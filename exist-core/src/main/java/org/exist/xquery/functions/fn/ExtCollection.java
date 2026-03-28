@@ -21,6 +21,8 @@
  */
 package org.exist.xquery.functions.fn;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.collections.Collection;
 import org.exist.dom.QName;
 import org.exist.dom.persistent.DefaultDocumentSet;
@@ -38,9 +40,17 @@ import org.exist.xquery.*;
 import org.exist.xquery.functions.xmldb.XMLDBModule;
 import org.exist.xquery.value.*;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Iterator;
+
+import org.exist.xquery.util.DocUtils;
 
 import static org.exist.xquery.FunctionDSL.*;
 
@@ -48,6 +58,8 @@ import static org.exist.xquery.FunctionDSL.*;
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class ExtCollection extends BasicFunction {
+
+    private static final Logger LOG = LogManager.getLogger(ExtCollection.class);
 
     private static final String FS_COLLECTION_NAME = "collection";
     static final FunctionSignature[] FS_COLLECTION = functionSignatures(
@@ -120,6 +132,10 @@ public class ExtCollection extends BasicFunction {
         if (dynamicCollection != null) {
             items.addAll(dynamicCollection);
 
+        } else if ("file".equals(collectionUri.getScheme())) {
+            // file: URI — scan directory for XML files
+            getFileCollectionItems(collectionUri, items);
+
         } else {
             final MutableDocumentSet ndocs = new DefaultDocumentSet();
             final XmldbURI uri = XmldbURI.create(collectionUri);
@@ -144,6 +160,54 @@ public class ExtCollection extends BasicFunction {
 
             // add the docs to the items
             addAll(ndocs, items);
+        }
+    }
+
+    /**
+     * Scan a file: URI directory for XML files and parse them into in-memory documents.
+     * Supports an optional ?select=glob query parameter for filtering (e.g., ?select=*.xml).
+     * Only DBA users can access the file system directly.
+     */
+    private void getFileCollectionItems(final URI collectionUri, final Sequence items) throws XPathException {
+        // Security: only DBA users can access file: URIs
+        if (!context.getBroker().getCurrentSubject().hasDbaRole()) {
+            throw new XPathException(this, ErrorCodes.FODC0002,
+                    "Permission denied: only DBA users can access file: URIs in fn:collection()");
+        }
+
+        // Extract path and optional ?select= glob filter
+        final String filePath = collectionUri.getPath();
+        final String query = collectionUri.getQuery();
+        String globPattern = "*.xml"; // default: XML files only
+        if (query != null && query.startsWith("select=")) {
+            globPattern = query.substring("select=".length());
+        }
+
+        final Path dir = Paths.get(filePath);
+        if (!Files.isDirectory(dir)) {
+            throw new XPathException(this, ErrorCodes.FODC0002,
+                    "Directory does not exist: " + filePath);
+        }
+
+        try (final DirectoryStream<Path> stream = Files.newDirectoryStream(dir, globPattern)) {
+            for (final Path file : stream) {
+                if (Files.isRegularFile(file) && Files.isReadable(file)) {
+                    try (final InputStream is = Files.newInputStream(file)) {
+                        final org.exist.dom.memtree.DocumentImpl doc =
+                                DocUtils.parse(context, is, this);
+                        doc.setDocumentURI(file.toUri().toString());
+                        items.add(doc);
+                    } catch (final XPathException | IOException e) {
+                        // Skip non-parseable files (they may not be well-formed XML)
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug("Skipping non-parseable file in collection: {}", file, e);
+                        }
+                    }
+                }
+            }
+        } catch (final IOException e) {
+            throw new XPathException(this, ErrorCodes.FODC0002,
+                    "Error reading directory: " + e.getMessage());
         }
     }
 
