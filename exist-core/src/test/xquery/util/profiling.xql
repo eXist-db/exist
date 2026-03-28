@@ -113,3 +113,54 @@ function prof:track-sequence-value() {
     let $result := util:track(1 to 5)
     return count($result?value)
 };
+
+(: === util:explain tests === :)
+
+declare
+    %test:assertTrue
+function prof:explain-returns-element() {
+    let $result := util:explain('1 + 1')
+    return $result instance of element()
+};
+
+declare
+    %test:assertEquals("explain")
+function prof:explain-root-element() {
+    let $result := util:explain('1 + 1')
+    return local-name($result)
+};
+
+declare
+    %test:assertTrue
+function prof:explain-for-has-for-element() {
+    let $result := util:explain('for $x in 1 to 5 return $x')
+    return exists($result//for)
+};
+
+declare
+    %test:assertTrue
+function prof:explain-let-has-let-element() {
+    let $result := util:explain('let $x := 42 return $x')
+    return exists($result//let)
+};
+
+declare
+    %test:assertTrue
+function prof:explain-path-has-step() {
+    let $result := util:explain('//title')
+    return exists($result//step)
+};
+
+declare
+    %test:assertTrue
+function prof:explain-function-call() {
+    let $result := util:explain('count(1 to 10)')
+    return exists($result//*[contains(@name, "count")])
+};
+
+declare
+    %test:assertTrue
+function prof:explain-conditional() {
+    let $result := util:explain('if (true()) then 1 else 2')
+    return exists($result//if)
+};
