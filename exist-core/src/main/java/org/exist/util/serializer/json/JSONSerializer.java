@@ -67,7 +67,7 @@ public class JSONSerializer {
 
     public void serialize(Sequence sequence, Writer writer) throws SAXException {
         // QT4: escape-solidus controls whether / is escaped as \/ (default: true)
-        final boolean escapeSolidus = !"no".equals(
+        final boolean escapeSolidus = !isBooleanFalse(
                 outputProperties.getProperty(EXistOutputKeys.ESCAPE_SOLIDUS, "yes"));
         final JsonFactory factory = JsonFactory.builder()
                 .configure(JsonWriteFeature.ESCAPE_FORWARD_SLASHES, escapeSolidus)
@@ -80,7 +80,7 @@ public class JSONSerializer {
             }
             // Duplicate detection is handled manually in serializeMap for proper SERE0022 errors
             generator.disable(JsonGenerator.Feature.STRICT_DUPLICATE_DETECTION);
-            final boolean jsonLines = "yes".equals(
+            final boolean jsonLines = isBooleanTrue(
                     outputProperties.getProperty(EXistOutputKeys.JSON_LINES, "no"));
             if (jsonLines) {
                 serializeJsonLines(sequence, generator);
@@ -177,6 +177,18 @@ public class JSONSerializer {
         } else {
             generator.writeString(item.getStringValue());
         }
+    }
+
+    private static boolean isBooleanTrue(final String value) {
+        if (value == null) return false;
+        final String v = value.trim();
+        return "yes".equals(v) || "true".equals(v) || "1".equals(v);
+    }
+
+    private static boolean isBooleanFalse(final String value) {
+        if (value == null) return false;
+        final String v = value.trim();
+        return "no".equals(v) || "false".equals(v) || "0".equals(v);
     }
 
     private void serializeNode(Item item, JsonGenerator generator) throws SAXException {
