@@ -164,3 +164,68 @@ function prof:explain-conditional() {
     let $result := util:explain('if (true()) then 1 else 2')
     return exists($result//if)
 };
+
+(: === util:profile tests === :)
+
+declare
+    %test:assertTrue
+function prof:profile-returns-map() {
+    let $result := util:profile('1 + 1')
+    return $result instance of map(*)
+};
+
+declare
+    %test:assertTrue
+function prof:profile-has-result-key() {
+    let $result := util:profile('1 + 1')
+    return map:contains($result, "result")
+};
+
+declare
+    %test:assertTrue
+function prof:profile-has-time-key() {
+    let $result := util:profile('1 + 1')
+    return map:contains($result, "time")
+};
+
+declare
+    %test:assertTrue
+function prof:profile-has-memory-key() {
+    let $result := util:profile('1 + 1')
+    return map:contains($result, "memory")
+};
+
+declare
+    %test:assertTrue
+function prof:profile-has-plan-key() {
+    let $result := util:profile('1 + 1')
+    return map:contains($result, "plan")
+};
+
+declare
+    %test:assertTrue
+function prof:profile-has-stats-key() {
+    let $result := util:profile('1 + 1')
+    return map:contains($result, "stats")
+};
+
+declare
+    %test:assertEquals(2)
+function prof:profile-result-correct() {
+    let $result := util:profile('1 + 1')
+    return $result?result
+};
+
+declare
+    %test:assertTrue
+function prof:profile-plan-is-element() {
+    let $result := util:profile('for $x in 1 to 5 return $x')
+    return $result?plan instance of element()
+};
+
+declare
+    %test:assertTrue
+function prof:profile-stats-is-element() {
+    let $result := util:profile('1 + 1')
+    return $result?stats instance of element()
+};
