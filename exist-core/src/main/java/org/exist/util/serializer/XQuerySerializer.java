@@ -71,6 +71,9 @@ public class XQuerySerializer {
             case "json":
                 serializeJSON(sequence, compilationTime, executionTime);
                 break;
+            case "csv":
+                serializeCSV(sequence);
+                break;
             case "xml":
             default:
                 serializeXML(sequence, start, howmany, wrap, typed, compilationTime, executionTime);
@@ -80,7 +83,7 @@ public class XQuerySerializer {
 
     public boolean normalize() {
         final String method = outputProperties.getProperty(OutputKeys.METHOD, "xml");
-        return !("json".equals(method) || "adaptive".equals(method));
+        return !("json".equals(method) || "adaptive".equals(method) || "csv".equals(method));
     }
 
     private void serializeXML(final Sequence sequence, final int start, final int howmany, final boolean wrap, final boolean typed, final long compilationTime, final long executionTime) throws SAXException, XPathException {
@@ -154,6 +157,11 @@ public class XQuerySerializer {
             JSONSerializer serializer = new JSONSerializer(broker, outputProperties);
             serializer.serialize(sequence, writer);
         }
+    }
+
+    private void serializeCSV(final Sequence sequence) throws SAXException {
+        final CSVSerializer serializer = new CSVSerializer(outputProperties);
+        serializer.serialize(sequence, writer);
     }
 
     private void serializeAdaptive(final Sequence sequence) throws SAXException, XPathException {

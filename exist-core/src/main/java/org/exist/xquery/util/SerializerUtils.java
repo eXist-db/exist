@@ -139,6 +139,12 @@ public class SerializerUtils {
         ITEM_SEPARATOR(EXistOutputKeys.ITEM_SEPARATOR, Type.STRING, Cardinality.ZERO_OR_ONE, Sequence.EMPTY_SEQUENCE),  //default: () means "absent"
         JSON_LINES(EXistOutputKeys.JSON_LINES, Type.BOOLEAN, Cardinality.ZERO_OR_ONE, BooleanValue.FALSE),
         JSON_NODE_OUTPUT_METHOD(EXistOutputKeys.JSON_NODE_OUTPUT_METHOD, Type.STRING, Cardinality.ZERO_OR_ONE, new StringValue("xml")),
+        // CSV serialization parameters (vendor extension, modeled on BaseX)
+        CSV_FIELD_DELIMITER(EXistOutputKeys.CSV_FIELD_DELIMITER, Type.STRING, Cardinality.ZERO_OR_ONE, new StringValue(",")),
+        CSV_ROW_DELIMITER(EXistOutputKeys.CSV_ROW_DELIMITER, Type.STRING, Cardinality.ZERO_OR_ONE, new StringValue("\n")),
+        CSV_QUOTE_CHARACTER(EXistOutputKeys.CSV_QUOTE_CHARACTER, Type.STRING, Cardinality.ZERO_OR_ONE, new StringValue("\"")),
+        CSV_HEADER(EXistOutputKeys.CSV_HEADER, Type.BOOLEAN, Cardinality.ZERO_OR_ONE, BooleanValue.FALSE),
+        CSV_QUOTES(EXistOutputKeys.CSV_QUOTES, Type.BOOLEAN, Cardinality.ZERO_OR_ONE, BooleanValue.TRUE),
         MEDIA_TYPE(OutputKeys.MEDIA_TYPE, Type.STRING, Cardinality.ZERO_OR_ONE, Sequence.EMPTY_SEQUENCE),    // default: a media type suitable for the chosen method
         METHOD(OutputKeys.METHOD, Type.STRING, Cardinality.ZERO_OR_ONE, new StringValue("xml")),
         NORMALIZATION_FORM("normalization-form", Type.STRING, Cardinality.ZERO_OR_ONE, new StringValue("none")),
@@ -521,6 +527,7 @@ public class SerializerUtils {
             case "jsonp" -> new StringValue("application/javascript");
             case "html" -> new StringValue("text/html");
             case "adaptive", "text" -> new StringValue("text/plain");
+            case "csv" -> new StringValue("text/csv");
             case "binary" -> new StringValue("application/octet-stream");
             default -> throw new UnsupportedOperationException("Unrecognised serialization method: " + method);
         };
