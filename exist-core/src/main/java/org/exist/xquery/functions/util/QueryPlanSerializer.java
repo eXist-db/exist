@@ -65,18 +65,6 @@ public class QueryPlanSerializer extends DefaultExpressionVisitor {
         builder.endElement();
     }
 
-    private void textElement(final String name, final String text) {
-        startElement(name);
-        builder.characters(text);
-        endElement();
-    }
-
-    private void addLocation(final Expression expr) {
-        if (expr.getLine() > 0) {
-            // Line/column info is on the element already started by the caller
-        }
-    }
-
     private String[][] locationAttrs(final Expression expr) {
         if (expr.getLine() > 0) {
             return new String[][]{

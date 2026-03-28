@@ -21,12 +21,9 @@
  */
 package org.exist.xquery.functions.util;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.DocumentImpl;
 import org.exist.dom.memtree.MemTreeBuilder;
-import org.exist.source.StringSource;
 import org.exist.storage.DBBroker;
 import org.exist.xquery.*;
 import org.exist.xquery.functions.map.MapType;
@@ -56,8 +53,6 @@ import java.io.StringReader;
  * </pre>
  */
 public class FunProfile extends BasicFunction {
-
-    private static final Logger LOG = LogManager.getLogger(FunProfile.class);
 
     public static final FunctionSignature[] signatures = {
             new FunctionSignature(
@@ -171,10 +166,9 @@ public class FunProfile extends BasicFunction {
 
             return resultMap;
 
+        } catch (final XPathException e) {
+            throw e;
         } catch (final Exception e) {
-            if (e instanceof XPathException) {
-                throw (XPathException) e;
-            }
             throw new XPathException(this, ErrorCodes.XPST0003, "Error profiling query: " + e.getMessage());
         } finally {
             context.popNamespaceContext();
@@ -197,8 +191,14 @@ public class FunProfile extends BasicFunction {
         }
     }
 
+    /**
+     * Serialize the per-query profiler's performance stats as XML.
+     * Uses the profiled query's own Profiler instance (not the global
+     * BrokerPool stats) to ensure per-query isolation under concurrent load.
+     */
     private Sequence serializeProfilerStats(final XQueryContext pContext) throws XPathException {
-        final PerformanceStats stats = pContext.getBroker().getBrokerPool().getPerformanceStats();
+        // Read from the per-query profiler's stats, not the global BrokerPool stats
+        final PerformanceStats stats = pContext.getProfiler().getPerformanceStats();
         context.pushDocumentContext();
         try {
             final MemTreeBuilder builder = context.getDocumentBuilder();

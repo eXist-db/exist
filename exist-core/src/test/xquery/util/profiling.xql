@@ -1,3 +1,24 @@
+(:
+ : eXist-db Open Source Native XML Database
+ : Copyright (C) 2001 The eXist-db Authors
+ :
+ : info@exist-db.org
+ : http://www.exist-db.org
+ :
+ : This library is free software; you can redistribute it and/or
+ : modify it under the terms of the GNU Lesser General Public
+ : License as published by the Free Software Foundation; either
+ : version 2.1 of the License, or (at your option) any later version.
+ :
+ : This library is distributed in the hope that it will be useful,
+ : but WITHOUT ANY WARRANTY; without even the implied warranty of
+ : MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ : Lesser General Public License for more details.
+ :
+ : You should have received a copy of the GNU Lesser General Public
+ : License along with this library; if not, write to the Free Software
+ : Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ :)
 xquery version "3.1";
 
 (:~
@@ -228,4 +249,20 @@ declare
 function prof:profile-stats-is-element() {
     let $result := util:profile('1 + 1')
     return $result?stats instance of element()
+};
+
+(: === util:index-report tests === :)
+
+declare
+    %test:assertTrue
+function prof:index-report-returns-element() {
+    let $result := util:index-report('1 + 1')
+    return $result instance of element()
+};
+
+declare
+    %test:assertTrue
+function prof:index-report-with-path() {
+    let $result := util:index-report('//title')
+    return $result instance of element()
 };

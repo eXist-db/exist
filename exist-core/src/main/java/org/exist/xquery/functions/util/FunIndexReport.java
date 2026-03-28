@@ -35,46 +35,38 @@ import antlr.collections.AST;
 import java.io.StringReader;
 
 /**
- * Returns the compiled expression tree of an XQuery expression as XML.
- * This is the core query visibility function — shows what the optimizer produces.
+ * Execute a query with profiling and report which indexes were used.
+ * Returns an XML report showing index type, usage count, and elapsed time.
  *
  * <pre>
- * util:explain('for $x in 1 to 10 where $x > 5 return $x * 2')
+ * util:index-report('collection("/db/data")//book[@year > 2020]')
  * </pre>
  *
- * Returns an XML representation of the expression tree showing FLWOR clauses,
- * path expressions, function calls, comparisons, etc.
+ * Returns:
+ * <pre>
+ * &lt;index-report xmlns="http://exist-db.org/xquery/profiling"&gt;
+ *   &lt;index type="range" source="..." elapsed="0.5" calls="42" optimization-level="BASIC"/&gt;
+ *   &lt;optimization type="RANGE_IDX" source="..." line="1" column="15"/&gt;
+ * &lt;/index-report&gt;
+ * </pre>
  */
-public class FunExplain extends BasicFunction {
+public class FunIndexReport extends BasicFunction {
 
     public static final FunctionSignature[] signatures = {
             new FunctionSignature(
-                    new QName("explain", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-                    "Compiles the given XQuery expression and returns its expression tree as XML. " +
-                            "Shows the post-optimization query plan.",
+                    new QName("index-report", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
+                    "Executes the given query with profiling enabled and returns an XML report " +
+                            "showing which indexes were used and which optimizations were applied.",
                     new SequenceType[]{
                             new FunctionParameterSequenceType("query", Type.STRING, Cardinality.EXACTLY_ONE,
-                                    "The XQuery expression to explain")
+                                    "The XQuery expression to analyze for index usage")
                     },
                     new FunctionReturnSequenceType(Type.ELEMENT, Cardinality.EXACTLY_ONE,
-                            "An XML representation of the compiled expression tree")
-            ),
-            new FunctionSignature(
-                    new QName("explain", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
-                    "Compiles the given XQuery expression and returns its expression tree as XML. " +
-                            "The module-load-path controls where imports are resolved.",
-                    new SequenceType[]{
-                            new FunctionParameterSequenceType("query", Type.STRING, Cardinality.EXACTLY_ONE,
-                                    "The XQuery expression to explain"),
-                            new FunctionParameterSequenceType("module-load-path", Type.STRING, Cardinality.EXACTLY_ONE,
-                                    "The module load path for resolving imports")
-                    },
-                    new FunctionReturnSequenceType(Type.ELEMENT, Cardinality.EXACTLY_ONE,
-                            "An XML representation of the compiled expression tree")
+                            "An XML report of index usage and optimizations")
             )
     };
 
-    public FunExplain(final XQueryContext context, final FunctionSignature signature) {
+    public FunIndexReport(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
 
@@ -85,14 +77,19 @@ public class FunExplain extends BasicFunction {
             throw new XPathException(this, ErrorCodes.XPTY0004, "Query expression is empty");
         }
 
-        // Compile the query using the same pattern as util:compile()
         final XQueryContext pContext = new XQueryContext(context.getBroker().getBrokerPool());
         context.pushNamespaceContext();
-        try {
-            if (getArgumentCount() == 2 && args[1].hasOne()) {
-                pContext.setModuleLoadPath(args[1].getStringValue());
-            }
 
+        try {
+            // Enable profiling with full verbosity
+            final Profiler profiler = pContext.getProfiler();
+            profiler.configure(new Option(
+                    this,
+                    new QName("profiling", "http://exist-db.org/xquery/util", "exist"),
+                    "enabled=yes verbosity=10"
+            ));
+
+            // Compile
             final XQueryLexer lexer = new XQueryLexer(pContext, new StringReader(query));
             final XQueryParser parser = new XQueryParser(lexer);
             final XQueryTreeParser astParser = new XQueryTreeParser(pContext);
@@ -110,37 +107,35 @@ public class FunExplain extends BasicFunction {
                 throw astParser.getLastException();
             }
 
-            // Analyze (optimize) the expression tree
             path.analyze(new AnalyzeContextInfo());
 
-            // Serialize the expression tree as XML
-            return serializeExpressionTree(path);
+            // Execute to trigger index usage
+            path.eval(null, null);
 
+            // Serialize the per-query profiler stats as the index report
+            final PerformanceStats stats = profiler.getPerformanceStats();
+            context.pushDocumentContext();
+            try {
+                final MemTreeBuilder builder = context.getDocumentBuilder();
+                if (stats instanceof PerformanceStatsImpl) {
+                    ((PerformanceStatsImpl) stats).serialize(builder);
+                } else {
+                    builder.startElement("", "index-report", "index-report", null);
+                    builder.endElement();
+                }
+                final DocumentImpl doc = (DocumentImpl) builder.getDocument();
+                return (org.exist.dom.memtree.ElementImpl) doc.getDocumentElement();
+            } finally {
+                context.popDocumentContext();
+            }
+
+        } catch (final XPathException e) {
+            throw e;
         } catch (final Exception e) {
-            throw new XPathException(this, ErrorCodes.XPST0003, "Parse error: " + e.getMessage());
+            throw new XPathException(this, ErrorCodes.FOER0000, "Error profiling query: " + e.getMessage());
         } finally {
             context.popNamespaceContext();
             pContext.reset(false);
-        }
-    }
-
-    private Sequence serializeExpressionTree(final Expression expression) throws XPathException {
-        context.pushDocumentContext();
-        try {
-            final MemTreeBuilder builder = context.getDocumentBuilder();
-
-            builder.startElement("", "explain", "explain", null);
-
-            final QueryPlanSerializer visitor = new QueryPlanSerializer(builder);
-            expression.accept(visitor);
-
-            builder.endElement();
-
-            final DocumentImpl doc = (DocumentImpl) builder.getDocument();
-            // Return the root element, not the document node
-            return (org.exist.dom.memtree.ElementImpl) doc.getDocumentElement();
-        } finally {
-            context.popDocumentContext();
         }
     }
 }
