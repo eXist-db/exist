@@ -112,6 +112,8 @@ public class XIncludeFilter implements Receiver {
     private @Nullable String moduleLoadPath = null;
     private @Nullable Map<String, String> namespaces = null;
     private boolean inFallback = false;
+    private int inIncludeDepth = 0; // depth of non-XInclude elements inside xi:include (for suppressing non-fallback children)
+    private boolean suppressIncludeChildren = false; // true while processing xi:include's own children (not expanded content)
     private @Nullable ResourceError error = null;
 
     public XIncludeFilter(final Serializer serializer, @Nullable final Receiver receiver) {
@@ -132,6 +134,8 @@ public class XIncludeFilter implements Receiver {
         this.moduleLoadPath = null;
         this.namespaces = null;
         this.inFallback = false;
+        this.inIncludeDepth = 0;
+        this.suppressIncludeChildren = false;
         this.error = null;
     }
 
@@ -155,6 +159,9 @@ public class XIncludeFilter implements Receiver {
 
     @Override
     public void characters(final CharSequence seq) throws SAXException {
+        if (suppressIncludeChildren && !inFallback) {
+            return; // suppress non-fallback content inside xi:include
+        }
         if (!inFallback || error != null) {
             receiver.characters(seq);
         }
@@ -162,6 +169,9 @@ public class XIncludeFilter implements Receiver {
 
     @Override
     public void comment(final char[] ch, final int start, final int length) throws SAXException {
+        if (suppressIncludeChildren && !inFallback) {
+            return; // suppress non-fallback content inside xi:include
+        }
         if (!inFallback || error != null) {
             receiver.comment(ch, start, length);
         }
@@ -179,13 +189,19 @@ public class XIncludeFilter implements Receiver {
                 inFallback = false;
                 // clear error
                 error = null;
-            } else if (XI_INCLUDE.equals(qname.getLocalPart()) && error != null) {
-                // found an error, but there was no fallback element.
-                // throw the exception now
-                final SAXException e = error.cause.map(cause -> new SAXException(error.message, cause)).orElse(new SAXException(error.message));
-                error = null;
-                throw e;
+            } else if (XI_INCLUDE.equals(qname.getLocalPart())) {
+                inIncludeDepth--;
+                suppressIncludeChildren = (inIncludeDepth > 0); // restore suppression if nested
+                if (error != null) {
+                    // found an error, but there was no fallback element.
+                    // throw the exception now
+                    final SAXException e = error.cause.map(cause -> new SAXException(error.message, cause)).orElse(new SAXException(error.message));
+                    error = null;
+                    throw e;
+                }
             }
+        } else if (suppressIncludeChildren && !inFallback) {
+            // Inside xi:include but not in fallback — suppress non-fallback children per spec
         } else if (!inFallback || error != null) {
             receiver.endElement(qname);
         }
@@ -237,8 +253,18 @@ public class XIncludeFilter implements Receiver {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("processing include ...");
                 }
+                inIncludeDepth++;
+
+                // processXInclude will serialize included content through this filter;
+                // suppress only the xi:include's own children (not the expanded content)
+                final boolean prevSuppress = suppressIncludeChildren;
+                suppressIncludeChildren = false; // allow expanded content through
 
                 final Optional<ResourceError> maybeResourceError = processXInclude(attribs.getValue(HREF_ATTRIB), attribs.getValue(XPOINTER_ATTRIB));
+
+                // After processXInclude returns, any remaining SAX events until </xi:include>
+                // are the xi:include's own children — suppress them (except fallback)
+                suppressIncludeChildren = true;
 
                 if (maybeResourceError.isPresent()) {
                     final ResourceError resourceError = maybeResourceError.get();
@@ -250,6 +276,8 @@ public class XIncludeFilter implements Receiver {
             } else if (qname.getLocalPart().equals(XI_FALLBACK)) {
                 inFallback = true;
             }
+        } else if (suppressIncludeChildren && !inFallback) {
+            // Inside xi:include but not in fallback — suppress non-fallback children per spec
         } else if (!inFallback || error != null) {
             //LOG.debug("start: " + qName);
             receiver.startElement(qname, attribs);
@@ -275,7 +303,15 @@ public class XIncludeFilter implements Receiver {
      * @throws SAXException              If a SAX processing error occurs
      */
     protected Optional<ResourceError> processXInclude(final String href, String xpointer) throws SAXException {
-        if (href == null) {
+        if (href == null && xpointer == null) {
+            throw new SAXException("No href or xpointer attribute found in XInclude include element");
+        }
+
+        // Intra-document reference: xpointer without href (or href="")
+        if (href == null || href.isEmpty()) {
+            if (xpointer != null) {
+                return processIntraDocumentXPointer(xpointer);
+            }
             throw new SAXException("No href attribute found in XInclude include element");
         }
         // save some settings
@@ -411,11 +447,28 @@ public class XIncludeFilter implements Receiver {
             Source source = null;
             final XQueryPool pool = serializer.broker.getBrokerPool().getXQueryPool();
             CompiledXQuery compiled = null;
+            boolean wasElementScheme = false;
             try {
                 if (xpointer == null) {
                     source = new DBSource(serializer.broker.getBrokerPool(), (BinaryDocument) doc, true);
                 } else {
+                    wasElementScheme = xpointer.trim().startsWith("element(");
+                    xpointer = convertXPointerToXPath(xpointer);
                     xpointer = checkNamespaces(xpointer);
+                    // element() scheme produces XPath — needs doc() context
+                    // and must be compiled as regular XQuery, not xpointer mode
+                    if (wasElementScheme) {
+                        final XmldbURI contextDocUri = doc != null ? doc.getURI() : docUri;
+                        if (contextDocUri != null) {
+                            if (xpointer.startsWith("/")) {
+                                // Child sequence: /1/2 -> doc('...')/*[1]/*[2]
+                                xpointer = "doc('" + contextDocUri + "')" + xpointer;
+                            } else if (xpointer.startsWith("id(")) {
+                                // ID-based: id('x') -> doc('...')/id('x')
+                                xpointer = "doc('" + contextDocUri + "')/" + xpointer;
+                            }
+                        }
+                    }
                     source = new StringSource(xpointer);
                 }
                 final XQuery xquery = serializer.broker.getBrokerPool().getXQueryService();
@@ -460,7 +513,10 @@ public class XIncludeFilter implements Receiver {
 
                 if (compiled == null) {
                     try {
-                        compiled = xquery.compile(context, source, xpointer != null);
+                        // element() scheme expressions are converted to regular XQuery
+                        // (doc('...')/*[1]) and must not use xpointer compilation mode
+                        final boolean useXPointerMode = xpointer != null && !wasElementScheme;
+                        compiled = xquery.compile(context, source, useXPointerMode);
                     } catch (final IOException e) {
                         throw new SAXException("I/O error while reading query for xinclude: " + e.getMessage(), e);
                     }
@@ -499,8 +555,12 @@ public class XIncludeFilter implements Receiver {
                 }
 
             } catch (final XPathException | PermissionDeniedException e) {
+                // XPointer evaluation failures are resource errors per XInclude spec 4.2,
+                // not fatal errors. Return as ResourceError to allow fallback processing.
                 LOG.warn("xpointer error", e);
-                throw new SAXException("Error while processing XInclude expression: " + e.getMessage(), e);
+                document = prevDoc;
+                serializer.createContainerElements = createContainerElements;
+                return Optional.of(new ResourceError("Error while processing XInclude expression: " + e.getMessage(), e));
             } finally {
                 if (compiled != null) {
                     pool.returnCompiledXQuery(source, compiled);
@@ -512,6 +572,164 @@ public class XIncludeFilter implements Receiver {
         serializer.createContainerElements = createContainerElements;
 
         return Optional.empty();
+    }
+
+    /**
+     * Handle intra-document XPointer references (xpointer without href).
+     * Per XInclude spec, when href is absent or empty, the xpointer is evaluated
+     * against the current document.
+     */
+    private Optional<ResourceError> processIntraDocumentXPointer(String xpointer) throws SAXException {
+        if (document == null) {
+            return Optional.of(new ResourceError("No current document for intra-document XPointer reference"));
+        }
+
+        // Convert element() scheme to XPath if needed
+        xpointer = convertXPointerToXPath(xpointer);
+
+        // For absolute XPath expressions (from element() scheme), wrap with doc()
+        // to ensure the document context is properly set
+        final String docUri = document.getURI().toString();
+        if (xpointer.startsWith("/")) {
+            xpointer = "doc('" + docUri + "')" + xpointer;
+        } else if (xpointer.startsWith("id(")) {
+            // id() needs the document context — wrap: doc('...')/id('...')
+            xpointer = "doc('" + docUri + "')/" + xpointer;
+        }
+
+        final XQueryPool pool = serializer.broker.getBrokerPool().getXQueryPool();
+        CompiledXQuery compiled = null;
+        Source source = null;
+        try {
+            xpointer = checkNamespaces(xpointer);
+            source = new StringSource(xpointer);
+            final XQuery xquery = serializer.broker.getBrokerPool().getXQueryService();
+            XQueryContext context;
+            compiled = pool.borrowCompiledXQuery(serializer.broker, source);
+            if (compiled == null) {
+                context = new XQueryContext(serializer.broker.getBrokerPool());
+            } else {
+                context = compiled.getContext();
+                context.prepareForReuse();
+            }
+            if (namespaces != null) {
+                context.declareNamespaces(namespaces);
+            }
+            context.declareNamespace("xinclude", Namespaces.XINCLUDE_NS);
+            // Set the current document as the statically known document
+            context.setStaticallyKnownDocuments(new XmldbURI[]{document.getURI()});
+
+            if (compiled == null) {
+                compiled = xquery.compile(context, source, true);
+            } else {
+                compiled.getContext().updateContext(context);
+                context.getWatchDog().reset();
+            }
+
+            try {
+                final Sequence seq = xquery.execute(serializer.broker, compiled, null);
+                if (Type.subTypeOf(seq.getItemType(), Type.NODE)) {
+                    NodeValue node;
+                    for (final SequenceIterator i = seq.iterate(); i.hasNext(); ) {
+                        node = (NodeValue) i.nextItem();
+                        serializer.serializeToReceiver(node, false);
+                    }
+                } else {
+                    for (int i = 0; i < seq.getItemCount(); i++) {
+                        characters(seq.itemAt(i).getStringValue());
+                    }
+                }
+            } finally {
+                context.runCleanupTasks();
+            }
+            return Optional.empty();
+        } catch (final XPathException | PermissionDeniedException e) {
+            LOG.warn("intra-document xpointer error", e);
+            throw new SAXException("Error while processing intra-document XPointer: " + e.getMessage(), e);
+        } catch (final IOException e) {
+            throw new SAXException("I/O error while reading intra-document XPointer query: " + e.getMessage(), e);
+        } finally {
+            if (compiled != null) {
+                pool.returnCompiledXQuery(source, compiled);
+            }
+        }
+    }
+
+    /**
+     * Convert XPointer element() scheme to XPath expressions.
+     * The xpointer() scheme is handled natively by the ANTLR parser's xpointer() rule,
+     * so we leave it as-is and only convert element() scheme pointers.
+     *
+     * Handles:
+     *   element(/1)          -> /node()[1]
+     *   element(/1/2/3)      -> /node()[1]/node()[2]/node()[3]
+     *   element(myid)        -> id('myid')
+     *   element(myid/2/3)    -> id('myid')/node()[2]/node()[3]
+     *   xpointer(expr)       -> xpointer(expr) (left for ANTLR parser)
+     *   xmlns(...)element()  -> strips xmlns(), converts element()
+     */
+    private static String convertXPointerToXPath(String xpointer) {
+        xpointer = xpointer.trim();
+
+        // xpointer() scheme — leave as-is; the ANTLR parser's xpointer() rule handles it
+        if (xpointer.startsWith("xpointer(")) {
+            return xpointer;
+        }
+
+        // Handle element() scheme
+        if (xpointer.startsWith("element(") && xpointer.endsWith(")")) {
+            final String content = xpointer.substring(8, xpointer.length() - 1).trim();
+            return convertElementSchemeToXPath(content);
+        }
+
+        // Handle multiple schemes: xmlns(...)element(...)
+        // Strip xmlns() schemes first (handled by checkNamespaces), then look for element()
+        if (xpointer.contains("element(")) {
+            int idx = 0;
+            while (idx < xpointer.length()) {
+                if (xpointer.startsWith("xmlns(", idx)) {
+                    final int close = xpointer.indexOf(')', idx);
+                    if (close > 0) {
+                        idx = close + 1;
+                        continue;
+                    }
+                }
+                break;
+            }
+            if (idx > 0 && idx < xpointer.length()) {
+                return convertXPointerToXPath(xpointer.substring(idx));
+            }
+        }
+
+        return xpointer;
+    }
+
+    /**
+     * Convert element() scheme content to XPath.
+     * Per XPointer element() scheme spec, child sequences use 1-based
+     * element positions (not node positions), so we use *[N] not node()[N].
+     */
+    private static String convertElementSchemeToXPath(final String content) {
+        if (content.startsWith("/")) {
+            // Child sequence: /1/2/3 -> /*[1]/*[2]/*[3]
+            final String[] parts = content.substring(1).split("/");
+            final StringBuilder xpath = new StringBuilder();
+            for (final String part : parts) {
+                xpath.append("/*[").append(part.trim()).append("]");
+            }
+            return xpath.toString();
+        } else if (content.contains("/")) {
+            // ID + child sequence: myid/2/3 -> id('myid')/*[2]/*[3]
+            final String[] parts = content.split("/");
+            final StringBuilder xpath = new StringBuilder("id('").append(parts[0].trim()).append("')");
+            for (int i = 1; i < parts.length; i++) {
+                xpath.append("/*[").append(parts[i].trim()).append("]");
+            }
+            return xpath.toString();
+        } else {
+            // Just an ID: myid -> id('myid')
+            return "id('" + content.trim() + "')";
+        }
     }
 
     private Either<ResourceError, org.exist.dom.memtree.DocumentImpl> parseExternal(final URI externalUri) throws ParserConfigurationException, SAXException {
