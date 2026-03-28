@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<!-- Testing the content of the xinclude element. The comment should be ignored. -->
+<x xmlns:xi="http://www.w3.org/2001/XInclude">
+	<xi:include href="../ents/something.xml">
+		<!-- This comment must be ignored. -->
+	</xi:include>
+</x>

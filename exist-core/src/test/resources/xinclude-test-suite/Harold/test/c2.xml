@@ -1,0 +1,7 @@
+<?xml version='1.0'?>
+<document xmlns:xi="http://www.w3.org/2001/XInclude">
+  <p>This document has been accessed
+  <xi:include href="count.txt" parse="text"/> times.</p>
+</document>
+
+

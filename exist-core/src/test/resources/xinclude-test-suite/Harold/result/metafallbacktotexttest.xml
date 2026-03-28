@@ -1,0 +1,5 @@
+<root>
+  <test xml:base="fallbacktest3.xml">
+  some data<!--comment-->more data
+</test>
+</root>

@@ -1,0 +1,23 @@
+<root>
+  <test xml:base="fallbacktotext.xml">
+  <![CDATA[<simple>
+<test xmlns:xinclude="http://www.w3.org/2001/XInclude">
+  <latin1>
+    <firstElement/>
+    <xinclude:include href="utf8.xml" parse="text"/>
+    <insideChildren/>
+    <another>
+      <deeper>text</deeper>
+    </another>
+  </latin1>
+  <test2>
+    <xinclude:include href="test2.xml"/>
+  </test2>
+  <test3>
+   <!-- <xinclude:include href="roottest.xml"/> -->
+  </test3>
+</test>
+</simple>
+]]>
+</test>
+</root>

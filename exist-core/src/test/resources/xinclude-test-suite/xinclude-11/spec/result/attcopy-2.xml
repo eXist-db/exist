@@ -1,0 +1,13 @@
+<document xmlns:xi="http://www.w3.org/2001/XInclude"
+          xmlns:eg="http://example.org/namespace/example">
+   <p>This example shows attribute replacement.</p>
+
+   <note eg:root="one" xml:id="inc1">
+      <p>Consider the <phrase xml:id="wombat">Wombat</phrase>.</p>
+   </note>
+
+   <note eg:root="two" xml:id="inc2">
+      <p>Consider the <phrase xml:id="wombat">Wombat</phrase>.</p>
+   </note>
+
+</document>

@@ -1,0 +1,5 @@
+ <!-- Testing an include element in the document (top-level) element in the source doc.
+Test should fail because is including a processing instruction. -->
+<xinclude:include  xmlns:xinclude="http://www.w3.org/2001/XInclude" href="../ents/getnodes.xml" xpointer="xpointer(//processing-instruction())"/>
+  
+  

@@ -1,0 +1,8 @@
+<?xml version='1.0'?>
+<root>
+   Test that a document can include a piece of itself using an xpointer attribute.
+  <xi:include xpointer="element(/1/2)" xmlns:xi="http://www.w3.org/2001/XInclude" />
+  <data>
+     This will be copied
+  </data>
+</root>

@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<x xmlns:xinclude="http://www.w3.org/2001/XInclude">
+   <!-- Simple test of including another XML document -->
+   <book xml:base="../ents/books.xml">
+<chapter>chapter 1.
+	<subtitle>first subtitle</subtitle>
+	<subtitle>Second subtitle</subtitle>
+</chapter>
+<chapter>chapter 2.
+	<subtitle>first subtitle</subtitle>
+	<subtitle>Second subtitle</subtitle>
+</chapter>
+<chapter>chapter 3.
+	<subtitle>first subtitle</subtitle>
+	<subtitle>Second subtitle</subtitle>
+</chapter>
+</book>
+</x>

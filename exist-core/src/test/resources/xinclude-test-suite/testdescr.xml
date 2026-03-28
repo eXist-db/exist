@@ -1,0 +1,1460 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE testsuite SYSTEM "testcases.dtd" >
+<testsuite>
+	<testcases creator="Redhat" basedir="Imaq/test/XInclude/docs">
+		<testcase id="imaq-include-xml-01" href="include.xml" type="success">
+			<contributor>Daniel Veillard</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#xml-included-items">4.2</section>
+			<date qualifier="created">8-Mar-2002</date>
+			<description>Simple test of including another XML document.</description>	
+			<output>../../../result/XInclude/include.xml</output>
+		</testcase>
+
+		<testcase id="imaq-include-xml-02" href="recursive.xml" type="success">
+			<contributor>Daniel Veillard</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#loops">4.2.7</section>
+			<date qualifier="created">8-Mar-2002</date>
+			<description>Test recursive inclusion.</description>	
+			<output>../../../result/XInclude/recursive.xml</output>
+		</testcase>
+
+		<testcase id="imaq-include-xml-03" href="nodes.xml" type="success" features="xpointer-scheme">
+			<contributor>Daniel Veillard</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#multiple-nodes">4.2.2</section>
+			<date qualifier="created">8-Mar-2002</date>
+			<description>Simple test of including a set of nodes from an XML document.</description>	
+			<output>../../../result/XInclude/nodes.xml</output>
+		</testcase>
+
+		<testcase id="imaq-include-xml-04" href="docids.xml" type="success">
+			<contributor>Daniel Veillard</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#xml-included-items">4.2</section>
+			<date qualifier="created">8-Mar-2002</date>
+			<description>including another XML document with IDs</description>	
+			<output>../../../result/XInclude/docids.xml</output>
+		</testcase>
+
+		<testcase id="imaq-include-xml-05" href="txtinclude.xml" type="success">
+			<contributor>Daniel Veillard</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#text-included-items">4.3</section>
+			<date qualifier="created">8-Mar-2002</date>
+			<description>Simple test of including another text document</description>	
+			<output>../../../result/XInclude/txtinclude.xml</output>
+		</testcase>
+
+		<testcase id="imaq-include-xml-06" href="fallback.xml" type="success">
+			<contributor>Daniel Veillard</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#fallback">4.4</section>
+			<date qualifier="created">21-Aug-2002</date>
+			<description>Simple test of a fallback on unavailable URI.</description>	
+			<output>../../../result/XInclude/fallback.xml</output>
+		</testcase>
+  <testcase id="imaq-pex1-01" href="pex1.xml" type="success">
+   <!-- Transcribed by HST from http://lists.w3.org/Archives/Public/public-xml-core-wg/2006Aug/0033.html -->
+   <contributor>Daniel Veillard</contributor>
+   <section resource="http://www.w3.org/XML/2005/01/proposed-xinclude-errata#PEX1">3.2</section>
+   <date qualifier="created">2006-09-27</date>
+   <description>Unused fallbacks must not generate errors, even if broken.</description>
+   <output>../../../result/XInclude/include.xml</output>
+  </testcase>
+  <testcase id="imaq-pex1-02" href="pex1a.xml" type="error">
+   <contributor>Henry S. Thompson</contributor>
+   <section resource="http://www.w3.org/XML/2005/01/proposed-xinclude-errata#PEX1">3.2</section>
+   <date qualifier="created">2006-09-27</date>
+   <description>Broken fallback must generate errors, if they're needed.</description>
+  </testcase>
+  <testcase id="imaq-pex6-03" href="pex6a.xml" type="success">
+   <!-- Transcribed by HST from http://lists.w3.org/Archives/Public/public-xml-core-wg/2006Aug/0033.html -->
+   <contributor>Daniel Veillard</contributor>
+   <section resource="http://www.w3.org/XML/2005/01/proposed-xinclude-errata#PEX6">4.3</section>
+   <date qualifier="created">2006-09-27</date>
+   <description>A BOM in UTF16 is not added to the resulting document.</description>
+   <output>../../../result/XInclude/pex6a.xml</output>
+  </testcase>
+  <testcase id="imaq-pex6-04" href="pex6b.xml" type="success">
+   <!-- Transcribed by HST from http://lists.w3.org/Archives/Public/public-xml-core-wg/2006Aug/0033.html -->
+   <contributor>Daniel Veillard</contributor>
+   <section resource="http://www.w3.org/XML/2005/01/proposed-xinclude-errata#PEX6">4.3</section>
+   <date qualifier="created">2006-09-27</date>
+   <description>A BOM in UTF16LE is added to the resulting document.</description>
+   <output>../../../result/XInclude/pex6b.xml</output>
+  </testcase>
+  <testcase id="imaq-pex11-05" href="pex11.xml" type="error">
+   <!-- Transcribed by HST from http://lists.w3.org/Archives/Public/public-xml-core-wg/2006Aug/0033.html -->
+   <contributor>Daniel Veillard</contributor>
+   <section resource="http://www.w3.org/XML/2005/01/proposed-xinclude-errata#PEX11">3.1</section>
+   <date qualifier="created">2006-09-27</date>
+   <description>'accept' attributes with characters outside the range #x20 through #x7E must
+    be flagged as fatal errors.</description>
+  </testcase>
+	</testcases>
+	<testcases creator="FourThought" basedir="FourThought/test/XInclude/docs">
+		<testcase id="FourThought-include-01" href="ft-include1.xml" type="success">
+			<contributor>John Evdemon</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#syntax">3.1</section>
+			<date qualifier="created">18-September-2002</date>
+			<description>Simple test of including another XML document.</description>	
+			<output>../../../result/XInclude/include1.xml</output>
+		</testcase>
+		
+		<testcase id="FourThought-include-02" href="ft-include2.xml" type="success">
+			<contributor>John Evdemon</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#loops">4.2.7</section>
+			<date qualifier="created">18-September-2002</date>
+			<description>Test recursive inclusion.</description>	
+			<output>../../../result/XInclude/include2.xml</output>
+		</testcase>
+
+		
+		<testcase id="FourThought-include-03" href="ft-include3.xml" type="success">
+			<contributor>John Evdemon</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#syntax">3.1</section>
+			<date qualifier="created">18-September-2002</date>
+			<description>Simple test of including another text document.</description>	
+			<output>../../../result/XInclude/include3.xml</output>
+		</testcase>
+
+		<testcase id="FourThought-include-04" href="ft-include4.xml" type="success" features="xpointer-scheme">
+			<contributor>John Evdemon</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#multiple-nodes">4.2.2</section>
+			<date qualifier="created">18-September-2002</date>
+			<description>Simple test of including a set of nodes from an XML document.</description>	
+			<output>../../../result/XInclude/include4.xml</output>
+		</testcase>
+
+		<testcase id="FourThought-include-05" href="ft-include5.xml" type="success" features="xpointer-scheme">
+			<contributor>John Evdemon</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#multiple-nodes">4.2.2</section>
+			<date qualifier="created">18-September-2002</date>
+			<description>Simple test of including a set of nodes from an XML document.</description>	
+			<output>../../../result/XInclude/include5.xml</output>
+		</testcase>
+
+		<testcase id="FourThought-include-06" href="ft-include6.xml" type="success" features="xpointer-scheme">
+			<contributor>John Evdemon</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#docii">4.2.1</section>
+			<date qualifier="created">18-September-2002</date>
+			<description>Simple test of including a set of nodes from an XML document.</description>	
+			<output>../../../result/XInclude/include6.xml</output>
+		</testcase>
+
+		<testcase id="FourThought-include-07" href="ft-include7.xml" type="success" features="xpointer-scheme">
+			<contributor>John Evdemon</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#elements">4.2.5</section>
+			<date qualifier="created">18-September-2002</date>
+			<description>Simple test of including a set of nodes from an XML document.</description>	
+			<output>../../../result/XInclude/include7.xml</output>
+		</testcase>
+		
+	</testcases>
+
+	<testcases creator="NIST" basedir="Nist/test/docs">
+		<testcase id="Nist-include-01" href="nist-include-01.xml" type="success">
+			<contributor>Sandra I. Martinez</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#syntax">3.1</section>
+			<date qualifier="created">18-September-2002</date>
+			<description>Test the inclusion of  another XML document.</description>	
+			<output>../../result/nist-include-01.xml</output>
+		</testcase>
+
+		<testcase id="Nist-include-02" href="nist-include-02.xml" type="success">
+			<contributor>Sandra I. Martinez</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#syntax">3.1</section>
+			<date qualifier="created">September-2002</date>
+			<description>Test that the encoding attribute in the Xinclude element has no effect when parse="xml".</description>	
+			<output>../../result/nist-include-02.xml</output>
+		</testcase>
+
+		<testcase id="Nist-include-03" href="nist-include-03.xml" type="error">
+			<contributor>Sandra I. Martinez</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#syntax">3.1</section>
+			<date qualifier="created">September, 2002</date>
+			<description>Test that values other than xml or text, in the parse attribute of the XInclude 
+				element, result in fatal errors. </description>	
+		</testcase>
+
+		<testcase id="Nist-include-04" href="nist-include-04.xml" type="success">
+			<contributor>Sandra I. Martinez</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#syntax">3.2</section>
+			<date qualifier="created">September, 2002</date>
+			<description>Test of fallback element appearing as a child of an xinclude element. </description>	
+			<output>../../result/nist-include-04.xml</output>
+		</testcase>
+
+		<testcase id="Nist-include-05" href="nist-include-05.xml" type="error">
+			<contributor>Sandra I. Martinez</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#syntax">3.2</section>
+			<date qualifier="created">Septembe, 2002</date>
+			<description> Test a fallback element not appearing as a direct
+			child of an xinclude element. A fatal error should be generated.</description>	
+		</testcase>
+
+		<testcase id="Nist-include-06" href="nist-include-06.xml" type="success">
+			<contributor>Sandra I. Martinez</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#syntax">3.2</section>
+			<date qualifier="created">September, 2002</date>
+			<description> Test a fallback when a resource error occurs.  </description>	
+			<output>../../result/nist-include-06.xml</output>
+		</testcase>
+
+		<testcase id="Nist-include-07" href="nist-include-07.xml" type="success">
+			<contributor>Sandra I. Martinez</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#syntax">3.2</section>
+			<date qualifier="created">September, 2002</date>
+			<description> Test an empty fallback element. The xinclude element is
+			 removed from the results.</description>	
+			<output>../../result/nist-include-07.xml</output>
+		</testcase>
+
+		<testcase id="Nist-include-08" href="nist-include-08.xml" type="error">
+			<contributor>Sandra I. Martinez</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#syntax">3.2</section>
+			<date qualifier="created">September, 2002</date>
+			<description> Test of a fallback element missing from the 
+				include element. A resource error results in a fatal error. </description>	
+		
+		</testcase>
+		<testcase id="Nist-include-09" href="nist-include-09.xml" type="success">
+			<contributor>Sandra I. Martinez</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#syntax">3.1</section>
+			<date qualifier="created">September, 2002</date>
+			<description> Test unqualified attributes in the include element. They must be ignored.</description>	
+			<output>../../result/nist-include-09.xml</output>
+		</testcase>
+
+		<testcase id="Nist-include-10" href="nist-include-10.xml" type="success">
+			<contributor>Sandra I. Martinez</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#syntax">3.1</section>
+			<date qualifier="created">September, 2002</date>
+			<description> Test content other than the fallback, in the xinclude element. 
+			This content must be ignored. </description>	
+			<output>../../result/nist-include-10.xml</output>
+		</testcase>
+
+
+		<testcase id="Nist-include-11" href="nist-include-11.xml" type="error">
+			<contributor>Sandra I. Martinez</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#xml-included-items">4.2</section>
+			<date qualifier="created">September, 2002</date>
+			<description> Test a resource containing non-well-formed XML. The inclusion results in a fatal error.</description>	
+			
+		</testcase>
+
+		<testcase id="Nist-include-12" href="nist-include-12.xml" type="error">
+			<contributor>Sandra I. Martinez</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#fallback">4.4</section>
+			<date qualifier="created">September, 2002</date>
+			<description> Test that is a fatal error for an include element to contain more than one fallback elements. </description>	
+			
+		</testcase>
+
+		<testcase id="Nist-include-13" href="nist-include-13.xml" type="success">
+			<contributor>Sandra I. Martinez</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#fallback">4.4</section>
+			<date qualifier="created">September, 2002</date>
+			<description> Test a fallback element containing markup when parse="text".  </description>	
+			<output>../../result/nist-include-13.xml</output>
+		</testcase>
+
+		<testcase id="Nist-include-14" href="nist-include-14.xml" type="success">
+			<contributor>Sandra I. Martinez</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#fallback">4.4</section>
+			<date qualifier="created">September, 2002</date>
+			<description> Test a fallback element containing markup when parse="text".  </description>	
+			<output>../../result/nist-include-14.xml</output>
+		</testcase>
+
+		<testcase id="Nist-include-15" href="nist-include-15.xml" type="error">
+			<contributor>Sandra I. Martinez</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#loops">4.2.7</section>
+			<date qualifier="created">September, 2002</date>
+			<description> It is illegal for an include element to point to itself, when parse="xml". </description>	
+			
+		</testcase>
+
+		<testcase id="Nist-include-16" href="nist-include-16.xml" type="success">
+			<contributor>Sandra I. Martinez</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#docii">4.2.1</section>
+			<date qualifier="created">September, 2002</date>
+			<description> Test a document type declaration information item child 
+			  in the resource information set. the DTD should be excluded for inclusion in the source infoset.  </description>	
+			<output>../../result/nist-include-16.xml</output>
+		</testcase>
+
+		<testcase id="Nist-include-17" href="nist-include-17.xml" type="success">
+			<contributor>Sandra I. Martinez</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#creating-result">4.5</section>
+			<date qualifier="created">September, 2002</date>
+			<description> Test intra-document reference within include elements.</description>	
+			<output>../../result/nist-include-17.xml</output>
+		</testcase>
+
+		<testcase id="Nist-include-18" href="nist-include-18.xml" type="success" features="xpointer-scheme">
+			<contributor>Sandra I. Martinez</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#multiple-nodes">4.2.2</section>
+			<date qualifier="created">September, 2002</date>
+			<description> Simple test of including a set of nodes from an XML document. </description>	
+			<output>../../result/nist-include-18.xml</output>
+		</testcase>
+		<testcase id="Nist-include-19" href="nist-include-19.xml" type="success" features="xpointer-scheme">
+			<contributor>Sandra I. Martinez</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#multiple-nodes">4.2.2</section>
+			<date qualifier="created">September, 2002</date>
+			<description> Test the inclusion of a set of nodes from an XML document. </description>	
+			<output>../../result/nist-include-19.xml</output>
+		</testcase>
+
+		<testcase id="Nist-include-20" href="nist-include-20.xml" type="success" features="xpointer-scheme">
+			<contributor>Sandra I. Martinez</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#multiple-nodes">4.2.2</section>
+			<date qualifier="created">September, 2002</date>
+			<description> Test an include location identifying a document information item with
+			an xpointer  locating the document root. In this case
+			the set of top level include items is the children of acquired infoset's
+			document information item, except for the document type information
+			item.  </description>	
+			<output>../../result/nist-include-20.xml</output>
+		</testcase>
+
+		<testcase id="Nist-include-21" href="nist-include-21.xml" type="success">
+			<contributor>Sandra I. Martinez</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#unparsed-entities">4.5.1</section>
+			<date qualifier="created">January, 2003</date>
+			<description> Including an XML document with an unparsed entity. </description>	
+			<output>../../result/nist-include-21.xml</output>
+		</testcase>
+
+		<testcase id="Nist-include-22" href="nist-include-22.xml" type="success">
+			<contributor>Sandra I. Martinez</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#creating-result">4.5</section>
+			<date qualifier="created">January, 2003</date>
+			<description> Testing when the document (top level) element in the source infoset is an
+			include element. </description>	
+			<output>../../result/nist-include-22.xml</output>
+		</testcase>
+
+		<testcase id="Nist-include-23" href="nist-include-23.xml" type="error" features="xpointer-scheme">
+			<contributor>Sandra I. Martinez</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#creating-result">4.5</section>
+			<date qualifier="created">January, 2003</date>
+			<description> Testing an include element in the document (top-level) element in the source doc.
+				Test should fail because is including more than one element. </description>	
+			
+		</testcase>
+
+		<testcase id="Nist-include-24" href="nist-include-24.xml" type="error" features="xpointer-scheme">
+			<contributor>Sandra I. Martinez</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#creating-result">4.5</section>
+			<date qualifier="created">January, 2003</date>
+			<description> Testing an include element in the document (top-level) element in the source doc.
+				Test should fail because is including only a processing instruction. </description>	
+		</testcase>
+
+		<testcase id="Nist-include-25" href="nist-include-25.xml" type="error" features="xpointer-scheme">
+			<contributor>Sandra I. Martinez</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#creating-result">4.5</section>
+			<date qualifier="created">January, 2003</date>
+			<description> Testing an include element in the document (top-level) element in the source doc.
+				Test should fail because is including only a comment. </description>	
+			
+		</testcase>
+
+		<testcase id="Nist-include-26" href="nist-include-26.xml" type="success">
+			<contributor>Sandra I. Martinez</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#base">4.5.5</section>
+			<date qualifier="created">January, 2003</date>
+			<description>  Test relative URI references in the included infoset. </description>	
+			<output>../../result/nist-include-26.xml</output>
+		</testcase>
+		
+		<testcase id="Nist-include-27" href="nist-include-27.xml" type="success">
+			<contributor>Sandra I. Martinez</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#syntax">3.1</section>
+			<date qualifier="created">January, 2003</date>
+			<description>Test that the encoding attribute when parse="xml" does not translate the incoming document. </description>	
+			<output>../../result/nist-include-27.xml</output>
+		</testcase>
+
+		<testcase id="Nist-include-28" href="nist-include-28.xml" type="success">
+			<contributor>Sandra I. Martinez</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#xml-included-items">4.2</section>
+			<date qualifier="created">January, 2003</date>
+			<description>  including another XML document with IDs, using a shorthand pointer. </description>	
+			<output>../../result/nist-include-28.xml</output>
+		</testcase>
+
+		<testcase id="Nist-include-29" href="nist-include-29.xml" type="success">
+			<contributor>Sandra I. Martinez</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#xml-included-items">4.2</section>
+			<date qualifier="created">January, 2003</date>
+			<description>  including another XML document with IDs, using a shorthand pointer. </description>	
+			<output>../../result/nist-include-29.xml</output>
+		</testcase>
+
+		<testcase id="Nist-include-30" href="nist-include-30.xml" type="success">
+			<contributor>Sandra I. Martinez</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#xml-included-items">4.2</section>
+			<date qualifier="created">January, 2003</date>
+			<description>  Including another XML document with IDs, using a shorthand pointer. </description>	
+			<output>../../result/nist-include-30.xml</output>
+		</testcase>
+
+		<testcase id="Nist-include-31" href="nist-include-31.xml" type="success">
+			<contributor>Sandra I. Martinez</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#xml-included-items">4.2</section>
+			<date qualifier="created">January, 2003</date>
+			<description>  Including an XML document using an XPointer element scheme. </description>	
+			<output>../../result/nist-include-31.xml</output>
+		</testcase>
+
+		<testcase id="Nist-include-32" href="nist-include-32.xml" type="error"> <!-- document() subresource error -->
+			<contributor>Sandra I. Martinez</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#xml-included-items">4.2</section>
+			<date qualifier="created">January, 2003</date>
+			<description>  Including an XML document using an XPointer element scheme.</description>	
+			 
+		</testcase>
+
+		<testcase id="Nist-include-33" href="nist-include-33.xml" type="error"> <!-- document() subresource error -->
+			<contributor>Sandra I. Martinez</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#xml-included-items">4.2</section>
+			<date qualifier="created">January, 2003</date>
+			<description>  Including an XML document using an XPointer element scheme.</description>	
+		 
+		</testcase>
+
+		<testcase id="Nist-include-34" href="nist-include-34.xml" type="success">
+			<contributor>Sandra I. Martinez</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#xml-included-items">4.2</section>
+			<date qualifier="created">January, 2003</date>
+			<description>  Including another XML document with ids using XPointer element scheme. </description>	
+			<output>../../result/nist-include-34.xml</output>
+		</testcase>
+
+		<testcase id="Nist-include-35" href="nist-include-35.xml" type="success">
+			<contributor>Sandra I. Martinez</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#xml-included-items">4.2</section>
+			<date qualifier="created">January, 2003</date>
+			<description>  Including an XML document using an XPointer element scheme.</description>	
+			<output>../../result/nist-include-35.xml</output>
+		</testcase>
+
+		<testcase id="Nist-include-36" href="nist-include-36.xml" type="success">
+			<contributor>Sandra I. Martinez</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#xml-included-items">4.2</section>
+			<date qualifier="created">January, 2003</date>
+			<description>  Including an XML document using an XPointer element scheme.</description>	
+			<output>../../result/nist-include-36.xml</output>
+		 
+		</testcase>
+
+		<testcase id="Nist-include-37" href="nist-include-37.xml" type="success">
+			<contributor>Sandra I. Martinez</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#xml-included-items">4.2</section>
+			<date qualifier="created">January, 2003</date>
+			<description> Including another XML document using XPointer Framework scheme-base pointer.  
+				If the processor does not support the scheme used in a pointer part, it skip that pointer part.</description>	
+			<output>../../result/nist-include-37.xml</output>
+		</testcase>
+
+		<testcase id="Nist-include-38" href="nist-include-38.xml" type="success">
+			<contributor>Sandra I. Martinez</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#xml-included-items">4.2</section>
+			<date qualifier="created">January, 2003</date>
+			<description> Including another XML document using XPointer Framework.  
+				If the processor does not support the scheme used in a pointer part, it skip that pointer part.</description>	
+			<output>../../result/nist-include-38.xml</output>
+		</testcase>
+
+		<testcase id="nist-include-39" href="nist-include-39.xml" type="success">
+			<contributor>Sandra I. Martinez</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#syntax">3.1</section>
+			<date qualifier="created">January, 2003</date>
+			<description> Testing the content of the xinclude element. 
+				The comment  should be ignored .</description>	
+			<output>../../result/nist-include-39.xml</output>
+		</testcase>
+
+		<testcase id="nist-include-40" href="nist-include-40.xml" type="success">
+			<contributor>Sandra I. Martinez</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#syntax">3.1</section>
+			<date qualifier="created">January, 2003</date>
+			<description> Testing the content of the xinclude element. 
+				The element should be ignored .</description>	
+			<output>../../result/nist-include-40.xml</output>
+		</testcase>
+
+		<testcase id="nist-include-41" href="nist-include-41.xml" type="error">
+			<contributor>Sandra I. Martinez</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#syntax">3.1</section>
+			<date qualifier="created">January, 2003</date>
+			<description> Testing the content of the xinclude element. 
+			This test should result in a fatal error.</description>	
+			
+		</testcase>
+
+		<testcase id="Nist-include-42" href="nist-include-42.xml" type="error">
+			<contributor>Sandra I. Martinez</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#syntax">3.1</section>
+			<date qualifier="created">January, 2003</date>
+			<description> Testing the content of the xinclude element. 
+				The xinclude element may contain a fallback element; 
+				other elements from the xinclude namespace result in a fatal error.</description>	
+			
+		</testcase>
+
+		<testcase id="Nist-include-43" href="nist-include-43.xml" type="error">
+			<contributor>Sandra I. Martinez</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#syntax">3.1</section>
+			<date qualifier="created">January, 2003</date>
+			<description> Testing the content of the xinclude element. 
+				The content must be one fallback. This test should result in a fatal error.</description>	
+			
+		</testcase>
+
+		<testcase id="Nist-include-44" href="nist-include-44.xml" type="error">
+			<contributor>Sandra I. Martinez</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#xml-included-items">4.2</section>
+			<date qualifier="created">January, 2003</date>
+			<description> Test a resource that contains not-well-formed XML. 
+				This test should result in a fatal error.</description>	
+			
+		</testcase>
+
+		<testcase id="Nist-include-45" href="nist-include-45.xml" type="error">
+			<contributor>Sandra I. Martinez</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#xml-included-items">4.2</section>
+			<date qualifier="created">January, 2003</date>
+			<description> Test a resource that contains not-well-formed XML. 
+				This test should result in a fatal error.</description>	
+			
+		</testcase>
+
+		<testcase id="Nist-include-46" href="nist-include-46.xml" type="error">
+			<contributor>Sandra I. Martinez</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#syntax">3.1</section>
+			<date qualifier="created">January, 2003</date>
+			<description> Testing the content of the xinclude element. 
+				The xinclude element may contain a fallback element; other elements from the xinclude namespace result in a fatal error.</description>	
+			
+		</testcase>
+
+		<testcase id="Nist-include-47" href="nist-include-47.xml" type="error">
+			<contributor>Sandra I. Martinez</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#syntax">3.1</section>
+			<date qualifier="created">January, 2003</date>
+			<description> Testing the content of the xinclude element. 
+				The xinclude element may contain a fallback element; other elements from the xinclude namespace result in a fatal error.</description>	
+			
+		</testcase>
+
+		<testcase id="Nist-include-48" href="nist-include-48.xml" type="error" features="unexpanded-entities xpointer-scheme">
+			<contributor>Sandra I. Martinez</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#xml-included-items">4.2</section>
+			<date qualifier="created">January, 2003</date>
+			<description> It is a fatal error to resolve an xpointer scheme on a document
+			that contains unexpanded entity reference information items.</description>	
+			
+		</testcase>
+
+		<testcase id="Nist-include-49" href="nist-include-49.xml" type="success" features="unexpanded-entities">
+			<contributor>Sandra I. Martinez</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#creating-result">4.5</section>
+			<date qualifier="created">January, 2003</date>
+			<description> The unexpanded entity reference information items, if present in the source infoset,
+				will appear in the result infoset.</description>	
+			<output>../../result/nist-include-49.xml</output>
+		</testcase>
+
+		<testcase id="Nist-include-50" href="nist-include-50.xml" type="success">
+			<contributor>Sandra I. Martinez</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#creating-result">4.5</section>
+			<date qualifier="created">January, 2003</date>
+			<description> Test an include location identifying the document information item without an Xpointer, 
+			The set of top-level included items should be the children of the acquired inforset's document
+			information item, except for the document type declaration information item. </description>	
+			<output>../../result/nist-include-50.xml</output>
+		</testcase>
+
+		<testcase id="Nist-include-51" href="nist-include-51.xml" type="success" features="xpointer-scheme">
+			<contributor>Sandra I. Martinez</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#elements">4.2.5</section>
+			<date qualifier="created">January, 2003</date>
+			<description> Test an include location having an XPointer identifying a comment. 
+			The set of top-level included items should consist of the information item corresponding 
+			to the comment node in the acquired infoset.</description>	
+			<output>../../result/nist-include-51.xml</output>
+		</testcase>
+
+		<testcase id="Nist-include-52" href="nist-include-52.xml" type="success" features="xpointer-scheme">
+			<contributor>Sandra I. Martinez</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#elements">4.2.5</section>
+			<date qualifier="created">January, 2003</date>
+			<description> Test an include location having an XPointer identifying a processing instruction.
+			The set of top-level included items should consist of the information item corresponding 
+			to the processing instruction node in the acquired infoset.</description>	
+			<output>../../result/nist-include-52.xml</output>
+		</testcase>
+
+		<testcase id="Nist-include-53" href="nist-include-53.xml" type="error" features="xpointer-scheme">
+			<contributor>Sandra I. Martinez</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#attributes">4.2.6</section>
+			<date qualifier="created">January, 2003</date>
+			<description> Test that an include location identifying an attribute node will result in a
+			fatal error. </description>	
+		</testcase>
+
+		<testcase id="Nist-include-54" href="nist-include-54.xml" type="error" features="xpointer-scheme">
+			<contributor>Sandra I. Martinez</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#attributes">4.2.6</section>
+			<date qualifier="created">January, 2003</date>
+			<description>Test that an include location identifying an attribute node will result in a
+			fatal error. </description>	
+		</testcase>
+
+		<testcase id="Nist-include-55" href="nist-include-55.xml" type="success" features="unparsed-entities">
+			<contributor>Sandra I. Martinez</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#unparsed-entities">4.5.1</section>
+			<date qualifier="created">January, 2003</date>
+			<description> Including a duplicate unparsed entity. 
+			Test should ignore duplicate unparsed entity. </description>	
+			<output>../../result/nist-include-55.xml</output>
+		</testcase>
+
+		<testcase id="Nist-include-56" href="nist-include-56.xml" type="error" features="unparsed-entities">
+			<contributor>Sandra I. Martinez</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#unparsed-entities">4.5.1</section>
+			<date qualifier="created">January, 2003</date>
+			<description>  Including an unparsed entity with same name, 
+			but different sysid. Test should fail. </description>	
+		</testcase>
+
+<!-- (RMT) Removed because we can't reliably put non-ascii characters in
+           file names:
+
+	 	<testcase id="Nist-include-57" href="nist-include-57.xml"
+		          type="error">
+			<contributor>Sandra I. Martinez</contributor>
+			<section resource="http://www.w3.org/XML/Group/2003/03/PR-xinclude-20030331/#IRIs">5.0</section>
+			<date qualifier="created">April, 2003</date>
+			<description>  Simple IRI test. </description>	
+		</testcase>
+-->
+
+	</testcases>
+
+	<testcases creator="LTG, Edinburgh Univ" basedir="EdUni/test">
+
+		<testcase id="eduni-1" href="book.xml" type="success">
+			<contributor>Richard Tobin</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#xml-included-items">4.2</section>
+			<date qualifier="created">30-Jun-2004</date>
+			<description>Simple whole-file inclusion.</description>	
+			<output>../result/book.xml</output>
+		</testcase>
+
+		<testcase id="eduni-2" href="extract.xml" type="success">
+			<contributor>Richard Tobin</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#xml-included-items">4.2</section>
+			<date qualifier="created">30-Jun-2004</date>
+			<description>Verify that xi:include elements in the target have been processed in the acquired infoset, ie before the xpointer is applied.</description>
+			<output>../result/extract.xml</output>
+		</testcase>
+
+		<testcase id="eduni-3" href="lang.xml" type="success" features="lang-fixup">
+			<contributor>Richard Tobin</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#language">4.2</section>
+			<date qualifier="created">1-Sep-2004</date>
+			<description>Check xml:lang fixup</description>
+			<output>../result/lang.xml</output>
+		</testcase>
+
+	</testcases>
+	
+	<testcases creator="Elliotte Rusty Harold" basedir="Harold/test">
+  
+		<testcase id="harold-01" href="xmlbasetest.xml" type="success">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#include-location">4.1</section>
+			<date qualifier="created">31-Aug-2004</date>
+			<description>xml:base attribute is used to resolve relative URLs in href attributes</description>	
+			<output>../result/xmlbasetest.xml</output>
+		</testcase>
+
+    <testcase id="harold-02" href="resolvethruxpointer.xml" type="success">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#elements">4.2.5</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>Use XPointer to include an include element in another document,
+    and make sure that's fully resolved too</description>	
+			<output>../result/resolvethruxpointer.xml</output>
+		</testcase>
+ 
+    <testcase id="harold-03" href="xmlbasetest2.xml" type="success">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#include-location">4.1</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>xml:base attribute on the xi:include element is used to resolve relative URL in href</description>	
+			<output>../result/xmlbasetest2.xml</output>
+		</testcase>
+    
+    <testcase id="harold-04" href="xmlbasetest3.xml" type="success">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#include-location">4.1</section>
+       <date qualifier="created">31-Aug-2004</date>
+			<description>xml:base attribute from an unincluded element 
+			still applies to its included descendants</description>	
+			<output>../result/xmlbasetest3.xml</output>
+		</testcase>
+   
+    <testcase id="harold-05" href="marshtest.xml" type="success">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#xml-included-items">4.2</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>An include element includes its following sibling element, which has a child 
+      include element including the sibling element after that one.</description>	
+			<output>../result/marshtest.xml</output>
+		</testcase>
+
+       <testcase id="harold-06" href="includedocumentwithintradocumentreferences.xml" type="success">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#xml-included-items">4.2</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>Include a document that uses XPointers to reference various parts of itself</description>	
+			<output>../result/includedocumentwithintradocumentreferences.xml</output>
+		</testcase>
+    
+    <testcase id="harold-07" href="langtest1.xml" type="success">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#language">4.5.6</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>xml:lang attribute from including document does not override xml:lang attribute in included document</description>	
+			<output>../result/langtest1.xml</output>
+		</testcase>
+    
+    <testcase id="harold-08" href="langtest2.xml" type="success">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#language">4.5.6</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>xml:lang attribute is added to retain the included element's language, even
+        though the language was originaly declared on an unincluded element</description>	
+			<output>../result/langtest2.xml</output>
+		</testcase>
+    
+    <testcase id="harold-09" href="langtest3.xml" type="success">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#language">4.5.6</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>xml:lang='' is added when the included document does not declare a language
+      and the including element does</description>	
+			<output>../result/langtest3.xml</output>
+		</testcase>
+    
+    
+    <testcase id="harold-10" href="marshtestwithxmlbase.xml" type="success">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#include-location">4.1</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>Test that the 
+      xml:base attribute is not used to resolve a missing href.
+      According to RFC 2396 empty string URI always refers to the  current document irrespective of base URI.</description>
+			<output>../result/marshtestwithxmlbase.xml</output>
+		</testcase>
+    
+    
+    <testcase id="harold-11" href="marshtestwithxmlbaseandemptyhref.xml" type="success">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#include_element">3.1</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>There's no difference between href="" and no href attribute.</description>	
+			<output>../result/marshtestwithxmlbase.xml</output>
+		</testcase>
+
+    
+    <testcase id="harold-12" href="includefromsamedocumentwithbase.xml" type="success">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#base">4.5.5</section>
+  
+      <date qualifier="created">31-Aug-2004</date>
+			<description>Make sure base URIs are preserved when including from the same document.</description>	
+			<output>../result/includefromsamedocumentwithbase.xml</output>
+		</testcase>
+		
+    <testcase id="harold-13" href="badiri.xml" type="error">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#include_element">3.1</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>Syntactically incorrect IRI is a fatal error (Eitehr I'm missing something or the spec needs to state this prinicple more clearly.)</description>	
+		</testcase>
+		
+    <testcase id="harold-14" href="badiri2.xml" type="error">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#include_element">3.1</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>Syntactically incorrect IRI with an unrecognized scheme is a fatal error</description>	
+		</testcase>
+		
+    <testcase id="harold-15" href="goodiri.xml" type="success">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#xml-included-items">4.2</section>
+      <date qualifier="created">31-Aug-2004</date>
+<description>Syntactically correct IRI with an unrecognized scheme is a resource error</description>				
+<output>../result/goodiri.xml</output>
+		</testcase>
+		
+		<testcase id="harold-16" href="badaccept1.xml" type="error">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#include_element">3.1</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>accept attribute contains carriage-return/linefeed pair</description>	
+		</testcase>
+    
+    <testcase id="harold-17" href="badaccept2.xml" type="error">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#include_element">3.1</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>accept attribute contains Latin-1 character (non-breaking space)</description>	
+		</testcase>
+		
+    <testcase id="harold-18" href="extraattributes.xml" type="success">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#include_element">3.1</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>Unprefixed, unrecognized attributes on an include element are ignored</description>	
+			<output>../result/c1.xml</output>
+		</testcase>    
+    
+    <testcase id="harold-19" href="emptyfallback.xml" type="success">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#fallback_element">3.2</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>Fallback elements can be empty</description>	
+			<output>../result/emptyfallback.xml</output>
+		</testcase>
+		
+    <testcase id="harold-20" href="metafallbacktest.xml" type="success">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#fallback">4.4</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>Included documents can themselves use fallbacks</description>	
+			<output>../result/metafallbacktest.xml</output>
+		</testcase>
+		
+    <testcase id="harold-21" href="metafallbacktest6.xml" type="success">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#fallback">4.4</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>An included document can use a fallback that points into the included document</description>	
+			<output>../result/metafallbacktest6.xml</output>
+		</testcase>
+		
+    <testcase id="harold-22" href="metafallbacktest2.xml" type="success">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#fallback">4.4</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>An included document can use a fallback that includes another document as text</description>	
+			<output>../result/metafallbacktest2.xml</output>
+		</testcase>
+        
+    <testcase id="harold-23" href="metafallbacktest3.xml" type="error">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#include_element">3.1</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>A fallback element in an included document contains an include element with a parse attribute with an illegal value.</description>	
+		</testcase>
+		
+    <testcase id="harold-24" href="metafallbacktest4.xml" type="error">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#include_element">3.1</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>A fallback element in an included document contains an include element with neither an xpointer nor an href attribute.</description>	
+		</testcase>
+		
+ 
+    <testcase id="harold-25" href="metafallbacktestwithfragmentid.xml" type="error">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#include_element">3.1</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>A fallback element in an included document contains an include element whose href attribute has a fragment ID.</description>	
+		</testcase>    
+    
+    <testcase id="harold-26" href="metafallbacktest5.xml" type="error">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#fallback">4.4</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>The XPointer does not select anything in the acquired infoset, but does select something in the source infoset.</description>	
+		</testcase>
+		
+    <testcase id="harold-27" href="metafallbacktotexttest.xml" type="success">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#fallback">4.4</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>A fallback in an included document contains some text and a comment, but no elements.</description>	
+			<output>../result/metafallbacktotexttest.xml</output>
+		</testcase>
+    
+    <testcase id="harold-28" href="metafallbacktestwithxpointer.xml" type="success">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#fallback">4.4</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>Include element points to another include element, which has a missing resource 
+      and therefore activates a fallback.</description>	
+			<output>../result/metafallbacktestwithxpointer.xml</output>
+		</testcase>
+		
+    <testcase id="harold-29" href="metafallbacktestwithxpointer2.xml" type="success">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#fallback">4.4</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>An include element can include another include element that
+      then uses a fallback.</description>	
+			<output>../result/metafallbacktestwithxpointer2.xml</output>
+		</testcase>
+    
+    <testcase id="harold-30" href="metamissingfallbacktestwithxpointer.xml" type="error">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#xml-included-items">4.2</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>An include element can include another include element that
+      then fails to find a resource, which is a fatal error if there's no fallback.</description>	
+		</testcase>
+		
+		<testcase id="harold-31" href="metafallbackwithbadxpointertest.xml" type="error">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#fallback">4.4</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>An include element can include another include element that
+      then fails to find a resource, but it has a fallback, which itself has an include child, which then throws a fatal error.</description>	
+		</testcase>
+		
+    <testcase id="harold-32" href="parseequalxml.xml" type="success">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#xml-included-items">4.2</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>Basic test from XInclude spec</description>	
+			<output>../result/c1.xml</output>
+		</testcase>
+    
+    <testcase id="harold-33" href="legalcircle.xml" type="error">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#loops">4.2.7</section>
+      <date qualifier="created">31-Aug-2004</date>
+      <description>An include element points to a document that includes it, using an xpointer to select part of that document.</description>	
+		</testcase>    
+    
+    <testcase id="harold-34" href="recursewithinsamedocument.xml" type="success">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#xml-included-items">4.2</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>An include element points to another include element in the same document.</description>	
+			<output>../result/recursewithinsamedocument.xml</output>
+		</testcase>    
+    
+    <testcase id="harold-35" href="paralleltest.xml" type="success">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#xml-included-items">4.2</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>Include elements can be siblings</description>	
+			<output>../result/paralleltest.xml</output>
+		</testcase>
+		
+    <testcase id="harold-36" href="namespacetest.xml" type="success">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#processing">4</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>Namespaces (and lack thereof) must be preserved in included documents</description>	
+			<output>../result/namespacetest.xml</output>
+		</testcase>
+		
+    <testcase id="harold-37" href="internalcircular.xml" type="error">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#loops">4.2.7</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>Detect an inclusion loop when an include element refers to itself</description>	
+		</testcase>
+		
+    <testcase id="harold-38" href="internalcircularviaancestor.xml" type="error">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#loops">4.2.7</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>Detect an inclusion loop when an include element refers to its  ancestor element
+      in the same document</description>	
+		</testcase>
+		
+    <testcase id="harold-39" href="latin1.xml" type="success">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#processing">4</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>Processing a document that contains no include elements produces the same document.</description>	
+			<output>../result/latin1.xml</output>
+		</testcase>
+		
+    <testcase id="harold-40" href="simple.xml" type="success">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#processing">4</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>Basic inclusion</description>	
+			<output>../result/simple.xml</output>
+		</testcase>
+    
+    <testcase id="harold-41" href="roottest.xml" type="success">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#xml-included-items">4.2</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>The root element of a document can be an include element.</description>	
+			<output>../result/roottest.xml</output>
+		</testcase>
+
+      <testcase id="harold-42" href="roottest2.xml" type="success">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#xml-included-items">4.2</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>The root element of a document can be an include element.
+      In this test the included document has a prolog and an epilog and the root element is replaced</description>	
+			<output>../result/roottest2.xml</output>
+		</testcase>
+
+    <testcase id="harold-43" href="nestedxinclude.xml" type="error">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#include_element">3.1</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>testIncludeElementsCannotHaveIncludeChildren</description>	
+		</testcase>
+
+    <testcase id="harold-44" href="nestedxincludenamespace.xml" type="error">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#include_element">3.1</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>Include elements cannot have children from the xinclude namespace except for fallback.</description>	
+		</testcase>
+
+    <testcase id="harold-45" href="nakedfallback.xml" type="error">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#fallback_element">3.2</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>Fallback can only be a child of xinclude element</description>	
+		</testcase>
+
+    <testcase id="harold-46" href="fallbackcontainsfallback.xml" type="error">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#fallback_element">3.2</section>
+
+      <date qualifier="created">31-Aug-2004</date>
+			<description>A fallback element cannot have a fallback child element.</description>	
+		</testcase>
+
+    <testcase id="harold-47" href="multiplefallbacks.xml" type="error">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#include_element">3.1</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>"The appearance of more than one xi:fallback element, an xi:include element, 
+      or any other element from the XInclude namespace is a fatal error."
+      In this test the fallback is activated.</description>	
+		</testcase>
+
+    <testcase id="harold-48" href="multiplefallbacks2.xml" type="error">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#include_element">3.1</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>"The appearance of more than one xi:fallback element, an xi:include element, 
+      or any other element from the XInclude namespace is a fatal error."
+      In this test the fallback is not activated.</description>	
+		</testcase>
+    
+    <testcase id="harold-49" href="circle1.xml" type="error">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#loops">4.2.7</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>A document cannot include itself</description>	
+		</testcase>
+
+    <testcase id="harold-50" href="circle2a.xml" type="error">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#loops">4.2.7</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>Document A includes document B which includes document A</description>	
+		</testcase>
+    
+    <testcase id="harold-51" href="missinghref.xml" type="error">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#include_element">3.1</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>Include element is missing an href and xpointer attribute</description>	
+		</testcase>
+    
+    <testcase id="harold-52" href="badparseattribute.xml" type="error">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#include_element">3.1</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>parse attribute must have value xml or text</description>	
+		</testcase>
+    
+    <testcase id="harold-53" href="missingfile.xml" type="error">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#xml-included-items">4.2</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>Missing resource is fatal when there's no fallback</description>	
+		</testcase>
+    
+    <testcase id="harold-54" href="fallbacktest.xml" type="success">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#fallback">4.4</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>Missing resource is non-fatal when there's a fallback</description>	
+			<output>../result/fallbacktest.xml</output>
+		</testcase>
+    
+    <testcase id="harold-55" href="fallbacktest2.xml" type="success">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#fallback_element">3.2</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>Fallback elements can themselves contain include elements</description>	
+			<output>../result/fallbacktest2.xml</output>
+		</testcase>
+
+    <testcase id="harold-56" href="utf16.xml" type="success">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#text-included-items">4.3</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>encoding="UTF-16"</description>	
+			<output>../result/utf16.xml</output>
+		</testcase>
+    
+    <testcase id="harold-57" href="xptridtest.xml" type="success">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#xml-included-items">4.2</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>A shorthand XPointer</description>	
+			<output>../result/xptridtest.xml</output>
+		</testcase>
+    
+    <testcase id="harold-58" href="xptridtest2.xml" type="error">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#xml-included-items">4.2</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>XPointer that selects nothing is a resource error, and fatal because there's no fallback.</description>	
+		</testcase>
+    
+    <testcase id="harold-59" href="xptrtumblertest.xml" type="success">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#xml-included-items">4.2</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>XPointers of the forms described in [XPointer Framework] and [XPointer element() scheme] must be supported. </description>	
+			<output>../result/xptrtumblertest.xml</output>
+		</testcase>
+
+    <testcase id="harold-60" href="colonizedschemename.xml" type="success">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#xml-included-items">4.2</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>Unrecognized colonized XPointer schemes are skipped, and the following scheme is used.</description>	
+			<output>../result/xptrtumblertest.xml</output>
+		</testcase>
+
+    <testcase id="harold-61" href="laterfailure.xml" type="error">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#xml-included-items">4.2</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>Even if the first XPointer part locates a resource, a syntax error in
+      the second XPointer part is still a fatal error.</description>	
+		</testcase>
+
+    <testcase id="harold-62" href="laterfailure2.xml" type="error">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#xml-included-items">4.2</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>Even if the first XPointer part locates a resource, a syntax error in
+      the second XPointer part is still a fatal error.</description>	
+		</testcase>
+
+    <testcase id="harold-63" href="onlyxpointer.xml" type="success">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#include_element">3.1</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>You can include another element from the same document without an href attribute.</description>	
+			<output>../result/onlyxpointer.xml</output>
+		</testcase>
+
+      <testcase id="harold-64" href="xptr2tumblertest.xml" type="success">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#xml-included-items">4.2</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description> Test with 3 element schemes in the XPointer.
+    The first and second one point to nothing. The third one
+    selects something. XPointer parts are evaluated from left to right until one finds something.</description>	
+			<output>../result/xptrtumblertest.xml</output>
+		</testcase>
+
+    <testcase id="harold-65" href="xptrtumblertest.xml" type="success">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#xml-included-items">4.2</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>Test with 2 element schemes in the XPointer.
+     The first one uses an ID that doesn't exist 
+    and points to nothing. The second one
+     selects something.</description>	
+			<output>../result/xptrtumblertest.xml</output>
+		</testcase>
+
+      <testcase id="harold-66" href="xptrtumblerfailsbutfallback.xml" type="success">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#xml-included-items">4.2</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>  Make sure XPointer syntax errors are treated as a resource 
+    error, not a fatal error; and thus fallbacks are applied</description>	
+			<output>../result/xptrtumblertest.xml</output>
+		</testcase>
+
+    <testcase id="harold-67" href="xptrsyntaxerrorbutfallback.xml" type="success">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#xml-included-items">4.2</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>  Make sure XPointer syntax errors are treated as a resource 
+    error, not a fatal error; and thus fallbacks are applied</description>	
+			<output>../result/xptrtumblertest.xml</output>
+		</testcase>
+
+    <testcase id="harold-68" href="xptrtumblertest.xml" type="success">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#xml-included-items">4.2</section>  
+      <date qualifier="created">31-Aug-2004</date>
+			<description> Test with 3 element schemes in the XPointer, separated by white space.
+    The first one points to nothing. The third one
+    selects something.</description>	
+			<output>../result/xptrtumblertest.xml</output>
+		</testcase>
+
+    <testcase id="harold-69" href="xptrtumblertest2.xml" type="error">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#xml-included-items">4.2</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>An XPointer that doesn't point to anything is a resource error; and fatal because there's no fallback</description>	
+		</testcase>
+    
+    <testcase id="harold-70" href="badxptr.xml" type="error">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#xml-included-items">4.2</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>Syntax error in an XPointer is a resource error; and fatal because there's no fallback</description>	
+		</testcase>
+    
+    <testcase id="harold-71" href="badxptr2.xml" type="error">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#xml-included-items?">4.2</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>Syntax error in an XPointer is a resource error; and fatal because there's no fallback</description>	
+		</testcase>
+    
+    <testcase id="harold-72" href="xptrfallback.xml" type="success">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#xml-included-items">4.2</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>Unrecognized XPointer scheme activates fallback</description>	
+			<output>../result/xptrfallback.xml</output>
+		</testcase>
+    
+    <testcase id="harold-73" href="xptridandtumblertest.xml" type="success">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#xml-included-items">4.2</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>XPointer uses an element scheme where the first part is an ID</description>	
+			<output>../result/xptridandtumblertest.xml</output>
+		</testcase>
+
+    <testcase id="harold-74" href="UTF16BigEndianWithByteOrderMark.xml" type="success">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#text-included-items">4.3</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>Can autodetect UTF16 big endian files with a with a byte order mark when parse="text"</description>	
+			<output>../result/UTF16BigEndianWithByteOrderMark.xml</output>
+		</testcase>
+
+    <testcase id="harold-75" href="UTF16LittleEndianWithByteOrderMark.xml" type="success">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#text-included-items">4.3</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>Can autodetect UTF16 little endian files with a with a byte order mark when parse="text"</description>	
+			<output>../result/UTF16LittleEndianWithByteOrderMark.xml</output>
+		</testcase>
+
+    <testcase id="harold-76" href="UTF8WithByteOrderMark.xml" type="success">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#text-included-items">4.3</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>Can autodetect UTF-8 files with a with a byte order mark when parse="text"</description>	
+			<output>../result/UTF8WithByteOrderMark.xml</output>
+		</testcase>
+
+    <testcase id="harold-77" href="UnicodeBigUnmarked.xml" type="success">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#text-included-items">4.3</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>Can autodetect UCS2 big endian files with a without a byte order mark when parse="text"</description>	
+			<output>../result/UnicodeBigUnmarked.xml</output>
+		</testcase>
+
+    <testcase id="harold-78" href="UnicodeLittleUnmarked.xml" type="success">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#text-included-items">4.3</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>Can autodetect UCS2 little endian files with a without a byte order mark when parse="text"</description>	
+			<output>../result/UnicodeLittleUnmarked.xml</output>
+		</testcase>
+    
+      <testcase id="harold-79" href="EBCDIC.xml" type="success">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#text-included-items">4.3</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>Can autodetect EBCDIC files with a without a byte order mark when parse="text"</description>	
+			<output>../result/EBCDIC.xml</output>
+		</testcase>
+
+    <testcase id="harold-80" href="badxptr3.xml" type="error">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#xml-included-items">4.2</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>Syntax error in an XPointer is a resource error; and fatal becaue there's no fallback</description>	
+		</testcase>
+
+    <testcase id="harold-81" href="badxptr4.xml" type="error">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#xml-included-items">4.2</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>Syntax error in an XPointer is a resource error; and fatal becaue there's no fallback</description>	
+		</testcase>
+
+    <testcase id="harold-82" href="circlepointer1.xml" type="error">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#loops">4.2.7</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>Circular references via xpointer are fatal</description>	
+		</testcase>
+    
+    <testcase id="harold-83" href="xpointeroverridesfragmentid.xml" type="error">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#include_element">3.1</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>href attribute with fragment ID is a fatal error even when there's an xpointer attribute</description>	
+		</testcase>
+    
+    <testcase id="harold-84" href="ignoresfragmentid.xml" type="error">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#include_element">3.1</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>href attribute with fragment ID is a fatal error</description>	
+		</testcase>
+    
+    <testcase id="harold-85" href="lineends.xml" type="success">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#text-included-items">4.3</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>Line breaks must be preserved verbatim when including a document with parse="text"</description>	
+			<output>../result/lineends.xml</output>
+		</testcase>
+    
+    <testcase id="harold-86" href="meaninglessfragmentid.xml" type="error">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#include_element">3.1</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>A fragment identifier is semantically bad; but still meets the
+    syntax of fragment IDs from RFC 2396. </description>
+		</testcase>
+    
+    <testcase id="harold-87" href="acceptfrench.xml" type="success">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#include_element">3.1</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>accept-language="fr"
+			 This test connects to IBiblio to load the included
+data. This is necessary because file URLs don't support
+content negotiation</description>	
+			<output>../result/acceptfrench.xml</output>
+		</testcase>
+    
+    <testcase id="harold-88" href="acceptenglish.xml" type="success">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#include_element">3.1</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>accept-language="en"
+      This test connects to IBiblio to load the included
+data. This is necessary because file URLs don't support
+content negotiation</description>	
+			<output>../result/acceptenglish.xml</output>
+		</testcase>
+    
+    <testcase id="harold-89" href="acceptplaintext.xml" type="success">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#include_element">3.1</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>accept="text/plain"
+      This test connects to IBiblio to load the included
+data. This is necessary because file URLs don't support
+content negotiation</description>	
+			<output>../result/acceptplaintext.xml</output>
+		</testcase>
+    
+    <testcase id="harold-90" href="accepthtml.xml" type="success">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#include_element">3.1</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>accept="text/html"
+      This test connects to IBiblio to load the included
+data. This is necessary because file URLs don't support
+content negotiation</description>	
+			<output>../result/accepthtml.xml</output>
+		</testcase>
+
+    <testcase id="harold-91" href="unrecognizedscheme.xml" type="error">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#xml-included-items">4.2</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>Unrecognized scheme in XPointer is a fatal error if there's no fallback</description>	
+		</testcase>
+     
+    <testcase id="harold-92" href="unrecognizedschemewithfallback.xml" type="success">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#xml-included-items">4.2</section>
+      <date qualifier="created">31-Aug-2004</date>
+      <description>Unrecognized scheme in XPointer is a resource error so fallbacks apply</description>
+      <output>../result/unrecognizedschemewithfallback.xml</output>
+		</testcase>
+     
+    <testcase id="harold-93" href="test.xml" type="success">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#creating-result">4.5</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>Basic inclusions as XML and text</description>	
+			<output>../result/test.xml</output>
+	</testcase>    
+
+    <testcase id="harold-94" href="toplevel.xml" type="error">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#include_element">3.1</section>
+      <date qualifier="created">31-Aug-2004</date>
+			<description>Included document has an include element with neither href nor xpointer attribute</description>	
+	</testcase>
+		
+    <testcase id="harold-95" href="tobintop.xml" type="success">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#include_element">3.1</section>
+      <date qualifier="created">12-Sep-2004</date>
+			<description>XPointers are resolved against the acquired infoset, not thge source infoset</description>	
+			<output>../result/tobintop.xml</output>
+		</testcase>
+    
+    <testcase id="harold-96" href="badelementschemedata.xml" type="success">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#include_element">3.1</section>
+      <date qualifier="created">12-Sep-2004</date>
+			<description>Test that a non-child sequence in an xpointer is treated as a resource error.</description>	
+			<output>../result/badelementschemedata.xml</output>
+		</testcase>
+		
+    <testcase id="harold-97" href="xpointerwithpercentescape.xml" type="error">
+			<contributor>Elliotte Rusty Harold</contributor>
+			<section resource="http://www.w3.org/TR/xinclude/#include_element">3.1</section>
+     <date qualifier="created">13-Oct-2004</date>
+			<description>Since the xpointer attribute is not a URI reference, %-escaping must not appear in the XPointer, nor is there any need for a processor to apply or reverse such escaping.</description>	
+ 	</testcase>
+	</testcases>
+</testsuite>

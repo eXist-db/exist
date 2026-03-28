@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<!DOCTYPE book [
+<!ELEMENT book (doc)*>
+<!ELEMENT doc (isid)*>
+<!ELEMENT isid EMPTY>
+<!ATTLIST isid myid ID #IMPLIED>
+]>
+<book>
+<doc>
+<isid myid="mine"/>
+<isid myid="dup"/>
+</doc>
+<!-- including another XML document with IDs, using a shorthand pointer. -->
+<isid myid="dup" xml:base="../ents/prtids.xml"/>
+</book>

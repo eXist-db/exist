@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<root xmlns:xi="http://www.w3.org/2001/XInclude">
+   Test that xpointer is used and fragment ID isn't
+  <xi:include href="test3.xml#nonesuch(/1/name*)"/>
+</root>

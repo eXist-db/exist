@@ -1,0 +1,16 @@
+<?xml version = "1.0"?>
+<ADDRBOOK>
+  <ENTRY ID="pa">
+    <NAME>Pieter Aaron</NAME>
+    <EMAIL>pieter.aaron@inter.net</EMAIL>
+  </ENTRY>
+  <ENTRY ID="en">
+    <NAME>Emeka Ndubuisi</NAME>
+    <EMAIL>endubuisi@spamtron.com</EMAIL>
+  </ENTRY>
+  <ENTRY ID="vz">
+    <NAME>Vasia Zhugenev</NAME>
+    <EMAIL>vxz@gog.ru</EMAIL>
+  </ENTRY>
+</ADDRBOOK>
+

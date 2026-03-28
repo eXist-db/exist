@@ -1,0 +1,7 @@
+<?xml version='1.0'?>
+<root>
+   You should see a p element:
+  <xi:include href="docwithid.xml" xpointer="element(/1/12/3)" xmlns:xi="http://www.w3.org/2001/XInclude">
+    <xi:fallback><p id="p1" xml:base="docwithid.xml">Test worked</p></xi:fallback>
+  </xi:include>
+</root>

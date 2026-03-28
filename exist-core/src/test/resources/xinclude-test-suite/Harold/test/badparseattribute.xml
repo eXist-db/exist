@@ -1,0 +1,6 @@
+<?xml version='1.0'?>
+<test>
+  This file is just for making sure my XIncluder can detect 
+  bad values for parse attributes.
+  <xi:include parse="nonesuch" href="simple.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+</test>

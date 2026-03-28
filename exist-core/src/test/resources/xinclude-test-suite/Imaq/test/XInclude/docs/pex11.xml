@@ -1,0 +1,6 @@
+<x xmlns:xinclude="http://www.w3.org/2001/XInclude">
+   <!-- Test that a wrong accept attribute generate a fatal error -->
+   <xinclude:include href="../ents/something.xml"
+                     accept="&#xA;">
+   </xinclude:include>
+</x>

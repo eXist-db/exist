@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document xmlns:xi="http://www.w3.org/2001/XInclude">
+  <p>This will be duplicated if we're successful</p>
+  <document xml:base="circleback.xml">
+  <p xml:base="legalcircle.xml">This will be duplicated if we're successful</p>
+</document>
+</document>
+
+

@@ -1,0 +1,20 @@
+<sentences xmlns:xi="http://www.w3.org/2001/XInclude">
+  <sentence>The cat sat on the mat.</sentence>
+  <sentence xml:lang="en-gb">Jackdaws love my big sphinx of quartz.</sentence>
+  <xi:include href="lang-samples.xml" xpointer="none"/>
+  <xi:include href="lang-samples.xml" xpointer="none2"/>
+  <xi:include href="lang-samples.xml" xpointer="english"/>
+  <xi:include href="lang-samples.xml" xpointer="english2"/>
+  <xi:include href="lang-samples.xml" xpointer="french"/>
+  <xi:include href="lang-samples.xml" xpointer="german"/>
+  <xi:include href="lang-samples.xml" xpointer="australian"/>
+  <sentences xml:lang="en-gb">
+    <xi:include href="lang-samples.xml" xpointer="none"/>
+    <xi:include href="lang-samples.xml" xpointer="none2"/>
+    <xi:include href="lang-samples.xml" xpointer="english"/>
+    <xi:include href="lang-samples.xml" xpointer="english2"/>
+    <xi:include href="lang-samples.xml" xpointer="french"/>
+    <xi:include href="lang-samples.xml" xpointer="german"/>
+    <xi:include href="lang-samples.xml" xpointer="australian"/>
+  </sentences>
+</sentences>

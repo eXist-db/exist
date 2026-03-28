@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<x xmlns:xi="http://www.w3.org/2001/XInclude">
+<ENTRY ID="pa" xml:base="include4.xml">
+    <NAME>Pieter Aaron</NAME>
+    <EMAIL>pieter.aaron@inter.net</EMAIL>
+  </ENTRY><ENTRY ID="en" xml:base="include4.xml">
+    <NAME>Emeka Ndubuisi</NAME>
+    <EMAIL>endubuisi@spamtron.com</EMAIL>
+  </ENTRY><ENTRY ID="vz" xml:base="include4.xml">
+    <NAME>Vasia Zhugenev</NAME>
+    <EMAIL>vxz@gog.ru</EMAIL>
+  </ENTRY>
+</x>

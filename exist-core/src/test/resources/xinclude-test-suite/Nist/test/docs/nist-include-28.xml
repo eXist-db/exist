@@ -1,0 +1,15 @@
+<!DOCTYPE book [
+<!ELEMENT book (doc*)>
+<!ELEMENT doc (isid*)>
+<!ELEMENT isid EMPTY>
+<!ATTLIST isid myid ID #IMPLIED>
+]>
+<book>
+<doc>
+<isid myid="mine"/>
+<isid myid="dup"/>
+</doc>
+<!-- including another XML document with IDs, using a shorthand pointer. -->
+<xinclude:include xmlns:xinclude="http://www.w3.org/2001/XInclude"
+		 href="../ents/prtids.xml" xpointer="dup"/>
+</book>

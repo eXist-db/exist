@@ -1,0 +1,6 @@
+<x xmlns:xinclude="http://www.w3.org/2001/XInclude">
+   <!-- Test that a BOM in UTF16 is not added to the resulting document -->
+   <xinclude:include href="../ents/utf16lewithbom" parse="text"
+                     encoding="UTF-16">
+   </xinclude:include>
+</x>

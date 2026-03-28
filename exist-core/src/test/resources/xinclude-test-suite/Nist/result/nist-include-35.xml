@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<x xmlns:xinclude="http://www.w3.org/2001/XInclude">
+   <!-- Including another XML document with ids using XPointer element schema. -->
+   <doc xml:base="../ents/idtst.xml">
+    <family fnumber="f1">Lopez</family>
+    <family fnumber="f2">Clark</family>
+    <family fnumber="f3" mother="f1" father="f2">Jackson</family>
+    <family fnumber="f4" mother="f1" father="f2">Medina</family>
+</doc>
+</x>

@@ -1,0 +1,5 @@
+<?xml version='1.0'?>
+<test>
+  <xi:include href="disclaimer.xml" xpointer="element(/1/17/82)" 
+  xmlns:xi="http://www.w3.org/2001/XInclude"><xi:fallback>fallback text</xi:fallback></xi:include>
+</test>

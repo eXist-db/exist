@@ -1,0 +1,12 @@
+<?xml version='1.0'?>
+<document xmlns:xi="http://www.w3.org/2001/XInclude">
+  <root xmlns:xi="http://www.w3.org/2001/XInclude" xml:base="marshtest.xml">
+<x id="foo">
+  <x id="bar"/>
+</x>
+<x id="foo">
+  <x id="bar"/>
+</x>
+<x id="bar"/>
+</root>
+</document>

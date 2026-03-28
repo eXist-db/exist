@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<!DOCTYPE root>
+<root>
+   You should see a p element:
+  <q>If you only see the q element the test worked</q>
+</root>

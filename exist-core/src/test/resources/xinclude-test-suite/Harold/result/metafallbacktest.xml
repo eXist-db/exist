@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<root>
+  <test xml:base="fallbacktest.xml">
+  <test>some data</test>
+</test>
+</root>

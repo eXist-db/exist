@@ -1,0 +1,4 @@
+<?xml version='1.0'?>
+<test>
+  <xi:include parse="text" encoding="UTF-16" href="utf16.txt" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+</test>

@@ -1,0 +1,7 @@
+<?xml version='1.0'?>
+<document xmlns:xi="http://www.w3.org/2001/XInclude">
+  <p>This will be duplicated if we're successful</p>
+  <xi:include href="circleback.xml"/>
+</document>
+
+

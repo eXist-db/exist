@@ -1,0 +1,6 @@
+<?xml version='1.0'?>
+<root>
+   There should be a syntax error resolving this due to
+  the illegal XPointer syntax
+  <xi:include href="docwithid.xml" xpointer="element(p:l/2/3)" xmlns:xi="http://www.w3.org/2001/XInclude" />
+</root>

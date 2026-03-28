@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<!DOCTYPE x [
+<!ELEMENT x (family)*>
+<!ELEMENT family (#PCDATA)>
+<!ATTLIST family fnumber ID #REQUIRED>
+<!ATTLIST family father IDREF #IMPLIED>
+<!ATTLIST family mother IDREF #IMPLIED>
+]>
+<x xmlns:xinclude="http://www.w3.org/2001/XInclude">
+   <!-- Including another XML document with ids using a shorthand pointer. -->
+   <family fnumber="f3" mother="f1" father="f2" xml:base="../ents/idtst.xml">Jackson</family>
+</x>

@@ -1,0 +1,11 @@
+<?xml version='1.0'?>
+<document xmlns:xi="http://www.w3.org/2001/XInclude"
+          xmlns:eg="http://example.org/namespace/example">
+<p>This example includes a “definition” paragraph from some document
+twice using attribute copying.</p>
+
+<xi:include eg:root="one" href="src.xml" xpointer="element(def)"/>
+
+<xi:include eg:root="two" href="src.xml" xpointer="element(def)"/>
+
+</document>

@@ -1,0 +1,11 @@
+<?xml version='1.0'?>
+<document xmlns:xi="http://www.w3.org/2001/XInclude">
+  <p>120 Mz is adequate for an average home user.</p>
+  <xi:include href="disclaimer.xml">
+     It is illegal for one xi:include element to
+     contain another, even when the resource is avaialable.
+    <xi:include href="c2.xml"/>  
+  </xi:include>
+</document>
+
+

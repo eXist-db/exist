@@ -1,0 +1,7 @@
+<!DOCTYPE extract [
+<!ATTLIST include xmlns    CDATA #FIXED "http://www.w3.org/2001/XInclude">
+]>
+<extract>
+<include href="book.xml" xpointer="intro"/>
+<include href="book.xml" xpointer="chap1"/>
+</extract>
