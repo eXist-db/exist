@@ -289,11 +289,19 @@ public class SerializerUtils {
         final javax.xml.namespace.QName key = reader.getName();
         final String local = key.getLocalPart();
         final String prefix = key.getPrefix();
+        final String nsURI = key.getNamespaceURI();
         if (properties.containsKey(local)) {
             throw new XPathException(parent, FnModule.SEPM0019, "serialization parameter specified twice: " + key);
         }
-        if (prefix.equals(OUTPUT_NAMESPACE) && !W3CParameterConventionKeys.contains(local)) {
+        if (Namespaces.XSLT_XQUERY_SERIALIZATION_NS.equals(nsURI) && !W3CParameterConventionKeys.contains(local)) {
             throw new XPathException(ErrorCodes.SEPM0017, "serialization parameter not recognized: " + key);
+        }
+
+        // Accept eXist-specific parameters from the exist: namespace (issue #3446)
+        // These include expand-xincludes, highlight-matches, process-xsl-pi, add-exist-id, jsonp, etc.
+        if (Namespaces.EXIST_NS.equals(nsURI)) {
+            readSerializationProperty(reader, local, properties);
+            return;
         }
 
         readSerializationProperty(reader, local, properties);
