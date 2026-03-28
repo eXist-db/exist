@@ -66,8 +66,11 @@ public class JSONSerializer {
     }
 
     public void serialize(Sequence sequence, Writer writer) throws SAXException {
-        JsonFactory factory = JsonFactory.builder()
-                .enable(JsonWriteFeature.ESCAPE_FORWARD_SLASHES)
+        // QT4: escape-solidus controls whether / is escaped as \/ (default: true)
+        final boolean escapeSolidus = !"no".equals(
+                outputProperties.getProperty(EXistOutputKeys.ESCAPE_SOLIDUS, "yes"));
+        final JsonFactory factory = JsonFactory.builder()
+                .configure(JsonWriteFeature.ESCAPE_FORWARD_SLASHES, escapeSolidus)
                 .build();
         try {
             JsonGenerator generator = factory.createGenerator(writer);
@@ -77,13 +80,38 @@ public class JSONSerializer {
             }
             // Duplicate detection is handled manually in serializeMap for proper SERE0022 errors
             generator.disable(JsonGenerator.Feature.STRICT_DUPLICATE_DETECTION);
-            serializeSequence(sequence, generator);
+            final boolean jsonLines = "yes".equals(
+                    outputProperties.getProperty(EXistOutputKeys.JSON_LINES, "no"));
+            if (jsonLines) {
+                serializeJsonLines(sequence, generator);
+            } else {
+                serializeSequence(sequence, generator);
+            }
             if ("yes".equals(outputProperties.getProperty(EXistOutputKeys.INSERT_FINAL_NEWLINE, "no"))) {
                 generator.writeRaw('\n');
             }
             generator.close();
         } catch (IOException | XPathException e) {
             throw new SAXException(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * JSON Lines format (NDJSON): one JSON value per line, no array wrapper.
+     * Per QT4 Serialization 4.0, when json-lines=true.
+     */
+    private void serializeJsonLines(Sequence sequence, JsonGenerator generator) throws IOException, XPathException, SAXException {
+        if (sequence.isEmpty()) {
+            return;
+        }
+        boolean first = true;
+        for (SequenceIterator i = sequence.iterate(); i.hasNext(); ) {
+            if (!first) {
+                generator.writeRaw('\n');
+            }
+            serializeItem(i.nextItem(), generator);
+            generator.flush();
+            first = false;
         }
     }
 
