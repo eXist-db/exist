@@ -76,9 +76,51 @@ public class XQuerySerializer {
                 break;
             case "xml":
             default:
-                serializeXML(sequence, start, howmany, wrap, typed, compilationTime, executionTime);
+                // For XML/text methods, flatten any arrays in the sequence before serialization
+                // (arrays can't be serialized as SAX events directly)
+                final Sequence flattened = flattenArrays(sequence);
+                if (flattened != sequence) {
+                    // Flattening changed the sequence — reset start/howmany to cover all items.
+                    // For text method, default item-separator is space if not explicitly set.
+                    if ("text".equals(method) && outputProperties.getProperty(EXistOutputKeys.ITEM_SEPARATOR) == null) {
+                        outputProperties.setProperty(EXistOutputKeys.ITEM_SEPARATOR, " ");
+                    }
+                    serializeXML(flattened, 1, flattened.getItemCount(), wrap, typed, compilationTime, executionTime);
+                } else {
+                    serializeXML(flattened, start, howmany, wrap, typed, compilationTime, executionTime);
+                }
                 break;
         }
+    }
+
+    /**
+     * Flatten arrays in a sequence — each array member becomes a top-level item.
+     * This is needed because the SAX-based XML/text serializer can't handle ArrayType items.
+     */
+    private static Sequence flattenArrays(final Sequence sequence) throws XPathException {
+        boolean hasArrays = false;
+        for (final SequenceIterator i = sequence.iterate(); i.hasNext(); ) {
+            if (i.nextItem().getType() == Type.ARRAY_ITEM) {
+                hasArrays = true;
+                break;
+            }
+        }
+        if (!hasArrays) {
+            return sequence;
+        }
+        final ValueSequence result = new ValueSequence();
+        for (final SequenceIterator i = sequence.iterate(); i.hasNext(); ) {
+            final Item item = i.nextItem();
+            if (item.getType() == Type.ARRAY_ITEM) {
+                final Sequence flat = org.exist.xquery.functions.array.ArrayType.flatten(item);
+                for (final SequenceIterator fi = flat.iterate(); fi.hasNext(); ) {
+                    result.add(fi.nextItem());
+                }
+            } else {
+                result.add(item);
+            }
+        }
+        return result;
     }
 
     public boolean normalize() {

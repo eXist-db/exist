@@ -104,13 +104,27 @@ public class JSONSerializer {
         if (sequence.isEmpty()) {
             return;
         }
+        // Each line must be a separate root-level value. Jackson adds separator
+        // whitespace between root values, so we serialize each item to a string
+        // and concatenate with newlines.
+        final boolean escapeSolidus = !isBooleanFalse(
+                outputProperties.getProperty(EXistOutputKeys.ESCAPE_SOLIDUS, "yes"));
         boolean first = true;
         for (SequenceIterator i = sequence.iterate(); i.hasNext(); ) {
             if (!first) {
                 generator.writeRaw('\n');
             }
-            serializeItem(i.nextItem(), generator);
-            generator.flush();
+            // Serialize this item to a standalone string
+            final java.io.StringWriter lineWriter = new java.io.StringWriter();
+            final JsonFactory lineFactory = JsonFactory.builder()
+                    .configure(JsonWriteFeature.ESCAPE_FORWARD_SLASHES, escapeSolidus)
+                    .build();
+            final JsonGenerator lineGen = lineFactory.createGenerator(lineWriter);
+            lineGen.disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET);
+            serializeItem(i.nextItem(), lineGen);
+            lineGen.close();
+            // Write the line's JSON as raw content to avoid Jackson's root separator
+            generator.writeRaw(lineWriter.toString());
             first = false;
         }
     }
