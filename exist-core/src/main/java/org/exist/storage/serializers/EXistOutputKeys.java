@@ -29,6 +29,7 @@ public class EXistOutputKeys {
     public static final String ITEM_SEPARATOR = "item-separator";
 
     // --- QT4 Serialization 4.0 parameters ---
+    public static final String CANONICAL = "canonical";
     public static final String ESCAPE_SOLIDUS = "escape-solidus";
     public static final String JSON_LINES = "json-lines";
 
