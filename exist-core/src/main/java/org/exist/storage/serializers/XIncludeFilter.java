@@ -93,6 +93,16 @@ public class XIncludeFilter implements Receiver {
     private static final String XI_INCLUDE = "include";
     private static final String XI_FALLBACK = "fallback";
 
+    private @Nullable Receiver receiver;
+    private final Serializer serializer;
+    private @Nullable DocumentImpl document = null;
+    private @Nullable String moduleLoadPath = null;
+    private @Nullable Map<String, String> namespaces = null;
+    private boolean inFallback = false;
+    private int inIncludeDepth = 0; // depth of non-XInclude elements inside xi:include (for suppressing non-fallback children)
+    private boolean suppressIncludeChildren = false; // true while processing xi:include's own children (not expanded content)
+    private @Nullable ResourceError error = null;
+
     private static class ResourceError {
         private final String message;
         private final Optional<Exception> cause;
@@ -107,16 +117,6 @@ public class XIncludeFilter implements Receiver {
             this.cause = Optional.empty();
         }
     }
-
-    private @Nullable Receiver receiver;
-    private final Serializer serializer;
-    private @Nullable DocumentImpl document = null;
-    private @Nullable String moduleLoadPath = null;
-    private @Nullable Map<String, String> namespaces = null;
-    private boolean inFallback = false;
-    private int inIncludeDepth = 0; // depth of non-XInclude elements inside xi:include (for suppressing non-fallback children)
-    private boolean suppressIncludeChildren = false; // true while processing xi:include's own children (not expanded content)
-    private @Nullable ResourceError error = null;
 
     public XIncludeFilter(final Serializer serializer, @Nullable final Receiver receiver) {
         this.receiver = receiver;
@@ -257,12 +257,17 @@ public class XIncludeFilter implements Receiver {
                 }
                 inIncludeDepth++;
 
+                // Validate parse attribute (per spec 4.1: must be "xml" or "text")
+                final String parseMode = attribs.getValue(PARSE_ATTRIB);
+                if (parseMode != null && !"xml".equals(parseMode) && !"text".equals(parseMode)) {
+                    throw new SAXException("Invalid value for parse attribute: '" + parseMode +
+                            "'. Must be 'xml' or 'text'.");
+                }
+
                 // processXInclude will serialize included content through this filter;
                 // suppress only the xi:include's own children (not the expanded content)
-                final boolean prevSuppress = suppressIncludeChildren;
                 suppressIncludeChildren = false; // allow expanded content through
 
-                final String parseMode = attribs.getValue(PARSE_ATTRIB);
                 final String encoding = attribs.getValue(ENCODING_ATTRIB);
                 final Optional<ResourceError> maybeResourceError = processXInclude(
                         attribs.getValue(HREF_ATTRIB), attribs.getValue(XPOINTER_ATTRIB),
@@ -477,23 +482,23 @@ public class XIncludeFilter implements Receiver {
                     source = new DBSource(serializer.broker.getBrokerPool(), (BinaryDocument) doc, true);
                 } else {
                     wasElementScheme = xpointer.trim().startsWith("element(");
-                    xpointer = convertXPointerToXPath(xpointer);
-                    xpointer = checkNamespaces(xpointer);
+                    String xp = convertXPointerToXPath(xpointer);
+                    xp = checkNamespaces(xp);
                     // element() scheme produces XPath — needs doc() context
                     // and must be compiled as regular XQuery, not xpointer mode
                     if (wasElementScheme) {
                         final XmldbURI contextDocUri = doc != null ? doc.getURI() : docUri;
                         if (contextDocUri != null) {
-                            if (xpointer.startsWith("/")) {
+                            if (xp.startsWith("/")) {
                                 // Child sequence: /1/2 -> doc('...')/*[1]/*[2]
-                                xpointer = "doc('" + contextDocUri + "')" + xpointer;
-                            } else if (xpointer.startsWith("id(")) {
+                                xp = "doc('" + contextDocUri + "')" + xp;
+                            } else if (xp.startsWith("id(")) {
                                 // ID-based: id('x') -> doc('...')/id('x')
-                                xpointer = "doc('" + contextDocUri + "')/" + xpointer;
+                                xp = "doc('" + contextDocUri + "')/" + xp;
                             }
                         }
                     }
-                    source = new StringSource(xpointer);
+                    source = new StringSource(xp);
                 }
                 final XQuery xquery = serializer.broker.getBrokerPool().getXQueryService();
                 XQueryContext context;
@@ -609,24 +614,24 @@ public class XIncludeFilter implements Receiver {
         }
 
         // Convert element() scheme to XPath if needed
-        xpointer = convertXPointerToXPath(xpointer);
+        String xp = convertXPointerToXPath(xpointer);
 
         // For absolute XPath expressions (from element() scheme), wrap with doc()
         // to ensure the document context is properly set
         final String docUri = document.getURI().toString();
-        if (xpointer.startsWith("/")) {
-            xpointer = "doc('" + docUri + "')" + xpointer;
-        } else if (xpointer.startsWith("id(")) {
+        if (xp.startsWith("/")) {
+            xp = "doc('" + docUri + "')" + xp;
+        } else if (xp.startsWith("id(")) {
             // id() needs the document context — wrap: doc('...')/id('...')
-            xpointer = "doc('" + docUri + "')/" + xpointer;
+            xp = "doc('" + docUri + "')/" + xp;
         }
 
         final XQueryPool pool = serializer.broker.getBrokerPool().getXQueryPool();
         CompiledXQuery compiled = null;
         Source source = null;
         try {
-            xpointer = checkNamespaces(xpointer);
-            source = new StringSource(xpointer);
+            xp = checkNamespaces(xp);
+            source = new StringSource(xp);
             final XQuery xquery = serializer.broker.getBrokerPool().getXQueryService();
             XQueryContext context;
             compiled = pool.borrowCompiledXQuery(serializer.broker, source);
@@ -692,40 +697,37 @@ public class XIncludeFilter implements Receiver {
      *   xpointer(expr)       -> xpointer(expr) (left for ANTLR parser)
      *   xmlns(...)element()  -> strips xmlns(), converts element()
      */
-    private static String convertXPointerToXPath(String xpointer) {
-        xpointer = xpointer.trim();
+    private static String convertXPointerToXPath(final String xpointer) {
+        final String xp = xpointer.trim();
 
         // xpointer() scheme — leave as-is; the ANTLR parser's xpointer() rule handles it
-        if (xpointer.startsWith("xpointer(")) {
-            return xpointer;
+        if (xp.startsWith("xpointer(")) {
+            return xp;
         }
 
         // Handle element() scheme
-        if (xpointer.startsWith("element(") && xpointer.endsWith(")")) {
-            final String content = xpointer.substring(8, xpointer.length() - 1).trim();
+        if (xp.startsWith("element(") && xp.endsWith(")")) {
+            final String content = xp.substring(8, xp.length() - 1).trim();
             return convertElementSchemeToXPath(content);
         }
 
         // Handle multiple schemes: xmlns(...)element(...)
         // Strip xmlns() schemes first (handled by checkNamespaces), then look for element()
-        if (xpointer.contains("element(")) {
+        if (xp.contains("element(")) {
             int idx = 0;
-            while (idx < xpointer.length()) {
-                if (xpointer.startsWith("xmlns(", idx)) {
-                    final int close = xpointer.indexOf(')', idx);
-                    if (close > 0) {
-                        idx = close + 1;
-                        continue;
-                    }
+            while (xp.startsWith("xmlns(", idx)) {
+                final int close = xp.indexOf(')', idx);
+                if (close <= 0) {
+                    break; // malformed xmlns() scheme, stop parsing
                 }
-                break;
+                idx = close + 1;
             }
-            if (idx > 0 && idx < xpointer.length()) {
-                return convertXPointerToXPath(xpointer.substring(idx));
+            if (idx > 0 && idx < xp.length()) {
+                return convertXPointerToXPath(xp.substring(idx));
             }
         }
 
-        return xpointer;
+        return xp;
     }
 
     /**
@@ -846,10 +848,8 @@ public class XIncludeFilter implements Receiver {
     private Either<ResourceError, org.exist.dom.memtree.DocumentImpl> parseExternal(final URI externalUri) throws ParserConfigurationException, SAXException {
         try {
             final URLConnection con = externalUri.toURL().openConnection();
-            if (con instanceof HttpURLConnection httpConnection) {
-                if (httpConnection.getResponseCode() != HttpURLConnection.HTTP_OK) {
-                    return Either.Left(new ResourceError("XInclude: unable to retrieve from URI: " + externalUri + ", server returned response code: " + httpConnection.getResponseCode()));
-                }
+            if (con instanceof HttpURLConnection httpConnection && httpConnection.getResponseCode() != HttpURLConnection.HTTP_OK) {
+                return Either.Left(new ResourceError("XInclude: unable to retrieve from URI: " + externalUri + ", server returned response code: " + httpConnection.getResponseCode()));
             }
 
             // we use eXist's in-memory DOM implementation
@@ -889,18 +889,19 @@ public class XIncludeFilter implements Receiver {
      * Process xmlns() schema. We process these here, because namespace mappings should
      * already been known when parsing the xpointer() expression.
      */
-    private String checkNamespaces(String xpointer) throws XPathException {
+    private String checkNamespaces(final String xpointer) throws XPathException {
+        String result = xpointer;
         int p0;
-        while ((p0 = xpointer.indexOf("xmlns(")) != Constants.STRING_NOT_FOUND) {
+        while ((p0 = result.indexOf("xmlns(")) != Constants.STRING_NOT_FOUND) {
             if (p0 < 0) {
-                return xpointer;
+                return result;
             }
-            final int p1 = xpointer.indexOf(')', p0 + 6);
+            final int p1 = result.indexOf(')', p0 + 6);
             if (p1 < 0) {
                 throw new XPathException((Expression) null, "expected ) for xmlns()");
             }
-            final String mapping = xpointer.substring(p0 + 6, p1);
-            xpointer = xpointer.substring(0, p0) + xpointer.substring(p1 + 1);
+            final String mapping = result.substring(p0 + 6, p1);
+            result = result.substring(0, p0) + result.substring(p1 + 1);
             final StringTokenizer tok = new StringTokenizer(mapping, "= \t\n");
             if (tok.countTokens() < 2) {
                 throw new XPathException((Expression) null, "expected prefix=namespace mapping in " + mapping);
@@ -912,7 +913,7 @@ public class XIncludeFilter implements Receiver {
             }
             namespaces.put(prefix, namespaceURI);
         }
-        return xpointer;
+        return result;
     }
 
     protected Map<String, String> processParameters(final String args) {

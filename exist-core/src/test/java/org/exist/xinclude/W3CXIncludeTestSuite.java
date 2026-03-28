@@ -140,6 +140,16 @@ public class W3CXIncludeTestSuite {
         tests.add(new Object[]{"xi11-fallback", "xinclude-11/more", "fallback.xml", "success",
                 "result/fallback.xml", "XInclude 1.1: Integrity constraint error with fallback", "fragid"});
 
+        // XProc 3.0 XInclude tests (unique scenarios not in W3C suites)
+        tests.add(new Object[]{"xproc-016", "xproc3/input", "xproc-016.xml", "success",
+                "../result/xproc-016.xml", "XProc 3.0: parse=\"text\" on XML document", ""});
+        tests.add(new Object[]{"xproc-017", "xproc3/input", "xproc-017.xml", "success",
+                null, "XProc 3.0: fixup-xml-lang=\"true\"", "fixup-xml-lang"});
+        tests.add(new Object[]{"xproc-018", "xproc3/input", "xproc-018.xml", "success",
+                null, "XProc 3.0: fixup-xml-lang=\"true\" (variant)", "fixup-xml-lang"});
+        tests.add(new Object[]{"xproc-019", "xproc3/input", "xproc-019.xml", "success",
+                null, "XProc 3.0: fixup-xml-lang=\"false\" (default)", "fixup-xml-lang"});
+
         return tests;
     }
 
@@ -153,6 +163,7 @@ public class W3CXIncludeTestSuite {
             // XInclude 1.1 features not yet supported
             Assume.assumeFalse("Skipping: requires XInclude 1.1 attribute copying", features.contains("attcopy"));
             Assume.assumeFalse("Skipping: requires XInclude 1.1 RFC 5147 fragid", features.contains("fragid"));
+            Assume.assumeFalse("Skipping: requires fixup-xml-lang processor parameter", features.contains("fixup-xml-lang"));
         }
 
         // Skip tests that reference external HTTP URLs (network-dependent)
