@@ -88,6 +88,8 @@ public class XIncludeFilter implements Receiver {
 
     private static final QName HREF_ATTRIB = new QName("href", XMLConstants.NULL_NS_URI);
     private static final QName XPOINTER_ATTRIB = new QName("xpointer", XMLConstants.NULL_NS_URI);
+    private static final QName PARSE_ATTRIB = new QName("parse", XMLConstants.NULL_NS_URI);
+    private static final QName ENCODING_ATTRIB = new QName("encoding", XMLConstants.NULL_NS_URI);
     private static final String XI_INCLUDE = "include";
     private static final String XI_FALLBACK = "fallback";
 
@@ -260,7 +262,11 @@ public class XIncludeFilter implements Receiver {
                 final boolean prevSuppress = suppressIncludeChildren;
                 suppressIncludeChildren = false; // allow expanded content through
 
-                final Optional<ResourceError> maybeResourceError = processXInclude(attribs.getValue(HREF_ATTRIB), attribs.getValue(XPOINTER_ATTRIB));
+                final String parseMode = attribs.getValue(PARSE_ATTRIB);
+                final String encoding = attribs.getValue(ENCODING_ATTRIB);
+                final Optional<ResourceError> maybeResourceError = processXInclude(
+                        attribs.getValue(HREF_ATTRIB), attribs.getValue(XPOINTER_ATTRIB),
+                        parseMode, encoding);
 
                 // After processXInclude returns, any remaining SAX events until </xi:include>
                 // are the xi:include's own children — suppress them (except fallback)
@@ -298,11 +304,15 @@ public class XIncludeFilter implements Receiver {
     /**
      * @param href     The resource to be xincluded
      * @param xpointer The xpointer
+     * @param parseMode The parse mode ("xml" or "text"), null defaults to "xml"
+     * @param encoding  The encoding for text inclusion, null defaults to UTF-8
      * @return Optionally a ResourceError if it was not possible to retrieve the resource
      * to be xincluded
      * @throws SAXException              If a SAX processing error occurs
      */
-    protected Optional<ResourceError> processXInclude(final String href, String xpointer) throws SAXException {
+    protected Optional<ResourceError> processXInclude(final String href, String xpointer,
+                                                       @Nullable final String parseMode,
+                                                       @Nullable final String encoding) throws SAXException {
         if (href == null && xpointer == null) {
             throw new SAXException("No href or xpointer attribute found in XInclude include element");
         }
@@ -433,6 +443,20 @@ public class XIncludeFilter implements Receiver {
                */
         if (doc == null && memtreeDoc == null && xpointer == null) {
             return Optional.of(new ResourceError("document " + docUri + " not found"));
+        }
+
+        // Handle parse="text" — include resource as text, not XML
+        if ("text".equals(parseMode)) {
+            final String textContent = readResourceAsText(doc, memtreeDoc, docUri, href, encoding);
+            if (textContent != null) {
+                characters(textContent);
+            } else {
+                return Optional.of(new ResourceError("Unable to read text content from " + (docUri != null ? docUri : href)));
+            }
+            // restore settings and return
+            document = prevDoc;
+            serializer.createContainerElements = createContainerElements;
+            return Optional.empty();
         }
 
         if (xpointer == null && !xqueryDoc) {
@@ -729,6 +753,93 @@ public class XIncludeFilter implements Receiver {
         } else {
             // Just an ID: myid -> id('myid')
             return "id('" + content.trim() + "')";
+        }
+    }
+
+    /**
+     * Read a resource as text for parse="text" inclusion.
+     *
+     * <p>Per the XInclude spec, when parse="text", the resource is read as plain text
+     * and included as character data. XML special characters in the included text are
+     * preserved as-is (they will be escaped during serialization).</p>
+     *
+     * <p>Architectural note: BaseX delegates XInclude entirely to Java's built-in
+     * SAXParserFactory.setXIncludeAware(true), which handles parse="text" at document
+     * import time. eXist's approach (serialization-time XIncludeFilter) is more powerful
+     * (works on stored documents) but requires implementing each XInclude feature
+     * explicitly. A complementary parse-time XInclude option (like BaseX) could be
+     * added as a future enhancement.</p>
+     */
+    private @Nullable String readResourceAsText(@Nullable final DocumentImpl doc,
+                                                 @Nullable final org.exist.dom.memtree.DocumentImpl memtreeDoc,
+                                                 @Nullable final XmldbURI docUri,
+                                                 final String href,
+                                                 @Nullable final String encoding) {
+        final java.nio.charset.Charset charset;
+        try {
+            charset = encoding != null ? java.nio.charset.Charset.forName(encoding) : UTF_8;
+        } catch (final java.nio.charset.UnsupportedCharsetException e) {
+            LOG.warn("Unsupported encoding '{}' for text inclusion, falling back to UTF-8", encoding);
+            return readResourceAsText(doc, memtreeDoc, docUri, href, null);
+        }
+
+        // Case 1: Binary document in database — read raw bytes
+        if (doc != null && doc.getResourceType() == DocumentImpl.BINARY_FILE) {
+            try (final InputStream is = serializer.broker.getBinaryResource((BinaryDocument) doc)) {
+                return new String(is.readAllBytes(), charset);
+            } catch (final IOException e) {
+                LOG.warn("Error reading binary resource as text: {}", docUri, e);
+                return null;
+            }
+        }
+
+        // Case 2: XML document in database — serialize to string (text representation)
+        if (doc != null) {
+            // For XML documents with parse="text", we serialize the document to its
+            // XML text representation and include that as character data.
+            // Per XInclude spec, the XML declaration is NOT part of the text inclusion.
+            try {
+                final Serializer tempSerializer = serializer.broker.borrowSerializer();
+                try {
+                    tempSerializer.setProperty(javax.xml.transform.OutputKeys.OMIT_XML_DECLARATION, "yes");
+                    tempSerializer.setProperty(javax.xml.transform.OutputKeys.INDENT, "no");
+                    return tempSerializer.serialize(doc);
+                } finally {
+                    serializer.broker.returnSerializer(tempSerializer);
+                }
+            } catch (final Exception e) {
+                LOG.warn("Error serializing XML document as text: {}", docUri, e);
+                return null;
+            }
+        }
+
+        // Case 3: In-memory document
+        if (memtreeDoc != null) {
+            try {
+                final Serializer tempSerializer = serializer.broker.borrowSerializer();
+                try {
+                    tempSerializer.setProperty(javax.xml.transform.OutputKeys.OMIT_XML_DECLARATION, "yes");
+                    tempSerializer.setProperty(javax.xml.transform.OutputKeys.INDENT, "no");
+                    return tempSerializer.serialize(memtreeDoc);
+                } finally {
+                    serializer.broker.returnSerializer(tempSerializer);
+                }
+            } catch (final Exception e) {
+                LOG.warn("Error serializing in-memory document as text: {}", href, e);
+                return null;
+            }
+        }
+
+        // Case 4: External URI — read from URL
+        try {
+            final URI externalUri = new URI(href);
+            final URLConnection con = externalUri.toURL().openConnection();
+            try (final InputStream is = con.getInputStream()) {
+                return new String(is.readAllBytes(), charset);
+            }
+        } catch (final Exception e) {
+            LOG.warn("Error reading external resource as text: {}", href, e);
+            return null;
         }
     }
 
