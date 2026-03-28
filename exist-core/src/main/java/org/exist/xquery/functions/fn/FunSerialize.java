@@ -136,13 +136,25 @@ public class FunSerialize extends BasicFunction {
     }
 
     /**
+     * Check if a serialization boolean parameter value is true.
+     * W3C Serialization 3.1 accepts "yes", "true", "1" (with optional whitespace) as true.
+     */
+    private static boolean isBooleanTrue(final String value) {
+        if (value == null) {
+            return false;
+        }
+        final String trimmed = value.trim();
+        return "yes".equals(trimmed) || "true".equals(trimmed) || "1".equals(trimmed);
+    }
+
+    /**
      * Validate serialization parameter consistency per W3C Serialization 3.1.
      * Throws SEPM0009 if omit-xml-declaration=yes conflicts with standalone or
      * version+doctype-system.
      */
     private void validateSerializationParams(final Properties props) throws XPathException {
         final String omitXmlDecl = props.getProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-        if ("yes".equals(omitXmlDecl)) {
+        if (isBooleanTrue(omitXmlDecl)) {
             // SEPM0009: standalone must be omit (absent) when omit-xml-declaration=yes
             final String standalone = props.getProperty(OutputKeys.STANDALONE);
             if (standalone != null) {

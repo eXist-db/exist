@@ -587,9 +587,9 @@ public class XMLWriter implements SerializerWriter {
 
         final String omitXmlDecl = outputProperties.getProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
         @Nullable final String standalone = outputProperties.getProperty(OutputKeys.STANDALONE);
-        // Per W3C Serialization 3.1: output declaration if omit-xml-declaration=no,
+        // Per W3C Serialization 3.1: output declaration if omit-xml-declaration is false/no/0,
         // or if standalone is explicitly set (the declaration is required to carry standalone)
-        if ("no".equals(omitXmlDecl) || standalone != null) {
+        if (isBooleanFalse(omitXmlDecl) || standalone != null) {
             // get the fields of the declaration from the serialization properties
             final String version = outputProperties.getProperty(OutputKeys.VERSION, DEFAULT_XML_VERSION);
             final String encoding = outputProperties.getProperty(OutputKeys.ENCODING, DEFAULT_XML_ENCODING);
@@ -639,6 +639,18 @@ public class XMLWriter implements SerializerWriter {
      */
     protected boolean escapeAmpersandBeforeBrace() {
         return true;
+    }
+
+    /**
+     * Check if a serialization boolean parameter value is false.
+     * W3C Serialization 3.1 accepts "no", "false", "0" (with optional whitespace) as false.
+     */
+    protected static boolean isBooleanFalse(final String value) {
+        if (value == null) {
+            return false;
+        }
+        final String trimmed = value.trim();
+        return "no".equals(trimmed) || "false".equals(trimmed) || "0".equals(trimmed);
     }
 
     /**
