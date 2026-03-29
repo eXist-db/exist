@@ -270,6 +270,15 @@ public class SerializerUtils {
                 throw new XPathException(parent, FnModule.SENR0001, "serialization parameter elements should be in the output namespace");
             }
 
+            // SEPM0017: reject unrecognized attributes on the serialization-parameters root element
+            for (int i = 0; i < reader.getAttributeCount(); i++) {
+                final String attrNs = reader.getAttributeNamespace(i);
+                if (attrNs == null || attrNs.isEmpty() || Namespaces.XSLT_XQUERY_SERIALIZATION_NS.equals(attrNs)) {
+                    throw new XPathException(ErrorCodes.SEPM0017,
+                            "Unrecognized attribute on serialization-parameters: " + reader.getAttributeLocalName(i));
+                }
+            }
+
             final int thisLevel = ((NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID)).getTreeLevel();
 
             while (reader.hasNext()) {
@@ -301,6 +310,12 @@ public class SerializerUtils {
         }
         if (Namespaces.XSLT_XQUERY_SERIALIZATION_NS.equals(nsURI) && !W3CParameterConventionKeys.contains(local)) {
             throw new XPathException(ErrorCodes.SEPM0017, "serialization parameter not recognized: " + key);
+        }
+
+        // SEPM0017: reject elements with no namespace (must be in output: or exist: namespace)
+        if (nsURI == null || nsURI.isEmpty()) {
+            throw new XPathException(ErrorCodes.SEPM0017,
+                    "serialization parameter element must be in a namespace: " + local);
         }
 
         // Accept eXist-specific parameters from the exist: namespace (issue #3446)
