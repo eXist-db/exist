@@ -3310,11 +3310,19 @@ throws PermissionDeniedException, EXistException
     |
     "descendant-or-self" { axis= Constants.DESCENDANT_SELF_AXIS; }
     |
+    "following-sibling-or-self" { axis= Constants.FOLLOWING_SIBLING_OR_SELF_AXIS; }
+    |
     "following-sibling" { axis= Constants.FOLLOWING_SIBLING_AXIS; }
+    |
+    "following-or-self" { axis= Constants.FOLLOWING_OR_SELF_AXIS; }
     |
     "following" { axis= Constants.FOLLOWING_AXIS; }
     |
+    "preceding-sibling-or-self" { axis= Constants.PRECEDING_SIBLING_OR_SELF_AXIS; }
+    |
     "preceding-sibling" { axis= Constants.PRECEDING_SIBLING_AXIS; }
+    |
+    "preceding-or-self" { axis= Constants.PRECEDING_OR_SELF_AXIS; }
     |
     "preceding" { axis= Constants.PRECEDING_AXIS; }
     |

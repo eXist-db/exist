@@ -1271,14 +1271,17 @@ forwardAxis : forwardAxisSpecifier COLON! COLON! ;
 forwardAxisSpecifier
 :
 	"child" | "self" | "attribute" | "descendant" | "descendant-or-self"
-    | "following-sibling" | "following"
+    | "following-sibling-or-self" | "following-sibling"
+    | "following-or-self" | "following"
 	;
 
 reverseAxis : reverseAxisSpecifier COLON! COLON! ;
 
 reverseAxisSpecifier
 :
-	"parent" | "ancestor" | "ancestor-or-self" | "preceding-sibling" | "preceding"
+	"parent" | "ancestor" | "ancestor-or-self"
+    | "preceding-sibling-or-self" | "preceding-sibling"
+    | "preceding-or-self" | "preceding"
 	;
 
 nodeTest throws XPathException
@@ -2117,11 +2120,19 @@ reservedKeywords returns [String name]
 	|
 	"ancestor-or-self" { name= "ancestor-or-self"; }
 	|
+	"preceding-sibling-or-self" { name= "preceding-sibling-or-self"; }
+	|
 	"preceding-sibling" { name= "preceding-sibling"; }
+	|
+	"following-sibling-or-self" { name= "following-sibling-or-self"; }
 	|
 	"following-sibling" { name= "following-sibling"; }
 	|
+	"following-or-self" { name = "following-or-self"; }
+	|
 	"following" { name = "following"; }
+	|
+	"preceding-or-self" { name = "preceding-or-self"; }
 	|
 	"preceding" { name = "preceding"; }
 	|
