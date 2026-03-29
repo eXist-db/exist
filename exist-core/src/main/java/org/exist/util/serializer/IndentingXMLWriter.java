@@ -180,7 +180,8 @@ public class IndentingXMLWriter extends XMLWriter {
         } catch (final NumberFormatException e) {
             LOG.warn("Invalid indentation value: '{}'", option);
         }
-        indent = "yes".equals(outputProperties.getProperty(OutputKeys.INDENT, "no"));
+        final String indentValue = outputProperties.getProperty(OutputKeys.INDENT, "no").trim();
+        indent = "yes".equals(indentValue) || "true".equals(indentValue) || "1".equals(indentValue);
         final String suppressProp = outputProperties.getProperty("suppress-indentation");
         if (suppressProp != null && !suppressProp.isEmpty()) {
             suppressIndentation = new HashSet<>();

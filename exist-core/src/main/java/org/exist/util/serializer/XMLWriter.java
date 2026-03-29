@@ -116,6 +116,7 @@ public class XMLWriter implements SerializerWriter {
         textSpecialChars['>'] = true;
                 textSpecialChars['\r'] = true;
         textSpecialChars['&'] = true;
+        textSpecialChars[0x7F] = true; // DEL must be escaped as &#x7F;
 
         attrSpecialChars = new boolean[128];
         Arrays.fill(attrSpecialChars, false);
@@ -126,6 +127,7 @@ public class XMLWriter implements SerializerWriter {
         attrSpecialChars['\t'] = true;
         attrSpecialChars['&'] = true;
         attrSpecialChars['"'] = true;
+        attrSpecialChars[0x7F] = true; // DEL must be escaped as &#x7F;
     }
 
     @Nullable private XMLDeclaration originalXmlDecl;
