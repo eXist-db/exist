@@ -177,6 +177,17 @@ public class XQuerySerializer {
     }
 
     private void serializeXMLWithItemSeparator(final Sequence sequence, final int start, final int howmany, final boolean typed, final String itemSeparator) throws SAXException, XPathException {
+        // Write XML declaration if not omitted (per W3C Serialization 3.1)
+        if (!isBooleanTrue(outputProperties.getProperty(OutputKeys.OMIT_XML_DECLARATION, "no"))) {
+            try {
+                final String version = outputProperties.getProperty(OutputKeys.VERSION, "1.0");
+                final String encoding = outputProperties.getProperty(OutputKeys.ENCODING, "UTF-8");
+                writer.write("<?xml version=\"" + version + "\" encoding=\"" + encoding + "\"?>");
+            } catch (IOException e) {
+                throw new SAXException(e.getMessage(), e);
+            }
+        }
+
         final int actualStart = start - 1; // convert 1-based to 0-based
         final int end = Math.min(actualStart + howmany, sequence.getItemCount());
         for (int i = actualStart; i < end; i++) {
@@ -192,9 +203,28 @@ public class XQuerySerializer {
                 continue;
             }
             if (Type.subTypeOf(item.getType(), Type.NODE)) {
-                final ValueSequence singleItem = new ValueSequence(1);
-                singleItem.add(item);
-                serializeXMLDirect(singleItem, 1, 1, false, typed, 0, 0);
+                // For nodes serialized with item-separator, omit the XML declaration
+                // on each individual node (only one declaration for the whole output)
+                final Properties nodeProps = new Properties(outputProperties);
+                nodeProps.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+                final Serializer serializer = broker.borrowSerializer();
+                SAXSerializer sax = null;
+                try {
+                    sax = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
+                    sax.setOutput(writer, nodeProps);
+                    serializer.setProperties(nodeProps);
+                    serializer.setSAXHandlers(sax, sax);
+                    final ValueSequence singleItem = new ValueSequence(1);
+                    singleItem.add(item);
+                    serializer.toSAX(singleItem, 1, 1, false, typed, 0, 0);
+                } catch (SAXNotSupportedException | SAXNotRecognizedException e) {
+                    throw new SAXException(e.getMessage(), e);
+                } finally {
+                    if (sax != null) {
+                        SerializerPool.getInstance().returnObject(sax);
+                    }
+                    broker.returnSerializer(serializer);
+                }
             } else {
                 try {
                     writer.write(item.getStringValue());
@@ -203,6 +233,12 @@ public class XQuerySerializer {
                 }
             }
         }
+    }
+
+    private static boolean isBooleanTrue(final String value) {
+        if (value == null) return false;
+        final String v = value.trim();
+        return "yes".equals(v) || "true".equals(v) || "1".equals(v);
     }
 
     private void serializeJSON(final Sequence sequence, final long compilationTime, final long executionTime) throws SAXException, XPathException {

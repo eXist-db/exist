@@ -984,6 +984,16 @@ function ser:cdata-section-elements-with-namespace() {
 };
 
 declare
+    %test:assertEquals('1|2|3')
+function ser:item-separator-with-atomics() {
+    (: Atomic items joined by item-separator :)
+    serialize(
+        (1, 2, 3),
+        map { "method": "xml", "item-separator": "|", "omit-xml-declaration": true() }
+    )
+};
+
+declare
     %test:assertTrue
 function ser:cdata-section-elements-combined() {
     (: Combined: both unprefixed and namespaced elements get CDATA :)
