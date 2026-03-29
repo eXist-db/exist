@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.value;
 
+import javax.annotation.Nullable;
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.ErrorCodes;
@@ -41,6 +42,9 @@ public class SequenceType {
     private int primaryType = Type.ITEM;
     private Cardinality cardinality = Cardinality.EXACTLY_ONE;
     private QName nodeName = null;
+
+    // XQuery 4.0 record type support
+    private RecordType recordType = null;
 
     public SequenceType() {
     }
@@ -108,6 +112,46 @@ public class SequenceType {
         this.nodeName = qname;
     }
 
+    // --- XQuery 4.0 Record Type Support ---
+
+    /**
+     * Check if this SequenceType is a record type.
+     */
+    public boolean isRecordType() {
+        return primaryType == Type.RECORD && recordType != null;
+    }
+
+    /**
+     * Get the record type's field declarations.
+     */
+    @Nullable
+    public java.util.List<RecordType.FieldDeclaration> getFieldDeclarations() {
+        return recordType != null ? recordType.getFieldDeclarations() : null;
+    }
+
+    /**
+     * Check if the record type is extensible (allows extra keys).
+     */
+    public boolean isRecordExtensible() {
+        return recordType != null && recordType.isExtensible();
+    }
+
+    /**
+     * Set the record type definition.
+     */
+    public void setRecordType(final RecordType recordType) {
+        this.primaryType = Type.RECORD;
+        this.recordType = recordType;
+    }
+
+    /**
+     * Get the record type, or null if this isn't a record type.
+     */
+    @Nullable
+    public RecordType getRecordType() {
+        return recordType;
+    }
+
     /**
      * Check the specified sequence against this SequenceType.
      *
@@ -135,6 +179,16 @@ public class SequenceType {
      * @return true, if item is a subtype of primaryType
      */
     public boolean checkType(final Item item) {
+        // XQuery 4.0 record type checking
+        if (isRecordType()) {
+            if (!Type.subTypeOf(item.getType(), Type.MAP_ITEM)) {
+                return false;
+            }
+            if (item instanceof org.exist.xquery.functions.map.AbstractMapType) {
+                return recordType.matches((org.exist.xquery.functions.map.AbstractMapType) item);
+            }
+            return false;
+        }
         int type = item.getType();
         if (type == Type.NODE) {
             final Node realNode = ((NodeValue) item).getNode();
