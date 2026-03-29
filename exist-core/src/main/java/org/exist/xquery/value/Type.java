@@ -133,7 +133,10 @@ public class Type {
     public final static int JAVA_OBJECT = 68;
     public final static int EMPTY_SEQUENCE = 69;  // NOTE(AR) this types does appear in the XQ 3.1 spec - https://www.w3.org/TR/xquery-31/#id-sequencetype-syntax
 
-    private final static int[] superTypes = new int[69];
+    // XQuery 4.0 record type — a subtype of map(*)
+    public final static int RECORD = 70;
+
+    private final static int[] superTypes = new int[71];
     private final static Int2ObjectOpenHashMap<String[]> typeNames = new Int2ObjectOpenHashMap<>(69, Hash.FAST_LOAD_FACTOR);
     private final static Object2IntOpenHashMap<String> typeCodes = new Object2IntOpenHashMap<>(78, Hash.FAST_LOAD_FACTOR);
     static {
@@ -247,6 +250,8 @@ public class Type {
 
         // FUNCTION_REFERENCE sub-types
         defineSubType(FUNCTION, MAP_ITEM);
+        // XQ4: RECORD is a subtype of MAP
+        defineSubType(MAP_ITEM, RECORD);
         defineSubType(FUNCTION, ARRAY_ITEM);
 
         // NODE types
@@ -327,6 +332,7 @@ public class Type {
         defineBuiltInType(FUNCTION, "function(*)", "function");
         defineBuiltInType(ARRAY_ITEM, "array(*)", "array");
         defineBuiltInType(MAP_ITEM, "map(*)", "map");                                               // keep `map` for backward compatibility
+        defineBuiltInType(RECORD, "record(*)", "record");
         defineBuiltInType(CDATA_SECTION, "cdata-section()");
         defineBuiltInType(JAVA_OBJECT, "object");
         defineBuiltInType(EMPTY_SEQUENCE, "empty-sequence()", "empty()");                           // keep `empty()` for backward compatibility
