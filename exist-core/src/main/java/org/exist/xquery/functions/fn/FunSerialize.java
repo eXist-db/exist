@@ -169,6 +169,13 @@ public class FunSerialize extends BasicFunction {
                         "omit-xml-declaration is yes with version '" + version + "' and doctype-system set");
             }
         }
+
+        // Canonical serialization is not implemented — reject with SEPM0016
+        final String canonical = props.getProperty(EXistOutputKeys.CANONICAL);
+        if (isBooleanTrue(canonical)) {
+            throw new XPathException(this, ErrorCodes.SEPM0016,
+                    "Canonical serialization (canonical=true) is not supported");
+        }
     }
 
     /**

@@ -75,8 +75,18 @@ public class JSONSerializer {
         try {
             JsonGenerator generator = factory.createGenerator(writer);
             generator.disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET);
-            if ("yes".equals(outputProperties.getProperty(OutputKeys.INDENT, "no"))) {
-                generator.useDefaultPrettyPrinter();
+            if (isBooleanTrue(outputProperties.getProperty(OutputKeys.INDENT, "no"))) {
+                final int indentSpaces = Integer.parseInt(
+                        outputProperties.getProperty(EXistOutputKeys.INDENT_SPACES, "4"));
+                final com.fasterxml.jackson.core.util.DefaultPrettyPrinter pp =
+                        new com.fasterxml.jackson.core.util.DefaultPrettyPrinter();
+                pp.indentArraysWith(
+                        com.fasterxml.jackson.core.util.DefaultIndenter.SYSTEM_LINEFEED_INSTANCE.withIndent(
+                                " ".repeat(indentSpaces)));
+                pp.indentObjectsWith(
+                        com.fasterxml.jackson.core.util.DefaultIndenter.SYSTEM_LINEFEED_INSTANCE.withIndent(
+                                " ".repeat(indentSpaces)));
+                generator.setPrettyPrinter(pp);
             }
             // Duplicate detection is handled manually in serializeMap for proper SERE0022 errors
             generator.disable(JsonGenerator.Feature.STRICT_DUPLICATE_DETECTION);
