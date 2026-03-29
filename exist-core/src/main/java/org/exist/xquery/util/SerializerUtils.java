@@ -352,6 +352,10 @@ public class SerializerUtils {
             setCharacterMap(serializationProperties, characterMap);
         } else {
             String value = reader.getAttributeValue(XMLConstants.NULL_NS_URI, "value");
+            // Normalize whitespace in parameter values per W3C Serialization 3.1
+            if (value != null) {
+                value = value.trim();
+            }
             if (value == null) {
                 if (attributeCount > 0) {
                     throw new XPathException(ErrorCodes.SEPM0017, MSG_NON_VALUE_ATTRIBUTE + ": " + key);
