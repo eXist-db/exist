@@ -78,6 +78,8 @@ public class XQuerySerializer {
             default:
                 // For XML/text methods, flatten any arrays in the sequence before serialization
                 // (arrays can't be serialized as SAX events directly)
+                // Maps and function items cannot be serialized with XML/text methods (SENR0001)
+                validateXmlSerializable(sequence);
                 final Sequence flattened = flattenArrays(sequence);
                 if (flattened != sequence) {
                     // Flattening changed the sequence — reset start/howmany to cover all items.
@@ -90,6 +92,21 @@ public class XQuerySerializer {
                     serializeXML(flattened, start, howmany, wrap, typed, compilationTime, executionTime);
                 }
                 break;
+        }
+    }
+
+    /**
+     * Validate that a sequence can be serialized with the XML/text method.
+     * Maps and function items are not serializable as XML (SENR0001).
+     */
+    private static void validateXmlSerializable(final Sequence sequence) throws SAXException, XPathException {
+        for (final SequenceIterator i = sequence.iterate(); i.hasNext(); ) {
+            final Item item = i.nextItem();
+            final int type = item.getType();
+            if (type == Type.MAP_ITEM || type == Type.FUNCTION) {
+                throw new SAXException("err:SENR0001 Cannot serialize a " +
+                        Type.getTypeName(type) + " with the XML or text output method");
+            }
         }
     }
 
