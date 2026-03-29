@@ -3137,6 +3137,8 @@ throws PermissionDeniedException, EXistException, XPathException
     (
         step = lookup [step]
         |
+        step = filterExprAM [step]
+        |
         #(
             PREDICATE
             {
@@ -3194,6 +3196,24 @@ throws PermissionDeniedException, EXistException, XPathException
             predicateExpr.setASTNode(predicate_AST_in);
             predicateExpr.addPath(path);
             step.addPredicate(predicateExpr);
+        }
+    )
+    ;
+
+// === XQuery 4.0: Array/Map Filter Expression (?[expr]) ===
+filterExprAM [Expression leftExpr]
+returns [Expression step]
+throws PermissionDeniedException, EXistException, XPathException
+:
+    #(
+        filterAM:FILTER_AM
+        {
+            PathExpr predExpr = new PathExpr(context);
+        }
+        ( expr [predExpr] )+
+        {
+            step = new FilterExprAM(context, leftExpr, predExpr);
+            step.setASTNode(filterAM);
         }
     )
     ;

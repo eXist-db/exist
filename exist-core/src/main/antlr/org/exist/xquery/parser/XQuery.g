@@ -161,6 +161,7 @@ imaginaryTokenDefinitions
 	MAP
 	MAP_TEST
 	LOOKUP
+	FILTER_AM
 	ARRAY
 	ARRAY_TEST
 	PROLOG
@@ -1326,8 +1327,22 @@ postfixExpr throws XPathException
 		|
 		(LPAREN) => dynamicFunCall
 		|
+		// XQuery 4.0: FilterExprAM - must check before lookup
+		(QUESTION LPPAREN) => filterExprAM
+		|
 		(QUESTION) => lookup
 	)*
+	;
+
+// XQuery 4.0: Array/Map Filter Expression
+filterExprAM throws XPathException
+{ }
+:
+	q:QUESTION! LPPAREN! expr:exprSingle RPPAREN!
+	{
+		#filterExprAM = #(#[FILTER_AM, "?["], #expr);
+		#filterExprAM.copyLexInfo(#q);
+	}
 	;
 
 arrowExpr throws XPathException
