@@ -952,3 +952,49 @@ declare
 function ser:item-separator-applies-to-array-members() {
     serialize([1,2], map { "item-separator": "|" })
 };
+
+declare
+    %test:assertTrue
+function ser:cdata-section-elements-no-namespace() {
+    (: Simple unprefixed CDATA test :)
+    let $result := serialize(
+        <root><b>bold</b><i>italic</i></root>,
+        map {
+            "method": "xml",
+            "cdata-section-elements": QName("", "b"),
+            "omit-xml-declaration": true()
+        }
+    )
+    return contains($result, "CDATA[bold]") and not(contains($result, "CDATA[italic]"))
+};
+
+declare
+    %test:assertTrue
+function ser:cdata-section-elements-with-namespace() {
+    (: Namespaced CDATA test :)
+    let $result := serialize(
+        <root><p:b xmlns:p="http://www.example.org/ns/p">BOLD</p:b><p:i xmlns:p="http://www.example.org/ns/p">ITALIC</p:i></root>,
+        map {
+            "method": "xml",
+            "cdata-section-elements": QName("http://www.example.org/ns/p", "b"),
+            "omit-xml-declaration": true()
+        }
+    )
+    return contains($result, "CDATA[BOLD]") and not(contains($result, "CDATA[ITALIC]"))
+};
+
+declare
+    %test:assertTrue
+function ser:cdata-section-elements-combined() {
+    (: Combined: both unprefixed and namespaced elements get CDATA :)
+    let $result := serialize(
+        <chapter><b>bold</b><i>italic</i><p:b xmlns:p="http://www.example.org/ns/p">BOLD</p:b><p:i xmlns:p="http://www.example.org/ns/p">ITALIC</p:i></chapter>,
+        map {
+            "method": "xml",
+            "cdata-section-elements": (QName("", "b"), QName("http://www.example.org/ns/p", "b")),
+            "omit-xml-declaration": true()
+        }
+    )
+    return contains($result, "CDATA[bold]") and contains($result, "CDATA[BOLD]")
+           and not(contains($result, "CDATA[italic]")) and not(contains($result, "CDATA[ITALIC]"))
+};

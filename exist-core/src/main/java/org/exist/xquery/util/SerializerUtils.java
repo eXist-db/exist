@@ -474,7 +474,6 @@ public class SerializerUtils {
     public static Properties getSerializationOptions(final Expression parent, final AbstractMapType entries) throws XPathException {
         try {
             final Properties properties = new Properties();
-
             for (final W3CParameterConvention w3cParameterConvention : W3CParameterConvention.values()) {
                 final Sequence parameterValue = getParameterValue(parent, entries, w3cParameterConvention,
                         new StringValue(w3cParameterConvention.getParameterName()));
@@ -604,7 +603,7 @@ public class SerializerUtils {
                 properties.setProperty(localParameterName, value);
                 break;
             case Type.QNAME:
-                if (Cardinality._MANY.isSuperCardinalityOrEqualOf(parameterConvention.getCardinality())) {
+                if (parameterConvention.getCardinality().isSuperCardinalityOrEqualOf(Cardinality._MANY)) {
                     final SequenceIterator iterator = parameterValue.iterate();
                     while (iterator.hasNext()) {
                         final String existingValue = properties.getProperty(localParameterName);
