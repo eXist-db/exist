@@ -25,6 +25,7 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.json.JsonWriteFeature;
 import io.lacuna.bifurcan.IEntry;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
@@ -32,9 +33,11 @@ import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.functions.array.ArrayType;
 import org.exist.xquery.functions.map.MapType;
+import org.exist.xquery.util.SerializerUtils;
 import org.exist.xquery.value.*;
 import org.xml.sax.SAXException;
 
+import javax.annotation.Nullable;
 import javax.xml.transform.OutputKeys;
 import java.io.IOException;
 import java.io.Writer;
@@ -59,6 +62,7 @@ public class JSONSerializer {
     private final Properties outputProperties;
     private final boolean allowDuplicateNames;
     private final boolean canonical;
+    @Nullable private final Int2ObjectMap<String> characterMap;
 
     public JSONSerializer(DBBroker broker, Properties outputProperties) {
         super();
@@ -69,6 +73,7 @@ public class JSONSerializer {
         // Canonical mode: always reject duplicate keys
         this.allowDuplicateNames = !canonical && "yes".equals(
                 outputProperties.getProperty(EXistOutputKeys.ALLOW_DUPLICATE_NAMES, "yes"));
+        this.characterMap = SerializerUtils.getCharacterMap(outputProperties);
     }
 
     public void serialize(Sequence sequence, Writer writer) throws SAXException {
@@ -210,7 +215,7 @@ public class JSONSerializer {
         } else if (item.getType() == Type.BOOLEAN) {
             generator.writeBoolean(((AtomicValue) item).effectiveBooleanValue());
         } else {
-            generator.writeString(item.getStringValue());
+            writeStringWithCharMap(generator, item.getStringValue());
         }
     }
 
@@ -234,6 +239,41 @@ public class JSONSerializer {
         }
     }
 
+    /**
+     * Apply use-character-maps substitutions to a string value.
+     * Character map replacements are written raw (not escaped by JSON).
+     */
+    private String applyCharacterMap(final String value) {
+        if (characterMap == null || characterMap.isEmpty()) {
+            return value;
+        }
+        final StringBuilder sb = new StringBuilder(value.length());
+        for (int i = 0; i < value.length(); ) {
+            final int cp = value.codePointAt(i);
+            i += Character.charCount(cp);
+            final String replacement = characterMap.get(cp);
+            if (replacement != null) {
+                sb.append(replacement);
+            } else {
+                sb.appendCodePoint(cp);
+            }
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Write a string value to the JSON generator, applying character map
+     * substitutions. The mapped string is passed through writeString so
+     * Jackson handles JSON structural separators and escaping correctly.
+     */
+    private void writeStringWithCharMap(final JsonGenerator generator, final String value) throws IOException {
+        if (characterMap == null || characterMap.isEmpty()) {
+            generator.writeString(value);
+        } else {
+            generator.writeString(applyCharacterMap(value));
+        }
+    }
+
     private static boolean isBooleanTrue(final String value) {
         if (value == null) return false;
         final String v = value.trim();
@@ -254,7 +294,7 @@ public class JSONSerializer {
         xmlOutput.setProperty(OutputKeys.INDENT, outputProperties.getProperty(OutputKeys.INDENT, "no"));
         try {
             serializer.setProperties(xmlOutput);
-            generator.writeString(serializer.serialize((NodeValue)item));
+            writeStringWithCharMap(generator, serializer.serialize((NodeValue)item));
         } catch (IOException e) {
             throw new SAXException(e.getMessage(), e);
         } finally {
