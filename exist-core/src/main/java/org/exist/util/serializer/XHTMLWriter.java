@@ -157,7 +157,11 @@ public class XHTMLWriter extends IndentingXMLWriter {
         return emptyTags.contains(tag);
     }
 
+    private static final String SVG_NS = "http://www.w3.org/2000/svg";
+    private static final String MATHML_NS = "http://www.w3.org/1998/Math/MathML";
+
     boolean haveCollapsedXhtmlPrefix = false;
+    private String collapsedForeignNs = null;  // SVG or MathML ns being normalized
 
     @Override
     public void startElement(final QName qname) throws TransformerException {
@@ -182,16 +186,23 @@ public class XHTMLWriter extends IndentingXMLWriter {
         super.endElement(xhtmlQName);
 
         haveCollapsedXhtmlPrefix = false;
+        collapsedForeignNs = null;
     }
     
     protected QName removeXhtmlPrefix(final QName qname) {
         final String prefix = qname.getPrefix();
         final String namespaceURI = qname.getNamespaceURI();
-        if(prefix != null && !prefix.isEmpty() && namespaceURI != null && namespaceURI.equals(Namespaces.XHTML_NS)) {
-            haveCollapsedXhtmlPrefix = true;
-            return new QName(qname.getLocalPart(), namespaceURI);
+        if (prefix != null && !prefix.isEmpty() && namespaceURI != null) {
+            if (namespaceURI.equals(Namespaces.XHTML_NS)) {
+                haveCollapsedXhtmlPrefix = true;
+                return new QName(qname.getLocalPart(), namespaceURI);
+            }
+            // XHTML5: normalize SVG and MathML prefixes to default namespace
+            if (isHtml5Version() && (namespaceURI.equals(SVG_NS) || namespaceURI.equals(MATHML_NS))) {
+                collapsedForeignNs = namespaceURI;
+                return new QName(qname.getLocalPart(), namespaceURI);
+            }
         }
-        
         return qname;
     }
 
@@ -219,26 +230,37 @@ public class XHTMLWriter extends IndentingXMLWriter {
         super.endElement(namespaceURI, localName, xhtmlQName);
 
         haveCollapsedXhtmlPrefix = false;
+        collapsedForeignNs = null;
     }
-    
+
     protected String removeXhtmlPrefix(final String namespaceURI, final String qname) {
-        
         final int pos = qname.indexOf(':');
-        if(pos > 0 && namespaceURI != null && namespaceURI.equals(Namespaces.XHTML_NS)) {
-            haveCollapsedXhtmlPrefix = true;
-            return qname.substring(pos+1);
-            
+        if (pos > 0 && namespaceURI != null) {
+            if (namespaceURI.equals(Namespaces.XHTML_NS)) {
+                haveCollapsedXhtmlPrefix = true;
+                return qname.substring(pos + 1);
+            }
+            // XHTML5: normalize SVG and MathML prefixes
+            if (isHtml5Version() && (namespaceURI.equals(SVG_NS) || namespaceURI.equals(MATHML_NS))) {
+                collapsedForeignNs = namespaceURI;
+                return qname.substring(pos + 1);
+            }
         }
-        
         return qname;
     }
 
     @Override
     public void namespace(final String prefix, final String nsURI) throws TransformerException {
-        if(haveCollapsedXhtmlPrefix && prefix != null && !prefix.isEmpty() && nsURI.equals(Namespaces.XHTML_NS)) {
-            return; //dont output the xmlns:prefix for the collapsed nodes prefix
+        if (haveCollapsedXhtmlPrefix && prefix != null && !prefix.isEmpty() && nsURI.equals(Namespaces.XHTML_NS)) {
+            return; // don't output the xmlns:prefix for the collapsed node's prefix
         }
-        
+        // When a foreign namespace prefix was collapsed, replace the prefixed
+        // declaration with a default namespace declaration
+        if (collapsedForeignNs != null && prefix != null && !prefix.isEmpty()
+                && nsURI.equals(collapsedForeignNs)) {
+            super.namespace("", nsURI);  // emit xmlns="..." instead of xmlns:prefix="..."
+            return;
+        }
         super.namespace(prefix, nsURI);
     }
     
