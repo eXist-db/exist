@@ -178,13 +178,19 @@ public class FunSerialize extends BasicFunction {
         // Canonical serialization: force required parameters
         final String canonical = props.getProperty(EXistOutputKeys.CANONICAL);
         if (isBooleanTrue(canonical)) {
-            // Per W3C Serialization: when canonical=true, force these settings
-            props.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-            props.setProperty(OutputKeys.ENCODING, "UTF-8");
-            // CDATA sections not allowed in canonical form
-            props.remove(OutputKeys.CDATA_SECTION_ELEMENTS);
-            // Suppress content-type meta for XHTML canonical
-            props.setProperty("include-content-type", "no");
+            final String method = props.getProperty(OutputKeys.METHOD, "xml");
+            if ("json".equals(method)) {
+                // Canonical JSON (RFC 8785): handled in JSONSerializer
+                // Force no indent, no solidus escaping
+                props.setProperty(OutputKeys.INDENT, "no");
+                props.setProperty(EXistOutputKeys.ESCAPE_SOLIDUS, "no");
+            } else {
+                // Canonical XML/XHTML (C14N)
+                props.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+                props.setProperty(OutputKeys.ENCODING, "UTF-8");
+                props.remove(OutputKeys.CDATA_SECTION_ELEMENTS);
+                props.setProperty("include-content-type", "no");
+            }
         }
     }
 

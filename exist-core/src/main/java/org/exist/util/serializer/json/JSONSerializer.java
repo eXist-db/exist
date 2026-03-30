@@ -38,7 +38,9 @@ import org.xml.sax.SAXException;
 import javax.xml.transform.OutputKeys;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
@@ -56,18 +58,23 @@ public class JSONSerializer {
     private final DBBroker broker;
     private final Properties outputProperties;
     private final boolean allowDuplicateNames;
+    private final boolean canonical;
 
     public JSONSerializer(DBBroker broker, Properties outputProperties) {
         super();
         this.broker = broker;
         this.outputProperties = outputProperties;
-        this.allowDuplicateNames = "yes".equals(
+        final String canonicalProp = outputProperties.getProperty(EXistOutputKeys.CANONICAL);
+        this.canonical = isBooleanTrue(canonicalProp);
+        // Canonical mode: always reject duplicate keys
+        this.allowDuplicateNames = !canonical && "yes".equals(
                 outputProperties.getProperty(EXistOutputKeys.ALLOW_DUPLICATE_NAMES, "yes"));
     }
 
     public void serialize(Sequence sequence, Writer writer) throws SAXException {
         // QT4: escape-solidus controls whether / is escaped as \/ (default: true)
-        final boolean escapeSolidus = !isBooleanFalse(
+        // Canonical JSON (RFC 8785): solidus is NOT escaped
+        final boolean escapeSolidus = !canonical && !isBooleanFalse(
                 outputProperties.getProperty(EXistOutputKeys.ESCAPE_SOLIDUS, "yes"));
         final JsonFactory factory = JsonFactory.builder()
                 .configure(JsonWriteFeature.ESCAPE_FORWARD_SLASHES, escapeSolidus)
@@ -179,6 +186,16 @@ public class JSONSerializer {
 
     private void serializeAtomicValue(Item item, JsonGenerator generator) throws IOException, XPathException, SAXException {
         if (Type.subTypeOfUnion(item.getType(), Type.NUMERIC)) {
+            if (canonical) {
+                // RFC 8785: cast to double, use shortest representation
+                final double d = ((org.exist.xquery.value.NumericValue) item).getDouble();
+                if (!Double.isFinite(d)) {
+                    throw new SAXException("err:SERE0020 Numeric value " + item.getStringValue()
+                            + " cannot be serialized in canonical JSON");
+                }
+                generator.writeRawValue(canonicalDoubleString(d));
+                return;
+            }
             final String stringValue = item.getStringValue();
             // W3C Serialization 3.1: INF, -INF, and NaN MUST raise SERE0020
             if ("NaN".equals(stringValue) || "INF".equals(stringValue) || "-INF".equals(stringValue)) {
@@ -194,6 +211,26 @@ public class JSONSerializer {
             generator.writeBoolean(((AtomicValue) item).effectiveBooleanValue());
         } else {
             generator.writeString(item.getStringValue());
+        }
+    }
+
+    /**
+     * RFC 8785 canonical double formatting.
+     * Uses ECMAScript shortest representation: minimum digits to uniquely
+     * identify the double value. Plain notation for [1e-6, 1e21), exponential
+     * notation otherwise with lowercase 'e'.
+     */
+    private static String canonicalDoubleString(final double value) {
+        if (value == 0) return "0";
+        if (value == Double.MIN_VALUE) return "5e-324";
+        if (value == -Double.MIN_VALUE) return "-5e-324";
+
+        final java.math.BigDecimal bd = java.math.BigDecimal.valueOf(value).stripTrailingZeros();
+        final double abs = Math.abs(value);
+        if (abs >= 1e-6 && abs < 1e21) {
+            return bd.toPlainString();
+        } else {
+            return bd.toString().replace('E', 'e');
         }
     }
 
@@ -242,7 +279,31 @@ public class JSONSerializer {
     private void serializeMap(MapType map, JsonGenerator generator) throws IOException, XPathException, SAXException {
         generator.writeStartObject();
         final Set<String> seenKeys = allowDuplicateNames ? null : new HashSet<>();
-        for (final IEntry<AtomicValue, Sequence> entry: map) {
+
+        // Canonical JSON (RFC 8785): sort keys by UTF-16 code unit order
+        final Iterable<IEntry<AtomicValue, Sequence>> entries;
+        if (canonical) {
+            final List<IEntry<AtomicValue, Sequence>> sorted = new ArrayList<>();
+            for (final IEntry<AtomicValue, Sequence> entry : map) {
+                sorted.add(entry);
+            }
+            sorted.sort((a, b) -> {
+                try {
+                    return a.key().getStringValue().compareTo(b.key().getStringValue());
+                } catch (XPathException e) {
+                    return 0;
+                }
+            });
+            entries = sorted;
+        } else {
+            final List<IEntry<AtomicValue, Sequence>> list = new ArrayList<>();
+            for (final IEntry<AtomicValue, Sequence> entry : map) {
+                list.add(entry);
+            }
+            entries = list;
+        }
+
+        for (final IEntry<AtomicValue, Sequence> entry : entries) {
             final String key = entry.key().getStringValue();
             if (seenKeys != null && !seenKeys.add(key)) {
                 throw new SAXException("err:SERE0022 Duplicate key '" + key + "' in map and allow-duplicate-names is 'no'");
