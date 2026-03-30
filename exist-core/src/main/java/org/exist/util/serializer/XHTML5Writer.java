@@ -136,12 +136,29 @@ public class XHTML5Writer extends XHTMLWriter {
             return;
         }
 
-        // Pass through doctype-public and doctype-system if set
         final String publicId = outputProperties != null
                 ? outputProperties.getProperty(javax.xml.transform.OutputKeys.DOCTYPE_PUBLIC) : null;
         final String systemId = outputProperties != null
                 ? outputProperties.getProperty(javax.xml.transform.OutputKeys.DOCTYPE_SYSTEM) : null;
-        documentType("html", publicId, systemId);
+        final String method = outputProperties != null
+                ? outputProperties.getProperty(javax.xml.transform.OutputKeys.METHOD, "xhtml") : "xhtml";
+
+        if ("xhtml".equalsIgnoreCase(method)) {
+            // XHTML: per W3C spec section 5.2, only output doctype-public when
+            // doctype-system is also present
+            if (systemId != null) {
+                documentType("html", publicId, systemId);
+            } else if (publicId == null) {
+                // Neither set — simple DOCTYPE
+                documentType("html", null, null);
+            } else {
+                // doctype-public without doctype-system — suppress DOCTYPE for XHTML
+                doctypeWritten = true;
+            }
+        } else {
+            // HTML method: pass through doctype-public and doctype-system as set
+            documentType("html", publicId, systemId);
+        }
         doctypeWritten = true;
     }
 }

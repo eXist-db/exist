@@ -221,6 +221,11 @@ public class FunSerialize extends BasicFunction {
                         "It is an error if an item in the sequence to serialize is an attribute node or a namespace node.");
                 }
                 step2.add(next);
+            } else if (itemType == Type.MAP_ITEM || itemType == Type.FUNCTION) {
+                // Maps and function items cannot be serialized with XML/HTML/XHTML/text methods (SENR0001)
+                throw new XPathException(callingExpr, FnModule.SENR0001,
+                    "It is an error if an item in the sequence to serialize is a " +
+                    Type.getTypeName(itemType) + ".");
             } else {
                 // atomic value
                 // "For each item in S1, if the item is atomic, obtain the lexical representation of the item by
