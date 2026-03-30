@@ -272,8 +272,8 @@ public class ElementConstructor extends NodeConstructor {
             final Item qnitem = qnameSeq.itemAt(0);
 
             QName qn;
-            if (qnitem instanceof QNameValue) {
-                qn = ((QNameValue) qnitem).getQName();
+            if (qnitem instanceof QNameValue value) {
+                qn = value.getQName();
             } else {
                 //Do we have the same result than Atomize there ? -pb
                 try {

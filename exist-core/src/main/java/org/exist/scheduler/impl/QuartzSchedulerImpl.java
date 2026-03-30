@@ -520,7 +520,7 @@ public class QuartzSchedulerImpl implements Scheduler, BrokerPoolService {
                 //create a Java job
                 try {
                     final Class<?> jobClass = Class.forName(jobConfig.getResourceName());
-                    final Object jobObject = jobClass.newInstance();
+                    final Object jobObject = jobClass.getDeclaredConstructor().newInstance();
                     if(jobConfig.getType().equals(JobType.SYSTEM)) {
                         if(jobObject instanceof SystemTask task) {
                             task.configure(config, jobConfig.getParameters());
@@ -531,8 +531,8 @@ public class QuartzSchedulerImpl implements Scheduler, BrokerPoolService {
                         }
                         
                     } else {
-                        if(jobObject instanceof JobDescription) {
-                            job = (JobDescription)jobObject;
+                        if(jobObject instanceof JobDescription description) {
+                            job = description;
                             if(jobConfig.getJobName() != null) {
                                 job.setName(jobConfig.getJobName());
                             }
@@ -573,13 +573,13 @@ public class QuartzSchedulerImpl implements Scheduler, BrokerPoolService {
         //if this is a system job, store the BrokerPool in the job's data map
         jobDataMap.put(DATABASE, brokerPool);
         //if this is a system task job, store the SystemTask in the job's data map
-        if(job instanceof SystemTaskJobImpl) {
-            jobDataMap.put(SYSTEM_TASK, ((SystemTaskJobImpl)job).getSystemTask());
+        if(job instanceof SystemTaskJobImpl impl) {
+            jobDataMap.put(SYSTEM_TASK, impl.getSystemTask());
         }
         //if this is a users XQuery job, store the XQuery resource and user in the job's data map
-        if(job instanceof UserXQueryJob) {
-            jobDataMap.put(XQUERY_SOURCE, ((UserXQueryJob)job).getXQueryResource());
-            jobDataMap.put(ACCOUNT, ((UserXQueryJob)job).getUser());
+        if(job instanceof UserXQueryJob queryJob) {
+            jobDataMap.put(XQUERY_SOURCE, queryJob.getXQueryResource());
+            jobDataMap.put(ACCOUNT, queryJob.getUser());
         }
         //copy any parameters into the job's data map
         if(params != null) {

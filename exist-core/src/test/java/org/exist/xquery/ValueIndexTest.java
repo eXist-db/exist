@@ -24,7 +24,6 @@ package org.exist.xquery;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.xmldb.IndexQueryService;
@@ -306,18 +305,20 @@ public class ValueIndexTest {
     public void indexScan() throws XMLDBException, URISyntaxException {
         configureCollection(CONFIG_PATH);
         String queryBody =
-            "declare namespace f=\'http://exist-db.org/xquery/test\';\n" +
-            "declare namespace mods='http://www.loc.gov/mods/v3';\n" +
-            "import module namespace u=\'http://exist-db.org/xquery/util\';\n" +
-            "\n" +
-            "declare function f:term-callback($term as item(), $data as xs:int+)\n" +
-            "as element()+ {\n" +
-            "    <item>\n" +
-            "        <term>{$term}</term>\n" +
-            "        <frequency>{$data[1]}</frequency>\n" +
-            "    </item>\n" +
-            "};\n" +
-            "\n";
+            """
+            declare namespace f='http://exist-db.org/xquery/test';
+            declare namespace mods='http://www.loc.gov/mods/v3';
+            import module namespace u='http://exist-db.org/xquery/util';
+            
+            declare function f:term-callback($term as item(), $data as xs:int+)
+            as element()+ {
+                <item>
+                    <term>{$term}</term>
+                    <frequency>{$data[1]}</frequency>
+                </item>
+            };
+            
+            """;
 
         XPathQueryService service = storeXMLFileAndGetQueryService(ITEMS_FILENAME, ITEMS_FILE);
         String query = queryBody + "u:index-keys(//item/name, \'\', util:function(xs:QName(\'f:term-callback\'), 2), 1000)";
@@ -427,7 +428,7 @@ public class ValueIndexTest {
     protected XPathQueryService storeXMLFileAndGetQueryService(
             String documentName, final URL srcFile) throws XMLDBException, URISyntaxException {
         XMLResource doc = testCollection.createResource(documentName, XMLResource.class);
-        Path f = Paths.get(srcFile.toURI());
+        Path f = Path.of(srcFile.toURI());
         doc.setContent(f);
         testCollection.storeResource(doc);
         XPathQueryService service = testCollection.getService(XPathQueryService.class);

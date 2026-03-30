@@ -31,13 +31,14 @@ import org.xmldb.api.base.XMLDBException;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.Serial;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Vector;
 
 
 public class CreateBackupDialog extends JPanel {
+    @Serial
     private static final long serialVersionUID = 4571248257313559856L;
 
     JComboBox collections;
@@ -148,7 +149,7 @@ public class CreateBackupDialog extends JPanel {
         chooser.setMultiSelectionEnabled(false);
         chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         chooser.addChoosableFileFilter(new MimeTypeFileFilter("application/zip"));
-        chooser.setSelectedFile(Paths.get("eXist-backup.zip").toFile());
+        chooser.setSelectedFile(Path.of("eXist-backup.zip").toFile());
         chooser.setCurrentDirectory(backupDir.toFile());
 
         if (chooser.showDialog(this, Messages.getString("CreateBackupDialog.5")) == JFileChooser.APPROVE_OPTION) {

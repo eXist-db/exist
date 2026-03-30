@@ -247,7 +247,7 @@ public class LuceneVectorFieldConfig extends AbstractFieldConfig {
         if (vectors.isEmpty()) {
             return;
         }
-        final float[] combined = vectors.size() == 1 ? vectors.get(0) : meanPool(vectors);
+        final float[] combined = vectors.size() == 1 ? vectors.getFirst() : meanPool(vectors);
         if (combined != null) {
             luceneDoc.add(new KnnFloatVectorField(fieldName, combined, similarity));
         }
@@ -272,7 +272,7 @@ public class LuceneVectorFieldConfig extends AbstractFieldConfig {
         if (vectors.isEmpty()) {
             return;
         }
-        final float[] combined = vectors.size() == 1 ? vectors.get(0) : meanPool(vectors);
+        final float[] combined = vectors.size() == 1 ? vectors.getFirst() : meanPool(vectors);
         if (combined != null) {
             luceneDoc.add(new KnnFloatVectorField(fieldName, combined, similarity));
             storeVectorIfLocal(combined);

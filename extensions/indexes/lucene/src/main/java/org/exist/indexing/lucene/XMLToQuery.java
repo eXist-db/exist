@@ -558,10 +558,9 @@ public class XMLToQuery {
             if (child.getNodeType() == Node.ELEMENT_NODE) {
                 Query childQuery = parse(field, (Element) child, analyzer, options);
                 if (query != null) {
-                    if (query instanceof BooleanQuery) {
+                    if (query instanceof BooleanQuery existing) {
                         // migrate to builder
                         BooleanQuery.Builder b = new BooleanQuery.Builder();
-                        BooleanQuery existing = (BooleanQuery) query;
                         for (BooleanClause c : existing) b.add(c);
                         b.add(childQuery, BooleanClause.Occur.SHOULD);
                         query = b.build();

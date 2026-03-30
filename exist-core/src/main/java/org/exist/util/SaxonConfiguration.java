@@ -32,7 +32,6 @@ import javax.xml.transform.stream.StreamSource;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Optional;
 
 @ThreadSafe
@@ -158,7 +157,7 @@ public final class SaxonConfiguration {
    * @return the input file, if it is absolute. a file relative to conf.xml, if the input file is relative
    */
   private static Path resolveConfigurationFile(final Configuration existConfiguration, final String filename) {
-    final var configurationFile = Paths.get(filename);
+    final var configurationFile = Path.of(filename);
     if (configurationFile.isAbsolute()) {
       return configurationFile;
     }

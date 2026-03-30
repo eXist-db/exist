@@ -806,8 +806,8 @@ public class EnsureLockingAspect {
             final short idx = specifiedLockModeParam;
             if(idx < args.length) {
                 final Object arg = args[idx];
-                if(arg instanceof Lock.LockMode) {
-                    mode = new Tuple2<>((Lock.LockMode)arg, true);
+                if(arg instanceof Lock.LockMode lockMode) {
+                    mode = new Tuple2<>(lockMode, true);
                 } else {
                     throw new IllegalArgumentException("modeParam was specified on @EnsureLocked but its index was not a Lock.LockMode parameter, found:  " + arg.getClass().getName());
                 }
@@ -831,8 +831,8 @@ public class EnsureLockingAspect {
     private List<Lock.LockMode> getLockModeArgs(final Object[] args) {
         final List<Lock.LockMode> lockModeArgs = new ArrayList<>();
         for(final Object arg : args) {
-            if(arg instanceof Lock.LockMode) {
-                lockModeArgs.add((Lock.LockMode)arg);
+            if(arg instanceof Lock.LockMode lockMode) {
+                lockModeArgs.add(lockMode);
             }
         }
         return lockModeArgs;

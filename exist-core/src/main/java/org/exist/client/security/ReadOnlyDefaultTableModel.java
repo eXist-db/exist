@@ -23,12 +23,15 @@ package org.exist.client.security;
 
 import javax.swing.table.DefaultTableModel;
 
+import java.io.Serial;
+
 /**
  *
  * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 public class ReadOnlyDefaultTableModel extends DefaultTableModel {
 
+    @Serial
     private static final long serialVersionUID = 8229062312676408884L;
 
     public ReadOnlyDefaultTableModel(final String[][] data, final String[] columnNames) {

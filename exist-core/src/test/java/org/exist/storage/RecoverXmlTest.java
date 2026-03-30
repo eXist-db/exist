@@ -135,8 +135,8 @@ public class RecoverXmlTest extends AbstractRecoverTest {
         assertNotNull(doc);
 
         final Source expected;
-        if (data instanceof FileInputSource) {
-            expected = Input.fromFile(((FileInputSource)data).getFile().toFile()).build();
+        if (data instanceof FileInputSource source) {
+            expected = Input.fromFile(source.getFile().toFile()).build();
         } else if(data instanceof StringInputSource) {
             try (final Reader reader = data.getCharacterStream()) {
                 expected = Input.fromString("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + readAll(reader)).build();
@@ -168,8 +168,8 @@ public class RecoverXmlTest extends AbstractRecoverTest {
             final String dbFilename) throws IOException {
 
         final Source expected;
-        if (data instanceof FileInputSource) {
-            expected = Input.fromFile(((FileInputSource)data).getFile().toFile()).build();
+        if (data instanceof FileInputSource source) {
+            expected = Input.fromFile(source.getFile().toFile()).build();
         } else if(data instanceof StringInputSource) {
             try (final Reader reader = data.getCharacterStream()) {
                 expected = Input.fromString("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + readAll(reader)).build();

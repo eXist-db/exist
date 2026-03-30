@@ -35,7 +35,6 @@ import org.xmldb.api.base.XMLDBException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -115,7 +114,7 @@ public class BackupSystemTask implements SystemTask {
         prefix = properties.getProperty("prefix", "");
         
         final String dir = properties.getProperty("dir", "backup");
-        directory = Paths.get(dir);
+        directory = Path.of(dir);
         if (!directory.isAbsolute()) {
             directory = ((Path)config.getProperty(BrokerPool.PROPERTY_DATA_DIR)).resolve(dir);
         }

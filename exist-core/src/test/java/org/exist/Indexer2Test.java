@@ -63,10 +63,12 @@ import org.xml.sax.SAXException;
 public class Indexer2Test {
 
     private final static String XML =
-            "<?xml version=\"1.0\"?>\n" +
-            "<TEI xmlns=\"http://www.tei-c.org/ns/1.0\">\n" +
-            "Government of new Territory of Nevada—Governor <name>Nye</name> <lb/>and the practical jokers—<name>Mr. Clemens</name> begins journalistic life <lb/>on <name>Virginia City</name> <name>Enterprise</name>.\n" +
-            "</TEI>\n";
+            """
+            <?xml version="1.0"?>
+            <TEI xmlns="http://www.tei-c.org/ns/1.0">
+            Government of new Territory of Nevada—Governor <name>Nye</name> <lb/>and the practical jokers—<name>Mr. Clemens</name> begins journalistic life <lb/>on <name>Virginia City</name> <name>Enterprise</name>.
+            </TEI>
+            """;
 
     private final static String XQUERY =
             "declare namespace tei=\"http://www.tei-c.org/ns/1.0\"; " +

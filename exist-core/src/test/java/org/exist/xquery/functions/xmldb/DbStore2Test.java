@@ -41,7 +41,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Random;
 
 import static org.junit.Assert.assertNotNull;
@@ -71,7 +70,7 @@ public class DbStore2Test {
     private final static Path getConfig() {
         try {
             final URL path = DbStoreTest.class.getClassLoader().getResource("org/exist/xmldb/allowAnyUri.xml");
-            return Paths.get(path.toURI());
+            return Path.of(path.toURI());
         } catch (URISyntaxException e) {
             throw new RuntimeException("unable to parse URI for resource", e);
         }

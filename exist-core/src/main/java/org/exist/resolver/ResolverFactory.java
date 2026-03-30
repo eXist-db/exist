@@ -40,7 +40,7 @@ import org.xmlresolver.XMLResolverConfiguration;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -96,7 +96,7 @@ public interface ResolverFactory {
     static String sanitizeCatalogUri(String strCatalogUri) {
         if (strCatalogUri.indexOf('\\') > -1) {
             // convert from Windows file path
-            strCatalogUri = Paths.get(strCatalogUri).toUri().toString();
+            strCatalogUri = Path.of(strCatalogUri).toUri().toString();
         }
         return strCatalogUri;
     }

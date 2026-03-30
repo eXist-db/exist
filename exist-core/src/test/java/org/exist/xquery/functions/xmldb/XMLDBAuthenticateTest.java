@@ -103,14 +103,15 @@ public class XMLDBAuthenticateTest extends AbstractXMLDBTest{
         assertEquals(HttpStatus.SC_OK, setResponse1.getStatusLine().getStatusCode());
 
         final Source expected = Input.fromString(
-                "<sm:id xmlns:sm=\"http://exist-db.org/xquery/securitymanager\">\n" +
-                "    <sm:real>\n" +
-                "        <sm:username>user1</sm:username>\n" +
-                "        <sm:groups>\n" +
-                "            <sm:group>user1</sm:group>\n" +
-                "        </sm:groups>\n" +
-                "    </sm:real>\n" +
-                "</sm:id>").build();
+                """
+                <sm:id xmlns:sm="http://exist-db.org/xquery/securitymanager">
+                    <sm:real>
+                        <sm:username>user1</sm:username>
+                        <sm:groups>
+                            <sm:group>user1</sm:group>
+                        </sm:groups>
+                    </sm:real>
+                </sm:id>""").build();
         final Source actual = Input.fromString(readEntityAsString(setResponse1.getEntity())).build();
         final Diff diff = DiffBuilder.compare(expected)
                 .withTest(actual)
@@ -137,14 +138,15 @@ public class XMLDBAuthenticateTest extends AbstractXMLDBTest{
         assertEquals(HttpStatus.SC_OK, setResponse1.getStatusLine().getStatusCode());
 
         final Source expected = Input.fromString(
-                "<sm:id xmlns:sm=\"http://exist-db.org/xquery/securitymanager\">\n" +
-                        "    <sm:real>\n" +
-                        "        <sm:username>guest</sm:username>\n" +
-                        "        <sm:groups>\n" +
-                        "            <sm:group>guest</sm:group>\n" +
-                        "        </sm:groups>\n" +
-                        "    </sm:real>\n" +
-                        "</sm:id>").build();
+                """
+                <sm:id xmlns:sm="http://exist-db.org/xquery/securitymanager">
+                    <sm:real>
+                        <sm:username>guest</sm:username>
+                        <sm:groups>
+                            <sm:group>guest</sm:group>
+                        </sm:groups>
+                    </sm:real>
+                </sm:id>""").build();
         final Source actual = Input.fromString(readEntityAsString(setResponse1.getEntity())).build();
         final Diff diff = DiffBuilder.compare(expected)
                 .withTest(actual)
@@ -171,14 +173,15 @@ public class XMLDBAuthenticateTest extends AbstractXMLDBTest{
         assertEquals(HttpStatus.SC_OK, setResponse1.getStatusLine().getStatusCode());
 
         final Source expected = Input.fromString(
-                "<sm:id xmlns:sm=\"http://exist-db.org/xquery/securitymanager\">\n" +
-                        "    <sm:real>\n" +
-                        "        <sm:username>user1</sm:username>\n" +
-                        "        <sm:groups>\n" +
-                        "            <sm:group>user1</sm:group>\n" +
-                        "        </sm:groups>\n" +
-                        "    </sm:real>\n" +
-                        "</sm:id>").build();
+                """
+                <sm:id xmlns:sm="http://exist-db.org/xquery/securitymanager">
+                    <sm:real>
+                        <sm:username>user1</sm:username>
+                        <sm:groups>
+                            <sm:group>user1</sm:group>
+                        </sm:groups>
+                    </sm:real>
+                </sm:id>""").build();
         final Source actual = Input.fromString(readEntityAsString(setResponse1.getEntity())).build();
         final Diff diff = DiffBuilder.compare(expected)
                 .withTest(actual)
@@ -221,14 +224,15 @@ public class XMLDBAuthenticateTest extends AbstractXMLDBTest{
         assertEquals(HttpStatus.SC_OK, setResponse1.getStatusLine().getStatusCode());
 
         final Source expected = Input.fromString(
-                "<sm:id xmlns:sm=\"http://exist-db.org/xquery/securitymanager\">\n" +
-                        "    <sm:real>\n" +
-                        "        <sm:username>guest</sm:username>\n" +
-                        "        <sm:groups>\n" +
-                        "            <sm:group>guest</sm:group>\n" +
-                        "        </sm:groups>\n" +
-                        "    </sm:real>\n" +
-                        "</sm:id>").build();
+                """
+                <sm:id xmlns:sm="http://exist-db.org/xquery/securitymanager">
+                    <sm:real>
+                        <sm:username>guest</sm:username>
+                        <sm:groups>
+                            <sm:group>guest</sm:group>
+                        </sm:groups>
+                    </sm:real>
+                </sm:id>""").build();
         final Source actual = Input.fromString(readEntityAsString(setResponse1.getEntity())).build();
         final Diff diff = DiffBuilder.compare(expected)
                 .withTest(actual)
@@ -271,14 +275,15 @@ public class XMLDBAuthenticateTest extends AbstractXMLDBTest{
         assertEquals(HttpStatus.SC_OK, setResponse1.getStatusLine().getStatusCode());
 
         final Source expected = Input.fromString(
-                "<sm:id xmlns:sm=\"http://exist-db.org/xquery/securitymanager\">\n" +
-                        "    <sm:real>\n" +
-                        "        <sm:username>user1</sm:username>\n" +
-                        "        <sm:groups>\n" +
-                        "            <sm:group>user1</sm:group>\n" +
-                        "        </sm:groups>\n" +
-                        "    </sm:real>\n" +
-                        "</sm:id>").build();
+                """
+                <sm:id xmlns:sm="http://exist-db.org/xquery/securitymanager">
+                    <sm:real>
+                        <sm:username>user1</sm:username>
+                        <sm:groups>
+                            <sm:group>user1</sm:group>
+                        </sm:groups>
+                    </sm:real>
+                </sm:id>""").build();
         final Source actual = Input.fromString(readEntityAsString(setResponse1.getEntity())).build();
         final Diff diff = DiffBuilder.compare(expected)
                 .withTest(actual)
@@ -314,14 +319,15 @@ public class XMLDBAuthenticateTest extends AbstractXMLDBTest{
         assertEquals(HttpStatus.SC_OK, setResponse1.getStatusLine().getStatusCode());
 
         final Source expected = Input.fromString(
-                "<sm:id xmlns:sm=\"http://exist-db.org/xquery/securitymanager\">\n" +
-                        "    <sm:real>\n" +
-                        "        <sm:username>guest</sm:username>\n" +
-                        "        <sm:groups>\n" +
-                        "            <sm:group>guest</sm:group>\n" +
-                        "        </sm:groups>\n" +
-                        "    </sm:real>\n" +
-                        "</sm:id>").build();
+                """
+                <sm:id xmlns:sm="http://exist-db.org/xquery/securitymanager">
+                    <sm:real>
+                        <sm:username>guest</sm:username>
+                        <sm:groups>
+                            <sm:group>guest</sm:group>
+                        </sm:groups>
+                    </sm:real>
+                </sm:id>""").build();
         final Source actual = Input.fromString(readEntityAsString(setResponse1.getEntity())).build();
         final Diff diff = DiffBuilder.compare(expected)
                 .withTest(actual)
@@ -357,14 +363,15 @@ public class XMLDBAuthenticateTest extends AbstractXMLDBTest{
         assertEquals(HttpStatus.SC_OK, setResponse1.getStatusLine().getStatusCode());
 
         final Source expected = Input.fromString(
-                "<sm:id xmlns:sm=\"http://exist-db.org/xquery/securitymanager\">\n" +
-                        "    <sm:real>\n" +
-                        "        <sm:username>user1</sm:username>\n" +
-                        "        <sm:groups>\n" +
-                        "            <sm:group>user1</sm:group>\n" +
-                        "        </sm:groups>\n" +
-                        "    </sm:real>\n" +
-                        "</sm:id>").build();
+                """
+                <sm:id xmlns:sm="http://exist-db.org/xquery/securitymanager">
+                    <sm:real>
+                        <sm:username>user1</sm:username>
+                        <sm:groups>
+                            <sm:group>user1</sm:group>
+                        </sm:groups>
+                    </sm:real>
+                </sm:id>""").build();
         final Source actual = Input.fromString(readEntityAsString(setResponse1.getEntity())).build();
         final Diff diff = DiffBuilder.compare(expected)
                 .withTest(actual)

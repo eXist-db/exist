@@ -96,14 +96,11 @@ public final class HttpVectorProvider implements VectorEmbeddingProvider {
       return null;
     }
     try {
-      switch (apiType) {
-        case OPENAI:
-          return embedOpenAI(text);
-        case COHERE:
-          return embedCohere(text, forQuery);
-        default:
-          return null;
-      }
+      return switch (apiType) {
+        case OPENAI -> embedOpenAI(text);
+        case COHERE -> embedCohere(text, forQuery);
+        default -> null;
+      };
     } catch (final Exception e) {
       LOG.warn("HTTP embedding failed for {}: {}", modelId, e.getMessage());
       return null;

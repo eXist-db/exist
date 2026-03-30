@@ -361,7 +361,7 @@ public class LuceneConfig {
                     if (queryAnalyzer != null)
                         return queryAnalyzer;
 
-                    LOG.warn(String.format("Failed to substitute %s with %s analyzer", id, qid));
+                    LOG.warn("Failed to substitute %s with %s analyzer".formatted(id, qid));
                 }
                 return analyzers.getAnalyzerById(id);
             }

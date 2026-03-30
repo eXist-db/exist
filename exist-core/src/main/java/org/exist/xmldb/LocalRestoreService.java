@@ -31,7 +31,8 @@ import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 
 import javax.annotation.Nullable;
-import java.nio.file.Paths;
+
+import java.nio.file.Path;
 
 public class LocalRestoreService extends AbstractLocalService implements EXistRestoreService {
 
@@ -55,7 +56,7 @@ public class LocalRestoreService extends AbstractLocalService implements EXistRe
         final Restore restore = new Restore();
         withDb((broker, transaction) -> {
             try {
-                restore.restore(broker, transaction, newAdminPassword, Paths.get(backup),
+                restore.restore(broker, transaction, newAdminPassword, Path.of(backup),
                         new RestoreListenerAdapter(restoreListener), overwriteApps);
             } catch (final SAXException e) {
                 throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e.getMessage());

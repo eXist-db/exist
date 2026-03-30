@@ -36,8 +36,8 @@ public class HttpAccount {
 
     public static Subject getUserFromServletRequest(final HttpServletRequest request) {
         final Principal principal = request.getUserPrincipal();
-        if(principal instanceof Subject) {
-            return (Subject) principal;
+        if(principal instanceof Subject subject2) {
+            return subject2;
         } else if(principal != null && "org.eclipse.jetty.plus.jaas.JAASUserPrincipal".equals(principal.getClass().getName())) {
 
             //workaroud strange jetty authentication method, why encapsulate user object??? -shabanovd
@@ -47,8 +47,8 @@ public class HttpAccount {
                 final Object obj = method.invoke(principal);
                 if(obj instanceof javax.security.auth.Subject subject) {
                     for(final Principal _principal_ : subject.getPrincipals()) {
-                        if(_principal_ instanceof Subject) {
-                            return (Subject) _principal_;
+                        if(_principal_ instanceof Subject subject1) {
+                            return subject1;
                         }
                     }
                 }

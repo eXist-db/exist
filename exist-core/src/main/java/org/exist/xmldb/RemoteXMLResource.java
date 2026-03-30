@@ -182,8 +182,8 @@ public class RemoteXMLResource
         }
         final Object res = super.getContent();
         if (res != null) {
-            if (res instanceof byte[]) {
-                return new String((byte[]) res, UTF_8);
+            if (res instanceof byte[] bytes) {
+                return new String(bytes, UTF_8);
 
             } else {
                 return res;
@@ -280,13 +280,10 @@ public class RemoteXMLResource
     public void setContent(final Object value) throws XMLDBException {
         content = null;
         if (!super.setContentInternal(value)) {
-            if (value instanceof String) {
-                content = (String) value;
-            } else if (value instanceof byte[]) {
-                content = new String((byte[]) value, UTF_8);
-
-            } else {
-                content = value.toString();
+            switch (value) {
+                case String string -> content = string;
+                case byte[] bytes -> content = new String(bytes, UTF_8);
+                default -> content = value.toString();
             }
         }
     }

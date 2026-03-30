@@ -71,14 +71,12 @@ public class BinaryValues implements BinaryValuesMXBean {
 
             final BinaryInputStreamCacheInfo result;
             final FilterInputStreamCache cache = cacheInstance.getCache();
-            if (cache instanceof FileFilterInputStreamCache) {
-                result = new BinaryInputStreamCacheInfo(CacheType.FILE, cacheInstance.getRegistered(),
-                        Optional.of(((FileFilterInputStreamCache) cache).getFilePath()), cache.getLength());
-            } else if (cache instanceof MemoryMappedFileFilterInputStreamCache) {
-                result = new BinaryInputStreamCacheInfo(CacheType.MEMORY_MAPPED_FILE, cacheInstance.getRegistered(),
-                        Optional.of(((MemoryMappedFileFilterInputStreamCache) cache).getFilePath()), cache.getLength());
-            } else {
-                result = new BinaryInputStreamCacheInfo(CacheType.MEMORY, cacheInstance.getRegistered(),
+            switch (cache) {
+                case FileFilterInputStreamCache streamCache1 -> result = new BinaryInputStreamCacheInfo(CacheType.FILE, cacheInstance.getRegistered(),
+                        Optional.of(streamCache1.getFilePath()), cache.getLength());
+                case MemoryMappedFileFilterInputStreamCache streamCache -> result = new BinaryInputStreamCacheInfo(CacheType.MEMORY_MAPPED_FILE, cacheInstance.getRegistered(),
+                        Optional.of(streamCache.getFilePath()), cache.getLength());
+                default -> result = new BinaryInputStreamCacheInfo(CacheType.MEMORY, cacheInstance.getRegistered(),
                         Optional.empty(), cache.getLength());
             }
 

@@ -21,6 +21,8 @@
  */
 package org.exist.util.sanity;
 
+import java.io.Serial;
+
 /**
  * Exception indicating a failed assertion. Used by
  * class {@link org.exist.util.sanity.SanityCheck} to print
@@ -30,7 +32,8 @@ package org.exist.util.sanity;
  */
 public class AssertFailure extends RuntimeException {
 
-	private static final long serialVersionUID = -4753385398634599386L;
+    @Serial
+    private static final long serialVersionUID = -4753385398634599386L;
 
     public AssertFailure() {
         super();

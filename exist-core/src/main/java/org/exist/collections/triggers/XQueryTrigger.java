@@ -352,8 +352,8 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
 		}
 		
 		final XQueryContext context = new XQueryContext(broker.getBrokerPool());
-        if (query instanceof DBSource) {
-            context.setModuleLoadPath(XmldbURI.EMBEDDED_SERVER_URI_PREFIX + ((DBSource)query).getDocumentPath().removeLastSegment().toString());
+        if (query instanceof DBSource source) {
+            context.setModuleLoadPath(XmldbURI.EMBEDDED_SERVER_URI_PREFIX + source.getDocumentPath().removeLastSegment().toString());
         }
 
         CompiledXQuery compiledQuery;

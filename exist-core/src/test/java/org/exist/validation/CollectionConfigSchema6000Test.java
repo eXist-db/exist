@@ -30,7 +30,6 @@ import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import static org.junit.Assert.fail;
 import static org.junit.Assert.assertTrue;
@@ -91,7 +90,7 @@ public class CollectionConfigSchema6000Test {
     }
 
     private Path resolveSchemaPath() {
-        final Path base = Paths.get(System.getProperty("user.dir"));
+        final Path base = Path.of(System.getProperty("user.dir"));
         Path p = base.resolve("schema").resolve("collection.xconf.xsd");
         if (!Files.exists(p)) {
             p = base.getParent().resolve("schema").resolve("collection.xconf.xsd");

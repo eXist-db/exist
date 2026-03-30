@@ -59,12 +59,13 @@ public class SAXTriggerTest {
             + "</test>";
 
     private final static String DOCUMENT3_CONTENT = 
-        "<test test=\"valueTest\">\n" +
-        "    <item id=\"1\" test=\"valueTest\">\n" +
-        "        <price test=\"valueTest\">5.6</price>\n" +
-        "        <stock test=\"valueTest\">22</stock>\n" +
-        "    </item>\n" +
-        "</test>";
+        """
+        <test test="valueTest">
+            <item id="1" test="valueTest">
+                <price test="valueTest">5.6</price>
+                <stock test="valueTest">22</stock>
+            </item>
+        </test>""";
     
     private final static String COLLECTION_CONFIG = 
             "<exist:collection xmlns:exist='http://exist-db.org/collection-config/1.0'>"

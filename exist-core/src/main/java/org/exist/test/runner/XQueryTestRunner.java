@@ -55,7 +55,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -108,7 +107,7 @@ public class XQueryTestRunner extends AbstractTestRunner {
     }
 
     private static Configuration getConfiguration() throws DatabaseConfigurationException {
-        final Optional<Path> home = Optional.ofNullable(System.getProperty("exist.home", System.getProperty("user.dir"))).map(Paths::get);
+        final Optional<Path> home = Optional.ofNullable(System.getProperty("exist.home", System.getProperty("user.dir"))).map(Path::of);
         final Path confFile = ConfigurationHelper.lookup("conf.xml", home);
 
         if (confFile.isAbsolute() && Files.exists(confFile)) {

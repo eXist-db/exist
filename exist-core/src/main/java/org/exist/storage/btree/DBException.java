@@ -72,14 +72,17 @@
  */
 package org.exist.storage.btree;
 
+import java.io.Serial;
+
 /**
  * A DBException is thrown by the database if an exception occurs in the
  * managing (creating, dropping) database objects such as Collections, Indexes,
  * and XMLObjects.
  */
 public class DBException extends Exception {
-	
-	private static final long serialVersionUID = 952318931514282901L;
+
+    @Serial
+    private static final long serialVersionUID = 952318931514282901L;
 	
 	public int faultCode;
 

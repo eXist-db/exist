@@ -293,7 +293,7 @@ public class Collations {
                     logger.error(msg);
                     throw new XPathException(expression, ErrorCodes.FOCH0002, msg);
                 }
-                collator = (Collator) collatorClass.newInstance();
+                collator = (Collator) collatorClass.getDeclaredConstructor().newInstance();
             } catch (final Exception e) {
                 final String msg = "The specified collator class " + uriClassName + " could not be found";
                 logger.error(msg);

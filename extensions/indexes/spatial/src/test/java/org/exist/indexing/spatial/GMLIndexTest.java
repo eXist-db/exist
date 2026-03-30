@@ -25,7 +25,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -121,7 +121,7 @@ public class GMLIndexTest {
 
             for (final String file : FILES) {
                 final URL url = GMLIndexTest.class.getResource("/" + file);
-                broker.storeDocument(transaction, XmldbURI.create(file), new FileInputSource(Paths.get(url.toURI())), MimeType.XML_TYPE, testCollection);
+                broker.storeDocument(transaction, XmldbURI.create(file), new FileInputSource(Path.of(url.toURI())), MimeType.XML_TYPE, testCollection);
             }
 
             transaction.commit();

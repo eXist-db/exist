@@ -71,7 +71,7 @@ public class RemoteResourceIterator implements ResourceIterator {
         if (resources.get(pos) instanceof List) {
             // node
             final List<String> v = (List<String>) resources.get(pos++);
-            final String doc = v.get(0);
+            final String doc = v.getFirst();
             final String s_id = v.get(1);
 
             final List<Object> params = new ArrayList<>();

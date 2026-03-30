@@ -806,7 +806,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             docIdQueries.add(IntField.newExactQuery(FIELD_DOC_ID, it.next().getDocId()));
         }
         if (docIdQueries.size() == 1) {
-            return docIdQueries.get(0);
+            return docIdQueries.getFirst();
         }
         final BooleanQuery.Builder b = new BooleanQuery.Builder();
         for (final Query q : docIdQueries) {
@@ -1213,8 +1213,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                         result[i++] = f;
                     }
                     return result;
-                } else if (fieldsObj instanceof IndexableField[]) {
-                    return (IndexableField[]) fieldsObj;
+                } else if (fieldsObj instanceof IndexableField[] indexableFields) {
+                    return indexableFields;
                 }
                 return new IndexableField[0];
             });
@@ -1569,7 +1569,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             if (opts.getQueryAnalyzerId() != null) {
                 analyzer = config.getAnalyzerById(opts.getQueryAnalyzerId());
                 if (analyzer == null) {
-                    String msg = String.format("getAnalyzerById('%s') returned null!", opts.getQueryAnalyzerId());
+                    String msg = "getAnalyzerById('%s') returned null!".formatted(opts.getQueryAnalyzerId());
                     LOG.error(msg);
                 }
             }
@@ -1595,7 +1595,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      */
     public static LuceneConfig getLuceneConfig(DBBroker broker, DocumentSet docs) {
         for (Iterator<Collection> i = docs.getCollectionIterator(); i.hasNext(); ) {
-            try (Collection collection = i.next();) {
+            try (Collection collection = i.next()) {
                 IndexSpec idxConf = collection.getIndexConfiguration(broker);
                 if (idxConf != null) {
                     LuceneConfig config = (LuceneConfig) idxConf.getCustomIndexSpec(LuceneIndex.ID);

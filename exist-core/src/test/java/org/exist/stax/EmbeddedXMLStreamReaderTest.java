@@ -70,15 +70,16 @@ public class EmbeddedXMLStreamReaderTest {
     private static final XmldbURI TEST_MIXED_XML_COLLECTION = XmldbURI.create("/db/persistent-dom-mixed-test");
     private static final XmldbURI MIXED_XML_NAME = XmldbURI.create("mixed.xml");
     private static final String MIXED_XML =
-            "<!-- 1 -->\n" +
-            "<x>\n" +
-            "  <!-- x.1 -->\n" +
-            "  <y1>text1<z1/><!-- y.1 --></y1>\n" +
-            "  <!-- x.2 -->\n" +
-            "  <y2>text2<z2/><!-- y.2 --></y2>\n" +
-            "  <!-- x.3 -->\n" +
-            "</x>\n" +
-            "<!-- 2 -->";
+            """
+            <!-- 1 -->
+            <x>
+              <!-- x.1 -->
+              <y1>text1<z1/><!-- y.1 --></y1>
+              <!-- x.2 -->
+              <y2>text2<z2/><!-- y.2 --></y2>
+              <!-- x.3 -->
+            </x>
+            <!-- 2 -->""";
 
     /**
      * Attempts to read all nodes in the document starting from the first node of the document.

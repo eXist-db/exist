@@ -59,7 +59,7 @@ public class GetLastAccessedTime extends SessionFunction {
 
     @Override
     public Sequence eval(final Sequence[] args, final Optional<SessionWrapper> session) throws XPathException {
-        if (!session.isPresent()) {
+        if (session.isEmpty()) {
             return XPathUtil.javaObjectToXPath(-1, context, this);
         }
 

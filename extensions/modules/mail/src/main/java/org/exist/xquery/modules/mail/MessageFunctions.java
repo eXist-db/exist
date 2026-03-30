@@ -202,8 +202,8 @@ public class MessageFunctions extends BasicFunction {
 
                     // Handle the content
                     Object content = message.getContent();
-                    if (content instanceof Multipart) {
-                        handleMultipart((Multipart) content, builder);
+                    if (content instanceof Multipart multipart) {
+                        handleMultipart(multipart, builder);
                     } else {
                         handlePart(message, builder);
                     }
@@ -314,8 +314,8 @@ public class MessageFunctions extends BasicFunction {
     private void handlePart(Part part, MemTreeBuilder builder)
             throws MessagingException, IOException, XPathException, SAXException {
         Object content = part.getContent();
-        if (content instanceof Multipart) {
-            handleMultipart((Multipart)content, builder);
+        if (content instanceof Multipart multipart) {
+            handleMultipart(multipart, builder);
             return;
         }
         String disposition = part.getDisposition();

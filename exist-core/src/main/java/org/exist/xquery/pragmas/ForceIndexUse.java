@@ -49,7 +49,7 @@ public class ForceIndexUse extends AbstractPragma {
 
             @Override
             public void visitBuiltinFunction(final Function expr) {
-                if (expr instanceof IndexUseReporter && ((IndexUseReporter) expr).hasUsedIndex()) {
+                if (expr instanceof IndexUseReporter reporter && reporter.hasUsedIndex()) {
                     bailout = false;
                 }
                 for (int i = 0; i < expr.getArgumentCount(); i++) {

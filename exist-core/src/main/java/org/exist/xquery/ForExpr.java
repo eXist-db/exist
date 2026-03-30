@@ -151,12 +151,12 @@ public class ForExpr extends BindingExpression {
             // This is possible if the input sequence is a node set and has no
             // dependencies on the current context item.
             if (isOuterFor) {
-                if (returnExpr instanceof WhereClause) {
+                if (returnExpr instanceof WhereClause clause1) {
                     if (at == null) {
-                        in = ((WhereClause) returnExpr).preEval(in);
+                        in = clause1.preEval(in);
                     }
-                } else if (returnExpr instanceof FLWORClause) {
-                    in = ((FLWORClause) returnExpr).preEval(in);
+                } else if (returnExpr instanceof FLWORClause clause) {
+                    in = clause.preEval(in);
                 }
             }
 

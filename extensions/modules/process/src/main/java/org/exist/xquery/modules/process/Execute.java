@@ -37,7 +37,6 @@ import javax.xml.stream.XMLStreamReader;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 
 public class Execute extends BasicFunction {
@@ -148,7 +147,7 @@ public class Execute extends BasicFunction {
     }
 
     private Path getWorkingDir(String arg) {
-        final Path file = Paths.get(arg);
+        final Path file = Path.of(arg);
         if (file.isAbsolute()) {
             return file;
         }

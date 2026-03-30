@@ -341,7 +341,7 @@ public class FileUtils {
      * @return The resolved path
      */
     public static Path resolve(final Optional<Path> parent, final String child) {
-        return parent.map(p -> p.resolve(child)).orElse(Paths.get(child));
+        return parent.map(p -> p.resolve(child)).orElse(Path.of(child));
     }
 
     /**

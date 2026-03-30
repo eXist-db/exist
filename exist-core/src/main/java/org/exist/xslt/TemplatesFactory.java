@@ -24,7 +24,6 @@ package org.exist.xslt;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -84,11 +83,11 @@ public class TemplatesFactory {
   private static String uri(String stylesheet, String baseUri) {
     String uri = stylesheet;
     if (stylesheet.indexOf(':') == Constants.STRING_NOT_FOUND) {
-      Path f = Paths.get(stylesheet).normalize();
+      Path f = Path.of(stylesheet).normalize();
       if (Files.isReadable(f)) {
         uri = f.toUri().toASCIIString();
       } else {
-        f = Paths.get(baseUri, stylesheet).normalize();
+        f = Path.of(baseUri, stylesheet).normalize();
         if (Files.isReadable(f)) {
           uri = f.toUri().toASCIIString();
         }

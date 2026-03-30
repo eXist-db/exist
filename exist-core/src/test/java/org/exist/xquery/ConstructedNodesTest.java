@@ -51,22 +51,24 @@ public class ConstructedNodesTest {
     @Test
 	public void iterateConstructNodes() throws XPathException, XMLDBException {
 		String xquery =
-				"declare variable $categories := \n" +
-				"	<categories>\n" +
-				"		<category uid=\"1\">Fruit</category>\n" +
-				"		<category uid=\"2\">Vegetable</category>\n" +
-				"		<category uid=\"3\">Meat</category>\n" +
-				"		<category uid=\"4\">Dairy</category>\n" +
-				"	</categories>\n" +
-				";\n\n" + 
-				
-				"for $category in $categories/category return\n" +
-				"	element option {\n" +
-				"		attribute value {\n" +
-				"			$category/@uid\n" +
-				"		},\n" +
-				"		text { $category }\n" +
-				"	}";
+				"""
+                declare variable $categories :=\s
+                	<categories>
+                		<category uid="1">Fruit</category>
+                		<category uid="2">Vegetable</category>
+                		<category uid="3">Meat</category>
+                		<category uid="4">Dairy</category>
+                	</categories>
+                ;
+                
+                for $category in $categories/category return
+                	element option {
+                		attribute value {
+                			$category/@uid
+                		},
+                		text { $category }
+                	}\
+                """;
 		
 		String expectedResults [] = { 
 			"<option value=\"1\">Fruit</option>",
@@ -91,16 +93,17 @@ public class ConstructedNodesTest {
     @Test
 	public void constructedNodesSort() throws XMLDBException {
 		String xquery =
-			"declare variable $categories := \n" +
-			"	<categories>\n" +
-			"		<category uid=\"1\">Fruit</category>\n" +
-			"		<category uid=\"2\">Vegetable</category>\n" +
-			"		<category uid=\"3\">Meat</category>\n" +
-			"		<category uid=\"4\">Dairy</category>\n" +
-			"	</categories>\n" +
-			";\n\n" + 
-			
-			"for $category in $categories/category order by $category/@uid descending return $category";
+			"""
+            declare variable $categories :=\s
+            	<categories>
+            		<category uid="1">Fruit</category>
+            		<category uid="2">Vegetable</category>
+            		<category uid="3">Meat</category>
+            		<category uid="4">Dairy</category>
+            	</categories>
+            ;
+            
+            for $category in $categories/category order by $category/@uid descending return $category""";
 		
 		String expectedResults [] = { 
 				"<category uid=\"4\">Dairy</category>",
@@ -125,17 +128,18 @@ public class ConstructedNodesTest {
     @Test
 	public void constructedNodesPosition() throws XMLDBException {
 		String xquery =
-			"declare variable $categories := \n" +
-			"	<categories>\n" +
-			"		<category uid=\"1\">Fruit</category>\n" +
-			"		<category uid=\"2\">Vegetable</category>\n" +
-			"		<category uid=\"3\">Meat</category>\n" +
-			"		<category uid=\"4\">Dairy</category>\n" +
-			"	</categories>\n" +
-			";\n\n" + 
-			
-			"$categories/category[1],\n" +
-			"$categories/category[position() eq 1]";
+			"""
+            declare variable $categories :=\s
+            	<categories>
+            		<category uid="1">Fruit</category>
+            		<category uid="2">Vegetable</category>
+            		<category uid="3">Meat</category>
+            		<category uid="4">Dairy</category>
+            	</categories>
+            ;
+            
+            $categories/category[1],
+            $categories/category[position() eq 1]""";
 		
 		String expectedResults [] = { 
 				"<category uid=\"1\">Fruit</category>",
@@ -160,9 +164,10 @@ public class ConstructedNodesTest {
     @Test
 	public void constructedTextNodes() throws XMLDBException {
 		String xquery =
-			"declare variable $hello-text-first := <a>{ \"hello\" }<b>world</b></a>;\n" +
-			"declare variable $hello-text-last := <a><b>world</b>{ \"hello\" }</a>;\n" +
-			"($hello-text-first, $hello-text-last)";
+			"""
+            declare variable $hello-text-first := <a>{ "hello" }<b>world</b></a>;
+            declare variable $hello-text-last := <a><b>world</b>{ "hello" }</a>;
+            ($hello-text-first, $hello-text-last)""";
 		
 		String expectedResults [] = { 
 				"<a>hello<b>world</b></a>",

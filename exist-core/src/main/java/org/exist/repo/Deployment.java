@@ -275,7 +275,7 @@ public class Deployment {
 
     public Optional<String> undeploy(final DBBroker broker, final Txn transaction, final String pkgName, final Optional<ExistRepository> repo) throws PackageException {
         final Optional<Path> maybePackageDir = getPackageDir(pkgName, repo);
-        if (!maybePackageDir.isPresent()) {
+        if (maybePackageDir.isEmpty()) {
             // fails silently if package dir is not found?
             return Optional.empty();
         }
@@ -319,7 +319,7 @@ public class Deployment {
 
     public Optional<String> deploy(final DBBroker broker, final Txn transaction, final String pkgName, final Optional<ExistRepository> repo, final String userTarget) throws PackageException, IOException {
         final Optional<Path> maybePackageDir = getPackageDir(pkgName, repo);
-        if (!maybePackageDir.isPresent()) {
+        if (maybePackageDir.isEmpty()) {
             throw new PackageException("Package not found: " + pkgName);
         }
 

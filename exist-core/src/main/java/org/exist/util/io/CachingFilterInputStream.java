@@ -66,8 +66,8 @@ public class CachingFilterInputStream extends FilterInputStream {
     public CachingFilterInputStream(final InputStream inputStream) throws InstantiationException {
         super(null);
 
-        if (inputStream instanceof CachingFilterInputStream) {
-            this.cache = ((CachingFilterInputStream) inputStream).shareCache();     // must be #shareCache not #getCache() to increment references
+        if (inputStream instanceof CachingFilterInputStream stream) {
+            this.cache = stream.shareCache();     // must be #shareCache not #getCache() to increment references
         } else {
             throw new InstantiationException("Only CachingFilterInputStream are supported as InputStream");
         }

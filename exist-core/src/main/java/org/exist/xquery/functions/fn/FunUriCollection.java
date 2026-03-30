@@ -114,7 +114,7 @@ public class FunUriCollection extends BasicFunction {
             final String uriWithQueryString = args[0].toString();
             final int queryStringIndex = uriWithQueryString.indexOf('?');
             final String uriWithoutQueryString = (queryStringIndex >= 0) ? uriWithQueryString.substring(0, queryStringIndex) : uriWithQueryString;
-            String uriWithoutStableQueryString = uriWithQueryString.replaceAll(String.format("%s\\s*=\\s*\\byes|no\\b\\s*&+", KEY_STABLE), "");
+            String uriWithoutStableQueryString = uriWithQueryString.replaceAll("%s\\s*=\\s*\\byes|no\\b\\s*&+".formatted(KEY_STABLE), "");
             if (uriWithoutStableQueryString.endsWith("?")) {
                 uriWithoutStableQueryString = uriWithoutStableQueryString.substring(0, uriWithoutStableQueryString.length() - 1);
             }
@@ -123,7 +123,7 @@ public class FunUriCollection extends BasicFunction {
             try {
                 uri = XmldbURI.xmldbUriFor(uriWithoutQueryString);
             } catch (URISyntaxException e) {
-                throw new XPathException(this, ErrorCodes.FODC0004, String.format("\"%s\" is not a valid URI.", args[0].toString()));
+                throw new XPathException(this, ErrorCodes.FODC0004, "\"%s\" is not a valid URI.".formatted(args[0].toString()));
             }
 
             final Map<String, String> queryStringMap = parseQueryString(uriWithQueryString);
@@ -162,7 +162,7 @@ public class FunUriCollection extends BasicFunction {
                             }
                         }
                     } else {
-                        throw new XPathException(this, ErrorCodes.FODC0002, String.format("Collection \"%s\" not found.", uri));
+                        throw new XPathException(this, ErrorCodes.FODC0002, "Collection \"%s\" not found.".formatted(uri));
                     }
                 } catch (final LockException | PermissionDeniedException e) {
                     throw new XPathException(this, ErrorCodes.FODC0002, e);
@@ -226,14 +226,14 @@ public class FunUriCollection extends BasicFunction {
             final String value = queryStringEntry.getValue();
             if (key.equals(KEY_CONTENT_TYPE)) {
                 if (Arrays.stream(VALUE_CONTENT_TYPES).noneMatch(contentTypeValue -> contentTypeValue.equals(value))) {
-                    throw new XPathException(this, ErrorCodes.FODC0004, String.format("Invalid query-string value \"%s\".", queryStringEntry));
+                    throw new XPathException(this, ErrorCodes.FODC0004, "Invalid query-string value \"%s\".".formatted(queryStringEntry));
                 }
             } else if (key.equals(KEY_STABLE)) {
                 if (Arrays.stream(VALUE_STABLES).noneMatch(stableValue -> stableValue.equals(value))) {
-                    throw new XPathException(this, ErrorCodes.FODC0004, String.format("Invalid query-string value \"%s\".", queryStringEntry));
+                    throw new XPathException(this, ErrorCodes.FODC0004, "Invalid query-string value \"%s\".".formatted(queryStringEntry));
                 }
             } else if (!key.equals(KEY_MATCH)) {
-                throw new XPathException(this, ErrorCodes.FODC0004, String.format("Unexpected query string \"%s\".", queryStringEntry));
+                throw new XPathException(this, ErrorCodes.FODC0004, "Unexpected query string \"%s\".".formatted(queryStringEntry));
             }
         }
     }

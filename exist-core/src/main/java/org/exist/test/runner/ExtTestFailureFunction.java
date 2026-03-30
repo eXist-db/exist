@@ -42,7 +42,6 @@ import javax.xml.transform.OutputKeys;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Properties;
 
 import static org.exist.xquery.FunctionDSL.param;
@@ -121,7 +120,7 @@ public class ExtTestFailureFunction extends JUnitIntegrationFunction {
             return path;
         }
         try {
-            final Path p = Paths.get(path);
+            final Path p = Path.of(path);
             return p.getFileName() != null ? p.getFileName().toString() : path;
         } catch (final Exception ignored) {
             return path;
@@ -147,8 +146,8 @@ public class ExtTestFailureFunction extends JUnitIntegrationFunction {
         final Sequence seqLine = actual.get(new StringValue(this, "line"));
         if (!seqLine.isEmpty()) {
             final Item item = seqLine.itemAt(0);
-            if (item instanceof IntegerValue) {
-                return (int) ((IntegerValue) item).getLong();
+            if (item instanceof IntegerValue value) {
+                return (int) value.getLong();
             }
             try {
                 return Integer.parseInt(item.getStringValue());

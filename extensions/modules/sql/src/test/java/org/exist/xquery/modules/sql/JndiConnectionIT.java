@@ -159,8 +159,9 @@ public class JndiConnectionIT {
                 "};\n";
 
         final String mainQuery =
-                "import module namespace mymodule = \"http://mymodule.com\" at \"xmldb:exist:///db/mymodule.xqm\";\n" +
-                "mymodule:get-handle()";
+                """
+                import module namespace mymodule = "http://mymodule.com" at "xmldb:exist:///db/mymodule.xqm";
+                mymodule:get-handle()""";
         final Source mainQuerySource = new StringSource(mainQuery);
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();

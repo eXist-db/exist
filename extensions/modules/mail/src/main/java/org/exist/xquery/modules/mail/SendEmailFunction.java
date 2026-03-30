@@ -242,7 +242,7 @@ public class SendEmailFunction extends BasicFunction {
 
         try {
             //Create a sendmail Process
-            final Process p = Runtime.getRuntime().exec("/usr/sbin/sendmail" + recipients);
+            final Process p = Runtime.getRuntime().exec(("/usr/sbin/sendmail" + recipients).split(" "));
 
             //Get a Buffered Print Writer to the Processes stdOut
             try (final PrintWriter out = new PrintWriter(new OutputStreamWriter(p.getOutputStream(), charset))) {

@@ -156,9 +156,9 @@ public class CropFunction extends BasicFunction {
 			
             //crop the image
             Image cropImage = Toolkit.getDefaultToolkit().createImage(new FilteredImageSource(image.getSource(), new CropImageFilter(x1, y1, width, height)));
-            if(cropImage instanceof BufferedImage) {
+            if(cropImage instanceof BufferedImage bufferedImage) {
                 // just in case cropImage is allready an BufferedImage
-                bImage = (BufferedImage)cropImage;
+                bImage = bufferedImage;
 
             } else {
                 bImage = new BufferedImage(cropImage.getWidth(null),

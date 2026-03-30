@@ -378,7 +378,7 @@ public class ProcessMonitor implements BrokerPoolService {
                 .map(XQueryContext::getHttpContext)
                 .map(XQueryContext.HttpContext::getRequest);
 
-        if (!maybeRequest.isPresent()) {
+        if (maybeRequest.isEmpty()) {
             return null;
         }
 

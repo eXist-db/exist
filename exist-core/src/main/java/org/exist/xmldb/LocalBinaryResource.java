@@ -247,8 +247,8 @@ public class LocalBinaryResource extends AbstractEXistResource implements Extend
 
         if(file != null) {
             retval = FileUtils.sizeQuietly(file);
-        } else if(inputSource != null && inputSource instanceof EXistInputSource) {
-            retval = ((EXistInputSource)inputSource).getByteStreamLength();
+        } else if(inputSource != null && inputSource instanceof EXistInputSource source) {
+            retval = source.getByteStreamLength();
         } else if(rawData != null) {
             retval = rawData.length;
         } else if(binaryValue != null) {

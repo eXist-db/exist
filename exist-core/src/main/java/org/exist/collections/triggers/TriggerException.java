@@ -23,12 +23,15 @@ package org.exist.collections.triggers;
 
 import org.xml.sax.SAXException;
 
+import java.io.Serial;
+
 /**
  * @author wolf
  */
 public class TriggerException extends SAXException {
 
-	private static final long serialVersionUID = -6501877347817156557L;
+    @Serial
+    private static final long serialVersionUID = -6501877347817156557L;
 
 	public TriggerException() {
 		super();

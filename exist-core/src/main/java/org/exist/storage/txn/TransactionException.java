@@ -23,11 +23,14 @@ package org.exist.storage.txn;
 
 import org.exist.EXistException;
 
+import java.io.Serial;
+
 /**
  * @author wolf
  *
  */
 public class TransactionException extends EXistException {
+    @Serial
     private static final long serialVersionUID = 3617572708582437173L;
 
     public TransactionException(final String message) {

@@ -28,7 +28,7 @@ import org.junit.runners.model.InitializationError;
 
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -42,7 +42,7 @@ class XQueryTestRunnerTest {
     @Test
     void testGetDescription() throws URISyntaxException, InitializationError {
         final URL queryUrl = getClass().getResource("single-test.xqm");
-        final XQueryTestRunner runner = new XQueryTestRunner(Paths.get(queryUrl.toURI()), false);
+        final XQueryTestRunner runner = new XQueryTestRunner(Path.of(queryUrl.toURI()), false);
         final Description description = runner.getDescription();
         assertNotNull(description);
         assertTrue(description.isSuite());
@@ -54,7 +54,7 @@ class XQueryTestRunnerTest {
     @Test
      void testGetDescriptionWhenNoTests() throws URISyntaxException, InitializationError {
         final URL queryUrl = getClass().getResource("no-tests.xqm");
-        final XQueryTestRunner runner = new XQueryTestRunner(Paths.get(queryUrl.toURI()), false);
+        final XQueryTestRunner runner = new XQueryTestRunner(Path.of(queryUrl.toURI()), false);
         final Description description = runner.getDescription();
         assertNotNull(description);
         assertFalse(description.isSuite());

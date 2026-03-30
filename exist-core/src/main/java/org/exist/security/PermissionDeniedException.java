@@ -21,6 +21,8 @@
  */
 package org.exist.security;
 
+import java.io.Serial;
+
 /**
  *  Description of the Class
  *
@@ -29,6 +31,7 @@ package org.exist.security;
  */
 public class PermissionDeniedException extends Exception {
 
+    @Serial
     private static final long serialVersionUID = 8832813230189409267L;
 
     /**  Constructor for the PermissionDeniedException object */

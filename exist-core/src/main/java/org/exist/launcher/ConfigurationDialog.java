@@ -25,7 +25,6 @@ import java.awt.*;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
@@ -131,7 +130,7 @@ public class ConfigurationDialog extends JDialog {
             lbStartupWarn.setVisible(true);
 
             if (SystemUtils.IS_OS_MAC_OSX) {
-                Path dir = Paths.get(System.getProperty("user.home")).resolve("Library").resolve("Application Support").resolve("org.exist");
+                Path dir = Path.of(System.getProperty("user.home")).resolve("Library").resolve("Application Support").resolve("org.exist");
                 dataDir.setText(dir.toAbsolutePath().toString());
             }
         } else {
@@ -479,7 +478,7 @@ public class ConfigurationDialog extends JDialog {
         if (!dataDirChanged)
             return true;
 
-        Path dir = Paths.get(dataDir.getText());
+        Path dir = Path.of(dataDir.getText());
         if (Files.exists(dir)) {
 
             try (final Stream<Path> fileStream = Files.list(dir).filter(p -> FileUtils.fileName(p).endsWith(".dbx"))) {
@@ -603,7 +602,7 @@ public class ConfigurationDialog extends JDialog {
 
     private void btnSelectDirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSelectDirActionPerformed
         final Optional<Path> currentDir = Optional.ofNullable(dataDir.getText())
-                .map(d -> Optional.of(Paths.get(d)))
+                .map(d -> Optional.of(Path.of(d)))
                 .filter(md -> md.map(Files::exists).orElse(false))
                 .orElse(ConfigurationHelper.getExistHome());
 

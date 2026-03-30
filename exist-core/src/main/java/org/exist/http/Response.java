@@ -32,9 +32,11 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class Response {
 	
 	private final static String stdHeaders = 
-		"Allow: POST GET PUT DELETE\n" +
-		"Server: eXist\n" +
-		"Cache-control: no-cache\n";
+		"""
+        Allow: POST GET PUT DELETE
+        Server: eXist
+        Cache-control: no-cache
+        """;
 	
 	private int code = HttpServletResponse.SC_OK;
 	private String statusDesc = null;

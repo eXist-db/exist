@@ -73,17 +73,17 @@ public class DOMJUnitTest extends RemoteDBTest {
 		Element root=null;
 		NodeList nl=null;
 		Node n = index.getContentAsDOM();
-		if (n instanceof Document) {
-			doc=(Document)n;
-			root=doc.getDocumentElement();
-		}
-		else if (n instanceof Element) {
-			doc = n.getOwnerDocument();
-			root=(Element)n;
-		}
-		else {
-			fail("RemoteXMLResource unable to return a Document either an Element");
-		}
+		switch (n) {
+            case Document document -> {
+                doc = document;
+                root = doc.getDocumentElement();
+            }
+            case Element element -> {
+                doc = n.getOwnerDocument();
+                root = element;
+            }
+            default -> fail("RemoteXMLResource unable to return a Document either an Element");
+        }
 
 		nl = doc.getChildNodes();
 		for (int i = 0; i < nl.getLength(); i++) {
@@ -102,13 +102,13 @@ public class DOMJUnitTest extends RemoteDBTest {
 		index = (XMLResource) rootColl.getResource(name);
 		content = (String) index.getContent();
 		n = index.getContentAsDOM();
-		if (n instanceof Document) {
-			doc=(Document)n;
+		if (n instanceof Document document) {
+			doc=document;
 			root=doc.getDocumentElement();
 		}
-		else if (n instanceof Element) {
+		else if (n instanceof Element element) {
 			doc = n.getOwnerDocument();
-			root=(Element)n;
+			root=element;
 		}
 		nl = root.getChildNodes();
 		for (int i = 0; i < nl.getLength(); i++) {

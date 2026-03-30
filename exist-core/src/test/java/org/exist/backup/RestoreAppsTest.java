@@ -57,19 +57,21 @@ public class RestoreAppsTest {
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     private static final String REPO_XML_APP =
-            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-            "<meta xmlns=\"http://exist-db.org/xquery/repo\">\n" +
-            "    <description>Backup Test App</description>\n" +
-            "    <type>application</type>\n" +
-            "    <target>backup-test</target>\n" +
-            "</meta>";
+            """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <meta xmlns="http://exist-db.org/xquery/repo">
+                <description>Backup Test App</description>
+                <type>application</type>
+                <target>backup-test</target>
+            </meta>""";
 
     private static final String REPO_XML_LIB =
-        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-        "<meta xmlns=\"http://exist-db.org/xquery/repo\">\n" +
-        "    <description>Backup Test App</description>\n" +
-        "    <type>library</type>\n" +
-        "</meta>";
+        """
+        <?xml version="1.0" encoding="UTF-8"?>
+        <meta xmlns="http://exist-db.org/xquery/repo">
+            <description>Backup Test App</description>
+            <type>library</type>
+        </meta>""";
 
     /**
      * Create an app package and generate a backup. Install a newer version
@@ -269,7 +271,7 @@ public class RestoreAppsTest {
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         Optional<ExistRepository> repo = pool.getExpathRepo();
-        if (!repo.isPresent()) {
+        if (repo.isEmpty()) {
             throw new EXistException("expath repository not available for test");
         }
         XarSource xar = new XarFileSource(xarFile);

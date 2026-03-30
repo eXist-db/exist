@@ -65,10 +65,11 @@ public class CleanupTest {
             "\"xmldb:exist:///db/test/test-module.xql\";" +
             "t:test('Hello world')";
 
-    private final static String TEST_INLINE = "let $a := \"a\"\n" +
-            "let $func := function() { $a }\n" +
-            "return\n" +
-            "   $func";
+    private final static String TEST_INLINE = """
+            let $a := "a"
+            let $func := function() { $a }
+            return
+               $func""";
 
     private final static String INTERNAL_MODULE_TEST = "import module namespace tt=\"" + MODULE_NS + "\" at " +
             "\"java:org.exist.xquery.TestModule\";" +

@@ -106,7 +106,7 @@ public class Option {
 	@Override
 	public boolean equals(final Object other) {
 		return other != null && 
-            other instanceof Option &&
-            qname.equals(((Option) other).qname);
+            other instanceof Option o &&
+            qname.equals(o.qname);
 	}
 }

@@ -45,45 +45,47 @@ public class ApacheFopTest {
     @Test
     public void simplePdf() throws EXistException, PermissionDeniedException, XPathException {
         final String fopConfig =
-                "<fop version=\"1.0\">\n" +
-                "    <strict-configuration>true</strict-configuration>\n" +
-                "    <strict-validation>false</strict-validation>\n" +
-                "    <base>./</base>\n" +
-                "    <renderers>\n" +
-                "        <renderer mime=\"application/pdf\"></renderer>\n" +
-                "    </renderers>\n" +
-                "</fop>";
+                """
+                <fop version="1.0">
+                    <strict-configuration>true</strict-configuration>
+                    <strict-validation>false</strict-validation>
+                    <base>./</base>
+                    <renderers>
+                        <renderer mime="application/pdf"></renderer>
+                    </renderers>
+                </fop>""";
 
         final String fo =
-                "<fo:root xmlns:fo=\"http://www.w3.org/1999/XSL/Format\">\n" +
-                "    <fo:layout-master-set>\n" +
-                "        <fo:simple-page-master master-name=\"page-left\" page-height=\"297mm\" page-width=\"210mm\" margin-bottom=\"10mm\" margin-top=\"10mm\" margin-left=\"36mm\" margin-right=\"18mm\">\n" +
-                "            <fo:region-body margin-bottom=\"10mm\" margin-top=\"16mm\"/>\n" +
-                "            <fo:region-before region-name=\"head-left\" extent=\"10mm\"/>\n" +
-                "        </fo:simple-page-master>\n" +
-                "        <fo:simple-page-master master-name=\"page-right\" page-height=\"297mm\" page-width=\"210mm\" margin-bottom=\"10mm\" margin-top=\"10mm\" margin-left=\"18mm\" margin-right=\"36mm\">\n" +
-                "            <fo:region-body margin-bottom=\"10mm\" margin-top=\"16mm\"/>\n" +
-                "            <fo:region-before region-name=\"head-right\" extent=\"10mm\"/>\n" +
-                "        </fo:simple-page-master>\n" +
-                "        <fo:page-sequence-master master-name=\"page-content\">\n" +
-                "            <fo:repeatable-page-master-alternatives>\n" +
-                "                <fo:conditional-page-master-reference master-reference=\"page-right\" odd-or-even=\"odd\"/>\n" +
-                "                <fo:conditional-page-master-reference master-reference=\"page-left\" odd-or-even=\"even\"/>\n" +
-                "            </fo:repeatable-page-master-alternatives>\n" +
-                "        </fo:page-sequence-master>\n" +
-                "    </fo:layout-master-set>\n" +
-                "    <fo:page-sequence master-reference=\"page-content\">\n" +
-                "         <fo:flow flow-name=\"xsl-region-body\" hyphenate=\"true\" language=\"en\" xml:lang=\"en\">\n" +
-                "                <fo:block id=\"A97060-t\" line-height=\"16pt\" font-size=\"11pt\">\n" +
-                "                    <fo:block id=\"A97060-e0\" page-break-after=\"right\">\n" +
-                "                        <fo:block id=\"A97060-e100\" text-align=\"justify\" space-before=\".5em\" text-indent=\"1.5em\" space-after=\".5em\">\n" +
-                "                            Hello World!\n" +
-                "                        </fo:block>\n" +
-                "                    </fo:block>\n" +
-                "                </fo:block>\n" +
-                "        </fo:flow>\n" +
-                "    </fo:page-sequence>\n" +
-                "</fo:root>";
+                """
+                <fo:root xmlns:fo="http://www.w3.org/1999/XSL/Format">
+                    <fo:layout-master-set>
+                        <fo:simple-page-master master-name="page-left" page-height="297mm" page-width="210mm" margin-bottom="10mm" margin-top="10mm" margin-left="36mm" margin-right="18mm">
+                            <fo:region-body margin-bottom="10mm" margin-top="16mm"/>
+                            <fo:region-before region-name="head-left" extent="10mm"/>
+                        </fo:simple-page-master>
+                        <fo:simple-page-master master-name="page-right" page-height="297mm" page-width="210mm" margin-bottom="10mm" margin-top="10mm" margin-left="18mm" margin-right="36mm">
+                            <fo:region-body margin-bottom="10mm" margin-top="16mm"/>
+                            <fo:region-before region-name="head-right" extent="10mm"/>
+                        </fo:simple-page-master>
+                        <fo:page-sequence-master master-name="page-content">
+                            <fo:repeatable-page-master-alternatives>
+                                <fo:conditional-page-master-reference master-reference="page-right" odd-or-even="odd"/>
+                                <fo:conditional-page-master-reference master-reference="page-left" odd-or-even="even"/>
+                            </fo:repeatable-page-master-alternatives>
+                        </fo:page-sequence-master>
+                    </fo:layout-master-set>
+                    <fo:page-sequence master-reference="page-content">
+                         <fo:flow flow-name="xsl-region-body" hyphenate="true" language="en" xml:lang="en">
+                                <fo:block id="A97060-t" line-height="16pt" font-size="11pt">
+                                    <fo:block id="A97060-e0" page-break-after="right">
+                                        <fo:block id="A97060-e100" text-align="justify" space-before=".5em" text-indent="1.5em" space-after=".5em">
+                                            Hello World!
+                                        </fo:block>
+                                    </fo:block>
+                                </fo:block>
+                        </fo:flow>
+                    </fo:page-sequence>
+                </fo:root>""";
 
         final String xquery =
                 "xquery version \"3.1\";\n" +

@@ -107,7 +107,7 @@ public class ServerShutdown {
             // initialize database drivers
             final Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
             // create the default database
-            final Database database = (Database) cl.newInstance();
+            final Database database = (Database) cl.getDeclaredConstructor().newInstance();
             DatabaseManager.registerDatabase(database);
             if (!uri.endsWith(XmldbURI.ROOT_COLLECTION)) {
                 uri = uri + XmldbURI.ROOT_COLLECTION;

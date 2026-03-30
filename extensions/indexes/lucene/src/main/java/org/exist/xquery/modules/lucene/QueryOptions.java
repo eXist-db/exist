@@ -289,13 +289,13 @@ public class QueryOptions {
     }
 
     public void configureParser(CommonQueryParserConfiguration parser) {
-        if (parser instanceof QueryParserBase) {
+        if (parser instanceof QueryParserBase base) {
             switch (defaultOperator) {
                 case OR:
-                    ((QueryParserBase) parser).setDefaultOperator(QueryParser.OR_OPERATOR);
+                    base.setDefaultOperator(QueryParser.OR_OPERATOR);
                     break;
                 default:
-                    ((QueryParserBase) parser).setDefaultOperator(QueryParser.AND_OPERATOR);
+                    base.setDefaultOperator(QueryParser.AND_OPERATOR);
                     break;
             }
         }

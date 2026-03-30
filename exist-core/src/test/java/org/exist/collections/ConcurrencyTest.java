@@ -62,14 +62,15 @@ public class ConcurrencyTest {
     private static final String QUERY = "collection('/db/test')/test/c";
 
     private static final String REMOVE =
-        "declare namespace xmldb=\"http://exist-db.org/xquery/xmldb\";\n" +
-        "declare namespace util=\"http://exist-db.org/xquery/util\";" +
-        "declare variable $start as xs:integer external; " +
-        "let $dummy := util:log('DEBUG', ('Removing $start: ', $start, ' to ', $start + 9)) " +
-        "for $i in $start to $start + 9 " +
-        "let $resource := collection('/db/test')/test[xs:integer(@id) eq $i] " +
-        "return" +
-        "   xmldb:remove(util:collection-name($resource), util:document-name($resource))";
+        """
+        declare namespace xmldb="http://exist-db.org/xquery/xmldb";
+        declare namespace util="http://exist-db.org/xquery/util";\
+        declare variable $start as xs:integer external; \
+        let $dummy := util:log('DEBUG', ('Removing $start: ', $start, ' to ', $start + 9)) \
+        for $i in $start to $start + 9 \
+        let $resource := collection('/db/test')/test[xs:integer(@id) eq $i] \
+        return\
+           xmldb:remove(util:collection-name($resource), util:document-name($resource))""";
 
     @Test
 	public void runTasks() {

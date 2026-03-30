@@ -60,24 +60,24 @@ public class ExpandTest {
     public void expandWithDefaultNS() throws XMLDBException {
     	final String expected = "<ok xmlns=\"some\">\n    <concept xmlns=\"\"/>\n</ok>";
 
-        String query = "" +
-                "let $doc-path := xmldb:store('/db', 'test.xml', <concept/>)\n" +
-                "let $doc := doc($doc-path)\n" +
-                "return\n" +
-                "<ok xmlns='some'>\n" +
-                "{util:expand($doc)}\n" +
-                "</ok>";
+        String query = """
+                let $doc-path := xmldb:store('/db', 'test.xml', <concept/>)
+                let $doc := doc($doc-path)
+                return
+                <ok xmlns='some'>
+                {util:expand($doc)}
+                </ok>""";
         ResourceSet result = existEmbeddedServer.executeQuery(query);
         String r = (String) result.getResource(0).getContent();
         assertEquals(expected, r);
 
-        query = "" +
-                "let $doc-path := xmldb:store('/db', 'test.xml', <concept/>)\n" +
-                "let $doc := doc($doc-path)\n" +
-                "return\n" +
-                "<ok xmlns='some'>\n" +
-                "{$doc}\n" +
-                "</ok>";
+        query = """
+                let $doc-path := xmldb:store('/db', 'test.xml', <concept/>)
+                let $doc := doc($doc-path)
+                return
+                <ok xmlns='some'>
+                {$doc}
+                </ok>""";
         result = existEmbeddedServer.executeQuery(query);
         r = (String) result.getResource(0).getContent();
         assertEquals(expected, r);
@@ -115,8 +115,9 @@ public class ExpandTest {
 
     @Test
     public void expandPersistentDomAttrNs() throws XMLDBException {
-        final String query = "declare namespace x = \"http://x\";\n" +
-                "util:expand(doc('/db/expand-test/doc4.xml')/doc4/@x:foo)";
+        final String query = """
+                declare namespace x = "http://x";
+                util:expand(doc('/db/expand-test/doc4.xml')/doc4/@x:foo)""";
         final ResourceSet result = existEmbeddedServer.executeQuery(query);
         final Resource res = result.getResource(0);
         assertEquals(XML_RESOURCE, res.getResourceType());

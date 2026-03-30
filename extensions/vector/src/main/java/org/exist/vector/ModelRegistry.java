@@ -29,7 +29,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -81,7 +80,7 @@ public final class ModelRegistry {
     try {
       final Optional<Path> home = ConfigurationHelper.getExistHome();
       final Path confFile = home.map(h -> h.resolve(CONF_XML).normalize().toAbsolutePath())
-          .orElseGet(() -> Paths.get(System.getProperty("user.dir", ".")).resolve(CONF_XML).normalize().toAbsolutePath());
+          .orElseGet(() -> Path.of(System.getProperty("user.dir", ".")).resolve(CONF_XML).normalize().toAbsolutePath());
       if (!Files.isRegularFile(confFile) || !Files.isReadable(confFile)) {
         LOG.debug("conf.xml not found or not readable at {} (vector-models registry empty)", confFile);
         return;

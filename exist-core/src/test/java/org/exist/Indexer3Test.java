@@ -62,103 +62,124 @@ public class Indexer3Test {
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     private final static String XML1 =
-            "<?xml version=\"1.0\"?>\n" +
-                    "<k>\n" +
-                    "<l>a <b>b</b> c <d> d </d>  <e>  </e> f</l>\n" +
-                    "<m> a <b>b</b> c <d> d </d>  <e>  </e> f </m>\n" +
-                    "<n> a<b>b</b> c <d> d </d>  <e>  </e>f </n>\n" +
-                    "<o>  <b>b</b> c <d> d </d>  <e>  </e>  </o>\n" +
-                    "</k>\n";
+            """
+            <?xml version="1.0"?>
+            <k>
+            <l>a <b>b</b> c <d> d </d>  <e>  </e> f</l>
+            <m> a <b>b</b> c <d> d </d>  <e>  </e> f </m>
+            <n> a<b>b</b> c <d> d </d>  <e>  </e>f </n>
+            <o>  <b>b</b> c <d> d </d>  <e>  </e>  </o>
+            </k>
+            """;
 
     private final static String XML2 =
-            "<?xml version=\"1.0\"?>\n" +
-                    "<k>\n" +
-                    "<l>a <b>b</b> c <d> d </d>  <e>  </e> f</l>\n" +
-                    "</k>\n";
+            """
+            <?xml version="1.0"?>
+            <k>
+            <l>a <b>b</b> c <d> d </d>  <e>  </e> f</l>
+            </k>
+            """;
 
     private final static String XML3 =
-            "<?xml version=\"1.0\"?>\n" +
-                    "<k>\n" +
-                    "<m> a <b>b</b> c <d> d </d>  <e>  </e> f </m>\n" +
-                    "</k>\n";
+            """
+            <?xml version="1.0"?>
+            <k>
+            <m> a <b>b</b> c <d> d </d>  <e>  </e> f </m>
+            </k>
+            """;
 
     private final static String XML4 =
-            "<?xml version=\"1.0\"?>\n" +
-                    "<k>\n" +
-                    "<n> a<b>b</b> c <d> d </d>  <e>  </e>f </n>\n" +
-                    "</k>\n";
+            """
+            <?xml version="1.0"?>
+            <k>
+            <n> a<b>b</b> c <d> d </d>  <e>  </e>f </n>
+            </k>
+            """;
 
     private final static String XML5 =
-            "<?xml version=\"1.0\"?>\n" +
-                    "<k>\n" +
-                    "<o>  <b>b</b> c <d> d </d>  <e>  </e>  </o>\n" +
-                    "</k>\n";
+            """
+            <?xml version="1.0"?>
+            <k>
+            <o>  <b>b</b> c <d> d </d>  <e>  </e>  </o>
+            </k>
+            """;
 
     private final static String XML6 =
-            "<?xml version=\"1.0\"?>\n" +
-                    "<k>\n" +
-                    "<!--    a comment with whitespace    leading, intermediate\n" +
-                    " and trailing   -->\n" +
-                    "</k>\n";
+            """
+            <?xml version="1.0"?>
+            <k>
+            <!--    a comment with whitespace    leading, intermediate
+             and trailing   -->
+            </k>
+            """;
 
     private final static String XML7 =
-            "<?xml version=\"1.0\"?>\n" +
-                    "<k>\n" +
-                    "    <o>    leading and trailing    </o>\n" +
-                    "</k>\n";
+            """
+            <?xml version="1.0"?>
+            <k>
+                <o>    leading and trailing    </o>
+            </k>
+            """;
 
     private final static String RESULT_SUPPRESS_WS_NONE_XML1 =
-            "<result>" +
-                    "<k>\n" +
-                    "<l>a <b>b</b> c <d> d </d>  <e>  </e> f</l>\n" +
-                    "<m> a <b>b</b> c <d> d </d>  <e>  </e> f </m>\n" +
-                    "<n> a<b>b</b> c <d> d </d>  <e>  </e>f </n>\n" +
-                    "<o>  <b>b</b> c <d> d </d>  <e>  </e>  </o>\n" +
-                    "</k>" +
-                    "</result>";
+            """
+            <result>\
+            <k>
+            <l>a <b>b</b> c <d> d </d>  <e>  </e> f</l>
+            <m> a <b>b</b> c <d> d </d>  <e>  </e> f </m>
+            <n> a<b>b</b> c <d> d </d>  <e>  </e>f </n>
+            <o>  <b>b</b> c <d> d </d>  <e>  </e>  </o>
+            </k>\
+            </result>""";
 
     private final static String RESULT_SUPPRESS_WS_NONE_XML2 =
-            "<result>" +
-                    "<k>\n" +
-                    "<l>a <b>b</b> c <d> d </d>  <e>  </e> f</l>\n" +
-                    "</k>" +
-                    "</result>";
+            """
+            <result>\
+            <k>
+            <l>a <b>b</b> c <d> d </d>  <e>  </e> f</l>
+            </k>\
+            </result>""";
 
     private final static String RESULT_SUPPRESS_WS_NONE_XML3 =
-            "<result>" +
-                    "<k>\n" +
-                    "<m> a <b>b</b> c <d> d </d>  <e>  </e> f </m>\n" +
-                    "</k>" +
-                    "</result>";
+            """
+            <result>\
+            <k>
+            <m> a <b>b</b> c <d> d </d>  <e>  </e> f </m>
+            </k>\
+            </result>""";
 
     private final static String RESULT_SUPPRESS_WS_NONE_XML4 =
-            "<result>" +
-                    "<k>\n" +
-                    "<n> a<b>b</b> c <d> d </d>  <e>  </e>f </n>\n" +
-                    "</k>" +
-                    "</result>";
+            """
+            <result>\
+            <k>
+            <n> a<b>b</b> c <d> d </d>  <e>  </e>f </n>
+            </k>\
+            </result>""";
 
     private final static String RESULT_SUPPRESS_WS_NONE_XML5 =
-            "<result>" +
-                    "<k>\n" +
-                    "<o>  <b>b</b> c <d> d </d>  <e>  </e>  </o>\n" +
-                    "</k>" +
-                    "</result>";
+            """
+            <result>\
+            <k>
+            <o>  <b>b</b> c <d> d </d>  <e>  </e>  </o>
+            </k>\
+            </result>""";
 
     private final static String RESULT_SUPPRESS_WS_NONE_XML6 =
-            "<result>" +
-                    "<k>\n" +
-                    "<!--    a comment with whitespace    leading, intermediate\n" +
-                    " and trailing   -->\n" +
-                    "</k>" +
-                    "</result>";
+            """
+            <result>\
+            <k>
+            <!--    a comment with whitespace    leading, intermediate
+             and trailing   -->
+            </k>\
+            </result>""";
 
     private final static String RESULT_SUPPRESS_WS_NONE_XML7 =
-            "<result>" +
-                    "<k>\n" +
-                    "    <o>    leading and trailing    </o>\n" +
-                    "</k>" +
-                    "</result>";
+            """
+            <result>\
+            <k>
+                <o>    leading and trailing    </o>
+            </k>\
+            </result>""";
 
     private final static String RESULT_SUPPRESS_WS_LEADING_XML1 =
             "<result>" +
@@ -199,19 +220,21 @@ public class Indexer3Test {
                     "</result>";
 
     private final static String RESULT_SUPPRESS_WS_LEADING_XML6 =
-            "<result>" +
-                    "<k>\n" +
-                    "<!--    a comment with whitespace    leading, intermediate\n" +
-                    " and trailing   -->\n" +
-                    "</k>" +
-                    "</result>";
+            """
+            <result>\
+            <k>
+            <!--    a comment with whitespace    leading, intermediate
+             and trailing   -->
+            </k>\
+            </result>""";
 
     private final static String RESULT_SUPPRESS_WS_LEADING_XML7 =
-            "<result>" +
-                    "<k>\n" +
-                    "    <o>leading and trailing    </o>\n" +
-                    "</k>" +
-                    "</result>";
+            """
+            <result>\
+            <k>
+                <o>leading and trailing    </o>
+            </k>\
+            </result>""";
 
     private final static String RESULT_SUPPRESS_WS_TRAILING_XML1 =
             "<result>" +
@@ -252,19 +275,21 @@ public class Indexer3Test {
                     "</result>";
 
     private final static String RESULT_SUPPRESS_WS_TRAILING_XML6 =
-            "<result>" +
-                    "<k>\n" +
-                    "<!--    a comment with whitespace    leading, intermediate\n" +
-                    " and trailing   -->\n" +
-                    "</k>" +
-                    "</result>";
+            """
+            <result>\
+            <k>
+            <!--    a comment with whitespace    leading, intermediate
+             and trailing   -->
+            </k>\
+            </result>""";
 
     private final static String RESULT_SUPPRESS_WS_TRAILING_XML7 =
-            "<result>" +
-                    "<k>\n" +
-                    "    <o>    leading and trailing</o>\n" +
-                    "</k>" +
-                    "</result>";
+            """
+            <result>\
+            <k>
+                <o>    leading and trailing</o>
+            </k>\
+            </result>""";
 
     private final static String RESULT_SUPPRESS_WS_BOTH_XML1 =
             "<result>" +
@@ -291,33 +316,37 @@ public class Indexer3Test {
                     "</result>";
 
     private final static String RESULT_SUPPRESS_WS_BOTH_XML4 =
-            "<result>" +
-                    "<k>\n" +
-                    "<n>a<b>b</b> c <d>d</d>  <e> </e>f</n>\n" +
-                    "</k>" +
-                    "</result>";
+            """
+            <result>\
+            <k>
+            <n>a<b>b</b> c <d>d</d>  <e> </e>f</n>
+            </k>\
+            </result>""";
 
     private final static String RESULT_SUPPRESS_WS_BOTH_XML5 =
-            "<result>" +
-                    "<k>\n" +
-                    "<o>  <b>b</b>c <d>d</d> <e> </e> </o>\n" +
-                    "</k>" +
-                    "</result>";
+            """
+            <result>\
+            <k>
+            <o>  <b>b</b>c <d>d</d> <e> </e> </o>
+            </k>\
+            </result>""";
 
     private final static String RESULT_SUPPRESS_WS_BOTH_XML6 =
-            "<result>" +
-                    "<k>\n" +
-                    "<!--    a comment with whitespace    leading, intermediate\n" +
-                    " and trailing   -->\n" +
-                    "</k>" +
-                    "</result>";
+            """
+            <result>\
+            <k>
+            <!--    a comment with whitespace    leading, intermediate
+             and trailing   -->
+            </k>\
+            </result>""";
 
     private final static String RESULT_SUPPRESS_WS_BOTH_XML7 =
-            "<result>" +
-                    "<k>\n" +
-                    "    <o>leading and trailing</o>\n" +
-                    "</k>" +
-                    "</result>";
+            """
+            <result>\
+            <k>
+                <o>leading and trailing</o>
+            </k>\
+            </result>""";
 
     private final static String XQUERY =
             "let $test := doc('" + TestConstants.TEST_COLLECTION_URI.toString() + "/" + TestConstants.TEST_XML_URI.toString() + "') " +

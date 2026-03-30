@@ -45,7 +45,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -141,7 +140,7 @@ public class Descriptor implements ErrorHandler {
 
             //load <xquery-app> attribue settings
             if ("true".equals(doc.getDocumentElement().getAttribute("request-replay-log"))) {
-                final Path logFile = Paths.get("request-replay-log.txt");
+                final Path logFile = Path.of("request-replay-log.txt");
                 bufWriteReplayLog = Files.newBufferedWriter(logFile);
                 final String attr = doc.getDocumentElement().getAttribute("filtered");
                 if (!attr.isEmpty()) {
@@ -212,7 +211,7 @@ public class Descriptor implements ErrorHandler {
                 return;
             }
             path = path.replaceAll("\\$\\{WEBAPP_HOME\\}",
-                    SingleInstanceConfiguration.getWebappHome().orElse(Paths.get(".")).toAbsolutePath().toString().replace('\\', '/'));
+                    SingleInstanceConfiguration.getWebappHome().orElse(Path.of(".")).toAbsolutePath().toString().replace('\\', '/'));
 
             //store the path
             allowSourceList[i] = path;
@@ -248,7 +247,7 @@ public class Descriptor implements ErrorHandler {
                 return;
             }
             path = path.replaceAll("\\$\\{WEBAPP_HOME\\}",
-                    SingleInstanceConfiguration.getWebappHome().orElse(Paths.get(".")).toAbsolutePath().toString().replace('\\', '/'));
+                    SingleInstanceConfiguration.getWebappHome().orElse(Path.of(".")).toAbsolutePath().toString().replace('\\', '/'));
 
             //must be a view to map to
             if (view.isEmpty()) {
@@ -256,7 +255,7 @@ public class Descriptor implements ErrorHandler {
                 return;
             }
             view = view.replaceAll("\\$\\{WEBAPP_HOME\\}",
-                    SingleInstanceConfiguration.getWebappHome().orElse(Paths.get(".")).toAbsolutePath().toString().replace('\\', '/'));
+                    SingleInstanceConfiguration.getWebappHome().orElse(Path.of(".")).toAbsolutePath().toString().replace('\\', '/'));
 
             //store what to map from
            /* if(path != null)

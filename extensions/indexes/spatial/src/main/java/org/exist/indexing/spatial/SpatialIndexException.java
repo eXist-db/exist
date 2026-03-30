@@ -21,11 +21,14 @@
  */
 package org.exist.indexing.spatial;
 
+import java.io.Serial;
+
 /**
  * @author <a href="mailto:pierrick.brihaye@free.fr">Pierrick Brihaye</a>
  */
 public class SpatialIndexException extends Exception {
 
+    @Serial
     private static final long serialVersionUID = 7991787594779565819L;
 
     SpatialIndexException(final String message) {

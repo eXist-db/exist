@@ -105,10 +105,11 @@ public class BackupRestoreSecurityPrincipalsTest {
         //create new users: 'frank(id=11)' and 'jack(id=12)'
         createInitialUsers(FRANK_USER, JACK_USER);
 
-        final String accountQuery = "declare namespace c = 'http://exist-db.org/Configuration';\n" +
-            "for $account in //c:account\n" +
-            "return\n" +
-            "<user id='{$account/@id}' name='{$account/c:name}'/>";
+        final String accountQuery = """
+            declare namespace c = 'http://exist-db.org/Configuration';
+            for $account in //c:account
+            return
+            <user id='{$account/@id}' name='{$account/c:name}'/>""";
 
         final XPathQueryService xqs = server.getRoot().getService(XPathQueryService.class);
 

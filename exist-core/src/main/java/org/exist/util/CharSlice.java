@@ -23,6 +23,7 @@ package org.exist.util;
 
 import net.jcip.annotations.ThreadSafe;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.io.Writer;
 
@@ -42,7 +43,8 @@ import java.io.Writer;
 @ThreadSafe
 public final class CharSlice implements CharSequence, Serializable {
 
-	private static final long serialVersionUID = -2668084569793755681L;
+    @Serial
+    private static final long serialVersionUID = -2668084569793755681L;
 
 	private final char[] array;
     private final int offset;

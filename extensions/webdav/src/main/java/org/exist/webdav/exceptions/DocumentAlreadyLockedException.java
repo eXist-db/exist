@@ -21,6 +21,8 @@
  */
 package org.exist.webdav.exceptions;
 
+import java.io.Serial;
+
 /**
  * Class that represents a situation that a file cannot be created  because the collection
  * does not exist.
@@ -29,6 +31,7 @@ package org.exist.webdav.exceptions;
  */
 public class DocumentAlreadyLockedException extends Exception {
 
+    @Serial
     private static final long serialVersionUID = 7229034225491130620L;
 
     public DocumentAlreadyLockedException() {

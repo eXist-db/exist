@@ -50,7 +50,7 @@ public class Invalidate extends SessionFunction {
 
     @Override
     public Sequence eval(final Sequence[] args, final Optional<SessionWrapper> session) throws XPathException {
-        if (!session.isPresent()) {
+        if (session.isEmpty()) {
             return Sequence.EMPTY_SEQUENCE;
         }
 

@@ -29,7 +29,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -94,7 +93,7 @@ public class DocTypeTest {
 
 		try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             final URL testFileUrl = getClass().getResource("test_content.xml");
-			final Path testFile = Paths.get(testFileUrl.toURI());
+			final Path testFile = Path.of(testFileUrl.toURI());
 			assertTrue(Files.isReadable(testFile));
 			
 			final InputSource is = new FileInputSource(testFile);

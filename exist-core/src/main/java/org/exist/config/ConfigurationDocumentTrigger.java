@@ -427,8 +427,8 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
                 }
             }
 
-            if (inName && event instanceof Characters) {
-                name.append(((Characters) event).ch);
+            if (inName && event instanceof Characters characters) {
+                name.append(characters.ch);
             }
         }
 

@@ -50,21 +50,24 @@ public class FunNamespaceURI extends Function {
     private static final String FUNCTION_DESCRIPTION_0_PARAM =
             "Returns the namespace URI of the xs:QName of the context item.\n\n";
     private static final String FUNCTION_DESCRIPTION_1_PARAM =
-            "Returns the namespace URI of the xs:QName of $arg.\n\n" +
-                    "If the argument is omitted, it defaults to the context node (.). ";
+            """
+            Returns the namespace URI of the xs:QName of $arg.
+            
+            If the argument is omitted, it defaults to the context node (.). """;
 
     private static final String FUNCTION_DESCRIPTION_COMMON =
-            "The behavior of the function if the argument is omitted is exactly " +
-                    "the same as if the context item had been passed as the argument.\n\n" +
+            """
+The behavior of the function if the argument is omitted is exactly \
+the same as if the context item had been passed as the argument.
 
-                    "The following errors may be raised: if the context item is undefined " +
-                    "[err:XPDY0002]XP; if the context item is not a node [err:XPTY0004]XP.\n\n" +
+The following errors may be raised: if the context item is undefined \
+[err:XPDY0002]XP; if the context item is not a node [err:XPTY0004]XP.
 
-                    "If $arg is neither an element nor an attribute node, or if it is an " +
-                    "element or attribute node whose expanded-QName (as determined by the " +
-                    "dm:node-name accessor in the Section 5.11 node-name AccessorDM) is " +
-                    "in no namespace, then the function returns the xs:anyURI " +
-                    "corresponding to the zero-length string.";
+If $arg is neither an element nor an attribute node, or if it is an \
+element or attribute node whose expanded-QName (as determined by the \
+dm:node-name accessor in the Section 5.11 node-name AccessorDM) is \
+in no namespace, then the function returns the xs:anyURI \
+corresponding to the zero-length string.""";
 
     public final static FunctionSignature[] signatures = {
             new FunctionSignature(

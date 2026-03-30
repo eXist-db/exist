@@ -53,15 +53,11 @@ public enum ReindexScope {
         if (mode == null || mode.isEmpty()) {
             return ALL;
         }
-        switch (mode.toLowerCase()) {
-            case "all":
-                return ALL;
-            case "fulltext":
-                return FULLTEXT;
-            case "vector":
-                return VECTOR;
-            default:
-                return ALL;
-        }
+        return switch (mode.toLowerCase()) {
+            case "all" -> ALL;
+            case "fulltext" -> FULLTEXT;
+            case "vector" -> VECTOR;
+            default -> ALL;
+        };
     }
 }

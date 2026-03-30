@@ -92,10 +92,11 @@ public class JaxpParseTest {
                 "validation:jaxp-parse(xs:anyURI('/db/parse_validate/defaultValue.xml'), true(), ())";
         result = execute(query);
 
-        String expected = "<ns1:root xmlns:ns1=\"defaultTest\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n" +
-                "    <color>red</color>\n" +
-                "    <shoesize country=\"nl\">43</shoesize>\n" +
-                "</ns1:root>";
+        String expected = """
+                <ns1:root xmlns:ns1="defaultTest" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                    <color>red</color>
+                    <shoesize country="nl">43</shoesize>
+                </ns1:root>""";
 
         XMLAssert.assertXMLEqual(expected, result);
     }

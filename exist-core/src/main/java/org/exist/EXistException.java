@@ -21,6 +21,8 @@
  */
 package org.exist;
 
+import java.io.Serial;
+
 /**
  * General exception type.
  * 
@@ -28,6 +30,7 @@ package org.exist;
  */
 public class EXistException extends Exception {
 
+    @Serial
     private static final long serialVersionUID = 3256728389837665330L;
 
     public EXistException() {

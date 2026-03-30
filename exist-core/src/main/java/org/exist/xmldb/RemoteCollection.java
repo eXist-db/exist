@@ -397,8 +397,8 @@ public class RemoteCollection extends AbstractRemote implements EXistCollection 
         long contentLen = 0;
         if (hash.containsKey("content-length-64bit")) {
             final Object o = hash.get("content-length-64bit");
-            if (o instanceof Long) {
-                contentLen = (Long) o;
+            if (o instanceof Long long1) {
+                contentLen = long1;
             } else {
                 contentLen = Long.parseLong((String) o);
             }
@@ -433,10 +433,10 @@ public class RemoteCollection extends AbstractRemote implements EXistCollection 
     }
 
     private Instant toInstant(Object date) {
-        if (date instanceof Instant) {
-            return (Instant)date;
-        } else if (date instanceof Date) {
-            return ((Date)date).toInstant();
+        if (date instanceof Instant instant) {
+            return instant;
+        } else if (date instanceof Date date1) {
+            return date1.toInstant();
         }
         return null;
     }
@@ -472,8 +472,8 @@ public class RemoteCollection extends AbstractRemote implements EXistCollection 
     @Override
     public void storeResource(final Resource res, final Instant a, final Instant b) throws XMLDBException {
 
-        final Object content = (res instanceof ExtendedResource)
-                ? ((ExtendedResource) res).getExtendedContent()
+        final Object content = (res instanceof ExtendedResource er)
+                ? er.getExtendedContent()
                 : res.getContent();
 
         if (content instanceof Path || content instanceof File || content instanceof InputSource) {
@@ -496,9 +496,9 @@ public class RemoteCollection extends AbstractRemote implements EXistCollection 
                 default -> -1;
             };
 
-            if (res instanceof AbstractRemoteResource) {
-                ((AbstractRemoteResource) res).dateCreated = a;
-                ((AbstractRemoteResource) res).dateModified = b;
+            if (res instanceof AbstractRemoteResource resource) {
+                resource.dateCreated = a;
+                resource.dateModified = b;
             }
 
             if (!BINARY_RESOURCE.equals(res.getResourceType()) && fileLength != -1
@@ -559,9 +559,9 @@ public class RemoteCollection extends AbstractRemote implements EXistCollection 
         InputStream is = null;
         String descString = "<unknown>";
         try {
-            if (res instanceof RemoteBinaryResource) {
-                is = ((RemoteBinaryResource) res).getStreamContent();
-                descString = ((RemoteBinaryResource) res).getStreamSymbolicPath();
+            if (res instanceof RemoteBinaryResource resource) {
+                is = resource.getStreamContent();
+                descString = resource.getStreamSymbolicPath();
             } else {
                 final Object content = res.getContent();
                 switch (content) {
@@ -577,8 +577,8 @@ public class RemoteCollection extends AbstractRemote implements EXistCollection 
                     }
                     case InputSource inputSource -> {
                         is = inputSource.getByteStream();
-                        if (content instanceof EXistInputSource) {
-                            descString = ((EXistInputSource) content).getSymbolicPath();
+                        if (content instanceof EXistInputSource source) {
+                            descString = source.getSymbolicPath();
                         }
                     }
                     case String s ->
@@ -590,8 +590,8 @@ public class RemoteCollection extends AbstractRemote implements EXistCollection 
 
             final byte[] chunk;
             if (res instanceof ExtendedResource) {
-                if(res instanceof AbstractRemoteResource) {
-                    final long contentLen = ((AbstractRemoteResource)res).getContentLength();
+                if(res instanceof AbstractRemoteResource resource) {
+                    final long contentLen = resource.getContentLength();
                     if (contentLen != -1) {
                         // content length is known
                         chunk = new byte[(int)Math.min(contentLen, MAX_UPLOAD_CHUNK)];

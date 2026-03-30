@@ -109,13 +109,11 @@ public class DatabaseInsertResourcesWithValidationTest {
     }
 
     /**
-     * Test for inserting hamlet.xml, while validating using default registered
-     * DTD set in system catalog.
+     * Verifies insertion of {@code hamlet.xml} with validation against the
+     * default DTD registered in the system catalog.
      * <p>
-     * First the string
-     * <!--!DOCTYPE PLAY PUBLIC "-//PLAY//EN" "play.dtd"-->
-     * needs to be modified into
-     * <!DOCTYPE PLAY PUBLIC "-//PLAY//EN" "play.dtd">
+     * Prior to validation, the inlined DOCTYPE declaration in the source must be expanded.
+     * This ensures the document is properly recognized and validated.
      */
     @Test
     public void validDocumentSystemCatalog() throws IOException {
@@ -143,12 +141,19 @@ public class DatabaseInsertResourcesWithValidationTest {
      * Test for inserting hamlet.xml, while validating using default registered
      * DTD set in system catalog.
      * <p>
-     * First the string
-     * <!--!DOCTYPE PLAY PUBLIC "-//PLAY//EN" "play.dtd"-->
-     * needs to be modified into
-     * <!DOCTYPE PLAY PUBLIC "-//PLAY//EN" "play.dtd">
+     * First the inline DOCTYPE declaration must be expanded.
      * <p>
-     * Additionally all "TITLE" elements are renamed to "INVALIDTITLE"
+     * Additionally all "TITLE" elements are renamed to "INVALIDTITLE".
+     * This ensures that validation fails against the DTD, since "INVALIDTITLE"
+     * is not a declared element.
+     * <p>
+     * The test verifies that:
+     * <ul>
+     *   <li>The DOCTYPE declaration is correctly restored before parsing.</li>
+     *   <li>DTD validation is triggered using the system catalog.</li>
+     *   <li>The invalid element names cause a validation error.</li>
+     *   <li>The insert operation is rejected due to the validation failure.</li>
+     * </ul>
      */
     @Test
     public void invalidDocumentSystemCatalog() throws IOException {

@@ -52,8 +52,8 @@ public class ReceiverToSAX implements Receiver {
         super();
         this.contentHandler = handler;
 
-        if (handler instanceof LexicalHandler) {
-            lexicalHandler = (LexicalHandler) handler;
+        if (handler instanceof LexicalHandler lexicalHandler1) {
+            lexicalHandler = lexicalHandler1;
         }
     }
 

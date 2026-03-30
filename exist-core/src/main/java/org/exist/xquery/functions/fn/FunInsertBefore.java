@@ -47,22 +47,23 @@ public class FunInsertBefore extends Function {
 
 	protected static final String FUNCTION_DESCRIPTION =
 
-		"Returns a new sequence constructed from the value " +
-		"of $target with the value of $inserts inserted at " + 
-		"the position specified by the value of $position. " +
-		"(The value of $target is not affected by the sequence construction.)\n\n" +
-		
-		"If $target is the empty sequence, $inserts is returned. If $inserts is the empty sequence, $target is returned.\n\n" +
-		
-		"The value returned by the function consists of all items " +
-		"of $target whose index is less than $position, followed " +
-		"by all items of $inserts, followed by the remaining elements " +
-		"of $target, in that sequence.\n\n" +
-		
-		"If $position is less than one (1), the first position, the effective " +
-		"value of $position is one (1). If $position is greater than the number " +
-		"of items in $target, then the effective value of $position is " +
-		"equal to the number of items in $target plus 1.";
+		"""
+Returns a new sequence constructed from the value \
+of $target with the value of $inserts inserted at \
+the position specified by the value of $position. \
+(The value of $target is not affected by the sequence construction.)
+
+If $target is the empty sequence, $inserts is returned. If $inserts is the empty sequence, $target is returned.
+
+The value returned by the function consists of all items \
+of $target whose index is less than $position, followed \
+by all items of $inserts, followed by the remaining elements \
+of $target, in that sequence.
+
+If $position is less than one (1), the first position, the effective \
+value of $position is one (1). If $position is greater than the number \
+of items in $target, then the effective value of $position is \
+equal to the number of items in $target plus 1.""";
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(

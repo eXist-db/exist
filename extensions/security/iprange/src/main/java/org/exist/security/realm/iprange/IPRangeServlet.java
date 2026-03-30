@@ -37,6 +37,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.Serial;
 
 /**
  * IPRange authenticator servlet.
@@ -46,6 +47,7 @@ import java.io.PrintWriter;
 public class IPRangeServlet extends HttpServlet implements ExistExtensionServlet  {
 
     protected final static Logger LOG = LogManager.getLogger(IPRangeServlet.class);
+    @Serial
     private static final long serialVersionUID = -568037449837549034L;
 
     @Override

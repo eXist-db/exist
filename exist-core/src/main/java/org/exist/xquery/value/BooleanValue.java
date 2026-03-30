@@ -221,8 +221,8 @@ public class BooleanValue extends AtomicValue {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof BooleanValue) {
-            return value == ((BooleanValue) obj).value;
+        if (obj instanceof BooleanValue booleanValue) {
+            return value == booleanValue.value;
         }
         return false;
     }

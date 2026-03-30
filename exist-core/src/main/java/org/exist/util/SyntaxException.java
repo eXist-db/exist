@@ -21,6 +21,8 @@
  */
 package org.exist.util;
 
+import java.io.Serial;
+
 /**
  *  Description of the Class
  *
@@ -29,7 +31,8 @@ package org.exist.util;
  */
 public class SyntaxException extends Exception {
 
-	private static final long serialVersionUID = -4603471595319223797L;
+    @Serial
+    private static final long serialVersionUID = -4603471595319223797L;
 
 	/**  Constructor for the PermissionDeniedException object */
     public SyntaxException() {

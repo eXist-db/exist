@@ -329,7 +329,7 @@ public abstract class AbstractRestoreHandler extends DefaultHandler {
             is = descriptor.getBlobInputSource(blobId);
 
             if (is == null) {
-                final String msg = String.format("Failed to restore resource '%s'%nfrom BLOB '%s'.%nReason: Unable to obtain its EXistInputSource", commonAttributes.name, blobId);
+                final String msg = "Failed to restore resource '%s'%nfrom BLOB '%s'.%nReason: Unable to obtain its EXistInputSource".formatted(commonAttributes.name, blobId);
                 listener.warn(msg);
                 return new SkippedEntryDeferredPermission();
             }
@@ -337,7 +337,7 @@ public abstract class AbstractRestoreHandler extends DefaultHandler {
             is = descriptor.getInputSource(filename);
 
             if (is == null) {
-                final String msg = String.format("Failed to restore resource '%s'%nfrom file '%s'.%nReason: Unable to obtain its EXistInputSource", commonAttributes.name, descriptor.getSymbolicPath(commonAttributes.name, false));
+                final String msg = "Failed to restore resource '%s'%nfrom file '%s'.%nReason: Unable to obtain its EXistInputSource".formatted(commonAttributes.name, descriptor.getSymbolicPath(commonAttributes.name, false));
                 listener.warn(msg);
                 return new SkippedEntryDeferredPermission();
             }
@@ -425,7 +425,7 @@ public abstract class AbstractRestoreHandler extends DefaultHandler {
             return deferredPermission;
 
         } catch(final Exception e) {
-            final String message = String.format("Failed to restore resource '%s'%nfrom file '%s'.%nReason: %s", commonAttributes.name, descriptor.getSymbolicPath(commonAttributes.name, false), e.getMessage());
+            final String message = "Failed to restore resource '%s'%nfrom file '%s'.%nReason: %s".formatted(commonAttributes.name, descriptor.getSymbolicPath(commonAttributes.name, false), e.getMessage());
             listener.warn(message);
             LOG.error(message, e);
             return new SkippedEntryDeferredPermission();

@@ -115,8 +115,8 @@ public class Lookup extends AbstractExpression {
                     }
                 } else if(item instanceof ArrayType) {
                     result.addAll(item.keys());
-                } else if(item instanceof AbstractMapType) {
-                    for(final IEntry<AtomicValue, Sequence> entry : ((AbstractMapType)item)) {
+                } else if(item instanceof AbstractMapType type) {
+                    for(final IEntry<AtomicValue, Sequence> entry : type) {
                         result.addAll(entry.value());
                     }
                 }

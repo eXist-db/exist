@@ -55,17 +55,19 @@ public class NamespaceUpdateTest {
 	public void updateAttribute() throws XMLDBException {
 		XQueryService service = testCollection.getService(XQueryService.class);
 		String query =
-				"declare namespace t='http://www.foo.com';\n" +
-						"<test xmlns='http://www.foo.com'>\n" +
-						"{\n" +
-						"	update insert attribute { 'ID' } { 'myid' } into /t:test\n" +
-						"}\n" +
-						"</test>";
+				"""
+                declare namespace t='http://www.foo.com';
+                <test xmlns='http://www.foo.com'>
+                {
+                	update insert attribute { 'ID' } { 'myid' } into /t:test
+                }
+                </test>""";
 		service.query(query);
 
 		query =
-				"declare namespace t='http://www.foo.com';\n" +
-						"/t:test/@ID/string(.)";
+				"""
+                declare namespace t='http://www.foo.com';
+                /t:test/@ID/string(.)""";
 		ResourceSet result = service.query(query);
 		assertEquals(1, result.getSize());
 		assertEquals("myid", result.getResource(0).getContent().toString());

@@ -54,35 +54,42 @@ public class FunNormalizeUnicode extends Function {
     protected static final Logger logger = LogManager.getLogger(FunNormalizeUnicode.class);
 	
 	protected static final String FUNCTION_DESCRIPTION_0_PARAM = 
-        "Returns the value of the context item normalized according to the " +
-		"nomalization form \"NFC\"\n\n";
+        """
+        Returns the value of the context item normalized according to the \
+        nomalization form "NFC"
+        
+        """;
 	protected static final String FUNCTION_DESCRIPTION_1_PARAM = 
-		"Returns the value of $arg normalized according to the " +
-		"normalization criteria for a normalization form identified " +
-		"by the value of $normalization-form. The effective value of " +
-		"the $normalization-form is computed by removing leading and " +
-		"trailing blanks, if present, and converting to upper case.\n\n" +
-		"If the value of $arg is the empty sequence, returns the zero-length string.\n\n" +
-		"See [Character Model for the World Wide Web 1.0: Normalization] " +
-		"for a description of the normalization forms.\n\n" +
+		"""
+Returns the value of $arg normalized according to the \
+normalization criteria for a normalization form identified \
+by the value of $normalization-form. The effective value of \
+the $normalization-form is computed by removing leading and \
+trailing blanks, if present, and converting to upper case.
 
-		"- If the effective value of $normalization-form is \"NFC\", then the value " +
-		"returned by the function is the value of $arg in Unicode Normalization Form C (NFC).\n" +
-		"- If the effective value of $normalization-form is \"NFD\", then the value " +
-		"returned by the function is the value of $arg in Unicode Normalization Form D (NFD).\n" +
-		"- If the effective value of $normalization-form is \"NFKC\", then the value " +
-		"returned by the function is the value of $arg in Unicode Normalization Form KC (NFKC).\n" +
-		"- If the effective value of $normalization-form is \"NFKD\", then the value " +
-		"returned by the function is the value of $arg in Unicode Normalization Form KD (NFKD).\n" +
-		"- If the effective value of $normalization-form is \"FULLY-NORMALIZED\", then the value " +
-		"returned by the function is the value of $arg in the fully normalized form.\n" +
-		"- If the effective value of $normalization-form is the zero-length string, " +
-		"no normalization is performed and $arg is returned.\n\n" +
-		"Conforming implementations must support normalization form \"NFC\" and may " +
-		"support normalization forms \"NFD\", \"NFKC\", \"NFKD\", \"FULLY-NORMALIZED\". " +
-		"They may also support other normalization forms with implementation-defined semantics. " +
-		"If the effective value of the $normalization-form is other than one of the values " +
-		"supported by the implementation, then an error is raised [err:FOCH0003].";
+If the value of $arg is the empty sequence, returns the zero-length string.
+
+See [Character Model for the World Wide Web 1.0: Normalization] \
+for a description of the normalization forms.
+
+- If the effective value of $normalization-form is "NFC", then the value \
+returned by the function is the value of $arg in Unicode Normalization Form C (NFC).
+- If the effective value of $normalization-form is "NFD", then the value \
+returned by the function is the value of $arg in Unicode Normalization Form D (NFD).
+- If the effective value of $normalization-form is "NFKC", then the value \
+returned by the function is the value of $arg in Unicode Normalization Form KC (NFKC).
+- If the effective value of $normalization-form is "NFKD", then the value \
+returned by the function is the value of $arg in Unicode Normalization Form KD (NFKD).
+- If the effective value of $normalization-form is "FULLY-NORMALIZED", then the value \
+returned by the function is the value of $arg in the fully normalized form.
+- If the effective value of $normalization-form is the zero-length string, \
+no normalization is performed and $arg is returned.
+
+Conforming implementations must support normalization form "NFC" and may \
+support normalization forms "NFD", "NFKC", "NFKD", "FULLY-NORMALIZED". \
+They may also support other normalization forms with implementation-defined semantics. \
+If the effective value of the $normalization-form is other than one of the values \
+supported by the implementation, then an error is raised [err:FOCH0003].""";
 
 	protected static final FunctionParameterSequenceType ARG_PARAM = new FunctionParameterSequenceType("arg", Type.STRING, Cardinality.ZERO_OR_ONE, "The unicode string to normalize");
 	protected static final FunctionParameterSequenceType NF_PARAM = new FunctionParameterSequenceType("normalization-form", Type.STRING, Cardinality.EXACTLY_ONE, "The normalization form");

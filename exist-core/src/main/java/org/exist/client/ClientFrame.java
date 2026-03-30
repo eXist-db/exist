@@ -71,7 +71,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.*;
@@ -89,6 +88,7 @@ import static org.exist.util.FileUtils.humanSize;
  */
 public class ClientFrame extends JFrame implements WindowFocusListener, KeyListener, ActionListener, MouseListener {
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
     public static final String CUT = Messages.getString("ClientFrame.0"); //$NON-NLS-1$
@@ -1016,7 +1016,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
                 properties.getProperty(InteractiveClient.URI, "xmldb:exist://"),
                 properties.getProperty(InteractiveClient.USER, SecurityManager.DBA_USER),
                 properties.getProperty(InteractiveClient.PASSWORD, null),
-                Paths.get(preferences.get("directory.backup", System.getProperty("user.home"))),
+                Path.of(preferences.get("directory.backup", System.getProperty("user.home"))),
                 defaultSelectedCollection
         );
 
@@ -1026,10 +1026,10 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
             final String backuptarget = dialog.getBackupTarget();
             final boolean deduplicateBlobs = dialog.getDeduplicateBlobs();
 
-            final Path target = Paths.get(backuptarget).normalize();
+            final Path target = Path.of(backuptarget).normalize();
             if (Files.exists(target)) {
                 final int response = JOptionPane.showConfirmDialog(this,
-                        String.format("%s %s %s", Messages.getString("CreateBackupDialog.6a"), backuptarget, Messages.getString("CreateBackupDialog.6b")),
+                        "%s %s %s".formatted(Messages.getString("CreateBackupDialog.6a"), backuptarget, Messages.getString("CreateBackupDialog.6b")),
                         Messages.getString("CreateBackupDialog.6c"), JOptionPane.YES_NO_OPTION);
 
                 if (response == JOptionPane.YES_OPTION) {
@@ -1044,7 +1044,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
             try {
                 final Backup backup = new Backup(
                         properties.getProperty(InteractiveClient.USER, SecurityManager.DBA_USER),
-                        properties.getProperty(InteractiveClient.PASSWORD, null), Paths.get(backuptarget),
+                        properties.getProperty(InteractiveClient.PASSWORD, null), Path.of(backuptarget),
                         XmldbURI.xmldbUriFor(properties.getProperty(InteractiveClient.URI, "xmldb:exist://") + collection),
                         null,
                         deduplicateBlobs
@@ -1080,7 +1080,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
                 final String restoreFile = f.toAbsolutePath().toString();
                 final boolean overwriteApps = overwriteCb.isSelected();
                 final GuiRestoreServiceTaskListener listener = new GuiRestoreServiceTaskListener(this);
-                doRestore(listener, properties.getProperty(InteractiveClient.USER, SecurityManager.DBA_USER), properties.getProperty(InteractiveClient.PASSWORD, null), newDbaPass, Paths.get(restoreFile), properties.getProperty(InteractiveClient.URI, "xmldb:exist://"), overwriteApps);
+                doRestore(listener, properties.getProperty(InteractiveClient.USER, SecurityManager.DBA_USER), properties.getProperty(InteractiveClient.PASSWORD, null), newDbaPass, Path.of(restoreFile), properties.getProperty(InteractiveClient.URI, "xmldb:exist://"), overwriteApps);
             }
         }
     }
@@ -1136,10 +1136,11 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
 
     public static void repairRepository(Collection collection) throws XMLDBException {
         final EXistXQueryService service = collection.getService(EXistXQueryService.class);
-        service.query("import module namespace repair=\"http://exist-db.org/xquery/repo/repair\"\n" +
-                "at \"resource:org/exist/xquery/modules/expathrepo/repair.xql\";\n" +
-                "repair:clean-all(),\n" +
-                "repair:repair()");
+        service.query("""
+                import module namespace repair="http://exist-db.org/xquery/repo/repair"
+                at "resource:org/exist/xquery/modules/expathrepo/repair.xql";
+                repair:clean-all(),
+                repair:repair()""");
     }
 
     public UserManagementService getUserManagementService() throws XMLDBException {
@@ -1174,7 +1175,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
             final JFileChooser chooser = new JFileChooser(preferences.get("directory.last", System.getProperty("user.dir")));
             chooser.setMultiSelectionEnabled(false);
             chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-            chooser.setSelectedFile(Paths.get(desc.getName().getCollectionPath()).toFile());
+            chooser.setSelectedFile(Path.of(desc.getName().getCollectionPath()).toFile());
             if (chooser.showDialog(this, "Select file for export") == JFileChooser.APPROVE_OPTION) {
                 preferences.put("directory.last", chooser.getCurrentDirectory().getAbsolutePath());
                 final Path file = chooser.getSelectedFile().toPath();
@@ -1190,9 +1191,9 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
                     final Collection collection = client.getCollection();
                     resource = collection
                             .getResource(desc.getName().toString());
-                    if (resource instanceof ExtendedResource) {
+                    if (resource instanceof ExtendedResource extendedResource) {
                         try(final OutputStream os = new BufferedOutputStream(Files.newOutputStream(file))) {
-                            ((ExtendedResource) resource).getContentIntoAStream(os);
+                            extendedResource.getContentIntoAStream(os);
                         }
                     } else {
                         contentSerializer = (SAXSerializer) SerializerPool
@@ -1285,11 +1286,11 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
                     thisCreated = DATE_TIME_FORMATTER.format(res.getCreationTime());
                     thisModified = DATE_TIME_FORMATTER.format(res.getLastModificationTime());
                     thisMimeType = ((EXistResource) res).getMimeType();
-                    if (res instanceof EXistBinaryResource) {
-                        final MessageDigest messageDigest = ((EXistBinaryResource) res).getContentDigest(DigestType.BLAKE_256);
+                    if (res instanceof EXistBinaryResource resource) {
+                        final MessageDigest messageDigest = resource.getContentDigest(DigestType.BLAKE_256);
                         thisMessageDigestType = messageDigest.getDigestType().getCommonNames()[0];
                         thisMessageDigestValue = messageDigest.toHexString();
-                        thisSize = humanSize(((EXistBinaryResource) res).getContentLength());
+                        thisSize = humanSize(resource.getContentLength());
                     } else {
                         thisMessageDigestType = NON_APPLICABLE;
                         thisMessageDigestValue = NON_APPLICABLE;
@@ -1572,6 +1573,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
 
     static class ResourceTableModel extends AbstractTableModel {
 
+        @Serial
         private static final long serialVersionUID = 1L;
 
         private final String[] columnNames = new String[]{
@@ -1959,7 +1961,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
                     files = new ArrayList<>();
                 }
 
-                files.add(Paths.get(new URI(token)));
+                files.add(Path.of(new URI(token)));
             }
 
             return files;

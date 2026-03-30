@@ -20,7 +20,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 package org.exist.client.security;
- 
+
+import java.io.Serial;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
@@ -30,6 +31,7 @@ import javax.swing.AbstractListModel;
 
 public class SortedListModel<T extends Object> extends AbstractListModel {
 
+    @Serial
     private static final long serialVersionUID = 8156990970750901747L;
 
     private final SortedSet<T> model;
@@ -70,7 +72,7 @@ public class SortedListModel<T extends Object> extends AbstractListModel {
     }
 
     public T firstElement() {
-        return model.first();
+        return model.getFirst();
     }
 
     public Iterator<T> iterator() {
@@ -78,7 +80,7 @@ public class SortedListModel<T extends Object> extends AbstractListModel {
     }
 
     public T lastElement() {
-        return model.last();
+        return model.getLast();
     }
 
     public boolean removeElement(final T element) {

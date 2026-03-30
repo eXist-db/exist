@@ -102,7 +102,7 @@ public class ResourceTest {
         byte[] data = null;
         
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
-                final Txn transaction = transact.beginTransaction();) {
+                final Txn transaction = transact.beginTransaction()) {
 
 
             final XmldbURI docPath = TestConstants.TEST_COLLECTION_URI.append(DOCUMENT_NAME_URI);

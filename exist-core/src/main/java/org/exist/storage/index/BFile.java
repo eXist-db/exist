@@ -218,8 +218,8 @@ public class BFile extends BTree {
             final long pnum = StorageAddress.pageFromPointer(p);
             final short tid = StorageAddress.tidFromPointer(p);
             final DataPage page = getDataPage(pnum);
-            if (page instanceof OverflowPage) {
-                ((OverflowPage) page).append(transaction, value);
+            if (page instanceof OverflowPage overflowPage) {
+                overflowPage.append(transaction, value);
             } else {
                 final int valueLen = value.size();
                 final byte[] data = page.getData();

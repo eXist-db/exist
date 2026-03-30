@@ -26,7 +26,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -160,7 +159,7 @@ public class XUpdateTest {
             throw new IOException("Can't find file: " + relPath);
         }
 
-        final Path f = Paths.get(url.toURI());
+        final Path f = Path.of(url.toURI());
         if (!Files.isReadable(f)) {
             throw new IOException("Can't read file: " + url);
         }

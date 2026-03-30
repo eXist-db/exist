@@ -33,7 +33,10 @@ import org.xmldb.api.base.XMLDBException;
 
 import javax.annotation.Nullable;
 import java.io.*;
-import java.nio.file.*;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
@@ -72,7 +75,7 @@ public class RemoteRestoreService implements EXistRestoreService {
     @Override
     public void restore(final String backup, @Nullable final String newAdminPassword,
             final RestoreServiceTaskListener restoreListener, final boolean overwriteApps) throws XMLDBException {
-        final Path backupPath = Paths.get(backup).normalize().toAbsolutePath();
+        final Path backupPath = Path.of(backup).normalize().toAbsolutePath();
         if (!Files.exists(backupPath)) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "Backup does not exist: " + backupPath);
         }

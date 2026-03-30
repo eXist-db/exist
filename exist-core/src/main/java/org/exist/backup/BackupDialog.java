@@ -23,9 +23,11 @@ package org.exist.backup;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.Serial;
 
 
 public class BackupDialog extends JDialog {
+    @Serial
     private static final long serialVersionUID = -4960002499478536048L;
 
     JTextField currentCollection;

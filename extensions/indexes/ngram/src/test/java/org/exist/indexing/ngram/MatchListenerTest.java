@@ -81,14 +81,15 @@ public class MatchListenerTest {
         + "</root>";
 
     private static String XML2 =
-        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-        "<p xmlns=\"http://www.tei-c.org/ns/1.0\" xml:id=\"pT01p0257c1501\">爾時會中。有一尊者。名曰龍護。手執寶拂。 \n" +
-        "    <lb n=\"0257c16\" ed=\"T\"/>侍立佛側。時尊者龍護白佛言。世尊。我見 \n" +
-        "    <lb n=\"0257c17\" ed=\"T\"/>諸邪外道尼乾子等。於佛世尊。先不起信。 \n" +
-        "    <lb n=\"0257c18\" ed=\"T\"/>唯於邪道。競說勝能。是故我今建立表剎 \n" +
-        "    <lb n=\"0257c19\" ed=\"T\"/>宣示於世。咸使聞知佛勝功德。於佛世尊。是 \n" +
-        "    <lb n=\"0257c20\" ed=\"T\"/>大丈夫。最尊最上。無有等者。\n" +
-        "</p>";
+        """
+        <?xml version="1.0" encoding="UTF-8"?>
+        <p xmlns="http://www.tei-c.org/ns/1.0" xml:id="pT01p0257c1501">爾時會中。有一尊者。名曰龍護。手執寶拂。\s
+            <lb n="0257c16" ed="T"/>侍立佛側。時尊者龍護白佛言。世尊。我見\s
+            <lb n="0257c17" ed="T"/>諸邪外道尼乾子等。於佛世尊。先不起信。\s
+            <lb n="0257c18" ed="T"/>唯於邪道。競說勝能。是故我今建立表剎\s
+            <lb n="0257c19" ed="T"/>宣示於世。咸使聞知佛勝功德。於佛世尊。是\s
+            <lb n="0257c20" ed="T"/>大丈夫。最尊最上。無有等者。
+        </p>""";
     
     private static String CONF1 =
         "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
@@ -121,7 +122,7 @@ public class MatchListenerTest {
         configureAndStore(CONF1, XML);
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             final XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
             Sequence seq = xquery.execute(broker, "//para[ngram:contains(., 'mixed')]", null);
@@ -159,7 +160,7 @@ public class MatchListenerTest {
         configureAndStore(CONF1, XML);
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             final XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
@@ -176,7 +177,7 @@ public class MatchListenerTest {
         configureAndStore(CONF1, XML);
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             final XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
@@ -199,7 +200,7 @@ public class MatchListenerTest {
         configureAndStore(CONF1, XML);
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             final XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
@@ -228,7 +229,7 @@ public class MatchListenerTest {
         configureAndStore(CONF1, XML);
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             final XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
@@ -269,7 +270,7 @@ public class MatchListenerTest {
         configureAndStore(CONF2, XML);
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             final XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
             Sequence seq = xquery.execute(broker, "//para[ngram:contains(note, 'nested inner')]", null);
@@ -293,7 +294,7 @@ public class MatchListenerTest {
         configureAndStore(CONF1, XML);
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             final XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
 
@@ -324,7 +325,7 @@ public class MatchListenerTest {
         configureAndStore(CONF1, XML);
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             final XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
 
@@ -463,7 +464,7 @@ public class MatchListenerTest {
         configureAndStore(CONF3, XML2);
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             final XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
 
@@ -488,7 +489,7 @@ public class MatchListenerTest {
         configureAndStore(CONF3, XML2);
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             final XQuery xquery = pool.getXQueryService();
             assertNotNull(xquery);
 

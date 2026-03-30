@@ -781,7 +781,7 @@ public final class Journal implements Closeable {
         if (fileNum < 0) {
             throw new IllegalArgumentException("File Number: " + fileNum + " is out of range (0-" + Short.MAX_VALUE + ")");
         }
-        return String.format("%010x", fileNum) + '.' + LOG_FILE_SUFFIX;
+        return "%010x".formatted(fileNum) + '.' + LOG_FILE_SUFFIX;
     }
 
     private static class RemoveRunnable implements Runnable {

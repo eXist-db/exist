@@ -72,7 +72,7 @@ class XMLTestRunnerTest {
         assertEquals("xmlts.demoTest", description.getDisplayName());
         assertEquals(2, description.testCount());
         final ArrayList<Description> children = description.getChildren();
-        assertChild(children.get(0), "testId(xmlts.demoTest)");
+        assertChild(children.getFirst(), "testId(xmlts.demoTest)");
         assertChild(children.get(1), "taskName(xmlts.demoTest)");
     }
 

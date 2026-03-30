@@ -189,7 +189,7 @@ public class AnalyzerConfig {
             }
             return (T) methodHandle.invokeWithArguments(vcParamValues);
         } catch (final NoSuchMethodException e) {
-            final String message = String.format("Could not find matching analyzer class constructor %s: %s", className, e.getMessage());
+            final String message = "Could not find matching analyzer class constructor %s: %s".formatted(className, e.getMessage());
             if (warnOnError) {
                 LOG.warn("{}. Will retry...", message);
             } else {
@@ -198,14 +198,14 @@ public class AnalyzerConfig {
         } catch (final InterruptedException e) {
             // NOTE: must set interrupted flag
             Thread.currentThread().interrupt();
-            final String message = String.format("Exception while instantiating analyzer class %s: %s", className, e.getMessage());
+            final String message = "Exception while instantiating analyzer class %s: %s".formatted(className, e.getMessage());
             if (warnOnError) {
                 LOG.warn("{}. Will retry...", message);
             } else {
                 LOG.error(message, e);
             }
         } catch (final Throwable e) {
-            final String message = String.format("Exception while instantiating analyzer class %s: %s", className, e.getMessage());
+            final String message = "Exception while instantiating analyzer class %s: %s".formatted(className, e.getMessage());
             if (warnOnError) {
                 LOG.warn("{}. Will retry...", message);
             } else {
@@ -387,7 +387,7 @@ public class AnalyzerConfig {
                     //default, assume java.lang.String
                     yield new KeyTypedValue<>(name, value, String.class);
                 } catch (ClassNotFoundException cnfe) {
-                    throw new ParameterException(String.format("Class for type: %s not found. %s", type, cnfe.getMessage()), cnfe);
+                    throw new ParameterException("Class for type: %s not found. %s".formatted(type, cnfe.getMessage()), cnfe);
                 }
             }
         };

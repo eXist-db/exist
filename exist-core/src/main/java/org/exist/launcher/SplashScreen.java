@@ -27,6 +27,7 @@ import org.exist.storage.BrokerPool;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.io.Serial;
 import java.net.URL;
 import java.util.Observable;
 import java.util.Observer;
@@ -40,6 +41,7 @@ import org.exist.SystemProperties;
  */
 public class SplashScreen extends JFrame implements Observer, Comparable {
 
+    @Serial
     private static final long serialVersionUID = -8449133653386075548L;
 
     private JLabel statusLabel;

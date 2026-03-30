@@ -140,16 +140,12 @@ public class ValueComparison extends GeneralComparison {
 		lv = comparableLvRv._1;
 		rv = comparableLvRv._2;
 
-		switch (truncation) {
-			case RIGHT:
-				return lv.startsWith(collator, rv);
-			case LEFT:
-				return lv.endsWith(collator, rv);
-			case BOTH:
-				return lv.contains(collator, rv);
-			default:
-				return lv.compareTo(collator, relation, rv);
-		}
+		return switch (truncation) {
+			case RIGHT -> lv.startsWith(collator, rv);
+			case LEFT -> lv.endsWith(collator, rv);
+			case BOTH -> lv.contains(collator, rv);
+			default -> lv.compareTo(collator, relation, rv);
+		};
 	}
 
 	/**

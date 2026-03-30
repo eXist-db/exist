@@ -204,37 +204,22 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             };
         }
         if (operator == RangeIndex.Operator.NE) {
-            Query eqQuery;
-            switch (type) {
+            Query eqQuery = switch (type) {
                 case Type.INTEGER:
                 case Type.LONG:
-                case Type.UNSIGNED_LONG:
-                    eqQuery = LongField.newExactQuery(field, ((NumericValue) content).getLong());
-                    break;
+                case Type.UNSIGNED_LONG: yield LongField.newExactQuery(field, ((NumericValue) content).getLong());
                 case Type.INT:
                 case Type.UNSIGNED_INT:
                 case Type.SHORT:
-                case Type.UNSIGNED_SHORT:
-                    eqQuery = IntField.newExactQuery(field, ((NumericValue) content).getInt());
-                    break;
+                case Type.UNSIGNED_SHORT: yield IntField.newExactQuery(field, ((NumericValue) content).getInt());
                 case Type.DECIMAL:
-                case Type.DOUBLE:
-                    eqQuery = DoubleField.newExactQuery(field, ((NumericValue) content).getDouble());
-                    break;
-                case Type.FLOAT:
-                    eqQuery = FloatField.newExactQuery(field, (float) ((NumericValue) content).getDouble());
-                    break;
-                case Type.DATE:
-                    eqQuery = LongField.newExactQuery(field, RangeIndexConfigElement.dateToLong((DateValue) content));
-                    break;
-                case Type.TIME:
-                    eqQuery = LongField.newExactQuery(field, RangeIndexConfigElement.timeToLong((TimeValue) content));
-                    break;
+                case Type.DOUBLE: yield DoubleField.newExactQuery(field, ((NumericValue) content).getDouble());
+                case Type.FLOAT: yield FloatField.newExactQuery(field, (float) ((NumericValue) content).getDouble());
+                case Type.DATE: yield LongField.newExactQuery(field, RangeIndexConfigElement.dateToLong((DateValue) content));
+                case Type.TIME: yield LongField.newExactQuery(field, RangeIndexConfigElement.timeToLong((TimeValue) content));
                 case Type.DATE_TIME:
-                default:
-                    eqQuery = new TermQuery(new Term(field, RangeIndexConfigElement.convertToBytes(content)));
-                    break;
-            }
+                default: yield new TermQuery(new Term(field, RangeIndexConfigElement.convertToBytes(content)));
+            };
             final BooleanQuery.Builder nqb = new BooleanQuery.Builder();
             nqb.add(new MatchAllDocsQuery(), BooleanClause.Occur.MUST);
             nqb.add(eqQuery, BooleanClause.Occur.MUST_NOT);
@@ -678,7 +663,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             BooleanQuery query = queryBuilder.build();
             Query qu = query;
             if (query.clauses().size() == 1) {
-                qu = query.clauses().get(0).query();
+                qu = query.clauses().getFirst().query();
             }
             final NodeSet resultSet = new NewArrayNodeSet();
             resultSet.addAll(doQuery(contextId, docs, contextSet, axis, searcher.searcher(), Node.ELEMENT_NODE, qu));
@@ -720,18 +705,23 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     private void diagnoseQuery(IndexSearcher searcher, Query query) {
         String field = null;
         String searchTerm = null;
-        if (query instanceof TermQuery tq) {
-            Term t = tq.getTerm();
-            field = t.field();
-            searchTerm = t.text();
-        } else if (query instanceof PrefixQuery pq) {
-            Term t = pq.getPrefix();
-            field = t.field();
-            searchTerm = t.text();
-        } else if (query instanceof WildcardQuery wq) {
-            Term t = wq.getTerm();
-            field = t.field();
-            searchTerm = t.text();
+        switch (query) {
+            case TermQuery tq -> {
+                Term t = tq.getTerm();
+                field = t.field();
+                searchTerm = t.text();
+            }
+            case PrefixQuery pq -> {
+                Term t = pq.getPrefix();
+                field = t.field();
+                searchTerm = t.text();
+            }
+            case WildcardQuery wq -> {
+                Term t = wq.getTerm();
+                field = t.field();
+                searchTerm = t.text();
+            }
+            default -> {}
         }
         if (field == null || FIELD_DOC_ID.equals(field) || FIELD_NODE_ID.equals(field) || FIELD_ID.equals(field) || FIELD_ADDRESS.equals(field)) {
             return;
@@ -1079,8 +1069,8 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                             boolean match = configuration.match(path);
                             if (match) {
                                 final TextCollector collector = contentStack.pop();
-                                match = collector instanceof ComplexTextCollector
-                                        ? match && ((ComplexTextCollector)collector).getConfig().matchConditions(element)
+                                match = collector instanceof ComplexTextCollector ctc
+                                        ? match && ctc.getConfig().matchConditions(element)
                                         : match;
                                 if (match) indexText(element, element.getQName(), path, configuration, collector);
                             }

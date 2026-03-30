@@ -29,7 +29,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Properties;
 
@@ -163,13 +162,13 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
         try {
             if (Type.subTypeOf(item.getType(), Type.JAVA_OBJECT)) {
                 final Object obj = ((JavaObjectValue) item).getObject();
-                if (obj instanceof java.io.File) {
-                    resourceId = loadFromFile(collection, ((java.io.File)obj).toPath(), docName, mimeType);
-                } else if(obj instanceof java.nio.file.Path) {
-                    resourceId = loadFromFile(collection, (Path)obj, docName, mimeType);
-                } else {
-                    LOGGER.error("Passed java object should be either a java.nio.file.Path or java.io.File");
-                    throw new XPathException(this, "Passed java object should be either a java.nio.file.Path or java.io.File");
+                switch (obj) {
+                    case java.io.File file -> resourceId = loadFromFile(collection, file.toPath(), docName, mimeType);
+                    case Path path -> resourceId = loadFromFile(collection, path, docName, mimeType);
+                    default -> {
+                        LOGGER.error("Passed java object should be either a java.nio.file.Path or java.io.File");
+                        throw new XPathException(this, "Passed java object should be either a java.nio.file.Path or java.io.File");
+                    }
                 }
 
             } else if (Type.subTypeOf(item.getType(), Type.ANY_URI)) {
@@ -253,7 +252,7 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
             if (path == null) {
                 throw new XPathException(this, "Cannot read from URI: " + uri.toASCIIString());
             }
-            final Path file = Paths.get(path);
+            final Path file = Path.of(path);
             if (!Files.isReadable(file)) {
                 throw new XPathException(this, "Cannot read path: " + path);
             }

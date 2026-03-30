@@ -40,11 +40,12 @@ public class ConversionsTest {
 	/** test conversion from QName to string */
 	@Test
 	public void qname2string() throws XMLDBException {
-        final String query = "declare namespace foo = 'http://foo'; \n" +
-                "let $a := ( xs:QName('foo:bar'), xs:QName('foo:john'), xs:QName('foo:doe') )\n" +
-                    "for $b in $a \n" +
-                        "return \n" +
-                            "<blah>{string($b)}</blah>" ;
+        final String query = """
+                declare namespace foo = 'http://foo';\s
+                let $a := ( xs:QName('foo:bar'), xs:QName('foo:john'), xs:QName('foo:doe') )
+                for $b in $a\s
+                return\s
+                <blah>{string($b)}</blah>""" ;
         final ResourceSet result = existEmbeddedServer.executeQuery( query );
         /* which returns :
             <blah>foo:bar</blah>

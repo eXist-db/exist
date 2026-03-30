@@ -50,13 +50,16 @@ public class FunRemove extends Function {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("remove", Function.BUILTIN_FUNCTION_NS),
-			"Returns a new sequence constructed from the value of $target with the item " +
-			"at $position removed.\n\nIf $position " +
-			"is less than 1 or greater than the number of items in $target, $target is returned. " +
-			"Otherwise, the value returned by the function consists of all items of $target " +
-			"whose index is less than $position, followed by all items of $target whose index " +
-			"is greater than $position. If $target is the empty sequence, the empty sequence " +
-			"is returned.",
+			"""
+            Returns a new sequence constructed from the value of $target with the item \
+            at $position removed.
+            
+            If $position \
+            is less than 1 or greater than the number of items in $target, $target is returned. \
+            Otherwise, the value returned by the function consists of all items of $target \
+            whose index is less than $position, followed by all items of $target whose index \
+            is greater than $position. If $target is the empty sequence, the empty sequence \
+            is returned.""",
 			new SequenceType[] {
 					new FunctionParameterSequenceType("target", Type.ITEM, Cardinality.ZERO_OR_MORE, "The input sequence"),
 					new FunctionParameterSequenceType("position", Type.INTEGER, Cardinality.EXACTLY_ONE, "The position of the value to be removed")
@@ -90,9 +93,9 @@ public class FunRemove extends Function {
                 {result= seq;}
             else {
         		pos--;
-        		if (seq instanceof NodeSet) {
+        		if (seq instanceof NodeSet set) {
         			result = new ExtArrayNodeSet();
-        			result.addAll((NodeSet) seq);
+        			result.addAll(set);
         			result = ((NodeSet)result).except((NodeSet) seq.itemAt(pos));
         		} else {
         			result = new ValueSequence();

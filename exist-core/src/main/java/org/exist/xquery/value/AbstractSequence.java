@@ -238,8 +238,8 @@ public abstract class AbstractSequence implements Sequence {
     public void clearContext(final int contextId) throws XPathException {
         for (final SequenceIterator i = unorderedIterator(); i.hasNext(); ) {
             final Item next = i.nextItem();
-            if (next instanceof NodeProxy) {
-                ((NodeProxy) next).clearContext(contextId);
+            if (next instanceof NodeProxy proxy) {
+                proxy.clearContext(contextId);
             }
         }
     }
