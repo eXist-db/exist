@@ -180,16 +180,10 @@ public class JSONSerializer {
     private void serializeAtomicValue(Item item, JsonGenerator generator) throws IOException, XPathException, SAXException {
         if (Type.subTypeOfUnion(item.getType(), Type.NUMERIC)) {
             final String stringValue = item.getStringValue();
-            // Handle special float/double values per W3C Serialization
-            if ("NaN".equals(stringValue)) {
-                // QT4: NaN serializes as JSON null
-                generator.writeNull();
-            } else if ("INF".equals(stringValue)) {
-                // QT4: +INF serializes as 1e9999
-                generator.writeRawValue("1e9999");
-            } else if ("-INF".equals(stringValue)) {
-                // QT4: -INF serializes as -1e9999
-                generator.writeRawValue("-1e9999");
+            // W3C Serialization 3.1: INF, -INF, and NaN MUST raise SERE0020
+            if ("NaN".equals(stringValue) || "INF".equals(stringValue) || "-INF".equals(stringValue)) {
+                throw new SAXException("err:SERE0020 Numeric value " + stringValue
+                        + " cannot be serialized as JSON");
             } else if ("-0".equals(stringValue)) {
                 // Negative zero: write as 0 (QT4 allows either 0 or -0)
                 generator.writeNumber(stringValue);
@@ -235,8 +229,12 @@ public class JSONSerializer {
         generator.writeStartArray();
         for (int i = 0; i < array.getSize(); i++) {
             final Sequence member = array.get(i);
-            // Array members can be multi-item sequences — each becomes a nested JSON array
-            serializeSequence(member, generator, true);
+            // W3C Serialization 3.1: multi-item sequences within arrays raise SERE0023
+            if (member.getItemCount() > 1) {
+                throw new SAXException("err:SERE0023 Array member at position " + (i + 1)
+                        + " is a sequence of " + member.getItemCount() + " items");
+            }
+            serializeSequence(member, generator, false);
         }
         generator.writeEndArray();
     }

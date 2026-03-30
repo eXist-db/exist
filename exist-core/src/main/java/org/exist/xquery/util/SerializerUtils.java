@@ -411,7 +411,7 @@ public class SerializerUtils {
             }
             final String character = readCharacterMapAttribute(reader, CHARACTER_ATTR_KEY);
             if (character.length() != 1) {
-                throw new XPathException(ErrorCodes.SEPM0016,
+                throw new XPathException(ErrorCodes.SEPM0017,
                         EXistOutputKeys.USE_CHARACTER_MAPS + " element character must be a single character string, was: " + character);
             }
 

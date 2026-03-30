@@ -407,19 +407,52 @@ public class XMLWriter implements SerializerWriter {
     }
 
     private void writeCdataContent(final CharSequence chars) throws IOException {
-        // CDATA sections cannot contain "]]>", so split at those boundaries
+        // CDATA sections must be split when:
+        // 1. The content contains "]]>" (which would end the CDATA prematurely)
+        // 2. A character cannot be represented in the output encoding (must be escaped as &#xNN;)
         final String s = chars.toString();
-        int start = 0;
-        int idx;
-        while ((idx = s.indexOf("]]>", start)) != -1) {
-            writer.write("<![CDATA[");
-            writer.write(s, start, idx + 2); // include the "]]" part
-            writer.write("]]>");
-            start = idx + 2; // continue from ">"
+        boolean inCdata = false;
+        for (int i = 0; i < s.length(); ) {
+            final int cp = s.codePointAt(i);
+            final int cpLen = Character.charCount(cp);
+
+            // Check for "]]>" sequence
+            if (cp == ']' && i + 2 < s.length() && s.charAt(i + 1) == ']' && s.charAt(i + 2) == '>') {
+                if (!inCdata) {
+                    writer.write("<![CDATA[");
+                    inCdata = true;
+                }
+                writer.write("]]");
+                writer.write("]]>");
+                inCdata = false;
+                i += 2; // skip "]]", the ">" will be picked up next
+                continue;
+            }
+
+            // Check if character is encodable in the output charset
+            if (!charSet.inCharacterSet((char) cp)) {
+                // Close any open CDATA section
+                if (inCdata) {
+                    writer.write("]]>");
+                    inCdata = false;
+                }
+                // Write as character reference
+                writer.write("&#x");
+                writer.write(Integer.toHexString(cp));
+                writer.write(';');
+            } else {
+                // Encodable character — write inside CDATA
+                if (!inCdata) {
+                    writer.write("<![CDATA[");
+                    inCdata = true;
+                }
+                writer.write(s, i, cpLen);
+            }
+            i += cpLen;
         }
-        writer.write("<![CDATA[");
-        writer.write(s, start, s.length());
-        writer.write("]]>");
+        if (inCdata) {
+            writer.write("]]>");
+        }
     }
 
     public void characters(final char[] ch, final int start, final int len) throws TransformerException {
