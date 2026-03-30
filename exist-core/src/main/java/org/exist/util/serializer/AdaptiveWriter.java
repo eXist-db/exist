@@ -220,7 +220,7 @@ public class AdaptiveWriter extends IndentingXMLWriter {
 
     private void writeMap(final AbstractMapType map) throws SAXException, XPathException, TransformerException {
         try {
-            writer.write('{');
+            writer.write("map{");
             addIndent();
             indent();
             for (final Iterator<IEntry<AtomicValue, Sequence>> i = map.iterator(); i.hasNext(); ) {

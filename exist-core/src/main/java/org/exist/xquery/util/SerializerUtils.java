@@ -411,7 +411,7 @@ public class SerializerUtils {
             }
             final String character = readCharacterMapAttribute(reader, CHARACTER_ATTR_KEY);
             if (character.length() != 1) {
-                throw new XPathException(ErrorCodes.SEPM0017,
+                throw new XPathException(ErrorCodes.SEPM0016,
                         EXistOutputKeys.USE_CHARACTER_MAPS + " element character must be a single character string, was: " + character);
             }
 
@@ -687,7 +687,7 @@ public class SerializerUtils {
                                 " must have values of type " + Type.getTypeName(Type.STRING));
             }
             if (key.getStringValue().length() != 1) {
-                throw new XPathException(ErrorCodes.SEPM0017,
+                throw new XPathException(ErrorCodes.SEPM0016,
                         "Elements of the map for parameter value: " + localParameterName +
                                 " must have keys which are strings composed of a single character");
             }
