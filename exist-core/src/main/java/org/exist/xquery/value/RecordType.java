@@ -37,6 +37,9 @@ import java.util.*;
  */
 public class RecordType {
 
+    private final List<FieldDeclaration> fields;
+    private final boolean extensible;
+
     /**
      * A single field declaration in a record type.
      */
@@ -76,9 +79,6 @@ public class RecordType {
             return sb.toString();
         }
     }
-
-    private final List<FieldDeclaration> fields;
-    private final boolean extensible;
 
     public RecordType(final List<FieldDeclaration> fields, final boolean extensible) {
         this.fields = Collections.unmodifiableList(fields);

@@ -26,6 +26,10 @@ import org.exist.dom.QName;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
+import org.exist.xquery.value.SequenceType;
+import org.exist.xquery.value.Type;
+import org.exist.xquery.functions.map.AbstractMapType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -127,6 +131,7 @@ public class UserDefinedFunction extends Function implements Cloneable {
         try {
             QName varName;
             LocalVariable var;
+            final SequenceType[] argumentTypes = getSignature().getArgumentTypes();
             int j = 0;
             for (int i = 0; i < parameters.size(); i++, j++) {
                 varName = parameters.get(i);
@@ -146,10 +151,28 @@ public class UserDefinedFunction extends Function implements Cloneable {
                     actualCardinality = Cardinality.EXACTLY_ONE;
                 }
 
-                if (!getSignature().getArgumentTypes()[j].getCardinality().isSuperCardinalityOrEqualOf(actualCardinality)) {
+                if (!argumentTypes[j].getCardinality().isSuperCardinalityOrEqualOf(actualCardinality)) {
                     throw new XPathException(this, ErrorCodes.XPTY0004, "Invalid cardinality for parameter $" + varName +
-                            ". Expected " + getSignature().getArgumentTypes()[j].getCardinality().getHumanDescription() +
+                            ". Expected " + argumentTypes[j].getCardinality().getHumanDescription() +
                             ", got " + currentArguments[j].getItemCount());
+                }
+
+                // XQuery 4.0: record type validation at runtime
+                final SequenceType argType = argumentTypes[j];
+                if (argType.isRecordType() && argType.getRecordType() != null && !currentArguments[j].isEmpty()) {
+                    for (final SequenceIterator iter = currentArguments[j].iterate(); iter.hasNext(); ) {
+                        final Item item = iter.nextItem();
+                        if (Type.subTypeOf(item.getType(), Type.MAP_ITEM)) {
+                            if (!argType.getRecordType().matches((AbstractMapType) item)) {
+                                throw new XPathException(this, ErrorCodes.XPTY0004,
+                                        "Argument $" + varName + " does not match " + argType.getRecordType());
+                            }
+                        } else {
+                            throw new XPathException(this, ErrorCodes.XPTY0004,
+                                    "Argument $" + varName + " expected " + argType.getRecordType() +
+                                            " but got " + Type.getTypeName(item.getType()));
+                        }
+                    }
                 }
             }
             result = body.eval(null, null);
