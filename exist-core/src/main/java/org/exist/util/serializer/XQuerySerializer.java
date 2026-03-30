@@ -80,6 +80,9 @@ public class XQuerySerializer {
                 // (arrays can't be serialized as SAX events directly)
                 // Maps and function items cannot be serialized with XML/text methods (SENR0001)
                 validateXmlSerializable(sequence);
+                if (isCanonical()) {
+                    validateCanonical(sequence);
+                }
                 final Sequence flattened = flattenArrays(sequence);
                 if (flattened != sequence) {
                     // Flattening changed the sequence — reset start/howmany to cover all items.
@@ -108,6 +111,83 @@ public class XQuerySerializer {
                         Type.getTypeName(type) + " with the XML or text output method");
             }
         }
+    }
+
+    private boolean isCanonical() {
+        final String v = outputProperties.getProperty(EXistOutputKeys.CANONICAL);
+        return "yes".equals(v) || "true".equals(v) || "1".equals(v);
+    }
+
+    /**
+     * Validate canonical XML constraints (SERE0024).
+     * Checks for relative namespace URIs and multi-root documents.
+     */
+    private void validateCanonical(final Sequence sequence) throws SAXException, XPathException {
+        for (final SequenceIterator i = sequence.iterate(); i.hasNext(); ) {
+            final Item item = i.nextItem();
+            if (Type.subTypeOf(item.getType(), Type.NODE)) {
+                validateCanonicalNode((org.exist.xquery.value.NodeValue) item);
+            }
+        }
+    }
+
+    private void validateCanonicalNode(final org.exist.xquery.value.NodeValue node) throws SAXException, XPathException {
+        if (node.getType() == Type.DOCUMENT) {
+            // Check for multi-root: document must have exactly one element child
+            int elementCount = 0;
+            final org.w3c.dom.Node domNode = node.getNode();
+            for (org.w3c.dom.Node child = domNode.getFirstChild(); child != null; child = child.getNextSibling()) {
+                if (child.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
+                    elementCount++;
+                }
+            }
+            if (elementCount != 1) {
+                throw new SAXException("err:SERE0024 Canonical serialization requires a well-formed document with exactly one root element, found " + elementCount);
+            }
+            // Check namespace URIs on the document's elements
+            validateCanonicalNamespaces(domNode);
+        } else if (node.getType() == Type.ELEMENT) {
+            validateCanonicalNamespaces(node.getNode());
+        }
+    }
+
+    private void validateCanonicalNamespaces(final org.w3c.dom.Node node) throws SAXException {
+        if (node.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
+            final String nsUri = node.getNamespaceURI();
+            if (nsUri != null && !nsUri.isEmpty() && isRelativeUri(nsUri)) {
+                throw new SAXException("err:SERE0024 Canonical serialization does not allow relative namespace URIs: " + nsUri);
+            }
+            // Also check namespace URIs in attributes (including xmlns declarations)
+            final org.w3c.dom.NamedNodeMap attrs = node.getAttributes();
+            if (attrs != null) {
+                for (int i = 0; i < attrs.getLength(); i++) {
+                    final org.w3c.dom.Attr attr = (org.w3c.dom.Attr) attrs.item(i);
+                    final String attrName = attr.getName();
+                    // Check xmlns and xmlns:prefix declarations
+                    if ("xmlns".equals(attrName) || attrName.startsWith("xmlns:")) {
+                        final String declUri = attr.getValue();
+                        if (declUri != null && !declUri.isEmpty() && isRelativeUri(declUri)) {
+                            throw new SAXException("err:SERE0024 Canonical serialization does not allow relative namespace URIs: " + declUri);
+                        }
+                    }
+                }
+            }
+            // Check child elements recursively
+            for (org.w3c.dom.Node child = node.getFirstChild(); child != null; child = child.getNextSibling()) {
+                validateCanonicalNamespaces(child);
+            }
+        }
+    }
+
+    private static boolean isRelativeUri(final String uri) {
+        // Absolute URIs contain a scheme (e.g., "http://", "urn:", "file:")
+        // A URI without ":" before the first "/" or "?" is relative
+        for (int i = 0; i < uri.length(); i++) {
+            final char c = uri.charAt(i);
+            if (c == ':') return false;  // Found scheme separator — absolute
+            if (c == '/' || c == '?' || c == '#') return true;  // Path/query before scheme — relative
+        }
+        return true;  // No scheme found — relative (e.g., "local.ns")
     }
 
     /**

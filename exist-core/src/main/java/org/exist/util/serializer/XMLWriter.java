@@ -87,6 +87,11 @@ public class XMLWriter implements SerializerWriter {
      */
     private boolean xdmSerialization = false;
     private boolean xml11 = false;
+    private boolean canonical = false;
+
+    // Canonical XML: buffer namespaces and attributes for sorting
+    private final List<String[]> canonicalNamespaces = new ArrayList<>();  // [prefix, uri]
+    private final List<String[]> canonicalAttributes = new ArrayList<>();  // [nsUri, localName, qname, value]
 
     private final Deque<QName> elementName = new ArrayDeque<>();
 
@@ -161,6 +166,8 @@ public class XMLWriter implements SerializerWriter {
 
         this.xdmSerialization = "yes".equals(outputProperties.getProperty(EXistOutputKeys.XDM_SERIALIZATION, "no"));
         this.xml11 = "1.1".equals(outputProperties.getProperty(OutputKeys.VERSION));
+        final String canonicalProp = outputProperties.getProperty(EXistOutputKeys.CANONICAL);
+        this.canonical = "yes".equals(canonicalProp) || "true".equals(canonicalProp) || "1".equals(canonicalProp);
     }
 
     private Set<QName> parseCdataSectionElementNames() {
@@ -317,9 +324,29 @@ public class XMLWriter implements SerializerWriter {
             return;
         }
 
-        try {						
+        try {
             if(!tagIsOpen) {
                 throw new TransformerException("Found a namespace declaration outside an element");
+            }
+
+            if (canonical) {
+                // Buffer for sorting — emitted in closeStartTag
+                final String pfx = prefix != null ? prefix : "";
+                final String uri = nsURI != null ? nsURI : "";
+                // Validate: reject relative namespace URIs (SERE0024)
+                if (!uri.isEmpty() && isRelativeUri(uri)) {
+                    throw new TransformerException("err:SERE0024 Canonical serialization does not allow relative namespace URIs: " + uri);
+                }
+                if (pfx.isEmpty() && uri.isEmpty()) {
+                    return;  // Skip xmlns="" in canonical (not meaningful for no-namespace elements)
+                }
+                // Deduplicate: replace existing binding for same prefix
+                canonicalNamespaces.removeIf(ns -> ns[0].equals(pfx));
+                canonicalNamespaces.add(new String[]{pfx, uri});
+                if (pfx.isEmpty()) {
+                    defaultNamespace = uri;
+                }
+                return;
             }
 
             if(prefix != null && !prefix.isEmpty()) {
@@ -332,7 +359,7 @@ public class XMLWriter implements SerializerWriter {
                 writer.write('"');
             } else {
                 if(defaultNamespace.equals(nsURI)) {
-                    return;	
+                    return;
                 }
                 writer.write(' ');
                 writer.write("xmlns");
@@ -351,8 +378,13 @@ public class XMLWriter implements SerializerWriter {
             if(!tagIsOpen) {
                     characters(value);
                     return;
-                    // throw new TransformerException("Found an attribute outside an
-                    // element");
+            }
+            if (canonical) {
+                // Buffer for sorting — extract namespace URI from qname if prefixed
+                final int colon = qname.indexOf(':');
+                final String nsUri = colon > 0 ? "" : "";  // string qname doesn't carry namespace
+                canonicalAttributes.add(new String[]{nsUri, colon > 0 ? qname.substring(colon + 1) : qname, qname, value.toString()});
+                return;
             }
             writer.write(' ');
             writer.write(qname);
@@ -369,8 +401,18 @@ public class XMLWriter implements SerializerWriter {
             if(!tagIsOpen) {
                 characters(value);
                 return;
-                // throw new TransformerException("Found an attribute outside an
-                // element");
+            }
+            if (canonical) {
+                final String nsUri = qname.getNamespaceURI() != null ? qname.getNamespaceURI() : "";
+                final String localName = qname.getLocalPart();
+                final String fullName;
+                if (qname.getPrefix() != null && !qname.getPrefix().isEmpty()) {
+                    fullName = qname.getPrefix() + ":" + localName;
+                } else {
+                    fullName = localName;
+                }
+                canonicalAttributes.add(new String[]{nsUri, localName, fullName, value.toString()});
+                return;
             }
             writer.write(' ');
             if(qname.getPrefix() != null && !qname.getPrefix().isEmpty()) {
@@ -588,8 +630,23 @@ public class XMLWriter implements SerializerWriter {
     protected void closeStartTag(final boolean isEmpty) throws TransformerException {
         try {
             if(tagIsOpen) {
-                if(isEmpty) {
+                if (canonical) {
+                    flushCanonicalBuffers();
+                }
+                if(isEmpty && !canonical) {
+                    // Canonical XML: empty elements expanded to <elem></elem>
                     writer.write("/>");
+                } else if (isEmpty) {
+                    // Canonical: write ></qname> for empty elements
+                    writer.write('>');
+                    final QName currentElem = elementName.peek();
+                    writer.write("</");
+                    if (currentElem.getPrefix() != null && !currentElem.getPrefix().isEmpty()) {
+                        writer.write(currentElem.getPrefix());
+                        writer.write(':');
+                    }
+                    writer.write(currentElem.getLocalPart());
+                    writer.write('>');
                 } else {
                     writer.write('>');
                 }
@@ -598,6 +655,52 @@ public class XMLWriter implements SerializerWriter {
         } catch(final IOException ioe) {
             throw new TransformerException(ioe.getMessage(), ioe);
         }
+    }
+
+    protected boolean isCanonical() {
+        return canonical;
+    }
+
+    protected void flushCanonicalBuffersXhtml() throws TransformerException {
+        try {
+            flushCanonicalBuffers();
+        } catch (final IOException ioe) {
+            throw new TransformerException(ioe.getMessage(), ioe);
+        }
+    }
+
+    private void flushCanonicalBuffers() throws IOException {
+        // Sort namespaces by prefix (default namespace first, then alphabetical)
+        canonicalNamespaces.sort((a, b) -> a[0].compareTo(b[0]));
+        // Write sorted namespaces
+        for (final String[] ns : canonicalNamespaces) {
+            writer.write(' ');
+            if (ns[0].isEmpty()) {
+                writer.write("xmlns=\"");
+            } else {
+                writer.write("xmlns:");
+                writer.write(ns[0]);
+                writer.write("=\"");
+            }
+            writeChars(ns[1], true);
+            writer.write('"');
+        }
+        canonicalNamespaces.clear();
+
+        // Sort attributes by namespace URI (primary), then local name (secondary)
+        canonicalAttributes.sort((a, b) -> {
+            final int cmp = a[0].compareTo(b[0]);
+            return cmp != 0 ? cmp : a[1].compareTo(b[1]);
+        });
+        // Write sorted attributes
+        for (final String[] attr : canonicalAttributes) {
+            writer.write(' ');
+            writer.write(attr[2]);  // qualified name
+            writer.write("=\"");
+            writeChars(attr[3], true);
+            writer.write('"');
+        }
+        canonicalAttributes.clear();
     }
 
     protected void writeDeclaration() throws TransformerException {
@@ -808,6 +911,15 @@ public class XMLWriter implements SerializerWriter {
         }
         charref[o++] = ';';
         writer.write(charref, 0, o);
+    }
+
+    private static boolean isRelativeUri(final String uri) {
+        for (int i = 0; i < uri.length(); i++) {
+            final char c = uri.charAt(i);
+            if (c == ':') return false;
+            if (c == '/' || c == '?' || c == '#') return true;
+        }
+        return true;
     }
 
     private static class XMLDeclaration {

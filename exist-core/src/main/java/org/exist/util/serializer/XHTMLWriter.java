@@ -247,8 +247,18 @@ public class XHTMLWriter extends IndentingXMLWriter {
     protected void closeStartTag(final boolean isEmpty) throws TransformerException {
         try {
             if (tagIsOpen) {
+                // Flush canonical buffers (sorted namespaces + attributes) if active
+                if (isCanonical()) {
+                    flushCanonicalBuffersXhtml();
+                }
                 if (isEmpty) {
-                    if (isEmptyTag(currentTag)) {
+                    if (isCanonical()) {
+                        // Canonical: always expand empty elements
+                        getWriter().write('>');
+                        getWriter().write("</");
+                        getWriter().write(currentTag);
+                        getWriter().write('>');
+                    } else if (isEmptyTag(currentTag)) {
                         // For method="html", use HTML-style void tags (<br>)
                         // For method="xhtml", use XHTML-style (<br />)
                         if (isHtmlMethod()) {

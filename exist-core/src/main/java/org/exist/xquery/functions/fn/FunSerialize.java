@@ -100,7 +100,12 @@ public class FunSerialize extends BasicFunction {
 
             return new StringValue(this, writer.toString());
         } catch (final IOException | SAXException e) {
-            throw new XPathException(this, FnModule.SENR0001, e.getMessage());
+            // Preserve specific serialization error codes from the message
+            final String msg = e.getMessage();
+            if (msg != null && msg.startsWith("err:SERE0024")) {
+                throw new XPathException(this, new ErrorCodes.ErrorCode("SERE0024", msg), msg);
+            }
+            throw new XPathException(this, FnModule.SENR0001, msg);
         }
     }
 
@@ -170,11 +175,16 @@ public class FunSerialize extends BasicFunction {
             }
         }
 
-        // Canonical serialization is not implemented — reject with SEPM0016
+        // Canonical serialization: force required parameters
         final String canonical = props.getProperty(EXistOutputKeys.CANONICAL);
         if (isBooleanTrue(canonical)) {
-            throw new XPathException(this, ErrorCodes.SEPM0016,
-                    "Canonical serialization (canonical=true) is not supported");
+            // Per W3C Serialization: when canonical=true, force these settings
+            props.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+            props.setProperty(OutputKeys.ENCODING, "UTF-8");
+            // CDATA sections not allowed in canonical form
+            props.remove(OutputKeys.CDATA_SECTION_ELEMENTS);
+            // Suppress content-type meta for XHTML canonical
+            props.setProperty("include-content-type", "no");
         }
     }
 

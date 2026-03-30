@@ -24,6 +24,7 @@ package org.exist.util.serializer;
 import java.io.Writer;
 import javax.xml.transform.TransformerException;
 
+import org.exist.storage.serializers.EXistOutputKeys;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 
@@ -125,6 +126,14 @@ public class XHTML5Writer extends XHTMLWriter {
     @Override
     protected void writeDoctype(String rootElement) throws TransformerException {
         if (doctypeWritten) {
+            return;
+        }
+
+        // Canonical serialization: never output DOCTYPE
+        final String canonicalProp = outputProperties != null
+                ? outputProperties.getProperty(EXistOutputKeys.CANONICAL) : null;
+        if ("yes".equals(canonicalProp) || "true".equals(canonicalProp) || "1".equals(canonicalProp)) {
+            doctypeWritten = true;
             return;
         }
 
