@@ -86,6 +86,7 @@ public class XMLWriter implements SerializerWriter {
      * compared to retrieving resources from the database.
      */
     private boolean xdmSerialization = false;
+    private boolean xml11 = false;
 
     private final Deque<QName> elementName = new ArrayDeque<>();
 
@@ -159,6 +160,7 @@ public class XMLWriter implements SerializerWriter {
         }
 
         this.xdmSerialization = "yes".equals(outputProperties.getProperty(EXistOutputKeys.XDM_SERIALIZATION, "no"));
+        this.xml11 = "1.1".equals(outputProperties.getProperty(OutputKeys.VERSION));
     }
 
     private Set<QName> parseCdataSectionElementNames() {
@@ -722,6 +724,10 @@ public class XMLWriter implements SerializerWriter {
                 ch = s.charAt(i);
                 if(ch < 128) {
                     if(specialChars[ch]) {
+                        break;
+                    } else if(xml11 && ch >= 0x01 && ch <= 0x1F
+                            && ch != 0x09 && ch != 0x0A && ch != 0x0D) {
+                        // XML 1.1: C0 control chars (except TAB, LF, CR) must be escaped
                         break;
                     } else {
                         i++;

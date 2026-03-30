@@ -90,7 +90,7 @@ public class FunCodepointsToString extends BasicFunction {
                 if (next < 0 || next > Integer.MAX_VALUE ||
                         !XMLChar.isValid((int)next)) {
                     throw new XPathException(this,
-                            ErrorCodes.FOCH0001, 
+                            ErrorCodes.FOCH0001,
                             "Codepoint " + next + " is not a valid character.");
                 }
                 if (next < 65536) {
