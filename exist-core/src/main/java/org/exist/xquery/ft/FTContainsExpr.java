@@ -59,6 +59,11 @@ public class FTContainsExpr extends AbstractExpression {
     private FTSelection ftSelection;
     private Expression ignoreExpr;
 
+    // Cached URI maps — captured during analyze() to avoid reading from
+    // context attributes during eval() (context may be reset concurrently)
+    private Map<String, Path> cachedStopWordURIMap;
+    private Map<String, Path> cachedThesaurusURIMap;
+
     public FTContainsExpr(final XQueryContext context) {
         super(context);
     }
@@ -97,6 +102,7 @@ public class FTContainsExpr extends AbstractExpression {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void analyze(final AnalyzeContextInfo contextInfo) throws XPathException {
         contextInfo.setParent(this);
         source.analyze(contextInfo);
@@ -104,6 +110,11 @@ public class FTContainsExpr extends AbstractExpression {
         if (ignoreExpr != null) {
             ignoreExpr.analyze(contextInfo);
         }
+        // Cache URI maps from context attributes at analyze time.
+        // Reading them during eval() is unreliable because context.reset()
+        // (called between test executions in the XQTS runner) clears attributes.
+        cachedStopWordURIMap = (Map<String, Path>) context.getAttribute("ft.stopWordURIMap");
+        cachedThesaurusURIMap = (Map<String, Path>) context.getAttribute("ft.thesaurusURIMap");
     }
 
     @Override
@@ -168,13 +179,17 @@ public class FTContainsExpr extends AbstractExpression {
                 sourceText = sourceItem.getStringValue();
             }
 
-            // Pass stop word and thesaurus URI mappings from context (set by XQTS runner or application)
+            // Use cached URI maps (captured during analyze), falling back to context attributes.
+            // The cache avoids the race condition where context.reset() clears attributes
+            // between analyze and eval in concurrent test runner scenarios.
             @SuppressWarnings("unchecked")
-            final Map<String, Path> stopWordURIMap =
-                    (Map<String, Path>) context.getAttribute("ft.stopWordURIMap");
+            final Map<String, Path> stopWordURIMap = cachedStopWordURIMap != null
+                    ? cachedStopWordURIMap
+                    : (Map<String, Path>) context.getAttribute("ft.stopWordURIMap");
             @SuppressWarnings("unchecked")
-            final Map<String, Path> thesaurusURIMap =
-                    (Map<String, Path>) context.getAttribute("ft.thesaurusURIMap");
+            final Map<String, Path> thesaurusURIMap = cachedThesaurusURIMap != null
+                    ? cachedThesaurusURIMap
+                    : (Map<String, Path>) context.getAttribute("ft.thesaurusURIMap");
             final FTEvaluator evaluator = new FTEvaluator(sourceText, stopWordURIMap, thesaurusURIMap,
                     elementBoundaries);
             // Provide XQuery context for dynamic expressions in positional filters
