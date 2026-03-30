@@ -40,7 +40,6 @@ import java.io.IOException;
 import java.lang.annotation.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -112,7 +111,7 @@ public class XSuite extends ParentRunner<Runner> {
     private static String[] getAnnotatedDirectories(final Class<?> klass) throws InitializationError {
         final XSuite.XSuiteFiles annotation = klass.getAnnotation(XSuite.XSuiteFiles.class);
         if (annotation == null) {
-            throw new InitializationError(String.format("class '%s' must have a XSuiteFiles annotation", klass.getName()));
+            throw new InitializationError("class '%s' must have a XSuiteFiles annotation".formatted(klass.getName()));
         }
         return annotation.value();
     }
@@ -205,7 +204,7 @@ public class XSuite extends ParentRunner<Runner> {
         }
         final java.util.function.Predicate<Path> isXQueryFile = XQueryFilenameFilter.asPredicate();
         for (final String suite : suites) {
-            final Path path = Paths.get(suite);
+            final Path path = Path.of(suite);
             if (!Files.exists(path)) {
                 continue;
             }
@@ -260,7 +259,7 @@ public class XSuite extends ParentRunner<Runner> {
             for (final String suite : suites) {
 
                 // if directory/file does not exist - throw an exception
-                final Path path = Paths.get(suite);
+                final Path path = Path.of(suite);
                 if (!Files.exists(path)) {
                     throw new InitializationError("XSuite does not exist: " + suite + ". path=" + path.toAbsolutePath());
                 }
@@ -556,8 +555,8 @@ public class XSuite extends ParentRunner<Runner> {
 
         void runnerStarted(final Description runnerDesc, final Runner runner) {
             lastActivityByRunner.put(runnerDesc, System.currentTimeMillis());
-            if (runner instanceof AbstractTestRunner) {
-                runnerLabelByDescription.put(runnerDesc, ((AbstractTestRunner) runner).getSourcePath().toAbsolutePath().toString());
+            if (runner instanceof AbstractTestRunner testRunner) {
+                runnerLabelByDescription.put(runnerDesc, testRunner.getSourcePath().toAbsolutePath().toString());
             } else {
                 runnerLabelByDescription.put(runnerDesc, runnerDesc.getDisplayName());
             }

@@ -187,9 +187,9 @@ public class HttpRequestWrapper implements RequestWrapper {
         if (original != null) {
 
             // Check if original value was already a List
-            if (original instanceof List) {
+            if (original instanceof List list1) {
                 // Add value to existing List
-                ((List) original).add(value);
+                list1.add(value);
 
             } else {
                 // Single value already detected, convert to List and add both items
@@ -274,9 +274,9 @@ public class HttpRequestWrapper implements RequestWrapper {
             return parameterValue == null;
         }
 
-        if (queryStringParameterValue instanceof List) {
+        if (queryStringParameterValue instanceof List list) {
             // Add value to existing List
-            return ((List) queryStringParameterValue).contains(parameterValue);
+            return list.contains(parameterValue);
         } else {
             if (parameterValue == null) {
                 return false;
@@ -341,14 +341,14 @@ public class HttpRequestWrapper implements RequestWrapper {
             // Cast
             // Return first Part object if present
             for(final Object listObject : list) {
-                if (listObject instanceof Part && !isFormField(((Part) listObject))) {
-                    partList.add((Part) listObject);
+                if (listObject instanceof Part part && !isFormField(part)) {
+                    partList.add(part);
                 }
             }           
 
-        } else if(obj instanceof Part && !isFormField(((Part) obj))) {
+        } else if(obj instanceof Part part && !isFormField(part)) {
             // Cast and return
-             partList.add((Part) obj);
+             partList.add(part);
         }
 
         // object did not represent a List of Part's or Part.
@@ -508,8 +508,8 @@ public class HttpRequestWrapper implements RequestWrapper {
             }
 
             // Return just a simple value
-        } else if (o instanceof String) {
-            return (String) o;
+        } else if (o instanceof String string) {
+            return string;
         }
 
         return null;

@@ -60,10 +60,10 @@ public abstract class RangeIndexConfigCondition {
      */
     protected Expression getInnerExpression(Predicate predicate) {
         Expression inner = predicate.getExpression(0);
-        if (inner instanceof InternalFunctionCall) {
-            Function function = ((InternalFunctionCall)inner).getFunction();
-            if (function instanceof Lookup) {
-                return ((Lookup)function).getFallback();
+        if (inner instanceof InternalFunctionCall call) {
+            Function function = call.getFunction();
+            if (function instanceof Lookup lookup) {
+                return lookup.getFallback();
             }
         }
 

@@ -43,12 +43,13 @@ public class XQueryProcessingInstructionTest {
 
     @Test
     public void testPI() throws XPathException, SAXException, IOException, XMLDBException {
-        final String query = "let $xml := <doc>" +
-                "<?pi test?>" +
-                "This is a p." +
-                "</doc>" +
-                "return\n" +
-                "$xml";
+        final String query = """
+                let $xml := <doc>\
+                <?pi test?>\
+                This is a p.\
+                </doc>\
+                return
+                $xml""";
         final ResourceSet result = existEmbeddedServer.executeQuery(query);
         final String r = (String) result.getResource(0).getContent();
         assertXMLEqual(r, "<doc><?pi test?>This is a p.</doc>");

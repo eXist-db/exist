@@ -138,14 +138,14 @@ public class URLSource extends AbstractSource {
         try {
             if (connection == null) {
                 connection = url.openConnection();
-                if (connection instanceof HttpURLConnection) {
-                    ((HttpURLConnection) connection).setRequestProperty("Accept", ACCEPT_HEADER);
+                if (connection instanceof HttpURLConnection lConnection) {
+                    lConnection.setRequestProperty("Accept", ACCEPT_HEADER);
                 }
 
                 lastModified = connection.getLastModified();
 
-                if (connection instanceof HttpURLConnection) {
-                    responseCode = ((HttpURLConnection) connection).getResponseCode();
+                if (connection instanceof HttpURLConnection lConnection) {
+                    responseCode = lConnection.getResponseCode();
                 }
             }
             Reader reader = null;
@@ -165,14 +165,14 @@ public class URLSource extends AbstractSource {
         try {
             if (connection == null) {
                 connection = url.openConnection();
-                if (connection instanceof HttpURLConnection) {
-                    ((HttpURLConnection) connection).setRequestProperty("Accept", ACCEPT_HEADER);
+                if (connection instanceof HttpURLConnection lConnection) {
+                    lConnection.setRequestProperty("Accept", ACCEPT_HEADER);
                 }
 
                 lastModified = connection.getLastModified();
 
-                if (connection instanceof HttpURLConnection) {
-                    responseCode = ((HttpURLConnection) connection).getResponseCode();
+                if (connection instanceof HttpURLConnection lConnection) {
+                    responseCode = lConnection.getResponseCode();
                 }
             }
             InputStream is = null;
@@ -197,14 +197,14 @@ public class URLSource extends AbstractSource {
         try {
             if (connection == null) {
                 connection = url.openConnection();
-                if (connection instanceof HttpURLConnection) {
-                    ((HttpURLConnection) connection).setRequestProperty("Accept", ACCEPT_HEADER);
+                if (connection instanceof HttpURLConnection lConnection) {
+                    lConnection.setRequestProperty("Accept", ACCEPT_HEADER);
                 }
 
                 lastModified = connection.getLastModified();
 
-                if (connection instanceof HttpURLConnection) {
-                    responseCode = ((HttpURLConnection) connection).getResponseCode();
+                if (connection instanceof HttpURLConnection lConnection) {
+                    responseCode = lConnection.getResponseCode();
                 }
             }
             final String content = connection.getContent().toString();

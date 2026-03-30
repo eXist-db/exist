@@ -24,10 +24,12 @@ package org.exist.dom;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import java.io.Serial;
 import java.util.ArrayList;
 
 public class NodeListImpl extends ArrayList<Node> implements NodeList {
 
+    @Serial
     private static final long serialVersionUID = 5505309345079983721L;
 
     public NodeListImpl() {

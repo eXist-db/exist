@@ -89,10 +89,11 @@ public class AbsolutePathTests extends XQueryCompilationTest {
     public void immediateLambdaWithDocumentAndDoubleSlash() throws EXistException, PermissionDeniedException {
         final Source expected = elemSource("<result><x/><x/><x/></result>");
 
-        final String query = "let $f := function($d) { $d ! //x }\n" +
-                "let $d := document { <root><x/><x/><y><x/></y></root> }\n" +
-                "return\n" +
-                "  <result>{ $f($d) }</result>";
+        final String query = """
+                let $f := function($d) { $d ! //x }
+                let $d := document { <root><x/><x/><y><x/></y></root> }
+                return
+                  <result>{ $f($d) }</result>""";
         final Either<XPathException, Sequence> actual = executeQuery(query);
 
         assertXQResultIdentical(expected, actual);
@@ -102,10 +103,11 @@ public class AbsolutePathTests extends XQueryCompilationTest {
     public void immediateLambdaWithDocumentAndSlash() throws EXistException, PermissionDeniedException {
         final Source expected = elemSource("<root/>");
 
-        final String query = "let $f := function($d) { $d ! /root }\n" +
-                "let $d := document { <root/> }\n" +
-                "return\n" +
-                "  $f($d)";
+        final String query = """
+                let $f := function($d) { $d ! /root }
+                let $d := document { <root/> }
+                return
+                  $f($d)""";
         final Either<XPathException, Sequence> actual = executeQuery(query);
 
         assertXQResultIdentical(expected, actual);
@@ -115,10 +117,11 @@ public class AbsolutePathTests extends XQueryCompilationTest {
     public void immediateLambdaWithDocumentAndLoneSlash() throws EXistException, PermissionDeniedException {
         final Source expected = docSource("<root/>");
 
-        final String query = "let $f := function($d) { $d ! / }\n" +
-                "let $d := document { <root/> }\n" +
-                "return\n" +
-                "  $f($d)";
+        final String query = """
+                let $f := function($d) { $d ! / }
+                let $d := document { <root/> }
+                return
+                  $f($d)""";
         final Either<XPathException, Sequence> actual = executeQuery(query);
 
         assertXQResultSimilar(expected, actual);

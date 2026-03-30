@@ -46,12 +46,14 @@ import static org.junit.Assert.assertEquals;
 public class SerializationTest {
 
     private static final String XML_WITH_DOCTYPE =
-            "<!DOCTYPE bookmap PUBLIC \"-//OASIS//DTD DITA BookMap//EN\" \"bookmap.dtd\">\n" +
-            "<bookmap id=\"bookmap-1\"/>";
+            """
+            <!DOCTYPE bookmap PUBLIC "-//OASIS//DTD DITA BookMap//EN" "bookmap.dtd">
+            <bookmap id="bookmap-1"/>""";
 
     private static final String XML_WITH_XMLDECL =
-            "<?xml version=\"1.1\" encoding=\"ISO-8859-1\" standalone=\"yes\"?>\n" +
-            "<bookmap id=\"bookmap-2\"/>";
+            """
+            <?xml version="1.1" encoding="ISO-8859-1" standalone="yes"?>
+            <bookmap id="bookmap-2"/>""";
 
     private static String PREV_PROPFIND_METHOD_XML_SIZE = null;
 

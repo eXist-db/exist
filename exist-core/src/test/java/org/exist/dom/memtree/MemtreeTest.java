@@ -50,25 +50,26 @@ import static org.junit.Assert.assertTrue;
 public class MemtreeTest {
 
     private final static String XML =
-            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                    "<!-- comment before doc 1 -->\n" +
-                    "<?pi-before-doc-1?>\n" +
-                    "<!-- comment before doc 2 -->\n" +
-                    "<?pi-before-doc-2?>\n" +
-                    "<doc-element>\n" +
-                    "    <!-- comment before e1 -->\n" +
-                    "    <e1 t=\"2\">\n" +
-                    "        <?pi-before-e1_1?>\n" +
-                    "        <e1_1 t=\"3\">text 1</e1_1>\n" +
-                    "        <e1_2 t=\"3\" x=\"y\">text 2</e1_2>\n" +
-                    "    </e1>\n" +
-                    "    <!-- comment after e1 -->\n" +
-                    "</doc-element>\n" +
-                    "<?pi-after-doc-1?>\n" +
-                    "<!-- comment after doc 1 -->\n" +
-                    "<?pi-after-doc-2?>\n" +
-                    "<!-- comment after doc 2 -->\n" +
-                    "<?pi-after-doc-3?>";
+            """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <!-- comment before doc 1 -->
+            <?pi-before-doc-1?>
+            <!-- comment before doc 2 -->
+            <?pi-before-doc-2?>
+            <doc-element>
+                <!-- comment before e1 -->
+                <e1 t="2">
+                    <?pi-before-e1_1?>
+                    <e1_1 t="3">text 1</e1_1>
+                    <e1_2 t="3" x="y">text 2</e1_2>
+                </e1>
+                <!-- comment after e1 -->
+            </doc-element>
+            <?pi-after-doc-1?>
+            <!-- comment after doc 1 -->
+            <?pi-after-doc-2?>
+            <!-- comment after doc 2 -->
+            <?pi-after-doc-3?>""";
 
     @Test
     public void size() throws IOException, ParserConfigurationException, SAXException {

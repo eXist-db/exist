@@ -54,8 +54,8 @@ abstract class FunRoundBase extends BasicFunction {
 
         final Item item = args[0].itemAt(0);
         final NumericValue value;
-        if (item instanceof NumericValue) {
-            value = (NumericValue) item;
+        if (item instanceof NumericValue numericValue) {
+            value = numericValue;
         } else {
             value = (NumericValue) item.convertTo(Type.NUMERIC);
         }

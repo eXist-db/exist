@@ -28,7 +28,6 @@ import org.exist.util.FileUtils;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -56,7 +55,7 @@ public class BackupDirectory {
     private final Matcher matcher;
 
     public BackupDirectory(final String dirPath) {
-        this(Paths.get(dirPath));
+        this(Path.of(dirPath));
     }
 
 

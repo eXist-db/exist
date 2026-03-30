@@ -27,7 +27,6 @@ import java.io.Writer;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 
@@ -73,7 +72,7 @@ public class Recovery2Test {
     private static Path getXmlDir() {
         try {
             final URI uri = Recovery2Test.class.getResource("/recovery/saami/terms-eng.xml").toURI();
-            return Paths.get(uri).getParent();
+            return Path.of(uri).getParent();
         } catch (final URISyntaxException e) {
             throw new RuntimeException("Cannot resolve recovery/saami path", e);
         }

@@ -28,6 +28,7 @@ import java.awt.Insets;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Box;
@@ -58,6 +59,7 @@ import org.xmldb.api.base.XMLDBException;
  */
 class TriggersDialog extends JFrame {
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
     private CollectionXConf cx = null;
@@ -257,6 +259,7 @@ class TriggersDialog extends JFrame {
     }
 
     public static class CheckBoxCellRenderer extends JCheckBox implements TableCellRenderer {
+        @Serial
         private static final long serialVersionUID = 1L;
 
         public CheckBoxCellRenderer() {
@@ -281,6 +284,7 @@ class TriggersDialog extends JFrame {
     }
 
     public static class CheckBoxCellEditor extends DefaultCellEditor {
+        @Serial
         private static final long serialVersionUID = 1L;
 
         public CheckBoxCellEditor() {
@@ -289,6 +293,7 @@ class TriggersDialog extends JFrame {
     }
 
     class TriggersTableModel extends AbstractTableModel {
+        @Serial
         private static final long serialVersionUID = 1L;
 
         private final String[] columnNames = new String[] { "class", "Parameters" };

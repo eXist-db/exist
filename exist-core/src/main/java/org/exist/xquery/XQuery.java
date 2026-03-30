@@ -423,10 +423,10 @@ public class XQuery {
                 }
 
                 final Sequence result;
-                if (expression instanceof LibraryModuleRoot) {
+                if (expression instanceof LibraryModuleRoot root) {
                     if (functionCall == null) {
                         if (expression != null) {
-                            throw new XPathException(((LibraryModuleRoot) expression).getLine(), ((LibraryModuleRoot) expression).getColumn(), ErrorCodes.EXXQDY0005, "No function call details were provided when trying to execute a Library Module.");
+                            throw new XPathException(root.getLine(), root.getColumn(), ErrorCodes.EXXQDY0005, "No function call details were provided when trying to execute a Library Module.");
                         } else {
                             throw new XPathException((Expression) null, ErrorCodes.EXXQDY0005, "No function call details were provided when trying to execute a Library Module.");
                         }

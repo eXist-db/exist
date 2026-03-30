@@ -60,28 +60,31 @@ public class FunIndexOf extends BasicFunction {
 
 	protected static final String FUNCTION_DESCRIPTION =
 
-		"Returns a sequence of positive integers giving the " + 
-		"positions within the sequence of atomic values $source " +  
-		"that are equal to $search.\n\n" +
-		"The collation used by the invocation of this function " + 
-		"is determined according to the rules in 7.3.1 Collations. " + 
-		"The collation is used when string comparison is required.\n\n" +
-		"The items in the sequence $source are compared with " + 
-		"$search under the rules for the 'eq' operator. Values of " +  
-		"type xs:untypedAtomic are compared as if they were of " +  
-		"type xs:string. Values that cannot be compared, i.e. " + 
-		"the 'eq' operator is not defined for their types, are " + 
-		"considered to be distinct. If an item compares equal, " +  
-		"then the position of that item in the sequence " + 
-		"$source is included in the result.\n\n" +
+		"""
+Returns a sequence of positive integers giving the \
+positions within the sequence of atomic values $source \
+that are equal to $search.
 
-		"If the value of $source is the empty sequence, or " + 
-		"if no item in $source matches $search, then the " + 
-		"empty sequence is returned.\n\n" +
+The collation used by the invocation of this function \
+is determined according to the rules in 7.3.1 Collations. \
+The collation is used when string comparison is required.
 
-		"The first item in a sequence is at position 1, not position 0.\n\n" +
+The items in the sequence $source are compared with \
+$search under the rules for the 'eq' operator. Values of \
+type xs:untypedAtomic are compared as if they were of \
+type xs:string. Values that cannot be compared, i.e. \
+the 'eq' operator is not defined for their types, are \
+considered to be distinct. If an item compares equal, \
+then the position of that item in the sequence \
+$source is included in the result.
 
-		"The result sequence is in ascending numeric order.";
+If the value of $source is the empty sequence, or \
+if no item in $source matches $search, then the \
+empty sequence is returned.
+
+The first item in a sequence is at position 1, not position 0.
+
+The result sequence is in ascending numeric order.""";
 
 	public final static FunctionSignature[] fnIndexOf = {
 			new FunctionSignature(

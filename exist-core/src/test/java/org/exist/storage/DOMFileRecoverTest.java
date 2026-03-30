@@ -147,7 +147,7 @@ public class DOMFileRecoverTest {
     @Test
     public void get() throws EXistException, IOException, BTreeException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
         	//Recover and read the data
 
             assertNotNull(broker);

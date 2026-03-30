@@ -41,11 +41,14 @@ public class DeadlockTest {
 
     private static final Logger LOG = LogManager.getLogger(DeadlockTest.class);
 
-    public static final String DOCUMENT_CONTENT = "<document>\n"
-            + "  <element1>value1</element1>\n"
-            + "  <element2>value2</element2>\n"
-            + "  <element3>value3</element3>\n"
-            + "  <element4>value4</element4>\n" + "</document>\n";
+    public static final String DOCUMENT_CONTENT = """
+            <document>
+              <element1>value1</element1>
+              <element2>value2</element2>
+              <element3>value3</element3>
+              <element4>value4</element4>
+            </document>
+            """;
 
     @Test
     public void deadlock() throws Exception {

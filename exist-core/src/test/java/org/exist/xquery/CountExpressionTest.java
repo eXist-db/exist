@@ -44,15 +44,16 @@ public class CountExpressionTest {
 
     @Test
     public void countTest() throws RecognitionException, XPathException, TokenStreamException, QName.IllegalQNameException {
-        final String query = "xquery version \"3.1\";\n" +
-                "for $p in $products\n" +
-                "order by $p/sales descending\n" +
-                "count $rank\n" +
-                "where $rank <= 3\n" +
-                "return\n" +
-                "   <product rank=\"{$rank}\">\n" +
-                "      {$p/name, $p/sales}\n" +
-                "   </product>";
+        final String query = """
+                xquery version "3.1";
+                for $p in $products
+                order by $p/sales descending
+                count $rank
+                where $rank <= 3
+                return
+                   <product rank="{$rank}">
+                      {$p/name, $p/sales}
+                   </product>""";
 
         // parse the query into the internal syntax tree
         final XQueryContext context = new XQueryContext();

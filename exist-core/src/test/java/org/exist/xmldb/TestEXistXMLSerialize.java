@@ -30,7 +30,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.Properties;
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -113,7 +113,7 @@ public class TestEXistXMLSerialize {
         XMLResource resource = testCollection.createResource(null, XMLResource.class);
 
         Document doc = javax.xml.parsers.DocumentBuilderFactory.newInstance( ).
-                        newDocumentBuilder().parse(Paths.get(testFile.toURI()).toFile());
+                        newDocumentBuilder().parse(Path.of(testFile.toURI()).toFile());
 
         resource.setContentAsDOM(doc);
         testCollection.storeResource(resource);
@@ -136,7 +136,7 @@ public class TestEXistXMLSerialize {
     @Test
     public void serialize2() throws ParserConfigurationException, SAXException, IOException, XMLDBException, URISyntaxException {
         Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
-        Document doc = javax.xml.parsers.DocumentBuilderFactory.newInstance( ).newDocumentBuilder().parse(Paths.get(testFile.toURI()).toFile());
+        Document doc = javax.xml.parsers.DocumentBuilderFactory.newInstance( ).newDocumentBuilder().parse(Path.of(testFile.toURI()).toFile());
         XMLResource resource = testCollection.createResource(null, XMLResource.class);
         resource.setContentAsDOM(doc);
         testCollection.storeResource(resource);
@@ -152,12 +152,10 @@ public class TestEXistXMLSerialize {
         try (final UnsynchronizedByteArrayOutputStream out = new UnsynchronizedByteArrayOutputStream()) {
             XMLSerializer serializer = new XMLSerializer(out, format);
 
-            if (node instanceof Document) {
-                serializer.serialize((Document) node);
-            } else if (node instanceof Element) {
-                serializer.serialize((Element) node);
-            } else {
-                fail("Can't serialize node type: " + node);
+            switch (node) {
+                case Document document -> serializer.serialize(document);
+                case Element element -> serializer.serialize(element);
+                default -> fail("Can't serialize node type: " + node);
             }
         }
     }
@@ -165,7 +163,7 @@ public class TestEXistXMLSerialize {
     @Test
     public void serialize3() throws ParserConfigurationException, SAXException, IOException, XMLDBException, TransformerException, URISyntaxException {
         Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
-        Document doc = javax.xml.parsers.DocumentBuilderFactory.newInstance( ).newDocumentBuilder().parse(Paths.get(testFile.toURI()).toFile());
+        Document doc = javax.xml.parsers.DocumentBuilderFactory.newInstance( ).newDocumentBuilder().parse(Path.of(testFile.toURI()).toFile());
         XMLResource resource = testCollection.createResource(null, XMLResource.class);
         resource.setContentAsDOM(doc);
         testCollection.storeResource(resource);
@@ -185,7 +183,7 @@ public class TestEXistXMLSerialize {
     public void serialize4() throws ParserConfigurationException, SAXException, IOException, XMLDBException, URISyntaxException {
         Collection testCollection = DatabaseManager.getCollection(XmldbURI.LOCAL_DB + "/" + TEST_COLLECTION);
 
-        Document doc = javax.xml.parsers.DocumentBuilderFactory.newInstance( ).newDocumentBuilder().parse(Paths.get(testFile.toURI()).toFile());
+        Document doc = javax.xml.parsers.DocumentBuilderFactory.newInstance( ).newDocumentBuilder().parse(Path.of(testFile.toURI()).toFile());
         XMLResource resource = testCollection.createResource(null, XMLResource.class);
         resource.setContentAsDOM(doc);
 

@@ -112,8 +112,10 @@ public class XQueryContextAttributesTest {
 
             final XmldbURI libraryQueryUri = XmldbURI.create("/db/mod1.xqm");
             final InputSource libraryQuery = new StringInputSource(
-                    ("module namespace mod1 = 'http://mod1';\n" +
-                    "declare function mod1:f1() { <not-important/> };").getBytes(UTF_8)
+                    ("""
+                    module namespace mod1 = 'http://mod1';
+                    declare function mod1:f1() { <not-important/> };\
+                    """).getBytes(UTF_8)
             );
             storeQuery(broker, transaction, libraryQueryUri, libraryQuery);
 

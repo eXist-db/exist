@@ -252,10 +252,10 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
         return Optional
                 .ofNullable(obj)
                 .flatMap(other -> {
-                    if(other instanceof AbstractSubject) {
-                        return Optional.of(((AbstractSubject)other).account);
-                    } else if(other instanceof AbstractAccount) {
-                        return Optional.of((AbstractAccount)other);
+                    if(other instanceof AbstractSubject subject) {
+                        return Optional.of(subject.account);
+                    } else if(other instanceof AbstractAccount account) {
+                        return Optional.of(account);
                     } else {
                         return Optional.empty();
                     }

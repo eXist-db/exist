@@ -74,59 +74,62 @@ public class TransformTest {
     private static final XmldbURI INPUT_LIST_XML_NAME = XmldbURI.create("inputListOps.xml");
 
     private static final String INPUT_XML =
-            "<listOps>\n" +
-            "    <ops id=\"IRCANTEC\"/>\n" +
-            "    <ops id=\"CIBTP\"/>\n" +
-            "    <ops id=\"AGIRC-ARRCO\"/>\n" +
-            "    <ops id=\"CTIP-FFSA-FNMF\"/>\n" +
-            "</listOps>";
+            """
+            <listOps>
+                <ops id="IRCANTEC"/>
+                <ops id="CIBTP"/>
+                <ops id="AGIRC-ARRCO"/>
+                <ops id="CTIP-FFSA-FNMF"/>
+            </listOps>""";
 
     private static final XmldbURI DICTIONARY_XML_NAME = XmldbURI.create("listOpsErr.xml");
 
     private static final String DICTIONARY_XML =
-            "<listOps>\n" +
-            "    <ops id=\"IRCANTEC\" doEntiteAff=\"false\" doGenerateB20=\"true\"> </ops>\n" +
-            "    <ops id=\"CIBTP\" doEntiteAff=\"true\" doGenerateB20=\"true\"/>\n" +
-            "    <ops id=\"AGIRC-ARRCO\" doEntiteAff=\"true\" doGenerateB20=\"false\"> </ops>\n" +
-            "    <ops id=\"CTIP-FFSA-FNMF\" doEntiteAff=\"true\" doGenerateB20=\"true\"> </ops>\n" +
-            "    <ops id=\"POLEEMPLOI\" doEntiteAff=\"true\" doGenerateB20=\"true\"> </ops>\n" +
-            "</listOps>";
+            """
+            <listOps>
+                <ops id="IRCANTEC" doEntiteAff="false" doGenerateB20="true"> </ops>
+                <ops id="CIBTP" doEntiteAff="true" doGenerateB20="true"/>
+                <ops id="AGIRC-ARRCO" doEntiteAff="true" doGenerateB20="false"> </ops>
+                <ops id="CTIP-FFSA-FNMF" doEntiteAff="true" doGenerateB20="true"> </ops>
+                <ops id="POLEEMPLOI" doEntiteAff="true" doGenerateB20="true"> </ops>
+            </listOps>""";
 
     private static final XmldbURI LIST_OPS_XSLT_NAME = XmldbURI.create("testListOps.xsl");
 
     private static final String LIST_OPS_XSLT =
-            "<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" xmlns:ts=\"http://www.talentia-software.fr\" version=\"2.0\">\n" +
-            "    <xsl:output method=\"xml\" indent=\"no\" encoding=\"UTF-8\"/>\n" +
-            "    <!-- -->\n" +
-            "    <xsl:param name=\"listOpsFileUri\" required=\"yes\"/>\n" +
-            "\n" +
-            "    <!-- -->\n" +
-            "    <xsl:variable name=\"ts:listOps\" select=\"doc($listOpsFileUri)\"/>\n" +
-            "\n" +
-            "    <xsl:key name=\"ts:listOpsById\" match=\"//ops\" use=\"@id\"/>\n" +
-            "\n" +
-            "    <!-- -->\n" +
-            "    <xsl:template match=\"/\">\n" +
-            "        <xsl:if test=\"empty($ts:listOps)\">\n" +
-            "            <xsl:message terminate=\"yes\">Could not find listOpsFileUri document</xsl:message>\n" +
-            "        </xsl:if>\n" +
-            "\n" +
-            "        <DSN_FLAT>\n" +
-            "            <xsl:for-each select=\"//ops\">\n" +
-            "                <xsl:variable name=\"keyId\" select=\"@id\"/>\n" +
-            "                <xsl:variable name=\"refListOpsEntry\" select=\"$ts:listOps/key('ts:listOpsById', $keyId)\"/>\n" +
-            "                <xsl:element name=\"keyId\">\n" +
-            "                    <xsl:value-of select=\"$keyId\"/>\n" +
-            "                </xsl:element>\n" +
-            "                <xsl:element name=\"listOpsEntry\">\n" +
-            "                    <xsl:for-each select=\"$refListOpsEntry/@*\">\n" +
-            "                        <xsl:value-of select=\"concat(name(), ': ', ., ' ')\"/>\n" +
-            "                    </xsl:for-each>\n" +
-            "                </xsl:element>\n" +
-            "            </xsl:for-each>\n" +
-            "        </DSN_FLAT>\n" +
-            "    </xsl:template>\n" +
-            "</xsl:stylesheet>";
+            """
+            <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:ts="http://www.talentia-software.fr" version="2.0">
+                <xsl:output method="xml" indent="no" encoding="UTF-8"/>
+                <!-- -->
+                <xsl:param name="listOpsFileUri" required="yes"/>
+            
+                <!-- -->
+                <xsl:variable name="ts:listOps" select="doc($listOpsFileUri)"/>
+            
+                <xsl:key name="ts:listOpsById" match="//ops" use="@id"/>
+            
+                <!-- -->
+                <xsl:template match="/">
+                    <xsl:if test="empty($ts:listOps)">
+                        <xsl:message terminate="yes">Could not find listOpsFileUri document</xsl:message>
+                    </xsl:if>
+            
+                    <DSN_FLAT>
+                        <xsl:for-each select="//ops">
+                            <xsl:variable name="keyId" select="@id"/>
+                            <xsl:variable name="refListOpsEntry" select="$ts:listOps/key('ts:listOpsById', $keyId)"/>
+                            <xsl:element name="keyId">
+                                <xsl:value-of select="$keyId"/>
+                            </xsl:element>
+                            <xsl:element name="listOpsEntry">
+                                <xsl:for-each select="$refListOpsEntry/@*">
+                                    <xsl:value-of select="concat(name(), ': ', ., ' ')"/>
+                                </xsl:for-each>
+                            </xsl:element>
+                        </xsl:for-each>
+                    </DSN_FLAT>
+                </xsl:template>
+            </xsl:stylesheet>""";
 
     private static final String LIST_OPS_XQUERY =
             "xquery version \"3.0\";\n" +
@@ -148,11 +151,12 @@ public class TransformTest {
     private static final XmldbURI DOCUMENT_XSLT_NAME = XmldbURI.create("xsl-doc.xslt");
 
     private static final String DOCUMENT_XSLT =
-            "<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"2.0\">\n" +
-            "\t<xsl:template name=\"xsl-doc\">\n" +
-            "\t\t<xsl:document><elem1/></xsl:document>\n" +
-            "\t</xsl:template>\n" +
-            "</xsl:stylesheet>";
+            """
+            <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0">
+            	<xsl:template name="xsl-doc">
+            		<xsl:document><elem1/></xsl:document>
+            	</xsl:template>
+            </xsl:stylesheet>""";
 
     private static final String DOCUMENT_XSLT_QUERY =
             "import module namespace transform=\"http://exist-db.org/xquery/transform\";\n" +
@@ -170,12 +174,14 @@ public class TransformTest {
             "<n/>";
 
     private static final String SIMPLE_XML_WITH_COMMENT =
-            "<!-- -->\n" +
-            "<n/>";
+            """
+            <!-- -->
+            <n/>""";
 
     private static final String SIMPLE_XML_WITH_TWO_COMMENTS =
-            "<!-- 1 --><!-- 2 -->\n" +
-            "<n/>";
+            """
+            <!-- 1 --><!-- 2 -->
+            <n/>""";
 
     private static final XmldbURI COUNT_DESCENDANTS_XSLT_NAME = XmldbURI.create("count-descendants.xslt");
 

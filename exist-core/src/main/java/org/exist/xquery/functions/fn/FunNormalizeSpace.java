@@ -48,13 +48,19 @@ public class FunNormalizeSpace extends Function {
     protected static final String FUNCTION_DESCRIPTION_1_PARAM =
             "Returns the value of $arg with whitespace normalized by stripping leading ";
     private static final String FUNCTION_DESCRIPTION_COMMON_1 =
-            "and trailing whitespace and replacing sequences of one or more than one " +
-                    "whitespace character with a single space, #x20.\n\n" +
-                    "The whitespace characters are defined in the metasymbol S (Production 3) " +
-                    "of [Extensible Markup Language (XML) 1.0 Recommendation (Third Edition)].\n\n" +
-                    "Note:\n\n" +
-                    "The definition of the metasymbol S (Production 3), is " +
-                    "unchanged in [Extensible Markup Language (XML) 1.1 Recommendation].\n\n";
+            """
+            and trailing whitespace and replacing sequences of one or more than one \
+            whitespace character with a single space, #x20.
+            
+            The whitespace characters are defined in the metasymbol S (Production 3) \
+            of [Extensible Markup Language (XML) 1.0 Recommendation (Third Edition)].
+            
+            Note:
+            
+            The definition of the metasymbol S (Production 3), is \
+            unchanged in [Extensible Markup Language (XML) 1.1 Recommendation].
+            
+            """;
 
     private static final String FUNCTION_DESCRIPTION_1_PARAM_1 =
             "If the value of $arg is the empty sequence, returns the zero-length string.\n\n";

@@ -162,8 +162,8 @@ public class MapType extends AbstractMapType {
     public void add(final AbstractMapType other) {
         setKeyType(other.key() != null ? other.key().getType() : UNKNOWN_KEY_TYPE);
 
-        if(other instanceof MapType) {
-            map = map.union(((MapType)other).map);
+        if(other instanceof MapType type) {
+            map = map.union(type.map);
         } else {
 
             // create a transient map

@@ -23,10 +23,12 @@ package org.exist.backup;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.Serial;
 import java.text.DecimalFormat;
 
 
 public class RestoreDialog extends JDialog {
+    @Serial
     private static final long serialVersionUID = 3773486348231766907L;
     private static final DecimalFormat PERCENTAGE_FORMAT = new DecimalFormat("###.##%");
 

@@ -21,6 +21,7 @@
  */
 package org.exist.client.security;
 
+import java.io.Serial;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -38,7 +39,8 @@ import org.xmldb.api.base.XMLDBException;
  * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 public class EditGroupDialog extends GroupDialog {
-    
+
+    @Serial
     private static final long serialVersionUID = -9092253443709031810L;
 	
     private final Group group;

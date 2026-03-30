@@ -127,12 +127,13 @@ public class ErrorCodes {
 
     public static final ErrorCode XQST0094 = new W3CErrorCode("XQST0094", "The name of each grouping variable must be equal (by the eq operator on expanded QNames) to the name of a variable in the input tuple stream.");
 
-    public static final ErrorCode XQDY0101 = new W3CErrorCode("XQDY0101", "An error is raised if a computed namespace constructor attempts to do any of the following:\n" +
-            "Bind the prefix xml to some namespace URI other than http://www.w3.org/XML/1998/namespace.\n" +
-            "Bind a prefix other than xml to the namespace URI http://www.w3.org/XML/1998/namespace.\n" +
-            "Bind the prefix xmlns to any namespace URI.\n" +
-            "Bind a prefix to the namespace URI http://www.w3.org/2000/xmlns/.\n" +
-            "Bind any prefix (including the empty prefix) to a zero-length namespace URI.");
+    public static final ErrorCode XQDY0101 = new W3CErrorCode("XQDY0101", """
+            An error is raised if a computed namespace constructor attempts to do any of the following:
+            Bind the prefix xml to some namespace URI other than http://www.w3.org/XML/1998/namespace.
+            Bind a prefix other than xml to the namespace URI http://www.w3.org/XML/1998/namespace.
+            Bind the prefix xmlns to any namespace URI.
+            Bind a prefix to the namespace URI http://www.w3.org/2000/xmlns/.
+            Bind any prefix (including the empty prefix) to a zero-length namespace URI.""");
     public static final ErrorCode XQDY0102 = new W3CErrorCode("XQDY0102", "If the name of an element in an element constructor is in no namespace, creating a default namespace for that element using a computed namespace constructor is an error.");
     public static final ErrorCode XQST0103 =  new W3CErrorCode("XQST0103", "All variables in a window clause must have distinct names.");
     public static final ErrorCode XQDY0137 = new W3CErrorCode("XQDY0137", "No two keys in a map may have the same key value");

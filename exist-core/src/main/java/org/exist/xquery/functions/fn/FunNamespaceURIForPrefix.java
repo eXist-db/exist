@@ -45,15 +45,17 @@ public class FunNamespaceURIForPrefix extends BasicFunction {
 	
 	protected static final String FUNCTION_DESCRIPTION =
 
-		"Returns the namespace URI of one of the in-scope namespaces " +
-		"for $element, identified by its namespace prefix.\n\n" +
-		"If $element has an in-scope namespace whose namespace prefix " +
-		"is equal to $prefix, it returns the namespace URI of that namespace. " +
-		"If $prefix is the zero-length string or the empty sequence, it " +
-		"returns the namespace URI of the default (unnamed) namespace. " +
-		"Otherwise, it returns the empty sequence.\n\n" +
+		"""
+Returns the namespace URI of one of the in-scope namespaces \
+for $element, identified by its namespace prefix.
 
-		"Prefixes are equal only if their Unicode code points match exactly.";
+If $element has an in-scope namespace whose namespace prefix \
+is equal to $prefix, it returns the namespace URI of that namespace. \
+If $prefix is the zero-length string or the empty sequence, it \
+returns the namespace URI of the default (unnamed) namespace. \
+Otherwise, it returns the empty sequence.
+
+Prefixes are equal only if their Unicode code points match exactly.""";
 
 
 	public final static FunctionSignature signature =

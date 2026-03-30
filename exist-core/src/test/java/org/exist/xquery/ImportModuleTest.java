@@ -103,11 +103,13 @@ public class ImportModuleTest {
      */
     private @Nullable ErrorCodes.ErrorCode prefixNot(final String prefix) throws EXistException, IOException, PermissionDeniedException, LockException, SAXException {
         final String module =
-                "xquery version \"1.0\";\n" +
-                "module namespace impl = \"http://example.com/impl\";\n" +
-                "declare function impl:f1($a as xs:string) as xs:string {\n" +
-                "    $a\n" +
-                "};\n";
+                """
+                xquery version "1.0";
+                module namespace impl = "http://example.com/impl";
+                declare function impl:f1($a as xs:string) as xs:string {
+                    $a
+                };
+                """;
 
         final String query =
                 "import module namespace " + prefix + " = \"http://example.com/impl\" at \"xmldb:exist:///db/impl1.xqm\";\n" +
@@ -149,26 +151,32 @@ public class ImportModuleTest {
     @Test
     public void prefixSameAsOtherImport() throws EXistException, IOException, SAXException, PermissionDeniedException, LockException {
         final String module1 =
-                "xquery version \"1.0\";\n" +
-                "module namespace impl = \"http://example.com/impl\";\n" +
-                "declare function impl:f1($a as xs:string) as xs:string {\n" +
-                "    $a\n" +
-                "};\n";
+                """
+                xquery version "1.0";
+                module namespace impl = "http://example.com/impl";
+                declare function impl:f1($a as xs:string) as xs:string {
+                    $a
+                };
+                """;
 
         final String module2 =
-                "xquery version \"1.0\";\n" +
-                "module namespace impl = \"http://example.com/impl\";\n" +
-                "declare function impl:f1($a as xs:string, $b as xs:string) as xs:string {\n" +
-                "    fn:concat($a, ' ', $b)\n" +
-                "};\n";
+                """
+                xquery version "1.0";
+                module namespace impl = "http://example.com/impl";
+                declare function impl:f1($a as xs:string, $b as xs:string) as xs:string {
+                    fn:concat($a, ' ', $b)
+                };
+                """;
 
         final String query =
-                "import module namespace impl = \"http://example.com/impl\" at \"xmldb:exist:///db/impl1.xqm\";\n" +
-                "import module namespace impl = \"http://example.com/impl\" at \"xmldb:exist:///db/impl2.xqm\";\n" +
-                "<result>\n" +
-                "    <impl1>{impl:f1(\"to impl1\")}</impl1>" +
-                "    <impl2>{impl:f1(\"to\", \"impl1\")}</impl2>" +
-                "</result>\n";
+                """
+                import module namespace impl = "http://example.com/impl" at "xmldb:exist:///db/impl1.xqm";
+                import module namespace impl = "http://example.com/impl" at "xmldb:exist:///db/impl2.xqm";
+                <result>
+                    <impl1>{impl:f1("to impl1")}</impl1>\
+                    <impl2>{impl:f1("to", "impl1")}</impl2>\
+                </result>
+                """;
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final Source source = new StringSource(query);
@@ -207,18 +215,22 @@ public class ImportModuleTest {
     @Test
     public void prefixSameAsOtherNamespaceDeclaration() throws EXistException, IOException, SAXException, PermissionDeniedException, LockException {
         final String module =
-                "xquery version \"1.0\";\n" +
-                "module namespace impl = \"http://example.com/impl\";\n" +
-                "declare function impl:f1($a as xs:string) as xs:string {\n" +
-                "    $a\n" +
-                "};\n";
+                """
+                xquery version "1.0";
+                module namespace impl = "http://example.com/impl";
+                declare function impl:f1($a as xs:string) as xs:string {
+                    $a
+                };
+                """;
 
         final String query =
-                "declare namespace impl = \"http://example.com/impl\";\n" +
-                "import module namespace impl = \"http://example.com/impl\" at \"xmldb:exist:///db/impl1.xqm\";\n" +
-                "<result>\n" +
-                "    <impl1>{impl:f1(\"to impl1\")}</impl1>" +
-                "</result>\n";
+                """
+                declare namespace impl = "http://example.com/impl";
+                import module namespace impl = "http://example.com/impl" at "xmldb:exist:///db/impl1.xqm";
+                <result>
+                    <impl1>{impl:f1("to impl1")}</impl1>\
+                </result>
+                """;
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final Source source = new StringSource(query);
@@ -254,26 +266,32 @@ public class ImportModuleTest {
     @Test
     public void prefixSameAsModuleDeclaration() throws EXistException, IOException, SAXException, PermissionDeniedException, LockException {
         final String module1 =
-                "xquery version \"1.0\";\n" +
-                "module namespace impl = \"http://example.com/impl\";\n" +
-                "import module namespace impl = \"http://example.com/impl\" at \"xmldb:exist:///db/impl2.xqm\";\n" +
-                "declare function impl:f1($a as xs:string) as xs:string {\n" +
-                "    $a\n" +
-                "};\n";
+                """
+                xquery version "1.0";
+                module namespace impl = "http://example.com/impl";
+                import module namespace impl = "http://example.com/impl" at "xmldb:exist:///db/impl2.xqm";
+                declare function impl:f1($a as xs:string) as xs:string {
+                    $a
+                };
+                """;
 
         final String module2 =
-                "xquery version \"1.0\";\n" +
-                "module namespace impl = \"http://example.com/impl\";\n" +
-                "declare function impl:f1($a as xs:string, $b as xs:string) as xs:string {\n" +
-                "    fn:concat($a, ' ', $b)\n" +
-                "};\n";
+                """
+                xquery version "1.0";
+                module namespace impl = "http://example.com/impl";
+                declare function impl:f1($a as xs:string, $b as xs:string) as xs:string {
+                    fn:concat($a, ' ', $b)
+                };
+                """;
 
         final String query =
-                "declare namespace impl = \"http://example.com/impl\";\n" +
-                "import module namespace impl = \"http://example.com/impl\" at \"xmldb:exist:///db/impl1.xqm\";\n" +
-                "<result>\n" +
-                "    <impl1>{impl:f1(\"to impl1\")}</impl1>" +
-                "</result>\n";
+                """
+                declare namespace impl = "http://example.com/impl";
+                import module namespace impl = "http://example.com/impl" at "xmldb:exist:///db/impl1.xqm";
+                <result>
+                    <impl1>{impl:f1("to impl1")}</impl1>\
+                </result>
+                """;
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final Source source = new StringSource(query);
@@ -311,17 +329,21 @@ public class ImportModuleTest {
     @Test
     public void emptyNamespace() throws EXistException, IOException, PermissionDeniedException, LockException, SAXException {
         final String module =
-                "xquery version \"1.0\";\n" +
-                "module namespace impl = \"http://example.com/impl\";\n" +
-                "declare function impl:f1($a as xs:string) as xs:string {\n" +
-                "    $a\n" +
-                "};\n";
+                """
+                xquery version "1.0";
+                module namespace impl = "http://example.com/impl";
+                declare function impl:f1($a as xs:string) as xs:string {
+                    $a
+                };
+                """;
 
         final String query =
-                "import module namespace impl = \"\" at \"xmldb:exist:///db/impl1.xqm\";\n" +
-                "<result>\n" +
-                "    <impl1>{impl:f1(\"to impl1\")}</impl1>" +
-                "</result>\n";
+                """
+                import module namespace impl = "" at "xmldb:exist:///db/impl1.xqm";
+                <result>
+                    <impl1>{impl:f1("to impl1")}</impl1>\
+                </result>
+                """;
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final Source source = new StringSource(query);
@@ -357,28 +379,34 @@ public class ImportModuleTest {
     @Test
     public void namespaceSameAsOtherImport() throws EXistException, IOException, PermissionDeniedException, LockException, SAXException {
         final String module1 =
-                "xquery version \"1.0\";\n" +
-                "module namespace impl = \"http://example.com/impl\";\n" +
-                "declare function impl:f1($a as xs:string) as xs:string {\n" +
-                "    $a\n" +
-                "};\n";
+                """
+                xquery version "1.0";
+                module namespace impl = "http://example.com/impl";
+                declare function impl:f1($a as xs:string) as xs:string {
+                    $a
+                };
+                """;
 
         final String module2 =
-                "xquery version \"1.0\";\n" +
-                "module namespace impl = \"http://example.com/impl\";\n" +
-                "declare function impl:f1($a as xs:string, $b as xs:string) as xs:string {\n" +
-                "    fn:concat($a, ' ', $b)\n" +
-                "};\n";
+                """
+                xquery version "1.0";
+                module namespace impl = "http://example.com/impl";
+                declare function impl:f1($a as xs:string, $b as xs:string) as xs:string {
+                    fn:concat($a, ' ', $b)
+                };
+                """;
 
         final String query =
-                "import module namespace impl1 = \"http://example.com/impl\"" +
-                "        at \"xmldb:exist:///db/impl1.xqm\";\n" +
-                "import module namespace impl2 = \"http://example.com/impl\"" +
-                "        at \"xmldb:exist:///db/impl2.xqm\";\n" +
-                "<result>\n" +
-                "    <impl1>{impl1:f1(\"to impl1\")}</impl1>" +
-                "    <impl2>{impl2:f1(\"to\", \"impl2\")}</impl2>" +
-                "</result>\n";
+                """
+                import module namespace impl1 = "http://example.com/impl"\
+                        at "xmldb:exist:///db/impl1.xqm";
+                import module namespace impl2 = "http://example.com/impl"\
+                        at "xmldb:exist:///db/impl2.xqm";
+                <result>
+                    <impl1>{impl1:f1("to impl1")}</impl1>\
+                    <impl2>{impl2:f1("to", "impl2")}</impl2>\
+                </result>
+                """;
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final Source source = new StringSource(query);
@@ -416,10 +444,12 @@ public class ImportModuleTest {
     @Test
     public void noSuchModuleWithLocationHint() throws EXistException, IOException, PermissionDeniedException {
         final String query =
-                "import module namespace impl = \"http://example.com/impl\" at \"xmldb:exist:///db/impl1.xqm\";\n" +
-                "<result>\n" +
-                "    <impl1>{impl:f1(\"to impl1\")}</impl1>" +
-                "</result>\n";
+                """
+                import module namespace impl = "http://example.com/impl" at "xmldb:exist:///db/impl1.xqm";
+                <result>
+                    <impl1>{impl:f1("to impl1")}</impl1>\
+                </result>
+                """;
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final Source source = new StringSource(query);
@@ -451,10 +481,12 @@ public class ImportModuleTest {
     @Test
     public void noSuchModuleWithoutLocationHint() throws EXistException, IOException, PermissionDeniedException {
         final String query =
-                "import module namespace impl = \"http://example.com/impl\";\n" +
-                "<result>\n" +
-                "    <impl1>{impl:f1(\"to impl1\")}</impl1>" +
-                "</result>\n";
+                """
+                import module namespace impl = "http://example.com/impl";
+                <result>
+                    <impl1>{impl:f1("to impl1")}</impl1>\
+                </result>
+                """;
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final Source source = new StringSource(query);
@@ -486,26 +518,32 @@ public class ImportModuleTest {
     @Test
     public void functionSameAsOtherModule() throws EXistException, IOException, PermissionDeniedException, LockException, SAXException {
         final String module1 =
-                "xquery version \"1.0\";\n" +
-                "module namespace impl = \"http://example.com/impl\";\n" +
-                "declare function impl:f1($a as xs:string) as xs:string {\n" +
-                "    $a\n" +
-                "};\n";
+                """
+                xquery version "1.0";
+                module namespace impl = "http://example.com/impl";
+                declare function impl:f1($a as xs:string) as xs:string {
+                    $a
+                };
+                """;
 
         final String module2 =
-                "xquery version \"1.0\";\n" +
-                "module namespace impl = \"http://example.com/impl\";\n" +
-                "declare function impl:f1($a as xs:string) as xs:string {\n" +
-                "    $a\n" +
-                "};\n";
+                """
+                xquery version "1.0";
+                module namespace impl = "http://example.com/impl";
+                declare function impl:f1($a as xs:string) as xs:string {
+                    $a
+                };
+                """;
 
         final String query =
-                "import module namespace impl = \"http://example.com/impl\"" +
-                "        at \"xmldb:exist:///db/impl1.xqm\", \"xmldb:exist:///db/impl2.xqm\";\n" +
-                "<result>\n" +
-                "    <impl1>{impl:f1(\"to impl1\")}</impl1>" +
-                "    <impl2>{impl:f1(\"to impl1\")}</impl2>" +
-                "</result>\n";
+                """
+                import module namespace impl = "http://example.com/impl"\
+                        at "xmldb:exist:///db/impl1.xqm", "xmldb:exist:///db/impl2.xqm";
+                <result>
+                    <impl1>{impl:f1("to impl1")}</impl1>\
+                    <impl2>{impl:f1("to impl1")}</impl2>\
+                </result>
+                """;
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final Source source = new StringSource(query);
@@ -544,18 +582,20 @@ public class ImportModuleTest {
     @Test
     public void functionDuplicateInMainModule() throws EXistException, IOException, PermissionDeniedException, LockException, TriggerException, XPathException {
         final String query =
-                        "declare function local:f1($a as xs:string) as xs:string {\n" +
-                        "    <first>{$a}</first>\n" +
-                        "};\n" +
-                        "\n" +
-                        "declare function local:f1($a as xs:string) as xs:string {\n" +
-                        "    <second>{$a}</second>\n" +
-                        "};\n" +
-                        "\n" +
-                        "<result>\n" +
-                        "    <impl1>{local:f1(\"to impl1\")}</impl1>" +
-                        "    <impl2>{local:f1(\"to impl1\")}</impl2>" +
-                        "</result>\n";
+                        """
+                        declare function local:f1($a as xs:string) as xs:string {
+                            <first>{$a}</first>
+                        };
+                        
+                        declare function local:f1($a as xs:string) as xs:string {
+                            <second>{$a}</second>
+                        };
+                        
+                        <result>
+                            <impl1>{local:f1("to impl1")}</impl1>\
+                            <impl2>{local:f1("to impl1")}</impl2>\
+                        </result>
+                        """;
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final Source source = new StringSource(query);
@@ -588,21 +628,23 @@ public class ImportModuleTest {
     @Test
     public void functionDuplicateNsInMainModule() throws EXistException, IOException, PermissionDeniedException, LockException, TriggerException, XPathException {
         final String query =
-                "declare namespace ns1 = 'http://ns1';\n" +
-                "declare namespace ns12 = 'http://ns1';\n" +
-                "\n" +
-                "declare function ns1:f1($a as xs:string) as xs:string {\n" +
-                        "    <first>{$a}</first>\n" +
-                        "};\n" +
-                        "\n" +
-                        "declare function ns12:f1($a as xs:string) as xs:string {\n" +
-                        "    <second>{$a}</second>\n" +
-                        "};\n" +
-                        "\n" +
-                        "<result>\n" +
-                        "    <impl1>{ns1:f1(\"to impl1\")}</impl1>" +
-                        "    <impl2>{ns12:f1(\"to impl1\")}</impl2>" +
-                        "</result>\n";
+                """
+                declare namespace ns1 = 'http://ns1';
+                declare namespace ns12 = 'http://ns1';
+                
+                declare function ns1:f1($a as xs:string) as xs:string {
+                    <first>{$a}</first>
+                };
+                
+                declare function ns12:f1($a as xs:string) as xs:string {
+                    <second>{$a}</second>
+                };
+                
+                <result>
+                    <impl1>{ns1:f1("to impl1")}</impl1>\
+                    <impl2>{ns12:f1("to impl1")}</impl2>\
+                </result>
+                """;
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final Source source = new StringSource(query);
@@ -635,21 +677,25 @@ public class ImportModuleTest {
     @Test
     public void functionSameAsImportingModule() throws EXistException, IOException, PermissionDeniedException, LockException, SAXException {
         final String module =
-                "xquery version \"1.0\";\n" +
-                "module namespace impl = \"http://example.com/impl\";\n" +
-                "declare function impl:f1($a as xs:string) as xs:string {\n" +
-                "    $a\n" +
-                "};\n";
+                """
+                xquery version "1.0";
+                module namespace impl = "http://example.com/impl";
+                declare function impl:f1($a as xs:string) as xs:string {
+                    $a
+                };
+                """;
 
         final String query =
-                "import module namespace impl = \"http://example.com/impl\"" +
-                "        at \"xmldb:exist:///db/impl1.xqm\";\n" +
-                "declare function impl:f1($a as xs:string) as xs:string {\n" +
-                "    $a\n" +
-                "};\n" +
-                "<result>\n" +
-                "    <impl1>{impl:f1(\"to impl1\")}</impl1>" +
-                "</result>\n";
+                """
+                import module namespace impl = "http://example.com/impl"\
+                        at "xmldb:exist:///db/impl1.xqm";
+                declare function impl:f1($a as xs:string) as xs:string {
+                    $a
+                };
+                <result>
+                    <impl1>{impl:f1("to impl1")}</impl1>\
+                </result>
+                """;
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final Source source = new StringSource(query);
@@ -687,21 +733,27 @@ public class ImportModuleTest {
     @Test
     public void variableSameAsOtherModule() throws EXistException, IOException, PermissionDeniedException, LockException, SAXException {
         final String module1 =
-                "xquery version \"1.0\";\n" +
-                "module namespace impl = \"http://example.com/impl\";\n" +
-                "declare variable $impl:f1 := \"impl1\";\n";
+                """
+                xquery version "1.0";
+                module namespace impl = "http://example.com/impl";
+                declare variable $impl:f1 := "impl1";
+                """;
 
         final String module2 =
-                "xquery version \"1.0\";\n" +
-                "module namespace impl = \"http://example.com/impl\";\n" +
-                "declare variable $impl:f1 := \"impl2\";\n";
+                """
+                xquery version "1.0";
+                module namespace impl = "http://example.com/impl";
+                declare variable $impl:f1 := "impl2";
+                """;
 
         final String query =
-                "import module namespace impl = \"http://example.com/impl\"" +
-                "        at \"xmldb:exist:///db/impl1.xqm\", \"xmldb:exist:///db/impl2.xqm\";\n" +
-                "<result>\n" +
-                "    <impl1>{$impl:f1}</impl1>" +
-                "</result>\n";
+                """
+                import module namespace impl = "http://example.com/impl"\
+                        at "xmldb:exist:///db/impl1.xqm", "xmldb:exist:///db/impl2.xqm";
+                <result>
+                    <impl1>{$impl:f1}</impl1>\
+                </result>
+                """;
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final Source source = new StringSource(query);
@@ -739,17 +791,21 @@ public class ImportModuleTest {
     @Test
     public void variableSameAsImportingModule() throws EXistException, IOException, PermissionDeniedException, LockException, SAXException {
         final String module =
-                "xquery version \"1.0\";\n" +
-                "module namespace impl = \"http://example.com/impl\";\n" +
-                "declare variable $impl:f1 := \"impl1\";\n";
+                """
+                xquery version "1.0";
+                module namespace impl = "http://example.com/impl";
+                declare variable $impl:f1 := "impl1";
+                """;
 
         final String query =
-                "import module namespace impl = \"http://example.com/impl\"" +
-                "        at \"xmldb:exist:///db/impl1.xqm\";\n" +
-                "declare variable $impl:f1 := \"this\";\n" +
-                "<result>\n" +
-                "    <impl1>{$impl:f1}</impl1>" +
-                "</result>\n";
+                """
+                import module namespace impl = "http://example.com/impl"\
+                        at "xmldb:exist:///db/impl1.xqm";
+                declare variable $impl:f1 := "this";
+                <result>
+                    <impl1>{$impl:f1}</impl1>\
+                </result>
+                """;
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final Source source = new StringSource(query);
@@ -786,17 +842,21 @@ public class ImportModuleTest {
     @Test
     public void functionsSingleLocationHint() throws EXistException, IOException, PermissionDeniedException, LockException, SAXException, XPathException {
         final String module =
-                "xquery version \"1.0\";\n" +
-                "module namespace impl = \"http://example.com/impl\";\n" +
-                "declare function impl:f1($a as xs:string) as xs:string {\n" +
-                "    $a\n" +
-                "};\n";
+                """
+                xquery version "1.0";
+                module namespace impl = "http://example.com/impl";
+                declare function impl:f1($a as xs:string) as xs:string {
+                    $a
+                };
+                """;
 
         final String query =
-                "import module namespace impl = \"http://example.com/impl\" at \"xmldb:exist:///db/impl1.xqm\";\n" +
-                "<result>\n" +
-                "    <impl1>{impl:f1(\"to impl1\")}</impl1>" +
-                "</result>\n";
+                """
+                import module namespace impl = "http://example.com/impl" at "xmldb:exist:///db/impl1.xqm";
+                <result>
+                    <impl1>{impl:f1("to impl1")}</impl1>\
+                </result>
+                """;
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final Source source = new StringSource(query);
@@ -841,34 +901,42 @@ public class ImportModuleTest {
     @Test
     public void functionsCompositeFromMultipleLocationHints() throws EXistException, IOException, PermissionDeniedException, LockException, SAXException, XPathException {
         final String module1 =
-                "xquery version \"1.0\";\n" +
-                "module namespace impl = \"http://example.com/impl\";\n" +
-                "declare function impl:f1($a as xs:string) as xs:string {\n" +
-                "    $a\n" +
-                "};\n";
+                """
+                xquery version "1.0";
+                module namespace impl = "http://example.com/impl";
+                declare function impl:f1($a as xs:string) as xs:string {
+                    $a
+                };
+                """;
 
         final String module2 =
-                "xquery version \"1.0\";\n" +
-                "module namespace impl = \"http://example.com/impl\";\n" +
-                "declare function impl:f1($a as xs:string, $b as xs:string) as xs:string {\n" +
-                "    fn:concat($a, ' ', $b)\n" +
-                "};\n";
+                """
+                xquery version "1.0";
+                module namespace impl = "http://example.com/impl";
+                declare function impl:f1($a as xs:string, $b as xs:string) as xs:string {
+                    fn:concat($a, ' ', $b)
+                };
+                """;
 
         final String module3 =
-                "xquery version \"1.0\";\n" +
-                "module namespace impl = \"http://example.com/impl\";\n" +
-                "declare function impl:f2($a as xs:string) as xs:string {\n" +
-                "    $a\n" +
-                "};\n";
+                """
+                xquery version "1.0";
+                module namespace impl = "http://example.com/impl";
+                declare function impl:f2($a as xs:string) as xs:string {
+                    $a
+                };
+                """;
 
         final String query =
-                "import module namespace impl = \"http://example.com/impl\"" +
-                "        at \"xmldb:exist:///db/impl1.xqm\", \"xmldb:exist:///db/impl2.xqm\", \"xmldb:exist:///db/impl3.xqm\";\n" +
-                "<result>\n" +
-                "    <impl1>{impl:f1(\"to impl1\")}</impl1>" +
-                "    <impl2>{impl:f1(\"to\", \"impl2\")}</impl2>" +
-                "    <impl3>{impl:f2(\"to impl3\")}</impl3>" +
-                "</result>\n";
+                """
+                import module namespace impl = "http://example.com/impl"\
+                        at "xmldb:exist:///db/impl1.xqm", "xmldb:exist:///db/impl2.xqm", "xmldb:exist:///db/impl3.xqm";
+                <result>
+                    <impl1>{impl:f1("to impl1")}</impl1>\
+                    <impl2>{impl:f1("to", "impl2")}</impl2>\
+                    <impl3>{impl:f2("to impl3")}</impl3>\
+                </result>
+                """;
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final Source source = new StringSource(query);
@@ -921,34 +989,42 @@ public class ImportModuleTest {
     @Test
     public void functionsCompositeFromMultipleLocationHintsWithDifferingPrefixes() throws EXistException, IOException, PermissionDeniedException, LockException, SAXException, XPathException {
         final String module1 =
-                "xquery version \"1.0\";\n" +
-                        "module namespace impl1 = \"http://example.com/impl\";\n" +
-                        "declare function impl1:f1($a as xs:string) as xs:string {\n" +
-                        "    $a\n" +
-                        "};\n";
+                """
+                xquery version "1.0";
+                module namespace impl1 = "http://example.com/impl";
+                declare function impl1:f1($a as xs:string) as xs:string {
+                    $a
+                };
+                """;
 
         final String module2 =
-                "xquery version \"1.0\";\n" +
-                        "module namespace impl2 = \"http://example.com/impl\";\n" +
-                        "declare function impl2:f1($a as xs:string, $b as xs:string) as xs:string {\n" +
-                        "    fn:concat($a, ' ', $b)\n" +
-                        "};\n";
+                """
+                xquery version "1.0";
+                module namespace impl2 = "http://example.com/impl";
+                declare function impl2:f1($a as xs:string, $b as xs:string) as xs:string {
+                    fn:concat($a, ' ', $b)
+                };
+                """;
 
         final String module3 =
-                "xquery version \"1.0\";\n" +
-                        "module namespace impl3 = \"http://example.com/impl\";\n" +
-                        "declare function impl3:f2($a as xs:string) as xs:string {\n" +
-                        "    $a\n" +
-                        "};\n";
+                """
+                xquery version "1.0";
+                module namespace impl3 = "http://example.com/impl";
+                declare function impl3:f2($a as xs:string) as xs:string {
+                    $a
+                };
+                """;
 
         final String query =
-                "import module namespace impl = \"http://example.com/impl\"" +
-                        "        at \"xmldb:exist:///db/impl1.xqm\", \"xmldb:exist:///db/impl2.xqm\", \"xmldb:exist:///db/impl3.xqm\";\n" +
-                        "<result>\n" +
-                        "    <impl1>{impl:f1(\"to impl1\")}</impl1>" +
-                        "    <impl2>{impl:f1(\"to\", \"impl2\")}</impl2>" +
-                        "    <impl3>{impl:f2(\"to impl3\")}</impl3>" +
-                        "</result>\n";
+                """
+                import module namespace impl = "http://example.com/impl"\
+                        at "xmldb:exist:///db/impl1.xqm", "xmldb:exist:///db/impl2.xqm", "xmldb:exist:///db/impl3.xqm";
+                <result>
+                    <impl1>{impl:f1("to impl1")}</impl1>\
+                    <impl2>{impl:f1("to", "impl2")}</impl2>\
+                    <impl3>{impl:f2("to impl3")}</impl3>\
+                </result>
+                """;
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final Source source = new StringSource(query);
@@ -1001,15 +1077,19 @@ public class ImportModuleTest {
     @Test
     public void variablesSingleLocationHint() throws EXistException, IOException, PermissionDeniedException, LockException, SAXException, XPathException {
         final String module =
-                "xquery version \"1.0\";\n" +
-                "module namespace impl = \"http://example.com/impl\";\n" +
-                "declare variable $impl:v1 := \"impl1\";\n";
+                """
+                xquery version "1.0";
+                module namespace impl = "http://example.com/impl";
+                declare variable $impl:v1 := "impl1";
+                """;
 
         final String query =
-                "import module namespace impl = \"http://example.com/impl\" at \"xmldb:exist:///db/impl1.xqm\";\n" +
-                "<result>\n" +
-                "    <impl1>{$impl:v1}</impl1>" +
-                "</result>\n";
+                """
+                import module namespace impl = "http://example.com/impl" at "xmldb:exist:///db/impl1.xqm";
+                <result>
+                    <impl1>{$impl:v1}</impl1>\
+                </result>
+                """;
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final Source source = new StringSource(query);
@@ -1054,28 +1134,36 @@ public class ImportModuleTest {
     @Test
     public void variablesCompositeFromMultipleLocationHints() throws EXistException, IOException, PermissionDeniedException, LockException, SAXException, XPathException {
         final String module1 =
-                "xquery version \"1.0\";\n" +
-                "module namespace impl = \"http://example.com/impl\";\n" +
-                "declare variable $impl:v1 := \"impl1\";\n";
+                """
+                xquery version "1.0";
+                module namespace impl = "http://example.com/impl";
+                declare variable $impl:v1 := "impl1";
+                """;
 
         final String module2 =
-                "xquery version \"1.0\";\n" +
-                "module namespace impl = \"http://example.com/impl\";\n" +
-                "declare variable $impl:v2 := \"impl2\";\n";
+                """
+                xquery version "1.0";
+                module namespace impl = "http://example.com/impl";
+                declare variable $impl:v2 := "impl2";
+                """;
 
         final String module3 =
-                "xquery version \"1.0\";\n" +
-                "module namespace impl = \"http://example.com/impl\";\n" +
-                "declare variable $impl:v3 := \"impl3\";\n";
+                """
+                xquery version "1.0";
+                module namespace impl = "http://example.com/impl";
+                declare variable $impl:v3 := "impl3";
+                """;
 
         final String query =
-                "import module namespace impl = \"http://example.com/impl\"" +
-                        "        at \"xmldb:exist:///db/impl1.xqm\", \"xmldb:exist:///db/impl2.xqm\", \"xmldb:exist:///db/impl3.xqm\";\n" +
-                        "<result>\n" +
-                        "    <impl1>{$impl:v1}</impl1>" +
-                        "    <impl2>{$impl:v2}</impl2>" +
-                        "    <impl3>{$impl:v3}</impl3>" +
-                        "</result>\n";
+                """
+                import module namespace impl = "http://example.com/impl"\
+                        at "xmldb:exist:///db/impl1.xqm", "xmldb:exist:///db/impl2.xqm", "xmldb:exist:///db/impl3.xqm";
+                <result>
+                    <impl1>{$impl:v1}</impl1>\
+                    <impl2>{$impl:v2}</impl2>\
+                    <impl3>{$impl:v3}</impl3>\
+                </result>
+                """;
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final Source source = new StringSource(query);
@@ -1128,28 +1216,36 @@ public class ImportModuleTest {
     @Test
     public void variablesCompositeFromMultipleLocationHintsWithDifferingPrefixes() throws EXistException, IOException, PermissionDeniedException, LockException, SAXException, XPathException {
         final String module1 =
-                "xquery version \"1.0\";\n" +
-                "module namespace impl1 = \"http://example.com/impl\";\n" +
-                "declare variable $impl1:v1 := \"impl1\";\n";
+                """
+                xquery version "1.0";
+                module namespace impl1 = "http://example.com/impl";
+                declare variable $impl1:v1 := "impl1";
+                """;
 
         final String module2 =
-                "xquery version \"1.0\";\n" +
-                "module namespace impl2 = \"http://example.com/impl\";\n" +
-                "declare variable $impl2:v2 := \"impl2\";\n";
+                """
+                xquery version "1.0";
+                module namespace impl2 = "http://example.com/impl";
+                declare variable $impl2:v2 := "impl2";
+                """;
 
         final String module3 =
-                "xquery version \"1.0\";\n" +
-                "module namespace impl3 = \"http://example.com/impl\";\n" +
-                "declare variable $impl3:v3 := \"impl3\";\n";
+                """
+                xquery version "1.0";
+                module namespace impl3 = "http://example.com/impl";
+                declare variable $impl3:v3 := "impl3";
+                """;
 
         final String query =
-                "import module namespace impl = \"http://example.com/impl\"" +
-                "        at \"xmldb:exist:///db/impl1.xqm\", \"xmldb:exist:///db/impl2.xqm\", \"xmldb:exist:///db/impl3.xqm\";\n" +
-                "<result>\n" +
-                "    <impl1>{$impl:v1}</impl1>" +
-                "    <impl2>{$impl:v2}</impl2>" +
-                "    <impl3>{$impl:v3}</impl3>" +
-                "</result>\n";
+                """
+                import module namespace impl = "http://example.com/impl"\
+                        at "xmldb:exist:///db/impl1.xqm", "xmldb:exist:///db/impl2.xqm", "xmldb:exist:///db/impl3.xqm";
+                <result>
+                    <impl1>{$impl:v1}</impl1>\
+                    <impl2>{$impl:v2}</impl2>\
+                    <impl3>{$impl:v3}</impl3>\
+                </result>
+                """;
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final Source source = new StringSource(query);
@@ -1199,34 +1295,40 @@ public class ImportModuleTest {
     @Test
     public void variablesBetweenModules() throws EXistException, PermissionDeniedException, IOException, LockException, SAXException, XPathException {
         final String module1 =
-                "xquery version \"1.0\";\n" +
-                "module namespace mod1 = \"http://example.com/mod1\";\n" +
-                "declare variable $mod1:var1 := \"mod1 var1\";\n" +
-                "declare function mod1:test() {\n" +
-                "    <function name=\"mod1:test\">\n" +
-                "        <variable name=\"mod1:var1\">{$mod1:var1}</variable>\n" +
-                "    </function>\n" +
-                "};";
+                """
+                xquery version "1.0";
+                module namespace mod1 = "http://example.com/mod1";
+                declare variable $mod1:var1 := "mod1 var1";
+                declare function mod1:test() {
+                    <function name="mod1:test">
+                        <variable name="mod1:var1">{$mod1:var1}</variable>
+                    </function>
+                };\
+                """;
 
         final String module2 =
-                "xquery version \"1.0\";\n" +
-                "module namespace mod2 = \"http://example.com/mod2\";\n" +
-                "declare variable $mod2:var1 := \"mod2 var1\";\n" +
-                "import module namespace mod1 = \"http://example.com/mod1\" at \"xmldb:exist:///db/mod1.xqm\";\n" +
-                "declare function mod2:test() {\n" +
-                "    <function name=\"mod2:test\">\n" +
-                "        <variable name=\"mod2:var1\">{$mod2:var1}</variable>\n" +
-                "        { mod1:test() }\n" +
-                "        <variable name=\"mod1:var1\">{$mod1:var1}</variable>\n" +
-                "    </function>\n" +
-                "};";
+                """
+                xquery version "1.0";
+                module namespace mod2 = "http://example.com/mod2";
+                declare variable $mod2:var1 := "mod2 var1";
+                import module namespace mod1 = "http://example.com/mod1" at "xmldb:exist:///db/mod1.xqm";
+                declare function mod2:test() {
+                    <function name="mod2:test">
+                        <variable name="mod2:var1">{$mod2:var1}</variable>
+                        { mod1:test() }
+                        <variable name="mod1:var1">{$mod1:var1}</variable>
+                    </function>
+                };\
+                """;
 
         final String query =
-                "xquery version \"1.0\";\n" +
-                " import module namespace mod2 = 'http://example.com/mod2' at 'xmldb:exist:///db/mod2.xqm';\n" +
-                "<result>\n" +
-                "    {mod2:test()}\n" +
-                "</result>\n";
+                """
+                xquery version "1.0";
+                 import module namespace mod2 = 'http://example.com/mod2' at 'xmldb:exist:///db/mod2.xqm';
+                <result>
+                    {mod2:test()}
+                </result>
+                """;
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final Source source = new StringSource(query);
@@ -1285,30 +1387,36 @@ public class ImportModuleTest {
     @Test
     public void xq10CyclicTwoLibraryModules() throws EXistException, IOException, PermissionDeniedException, LockException, SAXException {
         final String module1 =
-                "xquery version \"1.0\";\n" +
-                        "module namespace impl1 = \"http://example.com/impl1\";\n" +
-                        "import module namespace impl2 = \"http://example.com/impl2\"" +
-                        "        at \"xmldb:exist:///db/impl2.xqm\";\n" +
-                        "declare function impl1:f1($a as xs:string) {\n" +
-                        "    <impl1>{$a}</impl1>\n" +
-                        "};\n";
+                """
+                xquery version "1.0";
+                module namespace impl1 = "http://example.com/impl1";
+                import module namespace impl2 = "http://example.com/impl2"\
+                        at "xmldb:exist:///db/impl2.xqm";
+                declare function impl1:f1($a as xs:string) {
+                    <impl1>{$a}</impl1>
+                };
+                """;
 
         final String module2 =
-                "xquery version \"1.0\";\n" +
-                        "module namespace impl2 = \"http://example.com/impl2\";\n" +
-                        "import module namespace impl1 = \"http://example.com/impl1\"" +
-                        "        at \"xmldb:exist:///db/impl1.xqm\";\n" +
-                        "declare function impl2:f1($a as xs:string) as xs:string {\n" +
-                        "    <impl2>{$a}</impl2>\n" +
-                        "};\n";
+                """
+                xquery version "1.0";
+                module namespace impl2 = "http://example.com/impl2";
+                import module namespace impl1 = "http://example.com/impl1"\
+                        at "xmldb:exist:///db/impl1.xqm";
+                declare function impl2:f1($a as xs:string) as xs:string {
+                    <impl2>{$a}</impl2>
+                };
+                """;
 
         final String query =
-                "xquery version \"1.0\";\n" +
-                        "import module namespace impl1 = \"http://example.com/impl1\"" +
-                        "        at \"xmldb:exist:///db/impl1.xqm\";\n" +
-                        "<result>\n" +
-                        "    {impl1:f1(\"from main\")}" +
-                        "</result>\n";
+                """
+                xquery version "1.0";
+                import module namespace impl1 = "http://example.com/impl1"\
+                        at "xmldb:exist:///db/impl1.xqm";
+                <result>
+                    {impl1:f1("from main")}\
+                </result>
+                """;
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final Source source = new StringSource(query);
@@ -1349,30 +1457,36 @@ public class ImportModuleTest {
     @Test
     public void xq31CyclicTwoLibraryModules() throws EXistException, IOException, PermissionDeniedException, LockException, SAXException, XPathException {
         final String module1 =
-                "xquery version \"3.1\";\n" +
-                        "module namespace impl1 = \"http://example.com/impl1\";\n" +
-                        "import module namespace impl2 = \"http://example.com/impl2\"" +
-                        "        at \"xmldb:exist:///db/impl2.xqm\";\n" +
-                        "declare function impl1:f1($a as xs:string) {\n" +
-                        "    <impl1>{$a}</impl1>\n" +
-                        "};\n";
+                """
+                xquery version "3.1";
+                module namespace impl1 = "http://example.com/impl1";
+                import module namespace impl2 = "http://example.com/impl2"\
+                        at "xmldb:exist:///db/impl2.xqm";
+                declare function impl1:f1($a as xs:string) {
+                    <impl1>{$a}</impl1>
+                };
+                """;
 
         final String module2 =
-                "xquery version \"3.1\";\n" +
-                        "module namespace impl2 = \"http://example.com/impl2\";\n" +
-                        "import module namespace impl1 = \"http://example.com/impl1\"" +
-                        "        at \"xmldb:exist:///db/impl1.xqm\";\n" +
-                        "declare function impl2:f1($a as xs:string) as xs:string {\n" +
-                        "    <impl2>{$a}</impl2>\n" +
-                        "};\n";
+                """
+                xquery version "3.1";
+                module namespace impl2 = "http://example.com/impl2";
+                import module namespace impl1 = "http://example.com/impl1"\
+                        at "xmldb:exist:///db/impl1.xqm";
+                declare function impl2:f1($a as xs:string) as xs:string {
+                    <impl2>{$a}</impl2>
+                };
+                """;
 
         final String query =
-                "xquery version \"3.1\";\n" +
-                "import module namespace impl1 = \"http://example.com/impl1\"" +
-                        "        at \"xmldb:exist:///db/impl1.xqm\";\n" +
-                        "<result>\n" +
-                        "    {impl1:f1(\"from main\")}" +
-                        "</result>\n";
+                """
+                xquery version "3.1";
+                import module namespace impl1 = "http://example.com/impl1"\
+                        at "xmldb:exist:///db/impl1.xqm";
+                <result>
+                    {impl1:f1("from main")}\
+                </result>
+                """;
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final Source source = new StringSource(query);
@@ -1425,39 +1539,47 @@ public class ImportModuleTest {
     @Test
     public void xq10CyclicThreeLibraryModules() throws EXistException, IOException, PermissionDeniedException, LockException, SAXException {
         final String module1 =
-                "xquery version \"1.0\";\n" +
-                "module namespace impl1 = \"http://example.com/impl1\";\n" +
-                "import module namespace impl2 = \"http://example.com/impl2\"" +
-                "        at \"xmldb:exist:///db/impl2.xqm\";\n" +
-                "declare function impl1:f1($a as xs:string) {\n" +
-                "    <impl1>{$a}</impl1>\n" +
-                "};\n";
+                """
+                xquery version "1.0";
+                module namespace impl1 = "http://example.com/impl1";
+                import module namespace impl2 = "http://example.com/impl2"\
+                        at "xmldb:exist:///db/impl2.xqm";
+                declare function impl1:f1($a as xs:string) {
+                    <impl1>{$a}</impl1>
+                };
+                """;
 
         final String module2 =
-                "xquery version \"1.0\";\n" +
-                "module namespace impl2 = \"http://example.com/impl2\";\n" +
-                "import module namespace impl3 = \"http://example.com/impl3\"" +
-                "        at \"xmldb:exist:///db/impl3.xqm\";\n" +
-                "declare function impl2:f1($a as xs:string) {\n" +
-                "    <impl2>{$a}</impl2>\n" +
-                "};\n";
+                """
+                xquery version "1.0";
+                module namespace impl2 = "http://example.com/impl2";
+                import module namespace impl3 = "http://example.com/impl3"\
+                        at "xmldb:exist:///db/impl3.xqm";
+                declare function impl2:f1($a as xs:string) {
+                    <impl2>{$a}</impl2>
+                };
+                """;
 
         final String module3 =
-                "xquery version \"1.0\";\n" +
-                "module namespace impl3 = \"http://example.com/impl3\";\n" +
-                "import module namespace impl1 = \"http://example.com/impl1\"" +
-                "        at \"xmldb:exist:///db/impl1.xqm\";\n" +
-                "declare function impl3:f1($a as xs:string) {\n" +
-                "    <impl3>{$a}</impl3>\n" +
-                "};\n";
+                """
+                xquery version "1.0";
+                module namespace impl3 = "http://example.com/impl3";
+                import module namespace impl1 = "http://example.com/impl1"\
+                        at "xmldb:exist:///db/impl1.xqm";
+                declare function impl3:f1($a as xs:string) {
+                    <impl3>{$a}</impl3>
+                };
+                """;
 
         final String query =
-                "xquery version \"1.0\";\n" +
-                "import module namespace impl1 = \"http://example.com/impl1\"" +
-                "        at \"xmldb:exist:///db/impl1.xqm\";\n" +
-                "<result>\n" +
-                "    {impl1:f1(\"from main\")}" +
-                "</result>\n";
+                """
+                xquery version "1.0";
+                import module namespace impl1 = "http://example.com/impl1"\
+                        at "xmldb:exist:///db/impl1.xqm";
+                <result>
+                    {impl1:f1("from main")}\
+                </result>
+                """;
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final Source source = new StringSource(query);
@@ -1499,39 +1621,47 @@ public class ImportModuleTest {
     @Test
     public void xq31CyclicThreeLibraryModules() throws EXistException, IOException, PermissionDeniedException, LockException, SAXException, XPathException {
         final String module1 =
-                "xquery version \"3.1\";\n" +
-                        "module namespace impl1 = \"http://example.com/impl1\";\n" +
-                        "import module namespace impl2 = \"http://example.com/impl2\"" +
-                        "        at \"xmldb:exist:///db/impl2.xqm\";\n" +
-                        "declare function impl1:f1($a as xs:string) {\n" +
-                        "    <impl1>{$a}</impl1>\n" +
-                        "};\n";
+                """
+                xquery version "3.1";
+                module namespace impl1 = "http://example.com/impl1";
+                import module namespace impl2 = "http://example.com/impl2"\
+                        at "xmldb:exist:///db/impl2.xqm";
+                declare function impl1:f1($a as xs:string) {
+                    <impl1>{$a}</impl1>
+                };
+                """;
 
         final String module2 =
-                "xquery version \"3.1\";\n" +
-                        "module namespace impl2 = \"http://example.com/impl2\";\n" +
-                        "import module namespace impl3 = \"http://example.com/impl3\"" +
-                        "        at \"xmldb:exist:///db/impl3.xqm\";\n" +
-                        "declare function impl2:f1($a as xs:string) {\n" +
-                        "    <impl2>{$a}</impl2>\n" +
-                        "};\n";
+                """
+                xquery version "3.1";
+                module namespace impl2 = "http://example.com/impl2";
+                import module namespace impl3 = "http://example.com/impl3"\
+                        at "xmldb:exist:///db/impl3.xqm";
+                declare function impl2:f1($a as xs:string) {
+                    <impl2>{$a}</impl2>
+                };
+                """;
 
         final String module3 =
-                "xquery version \"3.1\";\n" +
-                        "module namespace impl3 = \"http://example.com/impl3\";\n" +
-                        "import module namespace impl1 = \"http://example.com/impl1\"" +
-                        "        at \"xmldb:exist:///db/impl1.xqm\";\n" +
-                        "declare function impl3:f1($a as xs:string) {\n" +
-                        "    <impl3>{$a}</impl3>\n" +
-                        "};\n";
+                """
+                xquery version "3.1";
+                module namespace impl3 = "http://example.com/impl3";
+                import module namespace impl1 = "http://example.com/impl1"\
+                        at "xmldb:exist:///db/impl1.xqm";
+                declare function impl3:f1($a as xs:string) {
+                    <impl3>{$a}</impl3>
+                };
+                """;
 
         final String query =
-                "xquery version \"3.1\";\n" +
-                "import module namespace impl1 = \"http://example.com/impl1\"" +
-                        "        at \"xmldb:exist:///db/impl1.xqm\";\n" +
-                        "<result>\n" +
-                        "    {impl1:f1(\"from main\")}" +
-                        "</result>\n";
+                """
+                xquery version "3.1";
+                import module namespace impl1 = "http://example.com/impl1"\
+                        at "xmldb:exist:///db/impl1.xqm";
+                <result>
+                    {impl1:f1("from main")}\
+                </result>
+                """;
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final Source source = new StringSource(query);

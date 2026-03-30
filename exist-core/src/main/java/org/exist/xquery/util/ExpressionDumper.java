@@ -61,8 +61,8 @@ public class ExpressionDumper {
     }
     
     public ExpressionDumper(Writer writer, int indentAmount, int verbosity) {
-        if(writer instanceof PrintWriter)
-            {this.out = (PrintWriter)writer;}
+        if(writer instanceof PrintWriter printWriter)
+            {this.out = printWriter;}
         else
             {this.out = new PrintWriter(writer);}
         this.indentAmount = indentAmount;

@@ -39,7 +39,7 @@ import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.Optional;
 
 import org.exist.backup.restore.listener.AbstractRestoreListener;
@@ -115,7 +115,7 @@ public class Restore extends BasicFunction {
 
                     final RestoreListener listener = new XMLRestoreListener(builder);
                     final org.exist.backup.Restore restore = new org.exist.backup.Restore();
-                    restore.restore(broker, transaction, adminPassAfter, Paths.get(dirOrFile), listener, overwriteApps);
+                    restore.restore(broker, transaction, adminPassAfter, Path.of(dirOrFile), listener, overwriteApps);
 
                     transaction.commit();
                 }

@@ -540,8 +540,8 @@ class Options {
     private XSLTVersion domExtractXsltVersion(final Source xsltStylesheet) throws XPathException {
 
         Node node = ((DOMSource) xsltStylesheet).getNode();
-        if (node instanceof Document) {
-            node = ((Document) node).getDocumentElement();
+        if (node instanceof Document document) {
+            node = document.getDocumentElement();
         }
 
         String version = "";

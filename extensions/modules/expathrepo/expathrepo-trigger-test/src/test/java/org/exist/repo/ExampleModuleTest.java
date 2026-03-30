@@ -53,8 +53,9 @@ public class ExampleModuleTest {
     @Test
     public void helloWorld() throws XPathException, PermissionDeniedException, EXistException {
         final String query =
-                "declare namespace myjmod = \"https://my-organisation.com/exist-db/ns/app/my-java-module\";\n" +
-                        "myjmod:hello-world()";
+                """
+                declare namespace myjmod = "https://my-organisation.com/exist-db/ns/app/my-java-module";
+                myjmod:hello-world()""";
         final Sequence result = executeQuery(query);
 
         assertTrue(result.hasOne());
@@ -73,8 +74,9 @@ public class ExampleModuleTest {
     @Test
     public void sayHello() throws XPathException, PermissionDeniedException, EXistException {
         final String query =
-                "declare namespace myjmod = \"https://my-organisation.com/exist-db/ns/app/my-java-module\";\n" +
-                        "myjmod:say-hello('Adam')";
+                """
+                declare namespace myjmod = "https://my-organisation.com/exist-db/ns/app/my-java-module";
+                myjmod:say-hello('Adam')""";
         final Sequence result = executeQuery(query);
 
         assertTrue(result.hasOne());
@@ -93,8 +95,9 @@ public class ExampleModuleTest {
     @Test
     public void sayHello_noName() throws XPathException, PermissionDeniedException, EXistException {
         final String query =
-                "declare namespace myjmod = \"https://my-organisation.com/exist-db/ns/app/my-java-module\";\n" +
-                        "myjmod:say-hello(())";
+                """
+                declare namespace myjmod = "https://my-organisation.com/exist-db/ns/app/my-java-module";
+                myjmod:say-hello(())""";
         final Sequence result = executeQuery(query);
 
         assertTrue(result.hasOne());
@@ -113,8 +116,9 @@ public class ExampleModuleTest {
     @Test
     public void add() throws XPathException, PermissionDeniedException, EXistException {
         final String query =
-                "declare namespace myjmod = \"https://my-organisation.com/exist-db/ns/app/my-java-module\";\n" +
-                        "myjmod:add(xs:int(123), xs:int(456))";
+                """
+                declare namespace myjmod = "https://my-organisation.com/exist-db/ns/app/my-java-module";
+                myjmod:add(xs:int(123), xs:int(456))""";
         final Sequence result = executeQuery(query);
 
         assertTrue(result.hasOne());

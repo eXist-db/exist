@@ -565,14 +565,16 @@ public class CustomIndexTest {
             assertEquals(1, seq.getItemCount());
             
             String queryBody =
-                "declare function local:callback($key as item(), $data as xs:int+)\n" +
-                "as element()+ {\n" + 
-                "    <item>\n" + 
-                "        <key>{$key}</key>\n" + 
-                "        <frequency>{$data[1]}</frequency>\n" + 
-                "    </item>\n" + 
-                "};\n" + 
-                "\n";
+                """
+                declare function local:callback($key as item(), $data as xs:int+)
+                as element()+ {
+                    <item>
+                        <key>{$key}</key>
+                        <frequency>{$data[1]}</frequency>
+                    </item>
+                };
+                
+                """;
             
             String query = queryBody + "util:index-keys(/test/item, \'\', util:function(xs:QName(\'local:callback\'), 2), 1000, 'ngram-index')";
             //String query = queryBody + "util:index-keys(/test/item, \'\', util:function(xs:QName(\'local:callback\'), 2), 1000, 'org.exist.indexing.impl.NGramIndex')";

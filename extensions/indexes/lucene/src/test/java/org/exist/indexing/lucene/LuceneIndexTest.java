@@ -85,11 +85,14 @@ public class LuceneIndexTest {
             "</section>";
 
     private static final String XML2 =
-            "<test>" +
-            "   <item id='1' attr='attribute'><description>Chair</description></item>" +
-            "   <item id='2'><description>Table</description>\n<condition>good</condition></item>" +
-            "   <item id='3'><description>Cabinet</description>\n<condition>bad</condition></item>" +
-            "</test>";
+            """
+            <test>\
+               <item id='1' attr='attribute'><description>Chair</description></item>\
+               <item id='2'><description>Table</description>
+            <condition>good</condition></item>\
+               <item id='3'><description>Cabinet</description>
+            <condition>bad</condition></item>\
+            </test>""";
 
     private static final String XML3 =
             "<section>" +
@@ -325,19 +328,20 @@ public class LuceneIndexTest {
                 "</TEI>";
 
         final String COLLECTION_CONFIG10 =
-                "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">\n" +
-                "    <index>\n" +
-                "        <!-- Lucene indexes -->\n" +
-                "        <lucene diacritics='no'>\n" +
-                "            <analyzer class='org.apache.lucene.analysis.standard.StandardAnalyzer'/>\n" +
-                "            <text match=\"//title[@xml:lang='Sa-Ltn']\"/>\n" +
-                "            <text match=\"/TEI/text\"><ignore qname=\"text\"/></text>\n" +
-                "            <text field=\"not-equals-Sa-Ltn\" match=\"//title[@xml:lang != 'Sa-Ltn']\"/>\n" +
-                "            <text field=\"ne-Sa-Ltn\" match=\"//title[fn:not(@xml:lang='Sa-Ltn')]\"/>\n" +
-                "            <text field=\"eq-Sa-Ltn\" match=\"//title[@xml:lang eq 'Sa-Ltn']\"/>\n" +
-                "        </lucene> \n" +
-                "    </index>\n" +
-                "</collection>";
+                """
+                <collection xmlns="http://exist-db.org/collection-config/1.0">
+                    <index>
+                        <!-- Lucene indexes -->
+                        <lucene diacritics='no'>
+                            <analyzer class='org.apache.lucene.analysis.standard.StandardAnalyzer'/>
+                            <text match="//title[@xml:lang='Sa-Ltn']"/>
+                            <text match="/TEI/text"><ignore qname="text"/></text>
+                            <text field="not-equals-Sa-Ltn" match="//title[@xml:lang != 'Sa-Ltn']"/>
+                            <text field="ne-Sa-Ltn" match="//title[fn:not(@xml:lang='Sa-Ltn')]"/>
+                            <text field="eq-Sa-Ltn" match="//title[@xml:lang eq 'Sa-Ltn']"/>
+                        </lucene>\s
+                    </index>
+                </collection>""";
 
 
         final DocumentSet docs = configureAndStore(COLLECTION_CONFIG10, XML10, "test.xml");

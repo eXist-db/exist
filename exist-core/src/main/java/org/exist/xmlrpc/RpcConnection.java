@@ -104,7 +104,10 @@ import java.io.*;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.OpenOption;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.locks.Lock;
@@ -595,8 +598,8 @@ public class RpcConnection implements RpcAPI {
         try {
             final DigestType digestType = DigestType.forCommonName(digestAlgorithm);
             final MessageDigest messageDigest = this.<MessageDigest>readDocument(XmldbURI.xmldbUriFor(path)).apply((document, broker, transaction) -> {
-                if (document instanceof BinaryDocument) {
-                    return broker.getBinaryResourceContentDigest(transaction, (BinaryDocument) document, digestType);
+                if (document instanceof BinaryDocument binaryDocument) {
+                    return broker.getBinaryResourceContentDigest(transaction, binaryDocument, digestType);
                 } else {
                     throw new EXistException("Only supported for binary documents");
                 }
@@ -937,7 +940,7 @@ public class RpcConnection implements RpcAPI {
 
     @Override
     public boolean dataBackup(final String dest) {
-        factory.getBrokerPool().triggerSystemTask(new DataBackup(Paths.get(dest)));
+        factory.getBrokerPool().triggerSystemTask(new DataBackup(Path.of(dest)));
         return true;
     }
 
@@ -1485,7 +1488,7 @@ public class RpcConnection implements RpcAPI {
 
                     // As this file can be a non-temporal one, we should not
                     // blindly erase it!
-                    final Path path = Paths.get(localFile);
+                    final Path path = Path.of(localFile);
                     if (!Files.isReadable(path)) {
                         // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
                         collection.close();
@@ -1954,8 +1957,8 @@ public class RpcConnection implements RpcAPI {
     private @Nullable Map<String, String> nodeMap(final Item item) {
         final Map<String, String> result;
 
-        if (item instanceof NodeValue &&
-                ((NodeValue)item).getImplementationType() == NodeValue.PERSISTENT_NODE) {
+        if (item instanceof NodeValue value &&
+                value.getImplementationType() == NodeValue.PERSISTENT_NODE) {
             final NodeProxy p = (NodeProxy) item;
 
             result = new HashMap<>();
@@ -3099,7 +3102,7 @@ public class RpcConnection implements RpcAPI {
     @Override
     public byte[] getDocumentChunk(final String name, final int start, final int len)
             throws EXistException, PermissionDeniedException, IOException {
-        final Path file = Paths.get(System.getProperty("java.io.tmpdir")).resolve(name);
+        final Path file = Path.of(System.getProperty("java.io.tmpdir")).resolve(name);
         if (!Files.isReadable(file)) {
             throw new EXistException("unable to read file " + name);
         }
@@ -3249,7 +3252,7 @@ public class RpcConnection implements RpcAPI {
             final Backup backup = new Backup(
                     userbackup,
                     password,
-                    Paths.get(destcollection + "-backup"),
+                    Path.of(destcollection + "-backup"),
                     XmldbURI.xmldbUriFor(XmldbURI.EMBEDDED_SERVER_URI.toString() + collection));
             backup.backup(false, null);
 

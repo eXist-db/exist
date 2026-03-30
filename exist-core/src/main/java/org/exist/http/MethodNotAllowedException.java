@@ -21,8 +21,11 @@
  */
 package org.exist.http;
 
+import java.io.Serial;
+
 public class MethodNotAllowedException extends Exception {
 
+    @Serial
     private static final long serialVersionUID = -8399138417913514619L;
 
     public MethodNotAllowedException(String message) {

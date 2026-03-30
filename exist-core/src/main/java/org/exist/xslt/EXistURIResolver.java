@@ -186,7 +186,7 @@ public class EXistURIResolver implements URIResolver {
       }
 
       final Source source;
-      if (doc instanceof BinaryDocument) {
+      if (doc instanceof BinaryDocument document) {
 
         /*
          * NOTE: this is extremely unpleasant as we let a reference to the blob file
@@ -197,7 +197,7 @@ public class EXistURIResolver implements URIResolver {
          * the situation - AR.
          */
         try (final Txn transaction = broker.getBrokerPool().getTransactionManager().beginTransaction()) {
-          source = broker.withBinaryFile(transaction, (BinaryDocument) doc, p -> {
+          source = broker.withBinaryFile(transaction, document, p -> {
             final StreamSource source1 = new StreamSource(p.toFile());
             source1.setSystemId(p.toUri().toString());
             return source1;

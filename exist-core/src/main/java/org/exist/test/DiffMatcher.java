@@ -98,8 +98,8 @@ public class DiffMatcher extends DiagnosingMatcher<Sequence> {
         }
 
         final Item actualItem;
-        if (item instanceof NodeValue) {
-            actualItem = (NodeValue) item;
+        if (item instanceof NodeValue value) {
+            actualItem = value;
 
         } else if (item instanceof final Sequence actual) {
 

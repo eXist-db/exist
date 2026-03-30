@@ -149,8 +149,8 @@ public class DefaultExpressionVisitor extends BasicExpressionVisitor {
     public void visitAttribConstructor(AttributeConstructor constructor) {
         for (final Iterator<Object> i = constructor.contentIterator(); i.hasNext(); ) {
             final Object next = i.next();
-            if (next instanceof Expression)
-                {((Expression)next).accept(this);}
+            if (next instanceof Expression expression)
+                {expression.accept(this);}
         }
     }
 

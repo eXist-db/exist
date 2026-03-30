@@ -54,12 +54,16 @@ public class FunRoot extends Function {
     protected static final String FUNCTION_DESCRIPTION_0_PARAM =
             "Returns the root of the tree to which the context item belongs. ";
     protected static final String FUNCTION_DESCRIPTION_1_PARAM =
-            "Returns the root of the tree to which $arg belongs. " +
-                    "This will usually, but not necessarily, be a document node.\n\n" +
-                    "If $arg is the empty sequence, the empty sequence is returned.\n\n" +
-                    "If $arg is a document node, $arg is returned.\n\n" +
-                    " The behavior of the zero argument version of the function is " +
-                    "exactly the same as if the context item had been passed in $arg.";
+            """
+            Returns the root of the tree to which $arg belongs. \
+            This will usually, but not necessarily, be a document node.
+            
+            If $arg is the empty sequence, the empty sequence is returned.
+            
+            If $arg is a document node, $arg is returned.
+            
+             The behavior of the zero argument version of the function is \
+            exactly the same as if the context item had been passed in $arg.""";
 
     public final static FunctionSignature[] signatures = {
             new FunctionSignature(

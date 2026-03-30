@@ -293,9 +293,9 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
     public Node getContentAsDOM() throws XMLDBException {
         final Node result;
         if (root != null) {
-            if(root instanceof NodeImpl) {
+            if(root instanceof NodeImpl impl) {
                 withDb((broker, transaction) -> {
-                    ((NodeImpl)root).expand();
+                    impl.expand();
                     return null;
                 });
             }
@@ -327,7 +327,7 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
      */
     private Node exportInternalNode(final Node node) {
         final Optional<Class<? extends Node>> domClazz = getW3cNodeInterface(node.getClass());
-        if(!domClazz.isPresent()) {
+        if(domClazz.isEmpty()) {
             throw new IllegalArgumentException("Provided node does not implement org.w3c.dom");
         }
 
@@ -415,8 +415,8 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
             } else if("getNodeId".equals(method.getName())) {
                 if (proxy instanceof StoredNodeIdentity
                         && (args == null || args.length == 0)
-                        && node instanceof StoredNode) {
-                    domResult = Optional.of(((StoredNode) node).getNodeId());
+                        && node instanceof StoredNode storedNode) {
+                    domResult = Optional.of(storedNode.getNodeId());
                 } else if (proxy instanceof MemtreeNodeIdentity
                         && (args == null || args.length == 0)
                         && node instanceof NodeImpl memtreeNode) {

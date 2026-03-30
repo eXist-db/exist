@@ -182,8 +182,8 @@ abstract class BrokerPools {
                 // Catch all possible issues and report.
                 LOG.error("Unable to initialize database instance '{}': {}", instanceName, e.getMessage(), e);
                 final EXistException ee;
-                if(e instanceof EXistException) {
-                    ee = (EXistException)e;
+                if(e instanceof EXistException exception) {
+                    ee = exception;
                 } else {
                     ee = new EXistException(e);
                 }

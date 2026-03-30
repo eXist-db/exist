@@ -30,7 +30,6 @@ import java.io.StringReader;
 import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -138,7 +137,7 @@ public abstract class TestCase {
 		if (outputFile == null)
 			Assert.fail("no expected result information");
 
-		Path expectedResult = Paths.get(testLocation+folder, outputFile.getTextContent());
+		Path expectedResult = Path.of(testLocation+folder, outputFile.getTextContent());
 		if (!Files.isReadable(expectedResult)) {
 			Assert.fail("can't read expected result");
 		}
@@ -308,14 +307,14 @@ public abstract class TestCase {
 		final BrokerPool pool = existEmbeddedServer.getBrokerPool();
 		if (r instanceof NodeProxy p) {
             res = new LocalXMLResource(user, pool, collection, p);
-		} else if (r instanceof Node) {
+		} else if (r instanceof Node node) {
 			res = new LocalXMLResource(user, pool, collection, XmldbURI.EMPTY_URI);
-			res.setContentAsDOM((Node)r);
+			res.setContentAsDOM(node);
 		} else if (r instanceof AtomicValue) {
 			res = new LocalXMLResource(user, pool, collection, XmldbURI.EMPTY_URI);
 			res.setContent(r);
-		} else if (r instanceof LocalXMLResource)
-			res = (LocalXMLResource) r;
+		} else if (r instanceof LocalXMLResource resource)
+			res = resource;
 		else
 			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "unknown object "+r.getClass());
 		
@@ -360,7 +359,7 @@ public abstract class TestCase {
 			//workaround BOM
 			if ("Content is not allowed in prolog.".equals(e.getMessage())) {
 	            try {
-	            	String xml = readFileAsString(Paths.get(uri));
+	            	String xml = readFileAsString(Path.of(uri));
 	            	xml = xml.trim().replaceFirst("^([\\W]+)<","<");
 	            	InputSource src = new InputSource(new StringReader(xml));
 					xr.parse(src);

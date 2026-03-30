@@ -211,8 +211,8 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
      * @throws IOException if an I/O error occurs
      */
     private void writeResource(final Resource res, final Path dest) throws XMLDBException, IOException {
-        if (res instanceof XMLResource) {
-            writeXMLResource((XMLResource) res, dest);
+        if (res instanceof XMLResource lResource) {
+            writeXMLResource(lResource, dest);
         } else if (res instanceof ExtendedResource) {
             writeBinaryResource(res, dest);
         }

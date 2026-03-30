@@ -1442,8 +1442,8 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
     @EnsureContainerLocked(mode=READ_LOCK)
     public boolean isSameNode(final Node other) {
         // This function is used by Saxon in some circumstances, and this partial implementation is required for proper Saxon operation.
-        if(other instanceof DocumentImpl) {
-            return this.docId == ((DocumentImpl) other).getDocId();
+        if(other instanceof DocumentImpl impl) {
+            return this.docId == impl.getDocId();
         } else {
             return false;
         }

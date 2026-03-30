@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Optional;
 
 import org.exist.EXistException;
@@ -61,7 +60,7 @@ public class TwoDatabasesTest {
     public static void prepare() throws URISyntaxException {
         final String log4j = System.getProperty("log4j.configurationFile");
         if (log4j == null) {
-            Path lf = Paths.get("log42j.xml");
+            Path lf = Path.of("log42j.xml");
             if (Files.isReadable(lf)) {
                 System.setProperty("log4j.configurationFile", lf.toUri().toASCIIString());
             }
@@ -71,8 +70,8 @@ public class TwoDatabasesTest {
         final char separator = System.getProperty("file.separator").charAt(0);
         final String packagePath = TwoDatabasesTest.class.getPackage().getName().replace('.', separator);
 
-        config1File = Paths.get(loader.getResource(packagePath + separator + "conf1.xml").toURI());
-        config2File = Paths.get(loader.getResource(packagePath + separator + "conf2.xml").toURI());
+        config1File = Path.of(loader.getResource(packagePath + separator + "conf1.xml").toURI());
+        config2File = Path.of(loader.getResource(packagePath + separator + "conf2.xml").toURI());
     }
 
     @Rule
@@ -119,7 +118,7 @@ public class TwoDatabasesTest {
         final BrokerPool pool2 = existEmbeddedServer2.getBrokerPool();
         try (final DBBroker broker2 = pool2.get(Optional.of(user1));
              final Txn transaction2 = pool2.getTransactionManager().beginTransaction()) {
-            try(Collection top2 = storeBin(broker2, transaction2, "2");) {
+            try(Collection top2 = storeBin(broker2, transaction2, "2")) {
                 pool2.getTransactionManager().commit(transaction2);
             }
         }

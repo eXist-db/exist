@@ -35,7 +35,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 
 import static org.exist.launcher.ConfigurationUtility.*;
@@ -148,7 +147,7 @@ public class LauncherWrapper {
 
         final ProcessBuilder pb = new ProcessBuilder(args);
         final Optional<Path> home = ConfigurationHelper.getExistHome();
-        pb.directory(home.orElse(Paths.get(".")).toFile());
+        pb.directory(home.orElse(Path.of(".")).toFile());
         pb.redirectErrorStream(true);
         pb.inheritIO();
 
@@ -159,16 +158,16 @@ public class LauncherWrapper {
     protected String getJavaCmd() {
         final File javaHome = new File(System.getProperty("java.home"));
         if (OS.startsWith("windows")) {
-            Path javaBin = Paths.get(javaHome.getAbsolutePath(), "bin", "javaw.exe");
+            Path javaBin = Path.of(javaHome.getAbsolutePath(), "bin", "javaw.exe");
             if (Files.isExecutable(javaBin)) {
                 return '"' + javaBin.toString() + '"';
             }
-            javaBin = Paths.get(javaHome.getAbsolutePath(), "bin", "java.exe");
+            javaBin = Path.of(javaHome.getAbsolutePath(), "bin", "java.exe");
             if (Files.isExecutable(javaBin)) {
                 return '"' + javaBin.toString() + '"';
             }
         } else {
-            Path javaBin = Paths.get(javaHome.getAbsolutePath(), "bin", "java");
+            Path javaBin = Path.of(javaHome.getAbsolutePath(), "bin", "java");
             if (Files.isExecutable(javaBin)) {
                 return javaBin.toString();
             }

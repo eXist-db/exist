@@ -58,15 +58,19 @@ public class FunResolveURI extends Function {
         "Resolves $relative against $base ";
 
 	protected static final String FUNCTION_DESCRIPTION_COMMON = 
-        "using an algorithm such as the ones described " +
-		"in [RFC 2396] or [RFC 3986], and the resulting absolute " +
-		"URI reference is returned. An error may be raised " +
-		"[err:FORG0009] in the resolution process.\n\n" +
-		"If $relative is an absolute URI reference, it is returned " +
-		"unchanged.\n\n" +
-		"If $relative or $base is not a valid xs:anyURI an error " +
-		"is raised [err:FORG0002].\n\n" +
-		"If $relative is the empty sequence, the empty sequence is returned.";
+        """
+        using an algorithm such as the ones described \
+        in [RFC 2396] or [RFC 3986], and the resulting absolute \
+        URI reference is returned. An error may be raised \
+        [err:FORG0009] in the resolution process.
+        
+        If $relative is an absolute URI reference, it is returned \
+        unchanged.
+        
+        If $relative or $base is not a valid xs:anyURI an error \
+        is raised [err:FORG0002].
+        
+        If $relative is the empty sequence, the empty sequence is returned.""";
 	
 	protected static final FunctionParameterSequenceType RELATIVE_ARG = new FunctionParameterSequenceType("relative", Type.STRING, Cardinality.ZERO_OR_ONE, "The relative URI");
 	protected static final FunctionParameterSequenceType BASE_ARG = new FunctionParameterSequenceType("base", Type.STRING, Cardinality.EXACTLY_ONE, "The base URI");

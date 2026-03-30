@@ -185,14 +185,14 @@ public class LocalResourceSet extends AbstractLocal implements ResourceSet {
                     coll.setProperties(outputProperties);
             }
             res = new LocalXMLResource(user, brokerPool, coll, p);
-        } else if (r instanceof Node) {
+        } else if (r instanceof Node node) {
             res = new LocalXMLResource(user, brokerPool, collection, XmldbURI.EMPTY_URI);
-            ((LocalXMLResource)res).setContentAsDOM((Node) r);
+            ((LocalXMLResource)res).setContentAsDOM(node);
         } else if (r instanceof AtomicValue) {
             if(r instanceof BinaryValue) {
                 final XmldbURI docId;
-                if(r instanceof Base64BinaryDocument) {
-                    docId = Optional.ofNullable(((Base64BinaryDocument)r).getUrl()).filter(s -> !s.isEmpty()).map(XmldbURI::create).orElse(XmldbURI.EMPTY_URI);
+                if(r instanceof Base64BinaryDocument document) {
+                    docId = Optional.ofNullable(document.getUrl()).filter(s -> !s.isEmpty()).map(XmldbURI::create).orElse(XmldbURI.EMPTY_URI);
                 } else {
                     docId = XmldbURI.EMPTY_URI;
                 }
@@ -201,8 +201,8 @@ public class LocalResourceSet extends AbstractLocal implements ResourceSet {
                 res = new LocalXMLResource(user, brokerPool, collection, XmldbURI.EMPTY_URI);
             }
             res.setContent(r);
-        } else if (r instanceof Resource) {
-            return (Resource)r;
+        } else if (r instanceof Resource resource) {
+            return resource;
         }
 
         res.setProperties(outputProperties);

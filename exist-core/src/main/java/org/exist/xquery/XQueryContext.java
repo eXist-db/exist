@@ -30,7 +30,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -603,8 +602,8 @@ public class XQueryContext implements BinaryValueManager, Context {
                 } else {
                     // NOTE(AR) set the location of the module to import relative to this module's load path
                     // - so that transient imports of the imported module will resolve correctly!
-                    final Path collectionPath = Paths.get(XmldbURI.create(moduleLoadPath).getCollectionPath());
-                    final Path sourcePath = Paths.get(sourceCollection);
+                    final Path collectionPath = Path.of(XmldbURI.create(moduleLoadPath).getCollectionPath());
+                    final Path sourcePath = Path.of(sourceCollection);
                     location = collectionPath.relativize(sourcePath).toString();
                 }
             }
@@ -629,8 +628,8 @@ public class XQueryContext implements BinaryValueManager, Context {
         // prepare the variables of the internal modules (which were previously reset)
         for (final Module[] modules : allModules.values()) {
             for (final Module module : modules) {
-                if (module instanceof InternalModule) {
-                    ((InternalModule) module).prepare(this);
+                if (module instanceof InternalModule internalModule) {
+                    internalModule.prepare(this);
                 }
             }
         }
@@ -1788,8 +1787,8 @@ public class XQueryContext implements BinaryValueManager, Context {
             modules.compute(module.getNamespaceURI(), addToMapValueArray(module));
             allModules.compute(module.getNamespaceURI(), addToMapValueArray(module));
 
-            if (module instanceof InternalModule) {
-                ((InternalModule) module).prepare(this);
+            if (module instanceof InternalModule internalModule) {
+                internalModule.prepare(this);
             }
             return module;
         } catch (final InstantiationException | IllegalAccessException | InvocationTargetException | XPathException e) {
@@ -2648,8 +2647,8 @@ public class XQueryContext implements BinaryValueManager, Context {
         try {
             //TODO: use URIs to ensure proper resolution of relative locations
             final String contextPath;
-            if (source instanceof FileSource) {
-                final Path sourcePath = ((FileSource) source).getPath();
+            if (source instanceof FileSource fileSource) {
+                final Path sourcePath = fileSource.getPath();
                 contextPath = sourcePath.resolveSibling(moduleLoadPath).normalize().toString();
             } else {
                 contextPath = moduleLoadPath;

@@ -43,7 +43,6 @@ import org.junit.runner.Runner;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -97,8 +96,8 @@ public abstract class AbstractTestRunner extends Runner {
                 context.setBaseURI(new AnyURIValue("/db"));
                 if (moduleLoadPath != null) {
                     context.setModuleLoadPath(moduleLoadPath.toAbsolutePath().toString());
-                } else if (query instanceof FileSource) {
-                    final Path queryPath = Paths.get(((FileSource) query).getPath().toAbsolutePath().toString());
+                } else if (query instanceof FileSource source) {
+                    final Path queryPath = Path.of(source.getPath().toAbsolutePath().toString());
                     if (Files.isDirectory(queryPath)) {
                         context.setModuleLoadPath(queryPath.toString());
                     } else {

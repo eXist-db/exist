@@ -62,27 +62,28 @@ public class RemoveCollectionIT {
     private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     private final static String generateXQ =
-            "declare function local:random-sequence($length as xs:integer, $G as map(xs:string, item())) {\n"
-            + "  if ($length eq 0)\n"
-            + "  then ()\n"
-            + "  else ($G?number, local:random-sequence($length - 1, $G?next()))\n"
-            + "};\n"
-            + "let $rnd := fn:random-number-generator() return"
-            + "<book id=\"{$filename}\" n=\"{$count}\">"
-            + "   <chapter xml:id=\"chapter{$count}\">"
-            + "       <title>{local:random-sequence(7, $rnd)}</title>"
-            + "       {"
-            + "           for $section in 1 to 8 return"
-            + "               <section id=\"sect{$section}\">"
-            + "                   <title>{local:random-sequence(7, $rnd)}</title>"
-            + "                   {"
-            + "                       for $para in 1 to 10 return"
-            + "                           <para>{local:random-sequence(120, $rnd)}</para>"
-            + "                   }"
-            + "               </section>"
-            + "       }"
-            + "   </chapter>"
-            + "</book>";
+            """
+            declare function local:random-sequence($length as xs:integer, $G as map(xs:string, item())) {
+              if ($length eq 0)
+              then ()
+              else ($G?number, local:random-sequence($length - 1, $G?next()))
+            };
+            let $rnd := fn:random-number-generator() return\
+            <book id="{$filename}" n="{$count}">\
+               <chapter xml:id="chapter{$count}">\
+                   <title>{local:random-sequence(7, $rnd)}</title>\
+                   {\
+                       for $section in 1 to 8 return\
+                           <section id="sect{$section}">\
+                               <title>{local:random-sequence(7, $rnd)}</title>\
+                               {\
+                                   for $para in 1 to 10 return\
+                                       <para>{local:random-sequence(120, $rnd)}</para>\
+                               }\
+                           </section>\
+                   }\
+               </chapter>\
+            </book>""";
     
     private final static int COUNT = 300;
 
@@ -201,7 +202,7 @@ public class RemoveCollectionIT {
 
     public void recover(final BrokerPool pool, final boolean checkResource) throws EXistException, PermissionDeniedException, DatabaseConfigurationException, IOException {
         LockedDocument lockedDoc = null;
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             if (checkResource) {
                 lockedDoc = broker.getXMLResource(TestConstants.TEST_COLLECTION_URI.append("hamlet.xml"), LockMode.READ_LOCK);
                 assertNull("Resource should have been removed", lockedDoc);

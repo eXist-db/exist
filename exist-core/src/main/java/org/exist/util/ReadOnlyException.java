@@ -21,9 +21,12 @@
  */
 package org.exist.util;
 
+import java.io.Serial;
+
 public class ReadOnlyException extends Exception {
 
-	private static final long serialVersionUID = 7077941517830242672L;
+    @Serial
+    private static final long serialVersionUID = 7077941517830242672L;
 
 	/**
 	 * Constructor for ReadOnlyException.

@@ -103,7 +103,7 @@ public class Query extends Function implements Optimizable {
     public void setArguments(final List<Expression> arguments) {
         steps.clear();
 
-        final Expression path = arguments.get(0);
+        final Expression path = arguments.getFirst();
         steps.add(path);
 
         Expression arg = arguments.get(1).simplify();

@@ -53,7 +53,6 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -217,9 +216,9 @@ public class Transform extends BasicFunction {
                     if (expandXIncludes) {
                         String xiPath = serializationProps.getProperty(EXistOutputKeys.XINCLUDE_PATH);
                         if (xiPath != null && !xiPath.startsWith(XmldbURI.XMLDB_URI_PREFIX)) {
-                            final Path f = Paths.get(xiPath).normalize();
+                            final Path f = Path.of(xiPath).normalize();
                             if (!f.isAbsolute()) {
-                                xiPath = Paths.get(context.getModuleLoadPath(), xiPath).normalize().toAbsolutePath().toString();
+                                xiPath = Path.of(context.getModuleLoadPath(), xiPath).normalize().toAbsolutePath().toString();
                             }
                         } else {
                             xiPath = context.getModuleLoadPath();
@@ -252,7 +251,7 @@ public class Transform extends BasicFunction {
             final Optional<ResponseWrapper> maybeResponse = Optional.ofNullable(context.getHttpContext())
                     .map(XQueryContext.HttpContext::getResponse);
 
-            if (!maybeResponse.isPresent()) {
+            if (maybeResponse.isEmpty()) {
                 throw new XPathException(this, ErrorCodes.XPDY0002, "No response object found in the current XQuery context.");
             }
 
@@ -287,9 +286,9 @@ public class Transform extends BasicFunction {
                         XIncludeFilter xinclude = new XIncludeFilter(serializer, receiver);
                         String xiPath = serializationProps.getProperty(EXistOutputKeys.XINCLUDE_PATH);
                         if (xiPath != null) {
-                            final Path f = Paths.get(xiPath).normalize();
+                            final Path f = Path.of(xiPath).normalize();
                             if (!f.isAbsolute()) {
-                                xiPath = Paths.get(context.getModuleLoadPath(), xiPath).normalize().toAbsolutePath().toString();
+                                xiPath = Path.of(context.getModuleLoadPath(), xiPath).normalize().toAbsolutePath().toString();
                             }
 
                         } else {
@@ -368,8 +367,8 @@ public class Transform extends BasicFunction {
                 }
             } else {
                 String baseUri = context.getModuleLoadPath();
-                if (stylesheetItem instanceof Document) {
-                    baseUri = ((Document) stylesheetItem).getDocumentURI();
+                if (stylesheetItem instanceof Document document) {
+                    baseUri = document.getDocumentURI();
 
                     /*
                      * This must be checked because in the event the stylesheet is
@@ -394,8 +393,8 @@ public class Transform extends BasicFunction {
             }
 
         } catch (final Exception e) {
-            if (e instanceof XPathException) {
-                throw (XPathException) e;
+            if (e instanceof XPathException exception) {
+                throw exception;
             }
             throw new XPathException(this, "Unable to set up transformer: " + e.getMessage(), e);
         }

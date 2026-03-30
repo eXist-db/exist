@@ -47,16 +47,16 @@ public class HighlightedTableCellRenderer<T extends AbstractTableModel> extends 
      */
     @Override
     public Component getTableCellRendererComponent(final JTable table, Object value, final boolean isSelected, final boolean hasFocus, final int row, final int column) {
-        if(value instanceof XmldbURI) {
-            value = new PrettyXmldbURI((XmldbURI)value);
+        if(value instanceof XmldbURI rI) {
+            value = new PrettyXmldbURI(rI);
         }
         
         final Component renderer = super.getTableCellRendererComponent(table, value, isSelected,hasFocus, row, column);
         
-        if(renderer instanceof JCheckBox) {
-            ((JCheckBox)renderer).setOpaque(true);
-        } else if(renderer instanceof JLabel) {
-            ((JLabel)renderer).setOpaque(true);
+        if(renderer instanceof JCheckBox box) {
+            box.setOpaque(true);
+        } else if(renderer instanceof JLabel label) {
+            label.setOpaque(true);
         }
 
         final Color foreground;
@@ -65,7 +65,7 @@ public class HighlightedTableCellRenderer<T extends AbstractTableModel> extends 
         if (isSelected) {
             foreground = highForeground;
             background = highBackground;
-        } else if (resources instanceof ResourceTableModel && ((ResourceTableModel)resources).getRow(row).isCollection()) {
+        } else if (resources instanceof ResourceTableModel model && model.getRow(row).isCollection()) {
             foreground = collectionForeground;
             background = collectionBackground;
         } else if (row % 2 == 0) {

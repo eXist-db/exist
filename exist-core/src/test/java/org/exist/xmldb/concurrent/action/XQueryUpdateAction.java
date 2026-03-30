@@ -30,17 +30,18 @@ import org.xmldb.api.modules.XQueryService;
 public class XQueryUpdateAction extends Action {
 
 	private static final String query =
-		"util:exclusive-lock(collection('/db/C1'),\n" +
-		"	let $maxId := max(for $i in //node/@id return xs:integer($i)) + 1\n" +
-		"	let $update :=\n" +
-		"		<xu:modifications xmlns:xu=\"http://www.xmldb.org/xupdate\" version=\"1.0\">\n" +
-		"			<xu:append select=\"/root\">\n" +
-		"				<node id=\"{$maxId}\">appended node</node>\n" +
-		"			</xu:append>\n" +
-		"		</xu:modifications>\n" +
-		"	return\n" +
-		"		xmldb:update('/db/C1', $update)" +
-		")";
+		"""
+        util:exclusive-lock(collection('/db/C1'),
+        	let $maxId := max(for $i in //node/@id return xs:integer($i)) + 1
+        	let $update :=
+        		<xu:modifications xmlns:xu="http://www.xmldb.org/xupdate" version="1.0">
+        			<xu:append select="/root">
+        				<node id="{$maxId}">appended node</node>
+        			</xu:append>
+        		</xu:modifications>
+        	return
+        		xmldb:update('/db/C1', $update)\
+        )""";
 	
 	public XQueryUpdateAction(final String collectionPath, final String resourceName) {
 		super(collectionPath, resourceName);

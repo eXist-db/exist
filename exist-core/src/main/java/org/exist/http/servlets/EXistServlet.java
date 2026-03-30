@@ -44,6 +44,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.EOFException;
 import java.io.IOException;
+import java.io.Serial;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Optional;
@@ -56,6 +57,7 @@ import java.util.Optional;
  */
 public class EXistServlet extends AbstractExistHttpServlet {
 
+    @Serial
     private static final long serialVersionUID = -3563999345725645647L;
     private final static Logger LOG = LogManager.getLogger(EXistServlet.class);
     private RESTServer srvREST;
@@ -572,8 +574,8 @@ public class EXistServlet extends AbstractExistHttpServlet {
                 throw new ServletException("An unknown error occurred: " + e.getMessage(), e);
             }
         } finally {
-            if (request instanceof HttpServletRequestWrapper) {
-                ((HttpServletRequestWrapper) request).close();
+            if (request instanceof HttpServletRequestWrapper wrapper) {
+                wrapper.close();
             }
         }
     }

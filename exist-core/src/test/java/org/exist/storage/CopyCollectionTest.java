@@ -144,7 +144,7 @@ public class CopyCollectionTest {
      */
     @Test
     public void copyPreserveToNonExistentAsSelf() throws AuthenticationException, LockException, PermissionDeniedException, EXistException, IOException, TriggerException {
-        final Subject user1 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER1_NAME, USER1_PWD);;
+        final Subject user1 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER1_NAME, USER1_PWD);
         copyCol(user1, PRESERVE, USER1_COL1, USER1_NEW_COL);
         checkAttributes(USER1_NEW_COL, USER1_NAME, USER1_NAME, USER1_COL1_MODE, equalTo(getCreated(USER1_COL1)));
     }

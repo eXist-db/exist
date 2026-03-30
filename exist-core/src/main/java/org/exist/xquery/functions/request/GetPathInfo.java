@@ -43,8 +43,9 @@ public class GetPathInfo extends StrictRequestFunction {
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName("get-path-info", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
-			"Returns any extra path information associated with the URL the client sent when it made this request.\n" +
-			"For example an xquery GET or POST to /some/path/myfile.xq/extra/path will return /extra/path when myfile.xq is executed.",
+			"""
+            Returns any extra path information associated with the URL the client sent when it made this request.
+            For example an xquery GET or POST to /some/path/myfile.xq/extra/path will return /extra/path when myfile.xq is executed.""",
 			null,
 			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the request path information"));
 

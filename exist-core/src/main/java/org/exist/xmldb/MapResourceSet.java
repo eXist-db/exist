@@ -146,8 +146,8 @@ public class MapResourceSet implements ResourceSet
             return null;
         }
         final Object r = resourcesVector.get((int) pos);
-        if (r instanceof Resource) {
-            return (Resource) r;
+        if (r instanceof Resource resource) {
+            return resource;
         }
         return null;
     }

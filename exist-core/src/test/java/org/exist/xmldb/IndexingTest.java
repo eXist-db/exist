@@ -143,10 +143,10 @@ public class IndexingTest {
         }
 
         Element documentElement = null;
-        if (n instanceof Element) {
-            documentElement = (Element) n;
-        } else if (n instanceof Document) {
-            documentElement = ((Document) n).getDocumentElement();
+        if (n instanceof Element element) {
+            documentElement = element;
+        } else if (n instanceof Document document) {
+            documentElement = document.getDocumentElement();
         }
 
         assertions(documentElement);

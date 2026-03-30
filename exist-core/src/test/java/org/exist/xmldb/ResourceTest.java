@@ -162,10 +162,10 @@ public class ResourceTest {
         assertNotNull(doc);
         Node n = doc.getContentAsDOM();
         Element elem=null;
-        if (n instanceof Element) {
-            elem = (Element)n;
-        } else if (n instanceof Document) {
-            elem = ((Document)n).getDocumentElement();
+        if (n instanceof Element element) {
+            elem = element;
+        } else if (n instanceof Document document) {
+            elem = document.getDocumentElement();
         }
         assertNotNull(elem);
         assertEquals(elem.getNodeName(), "PLAY");

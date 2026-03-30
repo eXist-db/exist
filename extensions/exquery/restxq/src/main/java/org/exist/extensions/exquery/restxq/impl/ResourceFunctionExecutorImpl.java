@@ -334,12 +334,10 @@ public class ResourceFunctionExecutorImpl implements ResourceFunctionExecuter {
             //EXQuery XDM should not have any concrete types, just interfaces
             //some of the abstract code in EXQuery needs to be able to instantiate types.
             //Consider a factory or java.util.ServiceLoader pattern
-            if(typedValue instanceof org.exquery.xdm.type.StringTypedValue) {
-                value = new StringValue(((org.exquery.xdm.type.StringTypedValue)typedValue).getValue());
-            } else if(typedValue instanceof org.exquery.xdm.type.Base64BinaryTypedValue) {
-                value = BinaryValueFromInputStream.getInstance(xqueryContext, new Base64BinaryValueType(), ((org.exquery.xdm.type.Base64BinaryTypedValue)typedValue).getValue(), null);
-            } else {
-                value = (Item)typedValue.getValue();
+            switch (typedValue) {
+                case org.exquery.xdm.type.StringTypedValue stringTypedValue -> value = new StringValue(stringTypedValue.getValue());
+                case org.exquery.xdm.type.Base64BinaryTypedValue binaryTypedValue -> value = BinaryValueFromInputStream.getInstance(xqueryContext, new Base64BinaryValueType(), binaryTypedValue.getValue(), null);
+                default -> value = (Item)typedValue.getValue();
             }
 
             if(existDestinationType == value.getType()) {

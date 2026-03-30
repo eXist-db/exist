@@ -46,11 +46,12 @@ public class WindowClauseTest {
 
     @Test
     void simpleWindowConditions() throws RecognitionException, XPathException, TokenStreamException {
-        final String query = "xquery version \"3.1\";\n" +
-                "for tumbling window $w in (2, 4, 6, 8, 10, 12, 14)\n" +
-                "    start at $s when fn:true()\n" +
-                "    only end at $e when $e - $s eq 2\n" +
-                "return <window>{ $w }</window>";
+        final String query = """
+                xquery version "3.1";
+                for tumbling window $w in (2, 4, 6, 8, 10, 12, 14)
+                    start at $s when fn:true()
+                    only end at $e when $e - $s eq 2
+                return <window>{ $w }</window>""";
 
         // parse the query into the internal syntax tree
         final XQueryContext context = new XQueryContext();
@@ -76,11 +77,12 @@ public class WindowClauseTest {
 
     @Test
     void complexWindowCondition() throws RecognitionException, XPathException, TokenStreamException {
-        final String query = "xquery version \"3.1\";\n" +
-                "for tumbling window $w in (2, 4, 6, 8, 10, 12, 14)\n" +
-                "   start $first next $second when $first/price < $second/price\n" +
-                "   end $last next $beyond when $last/price > $beyond/price\n" +
-                "return <window>{ $w }</window>";
+        final String query = """
+                xquery version "3.1";
+                for tumbling window $w in (2, 4, 6, 8, 10, 12, 14)
+                   start $first next $second when $first/price < $second/price
+                   end $last next $beyond when $last/price > $beyond/price
+                return <window>{ $w }</window>""";
 
         // parse the query into the internal syntax tree
         final XQueryContext context = new XQueryContext();
@@ -105,10 +107,11 @@ public class WindowClauseTest {
 
     @Test
     void noEndWindowCondition() throws RecognitionException, XPathException, TokenStreamException {
-        final String query = "xquery version \"3.1\";\n" +
-                "for tumbling window $w in (2, 4, 6, 8, 10, 12, 14)\n" +
-                "   start $first next $second when $first/price < $second/price\n" +
-                "return <window>{ $w }</window>";
+        final String query = """
+                xquery version "3.1";
+                for tumbling window $w in (2, 4, 6, 8, 10, 12, 14)
+                   start $first next $second when $first/price < $second/price
+                return <window>{ $w }</window>""";
 
         // parse the query into the internal syntax tree
         final XQueryContext context = new XQueryContext();
@@ -133,11 +136,12 @@ public class WindowClauseTest {
 
     @Test
     void slidingWindowClause() throws RecognitionException, XPathException, TokenStreamException {
-        final String query = "xquery version \"3.1\";\n" +
-                "for sliding window $w in (2, 4, 6, 8, 10, 12, 14)\n" +
-                "    start at $s when fn:true()\n" +
-                "    only end at $e when $e - $s eq 2\n" +
-                "return <window>{ $w }</window>";
+        final String query = """
+                xquery version "3.1";
+                for sliding window $w in (2, 4, 6, 8, 10, 12, 14)
+                    start at $s when fn:true()
+                    only end at $e when $e - $s eq 2
+                return <window>{ $w }</window>""";
 
         // parse the query into the internal syntax tree
         final XQueryContext context = new XQueryContext();
@@ -164,12 +168,14 @@ public class WindowClauseTest {
 
     @Test
     void allWindowsVars() throws RecognitionException, XPathException, TokenStreamException, QName.IllegalQNameException {
-        final String query = "xquery version \"3.1\";\n" +
-                "for tumbling window $w in (2, 4, 6, 8, 10, 12, 14)\n" +
-                "start $first at $s previous $start-previous next $start-next when fn:true()\n" +
-                "only end $last at $e previous $end-previous next $end-next when $e - $s eq 2\n" +
-                "return\n" +
-                "  <window>{$first, $last}</window>\n";
+        final String query = """
+                xquery version "3.1";
+                for tumbling window $w in (2, 4, 6, 8, 10, 12, 14)
+                start $first at $s previous $start-previous next $start-next when fn:true()
+                only end $last at $e previous $end-previous next $end-next when $e - $s eq 2
+                return
+                  <window>{$first, $last}</window>
+                """;
 
         // parse the query into the internal syntax tree
         final XQueryContext context = new XQueryContext();
@@ -204,12 +210,14 @@ public class WindowClauseTest {
 
     @Test
     void tumblingWindowAllWindowVarsNoOnly() throws RecognitionException, XPathException, TokenStreamException, QName.IllegalQNameException {
-        final String query = "xquery version \"3.1\";\n" +
-                "for tumbling window $w in (2, 4, 6, 8, 10)\n" +
-                "    start $s at $spos previous $sprev next $snext when fn:true() \n" +
-                "    end $e at $epos previous $eprev next $enext when fn:true()\n" +
-                "return\n" +
-                "  <window>{$first, $last}</window>\n";
+        final String query = """
+                xquery version "3.1";
+                for tumbling window $w in (2, 4, 6, 8, 10)
+                    start $s at $spos previous $sprev next $snext when fn:true()\s
+                    end $e at $epos previous $eprev next $enext when fn:true()
+                return
+                  <window>{$first, $last}</window>
+                """;
 
             // parse the query into the internal syntax tree
             final XQueryContext context = new XQueryContext();
@@ -245,11 +253,12 @@ public class WindowClauseTest {
 
     @Test
     void tumblingWindowAvgReturn() throws RecognitionException, XPathException, TokenStreamException, QName.IllegalQNameException {
-        final String query = "xquery version \"3.1\";\n" +
-                "for tumbling window $w in (2, 4, 6, 8, 10, 12, 14)\n" +
-                "    start at $s when fn:true()\n" +
-                "    only end at $e when $e - $s eq 2\n" +
-                "return avg($w)";
+        final String query = """
+                xquery version "3.1";
+                for tumbling window $w in (2, 4, 6, 8, 10, 12, 14)
+                    start at $s when fn:true()
+                    only end at $e when $e - $s eq 2
+                return avg($w)""";
 
         // parse the query into the internal syntax tree
         final XQueryContext context = new XQueryContext();
@@ -284,10 +293,11 @@ public class WindowClauseTest {
 
     @Test
     void tumblingWindowNoEndWindowConditionPositional() throws RecognitionException, XPathException, TokenStreamException, QName.IllegalQNameException {
-        final String query = "xquery version \"3.1\";\n" +
-                "for tumbling window $w in (2, 4, 6, 8, 10, 12, 14)\n" +
-                "    start at $s when $s mod 3 = 1\n" +
-                "return <window>{ $w }</window>";
+        final String query = """
+                xquery version "3.1";
+                for tumbling window $w in (2, 4, 6, 8, 10, 12, 14)
+                    start at $s when $s mod 3 = 1
+                return <window>{ $w }</window>""";
 
         // parse the query into the internal syntax tree
         final XQueryContext context = new XQueryContext();
@@ -317,10 +327,11 @@ public class WindowClauseTest {
 
     @Test
     void tumblingWindowNoEndWindowConditionCurrentItem() throws RecognitionException, XPathException, TokenStreamException {
-        final String query = "xquery version \"3.1\";\n" +
-                "for tumbling window $w in (2, 4, 6, 8, 10, 12, 14)\n" +
-                "    start $first when $first mod 3 = 0\n" +
-                "return <window>{ $w }</window>";
+        final String query = """
+                xquery version "3.1";
+                for tumbling window $w in (2, 4, 6, 8, 10, 12, 14)
+                    start $first when $first mod 3 = 0
+                return <window>{ $w }</window>""";
 
         // parse the query into the internal syntax tree
         final XQueryContext context = new XQueryContext();
@@ -350,11 +361,12 @@ public class WindowClauseTest {
 
     @Test
     void slidingWindowAvgReturn() throws RecognitionException, XPathException, TokenStreamException, QName.IllegalQNameException {
-        final String query = "xquery version \"3.1\";\n" +
-                "for sliding window $w in (2, 4, 6, 8, 10, 12, 14)\n" +
-                "    start at $s when fn:true()\n" +
-                "    only end at $e when $e - $s eq 2\n" +
-                "return avg($w)";
+        final String query = """
+                xquery version "3.1";
+                for sliding window $w in (2, 4, 6, 8, 10, 12, 14)
+                    start at $s when fn:true()
+                    only end at $e when $e - $s eq 2
+                return avg($w)""";
 
         // parse the query into the internal syntax tree
         final XQueryContext context = new XQueryContext();
@@ -389,11 +401,12 @@ public class WindowClauseTest {
 
     @Test
     void slidingWindowEndWithoutOnly() throws RecognitionException, XPathException, TokenStreamException, QName.IllegalQNameException {
-        final String query = "xquery version \"3.1\";\n" +
-                "for sliding window $w in (2, 4, 6, 8, 10, 12, 14)\n" +
-                "    start at $s when fn:true()\n" +
-                "    end at $e when $e - $s eq 2\n" +
-                "return <window>{ $w }</window>";
+        final String query = """
+                xquery version "3.1";
+                for sliding window $w in (2, 4, 6, 8, 10, 12, 14)
+                    start at $s when fn:true()
+                    end at $e when $e - $s eq 2
+                return <window>{ $w }</window>""";
 
         // parse the query into the internal syntax tree
         final XQueryContext context = new XQueryContext();
@@ -428,17 +441,18 @@ public class WindowClauseTest {
 
     @Test
     void tumblingWindowRunUp() throws RecognitionException, XPathException, TokenStreamException, QName.IllegalQNameException {
-        final String query = "xquery version \"3.1\";\n" +
-                "for tumbling window $w in $closings\n" +
-                "   start $first next $second when $first/price < $second/price\n" +
-                "   end $last next $beyond when $last/price > $beyond/price\n" +
-                "return\n" +
-                "   <run-up symbol=\"{$symbol}\">\n" +
-                "      <start-date>{fn:data($first/date)}</start-date>\n" +
-                "      <start-price>{fn:data($first/price)}</start-price>\n" +
-                "      <end-date>{fn:data($last/date)}</end-date>\n" +
-                "      <end-price>{fn:data($last/price)}</end-price>\n" +
-                "   </run-up>";
+        final String query = """
+                xquery version "3.1";
+                for tumbling window $w in $closings
+                   start $first next $second when $first/price < $second/price
+                   end $last next $beyond when $last/price > $beyond/price
+                return
+                   <run-up symbol="{$symbol}">
+                      <start-date>{fn:data($first/date)}</start-date>
+                      <start-price>{fn:data($first/price)}</start-price>
+                      <end-date>{fn:data($last/date)}</end-date>
+                      <end-price>{fn:data($last/price)}</end-price>
+                   </run-up>""";
 
         // parse the query into the internal syntax tree
         final XQueryContext context = new XQueryContext();

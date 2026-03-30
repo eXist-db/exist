@@ -267,8 +267,8 @@ public class TryCatchExpression extends AbstractExpression {
         err_column_nr.setSequenceType(new SequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE));
 
         final Sequence colNum;
-        if (t != null && t instanceof XPathException) {
-            colNum = new IntegerValue(this, ((XPathException)t).getColumn());
+        if (t != null && t instanceof XPathException exception) {
+            colNum = new IntegerValue(this, exception.getColumn());
         } else {
             colNum = Sequence.EMPTY_SEQUENCE;
         }
@@ -286,8 +286,8 @@ public class TryCatchExpression extends AbstractExpression {
         err_line_nr.setSequenceType(new SequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE));
 
         final Sequence lineNum;
-        if (t != null && t instanceof XPathException) {
-            lineNum = new IntegerValue(this, ((XPathException)t).getLine());
+        if (t != null && t instanceof XPathException exception) {
+            lineNum = new IntegerValue(this, exception.getLine());
         } else {
             lineNum = Sequence.EMPTY_SEQUENCE;
         }
@@ -305,8 +305,8 @@ public class TryCatchExpression extends AbstractExpression {
         err_module.setSequenceType(new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE));
 
         final Sequence module;
-        if (t != null && t instanceof XPathException && ((XPathException)t).getSource() != null) {
-            module = new StringValue(this, ((XPathException)t).getSource().pathOrShortIdentifier());
+        if (t != null && t instanceof XPathException exception && exception.getSource() != null) {
+            module = new StringValue(this, exception.getSource().pathOrShortIdentifier());
         } else {
             module = Sequence.EMPTY_SEQUENCE;
         }
@@ -326,8 +326,8 @@ public class TryCatchExpression extends AbstractExpression {
         final Sequence errorValue;
         if (t != null) {
             // Get error value from exception
-            if(t instanceof XPathException && ((XPathException)t).getErrorVal() != null) {
-                errorValue = ((XPathException)t).getErrorVal();
+            if(t instanceof XPathException exception && exception.getErrorVal() != null) {
+                errorValue = exception.getErrorVal();
             } else {
                 errorValue = Sequence.EMPTY_SEQUENCE;
             }
@@ -346,7 +346,7 @@ public class TryCatchExpression extends AbstractExpression {
     // was called with one argument).
     private void addErrDescription(final Throwable t, final ErrorCode errorCode) throws XPathException {
         final Optional<String> errorDesc = Optional.ofNullable(errorCode.getDescription());
-        final Optional<String> throwableDesc = Optional.ofNullable(t instanceof XPathException ? ((XPathException) t).getDetailMessage() : t.getMessage());
+        final Optional<String> throwableDesc = Optional.ofNullable(t instanceof XPathException xpe ? xpe.getDetailMessage() : t.getMessage());
         final Expression expression = this;
         final Sequence description = errorDesc
                 .<Sequence>map(
@@ -505,8 +505,8 @@ public class TryCatchExpression extends AbstractExpression {
         localVar.setSequenceType(new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE));
 
         final Sequence trace;
-		if(t != null && t instanceof XPathException) {
-			final List<XPathException.FunctionStackElement> callStack = ((XPathException)t).getCallStack();
+		if(t != null && t instanceof XPathException exception) {
+			final List<XPathException.FunctionStackElement> callStack = exception.getCallStack();
 			if(callStack == null){
 				trace = Sequence.EMPTY_SEQUENCE;
 			} else {

@@ -69,10 +69,10 @@ public class FunctionAvailable extends BasicFunction {
             found = context.resolveFunction(functionName, arity) != null;
         } else {
             for (final org.exist.xquery.Module module : modules) {
-                if (module instanceof InternalModule) {
-                    found = ((InternalModule)module).getFunctionDef(functionName, arity) != null;
-                } else if (module instanceof ExternalModule) {
-                    found = ((ExternalModule)module).getFunction(functionName, arity, context) != null;
+                if (module instanceof InternalModule internalModule) {
+                    found = internalModule.getFunctionDef(functionName, arity) != null;
+                } else if (module instanceof ExternalModule externalModule) {
+                    found = externalModule.getFunction(functionName, arity, context) != null;
                 }
 
                 if (found) {

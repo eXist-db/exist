@@ -141,7 +141,7 @@ public abstract class NumberFormatter {
     }
 
     public static NumberFormatter getInstance(final String language) {
-        final Locale locale = new Locale(language);
+        final Locale locale = Locale.of(language);
 
         return switch (language) {
             case "de" -> new NumberFormatter_de(locale);

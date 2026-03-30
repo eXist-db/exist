@@ -21,6 +21,8 @@
  */
 package org.exist.security;
 
+import java.io.Serial;
+
 /**
  * Authentication process error.
  * 
@@ -29,7 +31,8 @@ package org.exist.security;
  */
 public class AuthenticationException extends Exception {
 
-	private static final long serialVersionUID = 8966739840703820248L;
+    @Serial
+    private static final long serialVersionUID = 8966739840703820248L;
 	
 	public static final int UNNOWN_EXCEPTION = -1; 
 

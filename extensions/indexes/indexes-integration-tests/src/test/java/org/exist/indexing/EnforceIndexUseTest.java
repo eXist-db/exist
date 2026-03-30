@@ -77,24 +77,27 @@ public class EnforceIndexUseTest {
 
     private ExistEmbeddedServer existEmbeddedServer;
     private static final String OLD_RANGE_COLLECTION_CONFIG =
-            "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">\n" +
-                    "    <index xmlns:xs=\"http://www.w3.org/2001/XMLSchema\">\n" +
-                    "        <create qname=\"@bar\" type=\"xs:string\"/>\n" +
-                    "    </index>\n" +
-                    "</collection>";
+            """
+            <collection xmlns="http://exist-db.org/collection-config/1.0">
+                <index xmlns:xs="http://www.w3.org/2001/XMLSchema">
+                    <create qname="@bar" type="xs:string"/>
+                </index>
+            </collection>""";
     private static final String NEW_RANGE_COLLECTION_CONFIG =
-            "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">\n" +
-                    "    <index xmlns:xs=\"http://www.w3.org/2001/XMLSchema\">\n" +
-                    "        <range>\n" +
-                    "            <create qname=\"@bar\" type=\"xs:string\"/>\n" +
-                    "        </range>\n" +
-                    "    </index>\n" +
-                    "</collection>";
+            """
+            <collection xmlns="http://exist-db.org/collection-config/1.0">
+                <index xmlns:xs="http://www.w3.org/2001/XMLSchema">
+                    <range>
+                        <create qname="@bar" type="xs:string"/>
+                    </range>
+                </index>
+            </collection>""";
 
     private static final String XML =
-            "<root>\n" +
-                    "<foo bar=\"baz\"/>\n" +
-                    "</root>";
+            """
+            <root>
+            <foo bar="baz"/>
+            </root>""";
 
     @Test
     public void matchesWithDiffrentIndexStyles() throws PermissionDeniedException, EXistException, XPathException {

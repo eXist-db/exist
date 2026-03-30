@@ -37,13 +37,13 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
-import java.nio.file.Paths;
-
 import org.exist.backup.SystemImport;
 import org.exist.backup.restore.listener.AbstractRestoreListener;
 import org.exist.backup.restore.listener.RestoreListener;
 
 import javax.annotation.Nullable;
+
+import java.nio.file.Path;
 
 public class FnImport extends BasicFunction {
 
@@ -126,7 +126,7 @@ public class FnImport extends BasicFunction {
 			try {
 				final SystemImport restore = new SystemImport(context.getDatabase());
 				final RestoreListener listener = new XMLRestoreListener(builder);
-				restore.restore(org.exist.security.SecurityManager.DBA_USER, adminPass, adminPassAfter, Paths.get(dirOrFile), listener);
+				restore.restore(org.exist.security.SecurityManager.DBA_USER, adminPass, adminPassAfter, Path.of(dirOrFile), listener);
 			} catch (final Exception e) {
 				throw new XPathException(this, "restore failed with exception: " + e.getMessage(), e);
 			}

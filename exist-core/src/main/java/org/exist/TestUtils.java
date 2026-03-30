@@ -35,7 +35,6 @@ import org.exist.xmldb.XmldbURI;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -184,7 +183,7 @@ public class TestUtils {
      * @throws IOException if an IO error occurs.
      */
     public static Optional<Path> getExistHomeFile(final String fileName) throws IOException {
-        final Path path = getEXistHome().orElseGet(() -> Paths.get(".")).resolve(fileName);
+        final Path path = getEXistHome().orElseGet(() -> Path.of(".")).resolve(fileName);
         if(Files.exists(path)) {
             return Optional.of(path);
         } else {

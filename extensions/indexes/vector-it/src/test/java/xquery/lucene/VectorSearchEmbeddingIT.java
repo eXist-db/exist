@@ -37,7 +37,6 @@ import org.junit.Test;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
@@ -133,9 +132,10 @@ public class VectorSearchEmbeddingIT {
     public void diagnosticsReportsModel() throws XPathException, PermissionDeniedException, EXistException {
         setupDefaultCollection();
         final Sequence result = executeQuery(
-            "xquery version \"3.1\";\n"
-            + "import module namespace vector=\"http://exist-db.org/xquery/vector\";\n"
-            + "count(vector:diagnostics())");
+            """
+            xquery version "3.1";
+            import module namespace vector="http://exist-db.org/xquery/vector";
+            count(vector:diagnostics())""");
         assertTrue("diagnostics should return at least one entry",
             result.itemAt(0).toJavaObject(Integer.class).intValue() >= 1);
     }
@@ -311,7 +311,7 @@ public class VectorSearchEmbeddingIT {
 
     private boolean hasEmbeddingModel() {
         final Path base = ConfigurationHelper.getExistHome()
-            .orElse(Paths.get(System.getProperty("user.dir", ".")));
+            .orElse(Path.of(System.getProperty("user.dir", ".")));
         final Path modelDir = base.resolve("target/onnx-models/all-MiniLM-L6-v2");
         return Files.isRegularFile(modelDir.resolve("model.onnx"))
             && Files.isRegularFile(modelDir.resolve("tokenizer.json"));

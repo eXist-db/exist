@@ -23,6 +23,8 @@ package org.exist.scheduler;
 
 import org.quartz.JobExecutionException;
 
+import java.io.Serial;
+
 /**
  * Exception class can be thrown by implementations of org.exist.scheduler.Job.
  *
@@ -31,7 +33,8 @@ import org.quartz.JobExecutionException;
  * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 public class JobException extends Exception {
-    
+
+    @Serial
     private static final long serialVersionUID = 1567438994821964637L;
 
     public enum JobExceptionAction {

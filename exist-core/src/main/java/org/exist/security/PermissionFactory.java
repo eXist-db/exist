@@ -227,7 +227,7 @@ public class PermissionFactory {
     }
 
     public static void chown(final DBBroker broker, final Permission permission, final Optional<String> owner, final Optional<String> group) throws PermissionDeniedException {
-        if ((!owner.isPresent()) && !group.isPresent()) {
+        if ((owner.isEmpty()) && group.isEmpty()) {
             throw new IllegalArgumentException("Either owner or group must be provided");
         }
 
@@ -435,7 +435,7 @@ public class PermissionFactory {
     }
 
     private static void chmod_impl(final DBBroker broker, final Permission permission, final Optional<Either<String, Integer>> mode, final Optional<List<ACEAider>> acl) throws PermissionDeniedException {
-        if ((!mode.isPresent()) && !acl.isPresent()) {
+        if ((mode.isEmpty()) && acl.isEmpty()) {
             throw new IllegalArgumentException("Either mode or acl must be provided");
         }
 
@@ -513,8 +513,8 @@ public class PermissionFactory {
      * @throws PermissionDeniedException if the calling process has insufficient permissions.
      */
     public static void chacl(final Permission permission, final ConsumerE<ACLPermission, PermissionDeniedException> permissionModifier) throws PermissionDeniedException {
-        if(permission instanceof SimpleACLPermission) {
-            chacl((SimpleACLPermission)permission, permissionModifier);
+        if(permission instanceof SimpleACLPermission lPermission) {
+            chacl(lPermission, permissionModifier);
         } else {
             throw new PermissionDeniedException("ACL like permissions have not been enabled");
         }
@@ -533,8 +533,8 @@ public class PermissionFactory {
      */
     public static void chacl(final DBBroker broker, final Txn transaction, final XmldbURI pathUri, final ConsumerE<ACLPermission, PermissionDeniedException> permissionModifier) throws PermissionDeniedException {
         updatePermissions(broker, transaction, pathUri, permission -> {
-            if(permission instanceof SimpleACLPermission) {
-                chacl((SimpleACLPermission)permission, permissionModifier);
+            if(permission instanceof SimpleACLPermission lPermission) {
+                chacl(lPermission, permissionModifier);
             } else {
                 throw new PermissionDeniedException("ACL like permissions have not been enabled");
             }

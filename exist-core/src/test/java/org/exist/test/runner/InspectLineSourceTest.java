@@ -39,7 +39,6 @@ import org.w3c.dom.Node;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Collections;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -59,7 +58,7 @@ public class InspectLineSourceTest {
     @Test
     public void inspectFunctionReturnsLineAndSourceForUDF() throws EXistException, PermissionDeniedException, XPathException, IOException, DatabaseConfigurationException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        final Path path = Paths.get("src/test/resources/org/exist/test/runner/inspect-line-source-test.xqm").toAbsolutePath();
+        final Path path = Path.of("src/test/resources/org/exist/test/runner/inspect-line-source-test.xqm").toAbsolutePath();
         if (!Files.exists(path)) {
             throw new AssertionError("Test resource missing: " + path);
         }

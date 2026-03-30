@@ -43,26 +43,27 @@ public class AdditionalJingXsdRngTest {
 
     @Test
     public void testValidateXSDwithJing() throws XMLDBException {
-        final String query = "let $v := <doc>\n" +
-                "\t<title>Title</title>\n" +
-                "\t<p>Some paragraph.</p>\n" +
-                "      </doc>\n" +
-                "let $schema := <xs:schema xmlns:xs=\"http://www.w3.org/2001/XMLSchema\"\n" +
-                "\t\t elementFormDefault=\"qualified\">\n" +
-                "\t<xs:element name=\"doc\">\n" +
-                "\t  <xs:complexType>\n" +
-                "\t    <xs:sequence>\n" +
-                "\t      <xs:element minOccurs=\"0\" ref=\"title\"/>\n" +
-                "\t      <xs:element minOccurs=\"0\" maxOccurs=\"unbounded\" ref=\"p\"/>\n" +
-                "\t    </xs:sequence>\n" +
-                "\t  </xs:complexType>\n" +
-                "\t</xs:element>\n" +
-                "\t<xs:element name=\"title\" type=\"xs:string\"/>\n" +
-                "\t<xs:element name=\"p\" type=\"xs:string\"/>\n" +
-                "      </xs:schema>\n" +
-                "return\n" +
-                "\n" +
-                "\tvalidation:jing($v,$schema)";
+        final String query = """
+                let $v := <doc>
+                	<title>Title</title>
+                	<p>Some paragraph.</p>
+                      </doc>
+                let $schema := <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+                		 elementFormDefault="qualified">
+                	<xs:element name="doc">
+                	  <xs:complexType>
+                	    <xs:sequence>
+                	      <xs:element minOccurs="0" ref="title"/>
+                	      <xs:element minOccurs="0" maxOccurs="unbounded" ref="p"/>
+                	    </xs:sequence>
+                	  </xs:complexType>
+                	</xs:element>
+                	<xs:element name="title" type="xs:string"/>
+                	<xs:element name="p" type="xs:string"/>
+                      </xs:schema>
+                return
+                
+                	validation:jing($v,$schema)""";
 
         final ResourceSet result = existEmbeddedServer.executeQuery(query);
         final String r = (String) result.getResource(0).getContent();
@@ -71,26 +72,27 @@ public class AdditionalJingXsdRngTest {
 
     @Test
     public void testValidateXSDwithJing_invalid() throws XMLDBException {
-        final String query = "let $v := <doc>\n" +
-                "\t<title1>Title</title1>\n" +
-                "\t<p>Some paragraph.</p>\n" +
-                "      </doc>\n" +
-                "let $schema := <xs:schema xmlns:xs=\"http://www.w3.org/2001/XMLSchema\"\n" +
-                "\t\t elementFormDefault=\"qualified\">\n" +
-                "\t<xs:element name=\"doc\">\n" +
-                "\t  <xs:complexType>\n" +
-                "\t    <xs:sequence>\n" +
-                "\t      <xs:element minOccurs=\"0\" ref=\"title\"/>\n" +
-                "\t      <xs:element minOccurs=\"0\" maxOccurs=\"unbounded\" ref=\"p\"/>\n" +
-                "\t    </xs:sequence>\n" +
-                "\t  </xs:complexType>\n" +
-                "\t</xs:element>\n" +
-                "\t<xs:element name=\"title\" type=\"xs:string\"/>\n" +
-                "\t<xs:element name=\"p\" type=\"xs:string\"/>\n" +
-                "      </xs:schema>\n" +
-                "return\n" +
-                "\n" +
-                "\tvalidation:jing($v,$schema)";
+        final String query = """
+                let $v := <doc>
+                	<title1>Title</title1>
+                	<p>Some paragraph.</p>
+                      </doc>
+                let $schema := <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+                		 elementFormDefault="qualified">
+                	<xs:element name="doc">
+                	  <xs:complexType>
+                	    <xs:sequence>
+                	      <xs:element minOccurs="0" ref="title"/>
+                	      <xs:element minOccurs="0" maxOccurs="unbounded" ref="p"/>
+                	    </xs:sequence>
+                	  </xs:complexType>
+                	</xs:element>
+                	<xs:element name="title" type="xs:string"/>
+                	<xs:element name="p" type="xs:string"/>
+                      </xs:schema>
+                return
+                
+                	validation:jing($v,$schema)""";
 
         final ResourceSet result = existEmbeddedServer.executeQuery(query);
         final String r = (String) result.getResource(0).getContent();
@@ -99,38 +101,39 @@ public class AdditionalJingXsdRngTest {
 
     @Test
     public void testValidateRNGwithJing() throws XPathException, XMLDBException {
-        final String query = "let $v := <doc>\n" +
-                "\t<title>Title</title>\n" +
-                "\t<p>Some paragraph.</p>\n" +
-                "      </doc>\n" +
-                "let $schema := <grammar xmlns=\"http://relaxng.org/ns/structure/1.0\">\n" +
-                "  <start>\n" +
-                "    <ref name=\"doc\"/>\n" +
-                "  </start>\n" +
-                "  <define name=\"doc\">\n" +
-                "    <element name=\"doc\">\n" +
-                "      <optional>\n" +
-                "        <ref name=\"title\"/>\n" +
-                "      </optional>\n" +
-                "      <zeroOrMore>\n" +
-                "        <ref name=\"p\"/>\n" +
-                "      </zeroOrMore>\n" +
-                "    </element>\n" +
-                "  </define>\n" +
-                "  <define name=\"title\">\n" +
-                "    <element name=\"title\">\n" +
-                "      <text/>\n" +
-                "    </element>\n" +
-                "  </define>\n" +
-                "  <define name=\"p\">\n" +
-                "    <element name=\"p\">\n" +
-                "      <text/>\n" +
-                "    </element>\n" +
-                "  </define>\n" +
-                "</grammar>\n" +
-                "return\n" +
-                "\n" +
-                "\tvalidation:jing($v,$schema)";
+        final String query = """
+                let $v := <doc>
+                	<title>Title</title>
+                	<p>Some paragraph.</p>
+                      </doc>
+                let $schema := <grammar xmlns="http://relaxng.org/ns/structure/1.0">
+                  <start>
+                    <ref name="doc"/>
+                  </start>
+                  <define name="doc">
+                    <element name="doc">
+                      <optional>
+                        <ref name="title"/>
+                      </optional>
+                      <zeroOrMore>
+                        <ref name="p"/>
+                      </zeroOrMore>
+                    </element>
+                  </define>
+                  <define name="title">
+                    <element name="title">
+                      <text/>
+                    </element>
+                  </define>
+                  <define name="p">
+                    <element name="p">
+                      <text/>
+                    </element>
+                  </define>
+                </grammar>
+                return
+                
+                	validation:jing($v,$schema)""";
 
         final ResourceSet result = existEmbeddedServer.executeQuery(query);
         final String r = (String) result.getResource(0).getContent();
@@ -139,38 +142,39 @@ public class AdditionalJingXsdRngTest {
 
     @Test
     public void testValidateRNGwithJing_invalid() throws XMLDBException {
-        final String query = "let $v := <doc>\n" +
-                "\t<title1>Title</title1>\n" +
-                "\t<p>Some paragraph.</p>\n" +
-                "      </doc>\n" +
-                "let $schema := <grammar xmlns=\"http://relaxng.org/ns/structure/1.0\">\n" +
-                "  <start>\n" +
-                "    <ref name=\"doc\"/>\n" +
-                "  </start>\n" +
-                "  <define name=\"doc\">\n" +
-                "    <element name=\"doc\">\n" +
-                "      <optional>\n" +
-                "        <ref name=\"title\"/>\n" +
-                "      </optional>\n" +
-                "      <zeroOrMore>\n" +
-                "        <ref name=\"p\"/>\n" +
-                "      </zeroOrMore>\n" +
-                "    </element>\n" +
-                "  </define>\n" +
-                "  <define name=\"title\">\n" +
-                "    <element name=\"title\">\n" +
-                "      <text/>\n" +
-                "    </element>\n" +
-                "  </define>\n" +
-                "  <define name=\"p\">\n" +
-                "    <element name=\"p\">\n" +
-                "      <text/>\n" +
-                "    </element>\n" +
-                "  </define>\n" +
-                "</grammar>\n" +
-                "return\n" +
-                "\n" +
-                "\tvalidation:jing($v,$schema)";
+        final String query = """
+                let $v := <doc>
+                	<title1>Title</title1>
+                	<p>Some paragraph.</p>
+                      </doc>
+                let $schema := <grammar xmlns="http://relaxng.org/ns/structure/1.0">
+                  <start>
+                    <ref name="doc"/>
+                  </start>
+                  <define name="doc">
+                    <element name="doc">
+                      <optional>
+                        <ref name="title"/>
+                      </optional>
+                      <zeroOrMore>
+                        <ref name="p"/>
+                      </zeroOrMore>
+                    </element>
+                  </define>
+                  <define name="title">
+                    <element name="title">
+                      <text/>
+                    </element>
+                  </define>
+                  <define name="p">
+                    <element name="p">
+                      <text/>
+                    </element>
+                  </define>
+                </grammar>
+                return
+                
+                	validation:jing($v,$schema)""";
 
         final ResourceSet result = existEmbeddedServer.executeQuery(query);
         final String r = (String) result.getResource(0).getContent();

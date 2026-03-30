@@ -75,7 +75,7 @@ public class CustomMatchListenerFactory {
             try {
                 final Class<?> listenerClass = Class.forName(className);
                 if (CustomMatchListener.class.isAssignableFrom(listenerClass)) {
-                    final CustomMatchListener listener = (CustomMatchListener) listenerClass.newInstance();
+                    final CustomMatchListener listener = (CustomMatchListener) listenerClass.getDeclaredConstructor().newInstance();
                     listener.setBroker(broker);
                     if (first == null) {
                         first = listener;

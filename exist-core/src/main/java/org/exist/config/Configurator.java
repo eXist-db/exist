@@ -432,15 +432,15 @@ public class Configurator {
                                 list.remove(i); //TODO Surely we should log a problem here or throw an exception?
                                 continue;
 
-                            } else if (obj instanceof Reference) {
+                            } else if (obj instanceof Reference reference) {
 
-                                if (!referenceBy.isPresent()) {
+                                if (referenceBy.isEmpty()) {
                                     LOG.error("illegal design '{}' [{}]", configuration.getName(), field);
                                     list.remove(i);
                                     continue;
                                 } else {
 
-                                    final String name = ((Reference) obj).getName();
+                                    final String name = reference.getName();
 
                                     //Lookup for new configuration, update if found
                                     final List<Configuration> applicableConfs = filter(confs, conf ->
@@ -515,7 +515,7 @@ public class Configurator {
                                 if(value != null) {
                                     final Optional<ConsumerE<String, ReflectiveOperationException>> updateFn = updateListFn(instance, confName, removed, value);
 
-                                    if(!updateFn.isPresent()) {
+                                    if(updateFn.isEmpty()) {
                                         LOG.error("Could not insert configured object");
                                     } else {
                                         try {
@@ -535,7 +535,7 @@ public class Configurator {
                                         if (value != null) {
                                             final Optional<ConsumerE<String, ReflectiveOperationException>> updateFn = updateListFn(instance, confName, removed, value);
 
-                                            if(!updateFn.isPresent()) {
+                                            if(updateFn.isEmpty()) {
                                                 LOG.error("Could not insert configured object");
                                             } else {
                                                 try {
@@ -579,7 +579,7 @@ public class Configurator {
                                 objs = new Object[]{id.toLowerCase(), id};
                             }
                             
-                            final String clazzName = String.format(annotation.value(), objs);
+                            final String clazzName = annotation.value().formatted(objs);
                             final Configurable obj = create(conf, instance, clazzName);
                             
                             if (obj != null) {
@@ -707,7 +707,7 @@ public class Configurator {
                 return null;
             }
 
-            if (obj instanceof LifeCycle) {
+            if (obj instanceof LifeCycle cycle) {
                 BrokerPool db = null;
                 
                 try {
@@ -721,7 +721,7 @@ public class Configurator {
                 if (db != null) {
                     try(final DBBroker broker = db.getBroker();
                         final Txn transaction = broker.continueOrBeginTransaction()) {
-                        ((LifeCycle) obj).start(broker, transaction);
+                        cycle.start(broker, transaction);
                         transaction.commit();
                     }
                 }
@@ -1068,8 +1068,8 @@ public class Configurator {
         
         //determine the list entries type from its generic type
         final Type fieldGenericType = field.getGenericType();
-        if (fieldGenericType instanceof ParameterizedType) {
-            final Type genericTypeArgs[] = ((ParameterizedType) fieldGenericType).getActualTypeArguments();
+        if (fieldGenericType instanceof ParameterizedType type) {
+            final Type genericTypeArgs[] = type.getActualTypeArguments();
             if (genericTypeArgs != null && genericTypeArgs.length == 1) {
                 final Type genericListType = genericTypeArgs[0];
                 if (genericListType.equals(String.class)) {
@@ -1136,8 +1136,8 @@ public class Configurator {
     }
 
     public static FullXmldbURI getFullURI(final BrokerPool pool, final XmldbURI uri) {
-        if (uri instanceof FullXmldbURI) {
-            return (FullXmldbURI) uri;
+        if (uri instanceof FullXmldbURI rI) {
+            return rI;
         }
 
         final StringBuilder accessor = new StringBuilder(XmldbURI.XMLDB_URI_PREFIX);
@@ -1347,8 +1347,8 @@ public class Configurator {
             final FullXmldbURI uri = entry.getKey();
             if (uri.getInstanceName().equals(db.getId())) {
                 final Configuration conf = entry.getValue();
-                if (conf instanceof ConfigurationImpl) {
-                    ((ConfigurationImpl) conf).configuredObjectReference = null;
+                if (conf instanceof ConfigurationImpl impl) {
+                    impl.configuredObjectReference = null;
                 }
             }
             hotConfigs.remove(uri);

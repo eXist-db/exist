@@ -136,7 +136,7 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
     }
 
     private boolean checkCondition(DBBroker broker, DocumentImpl document, NodeId nodeId) throws PermissionDeniedException, XPathException {
-        if (!condition.isPresent()) {
+        if (condition.isEmpty()) {
             return true;
         }
 
@@ -193,9 +193,8 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
                 case Type.UNSIGNED_LONG:
                     final BigInteger big = new BigInteger(content.trim());
                     if (big.compareTo(LONG_MIN) < 0 || big.compareTo(LONG_MAX) > 0) {
-                        throw new IllegalStateException(String.format(
-                            "Lucene field '%s' of type xs:integer cannot store value outside long range (-9223372036854775808 to 9223372036854775807): %s. See https://github.com/eXist-db/exist/issues/4532",
-                            fieldName, content));
+                        throw new IllegalStateException("Lucene field '%s' of type xs:integer cannot store value outside long range (-9223372036854775808 to 9223372036854775807): %s. See https://github.com/eXist-db/exist/issues/4532".formatted(
+                                fieldName, content));
                     }
                     long lvalue = big.longValue();
                     return new LongField(fieldName, lvalue, Field.Store.YES);

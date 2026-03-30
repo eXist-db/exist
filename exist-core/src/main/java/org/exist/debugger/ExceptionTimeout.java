@@ -21,13 +21,16 @@
  */
 package org.exist.debugger;
 
+import java.io.Serial;
+
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
 public class ExceptionTimeout extends Exception {
 
-	private static final long serialVersionUID = -5783619743744719741L;
+    @Serial
+    private static final long serialVersionUID = -5783619743744719741L;
 	
 	public ExceptionTimeout() {
 		super();

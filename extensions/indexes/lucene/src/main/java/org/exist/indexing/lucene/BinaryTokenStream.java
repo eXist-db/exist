@@ -82,8 +82,8 @@ public final class BinaryTokenStream extends TokenStream {
 
         @Override
         public void copyTo(AttributeImpl target) {
-            if (target instanceof ByteTermAttribute) {
-                ((ByteTermAttribute) target).setBytesRef(bytes);
+            if (target instanceof ByteTermAttribute attribute) {
+                attribute.setBytesRef(bytes);
             } else if (target instanceof TermToBytesRefAttribute) {
                 // Since we implement TermToBytesRefAttribute, Lucene might expect this
                 // Although TermToBytesRefAttribute doesn't have a setter, 

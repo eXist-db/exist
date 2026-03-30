@@ -183,12 +183,12 @@ public class SearchResourceResolver implements XMLEntityResolver {
     }
 
     private String getXriDetails(final XMLResourceIdentifier xrid) {
-        return String.format("PublicId='%s' BaseSystemId='%s' ExpandedSystemId='%s' LiteralSystemId='%s' Namespace='%s' ",
+        return "PublicId='%s' BaseSystemId='%s' ExpandedSystemId='%s' LiteralSystemId='%s' Namespace='%s' ".formatted(
                 xrid.getPublicId(), xrid.getBaseSystemId(), xrid.getExpandedSystemId(), xrid.getLiteralSystemId(), xrid.getNamespace());
     }
 
     private String getXisDetails(final XMLInputSource xis) {
-        return String.format("PublicId='%s' SystemId='%s' BaseSystemId='%s' Encoding='%s' ",
+        return "PublicId='%s' SystemId='%s' BaseSystemId='%s' Encoding='%s' ".formatted(
                 xis.getPublicId(), xis.getSystemId(), xis.getBaseSystemId(), xis.getEncoding());
     }
 

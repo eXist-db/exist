@@ -615,17 +615,17 @@ public class XmldbURI implements Comparable<Object>, Serializable, Cloneable {
     }
 
     public boolean equals(final Object ob) {
-        if (ob instanceof XmldbURI) {
-            return getXmldbURI().equals(((XmldbURI) ob).getXmldbURI());
+        if (ob instanceof XmldbURI rI) {
+            return getXmldbURI().equals(rI.getXmldbURI());
         }
 
         if (ob instanceof URI) {
             return getXmldbURI().equals(ob);
         }
 
-        if (ob instanceof String) {
+        if (ob instanceof String string) {
             try {
-                return getXmldbURI().equals(new URI((String) ob));
+                return getXmldbURI().equals(new URI(string));
             } catch (final URISyntaxException e) {
                 return false;
             }

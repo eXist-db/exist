@@ -106,9 +106,10 @@ public class XQueryDeclareContextItemTest {
     @Test
     public void declareContextItem() throws EXistException, PermissionDeniedException, XPathException {
         final String query =
-                "xquery version \"3.0\";\n" +
-                "declare context item := 3; \n" +
-                ". + 4";
+                """
+                xquery version "3.0";
+                declare context item := 3;\s
+                . + 4""";
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final XQuery xquery = pool.getXQueryService();
@@ -126,9 +127,10 @@ public class XQueryDeclareContextItemTest {
     @Test
     public void declareContextItemIsDocument() throws EXistException, PermissionDeniedException, XPathException {
         final String query =
-                "xquery version \"3.0\";\n" +
-                "declare context item := document { <root><item>foo</item><item>baz</item></root> }; \n" +
-                "(/) instance of document-node()";
+                """
+                xquery version "3.0";
+                declare context item := document { <root><item>foo</item><item>baz</item></root> };\s
+                (/) instance of document-node()""";
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final XQuery xquery = pool.getXQueryService();
@@ -143,9 +145,10 @@ public class XQueryDeclareContextItemTest {
     @Test
     public void declareContextItemTyped() throws EXistException, PermissionDeniedException, XPathException {
         final String query =
-                "xquery version \"3.0\";\n" +
-                        "declare context item as xs:integer := 3; \n" +
-                        ". + 4";
+                """
+                xquery version "3.0";
+                declare context item as xs:integer := 3;\s
+                . + 4""";
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final XQuery xquery = pool.getXQueryService();
@@ -160,9 +163,10 @@ public class XQueryDeclareContextItemTest {
     @Test
     public void declareContextItemExternal() throws EXistException, PermissionDeniedException, XPathException {
         final String query =
-                "xquery version \"3.0\";\n" +
-                        "declare context item external; \n" +
-                        ". + 4";
+                """
+                xquery version "3.0";
+                declare context item external;\s
+                . + 4""";
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final XQuery xquery = pool.getXQueryService();
@@ -177,9 +181,10 @@ public class XQueryDeclareContextItemTest {
     @Test
     public void declareContextItemExternalDefault() throws EXistException, PermissionDeniedException, XPathException {
         final String query =
-                "xquery version \"3.0\";\n" +
-                        "declare context item external := 3; \n" +
-                        ". + 4";
+                """
+                xquery version "3.0";
+                declare context item external := 3;\s
+                . + 4""";
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final XQuery xquery = pool.getXQueryService();
@@ -194,9 +199,10 @@ public class XQueryDeclareContextItemTest {
     @Test
     public void declareContextItemExternalDefaultOverrides() throws EXistException, PermissionDeniedException, XPathException {
         final String query =
-                "xquery version \"3.0\";\n" +
-                        "declare context item external := 3; \n" +
-                        ". + 4";
+                """
+                xquery version "3.0";
+                declare context item external := 3;\s
+                . + 4""";
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final XQuery xquery = pool.getXQueryService();
@@ -211,10 +217,11 @@ public class XQueryDeclareContextItemTest {
     @Test
     public void declareContextItemExternalElement() throws EXistException, PermissionDeniedException, XPathException, SAXException {
         final String query =
-                "xquery version \"3.0\";\n" +
-                        "declare namespace env=\"http://www.w3.org/2003/05/soap-envelope\";\n" +
-                        "declare context item as element(env:Envelope) external;\n" +
-                        "<wrap>{.}</wrap>";
+                """
+                xquery version "3.0";
+                declare namespace env="http://www.w3.org/2003/05/soap-envelope";
+                declare context item as element(env:Envelope) external;
+                <wrap>{.}</wrap>""";
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final XQuery xquery = pool.getXQueryService();

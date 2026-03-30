@@ -116,54 +116,67 @@ public class RESTServiceTest {
             + "</text>" + "</query>";
 
     private static final String TEST_MODULE =
-            "module namespace t=\"http://test.foo\";\n" +
-                    "declare variable $t:VAR := 'World!';";
+            """
+            module namespace t="http://test.foo";
+            declare variable $t:VAR := 'World!';\
+            """;
 
     private static final String TEST_XQUERY =
-            "xquery version \"1.0\";\n" +
-                    "declare option exist:serialize \"method=text media-type=text/text\";\n" +
-                    "import module namespace request=\"http://exist-db.org/xquery/request\";\n" +
-                    "import module namespace t=\"http://test.foo\" at \"module.xq\";\n" +
-                    "let $param := request:get-parameter('p', ())\n" +
-                    "return\n" +
-                    "	($param, ' ', $t:VAR)";
+            """
+            xquery version "1.0";
+            declare option exist:serialize "method=text media-type=text/text";
+            import module namespace request="http://exist-db.org/xquery/request";
+            import module namespace t="http://test.foo" at "module.xq";
+            let $param := request:get-parameter('p', ())
+            return
+            	($param, ' ', $t:VAR)""";
 
     private static final String TEST_XQUERY_PARAMETER =
-            "xquery version \"1.0\";\n" +
-                    "declare namespace request=\"http://exist-db.org/xquery/request\";\n" +
-                    "import module namespace requestparametermod=\"http://exist-db.org/xquery/requestparametermod\" at \"requestparametermod.xqm\";\n" +
-                    "concat(\"xql=\", request:get-parameter(\"doc\",())),\n" +
-                    "concat(\"xqm=\", $requestparametermod:request)";
+            """
+            xquery version "1.0";
+            declare namespace request="http://exist-db.org/xquery/request";
+            import module namespace requestparametermod="http://exist-db.org/xquery/requestparametermod" at "requestparametermod.xqm";
+            concat("xql=", request:get-parameter("doc",())),
+            concat("xqm=", $requestparametermod:request)""";
 
     private static final String TEST_XQUERY_PARAMETER_MODULE =
-            "module namespace requestparametermod = \"http://exist-db.org/xquery/requestparametermod\";\n" +
-                    "declare namespace request=\"http://exist-db.org/xquery/request\";\n" +
-                    "declare variable $requestparametermod:request := request:get-parameter(\"doc\",());\n";
+            """
+            module namespace requestparametermod = "http://exist-db.org/xquery/requestparametermod";
+            declare namespace request="http://exist-db.org/xquery/request";
+            declare variable $requestparametermod:request := request:get-parameter("doc",());
+            """;
 
     private static final String TEST_XQUERY_WITH_PATH_PARAMETER =
-            "xquery version \"1.0\";\n" +
-                    "declare namespace request=\"http://exist-db.org/xquery/request\";\n" +
-                    "declare option exist:serialize \"method=text media-type=text/text\";\n" +
-                    "(\"pathInfo=\", request:get-path-info(), \"\n\"," +
-                    "\"servletPath=\", request:get-servlet-path(), \"\n\")";
+            """
+            xquery version "1.0";
+            declare namespace request="http://exist-db.org/xquery/request";
+            declare option exist:serialize "method=text media-type=text/text";
+            ("pathInfo=", request:get-path-info(), "
+            ",\
+            "servletPath=", request:get-servlet-path(), "
+            ")""";
 
     private static final String TEST_XQUERY_WITH_PATH_AND_CONTENT =
-            "xquery version \"3.0\";\n" +
-                    "declare namespace request=\"http://exist-db.org/xquery/request\";\n" +
-                    "declare option exist:serialize \"method=text media-type=text/text\";\n" +
-                    "request:get-data()//data/text() || ' ' || request:get-path-info()";
+            """
+            xquery version "3.0";
+            declare namespace request="http://exist-db.org/xquery/request";
+            declare option exist:serialize "method=text media-type=text/text";
+            request:get-data()//data/text() || ' ' || request:get-path-info()""";
 
     private static final String AUTH_QUERY =
-            "import module namespace request=\"http://exist-db.org/xquery/request\";\n" +
-                    "import module namespace sm=\"http://exist-db.org/xquery/securitymanager\";\n" +
-                    "<authorization>\n" +
-                    "    {sm:id()}\n" +
-                    "    <header>{request:get-header('Authorization')}</header>\n" +
-                    "</authorization>\n";
+            """
+            import module namespace request="http://exist-db.org/xquery/request";
+            import module namespace sm="http://exist-db.org/xquery/securitymanager";
+            <authorization>
+                {sm:id()}
+                <header>{request:get-header('Authorization')}</header>
+            </authorization>
+            """;
 
     private static final String XML_WITH_DOCTYPE =
-            "<!DOCTYPE bookmap PUBLIC \"-//OASIS//DTD DITA BookMap//EN\" \"bookmap.dtd\">\n" +
-            "<bookmap id=\"bookmap-1\"/>";
+            """
+            <!DOCTYPE bookmap PUBLIC "-//OASIS//DTD DITA BookMap//EN" "bookmap.dtd">
+            <bookmap id="bookmap-1"/>""";
 
 
     private static final XmldbURI TEST_DOCTYPE_COLLECTION_URI = XmldbURI.ROOT_COLLECTION_URI.append("rest-test-doctype");
@@ -172,23 +185,24 @@ public class RESTServiceTest {
     private static final XmldbURI TEST_XSLPI_COLLECTION_URI = XmldbURI.ROOT_COLLECTION_URI.append("rest-test-xslpi");
 
     private static final String XSLT_WITH_XSLPI =
-            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-            "<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" exclude-result-prefixes=\"xs\" version=\"2.0\">\n" +
-            "  <xsl:output method=\"xml\" indent=\"no\" media-type=\"application/xml\" omit-xml-declaration=\"yes\"/>\n" +
-            "  <xsl:template match=\"processing-instruction()\" priority=\"2\"/>\n" +
-            "  <xsl:template match=\"bookmap\">\n" +
-            "    <copied>\n" +
-            "      <xsl:copy>\n" +
-            "        <xsl:apply-templates select=\"node()|@*\"/>\n" +
-            "      </xsl:copy>\n" +
-            "    </copied>\n" +
-            "  </xsl:template>\n" +
-            "  <xsl:template match=\"node()|@*\">\n" +
-            "    <xsl:copy>\n" +
-            "      <xsl:apply-templates select=\"node()|@*\"/>\n" +
-            "    </xsl:copy>\n" +
-            "  </xsl:template>\n" +
-            "</xsl:stylesheet>";
+            """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema" exclude-result-prefixes="xs" version="2.0">
+              <xsl:output method="xml" indent="no" media-type="application/xml" omit-xml-declaration="yes"/>
+              <xsl:template match="processing-instruction()" priority="2"/>
+              <xsl:template match="bookmap">
+                <copied>
+                  <xsl:copy>
+                    <xsl:apply-templates select="node()|@*"/>
+                  </xsl:copy>
+                </copied>
+              </xsl:template>
+              <xsl:template match="node()|@*">
+                <xsl:copy>
+                  <xsl:apply-templates select="node()|@*"/>
+                </xsl:copy>
+              </xsl:template>
+            </xsl:stylesheet>""";
 
     private static final XmldbURI TEST_XSLT_DOC_WITH_XSLPI_URI = XmldbURI.create("test-with-xslpi.xslt");
 
@@ -199,8 +213,9 @@ public class RESTServiceTest {
     private static final XmldbURI TEST_XML_DOC_WITH_XSLPI_URI = XmldbURI.create("test-with-xslpi.xml");
 
     private static final String XML_WITH_XMLDECL =
-            "<?xml version=\"1.1\" encoding=\"ISO-8859-1\" standalone=\"yes\"?>\n" +
-            "<bookmap id=\"bookmap-2\"/>";
+            """
+            <?xml version="1.1" encoding="ISO-8859-1" standalone="yes"?>
+            <bookmap id="bookmap-2"/>""";
 
     private static final XmldbURI TEST_XMLDECL_COLLECTION_URI = XmldbURI.ROOT_COLLECTION_URI.append("rest-test-xmldecl");
     private static final XmldbURI TEST_XML_DOC_WITH_XMLDECL_URI = XmldbURI.create("test-with-xmldecl.xml");
@@ -849,17 +864,18 @@ try {
             final String response = readResponse(connect.getInputStream());
 
             final Source expectedSource = Input.from(
-                    "<authorization>\n" +
-                            "    <sm:id xmlns:sm=\"http://exist-db.org/xquery/securitymanager\">\n" +
-                            "        <sm:real>\n" +
-                            "            <sm:username>guest</sm:username>\n" +
-                            "            <sm:groups>\n" +
-                            "                <sm:group>guest</sm:group>\n" +
-                            "            </sm:groups>\n" +
-                            "        </sm:real>\n" +
-                            "    </sm:id>\n" +
-                            "    <header/>\n" +
-                            "</authorization>").build();
+                    """
+                    <authorization>
+                        <sm:id xmlns:sm="http://exist-db.org/xquery/securitymanager">
+                            <sm:real>
+                                <sm:username>guest</sm:username>
+                                <sm:groups>
+                                    <sm:group>guest</sm:group>
+                                </sm:groups>
+                            </sm:real>
+                        </sm:id>
+                        <header/>
+                    </authorization>""").build();
             final Source actualSource = Input.from(response).build();
 
             final Diff diff = DiffBuilder.compare(expectedSource)
@@ -895,17 +911,18 @@ try {
             final String response = readResponse(connect.getInputStream());
 
             final Source expectedSource = Input.from(
-                    "<authorization>\n" +
-                            "    <sm:id xmlns:sm=\"http://exist-db.org/xquery/securitymanager\">\n" +
-                            "        <sm:real>\n" +
-                            "            <sm:username>admin</sm:username>\n" +
-                            "            <sm:groups>\n" +
-                            "                <sm:group>dba</sm:group>\n" +
-                            "            </sm:groups>\n" +
-                            "        </sm:real>\n" +
-                            "    </sm:id>\n" +
-                            "    <header>Basic YWRtaW46</header>\n" +
-                            "</authorization>").build();
+                    """
+                    <authorization>
+                        <sm:id xmlns:sm="http://exist-db.org/xquery/securitymanager">
+                            <sm:real>
+                                <sm:username>admin</sm:username>
+                                <sm:groups>
+                                    <sm:group>dba</sm:group>
+                                </sm:groups>
+                            </sm:real>
+                        </sm:id>
+                        <header>Basic YWRtaW46</header>
+                    </authorization>""").build();
             final Source actualSource = Input.from(response).build();
 
             final Diff diff = DiffBuilder.compare(expectedSource)
@@ -941,17 +958,18 @@ try {
             final String response = readResponse(connect.getInputStream());
 
             final Source expectedSource = Input.from(
-                    "<authorization>\n" +
-                            "    <sm:id xmlns:sm=\"http://exist-db.org/xquery/securitymanager\">\n" +
-                            "        <sm:real>\n" +
-                            "            <sm:username>admin</sm:username>\n" +
-                            "            <sm:groups>\n" +
-                            "                <sm:group>dba</sm:group>\n" +
-                            "            </sm:groups>\n" +
-                            "        </sm:real>\n" +
-                            "    </sm:id>\n" +
-                            "    <header>bAsiC YWRtaW46</header>\n" +
-                            "</authorization>").build();
+                    """
+                    <authorization>
+                        <sm:id xmlns:sm="http://exist-db.org/xquery/securitymanager">
+                            <sm:real>
+                                <sm:username>admin</sm:username>
+                                <sm:groups>
+                                    <sm:group>dba</sm:group>
+                                </sm:groups>
+                            </sm:real>
+                        </sm:id>
+                        <header>bAsiC YWRtaW46</header>
+                    </authorization>""").build();
             final Source actualSource = Input.from(response).build();
 
             final Diff diff = DiffBuilder.compare(expectedSource)
@@ -986,23 +1004,24 @@ try {
             final String response = readResponse(connect.getInputStream());
 
             final Source expectedSource = Input.from(
-                    "<authorization>\n" +
-                            "    <sm:id xmlns:sm=\"http://exist-db.org/xquery/securitymanager\">\n" +
-                            "        <sm:real>\n" +
-                            "            <sm:username>guest</sm:username>\n" +
-                            "            <sm:groups>\n" +
-                            "                <sm:group>guest</sm:group>\n" +
-                            "            </sm:groups>\n" +
-                            "        </sm:real>\n" +
-                            "        <sm:effective>\n" +
-                            "            <sm:username>admin</sm:username>\n" +
-                            "            <sm:groups>\n" +
-                            "                <sm:group>dba</sm:group>\n" +
-                            "            </sm:groups>\n" +
-                            "        </sm:effective>\n" +
-                            "    </sm:id>\n" +
-                            "    <header/>\n" +
-                            "</authorization>").build();
+                    """
+                    <authorization>
+                        <sm:id xmlns:sm="http://exist-db.org/xquery/securitymanager">
+                            <sm:real>
+                                <sm:username>guest</sm:username>
+                                <sm:groups>
+                                    <sm:group>guest</sm:group>
+                                </sm:groups>
+                            </sm:real>
+                            <sm:effective>
+                                <sm:username>admin</sm:username>
+                                <sm:groups>
+                                    <sm:group>dba</sm:group>
+                                </sm:groups>
+                            </sm:effective>
+                        </sm:id>
+                        <header/>
+                    </authorization>""").build();
             final Source actualSource = Input.from(response).build();
 
             final Diff diff = DiffBuilder.compare(expectedSource)
@@ -1038,17 +1057,18 @@ try {
             final String response = readResponse(connect.getInputStream());
 
             final Source expectedSource = Input.from(
-                    "<authorization>\n" +
-                            "    <sm:id xmlns:sm=\"http://exist-db.org/xquery/securitymanager\">\n" +
-                            "        <sm:real>\n" +
-                            "            <sm:username>admin</sm:username>\n" +
-                            "            <sm:groups>\n" +
-                            "                <sm:group>dba</sm:group>\n" +
-                            "            </sm:groups>\n" +
-                            "        </sm:real>\n" +
-                            "    </sm:id>\n" +
-                            "    <header>Basic YWRtaW46</header>\n" +
-                            "</authorization>").build();
+                    """
+                    <authorization>
+                        <sm:id xmlns:sm="http://exist-db.org/xquery/securitymanager">
+                            <sm:real>
+                                <sm:username>admin</sm:username>
+                                <sm:groups>
+                                    <sm:group>dba</sm:group>
+                                </sm:groups>
+                            </sm:real>
+                        </sm:id>
+                        <header>Basic YWRtaW46</header>
+                    </authorization>""").build();
             final Source actualSource = Input.from(response).build();
 
             final Diff diff = DiffBuilder.compare(expectedSource)
@@ -1107,23 +1127,24 @@ try {
             final String response = readResponse(connect.getInputStream());
 
             final Source expectedSource = Input.from(
-                    "<authorization>\n" +
-                            "    <sm:id xmlns:sm=\"http://exist-db.org/xquery/securitymanager\">\n" +
-                            "        <sm:real>\n" +
-                            "            <sm:username>guest</sm:username>\n" +
-                            "            <sm:groups>\n" +
-                            "                <sm:group>guest</sm:group>\n" +
-                            "            </sm:groups>\n" +
-                            "        </sm:real>\n" +
-                            "        <sm:effective>\n" +
-                            "            <sm:username>admin</sm:username>\n" +
-                            "            <sm:groups>\n" +
-                            "                <sm:group>dba</sm:group>\n" +
-                            "            </sm:groups>\n" +
-                            "        </sm:effective>\n" +
-                            "    </sm:id>\n" +
-                            "    <header>Bearer some-token</header>\n" +
-                            "</authorization>").build();
+                    """
+                    <authorization>
+                        <sm:id xmlns:sm="http://exist-db.org/xquery/securitymanager">
+                            <sm:real>
+                                <sm:username>guest</sm:username>
+                                <sm:groups>
+                                    <sm:group>guest</sm:group>
+                                </sm:groups>
+                            </sm:real>
+                            <sm:effective>
+                                <sm:username>admin</sm:username>
+                                <sm:groups>
+                                    <sm:group>dba</sm:group>
+                                </sm:groups>
+                            </sm:effective>
+                        </sm:id>
+                        <header>Bearer some-token</header>
+                    </authorization>""").build();
             final Source actualSource = Input.from(response).build();
 
             final Diff diff = DiffBuilder.compare(expectedSource)
@@ -1223,11 +1244,12 @@ try {
         final String docUri = getServerUri() + GET_METHOD_ENCODED_COLLECTION_URI.getCollectionPath();
         final HttpURLConnection connect = getConnection(docUri);
 
-        final String data = "<query xmlns=\"http://exist.sourceforge.net/NS/exist\">\n" +
-                "    <text>\n" +
-                "        //foo\n" +
-                "    </text>\n" +
-                "</query>";
+        final String data = """
+                <query xmlns="http://exist.sourceforge.net/NS/exist">
+                    <text>
+                        //foo
+                    </text>
+                </query>""";
         try {
             connect.setRequestProperty("Authorization", "Basic " + credentials);
             connect.setRequestMethod("POST");
@@ -1382,10 +1404,12 @@ try {
 
             final String response = readResponse(connect.getInputStream());
 
-            final Source expectedSource = Input.from("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                    "<copied>\n" +
-                    "    <bookmap id=\"bookmap-1\"></bookmap>\n" +
-                    "</copied>\n").build();
+            final Source expectedSource = Input.from("""
+                    <?xml version="1.0" encoding="UTF-8"?>
+                    <copied>
+                        <bookmap id="bookmap-1"></bookmap>
+                    </copied>
+                    """).build();
             final Source actualSource = Input.from(response).build();
 
             final Diff diff = DiffBuilder.compare(expectedSource)

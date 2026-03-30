@@ -35,7 +35,6 @@ import org.junit.Test;
 
 import java.net.URISyntaxException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import static org.junit.Assert.*;
 
@@ -43,7 +42,7 @@ public class NonLazyCacheTest {
 
     private static Path getLazyConfig() {
         try {
-            return Paths.get(NonLazyCacheTest.class.getResource("/non-lazy-cache-conf.xml").toURI());
+            return Path.of(NonLazyCacheTest.class.getResource("/non-lazy-cache-conf.xml").toURI());
         } catch (final URISyntaxException e) {
             throw new IllegalStateException("Unable to find: non-lazy-cache-conf.xml");
         }

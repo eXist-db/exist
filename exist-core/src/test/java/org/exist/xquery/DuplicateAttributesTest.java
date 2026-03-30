@@ -56,24 +56,25 @@ public class DuplicateAttributesTest {
     private static String STORED_DOC2 = "<node attr2='ab'/>";
 
     private static String DOC_WITH_DTD =
-        "<!DOCTYPE IDS [\n" +
-        "<!ELEMENT IDS (elementwithid-1+, elementwithid-2+,\n" +
-        "               elementwithidrefattr-1+,elementwithidrefattr-2+)>\n" +
-        "<!ELEMENT elementwithid-1 (#PCDATA)>\n" +
-        "<!ELEMENT elementwithid-2 (#PCDATA)>\n" +
-        "<!ELEMENT elementwithidrefattr-1 (#PCDATA)>\n" +
-        "<!ELEMENT elementwithidrefattr-2 (#PCDATA)>\n" +
-        "<!ATTLIST elementwithid-1 anId  ID #REQUIRED>\n" +
-        "<!ATTLIST elementwithid-2 anId  ID #REQUIRED>\n" +
-        "<!ATTLIST elementwithidrefattr-1 anIdRef IDREF #REQUIRED>  \n" +
-        "<!ATTLIST elementwithidrefattr-2 anIdRef IDREF #REQUIRED>\n" +
-        "]>\n" +
-        " <IDS>\n" +
-        "  <elementwithid-1 anId = \"id1\"/>\n" +
-        "  <elementwithid-2 anId = \"id2\"/>\n" +
-        "  <elementwithidrefattr-1 anIdRef = \"id1\"/>\n" +
-        "  <elementwithidrefattr-2 anIdRef = \"id2\"/> \n" +
-        " </IDS>";
+        """
+        <!DOCTYPE IDS [
+        <!ELEMENT IDS (elementwithid-1+, elementwithid-2+,
+                       elementwithidrefattr-1+,elementwithidrefattr-2+)>
+        <!ELEMENT elementwithid-1 (#PCDATA)>
+        <!ELEMENT elementwithid-2 (#PCDATA)>
+        <!ELEMENT elementwithidrefattr-1 (#PCDATA)>
+        <!ELEMENT elementwithidrefattr-2 (#PCDATA)>
+        <!ATTLIST elementwithid-1 anId  ID #REQUIRED>
+        <!ATTLIST elementwithid-2 anId  ID #REQUIRED>
+        <!ATTLIST elementwithidrefattr-1 anIdRef IDREF #REQUIRED> \s
+        <!ATTLIST elementwithidrefattr-2 anIdRef IDREF #REQUIRED>
+        ]>
+         <IDS>
+          <elementwithid-1 anId = "id1"/>
+          <elementwithid-2 anId = "id2"/>
+          <elementwithidrefattr-1 anIdRef = "id1"/>
+          <elementwithidrefattr-2 anIdRef = "id2"/>\s
+         </IDS>""";
 
     /**
      * Add attribute to element which already has an attribute of that name.
@@ -82,9 +83,10 @@ public class DuplicateAttributesTest {
     public void appendStoredAttrFail() throws XMLDBException {
         XQueryService xqs = testCollection.getService(XQueryService.class);
         String query =
-            "let $a := \n" +
-            "<node attr=\"a\" b=\"c\">{doc(\"/db/test/stored1.xml\")//@attr}</node>" +
-            "return $a";
+            """
+            let $a :=\s
+            <node attr="a" b="c">{doc("/db/test/stored1.xml")//@attr}</node>\
+            return $a""";
         xqs.query(query);
     }
 
@@ -96,9 +98,10 @@ public class DuplicateAttributesTest {
         try {
             XQueryService xqs = testCollection.getService(XQueryService.class);
             String query =
-                "let $a := \n" +
-                "<node attr=\"a\" b=\"c\">{doc(\"/db/test/stored2.xml\")//@attr2}</node>" +
-                "return $a";
+                """
+                let $a :=\s
+                <node attr="a" b="c">{doc("/db/test/stored2.xml")//@attr2}</node>\
+                return $a""";
             ResourceSet result = xqs.query(query);
             assertEquals(1, result.getSize());
             assertEquals("<node attr=\"a\" b=\"c\" attr2=\"ab\"/>", result.getResource(0).getContent());
@@ -116,10 +119,11 @@ public class DuplicateAttributesTest {
     public void appendConstrAttr() throws XMLDBException {
         XQueryService xqs = testCollection.getService(XQueryService.class);
         String query =
-            "let $a := <root attr=\"ab\"/>" +
-            "let $b := \n" +
-            "   <node attr=\"a\" b=\"c\">{$a//@attr}</node>" +
-            "return $a";
+            """
+            let $a := <root attr="ab"/>\
+            let $b :=\s
+               <node attr="a" b="c">{$a//@attr}</node>\
+            return $a""";
         xqs.query(query);
     }
 

@@ -394,7 +394,7 @@ public class FnFormatDates extends BasicFunction {
 
     private String formatTimeZone(final String timezonePicture, final int hour, final int minute,
             final TimeZone timeZone, final String language, final Optional<String> place) {
-        final Locale locale = new Locale(language);
+        final Locale locale = Locale.of(language);
 
         final String format;
         switch(timezonePicture) {
@@ -461,7 +461,7 @@ public class FnFormatDates extends BasicFunction {
             }
             return String.valueOf(MILITARY_TZ_CHARS[offset]);
         } else {
-            return String.format("%+03d:%02d", hour, minute);
+            return "%+03d:%02d".formatted(hour, minute);
         }
     }
 

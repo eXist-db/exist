@@ -116,8 +116,8 @@ public class ParameterFunctions extends AbstractRequestModuleFunction {
             result = Objects.requireNonNullElse(defaultValues, Sequence.EMPTY_SEQUENCE);
         } else {
             result = new ValueSequence();
-            if(queryParamValues instanceof List) {
-                for(final Object value : (List)queryParamValues) {
+            if(queryParamValues instanceof List list) {
+                for(final Object value : list) {
                     result.add(new StringValue(this, value.toString()));
                 }
             } else {

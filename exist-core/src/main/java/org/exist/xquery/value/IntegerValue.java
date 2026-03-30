@@ -407,13 +407,13 @@ public class IntegerValue extends NumericValue {
      */
     @Override
     public ComputableValue div(final ComputableValue other) throws XPathException {
-        if (other instanceof IntegerValue) {
-            if (((IntegerValue) other).isZero()) {
+        if (other instanceof IntegerValue integerValue) {
+            if (integerValue.isZero()) {
                 throw new XPathException(getExpression(), ErrorCodes.FOAR0001, "division by zero");
             }
             //http://www.w3.org/TR/xpath20/#mapping : numeric; but xs:decimal if both operands are xs:integer
             final BigDecimal d = new BigDecimal(value);
-            final BigDecimal od = new BigDecimal(((IntegerValue) other).value);
+            final BigDecimal od = new BigDecimal(integerValue.value);
             final int scale = Math.max(18, Math.max(d.scale(), od.scale()));
             return new DecimalValue(getExpression(), d.divide(od, scale, RoundingMode.HALF_DOWN));
         } else {

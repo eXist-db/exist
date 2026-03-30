@@ -48,7 +48,7 @@ public class RangeExpression extends PathExpr {
 	
 	//TODO : remove and use the other constructor
 	public void setArguments(List<Expression> arguments) throws XPathException {
-		start = arguments.get(0);
+		start = arguments.getFirst();
 		end = arguments.get(1);        
 	}
 	

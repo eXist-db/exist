@@ -43,9 +43,9 @@ import javax.swing.filechooser.FileFilter;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.Serial;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 
@@ -61,6 +61,7 @@ import static se.softhouse.jargo.Arguments.helpArgument;
  * @author wolf
  */
 public class ExportGUI extends javax.swing.JFrame {
+    @Serial
     private static final long serialVersionUID = -8104424554660744639L;
 
     /* general arguments */
@@ -100,16 +101,16 @@ public class ExportGUI extends javax.swing.JFrame {
         super("Consistency Check and Repair");
         initComponents();
         final String existHome = System.getProperty("exist.home", "./");
-        final Path home = Paths.get(existHome).normalize();
+        final Path home = Path.of(existHome).normalize();
         dbConfig.setText(
-                Optional.ofNullable(System.getProperty("exist.configurationFile")).map(Paths::get)
+                Optional.ofNullable(System.getProperty("exist.configurationFile")).map(Path::of)
                         .orElse(home.resolve("etc").resolve("conf.xml"))
                         .toAbsolutePath().toString());
         outputDir.setText(home.resolve("export").toAbsolutePath().toString());
     }
 
     protected boolean checkOutputDir() {
-        final Path dir = Paths.get(outputDir.getText()).normalize();
+        final Path dir = Path.of(outputDir.getText()).normalize();
 
         if (!Files.exists(dir)) {
 
@@ -133,7 +134,7 @@ public class ExportGUI extends javax.swing.JFrame {
         if (pool != null) {
             return true;
         }
-        final Path confFile = Paths.get(dbConfig.getText()).normalize();
+        final Path confFile = Path.of(dbConfig.getText()).normalize();
 
         if (!(Files.exists(confFile) && Files.isReadable(confFile))) {
             JOptionPane.showMessageDialog(this, "The selected database configuration file " + confFile.toAbsolutePath() + " does not exist or is not readable.", "Configuration Error", JOptionPane.ERROR_MESSAGE);
@@ -383,7 +384,7 @@ public class ExportGUI extends javax.swing.JFrame {
 
 
     private void btnChangeDirActionPerformed(final java.awt.event.ActionEvent evt) { // GEN-FIRST:event_btnChangeDirActionPerformed
-        final Path dir = Paths.get(outputDir.getText());
+        final Path dir = Path.of(outputDir.getText());
         final JFileChooser chooser = new JFileChooser();
         chooser.setMultiSelectionEnabled(false);
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -403,12 +404,12 @@ public class ExportGUI extends javax.swing.JFrame {
 
 
     private void btnConfSelectActionPerformed(final java.awt.event.ActionEvent evt) { // GEN-FIRST:event_btnConfSelectActionPerformed
-        final Path dir = Paths.get(dbConfig.getText()).normalize().getParent();
+        final Path dir = Path.of(dbConfig.getText()).normalize().getParent();
         final JFileChooser chooser = new JFileChooser();
         chooser.setMultiSelectionEnabled(false);
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         chooser.setSelectedFile(Optional.ofNullable(System.getProperty("exist.configurationFile"))
-                .map(Paths::get)
+                .map(Path::of)
                 .orElse(dir.resolve("etc").resolve("conf.xml"))
                 .toFile());
         chooser.setCurrentDirectory(dir.resolve("etc").toFile());

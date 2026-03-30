@@ -36,6 +36,7 @@ import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.io.Serial;
 import java.util.ArrayList;
 
 /**
@@ -47,7 +48,8 @@ import java.util.ArrayList;
  */
 class IndexDialog extends JFrame {
 
-	private static final long serialVersionUID = 1L;
+    @Serial
+    private static final long serialVersionUID = 1L;
 
 	private static final String[] CONFIG_TYPE = {
         "qname",
@@ -346,7 +348,8 @@ class IndexDialog extends JFrame {
 	
 	public static class ComboBoxCellRenderer extends JComboBox implements TableCellRenderer
 	{
-		private static final long serialVersionUID = 1L;
+        @Serial
+        private static final long serialVersionUID = 1L;
 
 		public ComboBoxCellRenderer(String[] items)
         {
@@ -375,7 +378,8 @@ class IndexDialog extends JFrame {
 	
     public static class ComboBoxCellEditor extends DefaultCellEditor
     {
-		private static final long serialVersionUID = 1L;
+        @Serial
+        private static final long serialVersionUID = 1L;
 
 		public ComboBoxCellEditor(String[] items)
         {
@@ -384,8 +388,9 @@ class IndexDialog extends JFrame {
     }
 
 	class RangeIndexTableModel extends AbstractTableModel
-	{	
-		private static final long serialVersionUID = 1L;
+	{
+        @Serial
+        private static final long serialVersionUID = 1L;
 
 		private final String[] columnNames = new String[] { "Type", "XPath", "xsType" };
 

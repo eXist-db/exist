@@ -42,7 +42,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 
@@ -100,7 +99,7 @@ public class ExportMain {
             .build();
     private static final Argument<File> outputDirArg = fileArgument("-d", "--dir")
             .description("the directory to which all output will be written.")
-            .defaultValue(Paths.get("export").toAbsolutePath().toFile())
+            .defaultValue(Path.of("export").toAbsolutePath().toFile())
             .build();
 
     protected static BrokerPool startDB(final Optional<Path> configFile) {

@@ -21,6 +21,7 @@
  */
 package org.exist.xquery;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -37,6 +38,7 @@ import org.exist.xquery.value.Sequence;
  */
 public class XPathException extends Exception implements XPathErrorProvider {
 
+    @Serial
     private static final long serialVersionUID = 212844692232650666L;
     private int line = 0;
     private int column = 0;
@@ -191,8 +193,8 @@ public class XPathException extends Exception implements XPathErrorProvider {
     @Deprecated
     public XPathException(final Throwable cause) {
         super(cause);
-        if (cause instanceof XPathErrorProvider) {
-            this.errorCode = ((XPathErrorProvider)cause).getErrorCode();
+        if (cause instanceof XPathErrorProvider provider) {
+            this.errorCode = provider.getErrorCode();
         }
     }
 
@@ -209,8 +211,8 @@ public class XPathException extends Exception implements XPathErrorProvider {
     public XPathException(final Expression expr, final String message, final Throwable cause) {
         super(cause);
         this.message = message;
-        if (cause instanceof XPathErrorProvider) {
-            this.errorCode = ((XPathErrorProvider)cause).getErrorCode();
+        if (cause instanceof XPathErrorProvider provider) {
+            this.errorCode = provider.getErrorCode();
         }
 
         if (expr != null) {
@@ -227,7 +229,7 @@ public class XPathException extends Exception implements XPathErrorProvider {
      */
     @Deprecated
     public XPathException(final Expression expr, final Throwable cause) {
-        this(expr, cause instanceof XPathErrorProvider ? ((XPathErrorProvider)cause).getErrorCode() : ErrorCodes.ERROR, cause == null ? "" : cause.getMessage(), null, cause);
+        this(expr, cause instanceof XPathErrorProvider xpep ? xpep.getErrorCode() : ErrorCodes.ERROR, cause == null ? "" : cause.getMessage(), null, cause);
     }
 
     /**
@@ -304,8 +306,8 @@ public class XPathException extends Exception implements XPathErrorProvider {
         this.message = message;
         this.line = line;
         this.column = column;
-        if (cause instanceof XPathErrorProvider) {
-            this.errorCode = ((XPathErrorProvider)cause).getErrorCode();
+        if (cause instanceof XPathErrorProvider provider) {
+            this.errorCode = provider.getErrorCode();
         }
     }
 
@@ -321,8 +323,8 @@ public class XPathException extends Exception implements XPathErrorProvider {
         super(cause);
         this.line = line;
         this.column = column;
-        if(cause instanceof XPathErrorProvider) {
-            this.errorCode = ((XPathErrorProvider)cause).getErrorCode();
+        if(cause instanceof XPathErrorProvider provider) {
+            this.errorCode = provider.getErrorCode();
         }
     }
 

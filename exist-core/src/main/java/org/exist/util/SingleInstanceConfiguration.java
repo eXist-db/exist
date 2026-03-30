@@ -64,7 +64,7 @@ public class SingleInstanceConfiguration extends Configuration {
      * @return the path to the configuration file
      */
     public static Optional<Path> getPath() {
-        if (!_configFile.isPresent()) {
+        if (_configFile.isEmpty()) {
             final Path f = ConfigurationHelper.lookup("conf.xml");
             return Optional.of(f);
         }
@@ -80,7 +80,7 @@ public class SingleInstanceConfiguration extends Configuration {
      */
     public static Optional<Path> getWebappHome(){
         // if existHome is not set, try to do so.
-        if (!_existHome.isPresent()){
+        if (_existHome.isEmpty()){
         	_existHome = ConfigurationHelper.getExistHome();
         }
 

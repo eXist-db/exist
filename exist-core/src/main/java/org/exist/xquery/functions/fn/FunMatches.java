@@ -67,26 +67,35 @@ public final class FunMatches extends Function implements Optimizable, IndexUseR
 
     private static final String FS_MATCHES_NAME = "matches";
     private static final String FS_DESCRIPTION =
-            "The function returns true if $input matches the regular expression " +
-            "supplied as $pattern as influenced by the value of $flags, if present; " +
-            "otherwise, it returns false.\n\n" +
-            "The effect of calling this version of the function with the $flags argument set to a" +
-            "zero-length string is the same as using the other two argument version. " +
-            "Flags are defined in 7.6.1.1 Flags.\n\n" +
-            "If $input is the empty sequence, it is interpreted as the zero-length string.\n\n" +
-            "Unless the metacharacters ^ and $ are used as anchors, the string is considered " +
-            "to match the pattern if any substring matches the pattern. But if anchors are used, " +
-            "the anchors must match the start/end of the string (in string mode), or the " +
-            "start/end of a line (in multiline mode).\n\n" +
-            "Note:\n\n" +
-            "This is different from the behavior of patterns in [XML Schema Part 2: Datatypes " +
-            "Second Edition], where regular expressions are implicitly anchored.\n\n" +
-            "Please note that - in contrast - with the " +
-            "specification - this method allows zero or more items for the string argument.\n\n" +
-            "An error is raised [err:FORX0002] if the value of $pattern is invalid " +
-            "according to the rules described in section 7.6.1 Regular Expression Syntax.\n\n" +
-            "An error is raised [err:FORX0001] if the value of $flags is invalid " +
-            "according to the rules described in section 7.6.1 Regular Expression Syntax.";
+            """
+            The function returns true if $input matches the regular expression \
+            supplied as $pattern as influenced by the value of $flags, if present; \
+            otherwise, it returns false.
+            
+            The effect of calling this version of the function with the $flags argument set to a\
+            zero-length string is the same as using the other two argument version. \
+            Flags are defined in 7.6.1.1 Flags.
+            
+            If $input is the empty sequence, it is interpreted as the zero-length string.
+            
+            Unless the metacharacters ^ and $ are used as anchors, the string is considered \
+            to match the pattern if any substring matches the pattern. But if anchors are used, \
+            the anchors must match the start/end of the string (in string mode), or the \
+            start/end of a line (in multiline mode).
+            
+            Note:
+            
+            This is different from the behavior of patterns in [XML Schema Part 2: Datatypes \
+            Second Edition], where regular expressions are implicitly anchored.
+            
+            Please note that - in contrast - with the \
+            specification - this method allows zero or more items for the string argument.
+            
+            An error is raised [err:FORX0002] if the value of $pattern is invalid \
+            according to the rules described in section 7.6.1 Regular Expression Syntax.
+            
+            An error is raised [err:FORX0001] if the value of $flags is invalid \
+            according to the rules described in section 7.6.1 Regular Expression Syntax.""";
 
     public final static FunctionSignature[] signatures = functionSignatures(
             FS_MATCHES_NAME,
@@ -123,7 +132,7 @@ public final class FunMatches extends Function implements Optimizable, IndexUseR
     @Override
     public void setArguments(final List<Expression> arguments) throws XPathException {
         steps.clear();
-        final Expression path = arguments.get(0);
+        final Expression path = arguments.getFirst();
         steps.add(path);
 
         if (arguments.size() >= 2) {
@@ -148,7 +157,7 @@ public final class FunMatches extends Function implements Optimizable, IndexUseR
 
         final List<LocationStep> steps = BasicExpressionVisitor.findLocationSteps(path);
         if (!steps.isEmpty()) {
-            final LocationStep firstStep = steps.get(0);
+            final LocationStep firstStep = steps.getFirst();
             LocationStep lastStep = steps.getLast();
             if (firstStep != null && lastStep != null) {
                 final NodeTest test = lastStep.getTest();

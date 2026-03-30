@@ -297,8 +297,8 @@ public class IndexManager implements BrokerPoolService {
     public void backupToArchive(final RawDataBackup backup) throws IOException {
         for (final Iterator<Index> i = iterator(); i.hasNext(); ) {
             final Index index = i.next();
-            if (index instanceof RawBackupSupport) {
-                ((RawBackupSupport) index).backupToArchive(backup);
+            if (index instanceof RawBackupSupport support) {
+                support.backupToArchive(backup);
             }
         }
     }

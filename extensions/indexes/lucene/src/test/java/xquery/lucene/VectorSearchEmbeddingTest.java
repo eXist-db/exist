@@ -38,7 +38,6 @@ import org.junit.Test;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assume.assumeTrue;
@@ -105,7 +104,7 @@ public class VectorSearchEmbeddingTest {
 
     private boolean hasEmbeddingModel() {
         final Path base = ConfigurationHelper.getExistHome()
-            .orElse(Paths.get(System.getProperty("user.dir", ".")));
+            .orElse(Path.of(System.getProperty("user.dir", ".")));
         final Path modelDir = base.resolve("target/onnx-models/all-MiniLM-L6-v2");
         return Files.isRegularFile(modelDir.resolve("model.onnx"))
             && Files.isRegularFile(modelDir.resolve("tokenizer.json"));

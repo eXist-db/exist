@@ -53,37 +53,49 @@ import org.exist.xquery.value.Type;
 public class FunMax extends CollatingFunction {
 
 	protected static final String FUNCTION_DESCRIPTION_COMMON_1 =
-		"Selects an item from the input sequence $arg whose value is " +
-		"greater than or equal to the value of every other item in the " +
-		"input sequence. If there are two or more such items, then the " +
-		"specific item whose value is returned is implementation dependent.\n\n" +
-		"The following rules are applied to the input sequence:\n\n" +
-		"- Values of type xs:untypedAtomic in $arg are cast to xs:double.\n" +
-		"- Numeric and xs:anyURI values are converted to the least common " +
-		"type that supports the 'ge' operator by a combination of type " +
-		"promotion and subtype substitution. See Section B.1 Type " +
-		"PromotionXP and Section B.2 Operator MappingXP.\n\n" +
-		"The items in the resulting sequence may be reordered in an arbitrary " +
-		"order. The resulting sequence is referred to below as the converted " +
-		"sequence. This function returns an item from the converted sequence " +
-		"rather than the input sequence.\n\n" +
-		"If the converted sequence is empty, the empty sequence is returned.\n\n" +
-		"All items in $arg must be numeric or derived from a single base type " + 
-		"for which the 'ge' operator is defined. In addition, the values in the " +
-		"sequence must have a total order. If date/time values do not have a " +
-		"timezone, they are considered to have the implicit timezone provided " +
-		"by the dynamic context for purposes of comparison. Duration values " +
-		"must either all be xs:yearMonthDuration values or must all be " +
-		"xs:dayTimeDuration values.\n\n" +
-		"If any of these conditions is not met, then a type error is raised [err:FORG0006].\n\n" +
-		"If the converted sequence contains the value NaN, the value NaN is returned.\n\n" +
-		"If the items in the value of $arg are of type xs:string or types " +
-		"derived by restriction from xs:string, then the determination of " + 
-		"the item with the largest value is made according to the collation " +
-		"that is used.";
+		"""
+        Selects an item from the input sequence $arg whose value is \
+        greater than or equal to the value of every other item in the \
+        input sequence. If there are two or more such items, then the \
+        specific item whose value is returned is implementation dependent.
+        
+        The following rules are applied to the input sequence:
+        
+        - Values of type xs:untypedAtomic in $arg are cast to xs:double.
+        - Numeric and xs:anyURI values are converted to the least common \
+        type that supports the 'ge' operator by a combination of type \
+        promotion and subtype substitution. See Section B.1 Type \
+        PromotionXP and Section B.2 Operator MappingXP.
+        
+        The items in the resulting sequence may be reordered in an arbitrary \
+        order. The resulting sequence is referred to below as the converted \
+        sequence. This function returns an item from the converted sequence \
+        rather than the input sequence.
+        
+        If the converted sequence is empty, the empty sequence is returned.
+        
+        All items in $arg must be numeric or derived from a single base type \
+        for which the 'ge' operator is defined. In addition, the values in the \
+        sequence must have a total order. If date/time values do not have a \
+        timezone, they are considered to have the implicit timezone provided \
+        by the dynamic context for purposes of comparison. Duration values \
+        must either all be xs:yearMonthDuration values or must all be \
+        xs:dayTimeDuration values.
+        
+        If any of these conditions is not met, then a type error is raised [err:FORG0006].
+        
+        If the converted sequence contains the value NaN, the value NaN is returned.
+        
+        If the items in the value of $arg are of type xs:string or types \
+        derived by restriction from xs:string, then the determination of \
+        the item with the largest value is made according to the collation \
+        that is used.""";
 	protected static final String FUNCTION_DESCRIPTION_2_PARAM =
-    "If the type of the items in $arg is not xs:string " + 
-		"and $collation-uri is specified, the collation is ignored.\n\n";
+    """
+    If the type of the items in $arg is not xs:string \
+    and $collation-uri is specified, the collation is ignored.
+    
+    """;
     protected static final String FUNCTION_DESCRIPTION_COMMON_2 =
 		"The collation used by the invocation of this function is " +
 		"determined according to the rules in 7.3.1 Collations.";

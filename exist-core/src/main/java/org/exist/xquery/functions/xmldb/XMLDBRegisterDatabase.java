@@ -74,7 +74,7 @@ public class XMLDBRegisterDatabase extends BasicFunction {
 		final boolean createDatabase = args[1].effectiveBooleanValue();
 		try {
 			final Class<?> driver = Class.forName(driverName);
-			final Database database = (Database) driver.newInstance();
+			final Database database = (Database) driver.getDeclaredConstructor().newInstance();
 			database.setProperty("create-database", createDatabase
 					? "true"
 					: "false");

@@ -31,7 +31,6 @@ import java.io.*;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -86,6 +85,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.xmldb.api.base.ResourceType.XML_RESOURCE;
 
 public class QueryDialog extends JFrame {
+    @Serial
     private static final long serialVersionUID = 1L;
 
     private static final String LOADING_INDICATOR = "Loading...";
@@ -410,7 +410,7 @@ public class QueryDialog extends JFrame {
     private void open() {
         final String workDir = properties.getProperty(WORKING_DIR, System.getProperty("user.dir"));
         final JFileChooser chooser = new JFileChooser();
-        chooser.setCurrentDirectory(Paths.get(workDir).toFile());
+        chooser.setCurrentDirectory(Path.of(workDir).toFile());
         chooser.setMultiSelectionEnabled(false);
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         chooser.addChoosableFileFilter(new MimeTypeFileFilter("application/xquery"));
@@ -446,7 +446,7 @@ public class QueryDialog extends JFrame {
         final String workDir = properties.getProperty(WORKING_DIR, System.getProperty("user.dir"));
         final JFileChooser chooser = new JFileChooser();
         chooser.setMultiSelectionEnabled(false);
-        chooser.setCurrentDirectory(Paths.get(workDir).toFile());
+        chooser.setCurrentDirectory(Path.of(workDir).toFile());
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         if ("result".equals(fileCategory)) {
             chooser.addChoosableFileFilter(new MimeTypeFileFilter("application/xhtml+xml"));
@@ -576,8 +576,8 @@ public class QueryDialog extends JFrame {
                 final CompiledExpression compiled = service.compile(xpath);
                 final long t1 = System.currentTimeMillis();
                 // Check could also be collection instanceof LocalCollection
-                if (compiled instanceof CompiledXQuery) {
-                    context = ((CompiledXQuery) compiled).getContext();
+                if (compiled instanceof CompiledXQuery xQuery) {
+                    context = xQuery.getContext();
                     runningContext.set(context);
                 }
                 tCompiled = t1 - t0;

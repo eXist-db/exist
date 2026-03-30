@@ -98,6 +98,6 @@ public class UmaskSpinnerModel extends AbstractSpinnerModel {
     }
     
     public static String intToOctalUmask(final int umask) {
-        return String.format("%4s", Integer.toString(umask, OCTAL_RADIX)).replace(' ', '0');
+        return "%4s".formatted(Integer.toString(umask, OCTAL_RADIX)).replace(' ', '0');
     }
 }
