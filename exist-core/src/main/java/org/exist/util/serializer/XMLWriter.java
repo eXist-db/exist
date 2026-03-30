@@ -88,6 +88,7 @@ public class XMLWriter implements SerializerWriter {
     private boolean xdmSerialization = false;
     private boolean xml11 = false;
     private boolean canonical = false;
+    @Nullable private java.text.Normalizer.Form normalizationForm = null;
 
     // Canonical XML: buffer namespaces and attributes for sorting
     private final List<String[]> canonicalNamespaces = new ArrayList<>();  // [prefix, uri]
@@ -166,6 +167,7 @@ public class XMLWriter implements SerializerWriter {
 
         this.xdmSerialization = "yes".equals(outputProperties.getProperty(EXistOutputKeys.XDM_SERIALIZATION, "no"));
         this.xml11 = "1.1".equals(outputProperties.getProperty(OutputKeys.VERSION));
+        this.normalizationForm = parseNormalizationForm(outputProperties.getProperty("normalization-form", "none"));
         final String canonicalProp = outputProperties.getProperty(EXistOutputKeys.CANONICAL);
         this.canonical = "yes".equals(canonicalProp) || "true".equals(canonicalProp) || "1".equals(canonicalProp);
     }
@@ -454,7 +456,7 @@ public class XMLWriter implements SerializerWriter {
         // CDATA sections must be split when:
         // 1. The content contains "]]>" (which would end the CDATA prematurely)
         // 2. A character cannot be represented in the output encoding (must be escaped as &#xNN;)
-        final String s = chars.toString();
+        final String s = normalize(chars).toString();
         boolean inCdata = false;
         for (int i = 0; i < s.length(); ) {
             final int cp = s.codePointAt(i);
@@ -817,14 +819,16 @@ public class XMLWriter implements SerializerWriter {
     }
     
     protected void writeChars(final CharSequence s, final boolean inAttribute) throws IOException {
+        // Apply Unicode normalization if configured
+        final CharSequence text = normalize(s);
         final boolean[] specialChars = inAttribute ? attrSpecialChars : textSpecialChars;
         char ch = 0;
-        final int len = s.length();
+        final int len = text.length();
         int pos = 0, i;
         while(pos < len) {
             i = pos;
             while(i < len) {
-                ch = s.charAt(i);
+                ch = text.charAt(i);
                 if(ch < 128) {
                     if(specialChars[ch]) {
                         break;
@@ -847,7 +851,7 @@ public class XMLWriter implements SerializerWriter {
                     i++;
                 }
             }
-            writeCharSeq(s, pos, i);
+            writeCharSeq(text, pos, i);
             // writer.write(s.subSequence(pos, i).toString());
             
             if (i >= len) {
@@ -864,7 +868,7 @@ public class XMLWriter implements SerializerWriter {
                         break;
                     case '&':
                         // HTML spec: & before { in attribute values should not be escaped
-                        if (inAttribute && i + 1 < len && s.charAt(i + 1) == '{' && !escapeAmpersandBeforeBrace()) {
+                        if (inAttribute && i + 1 < len && text.charAt(i + 1) == '{' && !escapeAmpersandBeforeBrace()) {
                             writer.write('&');
                         } else {
                             writer.write("&amp;");
@@ -911,6 +915,29 @@ public class XMLWriter implements SerializerWriter {
         }
         charref[o++] = ';';
         writer.write(charref, 0, o);
+    }
+
+    @Nullable
+    private static java.text.Normalizer.Form parseNormalizationForm(final String value) {
+        if (value == null) return null;
+        return switch (value.trim().toUpperCase(java.util.Locale.ROOT)) {
+            case "NFC" -> java.text.Normalizer.Form.NFC;
+            case "NFD" -> java.text.Normalizer.Form.NFD;
+            case "NFKC" -> java.text.Normalizer.Form.NFKC;
+            case "NFKD" -> java.text.Normalizer.Form.NFKD;
+            case "NONE", "" -> null;
+            default -> null;  // "fully-normalized" or unknown — treated as none
+        };
+    }
+
+    /**
+     * Apply Unicode normalization if a normalization-form is set.
+     */
+    protected CharSequence normalize(final CharSequence text) {
+        if (normalizationForm == null) return text;
+        final String s = text.toString();
+        if (java.text.Normalizer.isNormalized(s, normalizationForm)) return text;
+        return java.text.Normalizer.normalize(s, normalizationForm);
     }
 
     private static boolean isRelativeUri(final String uri) {
