@@ -847,7 +847,7 @@ function ser:serialize-xml-134() {
 };
 
 declare
-    %test:assertEquals('<!DOCTYPE html> <option selected></option>')
+    %test:assertEquals('<option selected></option>')
 function ser:serialize-html-5-boolean-attribute-names() {
     <option selected="selected"/>
     => serialize($ser:opt-map-html5)
@@ -855,7 +855,7 @@ function ser:serialize-html-5-boolean-attribute-names() {
 };
 
 declare
-    %test:assertEquals('<!DOCTYPE html> <br>')
+    %test:assertEquals('<br>')
 function ser:serialize-html-5-empty-tags() {
     <br/>
     => serialize($ser:opt-map-html5)

@@ -580,7 +580,9 @@ public class XMLWriter implements SerializerWriter {
             // get the fields of the persisted xml declaration, but overridden with any properties from the serialization properties
             final String version = outputProperties.getProperty(OutputKeys.VERSION, (originalXmlDecl.version != null ? originalXmlDecl.version : DEFAULT_XML_VERSION));
             final String encoding = outputProperties.getProperty(OutputKeys.ENCODING, (originalXmlDecl.encoding != null ? originalXmlDecl.encoding : DEFAULT_XML_ENCODING));
-            @Nullable final String standalone = outputProperties.getProperty(OutputKeys.STANDALONE, originalXmlDecl.standalone);
+            @Nullable final String standaloneOrig = outputProperties.getProperty(OutputKeys.STANDALONE, originalXmlDecl.standalone);
+            // "omit" means standalone should be absent from the declaration
+            @Nullable final String standalone = (standaloneOrig != null && "omit".equalsIgnoreCase(standaloneOrig.trim())) ? null : standaloneOrig;
 
             writeDeclaration(version, encoding, standalone);
 
@@ -588,7 +590,9 @@ public class XMLWriter implements SerializerWriter {
         }
 
         final String omitXmlDecl = outputProperties.getProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-        @Nullable final String standalone = outputProperties.getProperty(OutputKeys.STANDALONE);
+        @Nullable final String standaloneRaw = outputProperties.getProperty(OutputKeys.STANDALONE);
+        // "omit" means standalone should be absent from the declaration
+        @Nullable final String standalone = (standaloneRaw != null && "omit".equalsIgnoreCase(standaloneRaw.trim())) ? null : standaloneRaw;
         // Per W3C Serialization 3.1: output declaration if omit-xml-declaration is false/no/0,
         // or if standalone is explicitly set (the declaration is required to carry standalone)
         if (isBooleanFalse(omitXmlDecl) || standalone != null) {
@@ -609,7 +613,15 @@ public class XMLWriter implements SerializerWriter {
             writer.write('"');
             if(standalone != null) {
                 writer.write(" standalone=\"");
-                writer.write(standalone);
+                // Normalize boolean values to yes/no for XML declaration
+                final String standaloneVal = standalone.trim();
+                if ("true".equals(standaloneVal) || "1".equals(standaloneVal)) {
+                    writer.write("yes");
+                } else if ("false".equals(standaloneVal) || "0".equals(standaloneVal)) {
+                    writer.write("no");
+                } else {
+                    writer.write(standaloneVal);
+                }
                 writer.write('"');
             }
             writer.write("?>\n");

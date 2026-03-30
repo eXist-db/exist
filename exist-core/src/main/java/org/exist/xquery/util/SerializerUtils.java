@@ -565,7 +565,10 @@ public class SerializerUtils {
             while (iterator.hasNext()) {
                 final Item item = iterator.nextItem();
                 // Use subtype check: xs:integer is a valid xs:decimal, xs:string subtypes are valid xs:string, etc.
-                if (!Type.subTypeOf(item.getType(), parameterConvention.getType())) {
+                // Also accept xs:untypedAtomic — the W3C spec allows untypedAtomic values to be cast
+                // to the required type for serialization parameters
+                if (!Type.subTypeOf(item.getType(), parameterConvention.getType())
+                        && item.getType() != Type.UNTYPED_ATOMIC) {
                     return false;
                 }
             }
@@ -587,11 +590,18 @@ public class SerializerUtils {
 
         switch (parameterConvention.getType()) {
             case Type.BOOLEAN:
-                value = ((BooleanValue) parameterValue.itemAt(0)).getValue() ? "yes" : "no";
+                final Item boolItem = parameterValue.itemAt(0);
+                if (boolItem instanceof BooleanValue bv) {
+                    value = bv.getValue() ? "yes" : "no";
+                } else {
+                    // xs:untypedAtomic or other — coerce via string
+                    final String boolStr = boolItem.getStringValue().trim();
+                    value = ("true".equals(boolStr) || "1".equals(boolStr)) ? "yes" : "no";
+                }
                 properties.setProperty(localParameterName, value);
                 break;
             case Type.STRING:
-                value = ((StringValue)parameterValue.itemAt(0)).getStringValue();
+                value = parameterValue.itemAt(0).getStringValue();
                 properties.setProperty(localParameterName, value);
                 break;
             case Type.DECIMAL:
@@ -599,7 +609,7 @@ public class SerializerUtils {
                 properties.setProperty(localParameterName, value);
                 break;
             case Type.INTEGER:
-                value = ((IntegerValue) parameterValue.itemAt(0)).getStringValue();
+                value = parameterValue.itemAt(0).getStringValue();
                 properties.setProperty(localParameterName, value);
                 break;
             case Type.QNAME:

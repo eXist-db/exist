@@ -128,6 +128,14 @@ public class XHTML5Writer extends XHTMLWriter {
             return;
         }
 
+        // Only output DOCTYPE when the root element is <html> (case-insensitive)
+        // Per W3C Serialization: DOCTYPE is for the html element only, not fragments
+        final String localName = rootElement.contains(":") ? rootElement.substring(rootElement.indexOf(':') + 1) : rootElement;
+        if (!"html".equalsIgnoreCase(localName)) {
+            doctypeWritten = true;  // suppress future attempts
+            return;
+        }
+
         // Pass through doctype-public and doctype-system if set
         final String publicId = outputProperties != null
                 ? outputProperties.getProperty(javax.xml.transform.OutputKeys.DOCTYPE_PUBLIC) : null;
