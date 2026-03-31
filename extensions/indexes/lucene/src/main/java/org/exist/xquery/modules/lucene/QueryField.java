@@ -40,7 +40,7 @@ public class QueryField extends Query implements Optimizable {
     private static final FunctionParameterSequenceType FS_PARAM_FIELD = optManyParam("field", Type.STRING, "The lucene field name.");
     private static final FunctionParameterSequenceType FS_PARAM_QUERY = param("query", Type.ITEM, "The query to search for, provided either as a string or text in Lucene's default query syntax or as an XML fragment to bypass Lucene's default query parser");
 
-    final static FunctionSignature[] signatures = functionSignatures(
+    static final FunctionSignature[] signatures = functionSignatures(
             "query-field",
             "Queries a Lucene field, which has to be explicitely created in the index configuration.",
             returnsOptMany(Type.NODE, """
@@ -69,7 +69,7 @@ public class QueryField extends Query implements Optimizable {
             )
     );
 
-    private NodeSet preselectResult = null;
+    private NodeSet preselectResult;
 
     public QueryField(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);

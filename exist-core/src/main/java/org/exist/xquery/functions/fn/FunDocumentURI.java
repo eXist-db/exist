@@ -74,8 +74,8 @@ public class FunDocumentURI extends Function {
             }
         }
 
-        final boolean contextItemIsAbsent = (contextItem == null);
-        final boolean argumentIsOmitted = (getArgumentCount() == 0);
+        final boolean contextItemIsAbsent = contextItem == null;
+        final boolean argumentIsOmitted = getArgumentCount() == 0;
 
         // Error condition
         if(argumentIsOmitted && contextItemIsAbsent){
@@ -83,7 +83,7 @@ public class FunDocumentURI extends Function {
         }
 
         // Get sequence from contextItem or from context Sequence
-        final Sequence seq = (argumentIsOmitted)
+        final Sequence seq = argumentIsOmitted
                 ? contextItem.toSequence()
                 : getArgument(0).eval(contextSequence, contextItem);
 

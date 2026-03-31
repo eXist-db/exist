@@ -29,10 +29,10 @@ import org.exist.util.FastQSort;
 */
 public class OccurrenceList {
 
-    private NodeId nodes[] = new NodeId[4];
-    private int offsets[] = new int[4];
+    private NodeId[] nodes = new NodeId[4];
+    private int[] offsets = new int[4];
 
-    private int position = 0;
+    private int position;
 
     public void add(NodeId id, int offset) {
         ensureCapacity(position);
@@ -73,9 +73,12 @@ public class OccurrenceList {
     }
 
     public boolean contains(NodeId id) {
-        for (int i = 0; i < position; i++)
+        for (int i = 0; i < position; i++) {
             if (nodes[i].equals(id))
-                {return true;}
+            {
+                return true;
+            }
+        }
         return false;
     }
 

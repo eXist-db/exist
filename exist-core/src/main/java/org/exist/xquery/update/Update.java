@@ -25,12 +25,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.persistent.AttrImpl;
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.ElementImpl;
 import org.exist.dom.NodeListImpl;
-import org.exist.dom.persistent.StoredNode;
-import org.exist.dom.persistent.TextImpl;
+import org.exist.dom.persistent.*;
 import org.exist.security.Permission;
 import org.exist.storage.NotificationService;
 import org.exist.storage.UpdateListener;
@@ -45,13 +41,7 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.util.Error;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.util.Messages;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
+import org.exist.xquery.value.*;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Node;
 
@@ -61,7 +51,7 @@ import org.w3c.dom.Node;
  */
 public class Update extends Modification {
 
-    private final static Logger LOG = LogManager.getLogger(Update.class);
+    private static final Logger LOG = LogManager.getLogger(Update.class);
 
     public Update(XQueryContext context, Expression select, Expression value) {
         super(context, select, value);
@@ -128,7 +118,7 @@ public class Update extends Modification {
             try (final Txn transaction = getTransaction()) {
                 final NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
 
-                final StoredNode ql[] = selectAndLock(transaction, inSeq);
+                final StoredNode[] ql = selectAndLock(transaction, inSeq);
                 for (final StoredNode node : ql) {
                     final DocumentImpl doc = node.getOwnerDocument();
                     if (!doc.getPermissions().validate(context.getSubject(),

@@ -167,7 +167,7 @@ public class FnCollectionSecurityTest {
 
             transaction.commit();
         } catch (final XPathException e) {
-            if (e.getCause() != null && e.getCause() instanceof PermissionDeniedException) {
+            if (e.getCause() instanceof PermissionDeniedException) {
                 throw (PermissionDeniedException) e.getCause();
             } else {
                 throw e;
@@ -193,7 +193,7 @@ public class FnCollectionSecurityTest {
 
             transaction.commit();
         } catch (final XPathException e) {
-            if (e.getCause() != null && e.getCause() instanceof PermissionDeniedException) {
+            if (e.getCause() instanceof PermissionDeniedException) {
                 throw (PermissionDeniedException) e.getCause();
             } else {
                 throw e;
@@ -219,7 +219,7 @@ public class FnCollectionSecurityTest {
 
             transaction.commit();
         } catch (final XPathException e) {
-            if (e.getCause() != null && e.getCause() instanceof PermissionDeniedException) {
+            if (e.getCause() instanceof PermissionDeniedException) {
                 throw (PermissionDeniedException) e.getCause();
             } else {
                 throw e;

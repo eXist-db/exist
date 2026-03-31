@@ -21,15 +21,15 @@
  */
 package org.exist.xquery;
 
-import java.io.Writer;
-import java.util.List;
-
-import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.QName;
+import org.exist.dom.persistent.DocumentSet;
 import org.exist.xquery.parser.XQueryAST;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
+
+import java.io.Writer;
+import java.util.List;
 
 /**
  * Wrapper for internal modules in order to

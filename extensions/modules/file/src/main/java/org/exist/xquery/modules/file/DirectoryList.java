@@ -21,26 +21,19 @@
  */
 package org.exist.xquery.modules.file;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Date;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import org.apache.tools.ant.DirectoryScanner;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.util.FileUtils;
 import org.exist.xquery.*;
-import org.exist.xquery.value.DateTimeValue;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Date;
 
 import static org.exist.xquery.modules.file.FileErrorCode.DIRECTORY_NOT_FOUND;
 
@@ -186,9 +179,9 @@ public class DirectoryList extends BasicFunction {
             return Math.abs(sizeLong / 1024) + "KB";
         }
         if (sizeLong < 1073741824) {
-            return Math.abs((sizeLong / (1024 * 1024))) + "MB";
+            return Math.abs(sizeLong / (1024 * 1024)) + "MB";
         }
-        return Math.abs((sizeLong / (1024 * 1024 * 1024))) + "GB";
+        return Math.abs(sizeLong / (1024 * 1024 * 1024)) + "GB";
     }
 
 }

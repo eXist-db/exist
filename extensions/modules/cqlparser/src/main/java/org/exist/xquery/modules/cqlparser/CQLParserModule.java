@@ -21,10 +21,11 @@
  */
 package org.exist.xquery.modules.cqlparser;
 
-import java.util.List;
-import java.util.Map;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * Module function definitions for a Contextual Query Language (CQL) parser.
@@ -36,14 +37,14 @@ import org.exist.xquery.FunctionDef;
  */
 public class CQLParserModule extends AbstractInternalModule {
 
-    public final static String NAMESPACE_URI = "http://exist-db.org/xquery/cqlparser";
+    public static final String NAMESPACE_URI = "http://exist-db.org/xquery/cqlparser";
     
-    public final static String PREFIX = "cqlparser";
-    public final static String INCLUSION_DATE = "2012-06-18";
-    public final static String RELEASED_IN_VERSION = "eXist-2.1";
+    public static final String PREFIX = "cqlparser";
+    public static final String INCLUSION_DATE = "2012-06-18";
+    public static final String RELEASED_IN_VERSION = "eXist-2.1";
 
 
-    private final static FunctionDef[] functions = {
+    private static final FunctionDef[] functions = {
         new FunctionDef(ParseCQL.signature, ParseCQL.class)
     };
     

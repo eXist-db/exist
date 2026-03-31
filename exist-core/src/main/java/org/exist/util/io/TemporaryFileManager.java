@@ -26,18 +26,16 @@
  */
 package org.exist.util.io;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.exist.util.FileUtils;
+
 import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.exist.util.FileUtils;
-
-import static java.nio.file.StandardOpenOption.CREATE_NEW;
-import static java.nio.file.StandardOpenOption.DELETE_ON_CLOSE;
-import static java.nio.file.StandardOpenOption.WRITE;
+import static java.nio.file.StandardOpenOption.*;
 
 /**
  * Temporary File Manager.
@@ -76,7 +74,7 @@ import static java.nio.file.StandardOpenOption.WRITE;
  */
 public class TemporaryFileManager {
 
-    private final static Logger LOG = LogManager.getLogger(TemporaryFileManager.class);
+    private static final Logger LOG = LogManager.getLogger(TemporaryFileManager.class);
 
     private static final String FOLDER_PREFIX = "exist-db-temp-file-manager";
     private static final String FILE_PREFIX = "exist-db-temp";

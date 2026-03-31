@@ -37,7 +37,7 @@ import java.util.Optional;
 @ThreadSafe
 public final class SaxonConfiguration {
 
-  private final static Logger LOG = LogManager.getLogger(SaxonConfiguration.class);
+  private static final Logger LOG = LogManager.getLogger(SaxonConfiguration.class);
 
   public static final String SAXON_CONFIGURATION_ELEMENT_NAME = "saxon";
   public static final String SAXON_CONFIGURATION_FILE_ATTRIBUTE = "configuration-file";
@@ -107,7 +107,7 @@ public final class SaxonConfiguration {
     return new SaxonConfiguration(saxonConfiguration.get());
   }
 
-  static private Optional<net.sf.saxon.Configuration> readSaxonConfigurationFile(final Path saxonConfigFile) {
+  private static Optional<net.sf.saxon.Configuration> readSaxonConfigurationFile(final Path saxonConfigFile) {
     try {
       return Optional.of(net.sf.saxon.Configuration.readConfiguration(
           new StreamSource(Files.newInputStream(saxonConfigFile))));
@@ -125,7 +125,7 @@ public final class SaxonConfiguration {
     return Optional.empty();
   }
 
-  static private void reportLicensedFeatures(final net.sf.saxon.Configuration configuration) {
+  private static void reportLicensedFeatures(final net.sf.saxon.Configuration configuration) {
     configuration.displayLicenseMessage();
 
     final var sb = new StringBuilder();

@@ -21,11 +21,11 @@
  */
 package org.exist.xquery.modules.exi;
 
-import java.util.List;
-import java.util.Map;
-
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * XQuery Extension module for Efficient XML Interchange (EXI) processing.
@@ -35,13 +35,13 @@ import org.exist.xquery.FunctionDef;
  */
 public class ExiModule extends AbstractInternalModule {
 	
-	public final static String NAMESPACE_URI = "http://exist-db.org/xquery/exi";
+	public static final String NAMESPACE_URI = "http://exist-db.org/xquery/exi";
 	
-	public final static String PREFIX = "exi";
-    public final static String INCLUSION_DATE = "2011-06-09";
-    public final static String RELEASED_IN_VERSION = "eXist-2.0";
+	public static final String PREFIX = "exi";
+    public static final String INCLUSION_DATE = "2011-06-09";
+    public static final String RELEASED_IN_VERSION = "eXist-2.0";
     
-    private final static FunctionDef[] functions = {
+    private static final FunctionDef[] functions = {
 		new FunctionDef(EncodeExiFunction.signatures[0], EncodeExiFunction.class),
 		new FunctionDef(EncodeExiFunction.signatures[1], EncodeExiFunction.class),
 		new FunctionDef(DecodeExiFunction.signatures[0], DecodeExiFunction.class),

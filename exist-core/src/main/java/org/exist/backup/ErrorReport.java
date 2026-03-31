@@ -25,25 +25,25 @@ import org.exist.xmldb.XmldbURI;
 
 
 public class ErrorReport {
-    public final static int INCORRECT_NODE_ID = 0;
-    public final static int INCORRECT_NODE_TYPE = 1;
-    public final static int NODE_HIERARCHY = 2;
-    public final static int ACCESS_FAILED = 3;
-    public final static int CHILD_COLLECTION = 4;
-    public final static int RESOURCE_ACCESS_FAILED = 5;
-    public final static int DOM_INDEX = 6;
-    public final static int CONFIGURATION_FAILD = 7;
+    public static final int INCORRECT_NODE_ID = 0;
+    public static final int INCORRECT_NODE_TYPE = 1;
+    public static final int NODE_HIERARCHY = 2;
+    public static final int ACCESS_FAILED = 3;
+    public static final int CHILD_COLLECTION = 4;
+    public static final int RESOURCE_ACCESS_FAILED = 5;
+    public static final int DOM_INDEX = 6;
+    public static final int CONFIGURATION_FAILD = 7;
 
-    public final static String[] ERRCODES = {
+    public static final String[] ERRCODES = {
             "ERR_NODE_ID", "ERR_NODE_TYPE", "ERR_NODE_HIERARCHY", "ERR_ACCESS",
             "ERR_CHILD_COLLECTION", "RESOURCE_ACCESS_FAILED", "ERR_DOM_INDEX"
     };
 
     private final int code;
 
-    private String message = null;
+    private String message;
 
-    private Throwable exception = null;
+    private Throwable exception;
 
     public ErrorReport(final int code, final String message) {
         this.code = code;
@@ -58,17 +58,17 @@ public class ErrorReport {
     }
 
     public int getErrcode() {
-        return (code);
+        return code;
     }
 
 
     public String getErrcodeString() {
-        return (ERRCODES[code]);
+        return ERRCODES[code];
     }
 
 
     public String getMessage() {
-        return (message);
+        return message;
     }
 
 
@@ -78,7 +78,7 @@ public class ErrorReport {
 
 
     public Throwable getException() {
-        return (exception);
+        return exception;
     }
 
 
@@ -94,7 +94,7 @@ public class ErrorReport {
         if (message != null) {
             sb.append(message);
         }
-        return (sb.toString());
+        return sb.toString();
     }
 
     public static class ResourceError extends ErrorReport {
@@ -110,7 +110,7 @@ public class ErrorReport {
         }
 
         public int getDocumentId() {
-            return (documentId);
+            return documentId;
         }
 
 
@@ -120,7 +120,7 @@ public class ErrorReport {
 
 
         public String toString() {
-            return (super.toString() + "\nDocument ID: " + documentId);
+            return super.toString() + "\nDocument ID: " + documentId;
         }
     }
 
@@ -128,7 +128,7 @@ public class ErrorReport {
     public static class CollectionError extends ErrorReport {
         private int collectionId = -1;
 
-        private XmldbURI collectionURI = null;
+        private XmldbURI collectionURI;
 
         public CollectionError(final int code, final String message) {
             super(code, message);
@@ -140,7 +140,7 @@ public class ErrorReport {
         }
 
         public int getCollectionId() {
-            return (collectionId);
+            return collectionId;
         }
 
 
@@ -149,7 +149,7 @@ public class ErrorReport {
         }
 
         public XmldbURI getCollectionURI() {
-            return (collectionURI);
+            return collectionURI;
         }
 
         public void setCollectionURI(final XmldbURI collectionURI) {
@@ -157,7 +157,7 @@ public class ErrorReport {
         }
 
         public String toString() {
-            return (super.toString() + "\nCollection ID: " + collectionId);
+            return super.toString() + "\nCollection ID: " + collectionId;
         }
     }
 
@@ -177,12 +177,12 @@ public class ErrorReport {
         }
 
         public int getDocumentId() {
-            return (documentId);
+            return documentId;
         }
 
 
         public String toString() {
-            return (super.toString() + "\nDocument ID: " + documentId);
+            return super.toString() + "\nDocument ID: " + documentId;
         }
     }
 }

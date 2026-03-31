@@ -26,11 +26,12 @@
  */
 package org.exist.extensions.exquery.restxq.impl.xquery;
 
-import java.util.List;
-import java.util.Map;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 import org.exquery.restxq.Namespace;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -38,11 +39,11 @@ import org.exquery.restxq.Namespace;
  */
 public class RestXqModule extends AbstractInternalModule {
     
-    public final static String NAMESPACE_URI = Namespace.ANNOTATION_NS;
-    public final static String PREFIX = Namespace.ANNOTATION_PREFIX;
-    public final static String RELEASED_IN_VERSION = "2.0";
+    public static final String NAMESPACE_URI = Namespace.ANNOTATION_NS;
+    public static final String PREFIX = Namespace.ANNOTATION_PREFIX;
+    public static final String RELEASED_IN_VERSION = "2.0";
     
-    private final static FunctionDef[] signatures = {
+    private static final FunctionDef[] signatures = {
         new FunctionDef(RegistryFunctions.signatures[0], RegistryFunctions.class),
         new FunctionDef(UriFunctions.signatures[0], UriFunctions.class),
         new FunctionDef(UriFunctions.signatures[1], UriFunctions.class)

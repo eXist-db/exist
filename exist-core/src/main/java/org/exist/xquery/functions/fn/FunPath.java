@@ -86,10 +86,10 @@ public class FunPath extends BasicFunction {
                 final Node node = nodeValue.getNode();
                 final LinkedList<String> pathValues = new LinkedList<>();
                 getPathValues(node, pathValues);
-                if ((node.getOwnerDocument() == null ||
+                if (node.getOwnerDocument() == null ||
                      node.getOwnerDocument().getDocumentElement() == null ||
                      (node.getOwnerDocument() instanceof org.exist.dom.memtree.DocumentImpl &&
-                      !((org.exist.dom.memtree.DocumentImpl) node.getOwnerDocument()).isExplicitlyCreated()))) {
+                      !((org.exist.dom.memtree.DocumentImpl) node.getOwnerDocument()).isExplicitlyCreated())) {
                     // This string is prefixed by "Q{http://www.w3.org/2005/xpath-functions}root()"
                     // if the root node is not a document node.
                     pathValues.removeFirst();
@@ -205,7 +205,7 @@ public class FunPath extends BasicFunction {
                     // name, and position is an integer representing the position
                     // of the selected node among its like-named siblings.
                     final int nodePosition = getNodePosition(node);
-                    value.append((node.getOwnerDocument() != null && node.getOwnerDocument().getDocumentElement() != null) ? "/Q" : "Q");
+                    value.append(node.getOwnerDocument() != null && node.getOwnerDocument().getDocumentElement() != null ? "/Q" : "Q");
                     value.append(((INode) node).getQName().toURIQualifiedName());
                     if (nodePosition > 0) {
                         value.append("[%d]".formatted(nodePosition));

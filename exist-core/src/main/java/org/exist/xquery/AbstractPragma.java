@@ -38,7 +38,7 @@ public abstract class AbstractPragma implements Pragma {
     private @Nullable final String contents;
     private @Nullable final Expression expression;
 
-    public AbstractPragma(@Nullable final Expression expression, final QName name, @Nullable final String contents) {
+    protected AbstractPragma(@Nullable final Expression expression, final QName name, @Nullable final String contents) {
         this.expression = expression;
         this.name = name;
         this.contents = contents;

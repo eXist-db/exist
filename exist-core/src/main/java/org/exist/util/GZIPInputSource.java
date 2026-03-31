@@ -25,8 +25,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.BufferedInputStream;
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -45,7 +45,7 @@ import java.util.zip.GZIPInputStream;
  *
  */
 public final class GZIPInputSource extends EXistInputSource {
-	private final static Logger LOG = LogManager.getLogger(GZIPInputSource.class);
+	private static final Logger LOG = LogManager.getLogger(GZIPInputSource.class);
 	private final Path gzipFile;
 	private Optional<InputStream> inputStream = Optional.empty();
 	

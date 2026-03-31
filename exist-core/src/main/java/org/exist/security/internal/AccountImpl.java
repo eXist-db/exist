@@ -21,8 +21,6 @@
  */
 package org.exist.security.internal;
 
-import org.exist.security.AbstractRealm;
-import org.exist.security.AbstractAccount;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.config.Configuration;
@@ -30,21 +28,22 @@ import org.exist.config.ConfigurationException;
 import org.exist.config.Configurator;
 import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationFieldAsElement;
+import org.exist.security.AbstractAccount;
+import org.exist.security.AbstractRealm;
+import org.exist.security.Account;
+import org.exist.security.Credential;
 import org.exist.security.Group;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.SchemaType;
 import org.exist.security.SecurityManager;
-import org.exist.security.Account;
 import org.exist.security.internal.aider.UserAider;
+import org.exist.storage.DBBroker;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.Properties;
-import org.exist.security.Credential;
-
-import org.exist.storage.DBBroker;
 
 /**
  * Represents a user within the database.
@@ -56,10 +55,10 @@ import org.exist.storage.DBBroker;
 @ConfigurationClass("account")
 public class AccountImpl extends AbstractAccount {
 
-    private final static Logger LOG = LogManager.getLogger(AccountImpl.class);
+    private static final Logger LOG = LogManager.getLogger(AccountImpl.class);
     public static boolean CHECK_PASSWORDS = true;
 
-    private final static SecurityProperties securityProperties = new SecurityProperties();
+    private static final SecurityProperties securityProperties = new SecurityProperties();
 
     public static SecurityProperties getSecurityProperties() {
         return securityProperties;
@@ -98,9 +97,9 @@ public class AccountImpl extends AbstractAccount {
     }*/
 
     @ConfigurationFieldAsElement("password")
-    private String password = null;
+    private String password;
     @ConfigurationFieldAsElement("digestPassword")
-    private String digestPassword = null;
+    private String digestPassword;
 
     /**
      * Create a new user with name and password
@@ -265,14 +264,14 @@ public class AccountImpl extends AbstractAccount {
         this.digestPassword = _cred.getDigest();
     }
 
-    public final static class SecurityProperties {
+    public static final class SecurityProperties {
 
-        private final static boolean DEFAULT_CHECK_PASSWORDS = true;
+        private static final boolean DEFAULT_CHECK_PASSWORDS = true;
 
-        private final static String PROP_CHECK_PASSWORDS = "passwords.check";
+        private static final String PROP_CHECK_PASSWORDS = "passwords.check";
 
-        private Properties loadedSecurityProperties = null;
-        private Boolean checkPasswords = null;
+        private Properties loadedSecurityProperties;
+        private Boolean checkPasswords;
 
         public synchronized boolean isCheckPasswords() {
             if(checkPasswords == null) {

@@ -53,8 +53,8 @@ public class EmbeddedXMLStreamReader implements IEmbeddedXMLStreamReader, Extend
     private static final Logger LOG = LogManager.getLogger(EmbeddedXMLStreamReader.class);
 
     // states outside the range of events defined in {@link XMLStreamConstants}
-    private static int BEFORE = -1;
-    private static int AFTER = -2;
+    private static final int BEFORE = -1;
+    private static final int AFTER = -2;
 
     // members which don't (generally) change!
     private DBBroker broker;
@@ -64,16 +64,16 @@ public class EmbeddedXMLStreamReader implements IEmbeddedXMLStreamReader, Extend
 
     // mutable members which hold the current state of the stream
     private int state = BEFORE;  // initial state!
-    private boolean consumedState = false;
+    private boolean consumedState;
     @Nullable private NodeHandle origin;
-    @Nullable private Value previous = null;
-    @Nullable private Value current = null;
-    @Nullable private NodeId nodeId = null;
+    @Nullable private Value previous;
+    @Nullable private Value current;
+    @Nullable private NodeId nodeId;
     private final Deque<ElementEvent> elementStack = new ArrayDeque<>();
-    private boolean nsRead = false;
+    private boolean nsRead;
     private final List<String[]> namespaces = new ArrayList<>(6);
-    @Nullable private QName qname = null;
-    @Nullable private AttrList attributes = null;
+    @Nullable private QName qname;
+    @Nullable private AttrList attributes;
     private final XMLString text = new XMLString(256);
 
 
@@ -160,7 +160,6 @@ public class EmbeddedXMLStreamReader implements IEmbeddedXMLStreamReader, Extend
             verifyOriginNodeId();
             origin = null;
         }
-        return;
     }
 
     @Override
@@ -311,7 +310,7 @@ public class EmbeddedXMLStreamReader implements IEmbeddedXMLStreamReader, Extend
 
     @Override
     public Object getProperty(final String string) throws IllegalArgumentException {
-        if(string.equals(PROPERTY_NODE_ID)) {
+        if(PROPERTY_NODE_ID.equals(string)) {
             if(nodeId == null) {
                 readNodeId();
             }
@@ -703,7 +702,7 @@ public class EmbeddedXMLStreamReader implements IEmbeddedXMLStreamReader, Extend
     private static final class ElementEvent {
         private final Value data;
         private final int childCount;
-        private int currentChild = 0;
+        private int currentChild;
 
         public ElementEvent(final Value data) {
             this.data = data;

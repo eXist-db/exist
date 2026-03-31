@@ -57,7 +57,7 @@ public class CDataIntergationTest {
     @ClassRule
     public static final TemporaryFolder TEMP_FOLDER = new TemporaryFolder();
 
-    private static String PREV_PROPFIND_METHOD_XML_SIZE = null;
+    private static String PREV_PROPFIND_METHOD_XML_SIZE;
 
     @BeforeClass
     public static void setup() {

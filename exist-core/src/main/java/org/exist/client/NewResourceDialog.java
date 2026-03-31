@@ -21,22 +21,6 @@
  */
 package org.exist.client;
 
-import java.awt.BorderLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.border.EtchedBorder;
 import org.exist.xmldb.EXistResource;
 import org.exist.xquery.util.URIUtils;
 import org.xmldb.api.base.Collection;
@@ -45,16 +29,27 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.BinaryResource;
 import org.xmldb.api.modules.XMLResource;
 
+import javax.swing.*;
+import javax.swing.border.EtchedBorder;
+import java.awt.BorderLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+
 /**
  *
  * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 public class NewResourceDialog extends JFrame {
     
-    private final static String DEFAULT_FILENAME = "new-resource";
+    private static final String DEFAULT_FILENAME = "new-resource";
     
-    private final static String DEFAULT_MODULE_NS = "http://module1";
-    private final static String DEFAULT_MODULE_NS_PREFIX = "mod1";
+    private static final String DEFAULT_MODULE_NS = "http://module1";
+    private static final String DEFAULT_MODULE_NS_PREFIX = "mod1";
     
     private final InteractiveClient client;
     
@@ -262,7 +257,7 @@ public class NewResourceDialog extends JFrame {
         final StringBuilder resourceContentBuilder = new StringBuilder();
         try(final InputStream is = getClass().getResourceAsStream(resourceType.getTemplatePath());
                 final Reader reader = new InputStreamReader(is)) {
-            final char buf[] = new char[1024];
+            final char[] buf = new char[1024];
             int read = -1;
             while((read = reader.read(buf)) > -1) {
                 resourceContentBuilder.append(buf, 0, read);

@@ -21,12 +21,12 @@
  */
 package org.exist.storage.index;
 
-import java.nio.ByteBuffer;
-
 import org.exist.storage.DBBroker;
 import org.exist.storage.NativeBroker;
 import org.exist.storage.journal.AbstractLoggable;
 import org.exist.storage.txn.Txn;
+
+import java.nio.ByteBuffer;
 
 /**
  * @author wolf
@@ -35,12 +35,12 @@ public abstract class AbstractBFileLoggable extends AbstractLoggable {
     private NativeBroker broker;
     protected byte fileId;
 
-    public AbstractBFileLoggable(final byte type, final byte fileId, final Txn transaction) {
+    protected AbstractBFileLoggable(final byte type, final byte fileId, final Txn transaction) {
         super(type, transaction.getId());
         this.fileId = fileId;
     }
 
-    public AbstractBFileLoggable(final DBBroker broker, final long transactionId) {
+    protected AbstractBFileLoggable(final DBBroker broker, final long transactionId) {
         super(BFile.LOG_CREATE_PAGE, transactionId);
         this.broker = (NativeBroker) broker;
     }

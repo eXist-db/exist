@@ -41,7 +41,7 @@ import java.util.Optional;
  */
 public abstract class StrictResponseFunction extends ResponseFunction {
 
-    public StrictResponseFunction(final XQueryContext context, final FunctionSignature signature) {
+    protected StrictResponseFunction(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
 

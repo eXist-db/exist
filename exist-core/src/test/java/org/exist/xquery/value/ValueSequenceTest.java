@@ -49,7 +49,7 @@ import static org.junit.Assert.assertEquals;
 public class ValueSequenceTest {
 
     @ClassRule
-    public final static ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
+    public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Test
     public void sortInDocumentOrder() throws EXistException, PermissionDeniedException, AuthenticationException {

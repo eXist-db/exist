@@ -21,7 +21,6 @@
  */
 package org.exist.xquery.functions.system;
 
-import java.util.Date;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
@@ -32,11 +31,9 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XQueryWatchDog;
-import org.exist.xquery.value.DateTimeValue;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
+
+import java.util.Date;
 
 /**
  * Return a list of the currently running XQueries (must be dba)
@@ -45,13 +42,13 @@ import org.exist.xquery.value.Type;
  */
 public class GetRunningXQueries extends BasicFunction
 {
-    protected final static Logger logger = LogManager.getLogger(GetRunningXQueries.class);
+    protected static final Logger logger = LogManager.getLogger(GetRunningXQueries.class);
 
-	final static String NAMESPACE_URI                       = SystemModule.NAMESPACE_URI;
-    final static String PREFIX                              = SystemModule.PREFIX;
+	static final String NAMESPACE_URI                       = SystemModule.NAMESPACE_URI;
+    static final String PREFIX                              = SystemModule.PREFIX;
     
 
-	public final static FunctionSignature signature =
+	public static final FunctionSignature signature =
 		new FunctionSignature(
 			new QName( "get-running-xqueries", SystemModule.NAMESPACE_URI, SystemModule.PREFIX ),
 			"Get a list of running XQueries (dba role only).",
@@ -76,7 +73,7 @@ public class GetRunningXQueries extends BasicFunction
 			throw xPathException;
 		}
 			
-		return( getRunningXQueries() );
+		return getRunningXQueries();
 	}
 	
 	
@@ -103,7 +100,7 @@ public class GetRunningXQueries extends BasicFunction
 
 			xmlResponse = (NodeValue) builder.getDocument().getDocumentElement();
 
-			return (xmlResponse);
+			return xmlResponse;
 		} finally {
 			context.popDocumentContext();
 		}
@@ -113,10 +110,10 @@ public class GetRunningXQueries extends BasicFunction
 	{
 		builder.startElement( new QName( "xquery", NAMESPACE_URI, PREFIX ), null );
 		
-		builder.addAttribute( new QName( "id", null, null ), "" + context.hashCode() );
+		builder.addAttribute( new QName( "id", null, null ), String.valueOf(context.hashCode()) );
 		builder.addAttribute( new QName( "sourceType", null, null ), context.getSource().type() );
                 builder.addAttribute( new QName( "started", null, null), new DateTimeValue(this, new Date(watchdog.getStartTime())).getStringValue());
-		builder.addAttribute( new QName( "terminating", null, null ), ( watchdog.isTerminating() ? "true" : "false" ) );
+		builder.addAttribute( new QName( "terminating", null, null ),  watchdog.isTerminating() ? "true" : "false");
 
 		builder.addAttribute(new QName("caller", null, null), context == getContext() ? "true" : "false");
 		

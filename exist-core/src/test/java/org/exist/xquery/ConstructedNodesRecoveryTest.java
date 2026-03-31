@@ -41,21 +41,19 @@ import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
 import org.exist.util.MimeType;
 import org.exist.util.StringInputSource;
-import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.value.Sequence;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.util.serializer.SerializerPool;
-
+import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.value.Sequence;
 import org.junit.After;
 import org.junit.Test;
+import org.xml.sax.SAXException;
 
+import javax.xml.transform.OutputKeys;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Optional;
 import java.util.Properties;
-import javax.xml.transform.OutputKeys;
-
-import org.xml.sax.SAXException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -66,7 +64,7 @@ import static org.junit.Assert.assertNotNull;
  */
 public class ConstructedNodesRecoveryTest {
 
-	private final static String xquery =
+	private static final String xquery =
 		"""
         declare variable $categories :=\s
         	<categories>
@@ -86,14 +84,14 @@ public class ConstructedNodesRecoveryTest {
         	}\
         """;
 
-	private final static String expectedResults [] = { 
+	private static final String [] expectedResults = { 
 		"Fruit",
 		"Vegetable",
 		"Meat",
 		"Dairy"
 	}; 
 		
-	private final static String testDocument = 
+	private static final String testDocument = 
 		"<fruit>" +
 			"<apple colour=\"green\"/>" +
 			"<pear colour=\"green\"/>" +
@@ -103,7 +101,7 @@ public class ConstructedNodesRecoveryTest {
 		"</fruit>";
 
 	// we don't use @ClassRule/@Rule as we want to force corruption in some tests
-	private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
+	private final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
 	/**
 	 * Issues a query against constructed nodes and then corrupts the database (intentionally)

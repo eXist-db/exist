@@ -21,9 +21,9 @@
  */
 package org.exist.xmlrpc.function;
 
+import com.evolvedbinary.j8fu.function.Function2E;
 import org.exist.EXistException;
 import org.exist.security.PermissionDeniedException;
-import com.evolvedbinary.j8fu.function.Function2E;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.XPathException;
 

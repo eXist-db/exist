@@ -21,14 +21,14 @@
  */
 package org.exist.xmldb.concurrent.action;
 
-import java.util.Random;
-
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XPathQueryService;
 import org.xmldb.api.modules.XUpdateQueryService;
+
+import java.util.Random;
 
 import static org.junit.Assert.assertEquals;
 
@@ -57,7 +57,7 @@ public class TextUpdateAction extends Action {
 		"</xu:append>" +
 		"</xu:modifications>";
 	
-	private final static String REMOVE =
+	private static final String REMOVE =
 		"<xu:modifications xmlns:xu=\"http://www.xmldb.org/xupdate\" version=\"1.0\">" +
 		"<xu:remove select=\"/article/section\"/>" +
 		"</xu:modifications>";

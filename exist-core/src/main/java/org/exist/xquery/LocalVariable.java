@@ -32,8 +32,8 @@ import org.exist.dom.QName;
  */
 public class LocalVariable extends VariableImpl {
 
-	protected LocalVariable before = null;
-	protected LocalVariable after = null;
+	protected LocalVariable before;
+	protected LocalVariable after;
 
     public LocalVariable(QName qname) {
         super(qname);

@@ -59,7 +59,7 @@ public class CollectionOrderTest {
     @ClassRule
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
-    private static XmldbURI TEST_COLLECTION = XmldbURI.ROOT_COLLECTION_URI.append("testCollectionOrder");
+    private static final XmldbURI TEST_COLLECTION = XmldbURI.ROOT_COLLECTION_URI.append("testCollectionOrder");
 
     private static final int SUB_COLLECTION_COUNT = 1000;
     private static final int DOCUMENT_COUNT = 1000;

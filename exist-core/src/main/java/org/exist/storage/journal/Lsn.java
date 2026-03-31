@@ -64,12 +64,12 @@ public class Lsn implements Comparable<Lsn> {
         ByteConversion.longToByte(offset, lsn, FILE_OFFSET_OFFSET);
     }
 
-    private Lsn(final byte data[], final int offset) {
+    private Lsn(final byte[] data, final int offset) {
         this.lsn = new byte[RAW_LENGTH];
         System.arraycopy(data, offset, lsn, 0, RAW_LENGTH);
     }
 
-    private Lsn(final byte lsn[]) {
+    private Lsn(final byte[] lsn) {
         this.lsn = lsn;
     }
 
@@ -125,16 +125,21 @@ public class Lsn implements Comparable<Lsn> {
         for (int i = 0; i < RAW_LENGTH; i++) {
             int a = lsn[i];
             int b = other.lsn[i];
-            if (a != b)
-                return ((a & LONG_MASK) < (b & LONG_MASK)) ? -1 : 1;
+            if (a != b) {
+                return (a & LONG_MASK) < (b & LONG_MASK) ? -1 : 1;
+            }
         }
         return 0;
     }
 
     @Override
     public boolean equals(final Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         final Lsn other = (Lsn) o;
         return Arrays.equals(lsn, other.lsn);
     }

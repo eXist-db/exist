@@ -55,7 +55,7 @@ public class CollectionOfArrayIterator<T> implements Iterator<T> {
     }
 
     private int arrayIdx = -1;  // -1 indicates BoF state
-    private T[] array = null;
+    private T[] array;
 
     @Override
     public boolean hasNext() {

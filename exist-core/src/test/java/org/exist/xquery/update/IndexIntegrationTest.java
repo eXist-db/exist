@@ -21,13 +21,13 @@
  */
 package org.exist.xquery.update;
 
+import com.evolvedbinary.j8fu.function.ConsumerE;
 import org.easymock.IArgumentMatcher;
 import org.easymock.IMocksControl;
 import org.exist.dom.persistent.*;
 import org.exist.indexing.*;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import com.evolvedbinary.j8fu.function.ConsumerE;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XQueryContext;
 import org.junit.Test;

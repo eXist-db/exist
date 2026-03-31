@@ -21,11 +21,11 @@
  */
 package org.exist.xmldb.function;
 
+import com.evolvedbinary.j8fu.function.BiFunctionE;
 import org.exist.EXistException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
-import com.evolvedbinary.j8fu.function.BiFunctionE;
 import org.exist.xquery.XPathException;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;

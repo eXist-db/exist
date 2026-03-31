@@ -26,7 +26,7 @@ package org.exist.util.serializer.encodings;
  */
 public class KOI8RCharSet extends CharacterSet {
 
-	protected final static CharacterSet instance = new KOI8RCharSet();
+	protected static final CharacterSet instance = new KOI8RCharSet();
 	
 	/* (non-Javadoc)
 	 * @see org.exist.util.serializer.encodings.CharacterSet#inCharacterSet(char)

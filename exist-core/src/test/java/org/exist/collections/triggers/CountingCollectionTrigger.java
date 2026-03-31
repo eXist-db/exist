@@ -81,23 +81,23 @@ public class CountingCollectionTrigger implements CollectionTrigger {
     //we really should re-design triggers to make them easily testable!
     //...all I am going to say is that I am not redesigning triggers again right now
     //and that `they made me do it`!
-    public final static class CountingCollectionTriggerState {
-        private int configure = 0;
-        private int beforeCreate = 0;
-        private int afterCreate = 0;
-        private int beforeCopy = 0;
-        private int afterCopy = 0;
-        private int beforeMove = 0;
-        private int afterMove = 0;
-        private int beforeDelete = 0;
-        private int afterDelete = 0;
+    public static final class CountingCollectionTriggerState {
+        private int configure;
+        private int beforeCreate;
+        private int afterCreate;
+        private int beforeCopy;
+        private int afterCopy;
+        private int beforeMove;
+        private int afterMove;
+        private int beforeDelete;
+        private int afterDelete;
 
-        private final static CountingCollectionTriggerState instance = new CountingCollectionTriggerState();
+        private static final CountingCollectionTriggerState instance = new CountingCollectionTriggerState();
 
         private CountingCollectionTriggerState() {
         }
 
-        public final static CountingCollectionTriggerState getInstance() {
+        public static CountingCollectionTriggerState getInstance() {
             return instance;
         }
 

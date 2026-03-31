@@ -55,12 +55,12 @@ public class DLNTest {
         }
     }
     
-    private final static int ITEMS_TO_TEST = 10000;
+    private static final int ITEMS_TO_TEST = 10000;
 
     @Test
     public void singleId() {
         Random rand = new Random();
-        TestItem items[] = new TestItem[ITEMS_TO_TEST];
+        TestItem[] items = new TestItem[ITEMS_TO_TEST];
         for (int i = 0; i < ITEMS_TO_TEST; i++) {
             int next = rand.nextInt(5000000);
             DLN dln = new DLN();
@@ -72,17 +72,19 @@ public class DLNTest {
 
         for (int i = 0; i < ITEMS_TO_TEST; i++) {
             assertEquals("Item: " + i, items[i].id, ((DLN)items[i].dln).getLevelId(0));
-            if (i + 1 < ITEMS_TO_TEST)
+            if (i + 1 < ITEMS_TO_TEST) {
                 assertTrue(items[i].id <= items[i + 1].id);
-            if (i > 0)
+            }
+            if (i > 0) {
                 assertTrue(items[i].id >= items[i - 1].id);
+            }
         }
     }
 
     @Test
     public void sort() {
         Random rand = new Random();
-        DLN items[] = new DLN[ITEMS_TO_TEST];
+        DLN[] items = new DLN[ITEMS_TO_TEST];
         for (int i = 0; i < ITEMS_TO_TEST; i++) {
             int next = rand.nextInt(5000000);
             DLN dln = new DLN();
@@ -150,9 +152,12 @@ public class DLNTest {
         int[] id0 = new int[] { 1, 33, 56, 2, 98, 1, 27 };
         dln = new DLN();
         for (int i = 0; i < id0.length; i++) {
-            if (i > 0)
+            if (i > 0) {
                 dln.addLevelId(1, false);
-            for (int j = 1; j < id0[i]; j++) dln.incrementLevelId();
+            }
+            for (int j = 1; j < id0[i]; j++) {
+                dln.incrementLevelId();
+            }
         }
         assertEquals("1.33.56.2.98.1.27", dln.toString());
         assertEquals(7, dln.getLevelCount(0));

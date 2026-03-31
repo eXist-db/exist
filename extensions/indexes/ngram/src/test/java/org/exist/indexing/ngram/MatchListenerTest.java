@@ -21,17 +21,6 @@
  */
 package org.exist.indexing.ngram;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Optional;
-import java.util.Properties;
-
-import javax.xml.transform.OutputKeys;
-
 import org.custommonkey.xmlunit.NamespaceContext;
 import org.custommonkey.xmlunit.SimpleNamespaceContext;
 import org.custommonkey.xmlunit.XMLAssert;
@@ -68,9 +57,17 @@ import org.junit.Test;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import javax.xml.transform.OutputKeys;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Optional;
+import java.util.Properties;
+
+import static org.junit.Assert.*;
+
 public class MatchListenerTest {
 
-    private static String XML = "<root>" + "   <para>some paragraph with <hi>mixed</hi> content.</para>"
+    private static final String XML = "<root>" + "   <para>some paragraph with <hi>mixed</hi> content.</para>"
         + "   <para>another paragraph with <note><hi>nested</hi> inner</note> elements.</para>"
         + "   <para>a third paragraph with <term>term</term>.</para>" + "   <para>double match double match</para>"
         + "   <para>abaaba</para>" + "   <para>aaa aaa aaa</para>" + "    <para>Where did all the *s go?</para>"
@@ -80,7 +77,7 @@ public class MatchListenerTest {
         + "   <para>ucjkewbuwdcoikjewkj</para><para>ucjkewboislksoikjewkj</para><para>ucjkewbsdcoikjewkj</para><para>ucjkewbaaasaaacoikjewkj</para>"
         + "</root>";
 
-    private static String XML2 =
+    private static final String XML2 =
         """
         <?xml version="1.0" encoding="UTF-8"?>
         <p xmlns="http://www.tei-c.org/ns/1.0" xml:id="pT01p0257c1501">爾時會中。有一尊者。名曰龍護。手執寶拂。\s
@@ -91,7 +88,7 @@ public class MatchListenerTest {
             <lb n="0257c20" ed="T"/>大丈夫。最尊最上。無有等者。
         </p>""";
     
-    private static String CONF1 =
+    private static final String CONF1 =
         "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
         "   <index>" +
         "       <ngram qname=\"para\"/>" +
@@ -99,22 +96,22 @@ public class MatchListenerTest {
         "   </index>" +
         "</collection>";
 
-    private static String CONF2 =
+    private static final String CONF2 =
         "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
         "   <index>" +
         "       <ngram qname=\"note\"/>" +
         "   </index>" +
         "</collection>";
 
-    private static String CONF3 =
+    private static final String CONF3 =
         "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
         "   <index xmlns:tei=\"http://www.tei-c.org/ns/1.0\">" +
         "       <ngram qname=\"tei:p\"/>" +
         "   </index>" +
         "</collection>";
 
-    private static String MATCH_START = "<exist:match xmlns:exist=\"http://exist.sourceforge.net/NS/exist\">";
-    private static String MATCH_END = "</exist:match>";
+    private static final String MATCH_START = "<exist:match xmlns:exist=\"http://exist.sourceforge.net/NS/exist\">";
+    private static final String MATCH_END = "</exist:match>";
 
 
     @Test
@@ -528,7 +525,7 @@ public class MatchListenerTest {
             transact.commit(transaction);
         }
 
-        final HashMap<String, String> m = new HashMap<String, String>();
+        final HashMap<String, String> m = new HashMap<>();
         m.put("tei", "http://www.tei-c.org/ns/1.0");
         m.put("exist", "http://exist.sourceforge.net/NS/exist");
         final NamespaceContext ctx = new SimpleNamespaceContext(m);

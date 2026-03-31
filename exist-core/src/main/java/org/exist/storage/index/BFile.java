@@ -21,20 +21,11 @@
  */
 package org.exist.storage.index;
 
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import org.exist.storage.BrokerPool;
-import org.exist.storage.BufferStats;
-import org.exist.storage.DefaultCacheManager;
-import org.exist.storage.NativeBroker;
-import org.exist.storage.StorageAddress;
-import org.exist.storage.btree.BTree;
-import org.exist.storage.btree.BTreeCallback;
-import org.exist.storage.btree.BTreeException;
-import org.exist.storage.btree.DBException;
-import org.exist.storage.btree.IndexQuery;
-import org.exist.storage.btree.Value;
+import org.exist.storage.*;
+import org.exist.storage.btree.*;
 import org.exist.storage.cache.Cache;
 import org.exist.storage.cache.Cacheable;
 import org.exist.storage.cache.LRUCache;
@@ -49,7 +40,6 @@ import org.exist.storage.lock.LockManager;
 import org.exist.storage.lock.ManagedLock;
 import org.exist.storage.txn.Txn;
 import org.exist.util.*;
-import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.util.sanity.SanityCheck;
 import org.exist.xquery.Constants;
 import org.exist.xquery.TerminatedException;
@@ -83,24 +73,24 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class BFile extends BTree {
 
-    protected final static Logger LOGSTATS = LogManager.getLogger( NativeBroker.EXIST_STATISTICS_LOGGER );
+    protected static final Logger LOGSTATS = LogManager.getLogger( NativeBroker.EXIST_STATISTICS_LOGGER );
     
-    public final static long UNKNOWN_ADDRESS = -1;
+    public static final long UNKNOWN_ADDRESS = -1;
 
-    public final static long DATA_SYNC_PERIOD = 15000;
+    public static final long DATA_SYNC_PERIOD = 15000;
     
     // minimum free space a page should have to be
     // considered for reusing
-    public final static int PAGE_MIN_FREE = 64;
+    public static final int PAGE_MIN_FREE = 64;
 
     // page signatures
-    public final static byte RECORD = 20;
+    public static final byte RECORD = 20;
 
-    public final static byte LOB = 21;
+    public static final byte LOB = 21;
 
-    public final static byte FREE_LIST = 22;
+    public static final byte FREE_LIST = 22;
 
-    public final static byte MULTI_PAGE = 23;
+    public static final byte MULTI_PAGE = 23;
     
     public static final int LENGTH_RECORDS_COUNT = 2; //sizeof short
     public static final int LENGTH_NEXT_TID = 2; //sizeof short
@@ -108,16 +98,16 @@ public class BFile extends BTree {
     /*
      * Byte ids for the records written to the log file.
      */
-    public final static byte LOG_CREATE_PAGE = 0x30;
-    public final static byte LOG_STORE_VALUE = 0x31;
-    public final static byte LOG_REMOVE_VALUE = 0x32;
-    public final static byte LOG_REMOVE_PAGE = 0x33;
-    public final static byte LOG_OVERFLOW_APPEND = 0x34;
-    public final static byte LOG_OVERFLOW_STORE = 0x35;
-    public final static byte LOG_OVERFLOW_CREATE = 0x36;
-    public final static byte LOG_OVERFLOW_MODIFIED = 0x37;
-    public final static byte LOG_OVERFLOW_CREATE_PAGE = 0x38;
-    public final static byte LOG_OVERFLOW_REMOVE = 0x39;
+    public static final byte LOG_CREATE_PAGE = 0x30;
+    public static final byte LOG_STORE_VALUE = 0x31;
+    public static final byte LOG_REMOVE_VALUE = 0x32;
+    public static final byte LOG_REMOVE_PAGE = 0x33;
+    public static final byte LOG_OVERFLOW_APPEND = 0x34;
+    public static final byte LOG_OVERFLOW_STORE = 0x35;
+    public static final byte LOG_OVERFLOW_CREATE = 0x36;
+    public static final byte LOG_OVERFLOW_MODIFIED = 0x37;
+    public static final byte LOG_OVERFLOW_CREATE_PAGE = 0x38;
+    public static final byte LOG_OVERFLOW_REMOVE = 0x39;
 
     static {
         // register log entry types for this db file
@@ -327,7 +317,7 @@ public class BFile extends BTree {
 
     private static class RemoveCallback implements BTreeCallback {
         long[] pointers = new long[128];
-        int count = 0;
+        int count;
         
         public boolean indexInfo(final Value value, final long pointer) throws TerminatedException {
             if (count == pointers.length) {
@@ -368,8 +358,7 @@ public class BFile extends BTree {
             logManager.ifPresent(l -> l.flush(true, false));
         }
         flushed = flushed | dataCache.flush();
-        flushed = flushed | super.flush();
-        return flushed;
+        return flushed | super.flush();
     }
 
     public BufferStats getDataBufferStats() {
@@ -482,8 +471,7 @@ public class BFile extends BTree {
         }
         final byte[] data = page.getData();
         final int l = ByteConversion.byteToInt(data, offset);
-        final SimplePageInput input = new SimplePageInput(data, offset + 4, l, pointer);
-        return input;
+        return new SimplePageInput(data, offset + 4, l, pointer);
     }
 
     /**
@@ -1456,7 +1444,7 @@ public class BFile extends BTree {
 
     private static final class BFilePageHeader extends BTreePageHeader {
 
-        private int dataLen = 0;
+        private int dataLen;
 
         private long lastInChain = -1L;
 
@@ -1466,7 +1454,7 @@ public class BFile extends BTree {
         // values inside a page
         private short nextTID = -1;
 
-        private short records = 0;
+        private short records;
 
         public BFilePageHeader() {
             super();
@@ -1563,8 +1551,8 @@ public class BFile extends BTree {
     }
 
     private abstract class DataPage implements Comparable, Cacheable {
-        private int refCount = 0;
-        private int timestamp = 0;
+        private int refCount;
+        private int timestamp;
         private boolean saved = true;
 
         public abstract void delete() throws IOException;
@@ -1697,9 +1685,9 @@ public class BFile extends BTree {
     }
 
     private final class FindCallback implements BTreeCallback {
-        public final static int BOTH = 2;
-        public final static int KEYS = 1;
-        public final static int VALUES = 0;
+        public static final int BOTH = 2;
+        public static final int KEYS = 1;
+        public static final int VALUES = 0;
 
         private final int mode;
         private final IndexCallback callback;
@@ -1792,7 +1780,7 @@ public class BFile extends BTree {
 
     private final class OverflowPage extends DataPage {
         private final SinglePage firstPage;
-        private byte[] data = null;
+        private byte[] data;
 
         public OverflowPage(final Txn transaction) throws IOException {
             firstPage = new SinglePage(false);
@@ -1943,8 +1931,7 @@ public class BFile extends BTree {
         }
 
         public VariableByteInput getDataStream(final long pointer) {
-            final MultiPageInput input = new MultiPageInput(firstPage, pointer);
-            return input;
+            return new MultiPageInput(firstPage, pointer);
         }
 
         @Override
@@ -2146,7 +2133,7 @@ public class BFile extends BTree {
      * 
      * @author wolf
      */
-    private final static class SimplePageInput extends VariableByteArrayInput
+    private static final class SimplePageInput extends VariableByteArrayInput
             implements PageInputStream {
 
         private final long address;
@@ -2180,7 +2167,7 @@ public class BFile extends BTree {
     private final class MultiPageInput implements VariableByteInput, PageInputStream {
         private SinglePage nextPage;
         private int pageLen;
-        private short offset = 0;
+        private short offset;
         private final long address;
 
         public MultiPageInput(SinglePage first, long address) {
@@ -2221,13 +2208,13 @@ public class BFile extends BTree {
                 advance();
             }
             byte b = nextPage.data[offset++];
-            short i = (short) (b & 0177);
-            for (int shift = 7; (b & 0200) != 0; shift += 7) {
+            short i = (short) (b & 127);
+            for (int shift = 7; (b & 128) != 0; shift += 7) {
                 if (offset == pageLen) {
                     advance();
                 }
                 b = nextPage.data[offset++];
-                i |= (b & 0177) << shift;
+                i |= (b & 127) << shift;
             }
             return i;
         }
@@ -2238,13 +2225,13 @@ public class BFile extends BTree {
                 advance();
             }
             byte b = nextPage.data[offset++];
-            int i = b & 0177;
-            for (int shift = 7; (b & 0200) != 0; shift += 7) {
+            int i = b & 127;
+            for (int shift = 7; (b & 128) != 0; shift += 7) {
                 if (offset == pageLen) {
                     advance();
                 }
                 b = nextPage.data[offset++];
-                i |= (b & 0177) << shift;
+                i |= (b & 127) << shift;
             }
             return i;
         }
@@ -2279,8 +2266,8 @@ public class BFile extends BTree {
                 advance();
             }
             byte b = nextPage.data[offset++];
-            long i = b & 0177;
-            for (int shift = 7; (b & 0200) != 0; shift += 7) {
+            long i = b & 127;
+            for (int shift = 7; (b & 128) != 0; shift += 7) {
                 if (offset == pageLen) {
                     advance();
                 }
@@ -2297,7 +2284,7 @@ public class BFile extends BTree {
                     if (offset == pageLen) {
                         advance();
                     }
-                } while ((nextPage.data[offset++] & 0200) > 0);
+                } while ((nextPage.data[offset++] & 128) > 0);
             }
         }
 
@@ -2375,7 +2362,7 @@ public class BFile extends BTree {
         @Override
         public final String readUTF() throws IOException {
             final int len = readInt();
-            final byte data[] = new byte[len];
+            final byte[] data = new byte[len];
 
             read(data);
 
@@ -2391,7 +2378,7 @@ public class BFile extends BTree {
                 }
                 more = nextPage.data[offset++];
                 os.writeByte(more);
-                more &= 0200;
+                more &= 128;
             } while (more > 0);
         }
 
@@ -2460,7 +2447,7 @@ public class BFile extends BTree {
     private final class SinglePage extends DataPage {
 
         // the raw working data of this page (without page header)
-        byte[] data = null;
+        byte[] data;
 
         // the low-level page
         final Page page;
@@ -2469,7 +2456,7 @@ public class BFile extends BTree {
         final BFilePageHeader ph;
 
         // table mapping record ids (tids) to offsets
-        short[] offsets = null;
+        short[] offsets;
 
         public SinglePage() throws IOException {
             this(true);

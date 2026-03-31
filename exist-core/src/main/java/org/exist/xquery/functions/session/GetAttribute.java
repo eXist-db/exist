@@ -24,11 +24,7 @@ package org.exist.xquery.functions.session;
 import org.exist.dom.QName;
 import org.exist.http.servlets.SessionWrapper;
 import org.exist.xquery.*;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 import java.util.Optional;
 
@@ -42,7 +38,7 @@ import java.util.Optional;
  */
 public class GetAttribute extends SessionFunction {
 
-    public final static FunctionSignature signature =
+    public static final FunctionSignature signature =
             new FunctionSignature(
                     new QName("get-attribute", SessionModule.NAMESPACE_URI, SessionModule.PREFIX),
                     "Returns an attribute stored in the current session object or an empty sequence " +

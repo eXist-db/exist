@@ -47,20 +47,20 @@ import java.util.stream.Collectors;
 @ThreadSafe
 public class IndexManager implements BrokerPoolService {
 
-    private final static Logger LOG = LogManager.getLogger(IndexManager.class);
+    private static final Logger LOG = LogManager.getLogger(IndexManager.class);
 
     public static final String CONFIGURATION_ELEMENT_NAME = "modules";
     public static final String CONFIGURATION_MODULE_ELEMENT_NAME = "module";
     public static final String INDEXER_MODULES_CLASS_ATTRIBUTE = "class";
     public static final String INDEXER_MODULES_ID_ATTRIBUTE = "id";
 
-    public final static String PROPERTY_INDEXER_MODULES = "indexer.modules";
+    public static final String PROPERTY_INDEXER_MODULES = "indexer.modules";
 
     private final BrokerPool pool;
 
     private final Map<String, Index> indexers = new ConcurrentHashMap<>();
 
-    private Configuration.IndexModuleConfig modConfigs[];
+    private Configuration.IndexModuleConfig[] modConfigs;
     private Path dataDir;
 
     private AtomicLong configurationTimestamp = new AtomicLong(System.currentTimeMillis());

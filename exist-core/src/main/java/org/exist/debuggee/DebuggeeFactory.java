@@ -23,7 +23,6 @@ package org.exist.debuggee;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.xquery.XPathException;
@@ -35,9 +34,9 @@ import org.exist.xquery.XQueryContext;
  */
 public class DebuggeeFactory {
     
-	private final static Logger LOG = LogManager.getLogger(DebuggeeFactory.class);
+	private static final Logger LOG = LogManager.getLogger(DebuggeeFactory.class);
 
-    private static Debuggee instance = null;
+    private static Debuggee instance;
 
     public static Debuggee getInstance() {
         if (instance == null) {

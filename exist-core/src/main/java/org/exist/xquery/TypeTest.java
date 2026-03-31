@@ -22,10 +22,10 @@
 package org.exist.xquery;
 
 import org.exist.dom.INode;
-import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.QName;
-import org.exist.xquery.value.Type;
+import org.exist.dom.persistent.NodeProxy;
 import org.exist.stax.StaXUtil;
+import org.exist.xquery.value.Type;
 import org.w3c.dom.Node;
 
 import javax.xml.stream.XMLStreamReader;
@@ -37,7 +37,7 @@ import javax.xml.stream.XMLStreamReader;
  */
 public class TypeTest implements NodeTest {
 
-    protected int nodeType = 0;
+    protected int nodeType;
 	
     public TypeTest(final int nodeType) {
         setType(nodeType);

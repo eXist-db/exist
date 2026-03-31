@@ -29,11 +29,7 @@ import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.dom.memtree.NodeImpl;
 import org.exist.util.XMLNames;
 import org.exist.xquery.util.ExpressionDumper;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.QNameValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 import org.xml.sax.helpers.AttributesImpl;
 
 import javax.xml.XMLConstants;
@@ -48,11 +44,11 @@ import java.util.Iterator;
 public class ElementConstructor extends NodeConstructor {
 
 	private Expression qnameExpr;
-	private PathExpr content = null;
-	private AttributeConstructor attributes[] = null;
-	private QName namespaceDecls[] = null;
+	private PathExpr content;
+	private AttributeConstructor[] attributes;
+	private QName[] namespaceDecls;
 	
-	protected final static Logger LOG =
+	protected static final Logger LOG =
 		LogManager.getLogger(ElementConstructor.class);
 	
 	public ElementConstructor(final XQueryContext context) {
@@ -102,7 +98,7 @@ public class ElementConstructor extends NodeConstructor {
             attributes = new AttributeConstructor[1];
             attributes[0] = attr;
         } else {
-            final AttributeConstructor natts[] = new AttributeConstructor[attributes.length + 1];
+            final AttributeConstructor[] natts = new AttributeConstructor[attributes.length + 1];
             System.arraycopy(attributes, 0, natts, 0, attributes.length);
             natts[attributes.length] = attr;
             attributes = natts;
@@ -140,7 +136,7 @@ public class ElementConstructor extends NodeConstructor {
                     throw new XPathException(this, ErrorCodes.XQST0071, "duplicate definition for '" + qn + "'");
                 }
             }
-            final QName decls[] = new QName[namespaceDecls.length + 1];
+            final QName[] decls = new QName[namespaceDecls.length + 1];
             System.arraycopy(namespaceDecls, 0, decls, 0, namespaceDecls.length);
             decls[namespaceDecls.length] = qn;          
             namespaceDecls = decls;
@@ -330,8 +326,7 @@ public class ElementConstructor extends NodeConstructor {
                 content.eval(contextSequence, contextItem);
             }
             builder.endElement();
-            final NodeImpl node = builder.getDocument().getNode(nodeNr);
-            return node;
+            return builder.getDocument().getNode(nodeNr);
         } finally {
             context.popInScopeNamespaces();
             if (newDocumentContext) {
@@ -423,10 +418,11 @@ public class ElementConstructor extends NodeConstructor {
 		if(content != null) {
 		    content.resetState(postOptimization);
 		}
-		if(attributes != null)
+        if (attributes != null) {
             for (final Expression next : attributes) {
                 next.resetState(postOptimization);
             }
+        }
 	}
 
 	@Override

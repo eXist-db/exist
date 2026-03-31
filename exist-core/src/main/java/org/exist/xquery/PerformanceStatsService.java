@@ -46,10 +46,10 @@ import static org.exist.storage.lock.ManagedLock.acquire;
 @ThreadSafe
 public class PerformanceStatsService implements BrokerPoolService, PerformanceStats {
 
-    private @Nullable ReadWriteLock performanceStatsLock = null;  // access is guarded by volatile `performanceStats` field below
+    private @Nullable ReadWriteLock performanceStatsLock;  // access is guarded by volatile `performanceStats` field below
 
     @GuardedBy("performanceStatsLock")
-    private volatile @Nullable PerformanceStats performanceStats = null;  // volatile access as it is lazy-initialised (or not) in {@link BrokerPoolService#configure()} by the system thread
+    private volatile @Nullable PerformanceStats performanceStats;  // volatile access as it is lazy-initialised (or not) in {@link BrokerPoolService#configure()} by the system thread
 
     @Override
     public void configure(final Configuration configuration) throws BrokerPoolServiceException {
@@ -80,7 +80,7 @@ public class PerformanceStatsService implements BrokerPoolService, PerformanceSt
     public void setEnabled(final boolean enabled) {
         if (performanceStats == null) {
             // not initialized or disabled
-            if (enabled == true) {
+            if (enabled) {
                 init();
             }
             return;

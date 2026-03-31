@@ -23,11 +23,7 @@ package org.exist.xquery.functions.fn;
 
 import org.exist.collections.Collection;
 import org.exist.dom.QName;
-import org.exist.dom.persistent.DefaultDocumentSet;
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.DocumentSet;
-import org.exist.dom.persistent.MutableDocumentSet;
-import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.*;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.LockManager;

@@ -21,19 +21,12 @@
  */
 package org.exist.xmldb;
 
-import org.exist.test.ExistXmldbEmbeddedServer;
-import org.junit.*;
-import org.exist.security.Account;
-
-import static org.exist.TestUtils.*;
-import static org.exist.collections.CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import org.exist.collections.CollectionConfiguration;
+import org.exist.security.Account;
+import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.test.TestConstants;
 import org.exist.xquery.Constants;
+import org.junit.*;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
@@ -43,15 +36,19 @@ import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XPathQueryService;
 
+import static org.exist.TestUtils.*;
+import static org.exist.collections.CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE;
+import static org.junit.Assert.*;
+
 public class CollectionConfigurationTest {
 
     @ClassRule
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
-    private final static String TEST_COLLECTION = "testIndexConfiguration";
+    private static final String TEST_COLLECTION = "testIndexConfiguration";
     
-    private final static XmldbURI COLLECTION_SUB1 = XmldbURI.ROOT_COLLECTION_URI.append(TEST_COLLECTION).append("sub1");
-    private final static XmldbURI COLLECTION_SUB2 = XmldbURI.ROOT_COLLECTION_URI.append(TEST_COLLECTION).append("sub2");
+    private static final XmldbURI COLLECTION_SUB1 = XmldbURI.ROOT_COLLECTION_URI.append(TEST_COLLECTION).append("sub1");
+    private static final XmldbURI COLLECTION_SUB2 = XmldbURI.ROOT_COLLECTION_URI.append(TEST_COLLECTION).append("sub2");
 
     private static final XmldbURI CONF_COLL_URI = XmldbURI.CONFIG_COLLECTION_URI.append("/db/" + TEST_COLLECTION);
     private static final XmldbURI CONF_COLL_URI2 = CONF_COLL_URI.append(TestConstants.SPECIAL_NAME);     
@@ -60,15 +57,15 @@ public class CollectionConfigurationTest {
     private static final XmldbURI TEST_CONFIG_NAME_1 = XmldbURI.create("test1.xconf");
     private static final XmldbURI TEST_CONFIG_NAME_2 = XmldbURI.create(TestConstants.SPECIAL_NAME + ".xconf");
 
-    private final static String DOCUMENT_CONTENT = "<test>" + "<a>001</a>"
+    private static final String DOCUMENT_CONTENT = "<test>" + "<a>001</a>"
     + "<a>01</a>" + "<a>1</a>" + "<b>001</b>" + "<b>01</b>"
     + "<b>1</b>" + "</test>";
 
-    private final static String DOCUMENT_CONTENT2 = "<test x='0'>" + "<c c='2002-12-07T12:20:46.275+01:00'>2002-12-07T12:20:46.275+01:00</c>"
+    private static final String DOCUMENT_CONTENT2 = "<test x='0'>" + "<c c='2002-12-07T12:20:46.275+01:00'>2002-12-07T12:20:46.275+01:00</c>"
     + "<d d='1'>1</d>" + "<e e='1'>1</e>" + "<f f='true'>true</f>" +" <g g='1'>1</g>" +"<h h='1'>1</h>" 
     + "<test x='1'><test x='2'></test></test></test>";
 
-    private final static String DOCUMENT_CONTENT3 =
+    private static final String DOCUMENT_CONTENT3 =
         "<test>" +
         "   <a>1</a>" +
         "   <b>1</b>" +
@@ -78,7 +75,7 @@ public class CollectionConfigurationTest {
         "   <f>xxx</f>" +
         "</test>";
     
-    private final static String CONFIG1 = "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">"
+    private static final String CONFIG1 = "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">"
         + "  <index>"
         + "    <create qname=\"a\" type=\"xs:integer\"/>"
         + "    <create qname=\"b\" type=\"xs:string\"/>"
@@ -87,7 +84,7 @@ public class CollectionConfigurationTest {
         + "  </index>"
         + "</collection>";
 
-    private final static String CONFIG2 = "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">"
+    private static final String CONFIG2 = "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">"
         + "  <index>"
         + "    <create path=\"//c\" type=\"xs:dateTime\"/>"
         + "    <create path=\"//d\" type=\"xs:double\"/>"
@@ -105,14 +102,14 @@ public class CollectionConfigurationTest {
         + "  </index>"
         + "</collection>";
 
-    private final static String CONFIG3 = "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">"
+    private static final String CONFIG3 = "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">"
         + "  <index>"
         + "    <create qname=\"a\" type=\"xs:integer\"/>"
         + "    <create path=\"//a\" type=\"xs:integer\"/>"
         + "  </index>"
         + "</collection>";
 
-    private final static String QNAME_CONFIG = "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">"
+    private static final String QNAME_CONFIG = "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">"
         + "  <index>"
         + "    <create qname=\"a\" type=\"xs:integer\"/>"
         + "    <create qname=\"b\" type=\"xs:integer\"/>"
@@ -141,12 +138,12 @@ public class CollectionConfigurationTest {
         + "  </index>"
         + "</collection>";
 
-    private final static String EMPTY_CONFIG = "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">"
+    private static final String EMPTY_CONFIG = "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">"
         + "  <index>"
         + "  </index>"
         + "</collection>";
 
-    private final static String INVALID_CONFIG1 = """
+    private static final String INVALID_CONFIG1 = """
         <collection xmlns="http://exist-db.org/collection-config/1.0">
          <triggers>
              <trigger event="store,update,remove" class="org.exist.NonExistingTrigger">
@@ -1240,9 +1237,11 @@ public class CollectionConfigurationTest {
                result = service.query("/test/c[(# exist:force-index-use #) { . = xs:dateTime(\"2002-12-07T12:20:46.275+01:00\") }]");
        } catch (Exception e) {
            //e.printStackTrace();
-           if (e.getMessage().indexOf("XQDYxxxx") != Constants.STRING_NOT_FOUND)
-                       exceptionThrown = true;
-               else throw e;
+           if (e.getMessage().indexOf("XQDYxxxx") != Constants.STRING_NOT_FOUND) {
+               exceptionThrown = true;
+           } else {
+               throw e;
+           }
        }
        assertTrue("Exception expected : missing index", exceptionThrown);
 
@@ -1250,9 +1249,11 @@ public class CollectionConfigurationTest {
                exceptionThrown = false;
                result = service.query("/test/d[(# exist:force-index-use #) { . = xs:double(1) }]");
            } catch (Exception e) {
-               if (e.getMessage().indexOf("XQDYxxxx") != Constants.STRING_NOT_FOUND)
-                       exceptionThrown = true;
-               else throw e;
+           if (e.getMessage().indexOf("XQDYxxxx") != Constants.STRING_NOT_FOUND) {
+               exceptionThrown = true;
+           } else {
+               throw e;
+           }
            }
            assertTrue("Exception expected : missing index", exceptionThrown);
 
@@ -1260,9 +1261,11 @@ public class CollectionConfigurationTest {
                exceptionThrown = false;
                result = service.query("/test/e[(# exist:force-index-use #) { . = xs:float(1) }]");
                } catch (Exception e) {
-               if (e.getMessage().indexOf("XQDYxxxx") != Constants.STRING_NOT_FOUND)
-                       exceptionThrown = true;
-               else throw e;
+               if (e.getMessage().indexOf("XQDYxxxx") != Constants.STRING_NOT_FOUND) {
+                   exceptionThrown = true;
+               } else {
+                   throw e;
+               }
                }
                assertTrue("Exception expected : missing index", exceptionThrown);
 
@@ -1270,9 +1273,11 @@ public class CollectionConfigurationTest {
                exceptionThrown = false;
                result = service.query("/test/f[(# exist:force-index-use #) { . = true() }]");
                     } catch (Exception e) {
-               if (e.getMessage().indexOf("XQDYxxxx") != Constants.STRING_NOT_FOUND)
-                       exceptionThrown = true;
-               else throw e;
+               if (e.getMessage().indexOf("XQDYxxxx") != Constants.STRING_NOT_FOUND) {
+                   exceptionThrown = true;
+               } else {
+                   throw e;
+               }
                     }
                     assertTrue("Exception expected : missing index", exceptionThrown);
 
@@ -1280,9 +1285,11 @@ public class CollectionConfigurationTest {
                exceptionThrown = false;
                result = service.query("/test/g[(# exist:force-index-use #) { . = 1 }]");
                } catch (Exception e) {
-               if (e.getMessage().indexOf("XQDYxxxx") != Constants.STRING_NOT_FOUND)
-                       exceptionThrown = true;
-               else throw e;
+                if (e.getMessage().indexOf("XQDYxxxx") != Constants.STRING_NOT_FOUND) {
+                    exceptionThrown = true;
+                } else {
+                    throw e;
+                }
                }
                assertTrue("Exception expected : missing index", exceptionThrown);
 
@@ -1290,9 +1297,11 @@ public class CollectionConfigurationTest {
                exceptionThrown = false;
                result = service.query("/test/h[(# exist:force-index-use #) { . = '1' }]");
            } catch (Exception e) {
-               if (e.getMessage().indexOf("XQDYxxxx") != Constants.STRING_NOT_FOUND)
-                       exceptionThrown = true;
-               else throw e;
+               if (e.getMessage().indexOf("XQDYxxxx") != Constants.STRING_NOT_FOUND) {
+                   exceptionThrown = true;
+               } else {
+                   throw e;
+               }
            }
            assertTrue("Exception expected : missing index", exceptionThrown);
   }   
@@ -1409,6 +1418,6 @@ public class CollectionConfigurationTest {
        res.setContent(confContent);            
        configColl.storeResource(res);
        UserManagementService ums = configColl.getService(UserManagementService.class);
-       ums.chmod(res, 0744);
+       ums.chmod(res, 484);
    }
 }

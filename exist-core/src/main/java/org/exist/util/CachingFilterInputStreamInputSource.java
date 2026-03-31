@@ -38,7 +38,7 @@ import java.io.Reader;
 public class CachingFilterInputStreamInputSource extends EXistInputSource {
     private static final Logger LOG = LogManager.getLogger(CachingFilterInputStreamInputSource.class);
 
-    private CachingFilterInputStream cachingFilterInputStream;
+    private final CachingFilterInputStream cachingFilterInputStream;
     private long length = -1;
 
     public CachingFilterInputStreamInputSource(final CachingFilterInputStream cachingFilterInputStream) {

@@ -40,7 +40,7 @@ public class SequenceType {
 
     private int primaryType = Type.ITEM;
     private Cardinality cardinality = Cardinality.EXACTLY_ONE;
-    private QName nodeName = null;
+    private QName nodeName;
 
     public SequenceType() {
     }

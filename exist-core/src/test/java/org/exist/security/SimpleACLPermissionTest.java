@@ -22,25 +22,23 @@
 package org.exist.security;
 
 import com.googlecode.junittoolbox.ParallelRunner;
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
+import org.easymock.EasyMock;
+import org.exist.Database;
+import org.exist.security.ACLPermission.ACE_ACCESS_TYPE;
+import org.exist.security.ACLPermission.ACE_TARGET;
+import org.exist.security.internal.SecurityManagerImpl;
 import org.exist.storage.DBBroker;
 import org.exist.storage.io.VariableByteInputStream;
-
-import java.io.IOException;
 import org.exist.storage.io.VariableByteOutputStream;
-import org.exist.Database;
-import org.exist.security.ACLPermission.ACE_TARGET;
-import org.exist.security.ACLPermission.ACE_ACCESS_TYPE;
-import org.exist.security.internal.SecurityManagerImpl;
-import java.util.Random;
-import org.easymock.EasyMock;
-import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.io.IOException;
+import java.util.Random;
+
 import static org.easymock.EasyMock.*;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 /**
  *
@@ -49,7 +47,7 @@ import static org.junit.Assert.assertEquals;
 @RunWith(ParallelRunner.class)
 public class SimpleACLPermissionTest {
 
-    private final static int ALL = Permission.READ | Permission.WRITE | Permission.EXECUTE;
+    private static final int ALL = Permission.READ | Permission.WRITE | Permission.EXECUTE;
 
     @Test
     public void add() throws PermissionDeniedException {
@@ -213,7 +211,7 @@ public class SimpleACLPermissionTest {
         assertEquals(ALL, permission.getACEMode(0));
 
         final int secondUserId = 1113;
-        final int secondMode = 04;
+        final int secondMode = 4;
         permission.insertUserACE(0, ACE_ACCESS_TYPE.ALLOWED, secondUserId, secondMode);
         
         assertEquals(2, permission.getACECount());
@@ -255,7 +253,7 @@ public class SimpleACLPermissionTest {
         assertEquals(ALL, permission.getACEMode(0));
 
         final int secondUserId = 1113;
-        final int secondMode = 04;
+        final int secondMode = 4;
         permission.addUserACE(ACE_ACCESS_TYPE.ALLOWED, secondUserId, secondMode);
         
         assertEquals(2, permission.getACECount());
@@ -266,7 +264,7 @@ public class SimpleACLPermissionTest {
         assertEquals(secondMode, permission.getACEMode(1));
 
         final int thirdUserId = 1114;
-        final int thirdMode = 02;
+        final int thirdMode = 2;
         permission.insertUserACE(1, ACE_ACCESS_TYPE.ALLOWED, thirdUserId, thirdMode);
         
         assertEquals(3, permission.getACECount());
@@ -318,7 +316,7 @@ public class SimpleACLPermissionTest {
         assertEquals(ALL, permission.getACEMode(0));
 
         final int secondUserId = 1113;
-        final int secondMode = 04;
+        final int secondMode = 4;
         permission.insertUserACE(1, ACE_ACCESS_TYPE.ALLOWED, secondUserId, secondMode);
         
         verify(mockSecurityManager, mockDatabase, mockBroker, mockCurrentSubject);
@@ -501,7 +499,7 @@ public class SimpleACLPermissionTest {
         final SecurityManager mockSecurityManager = EasyMock.createMock(SecurityManager.class);
 
         final int ownerId = new Random().nextInt(SecurityManagerImpl.MAX_USER_ID);
-        final int mode = 0700;
+        final int mode = 448;
         final int ownerGroupId = new Random().nextInt(SecurityManagerImpl.MAX_GROUP_ID);
 
         final Subject mockUser = EasyMock.createMock(Subject.class);
@@ -536,7 +534,7 @@ public class SimpleACLPermissionTest {
         expect(mockCurrentSubject.hasDbaRole()).andReturn(true);
 
         final int ownerId = new Random().nextInt(SecurityManagerImpl.MAX_USER_ID);
-        final int mode = 0700;
+        final int mode = 448;
         final int ownerGroupId = new Random().nextInt(SecurityManagerImpl.MAX_GROUP_ID);
 
         final Subject mockUser = EasyMock.createMock(Subject.class);
@@ -572,7 +570,7 @@ public class SimpleACLPermissionTest {
         expect(mockCurrentSubject.hasDbaRole()).andReturn(true).times(2);
 
         final int ownerId = new Random().nextInt(SecurityManagerImpl.MAX_USER_ID);
-        final int mode = 0700;
+        final int mode = 448;
         final int ownerGroupId = new Random().nextInt(SecurityManagerImpl.MAX_GROUP_ID);
 
         /**
@@ -620,7 +618,7 @@ public class SimpleACLPermissionTest {
         expect(mockCurrentSubject.hasDbaRole()).andReturn(true).times(2);
 
         final int ownerId = new Random().nextInt(SecurityManagerImpl.MAX_USER_ID);
-        final int mode = 0700;
+        final int mode = 448;
         final int ownerGroupId = new Random().nextInt(SecurityManagerImpl.MAX_GROUP_ID);
 
         /**
@@ -702,7 +700,7 @@ public class SimpleACLPermissionTest {
         assertEquals(mode2, permission.getACEMode(1));
         
         //get the written acl data
-        final byte data[] = os.toByteArray();
+        final byte[] data = os.toByteArray();
         
         //create a new permission instance
         SimpleACLPermission permission2 = new SimpleACLPermission(mockSecurityManager);

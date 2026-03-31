@@ -31,13 +31,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
+import org.exist.xquery.value.*;
 import org.exquery.http.HttpRequest;
 
 import java.util.Objects;
@@ -48,17 +42,17 @@ import java.util.Objects;
  */
 public class HeaderFunctions extends AbstractRequestModuleFunction {
 
-    private final static QName qnHeaderNames = new QName("header-names", RequestModule.NAMESPACE_URI, RequestModule.PREFIX);
-    private final static QName qnHeader = new QName("header", RequestModule.NAMESPACE_URI, RequestModule.PREFIX);
+    private static final QName qnHeaderNames = new QName("header-names", RequestModule.NAMESPACE_URI, RequestModule.PREFIX);
+    private static final QName qnHeader = new QName("header", RequestModule.NAMESPACE_URI, RequestModule.PREFIX);
     
-    public final static FunctionSignature FNS_HEADER_NAMES = new FunctionSignature(
+    public static final FunctionSignature FNS_HEADER_NAMES = new FunctionSignature(
         qnHeaderNames,
         "Gets the names of HTTP Headers available in the HTTP Request.",
         null,
         new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE_OR_MORE, "The names of available HTTP Headers in the HTTP Request.")
     );
     
-    public final static FunctionSignature FNS_HEADER = new FunctionSignature(
+    public static final FunctionSignature FNS_HEADER = new FunctionSignature(
         qnHeader,
         "Gets the value of the named HTTP Header in the HTTP Request. If there is no such header, then an empty sequence is returned.",
         new SequenceType[] {
@@ -67,7 +61,7 @@ public class HeaderFunctions extends AbstractRequestModuleFunction {
         new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "The value of the named HTTP Header, or an empty sequence.")
     );
     
-    public final static FunctionSignature FNS_HEADER_WITH_DEFAULT = new FunctionSignature(
+    public static final FunctionSignature FNS_HEADER_WITH_DEFAULT = new FunctionSignature(
         qnHeader,
         "Gets the value of the named HTTP Header in the HTTP Request.  If there is no such header in the HTTP Request, then the value specified in $default is returned instead.",
         new SequenceType[] {

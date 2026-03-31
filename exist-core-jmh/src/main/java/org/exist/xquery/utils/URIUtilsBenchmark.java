@@ -50,7 +50,7 @@ public class URIUtilsBenchmark {
         return URIUtils.encodeForURI(uri);
     }
 
-    public static void main(final String args[]) {
+    public static void main(final String[] args) {
         // NOTE: just for running with the java debugger
         final URIUtilsBenchmark uriUtilsBenchmark = new URIUtilsBenchmark();
 //        uriUtilsBenchmark.encodeForURI();

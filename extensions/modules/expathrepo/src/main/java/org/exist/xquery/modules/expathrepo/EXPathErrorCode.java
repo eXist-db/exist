@@ -30,7 +30,7 @@ import org.exist.xquery.ErrorCodes.ErrorCode;
  */
 
 
-public class EXPathErrorCode extends ErrorCode {
+public final class EXPathErrorCode extends ErrorCode {
     
     /**
      * EXPATH specific errors [EXP][DY|SE|ST][nnnn]
@@ -42,17 +42,17 @@ public class EXPathErrorCode extends ErrorCode {
      * ST = Static
      * nnnn = number
      */
-    public final static ErrorCode EXPDY001 = new EXPathErrorCode("EXPATH001", "Package not found.");
-    public final static ErrorCode EXPDY002 = new EXPathErrorCode("EXPATH002", "Bad collection URI.");
-    public final static ErrorCode EXPDY003 = new EXPathErrorCode("EXPATH003", "Permission denied.");
-    public final static ErrorCode EXPDY004 = new EXPathErrorCode("EXPATH004", "Error in descriptor found.");
-    public final static ErrorCode EXPDY005 = new EXPathErrorCode("EXPATH005", "Invalid repo URI");
-    public final static ErrorCode EXPDY006 = new EXPathErrorCode("EXPATH006", "Failed to connect to public repo");
+    public static final ErrorCode EXPDY001 = new EXPathErrorCode("EXPATH001", "Package not found.");
+    public static final ErrorCode EXPDY002 = new EXPathErrorCode("EXPATH002", "Bad collection URI.");
+    public static final ErrorCode EXPDY003 = new EXPathErrorCode("EXPATH003", "Permission denied.");
+    public static final ErrorCode EXPDY004 = new EXPathErrorCode("EXPATH004", "Error in descriptor found.");
+    public static final ErrorCode EXPDY005 = new EXPathErrorCode("EXPATH005", "Invalid repo URI");
+    public static final ErrorCode EXPDY006 = new EXPathErrorCode("EXPATH006", "Failed to connect to public repo");
     // other error thrown from expath library
-    public final static ErrorCode EXPDY007 = new EXPathErrorCode("EXPATH00", null);
+    public static final ErrorCode EXPDY007 = new EXPathErrorCode("EXPATH00", null);
     
-    public final static String EXPATH_ERROR_NS = "http://expath.org/ns/error";
-    public final static String EXPATH_ERROR_PREFIX = "experr";
+    public static final String EXPATH_ERROR_NS = "http://expath.org/ns/error";
+    public static final String EXPATH_ERROR_PREFIX = "experr";
     
     private EXPathErrorCode(String code, String description) {
         super(new QName(code, EXPATH_ERROR_NS, EXPATH_ERROR_PREFIX), description);

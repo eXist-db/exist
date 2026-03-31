@@ -21,13 +21,12 @@
  */
 package org.exist.http.urlrewrite;
 
-import org.exist.http.urlrewrite.XQueryURLRewrite.RequestWrapper;
-import org.w3c.dom.Element;
-
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
+import org.exist.http.urlrewrite.XQueryURLRewrite.RequestWrapper;
+import org.w3c.dom.Element;
 
 public class PathForward extends Forward {
     private final ServletConfig filterConfig;

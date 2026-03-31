@@ -101,7 +101,7 @@ public final class ModelPathResolver {
     }
     LOG.warn("Model directory not found at {} (resolved from '{}'; base={}). Directory must contain {} and {}.",
         resolved, pathStr, base, MODEL_FILE, TOKENIZER_FILE);
-    if (pathStr.startsWith(DEFAULT_ONNX_SUBDIR + "/") || pathStr.equals(DEFAULT_ONNX_SUBDIR)) {
+    if (pathStr.startsWith(DEFAULT_ONNX_SUBDIR + "/") || DEFAULT_ONNX_SUBDIR.equals(pathStr)) {
       final Path fallback = base.resolve("target").resolve(pathStr);
       if (hasModelFiles(fallback)) {
         LOG.info("Using fallback path for tests/build layout: {}", fallback);

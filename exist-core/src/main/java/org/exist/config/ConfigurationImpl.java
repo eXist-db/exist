@@ -21,9 +21,6 @@
  */
 package org.exist.config;
 
-import java.lang.ref.WeakReference;
-import java.util.*;
-
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
@@ -33,6 +30,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import javax.xml.XMLConstants;
+import java.lang.ref.WeakReference;
+import java.util.*;
 
 /**
  * configuration -&gt; element
@@ -45,7 +44,7 @@ public class ConfigurationImpl implements Configuration {
 
     private Map<String, Object> runtimeProperties = new HashMap<>();
 
-    protected WeakReference<Configurable> configuredObjectReference = null;
+    protected WeakReference<Configurable> configuredObjectReference;
 
     private Element element;
 
@@ -109,12 +108,13 @@ public class ConfigurationImpl implements Configuration {
         return list;
     }
     
-    private Map<String, String> props = null;
+    private Map<String, String> props;
     
     private void cache() {
-        
-        if (props != null)
+
+        if (props != null) {
             return;
+        }
         
         props = new HashMap<>();
         Set<String> names = new HashSet<>();
@@ -125,7 +125,7 @@ public class ConfigurationImpl implements Configuration {
             if (child.getNodeType() == Node.ELEMENT_NODE) {
 
                 final String ns = child.getNamespaceURI();
-                if (ns != null && NS.equals(ns)) {
+                if (NS.equals(ns)) {
                     
                     String name = child.getLocalName();
                     
@@ -178,8 +178,10 @@ public class ConfigurationImpl implements Configuration {
 
     public String getProperty(String name, String default_property) {
         final String property = getProperty(name);
-        
-        if (property == null) return default_property;
+
+        if (property == null) {
+            return default_property;
+        }
         
         return property;
     }
@@ -214,9 +216,10 @@ public class ConfigurationImpl implements Configuration {
                     }
                     
                     Node attr = attrs.getNamedItem("key");
-                    
-                    if (attr == null)
+
+                    if (attr == null) {
                         continue;
+                    }
                     
                     final String key = attr.getNodeValue();
                     final String value = el.getTextContent();
@@ -293,7 +296,9 @@ public class ConfigurationImpl implements Configuration {
 
     public Boolean getPropertyBoolean(String name, boolean defaultValue) {
         Boolean value = getPropertyBoolean(name);
-        if(value == null) return defaultValue;
+        if (value == null) {
+            return defaultValue;
+        }
 
         return value;
     }
@@ -313,7 +318,7 @@ public class ConfigurationImpl implements Configuration {
             return defaultValue;
         }
         final int result = Integer.parseInt(value);
-        if ((positive) && (result < 0)) {
+        if (positive && (result < 0)) {
             return defaultValue;
         }
         return result;
@@ -334,7 +339,7 @@ public class ConfigurationImpl implements Configuration {
             return defaultValue;
         }
         final long result = Long.parseLong(value);
-        if ((positive) && (result < 0)) {
+        if (positive && (result < 0)) {
             return defaultValue;
         }
         return result;
@@ -379,25 +384,27 @@ public class ConfigurationImpl implements Configuration {
     }
 
     //related objects
-    Map<String, Object> objects = null;
+    Map<String, Object> objects;
 
     @Override
     public synchronized Object putObject(String name, Object object) {
-        if (objects == null)
+        if (objects == null) {
             objects = new HashMap<>();
+        }
         
         return objects.put(name, object);
     }
 
     @Override
     public synchronized Object getObject(String name) {
-        if (objects == null)
+        if (objects == null) {
             return null;
+        }
         
         return objects.get(name);
     }
 
-    private boolean saving = false;
+    private boolean saving;
 
     @Override
     public void checkForUpdates(Element element) {
@@ -464,7 +471,7 @@ public class ConfigurationImpl implements Configuration {
     @Override
     public boolean equals(final Object obj, final Optional<String> property) {
         if (obj instanceof ConfigurationImpl conf) {
-            if (!(getName().equals(conf.getName()))) {
+            if (!getName().equals(conf.getName())) {
                 return false;
             }
 

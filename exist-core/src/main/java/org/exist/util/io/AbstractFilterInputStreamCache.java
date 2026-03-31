@@ -30,14 +30,14 @@ import java.io.InputStream;
  * @author zwobit
  */
 public abstract class AbstractFilterInputStreamCache extends FilterInputStream implements FilterInputStreamCache {
-    private int sharedReferenceCount = 0;
+    private int sharedReferenceCount;
     
-    private int srcOffset = 0;
+    private int srcOffset;
 
     private final InputStream src;
-    private boolean srcClosed = false;
+    private boolean srcClosed;
 
-    public AbstractFilterInputStreamCache(InputStream src) {
+    protected AbstractFilterInputStreamCache(InputStream src) {
         super(src);
         this.src = src;
         incrementSharedReferences();

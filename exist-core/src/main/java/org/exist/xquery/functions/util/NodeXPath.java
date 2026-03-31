@@ -37,7 +37,7 @@ public class NodeXPath extends Function
 {
 	protected static final Logger logger = LogManager.getLogger(NodeXPath.class);
 	
-	public final static FunctionSignature signature =
+	public static final FunctionSignature signature =
 		new FunctionSignature(
 			new QName("node-xpath", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 			"Returns the XPath for a Node.",

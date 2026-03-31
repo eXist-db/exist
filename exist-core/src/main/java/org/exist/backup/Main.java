@@ -330,7 +330,7 @@ public class Main {
     }
 
     private static class AggregatingConsoleRestoreServiceTaskListener extends ConsoleRestoreServiceTaskListener {
-        private StringBuilder allProblems = null;
+        private StringBuilder allProblems;
 
         public AggregatingConsoleRestoreServiceTaskListener(final boolean quiet) {
             super(quiet);

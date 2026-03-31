@@ -21,11 +21,11 @@
  */
 package org.exist.xquery;
 
-import org.exist.storage.DBBroker;
+import org.easymock.EasyMock;
 import org.exist.security.Subject;
+import org.exist.storage.DBBroker;
 import org.exist.xquery.value.BinaryValue;
 import org.junit.Test;
-import org.easymock.EasyMock;
 
 import javax.xml.XMLConstants;
 import java.io.IOException;

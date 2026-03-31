@@ -672,7 +672,7 @@ public final class NodeSetHelper {
         return false;
     }
 
-    public static final void copyChildren(final Document newDoc, final Node node, final Node newNode) {
+    public static void copyChildren(final Document newDoc, final Node node, final Node newNode) {
         final NodeList children = node.getChildNodes();
         Node newChild;
         for(int i = 0; i < children.getLength(); i++) {
@@ -696,7 +696,7 @@ public final class NodeSetHelper {
         }
     }
 
-    public static final Node copyNode(final Document newDoc, final Node node) {
+    public static Node copyNode(final Document newDoc, final Node node) {
         final Node newNode;
         switch(node.getNodeType()) {
 

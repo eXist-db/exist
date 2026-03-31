@@ -21,11 +21,10 @@
  */
 package org.exist.source;
 
-import java.io.*;
-
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.EXistException;
-import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.QName;
+import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
@@ -34,8 +33,9 @@ import org.exist.security.internal.aider.UnixStylePermissionAider;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock.LockMode;
-import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xmldb.XmldbURI;
+
+import java.io.*;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 

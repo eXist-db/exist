@@ -36,14 +36,14 @@ import org.exist.xquery.value.Type;
 
 public class FunTrueOrFalse extends BasicFunction {
 
-	public final static FunctionSignature fnTrue =
+	public static final FunctionSignature fnTrue =
 			new FunctionSignature(
 				new QName("true", Function.BUILTIN_FUNCTION_NS),
                 "Always returns the boolean value true",
 				null,
 				new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true"));
 	
-	public final static FunctionSignature fnFalse =
+	public static final FunctionSignature fnFalse =
 		new FunctionSignature(
 			new QName("false", Function.BUILTIN_FUNCTION_NS),
             "Always returns the boolean value false",

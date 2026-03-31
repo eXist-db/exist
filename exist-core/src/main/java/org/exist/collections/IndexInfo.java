@@ -31,11 +31,7 @@ import org.exist.storage.lock.ManagedDocumentLock;
 import org.exist.storage.txn.Txn;
 import org.exist.util.serializer.DOMStreamer;
 import org.exist.xmldb.XmldbURI;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.EntityResolver;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
+import org.xml.sax.*;
 import org.xml.sax.ext.LexicalHandler;
 
 /**
@@ -53,8 +49,8 @@ public class IndexInfo {
 
     private DOMStreamer streamer;
     private DocumentTriggers docTriggers;
-    private boolean creating = false;
-    private Permission oldDocPermissions = null;
+    private boolean creating;
+    private Permission oldDocPermissions;
 
     IndexInfo(final Indexer indexer, final CollectionConfiguration collectionConfig, final ManagedDocumentLock documentLock) {
         this.indexer = indexer;

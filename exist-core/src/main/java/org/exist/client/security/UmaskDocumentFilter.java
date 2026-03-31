@@ -21,12 +21,12 @@
  */
 package org.exist.client.security;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.DocumentFilter;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  *
@@ -34,7 +34,7 @@ import javax.swing.text.DocumentFilter;
  */
 public class UmaskDocumentFilter extends DocumentFilter {
 
-    final static Pattern ptnUmask = Pattern.compile("0?[0-7]{1,3}");
+    static final Pattern ptnUmask = Pattern.compile("0?[0-7]{1,3}");
     final Matcher mtcUmask = ptnUmask.matcher("");
     
     @Override

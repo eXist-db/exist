@@ -21,10 +21,11 @@
  */
 package org.exist.xquery.functions.transform;
 
-import java.util.List;
-import java.util.Map;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * Module function definitions for transform module.
@@ -34,13 +35,13 @@ import org.exist.xquery.FunctionDef;
  */
 public class TransformModule extends AbstractInternalModule {
 
-	public final static String NAMESPACE_URI = "http://exist-db.org/xquery/transform";
+	public static final String NAMESPACE_URI = "http://exist-db.org/xquery/transform";
 	
-	public final static String PREFIX = "transform";
-    public final static String INCLUSION_DATE = "2004-09-12";
-    public final static String RELEASED_IN_VERSION = "pre eXist-1.0";
+	public static final String PREFIX = "transform";
+    public static final String INCLUSION_DATE = "2004-09-12";
+    public static final String RELEASED_IN_VERSION = "pre eXist-1.0";
 
-	private final static FunctionDef[] functions = {
+	private static final FunctionDef[] functions = {
 		new FunctionDef(Transform.signatures[0], Transform.class),
         new FunctionDef(Transform.signatures[1], Transform.class),
         new FunctionDef(Transform.signatures[2], Transform.class),

@@ -21,23 +21,21 @@
  */
 package org.exist.xquery;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.exist.Namespaces;
+import org.exist.dom.QName;
+import org.exist.xquery.ErrorCodes.ErrorCode;
+import org.exist.xquery.ErrorCodes.JavaErrorCode;
+import org.exist.xquery.util.ExpressionDumper;
+import org.exist.xquery.value.*;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import org.exist.Namespaces;
-import org.exist.dom.QName;
-
-import org.exist.xquery.ErrorCodes.ErrorCode;
-import org.exist.xquery.ErrorCodes.JavaErrorCode;
-import org.exist.xquery.util.ExpressionDumper;
-import org.exist.xquery.value.*;
 
 /**
  * XQuery 3.0 try {...} catch{...} expression.
@@ -143,8 +141,7 @@ public class TryCatchExpression extends AbstractExpression {
 
         try {
             // Evaluate 'try' expression
-            final Sequence tryTargetSeq = tryTargetExpr.eval(contextSequence, contextItem);
-            return tryTargetSeq;
+            return tryTargetExpr.eval(contextSequence, contextItem);
 
         } catch (final Throwable throwable) { 
 
@@ -218,8 +215,6 @@ public class TryCatchExpression extends AbstractExpression {
                             context.popLocalVariables(mark1, catchResultSeq);
                         }
 
-                    } else {
-                        // if in the end nothing is set, rethrow after loop
                     }
                 } // for catch clauses
 
@@ -267,7 +262,7 @@ public class TryCatchExpression extends AbstractExpression {
         err_column_nr.setSequenceType(new SequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE));
 
         final Sequence colNum;
-        if (t != null && t instanceof XPathException exception) {
+        if (t instanceof XPathException exception) {
             colNum = new IntegerValue(this, exception.getColumn());
         } else {
             colNum = Sequence.EMPTY_SEQUENCE;
@@ -286,7 +281,7 @@ public class TryCatchExpression extends AbstractExpression {
         err_line_nr.setSequenceType(new SequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE));
 
         final Sequence lineNum;
-        if (t != null && t instanceof XPathException exception) {
+        if (t instanceof XPathException exception) {
             lineNum = new IntegerValue(this, exception.getLine());
         } else {
             lineNum = Sequence.EMPTY_SEQUENCE;
@@ -305,7 +300,7 @@ public class TryCatchExpression extends AbstractExpression {
         err_module.setSequenceType(new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE));
 
         final Sequence module;
-        if (t != null && t instanceof XPathException exception && exception.getSource() != null) {
+        if (t instanceof XPathException exception && exception.getSource() != null) {
             module = new StringValue(this, exception.getSource().pathOrShortIdentifier());
         } else {
             module = Sequence.EMPTY_SEQUENCE;
@@ -505,7 +500,7 @@ public class TryCatchExpression extends AbstractExpression {
         localVar.setSequenceType(new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE));
 
         final Sequence trace;
-		if(t != null && t instanceof XPathException exception) {
+		if(t instanceof XPathException exception) {
 			final List<XPathException.FunctionStackElement> callStack = exception.getCallStack();
 			if(callStack == null){
 				trace = Sequence.EMPTY_SEQUENCE;

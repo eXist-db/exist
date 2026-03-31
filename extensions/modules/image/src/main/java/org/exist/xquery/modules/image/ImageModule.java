@@ -21,14 +21,6 @@
  */
 package org.exist.xquery.modules.image;
 
-import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.RenderingHints;
-import java.awt.image.BufferedImage;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-
 import org.exist.dom.QName;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDSL;
@@ -40,6 +32,13 @@ import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 
 import javax.annotation.Nullable;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.RenderingHints;
+import java.awt.image.BufferedImage;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 import static org.exist.xquery.FunctionDSL.functionDefs;
 
@@ -57,13 +56,13 @@ import static org.exist.xquery.FunctionDSL.functionDefs;
  */
 public class ImageModule extends AbstractInternalModule {
 
-    public final static String NAMESPACE_URI = "http://exist-db.org/xquery/image";
+    public static final String NAMESPACE_URI = "http://exist-db.org/xquery/image";
 
-    public final static String PREFIX = "image";
-    public final static String INCLUSION_DATE = "2006-03-13";
-    public final static String RELEASED_IN_VERSION = "eXist-1.2";
+    public static final String PREFIX = "image";
+    public static final String INCLUSION_DATE = "2006-03-13";
+    public static final String RELEASED_IN_VERSION = "eXist-1.2";
 
-    private final static FunctionDef[] functions = functionDefs(
+    private static final FunctionDef[] functions = functionDefs(
             functionDefs(GetWidthFunction.class, GetWidthFunction.signature),
             functionDefs(GetHeightFunction.class, GetHeightFunction.signature),
             functionDefs(ScaleFunction.class, ScaleFunction.FS_SCALE),

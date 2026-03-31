@@ -23,6 +23,7 @@
 package org.exist.collections;
 
 import com.evolvedbinary.j8fu.Try;
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.exist.EXistException;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.BinaryDocument;
@@ -36,7 +37,6 @@ import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
 import org.exist.util.LockException;
-import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.exist.util.MimeType;
 import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;

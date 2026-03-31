@@ -21,15 +21,15 @@
  */
 package org.exist.xquery.modules.ngram;
 
-import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.QName;
+import org.exist.dom.memtree.DocumentBuilderReceiver;
+import org.exist.dom.memtree.MemTreeBuilder;
+import org.exist.dom.memtree.NodeImpl;
+import org.exist.dom.persistent.NodeProxy;
 import org.exist.indexing.MatchListener;
 import org.exist.indexing.ngram.NGramIndex;
 import org.exist.indexing.ngram.NGramIndexWorker;
 import org.exist.indexing.ngram.NGramMatchCallback;
-import org.exist.dom.memtree.DocumentBuilderReceiver;
-import org.exist.dom.memtree.MemTreeBuilder;
-import org.exist.dom.memtree.NodeImpl;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.serializer.Receiver;
 import org.exist.xquery.BasicFunction;
@@ -37,24 +37,14 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.FunctionReference;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
+import org.exist.xquery.value.*;
 import org.xml.sax.SAXException;
 
 /**
  */
 public class HighlightMatches extends BasicFunction {
 
-    public final static FunctionSignature signature = new FunctionSignature(
+    public static final FunctionSignature signature = new FunctionSignature(
             new QName("filter-matches", NGramModule.NAMESPACE_URI, NGramModule.PREFIX),
             """
             Highlight matching strings within text nodes that resulted from a ngram search. \
@@ -83,8 +73,9 @@ public class HighlightMatches extends BasicFunction {
     }
 
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-        if (args[0].isEmpty())
+        if (args[0].isEmpty()) {
             return Sequence.EMPTY_SEQUENCE;
+        }
 
         context.pushDocumentContext();
         final Serializer serializer = context.getBroker().borrowSerializer();
@@ -104,9 +95,9 @@ public class HighlightMatches extends BasicFunction {
                         NodeProxy p = (NodeProxy) v;
                         MatchListener ml = index.getMatchListener(context.getBroker(), p, matchCb);
                         Receiver receiver;
-                        if (ml == null)
+                        if (ml == null) {
                             receiver = docBuilder;
-                        else {
+                        } else {
                             ml.setNextInChain(docBuilder);
                             receiver = ml;
                         }
@@ -126,7 +117,7 @@ public class HighlightMatches extends BasicFunction {
         }
     }
 
-    private class MatchCallback implements NGramMatchCallback {
+    private final class MatchCallback implements NGramMatchCallback {
         private FunctionReference callback;
         private DocumentBuilderReceiver docBuilder;
 
@@ -136,7 +127,7 @@ public class HighlightMatches extends BasicFunction {
         }
 
         public void match(Receiver receiver, String matchingText, NodeProxy node) throws XPathException, SAXException {
-            Sequence params[] = {
+            Sequence[] params = {
                     new StringValue(matchingText),
                     node,
                     Sequence.EMPTY_SEQUENCE

@@ -67,7 +67,7 @@ public class DeadlockTest {
     }
 
     public static class WriterThread extends Thread {
-        protected int resources = 0;
+        protected int resources;
 
         public WriterThread(final int resources) {
             this.resources = resources;

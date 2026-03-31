@@ -27,14 +27,13 @@ import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Sequence;
 import org.hamcrest.Matcher;
+
 import javax.xml.transform.Source;
 
 import static org.exist.test.DiffMatcher.hasIdenticalXml;
 import static org.exist.test.DiffMatcher.hasSimilarXml;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.fail;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 /**
  * This set of assertions are meant to help when testing XQuery compilation, execution and errors

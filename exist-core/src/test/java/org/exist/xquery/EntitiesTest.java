@@ -104,8 +104,7 @@ public class EntitiesTest {
     
     /** For queries without associated data */
     private XQueryService getQueryService() throws XMLDBException {
-        XQueryService service = testCollection.getService(XQueryService.class);
-        return service;
+        return testCollection.getService(XQueryService.class);
     }
     
     /** stores XML String and get Query Service
@@ -122,9 +121,7 @@ public class EntitiesTest {
                 documentName, XMLResource.class );
         doc.setContent(content);
         testCollection.storeResource(doc);
-        XQueryService service =
-                testCollection.getService(XQueryService.class);
-        return service;
+        return testCollection.getService(XQueryService.class);
     }
 
     @Test

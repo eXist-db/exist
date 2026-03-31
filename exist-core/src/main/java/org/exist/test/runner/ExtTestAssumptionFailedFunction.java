@@ -34,9 +34,7 @@ import org.junit.runner.Description;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunNotifier;
 
-import static org.exist.xquery.FunctionDSL.optParam;
-import static org.exist.xquery.FunctionDSL.param;
-import static org.exist.xquery.FunctionDSL.params;
+import static org.exist.xquery.FunctionDSL.*;
 
 public class ExtTestAssumptionFailedFunction extends JUnitIntegrationFunction {
     public ExtTestAssumptionFailedFunction(final XQueryContext context, final String parentName, final RunNotifier notifier) {

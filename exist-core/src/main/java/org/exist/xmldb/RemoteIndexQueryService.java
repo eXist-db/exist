@@ -21,17 +21,17 @@
  */
 package org.exist.xmldb;
 
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Stream;
-
 import org.exist.dom.QName;
 import org.exist.indexing.ReindexScope;
 import org.exist.util.Occurrences;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
+
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Stream;
 
 public class RemoteIndexQueryService extends AbstractRemoteService implements IndexQueryService {
 

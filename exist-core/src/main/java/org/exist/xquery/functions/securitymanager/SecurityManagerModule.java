@@ -21,10 +21,11 @@
  */
 package org.exist.xquery.functions.securitymanager;
 
-import java.util.List;
-import java.util.Map;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * eXist Security Manager Module Extension
@@ -37,12 +38,12 @@ import org.exist.xquery.FunctionDef;
  */
 public class SecurityManagerModule extends AbstractInternalModule {
 
-    public final static String NAMESPACE_URI = "http://exist-db.org/xquery/securitymanager";
-    public final static String PREFIX = "sm";
-    private final static String RELEASED_IN_VERSION = "eXist-2.0";
-    private final static String DESCRIPTION = "Module for interacting with the Security Manager";
+    public static final String NAMESPACE_URI = "http://exist-db.org/xquery/securitymanager";
+    public static final String PREFIX = "sm";
+    private static final String RELEASED_IN_VERSION = "eXist-2.0";
+    private static final String DESCRIPTION = "Module for interacting with the Security Manager";
 
-    private final static FunctionDef[] functions = {
+    private static final FunctionDef[] functions = {
         
         new FunctionDef(AccountManagementFunction.FNS_CREATE_ACCOUNT, AccountManagementFunction.class),
         new FunctionDef(AccountManagementFunction.FNS_CREATE_ACCOUNT_WITH_METADATA, AccountManagementFunction.class),

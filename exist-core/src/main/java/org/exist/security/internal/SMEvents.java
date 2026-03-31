@@ -21,9 +21,6 @@
  */
 package org.exist.security.internal;
 
-import java.util.List;
-import java.util.Optional;
-
 import org.exist.Database;
 import org.exist.config.Configurable;
 import org.exist.config.Configuration;
@@ -31,10 +28,10 @@ import org.exist.config.Configurator;
 import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationFieldAsAttribute;
 import org.exist.config.annotation.ConfigurationFieldAsElement;
+import org.exist.dom.QName;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.LockedDocument;
 import org.exist.dom.persistent.NodeSet;
-import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
@@ -48,6 +45,9 @@ import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
 import org.exist.xquery.value.Sequence;
 
+import java.util.List;
+import java.util.Optional;
+
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
@@ -55,18 +55,18 @@ import org.exist.xquery.value.Sequence;
 @ConfigurationClass("events")
 public class SMEvents implements Configurable {
 	
-    public final static String NAMESPACE_URI = "http://exist-db.org/security/events";
-    public final static String PREFIX = "sec-ev"; //security-events //secev //sev
+    public static final String NAMESPACE_URI = "http://exist-db.org/security/events";
+    public static final String PREFIX = "sec-ev"; //security-events //secev //sev
 
 	@ConfigurationFieldAsAttribute("script-uri")
 	protected String scriptURI = "";
 
 	@ConfigurationFieldAsElement("authentication")
-	protected EventAuthentication authentication = null;
+	protected EventAuthentication authentication;
 	
 	protected SecurityManager sm;
 	
-	private Configuration configuration = null;
+	private Configuration configuration;
 	
 	public SMEvents(SecurityManagerImpl sm, Configuration config) {
 		this.sm = sm;

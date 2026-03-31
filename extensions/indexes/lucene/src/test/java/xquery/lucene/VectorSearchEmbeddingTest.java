@@ -25,11 +25,8 @@ import org.exist.EXistException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-
-import org.exist.util.ConfigurationHelper;
-
-import java.util.Optional;
 import org.exist.test.ExistEmbeddedServer;
+import org.exist.util.ConfigurationHelper;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Sequence;
@@ -38,6 +35,7 @@ import org.junit.Test;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assume.assumeTrue;

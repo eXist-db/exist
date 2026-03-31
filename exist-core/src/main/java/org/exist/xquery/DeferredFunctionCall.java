@@ -28,23 +28,18 @@ import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.NodeHandle;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.numbering.NodeId;
-import org.exist.xquery.value.AtomicValue;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.MemoryNodeSet;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 import javax.annotation.Nullable;
 import java.util.Iterator;
 
 public abstract class DeferredFunctionCall implements Sequence {
     
-    private final static Logger LOG = LogManager.getLogger(DeferredFunctionCall.class);
+    private static final Logger LOG = LogManager.getLogger(DeferredFunctionCall.class);
     
-    private FunctionSignature signature;
-    private Sequence sequence = null;
-    private XPathException caughtException = null;
+    private final FunctionSignature signature;
+    private Sequence sequence;
+    private XPathException caughtException;
 
     protected DeferredFunctionCall(FunctionSignature signature) {
         this.signature = signature;

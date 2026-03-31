@@ -22,27 +22,16 @@
 package org.exist.xquery;
 
 import com.evolvedbinary.j8fu.tuple.Tuple2;
-import org.exist.dom.persistent.ContextItem;
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.DocumentSet;
-import org.exist.dom.persistent.NewArrayNodeSet;
-import org.exist.dom.persistent.NodeProxy;
-import org.exist.dom.persistent.NodeSet;
-import org.exist.dom.persistent.VirtualNodeSet;
+import org.exist.dom.persistent.*;
 import org.exist.xquery.util.ExpressionDumper;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.NumericValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
+import org.exist.xquery.value.*;
 
 import javax.annotation.Nullable;
 import java.util.Set;
 import java.util.TreeSet;
 
-import static org.exist.xquery.Predicate.ExecutionMode.*;
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
+import static org.exist.xquery.Predicate.ExecutionMode.*;
 
 /**
  * Handles predicate expressions.
@@ -58,7 +47,7 @@ public class Predicate extends PathExpr {
         POSITIONAL
     }
 
-    private CachedResult cached = null;
+    private CachedResult cached;
 
     private ExecutionMode executionMode = UNKNOWN;
 
@@ -329,7 +318,7 @@ public class Predicate extends PathExpr {
                     //XXX: else error or nothing?
                 }
                 for (final NumericValue pos : positions) {
-                    final int position = (reverseAxis ? contextSequence.getItemCount() - pos.getInt() : pos.getInt() - 1);
+                    final int position = reverseAxis ? contextSequence.getItemCount() - pos.getInt() : pos.getInt() - 1;
                     // TODO : move this test above ?
                     if (position <= contextSequence.getItemCount()) {
                         result.add(contextSequence.itemAt(position));
@@ -338,7 +327,7 @@ public class Predicate extends PathExpr {
             } else {
                 final Set<NumericValue> positions = new TreeSet<>();
                 for (final SequenceIterator i = contextSequence.iterate(); i.hasNext(); p++) {
-                    context.setContextSequencePosition((reverseAxis ? contextSequence.getItemCount() - p - 1 : p), contextSequence);
+                    context.setContextSequencePosition(reverseAxis ? contextSequence.getItemCount() - p - 1 : p, contextSequence);
                     final Item item = i.nextItem();
                     final Sequence innerSeq = inner.eval(contextSequence, item);
                     if (innerSeq.hasOne()
@@ -354,7 +343,7 @@ public class Predicate extends PathExpr {
                     }
                 }
                 for (final NumericValue pos : positions) {
-                    final int position = (reverseAxis ? contextSequence.getItemCount() - pos.getInt() : pos.getInt() - 1);
+                    final int position = reverseAxis ? contextSequence.getItemCount() - pos.getInt() : pos.getInt() - 1;
                     // TODO : move this test above ?
                     if (position <= contextSequence.getItemCount()) {
                         result.add(contextSequence.itemAt(position));
@@ -533,8 +522,8 @@ public class Predicate extends PathExpr {
                                 final NumericValue v = (NumericValue) j.nextItem();
                                 // Non integers return... nothing, not even an error !
                                 if (!v.hasFractionalPart() && !v.isZero()) {
-                                    final int pos = (reverseAxis ?
-                                            temp.getItemCount() - v.getInt() : v.getInt() - 1);
+                                    final int pos = reverseAxis ?
+                                            temp.getItemCount() - v.getInt() : v.getInt() - 1;
                                     // Other positions are ignored
                                     if (pos >= 0 && pos < temp.getItemCount()) {
                                         final NodeProxy t = (NodeProxy) temp.itemAt(pos);
@@ -609,7 +598,7 @@ public class Predicate extends PathExpr {
     }
 
     private static int calculatePos(final boolean reverseAxis, final Sequence contextSequence, final NumericValue v) throws XPathException {
-        return (reverseAxis ? contextSequence.getItemCount() - v.getInt() : v.getInt() - 1);
+        return reverseAxis ? contextSequence.getItemCount() - v.getInt() : v.getInt() - 1;
     }
 
     private static boolean withinBounds(final Sequence contextSequence, final int pos) {

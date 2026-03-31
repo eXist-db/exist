@@ -21,18 +21,9 @@
  */
 package org.exist.client.security;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import javax.annotation.Nullable;
-import javax.swing.JOptionPane;
-import javax.swing.table.DefaultTableModel;
-
 import org.exist.client.*;
-import org.exist.client.tristatecheckbox.TristateCheckboxTableCellEditor;
 import org.exist.client.tristatecheckbox.TristateCheckBoxTableCellRenderer;
+import org.exist.client.tristatecheckbox.TristateCheckboxTableCellEditor;
 import org.exist.client.tristatecheckbox.TristateState;
 import org.exist.security.ACLPermission;
 import org.exist.security.Permission;
@@ -44,6 +35,15 @@ import org.exist.xmldb.UserManagementService;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
+
+import javax.annotation.Nullable;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 import static org.exist.client.ClientFrame.MULTIPLE_INDICATOR;
@@ -60,7 +60,7 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
     private final String internetMediaType;
     private final String created;
     private final String lastModified;
-    private String size;
+    private final String size;
     private final String messageDigestType;
     private final String messageDigestValue;
     private final String owner;
@@ -69,10 +69,10 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
     @Nullable private final SimpleACLPermissionAider acl;
     private final List<ResourceDescriptor> applyTo;
     
-    private BasicPermissionsTableModel basicPermissionsTableModel = null;
-    private DefaultTableModel aclTableModel = null;
+    private BasicPermissionsTableModel basicPermissionsTableModel;
+    private DefaultTableModel aclTableModel;
 
-    private final static String ERROR_TITLE = "Edit Properties Error";
+    private static final String ERROR_TITLE = "Edit Properties Error";
 
     public EditPropertiesDialog(final UserManagementService userManagementService, final String currentUser, final Collection parent, final String uri, final String internetMediaType, final String created, final String lastModified, final String size, final String messageDigestType, final String messageDigestValue, final String owner, final String group, final ModeDisplay mode, @Nullable final SimpleACLPermissionAider acl, final List<ResourceDescriptor> applyTo) {
         this.userManagementService = userManagementService;

@@ -30,14 +30,8 @@ import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.value.Sequence;
 
 import javax.annotation.Nullable;
-
 // static imports for Dependency.* intentionally removed: no longer used
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Query rewriter for the range index. May replace path expressions like a[b = "c"] or a[b = "c"][d = "e"]
@@ -63,7 +57,7 @@ public class RangeQueryRewriter extends QueryRewriter {
         @Nullable final Predicate[] preds = locationStep.getPredicates();
         if (preds != null) {
             final Expression parentExpr = locationStep.getParentExpression();
-            if ((parentExpr instanceof RewritableExpression)) {
+            if (parentExpr instanceof RewritableExpression) {
                 // Step 1: replace all optimizable expressions within predicates with
                 // calls to the range functions. If those functions are used or not will
                 // be decided at run time.

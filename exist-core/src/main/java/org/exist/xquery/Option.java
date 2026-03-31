@@ -21,14 +21,13 @@
  */
 package org.exist.xquery;
 
-import java.util.StringTokenizer;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.exist.Namespaces;
 import org.exist.dom.QName;
 
 import javax.annotation.Nullable;
+import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Represents an XQuery option declared via "declare option".
@@ -37,20 +36,20 @@ import javax.annotation.Nullable;
  */
 public class Option {
 
-	public final static QName TIMEOUT_QNAME = new QName("timeout", Namespaces.EXIST_NS);
-	public final static QName OUTPUT_SIZE_QNAME = new QName("output-size-limit", Namespaces.EXIST_NS);
-	public final static QName SERIALIZE_QNAME = new QName("serialize", Namespaces.EXIST_NS);
-    public final static QName PROFILE_QNAME = new QName("profiling", Namespaces.EXIST_NS);
-    public final static QName OPTIMIZE_QNAME = new QName("optimize", Namespaces.EXIST_NS);
-    public final static QName OPTIMIZE_IMPLICIT_TIMEZONE = new QName("implicit-timezone", Namespaces.EXIST_NS);
-    public final static QName CURRENT_DATETIME = new QName("current-dateTime", Namespaces.EXIST_NS);
+	public static final QName TIMEOUT_QNAME = new QName("timeout", Namespaces.EXIST_NS);
+	public static final QName OUTPUT_SIZE_QNAME = new QName("output-size-limit", Namespaces.EXIST_NS);
+	public static final QName SERIALIZE_QNAME = new QName("serialize", Namespaces.EXIST_NS);
+    public static final QName PROFILE_QNAME = new QName("profiling", Namespaces.EXIST_NS);
+    public static final QName OPTIMIZE_QNAME = new QName("optimize", Namespaces.EXIST_NS);
+    public static final QName OPTIMIZE_IMPLICIT_TIMEZONE = new QName("implicit-timezone", Namespaces.EXIST_NS);
+    public static final QName CURRENT_DATETIME = new QName("current-dateTime", Namespaces.EXIST_NS);
 	
-    private final static String[] EMPTY = new String[0];
+    private static final String[] EMPTY = new String[0];
 
-    private final static String paramPattern =
+    private static final String paramPattern =
 		"\\s*([\\w\\.-]+)\\s*=\\s*('[^']*'|\"[^\"]*\"|[^\"\'\\s][^\\s]*)";
 	
-	private final static Pattern pattern = Pattern.compile(paramPattern);
+	private static final Pattern pattern = Pattern.compile(paramPattern);
     
 	private final QName qname;
 	private final String contents;
@@ -105,8 +104,7 @@ public class Option {
 
 	@Override
 	public boolean equals(final Object other) {
-		return other != null && 
-            other instanceof Option o &&
+		return other instanceof Option o &&
             qname.equals(o.qname);
 	}
 }

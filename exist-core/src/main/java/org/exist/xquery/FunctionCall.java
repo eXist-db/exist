@@ -21,23 +21,23 @@
  */
 package org.exist.xquery;
 
-import java.util.Arrays;
-import java.util.List;
-
 import org.exist.Namespaces;
-import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.QName;
+import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.VirtualNodeSet;
 import org.exist.xquery.util.Error;
 import org.exist.xquery.value.*;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
- * Represents a call to a user-defined function 
+ * Represents a call to a user-defined function
  * {@link org.exist.xquery.UserDefinedFunction}.
- * 
+ *
  * FunctionCall wraps around a user-defined function. It makes sure that all function parameters
- * are checked against the signature of the function. 
- * 
+ * are checked against the signature of the function.
+ *
  * @author wolf
  */
 public class FunctionCall extends Function {
@@ -49,12 +49,12 @@ public class FunctionCall extends Function {
 
 
     // the name of the function. Used for forward references.
-    protected QName name = null;
-    protected List<Expression> arguments = null;
-	
-    private boolean recursive = false;
+    protected QName name;
+    protected List<Expression> arguments;
 
-    protected VariableReference varDeps[];
+    private boolean recursive;
+
+    protected VariableReference[] varDeps;
 
     public FunctionCall(final XQueryContext context, final QName name, final List<Expression> arguments) {
         super(context, signatureForForwardReference(name, arguments));
@@ -72,12 +72,12 @@ public class FunctionCall extends Function {
         final FunctionReturnSequenceType functionReturnSequenceType = new FunctionParameterSequenceType("Return type is unknown for a forward-reference until it is evaluated");
         return new FunctionSignature(DEFERRED_FORWARD_REFERENCE_NAME, functionSignatureArgs, functionReturnSequenceType);
     }
-	
+
     public FunctionCall(final XQueryContext context, final UserDefinedFunction functionDef) {
         super(context, functionDef.getSignature());
         setFunction(functionDef);
     }
-    
+
     public FunctionCall(final FunctionCall other) {
         super(other.getContext(), other.getSignature());
         this.name = other.name;
@@ -92,16 +92,16 @@ public class FunctionCall extends Function {
         this.expression = this.functionDef;
         this.functionDef.setCaller(this);
         final SequenceType returnType = this.functionDef.getSignature().getReturnType();
-        
+
         // add return type checks
         if(returnType.getCardinality() != Cardinality.ZERO_OR_MORE) {
                 expression = new DynamicCardinalityCheck(context, returnType.getCardinality(), expression, new Error(Error.FUNC_RETURN_CARDINALITY));
         }
-        
+
         if(Type.subTypeOf(returnType.getPrimaryType(), Type.ANY_ATOMIC_TYPE)) {
                 expression = new Atomize(context, expression);
         }
-        
+
         if(Type.subTypeOfUnion(returnType.getPrimaryType(), Type.NUMERIC)) {
                 expression = new UntypedValueCheck(context, returnType.getPrimaryType(), expression, new Error(Error.FUNC_RETURN_TYPE));
         } else if(returnType.getPrimaryType() != Type.ITEM) {
@@ -112,7 +112,7 @@ public class FunctionCall extends Function {
     public UserDefinedFunction getFunction() {
         return functionDef;
     }
-        
+
 	@Override
 	public void analyze(final AnalyzeContextInfo contextInfo) throws XPathException {
 		//updateFunction();
@@ -143,12 +143,12 @@ public class FunctionCall extends Function {
             }
         }
     }
-	
+
     /**
      * Called by {@link XQueryContext} to resolve a call to a function that has not
      * yet been declared. XQueryContext remembers all calls to undeclared functions
      * and tries to resolve them after parsing has completed.
-     * 
+     *
      * @param functionDef the function definition to resolve
      * @throws XPathException if an error occurs resolving the forward reference
      */
@@ -157,27 +157,27 @@ public class FunctionCall extends Function {
         setArguments(arguments);
         arguments = null;
         name = null;
-    } 
-	
+    }
+
     @Override
     public int getArgumentCount() {
         if(arguments == null) {
             return super.getArgumentCount();
         }
-        
+
         return arguments.size();
     }
-	
+
     public QName getQName() {
         return name;
     }
-	
-    /** 
+
+    /**
      * Evaluates all arguments, then forwards them to the user-defined function.
-     * 
+     *
      * The return value of the user-defined function will be checked against the
      * provided function signature.
-     * 
+     *
      * @see org.exist.xquery.Expression#eval(Sequence, Item)
      */
     @Override
@@ -203,14 +203,14 @@ public class FunctionCall extends Function {
                 throw e;
             }
         }
-        
+
         final Sequence result = evalFunction(contextSequence, contextItem, seq, contextDocs);
         try {
             //Don't check deferred calls : it would result in a stack overflow
             //TODO : find a solution or... is it already here ?
             //Don't test on empty sequences since they can have several types
             //TODO : add a prior cardinality check on wether an empty result is allowed or not
-            //TODO : should we introduce a deffered type check on VirtualNodeSet 
+            //TODO : should we introduce a deffered type check on VirtualNodeSet
             // and trigger it when the nodeSet is realized ?
             if(!(result instanceof DeferredFunctionCall) && !(result instanceof VirtualNodeSet) && !result.isEmpty()) {
                 getSignature().getReturnType().checkType(result.getItemType());
@@ -219,7 +219,7 @@ public class FunctionCall extends Function {
             throw new XPathException(this, ErrorCodes.XPTY0004, "Return type of function '" + getSignature().getName() + "'. " + e.getMessage(), Sequence.EMPTY_SEQUENCE, e);
         }
 
-	
+
         //Annotation Triggers are bad design, disabled as breaks RESTXQ - Adam.
         /*for (Annotation ann : functionDef.getSignature().getAnnotations()) {
             AnnotationTrigger trigger = ann.getTrigger();
@@ -251,25 +251,25 @@ public class FunctionCall extends Function {
     public Sequence evalFunction(Sequence contextSequence, Item contextItem, Sequence[] seq, DocumentSet[] contextDocs) throws XPathException {
         context.proceed(this);
         if(context.isProfilingEnabled()) {
-            context.getProfiler().start(this);     
+            context.getProfiler().start(this);
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
-            
+
             if(contextSequence != null) {
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
             }
-            
+
             if(contextItem != null) {
                 context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
             }
         }
 
         functionDef.setArguments(seq, contextDocs);
-        
+
         if(isRecursive()) {
             //LOG.warn("Tail recursive function: " + functionDef.getSignature().toString());
             return new DeferredFunctionCallImpl(this, contextSequence, contextItem, seq, contextDocs);
         } else {
-            
+
             //XXX: should we have it? org.exist.xquery.UserDefinedFunction do a call -shabanovd
             context.stackEnter(this);
 
@@ -285,7 +285,7 @@ public class FunctionCall extends Function {
 
             Sequence returnSeq = null;
             try {
-                
+
                 returnSeq = expression.eval(contextSequence, contextItem);
                 while(returnSeq instanceof DeferredFunctionCall dfc &&
                     functionDef.getSignature().equals(dfc.getSignature())) {
@@ -294,23 +294,23 @@ public class FunctionCall extends Function {
                     }
                     returnSeq = ((DeferredFunctionCall) returnSeq).execute();
                 }
-                
+
                 if(context.getProfiler().traceFunctions()) {
                     context.getProfiler().traceFunctionEnd(this, start < 0 ? 0 : System.currentTimeMillis() - start);
                 }
-                
+
                 if(context.isProfilingEnabled()) {
                     context.getProfiler().end(this, "", returnSeq);
                 }
-                
+
                 return returnSeq;
-    		
+
             } catch(final XPathException e) {
                 // append location of the function call to the exception message:
                 if(e.getLine() <= 0) {
                     e.setLocation(expression.getLine(), expression.getColumn());
                 }
-    			
+
                 e.addFunctionCall(functionDef, this);
                 throw e;
             } finally {
@@ -348,7 +348,7 @@ public class FunctionCall extends Function {
         visitor.visitFunctionCall(this);
     }
 
-    private static class DeferredFunctionCallImpl extends DeferredFunctionCall {
+    private static final class DeferredFunctionCallImpl extends DeferredFunctionCall {
 
         private final FunctionCall call;
 
@@ -400,7 +400,7 @@ public class FunctionCall extends Function {
                 expression = new DynamicTypeCheck(context, returnType.getPrimaryType(), expression);
             }
         }
-        
+
         @Override
         protected Sequence execute() throws XPathException {
             final XQueryContext context = call.context;
@@ -411,13 +411,13 @@ public class FunctionCall extends Function {
             final LocalVariable mark = context.markLocalVariables(true);
             Sequence returnSeq = null;
             try {
-                
+
                 /*
                   Ensure that the arguments are set for a deferred function
                   as reset may alreay have been called before our deferred execution
                  */
                 functionDef.setArguments(seq, contextDocs);
-                
+
                 returnSeq = expression.eval(contextSequence, contextItem);
                 LOG.trace("Returning from execute()");
                 return returnSeq;
@@ -438,19 +438,20 @@ public class FunctionCall extends Function {
 
         @Override
         public boolean containsReference(final Item item) {
-            return this == item;
-        }
+                    return this.equals(item);
+                }
+
 
         @Override
         public boolean contains(final Item item) {
             return this.equals(item);
         }
     }
-    
+
     protected void setRecursive(boolean recursive) {
         this.recursive = recursive;
     }
-    
+
     public boolean isRecursive(){
     	return recursive;
     }

@@ -39,8 +39,8 @@ import java.io.InputStream;
 public class ByteBufferInputStream extends InputStream {
 
     private final ByteBufferAccessor bufAccessor;
-    private boolean closed = false;
-    private final static int END_OF_STREAM = -1;
+    private boolean closed;
+    private static final int END_OF_STREAM = -1;
 
     public ByteBufferInputStream(final ByteBufferAccessor bufAccessor) {
         this.bufAccessor = bufAccessor;

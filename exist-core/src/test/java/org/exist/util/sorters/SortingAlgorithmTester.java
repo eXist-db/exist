@@ -22,10 +22,10 @@
 
 package org.exist.util.sorters;
 
+import org.exist.dom.persistent.NodeProxy;
+
 import java.util.Comparator;
 import java.util.List;
-
-import org.exist.dom.persistent.NodeProxy;
 
 /**
  * Interface to some sorting algorithm.
@@ -44,7 +44,7 @@ public abstract class SortingAlgorithmTester {
 	abstract <C extends Comparable<? super C>> void invokeSort(C[] a, int lo, int hi)
 		throws Exception;
 	
-	abstract <C> void invokeSort(C a[], Comparator<C> c, int lo, int hi)
+	abstract <C> void invokeSort(C[] a, Comparator<C> c, int lo, int hi)
 		throws Exception;
 
 	abstract <C extends Comparable<? super C>> void sort(C[] a, int lo, int hi)
@@ -65,7 +65,7 @@ public abstract class SortingAlgorithmTester {
 
 	abstract void sortByNodeId(NodeProxy[] a, int lo, int hi) throws Exception;
 
-	abstract void sort(long[] a, int lo, int hi, Object b[]) throws Exception;
+	abstract void sort(long[] a, int lo, int hi, Object[] b) throws Exception;
 
 	public static SortingAlgorithmTester[] allSorters() {
 		return new SortingAlgorithmTester[] {

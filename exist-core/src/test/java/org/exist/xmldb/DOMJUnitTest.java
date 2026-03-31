@@ -41,7 +41,7 @@ import static org.junit.Assert.fail;
  * @author Pierrick Brihaye</a>
  */
 public class DOMJUnitTest extends RemoteDBTest {
-	private static String name = "test.xml";
+	private static final String name = "test.xml";
 	private Collection rootColl;
 	private Database database;
 

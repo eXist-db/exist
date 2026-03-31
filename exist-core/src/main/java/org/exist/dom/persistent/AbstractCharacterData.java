@@ -32,7 +32,7 @@ import org.w3c.dom.Node;
 
 public abstract class AbstractCharacterData extends StoredNode implements CharacterData {
 
-    protected XMLString cdata = null;
+    protected XMLString cdata;
 
     protected AbstractCharacterData(final short nodeType) {
         this(null, nodeType);

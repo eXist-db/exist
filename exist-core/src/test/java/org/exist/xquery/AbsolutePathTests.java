@@ -33,10 +33,7 @@ import javax.xml.transform.Source;
 
 import static org.exist.test.DiffMatcher.docSource;
 import static org.exist.test.DiffMatcher.elemSource;
-import static org.exist.test.XQueryAssertions.assertThatXQResult;
-import static org.exist.test.XQueryAssertions.assertXQStaticError;
-import static org.exist.test.XQueryAssertions.assertXQResultIdentical;
-import static org.exist.test.XQueryAssertions.assertXQResultSimilar;
+import static org.exist.test.XQueryAssertions.*;
 import static org.hamcrest.Matchers.equalTo;
 
 /**

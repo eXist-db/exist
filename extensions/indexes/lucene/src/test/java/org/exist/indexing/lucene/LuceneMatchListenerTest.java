@@ -30,10 +30,10 @@ import org.exist.EXistException;
 import org.exist.Namespaces;
 import org.exist.TestUtils;
 import org.exist.collections.Collection;
-import org.exist.dom.persistent.NodeProxy;
 import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.CollectionConfigurationManager;
 import org.exist.collections.triggers.TriggerException;
+import org.exist.dom.persistent.NodeProxy;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -52,13 +52,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
-import org.junit.AfterClass;
-
-import static org.junit.Assert.*;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.*;
 import org.xml.sax.SAXException;
 
 import javax.xml.transform.OutputKeys;
@@ -68,12 +62,14 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 
+import static org.junit.Assert.*;
+
 public class LuceneMatchListenerTest {
 
     @ClassRule
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
-    private static String XML =
+    private static final String XML =
             "<root>" +
             "   <para>some paragraph with <hi>mixed</hi> content.</para>" +
             "   <para>another paragraph with <note><hi>nested</hi> inner</note> elements.</para>" +
@@ -81,14 +77,14 @@ public class LuceneMatchListenerTest {
             "   <para>double match double match</para>" +
             "</root>";
 
-    private static String XML1 =
+    private static final String XML1 =
             "<article>" +
             "   <head>The <b>title</b>of it</head>" +
             "   <p>A simple<note>sic</note> paragraph with <hi>highlighted</hi> text <note>and a note</note> to be ignored.</p>" +
             "   <p>Paragraphs with <s>mix</s><s>ed</s> content are <s>danger</s>ous.</p>" +
             "</article>";
 
-    private static String XML2 =
+    private static final String XML2 =
             """
             <p xmlns="http://www.tei-c.org/ns/1.0">
                 <s type="combo"><w lemma="из">из</w>
@@ -114,14 +110,14 @@ public class LuceneMatchListenerTest {
                     <w>љуте</w>.</s>
             </p>""";
 
-    private static String CONF1 =
+    private static final String CONF1 =
         "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
         "   <index>" +
         "       <text qname=\"para\"/>" +
         "   </index>" +
         "</collection>";
 
-    private static String CONF2 =
+    private static final String CONF2 =
         "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
         "   <index>" +
         "       <text qname=\"para\"/>" +
@@ -129,14 +125,14 @@ public class LuceneMatchListenerTest {
         "   </index>" +
         "</collection>";
 
-    private static String CONF3 =
+    private static final String CONF3 =
         "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
         "   <index>" +
         "       <text qname=\"hi\"/>" +
         "   </index>" +
         "</collection>";
 
-    private static String CONF4 =
+    private static final String CONF4 =
         "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
         "   <index xmlns:tei=\"http://www.tei-c.org/ns/1.0\">" +
         "       <lucene>" +
@@ -150,7 +146,7 @@ public class LuceneMatchListenerTest {
         "</collection>";
 
 
-    private static String CONF5 =
+    private static final String CONF5 =
             """
             <collection xmlns="http://exist-db.org/collection-config/1.0">
                 <index xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema">\
@@ -162,8 +158,8 @@ public class LuceneMatchListenerTest {
                 </index>\
             </collection>""";
 
-    private static String MATCH_START = "<exist:match xmlns:exist=\"http://exist.sourceforge.net/NS/exist\">";
-    private static String MATCH_END = "</exist:match>";
+    private static final String MATCH_START = "<exist:match xmlns:exist=\"http://exist.sourceforge.net/NS/exist\">";
+    private static final String MATCH_END = "</exist:match>";
 
     /**
      * Test match highlighting for index configured by QName, e.g.
@@ -355,7 +351,9 @@ public class LuceneMatchListenerTest {
             for (int i = 0; i < perItem.getItemCount(); i++) {
                 int cnt = perItem.itemAt(i).toJavaObject(Integer.class).intValue();
                 totalExpand += cnt;
-                if (i > 0) sb.append(",");
+                if (i > 0) {
+                    sb.append(",");
+                }
                 sb.append(cnt);
             }
 

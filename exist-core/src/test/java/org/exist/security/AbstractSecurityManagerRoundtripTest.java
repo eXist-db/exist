@@ -21,19 +21,20 @@
  */
 package org.exist.security;
 
+import org.exist.EXistException;
+import org.exist.security.internal.aider.GroupAider;
+import org.exist.security.internal.aider.UserAider;
+import org.exist.util.DatabaseConfigurationException;
+import org.exist.xmldb.UserManagementService;
+import org.junit.Test;
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.XMLDBException;
+
 import java.io.IOException;
 import java.util.List;
 
-import org.exist.EXistException;
-import org.exist.util.DatabaseConfigurationException;
-import org.exist.xmldb.UserManagementService;
-import org.xmldb.api.base.Collection;
-import org.exist.security.internal.aider.GroupAider;
-import org.exist.security.internal.aider.UserAider;
-import org.junit.Test;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertEquals;
-import org.xmldb.api.base.XMLDBException;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Ensures that security manager data, accounts, groups (and associations)
@@ -81,7 +82,7 @@ public abstract class AbstractSecurityManagerRoundtripTest {
             assertNotNull(defaultGroup);
             assertEquals(group1Name, defaultGroup.getName());
 
-            String groups[] = user.getGroups();
+            String[] groups = user.getGroups();
             assertNotNull(groups);
             assertEquals(2, groups.length);
             assertEquals(group1Name, groups[0]);
@@ -139,7 +140,7 @@ public abstract class AbstractSecurityManagerRoundtripTest {
             assertNotNull(defaultGroup);
             assertEquals(SecurityManager.DBA_GROUP, defaultGroup.getName());
 
-            String groups[] = user.getGroups();
+            String[] groups = user.getGroups();
             assertNotNull(groups);
             assertEquals(3, groups.length);
             assertEquals(SecurityManager.DBA_GROUP, groups[0]);
@@ -198,7 +199,7 @@ public abstract class AbstractSecurityManagerRoundtripTest {
             assertNotNull(defaultGroup);
             assertEquals(group1Name, defaultGroup.getName());
 
-            String groups[] = user.getGroups();
+            String[] groups = user.getGroups();
             assertNotNull(groups);
             assertEquals(2, groups.length);
             assertEquals(group1Name, groups[0]);

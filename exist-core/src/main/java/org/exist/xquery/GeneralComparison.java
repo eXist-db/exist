@@ -24,12 +24,12 @@ package org.exist.xquery;
 import com.ibm.icu.text.Collator;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
+import org.exist.dom.QName;
 import org.exist.dom.persistent.ContextItem;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.NewArrayNodeSet;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.NodeSet;
-import org.exist.dom.QName;
 import org.exist.dom.persistent.VirtualNodeSet;
 import org.exist.storage.DBBroker;
 import org.exist.storage.ElementValue;
@@ -40,13 +40,7 @@ import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.Constants.StringTruncationOperator;
 import org.exist.xquery.pragmas.Optimize;
 import org.exist.xquery.util.ExpressionDumper;
-import org.exist.xquery.value.AtomicValue;
-import org.exist.xquery.value.BooleanValue;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 import java.util.Iterator;
 import java.util.List;
@@ -74,30 +68,30 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
     protected StringTruncationOperator          truncation            = StringTruncationOperator.NONE;
 
     /** The class might cache the entire results of a previous execution. */
-    protected CachedResult cached                = null;
+    protected CachedResult cached;
 
     /** Extra argument (to standard functions starts-with/contains etc.) to indicate the collation to be used for string comparisons. */
-    protected Object       collationArg          = null;
+    protected Object       collationArg;
 
     /** Set to true if this expression is called within the where clause of a FLWOR expression. */
-    protected boolean      inWhereClause         = false;
+    protected boolean      inWhereClause;
 
-    protected boolean      invalidNodeEvaluation = false;
+    protected boolean      invalidNodeEvaluation;
 
     protected int          rightOpDeps;
 
-    private boolean        hasUsedIndex          = false;
+    private boolean        hasUsedIndex;
 
     @SuppressWarnings( "unused" )
     private int            actualReturnType = Type.ITEM;
 
-    private LocationStep   contextStep      = null;
-    private QName          contextQName     = null;
-    protected boolean      optimizeSelf     = false;
-    protected boolean      optimizeChild    = false;
+    private LocationStep   contextStep;
+    private QName          contextQName;
+    protected boolean      optimizeSelf;
+    protected boolean      optimizeChild;
 
     private int            axis             = Constants.UNKNOWN_AXIS;
-    private NodeSet        preselectResult  = null;
+    private NodeSet        preselectResult;
 
     private IndexFlags     idxflags         = new IndexFlags();
 
@@ -252,19 +246,19 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 
     public boolean optimizeOnSelf()
     {
-        return( optimizeSelf );
+        return optimizeSelf;
     }
 
 
     public boolean optimizeOnChild()
     {
-        return( optimizeChild );
+        return optimizeChild;
     }
 
 
     public int getOptimizeAxis()
     {
-        return( axis );
+        return axis;
     }
 
 
@@ -274,11 +268,11 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
     public int returnsType()
     {
         if( inPredicate && ( !Dependency.dependsOn( this, Dependency.CONTEXT_ITEM ) ) ) {
-            return( getLeft().returnsType() );
+            return getLeft().returnsType();
         }
 
         // In all other cases, we return boolean
-        return( Type.BOOLEAN );
+        return Type.BOOLEAN;
     }
 
 
@@ -296,16 +290,16 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
         if( Type.subTypeOf( left.returnsType(), Type.NODE ) &&
                 //  and does not depend on the context item
                 !Dependency.dependsOn( left, Dependency.CONTEXT_ITEM ) && ( !inWhereClause || !Dependency.dependsOn( left, Dependency.CONTEXT_VARS ) ) ) {
-            return( deps + Dependency.CONTEXT_SET );
+            return deps + Dependency.CONTEXT_SET;
         } else {
-            return ( deps + Dependency.CONTEXT_SET + Dependency.CONTEXT_ITEM );
+            return deps + Dependency.CONTEXT_SET + Dependency.CONTEXT_ITEM;
         }
     }
 
 
     public Comparison getRelation()
     {
-        return( this.relation );
+        return this.relation;
     }
 
     public StringTruncationOperator getTruncation() {
@@ -372,7 +366,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 
                 NodeSet  temp;
                 final NodeSet  contextSet = useContext ? contextSequence.toNodeSet() : null;
-                final Collator collator   = ( ( collationArg != null ) ? getCollator( contextSequence ) : null );
+                final Collator collator   = collationArg != null ? getCollator( contextSequence ) : null;
 
                 if( truncation == StringTruncationOperator.NONE ) {
                     temp         = context.getBroker().getValueIndex().find(context.getWatchDog(), relation, contextSequence.getDocumentSet(), contextSet, NodeSet.DESCENDANT, contextQName, indexable);
@@ -407,7 +401,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
             context.getProfiler().traceIndexUsage( context, PerformanceStats.RANGE_IDX_TYPE, this, PerformanceStats.IndexOptimizationLevel.OPTIMIZED, System.currentTimeMillis() - start );
         }
 
-        return( ( preselectResult == null ) ? NodeSet.EMPTY_SET : preselectResult );
+        return preselectResult == null ? NodeSet.EMPTY_SET : preselectResult;
     }
 
 
@@ -462,7 +456,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                             contextSequence = contextItem.toSequence();
                         }
 
-                        if( ( !Dependency.dependsOn( rightOpDeps, Dependency.CONTEXT_ITEM ) ) ) {
+                        if( !Dependency.dependsOn( rightOpDeps, Dependency.CONTEXT_ITEM ) ) {
                             result = quickNodeSetCompare( contextSequence );
                         } else {
                             final NodeSet nodes = ( NodeSet )getLeft().eval(contextSequence, null);
@@ -494,7 +488,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 
         actualReturnType = result.getItemType();
 
-        return( result );
+        return result;
     }
 
 
@@ -514,7 +508,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
             context.getProfiler().message( this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION CHOICE", "genericCompare" );
         }
         final Sequence ls = getLeft().eval( contextSequence, contextItem );
-        return( genericCompare( ls, contextSequence, contextItem ) );
+        return genericCompare( ls, contextSequence, contextItem );
     }
 
 
@@ -584,7 +578,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
         if( context.getProfiler().traceFunctions() ) {
             context.getProfiler().traceIndexUsage( context, PerformanceStats.RANGE_IDX_TYPE, this, PerformanceStats.IndexOptimizationLevel.NONE, System.currentTimeMillis() - start );
         }
-        return( result );
+        return result;
     }
 
 
@@ -653,7 +647,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
         if( context.getProfiler().traceFunctions() ) {
             context.getProfiler().traceIndexUsage( context, PerformanceStats.RANGE_IDX_TYPE, this, PerformanceStats.IndexOptimizationLevel.NONE, System.currentTimeMillis() - start );
         }
-        return( result );
+        return result;
     }
 
 
@@ -686,7 +680,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
         final Sequence leftSeq = getLeft().eval(contextSequence, null);
 
         if( !leftSeq.isPersistentSet() ) {
-            return( genericCompare( leftSeq, contextSequence, null ) );
+            return genericCompare( leftSeq, contextSequence, null );
         }
 
         final NodeSet nodes = leftSeq.isEmpty() ? NodeSet.EMPTY_SET : ( NodeSet )leftSeq;
@@ -696,7 +690,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 
             //Well, we might discuss this one ;-)
             hasUsedIndex = true;
-            return( Sequence.EMPTY_SEQUENCE );
+            return Sequence.EMPTY_SEQUENCE;
         }
 
         //get the Sequence on the right
@@ -707,7 +701,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 
             //Well, we might discuss this one ;-)
             hasUsedIndex = true;
-            return( Sequence.EMPTY_SEQUENCE );
+            return Sequence.EMPTY_SEQUENCE;
         }
 
         //get the type of a possible index
@@ -753,7 +747,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                     // else use range index defined on path by default
                 }
             } else {
-                return( nodeSetCompare( nodes, contextSequence ) );
+                return nodeSetCompare( nodes, contextSequence );
             }
 
             //Get the documents from the node set
@@ -798,7 +792,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                             LOG.trace("Cannot convert key: {} to required index type: {}", Type.getTypeName(key.getType()), Type.getTypeName(indexType));
                         }
 
-                        return( nodeSetCompare( nodes, contextSequence ) );
+                        return nodeSetCompare( nodes, contextSequence );
                     }
                 }
 
@@ -809,7 +803,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                         LOG.trace("Checking if range index can be used for key: {}", key.getStringValue());
                     }
 
-                    final Collator collator = ( ( collationArg != null ) ? getCollator( contextSequence ) : null );
+                    final Collator collator = collationArg != null ? getCollator( contextSequence ) : null;
 
                     if( Type.subTypeOf( key.getType(), indexType ) ) {
 
@@ -885,7 +879,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                             LOG.trace("Cannot use range index: key is of type: {}) whereas index is of type '{}", Type.getTypeName(key.getType()), Type.getTypeName(indexType));
                         }
 
-                        return( nodeSetCompare( nodes, contextSequence ) );
+                        return nodeSetCompare( nodes, contextSequence );
                     }
                 } else {
 
@@ -898,7 +892,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                         LOG.trace("Cannot use key which is of type '{}", key.getClass().getName());
                     }
 
-                    return( nodeSetCompare( nodes, contextSequence ) );
+                    return nodeSetCompare( nodes, contextSequence );
 
                 }
             }
@@ -906,7 +900,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
             if( context.getProfiler().traceFunctions() ) {
                 context.getProfiler().traceIndexUsage( context, PerformanceStats.RANGE_IDX_TYPE, this, PerformanceStats.IndexOptimizationLevel.BASIC, System.currentTimeMillis() - start );
             }
-            return( result );
+            return result;
         } else {
 
             if( LOG.isTraceEnabled() ) {
@@ -918,7 +912,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                 context.getProfiler().message( this, Profiler.OPTIMIZATION_FLAGS, "OPTIMIZATION FALLBACK", "falling back to nodeSetCompare (no index available)" );
             }
 
-            return( nodeSetCompare( nodes, contextSequence ) );
+            return nodeSetCompare( nodes, contextSequence );
         }
     }
 
@@ -959,7 +953,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
             }
         }
 
-        return( matchType );
+        return matchType;
     }
 
 
@@ -968,7 +962,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
         return switch (truncation) {
             case LEFT -> (new StringBuilder().append(expr).append('$'));
             case RIGHT -> (new StringBuilder().append('^').append(expr));
-            default -> (expr);
+            default -> expr;
         };
     }
 
@@ -1140,16 +1134,16 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
         if( Type.subTypeOf( lv.getType(), Type.STRING ) || ( lv.getType() == Type.ANY_ATOMIC_TYPE) ) {
 
             if(lv.getStringValue().isEmpty()) {
-                return( true );
+                return true;
             }
         }
-        return( false );
+        return false;
     }
 
 
     public boolean hasUsedIndex()
     {
-        return( hasUsedIndex );
+        return hasUsedIndex;
     }
 
 
@@ -1187,7 +1181,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
             result.append( ' ' ).append( relation.generalComparisonSymbol ).append( ' ' );
             result.append( getRight().toString() );
         }
-        return( result.toString() );
+        return result.toString();
     }
 
 
@@ -1241,7 +1235,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
     protected Collator getCollator( Sequence contextSequence ) throws XPathException
     {
         if( collationArg == null ) {
-            return( context.getDefaultCollator() );
+            return context.getDefaultCollator();
         }
 
         String collationURI;
@@ -1251,10 +1245,10 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
         } else if( collationArg instanceof StringValue value ) {
             collationURI = value.getStringValue();
         } else {
-            return( context.getDefaultCollator() );
+            return context.getDefaultCollator();
         }
 
-        return( context.getCollator( collationURI ) );
+        return context.getCollator( collationURI );
     }
 
 
@@ -1264,7 +1258,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
     }
 
 
-    public final static IndexFlags checkForQNameIndex( IndexFlags idxflags, XQueryContext context, Sequence contextSequence, QName contextQName )
+    public static IndexFlags checkForQNameIndex( IndexFlags idxflags, XQueryContext context, Sequence contextSequence, QName contextQName )
     {
         idxflags.reset( contextQName != null );
 
@@ -1292,7 +1286,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                 idxflags.hasIndexOnPaths = true;
             }
         }
-        return( idxflags );
+        return idxflags;
     }
 
 
@@ -1318,28 +1312,28 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
         visitor.visitGeneralComparison( this );
     }
 
-    public final static class IndexFlags
+    public static final class IndexFlags
     {
         public boolean indexOnQName     = true;
-        public boolean partialIndexOnQName = false;
-        public boolean hasIndexOnPaths  = false;
-        public boolean hasIndexOnQNames = false;
+        public boolean partialIndexOnQName;
+        public boolean hasIndexOnPaths;
+        public boolean hasIndexOnQNames;
 
         public boolean indexOnQName()
         {
-            return( indexOnQName );
+            return indexOnQName;
         }
 
 
         public boolean hasIndexOnPaths()
         {
-            return( hasIndexOnPaths );
+            return hasIndexOnPaths;
         }
 
 
         public boolean hasIndexOnQNames()
         {
-            return( hasIndexOnQNames );
+            return hasIndexOnQNames;
         }
 
 

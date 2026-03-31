@@ -21,9 +21,6 @@
  */
 package org.exist.xquery.functions.session;
 
-import java.util.Date;
-import java.util.Optional;
-
 import org.exist.dom.QName;
 import org.exist.http.servlets.SessionWrapper;
 import org.exist.xquery.*;
@@ -31,6 +28,9 @@ import org.exist.xquery.value.DateTimeValue;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
+
+import java.util.Date;
+import java.util.Optional;
 
 /**
  * Returns the time when this session was created, or
@@ -40,7 +40,7 @@ import org.exist.xquery.value.Type;
  */
 public class GetCreationTime extends SessionFunction {
 
-    public final static FunctionSignature signature =
+    public static final FunctionSignature signature =
             new FunctionSignature(
                     new QName("get-creation-time", SessionModule.NAMESPACE_URI, SessionModule.PREFIX),
                     "Returns the time when this session was created. If a session does not " +

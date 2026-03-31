@@ -21,17 +21,15 @@
  */
 package org.exist.util.io;
 
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
+import org.junit.Test;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.Random;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
-import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
-import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
  * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
@@ -40,7 +38,7 @@ public class ByteBufferInputStreamTest {
 
     @Test
     public void available() throws IOException {
-        final byte testData[] = "test data".getBytes();
+        final byte[] testData = "test data".getBytes();
         final ByteBuffer buf = ByteBuffer.wrap(testData);
 
         InputStream is = new ByteBufferInputStream(new TestableByteBufferAccessor(buf));
@@ -50,7 +48,7 @@ public class ByteBufferInputStreamTest {
 
     @Test
     public void availableIsZeroAfterClose() throws IOException {
-        final byte testData[] = "test data".getBytes();
+        final byte[] testData = "test data".getBytes();
         final ByteBuffer buf = ByteBuffer.wrap(testData);
 
         InputStream is = new ByteBufferInputStream(new TestableByteBufferAccessor(buf));
@@ -62,7 +60,7 @@ public class ByteBufferInputStreamTest {
 
     @Test
     public void availableAfterRead() throws IOException {
-        final byte testData[] = "test data".getBytes();
+        final byte[] testData = "test data".getBytes();
         final ByteBuffer buf = ByteBuffer.wrap(testData);
 
         InputStream is = new ByteBufferInputStream(new TestableByteBufferAccessor(buf));
@@ -76,7 +74,7 @@ public class ByteBufferInputStreamTest {
 
     @Test
     public void readByteByByteCorrectAndThenReturnMinus1AtEndOfStream() throws IOException {
-        final byte testData[] = "test data".getBytes();
+        final byte[] testData = "test data".getBytes();
         final ByteBuffer buf = ByteBuffer.wrap(testData);
 
         InputStream is = new ByteBufferInputStream(new TestableByteBufferAccessor(buf));
@@ -91,12 +89,12 @@ public class ByteBufferInputStreamTest {
 
     @Test
     public void readMultipleBytesCorrectAndThenReturnMinus1AtEndOfStream() throws IOException {
-        final byte testData[] = "test data".getBytes();
+        final byte[] testData = "test data".getBytes();
         final ByteBuffer buf = ByteBuffer.wrap(testData);
 
         InputStream is = new ByteBufferInputStream(new TestableByteBufferAccessor(buf));
 
-        byte readData[] = new byte[testData.length];
+        byte[] readData = new byte[testData.length];
         int read = is.read(readData);
 
         assertEquals(testData.length, read);
@@ -108,12 +106,12 @@ public class ByteBufferInputStreamTest {
 
     @Test
     public void readMultipleBytesPastAvailable() throws IOException {
-        final byte testData[] = "test data".getBytes();
+        final byte[] testData = "test data".getBytes();
         final ByteBuffer buf = ByteBuffer.wrap(testData);
 
         InputStream is = new ByteBufferInputStream(new TestableByteBufferAccessor(buf));
 
-        byte readData[] = new byte[testData.length + 2];
+        byte[] readData = new byte[testData.length + 2];
         int read = is.read(readData);
 
         assertEquals(testData.length, read);
@@ -125,12 +123,12 @@ public class ByteBufferInputStreamTest {
     
     @Test
     public void readMultipleBytesSpecificCorrectAndThenReturnMinus1AtEndOfStream() throws IOException {
-        final byte testData[] = "test data".getBytes();
+        final byte[] testData = "test data".getBytes();
         final ByteBuffer buf = ByteBuffer.wrap(testData);
 
         InputStream is = new ByteBufferInputStream(new TestableByteBufferAccessor(buf));
 
-        byte readData[] = new byte[testData.length];
+        byte[] readData = new byte[testData.length];
         is.read(readData, 0, testData.length);
 
         assertArrayEquals(testData, readData);
@@ -141,12 +139,12 @@ public class ByteBufferInputStreamTest {
 
     @Test
     public void readMultipleBytesSpecificPastAvailable() throws IOException {
-        final byte testData[] = "test data".getBytes();
+        final byte[] testData = "test data".getBytes();
         final ByteBuffer buf = ByteBuffer.wrap(testData);
 
         InputStream is = new ByteBufferInputStream(new TestableByteBufferAccessor(buf));
 
-        byte readData[] = new byte[testData.length + 2];
+        byte[] readData = new byte[testData.length + 2];
     	int read = is.read(readData, 0, readData.length);
 
     	assertEquals(testData.length, read);
@@ -158,7 +156,7 @@ public class ByteBufferInputStreamTest {
 
     @Test(expected=IOException.class)
     public void readSingleByteAfterCloseThrowsException() throws IOException {
-        final byte testData[] = "test data".getBytes();
+        final byte[] testData = "test data".getBytes();
         final ByteBuffer buf = ByteBuffer.wrap(testData);
 
         InputStream is = new ByteBufferInputStream(new TestableByteBufferAccessor(buf));
@@ -175,7 +173,7 @@ public class ByteBufferInputStreamTest {
 
     @Test(expected=IOException.class)
     public void readMultipleBytesAfterCloseThrowsException() throws IOException {
-        final byte testData[] = "test data".getBytes();
+        final byte[] testData = "test data".getBytes();
         final ByteBuffer buf = ByteBuffer.wrap(testData);
 
         InputStream is = new ByteBufferInputStream(new TestableByteBufferAccessor(buf));
@@ -186,14 +184,14 @@ public class ByteBufferInputStreamTest {
             fail(ioe.getMessage());
         }
 
-        byte readBuf[] = new byte[2];
+        byte[] readBuf = new byte[2];
         //should throw IOException
         is.read(readBuf);
     }
 
     @Test(expected=IOException.class)
     public void readMultipleBytesSpecificAfterCloseThrowsException() throws IOException {
-        final byte testData[] = "test data".getBytes();
+        final byte[] testData = "test data".getBytes();
         final ByteBuffer buf = ByteBuffer.wrap(testData);
 
         InputStream is = new ByteBufferInputStream(new TestableByteBufferAccessor(buf));
@@ -204,7 +202,7 @@ public class ByteBufferInputStreamTest {
             fail(ioe.getMessage());
         }
 
-        byte readBuf[] = new byte[2];
+        byte[] readBuf = new byte[2];
 
         //should throw IOException
         is.read(readBuf, 0, 2);
@@ -215,13 +213,13 @@ public class ByteBufferInputStreamTest {
 
         //generate 1KB of test data
         Random random = new Random();
-        byte testData[] = new byte[1024];
+        byte[] testData = new byte[1024];
         random.nextBytes(testData);
 
         final ByteBuffer buf = ByteBuffer.wrap(testData);
         try(final InputStream is = new ByteBufferInputStream(new TestableByteBufferAccessor(buf))) {
             final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream(testData.length);
-            byte readBuf[] = new byte[56];
+            byte[] readBuf = new byte[56];
             int read = -1;
 
             while ((read = is.read(readBuf)) > -1) {
@@ -238,14 +236,14 @@ public class ByteBufferInputStreamTest {
 
         //generate 1KB of test data
         Random random = new Random();
-        byte testData[] = new byte[1024];
+        byte[] testData = new byte[1024];
         random.nextBytes(testData);
 
         final ByteBuffer buf = ByteBuffer.wrap(testData);
         InputStream is = new ByteBufferInputStream(new TestableByteBufferAccessor(buf));
 
         try (final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream(testData.length)) {
-            byte readBuf[] = new byte[56];
+            byte[] readBuf = new byte[56];
             int read = -1;
 
             while ((read = is.read(readBuf, 0, readBuf.length)) > -1) {
@@ -260,7 +258,7 @@ public class ByteBufferInputStreamTest {
 
     @Test
     public void markReturnsTrue() {
-        final byte testData[] = "test data".getBytes();
+        final byte[] testData = "test data".getBytes();
         final ByteBuffer buf = ByteBuffer.wrap(testData);
         InputStream is = new ByteBufferInputStream(new TestableByteBufferAccessor(buf));
 
@@ -280,14 +278,14 @@ public class ByteBufferInputStreamTest {
         }
     }
 
-    private byte[] subArray(byte data[], int len) {
-        byte newData[] = new byte[len];
+    private byte[] subArray(byte[] data, int len) {
+        byte[] newData = new byte[len];
         System.arraycopy(data, 0, newData, 0, len);
         return newData;
     }
 
-     private byte[] subArray(byte data[], int offset, int len) {
-        byte newData[] = new byte[len];
+     private byte[] subArray(byte[] data, int offset, int len) {
+        byte[] newData = new byte[len];
         System.arraycopy(data, offset, newData, 0, len);
         return newData;
     }

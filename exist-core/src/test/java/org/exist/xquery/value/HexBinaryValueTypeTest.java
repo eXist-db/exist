@@ -23,6 +23,7 @@ package org.exist.xquery.value;
 
 import org.exist.xquery.XPathException;
 import org.junit.Test;
+
 import static org.junit.Assert.assertEquals;
 
 /**

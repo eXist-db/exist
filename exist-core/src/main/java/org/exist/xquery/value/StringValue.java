@@ -41,9 +41,9 @@ import static org.exist.dom.QName.Validity.VALID;
 
 public class StringValue extends AtomicValue {
 
-    public final static StringValue EMPTY_STRING = new StringValue("");
+    public static final StringValue EMPTY_STRING = new StringValue("");
 
-    private final static String langRegex =
+    private static final String langRegex =
             //http://www.w3.org/TR/xmlschema-2/#language
             //The lexical space of language is the set of all strings that conform
             //to the pattern [a-zA-Z]{1,8}(-[a-zA-Z0-9]{1,8})* .
@@ -56,7 +56,7 @@ public class StringValue extends AtomicValue {
     //+ "(-([a-z]|[A-Z])+)*/";        // Subcode"
 
 
-    private final static Pattern langPattern = Pattern.compile(langRegex);
+    private static final Pattern langPattern = Pattern.compile(langRegex);
 
     protected int type = Type.STRING;
 

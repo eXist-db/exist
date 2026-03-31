@@ -21,11 +21,11 @@
  */
 package org.exist.indexing.spatial;
 
-import java.util.Map;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Element;
+
+import java.util.Map;
 
 /**
  * @author <a href="mailto:pierrick.brihaye@free.fr">Pierrick Brihaye</a>
@@ -34,7 +34,7 @@ public class GMLIndexConfig {
 
     private static final Logger LOG = LogManager.getLogger(GMLIndexConfig.class);
 
-    private final static String FLUSH_AFTER = "flushAfter";	
+    private static final String FLUSH_AFTER = "flushAfter";	
     private int flushAfter = -1;
 
     public GMLIndexConfig(final Map<String, String> namespaces, final Element node) {

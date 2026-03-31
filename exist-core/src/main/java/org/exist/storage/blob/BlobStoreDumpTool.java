@@ -49,12 +49,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static java.nio.file.StandardOpenOption.READ;
-import static org.exist.storage.blob.BlobStoreImpl.BLOB_STORE_HEADER_LEN;
-import static org.exist.storage.blob.BlobStoreImpl.BLOB_STORE_MAGIC_NUMBER;
-import static org.exist.storage.blob.BlobStoreImpl.REFERENCE_COUNT_LEN;
-import static se.softhouse.jargo.Arguments.enumArgument;
-import static se.softhouse.jargo.Arguments.fileArgument;
-import static se.softhouse.jargo.Arguments.helpArgument;
+import static org.exist.storage.blob.BlobStoreImpl.*;
+import static se.softhouse.jargo.Arguments.*;
 
 /**
  * Simple tool for dumping the content
@@ -76,7 +72,7 @@ public class BlobStoreDumpTool {
             .transform(java.io.File::toPath)
             .build();
 
-    public static void main(final String args[]) throws IOException {
+    public static void main(final String[] args) throws IOException {
         try {
             CompatibleJavaVersionCheck.checkForCompatibleJavaVersion();
 

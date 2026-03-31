@@ -21,12 +21,12 @@
  */
 package org.exist.security;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.util.SyntaxException;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * All code in this class must be side-effect free
@@ -37,7 +37,7 @@ import org.exist.util.SyntaxException;
  */
 public abstract class AbstractUnixStylePermission implements Permission {
 
-    private final static Logger LOG = LogManager.getLogger(AbstractUnixStylePermission.class);
+    private static final Logger LOG = LogManager.getLogger(AbstractUnixStylePermission.class);
 
     static int ownerExecute = EXECUTE << 6;
 
@@ -49,7 +49,7 @@ public abstract class AbstractUnixStylePermission implements Permission {
     static int otherWrite = WRITE;
     static int otherExecute = EXECUTE;
 
-    static int noop = 0;
+    static int noop;
 
     /**
      * The symbolic mode is described by the following grammar:
@@ -212,11 +212,11 @@ public abstract class AbstractUnixStylePermission implements Permission {
         int shift = 0;
         int mode = getMode();
         for (final String s : existSymbolicMode.toLowerCase().split("[=,]")) {
-            if (s.equalsIgnoreCase(USER_STRING)) {
+            if (USER_STRING.equalsIgnoreCase(s)) {
                 shift = 6;
-            } else if (s.equalsIgnoreCase(GROUP_STRING)) {
+            } else if (GROUP_STRING.equalsIgnoreCase(s)) {
                 shift = 3;
-            } else if (s.equalsIgnoreCase(OTHER_STRING)) {
+            } else if (OTHER_STRING.equalsIgnoreCase(s)) {
                 shift = 0;
             } else {
                 final int perm;
@@ -232,9 +232,9 @@ public abstract class AbstractUnixStylePermission implements Permission {
                 }
 
                 if (s.startsWith("+")) {
-                    mode |= (perm << shift);
+                    mode |= perm << shift;
                 } else if (s.startsWith("-")) {
-                    mode &= (~(perm << shift));
+                    mode &= ~(perm << shift);
                 } else {
                     throw new SyntaxException("Unrecognised mode char '" + s + "'");
                 }
@@ -294,34 +294,34 @@ public abstract class AbstractUnixStylePermission implements Permission {
         for (int i = 0; i < modeArray.length; i++) {
 
             final char c = modeArray[i];
-            final int shift = (i < 3 ? 6 : (i < 6 ? 3 : 0));
+            final int shift = i < 3 ? 6 : (i < 6 ? 3 : 0);
 
             switch (c) {
                 case READ_CHAR:
-                    mode |= (READ << shift);
+                    mode |= READ << shift;
                     break;
                 case WRITE_CHAR:
-                    mode |= (WRITE << shift);
+                    mode |= WRITE << shift;
                     break;
                 case EXECUTE_CHAR:
-                    mode |= (EXECUTE << shift);
+                    mode |= EXECUTE << shift;
                     break;
                 case SETUID_CHAR_NO_EXEC:
                 case SETUID_CHAR:
                     if (i < 3) {
-                        mode |= (SET_UID << 9);
+                        mode |= SET_UID << 9;
                     } else {
-                        mode |= (SET_GID << 9);
+                        mode |= SET_GID << 9;
                     }
                     if (c == SETUID_CHAR) {
-                        mode |= (EXECUTE << shift);
+                        mode |= EXECUTE << shift;
                     }
                     break;
                 case STICKY_CHAR_NO_EXEC:
                 case STICKY_CHAR:
-                    mode |= (STICKY << 9);
+                    mode |= STICKY << 9;
                     if (c == STICKY_CHAR) {
-                        mode |= (EXECUTE << shift);
+                        mode |= EXECUTE << shift;
                     }
                     break;
 

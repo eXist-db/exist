@@ -21,10 +21,7 @@
  */
 package org.exist.xquery.functions.util;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URISyntaxException;
-
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.BinaryDocument;
@@ -36,13 +33,16 @@ import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.Txn;
 import org.exist.util.crypto.digest.DigestType;
 import org.exist.util.crypto.digest.MessageDigest;
-import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.*;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URISyntaxException;
 
 import static org.exist.xquery.FunctionDSL.*;
 import static org.exist.xquery.functions.util.UtilModule.functionSignature;
@@ -108,7 +108,7 @@ public class BinaryDoc extends BasicFunction {
     public Sequence eval(final Sequence[] args, final Sequence contextSequence)
             throws XPathException {
 
-        final Sequence emptyParamReturnValue = (isCalledAs(FS_BINARY_DOC_NAME) || isCalledAs(FS_BINARY_DOC_CONTENT_DIGEST_NAME)) ? Sequence.EMPTY_SEQUENCE : BooleanValue.FALSE;
+        final Sequence emptyParamReturnValue = isCalledAs(FS_BINARY_DOC_NAME) || isCalledAs(FS_BINARY_DOC_CONTENT_DIGEST_NAME) ? Sequence.EMPTY_SEQUENCE : BooleanValue.FALSE;
         if (args[0].isEmpty()) {
             return emptyParamReturnValue;
         }

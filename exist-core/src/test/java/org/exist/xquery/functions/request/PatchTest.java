@@ -21,40 +21,39 @@
  */
 package org.exist.xquery.functions.request;
 
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.entity.ContentType;
-import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
-
-import org.exist.xmldb.UserManagementService;
-import java.io.IOException;
 import org.exist.http.RESTTest;
 import org.exist.xmldb.EXistResource;
+import org.exist.xmldb.UserManagementService;
 import org.hamcrest.Matcher;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.exist.test.XmlStringDiffMatcher.hasSimilarXml;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.BinaryResource;
 import org.xmldb.api.modules.XMLResource;
 
+import java.io.IOException;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.commons.codec.binary.Base64.encodeBase64String;
+import static org.exist.test.XmlStringDiffMatcher.hasSimilarXml;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Test HTTP PATCH capabilities of {@link org.exist.http.servlets.EXistServlet}
  */
 public class PatchTest extends RESTTest {
 
-    private final static String XQUERY_FILENAME = "test-patch.xql";
-    private final static String XML_FILENAME = "test-patch.xml";
+    private static final String XQUERY_FILENAME = "test-patch.xql";
+    private static final String XML_FILENAME = "test-patch.xml";
 
     private static Collection root;
     private static XMLResource xml;
@@ -74,12 +73,12 @@ public class PatchTest extends RESTTest {
                 "declare option output:indent \"no\";" +
                 "<request><method>{request:get-method()}</method><data>{request:get-data()}</data></request>");
         root.storeResource(bin);
-        ums.chmod(bin, 0777);
+        ums.chmod(bin, 511);
 
         xml = root.createResource(XML_FILENAME, XMLResource.class);
         xml.setContent("<root/>");
         root.storeResource(xml);
-        ums.chmod(xml, 0777);
+        ums.chmod(xml, 511);
     }
 
     @AfterClass

@@ -40,7 +40,7 @@ public class GetScheme extends StrictRequestFunction {
 
 	protected static final Logger logger = LogManager.getLogger(GetScheme.class);
 
-	public final static FunctionSignature signature =
+	public static final FunctionSignature signature =
 		new FunctionSignature(
 			new QName("get-scheme", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
 			"Returns the name of the scheme used in the current request, for example, http, https, or ftp.",

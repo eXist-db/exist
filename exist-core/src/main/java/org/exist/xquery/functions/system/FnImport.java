@@ -23,6 +23,9 @@ package org.exist.xquery.functions.system;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exist.backup.SystemImport;
+import org.exist.backup.restore.listener.AbstractRestoreListener;
+import org.exist.backup.restore.listener.RestoreListener;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.xquery.BasicFunction;
@@ -30,47 +33,37 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
-
-import org.exist.backup.SystemImport;
-import org.exist.backup.restore.listener.AbstractRestoreListener;
-import org.exist.backup.restore.listener.RestoreListener;
+import org.exist.xquery.value.*;
 
 import javax.annotation.Nullable;
-
 import java.nio.file.Path;
 
 public class FnImport extends BasicFunction {
 
-	protected final static Logger logger = LogManager.getLogger(FnImport.class);
+	protected static final Logger logger = LogManager.getLogger(FnImport.class);
 
-	protected final static QName NAME = 
+	protected static final QName NAME = 
 			new QName("import", SystemModule.NAMESPACE_URI, SystemModule.PREFIX);
 
-	protected final static String DESCRIPTION = 
+	protected static final String DESCRIPTION = 
 		"Restore the database or a section of the database (admin user only).";
 	
-	protected final static FunctionParameterSequenceType DIRorFILE =
+	protected static final FunctionParameterSequenceType DIRorFILE =
 		new FunctionParameterSequenceType("dir-or-file", Type.STRING, Cardinality.EXACTLY_ONE,
 				"This is either a backup directory with the backup descriptor (__contents__.xml) or a backup ZIP file.");
 			
-	protected final static FunctionParameterSequenceType ADMIN_PASS =
+	protected static final FunctionParameterSequenceType ADMIN_PASS =
 		new FunctionParameterSequenceType("admin-pass", Type.STRING, Cardinality.ZERO_OR_ONE,
 			"The password for the admin user");
 
-	protected final static FunctionParameterSequenceType NEW_ADMIN_PASS =
+	protected static final FunctionParameterSequenceType NEW_ADMIN_PASS =
 		new FunctionParameterSequenceType("new-admin-pass", Type.STRING, Cardinality.ZERO_OR_ONE,
 				"Set the admin password to this new password.");
 
-	protected final static FunctionReturnSequenceType RETURN =
+	protected static final FunctionReturnSequenceType RETURN =
 		new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE, "the import results");
 
-	public final static FunctionSignature[] signatures = {
+	public static final FunctionSignature[] signatures = {
 		new FunctionSignature(
 			NAME,
 			DESCRIPTION,
@@ -94,7 +87,7 @@ public class FnImport extends BasicFunction {
 		)
 	};
 
-	public final static QName IMPORT_ELEMENT = new QName("import", SystemModule.NAMESPACE_URI, SystemModule.PREFIX);
+	public static final QName IMPORT_ELEMENT = new QName("import", SystemModule.NAMESPACE_URI, SystemModule.PREFIX);
 	
 
 	public FnImport(XQueryContext context, FunctionSignature signature) {
@@ -145,13 +138,13 @@ public class FnImport extends BasicFunction {
 		}
     }
 
-    private static class XMLRestoreListener extends AbstractRestoreListener {
+    private static final class XMLRestoreListener extends AbstractRestoreListener {
 
-        public final static QName COLLECTION_ELEMENT = new QName("collection", SystemModule.NAMESPACE_URI, SystemModule.PREFIX);
-        public final static QName RESOURCE_ELEMENT = new QName("resource", SystemModule.NAMESPACE_URI, SystemModule.PREFIX);
-        public final static QName INFO_ELEMENT = new QName("info", SystemModule.NAMESPACE_URI, SystemModule.PREFIX);
-        public final static QName WARN_ELEMENT = new QName("warn", SystemModule.NAMESPACE_URI, SystemModule.PREFIX);
-        public final static QName ERROR_ELEMENT = new QName("error", SystemModule.NAMESPACE_URI, SystemModule.PREFIX);
+        public static final QName COLLECTION_ELEMENT = new QName("collection", SystemModule.NAMESPACE_URI, SystemModule.PREFIX);
+        public static final QName RESOURCE_ELEMENT = new QName("resource", SystemModule.NAMESPACE_URI, SystemModule.PREFIX);
+        public static final QName INFO_ELEMENT = new QName("info", SystemModule.NAMESPACE_URI, SystemModule.PREFIX);
+        public static final QName WARN_ELEMENT = new QName("warn", SystemModule.NAMESPACE_URI, SystemModule.PREFIX);
+        public static final QName ERROR_ELEMENT = new QName("error", SystemModule.NAMESPACE_URI, SystemModule.PREFIX);
 	
         @Nullable private final MemTreeBuilder builder;
 

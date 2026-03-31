@@ -21,11 +21,11 @@
  */
 package org.exist.xmldb;
 
+import org.xmldb.api.base.XMLDBException;
+
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Path;
-
-import org.xmldb.api.base.XMLDBException;
 
 /**
  * An extension to BinaryResource interface, which adds the

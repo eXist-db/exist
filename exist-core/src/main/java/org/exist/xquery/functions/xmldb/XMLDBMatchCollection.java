@@ -21,22 +21,17 @@
  */
 package org.exist.xquery.functions.xmldb;
 
-import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
+import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.Cardinality;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.ValueSequence;
-import org.exist.xquery.value.StringValue;
+import org.exist.xquery.value.*;
+
+import java.util.List;
 
 /**
  *
@@ -46,7 +41,7 @@ public class XMLDBMatchCollection extends BasicFunction {
 
     protected static final Logger logger = LogManager.getLogger(XMLDBMatchCollection.class);
 
-    public final static FunctionSignature signature = new FunctionSignature(
+    public static final FunctionSignature signature = new FunctionSignature(
             new QName("match-collection", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
             "Looks for collection names in the collection index that match the provided regexp",
             new SequenceType[]{

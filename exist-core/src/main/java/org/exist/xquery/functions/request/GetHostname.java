@@ -40,7 +40,7 @@ public class GetHostname extends StrictRequestFunction {
 
 	private static final Logger logger = LogManager.getLogger(GetHostname.class);
 
-	public final static FunctionSignature signature =
+	public static final FunctionSignature signature =
 		new FunctionSignature(
 			new QName("get-hostname", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
 			"Returns the hostname of the current request.",

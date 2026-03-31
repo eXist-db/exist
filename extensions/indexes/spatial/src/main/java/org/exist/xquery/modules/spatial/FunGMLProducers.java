@@ -23,34 +23,25 @@ package org.exist.xquery.modules.spatial;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.QName;
+import org.exist.dom.memtree.DocumentBuilderReceiver;
+import org.exist.dom.memtree.MemTreeBuilder;
+import org.exist.dom.persistent.NodeProxy;
 import org.exist.indexing.spatial.AbstractGMLJDBCIndex;
 import org.exist.indexing.spatial.AbstractGMLJDBCIndexWorker;
 import org.exist.indexing.spatial.SpatialIndexException;
-import org.exist.dom.memtree.DocumentBuilderReceiver;
-import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.IndexUseReporter;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.DoubleValue;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.IntegerValue;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
-import org.w3c.dom.Element;
-
+import org.exist.xquery.value.*;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 import org.locationtech.jts.operation.buffer.BufferOp;
+import org.w3c.dom.Element;
 
 /**
  * @author <a href="mailto:pierrick.brihaye@free.fr">Pierrick Brihaye</a>
@@ -59,9 +50,9 @@ import org.locationtech.jts.operation.buffer.BufferOp;
 public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
 
     protected static final Logger logger = LogManager.getLogger(FunGMLProducers.class);
-    boolean hasUsedIndex = false;
+    boolean hasUsedIndex;
 
-    public final static FunctionSignature[] signatures = {
+    public static final FunctionSignature[] signatures = {
         new FunctionSignature(
             new QName("transform", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
             "Returns the GML representation of geometry $geometry with the SRS $srs",
@@ -192,15 +183,15 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
             Geometry geometry = null;
             String targetSRS = null;
             if (isCalledAs("transform")) {
-                if (args[0].isEmpty())
+                if (args[0].isEmpty()) {
                     result = Sequence.EMPTY_SEQUENCE;
-                else {
-                    final NodeValue geometryNode = (NodeValue) args[0].itemAt(0);
+                } else {
+                    final NodeValue geometryNode = (NodeValue)args[0].itemAt(0);
                     //Try to get the geometry from the index
                     String sourceSRS = null;
                     if (geometryNode.getImplementationType() == NodeValue.PERSISTENT_NODE) {
                         sourceSRS = indexWorker.getGeometricPropertyForNode(context, (NodeProxy)geometryNode, "SRS_NAME").getStringValue();
-                        geometry = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode, false);		        		
+                        geometry = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode, false);
                         hasUsedIndex = true;
                     }
                     //Otherwise, build it
@@ -216,9 +207,9 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
                     geometry = indexWorker.transformGeometry(geometry, sourceSRS, targetSRS);
                 }
             } else if (isCalledAs("WKTtoGML")) {
-                if (args[0].isEmpty())
+                if (args[0].isEmpty()) {
                     result = Sequence.EMPTY_SEQUENCE;
-                else {
+                } else {
                     final String wkt = args[0].itemAt(0).getStringValue();
                     final WKTReader wktReader = new WKTReader();
                     try {
@@ -234,10 +225,10 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
                     targetSRS = args[1].itemAt(0).getStringValue().trim();
                 }
             } else if (isCalledAs("buffer")) {
-                if (args[0].isEmpty())
+                if (args[0].isEmpty()) {
                     result = Sequence.EMPTY_SEQUENCE;
-                else {
-                    final NodeValue geometryNode = (NodeValue) args[0].itemAt(0);
+                } else {
+                    final NodeValue geometryNode = (NodeValue)args[0].itemAt(0);
                     //Try to get the geometry from the index
                     if (geometryNode.getImplementationType() == NodeValue.PERSISTENT_NODE) {
                         targetSRS = indexWorker.getGeometricPropertyForNode(context, (NodeProxy)geometryNode, "SRS_NAME").getStringValue();
@@ -246,10 +237,10 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
                     }
                     //Otherwise, build it
                     if (geometry == null) {
-                        targetSRS =  ((Element)geometryNode.getNode()).getAttribute("srsName").trim();
+                        targetSRS = ((Element)geometryNode.getNode()).getAttribute("srsName").trim();
                         geometry = indexWorker.streamNodeToGeometry(context, geometryNode);
                     }
-                    if (geometry == null) { 
+                    if (geometry == null) {
                         logger.error("Unable to get a geometry from the node");
                         throw new XPathException(this, "Unable to get a geometry from the node");
                     }
@@ -257,10 +248,12 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
                     final double distance = ((DoubleValue)args[1].itemAt(0)).getDouble();
                     int quadrantSegments = 8;
                     int endCapStyle = BufferOp.CAP_ROUND;
-                    if (getArgumentCount() > 2 && Type.subTypeOf(args[2].itemAt(0).getType(), Type.INTEGER))
+                    if (getArgumentCount() > 2 && Type.subTypeOf(args[2].itemAt(0).getType(), Type.INTEGER)) {
                         quadrantSegments = ((IntegerValue)args[2].itemAt(0)).getInt();
-                    if (getArgumentCount() > 3 && Type.subTypeOf(args[3].itemAt(0).getType(), Type.INTEGER))
+                    }
+                    if (getArgumentCount() > 3 && Type.subTypeOf(args[3].itemAt(0).getType(), Type.INTEGER)) {
                         endCapStyle = ((IntegerValue)args[3].itemAt(0)).getInt();
+                    }
                     switch (endCapStyle) {
                         case BufferOp.CAP_ROUND:
                         case BufferOp.CAP_BUTT:
@@ -276,10 +269,10 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
                     geometry = geometry.buffer(distance, quadrantSegments, endCapStyle);
                 }
             } else if (isCalledAs("getBbox")) {
-                if (args[0].isEmpty())
+                if (args[0].isEmpty()) {
                     result = Sequence.EMPTY_SEQUENCE;
-                else {
-                    final NodeValue geometryNode = (NodeValue) args[0].itemAt(0);
+                } else {
+                    final NodeValue geometryNode = (NodeValue)args[0].itemAt(0);
                     //Try to get the geometry from the index
                     if (geometryNode.getImplementationType() == NodeValue.PERSISTENT_NODE) {
                         targetSRS = indexWorker.getGeometricPropertyForNode(context, (NodeProxy)geometryNode, "SRS_NAME").getStringValue();
@@ -298,14 +291,14 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
                     geometry = geometry.getEnvelope();
                 }
             } else if (isCalledAs("convexHull")) {
-                if (args[0].isEmpty())
+                if (args[0].isEmpty()) {
                     result = Sequence.EMPTY_SEQUENCE;
-                else {
-                    final NodeValue geometryNode = (NodeValue) args[0].itemAt(0);
+                } else {
+                    final NodeValue geometryNode = (NodeValue)args[0].itemAt(0);
                     //Try to get the geometry from the index
                     if (geometryNode.getImplementationType() == NodeValue.PERSISTENT_NODE) {
                         targetSRS = indexWorker.getGeometricPropertyForNode(context, (NodeProxy)geometryNode, "SRS_NAME").getStringValue();
-                        geometry = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode, false);		        		
+                        geometry = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode, false);
                         hasUsedIndex = true;
                     }
                     //Otherwise, build it
@@ -313,17 +306,17 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
                         targetSRS = ((Element)geometryNode.getNode()).getAttribute("srsName").trim();
                         geometry = indexWorker.streamNodeToGeometry(context, geometryNode);
                     }
-                    if (geometry == null) { 
+                    if (geometry == null) {
                         logger.error("Unable to get a geometry from the node");
                         throw new XPathException(this, "Unable to get a geometry from the node");
                     }
                     geometry = geometry.convexHull();
                 }
             } else if (isCalledAs("boundary")) {
-                if (args[0].isEmpty())
+                if (args[0].isEmpty()) {
                     result = Sequence.EMPTY_SEQUENCE;
-                else {
-                    final NodeValue geometryNode = (NodeValue) args[0].itemAt(0);
+                } else {
+                    final NodeValue geometryNode = (NodeValue)args[0].itemAt(0);
                     //Try to get the geometry from the index
                     if (geometryNode.getImplementationType() == NodeValue.PERSISTENT_NODE) {
                         targetSRS = indexWorker.getGeometricPropertyForNode(context, (NodeProxy)geometryNode, "SRS_NAME").getStringValue();
@@ -344,15 +337,15 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
             } else {
                 Geometry geometry1 = null;
                 Geometry geometry2 = null;
-                if (args[0].isEmpty() && args[1].isEmpty())
+                if (args[0].isEmpty() && args[1].isEmpty()) {
                     result = Sequence.EMPTY_SEQUENCE;
-                else if (!args[0].isEmpty() && args[1].isEmpty())
+                } else if (!args[0].isEmpty() && args[1].isEmpty()) {
                     result = args[0].itemAt(0).toSequence();
-                else if (args[0].isEmpty() && !args[1].isEmpty())
+                } else if (args[0].isEmpty() && !args[1].isEmpty()) {
                     result = args[1].itemAt(0).toSequence();
-                else {
-                    final NodeValue geometryNode1 = (NodeValue) args[0].itemAt(0);
-                    final NodeValue geometryNode2 = (NodeValue) args[1].itemAt(0);
+                } else {
+                    final NodeValue geometryNode1 = (NodeValue)args[0].itemAt(0);
+                    final NodeValue geometryNode2 = (NodeValue)args[1].itemAt(0);
                     String srsName1 = null;
                     String srsName2 = null;
                     //Try to get the geometries from the index
@@ -383,10 +376,12 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
                         logger.error("Unable to get a geometry from the second node");
                         throw new XPathException(this, "Unable to get a geometry from the second node");
                     }
-                    if (srsName1 == null)
+                    if (srsName1 == null) {
                         throw new XPathException(this, "Unable to get a SRS for the first geometry");
-                    if (srsName2 == null)
+                    }
+                    if (srsName2 == null) {
                         throw new XPathException(this, "Unable to get a SRS for the second geometry");
+                    }
 
                     //Transform the second geometry in the SRS of the first one if necessary
                     if (!srsName1.equalsIgnoreCase(srsName2)) {
@@ -397,7 +392,7 @@ public class FunGMLProducers extends BasicFunction implements IndexUseReporter {
                         geometry = geometry1.intersection(geometry2);
                     } else if (isCalledAs("union")) {
                         geometry = geometry1.union(geometry2);
-                    } else if (isCalledAs("difference")) {	
+                    } else if (isCalledAs("difference")) {
                         geometry = geometry1.difference(geometry2);
                     } else if (isCalledAs("symetricDifference")) {
                         geometry = geometry1.symDifference(geometry2);

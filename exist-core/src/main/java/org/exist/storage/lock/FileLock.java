@@ -36,9 +36,8 @@ import java.text.DateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Properties;
-import static java.nio.file.StandardOpenOption.READ;
-import static java.nio.file.StandardOpenOption.SYNC;
-import static java.nio.file.StandardOpenOption.WRITE;
+
+import static java.nio.file.StandardOpenOption.*;
 
 /**
  * Cooperative inter-process file locking, used to synchronize access to database files across
@@ -68,23 +67,23 @@ import static java.nio.file.StandardOpenOption.WRITE;
  */
 public class FileLock {
 
-    private final static Logger LOG = LogManager.getLogger(FileLock.class);
+    private static final Logger LOG = LogManager.getLogger(FileLock.class);
 
     /** The heartbeat period in milliseconds */
     private final long HEARTBEAT = 10100;
 
     /** Magic word to be written to the start of the lock file */
-    private final static byte[] MAGIC =
+    private static final byte[] MAGIC =
         { 0x65, 0x58, 0x69, 0x73, 0x74, 0x2D, 0x64, 0x62 }; // "eXist-db"
 
     /** BrokerPool provides access the SyncDaemon */
-    private BrokerPool pool;
+    private final BrokerPool pool;
 
     /** The lock file */
     private Path lockFile;
 
     /** An open channel to the lock file */
-    private SeekableByteChannel channel = null;
+    private SeekableByteChannel channel;
 
     /** Temporary buffer used for writing */
     private final ByteBuffer buf = ByteBuffer.allocate(MAGIC.length + 8);

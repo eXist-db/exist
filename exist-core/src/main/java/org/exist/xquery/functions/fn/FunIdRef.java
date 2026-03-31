@@ -23,14 +23,8 @@ package org.exist.xquery.functions.fn;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import org.exist.dom.persistent.DefaultDocumentSet;
-import org.exist.dom.persistent.DocumentSet;
-import org.exist.dom.persistent.ExtArrayNodeSet;
-import org.exist.dom.persistent.MutableDocumentSet;
-import org.exist.dom.persistent.NodeProxy;
-import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.QName;
+import org.exist.dom.persistent.*;
 import org.exist.util.XMLNames;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Constants.Comparison;
@@ -42,16 +36,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
+import org.exist.xquery.value.*;
 import org.w3c.dom.Node;
 
 import java.util.Set;
@@ -65,7 +50,7 @@ import java.util.TreeSet;
  */
 public class FunIdRef extends Function {
 	protected static final Logger logger = LogManager.getLogger(FunIdRef.class);
-	public final static FunctionSignature[] signature = {
+	public static final FunctionSignature[] signature = {
 		new FunctionSignature(
 			new QName("idref", Function.BUILTIN_FUNCTION_NS),
 			"Returns the sequence of element or attributes nodes with an IDREF value matching the " +

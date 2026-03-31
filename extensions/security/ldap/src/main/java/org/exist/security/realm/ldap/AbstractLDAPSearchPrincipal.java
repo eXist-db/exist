@@ -21,17 +21,17 @@
  */
 package org.exist.security.realm.ldap;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
 import org.exist.config.Configurable;
 import org.exist.config.Configuration;
 import org.exist.config.Configurator;
 import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationFieldAsElement;
 import org.exist.security.AXSchemaType;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author aretter
@@ -40,7 +40,7 @@ import org.exist.security.AXSchemaType;
 public abstract class AbstractLDAPSearchPrincipal implements Configurable {
 
     @ConfigurationFieldAsElement("search-filter-prefix")
-    protected String searchFilterPrefix = null;
+    protected String searchFilterPrefix;
 
     @ConfigurationFieldAsElement("search-attribute")
     protected Map<String, String> searchAttributes = new HashMap<>();
@@ -49,14 +49,14 @@ public abstract class AbstractLDAPSearchPrincipal implements Configurable {
     protected Map<String, String> metadataSearchAttributes = new HashMap<>();
 
     @ConfigurationFieldAsElement("whitelist")
-    protected LDAPPrincipalWhiteList whiteList = null;
+    protected LDAPPrincipalWhiteList whiteList;
 
     @ConfigurationFieldAsElement("blacklist")
-    protected LDAPPrincipalBlackList blackList = null;
+    protected LDAPPrincipalBlackList blackList;
 
     protected Configuration configuration;
 
-    public AbstractLDAPSearchPrincipal(final Configuration config) {
+    protected AbstractLDAPSearchPrincipal(final Configuration config) {
         this.configuration = Configurator.configure(this, config);
     }
 
@@ -83,7 +83,7 @@ public abstract class AbstractLDAPSearchPrincipal implements Configurable {
 
     @Override
     public boolean isConfigured() {
-        return (configuration != null);
+        return configuration != null;
     }
 
     @Override

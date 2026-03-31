@@ -28,9 +28,9 @@ import org.exist.xquery.value.Type;
 
 public abstract class BinaryOp extends PathExpr {
 
-    protected boolean inWhereClause = false;
+    protected boolean inWhereClause;
     
-    public BinaryOp(XQueryContext context) {
+    protected BinaryOp(XQueryContext context) {
         super(context);
     }
 

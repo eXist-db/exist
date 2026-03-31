@@ -21,12 +21,12 @@
  */
 package org.exist.xquery;
 
-import java.io.Writer;
-
 import org.exist.source.Source;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.xmldb.api.base.CompiledExpression;
+
+import java.io.Writer;
 
 
 /**

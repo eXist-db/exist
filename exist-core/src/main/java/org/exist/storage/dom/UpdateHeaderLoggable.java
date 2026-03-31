@@ -21,13 +21,13 @@
  */
 package org.exist.storage.dom;
 
-import java.nio.ByteBuffer;
-
 import org.exist.storage.DBBroker;
 import org.exist.storage.NativeBroker;
 import org.exist.storage.journal.AbstractLoggable;
 import org.exist.storage.journal.LogException;
 import org.exist.storage.txn.Txn;
+
+import java.nio.ByteBuffer;
 
 /**
  * @author wolf
@@ -38,7 +38,7 @@ public class UpdateHeaderLoggable extends AbstractLoggable {
     protected long prevPage;
     protected long oldNext;
     protected long oldPrev;
-    private DOMFile domDb = null;
+    private DOMFile domDb;
 
     public UpdateHeaderLoggable(final Txn transaction, final long prevPage, final long pageNum, final long nextPage,
                                 final long oldPrev, final long oldNext) {

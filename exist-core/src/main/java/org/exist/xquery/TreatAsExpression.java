@@ -31,7 +31,7 @@ import org.exist.xquery.value.SequenceType;
 public class TreatAsExpression extends AbstractExpression {
 
     private Expression expression;
-    private SequenceType type;
+    private final SequenceType type;
     
     public TreatAsExpression(XQueryContext context, Expression expr, SequenceType type) {
         super(context);

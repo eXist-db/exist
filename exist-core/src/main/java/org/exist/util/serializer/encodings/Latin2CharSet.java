@@ -26,9 +26,9 @@ package org.exist.util.serializer.encodings;
  */
 public class Latin2CharSet extends CharacterSet {
 
-	protected final static CharacterSet instance = new Latin2CharSet();
+	protected static final CharacterSet instance = new Latin2CharSet();
 
-	private static boolean[] c = null;
+	private static final boolean[] c;
 
 	static {
 		c = new boolean[750];
@@ -143,7 +143,7 @@ public class Latin2CharSet extends CharacterSet {
 	 * @see org.exist.util.serializer.encodings.CharacterSet#inCharacterSet(char)
 	 */
 	public boolean inCharacterSet(char ch) {
-		return (ch < 750 && c[ch]);
+		return ch < 750 && c[ch];
 	}
 
 	public static CharacterSet getInstance() {

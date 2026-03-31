@@ -21,7 +21,6 @@
  */
 package org.exist.xquery.functions.securitymanager;
 
-import java.util.Set;
 import org.exist.dom.QName;
 import org.exist.security.AXSchemaType;
 import org.exist.security.EXistSchemaType;
@@ -35,14 +34,9 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.AnyURIValue;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
+import org.exist.xquery.value.*;
+
+import java.util.Set;
 
 
 /**
@@ -51,27 +45,27 @@ import org.exist.xquery.value.ValueSequence;
  */
 public class GetPrincipalMetadataFunction extends BasicFunction {
 
-    public final static SchemaType[] GROUP_METADATA_KEYS = {
+    public static final SchemaType[] GROUP_METADATA_KEYS = {
         AXSchemaType.LANGUAGE,
         AXSchemaType.EMAIL,
         EXistSchemaType.DESCRIPTION
     };
     
-    private final static QName qnGetAccountMetadataKeys = new QName("get-account-metadata-keys", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
-    private final static QName qnGetAccountMetadata = new QName("get-account-metadata", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    private static final QName qnGetAccountMetadataKeys = new QName("get-account-metadata-keys", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    private static final QName qnGetAccountMetadata = new QName("get-account-metadata", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
 
-    private final static QName qnGetGroupMetadataKeys = new QName("get-group-metadata-keys", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
-    private final static QName qnGetGroupMetadata = new QName("get-group-metadata", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    private static final QName qnGetGroupMetadataKeys = new QName("get-group-metadata-keys", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    private static final QName qnGetGroupMetadata = new QName("get-group-metadata", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
 
     
-    public final static FunctionSignature FNS_GET_ALL_ACCOUNT_METADATA_KEYS = new FunctionSignature(
+    public static final FunctionSignature FNS_GET_ALL_ACCOUNT_METADATA_KEYS = new FunctionSignature(
         qnGetAccountMetadataKeys,
         "Gets a sequence of the metadata attribute keys that may be used for an account.",
         null,
         new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.ZERO_OR_MORE, "The fully qualified metadata attribute key names")
     );
     
-    public final static FunctionSignature FNS_GET_ACCOUNT_METADATA_KEYS = new FunctionSignature(
+    public static final FunctionSignature FNS_GET_ACCOUNT_METADATA_KEYS = new FunctionSignature(
         qnGetAccountMetadataKeys,
         "Gets a sequence of the metadata attribute keys present for an account",
         new SequenceType[] {
@@ -80,7 +74,7 @@ public class GetPrincipalMetadataFunction extends BasicFunction {
         new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.ZERO_OR_MORE, "The fully qualified metadata attribute key names")
     );
     
-    public final static FunctionSignature FNS_GET_ACCOUNT_METADATA = new FunctionSignature(
+    public static final FunctionSignature FNS_GET_ACCOUNT_METADATA = new FunctionSignature(
         qnGetAccountMetadata,
         "Gets a metadata attribute value for an account",
         new SequenceType[] {
@@ -90,13 +84,13 @@ public class GetPrincipalMetadataFunction extends BasicFunction {
         new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "The metadata value")
     );
 
-    public final static FunctionSignature FNS_GET_ALL_GROUP_METADATA_KEYS = new FunctionSignature(
+    public static final FunctionSignature FNS_GET_ALL_GROUP_METADATA_KEYS = new FunctionSignature(
         qnGetGroupMetadataKeys,
         "Gets a sequence of the metadata attribute keys that may be used for a group.",
         null,
         new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.ZERO_OR_MORE, "The fully qualified metadata attribute key names")
     );
-    public final static FunctionSignature FNS_GET_GROUP_METADATA_KEYS = new FunctionSignature(
+    public static final FunctionSignature FNS_GET_GROUP_METADATA_KEYS = new FunctionSignature(
         qnGetGroupMetadataKeys,
         "Gets a sequence of the metadata attribute keys present for a group",
         new SequenceType[] {
@@ -104,7 +98,7 @@ public class GetPrincipalMetadataFunction extends BasicFunction {
         },
         new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.ZERO_OR_MORE, "The fully qualified metadata attribute key names")
     );
-    public final static FunctionSignature FNS_GET_GROUP_METADATA = new FunctionSignature(
+    public static final FunctionSignature FNS_GET_GROUP_METADATA = new FunctionSignature(
         qnGetGroupMetadata,
         "Gets a metadata attribute value for a group",
         new SequenceType[] {

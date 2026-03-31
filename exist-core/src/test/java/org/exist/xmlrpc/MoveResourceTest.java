@@ -35,6 +35,8 @@ import org.exist.TestUtils;
 import org.exist.test.ExistWebServer;
 import org.exist.util.io.InputStreamUtil;
 import org.exist.xmldb.XmldbURI;
+import org.junit.ClassRule;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -47,9 +49,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import org.junit.ClassRule;
-import org.junit.Test;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.samples.Samples.SAMPLES;

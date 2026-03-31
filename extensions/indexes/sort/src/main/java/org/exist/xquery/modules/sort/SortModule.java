@@ -29,13 +29,13 @@ import java.util.Map;
 
 public class SortModule extends AbstractInternalModule {
 
-    public final static String NAMESPACE_URI = "http://exist-db.org/xquery/sort";
+    public static final String NAMESPACE_URI = "http://exist-db.org/xquery/sort";
 
-    public final static String PREFIX = "sort";
-    public final static String INCLUSION_DATE = "2010-03-22";
-    public final static String RELEASED_IN_VERSION = "eXist-1.5";
+    public static final String PREFIX = "sort";
+    public static final String INCLUSION_DATE = "2010-03-22";
+    public static final String RELEASED_IN_VERSION = "eXist-1.5";
 
-    public final static FunctionDef[] functions = {
+    public static final FunctionDef[] functions = {
             new FunctionDef(CreateOrderIndex.signatures[0], CreateOrderIndex.class),
             new FunctionDef(CreateOrderIndex.signatures[1], CreateOrderIndex.class),
             new FunctionDef(GetIndex.signature, GetIndex.class),

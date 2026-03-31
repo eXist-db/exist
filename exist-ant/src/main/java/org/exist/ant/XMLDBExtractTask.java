@@ -49,12 +49,12 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * @author jim.fuller at webcomposite.com to handle binary file extraction
  */
 public class XMLDBExtractTask extends AbstractXMLDBTask {
-    private String resource = null;
-    private Path destFile = null;
-    private Path destDir = null;
-    private boolean createdirectories = false;
-    private boolean subcollections = false;
-    private boolean overwrite = false;
+    private String resource;
+    private Path destFile;
+    private Path destDir;
+    private boolean createdirectories;
+    private boolean subcollections;
+    private boolean overwrite;
 
 
     @Override
@@ -249,7 +249,7 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
             }
 
         } else {
-            final String msg = "Destination xml file " + ((dest != null) ? (dest.toAbsolutePath().toString() + " ") : "") + "exists. Use " + "overwrite property to overwrite this file.";
+            final String msg = "Destination xml file " + (dest != null ? (dest.toAbsolutePath().toString() + " ") : "") + "exists. Use " + "overwrite property to overwrite this file.";
 
             if (failonerror) {
                 throw (new BuildException(msg));
@@ -300,7 +300,7 @@ public class XMLDBExtractTask extends AbstractXMLDBTask {
             }
 
         } else {
-            final String msg = "Dest binary file " + ((dest != null) ? (dest.toAbsolutePath().toString() + " ") : "") + "exists. Use " + "overwrite property to overwrite file.";
+            final String msg = "Dest binary file " + (dest != null ? (dest.toAbsolutePath().toString() + " ") : "") + "exists. Use " + "overwrite property to overwrite file.";
 
             if (failonerror) {
                 throw (new BuildException(msg));

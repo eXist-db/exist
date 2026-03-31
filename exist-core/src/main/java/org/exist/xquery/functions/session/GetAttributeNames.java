@@ -21,19 +21,14 @@
  */
 package org.exist.xquery.functions.session;
 
-import java.util.Enumeration;
-import java.util.Optional;
-
 import org.exist.dom.QName;
 import org.exist.http.servlets.SessionWrapper;
 import org.exist.xquery.*;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
+import org.exist.xquery.value.*;
 
 import javax.annotation.Nonnull;
+import java.util.Enumeration;
+import java.util.Optional;
 
 /**
  * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
@@ -41,7 +36,7 @@ import javax.annotation.Nonnull;
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class GetAttributeNames extends StrictSessionFunction {
-    public final static FunctionSignature signature =
+    public static final FunctionSignature signature =
             new FunctionSignature(
                     new QName("get-attribute-names", SessionModule.NAMESPACE_URI, SessionModule.PREFIX),
                     "Returns a sequence containing the names of all session attributes defined within the "

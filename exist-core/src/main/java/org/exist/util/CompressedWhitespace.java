@@ -32,9 +32,9 @@ import java.io.Writer;
  */
 public class CompressedWhitespace implements CharSequence {
 
-    private static char[] WHITE_CHARS = {0x09, 0x0A, 0x0D, 0x20};
+    private static final char[] WHITE_CHARS = {0x09, 0x0A, 0x0D, 0x20};
 
-    private long value;
+    private final long value;
 
     public CompressedWhitespace(long compressedValue) {
         this.value = compressedValue;
@@ -55,7 +55,7 @@ public class CompressedWhitespace implements CharSequence {
         int outlength = 0;
         for (int i=0; i<inlen; i++) {
             final char c = in.charAt(i);
-            if (("\t\n\r ").indexOf(c) >= 0) {
+            if ("\t\n\r ".indexOf(c) >= 0) {
                 if (i == inlen-1 || c != in.charAt(i+1) || runlength == 63) {
                     runlength = 1;
                     outlength++;
@@ -75,7 +75,7 @@ public class CompressedWhitespace implements CharSequence {
         for (int i=0; i<inlen; i++) {
             final char c = in.charAt(i);
             if (i == inlen-1 || c != in.charAt(i+1) || runlength == 63) {
-                final int code =  ("\t\n\r ").indexOf(c);
+                final int code =  "\t\n\r ".indexOf(c);
                 out[ix++] = (code<<6) | runlength;
                 runlength = 1;
             } else {
@@ -87,7 +87,7 @@ public class CompressedWhitespace implements CharSequence {
             value = (value<<8) | out[i];
         }
         for (int i=0; i<(8-outlength); i++) {
-            value = (value<<8);
+            value = value<<8;
         }
         return new CompressedWhitespace(value);
     }
@@ -111,7 +111,7 @@ public class CompressedWhitespace implements CharSequence {
                 break;
             }
             final char c = WHITE_CHARS[b>>>6 & 0x3];
-            final int len = (b & 0x3f);
+            final int len = b & 0x3f;
             for (int j=0; j<len; j++) {
                 buffer.append(c);
             }
@@ -159,7 +159,7 @@ public class CompressedWhitespace implements CharSequence {
             if (b == 0) {
                 break;
             }
-            count += (b & 0x3f);
+            count += b & 0x3f;
             if (count > index) {
                 return WHITE_CHARS[b>>>6 & 0x3];
             }
@@ -225,7 +225,7 @@ public class CompressedWhitespace implements CharSequence {
                 break;
             }
             final char c = WHITE_CHARS[b>>>6 & 0x3];
-            final int len = (b & 0x3f);
+            final int len = b & 0x3f;
             for (int j=0; j<len; j++) {
                 writer.write(c);
             }
@@ -248,7 +248,7 @@ public class CompressedWhitespace implements CharSequence {
                 break;
             }
             final char c = WHITE_CHARS[b>>>6 & 0x3];
-            final int len = (b & 0x3f);
+            final int len = b & 0x3f;
             if (specialChars[c]) {
                 String e = "";
                 if (c=='\n') {

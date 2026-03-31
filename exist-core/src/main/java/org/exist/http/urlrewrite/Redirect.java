@@ -21,12 +21,12 @@
  */
 package org.exist.http.urlrewrite;
 
-import org.exist.http.servlets.HttpResponseWrapper;
-import org.w3c.dom.Element;
-
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.exist.http.servlets.HttpResponseWrapper;
+import org.w3c.dom.Element;
+
 import java.io.IOException;
 
 public class Redirect extends URLRewrite {

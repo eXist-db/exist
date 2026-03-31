@@ -45,13 +45,13 @@ import java.util.List;
 public class PathExpr extends AbstractExpression implements CompiledXQuery,
         CompiledExpression, RewritableExpression {
 
-    protected final static Logger LOG = LogManager.getLogger(PathExpr.class);
+    protected static final Logger LOG = LogManager.getLogger(PathExpr.class);
 
     protected final List<Expression> steps = new ArrayList<>();
 
-    private boolean staticContext = false;
+    private boolean staticContext;
 
-    protected boolean inPredicate = false;
+    protected boolean inPredicate;
 
     protected Expression parent;
 
@@ -479,7 +479,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
         if (steps.isEmpty()) {
             return Cardinality.EMPTY_SEQUENCE;
         }
-        return (steps.getLast()).getCardinality();
+        return steps.getLast().getCardinality();
     }
 
     @Override

@@ -24,27 +24,21 @@ package org.exist.xquery;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.debuggee.DebuggeeJoint;
-import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
+import org.exist.dom.persistent.DocumentSet;
 import org.exist.security.Subject;
 import org.exist.storage.UpdateListener;
 import org.exist.util.FileUtils;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.value.AnyURIValue;
-import org.exist.xquery.value.BinaryValue;
-import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.*;
 
 import javax.annotation.Nullable;
 import javax.xml.datatype.XMLGregorianCalendar;
-
 import java.net.URISyntaxException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.ValueSequence;
 
 
 /**
@@ -298,12 +292,12 @@ public class ModuleContext extends XQueryContext {
     }
 
     @Override
-    final protected XPathException moduleLoadException(final String message, final String moduleLocation) throws XPathException {
+    protected final XPathException moduleLoadException(final String message, final String moduleLocation) throws XPathException {
         return moduleLoadException(message, moduleLocation, null);
     }
 
     @Override
-    final protected XPathException moduleLoadException(final String message, final String moduleLocation, final Exception e) throws XPathException {
+    protected final XPathException moduleLoadException(final String message, final String moduleLocation, final Exception e) throws XPathException {
         String dependantModule;
         try {
             if (location != null && location.startsWith(XmldbURI.LOCAL_DB)) {

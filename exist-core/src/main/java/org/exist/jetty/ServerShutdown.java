@@ -30,7 +30,6 @@ import org.exist.util.OSUtil;
 import org.exist.util.SystemExitCodes;
 import org.exist.xmldb.DatabaseInstanceManager;
 import org.exist.xmldb.XmldbURI;
-
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
@@ -122,7 +121,7 @@ public class ServerShutdown {
             System.err.println("ERROR: " + e.getMessage());
 
             final Throwable t = e.getCause();
-            if(t!=null && t instanceof XmlRpcException){
+            if(t instanceof XmlRpcException){
                 System.err.println("CAUSE: "+t.getMessage());
             } else {
                 e.printStackTrace();

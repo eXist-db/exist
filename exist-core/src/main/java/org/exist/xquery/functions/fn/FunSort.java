@@ -24,16 +24,7 @@ package org.exist.xquery.functions.fn;
 import com.ibm.icu.text.Collator;
 import org.exist.dom.QName;
 import org.exist.xquery.*;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReference;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.NumericValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
+import org.exist.xquery.value.*;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -46,7 +37,7 @@ import java.util.List;
  */
 public class FunSort extends BasicFunction {
 
-  public final static FunctionSignature[] signatures = {
+  public static final FunctionSignature[] signatures = {
     new FunctionSignature(
       new QName("sort", Function.BUILTIN_FUNCTION_NS),
         "Sorts a supplied sequence.",
@@ -144,7 +135,7 @@ public class FunSort extends BasicFunction {
     return result;
   }
 
-  private static class FnSortComparator implements Comparator<Integer> {
+    private static final class FnSortComparator implements Comparator<Integer> {
     private final List<Sequence> keys;
     @Nullable private final Collator collator;
 

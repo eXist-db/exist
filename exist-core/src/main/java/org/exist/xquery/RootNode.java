@@ -21,12 +21,7 @@
  */
 package org.exist.xquery;
 
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.DocumentSet;
-import org.exist.dom.persistent.NewArrayNodeSet;
-import org.exist.dom.persistent.NodeHandle;
-import org.exist.dom.persistent.NodeProxy;
-import org.exist.dom.persistent.NodeSet;
+import org.exist.dom.persistent.*;
 import org.exist.numbering.NodeId;
 import org.exist.storage.UpdateListener;
 import org.exist.xquery.util.ExpressionDumper;
@@ -43,12 +38,12 @@ import java.util.Iterator;
 public class RootNode extends Step {
 
     @SuppressWarnings("unused")
-	private NodeSet cached = null;
+	private NodeSet cached;
 
     @SuppressWarnings("unused")
-	private DocumentSet cachedDocs = null;
+	private DocumentSet cachedDocs;
 
-    private UpdateListener listener = null;
+    private UpdateListener listener;
 
     public RootNode(XQueryContext context) {
         super(context, Constants.SELF_AXIS);

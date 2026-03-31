@@ -21,18 +21,18 @@
  */
 package org.exist.xquery.util;
 
+import org.exist.xquery.Expression;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
-
-import org.exist.xquery.Expression;
 
 /**
  * @author wolf
  */
 public class ExpressionDumper {
 
-    public final static int DEFAULT_INDENT_AMOUNT = 4;
+    public static final int DEFAULT_INDENT_AMOUNT = 4;
     
     public static String dump(Expression expr) {
         if (expr == null)
@@ -50,7 +50,7 @@ public class ExpressionDumper {
     
     private int verbosity;
     
-    private int indent = 0;
+    private int indent;
     
     public ExpressionDumper(Writer writer) {
         this(writer, DEFAULT_INDENT_AMOUNT, 0);
@@ -67,14 +67,16 @@ public class ExpressionDumper {
             {this.out = new PrintWriter(writer);}
         this.indentAmount = indentAmount;
         this.spaces = "";
-        for(int i = 0; i < indentAmount; i++) 
+        for (int i = 0; i < indentAmount; i++) {
             this.spaces += " ";
+        }
         this.verbosity = verbosity;
     }
     
     private void indent() {
-        for(int i = 0; i < indent; i++)
+        for (int i = 0; i < indent; i++) {
             out.print(spaces);
+        }
     }
     
     public int verbosity() {

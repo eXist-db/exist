@@ -45,14 +45,14 @@ import java.util.regex.Pattern;
 
 public class ListBackups extends BasicFunction
 {
-    private final static String           returnText        = "an XML fragment listing all eXist backups found in the specified backup directory: " + "<directory> " + "<backup file=\"filename\"> " + "<key>value</key>" + "<key>value</key>" + "</backup> " + "<backup file=\"filename\"> " + "<key>value</key>" + "<key>value</key>" + "</backup> " + "</directory> " + "Where key is a property name and value is a property value for the given .zip file.";
+    private static final String           returnText        = "an XML fragment listing all eXist backups found in the specified backup directory: " + "<directory> " + "<backup file=\"filename\"> " + "<key>value</key>" + "<key>value</key>" + "</backup> " + "<backup file=\"filename\"> " + "<key>value</key>" + "<key>value</key>" + "</backup> " + "</directory> " + "Where key is a property name and value is a property value for the given .zip file.";
 
-    public final static FunctionSignature signature         = new FunctionSignature( new QName( "list", BackupModule.NAMESPACE_URI, BackupModule.PREFIX ), "Returns an XML fragment listing all eXist backups found in a specified backup directory.", new SequenceType[] {
+    public static final FunctionSignature signature         = new FunctionSignature( new QName( "list", BackupModule.NAMESPACE_URI, BackupModule.PREFIX ), "Returns an XML fragment listing all eXist backups found in a specified backup directory.", new SequenceType[] {
             new FunctionParameterSequenceType( "directory", Type.STRING, Cardinality.EXACTLY_ONE, "The path to the directory to show the list of backups on." )
         }, new FunctionReturnSequenceType( Type.NODE, Cardinality.EXACTLY_ONE, returnText ) );
 
-    public final static QName             DIRECTORY_ELEMENT = new QName( "directory", Namespaces.EXIST_NS, "" );
-    public final static QName             BACKUP_ELEMENT    = new QName( "backup", Namespaces.EXIST_NS, "" );
+    public static final QName             DIRECTORY_ELEMENT = new QName( "directory", Namespaces.EXIST_NS, "" );
+    public static final QName             BACKUP_ELEMENT    = new QName( "backup", Namespaces.EXIST_NS, "" );
 
     public ListBackups(final XQueryContext context )
     {
@@ -119,7 +119,7 @@ public class ListBackups extends BasicFunction
                 }
             }
             builder.endElement();
-            return( builder.getDocument().getNode( nodeNr ) );
+            return builder.getDocument().getNode( nodeNr );
         } catch (final IOException ioe) {
             throw new XPathException(this, ioe);
         }

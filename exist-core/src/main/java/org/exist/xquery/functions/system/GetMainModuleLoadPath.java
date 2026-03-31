@@ -32,9 +32,9 @@ import org.exist.xquery.value.Type;
 
 public class GetMainModuleLoadPath extends BasicFunction {
 
-    protected final static Logger logger = LogManager.getLogger(GetMainModuleLoadPath.class);
+    protected static final Logger logger = LogManager.getLogger(GetMainModuleLoadPath.class);
 
-    public final static FunctionSignature signature =
+    public static final FunctionSignature signature =
 		new FunctionSignature(
 			new QName("get-main-module-load-path", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
 			"Returns the module load path from the root query context. The module load path " +

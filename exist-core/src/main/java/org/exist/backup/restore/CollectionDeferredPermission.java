@@ -43,7 +43,7 @@ import java.util.Optional;
  */
 class CollectionDeferredPermission extends AbstractDeferredPermission {
     
-    private final static Logger LOG = LogManager.getLogger(CollectionDeferredPermission.class);
+    private static final Logger LOG = LogManager.getLogger(CollectionDeferredPermission.class);
     
     public CollectionDeferredPermission(final RestoreListener listener, final XmldbURI collectionUri, final String owner, final String group, final Integer mode) {
         super(listener, collectionUri, owner, group, mode);

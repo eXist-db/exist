@@ -157,10 +157,11 @@ public class SequencedLongHashMapTest {
 	public void putDuplicates() {
 		final SequencedLongHashMap<Integer> map = new SequencedLongHashMap<>();
 
-		for (int i = 0; i < 10; i++)
-			for (int j = 0; j < 10; j++) {
-				map.put(j, j);
-			}
+        for (int i = 0; i < 10; i++) {
+            for (int j = 0; j < 10; j++) {
+                map.put(j, j);
+            }
+        }
 
 		boolean[] test = new boolean[10];
 		for (final LongIterator ki = map.iterator(); ki.hasNext();) {

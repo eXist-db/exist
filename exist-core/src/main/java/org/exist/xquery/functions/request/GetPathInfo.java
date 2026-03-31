@@ -40,7 +40,7 @@ public class GetPathInfo extends StrictRequestFunction {
 
 	protected static final Logger logger = LogManager.getLogger(GetPathInfo.class);
 
-	public final static FunctionSignature signature =
+	public static final FunctionSignature signature =
 		new FunctionSignature(
 			new QName("get-path-info", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
 			"""

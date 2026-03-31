@@ -34,6 +34,7 @@ package org.exist.storage.journal;
 
 import com.evolvedbinary.j8fu.function.BiFunction5E;
 import com.evolvedbinary.j8fu.function.Supplier5E;
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.triggers.TriggerException;
@@ -55,7 +56,6 @@ import org.exist.storage.txn.*;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
 import org.exist.util.*;
-import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.exist.xmldb.XmldbURI;
 import org.junit.After;
 import org.junit.Ignore;
@@ -1695,7 +1695,7 @@ public abstract class AbstractJournalTest<T> {
         return new Checkpoint(transactionId);
     }
 
-    protected static abstract class ExpectedLoggable {
+    protected abstract static class ExpectedLoggable {
         protected final long transactionId;
         protected ExpectedLoggable(final long transactionId) {
             this.transactionId = transactionId;
@@ -1709,8 +1709,12 @@ public abstract class AbstractJournalTest<T> {
 
         @Override
         public boolean equals(final Object o) {
-            if (this == o) return true;
-            if (o == null || o.getClass() != TxnStart.class) return false;
+            if (this == o) {
+                return true;
+            }
+            if (o == null || o.getClass() != TxnStart.class) {
+                return false;
+            }
 
             final TxnStart that = (TxnStart) o;
 
@@ -1730,8 +1734,12 @@ public abstract class AbstractJournalTest<T> {
 
         @Override
         public boolean equals(final Object o) {
-            if (this == o) return true;
-            if (o == null || o.getClass() != TxnAbort.class) return false;
+            if (this == o) {
+                return true;
+            }
+            if (o == null || o.getClass() != TxnAbort.class) {
+                return false;
+            }
 
             final TxnAbort that = (TxnAbort) o;
 
@@ -1751,8 +1759,12 @@ public abstract class AbstractJournalTest<T> {
 
         @Override
         public boolean equals(final Object o) {
-            if (this == o) return true;
-            if (o == null || o.getClass() != TxnCommit.class) return false;
+            if (this == o) {
+                return true;
+            }
+            if (o == null || o.getClass() != TxnCommit.class) {
+                return false;
+            }
 
             final TxnCommit that = (TxnCommit) o;
 
@@ -1772,8 +1784,12 @@ public abstract class AbstractJournalTest<T> {
 
         @Override
         public boolean equals(final Object o) {
-            if (this == o) return true;
-            if (o == null || o.getClass() != Checkpoint.class) return false;
+            if (this == o) {
+                return true;
+            }
+            if (o == null || o.getClass() != Checkpoint.class) {
+                return false;
+            }
 
             final Checkpoint that = (Checkpoint) o;
 
@@ -1821,15 +1837,19 @@ public abstract class AbstractJournalTest<T> {
     protected abstract static class AbstractExpectedStoreValue extends ExpectedLoggable {
         protected final long page;
 
-        public AbstractExpectedStoreValue(final long transactionId, final long page) {
+        protected AbstractExpectedStoreValue(final long transactionId, final long page) {
             super(transactionId);
             this.page = page;
         }
 
         @Override
         public boolean equals(final Object o) {
-            if (this == o) return true;
-            if (o == null || o.getClass() != StoreValueLoggable.class) return false;
+            if (this == o) {
+                return true;
+            }
+            if (o == null || o.getClass() != StoreValueLoggable.class) {
+                return false;
+            }
 
             final StoreValueLoggable that = (StoreValueLoggable) o;
             return that.transactionId == transactionId
@@ -1906,15 +1926,19 @@ public abstract class AbstractJournalTest<T> {
     protected abstract static class AbstractIndexExpectedRemoveValue extends ExpectedLoggable {
         protected final long page;
 
-        public AbstractIndexExpectedRemoveValue(final long transactionId, final long page) {
+        protected AbstractIndexExpectedRemoveValue(final long transactionId, final long page) {
             super(transactionId);
             this.page = page;
         }
 
         @Override
         public boolean equals(final Object o) {
-            if (this == o) return true;
-            if (o == null || o.getClass() != org.exist.storage.index.RemoveValueLoggable.class) return false;
+            if (this == o) {
+                return true;
+            }
+            if (o == null || o.getClass() != org.exist.storage.index.RemoveValueLoggable.class) {
+                return false;
+            }
 
             final org.exist.storage.index.RemoveValueLoggable that = (org.exist.storage.index.RemoveValueLoggable) o;
             return that.transactionId == transactionId
@@ -1967,15 +1991,19 @@ public abstract class AbstractJournalTest<T> {
     protected abstract static class AbstractExpectedAddValue extends ExpectedLoggable {
         protected final long page;
 
-        public AbstractExpectedAddValue(final long transactionId, final long page) {
+        protected AbstractExpectedAddValue(final long transactionId, final long page) {
             super(transactionId);
             this.page = page;
         }
 
         @Override
         public boolean equals(final Object o) {
-            if (this == o) return true;
-            if (o == null || o.getClass() != AddValueLoggable.class) return false;
+            if (this == o) {
+                return true;
+            }
+            if (o == null || o.getClass() != AddValueLoggable.class) {
+                return false;
+            }
 
             final AddValueLoggable that = (AddValueLoggable) o;
             return that.transactionId == transactionId
@@ -2048,15 +2076,19 @@ public abstract class AbstractJournalTest<T> {
     protected abstract static class AbstractExpectedWriteOverflowPage extends ExpectedLoggable {
         protected final long page;
 
-        public AbstractExpectedWriteOverflowPage(final long transactionId, final long page) {
+        protected AbstractExpectedWriteOverflowPage(final long transactionId, final long page) {
             super(transactionId);
             this.page = page;
         }
 
         @Override
         public boolean equals(final Object o) {
-            if (this == o) return true;
-            if (o == null || o.getClass() != WriteOverflowPageLoggable.class) return false;
+            if (this == o) {
+                return true;
+            }
+            if (o == null || o.getClass() != WriteOverflowPageLoggable.class) {
+                return false;
+            }
 
             final WriteOverflowPageLoggable that = (WriteOverflowPageLoggable) o;
             return that.transactionId == transactionId
@@ -2133,15 +2165,19 @@ public abstract class AbstractJournalTest<T> {
     protected abstract static class AbstractExpectedRemovePage extends ExpectedLoggable {
         protected final long page;
 
-        public AbstractExpectedRemovePage(final long transactionId, final long page) {
+        protected AbstractExpectedRemovePage(final long transactionId, final long page) {
             super(transactionId);
             this.page = page;
         }
 
         @Override
         public boolean equals(final Object o) {
-            if (this == o) return true;
-            if (o == null || o.getClass() != RemovePageLoggable.class) return false;
+            if (this == o) {
+                return true;
+            }
+            if (o == null || o.getClass() != RemovePageLoggable.class) {
+                return false;
+            }
 
             final RemovePageLoggable that = (RemovePageLoggable) o;
             return that.transactionId == transactionId
@@ -2187,7 +2223,7 @@ public abstract class AbstractJournalTest<T> {
         return list;
     }
 
-    protected static class ExtendedArrayList<T> extends ArrayList<T> {
+    protected static final class ExtendedArrayList<T> extends ArrayList<T> {
         private ExtendedArrayList(final int initialCapacity) {
             super(initialCapacity);
         }
@@ -2210,7 +2246,7 @@ public abstract class AbstractJournalTest<T> {
         }
     }
 
-    private int runSyncId = 0;
+    private int runSyncId;
     private <T> T runSync(final BrokerTask<T> brokerTask) throws InterruptedException, LockException, SAXException, PermissionDeniedException, EXistException, IOException {
         final String brokerTaskName = "AbstractJournalTest#runSync-" + runSyncId++;
         final Thread thread = new Thread(brokerTask, brokerTaskName);
@@ -2222,7 +2258,7 @@ public abstract class AbstractJournalTest<T> {
     private static class BrokerTask<T> implements Runnable {
         private final BiFunction5E<DBBroker, Txn, T, EXistException, PermissionDeniedException, IOException, SAXException, LockException> task;
         private final BrokerPool pool;
-        private volatile Supplier5E<T, EXistException, PermissionDeniedException, IOException, SAXException, LockException> result = null;
+        private volatile Supplier5E<T, EXistException, PermissionDeniedException, IOException, SAXException, LockException> result;
 
         public BrokerTask(final BrokerPool pool, final BiFunction5E<DBBroker, Txn, T, EXistException, PermissionDeniedException, IOException, SAXException, LockException> task) {
             this.pool = pool;

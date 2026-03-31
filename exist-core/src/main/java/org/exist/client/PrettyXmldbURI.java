@@ -26,7 +26,7 @@ import org.exist.xquery.util.URIUtils;
 
 public class PrettyXmldbURI {
 
-	private XmldbURI target;
+	private final XmldbURI target;
 	
 	public PrettyXmldbURI(XmldbURI target) {
 		this.target=target;

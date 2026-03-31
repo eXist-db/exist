@@ -99,7 +99,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
     private static final int REF_SIZE = 8;
 
     // holds the node type of a node
-    protected short[] nodeKind = null;
+    protected short[] nodeKind;
 
     // the tree level of a node
     protected short[] treeLevel;
@@ -115,8 +115,8 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
     //alphanumeric content
     protected int[] alpha;
     protected int[] alphaLen;
-    protected char[] characters = null;
-    protected int nextChar = 0;
+    protected char[] characters;
+    protected int nextChar;
 
     // attributes
     protected QName[] attrName;
@@ -124,33 +124,33 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
     protected NodeId[] attrNodeId;
     protected int[] attrParent;
     protected String[] attrValue;
-    protected int nextAttr = 0;
+    protected int nextAttr;
 
     // namespaces
-    protected int[] namespaceParent = null;
-    protected QName[] namespaceCode = null;
-    protected int nextNamespace = 0;
+    protected int[] namespaceParent;
+    protected QName[] namespaceCode;
+    protected int nextNamespace;
 
     // the current number of nodes in the doc
     protected int size = 1;
 
     protected int documentRootNode = -1;
 
-    protected String documentURI = null;
+    protected String documentURI;
 
     // reference nodes (link to an external, persistent document fragment)
-    protected NodeProxy[] references = null;
-    protected int nextReferenceIdx = 0;
+    protected NodeProxy[] references;
+    protected int nextReferenceIdx;
     // end reference nodes
 
 
     protected XQueryContext context;
     protected final boolean explicitlyCreated;
     protected final long docId;
-    private Database db = null;
+    private Database db;
     protected NamePool namePool;
 
-    boolean replaceAttribute = false;
+    boolean replaceAttribute;
 
 
     public DocumentImpl(final XQueryContext context, final boolean explicitlyCreated) {
@@ -234,7 +234,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
         nodeName[size] = qname != null ? namePool.getSharedName(qname) : null;
         alpha[size] = -1; // undefined
         next[size] = -1;
-        return (size++);
+        return size++;
     }
 
     public void addChars(final int nodeNum, final char[] ch, final int start, final int len) {
@@ -262,9 +262,9 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
         if(nodeKind == null) {
             init();
         }
-        int len = (s == null) ? 0 : s.length();
+        int len = s == null ? 0 : s.length();
         if(characters == null) {
-            characters = new char[(len > CHAR_BUF_SIZE) ? len : CHAR_BUF_SIZE];
+            characters = new char[len > CHAR_BUF_SIZE ? len : CHAR_BUF_SIZE];
         } else if((nextChar + len) >= characters.length) {
             int newLen = (characters.length * 3) / 2;
             if(newLen < (nextChar + len)) {
@@ -283,7 +283,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
 
     public void appendChars(final int nodeNum, final char[] ch, final int start, final int len) {
         if(characters == null) {
-            characters = new char[(len > CHAR_BUF_SIZE) ? len : CHAR_BUF_SIZE];
+            characters = new char[len > CHAR_BUF_SIZE ? len : CHAR_BUF_SIZE];
         } else if((nextChar + len) >= characters.length) {
             int newLen = (characters.length * 3) / 2;
             if(newLen < (nextChar + len)) {
@@ -301,7 +301,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
     public void appendChars(final int nodeNum, final CharSequence s) {
         final int len = s.length();
         if(characters == null) {
-            characters = new char[(len > CHAR_BUF_SIZE) ? len : CHAR_BUF_SIZE];
+            characters = new char[len > CHAR_BUF_SIZE ? len : CHAR_BUF_SIZE];
         } else if((nextChar + len) >= characters.length) {
             int newLen = (characters.length * 3) / 2;
             if(newLen < (nextChar + len)) {
@@ -374,7 +374,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
         if(alpha[nodeNum] < 0) {
             alpha[nodeNum] = nextAttr;
         }
-        return (nextAttr++);
+        return nextAttr++;
     }
 
     public int addNamespace(final int nodeNum, final QName qname) {
@@ -519,7 +519,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
         if(nodeNum >= size) {
             throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR, "node not found");
         }
-        final NodeImpl node = switch (nodeKind[nodeNum]) {
+        return switch (nodeKind[nodeNum]) {
             case Node.ELEMENT_NODE -> new ElementImpl(getExpression(), this, nodeNum);
             case Node.TEXT_NODE -> new TextImpl(getExpression(), this, nodeNum);
             case Node.COMMENT_NODE -> new CommentImpl(getExpression(), this, nodeNum);
@@ -528,7 +528,6 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
             case NodeImpl.REFERENCE_NODE -> new ReferenceNode(getExpression(), this, nodeNum);
             default -> throw new DOMException(DOMException.NOT_FOUND_ERR, "node not found");
         };
-        return node;
     }
 
     public NodeImpl getLastAttr() {
@@ -1003,7 +1002,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
 
     @Override
     public NodeList getElementsByTagName(final String tagname) {
-        if(tagname != null && tagname.equals(QName.WILDCARD)) {
+        if(QName.WILDCARD.equals(tagname)) {
             return getElementsByTagName(new QName.WildcardLocalPartQName(XMLConstants.DEFAULT_NS_PREFIX));
         } else {
             final QName qname;
@@ -1023,8 +1022,8 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
 
     @Override
     public NodeList getElementsByTagNameNS(final String namespaceURI, final String localName) {
-        final boolean wildcardNS = namespaceURI != null && namespaceURI.equals(QName.WILDCARD);
-        final boolean wildcardLocalPart = localName != null && localName.equals(QName.WILDCARD);
+        final boolean wildcardNS = QName.WILDCARD.equals(namespaceURI);
+        final boolean wildcardLocalPart = QName.WILDCARD.equals(localName);
 
         if(wildcardNS && wildcardLocalPart) {
             return getElementsByTagName(QName.WildcardQName.getInstance());
@@ -1222,7 +1221,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
             final DocumentBuilderReceiver receiver = new DocumentBuilderReceiver(getExpression(), builder);
             try {
                 builder.startDocument();
-                NodeImpl node = (rootNode == null) ? (NodeImpl) getFirstChild() : rootNode;
+                NodeImpl node = rootNode == null ? (NodeImpl) getFirstChild() : rootNode;
                 while(node != null) {
                     copyTo(node, receiver, true);
                     node = (NodeImpl) node.getNextSibling();
@@ -1449,7 +1448,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
     // this is DOM specific
     public int getChildCount() {
         int count = 0;
-        int top = (size > 1) ? 1 : -1;
+        int top = size > 1 ? 1 : -1;
         while(top > 0) {
             ++count;
             top = getNextSiblingFor(top);

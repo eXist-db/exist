@@ -21,9 +21,6 @@
  */
 package org.exist.xquery;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Database;
@@ -32,6 +29,8 @@ import org.exist.storage.DBBroker;
 import org.exist.xquery.value.Sequence;
 
 import javax.annotation.Nullable;
+import java.util.ArrayDeque;
+import java.util.Deque;
 
 /**
  * XQuery profiling output. Profiling information is written to a
@@ -69,21 +68,21 @@ public class Profiler {
      */
     private Logger log = LogManager.getLogger("xquery.profiling");
     
-    private Deque<ProfiledExpr> stack = new ArrayDeque<>();
+    private final Deque<ProfiledExpr> stack = new ArrayDeque<>();
     
     private final StringBuilder buf = new StringBuilder(64);
     
-    private boolean enabled = false;
+    private boolean enabled;
 
-    private boolean logEnabled = false;
+    private boolean logEnabled;
     
-    private int verbosity = 0; 
+    private int verbosity; 
 
-    private PerformanceStats stats;
+    private final PerformanceStats stats;
 
-    private long queryStart = 0;
+    private long queryStart;
 
-    private Database db;
+    private final Database db;
 
     public Profiler(@Nullable final Database db) {
         this.db = db;
@@ -91,7 +90,7 @@ public class Profiler {
         boolean performanceStatsEnabled = false;
         if (db != null) {
             final String xqueryProfilingTraceEnabled = (String) db.getConfiguration().getProperty(PerformanceStatsImpl.CONFIG_PROPERTY_TRACE);
-            performanceStatsEnabled = ("yes".equals(xqueryProfilingTraceEnabled) || "functions".equals(xqueryProfilingTraceEnabled));
+            performanceStatsEnabled = "yes".equals(xqueryProfilingTraceEnabled) || "functions".equals(xqueryProfilingTraceEnabled);
         }
         this.stats = new PerformanceStatsImpl(performanceStatsEnabled, locallyEnabled -> locallyEnabled || (db != null && db.getPerformanceStats().isEnabled()));
     }
@@ -108,8 +107,8 @@ public class Profiler {
      * @param pragma the option to read settings from
      */
     public final void configure(Option pragma) {
-        final String options[] = pragma.tokenizeContents();
-        String params[];
+        final String[] options = pragma.tokenizeContents();
+        String[] params;
         for (String option : options) {
             params = Option.parseKeyValuePair(option);
             if (params != null) {
@@ -180,7 +179,7 @@ public class Profiler {
     }
 
     public final void traceQueryEnd(XQueryContext context) {
-        stats.recordQuery(context.getSource().pathOrShortIdentifier(), (System.currentTimeMillis() - queryStart));
+        stats.recordQuery(context.getSource().pathOrShortIdentifier(), System.currentTimeMillis() - queryStart);
     }
 
     public final void traceFunctionStart(Function function) {
@@ -469,7 +468,7 @@ public class Profiler {
         return truncation.toString();
     }
 
-    private final static class ProfiledExpr {
+    private static final class ProfiledExpr {
         long start;
         Expression expr;
         

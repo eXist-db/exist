@@ -23,9 +23,9 @@ package org.exist.xquery.functions.util;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exist.dom.QName;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.NodeSet;
-import org.exist.dom.QName;
 import org.exist.indexing.IndexWorker;
 import org.exist.indexing.OrderedValuesIndex;
 import org.exist.indexing.QNamedKeysIndex;
@@ -47,7 +47,7 @@ public class IndexKeys extends BasicFunction {
 	
 	protected static final Logger logger = LogManager.getLogger(IndexKeys.class);
 
-    public final static FunctionSignature[] signatures = {
+    public static final FunctionSignature[] signatures = {
     	new FunctionSignature(
                 new QName("index-keys", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
                 "Can be used to query existing range indexes defined on a set of nodes. " +
@@ -160,7 +160,7 @@ public class IndexKeys extends BasicFunction {
                 }
                 final Occurrences[] occur = indexWorker.scanIndex(context, docs, nodes, hints);
                 //TODO : add an extra argument to pass the END_VALUE ?
-                final int len = (max != -1 && occur.length > max ? max : occur.length);
+                final int len = max != -1 && occur.length > max ? max : occur.length;
                 final Sequence[] params = new Sequence[2];
                 ValueSequence data = new ValueSequence();
                 for (int j = 0; j < len; j++) {
@@ -196,7 +196,7 @@ public class IndexKeys extends BasicFunction {
                     occur = t;
                 }
 
-                final int len = (max != -1 && occur.length > max ? max : occur.length);
+                final int len = max != -1 && occur.length > max ? max : occur.length;
                 final Sequence[] params = new Sequence[2];
                 ValueSequence data = new ValueSequence();
                 for (int j = 0; j < len; j++) {

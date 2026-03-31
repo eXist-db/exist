@@ -26,7 +26,7 @@ package org.exist.util.serializer.encodings;
  */
 public class Latin1CharSet extends CharacterSet {
 
-	protected final static CharacterSet instance = new Latin1CharSet();
+	protected static final CharacterSet instance = new Latin1CharSet();
 	
 	/* (non-Javadoc)
 	 * @see org.exist.util.serializer.encodings.CharacterSet#inCharacterSet(char)

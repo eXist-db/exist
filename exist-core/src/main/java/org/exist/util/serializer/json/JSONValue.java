@@ -26,9 +26,9 @@ import java.io.Writer;
 
 public class JSONValue extends JSONNode {
 	
-    public final static String NAME_VALUE = "#text";
+    public static final String NAME_VALUE = "#text";
 
-    private String content = null;
+    private String content;
 
     public JSONValue(final String content) {
         this(content, true);

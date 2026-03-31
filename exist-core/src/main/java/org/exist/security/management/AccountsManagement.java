@@ -23,8 +23,8 @@ package org.exist.security.management;
 
 import org.exist.EXistException;
 import org.exist.config.ConfigurationException;
-import org.exist.security.PermissionDeniedException;
 import org.exist.security.Account;
+import org.exist.security.PermissionDeniedException;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>

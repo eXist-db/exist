@@ -52,8 +52,8 @@ public class URLSource extends AbstractSource {
     private static final String ACCEPT_HEADER = "application/xml,application/xhtml+xml;q=0.9,*/*;q=0.2";
 
     protected final URL url;
-    private URLConnection connection = null;
-    private long lastModified = 0;
+    private URLConnection connection;
+    private long lastModified;
     private int responseCode = HttpURLConnection.HTTP_OK;
 
     public URLSource(final URL url) {

@@ -33,26 +33,26 @@ import java.util.Arrays;
 
 public abstract class Step extends AbstractExpression {
 
-    protected final static Logger LOG = LogManager.getLogger(Step.class);
+    protected static final Logger LOG = LogManager.getLogger(Step.class);
 
     protected int axis = Constants.UNKNOWN_AXIS;
 
-    protected boolean abbreviatedStep = false;
+    protected boolean abbreviatedStep;
 
-    @Nullable protected Predicate[] predicates = null;
+    @Nullable protected Predicate[] predicates;
 
     protected NodeTest test;
 
-    protected boolean inPredicate = false;
+    protected boolean inPredicate;
 
     protected int staticReturnType = Type.ITEM;
 
-    public Step( XQueryContext context, int axis ) {
+    protected Step( XQueryContext context, int axis ) {
         super(context);
         this.axis = axis;
     }
 
-    public Step( XQueryContext context, int axis, NodeTest test ) {
+    protected Step( XQueryContext context, int axis, NodeTest test ) {
         this( context, axis );
         this.test = test;
     }
@@ -200,10 +200,11 @@ public abstract class Step extends AbstractExpression {
         } else {
             result.append( "node()" );
         }
-        if (predicates != null)
+        if (predicates != null) {
             for (final Predicate pred : predicates) {
                 result.append(pred.toString());
             }
+        }
         return result.toString();
     }
 

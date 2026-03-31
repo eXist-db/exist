@@ -36,7 +36,7 @@ import org.exist.xquery.value.Sequence;
  */
 public abstract class CollatingFunction extends Function {
 
-    public final static String THIRD_REL_COLLATION_ARG_EXAMPLE =
+    public static final String THIRD_REL_COLLATION_ARG_EXAMPLE =
         "The third argument $collation-uri is either: " +
         "1) the full URI e.g. \"http://www.w3.org/2013/collation/UCA?lang=en;strength=secondary\", or " +
         "2) relative where you only need to " +
@@ -45,7 +45,7 @@ public abstract class CollatingFunction extends Function {
         "\"lang=sv-SE;strength=primary;decomposition=standard\" " +
         "or \"swedish\".";
 
-    public CollatingFunction(XQueryContext context, FunctionSignature signature) {
+    protected CollatingFunction(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
     }
 

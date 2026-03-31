@@ -22,12 +22,12 @@
 
 package org.exist.protocolhandler.xmlrpc;
 
-import java.io.IOException;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.protocolhandler.xmldb.XmldbURL;
 import org.exist.storage.io.BlockingOutputStream;
+
+import java.io.IOException;
 
 /**
  * Wrap XmlrpcDownload class into a runnable for XmlrpcInputStream.

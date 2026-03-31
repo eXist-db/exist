@@ -40,10 +40,10 @@ public interface PackageLoader {
      */
     public static class Version {
 
-        String min = null;
-        String max = null;
-        String semVer = null;
-        String version = null;
+        String min;
+        String max;
+        String semVer;
+        String version;
 
         public String getMin() {
             return min;

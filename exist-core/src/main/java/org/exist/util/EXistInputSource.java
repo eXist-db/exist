@@ -29,7 +29,7 @@ import java.io.Closeable;
 @NotThreadSafe
 public abstract class EXistInputSource extends InputSource implements Closeable {
 
-	private boolean closed = false;
+	private boolean closed;
 
 	/**
 	 * Get the length of the byte stream.

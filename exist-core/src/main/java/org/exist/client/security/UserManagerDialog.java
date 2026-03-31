@@ -21,16 +21,8 @@
  */
 package org.exist.client.security;
 
-import org.exist.client.DialogCompleteWithResponse;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.io.Serial;
-import java.util.Arrays;
-import java.util.Properties;
-import javax.swing.JOptionPane;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableModel;
 import org.exist.client.ClientFrame;
+import org.exist.client.DialogCompleteWithResponse;
 import org.exist.client.HighlightedTableCellRenderer;
 import org.exist.client.InteractiveClient;
 import org.exist.security.AXSchemaType;
@@ -41,6 +33,15 @@ import org.exist.security.Group;
 import org.exist.security.SecurityManager;
 import org.exist.xmldb.UserManagementService;
 import org.xmldb.api.base.XMLDBException;
+
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.Serial;
+import java.util.Arrays;
+import java.util.Properties;
 
 /**
  *
@@ -55,8 +56,8 @@ public class UserManagerDialog extends javax.swing.JFrame {
     private final String currentUser;
     private final ClientFrame client;
     
-    private DefaultTableModel usersTableModel = null;
-    private DefaultTableModel groupsTableModel = null;
+    private DefaultTableModel usersTableModel;
+    private DefaultTableModel groupsTableModel;
 
     public UserManagerDialog(final UserManagementService userManagementService, final String currentUser, final ClientFrame client) {
         this.userManagementService = userManagementService;
@@ -72,11 +73,11 @@ public class UserManagerDialog extends javax.swing.JFrame {
         if(usersTableModel == null) {
             
             try {
-                final Account accounts[] = userManagementService.getAccounts();
+                final Account[] accounts = userManagementService.getAccounts();
                 
                 Arrays.sort(accounts, new AccountComparator());
 
-                final String tableData[][] = new String[accounts.length][3];
+                final String[][] tableData = new String[accounts.length][3];
                 for(int i = 0; i < accounts.length; i++) {
                     tableData[i][0] = accounts[i].getName();
                     tableData[i][1] = accounts[i].getMetadataValue(AXSchemaType.FULLNAME);
@@ -100,11 +101,11 @@ public class UserManagerDialog extends javax.swing.JFrame {
         if(groupsTableModel == null) {
             
             try {
-                final String groupNames[] = userManagementService.getGroups();
+                final String[] groupNames = userManagementService.getGroups();
 
                 Arrays.sort(groupNames);
                 
-                final String tableData[][] = new String[groupNames.length][2];
+                final String[][] tableData = new String[groupNames.length][2];
                 for(int i = 0; i < groupNames.length; i++) {
                     tableData[i][0] = groupNames[i];
                     tableData[i][1] = userManagementService.getGroup(groupNames[i]).getMetadataValue(EXistSchemaType.DESCRIPTION);
@@ -130,7 +131,7 @@ public class UserManagerDialog extends javax.swing.JFrame {
         }
         
         try {
-            final Account accounts[] = userManagementService.getAccounts();
+            final Account[] accounts = userManagementService.getAccounts();
 
             Arrays.sort(accounts, new AccountComparator());
 
@@ -153,7 +154,7 @@ public class UserManagerDialog extends javax.swing.JFrame {
         }
         
         try {
-            final String groupNames[] = userManagementService.getGroups();
+            final String[] groupNames = userManagementService.getGroups();
 
             Arrays.sort(groupNames);
 
@@ -439,8 +440,8 @@ public class UserManagerDialog extends javax.swing.JFrame {
         final boolean userSelected = tblUsers.getSelectedRow() > -1;
         final String selectedUsername = getSelectedUsername();
         
-        boolean canModify = userSelected && !selectedUsername.equals(SecurityManager.SYSTEM);
-        boolean canDelete = userSelected && !(selectedUsername.equals(SecurityManager.SYSTEM) || selectedUsername.equals(SecurityManager.DBA_USER) || selectedUsername.equals(SecurityManager.GUEST_USER));
+        boolean canModify = userSelected && !SecurityManager.SYSTEM.equals(selectedUsername);
+        boolean canDelete = userSelected && !(SecurityManager.SYSTEM.equals(selectedUsername) || SecurityManager.DBA_USER.equals(selectedUsername) || SecurityManager.GUEST_USER.equals(selectedUsername));
         miEditUser.setEnabled(canModify);
         miRemoveUser.setEnabled(canDelete);
         
@@ -482,7 +483,7 @@ public class UserManagerDialog extends javax.swing.JFrame {
         final boolean groupSelected = tblGroups.getSelectedRow() > -1;
         final String selectedGroup = getSelectedGroup();
         
-        boolean canDelete = groupSelected && !(selectedGroup.equals(SecurityManager.DBA_GROUP) || selectedGroup.equals(SecurityManager.GUEST_GROUP));
+        boolean canDelete = groupSelected && !(SecurityManager.DBA_GROUP.equals(selectedGroup) || SecurityManager.GUEST_GROUP.equals(selectedGroup));
         
         miRemoveGroup.setEnabled(canDelete);
         

@@ -36,12 +36,13 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import org.exist.xquery.*;
+import org.exist.xquery.modules.ModuleUtils;
+import org.exist.xquery.modules.ModuleUtils.ContextMapEntryModifier;
 
+import javax.annotation.Nullable;
 import java.sql.Connection;
 import java.sql.SQLException;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -49,11 +50,6 @@ import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.exist.xquery.modules.ModuleUtils;
-import org.exist.xquery.modules.ModuleUtils.ContextMapEntryModifier;
-
-import javax.annotation.Nullable;
 
 import static org.exist.xquery.FunctionDSL.functionDefs;
 
@@ -64,11 +60,11 @@ import static org.exist.xquery.FunctionDSL.functionDefs;
  */
 public class SQLModule extends AbstractInternalModule {
 
-    protected final static Logger LOG = LogManager.getLogger(SQLModule.class);
-    public final static String NAMESPACE_URI = "http://exist-db.org/xquery/sql";
-    public final static String PREFIX = "sql";
-    public final static String INCLUSION_DATE = "2006-09-25";
-    public final static String RELEASED_IN_VERSION = "eXist-1.2";
+    protected static final Logger LOG = LogManager.getLogger(SQLModule.class);
+    public static final String NAMESPACE_URI = "http://exist-db.org/xquery/sql";
+    public static final String PREFIX = "sql";
+    public static final String INCLUSION_DATE = "2006-09-25";
+    public static final String RELEASED_IN_VERSION = "eXist-1.2";
 
     public static final FunctionDef[] functions = functionDefs(
             functionDefs(GetConnectionFunction.class, GetConnectionFunction.FS_GET_CONNECTION),
@@ -79,8 +75,8 @@ public class SQLModule extends AbstractInternalModule {
             functionDefs(PrepareFunction.class, PrepareFunction.signatures)
     );
 
-    public final static String CONNECTIONS_CONTEXTVAR = "_eXist_sql_connections";
-    public final static String PREPARED_STATEMENTS_CONTEXTVAR = "_eXist_sql_prepared_statements";
+    public static final String CONNECTIONS_CONTEXTVAR = "_eXist_sql_connections";
+    public static final String PREPARED_STATEMENTS_CONTEXTVAR = "_eXist_sql_prepared_statements";
 
     private static final Map<String, HikariDataSource> CONNECTION_POOLS = new ConcurrentHashMap<>();
     private static final Pattern POOL_NAME_PATTERN = Pattern.compile("(pool\\.[0-9]+)\\.name");

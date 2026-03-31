@@ -21,15 +21,15 @@
  */
 package org.exist.client;
 
-import java.io.File;
-import java.net.URISyntaxException;
-import java.nio.file.Path;
-import java.util.*;
-
 import org.exist.util.OSUtil;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.util.URIUtils;
 import se.softhouse.jargo.*;
+
+import java.io.File;
+import java.net.URISyntaxException;
+import java.nio.file.Path;
+import java.util.*;
 
 import static org.exist.util.ArgumentUtil.*;
 import static se.softhouse.jargo.Arguments.*;

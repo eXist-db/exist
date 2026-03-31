@@ -24,13 +24,6 @@ package org.exist.xquery;
 import antlr.RecognitionException;
 import antlr.TokenStreamException;
 import antlr.collections.AST;
-
-import java.io.*;
-import java.text.NumberFormat;
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-
 import com.evolvedbinary.j8fu.tuple.Tuple3;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -53,6 +46,11 @@ import org.exist.xquery.util.HTTPUtils;
 import org.exist.xquery.value.Sequence;
 
 import javax.annotation.Nullable;
+import java.io.*;
+import java.text.NumberFormat;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
 
 
 /**
@@ -60,7 +58,7 @@ import javax.annotation.Nullable;
  */
 public class XQuery {
 
-    private final static Logger LOG = LogManager.getLogger(XQuery.class);
+    private static final Logger LOG = LogManager.getLogger(XQuery.class);
 
     /**
      * Compiles an XQuery from a String.

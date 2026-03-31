@@ -22,17 +22,11 @@
 
 package org.exist.protocolhandler.embedded;
 
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
-
 import com.evolvedbinary.j8fu.Either;
 import com.evolvedbinary.j8fu.lazy.LazyValE;
 import net.jcip.annotations.NotThreadSafe;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.dom.persistent.BinaryDocument;
@@ -51,6 +45,10 @@ import org.exist.xmldb.XmldbURI;
 import org.xml.sax.SAXException;
 
 import javax.annotation.Nullable;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 
 import static com.evolvedbinary.j8fu.Either.Left;
 import static com.evolvedbinary.j8fu.Either.Right;
@@ -68,7 +66,7 @@ public class EmbeddedInputStream extends InputStream {
     private static final Logger LOG = LogManager.getLogger(EmbeddedInputStream.class);
     private final XmldbURL url;
     private final LazyValE<InputStream, IOException> underlyingStream;
-    private boolean closed = false;
+    private boolean closed;
 
     /**
      * @param url Location of document in database.

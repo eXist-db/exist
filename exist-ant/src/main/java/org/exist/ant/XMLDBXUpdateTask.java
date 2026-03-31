@@ -37,8 +37,8 @@ import org.xmldb.api.modules.XUpdateQueryService;
  */
 public class XMLDBXUpdateTask extends AbstractXMLDBTask
 {
-    private String resource = null;
-    private String commands = null;
+    private String resource;
+    private String commands;
 
     @Override
     public void execute() throws BuildException

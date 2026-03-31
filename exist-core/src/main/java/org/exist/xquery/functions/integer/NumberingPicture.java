@@ -33,7 +33,7 @@ import java.util.Optional;
  * Format numbers according to rule 9 (any other numbering sequence)
  * {@see https://www.w3.org/TR/xpath-functions-31/#formatting-integers}
  */
-class NumberingPicture extends IntegerPicture {
+final class NumberingPicture extends IntegerPicture {
 
     // Set up the code point ranges we accept as numberings.
     private static final Map<Integer, Integer> rangesForCodePoint = new HashMap<>();

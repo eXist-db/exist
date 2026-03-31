@@ -21,27 +21,21 @@
  */
 package org.exist.xquery.modules.file;
 
-import java.io.IOException;
-import java.nio.file.FileAlreadyExistsException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.attribute.FileAttribute;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.BooleanValue;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
+
+import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.FileAttribute;
 
 /**
  * @see java.nio.file.Files#createDirectory(Path, FileAttribute[])
@@ -52,8 +46,8 @@ import org.exist.xquery.value.Type;
  */
 public class DirectoryCreate extends BasicFunction {
 
-    private final static Logger logger = LogManager.getLogger(DirectoryCreate.class);
-    public final static FunctionSignature signatures[] = {
+    private static final Logger logger = LogManager.getLogger(DirectoryCreate.class);
+    public static final FunctionSignature[] signatures = {
         new FunctionSignature(
                 new QName("mkdir", FileModule.NAMESPACE_URI, FileModule.PREFIX),
                 "Create a directory.  This method is only available to the DBA role.",

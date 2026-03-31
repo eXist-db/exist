@@ -38,34 +38,34 @@ package org.exist.xquery.util;
  */
 public class Error {
 
-    public final static String FUNC_RETURN_CARDINALITY = "D01";
+    public static final String FUNC_RETURN_CARDINALITY = "D01";
     
-    public final static String FUNC_PARAM_CARDINALITY = "D02";
+    public static final String FUNC_PARAM_CARDINALITY = "D02";
     
-    public final static String FUNC_RETURN_TYPE = "D03";
+    public static final String FUNC_RETURN_TYPE = "D03";
     
-    public final static String TYPE_MISMATCH = "D04";
+    public static final String TYPE_MISMATCH = "D04";
     
-    public final static String NODE_COMP_TYPE_MISMATCH = "D05";
+    public static final String NODE_COMP_TYPE_MISMATCH = "D05";
     
-    public final static String FUNC_PARAM_TYPE = "D06";
+    public static final String FUNC_PARAM_TYPE = "D06";
     
-    public final static String VAR_TYPE_MISMATCH = "D07";
+    public static final String VAR_TYPE_MISMATCH = "D07";
 	
-	public final static String UPDATE_SELECT_TYPE = "D08";
+	public static final String UPDATE_SELECT_TYPE = "D08";
 	
-	public final static String UPDATE_EMPTY_CONTENT = "D09";
+	public static final String UPDATE_EMPTY_CONTENT = "D09";
 	
-	public final static String UPDATE_REPLACE_ELEM_TYPE = "D10";
+	public static final String UPDATE_REPLACE_ELEM_TYPE = "D10";
     
-    public final static String FUNC_EMPTY_SEQ_DISALLOWED = "S01";
+    public static final String FUNC_EMPTY_SEQ_DISALLOWED = "S01";
     
-    public final static String FUNC_PARAM_TYPE_STATIC = "S02";
+    public static final String FUNC_PARAM_TYPE_STATIC = "S02";
 	
-	public final static String FUNC_NOT_FOUND = "S03";
+	public static final String FUNC_NOT_FOUND = "S03";
      
     private final String errCode;
-    private Object[] args = null;
+    private Object[] args;
     
     /**
      * Creates a new error with the specified message id.

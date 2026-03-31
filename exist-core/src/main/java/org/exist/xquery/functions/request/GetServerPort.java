@@ -40,7 +40,7 @@ public class GetServerPort extends StrictRequestFunction {
 
 	protected static final Logger logger = LogManager.getLogger(GetServerPort.class);
 
-	public final static FunctionSignature signature =
+	public static final FunctionSignature signature =
 		new FunctionSignature(
 			new QName("get-server-port", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
 			"Returns the server port of the current request.",

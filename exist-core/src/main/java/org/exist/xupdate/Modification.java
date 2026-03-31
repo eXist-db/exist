@@ -21,12 +21,6 @@
  */
 package org.exist.xupdate;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.TreeMap;
-
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import org.apache.logging.log4j.LogManager;
@@ -37,12 +31,7 @@ import org.exist.collections.ManagedLocks;
 import org.exist.collections.triggers.DocumentTrigger;
 import org.exist.collections.triggers.DocumentTriggers;
 import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.persistent.DefaultDocumentSet;
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.DocumentSet;
-import org.exist.dom.persistent.MutableDocumentSet;
-import org.exist.dom.persistent.NodeSet;
-import org.exist.dom.persistent.StoredNode;
+import org.exist.dom.persistent.*;
 import org.exist.security.PermissionDeniedException;
 import org.exist.source.Source;
 import org.exist.source.StringSource;
@@ -62,6 +51,11 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import javax.annotation.Nullable;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Base class for all XUpdate modifications.
@@ -70,25 +64,25 @@ import javax.annotation.Nullable;
  */
 public abstract class Modification {
 
-	protected final static Logger LOG = LogManager.getLogger(Modification.class);
+	protected static final Logger LOG = LogManager.getLogger(Modification.class);
 
 	/** select Statement in the current XUpdate definition;
 	 * defines the set of nodes to which this XUpdate might apply. */
-	protected String selectStmt = null;
+	protected String selectStmt;
 	
     /**
      * NodeList to keep track of created document fragments within
      * the currently processed XUpdate modification.
      * see {@link XUpdateProcessor#contents}
      */
-	protected NodeList content = null;
+	protected NodeList content;
 	protected DBBroker broker;
 	/** Documents concerned by this XUpdate modification,
 	 * i.e. the set of documents to which this XUpdate might apply. */
 	protected DocumentSet docs;
 	protected Map<String, String> namespaces;
 	protected Map<String, Object> variables;
-	protected ManagedLocks<ManagedDocumentLock> lockedDocumentsLocks = null;
+	protected ManagedLocks<ManagedDocumentLock> lockedDocumentsLocks;
 	protected MutableDocumentSet modifiedDocuments = new DefaultDocumentSet();
     protected Int2ObjectMap<DocumentTrigger> triggers;
 
@@ -104,7 +98,7 @@ public abstract class Modification {
 	 * @param namespaces the namespace bindings
 	 * @param variables the variable bindings
 	 */
-	public Modification(DBBroker broker, DocumentSet docs, String selectStmt,
+	protected Modification(DBBroker broker, DocumentSet docs, String selectStmt,
 	        Map<String, String> namespaces, Map<String, Object> variables) {
 		this.selectStmt = selectStmt;
 		this.broker = broker;
@@ -164,12 +158,13 @@ public abstract class Modification {
 		context.setStaticallyKnownDocuments(docs);
 		declareNamespaces(context);
 		declareVariables(context);
-		if(compiled == null)
-			try {
-				compiled = xquery.compile(context, source);
-			} catch (final IOException e) {
-				throw new EXistException("An exception occurred while compiling the query: " + e.getMessage());
-			}
+        if (compiled == null) {
+            try {
+                compiled = xquery.compile(context, source);
+            } catch (final IOException e) {
+                throw new EXistException("An exception occurred while compiling the query: " + e.getMessage());
+            }
+        }
 		
 		Sequence resultSeq = null;
 		try {
@@ -240,7 +235,7 @@ public abstract class Modification {
 	        // during the modification
 	        lockedDocumentsLocks = lockedDocuments.lock(broker, true);
 	        
-		    final StoredNode ql[] = new StoredNode[nl.getLength()];		    
+		    final StoredNode[] ql = new StoredNode[nl.getLength()];		    
 			for (int i = 0; i < ql.length; i++) {
 				ql[i] = (StoredNode)nl.item(i);
 				final DocumentImpl doc = ql[i].getOwnerDocument();

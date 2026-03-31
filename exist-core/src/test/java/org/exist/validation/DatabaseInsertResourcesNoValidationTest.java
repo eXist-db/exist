@@ -57,8 +57,8 @@ public class DatabaseInsertResourcesNoValidationTest {
                     .build(),
             true,
             true);
-    private final static String TEST_COLLECTION = "testNoValidationInsert";
-    private final static String VALIDATION_HOME_COLLECTION_URI = "/db/" + TEST_COLLECTION + "/" + TestTools.VALIDATION_HOME_COLLECTION;
+    private static final String TEST_COLLECTION = "testNoValidationInsert";
+    private static final String VALIDATION_HOME_COLLECTION_URI = "/db/" + TEST_COLLECTION + "/" + TestTools.VALIDATION_HOME_COLLECTION;
 
     @BeforeClass
     public static void startup() throws Exception {

@@ -57,13 +57,13 @@ public class LockTableBenchmark {
 
     @State(Scope.Thread)
     public static class EventsState {
-        private int btreeReads = 0;
-        private int collectionIntentionReads = 0;
-        private int collectionReads = 0;
-        private int documentReads = 0;
+        private int btreeReads;
+        private int collectionIntentionReads;
+        private int collectionReads;
+        private int documentReads;
 
-        private int dataSubCollectionIndex = 0;
-        private int documentsIndex = 0;
+        private int dataSubCollectionIndex;
+        private int documentsIndex;
     }
 
     @Benchmark
@@ -186,7 +186,7 @@ public class LockTableBenchmark {
         }
     }
 
-    public static void main(final String args[]) {
+    public static void main(final String[] args) {
         // NOTE: just for running with the java debugger
         LockTableBenchmark lockTableBenchmark = new LockTableBenchmark();
         LockTableState lockTableState = new LockTableState();

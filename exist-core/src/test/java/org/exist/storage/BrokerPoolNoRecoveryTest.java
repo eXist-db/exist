@@ -21,13 +21,13 @@
  */
 package org.exist.storage;
 
-import static org.junit.Assert.assertNotNull;
-
 import org.exist.test.ExistEmbeddedServer;
 import org.junit.Rule;
 import org.junit.Test;
 
 import java.util.Properties;
+
+import static org.junit.Assert.assertNotNull;
 
 /**
  * @author <a href="mailto:ohumbel@gmail.com">Otmar Humbel</a>

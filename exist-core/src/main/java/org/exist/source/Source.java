@@ -21,16 +21,15 @@
  */
 package org.exist.source;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.io.InputStream;
-import java.nio.charset.Charset;
-
 import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 
 import javax.annotation.Nullable;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.nio.charset.Charset;
 
 
 /**

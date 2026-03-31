@@ -23,28 +23,21 @@ package org.exist.xquery.modules.spatial;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.QName;
+import org.exist.dom.persistent.NodeProxy;
 import org.exist.indexing.spatial.AbstractGMLJDBCIndex;
+import org.exist.indexing.spatial.AbstractGMLJDBCIndex.SpatialOperator;
 import org.exist.indexing.spatial.AbstractGMLJDBCIndexWorker;
 import org.exist.indexing.spatial.SpatialIndexException;
-import org.exist.indexing.spatial.AbstractGMLJDBCIndex.SpatialOperator;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.IndexUseReporter;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
-import org.w3c.dom.Element;
-
+import org.exist.xquery.value.*;
 import org.locationtech.jts.geom.Geometry;
+import org.w3c.dom.Element;
 
 /**
  * @author <a href="mailto:pierrick.brihaye@free.fr">Pierrick Brihaye</a>
@@ -54,9 +47,9 @@ public class FunSpatialSearch extends BasicFunction implements IndexUseReporter 
     protected static final FunctionParameterSequenceType NODES_PARAMETER = new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE, "The nodes");
     protected static final FunctionParameterSequenceType GEOMETRY_PARAMETER = new FunctionParameterSequenceType("geometry", Type.NODE, Cardinality.ZERO_OR_ONE, "The geometry");
     protected static final Logger logger = LogManager.getLogger(FunSpatialSearch.class);
-    boolean hasUsedIndex = false;
+    boolean hasUsedIndex;
 
-    public final static FunctionSignature[] signatures = {
+    public static final FunctionSignature[] signatures = {
         new FunctionSignature(
             new QName("equals", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
             "Returns the nodes in $nodes that contain a geometry which is equal to geometry $geometry",
@@ -131,9 +124,10 @@ public class FunSpatialSearch extends BasicFunction implements IndexUseReporter 
                 }
                 Geometry EPSG4326_geometry = null;
                 final NodeValue geometryNode = (NodeValue) args[1].itemAt(0);
-                if (geometryNode.getImplementationType() == NodeValue.PERSISTENT_NODE) 
+                if (geometryNode.getImplementationType() == NodeValue.PERSISTENT_NODE) {
                     //Get the geometry from the index if available
                     EPSG4326_geometry = indexWorker.getGeometryForNode(context.getBroker(), (NodeProxy)geometryNode, true);
+                }
                 if (EPSG4326_geometry == null) {
                     final String sourceCRS = ((Element)geometryNode.getNode()).getAttribute("srsName").trim();
                     final Geometry geometry = indexWorker.streamNodeToGeometry(context, geometryNode);
@@ -144,22 +138,23 @@ public class FunSpatialSearch extends BasicFunction implements IndexUseReporter 
                     throw new XPathException(this, "Unable to get a geometry from the node");
                 }
                 int spatialOp = SpatialOperator.UNKNOWN;
-                if (isCalledAs("equals"))
+                if (isCalledAs("equals")) {
                     spatialOp = SpatialOperator.EQUALS;
-                else if (isCalledAs("disjoint"))
+                } else if (isCalledAs("disjoint")) {
                     spatialOp = SpatialOperator.DISJOINT;
-                else if (isCalledAs("intersects"))
+                } else if (isCalledAs("intersects")) {
                     spatialOp = SpatialOperator.INTERSECTS;
-                else if (isCalledAs("touches"))
+                } else if (isCalledAs("touches")) {
                     spatialOp = SpatialOperator.TOUCHES;
-                else if (isCalledAs("crosses"))
+                } else if (isCalledAs("crosses")) {
                     spatialOp = SpatialOperator.CROSSES;
-                else if (isCalledAs("within"))
+                } else if (isCalledAs("within")) {
                     spatialOp = SpatialOperator.WITHIN;
-                else if (isCalledAs("contains"))
+                } else if (isCalledAs("contains")) {
                     spatialOp = SpatialOperator.CONTAINS;
-                else if (isCalledAs("overlaps"))
+                } else if (isCalledAs("overlaps")) {
                     spatialOp = SpatialOperator.OVERLAPS;
+                }
                 //Search the EPSG:4326 in the index
                 result = indexWorker.search(context.getBroker(), nodes.toNodeSet(), EPSG4326_geometry, spatialOp);
                 hasUsedIndex = true;

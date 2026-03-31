@@ -21,18 +21,15 @@
  */
 package org.exist.security;
 
-import java.util.Arrays;
-
 import org.exist.TestUtils;
 import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.internal.aider.UserAider;
 import org.exist.test.ExistWebServer;
 import org.exist.xmldb.EXistCollectionManagementService;
-import org.exist.xmldb.UserManagementService;
 import org.exist.xmldb.EXistXPathQueryService;
+import org.exist.xmldb.UserManagementService;
 import org.exist.xmldb.XmldbURI;
 import org.junit.After;
-import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -48,6 +45,10 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.BinaryResource;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
+
+import java.util.Arrays;
+
+import static org.junit.Assert.*;
 
 @RunWith(Parameterized.class)
 public class XMLDBSecurityTest {
@@ -101,7 +102,7 @@ public class XMLDBSecurityTest {
         final Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "guest", "guest");
         final UserManagementService ums = test.getService(UserManagementService.class);
         // grant myself all rights ;-)
-        ums.chmod(0777);
+        ums.chmod(511);
     }
 
     @Test(expected=XMLDBException.class) // fails since guest has no write permissions
@@ -110,7 +111,7 @@ public class XMLDBSecurityTest {
         final Resource resource = test.getResource("test.xml");
         final UserManagementService ums = test.getService(UserManagementService.class);
         // grant myself all rights ;-)
-        ums.chmod(resource, 0777);
+        ums.chmod(resource, 511);
     }
 
     @Test(expected=XMLDBException.class) // fails since guest has no write permissions
@@ -176,7 +177,7 @@ public class XMLDBSecurityTest {
         final UserManagementService ums = test.getService(UserManagementService.class);
 
         // grant myself all rights ;-)
-        ums.chmod(07777);
+        ums.chmod(4095);
     }
 
     @Test
@@ -184,7 +185,7 @@ public class XMLDBSecurityTest {
         final Collection test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1");
         final UserManagementService ums = test.getService(UserManagementService.class);
         // grant myself all rights ;-)
-        ums.chmod(07777);
+        ums.chmod(4095);
 
         assertEquals("rwsrwsrwt", ums.getPermissions(test).toString());
     }
@@ -195,7 +196,7 @@ public class XMLDBSecurityTest {
         final Resource resource = test.getResource("test.xml");
         final UserManagementService ums = test.getService(UserManagementService.class);
         // grant myself all rights ;-)
-        ums.chmod(resource, 0777);
+        ums.chmod(resource, 511);
     }
 
     @Test
@@ -204,7 +205,7 @@ public class XMLDBSecurityTest {
         final Resource resource = test.getResource("test.xml");
         final UserManagementService ums = test.getService(UserManagementService.class);
         // grant myself all rights ;-)
-        ums.chmod(resource, 0777);
+        ums.chmod(resource, 511);
     }
 
     /**
@@ -1011,7 +1012,7 @@ public class XMLDBSecurityTest {
         //pre-create the destination and set writable by all
         final Collection dest = cms.createCollection("copy-of-source");
         final UserManagementService ums = dest.getService(UserManagementService.class);
-        ums.chmod(0777);
+        ums.chmod(511);
 
         
         //as the 'test3' user copy the collection
@@ -1115,13 +1116,13 @@ public class XMLDBSecurityTest {
         //pre-create the destination and set writable by all
         final Collection dest = cms.createCollection("copy-of-source");
         UserManagementService ums = dest.getService(UserManagementService.class);
-        ums.chmod(0777);
+        ums.chmod(511);
         
         //pre-create a destination resource and set no access to group and others
         Resource resDestSource1 = dest.createResource("source1.xml", XMLResource.class);
         resDestSource1.setContent("<old/>");
         dest.storeResource(resDestSource1);
-        ums.chmod(resDestSource1, 0700);
+        ums.chmod(resDestSource1, 448);
         
         
         //as the 'test3' user copy the collection
@@ -1220,7 +1221,7 @@ public class XMLDBSecurityTest {
         resDest.setContent("<old/>");
         test.storeResource(resDest);
         UserManagementService ums = test.getService(UserManagementService.class);
-        ums.chmod(resDest, 0777);
+        ums.chmod(resDest, 511);
 
         
         //as the 'test3' user copy the resource
@@ -1272,7 +1273,7 @@ public class XMLDBSecurityTest {
         //pre-create the dest collection and grant access to all (0777)
         Collection dest = cms.createCollection("copy-of-source");
         UserManagementService ums = dest.getService(UserManagementService.class);
-        ums.chmod(0777);
+        ums.chmod(511);
 
         //as the 'test3' user copy the collection
         test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest3", "test3", "test3");
@@ -1303,7 +1304,7 @@ public class XMLDBSecurityTest {
 
         assertEquals("test1", permissions.getOwner().getName());
         assertEquals("users", permissions.getGroup().getName());
-        assertEquals(0770, permissions.getMode());
+        assertEquals(504, permissions.getMode());
     }
     
     @Test
@@ -1321,7 +1322,7 @@ public class XMLDBSecurityTest {
 
         assertEquals("test1", permissions.getOwner().getName());
         assertEquals("users", permissions.getGroup().getName());
-        assertEquals(0777, permissions.getMode());
+        assertEquals(511, permissions.getMode());
     }
     
     /**
@@ -1506,13 +1507,13 @@ public class XMLDBSecurityTest {
         //pre-create the destination and set writable by all
         final Collection dest = cms.createCollection("copy-of-source");
         UserManagementService ums = dest.getService(UserManagementService.class);
-        ums.chmod(0777);
+        ums.chmod(511);
         
         //pre-create a destination resource and set access for all
         Resource resDestSource1 = dest.createResource("source1.xml", XMLResource.class);
         resDestSource1.setContent("<old/>");
         dest.storeResource(resDestSource1);
-        ums.chmod(resDestSource1, 0777);
+        ums.chmod(resDestSource1, 511);
         
         //as the 'test3' user copy the collection
         test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest3", "test3", "test3");
@@ -1562,7 +1563,7 @@ public class XMLDBSecurityTest {
         //set the xquery to be owned by 'test1' and set it 'setuid', and set it 'rx' by 'users' group so 'test2' can execute it!
         UserManagementService ums = test.getService(UserManagementService.class);
         xqueryResource = test.getResource("setuid.xquery");
-        ums.chmod(xqueryResource, 04750);
+        ums.chmod(xqueryResource, 2536);
 
         //create a collection for the XQuery to write into
         final CollectionManagementService cms = test.getService(CollectionManagementService.class);
@@ -1570,7 +1571,7 @@ public class XMLDBSecurityTest {
 
         //only allow the user 'test1' to write into the collection
         ums = colForSetUid.getService(UserManagementService.class);
-        ums.chmod(0700);
+        ums.chmod(448);
 
         //execute the XQuery as the 'test2' user... it should become 'setuid' of 'test1' and succeed.
         final Collection test2 = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test2", "test2");
@@ -1599,7 +1600,7 @@ public class XMLDBSecurityTest {
         //set the xquery to be owned by 'test1' and do NOT set it 'setuid', and do set it 'rx' by 'users' group so 'test2' can execute it!
         UserManagementService ums = test.getService(UserManagementService.class);
         xqueryResource = test.getResource("not_setuid.xquery");
-        ums.chmod(xqueryResource, 00750); //NOT SETUID
+        ums.chmod(xqueryResource, 488); //NOT SETUID
 
         //create a collection for the XQuery to write into
         final CollectionManagementService cms = test.getService(CollectionManagementService.class);
@@ -1607,7 +1608,7 @@ public class XMLDBSecurityTest {
 
         //only allow the user 'test1' to write into the collection
         ums = colForSetUid.getService(UserManagementService.class);
-        ums.chmod(0700);
+        ums.chmod(448);
 
         //execute the XQuery as the 'test2' user... it should become 'setuid' of 'test1' and succeed.
         final Collection test2 = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test2", "test2");
@@ -1633,7 +1634,7 @@ public class XMLDBSecurityTest {
         UserManagementService ums = test.getService(UserManagementService.class);
         xqueryResource = test.getResource("setgid.xquery");
         ums.chown(xqueryResource, ums.getAccount("test1"), "users");
-        ums.chmod(xqueryResource, 02705); //setgid
+        ums.chmod(xqueryResource, 1477); //setgid
 
         //create a collection for the XQuery to write into
         final CollectionManagementService cms = test.getService(CollectionManagementService.class);
@@ -1641,7 +1642,7 @@ public class XMLDBSecurityTest {
 
         //only allow the group 'users' to write into the collection
         ums = colForSetUid.getService(UserManagementService.class);
-        ums.chmod(0570);
+        ums.chmod(376);
 
         //execute the XQuery as the 'test3' user... it should become 'setgid' of 'users' and succeed.
         final Collection test3 = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest2", "test3", "test3");
@@ -1670,7 +1671,7 @@ public class XMLDBSecurityTest {
         //set the xquery to be owned by 'test1':'users' and set it 'setgid', and set it 'rx' by ohers, so 'test3' can execute it!
         UserManagementService ums = test.getService(UserManagementService.class);
         xqueryResource = test.getResource("not_setgid.xquery");
-        ums.chmod(xqueryResource, 00705); //NOT setgid
+        ums.chmod(xqueryResource, 453); //NOT setgid
 
         //create a collection for the XQuery to write into
         final CollectionManagementService cms = test.getService(CollectionManagementService.class);
@@ -1678,7 +1679,7 @@ public class XMLDBSecurityTest {
 
         //only allow the group 'users' to write into the collection
         ums = colForSetUid.getService(UserManagementService.class);
-        ums.chmod(0070);
+        ums.chmod(56);
 
         //execute the XQuery as the 'test3' user... it should become 'setgid' of 'users' and succeed.
         final Collection test3 = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest2", "test3", "test3");
@@ -1971,7 +1972,7 @@ public class XMLDBSecurityTest {
         final Account test1 = ums.getAccount("test1");
         ums.chown(test1, "users");
         // full permissions for user and group, none for world
-        ums.chmod(0770);
+        ums.chmod(504);
 
         test = DatabaseManager.getCollection(getBaseUri() + "/db/securityTest1", "test1", "test1");
 
@@ -1979,12 +1980,12 @@ public class XMLDBSecurityTest {
         Resource resource = test.createResource("test.xml", XMLResource.class);
         resource.setContent("<test/>");
         test.storeResource(resource);
-        ums.chmod(resource, 0770);
+        ums.chmod(resource, 504);
 
         resource = test.createResource("test.bin", BinaryResource.class);
         resource.setContent("binary-test".getBytes());
         test.storeResource(resource);
-        ums.chmod(resource, 0770);
+        ums.chmod(resource, 504);
 
         // create a collection /db/securityTest2 as user "test1"
         cms = root.getService(CollectionManagementService.class);
@@ -1993,7 +1994,7 @@ public class XMLDBSecurityTest {
         //change ownership to test1
         ums.chown(test1, "users");
         // full permissions for user and group, none for world
-        ums.chmod(0775);
+        ums.chmod(509);
 
         // create a collection /db/securityTest3 as user "test3"
         cms = root.getService(CollectionManagementService.class);
@@ -2003,7 +2004,7 @@ public class XMLDBSecurityTest {
         final Account test3 = ums.getAccount("test3");
         ums.chown(test3, "users");
         // full permissions for all
-        ums.chmod(0777);
+        ums.chmod(511);
 
         // create a sub-collection /db/securityTest1/sub1 as user "test1"
         cms = test.getService(CollectionManagementService.class);
@@ -2012,7 +2013,7 @@ public class XMLDBSecurityTest {
         //change ownership to test1
         ums.chown(test1, "users");
         // full permissions for all
-        ums.chmod(0777);
+        ums.chmod(511);
     }
 
     @After

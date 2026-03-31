@@ -22,9 +22,6 @@
 package org.exist.xquery.modules.jndi;
 
 
-import javax.naming.NamingException;
-import javax.naming.directory.DirContext;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
@@ -33,11 +30,10 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.IntegerValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
+
+import javax.naming.NamingException;
+import javax.naming.directory.DirContext;
 
 /**
  * eXist JNDI Module Extension RenameFunction
@@ -55,11 +51,11 @@ public class RenameFunction extends BasicFunction
 {
 	protected static final Logger logger = LogManager.getLogger(RenameFunction.class);
 	
-	public final static String DSML_NAMESPACE = "http://www.dsml.org/DSML";
+	public static final String DSML_NAMESPACE = "http://www.dsml.org/DSML";
 
-	public final static String DSML_PREFIX = "dsml";
+	public static final String DSML_PREFIX = "dsml";
 
-	public final static FunctionSignature[] signatures = {
+	public static final FunctionSignature[] signatures = {
 			
 			new FunctionSignature(
 					new QName( "rename", JNDIModule.NAMESPACE_URI, JNDIModule.PREFIX ),
@@ -81,7 +77,7 @@ public class RenameFunction extends BasicFunction
 	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException 
 	{
 		// Was context handle or DN specified?
-		if( !( args[0].isEmpty() ) && !( args[1].isEmpty() ) && !( args[2].isEmpty() ) ) {
+		if( !args[0].isEmpty() && !args[1].isEmpty() && !args[2].isEmpty() ) {
 			
 			String dn 		= args[1].getStringValue();
 			String newDN 	= args[2].getStringValue();
@@ -103,7 +99,7 @@ public class RenameFunction extends BasicFunction
 			}
 		}
 		
-		return( Sequence.EMPTY_SEQUENCE );
+		return Sequence.EMPTY_SEQUENCE;
 	}
 
 }

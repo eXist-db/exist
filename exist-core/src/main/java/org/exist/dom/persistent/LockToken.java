@@ -53,7 +53,7 @@ public class LockToken {
     private final ResourceType resourceType; //= ResourceType.NOT_SPECIFIED;
 
     // Other
-    @Nullable private String owner = null;
+    @Nullable private String owner;
     private long timeout = -1L;
     @Nullable private String token;
 

@@ -47,7 +47,7 @@ public class OpenCollectionTest {
     @ClassRule
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, false);
 
-    private static XmldbURI TEST_COLLECTION = XmldbURI.ROOT_COLLECTION_URI.append("testCollection");
+    private static final XmldbURI TEST_COLLECTION = XmldbURI.ROOT_COLLECTION_URI.append("testCollection");
 
     @BeforeClass
     public static void init() throws EXistException, PermissionDeniedException, IOException, TriggerException {

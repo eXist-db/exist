@@ -21,18 +21,6 @@
  */
 package org.exist.xslt;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import javax.xml.transform.Templates;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.URIResolver;
-import javax.xml.transform.sax.SAXTransformerFactory;
-import javax.xml.transform.sax.TemplatesHandler;
-import javax.xml.transform.sax.TransformerHandler;
 import net.jcip.annotations.ThreadSafe;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
@@ -40,6 +28,19 @@ import org.exist.xquery.Constants;
 import org.exist.xquery.value.NodeValue;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
+
+import javax.xml.transform.Templates;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.URIResolver;
+import javax.xml.transform.sax.SAXTransformerFactory;
+import javax.xml.transform.sax.TemplatesHandler;
+import javax.xml.transform.sax.TransformerHandler;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import static org.exist.xslt.XsltURIResolverHelper.getXsltURIResolver;
 
@@ -52,7 +53,7 @@ import static org.exist.xslt.XsltURIResolverHelper.getXsltURIResolver;
 @ThreadSafe
 public class TemplatesFactory {
 
-  private final static ConcurrentMap<String, StylesheetResolverAndCompiler> cache = new ConcurrentHashMap<>();
+  private static final ConcurrentMap<String, StylesheetResolverAndCompiler> cache = new ConcurrentHashMap<>();
 
   public static Stylesheet stylesheet(String stylesheet, String baseUri, Properties properties, boolean useCache) {
 

@@ -21,16 +21,16 @@
  */
 package org.exist.xmldb;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceIterator;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Implementation of ResourceSet (a container of Resource objects), using
@@ -183,7 +183,7 @@ public class MapResourceSet implements ResourceSet
      */
     class NewResourceIterator implements ResourceIterator {
 
-        long pos = 0;
+        long pos;
 
         /**
          * Constructor for the NewResourceIterator object

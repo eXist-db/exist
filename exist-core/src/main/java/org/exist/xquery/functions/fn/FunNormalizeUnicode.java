@@ -24,7 +24,6 @@ package org.exist.xquery.functions.fn;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
@@ -34,13 +33,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 import java.text.Normalizer;
 
@@ -95,7 +88,7 @@ supported by the implementation, then an error is raised [err:FOCH0003].""";
 	protected static final FunctionParameterSequenceType NF_PARAM = new FunctionParameterSequenceType("normalization-form", Type.STRING, Cardinality.EXACTLY_ONE, "The normalization form");
 	protected static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the normalized text");
 
-	public final static FunctionSignature[] signatures = {
+	public static final FunctionSignature[] signatures = {
     	new FunctionSignature(
 	      new QName("normalize-unicode", Function.BUILTIN_FUNCTION_NS),
 	      FUNCTION_DESCRIPTION_0_PARAM,

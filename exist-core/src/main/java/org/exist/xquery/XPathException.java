@@ -21,17 +21,17 @@
  */
 package org.exist.xquery;
 
-import java.io.Serial;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
 import com.evolvedbinary.j8fu.function.SupplierE;
 import org.exist.source.Source;
 import org.exist.xquery.ErrorCodes.ErrorCode;
 import org.exist.xquery.parser.XQueryAST;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
+
+import java.io.Serial;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  *  Class for representing a generic XPath exception.
@@ -40,14 +40,14 @@ public class XPathException extends Exception implements XPathErrorProvider {
 
     @Serial
     private static final long serialVersionUID = 212844692232650666L;
-    private int line = 0;
-    private int column = 0;
+    private int line;
+    private int column;
     private ErrorCode errorCode = ErrorCodes.ERROR;
-    private String message = null;
+    private String message;
     private Sequence errorVal;
-    private List<FunctionStackElement> callStack = null;
+    private List<FunctionStackElement> callStack;
 
-    private Source source = null;
+    private Source source;
 
     /**
      * @param message the error message
@@ -107,12 +107,12 @@ public class XPathException extends Exception implements XPathErrorProvider {
 
     @Deprecated
     public XPathException(final Sequence sequence, final String message) {
-        this((sequence != null && !sequence.isEmpty() && sequence.itemAt(0) != null) ? sequence.itemAt(0).getExpression() : null, message);
+        this(sequence != null && !sequence.isEmpty() && sequence.itemAt(0) != null ? sequence.itemAt(0).getExpression() : null, message);
     }
 
     @Deprecated
     public XPathException(final Item item, final String message) {
-        this((item != null) ? item.getExpression() : null, message);
+        this(item != null ? item.getExpression() : null, message);
     }
 
     public XPathException(final Expression expr, final ErrorCode errorCode, final String errorDesc) {
@@ -127,11 +127,11 @@ public class XPathException extends Exception implements XPathErrorProvider {
     }
 
     public XPathException(final Sequence sequence, final ErrorCode errorCode, final String message) {
-        this((sequence != null && !sequence.isEmpty() && sequence.itemAt(0) != null) ? sequence.itemAt(0).getExpression() : null, errorCode, message);
+        this(sequence != null && !sequence.isEmpty() && sequence.itemAt(0) != null ? sequence.itemAt(0).getExpression() : null, errorCode, message);
     }
 
     public XPathException(final Item item, final ErrorCode errorCode, final String message) {
-        this((item != null) ? item.getExpression() : null, errorCode, message);
+        this(item != null ? item.getExpression() : null, errorCode, message);
     }
 
     public XPathException(final ErrorCode errorCode, final String errorDesc, final Sequence errorVal) {

@@ -22,20 +22,19 @@
 
 package org.exist.protocolhandler.xmlrpc;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.net.URL;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
-
 import org.exist.protocolhandler.xmldb.XmldbURL;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -52,7 +51,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class XmlrpcUpload {
     
-    private final static Logger LOG = LogManager.getLogger(XmlrpcUpload.class);
+    private static final Logger LOG = LogManager.getLogger(XmlrpcUpload.class);
     
     /**
      * Write data from a (input)stream to the specified XMLRPC url and leave

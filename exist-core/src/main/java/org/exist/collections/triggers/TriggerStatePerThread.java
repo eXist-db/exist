@@ -37,7 +37,7 @@ import java.util.Objects;
  */
 public class TriggerStatePerThread {
 	
-	private final static ThreadLocal<Deque<TriggerState>> THREAD_LOCAL_STATES = ThreadLocal.withInitial(ArrayDeque::new);
+	private static final ThreadLocal<Deque<TriggerState>> THREAD_LOCAL_STATES = ThreadLocal.withInitial(ArrayDeque::new);
 
 	public static void setAndTest(final Trigger trigger, final TriggerPhase triggerPhase, final TriggerEvent triggerEvent, final XmldbURI src, final @Nullable XmldbURI dst) throws CyclicTriggerException {
 		final Deque<TriggerState> states = THREAD_LOCAL_STATES.get();

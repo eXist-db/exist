@@ -22,15 +22,15 @@
 package org.exist.util.sorters;
 
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-
 import com.googlecode.junittoolbox.ParallelParameterized;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 /**
  * Test case - given a sort() method and an algorithm via a checker, do a variety
@@ -113,7 +113,7 @@ public class SortTest {
 			int[] a = new int[1000];
 
 			for (int ii = 0; ii < 1000; ii++) {
-				a[ii] = (ii >= i && ii < i + 100) ? rnd.nextInt(1000)
+				a[ii] = ii >= i && ii < i + 100 ? rnd.nextInt(1000)
 						: 999 - ii;
 			}
 
@@ -138,7 +138,7 @@ public class SortTest {
 			int[] a = new int[1000];
 
 			for (int ii = 0; ii < 1000; ii++) {
-				a[ii] = (ii >= i && ii < i + 100) ? rnd.nextInt(1000) : ii;
+				a[ii] = ii >= i && ii < i + 100 ? rnd.nextInt(1000) : ii;
 			}
 
 			checker.init(a);
@@ -163,7 +163,7 @@ public class SortTest {
 			int[] a = new int[1000];
 
 			for (int ii = 0; ii < 1000; ii++) {
-				a[ii] = (ii >= i && ii < i + 100) ? rnd.nextInt(1000)
+				a[ii] = ii >= i && ii < i + 100 ? rnd.nextInt(1000)
 						: (ii % 7);
 			}
 

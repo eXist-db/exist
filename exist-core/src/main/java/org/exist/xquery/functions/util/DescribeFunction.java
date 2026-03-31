@@ -21,8 +21,6 @@
  */
 package org.exist.xquery.functions.util;
 
-import java.util.Iterator;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
@@ -30,15 +28,11 @@ import org.exist.dom.memtree.DocumentImpl;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.xquery.*;
 import org.exist.xquery.Module;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 import org.xml.sax.helpers.AttributesImpl;
 
 import javax.xml.XMLConstants;
+import java.util.Iterator;
 
 import static org.apache.commons.lang3.ArrayUtils.isNotEmpty;
 
@@ -51,7 +45,7 @@ public class DescribeFunction extends Function {
 	
 	protected static final Logger logger = LogManager.getLogger(DescribeFunction.class);
 
-	public final static FunctionSignature signature =
+	public static final FunctionSignature signature =
 		new FunctionSignature(
 			new QName("describe-function", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 			"Describes a built-in function. Returns an element describing the " +
@@ -62,8 +56,8 @@ public class DescribeFunction extends Function {
 			new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE, "the signature of the function"),
 			"Use inspect:inspect-function#1 instead!");
 	
-	private final static QName ANNOTATION_QNAME = new QName("annotation", XMLConstants.NULL_NS_URI);
-	private final static QName ANNOTATION_VALUE_QNAME = new QName("value", XMLConstants.NULL_NS_URI);
+	private static final QName ANNOTATION_QNAME = new QName("annotation", XMLConstants.NULL_NS_URI);
+	private static final QName ANNOTATION_VALUE_QNAME = new QName("value", XMLConstants.NULL_NS_URI);
 	
 	public DescribeFunction(XQueryContext context) {
 		super(context, signature);

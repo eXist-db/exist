@@ -21,21 +21,18 @@
  */
 package org.exist.xquery.functions.fn;
 
+import org.apache.commons.lang3.StringUtils;
 import org.exist.dom.QName;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 
 import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.XMLGregorianCalendar;
-
 import java.math.BigDecimal;
 import java.math.BigInteger;
-
-import java.util.Map;
-import java.util.HashMap;
 import java.util.Arrays;
-
-import org.apache.commons.lang3.StringUtils;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Parses a string containing the date and time in IETF format,
@@ -45,16 +42,16 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class FunParseIetfDate extends BasicFunction {
 
-    private static FunctionParameterSequenceType IETF_DATE =
+    private static final FunctionParameterSequenceType IETF_DATE =
             new FunctionParameterSequenceType(
                     "value", Type.STRING, Cardinality.ZERO_OR_ONE, "The IETF-dateTime string");
 
-    private static FunctionReturnSequenceType RETURN =
+    private static final FunctionReturnSequenceType RETURN =
             new FunctionReturnSequenceType(
                     Type.DATE_TIME, Cardinality.ZERO_OR_ONE, "The parsed date");
 
 
-    public final static FunctionSignature FNS_PARSE_IETF_DATE = new FunctionSignature(
+    public static final FunctionSignature FNS_PARSE_IETF_DATE = new FunctionSignature(
             new QName("parse-ietf-date", Function.BUILTIN_FUNCTION_NS),
             """
             Parses a string containing the date and time in IETF format,
@@ -82,7 +79,7 @@ public class FunParseIetfDate extends BasicFunction {
         }
     }
 
-    private class Parser {
+    private final class Parser {
         private final char[] WS = {0x000A, 0x0009, 0x000D, 0x0020};
         private final String WS_STR = new String(WS);
 
@@ -105,14 +102,14 @@ public class FunParseIetfDate extends BasicFunction {
         private final int vlen;
         private int vidx;
 
-        private BigInteger year = null;
+        private BigInteger year;
         private int month = DatatypeConstants.FIELD_UNDEFINED;
         private int day = DatatypeConstants.FIELD_UNDEFINED;
 
         private int hour = DatatypeConstants.FIELD_UNDEFINED;
         private int minute = DatatypeConstants.FIELD_UNDEFINED;
         private int second = DatatypeConstants.FIELD_UNDEFINED;
-        private BigDecimal fractionalSecond = null;
+        private BigDecimal fractionalSecond;
 
         private int timezone = DatatypeConstants.FIELD_UNDEFINED;
 
@@ -313,7 +310,7 @@ public class FunParseIetfDate extends BasicFunction {
             checkMinutes(m);
 
             final int offset = h * 60 + m;
-            final int factor = (sign == '+' ? 1 : -1);
+            final int factor = sign == '+' ? 1 : -1;
             timezone = offset * factor;
 
             // cut off whitespace and optional timezone in parenthesis
@@ -366,7 +363,9 @@ public class FunParseIetfDate extends BasicFunction {
         }
 
         private void skip(char ch) throws IllegalArgumentException {
-            if (read() != ch) throw new IllegalArgumentException(value);
+            if (read() != ch) {
+                throw new IllegalArgumentException(value);
+            }
         }
 
         private int parseInt(int minDigits, int maxDigits) throws IllegalArgumentException {
@@ -403,7 +402,7 @@ public class FunParseIetfDate extends BasicFunction {
         }
 
         private boolean isWS(char c) {
-            return (WS_STR.indexOf(c) >= 0);
+            return WS_STR.indexOf(c) >= 0;
         }
 
         private boolean isDigit(char ch) {

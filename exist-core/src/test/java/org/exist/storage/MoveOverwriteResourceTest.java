@@ -48,32 +48,31 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Optional;
 
-import static org.junit.Assert.*;
-
 import static org.exist.storage.ElementValue.ELEMENT;
+import static org.junit.Assert.*;
 
 public class MoveOverwriteResourceTest {
 
     @ClassRule
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
-    private final static String XML1 =
+    private static final String XML1 =
             "<?xml version=\"1.0\"?>" +
                     "<test1>" +
                     "  <title>Hello1</title>" +
                     "</test1>";
 
-    private final static String XML2 =
+    private static final String XML2 =
             "<?xml version=\"1.0\"?>" +
                     "<test2>" +
                     "  <title>Hello2</title>" +
                     "</test2>";
 
-    private final static XmldbURI TEST_COLLECTION_URI = XmldbURI.ROOT_COLLECTION_URI.append("test");
-    private final static XmldbURI SUB_TEST_COLLECTION_URI = TEST_COLLECTION_URI.append("test2");
+    private static final XmldbURI TEST_COLLECTION_URI = XmldbURI.ROOT_COLLECTION_URI.append("test");
+    private static final XmldbURI SUB_TEST_COLLECTION_URI = TEST_COLLECTION_URI.append("test2");
 
-    private final static XmldbURI doc1Name = XmldbURI.create("doc1.xml");
-    private final static XmldbURI doc2Name = XmldbURI.create("doc2.xml");
+    private static final XmldbURI doc1Name = XmldbURI.create("doc1.xml");
+    private static final XmldbURI doc2Name = XmldbURI.create("doc2.xml");
 
     private static Collection test1;
     private static Collection test2;

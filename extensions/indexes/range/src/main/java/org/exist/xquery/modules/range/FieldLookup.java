@@ -22,9 +22,9 @@
 package org.exist.xquery.modules.range;
 
 import org.exist.collections.Collection;
+import org.exist.dom.QName;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.NodeSet;
-import org.exist.dom.QName;
 import org.exist.indexing.range.RangeIndex;
 import org.exist.indexing.range.RangeIndexConfig;
 import org.exist.indexing.range.RangeIndexWorker;
@@ -41,14 +41,14 @@ import java.util.List;
 
 public class FieldLookup extends Function implements Optimizable, IndexUseReporter {
 
-    private final static SequenceType[] PARAMETER_TYPE = new SequenceType[] {
+    private static final SequenceType[] PARAMETER_TYPE = new SequenceType[] {
         new FunctionParameterSequenceType("fields", Type.STRING, Cardinality.ZERO_OR_MORE,
                 "The name of the field(s) to search"),
         new FunctionParameterSequenceType("keys", Type.ANY_ATOMIC_TYPE, Cardinality.ZERO_OR_MORE,
                 "The keys to look up for each field.")
     };
 
-    public final static FunctionSignature[] signatures = {
+    public static final FunctionSignature[] signatures = {
         new FunctionSignature(
             new QName("field", RangeIndexModule.NAMESPACE_URI, RangeIndexModule.PREFIX),
             "General field lookup function. Normally this will be used by the query optimizer.",
@@ -146,8 +146,8 @@ public class FieldLookup extends Function implements Optimizable, IndexUseReport
         )
     };
 
-    private NodeSet preselectResult = null;
-    protected Expression fallback = null;
+    private NodeSet preselectResult;
+    protected Expression fallback;
 
     public FieldLookup(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
@@ -189,9 +189,10 @@ public class FieldLookup extends Function implements Optimizable, IndexUseReport
 
     @Override
     public NodeSet preSelect(Sequence contextSequence, boolean useContext) throws XPathException {
-        if (contextSequence != null && !contextSequence.isPersistentSet())
+        if (contextSequence != null && !contextSequence.isPersistentSet()) {
             // in-memory docs won't have an index
             return NodeSet.EMPTY_SET;
+        }
 
         long start = System.currentTimeMillis();
 
@@ -242,26 +243,29 @@ public class FieldLookup extends Function implements Optimizable, IndexUseReport
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         final Sequence effectiveContextSequence = contextItem != null ? contextItem.toSequence() : contextSequence;
 
-        if (effectiveContextSequence != null && !effectiveContextSequence.isPersistentSet())
+        if (effectiveContextSequence != null && !effectiveContextSequence.isPersistentSet()) {
             // in-memory docs won't have an index
             if (fallback == null) {
                 return Sequence.EMPTY_SEQUENCE;
             } else {
                 return fallback.eval(effectiveContextSequence, contextItem);
             }
+        }
 
         NodeSet result;
         if (preselectResult == null) {
             long start = System.currentTimeMillis();
 
             DocumentSet docs;
-            if (effectiveContextSequence == null)
+            if (effectiveContextSequence == null) {
                 docs = context.getStaticallyKnownDocuments();
-            else
+            } else {
                 docs = effectiveContextSequence.getDocumentSet();
+            }
             NodeSet contextSet = null;
-            if (effectiveContextSequence != null)
+            if (effectiveContextSequence != null) {
                 contextSet = effectiveContextSequence.toNodeSet();
+            }
 
             // If any of the lookup arguments is the empty sequence, the overall result is empty.
             if (hasEmptyArgs(effectiveContextSequence)) {

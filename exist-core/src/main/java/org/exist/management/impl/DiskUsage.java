@@ -21,23 +21,22 @@
  */
 package org.exist.management.impl;
 
-import java.io.IOException;
-import java.nio.file.FileStore;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Optional;
-import java.util.stream.Stream;
-
+import com.evolvedbinary.j8fu.function.FunctionE;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.journal.Journal;
 import org.exist.util.Configuration;
 import org.exist.util.FileUtils;
-import com.evolvedbinary.j8fu.function.FunctionE;
 
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
+import java.io.IOException;
+import java.nio.file.FileStore;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 /**
  * Class DiskUsage. Retrieves data from the java File object
@@ -46,7 +45,7 @@ import javax.management.ObjectName;
  */
 public class DiskUsage implements DiskUsageMXBean {
 
-    private final static Logger LOG = LogManager.getLogger(DiskUsage.class);
+    private static final Logger LOG = LogManager.getLogger(DiskUsage.class);
 
     private final String instanceId;
     private final Optional<Path> journalDir;

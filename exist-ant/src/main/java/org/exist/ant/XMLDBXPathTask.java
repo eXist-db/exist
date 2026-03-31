@@ -55,14 +55,14 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * @author <a href="mailto:peter.klotz@blue-elephant-systems.com">Peter Klotz</a>
  */
 public class XMLDBXPathTask extends AbstractXMLDBTask {
-    private String resource = null;
-    private String namespace = null;
-    private String query = null;
-    private String text = null;
+    private String resource;
+    private String namespace;
+    private String query;
+    private String text;
 
     // count mode
-    private boolean count = false;
-    private File destDir = null;
+    private boolean count;
+    private File destDir;
     private String outputproperty;
 
     @Override

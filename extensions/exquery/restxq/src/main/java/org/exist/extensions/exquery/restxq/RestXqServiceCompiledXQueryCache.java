@@ -26,11 +26,12 @@
  */
 package org.exist.extensions.exquery.restxq;
 
-import java.net.URI;
 import org.exist.storage.DBBroker;
 import org.exist.xquery.CompiledXQuery;
 import org.exquery.restxq.RestXqService;
 import org.exquery.restxq.RestXqServiceException;
+
+import java.net.URI;
 
 /**
  *

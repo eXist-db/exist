@@ -21,8 +21,8 @@
  */
 package org.exist.security.internal;
 
-import org.exist.security.AbstractSubject;
 import org.exist.security.AbstractAccount;
+import org.exist.security.AbstractSubject;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -56,10 +56,8 @@ public class SubjectAccreditedImpl extends AbstractSubject {
 	 */
 	@Override
 	public boolean isAuthenticated() {
-		return (
-			letterOfCredit != null 
-			&& account.getId() != account.getRealm().getSecurityManager().getGuestSubject().getId()
-		);
+		return letterOfCredit != null 
+			&& account.getId() != account.getRealm().getSecurityManager().getGuestSubject().getId();
 	}
 
 	@Override

@@ -31,8 +31,8 @@ import javax.xml.validation.Validator;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static org.junit.Assert.fail;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Regression test for GitHub #6000: range index field @type should be optional in XSD.

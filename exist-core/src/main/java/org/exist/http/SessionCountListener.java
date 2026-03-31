@@ -23,11 +23,12 @@ package org.exist.http;
 
 import jakarta.servlet.http.HttpSessionEvent;
 import jakarta.servlet.http.HttpSessionListener;
+
 import java.util.concurrent.atomic.AtomicLong;
 
 public class SessionCountListener implements HttpSessionListener {
 
-    private static AtomicLong activeSessions = new AtomicLong();
+    private static final AtomicLong activeSessions = new AtomicLong();
 
     @Override
     public void sessionCreated(final HttpSessionEvent httpSessionEvent) {

@@ -106,7 +106,7 @@ public class ControllerTest extends AbstractHttpTest {
     private Tuple2<Integer, String> get(final String testCollectionName, final String documentName) throws IOException {
         final Request request = Request
                 .Get(getAppsUri(existWebServer) + "/" + testCollectionName + "/" + documentName);
-        final Tuple2<Integer, String> responseCodeAndBody = withHttpExecutor(existWebServer, executor -> {
+        return withHttpExecutor(existWebServer, executor -> {
             final HttpResponse response = executor.execute(request).returnResponse();
             final int sc = response.getStatusLine().getStatusCode();
             try (final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
@@ -114,6 +114,5 @@ public class ControllerTest extends AbstractHttpTest {
                 return Tuple(sc, baos.toString(UTF_8));
             }
         });
-        return responseCodeAndBody;
     }
 }

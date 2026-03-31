@@ -22,22 +22,23 @@
 
 package org.exist.webstart;
 
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.exist.SystemProperties;
+import org.exist.util.FileUtils;
+
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import jakarta.servlet.ServletOutputStream;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.XMLStreamWriter;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.exist.SystemProperties;
-import org.exist.util.FileUtils;
-import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 
 /**
  * Class for writing JNLP file, jar files and image files.
@@ -187,7 +188,7 @@ public class JnlpWriter {
             for (final Path jar : jnlpFiles.getAllWebstartJars()) {
                 writer.writeStartElement("jar");
                 writer.writeAttribute("href", FileUtils.fileName(jar));
-                writer.writeAttribute("size", "" + FileUtils.sizeQuietly(jar));
+                writer.writeAttribute("size", String.valueOf(FileUtils.sizeQuietly(jar)));
                 writer.writeEndElement();
             }
 
@@ -295,12 +296,11 @@ public class JnlpWriter {
     }
 
     private String getImageMimeType(String filename) {
-        String type = switch (FilenameUtils.getExtension(filename)) {
+        return switch (FilenameUtils.getExtension(filename)) {
             case ".gif" -> "image/gif";
             case ".png" -> "image/png";
             case ".jpg", ".jpeg" -> "image/jpeg";
             default -> "application/octet-stream";
         };
-        return type;
     }
 }

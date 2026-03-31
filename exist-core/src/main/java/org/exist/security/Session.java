@@ -21,12 +21,12 @@
  */
 package org.exist.security;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.exist.EXistException;
 import org.exist.storage.BrokerPool;
 import org.exist.util.UUIDGenerator;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -34,8 +34,8 @@ import org.exist.util.UUIDGenerator;
  */
 public class Session {
 	
-	private String id;
-	private Subject subject;
+	private final String id;
+	private final Subject subject;
 	
 	private long lastUse;
 	
@@ -60,7 +60,7 @@ public class Session {
 		return id;
 	}
 	
-	private Map<String, Object> properties = new HashMap<>();
+	private final Map<String, Object> properties = new HashMap<>();
 	
 	public void setProperty(String name, Object value) {
 		used();
@@ -82,6 +82,6 @@ public class Session {
 	}
 
 	public boolean isValid() {
-		return (System.currentTimeMillis() - lastUse <= 30*1000); //30 seconds
+		return System.currentTimeMillis() - lastUse <= 30*1000; //30 seconds
 	}
 }

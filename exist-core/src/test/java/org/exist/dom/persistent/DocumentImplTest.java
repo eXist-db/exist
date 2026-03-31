@@ -22,6 +22,7 @@
 package org.exist.dom.persistent;
 
 import com.googlecode.junittoolbox.ParallelRunner;
+import org.easymock.EasyMock;
 import org.exist.Database;
 import org.exist.security.*;
 import org.exist.security.SecurityManager;
@@ -30,15 +31,11 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
-import org.easymock.EasyMock;
-
-import static org.easymock.EasyMock.replay;
-import static org.easymock.EasyMock.verify;
-import static org.easymock.EasyMock.expect;
-import static org.junit.Assert.*;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import static org.easymock.EasyMock.*;
+import static org.junit.Assert.*;
 
 /**
  *

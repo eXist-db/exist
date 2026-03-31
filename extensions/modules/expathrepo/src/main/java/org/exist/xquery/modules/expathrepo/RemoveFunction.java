@@ -21,8 +21,6 @@
  */
 package org.exist.xquery.modules.expathrepo;
 
-import java.util.Optional;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
@@ -38,6 +36,8 @@ import org.expath.pkg.repo.Repository;
 import org.expath.pkg.repo.UserInteractionStrategy;
 import org.expath.pkg.repo.tui.BatchUserInteraction;
 
+import java.util.Optional;
+
 
 /**
  * Remove Function: Remove package from repository
@@ -48,9 +48,9 @@ import org.expath.pkg.repo.tui.BatchUserInteraction;
  */
 public class RemoveFunction extends BasicFunction {
     @SuppressWarnings("unused")
-	private final static Logger logger = LogManager.getLogger(RemoveFunction.class);
+	private static final Logger logger = LogManager.getLogger(RemoveFunction.class);
 
-    public final static FunctionSignature signature =
+    public static final FunctionSignature signature =
 		new FunctionSignature(
 			new QName("remove", ExpathPackageModule.NAMESPACE_URI, ExpathPackageModule.PREFIX),
 			"Remove package, pkgName, from repository.",

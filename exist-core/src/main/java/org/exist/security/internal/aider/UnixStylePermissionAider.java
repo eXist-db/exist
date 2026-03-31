@@ -21,14 +21,13 @@
  */
 package org.exist.security.internal.aider;
 
-import java.io.IOException;
-
 import org.exist.security.*;
-
 import org.exist.security.SecurityManager;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.util.SyntaxException;
+
+import java.io.IOException;
 
 /**
  * Unix style permission details.
@@ -206,7 +205,7 @@ public class UnixStylePermissionAider extends AbstractUnixStylePermission implem
      */
     @Override
     public void setGroupMode(final int groupMode) {
-        this.mode |= (groupMode << 3);
+        this.mode |= groupMode << 3;
     }
 
     /**
@@ -256,7 +255,7 @@ public class UnixStylePermissionAider extends AbstractUnixStylePermission implem
      */
     @Override
     public void setOwnerMode(final int ownerMode) {
-        this.mode |= (ownerMode << 6);
+        this.mode |= ownerMode << 6;
     }
 
 
@@ -294,35 +293,35 @@ public class UnixStylePermissionAider extends AbstractUnixStylePermission implem
             for(final char c : modeStr.substring(i, i + 3).toCharArray()) {
                 switch(c) {
                     case READ_CHAR:
-                        mode |= (READ << (6 - i));
+                        mode |= READ << (6 - i);
                         break;
                     case WRITE_CHAR:
-                        mode |= (WRITE << (6 - i));
+                        mode |= WRITE << (6 - i);
                         break;
                     case EXECUTE_CHAR:
-                        mode |= (EXECUTE << (6 - i));
+                        mode |= EXECUTE << (6 - i);
                         break;
                     case SETUID_CHAR | SETGID_CHAR:
                         if(i == 0) {
-                            mode |= (SET_UID << 9);
+                            mode |= SET_UID << 9;
                         } else if(i == 3) {
-                            mode |= (SET_GID << 9);
+                            mode |= SET_GID << 9;
                         }
-                        mode |= (EXECUTE << (6 - i));
+                        mode |= EXECUTE << (6 - i);
                         break;
                     case SETUID_CHAR_NO_EXEC | SETGID_CHAR_NO_EXEC:
                         if(i == 0) {
-                            mode |= (SET_UID << 9);
+                            mode |= SET_UID << 9;
                         } else if(i == 3) {
-                            mode |= (SET_GID << 9);
+                            mode |= SET_GID << 9;
                         }
                         break;
                     case STICKY_CHAR:
-                        mode |= (STICKY << 9);
-                        mode |= (EXECUTE << (6 - i));
+                        mode |= STICKY << 9;
+                        mode |= EXECUTE << (6 - i);
                         break;
                     case STICKY_CHAR_NO_EXEC:
-                        mode |= (STICKY << 9);
+                        mode |= STICKY << 9;
                         break;
                     case UNSET_CHAR:
                         break;

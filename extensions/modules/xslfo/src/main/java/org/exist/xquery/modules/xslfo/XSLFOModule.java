@@ -21,12 +21,8 @@
  */
 package org.exist.xquery.modules.xslfo;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDSL;
@@ -34,6 +30,10 @@ import org.exist.xquery.FunctionDef;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:craiggoodyer@gmail.com">Craig Goodyer</a>
@@ -44,12 +44,12 @@ public class XSLFOModule extends AbstractInternalModule {
 
     private static final Logger logger = LogManager.getLogger(XSLFOModule.class);
 
-    public final static String NAMESPACE_URI = "http://exist-db.org/xquery/xslfo";
-    public final static String PREFIX = "xslfo";
-    public final static String INCLUSION_DATE = "2007-10-04";
-    public final static String RELEASED_IN_VERSION = "eXist-1.2";
+    public static final String NAMESPACE_URI = "http://exist-db.org/xquery/xslfo";
+    public static final String PREFIX = "xslfo";
+    public static final String INCLUSION_DATE = "2007-10-04";
+    public static final String RELEASED_IN_VERSION = "eXist-1.2";
 
-    private final static FunctionDef[] functions = {
+    private static final FunctionDef[] functions = {
             new FunctionDef(RenderFunction.signatures[0], RenderFunction.class),
             new FunctionDef(RenderFunction.signatures[1], RenderFunction.class)
     };
@@ -78,7 +78,7 @@ public class XSLFOModule extends AbstractInternalModule {
         return RELEASED_IN_VERSION;
     }
 
-    private ProcessorAdapter adapter = null;
+    private ProcessorAdapter adapter;
 
     public synchronized ProcessorAdapter getProcessorAdapter() {
 

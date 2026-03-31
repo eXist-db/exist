@@ -21,11 +21,6 @@
  */
 package org.exist.xquery.functions.util;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.math.BigInteger;
-import java.util.function.Function;
-
 import com.evolvedbinary.j8fu.tuple.Tuple3;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
@@ -43,6 +38,10 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.*;
 
 import javax.annotation.Nullable;
+import java.io.IOException;
+import java.io.InputStream;
+import java.math.BigInteger;
+import java.util.function.Function;
 
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 import static org.exist.xquery.FunctionDSL.param;
@@ -62,7 +61,7 @@ public class DocumentNameOrId extends BasicFunction {
 
 
     private static final String FSN_DOCUMENT_NAME = "document-name";
-    public final static FunctionSignature FS_DOCUMENT_NAME = functionSignature(
+    public static final FunctionSignature FS_DOCUMENT_NAME = functionSignature(
             FSN_DOCUMENT_NAME,
             "Returns the name of a document (excluding the collection path). The argument can either be " +
                     "a node or a string path pointing to a resource in the database. If the resource does not exist or the node " +
@@ -72,7 +71,7 @@ public class DocumentNameOrId extends BasicFunction {
     );
 
     private static final String FSN_DOCUMENT_ID = "document-id";
-    public final static FunctionSignature FS_DOCUMENT_ID = functionSignature(
+    public static final FunctionSignature FS_DOCUMENT_ID = functionSignature(
             FSN_DOCUMENT_ID,
             "Returns the internal integer id of a document. The argument can either be " +
                     "a node or a string path pointing to a resource in the database. If the resource does not exist or the node " +
@@ -82,7 +81,7 @@ public class DocumentNameOrId extends BasicFunction {
     );
 
     private static final String FSN_ABSOLUTE_RESOURCE_ID = "absolute-resource-id";
-    public final static FunctionSignature FS_ABSOLUTE_RESOURCE_ID = functionSignature(
+    public static final FunctionSignature FS_ABSOLUTE_RESOURCE_ID = functionSignature(
             FSN_ABSOLUTE_RESOURCE_ID,
             "Returns the absolute internal id of a resource as a 65 bit number. The first 32 bits are the collection id, the next 32 bits are the document id, the last bit is the document type. The argument can either be " +
                     "a node or a string path pointing to a resource in the database. If the resource does not exist or the node " +
@@ -93,7 +92,7 @@ public class DocumentNameOrId extends BasicFunction {
 
 
     private static final String FSN_GET_RESOURCE_BY_ABSOLUTE_ID = "get-resource-by-absolute-id";
-    public final static FunctionSignature FS_GET_RESOURCE_BY_ABSOLUTE_ID = functionSignature(
+    public static final FunctionSignature FS_GET_RESOURCE_BY_ABSOLUTE_ID = functionSignature(
             FSN_GET_RESOURCE_BY_ABSOLUTE_ID,
             "Returns the resource indicated by its absolute internal id. The first 32 bits are the collection id, the next 32 bits are the document id, the last bit is the document type. If the resource does not exist, the empty sequence is returned.",
             returnsOpt(Type.ITEM, "The resource from the database. A document() if its an XML resource, or an xs:base64binary otherwise"),
@@ -192,8 +191,7 @@ public class DocumentNameOrId extends BasicFunction {
         absoluteId = absoluteId.shiftLeft(32);
         absoluteId = absoluteId.or(BigInteger.valueOf(documentId));
         absoluteId = absoluteId.shiftLeft(1);
-        absoluteId = absoluteId.or(BigInteger.valueOf(resourceType & 1));
-        return absoluteId;
+        return absoluteId.or(BigInteger.valueOf(resourceType & 1));
     }
 
     private static Tuple3<Integer, Integer, Byte> decodeAbsoluteResourceId(BigInteger absoluteId) {

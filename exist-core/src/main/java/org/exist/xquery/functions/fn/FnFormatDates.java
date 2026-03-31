@@ -35,40 +35,40 @@ import java.util.regex.Pattern;
 
 public class FnFormatDates extends BasicFunction {
 
-	private static FunctionParameterSequenceType DATETIME =
+	private static final FunctionParameterSequenceType DATETIME =
 		new FunctionParameterSequenceType(
 			"value", Type.DATE_TIME, Cardinality.ZERO_OR_ONE, "The datetime");
 
-	private static FunctionParameterSequenceType DATE =  
+	private static final FunctionParameterSequenceType DATE =  
 		new FunctionParameterSequenceType(
 			"value", Type.DATE, Cardinality.ZERO_OR_ONE, "The date");
 	
-	private static FunctionParameterSequenceType TIME =  
+	private static final FunctionParameterSequenceType TIME =  
 		new FunctionParameterSequenceType(
 			"value", Type.TIME, Cardinality.ZERO_OR_ONE, "The time");
 	
-	private static FunctionParameterSequenceType PICTURE = 
+	private static final FunctionParameterSequenceType PICTURE = 
 		new FunctionParameterSequenceType(
 			"picture", Type.STRING, Cardinality.EXACTLY_ONE, "The picture string");
 	
-	private static FunctionParameterSequenceType LANGUAGE = 
+	private static final FunctionParameterSequenceType LANGUAGE = 
 		new FunctionParameterSequenceType(
 			"language", Type.STRING, Cardinality.ZERO_OR_ONE, "The language string");
 
-	private static FunctionParameterSequenceType CALENDAR = 
+	private static final FunctionParameterSequenceType CALENDAR = 
 		new FunctionParameterSequenceType(
 			"calendar", Type.STRING, Cardinality.ZERO_OR_ONE, "The calendar string");
 
-	private static FunctionParameterSequenceType PLACE = 
+	private static final FunctionParameterSequenceType PLACE = 
 		new FunctionParameterSequenceType(
 			"place", Type.STRING, Cardinality.ZERO_OR_ONE, "The place string");
 
-	private static FunctionReturnSequenceType RETURN = 
+	private static final FunctionReturnSequenceType RETURN = 
 		new FunctionReturnSequenceType(
 			Type.STRING, Cardinality.ZERO_OR_ONE, "The formatted date");
 
 
-    public final static FunctionSignature FNS_FORMAT_DATETIME_2 = new FunctionSignature(
+    public static final FunctionSignature FNS_FORMAT_DATETIME_2 = new FunctionSignature(
         new QName("format-dateTime", Function.BUILTIN_FUNCTION_NS),
         "Returns a string containing an xs:date value formatted for display.",
         new SequenceType[] {
@@ -78,7 +78,7 @@ public class FnFormatDates extends BasicFunction {
         RETURN
     );
 
-    public final static FunctionSignature FNS_FORMAT_DATETIME_5 = new FunctionSignature(
+    public static final FunctionSignature FNS_FORMAT_DATETIME_5 = new FunctionSignature(
         new QName("format-dateTime", Function.BUILTIN_FUNCTION_NS),
         "Returns a string containing an xs:date value formatted for display.",
         new SequenceType[] {
@@ -91,7 +91,7 @@ public class FnFormatDates extends BasicFunction {
         RETURN
     );
 
-    public final static FunctionSignature FNS_FORMAT_DATE_2 = new FunctionSignature(
+    public static final FunctionSignature FNS_FORMAT_DATE_2 = new FunctionSignature(
         new QName("format-date", Function.BUILTIN_FUNCTION_NS),
         "Returns a string containing an xs:date value formatted for display.",
         new SequenceType[] {
@@ -101,7 +101,7 @@ public class FnFormatDates extends BasicFunction {
         RETURN
     );
 
-    public final static FunctionSignature FNS_FORMAT_DATE_5 = new FunctionSignature(
+    public static final FunctionSignature FNS_FORMAT_DATE_5 = new FunctionSignature(
         new QName("format-date", Function.BUILTIN_FUNCTION_NS),
         "Returns a string containing an xs:date value formatted for display.",
         new SequenceType[] {
@@ -114,7 +114,7 @@ public class FnFormatDates extends BasicFunction {
         RETURN
     );
 
-    public final static FunctionSignature FNS_FORMAT_TIME_2 = new FunctionSignature(
+    public static final FunctionSignature FNS_FORMAT_TIME_2 = new FunctionSignature(
         new QName("format-time", Function.BUILTIN_FUNCTION_NS),
         "Returns a string containing an xs:time value formatted for display.",
         new SequenceType[] {
@@ -124,7 +124,7 @@ public class FnFormatDates extends BasicFunction {
         RETURN
     );
 
-    public final static FunctionSignature FNS_FORMAT_TIME_5 = new FunctionSignature(
+    public static final FunctionSignature FNS_FORMAT_TIME_5 = new FunctionSignature(
         new QName("format-time", Function.BUILTIN_FUNCTION_NS),
         "Returns a string containing an xs:time value formatted for display.",
         new SequenceType[] {
@@ -199,7 +199,7 @@ public class FnFormatDates extends BasicFunction {
                 sb.append('[');
                 i++;
             } else {
-                final int close = (i < pic.length() ? pic.indexOf(']', i) : -1);
+                final int close = i < pic.length() ? pic.indexOf(']', i) : -1;
                 if (close == -1) {
                     throw new XPathException(this, ErrorCodes.FOFD1340, "Date format contains a '[' with no matching ']'");
                 }
@@ -366,15 +366,16 @@ public class FnFormatDates extends BasicFunction {
                 }
                 break;
             case 'z':
-                if(dt.getTimezone() != Sequence.EMPTY_SEQUENCE) {
+                if (dt.getTimezone() != Sequence.EMPTY_SEQUENCE) {
                     sb.append("GMT");
                 }
+                //fall through to 'Z' to append the offset
             case 'Z':
                 final Calendar cal = dt.toJavaObject(Calendar.class);
 
                 final Sequence tz = dt.getTimezone();
                 if(tz != Sequence.EMPTY_SEQUENCE) {
-                    final DayTimeDurationValue dtv = ((DayTimeDurationValue)tz);
+                    final DayTimeDurationValue dtv = (DayTimeDurationValue)tz;
 
                     //cope with eXist's duration class's weird #getPart method
                     int minute = dtv.getPart(DurationValue.MINUTE);
@@ -437,7 +438,7 @@ public class FnFormatDates extends BasicFunction {
         return String.format(locale, format, hour, minute);
     }
 
-    private final static char[] MILITARY_TZ_CHARS = {'Z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L',
+    private static final char[] MILITARY_TZ_CHARS = {'Z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L',
             'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y' };
 
     /**

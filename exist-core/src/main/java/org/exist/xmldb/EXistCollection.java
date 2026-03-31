@@ -21,11 +21,11 @@
  */
 package org.exist.xmldb;
 
-import java.time.Instant;
-
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
+
+import java.time.Instant;
 
 /**
  * This interface extends org.xmldb.api.base.Collection with extensions specific to eXist.

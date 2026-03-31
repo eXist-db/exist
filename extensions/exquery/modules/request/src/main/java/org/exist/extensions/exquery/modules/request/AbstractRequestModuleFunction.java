@@ -39,7 +39,7 @@ import org.exquery.http.HttpRequest;
  */
 public abstract class AbstractRequestModuleFunction extends BasicFunction {
 
-    public AbstractRequestModuleFunction(final XQueryContext context, final FunctionSignature signature) {
+    protected AbstractRequestModuleFunction(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
 

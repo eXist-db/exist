@@ -36,7 +36,7 @@ public class ParseSimpleQL extends BasicFunction {
 	@SuppressWarnings("unused")
 	private static final Logger logger = LogManager.getLogger(ParseSimpleQL.class);
 	
-    public final static FunctionSignature signature =
+    public static final FunctionSignature signature =
         new FunctionSignature(
             new QName("parse-simpleql", SimpleQLModule.NAMESPACE_URI, SimpleQLModule.PREFIX),
             "Translates expressions in a simple query language to an XPath expression. A single search term " +
@@ -51,8 +51,9 @@ public class ParseSimpleQL extends BasicFunction {
 
     public Sequence eval(Sequence[] args, Sequence contextSequence)
             throws XPathException {
-        if (args[0].isEmpty())
+        if (args[0].isEmpty()) {
             return Sequence.EMPTY_SEQUENCE;
+        }
         String query = args[0].getStringValue();
         SimpleQLLexer lexer = new SimpleQLLexer(new StringReader(query));
         SimpleQLParser parser = new SimpleQLParser(lexer);

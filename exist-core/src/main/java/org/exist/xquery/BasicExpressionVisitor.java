@@ -251,7 +251,7 @@ public class BasicExpressionVisitor implements ExpressionVisitor {
 
     public static class FirstStepVisitor extends BasicExpressionVisitor {
 
-        private LocationStep firstStep = null;
+        private LocationStep firstStep;
 
         public LocationStep getFirstStep() {
             return firstStep;
@@ -265,7 +265,7 @@ public class BasicExpressionVisitor implements ExpressionVisitor {
 
     public static class VariableRefVisitor extends BasicExpressionVisitor {
 
-        private VariableReference ref = null;
+        private VariableReference ref;
 
         @Override
         public void visitVariableReference(final VariableReference ref) {

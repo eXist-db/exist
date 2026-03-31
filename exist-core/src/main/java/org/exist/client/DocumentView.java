@@ -21,6 +21,23 @@
  */
 package org.exist.client;
 
+import org.exist.security.Account;
+import org.exist.storage.ElementIndex;
+import org.exist.util.ProgressIndicator;
+import org.exist.xmldb.UserManagementService;
+import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.util.URIUtils;
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
+import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
+import org.fife.ui.rtextarea.RTextScrollPane;
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.Resource;
+import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.modules.XMLResource;
+
+import javax.swing.*;
+import javax.swing.border.BevelBorder;
+import javax.xml.transform.OutputKeys;
 import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -38,41 +55,6 @@ import java.util.Observable;
 import java.util.Observer;
 import java.util.Properties;
 
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPopupMenu;
-import javax.swing.JProgressBar;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.JToolBar;
-import javax.swing.KeyStroke;
-import javax.swing.border.BevelBorder;
-import javax.xml.transform.OutputKeys;
-
-import org.exist.security.Account;
-import org.exist.storage.ElementIndex;
-import org.exist.util.ProgressIndicator;
-import org.exist.xmldb.UserManagementService;
-import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.util.URIUtils;
-import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
-import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
-import org.fife.ui.rtextarea.RTextScrollPane;
-import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.Resource;
-import org.xmldb.api.base.XMLDBException;
-import org.xmldb.api.modules.XMLResource;
-
 import static org.xmldb.api.base.ResourceType.XML_RESOURCE;
 
 class DocumentView extends JFrame {
@@ -81,10 +63,10 @@ class DocumentView extends JFrame {
     private static final long serialVersionUID = 1L;
 
     protected InteractiveClient client;
-    private XmldbURI resourceName;
+    private final XmldbURI resourceName;
     protected Resource resource;
     protected Collection collection;
-    protected boolean readOnly = false;
+    protected boolean readOnly;
     protected RSyntaxTextArea text;
     protected RTextScrollPane textScrollPane;
     protected JButton saveButton;
@@ -178,7 +160,6 @@ class DocumentView extends JFrame {
         dialog.setResizable(true);
         dialog.pack();
         dialog.setVisible(true);
-        return;
     }
 
     public void setReadOnly() {

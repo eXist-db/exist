@@ -56,7 +56,7 @@ public class LauncherWrapper {
     /* general arguments */
     private static final Argument<?> helpArg = helpArgument("-h", "--help");
 
-    public final static void main(final String[] args) {
+    public static void main(final String[] args) {
         try {
             CompatibleJavaVersionCheck.checkForCompatibleJavaVersion();
 
@@ -194,7 +194,7 @@ public class LauncherWrapper {
             args.add("-Dexist.home=\".\"");
         }
 
-        if (command.equals(LAUNCHER) && "mac os x".equals(OS)) {
+        if (LAUNCHER.equals(command) && "mac os x".equals(OS)) {
             args.add("-Dapple.awt.UIElement=true");
         }
     }

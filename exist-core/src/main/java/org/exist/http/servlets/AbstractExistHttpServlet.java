@@ -21,7 +21,12 @@
  */
 package org.exist.http.servlets;
 
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.http.urlrewrite.XQueryURLRewrite;
@@ -37,11 +42,6 @@ import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.base.XMLDBException;
 
-import jakarta.servlet.ServletConfig;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.Serial;
 import java.nio.file.Files;
@@ -61,7 +61,7 @@ public abstract class AbstractExistHttpServlet extends HttpServlet {
     @Serial
     private static final long serialVersionUID = 804071766041263220L;
 
-	public final static String DEFAULT_ENCODING = UTF_8.name();
+	public static final String DEFAULT_ENCODING = UTF_8.name();
     
     private BrokerPool pool;
     private String formEncoding = DEFAULT_ENCODING;
@@ -69,8 +69,8 @@ public abstract class AbstractExistHttpServlet extends HttpServlet {
     private String defaultUsername = SecurityManager.GUEST_USER;
     private String defaultPassword = SecurityManager.GUEST_USER;
     private Authenticator authenticator;
-    private Subject defaultUser = null;
-    private boolean internalOnly = false;
+    private Subject defaultUser;
+    private boolean internalOnly;
     
     @Override
     public void init(ServletConfig config) throws ServletException {
@@ -126,7 +126,7 @@ public abstract class AbstractExistHttpServlet extends HttpServlet {
 
             final Configuration configuration = new Configuration(confFile, dbHome);
             final String start = config.getInitParameter("start");
-            if(start != null && "true".equals(start)) {
+            if("true".equals(start)) {
                 doDatabaseStartup(configuration);
             }
         }

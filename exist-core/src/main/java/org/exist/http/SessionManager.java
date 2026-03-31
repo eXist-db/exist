@@ -43,7 +43,7 @@ public class SessionManager {
     private final AtomicInteger sessionIdCounter = new AtomicInteger();
     private final Cache<Integer, QueryResult> cache;
 
-    private static class QueryResult {
+    private static final class QueryResult {
         final String query;
         final Sequence sequence;
 

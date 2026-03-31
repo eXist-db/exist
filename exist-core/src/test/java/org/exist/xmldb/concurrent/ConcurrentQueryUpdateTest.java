@@ -21,9 +21,6 @@
  */
 package org.exist.xmldb.concurrent;
 
-import java.util.Arrays;
-import java.util.List;
-
 import org.exist.xmldb.XmldbURI;
 import org.exist.xmldb.concurrent.action.XQueryUpdateAction;
 import org.junit.Before;
@@ -32,6 +29,9 @@ import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XQueryService;
+
+import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 

@@ -21,10 +21,11 @@
  */
 package org.exist.xquery.modules.ngram;
 
-import java.util.List;
-import java.util.Map;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * Module function definitions for NGram module.
@@ -38,8 +39,8 @@ public class NGramModule extends AbstractInternalModule {
     public static final String NAMESPACE_URI = "http://exist-db.org/xquery/ngram";
 
     public static final String PREFIX = "ngram";
-    public final static String INCLUSION_DATE = "2007-05-19";
-    public final static String RELEASED_IN_VERSION = "eXist-1.2";
+    public static final String INCLUSION_DATE = "2007-05-19";
+    public static final String RELEASED_IN_VERSION = "eXist-1.2";
 
     public static final FunctionDef[] functions = {
     	new FunctionDef(AddMatch.signature, AddMatch.class),

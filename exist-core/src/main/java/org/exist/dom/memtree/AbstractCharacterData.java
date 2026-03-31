@@ -32,11 +32,11 @@ import org.w3c.dom.Node;
 
 public abstract class AbstractCharacterData extends NodeImpl implements CharacterData {
 
-    public AbstractCharacterData(final DocumentImpl doc, final int nodeNumber) {
+    protected AbstractCharacterData(final DocumentImpl doc, final int nodeNumber) {
         this(null, doc, nodeNumber);
     }
 
-    public AbstractCharacterData(final Expression expression, final DocumentImpl doc, final int nodeNumber) {
+    protected AbstractCharacterData(final Expression expression, final DocumentImpl doc, final int nodeNumber) {
         super(expression, doc, nodeNumber);
     }
 
@@ -92,7 +92,7 @@ public abstract class AbstractCharacterData extends NodeImpl implements Characte
         // 1) create a new array of the correct size for the data
         final int change = len - count;
         final int newCharactersLength = existingCharactersLen + change;
-        final char newCharacters[] = new char[newCharactersLength];
+        final char[] newCharacters = new char[newCharactersLength];
 
         // 2) copy everything from document.characters to newCharacters that is before our offset
         System.arraycopy(document.characters, 0, newCharacters, 0, existingDataOffset + offset);
@@ -143,7 +143,7 @@ public abstract class AbstractCharacterData extends NodeImpl implements Characte
         final int existingCharactersLen = document.characters.length;
         final int extraRequired = len;
         final int newCharactersLen = existingCharactersLen + extraRequired;
-        final char newCharacters[] = new char[newCharactersLen];
+        final char[] newCharacters = new char[newCharactersLen];
 
         // 2) copy everything from data to newData that is upto the end of our offset + provided offset
         System.arraycopy(document.characters, 0, newCharacters, 0, existingDataOffset + offset);
@@ -181,7 +181,7 @@ public abstract class AbstractCharacterData extends NodeImpl implements Characte
         final int existingCharactersLen = document.characters.length;
         final int extraRequired = len;
         final int newCharactersLen = existingCharactersLen + extraRequired;
-        final char newCharacters[] = new char[newCharactersLen];
+        final char[] newCharacters = new char[newCharactersLen];
 
         // 2) copy everything from data to newData that is upto the end of our offset + len
         System.arraycopy(document.characters, 0, newCharacters, 0, existingDataOffset + existingDataLen);
@@ -226,7 +226,7 @@ public abstract class AbstractCharacterData extends NodeImpl implements Characte
             final int existingCharactersLen = document.characters.length;
             final int extraRequired = len - existingDataLen;
             final int newCharactersLen = existingCharactersLen + extraRequired;
-            final char newCharacters[] = new char[newCharactersLen];
+            final char[] newCharacters = new char[newCharactersLen];
 
             // 2) copy everything from data to newData that is before our offset
             System.arraycopy(document.characters, 0, newCharacters, 0, existingDataOffset);

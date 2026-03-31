@@ -21,10 +21,10 @@
  */
 package org.exist.http.servlets;
 
-import org.exist.security.Subject;
-
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.exist.security.Subject;
+
 import java.io.IOException;
 
 /**

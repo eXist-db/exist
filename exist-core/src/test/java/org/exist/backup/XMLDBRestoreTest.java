@@ -531,10 +531,7 @@ public class XMLDBRestoreTest {
                 """);
 
         for (final String groupName : groupNames) {
-            groupsContents.append(
-                    "    <resource type=\"XMLResource\" name=\"" + groupName + ".xml\" owner=\"SYSTEM\" group=\"dba\" mode=\"770\" created=\"2019-05-15T15:58:48.638+04:00\" modified=\"2019-05-15T15:58:48.638+04:00\" filename=\"" + groupName + ".xml\" mimetype=\"application/xml\">\n" +
-                            "        <acl entries=\"0\" version=\"1\"/>\n" +
-                            "    </resource>\n");
+            groupsContents.append("    <resource type=\"XMLResource\" name=\"").append(groupName).append(".xml\" owner=\"SYSTEM\" group=\"dba\" mode=\"770\" created=\"2019-05-15T15:58:48.638+04:00\" modified=\"2019-05-15T15:58:48.638+04:00\" filename=\"").append(groupName).append(".xml\" mimetype=\"application/xml\">\n" + "        <acl entries=\"0\" version=\"1\"/>\n" + "    </resource>\n");
         }
         groupsContents.append(
                 "</collection>");
@@ -555,15 +552,9 @@ public class XMLDBRestoreTest {
                         "<password>{RIPEMD160}" + backupPasswordHash + "</password>\n" +
                         "<digestPassword>" + backupPasswordDigest + "</digestPassword>\n");
         for (final String groupName : groupNames) {
-            userDoc.append(
-                    "<group name=\"" + groupName + "\"/>\n");
+            userDoc.append("<group name=\"").append(groupName).append("\"/>\n");
         }
-        userDoc.append(
-                "<expired>false</expired>\n" +
-                        "<enabled>true</enabled>\n" +
-                        "<umask>022</umask>\n" +
-                        "<name>" + username + "</name>\n" +
-                        "</account>\n");
+        userDoc.append("<expired>false</expired>\n" + "<enabled>true</enabled>\n" + "<umask>022</umask>\n" + "<name>").append(username).append("</name>\n" + "</account>\n");
 
         final Path dbContentsFile = Files.write(dbCol.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), dbContents.getBytes(UTF_8));
         final Path systemContentsFile = Files.write(systemCol.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), systemContents.getBytes(UTF_8));
@@ -648,7 +639,7 @@ public class XMLDBRestoreTest {
         }
     }
 
-    private static class DocInfo {
+    private static final class DocInfo {
         final String name;
         final int type;
         @Nullable final String mediaType;

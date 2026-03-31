@@ -25,17 +25,11 @@ import org.apache.xerces.util.XMLChar;
 import org.exist.dom.QName;
 import org.exist.util.XMLCharUtil;
 import org.exist.xquery.*;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.IntegerValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
+import org.exist.xquery.value.*;
 
 public class FunStringToCodepoints extends BasicFunction {
 
-	public final static FunctionSignature signature =
+	public static final FunctionSignature signature =
 		new FunctionSignature(
 				new QName("string-to-codepoints", Function.BUILTIN_FUNCTION_NS),
 				"Returns the sequence of unicode code points that constitute an xs:string. If $arg is a zero-length " +

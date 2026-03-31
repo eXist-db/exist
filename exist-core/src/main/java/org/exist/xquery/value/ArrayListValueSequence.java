@@ -58,7 +58,7 @@ import java.util.*;
  */
 public class ArrayListValueSequence extends AbstractSequence implements MemoryNodeSet {
 
-    private final static Logger LOG = LogManager.getLogger(ArrayListValueSequence.class);
+    private static final Logger LOG = LogManager.getLogger(ArrayListValueSequence.class);
 
     private final List<Item> values;
 
@@ -67,7 +67,7 @@ public class ArrayListValueSequence extends AbstractSequence implements MemoryNo
     // and Type.ITEM if there are items of mixed type.
     private int itemType = Type.ANY_TYPE;
 
-    private int state = 0;
+    private int state;
 
     public ArrayListValueSequence() {
         this.isEmpty = true;
@@ -309,7 +309,7 @@ public class ArrayListValueSequence extends AbstractSequence implements MemoryNo
     }
 
     private void setHasChanged() {
-        state = (state == Integer.MAX_VALUE ? state = 1 : state + 1);
+        state = state == Integer.MAX_VALUE ? state = 1 : state + 1;
     }
 
     @Override

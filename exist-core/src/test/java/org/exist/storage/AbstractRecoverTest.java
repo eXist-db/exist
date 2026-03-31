@@ -795,7 +795,7 @@ public abstract class AbstractRecoverTest {
         return path;
     }
 
-    private int runSyncId = 0;
+    private int runSyncId;
     private void runSync(final BrokerTask brokerTask) throws InterruptedException, LockException, SAXException, PermissionDeniedException, EXistException, IOException {
         final String brokerTaskName = "AbstractRecoveryTest#runSync-" + runSyncId++;
         final Thread thread = new Thread(brokerTask, brokerTaskName);
@@ -807,7 +807,7 @@ public abstract class AbstractRecoverTest {
     private static class BrokerTask implements Runnable {
         private final BiConsumer5E<DBBroker, Txn, EXistException, PermissionDeniedException, IOException, SAXException, LockException> task;
         private final BrokerPool pool;
-        private volatile Runnable5E<EXistException, PermissionDeniedException, IOException, SAXException, LockException> exception = null;
+        private volatile Runnable5E<EXistException, PermissionDeniedException, IOException, SAXException, LockException> exception;
 
         public BrokerTask(final BrokerPool pool, final BiConsumer5E<DBBroker, Txn, EXistException, PermissionDeniedException, IOException, SAXException, LockException> task) {
             this.pool = pool;

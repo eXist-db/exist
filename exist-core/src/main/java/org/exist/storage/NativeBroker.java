@@ -22,20 +22,23 @@
 package org.exist.storage;
 
 import com.evolvedbinary.j8fu.function.FunctionE;
+import com.evolvedbinary.j8fu.tuple.Tuple2;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Database;
-import org.exist.collections.*;
-import org.exist.collections.Collection;
-import org.exist.dom.memtree.DOMIndexer;
-import org.exist.dom.persistent.*;
-import org.exist.dom.QName;
 import org.exist.EXistException;
 import org.exist.Indexer;
 import org.exist.backup.RawDataBackup;
+import org.exist.collections.*;
+import org.exist.collections.Collection;
 import org.exist.collections.Collection.SubCollectionEntry;
 import org.exist.collections.triggers.*;
+import org.exist.dom.QName;
+import org.exist.dom.memtree.DOMIndexer;
+import org.exist.dom.persistent.*;
 import org.exist.indexing.Index;
 import org.exist.indexing.IndexController;
 import org.exist.indexing.StreamListener;
@@ -51,6 +54,7 @@ import org.exist.storage.blob.BlobStore;
 import org.exist.storage.btree.*;
 import org.exist.storage.dom.DOMFile;
 import org.exist.storage.dom.DOMTransaction;
+import org.exist.storage.dom.INodeIterator;
 import org.exist.storage.dom.NodeIterator;
 import org.exist.storage.dom.RawNodeIterator;
 import org.exist.storage.index.BFile;
@@ -70,8 +74,6 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.*;
 import org.exist.util.crypto.digest.DigestType;
 import org.exist.util.crypto.digest.MessageDigest;
-import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
-import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.util.io.InputStreamUtil;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.TerminatedException;
@@ -80,6 +82,9 @@ import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 
 import javax.annotation.Nullable;
 import javax.xml.stream.XMLStreamException;
@@ -89,16 +94,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.NumberFormat;
 import java.util.*;
-import java.util.function.Function;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.exist.storage.dom.INodeIterator;
-import com.evolvedbinary.j8fu.tuple.Tuple2;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.security.Permission.DEFAULT_TEMPORARY_COLLECTION_PERM;
@@ -149,18 +148,18 @@ public class NativeBroker implements DBBroker {
 
     public static final int OFFSET_COLLECTION_ID = 0;
 
-    public final static String INIT_COLLECTION_CONFIG = CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE + ".init";
+    public static final String INIT_COLLECTION_CONFIG = CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE + ".init";
 
     /** in-memory buffer size to use when copying binary resources */
-    private final static int BINARY_RESOURCE_BUF_SIZE = 65536;
+    private static final int BINARY_RESOURCE_BUF_SIZE = 65536;
 
-    private final static DigestType BINARY_RESOURCE_DIGEST_TYPE = DigestType.BLAKE_256;
+    private static final DigestType BINARY_RESOURCE_DIGEST_TYPE = DigestType.BLAKE_256;
 
-    private Configuration config;
+    private final Configuration config;
 
-    private BrokerPool pool;
+    private final BrokerPool pool;
 
-    private Deque<Subject> subject = new ArrayDeque<>();
+    private final Deque<Subject> subject = new ArrayDeque<>();
 
     /**
      * Used when TRACE level logging is enabled
@@ -170,9 +169,9 @@ public class NativeBroker implements DBBroker {
      * This can be written to a log file by calling
      * {@link DBBroker#traceSubjectChanges()}
      */
-    private TraceableStateChanges<Subject, TraceableSubjectChange.Change> subjectChangeTrace = LOG.isTraceEnabled() ? new TraceableStateChanges<>() : null;
+    private final TraceableStateChanges<Subject, TraceableSubjectChange.Change> subjectChangeTrace = LOG.isTraceEnabled() ? new TraceableStateChanges<>() : null;
 
-    private int referenceCount = 0;
+    private int referenceCount;
 
     private String id;
 
@@ -196,7 +195,7 @@ public class NativeBroker implements DBBroker {
     private final XmlSerializerPool xmlSerializerPool;
 
     /** used to count the nodes inserted after the last memory check */
-    private int nodesCount = 0;
+    private int nodesCount;
 
     private int nodesCountThreshold = DEFAULT_NODES_BEFORE_MEMORY_CHECK;
 
@@ -213,9 +212,9 @@ public class NativeBroker implements DBBroker {
     /**
      * Observer Design Pattern: List of ContentLoadingObserver objects
      */
-    private List<ContentLoadingObserver> contentLoadingObservers = new ArrayList<>();
+    private final List<ContentLoadingObserver> contentLoadingObservers = new ArrayList<>();
 
-    private ObjectLinkedOpenHashSet<Txn> currentTransactions = new ObjectLinkedOpenHashSet(4);  // 4 - we don't expect many concurrent transactions per-broker!
+    private final ObjectLinkedOpenHashSet<Txn> currentTransactions = new ObjectLinkedOpenHashSet(4);  // 4 - we don't expect many concurrent transactions per-broker!
 
     // initialize database; read configuration, etc.
     public NativeBroker(final BrokerPool pool, final Configuration config) throws EXistException {
@@ -808,7 +807,7 @@ public class NativeBroker implements DBBroker {
                 // is the parent Collection in the cache?
                 if (parentCollectionUri == XmldbURI.EMPTY_URI) {
                     // no parent... so, this is the root collection!
-                    return getOrCreateCollectionExplicit_rootCollection(transaction, collectionUri, collectionsCache, fireTrigger);
+                    return getOrCreateCollectionExplicitRootCollection(transaction, collectionUri, collectionsCache, fireTrigger);
                 } else {
                     final Collection parentCollection = collectionsCache.getIfPresent(parentCollectionUri);
                     if (parentCollection != null) {
@@ -827,13 +826,6 @@ public class NativeBroker implements DBBroker {
                             return new Tuple2<>(true, createCollection(transaction, parentCollection, collectionUri, collectionsCache, creationAttributes, fireTrigger));
                         }
 
-                    } else {
-                        /*
-                         * No parent Collection in the cache so that needs to be loaded/created
-                         * (or will be read from cache if we are pre-empted) before we can create this Collection.
-                         * However to do this, we need to yield the collectionLock, so we will continue outside
-                         * the ManagedCollectionLock at (3)
-                         */
                     }
                 }
             }
@@ -851,7 +843,7 @@ public class NativeBroker implements DBBroker {
         }
     }
 
-    private Tuple2<Boolean, Collection> getOrCreateCollectionExplicit_rootCollection(final Txn transaction, final XmldbURI collectionUri, final CollectionCache collectionsCache, final boolean fireTrigger) throws PermissionDeniedException, IOException, LockException, ReadOnlyException, TriggerException {
+    private Tuple2<Boolean, Collection> getOrCreateCollectionExplicitRootCollection(final Txn transaction, final XmldbURI collectionUri, final CollectionCache collectionsCache, final boolean fireTrigger) throws PermissionDeniedException, IOException, LockException, ReadOnlyException, TriggerException {
         // this is the root collection, so no parent, is the Collection present on disk?
 
         final Collection loadedRootCollection = loadCollection(collectionUri);
@@ -2610,7 +2602,7 @@ public class NativeBroker implements DBBroker {
             rootCollection.allDocs(this, docs, true);
             if(LOG.isDebugEnabled()) {
                 LOG.debug("getAllDocuments(DocumentSet) - end - loading {} documents took {} ms.",
-                        docs.getDocumentCount(), (System.currentTimeMillis() - start));
+                        docs.getDocumentCount(), System.currentTimeMillis() - start);
             }
             return docs;
         }
@@ -2851,7 +2843,7 @@ public class NativeBroker implements DBBroker {
         flush();
         closeDocument();
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Copy took {} ms.", (System.currentTimeMillis() - start));
+            LOG.debug("Copy took {} ms.", System.currentTimeMillis() - start);
         }
     }
 
@@ -3191,8 +3183,9 @@ public class NativeBroker implements DBBroker {
     @Override
     public void defragXMLResource(final Txn transaction, final DocumentImpl doc) {
         //TODO : use dedicated function in XmldbURI
-        if (LOG.isDebugEnabled())
+        if (LOG.isDebugEnabled()) {
             LOG.debug("============> Defragmenting document {}", doc.getURI());
+        }
         final long start = System.currentTimeMillis();
         try {
             final long firstChild = doc.getFirstChildAddress();
@@ -3250,7 +3243,7 @@ public class NativeBroker implements DBBroker {
             storeXMLResource(transaction, doc);
             closeDocument();
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Defragmentation took {} ms.", (System.currentTimeMillis() - start));
+                LOG.debug("Defragmentation took {} ms.", System.currentTimeMillis() - start);
             }
         } catch(final IOException e) {
             LOG.error(e);
@@ -4131,7 +4124,7 @@ public class NativeBroker implements DBBroker {
         pool.release(this);
     }
 
-    public final static class NodeRef extends Value {
+    public static final class NodeRef extends Value {
 
         public static final int OFFSET_DOCUMENT_ID = 0;
         public static final int OFFSET_NODE_ID = OFFSET_DOCUMENT_ID + DocumentImpl.LENGTH_DOCUMENT_ID;
@@ -4156,7 +4149,7 @@ public class NativeBroker implements DBBroker {
         }
     }
 
-    private final static class RemovedNode {
+    private static final class RemovedNode {
         final IStoredNode node;
         final String content;
         final NodePath path;
@@ -4356,7 +4349,7 @@ public class NativeBroker implements DBBroker {
     private final class DocumentCallback implements BTreeCallback {
 
         private final Collection.InternalAccess collectionInternalAccess;
-        private int documentCount = 0;
+        private int documentCount;
 
         private DocumentCallback(final Collection.InternalAccess collectionInternalAccess) {
             this.collectionInternalAccess = collectionInternalAccess;
@@ -4397,7 +4390,7 @@ public class NativeBroker implements DBBroker {
      *
      * Used for tracing subject changes
      */
-    private static class TraceableSubjectChange extends TraceableStateChange<Subject, TraceableSubjectChange.Change> {
+    private static final class TraceableSubjectChange extends TraceableStateChange<Subject, TraceableSubjectChange.Change> {
         private final String id;
 
         public enum Change {
@@ -4420,11 +4413,11 @@ public class NativeBroker implements DBBroker {
             return getState().getName();
         }
 
-        final static TraceableSubjectChange push(final Subject subject, final String id) {
+        static TraceableSubjectChange push(final Subject subject, final String id) {
             return new TraceableSubjectChange(Change.PUSH, subject, id);
         }
 
-        final static TraceableSubjectChange pop(final Subject subject, final String id) {
+        static TraceableSubjectChange pop(final Subject subject, final String id) {
             return new TraceableSubjectChange(Change.POP, subject, id);
         }
     }

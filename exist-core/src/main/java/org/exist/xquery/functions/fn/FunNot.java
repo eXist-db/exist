@@ -21,9 +21,9 @@
  */
 package org.exist.xquery.functions.fn;
 
+import org.exist.dom.QName;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.NodeSet;
-import org.exist.dom.QName;
 import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
@@ -33,18 +33,11 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.BooleanValue;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 public class FunNot extends Function {
 
-	public final static FunctionSignature signature =
+	public static final FunctionSignature signature =
 		new FunctionSignature(
 			new QName("not", Function.BUILTIN_FUNCTION_NS),
 			"""
@@ -58,7 +51,7 @@ public class FunNot extends Function {
 			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "the negated effective boolean value (ebv) of $arg"));
 
 	@SuppressWarnings("unused")
-	private boolean inWhereClause = false;
+	private boolean inWhereClause;
 	
 	public FunNot(XQueryContext context) {
 		super(context, signature);

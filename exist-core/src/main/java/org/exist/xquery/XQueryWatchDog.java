@@ -21,8 +21,6 @@
  */
 package org.exist.xquery;
 
-import java.text.NumberFormat;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.config.annotation.ConfigurationClass;
@@ -32,6 +30,7 @@ import org.exist.util.Configuration;
 import org.exist.xquery.util.ExpressionDumper;
 
 import javax.annotation.Nullable;
+import java.text.NumberFormat;
 
 
 /**
@@ -44,8 +43,8 @@ public class XQueryWatchDog {
     
     public static final String CONFIGURATION_ELEMENT_NAME = "watchdog";
     
-    public final static String PROPERTY_QUERY_TIMEOUT = "db-connection.watchdog.query-timeout";
-    public final static String PROPERTY_OUTPUT_SIZE_LIMIT = "db-connection.watchdog.output-size-limit";
+    public static final String PROPERTY_QUERY_TIMEOUT = "db-connection.watchdog.query-timeout";
+    public static final String PROPERTY_OUTPUT_SIZE_LIMIT = "db-connection.watchdog.output-size-limit";
 
     private final XQueryContext context;
     
@@ -57,9 +56,9 @@ public class XQueryWatchDog {
     
     private long startTime;
     
-    private boolean terminate = false;
+    private boolean terminate;
 
-    private String runningThread = null;
+    private String runningThread;
 
     public XQueryWatchDog(XQueryContext context) {
         this.context = context;
@@ -201,6 +200,6 @@ public class XQueryWatchDog {
     
     public boolean isTerminating()
     {
-    	return( terminate );
+    	return terminate;
     }
 }

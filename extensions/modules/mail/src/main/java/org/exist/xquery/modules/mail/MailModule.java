@@ -21,26 +21,20 @@
  */
 package org.exist.xquery.modules.mail;
 
-import java.util.Map.Entry;
+import jakarta.mail.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 import org.exist.xquery.XQueryContext;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.exist.xquery.modules.ModuleUtils;
+import org.exist.xquery.modules.ModuleUtils.ContextMapEntryModifier;
+import org.exist.xquery.modules.ModuleUtils.ContextMapModifierWithoutResult;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import jakarta.mail.Folder;
-import jakarta.mail.Message;
-import jakarta.mail.MessagingException;
-import jakarta.mail.Session;
-import jakarta.mail.Store;
-import org.exist.xquery.modules.ModuleUtils;
-import org.exist.xquery.modules.ModuleUtils.ContextMapEntryModifier;
-import org.exist.xquery.modules.ModuleUtils.ContextMapModifierWithoutResult;
+import java.util.Map.Entry;
 
 /**
  * eXist Mail Module Extension
@@ -59,17 +53,17 @@ import org.exist.xquery.modules.ModuleUtils.ContextMapModifierWithoutResult;
  */
 public class MailModule extends AbstractInternalModule { 
     
-    private final static Logger LOG = LogManager.getLogger( MailModule.class );
+    private static final Logger LOG = LogManager.getLogger( MailModule.class );
 	
-    public final static String NAMESPACE_URI = "http://exist-db.org/xquery/mail";
+    public static final String NAMESPACE_URI = "http://exist-db.org/xquery/mail";
 	
-    public final static String PREFIX = "mail";
+    public static final String PREFIX = "mail";
     // JavaMail-based from 2009-03-14
     // makes the need for versioning of the functions obvious too /ljo
-    public final static String INCLUSION_DATE = "2005-05-12, 2009-03-14";
-    public final static String RELEASED_IN_VERSION = "eXist-1.2 (JavaMail-based in trunk)";
+    public static final String INCLUSION_DATE = "2005-05-12, 2009-03-14";
+    public static final String RELEASED_IN_VERSION = "eXist-1.2 (JavaMail-based in trunk)";
 	
-    private final static FunctionDef[] functions = {
+    private static final FunctionDef[] functions = {
         new FunctionDef(MailSessionFunctions.signatures[0], MailSessionFunctions.class),
         new FunctionDef(MailSessionFunctions.signatures[1], MailSessionFunctions.class),
         new FunctionDef(MailStoreFunctions.signatures[0], MailStoreFunctions.class),
@@ -88,13 +82,13 @@ public class MailModule extends AbstractInternalModule {
         new FunctionDef(SendEmailFunction.deprecated, SendEmailFunction.class)
     };
 	
-    public final static String SESSIONS_CONTEXTVAR = "_eXist_mail_sessions";
-    public final static String STORES_CONTEXTVAR = "_eXist_mail_stores";
-    public final static String FOLDERS_CONTEXTVAR = "_eXist_mail_folders";
-    public final static String FOLDERMSGLISTS_CONTEXTVAR = "_eXist_folder_message_lists";
-    public final static String MSGLISTS_CONTEXTVAR = "_eXist_mail_message_lists";
+    public static final String SESSIONS_CONTEXTVAR = "_eXist_mail_sessions";
+    public static final String STORES_CONTEXTVAR = "_eXist_mail_stores";
+    public static final String FOLDERS_CONTEXTVAR = "_eXist_mail_folders";
+    public static final String FOLDERMSGLISTS_CONTEXTVAR = "_eXist_folder_message_lists";
+    public static final String MSGLISTS_CONTEXTVAR = "_eXist_mail_message_lists";
 
-    private static long currentSessionHandle = System.currentTimeMillis();
+    private static final long currentSessionHandle = System.currentTimeMillis();
 	
 	
     public MailModule(Map<String, List<?>> parameters) {

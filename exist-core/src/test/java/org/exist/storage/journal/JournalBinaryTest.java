@@ -64,9 +64,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static java.nio.file.StandardOpenOption.CREATE_NEW;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * Test expectations to check that the correct entries
@@ -82,8 +80,8 @@ public class JournalBinaryTest extends AbstractJournalTest<JournalBinaryTest.Bin
 
     @ClassRule
     public static final TemporaryFolder temporaryFolder = new TemporaryFolder();
-    private static Path testFile1 = null;
-    private static Path testFile2 = null;
+    private static Path testFile1;
+    private static Path testFile2;
 
     @BeforeClass
     public static void storeTempBinaryDocs() throws IOException {
@@ -500,7 +498,7 @@ public class JournalBinaryTest extends AbstractJournalTest<JournalBinaryTest.Bin
         return new BinaryDocLocator(doc.getURI().getRawCollectionPath(), ((BinaryDocument)doc).getBlobId());
     }
 
-    private final static String FS_SUBDIR = "fs";
+    private static final String FS_SUBDIR = "fs";
 
     private ExpectedStoreBlobFile StoreBlobFile(final long transactionId, final BlobId blobId) {
         return new ExpectedStoreBlobFile(transactionId, blobId);
@@ -521,8 +519,12 @@ public class JournalBinaryTest extends AbstractJournalTest<JournalBinaryTest.Bin
 
         @Override
         public boolean equals(final Object o) {
-            if (this == o) return true;
-            if (o == null || o.getClass() != StoreBlobFileLoggable.class) return false;
+            if (this == o) {
+                return true;
+            }
+            if (o == null || o.getClass() != StoreBlobFileLoggable.class) {
+                return false;
+            }
 
             final StoreBlobFileLoggable that = (StoreBlobFileLoggable) o;
             return that.transactionId == transactionId
@@ -549,8 +551,12 @@ public class JournalBinaryTest extends AbstractJournalTest<JournalBinaryTest.Bin
 
         @Override
         public boolean equals(final Object o) {
-            if (this == o) return true;
-            if (o == null || o.getClass() != UpdateBlobRefCountLoggable.class) return false;
+            if (this == o) {
+                return true;
+            }
+            if (o == null || o.getClass() != UpdateBlobRefCountLoggable.class) {
+                return false;
+            }
 
             final UpdateBlobRefCountLoggable that = (UpdateBlobRefCountLoggable) o;
             return that.transactionId == transactionId

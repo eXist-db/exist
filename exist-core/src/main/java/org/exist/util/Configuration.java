@@ -24,210 +24,87 @@ package org.exist.util;
 import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
+import org.exist.Indexer;
+import org.exist.Namespaces;
 import org.exist.backup.SystemExport;
 import org.exist.collections.CollectionCache;
+import org.exist.dom.memtree.SAXAdapter;
+import org.exist.indexing.IndexManager;
 import org.exist.repo.Deployment;
-
 import org.exist.resolver.ResolverFactory;
+import org.exist.scheduler.JobConfig;
+import org.exist.scheduler.JobException;
+import org.exist.scheduler.JobType;
 import org.exist.start.Main;
-import org.exist.storage.BrokerPoolConstants;
+import org.exist.storage.*;
 import org.exist.storage.lock.LockManager;
 import org.exist.storage.lock.LockTable;
+import org.exist.storage.serializers.CustomMatchListenerFactory;
+import org.exist.storage.serializers.Serializer;
 import org.exist.util.io.ContentFilePool;
+import org.exist.validation.GrammarPool;
+import org.exist.xmldb.DatabaseImpl;
 import org.exist.xquery.Expression;
 import org.exist.xquery.PerformanceStats;
 import org.exist.xquery.XQueryWatchDog;
+import org.exist.xslt.TransformerFactoryAllocator;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.*;
+import org.xmlresolver.Resolver;
 
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-import org.xml.sax.XMLReader;
-
-import org.exist.Indexer;
-import org.exist.indexing.IndexManager;
-import org.exist.dom.memtree.SAXAdapter;
-import org.exist.scheduler.JobConfig;
-import org.exist.scheduler.JobException;
-import org.exist.storage.DBBroker;
-import org.exist.storage.DefaultCacheManager;
-import org.exist.storage.IndexSpec;
-import org.exist.storage.NativeBroker;
-import org.exist.storage.XQueryPool;
-import org.exist.storage.serializers.CustomMatchListenerFactory;
-import org.exist.storage.serializers.Serializer;
-import org.exist.validation.GrammarPool;
-import org.exist.xmldb.DatabaseImpl;
-import org.exist.xslt.TransformerFactoryAllocator;
-
+import javax.annotation.Nullable;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 import java.io.IOException;
 import java.io.InputStream;
-
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Function;
 
-import javax.annotation.Nullable;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-
-import org.exist.Namespaces;
-import org.exist.scheduler.JobType;
-import org.xmlresolver.Resolver;
-
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING;
+import static org.exist.Indexer.*;
 import static org.exist.Namespaces.XPATH_FUNCTIONS_NS;
-import static org.exist.scheduler.JobConfig.JOB_CLASS_ATTRIBUTE;
-import static org.exist.scheduler.JobConfig.JOB_CRON_TRIGGER_ATTRIBUTE;
-import static org.exist.scheduler.JobConfig.JOB_DELAY_ATTRIBUTE;
-import static org.exist.scheduler.JobConfig.JOB_NAME_ATTRIBUTE;
-import static org.exist.scheduler.JobConfig.JOB_PERIOD_ATTRIBUTE;
-import static org.exist.scheduler.JobConfig.JOB_REPEAT_ATTRIBUTE;
-import static org.exist.scheduler.JobConfig.JOB_TYPE_ATTRIBUTE;
-import static org.exist.scheduler.JobConfig.JOB_UNSCHEDULE_ON_EXCEPTION;
-import static org.exist.scheduler.JobConfig.JOB_XQUERY_ATTRIBUTE;
-import static org.exist.scheduler.JobConfig.PROPERTY_SCHEDULER_JOBS;
-import static org.exist.storage.BrokerFactory.PROPERTY_DATABASE;
-import static org.exist.Indexer.CONFIGURATION_INDEX_ELEMENT_NAME;
-import static org.exist.Indexer.PRESERVE_WS_MIXED_CONTENT_ATTRIBUTE;
-import static org.exist.Indexer.PROPERTY_INDEXER_CONFIG;
-import static org.exist.Indexer.PROPERTY_PRESERVE_WS_MIXED_CONTENT;
-import static org.exist.Indexer.PROPERTY_SUPPRESS_WHITESPACE;
-import static org.exist.Indexer.SUPPRESS_WHITESPACE_ATTRIBUTE;
 import static org.exist.collections.CollectionCache.PROPERTY_CACHE_SIZE_BYTES;
-import static org.exist.storage.BrokerPoolConstants.CONFIGURATION_CONNECTION_ELEMENT_NAME;
-import static org.exist.storage.BrokerPoolConstants.DATA_DIR_ATTRIBUTE;
-import static org.exist.storage.BrokerPoolConstants.DISK_SPACE_MIN_PROPERTY;
-import static org.exist.storage.BrokerPoolConstants.MAX_CONNECTIONS_ATTRIBUTE;
-import static org.exist.storage.BrokerPoolConstants.MIN_CONNECTIONS_ATTRIBUTE;
-import static org.exist.storage.BrokerPoolConstants.PROPERTY_COLLECTION_CACHE_SIZE;
-import static org.exist.storage.BrokerPoolConstants.PROPERTY_DATA_DIR;
-import static org.exist.storage.BrokerPoolConstants.PROPERTY_MAX_CONNECTIONS;
-import static org.exist.storage.BrokerPoolConstants.PROPERTY_MIN_CONNECTIONS;
-import static org.exist.storage.BrokerPoolConstants.PROPERTY_NODES_BUFFER;
-import static org.exist.storage.BrokerPoolConstants.PROPERTY_PAGE_SIZE;
-import static org.exist.storage.BrokerPoolConstants.PROPERTY_RECOVERY_CHECK;
-import static org.exist.storage.BrokerPoolConstants.PROPERTY_RECOVERY_ENABLED;
-import static org.exist.storage.BrokerPoolConstants.PROPERTY_RECOVERY_FORCE_RESTART;
-import static org.exist.storage.BrokerPoolConstants.PROPERTY_RECOVERY_GROUP_COMMIT;
-import static org.exist.storage.BrokerPoolConstants.PROPERTY_SHUTDOWN_DELAY;
-import static org.exist.storage.BrokerPoolConstants.PROPERTY_STARTUP_TRIGGERS;
-import static org.exist.storage.BrokerPoolConstants.PROPERTY_SYNC_PERIOD;
-import static org.exist.storage.BrokerPoolConstants.RECOVERY_ENABLED_ATTRIBUTE;
-import static org.exist.storage.BrokerPoolConstants.RECOVERY_FORCE_RESTART_ATTRIBUTE;
-import static org.exist.storage.BrokerPoolConstants.RECOVERY_GROUP_COMMIT_ATTRIBUTE;
-import static org.exist.storage.BrokerPoolConstants.RECOVERY_POST_RECOVERY_CHECK;
-import static org.exist.storage.BrokerPoolConstants.SHUTDOWN_DELAY_ATTRIBUTE;
-import static org.exist.storage.BrokerPoolConstants.SYNC_PERIOD_ATTRIBUTE;
-import static org.exist.storage.DBBroker.POSIX_CHOWN_RESTRICTED_ATTRIBUTE;
-import static org.exist.storage.DBBroker.POSIX_CHOWN_RESTRICTED_PROPERTY;
-import static org.exist.storage.DBBroker.PRESERVE_ON_COPY_ATTRIBUTE;
-import static org.exist.storage.DBBroker.PRESERVE_ON_COPY_PROPERTY;
-import static org.exist.storage.DBBroker.PROPERTY_XUPDATE_CONSISTENCY_CHECKS;
-import static org.exist.storage.DBBroker.PROPERTY_XUPDATE_FRAGMENTATION_FACTOR;
+import static org.exist.scheduler.JobConfig.*;
+import static org.exist.storage.BrokerFactory.PROPERTY_DATABASE;
+import static org.exist.storage.BrokerPoolConstants.*;
+import static org.exist.storage.DBBroker.*;
 import static org.exist.storage.DBBroker.PreserveType;
-import static org.exist.storage.DBBroker.XUPDATE_CONSISTENCY_CHECKS_ATTRIBUTE;
-import static org.exist.storage.DBBroker.XUPDATE_FRAGMENTATION_FACTOR_ATTRIBUTE;
-import static org.exist.storage.DefaultCacheManager.CACHE_CHECK_MAX_SIZE_ATTRIBUTE;
-import static org.exist.storage.DefaultCacheManager.CACHE_SIZE_ATTRIBUTE;
-import static org.exist.storage.DefaultCacheManager.DEFAULT_CACHE_CHECK_MAX_SIZE_STRING;
-import static org.exist.storage.DefaultCacheManager.PROPERTY_CACHE_CHECK_MAX_SIZE;
-import static org.exist.storage.DefaultCacheManager.PROPERTY_CACHE_SIZE;
-import static org.exist.storage.DefaultCacheManager.SHRINK_THRESHOLD_ATTRIBUTE;
-import static org.exist.storage.DefaultCacheManager.SHRINK_THRESHOLD_PROPERTY;
+import static org.exist.storage.DefaultCacheManager.*;
 import static org.exist.storage.NativeBroker.INDEX_DEPTH_ATTRIBUTE;
 import static org.exist.storage.NativeBroker.PROPERTY_INDEX_DEPTH;
 import static org.exist.storage.NativeValueIndex.INDEX_CASE_SENSITIVE_ATTRIBUTE;
 import static org.exist.storage.NativeValueIndex.PROPERTY_INDEX_CASE_SENSITIVE;
-import static org.exist.storage.XQueryPool.MAX_STACK_SIZE_ATTRIBUTE;
-import static org.exist.storage.XQueryPool.POOL_SIZE_ATTTRIBUTE;
-import static org.exist.storage.XQueryPool.PROPERTY_MAX_STACK_SIZE;
-import static org.exist.storage.journal.Journal.PROPERTY_RECOVERY_JOURNAL_DIR;
-import static org.exist.storage.journal.Journal.PROPERTY_RECOVERY_SIZE_LIMIT;
-import static org.exist.storage.journal.Journal.PROPERTY_RECOVERY_SYNC_ON_COMMIT;
-import static org.exist.storage.journal.Journal.RECOVERY_JOURNAL_DIR_ATTRIBUTE;
-import static org.exist.storage.journal.Journal.RECOVERY_SIZE_LIMIT_ATTRIBUTE;
-import static org.exist.storage.journal.Journal.RECOVERY_SYNC_ON_COMMIT_ATTRIBUTE;
-import static org.exist.storage.serializers.Serializer.ADD_EXIST_ID_ATTRIBUTE;
-import static org.exist.storage.serializers.Serializer.COMPRESS_OUTPUT_ATTRIBUTE;
-import static org.exist.storage.serializers.Serializer.ENABLE_XINCLUDE_ATTRIBUTE;
-import static org.exist.storage.serializers.Serializer.ENABLE_XSL_ATTRIBUTE;
-import static org.exist.storage.serializers.Serializer.INDENT_ATTRIBUTE;
-import static org.exist.storage.serializers.Serializer.OMIT_ORIGINAL_XML_DECLARATION_ATTRIBUTE;
-import static org.exist.storage.serializers.Serializer.OMIT_XML_DECLARATION_ATTRIBUTE;
-import static org.exist.storage.serializers.Serializer.OUTPUT_DOCTYPE_ATTRIBUTE;
-import static org.exist.storage.serializers.Serializer.PROPERTY_ADD_EXIST_ID;
-import static org.exist.storage.serializers.Serializer.PROPERTY_COMPRESS_OUTPUT;
-import static org.exist.storage.serializers.Serializer.PROPERTY_ENABLE_XINCLUDE;
-import static org.exist.storage.serializers.Serializer.PROPERTY_ENABLE_XSL;
-import static org.exist.storage.serializers.Serializer.PROPERTY_INDENT;
-import static org.exist.storage.serializers.Serializer.PROPERTY_OMIT_ORIGINAL_XML_DECLARATION;
-import static org.exist.storage.serializers.Serializer.PROPERTY_OMIT_XML_DECLARATION;
-import static org.exist.storage.serializers.Serializer.PROPERTY_OUTPUT_DOCTYPE;
-import static org.exist.storage.serializers.Serializer.PROPERTY_TAG_MATCHING_ATTRIBUTES;
-import static org.exist.storage.serializers.Serializer.PROPERTY_TAG_MATCHING_ELEMENTS;
-import static org.exist.storage.serializers.Serializer.TAG_MATCHING_ATTRIBUTES_ATTRIBUTE;
-import static org.exist.storage.serializers.Serializer.TAG_MATCHING_ELEMENTS_ATTRIBUTE;
-import static org.exist.util.HtmlToXmlParser.HTML_TO_XML_PARSER_CLASS_ATTRIBUTE;
-import static org.exist.util.HtmlToXmlParser.HTML_TO_XML_PARSER_ELEMENT;
-import static org.exist.util.HtmlToXmlParser.HTML_TO_XML_PARSER_FEATURES_ELEMENT;
-import static org.exist.util.HtmlToXmlParser.HTML_TO_XML_PARSER_FEATURES_PROPERTY;
-import static org.exist.util.HtmlToXmlParser.HTML_TO_XML_PARSER_PROPERTIES_ELEMENT;
-import static org.exist.util.HtmlToXmlParser.HTML_TO_XML_PARSER_PROPERTIES_PROPERTY;
-import static org.exist.util.HtmlToXmlParser.HTML_TO_XML_PARSER_PROPERTY;
+import static org.exist.storage.XQueryPool.*;
+import static org.exist.storage.journal.Journal.*;
+import static org.exist.storage.serializers.Serializer.*;
+import static org.exist.util.HtmlToXmlParser.*;
 import static org.exist.util.ParametersExtractor.PARAMETER_ELEMENT_NAME;
 import static org.exist.util.XMLReaderObjectFactory.PROPERTY_VALIDATION_MODE;
-import static org.exist.util.XMLReaderPool.XmlParser.XML_PARSER_ELEMENT;
-import static org.exist.util.XMLReaderPool.XmlParser.XML_PARSER_FEATURES_ELEMENT;
-import static org.exist.util.XMLReaderPool.XmlParser.XML_PARSER_FEATURES_PROPERTY;
+import static org.exist.util.XMLReaderPool.XmlParser.*;
 import static org.exist.util.io.ContentFilePool.PROPERTY_IN_MEMORY_SIZE;
 import static org.exist.util.io.VirtualTempPath.DEFAULT_IN_MEMORY_SIZE;
-import static org.exist.xquery.FunctionFactory.DISABLE_DEPRECATED_FUNCTIONS_ATTRIBUTE;
-import static org.exist.xquery.FunctionFactory.DISABLE_DEPRECATED_FUNCTIONS_BY_DEFAULT;
-import static org.exist.xquery.FunctionFactory.ENABLE_JAVA_BINDING_ATTRIBUTE;
-import static org.exist.xquery.FunctionFactory.PROPERTY_DISABLE_DEPRECATED_FUNCTIONS;
-import static org.exist.xquery.FunctionFactory.PROPERTY_ENABLE_JAVA_BINDING;
-import static org.exist.xquery.XQueryContext.BUILT_IN_MODULE_CLASS_ATTRIBUTE;
-import static org.exist.xquery.XQueryContext.BUILT_IN_MODULE_SOURCE_ATTRIBUTE;
-import static org.exist.xquery.XQueryContext.BUILT_IN_MODULE_URI_ATTRIBUTE;
-import static org.exist.xquery.XQueryContext.ENABLE_QUERY_REWRITING_ATTRIBUTE;
-import static org.exist.xquery.XQueryContext.ENFORCE_INDEX_USE_ATTRIBUTE;
-import static org.exist.xquery.XQueryContext.PROPERTY_BUILT_IN_MODULES;
-import static org.exist.xquery.XQueryContext.PROPERTY_ENABLE_QUERY_REWRITING;
-import static org.exist.xquery.XQueryContext.PROPERTY_ENFORCE_INDEX_USE;
-import static org.exist.xquery.XQueryContext.PROPERTY_MODULE_PARAMETERS;
-import static org.exist.xquery.XQueryContext.PROPERTY_STATIC_MODULE_MAP;
-import static org.exist.xquery.XQueryContext.PROPERTY_XQUERY_BACKWARD_COMPATIBLE;
-import static org.exist.xquery.XQueryContext.PROPERTY_XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL;
-import static org.exist.xquery.XQueryContext.XQUERY_BACKWARD_COMPATIBLE_ATTRIBUTE;
-import static org.exist.xquery.XQueryContext.XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL_ATTRIBUTE;
-import static org.exist.xquery.XQueryContext.XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL_DEFAULT;
+import static org.exist.xquery.FunctionFactory.*;
+import static org.exist.xquery.XQueryContext.*;
 import static org.exist.xquery.XQueryWatchDog.PROPERTY_OUTPUT_SIZE_LIMIT;
 import static org.exist.xquery.XQueryWatchDog.PROPERTY_QUERY_TIMEOUT;
-import static org.exist.xslt.TransformerFactoryAllocator.CONFIGURATION_TRANSFORMER_ATTRIBUTE_ELEMENT_NAME;
-import static org.exist.xslt.TransformerFactoryAllocator.PROPERTY_CACHING_ATTRIBUTE;
-import static org.exist.xslt.TransformerFactoryAllocator.PROPERTY_TRANSFORMER_ATTRIBUTES;
-import static org.exist.xslt.TransformerFactoryAllocator.PROPERTY_TRANSFORMER_CLASS;
-import static org.exist.xslt.TransformerFactoryAllocator.TRANSFORMER_CACHING_ATTRIBUTE;
-import static org.exist.xslt.TransformerFactoryAllocator.TRANSFORMER_CLASS_ATTRIBUTE;
+import static org.exist.xslt.TransformerFactoryAllocator.*;
 
 
 public class Configuration implements ErrorHandler {
@@ -633,7 +510,7 @@ public class Configuration implements ErrorHandler {
         try {
             final Class<?> mClass = Class.forName(clazz);
 
-            if (!(org.exist.xquery.Module.class.isAssignableFrom(mClass))) {
+            if (!org.exist.xquery.Module.class.isAssignableFrom(mClass)) {
                 throw (new DatabaseConfigurationException("Failed to load module: " + uri + ". " +
                         "Class " + clazz + " is not an instance of org.exist.xquery.Module."));
             }
@@ -889,9 +766,9 @@ public class Configuration implements ErrorHandler {
             jobList.add(jobConfig);
 
             LOG.debug("Configured scheduled '{}' job '{}{}{}{}'", jobType, jobResource,
-                    (jobSchedule == null) ? "" : ("' with trigger '" + jobSchedule),
-                    (jobDelay == null) ? "" : ("' with delay '" + jobDelay),
-                    (jobRepeat == null) ? "" : ("' repetitions '" + jobRepeat));
+                    jobSchedule == null ? "" : ("' with trigger '" + jobSchedule),
+                    jobDelay == null ? "" : ("' with delay '" + jobDelay),
+                    jobRepeat == null ? "" : ("' repetitions '" + jobRepeat));
         } catch (final JobException je) {
             LOG.error(je);
         }

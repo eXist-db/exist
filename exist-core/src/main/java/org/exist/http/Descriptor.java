@@ -22,6 +22,7 @@
 
 package org.exist.http;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Namespaces;
@@ -35,7 +36,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.*;
 
-import jakarta.servlet.http.HttpServletRequest;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -65,21 +65,21 @@ import static javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING;
 // TODO: doLogRequestInReplayLog() - add the facility to log HTTP PUT requests, may need changes to HttpServletRequestWrapper
 // TODO: doLogRequestInReplayLog() - add the facility to log HTTP POST form file uploads, may need changes to HttpServletRequestWrapper
 
-public class Descriptor implements ErrorHandler {
+public final class Descriptor implements ErrorHandler {
     private static final String SYSTEM_LINE_SEPARATOR = System.getProperty("line.separator");
     //References
     private static Descriptor singletonRef;
-    private final static Logger LOG = LogManager.getLogger(Descriptor.class);        //Logger
+    private static final Logger LOG = LogManager.getLogger(Descriptor.class);        //Logger
     /**
      * descriptor file (descriptor.xml)
      */
-    private final static String file = "descriptor.xml";
+    private static final String file = "descriptor.xml";
 
     //Data
-    private BufferedWriter bufWriteReplayLog = null;    //Should a replay log of requests be created
-    private boolean requestsFiltered = false;
-    private String allowSourceList[] = null;    //Array of xql files to allow source to be viewed
-    private String mapList[][] = null;                    //Array of Mappings
+    private BufferedWriter bufWriteReplayLog;    //Should a replay log of requests be created
+    private boolean requestsFiltered;
+    private String[] allowSourceList;    //Array of xql files to allow source to be viewed
+    private String[][] mapList;                    //Array of Mappings
 
     /**
      * Descriptor Constructor.
@@ -183,7 +183,7 @@ public class Descriptor implements ErrorHandler {
             singletonRef = new Descriptor();
         }
 
-        return (singletonRef);
+        return singletonRef;
     }
 
     /**
@@ -292,11 +292,11 @@ public class Descriptor implements ErrorHandler {
                 //does the path match the <allow-source><xquery path=""/></allow-source> path
                 if ((s.equals(path)) || (path.contains(s))) {
                     //yes, return true
-                    return (true);
+                    return true;
                 }
             }
         }
-        return (false);
+        return false;
     }
 
     /**
@@ -310,7 +310,7 @@ public class Descriptor implements ErrorHandler {
     public String mapPath(String path) {
         if (mapList == null) //has a list of mappings been specified?
         {
-            return (path);
+            return path;
         }
 
         //Iterate through the mappings
@@ -318,12 +318,12 @@ public class Descriptor implements ErrorHandler {
             //does the path or the path/ match the map path
             if (strings[0].equals(path) || (strings[0] + "/").equals(path)) {
                 //return the view
-                return (strings[1]);
+                return strings[1];
             }
         }
 
         //no match return the original path
-        return (path);
+        return path;
     }
 
     public boolean requestsFiltered() {

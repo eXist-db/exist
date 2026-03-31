@@ -34,9 +34,9 @@ import org.exist.xquery.value.Sequence;
  */
 public class DynamicCardinalityCheck extends AbstractExpression {
 
-    final private Expression expression;
-    final private Cardinality requiredCardinality;
-    private Error error;
+    private final Expression expression;
+    private final Cardinality requiredCardinality;
+    private final Error error;
 
     public DynamicCardinalityCheck(final XQueryContext context, final Cardinality requiredCardinality,
             final Expression expr, final Error error) {

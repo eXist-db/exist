@@ -21,24 +21,23 @@
  */
 package org.exist.xquery.modules.image;
 
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
-import javax.annotation.Nullable;
-import javax.imageio.ImageIO;
-
-import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.map.MapType;
 import org.exist.xquery.value.*;
+
+import javax.annotation.Nullable;
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.exist.xquery.FunctionDSL.*;
 import static org.exist.xquery.modules.image.ImageModule.functionSignatures;

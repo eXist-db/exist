@@ -33,12 +33,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.IntegerValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 /**
  *
@@ -46,11 +41,11 @@ import org.exist.xquery.value.Type;
  */
 public class UMaskFunction extends BasicFunction {
     
-    private final static QName qnGetUMask = new QName("get-umask", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
-    private final static QName qnSetUMask = new QName("set-umask", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    private static final QName qnGetUMask = new QName("get-umask", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    private static final QName qnSetUMask = new QName("set-umask", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
 
     
-    public final static FunctionSignature FNS_GET_UMASK = new FunctionSignature(
+    public static final FunctionSignature FNS_GET_UMASK = new FunctionSignature(
         qnGetUMask,
         "Gets the umask of a Users Account.",
         new SequenceType[] {
@@ -59,7 +54,7 @@ public class UMaskFunction extends BasicFunction {
         new FunctionReturnSequenceType(Type.INT, Cardinality.ZERO_OR_MORE, "The umask of the users account expressed as an integer")
     );
     
-    public final static FunctionSignature FNS_SET_UMASK = new FunctionSignature(
+    public static final FunctionSignature FNS_SET_UMASK = new FunctionSignature(
         qnSetUMask,
         "Sets the umask of a Users Account.",
         new SequenceType[] {
@@ -77,7 +72,7 @@ public class UMaskFunction extends BasicFunction {
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
         final DBBroker broker = getContext().getBroker();
         final Subject currentUser = broker.getCurrentSubject();
-        if(currentUser.getName().equals(SecurityManager.GUEST_USER)) {
+        if(SecurityManager.GUEST_USER.equals(currentUser.getName())) {
             throw new XPathException(this, "You must be an authenticated user");
         }
         

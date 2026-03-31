@@ -78,7 +78,7 @@ public class SerializeAttrMatchesTest {
             <w xml:id="VSK.P13.t1.p3.w239" lemma="књига">књигом</w>
             <w xml:id="VSK.P13.t1.p3.w241">пешкешите</w>. –</s>""";
 
-    private Collection test = null;
+    private Collection test;
 
     @Test
     public void expandAttr() throws CollectionConfigurationException, LockException, IOException, SAXException, PermissionDeniedException, EXistException, XPathException {

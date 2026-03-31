@@ -85,8 +85,8 @@ public class RangeIndexAnalyzer extends Analyzer {
         }
     }
 
-    private List<FilterConfig> filterConfigs = new ArrayList<>();
-    private Collator collator = null;
+    private final List<FilterConfig> filterConfigs = new ArrayList<>();
+    private Collator collator;
 
     public RangeIndexAnalyzer() {
     }

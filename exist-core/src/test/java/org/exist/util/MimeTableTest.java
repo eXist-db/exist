@@ -21,14 +21,14 @@
  */
 package org.exist.util;
 
+import com.googlecode.junittoolbox.ParallelRunner;
+import org.junit.*;
+import org.junit.runner.RunWith;
+
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 
 import static org.junit.Assert.*;
-
-import com.googlecode.junittoolbox.ParallelRunner;
-import org.junit.*;
-import org.junit.runner.RunWith;
 
 /**
  * Test case for mime-type mapping.

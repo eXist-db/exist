@@ -26,8 +26,6 @@
  */
 package org.exist.extensions.exquery.restxq.impl.adapters;
 
-import java.util.Iterator;
-
 import com.evolvedbinary.j8fu.function.RunnableE;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -40,6 +38,7 @@ import org.exquery.xquery.Type;
 import org.exquery.xquery.TypedValue;
 
 import javax.annotation.Nullable;
+import java.util.Iterator;
 
 /**
  *
@@ -47,7 +46,7 @@ import javax.annotation.Nullable;
  */
 public class SequenceAdapter implements Sequence<Item> {
     
-    private final static Logger LOG = LogManager.getLogger(SequenceAdapter.class);
+    private static final Logger LOG = LogManager.getLogger(SequenceAdapter.class);
     
     private final org.exist.xquery.value.Sequence sequence;
     @Nullable private final RunnableE<SequenceException> closer;

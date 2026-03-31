@@ -21,6 +21,9 @@
  */
 package org.exist.http.servlets;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -30,9 +33,6 @@ import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.xquery.XQueryContext;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -42,9 +42,9 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class BasicAuthenticator implements Authenticator {
 
-	protected final static Logger LOG = LogManager.getLogger(BasicAuthenticator.class);
+	protected static final Logger LOG = LogManager.getLogger(BasicAuthenticator.class);
 
-	private BrokerPool pool;
+	private final BrokerPool pool;
 
 	public BasicAuthenticator(BrokerPool pool) {
 		this.pool = pool;

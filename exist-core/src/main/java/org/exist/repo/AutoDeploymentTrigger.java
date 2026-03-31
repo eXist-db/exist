@@ -49,14 +49,14 @@ import java.util.stream.Stream;
  */
 public class AutoDeploymentTrigger implements StartupTrigger {
 
-    private final static Logger LOG = LogManager.getLogger(AutoDeploymentTrigger.class);
+    private static final Logger LOG = LogManager.getLogger(AutoDeploymentTrigger.class);
 
-    public final static String AUTODEPLOY_DIRECTORY = "autodeploy";
+    public static final String AUTODEPLOY_DIRECTORY = "autodeploy";
 
-    public final static String AUTODEPLOY_PROPERTY = "exist.autodeploy";
-    public final static String AUTODEPLOY_DIRECTORY_PROPERTY = "exist.autodeploy.dir";
-    public final static String IGNORE_AUTODEPLOY_SYSTEM_PROPERTY_PARAM = "ignore-autodeploy-system-property";
-    public final static String AUTODEPLOY_DIRECTORY_PARAM = "dir";
+    public static final String AUTODEPLOY_PROPERTY = "exist.autodeploy";
+    public static final String AUTODEPLOY_DIRECTORY_PROPERTY = "exist.autodeploy.dir";
+    public static final String IGNORE_AUTODEPLOY_SYSTEM_PROPERTY_PARAM = "ignore-autodeploy-system-property";
+    public static final String AUTODEPLOY_DIRECTORY_PARAM = "dir";
 
     @Override
     public void execute(final DBBroker sysBroker, final Txn transaction, final Map<String, List<? extends Object>> params) {

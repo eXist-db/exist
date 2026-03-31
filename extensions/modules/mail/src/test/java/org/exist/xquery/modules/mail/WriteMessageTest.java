@@ -683,12 +683,12 @@ public class WriteMessageTest {
                 && messageLine.endsWith("--");
     }
 
-    private static Part[] extractParts(final String messageLines[], int messageBodyOffset, final String multipartBoundaryPrefix) {
+    private static Part[] extractParts(final String[] messageLines, int messageBodyOffset, final String multipartBoundaryPrefix) {
         assertEquals("", messageLines[messageBodyOffset++]); // body should start with an empty line
         return extractPartsFromPart(messageLines, messageBodyOffset, multipartBoundaryPrefix);
     }
 
-    private static Part[] extractPartsFromPart(final String messageLines[], int messageBodyOffset, final String multipartBoundaryPrefix) {
+    private static Part[] extractPartsFromPart(final String[] messageLines, int messageBodyOffset, final String multipartBoundaryPrefix) {
         // should start with a multipartBoundaryStart
         assertBoundaryStart(multipartBoundaryPrefix, messageLines[messageBodyOffset++]);
 
@@ -725,7 +725,7 @@ public class WriteMessageTest {
         return parts.toArray(new Part[0]);
     }
 
-    private static String[] extractMessageBody(final String messageLines[], int messageBodyOffset) {
+    private static String[] extractMessageBody(final String[] messageLines, int messageBodyOffset) {
         assertEquals("", messageLines[messageBodyOffset++]); // body should start with an empty line
 
         final List<String> messageBodyLines = new ArrayList<>();

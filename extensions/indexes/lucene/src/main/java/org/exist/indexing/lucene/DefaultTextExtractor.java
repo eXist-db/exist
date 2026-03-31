@@ -26,8 +26,8 @@ import org.exist.util.XMLString;
 
 public class DefaultTextExtractor extends AbstractTextExtractor {
 
-    private int stack = 0;
-    private boolean addSpaceBeforeNext = false;
+    private int stack;
+    private boolean addSpaceBeforeNext;
     
     public int startElement(QName name) {
         if (isInlineNode(name)) {
@@ -45,11 +45,11 @@ public class DefaultTextExtractor extends AbstractTextExtractor {
     }
 
     private boolean isIgnoredNode(final QName name) {
-        return (config.isIgnoredNode(name) || (idxConfig != null && idxConfig.isIgnoredNode(name)));
+        return config.isIgnoredNode(name) || (idxConfig != null && idxConfig.isIgnoredNode(name));
     }
 
 	private boolean isInlineNode(final QName name) {
-		return (config.isInlineNode(name) || (idxConfig != null && idxConfig.isInlineNode(name)));
+		return config.isInlineNode(name) || (idxConfig != null && idxConfig.isInlineNode(name));
 	}
 
     public int endElement(final QName name) {

@@ -43,32 +43,31 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 
-import static org.exist.indexing.lucene.LuceneIndexConfig.MATCH_ATTR;
-import static org.exist.indexing.lucene.LuceneIndexConfig.QNAME_ATTR;
-import static org.exist.indexing.lucene.LuceneIndexConfig.TYPE_ATTR;
+import static org.exist.indexing.lucene.LuceneIndexConfig.*;
 
 public class RangeIndexConfigElement {
 
-    protected final static String FILTER_ELEMENT = "filter";
+    protected static final String FILTER_ELEMENT = "filter";
 
-    protected NodePath path = null;
+    protected NodePath path;
     private int type = Type.STRING;
-    private RangeIndexConfigElement nextConfig = null;
-    protected boolean isQNameIndex = false;
+    private RangeIndexConfigElement nextConfig;
+    protected boolean isQNameIndex;
     protected RangeIndexAnalyzer analyzer = new RangeIndexAnalyzer();
-    protected boolean includeNested = false;
+    protected boolean includeNested;
     protected boolean caseSensitive = true;
-    protected boolean usesCollation = false;
+    protected boolean usesCollation;
     protected int wsTreatment = XMLString.SUPPRESS_NONE;
-    private TypeConverter typeConverter = null;
+    private TypeConverter typeConverter;
 
     public RangeIndexConfigElement(Element node, Map<String, String> namespaces) throws DatabaseConfigurationException {
         String match = node.getAttribute(MATCH_ATTR);
         if (!match.isEmpty()) {
             try {
                 path = new NodePath(namespaces, match);
-                if (path.length() == 0)
+                if (path.length() == 0) {
                     throw new DatabaseConfigurationException("Range index module: Invalid match path in collection config: " + match);
+                }
             } catch (IllegalArgumentException e) {
                 throw new DatabaseConfigurationException("Range index module: invalid qname in configuration: " + e.getMessage());
             }
@@ -334,10 +333,11 @@ public class RangeIndexConfigElement {
     }
 
     public void add(RangeIndexConfigElement config) {
-        if (nextConfig == null)
+        if (nextConfig == null) {
             nextConfig = config;
-        else
+        } else {
             nextConfig.add(config);
+        }
     }
 
     public RangeIndexConfigElement getNext() {

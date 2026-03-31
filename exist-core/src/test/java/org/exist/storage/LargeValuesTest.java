@@ -22,6 +22,7 @@
 package org.exist.storage;
 
 import org.exist.EXistException;
+import org.exist.TestUtils;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.triggers.TriggerException;
@@ -35,8 +36,6 @@ import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
 import org.exist.util.*;
 import org.exist.xmldb.XmldbURI;
-import org.exist.TestUtils;
-
 import org.junit.*;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -56,7 +55,7 @@ import static org.junit.Assert.*;
  */
 public class LargeValuesTest {
 
-    private String CONFIG_QNAME =
+    private final String CONFIG_QNAME =
     	"<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
     	"	<index xmlns:x=\"http://www.foo.com\" xmlns:xx=\"http://test.com\">" +
         "       <create qname=\"@id\" type=\"xs:string\"/>" +

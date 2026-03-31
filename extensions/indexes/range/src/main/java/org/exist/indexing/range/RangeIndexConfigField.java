@@ -43,12 +43,12 @@ import java.util.Map;
  */
 public class RangeIndexConfigField {
 
-    private String name;
-    private NodePath path = null;
-    private NodePath relPath = null;
+    private final String name;
+    private NodePath path;
+    private NodePath relPath;
     private int type = Type.STRING;
-    private TypeConverter typeConverter = null;
-    protected boolean includeNested = false;
+    private TypeConverter typeConverter;
+    protected boolean includeNested;
     protected int wsTreatment = XMLString.SUPPRESS_NONE;
     protected boolean caseSensitive = true;
 
@@ -62,8 +62,9 @@ public class RangeIndexConfigField {
         if (!match.isEmpty()) {
             try {
                 relPath = new NodePath(namespaces, match);
-                if (relPath.length() == 0)
+                if (relPath.length() == 0) {
                     throw new DatabaseConfigurationException("Range index module: Invalid match path in collection config: " + match);
+                }
                 path = new NodePath(parentPath);
                 path.append(relPath);
             } catch (IllegalArgumentException e) {

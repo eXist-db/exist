@@ -29,8 +29,8 @@ import org.exist.storage.txn.Txn;
 import org.exist.xmldb.*;
 import org.exist.xmldb.function.LocalXmldbFunction;
 import org.xmldb.api.base.ErrorCodes;
-import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.base.ServiceProviderCache.ProviderRegistry;
+import org.xmldb.api.base.XMLDBException;
 
 import java.net.URISyntaxException;
 import java.util.Optional;
@@ -66,7 +66,7 @@ public class InTxnLocalCollection extends LocalCollection {
 
     @Override
     public org.xmldb.api.base.Collection getParentCollection() throws XMLDBException {
-        if(getName().equals(XmldbURI.ROOT_COLLECTION)) {
+        if(XmldbURI.ROOT_COLLECTION.equals(getName())) {
             return null;
         }
 

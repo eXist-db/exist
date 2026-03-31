@@ -21,15 +21,8 @@
  */
 package org.exist.dom.memtree;
 
-import java.io.IOException;
-import java.io.StringWriter;
-import java.util.Optional;
-import java.util.Properties;
-import javax.xml.transform.OutputKeys;
-
 import com.googlecode.junittoolbox.ParallelRunner;
 import org.exist.EXistException;
-
 import org.exist.collections.Collection;
 import org.exist.security.AuthenticationException;
 import org.exist.security.PermissionDeniedException;
@@ -54,6 +47,12 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.xml.sax.SAXException;
 
+import javax.xml.transform.OutputKeys;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.util.Optional;
+import java.util.Properties;
+
 /**
  * Tests the serializing of constructed in-memory fragments.
  * 
@@ -65,7 +64,7 @@ public class DOMIndexerTest {
     @ClassRule
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
-    private final static String XML =
+    private static final String XML =
         "<?xml version=\"1.0\"?>" +
         "<!-- A comment -->" +
         "<root xmlns=\"urn:foo\" id=\"1\">" +
@@ -80,7 +79,7 @@ public class DOMIndexerTest {
         "</item>" +
         "</root>";
     
-    private final static String XQUERY =
+    private static final String XQUERY =
         "declare namespace f='urn:foo'; " +
         "let $a := " +
         "   (" +

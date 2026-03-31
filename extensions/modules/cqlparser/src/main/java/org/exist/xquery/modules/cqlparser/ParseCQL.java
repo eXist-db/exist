@@ -21,16 +21,8 @@
  */
 package org.exist.xquery.modules.cqlparser;
 
-import java.io.IOException;
-import java.io.StringReader;
-
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
+import org.apache.logging.log4j.Logger;
 import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.DocumentImpl;
@@ -40,20 +32,19 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
-
+import org.exist.xquery.value.*;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
-
 import org.z3950.zing.cql.CQLNode;
 import org.z3950.zing.cql.CQLParseException;
 import org.z3950.zing.cql.CQLParser;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import java.io.IOException;
+import java.io.StringReader;
 
 /**
  * Functions for a Contextual Query Language (CQL) parser.
@@ -72,7 +63,7 @@ public class ParseCQL extends BasicFunction {
 	@SuppressWarnings("unused")
 	private static final Logger logger = LogManager.getLogger(ParseCQL.class);
 	
-    public final static FunctionSignature signature =
+    public static final FunctionSignature signature =
         new FunctionSignature(
             new QName("parse-cql", CQLParserModule.NAMESPACE_URI, CQLParserModule.PREFIX),
             "Parses expressions in the Contextual Query Language (SRU/CQL) v1.2, " +
@@ -95,20 +86,22 @@ public class ParseCQL extends BasicFunction {
             throws XPathException {
     
     	Sequence ret = Sequence.EMPTY_SEQUENCE;
-        if (args[0].isEmpty())
+        if (args[0].isEmpty()) {
             return Sequence.EMPTY_SEQUENCE;
+        }
         String query = args[0].getStringValue();
         
         String output = "XCQL";
-        if (!args[1].isEmpty())
+        if (!args[1].isEmpty()) {
             output = args[1].getStringValue();
+        }
         
       	  try {
 	      CQLParser parser = new CQLParser(CQLParser.V1POINT2);
 //      		String local_full_query_string = query;
 //      		local_full_query_string = local_full_query_string.replace("-", "%2D");
       		CQLNode query_cql = parser.parse(query);
-      		if (output.equals(OutputTypeXCQL)) {
+      		if (OutputTypeXCQL.equals(output)) {
 		    String xmlContent = query_cql.toXCQL();
 		    if (xmlContent.isEmpty()) {
 			return Sequence.EMPTY_SEQUENCE;
@@ -127,7 +120,7 @@ public class ParseCQL extends BasicFunction {
 		    xr.parse(src);
 		    ret = (DocumentImpl) adapter.getDocument();
 
-      		} else if (output.equals(OutputTypeString)) {
+      		} else if (OutputTypeString.equals(output)) {
 		    ret = new StringValue(this, query_cql.toString());
       		} else {
 		    ret = new StringValue(this, query_cql.toCQL());

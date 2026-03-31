@@ -41,7 +41,7 @@ import java.util.BitSet;
 public class    AnyURIValue extends AtomicValue {
 
     public static final AnyURIValue EMPTY_URI = new AnyURIValue();
-    static final int caseDiff = ('a' - 'A');
+    static final int caseDiff = 'a' - 'A';
     static BitSet needEncoding;
 
     static {

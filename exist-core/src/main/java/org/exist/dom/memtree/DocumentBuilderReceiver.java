@@ -48,11 +48,11 @@ import java.util.Map;
  */
 public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, Receiver {
 
-    private MemTreeBuilder builder = null;
+    private MemTreeBuilder builder;
     private final boolean explicitNSDecl;
 
-    private Map<String, String> namespaces = null;
-    private boolean checkNS = false;
+    private Map<String, String> namespaces;
+    private boolean checkNS;
 
     private boolean suppressWhitespace = true;
 

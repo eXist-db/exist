@@ -21,10 +21,11 @@
  */
 package org.exist.xqdoc.xquery;
 
-import java.util.List;
-import java.util.Map;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
+
+import java.util.List;
+import java.util.Map;
 
 public class XQDocModule extends AbstractInternalModule {
 
@@ -32,7 +33,7 @@ public class XQDocModule extends AbstractInternalModule {
 
     public static final String PREFIX = "xqdm";
 
-    public final static String RELEASED_IN_VERSION = "eXist-1.4.1";
+    public static final String RELEASED_IN_VERSION = "eXist-1.4.1";
 
     public static final FunctionDef[] functions = {
         new FunctionDef(Scan.signatures[0], Scan.class),

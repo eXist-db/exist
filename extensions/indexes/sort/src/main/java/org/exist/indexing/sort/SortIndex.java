@@ -56,7 +56,7 @@ public class SortIndex extends AbstractIndex implements RawBackupSupport {
 
     public static final String ID = SortIndex.class.getName();
     public static final String FILE_NAME = "sort.dbx";
-    public final static short FILE_FORMAT_VERSION_ID = 3;
+    public static final short FILE_FORMAT_VERSION_ID = 3;
     public static final byte SORT_INDEX_ID = 0x10;
     protected static final Logger LOG = LogManager.getLogger(SortIndex.class);
     protected BTreeStore btree;
@@ -82,8 +82,9 @@ public class SortIndex extends AbstractIndex implements RawBackupSupport {
 
     @Override
     public void sync() throws DBException {
-        if (btree == null)
+        if (btree == null) {
             return;
+        }
         final LockManager lockManager = pool.getLockManager();
         try(final ManagedLock<ReentrantLock> btreeLock = lockManager.acquireBtreeWriteLock(btree.getLockName())) {
             btree.flush();

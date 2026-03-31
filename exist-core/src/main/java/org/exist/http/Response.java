@@ -21,9 +21,9 @@
  */
 package org.exist.http;
 
+import jakarta.servlet.http.HttpServletResponse;
 import org.exist.util.MimeType;
 
-import jakarta.servlet.http.HttpServletResponse;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
@@ -31,7 +31,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class Response {
 	
-	private final static String stdHeaders = 
+	private static final String stdHeaders = 
 		"""
         Allow: POST GET PUT DELETE
         Server: eXist
@@ -39,9 +39,9 @@ public class Response {
         """;
 	
 	private int code = HttpServletResponse.SC_OK;
-	private String statusDesc = null;
-	private String content = null;
-	private byte[] binaryContent = null;
+	private String statusDesc;
+	private String content;
+	private byte[] binaryContent;
 	private String encoding = UTF_8.name();
 	private String contentType = MimeType.XML_TYPE.getName();
 	

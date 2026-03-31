@@ -21,8 +21,8 @@
  */
 package org.exist.xquery;
 
-import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.memtree.MemTreeBuilder;
+import org.exist.dom.persistent.DocumentSet;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
@@ -34,10 +34,10 @@ import org.exist.xquery.value.Type;
  */
 public abstract class NodeConstructor extends AbstractExpression {
 
-    protected MemTreeBuilder builder = null;
-    protected boolean newDocumentContext = false;
+    protected MemTreeBuilder builder;
+    protected boolean newDocumentContext;
 
-    public NodeConstructor(XQueryContext context) {
+    protected NodeConstructor(XQueryContext context) {
         super(context);
     }
 

@@ -21,29 +21,21 @@
  */
 package org.exist.xquery.functions.util;
 
-import java.net.URISyntaxException;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.QName;
+import org.exist.dom.persistent.NodeProxy;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.JavaObjectValue;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
+
+import java.net.URISyntaxException;
 
 /**
  * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
@@ -53,7 +45,7 @@ public class CollectionName extends BasicFunction {
 	
 	protected static final Logger logger = LogManager.getLogger(CollectionName.class);
 
-	public final static FunctionSignature signature =
+	public static final FunctionSignature signature =
 		new FunctionSignature(
 			new QName("collection-name", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 			"Returns the name of the collection from a passed node or path string. If the argument is " +

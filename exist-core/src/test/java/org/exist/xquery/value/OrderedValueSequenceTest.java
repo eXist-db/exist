@@ -29,9 +29,7 @@ import org.junit.Test;
 
 import java.util.Arrays;
 
-import static org.easymock.EasyMock.createMock;
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.replay;
+import static org.easymock.EasyMock.*;
 import static org.junit.Assert.assertEquals;
 
 public class OrderedValueSequenceTest {

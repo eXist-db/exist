@@ -21,14 +21,14 @@
  */
 package org.exist.xmldb;
 
-import java.nio.file.Path;
-import java.util.Map;
-import java.util.TreeMap;
-
 import org.exist.storage.BrokerPool;
 import org.exist.storage.IndexStats;
 import org.exist.storage.report.Statistics;
 import org.exist.util.Configuration;
+
+import java.nio.file.Path;
+import java.util.Map;
+import java.util.TreeMap;
 
 public class DatabaseStatus {
 
@@ -38,7 +38,7 @@ public class DatabaseStatus {
 	private final int runningBrokers;
 	private final int availableBrokers;
 	private final int maxBrokers;
-	private Map<String, IndexStats> indexStats = new TreeMap<>();
+	private final Map<String, IndexStats> indexStats = new TreeMap<>();
 	
 	public DatabaseStatus(BrokerPool pool) {
 		final Configuration conf = pool.getConfiguration();

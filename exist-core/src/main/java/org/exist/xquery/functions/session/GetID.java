@@ -40,7 +40,7 @@ import java.util.Objects;
  * @author Loren Cahlander
  */
 public class GetID extends StrictSessionFunction {
-    public final static FunctionSignature signature = new FunctionSignature(
+    public static final FunctionSignature signature = new FunctionSignature(
             new QName("get-id", SessionModule.NAMESPACE_URI, SessionModule.PREFIX),
             "Returns the ID of the current session or an empty sequence if there is no session.",
             null,

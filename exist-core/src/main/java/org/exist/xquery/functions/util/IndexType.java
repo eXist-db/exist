@@ -23,8 +23,8 @@ package org.exist.xquery.functions.util;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.QName;
+import org.exist.dom.persistent.NodeSet;
 import org.exist.xquery.AnalyzeContextInfo;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -33,12 +33,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 /**
  * @author wolf
@@ -48,7 +43,7 @@ public class IndexType extends BasicFunction {
 	
 	protected static final Logger logger = LogManager.getLogger(IndexType.class);
 
-    public final static FunctionSignature signature = new FunctionSignature(
+    public static final FunctionSignature signature = new FunctionSignature(
             new QName("index-type", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
                 "Returns the range index type for a set of nodes or an empty sequence if no index is defined. ", 
                 new SequenceType[] {

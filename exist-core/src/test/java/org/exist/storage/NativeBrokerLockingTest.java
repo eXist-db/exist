@@ -56,11 +56,11 @@ import static org.junit.Assert.*;
  */
 public class NativeBrokerLockingTest {
 
-    private final static XmldbURI TEST_COLLECTION =  XmldbURI.ROOT_COLLECTION_URI.append("test");
-    private final static XmldbURI COLLECTION_A =  TEST_COLLECTION.append("colA");
-    private final static XmldbURI COLLECTION_B =  TEST_COLLECTION.append("colB");
+    private static final XmldbURI TEST_COLLECTION =  XmldbURI.ROOT_COLLECTION_URI.append("test");
+    private static final XmldbURI COLLECTION_A =  TEST_COLLECTION.append("colA");
+    private static final XmldbURI COLLECTION_B =  TEST_COLLECTION.append("colB");
 
-    private final static int TRACE_STACK_DEPTH = 5;
+    private static final int TRACE_STACK_DEPTH = 5;
 
     @Rule
     public ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
@@ -116,7 +116,8 @@ public class NativeBrokerLockingTest {
 
                 lockTable.registerListener(lockSymmetryListener);
                 // wait for the listener to be registered
-                while(!lockSymmetryListener.isRegistered());
+                while (!lockSymmetryListener.isRegistered()) {
+                }
 
                 registered = true;
                 try(final Collection collectionA = broker.openCollection(COLLECTION_A, LockMode.READ_LOCK)) {
@@ -132,7 +133,8 @@ public class NativeBrokerLockingTest {
         }
 
         // wait for the listener to be deregistered
-        while(lockSymmetryListener.isRegistered()) {}
+        while(lockSymmetryListener.isRegistered()) {
+            continue;}
 
         assertTrue(lockSymmetryListener.isSymmetrical());
     }
@@ -151,7 +153,8 @@ public class NativeBrokerLockingTest {
 
                 lockTable.registerListener(lockSymmetryListener);
                 // wait for the listener to be registered
-                while(!lockSymmetryListener.isRegistered());
+                while (!lockSymmetryListener.isRegistered()) {
+                }
 
                 registered = true;
                 try(final Collection collectionNone = broker.openCollection(COLLECTION_A.append("none"), LockMode.READ_LOCK)) {
@@ -167,7 +170,8 @@ public class NativeBrokerLockingTest {
         }
 
         // wait for the listener to be deregistered
-        while(lockSymmetryListener.isRegistered()) {}
+        while(lockSymmetryListener.isRegistered()) {
+            continue;}
 
         assertTrue(lockSymmetryListener.isSymmetrical());
     }
@@ -186,7 +190,8 @@ public class NativeBrokerLockingTest {
 
                 lockTable.registerListener(lockSymmetryListener);
                 // wait for the listener to be registered
-                while(!lockSymmetryListener.isRegistered());
+                while (!lockSymmetryListener.isRegistered()) {
+                }
 
                 registered = true;
                 final Collection collectionA = broker.getCollection(COLLECTION_B);
@@ -201,7 +206,8 @@ public class NativeBrokerLockingTest {
         }
 
         // wait for the listener to be deregistered
-        while(lockSymmetryListener.isRegistered()) {}
+        while(lockSymmetryListener.isRegistered()) {
+            continue;}
 
         assertTrue(lockSymmetryListener.isSymmetrical());
     }
@@ -220,7 +226,8 @@ public class NativeBrokerLockingTest {
 
                 lockTable.registerListener(lockSymmetryListener);
                 // wait for the listener to be registered
-                while(!lockSymmetryListener.isRegistered());
+                while (!lockSymmetryListener.isRegistered()) {
+                }
                 registered = true;
 
                 final Collection collectionNone = broker.getCollection(COLLECTION_B.append("none"));
@@ -235,7 +242,8 @@ public class NativeBrokerLockingTest {
         }
 
         // wait for the listener to be deregistered
-        while(lockSymmetryListener.isRegistered()) {}
+        while(lockSymmetryListener.isRegistered()) {
+            continue;}
 
         assertTrue(lockSymmetryListener.isSymmetrical());
     }
@@ -254,7 +262,8 @@ public class NativeBrokerLockingTest {
 
                 lockTable.registerListener(lockSymmetryListener);
                 // wait for the listener to be registered
-                while(!lockSymmetryListener.isRegistered());
+                while (!lockSymmetryListener.isRegistered()) {
+                }
 
                 registered = true;
                 final XmldbURI collectionC = COLLECTION_B.append("colC");
@@ -271,7 +280,8 @@ public class NativeBrokerLockingTest {
         }
 
         // wait for the listener to be deregistered
-        while(lockSymmetryListener.isRegistered()) {}
+        while(lockSymmetryListener.isRegistered()) {
+            continue;}
 
         assertTrue(lockSymmetryListener.isSymmetrical());
     }
@@ -293,7 +303,8 @@ public class NativeBrokerLockingTest {
 
                 lockTable.registerListener(lockSymmetryListener);
                 // wait for the listener to be registered
-                while(!lockSymmetryListener.isRegistered());
+                while (!lockSymmetryListener.isRegistered()) {
+                }
 
                 registered = true;
                 broker.moveCollection(transaction, collectionA, collectionB, XmldbURI.create("colA"));
@@ -307,7 +318,8 @@ public class NativeBrokerLockingTest {
         }
 
         // wait for the listener to be deregistered
-        while(lockSymmetryListener.isRegistered()) {}
+        while(lockSymmetryListener.isRegistered()) {
+            continue;}
 
         assertTrue(lockSymmetryListener.isSymmetrical());
     }
@@ -329,7 +341,8 @@ public class NativeBrokerLockingTest {
 
                 lockTable.registerListener(lockSymmetryListener);
                 // wait for the listener to be registered
-                while(!lockSymmetryListener.isRegistered());
+                while (!lockSymmetryListener.isRegistered()) {
+                }
 
                 registered = true;
                 broker.copyCollection(transaction, collectionA, collectionB, XmldbURI.create("colA"));
@@ -343,7 +356,8 @@ public class NativeBrokerLockingTest {
         }
 
         // wait for the listener to be deregistered
-        while(lockSymmetryListener.isRegistered()) {}
+        while(lockSymmetryListener.isRegistered()) {
+            continue;}
 
         assertTrue(lockSymmetryListener.isSymmetrical());
     }
@@ -364,7 +378,8 @@ public class NativeBrokerLockingTest {
 
                 lockTable.registerListener(lockSymmetryListener);
                 // wait for the listener to be registered
-                while(!lockSymmetryListener.isRegistered());
+                while (!lockSymmetryListener.isRegistered()) {
+                }
 
                 registered = true;
                 broker.removeCollection(transaction, collectionA);
@@ -378,7 +393,8 @@ public class NativeBrokerLockingTest {
         }
 
         // wait for the listener to be deregistered
-        while(lockSymmetryListener.isRegistered()) {}
+        while(lockSymmetryListener.isRegistered()) {
+            continue;}
 
         assertTrue(lockSymmetryListener.isSymmetrical());
     }
@@ -423,7 +439,7 @@ public class NativeBrokerLockingTest {
                 stackTrace = entry.getStackTraces().getFirst();
 
                 final String reason = LockTable.getSimpleStackReason(stackTrace);
-                if (("sync".equals(reason) || "notifySync".equals(reason))) {
+                if ("sync".equals(reason) || "notifySync".equals(reason)) {
                     return;
                 }
             } else {
@@ -496,7 +512,7 @@ public class NativeBrokerLockingTest {
         }
     }
 
-    private static class LockAction {
+    private static final class LockAction {
         public final LockTable.LockEventType lockEventType;
         public final long groupId;
         public final String id;

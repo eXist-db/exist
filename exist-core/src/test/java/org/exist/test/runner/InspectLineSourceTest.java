@@ -24,10 +24,10 @@ package org.exist.test.runner;
 
 import org.exist.EXistException;
 import org.exist.security.PermissionDeniedException;
-import org.exist.util.DatabaseConfigurationException;
 import org.exist.source.FileSource;
 import org.exist.storage.BrokerPool;
 import org.exist.test.ExistEmbeddedServer;
+import org.exist.util.DatabaseConfigurationException;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
@@ -42,10 +42,7 @@ import java.nio.file.Path;
 import java.util.Collections;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * Tests that util:inspect-function returns line and source attributes for user-defined functions.

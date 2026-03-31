@@ -36,14 +36,14 @@ import org.exist.security.Subject;
 @ConfigurationClass("authentication")
 public class EventAuthentication implements EventListener<Subject>, Configurable {
 	
-	protected final static QName functionName = new QName("authentication", SMEvents.NAMESPACE_URI);
+	protected static final QName functionName = new QName("authentication", SMEvents.NAMESPACE_URI);
 
 	//XXX: @ConfigurationFieldAsText
 	private String script = "";
 	
 	private SMEvents em;
 	
-	private Configuration configuration = null;
+	private Configuration configuration;
 	
 	public EventAuthentication(SMEvents em, Configuration config) {
 		this.em = em;

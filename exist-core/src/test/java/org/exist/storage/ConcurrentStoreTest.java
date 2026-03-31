@@ -21,11 +21,6 @@
  */
 package org.exist.storage;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Iterator;
-import java.util.Optional;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
@@ -45,6 +40,11 @@ import org.junit.AfterClass;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Iterator;
+import java.util.Optional;
+
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.samples.Samples.SAMPLES;
 import static org.junit.Assert.assertNotNull;
@@ -54,12 +54,13 @@ public class ConcurrentStoreTest {
 
     private static final Logger LOG = LogManager.getLogger(ConcurrencyTest.class);
 
-    private static XmldbURI TEST_COLLECTION_URI = XmldbURI.ROOT_COLLECTION_URI.append("test");
+    private static final XmldbURI TEST_COLLECTION_URI = XmldbURI.ROOT_COLLECTION_URI.append("test");
 
     // we don't use @ClassRule/@Rule as we want to force corruption in some tests
-    private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
+    private final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
-    private Collection test, test2;
+    private Collection test;
+    private Collection test2;
 
     @Test
     public void storeAndRead() throws InterruptedException, EXistException, DatabaseConfigurationException, PermissionDeniedException, IOException, TriggerException, LockException {

@@ -57,8 +57,8 @@ public class DecimalValue extends NumericValue {
     private static final Pattern decimalPattern = Pattern.compile("(\\-|\\+)?((\\.[0-9]+)|([0-9]+(\\.[0-9]*)?))");
     private static final Object[] EMPTY_OBJECT_ARRAY = {};
     //Copied from Saxon 8.8
-    private static boolean stripTrailingZerosMethodUnavailable = false;
-    private static Method stripTrailingZerosMethod = null;
+    private static boolean stripTrailingZerosMethodUnavailable;
+    private static Method stripTrailingZerosMethod;
     final BigDecimal value;
 
     public DecimalValue(final BigDecimal decimal) {
@@ -95,7 +95,7 @@ public class DecimalValue extends NumericValue {
 
     public DecimalValue(final Expression expression, double doubleValue) {
         super(expression);
-        value = stripTrailingZeros(new BigDecimal(doubleValue));
+        value = stripTrailingZeros(BigDecimal.valueOf(doubleValue));
     }
 
     /**
@@ -224,7 +224,7 @@ public class DecimalValue extends NumericValue {
     }
 
     public boolean hasFractionalPart() {
-        return (value.scale() > 0);
+        return value.scale() > 0;
     }
 
     @Override
@@ -403,25 +403,21 @@ public class DecimalValue extends NumericValue {
      * @see org.exist.xquery.value.NumericValue#div(org.exist.xquery.value.NumericValue)
      */
     public ComputableValue div(ComputableValue other) throws XPathException {
-        switch (other.getType()) {
-            //case Type.DECIMAL:
-            //return new DecimalValue(value.divide(((DecimalValue) other).value, BigDecimal.ROUND_HALF_UP));
-            case Type.INTEGER:
-                return div((ComputableValue) other.convertTo(getType()));
-            default:
-                if (!(other instanceof DecimalValue)) {
-                    final ComputableValue n = (ComputableValue) this.convertTo(other.getType());
-                    return n.div(other);
-                }
-                if (((DecimalValue) other).isZero()) {
-                    throw new XPathException(getExpression(), ErrorCodes.FOAR0001, "division by zero");
-                }
+        if (other.getType() == Type.INTEGER) {
+            return div((ComputableValue)other.convertTo(getType()));
+        } else {
+            if (!(other instanceof DecimalValue)) {
+                final ComputableValue n = (ComputableValue)this.convertTo(other.getType());
+                return n.div(other);
+            }
+            if (((DecimalValue)other).isZero()) {
+                throw new XPathException(getExpression(), ErrorCodes.FOAR0001, "division by zero");
+            }
 
-                //Copied from Saxon 8.6.1
-                final int scale = Math.max(DIVIDE_PRECISION, Math.max(value.scale(), ((DecimalValue) other).value.scale()));
-                final BigDecimal result = value.divide(((DecimalValue) other).value, scale, RoundingMode.HALF_DOWN);
-                return new DecimalValue(getExpression(), result);
-            //End of copy
+            //Copied from Saxon 8.6.1
+            final int scale = Math.max(DIVIDE_PRECISION, Math.max(value.scale(), ((DecimalValue)other).value.scale()));
+            final BigDecimal result = value.divide(((DecimalValue)other).value, scale, RoundingMode.HALF_DOWN);
+            return new DecimalValue(getExpression(), result);
         }
     }
 

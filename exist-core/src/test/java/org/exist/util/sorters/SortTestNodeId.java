@@ -22,10 +22,10 @@
 
 package org.exist.util.sorters;
 
-import java.io.IOException;
-
 import org.exist.numbering.NodeId;
 import org.exist.storage.io.VariableByteOutputStream;
+
+import java.io.IOException;
 
 /**
  * Mock NodeId.
@@ -57,9 +57,10 @@ class SortTestNodeId implements NodeId {
 	}
 
 	public int compareTo(SortTestNodeId arg0) {
-		if (i < 0)
-			throw new IllegalStateException(
-					"Sort ought not be looking at the nodeid");
+        if (i < 0) {
+            throw new IllegalStateException(
+                    "Sort ought not be looking at the nodeid");
+        }
 		return i - arg0.i;
 	}
 

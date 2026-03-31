@@ -23,25 +23,18 @@ package org.exist.xquery.modules.sql;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.IntegerValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
-
-import java.sql.Connection;
+import org.exist.xquery.value.*;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
-
 import javax.sql.DataSource;
+import java.sql.Connection;
 
 
 /**
@@ -59,7 +52,7 @@ public class GetJNDIConnectionFunction extends BasicFunction {
     @SuppressWarnings("unused")
     private static final Logger logger = LogManager.getLogger(GetJNDIConnectionFunction.class);
 
-    public final static FunctionSignature[] signatures = {
+    public static final FunctionSignature[] signatures = {
             new FunctionSignature(
                     new QName("get-jndi-connection", SQLModule.NAMESPACE_URI, SQLModule.PREFIX),
                     "Opens a connection to a SQL Database.",
@@ -102,7 +95,7 @@ public class GetJNDIConnectionFunction extends BasicFunction {
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
         // was a JNDI name specified?
         if (args[0].isEmpty()) {
-            return (Sequence.EMPTY_SEQUENCE);
+            return Sequence.EMPTY_SEQUENCE;
         }
 
         try {
@@ -126,7 +119,7 @@ public class GetJNDIConnectionFunction extends BasicFunction {
             }
 
             // store the connection and return the uid handle of the connection
-            return (new IntegerValue(this, SQLModule.storeConnection(context, con), Type.LONG));
+            return new IntegerValue(this, SQLModule.storeConnection(context, con), Type.LONG);
         } catch (Exception e) {
             throw (new XPathException(this, e.getMessage()));
         }

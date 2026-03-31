@@ -32,33 +32,16 @@
  */
 package org.exist.xquery.functions.util;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.StringWriter;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.Date;
-import java.util.Properties;
-import java.util.SimpleTimeZone;
-
-import javax.annotation.Nullable;
-import javax.xml.datatype.Duration;
-
 import org.exist.Namespaces;
-import org.exist.dom.persistent.BinaryDocument;
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.memtree.NodeImpl;
 import org.exist.dom.memtree.ReferenceNode;
 import org.exist.dom.memtree.SAXAdapter;
+import org.exist.dom.persistent.BinaryDocument;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.PermissionDeniedException;
-import org.exist.source.DBSource;
-import org.exist.source.FileSource;
-import org.exist.source.Source;
-import org.exist.source.SourceFactory;
-import org.exist.source.StringSource;
+import org.exist.source.*;
 import org.exist.storage.DBBroker;
 import org.exist.storage.XQueryPool;
 import org.exist.storage.lock.Lock.LockMode;
@@ -76,6 +59,18 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
+
+import javax.annotation.Nullable;
+import javax.xml.datatype.Duration;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.StringWriter;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.Date;
+import java.util.Properties;
+import java.util.SimpleTimeZone;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.xquery.FunctionDSL.*;
@@ -221,7 +216,7 @@ public class Eval extends BasicFunction {
         return doEval(context, contextSequence, args);
     }
 
-    private Sequence doEval(final XQueryContext evalContext, final Sequence contextSequence, final Sequence args[])
+    private Sequence doEval(final XQueryContext evalContext, final Sequence contextSequence, final Sequence[] args)
             throws XPathException {
         if (evalContext.getProfiler().isEnabled()) {
             evalContext.getProfiler().start(this);
@@ -374,10 +369,8 @@ public class Eval extends BasicFunction {
             Sequence result = null;
             try {
                 if (!isCalledAs(FS_EVAL_AND_SERIALIZE_NAME)) {
-                    result = execute(evalContext.getBroker(), xqueryService, querySource, innerContext, exprContext,
+                    return execute(evalContext.getBroker(), xqueryService, querySource, innerContext, exprContext,
                             cache, null);
-
-                    return result;
 
                 } else {
                     // get the default serialization options
@@ -396,7 +389,7 @@ public class Eval extends BasicFunction {
                     // do we need to subsequence the results?
                     if (getArgumentCount() > 2) {
                         result = FunSubSequence.subsequence(result,
-                                ((DoubleValue)getArgument(2).eval(contextSequence, null).convertTo(Type.DOUBLE)),
+                                (DoubleValue)getArgument(2).eval(contextSequence, null).convertTo(Type.DOUBLE),
                                 getArgumentCount() == 3 ? null : ((DoubleValue)getArgument(3).eval(contextSequence, null).convertTo(Type.DOUBLE))
                         );
                     }

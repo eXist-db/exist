@@ -50,8 +50,8 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
     // been defined on the nodes in this set.
     protected int indexType = Type.ANY_TYPE;
 
-    private boolean isCached = false;
-    private boolean processInReverseOrder = false;
+    private boolean isCached;
+    private boolean processInReverseOrder;
     private boolean trackMatches = true;
 
     protected AbstractNodeSet() {
@@ -670,7 +670,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
 
     private final class CollectionIterator implements Iterator<Collection> {
 
-        private Collection nextCollection = null;
+        private Collection nextCollection;
         private final NodeSetIterator nodeIterator = iterator();
 
         private CollectionIterator() {

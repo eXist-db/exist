@@ -28,12 +28,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.BooleanValue;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 import org.xmldb.api.base.Collection;
 
 /**
@@ -45,7 +40,7 @@ import org.xmldb.api.base.Collection;
  */
 public class XMLDBCollectionAvailable extends XMLDBAbstractCollectionManipulator {
 //    private static final Logger logger = LogManager.getLogger(XMLDBCollectionAvailable.class);
-    public final static FunctionSignature[] signatures = {
+    public static final FunctionSignature[] signatures = {
 	//Just to mimic doc-available()
 	new FunctionSignature(
 			      new QName("collection-available", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
@@ -65,6 +60,6 @@ public class XMLDBCollectionAvailable extends XMLDBAbstractCollectionManipulator
     public Sequence evalWithCollection(Collection collection, Sequence[] args, 
 				       Sequence contextSequence)
 	throws XPathException {
-	return (collection == null) ? BooleanValue.FALSE : BooleanValue.TRUE;
+	return collection == null ? BooleanValue.FALSE : BooleanValue.TRUE;
     }
 }

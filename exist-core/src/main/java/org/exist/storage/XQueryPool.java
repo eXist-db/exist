@@ -32,11 +32,6 @@
  */
 package org.exist.storage;
 
-import java.text.NumberFormat;
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.Objects;
-
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import net.jcip.annotations.ThreadSafe;
@@ -49,6 +44,11 @@ import org.exist.source.Source;
 import org.exist.util.Configuration;
 import org.exist.util.Holder;
 import org.exist.xquery.*;
+
+import java.text.NumberFormat;
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.Objects;
 
 /**
  * Global pool for compiled XQuery expressions.

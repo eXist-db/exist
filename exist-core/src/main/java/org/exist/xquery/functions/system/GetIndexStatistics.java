@@ -40,9 +40,9 @@ import org.xml.sax.SAXException;
 
 public class GetIndexStatistics extends BasicFunction {
 
-    protected final static Logger logger = LogManager.getLogger(GetIndexStatistics.class);
+    protected static final Logger logger = LogManager.getLogger(GetIndexStatistics.class);
 
-    public final static FunctionSignature signature = new FunctionSignature(
+    public static final FunctionSignature signature = new FunctionSignature(
         new QName("get-index-statistics", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
         "Internal function",
         null,

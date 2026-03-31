@@ -21,12 +21,12 @@
  */
 package org.exist.xquery.functions.response;
 
-import java.util.List;
-import java.util.Map;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.xquery.*;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * Module function definitions for xmldb module.
@@ -37,12 +37,12 @@ import org.exist.xquery.*;
  */
 public class ResponseModule extends AbstractInternalModule {
 
-    private final static Logger LOG = LogManager.getLogger(ResponseModule.class);
+    private static final Logger LOG = LogManager.getLogger(ResponseModule.class);
 
     public static final String NAMESPACE_URI = "http://exist-db.org/xquery/response";
     public static final String PREFIX = "response";
-    public final static String INCLUSION_DATE = "2006-04-09";
-    public final static String RELEASED_IN_VERSION = "eXist-1.0";
+    public static final String INCLUSION_DATE = "2006-04-09";
+    public static final String RELEASED_IN_VERSION = "eXist-1.0";
 
     public static final FunctionDef[] functions = {
             new FunctionDef(RedirectTo.signature, RedirectTo.class),
@@ -63,21 +63,21 @@ public class ResponseModule extends AbstractInternalModule {
 
     @Override
     public String getDescription() {
-        return ("A module for dealing with HTTP responses.");
+        return "A module for dealing with HTTP responses.";
     }
 
     @Override
     public String getNamespaceURI() {
-        return (NAMESPACE_URI);
+        return NAMESPACE_URI;
     }
 
     @Override
     public String getDefaultPrefix() {
-        return (PREFIX);
+        return PREFIX;
     }
 
     @Override
     public String getReleaseVersion() {
-        return (RELEASED_IN_VERSION);
+        return RELEASED_IN_VERSION;
     }
 }

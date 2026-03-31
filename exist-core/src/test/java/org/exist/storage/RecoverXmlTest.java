@@ -71,8 +71,8 @@ public class RecoverXmlTest extends AbstractRecoverTest {
 
     @ClassRule
     public static final TemporaryFolder temporaryFolder = new TemporaryFolder();
-    private static Path testFile1 = null;
-    private static Path testFile2 = null;
+    private static Path testFile1;
+    private static Path testFile2;
 
     @BeforeClass
     public static void storeTempXmlDocs() throws IOException {
@@ -155,7 +155,7 @@ public class RecoverXmlTest extends AbstractRecoverTest {
 
     private final String readAll(final Reader reader) throws IOException {
         final StringBuilder builder = new StringBuilder();
-        final char buf[] = new char[4096];
+        final char[] buf = new char[4096];
         int read = -1;
         while ((read = reader.read(buf)) > -1) {
             builder.append(buf, 0, read);

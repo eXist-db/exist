@@ -27,12 +27,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.IntegerValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 /**
  *
@@ -40,10 +35,10 @@ import org.exist.xquery.value.Type;
  */
 public class BaseConversionFunctions extends BasicFunction {
     
-    private final static QName qnIntToOctal = new QName("int-to-octal", UtilModule.NAMESPACE_URI, UtilModule.PREFIX);
-    private final static QName qnOctalToInt = new QName("octal-to-int", UtilModule.NAMESPACE_URI, UtilModule.PREFIX);
+    private static final QName qnIntToOctal = new QName("int-to-octal", UtilModule.NAMESPACE_URI, UtilModule.PREFIX);
+    private static final QName qnOctalToInt = new QName("octal-to-int", UtilModule.NAMESPACE_URI, UtilModule.PREFIX);
     
-    public final static FunctionSignature FNS_INT_TO_OCTAL = new FunctionSignature(
+    public static final FunctionSignature FNS_INT_TO_OCTAL = new FunctionSignature(
         qnIntToOctal,
         "Converts an int e.g. 511 to an octal number e.g. 0777.",
         new SequenceType[] {
@@ -52,7 +47,7 @@ public class BaseConversionFunctions extends BasicFunction {
         new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
     );
     
-    public final static FunctionSignature FNS_OCTAL_TO_INT = new FunctionSignature(
+    public static final FunctionSignature FNS_OCTAL_TO_INT = new FunctionSignature(
         qnOctalToInt,
         "Converts an octal string e.g. '0777' to an int e.g. 511.",
         new SequenceType[] {

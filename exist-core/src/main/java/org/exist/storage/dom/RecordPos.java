@@ -28,7 +28,7 @@ public final class RecordPos {
     private DOMPage page;
     int offset;
     private short tupleID;
-    private boolean isLink = false;
+    private boolean isLink;
 
     public RecordPos(int offset, DOMPage page, short tupleID) {
         this.offset = offset;

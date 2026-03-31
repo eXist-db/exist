@@ -21,10 +21,11 @@
  */
 package org.exist.xquery.functions.math;
 
-import java.util.List;
-import java.util.Map;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  *  eXist module for mathematical operations.
@@ -34,13 +35,13 @@ import org.exist.xquery.FunctionDef;
  */
 public class MathModule extends AbstractInternalModule {
     
-    public final static String NAMESPACE_URI = "http://www.w3.org/2005/xpath-functions/math";
+    public static final String NAMESPACE_URI = "http://www.w3.org/2005/xpath-functions/math";
     
-    public final static String PREFIX = "math";
-    public final static String INCLUSION_DATE = "2012-12-05";
-    public final static String RELEASED_IN_VERSION = "eXist-2.0";
+    public static final String PREFIX = "math";
+    public static final String INCLUSION_DATE = "2012-12-05";
+    public static final String RELEASED_IN_VERSION = "eXist-2.0";
 
-    private final static FunctionDef[] functions = {
+    private static final FunctionDef[] functions = {
         
         new FunctionDef(OneParamFunctions.FNS_ACOS, OneParamFunctions.class),
         new FunctionDef(OneParamFunctions.FNS_ASIN, OneParamFunctions.class),

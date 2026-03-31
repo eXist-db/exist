@@ -39,15 +39,15 @@ import java.util.Map;
  */
 public class ExpathPackageModule extends AbstractInternalModule {
 
-    private final static Logger logger = LogManager.getLogger(ExpathPackageModule.class);
+    private static final Logger logger = LogManager.getLogger(ExpathPackageModule.class);
 
-    public final static String NAMESPACE_URI = "http://exist-db.org/xquery/repo";
+    public static final String NAMESPACE_URI = "http://exist-db.org/xquery/repo";
 
-    public final static String PREFIX = "repo";
-    public final static String INCLUSION_DATE = "2010-07-27";
-    public final static String RELEASED_IN_VERSION = "eXist-2.0";
+    public static final String PREFIX = "repo";
+    public static final String INCLUSION_DATE = "2010-07-27";
+    public static final String RELEASED_IN_VERSION = "eXist-2.0";
     
-    private final static FunctionDef[] functions = {
+    private static final FunctionDef[] functions = {
     	new FunctionDef(Deploy.signatures[0], Deploy.class),
     	new FunctionDef(Deploy.signatures[1], Deploy.class),
         new FunctionDef(Deploy.signatures[2], Deploy.class),

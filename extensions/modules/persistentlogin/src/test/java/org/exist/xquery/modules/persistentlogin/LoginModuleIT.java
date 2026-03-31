@@ -54,7 +54,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class LoginModuleIT {
 
-    private static String XQUERY = "import module namespace login=\"http://exist-db.org/xquery/login\" " +
+    private static final String XQUERY = "import module namespace login=\"http://exist-db.org/xquery/login\" " +
             "at \"resource:org/exist/xquery/modules/persistentlogin/login.xql\";" +
             "login:set-user('org.exist.login', (), false())," +
             "sm:id()/(descendant::sm:effective,descendant::sm:real)[1]/sm:username/string()";
@@ -62,7 +62,7 @@ public class LoginModuleIT {
     @ClassRule
     public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
 
-    private final static String XQUERY_FILENAME = "test-login.xql";
+    private static final String XQUERY_FILENAME = "test-login.xql";
 
     private static Collection root;
     private static HttpClient client;
@@ -107,7 +107,7 @@ public class LoginModuleIT {
         res.setContent(XQUERY);
         root.storeResource(res);
         final UserManagementService ums = root.getService(UserManagementService.class);
-        ums.chmod(res, 0777);
+        ums.chmod(res, 511);
 
         final BasicCookieStore store = new BasicCookieStore();
         client = HttpClientBuilder.create().setDefaultCookieStore(store).build();

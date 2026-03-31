@@ -30,7 +30,7 @@ import org.apache.logging.log4j.Logger;
  */
 public class LogRestoreListener extends AbstractRestoreListener {
 
-    public final static Logger LOG = LogManager.getLogger(LogRestoreListener.class);
+    public static final Logger LOG = LogManager.getLogger(LogRestoreListener.class);
 
     @Override
     public void info(final String message) {

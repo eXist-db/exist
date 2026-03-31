@@ -46,8 +46,8 @@ import java.nio.file.Path;
 public class FileFilterInputStreamCache extends AbstractFilterInputStreamCache {
     private final Path tempFile;
     private final boolean externalFile;
-    private int length = 0;
-    private int offset = 0;
+    private int length;
+    private int offset;
 
     private final RandomAccessFile raf;
 

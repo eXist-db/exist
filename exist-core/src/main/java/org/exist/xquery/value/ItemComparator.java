@@ -55,7 +55,7 @@ import java.util.Comparator;
 public class ItemComparator implements Comparator<Item> {
 
     @Nullable private final Collator collator;
-    @Nullable private AtomicValueComparator atomicValueComparator = null;
+    @Nullable private AtomicValueComparator atomicValueComparator;
 
     public ItemComparator() {
         this(null);

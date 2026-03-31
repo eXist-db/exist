@@ -22,17 +22,16 @@
 package org.exist.xquery.functions.xquery3;
 
 import com.googlecode.junittoolbox.ParallelRunner;
-import org.custommonkey.xmlunit.XMLUnit;
 import org.custommonkey.xmlunit.XMLAssert;
+import org.custommonkey.xmlunit.XMLUnit;
 import org.exist.test.ExistXmldbEmbeddedServer;
+import org.exist.xquery.ErrorCodes;
+import org.exist.xquery.XPathException;
 import org.junit.ClassRule;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.xml.sax.SAXException;
 import org.xmldb.api.base.ResourceSet;
-
-import org.exist.xquery.ErrorCodes;
-import org.exist.xquery.XPathException;
-import org.junit.Test;
 import org.xmldb.api.base.XMLDBException;
 
 import java.io.IOException;

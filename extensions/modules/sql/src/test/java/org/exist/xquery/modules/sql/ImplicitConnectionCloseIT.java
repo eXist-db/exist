@@ -47,7 +47,6 @@ import org.exist.util.LockException;
 import org.exist.util.MimeType;
 import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;
-
 import org.exist.xquery.ExternalModule;
 import org.exist.xquery.Module;
 import org.exist.xquery.ModuleContext;
@@ -80,7 +79,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.xquery.modules.sql.Util.executeQuery;
 import static org.exist.xquery.modules.sql.Util.withCompiledQuery;
 import static org.junit.Assert.*;
-import static org.junit.Assert.assertEquals;
 
 /**
  * Uses JNDI to provide a StubDataSourceFactory
@@ -100,7 +98,7 @@ public class ImplicitConnectionCloseIT {
     @Rule
     public ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
-    private Context ctx = null;
+    private Context ctx;
 
     @Before
     public void setupJndiEnvironment() throws NamingException {
@@ -343,7 +341,7 @@ public class ImplicitConnectionCloseIT {
         private final String username;
         private final String password;
 
-        public int closedCount = 0;
+        public int closedCount;
 
         public StubConnection() {
             this(null, null);

@@ -29,12 +29,11 @@ import org.exist.storage.IndexSpec;
 import org.exist.storage.NodePath;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
+import org.exist.xquery.modules.lucene.Query;
 import org.exist.xquery.value.*;
 
 import javax.annotation.Nullable;
 import java.util.*;
-
-import org.exist.xquery.modules.lucene.Query;
 
 /**
  * A pragma which checks if an XPath expression could be replaced with a range field lookup.
@@ -46,7 +45,7 @@ public class OptimizeFieldPragma extends AbstractPragma {
     public static final QName OPTIMIZE_RANGE_PRAGMA = new QName("optimize-field", Namespaces.EXIST_NS, "exist");
 
     private final XQueryContext context;
-    private Expression rewritten = null;
+    private Expression rewritten;
     private AnalyzeContextInfo contextInfo;
     private int axis;
 

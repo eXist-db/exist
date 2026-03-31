@@ -31,7 +31,6 @@ import org.exist.xmldb.XmldbURI;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
-import static org.junit.Assert.assertTrue;
 import org.xml.sax.SAXException;
 
 import java.io.BufferedReader;
@@ -43,6 +42,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.junit.Assert.assertTrue;
+
 /**
  * @author jim fuller at webcomposite.com
  *
@@ -53,60 +54,60 @@ public class XIncludeSerializerTest {
     @ClassRule
     public static final ExistWebServer existWebServer = new ExistWebServer(true, true, true, true);
 
-    private final static XmldbURI XINCLUDE_COLLECTION = XmldbURI.ROOT_COLLECTION_URI.append("xinclude_test");
-    private final static XmldbURI XINCLUDE_NESTED_COLLECTION = XmldbURI.ROOT_COLLECTION_URI.append("xinclude_test/data");
+    private static final XmldbURI XINCLUDE_COLLECTION = XmldbURI.ROOT_COLLECTION_URI.append("xinclude_test");
+    private static final XmldbURI XINCLUDE_NESTED_COLLECTION = XmldbURI.ROOT_COLLECTION_URI.append("xinclude_test/data");
 
-    private final static String getXmlRpcApi() {
+    private static String getXmlRpcApi() {
         return "http://127.0.0.1:" + existWebServer.getPort() + "/xmlrpc";
     }
 
-    private final static String getRestUri()  {
+    private static String getRestUri()  {
         return "http://admin:admin@127.0.0.1:" + existWebServer.getPort() + "/db/xinclude_test";
     }
 
-    private final static String XML_DATA1
+    private static final String XML_DATA1
             = "<test xmlns:xi='" + Namespaces.XINCLUDE_NS + "'>"
             + "<root>"
             + "<xi:include href='metatags.xml'/>"
             + "</root>"
             + "</test>";
 
-    private final static String XML_DATA2
+    private static final String XML_DATA2
             = "<html>"
             + "<head>"
             + "<metatag xml:id='metatag' name='test' description='test'/>"
             + "</head>"
             + "</html>";
 
-    private final static String XML_DATA3
+    private static final String XML_DATA3
             = "<test xmlns:xi='" + Namespaces.XINCLUDE_NS + "'>"
             + "<root>"
             + "<xi:include href='../xinclude_test/data/metatags.xml'/>"
             + "</root>"
             + "</test>";
 
-    private final static String XML_DATA4
+    private static final String XML_DATA4
             = "<test xmlns:xi='" + Namespaces.XINCLUDE_NS + "'>"
             + "<root>"
             + "<xi:include href='data/metatags.xml'/>"
             + "</root>"
             + "</test>";
 
-    private final static String XML_DATA5
+    private static final String XML_DATA5
             = "<test xmlns:xi='" + Namespaces.XINCLUDE_NS + "'>"
             + "<root>"
             + "<xi:include href='data/metatags.xml' xpointer='xpointer(//metatag)'/>"
             + "</root>"
             + "</test>";
 
-    private final static String XML_DATA6
+    private static final String XML_DATA6
             = "<test xmlns:xi='" + Namespaces.XINCLUDE_NS + "'>"
             + "<root>"
             + "<xi:include href='data/metatags.xml' xpointer='metatag'/>"
             + "</root>"
             + "</test>";
 
-    private final static String XML_DATA7
+    private static final String XML_DATA7
             = "<test xmlns:xi='" + Namespaces.XINCLUDE_NS + "'>"
             + "<root>"
             + "<xi:include href='data/unknown.xml'>"
@@ -115,14 +116,14 @@ public class XIncludeSerializerTest {
             + "</root>"
             + "</test>";
 
-    private final static String XML_DATA8
+    private static final String XML_DATA8
             = "<test xmlns:xi='" + Namespaces.XINCLUDE_NS + "'>"
             + "<root>"
             + "<xi:include href='data/unknown.xml'/>"
             + "</root>"
             + "</test>";
 
-    private final static String XML_RESULT = "<test xmlns:xi='" + Namespaces.XINCLUDE_NS + "'>"
+    private static final String XML_RESULT = "<test xmlns:xi='" + Namespaces.XINCLUDE_NS + "'>"
             + "<root>"
             + "<html>"
             + "<head>"
@@ -132,13 +133,13 @@ public class XIncludeSerializerTest {
             + "</root>"
             + "</test>";
 
-    private final static String XML_RESULT_XPOINTER = "<test xmlns:xi='" + Namespaces.XINCLUDE_NS + "'>"
+    private static final String XML_RESULT_XPOINTER = "<test xmlns:xi='" + Namespaces.XINCLUDE_NS + "'>"
             + "<root>"
             + "<metatag xml:id='metatag' name='test' description='test'/>"
             + "</root>"
             + "</test>";
 
-    private final static String XML_RESULT_FALLBACK1 = "<test xmlns:xi='" + Namespaces.XINCLUDE_NS + "'>"
+    private static final String XML_RESULT_FALLBACK1 = "<test xmlns:xi='" + Namespaces.XINCLUDE_NS + "'>"
             + "<root>"
             + "<warning>Not found</warning>"
             + "</root>"

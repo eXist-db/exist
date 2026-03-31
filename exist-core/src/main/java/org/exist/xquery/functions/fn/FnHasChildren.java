@@ -29,16 +29,16 @@ import org.w3c.dom.Node;
 
 public class FnHasChildren extends Function {
 
-    private final static QName QN_HAS_CHILDREN = new QName("has-children", Function.BUILTIN_FUNCTION_NS);
+    private static final QName QN_HAS_CHILDREN = new QName("has-children", Function.BUILTIN_FUNCTION_NS);
 
-    public final static FunctionSignature FNS_HAS_CHILDREN_0 = new FunctionSignature(
+    public static final FunctionSignature FNS_HAS_CHILDREN_0 = new FunctionSignature(
             QN_HAS_CHILDREN,
             "Returns true if the context item has one or more child nodes",
             FunctionSignature.NO_ARGS,
             new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if the context item has one of more child nodes, false otherwise")
     );
 
-    public final static FunctionSignature FNS_HAS_CHILDREN_1 = new FunctionSignature(
+    public static final FunctionSignature FNS_HAS_CHILDREN_1 = new FunctionSignature(
             QN_HAS_CHILDREN,
             "Returns true if the supplied node has one or more child nodes",
             new SequenceType[] {

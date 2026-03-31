@@ -21,11 +21,11 @@
  */
 package org.exist.security.realm.ldap.xquery;
 
-import java.util.List;
-import java.util.Map;
-
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>

@@ -34,10 +34,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.Iterator;
 
-import static org.exist.xquery.FunctionDSL.arities;
-import static org.exist.xquery.FunctionDSL.arity;
-import static org.exist.xquery.FunctionDSL.param;
-import static org.exist.xquery.FunctionDSL.returnsOptMany;
+import static org.exist.xquery.FunctionDSL.*;
 import static org.exist.xquery.functions.inspect.InspectionModule.functionSignature;
 import static org.exist.xquery.functions.inspect.InspectionModule.functionSignatures;
 
@@ -83,7 +80,7 @@ public class ModuleFunctions extends BasicFunction {
                 tempContext.setModuleLoadPath(context.getModuleLoadPath());
                 tempContext.prepareForExecution();
 
-                final AnyURIValue uri = ((AnyURIValue) args[0].itemAt(0));
+                final AnyURIValue uri = (AnyURIValue) args[0].itemAt(0);
 
                 if (isCalledAs(FS_MODULE_FUNCTIONS_NAME)) {
                     try {

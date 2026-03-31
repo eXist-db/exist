@@ -32,7 +32,7 @@ import java.io.InputStream;
  */
 public class VariableByteInputStream extends AbstractVariableByteInput {
 
-    private InputStream is;
+    private final InputStream is;
     
     public VariableByteInputStream(InputStream is) {
         super();

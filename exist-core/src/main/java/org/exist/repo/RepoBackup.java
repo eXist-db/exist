@@ -47,7 +47,7 @@ import java.util.zip.ZipOutputStream;
  */
 public class RepoBackup {
 
-    public final static String REPO_ARCHIVE = "expathrepo.zip";
+    public static final String REPO_ARCHIVE = "expathrepo.zip";
 
     public static Path backup(final DBBroker broker) throws IOException {
         final TemporaryFileManager temporaryFileManager = TemporaryFileManager.getInstance();

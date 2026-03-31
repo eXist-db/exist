@@ -21,11 +21,6 @@
  */
 package org.exist;
 
-import java.nio.file.Path;
-import java.util.Collection;
-import java.util.Observer;
-import java.util.Optional;
-
 import org.exist.collections.CollectionConfigurationManager;
 import org.exist.collections.triggers.CollectionTrigger;
 import org.exist.collections.triggers.DocumentTrigger;
@@ -47,6 +42,11 @@ import org.exist.storage.journal.JournalManager;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.util.Configuration;
 import org.exist.xquery.PerformanceStats;
+
+import java.nio.file.Path;
+import java.util.Collection;
+import java.util.Observer;
+import java.util.Optional;
 
 /**
  * Database controller, all operation synchronized by this instance. (singleton)

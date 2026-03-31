@@ -79,17 +79,17 @@ public class XQDocHelper {
         return null;
     }
 
-    private StringBuilder description = new StringBuilder();
-    private Map<String, String> parameters = new HashMap<>();
-    private String returnValue = null;
-    private Map<String, String> meta = new HashMap<>();
+    private final StringBuilder description = new StringBuilder();
+    private final Map<String, String> parameters = new HashMap<>();
+    private String returnValue;
+    private final Map<String, String> meta = new HashMap<>();
 
     public void addDescription(final CharSequence part) {
         description.append(part.toString().trim());
     }
 
     public void setParameter(final String comment) {
-        final String components[] = comment.trim().split("\\s+", 2);
+        final String[] components = comment.trim().split("\\s+", 2);
         if(components != null && components.length == 2) {
             String var = components[0];
             if (!var.isEmpty() && var.charAt(0) == '$') {
@@ -150,10 +150,10 @@ public class XQDocHelper {
         final StringBuilder out = new StringBuilder();
         out.append(description.toString().trim()).append("\n\n");
         for (final Map.Entry<String, String> entry : meta.entrySet()) {
-            out.append("%20s\t%s\n".formatted(entry.getKey(), entry.getValue()));
+            out.append("%20s\t%s%n".formatted(entry.getKey(), entry.getValue()));
         }
         for (final Map.Entry<String, String> entry : parameters.entrySet()) {
-            out.append("%20s\t%s\n".formatted(entry.getKey(), entry.getValue()));
+            out.append("%20s\t%s%n".formatted(entry.getKey(), entry.getValue()));
         }
         return out.toString();
     }

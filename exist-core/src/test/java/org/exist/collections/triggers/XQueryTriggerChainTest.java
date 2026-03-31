@@ -80,18 +80,18 @@ public class XQueryTriggerChainTest {
     @ClassRule
     public static final ExistEmbeddedServer EXIST_EMBEDDED_SERVER = new ExistEmbeddedServer(true, true);
 
-	private final static XmldbURI TEST_COLLECTION_URI = XmldbURI.create("/db/testXQueryTriggerChain");
+	private static final XmldbURI TEST_COLLECTION_URI = XmldbURI.create("/db/testXQueryTriggerChain");
 
-    private final static XmldbURI COLLECTION_1_URI = TEST_COLLECTION_URI.append("collection1");
-    private final static XmldbURI COLLECTION_1_INPUT_URI = COLLECTION_1_URI.append("input");
-    private final static XmldbURI COLLECTION_1_OUTPUT_URI = COLLECTION_1_URI.append("output");
+    private static final XmldbURI COLLECTION_1_URI = TEST_COLLECTION_URI.append("collection1");
+    private static final XmldbURI COLLECTION_1_INPUT_URI = COLLECTION_1_URI.append("input");
+    private static final XmldbURI COLLECTION_1_OUTPUT_URI = COLLECTION_1_URI.append("output");
 
-    private final static XmldbURI COLLECTION_2_URI = TEST_COLLECTION_URI.append("collection2");
-    private final static XmldbURI COLLECTION_2_INPUT_URI = COLLECTION_2_URI.append("input");
-    private final static XmldbURI COLLECTION_2_OUTPUT_URI = COLLECTION_2_URI.append("output");
+    private static final XmldbURI COLLECTION_2_URI = TEST_COLLECTION_URI.append("collection2");
+    private static final XmldbURI COLLECTION_2_INPUT_URI = COLLECTION_2_URI.append("input");
+    private static final XmldbURI COLLECTION_2_OUTPUT_URI = COLLECTION_2_URI.append("output");
 
-    private final static XmldbURI TRIGGER_1_MODULE_URI = TEST_COLLECTION_URI.append("XQueryTrigger1.xqm");
-    private final static String TRIGGER_1_MODULE =
+    private static final XmldbURI TRIGGER_1_MODULE_URI = TEST_COLLECTION_URI.append("XQueryTrigger1.xqm");
+    private static final String TRIGGER_1_MODULE =
             "module namespace trigger = 'http://exist-db.org/xquery/trigger';\n" +
             "import module namespace util = 'http://exist-db.org/xquery/util';\n" +
             "import module namespace xmldb = 'http://exist-db.org/xquery/xmldb';\n" +
@@ -104,8 +104,8 @@ public class XQueryTriggerChainTest {
             "    xmldb:move($in-collection, $out-sub-collection, $in-document-name)\n" +
             "};";
 
-    private final static XmldbURI TRIGGER_2_MODULE_URI = TEST_COLLECTION_URI.append("XQueryTrigger2.xqm");
-    private final static String TRIGGER_2_MODULE =
+    private static final XmldbURI TRIGGER_2_MODULE_URI = TEST_COLLECTION_URI.append("XQueryTrigger2.xqm");
+    private static final String TRIGGER_2_MODULE =
             "module namespace trigger = 'http://exist-db.org/xquery/trigger';\n" +
             "import module namespace util = 'http://exist-db.org/xquery/util';\n" +
             "import module namespace xmldb = 'http://exist-db.org/xquery/xmldb';\n" +
@@ -118,7 +118,7 @@ public class XQueryTriggerChainTest {
             "    xmldb:get-child-resources($in-sub-collection) ! xmldb:copy-resource($in-sub-collection, ., '" + COLLECTION_2_OUTPUT_URI + "', ())\n" +
             "};";
 
-    private final static String TRIGGER_1_COLLECTION_CONFIG =
+    private static final String TRIGGER_1_COLLECTION_CONFIG =
             "<exist:collection xmlns:exist='http://exist-db.org/collection-config/1.0'>" +
             "  <exist:triggers>" +
             "     <exist:trigger class='org.exist.collections.triggers.XQueryTrigger'>" +

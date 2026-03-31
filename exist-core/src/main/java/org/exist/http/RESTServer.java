@@ -21,6 +21,8 @@
  */
 package org.exist.http;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
@@ -84,8 +86,6 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.AttributesImpl;
 import org.xml.sax.helpers.XMLFilterImpl;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.XMLStreamException;
@@ -96,8 +96,8 @@ import java.lang.invoke.LambdaMetafactory;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
-import java.util.Properties;
 import java.util.*;
+import java.util.Properties;
 import java.util.function.BiFunction;
 
 import static java.lang.invoke.MethodType.methodType;
@@ -113,10 +113,10 @@ import static org.exist.http.RESTServerParameter.*;
  */
 public class RESTServer {
 
-    protected final static Logger LOG = LogManager.getLogger(RESTServer.class);
-    public final static String SERIALIZATION_METHOD_PROPERTY = "output-as";
+    protected static final Logger LOG = LogManager.getLogger(RESTServer.class);
+    public static final String SERIALIZATION_METHOD_PROPERTY = "output-as";
     // Should we not obey the instance's defaults? /ljo
-    protected final static Properties defaultProperties = new Properties();
+    protected static final Properties defaultProperties = new Properties();
 
     static {
         defaultProperties.setProperty(OutputKeys.INDENT, "yes");
@@ -125,7 +125,8 @@ public class RESTServer {
         defaultProperties.setProperty(EXistOutputKeys.HIGHLIGHT_MATCHES, "elements");
         defaultProperties.setProperty(EXistOutputKeys.PROCESS_XSL_PI, "yes");
     }
-    public final static Properties defaultOutputKeysProperties = new Properties();
+
+    public static final Properties defaultOutputKeysProperties = new Properties();
 
     static {
         defaultOutputKeysProperties.setProperty(EXistOutputKeys.OMIT_ORIGINAL_XML_DECLARATION, "no");
@@ -134,7 +135,8 @@ public class RESTServer {
         defaultOutputKeysProperties.setProperty(OutputKeys.MEDIA_TYPE,
                 MimeType.XML_TYPE.getName());
     }
-    private final static String QUERY_ERROR_HEAD = "<html>" + "<head>"
+
+    private static final String QUERY_ERROR_HEAD = "<html>" + "<head>"
             + "<title>Query Error</title>" + "<style type=\"text/css\">"
             + ".errmsg {" + "  border: 1px solid black;" + "  padding: 15px;"
             + "  margin-left: 20px;" + "  margin-right: 20px;" + "}"
@@ -158,8 +160,8 @@ public class RESTServer {
     private final EXistServlet.FeatureEnabled xupdateSubmission;
 
     //EXQuery Request Module details
-    private String xqueryContextExqueryRequestAttribute = null;
-    private BiFunction<HttpServletRequest, FilterInputStreamCacheConfiguration, HttpRequest> cstrHttpServletRequestAdapter = null;
+    private String xqueryContextExqueryRequestAttribute;
+    private BiFunction<HttpServletRequest, FilterInputStreamCacheConfiguration, HttpRequest> cstrHttpServletRequestAdapter;
 
     // Constructor
     public RESTServer(final BrokerPool pool, final String formEncoding,
@@ -769,7 +771,7 @@ public class RESTServer {
                 final ElementImpl root = parseXML(broker.getBrokerPool(), content, nsExtractor);
                 final String rootNS = root.getNamespaceURI();
 
-                if (rootNS != null && rootNS.equals(Namespaces.EXIST_NS)) {
+                if (Namespaces.EXIST_NS.equals(rootNS)) {
 
                     if (Query.xmlKey().equals(root.getLocalName())) {
                         // process <query>xpathQuery</query>
@@ -836,7 +838,7 @@ public class RESTServer {
 
                             final Node child = children.item(i);
                             if (child.getNodeType() == Node.ELEMENT_NODE
-                                    && child.getNamespaceURI().equals(Namespaces.EXIST_NS)) {
+                                    && Namespaces.EXIST_NS.equals(child.getNamespaceURI())) {
 
                                 if (Text.xmlKey().equals(child.getLocalName())) {
                                     final StringBuilder buf = new StringBuilder();
@@ -857,7 +859,7 @@ public class RESTServer {
                                     Node node = child.getFirstChild();
                                     while (node != null) {
                                         if (node.getNodeType() == Node.ELEMENT_NODE
-                                                && node.getNamespaceURI().equals(Namespaces.EXIST_NS)
+                                                && Namespaces.EXIST_NS.equals(node.getNamespaceURI())
                                                 && Property.xmlKey().equals(node.getLocalName())) {
 
                                             final Element property = (Element) node;
@@ -897,7 +899,7 @@ public class RESTServer {
                         throw new BadRequestException("No query specified");
                     }
 
-                } else if (rootNS != null && rootNS.equals(XUpdateProcessor.XUPDATE_NS)) {
+                } else if (XUpdateProcessor.XUPDATE_NS.equals(rootNS)) {
                     if(LOG.isDebugEnabled()) {
                         LOG.debug("Got xupdate request: {}", content);
                     }
@@ -937,7 +939,7 @@ public class RESTServer {
                     final XUpdateProcessor processor = new XUpdateProcessor(broker, docs);
                     long mods = 0;
                     try(final Reader reader = new StringReader(content)) {
-                        final Modification modifications[] = processor.parse(new InputSource(reader));
+                        final Modification[] modifications = processor.parse(new InputSource(reader));
                         for (Modification modification : modifications) {
                             mods += modification.process(transaction);
                             broker.flush();
@@ -1284,14 +1286,13 @@ public class RESTServer {
         final InputStream is = request.getInputStream();
         final Reader reader = new InputStreamReader(is, encoding);
         final StringWriter content = new StringWriter();
-        final char ch[] = new char[4096];
+        final char[] ch = new char[4096];
         int len = 0;
         while ((len = reader.read(ch)) > -1) {
             content.write(ch, 0, len);
         }
 
-        final String xml = content.toString();
-        return xml;
+        return content.toString();
     }
 
     /**
@@ -1480,7 +1481,9 @@ public class RESTServer {
             final ElementImpl variable = (ElementImpl) i.nextItem();
             // get the QName of the variable
             final ElementImpl qname = (ElementImpl) variable.getFirstChild(new NameTest(Type.ELEMENT, new QName("qname", Namespaces.EXIST_NS)));
-            String localname = null, prefix = null, uri = null;
+            String localname = null;
+            String prefix = null;
+            String uri = null;
             NodeImpl child = (NodeImpl) qname.getFirstChild();
             while (child != null) {
                 if ("localname".equals(child.getLocalName())) {
@@ -1585,8 +1588,7 @@ public class RESTServer {
 
             DebuggeeFactory.checkForDebugRequest(request, context);
 
-            boolean wrap = outputProperties.getProperty("_wrap") != null
-                    && "yes".equals(outputProperties.getProperty("_wrap"));
+            boolean wrap = "yes".equals(outputProperties.getProperty("_wrap"));
 
             try {
                 final long executeStart = System.currentTimeMillis();
@@ -2264,12 +2266,10 @@ public class RESTServer {
     }
 
     private boolean isExecutableType(final DocumentImpl resource) {
-        return (
-            resource != null
+        return resource != null
             && (
                     MimeType.XQUERY_TYPE.getName().equals(resource.getMimeType()) // xquery
                     || MimeType.XPROC_TYPE.getName().equals(resource.getMimeType()) // xproc
-            )
-        );
+            );
     }
 }

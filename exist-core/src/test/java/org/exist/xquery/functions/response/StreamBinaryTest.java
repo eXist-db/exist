@@ -21,20 +21,19 @@
  */
 package org.exist.xquery.functions.response;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertArrayEquals;
-
-import java.io.IOException;
-import java.net.URLEncoder;
-
 import org.apache.commons.codec.binary.Base64;
-
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.fluent.Request;
 import org.exist.http.RESTTest;
-import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.junit.Test;
+
+import java.io.IOException;
+import java.net.URLEncoder;
+
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Tests expected behaviour of response:stream-binary() XQuery function

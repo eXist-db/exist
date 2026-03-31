@@ -21,11 +21,6 @@
  */
 package org.exist.storage;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URISyntaxException;
-import java.util.Optional;
-
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.dom.persistent.DocumentImpl;
@@ -45,13 +40,17 @@ import org.exist.xmldb.XmldbURI;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
+import org.xml.sax.SAXException;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URISyntaxException;
+import java.util.Optional;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.exist.samples.Samples.SAMPLES;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.exist.samples.Samples.SAMPLES;
-
-import org.xml.sax.SAXException;
 
 public class CopyResourceRecoveryTest {
 

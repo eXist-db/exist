@@ -30,12 +30,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 /**
  * Generate a massage digest (hashcode) from a string. Typically supported
@@ -51,7 +46,7 @@ public class Hash extends BasicFunction {
 	private static final FunctionParameterSequenceType base64flag = new FunctionParameterSequenceType("base64flag", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "The flag that specifies whether to return the result as Base64 encoded");
 	private static final FunctionReturnSequenceType result = new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the hashcode");
 	
-    public final static FunctionSignature[] signatures = {
+    public static final FunctionSignature[] signatures = {
             new FunctionSignature(
                     new QName("hash", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
                     "Calculates a hashcode from a string based on a specified algorithm.",
@@ -91,7 +86,7 @@ public class Hash extends BasicFunction {
             throw new XPathException(this, ex.getMessage());
         }
 
-        return (new StringValue(this, md));
+        return new StringValue(this, md);
     }
 
 }

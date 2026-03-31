@@ -30,10 +30,10 @@ import java.util.List;
  */
 public class MappedClass {
 	
-	protected String name = null;
-	protected String version = null;
+	protected String name;
+	protected String version;
 	
-	protected List<SubConfig> subconfs = new ArrayList<SubConfig>();
+	protected List<SubConfig> subconfs = new ArrayList<>();
 	
 	public void setName(String name) {
 		this.name = name;

@@ -30,12 +30,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.BooleanValue;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 
 /**
@@ -50,7 +45,7 @@ import org.exist.xquery.value.Type;
  */
 public class DeleteScheduledJob extends BasicFunction
 {
-    public final static FunctionSignature signature =
+    public static final FunctionSignature signature =
 		new FunctionSignature(
 			new QName( "delete-scheduled-job", SchedulerModule.NAMESPACE_URI, SchedulerModule.PREFIX ),
 			"Delete the named job named from the Scheduler. Will only delete User Scheduled Jobs! Returns true if the Job was deleted.",
@@ -61,7 +56,7 @@ public class DeleteScheduledJob extends BasicFunction
 			new FunctionReturnSequenceType( Type.BOOLEAN, Cardinality.EXACTLY_ONE, "a boolean value indicating success or failure on deleting the named job." )
 		);
 	
-    private Scheduler                     scheduler = null;
+    private final Scheduler                     scheduler;
 
     /**
      * DeleteScheduledJob Constructor.
@@ -96,9 +91,9 @@ public class DeleteScheduledJob extends BasicFunction
 
         //Check if the user is a DBA
         if( !user.hasDbaRole() ) {
-            return( BooleanValue.FALSE );
+            return BooleanValue.FALSE;
         }
 
-        return( BooleanValue.valueOf( scheduler.deleteJob( jobName, UserJob.JOB_GROUP ) ) );
+        return BooleanValue.valueOf( scheduler.deleteJob( jobName, UserJob.JOB_GROUP ) );
     }
 }

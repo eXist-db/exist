@@ -26,11 +26,12 @@
  */
 package org.exist.extensions.exquery.restxq.impl.adapters;
 
-import javax.xml.namespace.QName;
 import org.exist.xquery.LiteralValue;
 import org.exquery.xquery.Literal;
 import org.exquery.xquery3.Annotation;
 import org.exquery.xquery3.FunctionSignature;
+
+import javax.xml.namespace.QName;
 
 /**
  *
@@ -39,7 +40,7 @@ import org.exquery.xquery3.FunctionSignature;
 public class AnnotationAdapter implements Annotation {
 
     private QName name;
-    private LiteralValueAdapter literals[];
+    private LiteralValueAdapter[] literals;
     private FunctionSignatureAdapter functionSignature;
     
     public AnnotationAdapter() {
@@ -52,7 +53,7 @@ public class AnnotationAdapter implements Annotation {
     AnnotationAdapter(final org.exist.xquery.Annotation annotation, final FunctionSignatureAdapter functionSignatureAdapter) {
         this.name = annotation.getName().toJavaQName();
         
-        final LiteralValue literalValues[] = annotation.getValue();
+        final LiteralValue[] literalValues = annotation.getValue();
         this.literals = new LiteralValueAdapter[literalValues.length];
         for(int i = 0; i < literalValues.length; i++) {
             literals[i] = new LiteralValueAdapter(literalValues[i]);

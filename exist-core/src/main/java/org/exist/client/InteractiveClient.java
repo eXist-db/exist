@@ -21,6 +21,46 @@
  */
 package org.exist.client;
 
+import org.apache.tools.ant.DirectoryScanner;
+import org.exist.SystemProperties;
+import org.exist.dom.persistent.XMLUtil;
+import org.exist.security.Account;
+import org.exist.security.Group;
+import org.exist.security.Permission;
+import org.exist.security.SecurityManager;
+import org.exist.security.internal.aider.UserAider;
+import org.exist.start.CompatibleJavaVersionCheck;
+import org.exist.start.StartException;
+import org.exist.storage.ElementIndex;
+import org.exist.util.*;
+import org.exist.util.serializer.SAXSerializer;
+import org.exist.util.serializer.SerializerPool;
+import org.exist.xmldb.*;
+import org.exist.xquery.Constants;
+import org.jline.reader.*;
+import org.jline.reader.impl.history.DefaultHistory;
+import org.jline.terminal.Terminal;
+import org.jline.terminal.TerminalBuilder;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.AttributesImpl;
+import org.xmldb.api.DatabaseManager;
+import org.xmldb.api.base.*;
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.modules.BinaryResource;
+import org.xmldb.api.modules.XUpdateQueryService;
+import se.softhouse.jargo.ArgumentException;
+
+import javax.swing.ImageIcon;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
+import javax.xml.XMLConstants;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.OutputKeys;
 import java.awt.Dimension;
 import java.io.*;
 import java.lang.reflect.Field;
@@ -40,53 +80,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-import javax.swing.ImageIcon;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
-import javax.xml.XMLConstants;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.OutputKeys;
-
-import org.apache.tools.ant.DirectoryScanner;
-import org.exist.SystemProperties;
-import org.exist.dom.persistent.XMLUtil;
-import org.exist.security.Account;
-import org.exist.security.Group;
-import org.exist.security.Permission;
-import org.exist.security.SecurityManager;
-import org.exist.security.internal.aider.UserAider;
-import org.exist.start.CompatibleJavaVersionCheck;
-import org.exist.start.StartException;
-import org.exist.storage.ElementIndex;
-import org.exist.util.*;
-import org.exist.util.serializer.SAXSerializer;
-import org.exist.util.serializer.SerializerPool;
-import org.exist.xmldb.EXistCollectionManagementService;
-import org.exist.xmldb.DatabaseInstanceManager;
-import org.exist.xmldb.EXistResource;
-import org.exist.xmldb.ExtendedResource;
-import org.exist.xmldb.IndexQueryService;
-import org.exist.xmldb.UserManagementService;
-import org.exist.xmldb.EXistXPathQueryService;
-import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.Constants;
-import org.jline.reader.*;
-import org.jline.reader.impl.history.DefaultHistory;
-import org.jline.terminal.Terminal;
-import org.jline.terminal.TerminalBuilder;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.AttributesImpl;
-import org.xmldb.api.DatabaseManager;
-import org.xmldb.api.base.*;
-import org.xmldb.api.base.Collection;
-import org.xmldb.api.modules.BinaryResource;
-import org.xmldb.api.modules.XUpdateQueryService;
-import se.softhouse.jargo.ArgumentException;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.time.ZoneOffset.UTC;
@@ -157,9 +150,10 @@ public class InteractiveClient {
         DEFAULT_PROPERTIES.setProperty(EXPAND_XINCLUDES, "true");
         DEFAULT_PROPERTIES.setProperty(SSL_ENABLE, SSL_ENABLE_DEFAULT);
     }
+
     protected static final int[] COL_SIZES = new int[]{10, 10, 10, -1};
 
-    protected static String configuration = null;
+    protected static String configuration;
 
     protected final TreeSet<String> completions = new TreeSet<>();
     protected final LinkedList<String> queryHistory = new LinkedList<>();
@@ -169,24 +163,24 @@ public class InteractiveClient {
     protected Path queryHistoryFile;
     protected Path historyFile;
 
-    protected LineReader console = null;
+    protected LineReader console;
 
-    private Database database = null;
-    protected Collection current = null;
+    private Database database;
+    protected Collection current;
     protected int nextInSet = 1;
 
-    protected String[] resources = null;
-    protected ResourceSet result = null;
+    protected String[] resources;
+    protected ResourceSet result;
 
     /**
      * number of files of a recursive store
      */
-    protected int filesCount = 0;
+    protected int filesCount;
 
     /**
      * total length of a recursive store
      */
-    protected long totalLength = 0;
+    protected long totalLength;
 
     protected ClientFrame frame;
 
@@ -489,7 +483,7 @@ public class InteractiveClient {
         if (options.startGUI) {
             frame.setPath(path);
         }
-        final String args[];
+        final String[] args;
         if (line.startsWith("find")) {
             args = new String[2];
             args[0] = "find";
@@ -875,7 +869,7 @@ public class InteractiveClient {
                 }
             } else if ("users".equalsIgnoreCase(args[0])) {
                 final UserManagementService mgtService = current.getService(UserManagementService.class);
-                final Account users[] = mgtService.getAccounts();
+                final Account[] users = mgtService.getAccounts();
                 messageln("User\t\tGroups");
                 messageln("-----------------------------------------");
                 for (Account user : users) {
@@ -1151,7 +1145,7 @@ public class InteractiveClient {
     }
 
     private ResourceSet find(String xpath) throws XMLDBException {
-        if (xpath.substring(xpath.length() - EOL.length()).equals(EOL)) {
+        if (EOL.equals(xpath.substring(xpath.length() - EOL.length()))) {
             xpath = xpath.substring(0, xpath.length() - EOL.length());
         }
 
@@ -1185,7 +1179,7 @@ public class InteractiveClient {
             service.setNamespace(mapping.getKey(), mapping.getValue());
         }
 
-        return (sortBy == null) ? service.query(xpath) : service.query(xpath, sortBy);
+        return sortBy == null ? service.query(xpath) : service.query(xpath, sortBy);
     }
 
     protected final Resource retrieve(final XmldbURI resource) throws XMLDBException {
@@ -1635,7 +1629,7 @@ public class InteractiveClient {
                         mimeType = MimeType.BINARY_TYPE;
                     }
                     try (final Resource document = base.createResource(localName, mimeType.getXMLDBType())) {
-                        message("storing Zip-entry document " + localName + " (" + (number)
+                        message("storing Zip-entry document " + localName + " (" + number
                                 + " of " + zfile.size() + ") ...");
                         document.setContent(new ZipEntryInputSource(zfile, ze));
                         ((EXistResource) document).setMimeType(mimeType.getName());
@@ -1957,7 +1951,7 @@ public class InteractiveClient {
             if (options.xpath.isPresent()) {
 
                 final String xpathStr = options.xpath.get();
-                if (!xpathStr.equals(CommandlineOptions.XPATH_STDIN)) {
+                if (!CommandlineOptions.XPATH_STDIN.equals(xpathStr)) {
                     xpath = xpathStr;
                 } else {
                     // read from stdin
@@ -2137,7 +2131,9 @@ public class InteractiveClient {
         }
 
         if (interactive) {
-            if (initializeGui()) return false;
+            if (initializeGui()) {
+                return false;
+            }
         } else {
             shutdown(false);
         }
@@ -2497,7 +2493,7 @@ public class InteractiveClient {
         }
     }
 
-    static final void consoleOut(final String msg) {
+    static void consoleOut(final String msg) {
         System.out.println(msg); //NOSONAR this has to go to the console
     }
 
@@ -2509,7 +2505,7 @@ public class InteractiveClient {
         }
     }
 
-    static final void consoleErr(final String msg) {
+    static void consoleErr(final String msg) {
         System.err.println(msg); //NOSONAR this has to go to the console
     }
 
@@ -2570,7 +2566,7 @@ public class InteractiveClient {
     public static class ProgressObserver implements Observer {
 
         final ProgressBar elementsProgress = new ProgressBar("storing elements");
-        Observable lastObservable = null;
+        Observable lastObservable;
         final ProgressBar parseProgress = new ProgressBar("storing nodes   ");
 
         @Override

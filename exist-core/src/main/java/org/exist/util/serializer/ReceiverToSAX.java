@@ -41,7 +41,7 @@ import javax.annotation.Nullable;
 public class ReceiverToSAX implements Receiver {
 
     private ContentHandler contentHandler;
-    private LexicalHandler lexicalHandler = null;
+    private LexicalHandler lexicalHandler;
 
     private final char[] charBuf = new char[2048];
 

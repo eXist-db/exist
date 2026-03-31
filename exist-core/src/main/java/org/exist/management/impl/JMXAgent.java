@@ -28,14 +28,7 @@ import org.exist.management.TaskStatus;
 import org.exist.storage.BrokerPool;
 import org.exist.util.DatabaseConfigurationException;
 
-import javax.management.InstanceAlreadyExistsException;
-import javax.management.InstanceNotFoundException;
-import javax.management.MBeanRegistrationException;
-import javax.management.MBeanServer;
-import javax.management.MBeanServerFactory;
-import javax.management.MalformedObjectNameException;
-import javax.management.NotCompliantMBeanException;
-import javax.management.ObjectName;
+import javax.management.*;
 import java.util.*;
 
 /**

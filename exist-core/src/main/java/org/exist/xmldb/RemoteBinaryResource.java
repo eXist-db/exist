@@ -21,15 +21,6 @@
  */
 package org.exist.xmldb;
 
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-
 import org.exist.storage.blob.BlobId;
 import org.exist.util.EXistInputSource;
 import org.exist.util.MimeType;
@@ -40,6 +31,13 @@ import org.xml.sax.ext.LexicalHandler;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
 /**
  * @author wolf
  */
@@ -47,10 +45,10 @@ public class RemoteBinaryResource
         extends AbstractRemoteResource
         implements EXistBinaryResource {
 
-    private String type = null;
-    private byte[] content = null;  // only used for binary results from an XQuery execution, where we have been sent the result
-    private BlobId blobId = null;
-    private MessageDigest contentDigest = null;
+    private String type;
+    private byte[] content;  // only used for binary results from an XQuery execution, where we have been sent the result
+    private BlobId blobId;
+    private MessageDigest contentDigest;
 
     public RemoteBinaryResource(final RemoteCollection parent, final XmldbURI documentName) throws XMLDBException {
         super(parent, documentName, MimeType.BINARY_TYPE.getName());
@@ -100,7 +98,7 @@ public class RemoteBinaryResource
 
         if (file != null) {
             retval = file.toAbsolutePath().toString();
-        } else if (inputSource != null && inputSource instanceof EXistInputSource source) {
+        } else if (inputSource instanceof EXistInputSource source) {
             retval = source.getSymbolicPath();
         }
 
@@ -164,6 +162,6 @@ public class RemoteBinaryResource
     }
 
     @Override
-    @Nullable public void setProperties(final Properties properties) {
+    public void setProperties(final Properties properties) {
     }
 }

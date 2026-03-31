@@ -21,11 +21,6 @@
  */
 package org.exist.indexing.spatial;
 
-import java.nio.file.Path;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.HashMap;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.indexing.AbstractIndex;
@@ -37,6 +32,11 @@ import org.exist.storage.btree.DBException;
 import org.exist.util.DatabaseConfigurationException;
 import org.w3c.dom.Element;
 
+import java.nio.file.Path;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.HashMap;
+
 /**
  * @author <a href="mailto:pierrick.brihaye@free.fr">Pierrick Brihaye</a>
  */
@@ -47,10 +47,10 @@ public abstract class AbstractGMLJDBCIndex extends AbstractIndex {
      * not to the concrete HSQL (or whatever) one. This allows spatial functions to use
      * the available JDBC index, whatever its underlying engine is.
      */
-    public final static String ID = AbstractGMLJDBCIndex.class.getName();	
+    public static final String ID = AbstractGMLJDBCIndex.class.getName();	
 
     @SuppressWarnings("unused")
-    private final static Logger LOG = LogManager.getLogger(AbstractGMLJDBCIndex.class);
+    private static final Logger LOG = LogManager.getLogger(AbstractGMLJDBCIndex.class);
 
     /**
      * An IndexWorker "pool"
@@ -60,7 +60,7 @@ public abstract class AbstractGMLJDBCIndex extends AbstractIndex {
     /**
      * The connection to the DB that will be needed for global operations 
      */
-    protected Connection conn = null;
+    protected Connection conn;
 
     /**
      * The spatial operators to test spatial relationshipds beween geometries.

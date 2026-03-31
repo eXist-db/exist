@@ -21,12 +21,12 @@
  */
 package org.exist.storage.io;
 
-import java.io.IOException;
-import java.io.OutputStream;
-
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.util.ByteArray;
 import org.exist.util.FixedByteArray;
-import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
+
+import java.io.IOException;
+import java.io.OutputStream;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -150,8 +150,8 @@ public class VariableByteOutputStream extends OutputStream {
      *  @param s the short to write
      */
     public void writeShort(int s) {
-        while ((s & ~0177) != 0) {
-            buf.write((byte) ((s & 0177) | 0200));
+        while ((s & ~127) != 0) {
+            buf.write((byte) ((s & 127) | 128));
             s >>>= 7;
         }
         buf.write((byte) s);
@@ -173,8 +173,8 @@ public class VariableByteOutputStream extends OutputStream {
      *  @param i the integer to write
      */
     public void writeInt(int i) {
-        while ((i & ~0177) != 0) {
-            buf.write((byte) ((i & 0177) | 0200));
+        while ((i & ~127) != 0) {
+            buf.write((byte) ((i & 127) | 128));
             i >>>= 7;
         }
         buf.write((byte) i);
@@ -208,8 +208,8 @@ public class VariableByteOutputStream extends OutputStream {
      * @param l the long to write
      */
     public void writeLong(long l) {
-        while ((l & ~0177) != 0) {
-            buf.write((byte) ((l & 0177) | 0200));
+        while ((l & ~127) != 0) {
+            buf.write((byte) ((l & 127) | 128));
             l >>>= 7;
         }
         buf.write((byte) l);

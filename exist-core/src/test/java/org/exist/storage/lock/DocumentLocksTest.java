@@ -115,7 +115,7 @@ public class DocumentLocksTest {
         final AtomicReference firstWriteHolder = new AtomicReference();
         final AtomicReference lastWriteHolder = new AtomicReference();
 
-        final Callable<Void> callable1 = new Callable<Void>() {
+        final Callable<Void> callable1 = new Callable<>() {
             @Override
             public Void call() throws Exception {
                 try (final ManagedDocumentLock documentLock = lockManager.acquireDocumentWriteLock(docUri)) {
@@ -133,7 +133,7 @@ public class DocumentLocksTest {
             }
         };
 
-        final Callable<Void> callable2 = new Callable<Void>() {
+        final Callable<Void> callable2 = new Callable<>() {
             @Override
             public Void call() throws Exception {
                 thread2StartLatch.await();

@@ -26,11 +26,12 @@
  */
 package org.exist.extensions.exquery.restxq.impl.xquery.exist;
 
-import java.util.List;
-import java.util.Map;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 import org.exquery.restxq.Namespace;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -38,11 +39,11 @@ import org.exquery.restxq.Namespace;
  */
 public class ExistRestXqModule extends AbstractInternalModule {
 
-    public final static String NAMESPACE_URI = Namespace.ANNOTATION_NS + "/exist";
-    public final static String PREFIX = "ex" + Namespace.ANNOTATION_PREFIX;
-    public final static String RELEASED_IN_VERSION = "2.1";
+    public static final String NAMESPACE_URI = Namespace.ANNOTATION_NS + "/exist";
+    public static final String PREFIX = "ex" + Namespace.ANNOTATION_PREFIX;
+    public static final String RELEASED_IN_VERSION = "2.1";
     
-    private final static FunctionDef[] signatures = {
+    private static final FunctionDef[] signatures = {
         new FunctionDef(RegistryFunctions.FNS_REGISTER_MODULE, RegistryFunctions.class),
         new FunctionDef(RegistryFunctions.FNS_DEREGISTER_MODULE, RegistryFunctions.class),
         new FunctionDef(RegistryFunctions.FNS_FIND_RESOURCE_FUNCTIONS, RegistryFunctions.class),

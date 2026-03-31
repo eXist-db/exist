@@ -52,7 +52,7 @@ public class ConfigurableObject implements Configurable {
 	 */
 	@Override
 	public boolean isConfigured() {
-		return (configuration == null);
+		return configuration == null;
 	}
 
 	@Override

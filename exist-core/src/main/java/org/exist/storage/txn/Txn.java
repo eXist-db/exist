@@ -21,20 +21,20 @@
  */
 package org.exist.storage.txn;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import net.jcip.annotations.NotThreadSafe;
 import com.evolvedbinary.j8fu.function.SupplierE;
 import com.evolvedbinary.j8fu.tuple.Tuple2;
-import org.apache.logging.log4j.Logger;
+import net.jcip.annotations.NotThreadSafe;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.Transaction;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.lock.ManagedCollectionLock;
 import org.exist.storage.lock.ManagedDocumentLock;
 import org.exist.util.LockException;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author wolf
@@ -153,7 +153,7 @@ public class Txn implements Transaction {
      */
     public static class ReusableTxn extends Txn {
 
-        private final static Logger LOG = LogManager.getLogger(ReusableTxn.class);
+        private static final Logger LOG = LogManager.getLogger(ReusableTxn.class);
 
         private State reusableState = State.STARTED;
         private final Txn underlyingTransaction;

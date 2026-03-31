@@ -59,7 +59,7 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
 
     private static final Logger LOG = LogManager.getLogger(LuceneIndexWorker.class);
 
-    public final static String ID = LuceneIndex.class.getName();
+    public static final String ID = LuceneIndex.class.getName();
 
 	private static final String DIR_NAME = "lucene";
 	private static final String TAXONOMY_DIR_NAME = "taxonomy";
@@ -73,13 +73,13 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
 
     protected double bufferSize = IndexWriterConfig.DEFAULT_RAM_BUFFER_SIZE_MB;
 
-    protected IndexWriter cachedWriter = null;
-    protected DirectoryTaxonomyWriter cachedTaxonomyWriter = null;
+    protected IndexWriter cachedWriter;
+    protected DirectoryTaxonomyWriter cachedTaxonomyWriter;
 
-    protected SearcherTaxonomyManager searcherManager = null;
-    protected ReaderManager readerManager = null;
+    protected SearcherTaxonomyManager searcherManager;
+    protected ReaderManager readerManager;
 
-    protected boolean needsCommit = false;
+    protected boolean needsCommit;
 
     public String getDirName() {
         return DIR_NAME;
@@ -88,19 +88,22 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
     @Override
     public void configure(BrokerPool pool, Path dataDir, Element config) throws DatabaseConfigurationException {
         super.configure(pool, dataDir, config);
-        if (LOG.isDebugEnabled())
+        if (LOG.isDebugEnabled()) {
             LOG.debug("Configuring Lucene index");
+        }
 
         String bufferSizeParam = config.getAttribute("buffer");
-        if (!bufferSizeParam.isEmpty())
+        if (!bufferSizeParam.isEmpty()) {
             try {
                 bufferSize = Double.parseDouble(bufferSizeParam);
             } catch (NumberFormatException e) {
                 LOG.warn("Invalid buffer size setting for Lucene index: {}", bufferSizeParam, e);
             }
+        }
 
-        if (LOG.isDebugEnabled())
+        if (LOG.isDebugEnabled()) {
             LOG.debug("Using buffer size: {}", bufferSize);
+        }
         
         NodeList nl = config.getElementsByTagName("analyzer");
         if (nl.getLength() > 0) {
@@ -108,25 +111,29 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
             defaultAnalyzer = AnalyzerConfig.configureAnalyzer(node);
         }
 
-        if (defaultAnalyzer == null)
+        if (defaultAnalyzer == null) {
             defaultAnalyzer = new StandardAnalyzer();
-        if (LOG.isDebugEnabled())
+        }
+        if (LOG.isDebugEnabled()) {
             LOG.debug("Using default analyzer: {}", defaultAnalyzer.getClass().getName());
+        }
     }
 
     @Override
     public void open() throws DatabaseConfigurationException {
         Path dir = getDataDir().resolve(getDirName());
         Path taxoDir = dir.resolve(TAXONOMY_DIR_NAME);
-        if (LOG.isDebugEnabled())
+        if (LOG.isDebugEnabled()) {
             LOG.debug("Opening Lucene index directory: {}", dir.toAbsolutePath().toString());
+        }
 
         IndexWriter writer = null;
         try {
             if (Files.exists(dir)) {
-                if (!Files.isDirectory(dir))
+                if (!Files.isDirectory(dir)) {
                     throw new DatabaseConfigurationException("Lucene index location is not a directory: " +
                             dir.toAbsolutePath());
+                }
             } else {
                 Files.createDirectories(taxoDir);
             }
@@ -232,8 +239,9 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
     }
 
     public synchronized void releaseWriter(IndexWriter writer) {
-        if (writer == null)
+        if (writer == null) {
             return;
+        }
         needsCommit = true;
     }
 

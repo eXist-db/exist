@@ -75,7 +75,7 @@ import java.util.function.Function;
 @ThreadSafe
 public class WeakLazyStripes<K, S> {
     private static final int INITIAL_CAPACITY = 1000;
-    private static final float LOAD_FACTOR = 0.75f;
+    private static final float LOAD_FACTOR = 0.75F;
 
     /**
      * When {@link #amortizeCleanup} is false, this is the

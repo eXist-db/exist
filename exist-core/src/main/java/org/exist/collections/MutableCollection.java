@@ -25,20 +25,17 @@ import com.evolvedbinary.j8fu.function.BiConsumer2E;
 import com.evolvedbinary.j8fu.function.Consumer2E;
 import net.jcip.annotations.GuardedBy;
 import net.jcip.annotations.NotThreadSafe;
-import org.apache.commons.io.input.CloseShieldReader;
-import org.exist.dom.QName;
-import org.exist.dom.persistent.*;
-
-import java.io.*;
-import java.util.*;
-
 import org.apache.commons.io.input.CloseShieldInputStream;
+import org.apache.commons.io.input.CloseShieldReader;
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Database;
 import org.exist.EXistException;
 import org.exist.Indexer;
 import org.exist.collections.triggers.*;
+import org.exist.dom.QName;
+import org.exist.dom.persistent.*;
 import org.exist.indexing.IndexController;
 import org.exist.indexing.StreamListener;
 import org.exist.security.Account;
@@ -59,7 +56,6 @@ import org.exist.util.LockException;
 import org.exist.util.MimeType;
 import org.exist.util.XMLReaderObjectFactory;
 import org.exist.util.XMLReaderObjectFactory.VALIDATION_SETTING;
-import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.exist.util.serializer.DOMStreamer;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
@@ -70,6 +66,8 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
 import javax.annotation.Nullable;
+import java.io.*;
+import java.util.*;
 
 import static org.exist.storage.lock.Lock.LockMode.*;
 
@@ -115,7 +113,7 @@ public class MutableCollection implements Collection {
     private long created;
     private volatile boolean isTempCollection;
     private final Permission permissions;
-    @Deprecated private CollectionMetadata collectionMetadata = null;
+    @Deprecated private CollectionMetadata collectionMetadata;
 
     /**
      * Constructs a Collection Object (not yet persisted)
@@ -197,7 +195,7 @@ public class MutableCollection implements Collection {
     public final void setPath(XmldbURI path, final boolean updateChildren) {
         path = path.toCollectionPathURI();
         //TODO : see if the URI resolves against DBBroker.TEMP_COLLECTION
-        this.isTempCollection = path.getRawCollectionPath().equals(XmldbURI.TEMP_COLLECTION);
+        this.isTempCollection = XmldbURI.TEMP_COLLECTION.equals(path.getRawCollectionPath());
         this.path = path;
 
         if (updateChildren) {
@@ -705,9 +703,6 @@ public class MutableCollection implements Collection {
 
             final DocumentImpl doc = documents.get(name.lastSegmentString());
 
-            // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
-            collectionLock.close();
-
             if(doc == null) {
                 unlockFn.run();
                 return null;
@@ -780,7 +775,7 @@ public class MutableCollection implements Collection {
     }
 
     @Override
-    final public Permission getPermissions() {
+    public final Permission getPermissions() {
         try(final ManagedCollectionLock collectionLock = lockManager.acquireCollectionReadLock(path)) {
             return permissions;
         } catch(final LockException e) {
@@ -1383,7 +1378,7 @@ public class MutableCollection implements Collection {
             info.getTriggers().afterUpdateDocument(broker, transaction, document);
         }
         
-        db.getNotificationService().notifyUpdate(document, (info.isCreating() ? UpdateListener.ADD : UpdateListener.UPDATE));
+        db.getNotificationService().notifyUpdate(document, info.isCreating() ? UpdateListener.ADD : UpdateListener.UPDATE);
         //Is it a collection configuration file ?
         final XmldbURI docName = document.getFileURI();
         //WARNING : there is no reason to lock the collection since setPath() is normally called in a safe way
@@ -1432,7 +1427,7 @@ public class MutableCollection implements Collection {
     }
 
     private IndexInfo validateXMLResource(final Txn transaction, final DBBroker broker, final XmldbURI name, final CollectionConfiguration colconf, final InputSource source, final XMLReader reader) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException {
-        return validateXMLResourceInternal(transaction, broker, name, colconf, (info) -> {
+        return validateXMLResourceInternal(transaction, broker, name, colconf, info -> {
             info.setReader(reader, null);
             try {
 
@@ -1485,7 +1480,7 @@ public class MutableCollection implements Collection {
     @Deprecated
     @Override
     public IndexInfo validateXMLResource(final Txn transaction, final DBBroker broker, final XmldbURI name, final Node node) throws EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException {
-        return validateXMLResourceInternal(transaction, broker, name, getConfiguration(broker), (info) -> {
+        return validateXMLResourceInternal(transaction, broker, name, getConfiguration(broker), info -> {
                 info.setDOMStreamer(new DOMStreamer());
                 info.getDOMStreamer().serialize(node, true);
         });
@@ -1531,7 +1526,7 @@ public class MutableCollection implements Collection {
                 checkPermissionsForAddDocument(broker, oldDoc);
 
                 // NOTE: the new `document` object actually gets discarded in favour of the `oldDoc` below if there is an oldDoc and it is XML (so we can use -1 as the docId because it will never be used)
-                final int docId = (oldDoc != null && oldDoc.getResourceType() == DocumentImpl.XML_FILE) ? - 1 : broker.getNextResourceId(transaction);
+                final int docId = oldDoc != null && oldDoc.getResourceType() == DocumentImpl.XML_FILE ? - 1 : broker.getNextResourceId(transaction);
                 DocumentImpl document = new DocumentImpl(null, (BrokerPool) db, this, docId, name);
 
                 checkCollectionConflict(name);
@@ -1965,19 +1960,19 @@ public class MutableCollection implements Collection {
         //... otherwise return the general config (the broker's one)
         // Fall back to broker config when collection.xconf has no <index> element (fixes #2948)
         final IndexSpec spec = conf.getIndexConfiguration();
-        return (spec != null) ? spec : broker.getIndexConfiguration();
+        return spec != null ? spec : broker.getIndexConfiguration();
     }
 
     @Override
     public GeneralRangeIndexSpec getIndexByPathConfiguration(final DBBroker broker, final NodePath nodePath) {
         final IndexSpec idxSpec = getIndexConfiguration(broker);
-        return (idxSpec == null) ? null : idxSpec.getIndexByPath(nodePath);
+        return idxSpec == null ? null : idxSpec.getIndexByPath(nodePath);
     }
 
     @Override
     public QNameRangeIndexSpec getIndexByQNameConfiguration(final DBBroker broker, final QName nodeName) {
         final IndexSpec idxSpec = getIndexConfiguration(broker);
-        return (idxSpec == null) ? null : idxSpec.getIndexByQName(nodeName);
+        return idxSpec == null ? null : idxSpec.getIndexByQName(nodeName);
     }
 
     @Override

@@ -21,11 +21,11 @@
  */
 package org.exist.client.security;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import javax.swing.InputVerifier;
 import javax.swing.JComponent;
 import javax.swing.JTextField;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  *

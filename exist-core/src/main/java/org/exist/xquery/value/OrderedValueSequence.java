@@ -59,8 +59,8 @@ public class OrderedValueSequence extends AbstractSequence {
     private final List<OrderSpec> orderSpecs;
     private final List<BitSet> encounteredPrimitiveTypesForOrderSpecs;
     private Entry[] items;
-    private int count = 0;
-    private int state = 0;
+    private int count;
+    private int state;
 
     // used to keep track of the type of added items.
     private int itemType = Type.ANY_TYPE;
@@ -87,7 +87,7 @@ public class OrderedValueSequence extends AbstractSequence {
 
     @Override
     public long getItemCountLong() {
-        return (items == null) ? 0 : count;
+        return items == null ? 0 : count;
     }
 
     @Override
@@ -112,7 +112,7 @@ public class OrderedValueSequence extends AbstractSequence {
         if (count == 0 && items.length == 1) {
             items = new Entry[2];
         } else if (count == items.length) {
-            final Entry newItems[] = new Entry[count * 2];
+            final Entry[] newItems = new Entry[count * 2];
             System.arraycopy(items, 0, newItems, 0, count);
             items = newItems;
         }
@@ -183,7 +183,7 @@ public class OrderedValueSequence extends AbstractSequence {
                         );
                     }
                     message.append(']');
-                    final Expression expression = (items != null && items.length >= 1 && items[0] != null && items[0].item != null) ? items[0].item.getExpression() : null;
+                    final Expression expression = items != null && items.length >= 1 && items[0] != null && items[0].item != null ? items[0].item.getExpression() : null;
                     throw new XPathException(expression, ErrorCodes.XPTY0004, message.toString());
                 }
 
@@ -226,7 +226,6 @@ public class OrderedValueSequence extends AbstractSequence {
 
     private void checkItemType(final int type) {
         if (itemType == type) {
-            return;
         } else if (itemType == Type.ANY_TYPE) {
             itemType = type;
         } else {
@@ -357,7 +356,7 @@ public class OrderedValueSequence extends AbstractSequence {
     }
 
     private void setHasChanged() {
-        state = (state == Integer.MAX_VALUE ? state = 0 : state + 1);
+        state = state == Integer.MAX_VALUE ? state = 0 : state + 1;
     }
 
     @Override
@@ -407,7 +406,7 @@ public class OrderedValueSequence extends AbstractSequence {
         this.contextSequence = contextSequence;
     }
 
-    private static class Entry implements Comparable<Entry> {
+    private static final class Entry implements Comparable<Entry> {
         private final List<BitSet> encounteredPrimitiveTypesForOrderSpecs;
         private final List<OrderSpec> orderSpecs;
         private Item item;
@@ -485,8 +484,8 @@ public class OrderedValueSequence extends AbstractSequence {
                     final AtomicValue a = values.get(i);
                     final AtomicValue b = other.values.get(i);
 
-                    final boolean aIsEmpty = (a.isEmpty() || (Type.subTypeOfUnion(a.getType(), Type.NUMERIC) && ((NumericValue) a).isNaN()));
-                    final boolean bIsEmpty = (b.isEmpty() || (Type.subTypeOfUnion(b.getType(), Type.NUMERIC) && ((NumericValue) b).isNaN()));
+                    final boolean aIsEmpty = a.isEmpty() || (Type.subTypeOfUnion(a.getType(), Type.NUMERIC) && ((NumericValue) a).isNaN());
+                    final boolean bIsEmpty = b.isEmpty() || (Type.subTypeOfUnion(b.getType(), Type.NUMERIC) && ((NumericValue) b).isNaN());
                     if (aIsEmpty) {
                         if (bIsEmpty)
                         // both values are empty
@@ -530,7 +529,7 @@ public class OrderedValueSequence extends AbstractSequence {
             }
             // if the sort keys are equal, we need to order by the original position in the result sequence
             if (cmp == Constants.EQUAL) {
-                cmp = (pos > other.pos ? Constants.SUPERIOR : (pos == other.pos ? Constants.EQUAL : Constants.INFERIOR));
+                cmp = pos > other.pos ? Constants.SUPERIOR : (pos == other.pos ? Constants.EQUAL : Constants.INFERIOR);
             }
             return cmp;
         }
@@ -563,7 +562,7 @@ public class OrderedValueSequence extends AbstractSequence {
     }
 
     private class OrderedValueSequenceIterator implements SequenceIterator {
-        private int pos = 0;
+        private int pos;
 
         @Override
         public boolean hasNext() {

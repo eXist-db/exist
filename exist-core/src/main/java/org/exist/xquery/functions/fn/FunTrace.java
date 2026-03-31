@@ -81,7 +81,7 @@ public class FunTrace extends BasicFunction {
 public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
 
     // Get value for label, default to "-"
-    final String label = (args.length == 2) ? StringUtils.defaultIfBlank(args[1].getStringValue(), "-") : "-";
+    final String label = args.length == 2 ? StringUtils.defaultIfBlank(args[1].getStringValue(), "-") : "-";
 
     final Sequence result;
 

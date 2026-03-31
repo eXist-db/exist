@@ -21,20 +21,20 @@
  */
 package org.exist.xquery.modules.ngram.query;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exist.dom.QName;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.EmptyNodeSet;
 import org.exist.dom.persistent.NodeSet;
-import org.exist.dom.QName;
 import org.exist.indexing.ngram.NGramIndexWorker;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.modules.ngram.utils.NodeProxies;
 import org.exist.xquery.modules.ngram.utils.NodeSets;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class WildcardedExpressionSequence implements EvaluatableExpression {
 
@@ -42,7 +42,7 @@ public class WildcardedExpressionSequence implements EvaluatableExpression {
      *
      */
     private final List<WildcardedExpression> expressions;
-    private static Logger LOG = LogManager.getLogger(WildcardedExpressionSequence.class);
+    private static final Logger LOG = LogManager.getLogger(WildcardedExpressionSequence.class);
 
     public WildcardedExpressionSequence(final List<WildcardedExpression> expressions) {
 
@@ -76,8 +76,9 @@ public class WildcardedExpressionSequence implements EvaluatableExpression {
         }
 
         Wildcard leadingWildcard = null;
-        if (!expressions.isEmpty() && expressions.getFirst() instanceof Wildcard)
-            leadingWildcard = (Wildcard) expressions.removeFirst();
+        if (!expressions.isEmpty() && expressions.getFirst() instanceof Wildcard) {
+            leadingWildcard = (Wildcard)expressions.removeFirst();
+        }
 
         boolean endAnchorPresent = false;
         if (!expressions.isEmpty() && expressions.getLast() instanceof EndAnchor) {
@@ -86,15 +87,17 @@ public class WildcardedExpressionSequence implements EvaluatableExpression {
         }
 
         Wildcard trailingWildcard = null;
-        if (!expressions.isEmpty() && expressions.getLast() instanceof Wildcard)
-            trailingWildcard = (Wildcard) expressions.removeLast();
+        if (!expressions.isEmpty() && expressions.getLast() instanceof Wildcard) {
+            trailingWildcard = (Wildcard)expressions.removeLast();
+        }
 
         while (expressions.size() >= 3) {
             formEvaluatableTriples(expressionId);
         }
 
-        if (expressions.isEmpty())
+        if (expressions.isEmpty()) {
             return new EmptyNodeSet();
+        }
         // TODO: Should probably return nodes the satisfying the size constraint when wildcards are present
 
         if (expressions.size() != 1 || !(expressions.getFirst() instanceof EvaluatableExpression)) { // Should not happen.
@@ -106,15 +109,19 @@ public class WildcardedExpressionSequence implements EvaluatableExpression {
         NodeSet result = ((EvaluatableExpression) expressions.getFirst()).eval(index, docs, qnames, nodeSet, axis,
             expressionId);
 
-        if (leadingWildcard != null)
+        if (leadingWildcard != null) {
             result = expandMatchesBackward(leadingWildcard, result, expressionId);
-        if (startAnchorPresent)
+        }
+        if (startAnchorPresent) {
             result = NodeSets.getNodesMatchingAtStart(result, expressionId);
+        }
 
-        if (trailingWildcard != null)
+        if (trailingWildcard != null) {
             result = expandMatchesForward(trailingWildcard, result, expressionId);
-        if (endAnchorPresent)
+        }
+        if (endAnchorPresent) {
             result = NodeSets.getNodesMatchingAtEnd(result, expressionId);
+        }
 
         return result;
     }

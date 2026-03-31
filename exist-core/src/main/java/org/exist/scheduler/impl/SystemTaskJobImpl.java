@@ -39,10 +39,10 @@ import org.quartz.StatefulJob;
  */
 public class SystemTaskJobImpl implements SystemTaskJob, StatefulJob {
     
-    private final static String JOB_GROUP = "eXist.System";
+    private static final String JOB_GROUP = "eXist.System";
     private String name  = "SystemTask";
 
-    private SystemTask task = null;
+    private SystemTask task;
 
     /**
      * Default Constructor for Quartz.

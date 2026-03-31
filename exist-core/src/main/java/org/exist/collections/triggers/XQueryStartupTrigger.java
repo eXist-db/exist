@@ -21,8 +21,6 @@
  */
 package org.exist.collections.triggers;
 
-import java.util.*;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -44,6 +42,8 @@ import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Sequence;
+
+import java.util.*;
 
 /**
  * Startup Trigger to fire XQuery scripts during database startup.
@@ -73,7 +73,7 @@ import org.exist.xquery.value.Sequence;
  */
 public class XQueryStartupTrigger implements StartupTrigger {
 
-    protected final static Logger LOG = LogManager.getLogger(XQueryStartupTrigger.class);
+    protected static final Logger LOG = LogManager.getLogger(XQueryStartupTrigger.class);
 
     private static final String XQUERY = "xquery";
     private static final String AUTOSTART_COLLECTION = "/db/system/autostart";
@@ -164,9 +164,9 @@ public class XQueryStartupTrigger implements StartupTrigger {
 
         Permission perms = collection.getPermissions();
 
-        return (perms.getOwner().getName().equals(SecurityManager.SYSTEM)
-                && perms.getGroup().getName().equals(SecurityManager.DBA_GROUP)
-                && perms.getMode() == Permission.DEFAULT_SYSTEM_SECURITY_COLLECTION_PERM);
+        return SecurityManager.SYSTEM.equals(perms.getOwner().getName())
+                && SecurityManager.DBA_GROUP.equals(perms.getGroup().getName())
+                && perms.getMode() == Permission.DEFAULT_SYSTEM_SECURITY_COLLECTION_PERM;
 
     }
 
@@ -179,10 +179,10 @@ public class XQueryStartupTrigger implements StartupTrigger {
      */
     private boolean isPermissionsOK(final DocumentImpl document) {
         final Permission perms = document.getPermissions();
-        return (perms.getOwner().hasDbaRole()
-                && perms.getGroup().getName().equals(SecurityManager.DBA_GROUP)
+        return perms.getOwner().hasDbaRole()
+                && SecurityManager.DBA_GROUP.equals(perms.getGroup().getName())
                 && perms.getMode() == Permission.DEFAULT_SYSTEM_SECURITY_COLLECTION_PERM
-                && document.getMimeType().equals(REQUIRED_MIMETYPE));
+                && REQUIRED_MIMETYPE.equals(document.getMimeType());
 
     }
 

@@ -26,10 +26,10 @@ package org.exist.collections;
  * */
 public class CollectionURI {
 
-    public final static char FRAGMENT_SEPARATOR = '/';
+    public static final char FRAGMENT_SEPARATOR = '/';
 
-    private char[] uri = null;
-    private int length = 0;
+    private char[] uri;
+    private int length;
 
     private int hash; // Default to 0
 

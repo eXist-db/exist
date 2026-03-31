@@ -23,7 +23,6 @@ package org.exist.storage;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import org.exist.management.Agent;
 import org.exist.management.AgentFactory;
 import org.exist.storage.cache.Cache;
@@ -31,7 +30,6 @@ import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
 
 import java.text.NumberFormat;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -48,23 +46,23 @@ import java.util.List;
  */
 public class DefaultCacheManager implements CacheManager, BrokerPoolService
 {
-    private final static Logger LOG                             = LogManager.getLogger( DefaultCacheManager.class );
+    private static final Logger LOG                             = LogManager.getLogger( DefaultCacheManager.class );
 
     /** The maximum fraction of the total memory that can be used by a single cache. */
-    public final static double  MAX_MEM_USE                     = 0.9;
+    public static final double  MAX_MEM_USE                     = 0.9;
 
     /** The minimum size a cache needs to have to be considered for shrinking, defined in terms of a fraction of the overall memory. */
-    public final static double  MIN_SHRINK_FACTOR               = 0.5;
+    public static final double  MIN_SHRINK_FACTOR               = 0.5;
 
     /** The amount by which a large cache will be shrinked if other caches request a resize. */
-    public final static double  SHRINK_FACTOR                   = 0.7;
+    public static final double  SHRINK_FACTOR                   = 0.7;
 
     /**
      * The minimum number of pages that must be read from a cache between check intervals to be not considered for shrinking. This is a measure for
      * the "load" of the cache. Caches with high load will never be shrinked. A negative value means that shrinkage will not be performed.
      */
-    public final static int     DEFAULT_SHRINK_THRESHOLD        			= 10000;
-    public final static String  DEFAULT_SHRINK_THRESHOLD_STRING 			= "10000";
+    public static final int     DEFAULT_SHRINK_THRESHOLD        			= 10000;
+    public static final String  DEFAULT_SHRINK_THRESHOLD_STRING 			= "10000";
 
     public static final int           DEFAULT_CACHE_SIZE              			= 64;
     public static final String  CACHE_SIZE_ATTRIBUTE           			= "cacheSize";
@@ -78,18 +76,18 @@ public class DefaultCacheManager implements CacheManager, BrokerPoolService
     public static final String  SHRINK_THRESHOLD_PROPERTY      			= "db-connection.cache-shrink-threshold";
 
     /** Caches maintained by this class. */
-    private List<Cache>         caches                          = new ArrayList<>();
+    private final List<Cache>         caches                          = new ArrayList<>();
 
     private long                totalMem;
 
     /** The total maximum amount of pages shared between all caches. */
-    private int                 totalPageCount;
+    private final int                 totalPageCount;
 
     /** The number of pages currently used by the active caches. */
-    private int                 currentPageCount                = 0;
+    private int                 currentPageCount;
 
     /** The maximum number of pages that can be allocated by a single cache. */
-    private int                 maxCacheSize;
+    private final int                 maxCacheSize;
 
     private int                 pageSize;
 
@@ -104,9 +102,9 @@ public class DefaultCacheManager implements CacheManager, BrokerPoolService
      * Signals that a resize had been requested by a cache, but the request could not be accepted during normal operations. The manager might try to
      * shrink the largest cache during the next sync event.
      */
-    private Cache               lastRequest                     = null;
+    private Cache               lastRequest;
 
-    private String              instanceName;
+    private final String              instanceName;
 
     public DefaultCacheManager( BrokerPool pool )
     {
@@ -132,7 +130,7 @@ public class DefaultCacheManager implements CacheManager, BrokerPoolService
 
         if( checkMaxCache == null || checkMaxCache) {
             final long max        = Runtime.getRuntime().maxMemory();
-            long maxCache   = ( max >= ( 768 * 1024 * 1024 ) ) ? ( max / 2 ) : ( max / 3 );
+            long maxCache   = max >= ( 768 * 1024 * 1024 ) ? ( max / 2 ) : ( max / 3 );
 
             if( totalMem > maxCache ) {
                 totalMem = maxCache;
@@ -189,7 +187,7 @@ public class DefaultCacheManager implements CacheManager, BrokerPoolService
 
             // no free pages available
 //            LOG.debug("Cache " + cache.getName() + " cannot be resized");
-            return( -1 );
+            return -1;
         }
 
         if( ( cache.getGrowthFactor() > 1.0 ) && ( cache.getBuffers() < maxCacheSize ) ) {
@@ -199,7 +197,7 @@ public class DefaultCacheManager implements CacheManager, BrokerPoolService
                 if( currentPageCount >= totalPageCount ) {
 
                     // another cache has been resized. Give up
-                    return( -1 );
+                    return -1;
                 }
 
                 // calculate new cache size
@@ -227,10 +225,10 @@ public class DefaultCacheManager implements CacheManager, BrokerPoolService
                 cache.resize( newCacheSize );
                 currentPageCount += newCacheSize;
 //                LOG.debug("currentPageCount = " + currentPageCount + "; max = " + totalPageCount);
-                return( newCacheSize );
+                return newCacheSize;
             }
         }
-        return( -1 );
+        return -1;
     }
 
 
@@ -306,7 +304,7 @@ public class DefaultCacheManager implements CacheManager, BrokerPoolService
     @Override
     public long getMaxTotal()
     {
-        return( totalPageCount );
+        return totalPageCount;
     }
 
     /**
@@ -323,12 +321,12 @@ public class DefaultCacheManager implements CacheManager, BrokerPoolService
     @Override
     public long getMaxSingle()
     {
-        return( maxCacheSize );
+        return maxCacheSize;
     }
 
     public long getTotalMem()
     {
-        return( totalMem );
+        return totalMem;
     }
 
     /**
@@ -338,7 +336,7 @@ public class DefaultCacheManager implements CacheManager, BrokerPoolService
      */
     public int getDefaultInitialSize()
     {
-        return( DEFAULT_CACHE_SIZE );
+        return DEFAULT_CACHE_SIZE;
     }
 
 

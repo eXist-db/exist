@@ -21,23 +21,21 @@
  */
 package org.exist.config;
 
-import static org.junit.Assert.*;
-
-import java.io.InputStream;
-
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-
 import com.googlecode.junittoolbox.ParallelRunner;
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.exist.dom.memtree.SAXAdapter;
 import org.exist.util.ExistSAXParserFactory;
-import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import java.io.InputStream;
+
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.Assert.*;
 
 
 /**

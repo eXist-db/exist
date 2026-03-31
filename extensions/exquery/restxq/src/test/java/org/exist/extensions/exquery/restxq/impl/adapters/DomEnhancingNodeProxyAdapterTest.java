@@ -81,9 +81,6 @@ public class DomEnhancingNodeProxyAdapterTest {
 
             collection.storeDocument(transaction, broker, TEST_DOC_URI, new StringInputSource(TEST_DOC), MimeType.XML_TYPE);
 
-            // async release of collection lock
-            collection.close();
-
             transaction.commit();
         }
     }

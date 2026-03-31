@@ -23,7 +23,6 @@ package org.exist.xquery.functions.util;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import org.exist.dom.QName;
 import org.exist.util.UUIDGenerator;
 import org.exist.xquery.BasicFunction;
@@ -31,13 +30,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
+import org.exist.xquery.value.*;
 
 /**
  * @author wessels
@@ -47,7 +40,7 @@ public class UUID extends BasicFunction {
 
     private static final Logger logger = LogManager.getLogger(UUID.class);
     
-    public final static FunctionSignature[] signatures = {
+    public static final FunctionSignature[] signatures = {
             new FunctionSignature(
                     new QName("uuid", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
                     "Generate a version 4 (random) universally unique identifier (UUID) string, e.g. 154ad200-9c79-44f3-8cff-9780d91552a6",

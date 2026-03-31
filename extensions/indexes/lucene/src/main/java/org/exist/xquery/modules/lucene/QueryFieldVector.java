@@ -33,9 +33,7 @@ import org.exist.xquery.value.*;
 import javax.annotation.Nullable;
 import java.io.IOException;
 
-import static org.exist.xquery.FunctionDSL.optParam;
-import static org.exist.xquery.FunctionDSL.param;
-import static org.exist.xquery.FunctionDSL.returnsOptMany;
+import static org.exist.xquery.FunctionDSL.*;
 import static org.exist.xquery.modules.lucene.LuceneModule.functionSignature;
 
 /**
@@ -53,7 +51,7 @@ public class QueryFieldVector extends BasicFunction {
     private static final FunctionParameterSequenceType FS_PARAM_OPTIONS = optParam("options", Type.ITEM,
             "Optional map with filter-query, filter, facets.");
 
-    final static FunctionSignature[] signatures = {
+    static final FunctionSignature[] signatures = {
             functionSignature("query-field-vector",
                     "KNN vector search by field name. Uses context document set.",
                     returnsOptMany(Type.NODE, "Nodes matching the vector query."),

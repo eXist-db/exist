@@ -21,12 +21,12 @@
  */
 package org.exist.protocolhandler;
 
-import java.net.URLStreamHandler;
-import java.net.URLStreamHandlerFactory;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.protocolhandler.protocols.xmldb.Handler;
+
+import java.net.URLStreamHandler;
+import java.net.URLStreamHandlerFactory;
 
 /**
  * Factory class for creating custom stream handlers for the 'xmldb' protocol.
@@ -38,7 +38,7 @@ import org.exist.protocolhandler.protocols.xmldb.Handler;
  */
 public class eXistURLStreamHandlerFactory implements URLStreamHandlerFactory {
 
-    private final static Logger LOG = LogManager.getLogger(eXistURLStreamHandlerFactory.class);
+    private static final Logger LOG = LogManager.getLogger(eXistURLStreamHandlerFactory.class);
 
     private final URLStreamHandler handler;
 

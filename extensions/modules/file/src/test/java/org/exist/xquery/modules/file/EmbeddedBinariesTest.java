@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.modules.file;
 
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.collections.Collection;
 import org.exist.source.Source;
 import org.exist.source.StringSource;
@@ -31,7 +32,6 @@ import org.exist.storage.lock.Lock;
 import org.exist.storage.lock.ManagedCollectionLock;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
-import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.util.MimeType;
 import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;

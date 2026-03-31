@@ -52,8 +52,8 @@ import java.util.concurrent.Future;
  */
 public class XmldbRequestProcessorFactory implements RequestProcessorFactoryFactory.RequestProcessorFactory {
 
-    private final static Logger LOG = LogManager.getLogger(XmldbRequestProcessorFactory.class);
-    public final static int CHECK_INTERVAL = 2000;
+    private static final Logger LOG = LogManager.getLogger(XmldbRequestProcessorFactory.class);
+    public static final int CHECK_INTERVAL = 2000;
 
     private final boolean useDefaultUser;
     private final BrokerPool brokerPool;
@@ -93,7 +93,7 @@ public class XmldbRequestProcessorFactory implements RequestProcessorFactoryFact
             password = username;
         }
 
-        if (!useDefaultUser && username.equalsIgnoreCase(SecurityManager.GUEST_USER)) {
+        if (!useDefaultUser && SecurityManager.GUEST_USER.equalsIgnoreCase(username)) {
             final String message = "The user " + SecurityManager.GUEST_USER + " is prohibited from logging in through XML-RPC.";
             LOG.debug(message);
             throw new XmlRpcException(0, message);

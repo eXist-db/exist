@@ -22,11 +22,11 @@
 
 package org.exist.util.sorters;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
 
 /**
  * Check sort(List).
@@ -69,7 +69,7 @@ class ListChecker extends SortMethodChecker {
 	 * It loads an input int array into the internal Integer list
 	 */
 	void init(int[] values) throws Exception {
-		a = new ArrayList<Integer>(values.length);
+		a = new ArrayList<>(values.length);
         for (int value : values) {
             a.add(Integer.valueOf(value));
         }

@@ -21,8 +21,6 @@
  */
 package org.exist.xupdate;
 
-import java.util.Map;
-
 import org.exist.EXistException;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.DocumentImpl;
@@ -39,6 +37,8 @@ import org.exist.util.LockException;
 import org.exist.xquery.XPathException;
 import org.w3c.dom.NodeList;
 
+import java.util.Map;
+
 /**
  * Implements an XUpdate insert-after or insert-before modification.
  * 
@@ -46,9 +46,9 @@ import org.w3c.dom.NodeList;
  */
 public class Insert extends Modification {
 
-    public final static int INSERT_BEFORE = 0;
+    public static final int INSERT_BEFORE = 0;
 
-    public final static int INSERT_AFTER = 1;
+    public static final int INSERT_AFTER = 1;
 
     private int mode = INSERT_BEFORE;
 
@@ -100,13 +100,10 @@ public class Insert extends Modification {
                     throw new PermissionDeniedException("permission to update document denied");
                 }
                 final NodeImpl parent = (NodeImpl) getParent(node);
-                switch (mode) {
-                    case INSERT_BEFORE:
-                        parent.insertBefore(transaction, children, node);
-                        break;
-                    case INSERT_AFTER:
-                        parent.insertAfter(transaction, children, node);
-                        break;
+                if (mode == INSERT_BEFORE) {
+                    parent.insertBefore(transaction, children, node);
+                } else if (mode == INSERT_AFTER) {
+                    parent.insertAfter(transaction, children, node);
                 }
                 doc.setLastModified(System.currentTimeMillis());
                 modifiedDocuments.add(doc);
@@ -122,7 +119,7 @@ public class Insert extends Modification {
 
     @Override
     public String getName() {
-        return (mode == INSERT_BEFORE ? "insert-before" : "insert-after");
+        return mode == INSERT_BEFORE ? "insert-before" : "insert-after";
     }
 
 }

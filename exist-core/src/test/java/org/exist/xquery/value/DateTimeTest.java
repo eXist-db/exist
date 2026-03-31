@@ -28,9 +28,7 @@ import org.exist.xquery.XPathException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  *	note: some of these tests rely on local timezone override to -05:00, done in super.setUp()

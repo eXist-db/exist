@@ -43,7 +43,7 @@ public class ByteConversion {
      *     {@link #byteToIntH(byte[], int)} for consistency.
      */
     @Deprecated
-    public final static int byteToInt(final byte[] data, final int start ) {
+    public static int byteToInt(final byte[] data, final int start ) {
         return ( data[start] & 0xff ) |
             ( ( data[start + 1] & 0xff ) << 8 ) |
             ( ( data[start + 2] & 0xff ) << 16 ) |
@@ -60,7 +60,7 @@ public class ByteConversion {
      *
      * @return the integer
      */
-    public final static int byteToIntH(final byte[] data, final int start ) {
+    public static int byteToIntH(final byte[] data, final int start ) {
         return ( data[start + 3] & 0xff ) |
             ( ( data[start + 2] & 0xff ) << 8 ) |
             ( ( data[start + 1] & 0xff ) << 16 ) |
@@ -76,7 +76,7 @@ public class ByteConversion {
      *
      * @return the integer
      */
-    public final static int byteToIntH(final ByteBuffer buf) {
+    public static int byteToIntH(final ByteBuffer buf) {
         final byte b0 = buf.get();
         final byte b1 = buf.get();
         final byte b2 = buf.get();
@@ -96,7 +96,7 @@ public class ByteConversion {
      *
      * @return the long integer
      */
-    public final static long byteToLong( final byte[] data, final int start ) {
+    public static long byteToLong( final byte[] data, final int start ) {
         return ( ( ( (long) data[start] ) & 0xffL ) << 56 ) |
             ( ( ( (long) data[start + 1] ) & 0xffL ) << 48 ) |
             ( ( ( (long) data[start + 2] ) & 0xffL ) << 40 ) |
@@ -114,7 +114,7 @@ public class ByteConversion {
      *
      * @return the long integer
      */
-    public final static long byteToLong(final ByteBuffer buf) {
+    public static long byteToLong(final ByteBuffer buf) {
         final byte b0 = buf.get();
         final byte b1 = buf.get();
         final byte b2 = buf.get();
@@ -146,7 +146,7 @@ public class ByteConversion {
      * @return the short integer
      */
     @Deprecated
-    public final static short byteToShort( final byte[] data, final int start ) {
+    public static short byteToShort( final byte[] data, final int start ) {
         return (short) ( ( ( data[start + 1] & 0xff ) << 8 ) |
             ( data[start] & 0xff ) );
     }
@@ -161,7 +161,7 @@ public class ByteConversion {
      *
      * @return the short integer
      */
-    public final static short byteToShortH( final byte[] data, final int start ) {
+    public static short byteToShortH( final byte[] data, final int start ) {
         return (short) ( ( ( data[start] & 0xff ) << 8 ) |
             ( data[start + 1] & 0xff ) );
     }
@@ -175,7 +175,7 @@ public class ByteConversion {
      *
      * @return the short integer
      */
-    public final static short byteToShortH(final ByteBuffer buf) {
+    public static short byteToShortH(final ByteBuffer buf) {
         final byte b0 = buf.get();
         final byte b1 = buf.get();
         return (short) (((b0 & 0xff) << 8) | (b1 & 0xff));
@@ -193,7 +193,7 @@ public class ByteConversion {
      * @return   the byte array
      */
     @Deprecated
-    public final static byte[] intToByte( final int v, final byte[] data, final int start ) {
+    public static byte[] intToByte( final int v, final byte[] data, final int start ) {
         data[start] = (byte) ( ( v >>> 0 ) & 0xff );
         data[start + 1] = (byte) ( ( v >>> 8 ) & 0xff );
         data[start + 2] = (byte) ( ( v >>> 16 ) & 0xff );
@@ -209,7 +209,7 @@ public class ByteConversion {
      * @param v the value
      * @param buf the byte buffer to write into
      */
-    public final static void intToByteH(final int v, final ByteBuffer buf) {
+    public static void intToByteH(final int v, final ByteBuffer buf) {
         buf.put((byte) ((v >>> 24) & 0xff));
         buf.put((byte) ((v >>> 16) & 0xff));
         buf.put((byte) ((v >>> 8) & 0xff));
@@ -227,7 +227,7 @@ public class ByteConversion {
      *@param  start  the offset
      *@return   the byte array
      */
-    public final static byte[] intToByteH( final int v, final byte[] data, final int start ) {
+    public static byte[] intToByteH( final int v, final byte[] data, final int start ) {
         data[start + 3] = (byte) ( ( v >>> 0 ) & 0xff );
         data[start + 2] = (byte) ( ( v >>> 8 ) & 0xff );
         data[start + 1] = (byte) ( ( v >>> 16 ) & 0xff );
@@ -244,7 +244,7 @@ public class ByteConversion {
      *@param  start  the offset
      *@return   the byte array
      */
-    public final static byte[] longToByte( final long v, final byte[] data, final int start ) {
+    public static byte[] longToByte( final long v, final byte[] data, final int start ) {
         data[start + 7] = (byte) ( ( v >>> 0 ) & 0xff );
         data[start + 6] = (byte) ( ( v >>> 8 ) & 0xff );
         data[start + 5] = (byte) ( ( v >>> 16 ) & 0xff );
@@ -262,7 +262,7 @@ public class ByteConversion {
      * @param v the value
      * @param buf the byte buffer to write into
      */
-    public final static void longToByte(final long v, final ByteBuffer buf) {
+    public static void longToByte(final long v, final ByteBuffer buf) {
         buf.put((byte) ((v >>> 56) & 0xff));
         buf.put((byte) ((v >>> 48) & 0xff));
         buf.put((byte) ((v >>> 40) & 0xff));
@@ -279,7 +279,7 @@ public class ByteConversion {
      *@param  v the value
      *@return   the byte array
      */
-    public final static byte[] longToByte( final long v ) {
+    public static byte[] longToByte( final long v ) {
         final byte[] data = new byte[8];
         data[7] = (byte) ( ( v >>> 0 ) & 0xff );
         data[6] = (byte) ( ( v >>> 8 ) & 0xff );
@@ -306,7 +306,7 @@ public class ByteConversion {
      * @return   the byte array
      */
     @Deprecated
-    public final static byte[] shortToByte( final short v, final byte[] data, final int start ) {
+    public static byte[] shortToByte( final short v, final byte[] data, final int start ) {
         data[start] = (byte) ( ( v >>> 0 ) & 0xff );
         data[start + 1] = (byte) ( ( v >>> 8 ) & 0xff );
         return data;
@@ -323,7 +323,7 @@ public class ByteConversion {
      * @param  start  the offset
      * @return   the byte array
      */
-    public final static byte[] shortToByteH( final short v, final byte[] data, final int start ) {
+    public static byte[] shortToByteH( final short v, final byte[] data, final int start ) {
         data[start + 1] = (byte) ( ( v >>> 0 ) & 0xff );
         data[start] = (byte) ( ( v >>> 8 ) & 0xff );
         return data;
@@ -337,7 +337,7 @@ public class ByteConversion {
      * @param v the value
      * @param buf the byte buffer to write into
      */
-    public final static void shortToByteH(final short v, final ByteBuffer buf) {
+    public static void shortToByteH(final short v, final ByteBuffer buf) {
         buf.put( (byte) ((v >>> 8) & 0xff));
         buf.put((byte) ((v >>> 0) & 0xff));
 

@@ -21,12 +21,12 @@
  */
 package org.exist.xquery.functions.session;
 
-import java.util.List;
-import java.util.Map;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.xquery.*;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * Module function definitions for transform module.
@@ -38,12 +38,12 @@ import org.exist.xquery.*;
  */
 public class SessionModule extends AbstractInternalModule {
 
-    private final static Logger LOG = LogManager.getLogger(SessionModule.class);
+    private static final Logger LOG = LogManager.getLogger(SessionModule.class);
 
     public static final String NAMESPACE_URI = "http://exist-db.org/xquery/session";
     public static final String PREFIX = "session";
-    public final static String INCLUSION_DATE = "2006-04-09";
-    public final static String RELEASED_IN_VERSION = "eXist-1.0";
+    public static final String INCLUSION_DATE = "2006-04-09";
+    public static final String RELEASED_IN_VERSION = "eXist-1.0";
 
     public static final FunctionDef[] functions = {
             new FunctionDef(Create.signature, Create.class),
@@ -74,12 +74,12 @@ public class SessionModule extends AbstractInternalModule {
 
     @Override
     public String getNamespaceURI() {
-        return (NAMESPACE_URI);
+        return NAMESPACE_URI;
     }
 
     @Override
     public String getDefaultPrefix() {
-        return (PREFIX);
+        return PREFIX;
     }
 
     @Override

@@ -41,8 +41,8 @@ public class ProcessingInstructionImpl extends StoredNode implements ProcessingI
 
     public static final int LENGTH_TARGET_DATA = 4; //Sizeof int;
 
-    protected String target = null;
-    protected String data = null;
+    protected String target;
+    protected String data;
 
     public ProcessingInstructionImpl() {
         this(null);

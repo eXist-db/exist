@@ -21,10 +21,6 @@
  */
 package org.exist.xquery.modules.scheduler;
 
-import java.io.IOException;
-import java.util.Date;
-import java.util.List;
-
 import org.exist.dom.QName;
 import org.exist.scheduler.ScheduledJobInfo;
 import org.exist.scheduler.Scheduler;
@@ -42,6 +38,10 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 import org.xml.sax.SAXException;
 
+import java.io.IOException;
+import java.util.Date;
+import java.util.List;
+
 
 /**
  * eXist Scheduler Module Extension GetScheduledJobs.
@@ -58,7 +58,7 @@ import org.xml.sax.SAXException;
 public class GetScheduledJobs extends BasicFunction
 {
     	
-	public final static FunctionSignature signature =
+	public static final FunctionSignature signature =
 		new FunctionSignature(
 			new QName( "get-scheduled-jobs", SchedulerModule.NAMESPACE_URI, SchedulerModule.PREFIX ),
 			"Gets the details of all scheduled jobs in the form: " +
@@ -81,7 +81,7 @@ public class GetScheduledJobs extends BasicFunction
 			new FunctionReturnSequenceType( Type.NODE, Cardinality.EXACTLY_ONE, "the XML containing the list of jobs" ) 
 		);
 	
-	private Scheduler                     scheduler = null;
+	private final Scheduler                     scheduler;
 
     /**
      * GetScheduledJobs Constructor.
@@ -123,7 +123,7 @@ public class GetScheduledJobs extends BasicFunction
 
         for (String group : groups) {
 
-            if (userhasDBARole || group.equals(UserJob.JOB_GROUP)) {
+            if (userhasDBARole || UserJob.JOB_GROUP.equals(group)) {
                 xmlBuf.append("<" + SchedulerModule.PREFIX + ":group name=\"").append(group).append("\">");
 
                 for (ScheduledJobInfo scheduledJob : scheduledJobs) {

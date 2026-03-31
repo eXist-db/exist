@@ -43,7 +43,7 @@ import java.io.OutputStream;
  */
 public class BinaryValueFromInputStream extends BinaryValue {
 
-    private final static Logger LOG = LogManager.getLogger(BinaryValueFromInputStream.class);
+    private static final Logger LOG = LogManager.getLogger(BinaryValueFromInputStream.class);
 
     private final CachingFilterInputStream is;
     private final FilterInputStreamCache cache;
@@ -94,7 +94,7 @@ public class BinaryValueFromInputStream extends BinaryValue {
     public void streamBinaryTo(final OutputStream os) throws IOException {
         try {
             int read = -1;
-            final byte data[] = new byte[READ_BUFFER_SIZE];
+            final byte[] data = new byte[READ_BUFFER_SIZE];
             while ((read = is.read(data)) > -1) {
                 os.write(data, 0, read);
             }

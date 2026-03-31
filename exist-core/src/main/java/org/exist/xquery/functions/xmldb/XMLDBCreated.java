@@ -23,9 +23,6 @@ package org.exist.xquery.functions.xmldb;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.time.Instant;
-
 import org.exist.dom.QName;
 import org.exist.xmldb.EXistCollection;
 import org.exist.xmldb.EXistResource;
@@ -33,15 +30,12 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.DateTimeValue;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
+
+import java.time.Instant;
 
 /**
  * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
@@ -50,7 +44,7 @@ import org.xmldb.api.base.XMLDBException;
 public class XMLDBCreated extends XMLDBAbstractCollectionManipulator {
     private static final Logger logger = LogManager.getLogger(XMLDBCreated.class);
 
-	public final static FunctionSignature[] createdSignatures = {
+	public static final FunctionSignature[] createdSignatures = {
         new FunctionSignature(
 			new QName("created", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 			"Returns the creation date of the resource $resource in $collection-uri. " +
@@ -72,7 +66,7 @@ public class XMLDBCreated extends XMLDBAbstractCollectionManipulator {
         )
     };
 	
-	public final static FunctionSignature lastModifiedSignature =
+	public static final FunctionSignature lastModifiedSignature =
         new FunctionSignature(
 			new QName("last-modified", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 			"Returns the last-modification date of resource $resource in " +

@@ -73,8 +73,12 @@ public class MessageDigest {
 
     @Override
     public boolean equals(final Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         MessageDigest that = (MessageDigest) o;
         return digestType == that.digestType &&
                 Arrays.equals(value, that.value);
@@ -83,8 +87,7 @@ public class MessageDigest {
     @Override
     public int hashCode() {
         int result = Objects.hash(digestType);
-        result = 31 * result + Arrays.hashCode(value);
-        return result;
+        return 31 * result + Arrays.hashCode(value);
     }
 
     @Override

@@ -39,7 +39,7 @@ import javax.xml.XMLConstants;
 public class NamespaceConstructor extends NodeConstructor {
 
     private Expression qnameExpr;
-    private Expression content = null;
+    private Expression content;
 
     public NamespaceConstructor(final XQueryContext context) {
         super(context);
@@ -107,13 +107,13 @@ public class NamespaceConstructor extends NodeConstructor {
             throw new XPathException(this, ErrorCodes.XQDY0102, "Cannot override already defined ns");
         }
 
-        if (prefix.equals(XMLConstants.XMLNS_ATTRIBUTE)) {
+        if (XMLConstants.XMLNS_ATTRIBUTE.equals(prefix)) {
             throw new XPathException(this, ErrorCodes.XQDY0101, "Cannot bind xmlns prefix");
-        } else if (prefix.equals(XMLConstants.XML_NS_PREFIX) && !value.equals(Namespaces.XML_NS)) {
+        } else if (XMLConstants.XML_NS_PREFIX.equals(prefix) && !Namespaces.XML_NS.equals(value)) {
             throw new XPathException(this, ErrorCodes.XQDY0101, "Cannot bind xml prefix to another namespace");
-        } else if (value.equals(Namespaces.XML_NS) && !"xml".equals(prefix)) {
+        } else if (Namespaces.XML_NS.equals(value) && !"xml".equals(prefix)) {
             throw new XPathException(this, ErrorCodes.XQDY0101, "Cannot bind prefix to XML namespace");
-        } else if (value.equals(Namespaces.XMLNS_NS)) {
+        } else if (Namespaces.XMLNS_NS.equals(value)) {
             throw new XPathException(this, ErrorCodes.XQDY0101, "Cannot bind prefix to xmlns namespace");
         } else if (value.isEmpty()) {
             throw new XPathException(this, ErrorCodes.XQDY0101, "Cannot bind prefix to empty or zero-length namespace");

@@ -52,7 +52,7 @@ public class GrammarPool implements XMLGrammarPool {
     public static final String PROPERTY_EXPIRE_AFTER_ACCESS = "validation.grammar-cache.expire";
 
     private final Cache<GrammarKey, Grammar> grammarCache;
-    private boolean isLocked = false;
+    private boolean isLocked;
 
     /**
      * Constructor. Default 128 entries, lifetime after last access is 60 minutes.
@@ -101,7 +101,9 @@ public class GrammarPool implements XMLGrammarPool {
 
     @Override
     public void cacheGrammars(final String grammarType, final Grammar[] grammars) {
-        if (isLocked || grammars == null) return;
+        if (isLocked || grammars == null) {
+            return;
+        }
 
         Arrays.stream(grammars).forEach(grammar -> {
             final XMLGrammarDescription desc = grammar.getGrammarDescription();
@@ -126,7 +128,9 @@ public class GrammarPool implements XMLGrammarPool {
 
     @Override
     public void clear() {
-        if (isLocked) return;
+        if (isLocked) {
+            return;
+        }
 
         grammarCache.invalidateAll();
     }
@@ -153,8 +157,12 @@ public class GrammarPool implements XMLGrammarPool {
 
         @Override
         public boolean equals(final Object obj) {
-            if (this == obj) return true;
-            if (!(obj instanceof final GrammarKey other)) return false;
+            if (this == obj) {
+                return true;
+            }
+            if (!(obj instanceof final GrammarKey other)) {
+                return false;
+            }
             return Objects.equals(grammarType, other.grammarType) &&
                     Objects.equals(targetNamespace, other.targetNamespace);
         }

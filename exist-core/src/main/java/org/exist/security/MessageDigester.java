@@ -21,17 +21,17 @@
  */
 package org.exist.security;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-
 import org.apache.commons.codec.binary.Base64;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
 
 public class MessageDigester {
 
-    private static String[] hex = {"0", "1", "2", "3", "4", "5", "6", "7",
+    private static final String[] hex = {"0", "1", "2", "3", "4", "5", "6", "7",
             "8", "9", "a", "b", "c", "d", "e", "f"};
 
     private static final Logger LOG = LogManager.getLogger(MessageDigester.class);

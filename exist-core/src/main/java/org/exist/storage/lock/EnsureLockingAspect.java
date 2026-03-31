@@ -681,7 +681,7 @@ public class EnsureLockingAspect {
         return "@" + annotationClass.getSimpleName() + "(type=" + lockType + ")";
     }
 
-    private EnsureLockDetail resolveContainerLockDetail(final AnnotatedMethodConstraint<EnsureContainerLocked> lockConstraint, final Object args[]) {
+    private EnsureLockDetail resolveContainerLockDetail(final AnnotatedMethodConstraint<EnsureContainerLocked> lockConstraint, final Object[] args) {
         final Tuple2<Lock.LockMode, Boolean> mode = getLockMode(lockConstraint.getAnnotation(), args);
 
         final Lock.LockType type;
@@ -697,7 +697,7 @@ public class EnsureLockingAspect {
         return new EnsureLockDetail(mode._1, mode._2, type);
     }
 
-    private EnsureLockDetail resolveLockDetail(final AnnotatedMethodConstraint<EnsureLocked> lockConstraint, final Object args[]) {
+    private EnsureLockDetail resolveLockDetail(final AnnotatedMethodConstraint<EnsureLocked> lockConstraint, final Object[] args) {
         final Tuple2<Lock.LockMode, Boolean> mode = getLockMode(lockConstraint.getAnnotation(), args);
 
         final Lock.LockType type;
@@ -715,7 +715,7 @@ public class EnsureLockingAspect {
         return new EnsureLockDetail(mode._1, mode._2, type);
     }
 
-    private EnsureLockDetail resolveLockDetail(final AnnotatedParameterConstraint<EnsureLocked> lockConstraint, final Object args[]) {
+    private EnsureLockDetail resolveLockDetail(final AnnotatedParameterConstraint<EnsureLocked> lockConstraint, final Object[] args) {
         final Tuple2<Lock.LockMode, Boolean> mode = getLockMode(lockConstraint.getAnnotation(), args);
 
         final Lock.LockType type;
@@ -786,11 +786,11 @@ public class EnsureLockingAspect {
     }
 
 
-    private Tuple2<Lock.LockMode, Boolean> getLockMode(final EnsureLocked ensureLocked, final Object args[]) {
+    private Tuple2<Lock.LockMode, Boolean> getLockMode(final EnsureLocked ensureLocked, final Object[] args) {
         return getLockMode(ensureLocked.mode(), ensureLocked.modeParam(), args);
     }
 
-    private Tuple2<Lock.LockMode, Boolean> getLockMode(final EnsureContainerLocked ensureContainerLocked, final Object args[]) {
+    private Tuple2<Lock.LockMode, Boolean> getLockMode(final EnsureContainerLocked ensureContainerLocked, final Object[] args) {
         return getLockMode(ensureContainerLocked.mode(), ensureContainerLocked.modeParam(), args);
     }
 
@@ -798,7 +798,7 @@ public class EnsureLockingAspect {
      * @return A tuple, whose first value is the lock mode,
      * and whose second value is true if the mode was resolved from args.
      */
-    private Tuple2<Lock.LockMode, Boolean> getLockMode(final Lock.LockMode specifiedLockMode, final short specifiedLockModeParam, final Object args[]) {
+    private Tuple2<Lock.LockMode, Boolean> getLockMode(final Lock.LockMode specifiedLockMode, final short specifiedLockModeParam, final Object[] args) {
         final Tuple2<Lock.LockMode, Boolean> mode;
         if(specifiedLockMode != Lock.LockMode.NO_LOCK) {
             mode = new Tuple2<>(specifiedLockMode, false);
@@ -972,11 +972,11 @@ public class EnsureLockingAspect {
         }
     }
 
-    private static abstract class AnnotatedConstraint<T extends Annotation, U> {
+    private abstract static class AnnotatedConstraint<T extends Annotation, U> {
         private final T annotation;
         protected final U annotationTarget;
 
-        public AnnotatedConstraint(final T annotation, final U annotationTarget) {
+        protected AnnotatedConstraint(final T annotation, final U annotationTarget) {
             this.annotation = annotation;
             this.annotationTarget = annotationTarget;
         }

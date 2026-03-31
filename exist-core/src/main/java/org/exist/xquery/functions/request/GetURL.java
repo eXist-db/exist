@@ -40,7 +40,7 @@ public class GetURL extends StrictRequestFunction {
 
 	protected static final Logger logger = LogManager.getLogger(GetURL.class);
 
-	public final static FunctionSignature signature =
+	public static final FunctionSignature signature =
 		new FunctionSignature(
 			new QName("get-url", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
 			"Returns the URL of the current request.",

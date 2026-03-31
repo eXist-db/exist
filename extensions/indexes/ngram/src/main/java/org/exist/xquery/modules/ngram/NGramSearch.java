@@ -21,35 +21,23 @@
  */
 package org.exist.xquery.modules.ngram;
 
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.exist.dom.persistent.DocumentSet;
-import org.exist.dom.persistent.EmptyNodeSet;
-import org.exist.dom.persistent.Match;
-import org.exist.dom.persistent.NodeProxy;
-import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.QName;
+import org.exist.dom.persistent.*;
 import org.exist.indexing.ngram.NGramIndex;
 import org.exist.indexing.ngram.NGramIndexWorker;
 import org.exist.storage.ElementValue;
 import org.exist.xquery.*;
-import org.exist.xquery.modules.ngram.query.AlternativeStrings;
-import org.exist.xquery.modules.ngram.query.EmptyExpression;
-import org.exist.xquery.modules.ngram.query.EndAnchor;
-import org.exist.xquery.modules.ngram.query.EvaluatableExpression;
-import org.exist.xquery.modules.ngram.query.FixedString;
-import org.exist.xquery.modules.ngram.query.StartAnchor;
-import org.exist.xquery.modules.ngram.query.Wildcard;
-import org.exist.xquery.modules.ngram.query.WildcardedExpression;
-import org.exist.xquery.modules.ngram.query.WildcardedExpressionSequence;
+import org.exist.xquery.modules.ngram.query.*;
 import org.exist.xquery.modules.ngram.utils.NodeProxies;
 import org.exist.xquery.modules.ngram.utils.NodeSets;
 import org.exist.xquery.util.Error;
 import org.exist.xquery.value.*;
+
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class NGramSearch extends Function implements Optimizable {
 
@@ -79,7 +67,7 @@ public class NGramSearch extends Function implements Optimizable {
 
     protected static final Logger LOG = LogManager.getLogger(NGramSearch.class);
 
-    public final static FunctionSignature signatures[] = {
+    public static final FunctionSignature[] signatures = {
         new FunctionSignature(new QName("contains", NGramModule.NAMESPACE_URI, NGramModule.PREFIX),
             "Similar to the standard XQuery fn:contains function, but based on the NGram index. " + SEARCH_DESCRIPTION
                 + "The string may appear at any position within the node content.", new SequenceType[] {
@@ -120,12 +108,12 @@ public class NGramSearch extends Function implements Optimizable {
                 Cardinality.ZERO_OR_MORE, "a set of nodes from the input node set $nodes matching the query string "
                     + "or the empty sequence")) };
 
-    private LocationStep contextStep = null;
-    protected QName contextQName = null;
+    private LocationStep contextStep;
+    protected QName contextQName;
     protected int axis = Constants.UNKNOWN_AXIS;
-    private NodeSet preselectResult = null;
-    protected boolean optimizeSelf = false;
-    protected boolean optimizeChild = false;
+    private NodeSet preselectResult;
+    protected boolean optimizeSelf;
+    protected boolean optimizeChild;
     
     public NGramSearch(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
@@ -140,8 +128,9 @@ public class NGramSearch extends Function implements Optimizable {
         Expression arg = arguments.get(1);
         arg = new DynamicCardinalityCheck(context, Cardinality.ZERO_OR_ONE, arg, new org.exist.xquery.util.Error(
             Error.FUNC_PARAM_CARDINALITY, "2", getSignature()));
-        if(!Type.subTypeOf(arg.returnsType(), Type.ANY_ATOMIC_TYPE))
+        if (!Type.subTypeOf(arg.returnsType(), Type.ANY_ATOMIC_TYPE)) {
             arg = new Atomize(context, arg);
+        }
         steps.add(arg);
     }
 
@@ -239,20 +228,21 @@ public class NGramSearch extends Function implements Optimizable {
 
     @Override
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
-        if (contextItem != null)
-			contextSequence = contextItem.toSequence();
+        if (contextItem != null) {
+            contextSequence = contextItem.toSequence();
+        }
 
         NodeSet result;
         if (preselectResult == null) {
             Sequence input = getArgument(0).eval(contextSequence, contextItem);
-            if (input.isEmpty())
+            if (input.isEmpty()) {
                 result = NodeSet.EMPTY_SET;
-            else {
+            } else {
                 long start = System.currentTimeMillis();
                 NodeSet inNodes = input.toNodeSet();
                 DocumentSet docs = inNodes.getDocumentSet();
-                NGramIndexWorker index = (NGramIndexWorker) context.getBroker().getIndexController()
-                    .getWorkerByIndexId(NGramIndex.ID);
+                NGramIndexWorker index = (NGramIndexWorker)context.getBroker().getIndexController()
+                        .getWorkerByIndexId(NGramIndex.ID);
                 //Alternate design
                 // NGramIndexWorker index =
                 // (NGramIndexWorker)context.getBroker().getBrokerPool().getIndexManager().getIndexById(NGramIndex.ID).getWorker();
@@ -264,9 +254,9 @@ public class NGramSearch extends Function implements Optimizable {
                     qnames.add(contextQName);
                 }
                 result = processMatches(index, docs, qnames, key, inNodes, NodeSet.ANCESTOR);
-                if( context.getProfiler().traceFunctions() ) {
+                if (context.getProfiler().traceFunctions()) {
                     // report index use
-                    context.getProfiler().traceIndexUsage( context, "ngram", this, PerformanceStats.IndexOptimizationLevel.BASIC, System.currentTimeMillis() - start );
+                    context.getProfiler().traceIndexUsage(context, "ngram", this, PerformanceStats.IndexOptimizationLevel.BASIC, System.currentTimeMillis() - start);
                 }
             }
         } else {
@@ -286,29 +276,29 @@ public class NGramSearch extends Function implements Optimizable {
 
         EvaluatableExpression parsedQuery = null;
 
-        if ("wildcard-contains".equals(getLocalName()))
+        if ("wildcard-contains".equals(getLocalName())) {
             parsedQuery = parseQuery(query);
-            	else
+        } else {
             parsedQuery = new FixedString(this, query);
+        }
 
         LOG.debug("Parsed Query: {}", parsedQuery);
         NodeSet result = parsedQuery.eval(index, docs, qnames, nodeSet, axis, this
                 .getExpressionId());
 
-        if (getLocalName().startsWith("starts-with"))
+        if (getLocalName().startsWith("starts-with")) {
             result = NodeSets.getNodesMatchingAtStart(result, getExpressionId());
-        else if (getLocalName().startsWith("ends-with"))
+        } else if (getLocalName().startsWith("ends-with")) {
             result = NodeSets.getNodesMatchingAtEnd(result, getExpressionId());
+        }
 
-        result = NodeSets.transformNodes(result, proxy ->
+        return NodeSets.transformNodes(result, proxy ->
                 NodeProxies.transformOwnMatches(
                         proxy,
                         Match::filterOutOverlappingOffsets,
                         getExpressionId()
                 )
         );
-
-        return result;
     }
 
     private EvaluatableExpression parseQuery(final String query) throws XPathException {
@@ -316,8 +306,9 @@ public class NGramSearch extends Function implements Optimizable {
 
         LOG.trace("Tokenized query: {}", queryTokens);
 
-        if (queryTokens.isEmpty())
+        if (queryTokens.isEmpty()) {
             return new EmptyExpression();
+        }
 
         List<WildcardedExpression> expressions = new ArrayList<>();
 
@@ -326,8 +317,9 @@ public class NGramSearch extends Function implements Optimizable {
             queryTokens.removeFirst();
         }
 
-        if (queryTokens.isEmpty())
+        if (queryTokens.isEmpty()) {
             return new EmptyExpression();
+        }
 
         boolean endAnchorPresent = false;
         if ("$".equals(queryTokens.getLast())) {
@@ -335,8 +327,9 @@ public class NGramSearch extends Function implements Optimizable {
             queryTokens.removeLast();
         }
 
-        if (queryTokens.isEmpty())
+        if (queryTokens.isEmpty()) {
             return new EmptyExpression();
+        }
 
         for (String token : queryTokens) {
             if (token.startsWith(".")) {
@@ -358,12 +351,13 @@ public class NGramSearch extends Function implements Optimizable {
                         default:
                             Pattern p = Pattern.compile(INTERVAL_QUALIFIER_PATTERN);
                             Matcher m = p.matcher(qualifier);
-                            if (!m.matches()) // Should not happen
+                            if (!m.matches()) { // Should not happen
                                 throw new XPathException(
                                         this,
                                         ErrorCodes.FTDY0020,
                                         "query string violates wildcard qualifier syntax"
                                 );
+                            }
                             try {
                                 wildcard = new Wildcard(Integer.parseInt(m.group(1)), Integer.parseInt(m.group(2)));
                             } catch (NumberFormatException nfe) {
@@ -381,8 +375,9 @@ public class NGramSearch extends Function implements Optimizable {
             } else {
                 if (token.startsWith("[")) {
                     Set<String> strings = new HashSet<>(token.length() - 2);
-                    for (int i = 1; i < token.length() - 1; i++)
+                    for (int i = 1; i < token.length() - 1; i++) {
                         strings.add(Character.toString(token.charAt(i)));
+                    }
                     expressions.add(new AlternativeStrings(this, strings));
                 } else {
                     expressions.add(new FixedString(this, unescape(token)));
@@ -390,8 +385,9 @@ public class NGramSearch extends Function implements Optimizable {
             }
         }
 
-        if (endAnchorPresent)
+        if (endAnchorPresent) {
             expressions.add(new EndAnchor());
+        }
 
         return new WildcardedExpressionSequence(expressions);
     }
@@ -424,19 +420,22 @@ public class NGramSearch extends Function implements Optimizable {
                     }
                     if ((i + 1) < query.length()) {
                         char peek = query.charAt(i + 1);
-                        if (peek == '?' || peek == '*' || peek == '+')
+                        if (peek == '?' || peek == '*' || peek == '+') {
                             wildcardEnd = i + 1;
+                        }
                         if (peek == '{') {
                             wildcardEnd = query.indexOf('}', i + 2);
-                            if (wildcardEnd == -1)
+                            if (wildcardEnd == -1) {
                                 throw new XPathException(expression,
-                                    "err:FTDY0020: query string violates wildcard syntax: Unmatched qualifier start { in query string; marked by <-- HERE in \""
-                                        + query.substring(0, i + 2) + " <-- HERE " + query.substring(i + 2) + "\"");
-                            if (!query.substring(i + 1, wildcardEnd + 1).matches(INTERVAL_QUALIFIER_PATTERN))
+                                        "err:FTDY0020: query string violates wildcard syntax: Unmatched qualifier start { in query string; marked by <-- HERE in \""
+                                                + query.substring(0, i + 2) + " <-- HERE " + query.substring(i + 2) + "\"");
+                            }
+                            if (!query.substring(i + 1, wildcardEnd + 1).matches(INTERVAL_QUALIFIER_PATTERN)) {
                                 throw new XPathException(expression,
-                                    "err:FTDY0020: query string violates wildcard qualifier syntax;  marked by <-- HERE in \""
-                                        + query.substring(0, wildcardEnd + 1) + " <-- HERE "
-                                        + query.substring(wildcardEnd + 1) + "\"");
+                                        "err:FTDY0020: query string violates wildcard qualifier syntax;  marked by <-- HERE in \""
+                                                + query.substring(0, wildcardEnd + 1) + " <-- HERE "
+                                                + query.substring(wildcardEnd + 1) + "\"");
+                            }
                         }
                     }
                     result.add(query.substring(i, wildcardEnd + 1));
@@ -445,10 +444,11 @@ public class NGramSearch extends Function implements Optimizable {
                     if (currentChar == '[') {
                         int characterClassEnd = query.indexOf(']', i + 2); // Character classses can not be empty, thus
                         // start search for end at i+2
-                        if (characterClassEnd == -1)
+                        if (characterClassEnd == -1) {
                             throw new XPathException(expression,
-                                "err:FTDY0020: query string violates wildcard syntax: Unmatched [ in query string; marked by <-- HERE in \""
-                                    + query.substring(0, i + 1) + " <-- HERE " + query.substring(i + 1) + "\"");
+                                    "err:FTDY0020: query string violates wildcard syntax: Unmatched [ in query string; marked by <-- HERE in \""
+                                            + query.substring(0, i + 1) + " <-- HERE " + query.substring(i + 1) + "\"");
+                        }
                         if (!token.isEmpty()) {
                             result.add(token.toString());
                             token = new StringBuilder();
@@ -469,9 +469,10 @@ public class NGramSearch extends Function implements Optimizable {
                                 token = new StringBuilder();
                             }
                             result.add("$");
-                        } else
+                        } else {
                             // default case
                             token.append(currentChar);
+                        }
                         }
                     }
                 }
@@ -490,8 +491,9 @@ public class NGramSearch extends Function implements Optimizable {
         String[] ngrams = NGramSearch.getDistinctNGrams(query, index.getN());
 
         // Nothing to search for? The find nothing.
-        if (ngrams.length == 0)
+        if (ngrams.length == 0) {
             return new EmptyNodeSet();
+        }
 
         String firstNgramm = ngrams[0];
         LOG.trace("First NGRAM: {}", firstNgramm);

@@ -21,16 +21,16 @@
  */
 package org.exist.security;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import org.exist.config.Configuration;
 import org.exist.config.ConfigurationException;
 import org.exist.security.internal.RealmImpl;
 import org.exist.security.realm.Realm;
 import org.exist.storage.DBBroker;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Represents an Effective User

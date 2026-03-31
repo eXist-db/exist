@@ -29,27 +29,21 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 /**
  * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public class FunUpperOrLowerCase extends Function {
 
-	public final static FunctionSignature fnUpperCase =
+	public static final FunctionSignature fnUpperCase =
 		new FunctionSignature(
 			new QName("upper-case", Function.BUILTIN_FUNCTION_NS),
 			"Returns the value of $arg after translating every character to its upper-case correspondent as defined in the appropriate case mappings section in the Unicode standard. For versions of Unicode beginning with the 2.1.8 update, only locale-insensitive case mappings should be applied. Beginning with version 3.2.0 (and likely future versions) of Unicode, precise mappings are described in default case operations, which are full case mappings in the absence of tailoring for particular languages and environments. Every lower-case character that does not have an upper-case correspondent, as well as every upper-case character, is included in the returned value in its original form.",
 			new SequenceType[] { new FunctionParameterSequenceType("arg", Type.STRING, Cardinality.ZERO_OR_ONE, "The text to be converted to all upper-case characters") },
 			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the resulting upper-case text"));
 	
-	public final static FunctionSignature fnLowerCase =
+	public static final FunctionSignature fnLowerCase =
 		new FunctionSignature(
 			new QName("lower-case", Function.BUILTIN_FUNCTION_NS),
 			"Returns the value of $arg after translating every character to its lower-case correspondent as defined in the appropriate case mappings section in the Unicode standard. For versions of Unicode beginning with the 2.1.8 update, only locale-insensitive case mappings should be applied. Beginning with version 3.2.0 (and likely future versions) of Unicode, precise mappings are described in default case operations, which are full case mappings in the absence of tailoring for particular languages and environments. Every upper-case character that does not have a lower-case correspondent, as well as every lower-case character, is included in the returned value in its original form.",

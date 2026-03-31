@@ -23,11 +23,11 @@ package org.exist.contentextraction;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exist.dom.INodeHandle;
+import org.exist.dom.QName;
 import org.exist.dom.memtree.DocumentBuilderReceiver;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.dom.memtree.NodeImpl;
-import org.exist.dom.INodeHandle;
-import org.exist.dom.QName;
 import org.exist.storage.NodePath;
 import org.exist.util.serializer.AttrList;
 import org.exist.util.serializer.Receiver;
@@ -50,20 +50,20 @@ import javax.annotation.Nullable;
  */
 public class ContentReceiver implements Receiver {
 
-    private final static Logger LOG = LogManager.getLogger(ContentReceiver.class);
+    private static final Logger LOG = LogManager.getLogger(ContentReceiver.class);
     
     private final ValueSequence result = new ValueSequence();
     private final FunctionReference ref;
     private final NodePath currentElementPath = new NodePath();
     private final NodePath[] paths;
-    private DocumentBuilderReceiver docBuilderReceiver = null;
-    private NodePath startElementPath = null;
-    private Sequence userData = null;
+    private DocumentBuilderReceiver docBuilderReceiver;
+    private NodePath startElementPath;
+    private final Sequence userData;
     private Sequence prevReturnData = Sequence.EMPTY_SEQUENCE;
     private final XQueryContext context;
     private final Expression expression;
     
-    private boolean sendDataToCB = false;
+    private boolean sendDataToCB;
 
     /**
      *  Receiver constructor

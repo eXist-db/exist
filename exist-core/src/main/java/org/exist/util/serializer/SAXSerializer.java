@@ -47,7 +47,7 @@ public class SAXSerializer extends AbstractSerializer implements ContentHandler,
     private final NamespaceSupport nsSupport = new NamespaceSupport();
     private final Map<String, String> namespaceDecls = new HashMap<>();
     private final Map<String, String> optionalNamespaceDecls = new HashMap<>();
-    private boolean enforceXHTML = false;
+    private boolean enforceXHTML;
 
     public SAXSerializer() {
         super();
@@ -117,7 +117,7 @@ public class SAXSerializer extends AbstractSerializer implements ContentHandler,
 
     @Override
     public void startPrefixMapping(String prefix, String namespaceURI) throws SAXException {
-        if (namespaceURI.equals(Namespaces.XML_NS)) {
+        if (Namespaces.XML_NS.equals(namespaceURI)) {
             return;
         }
         if(prefix == null) {
@@ -348,7 +348,7 @@ public class SAXSerializer extends AbstractSerializer implements ContentHandler,
     @Override
     public void attribute(final QName qname, final String value) throws SAXException {
         // ignore namespace declaration attributes
-        if((qname.getPrefix() != null && XMLConstants.XMLNS_ATTRIBUTE.equals(qname.getPrefix())) || XMLConstants.XMLNS_ATTRIBUTE.equals(qname.getLocalPart())) {
+        if((XMLConstants.XMLNS_ATTRIBUTE.equals(qname.getPrefix())) || XMLConstants.XMLNS_ATTRIBUTE.equals(qname.getLocalPart())) {
             return;
         }
         

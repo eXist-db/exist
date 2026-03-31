@@ -42,7 +42,7 @@ public class JavaMethodsTest {
 		return a + b;
 	}
 	
-	private String message;
+	private final String message;
 	
 	public JavaMethodsTest(String msg) {
 		message = msg;

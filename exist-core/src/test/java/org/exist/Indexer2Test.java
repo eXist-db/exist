@@ -21,12 +21,6 @@
  */
 package org.exist;
 
-import java.io.IOException;
-import java.io.StringWriter;
-import java.util.Optional;
-import java.util.Properties;
-import javax.xml.transform.OutputKeys;
-
 import org.exist.collections.Collection;
 import org.exist.security.AuthenticationException;
 import org.exist.security.PermissionDeniedException;
@@ -46,14 +40,20 @@ import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
-
-import static org.exist.util.PropertiesBuilder.propertiesBuilder;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.xml.sax.SAXException;
+
+import javax.xml.transform.OutputKeys;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.util.Optional;
+import java.util.Properties;
+
+import static org.exist.util.PropertiesBuilder.propertiesBuilder;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests the indexer.
@@ -62,7 +62,7 @@ import org.xml.sax.SAXException;
  */
 public class Indexer2Test {
 
-    private final static String XML =
+    private static final String XML =
             """
             <?xml version="1.0"?>
             <TEI xmlns="http://www.tei-c.org/ns/1.0">
@@ -70,7 +70,7 @@ public class Indexer2Test {
             </TEI>
             """;
 
-    private final static String XQUERY =
+    private static final String XQUERY =
             "declare namespace tei=\"http://www.tei-c.org/ns/1.0\"; " +
             "declare boundary-space preserve; " +
             "declare function local:get-text($input as node()*) as item()* {" +

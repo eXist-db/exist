@@ -159,7 +159,7 @@ public class RestoreTask extends AbstractXMLDBTask
     public DirSet createDirSet()
     {
         this.dirSet = new DirSet();
-        return( dirSet );
+        return dirSet;
     }
 
 

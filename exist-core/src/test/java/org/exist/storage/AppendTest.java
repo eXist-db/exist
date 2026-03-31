@@ -34,7 +34,6 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
-
 import java.io.IOException;
 import java.io.StringReader;
 
@@ -63,7 +62,7 @@ public class AppendTest extends AbstractUpdateTest {
                                 "</xu:modifications>";
                 proc.setBroker(broker);
                 proc.setDocumentSet(docs);
-                final Modification modifications[] = proc.parse(new InputSource(new StringReader(xupdate)));
+                final Modification[] modifications = proc.parse(new InputSource(new StringReader(xupdate)));
                 modifications[0].process(transaction);
                 proc.reset();
             }
@@ -84,7 +83,7 @@ public class AppendTest extends AbstractUpdateTest {
                 "</xu:modifications>";
             proc.setBroker(broker);
             proc.setDocumentSet(docs);
-            final Modification modifications[] = proc.parse(new InputSource(new StringReader(xupdate)));
+            final Modification[] modifications = proc.parse(new InputSource(new StringReader(xupdate)));
             modifications[0].process(transaction);
             proc.reset();
         }

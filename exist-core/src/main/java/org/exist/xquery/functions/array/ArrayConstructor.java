@@ -37,8 +37,8 @@ public class ArrayConstructor extends AbstractExpression {
 
     public enum ConstructorType { SQUARE_ARRAY, CURLY_ARRAY }
 
-    private ConstructorType type;
-    private List<Expression> arguments = new ArrayList<>();
+    private final ConstructorType type;
+    private final List<Expression> arguments = new ArrayList<>();
 
     public ArrayConstructor(XQueryContext context, ConstructorType type) {
         super(context);
@@ -63,19 +63,18 @@ public class ArrayConstructor extends AbstractExpression {
             throw new XPathException(this, ErrorCodes.EXXQDY0004, "arrays are only available in XQuery 3.1, but version declaration states " +
                 context.getXQueryVersion());
         }
-        switch(type) {
-            case SQUARE_ARRAY:
-                final List<Sequence> items = new ArrayList<>(arguments.size());
-                for (Expression arg: arguments) {
-                    final Sequence result = arg.eval(contextSequence, contextItem);
-                    if (result != null) {
-                        items.add(result);
-                    }
+        if (type == ArrayConstructor.ConstructorType.SQUARE_ARRAY) {
+            final List<Sequence> items = new ArrayList<>(arguments.size());
+            for (Expression arg : arguments) {
+                final Sequence result = arg.eval(contextSequence, contextItem);
+                if (result != null) {
+                    items.add(result);
                 }
-                return new ArrayType(this, context, items);
-            default:
-                final Sequence result =  arguments.isEmpty() ? Sequence.EMPTY_SEQUENCE : arguments.getFirst().eval(contextSequence, contextItem);
-                return new ArrayType(this, context, result);
+            }
+            return new ArrayType(this, context, items);
+        } else {
+            final Sequence result = arguments.isEmpty() ? Sequence.EMPTY_SEQUENCE : arguments.getFirst().eval(contextSequence, contextItem);
+            return new ArrayType(this, context, result);
         }
     }
 

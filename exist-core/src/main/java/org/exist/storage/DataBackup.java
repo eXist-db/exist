@@ -44,7 +44,7 @@ import java.util.zip.ZipOutputStream;
 
 public class DataBackup implements SystemTask {
 
-    private final static Logger LOG = LogManager.getLogger(DataBackup.class);
+    private static final Logger LOG = LogManager.getLogger(DataBackup.class);
 
     public static final String DATE_FORMAT_PICTURE = "yyyyMMddHHmmssS";
     private final SimpleDateFormat creationDateFormat = new SimpleDateFormat(DATE_FORMAT_PICTURE);
@@ -119,8 +119,8 @@ public class DataBackup implements SystemTask {
         return lastBackup;
     }
 
-    private static class Callback implements RawDataBackup {
-        final private ZipOutputStream zout;
+    private static final class Callback implements RawDataBackup {
+        private final ZipOutputStream zout;
 
         private Callback(final ZipOutputStream out) {
             zout = out;

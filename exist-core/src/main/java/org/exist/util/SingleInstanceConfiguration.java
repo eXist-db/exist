@@ -21,11 +21,11 @@
  */
 package org.exist.util;
 
-import java.nio.file.Path;
-import java.util.Optional;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.nio.file.Path;
+import java.util.Optional;
 
 public class SingleInstanceConfiguration extends Configuration {
     
@@ -39,7 +39,7 @@ public class SingleInstanceConfiguration extends Configuration {
          */
     
     @SuppressWarnings("unused")
-	private final static Logger LOG = LogManager.getLogger(SingleInstanceConfiguration.class); //Logger
+	private static final Logger LOG = LogManager.getLogger(SingleInstanceConfiguration.class); //Logger
     protected static Optional<Path> _configFile = Optional.empty(); //config file (conf.xml by default)
     protected static Optional<Path> _existHome = Optional.empty();
     

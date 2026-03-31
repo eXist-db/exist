@@ -23,11 +23,6 @@ package org.exist.xquery;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.junit.*;
-
-import static org.exist.collections.CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
@@ -35,7 +30,10 @@ import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XQueryService;
 
-    
+import static org.exist.collections.CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 
 /**
  *
@@ -46,11 +44,11 @@ public class UnionTest {
     @ClassRule
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
-    private final static String TEST_COLLECTION_NAME = "test-pubmed";
+    private static final String TEST_COLLECTION_NAME = "test-pubmed";
     
-    private final static String PUBMED_DOC_NAME = "pubmed.xml";
+    private static final String PUBMED_DOC_NAME = "pubmed.xml";
     
-    private final static String PUBMED =
+    private static final String PUBMED =
         "<PubmedArticleSet>"
         + "<PubmedArticle>"
             + "<MedlineCitation Owner=\"NLM\" Status=\"In-Process\">"
@@ -76,7 +74,7 @@ public class UnionTest {
         + "</PubmedArticle>"
     + "</PubmedArticleSet>";
     
-    private final static String INDEX_CONFIG =
+    private static final String INDEX_CONFIG =
         "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">"
             + "<index>"
                 + "<create qname=\"ForeName\" type=\"xs:string\"/>"
@@ -84,7 +82,7 @@ public class UnionTest {
             + "</index>"
         +" </collection>";
     
-    private final static String XQUERY = "/PubmedArticleSet/PubmedArticle[MedlineCitation/Article/AuthorList/Author/(ForeName|LastName) = \"Castellano\"]";
+    private static final String XQUERY = "/PubmedArticleSet/PubmedArticle[MedlineCitation/Article/AuthorList/Author/(ForeName|LastName) = \"Castellano\"]";
 
     private static Collection testCollection;    
     
@@ -129,7 +127,7 @@ public class UnionTest {
     
     private Collection getOrCreateCollection(final Collection currentCollection, final String collectionPath) throws XMLDBException {
        
-        final int offset = collectionPath.indexOf("/") > -1 ? collectionPath.indexOf("/") : collectionPath.length();
+        final int offset = collectionPath.contains("/") ? collectionPath.indexOf("/") : collectionPath.length();
         final String colName = collectionPath.substring(0, offset);
         
         if(colName.isEmpty()) {
@@ -154,8 +152,7 @@ public class UnionTest {
        final XMLResource doc = testCollection.createResource(documentName, XMLResource.class);
        doc.setContent(content);
        testCollection.storeResource(doc);
-       final XQueryService service = testCollection.getService(XQueryService.class);
-       return service;
+       return testCollection.getService(XQueryService.class);
     }
     
     @Before
@@ -179,7 +176,7 @@ public class UnionTest {
         
         boolean foundPubmedConfig = false;
         for(final String configCol : colConfigDb.listChildCollections()) {
-            if(configCol.equals(TEST_COLLECTION_NAME)) {
+            if(TEST_COLLECTION_NAME.equals(configCol)) {
                 foundPubmedConfig = true;
                 break;
             }

@@ -33,8 +33,8 @@ import antlr.collections.AST;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Namespaces;
-import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.NodeListImpl;
+import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.NodeSetHelper;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
@@ -46,24 +46,9 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.parser.XQueryLexer;
 import org.exist.xquery.parser.XQueryParser;
 import org.exist.xquery.parser.XQueryTreeParser;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.Type;
-import org.w3c.dom.Attr;
-import org.w3c.dom.Comment;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.ProcessingInstruction;
-import org.w3c.dom.Text;
-import org.xml.sax.Attributes;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.InputSource;
-import org.xml.sax.Locator;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
+import org.exist.xquery.value.*;
+import org.w3c.dom.*;
+import org.xml.sax.*;
 import org.xml.sax.ext.LexicalHandler;
 
 import javax.xml.XMLConstants;
@@ -107,49 +92,49 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 	public static final String VARIABLE = "variable";
 	public static final String IF = "if";
 	
-	public final static String XUPDATE_NS = "http://www.xmldb.org/xupdate";
+	public static final String XUPDATE_NS = "http://www.xmldb.org/xupdate";
 
-	private final static Logger LOG = LogManager.getLogger(XUpdateProcessor.class);
+	private static final Logger LOG = LogManager.getLogger(XUpdateProcessor.class);
 
     /**
      * NodeList to keep track of created document fragments within
      * the currently processed XUpdate modification.
      */
-    private NodeListImpl contents = null;
+    private NodeListImpl contents;
 
     // Flags needed during SAX processing
-    private boolean inModification = false;
-	private boolean inAttribute = false;
+    private boolean inModification;
+	private boolean inAttribute;
 
     /**
      * Whitespace preservation: the XUpdate processor
      * will honour xml:space attribute settings.
      */
-    private boolean preserveWhitespace = false;
-    private boolean preserveWhitespaceTemp = false;
+    private boolean preserveWhitespace;
+    private boolean preserveWhitespaceTemp;
 
     /**
      * Stack to maintain xml:space settings. The items on the
      * stack are strings, containing either "default" or "preserve".
      */
-    private Deque<String> spaceStack = null;
+    private Deque<String> spaceStack;
 
     /**
      * The modification we are currently processing.
      */
-    private Modification modification = null;
+    private Modification modification;
 
     /** The DocumentBuilder used to create new nodes */
-    private DocumentBuilder builder;
+    private final DocumentBuilder builder;
 
     /** The Document object used to create new nodes */
     private Document doc;
 
     /** The current element stack. Contains the last elements processed. */
-    private Deque<Element> stack = new ArrayDeque<>();
+    private final Deque<Element> stack = new ArrayDeque<>();
 
     /** The last node that has been created */
-    private Node currentNode = null;
+    private Node currentNode;
 
     /** DBBroker for this instance */
     private DBBroker broker;
@@ -162,7 +147,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
      * within the XUpdate will be added to this list. The final list
      * will be returned to the caller.
      */
-    private List<Modification> modifications = new ArrayList<>();
+    private final List<Modification> modifications = new ArrayList<>();
 
     /** Temporary string buffer used for collecting text chunks */
     private final StringBuilder charBuf = new StringBuilder(64);
@@ -173,17 +158,17 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
      * Maps variable QName to the Sequence returned by
      * evaluating the variable expression.
      */
-    private Map<String, Object> variables = new TreeMap<>();
+    private final Map<String, Object> variables = new TreeMap<>();
 
     /**
      * Keeps track of namespaces declared within the XUpdate.
      */
-    private Map<String, String> namespaces = new HashMap<>(10);
+    private final Map<String, String> namespaces = new HashMap<>(10);
 
     /**
      * Stack used to track conditionals.
      */
-    private Deque<Conditional> conditionals = new ArrayDeque<>();
+    private final Deque<Conditional> conditionals = new ArrayDeque<>();
 
 	/**
 	 * Constructor for XUpdateProcessor.
@@ -241,7 +226,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 			reader.setContentHandler(this);
 			
 			reader.parse(is);
-			final Modification mods[] = new Modification[modifications.size()];
+			final Modification[] mods = new Modification[modifications.size()];
 			return modifications.toArray(mods);
 		} finally {
 			broker.getBrokerPool().getParserPool().returnXMLReader(reader);
@@ -300,7 +285,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 			}
 			charBuf.setLength(0);
 		}
-		if (namespaceURI.equals(XUPDATE_NS)) {
+		if (XUPDATE_NS.equals(namespaceURI)) {
 			String select = null;
 			switch (localName) {
 				case MODIFICATIONS:
@@ -599,17 +584,17 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 			if (IF.equals(localName)) {
 				final Conditional cond = conditionals.pop();
 				modifications.add(cond);
-			} else if (localName.equals(ELEMENT)) {
+			} else if (ELEMENT.equals(localName)) {
 				this.resetWhitespaceHandling(stack.pop());
-			} else if (localName.equals(ATTRIBUTE)) {
+			} else if (ATTRIBUTE.equals(localName)) {
 				inAttribute = false;
-			} else if (localName.equals(APPEND)
-				|| localName.equals(UPDATE)
-				|| localName.equals(REMOVE)
-				|| localName.equals(RENAME)
-				|| localName.equals(REPLACE)
-				|| localName.equals(INSERT_BEFORE)
-				|| localName.equals(INSERT_AFTER)) {
+			} else if (APPEND.equals(localName)
+				|| UPDATE.equals(localName)
+				|| REMOVE.equals(localName)
+				|| RENAME.equals(localName)
+				|| REPLACE.equals(localName)
+				|| INSERT_BEFORE.equals(localName)
+				|| INSERT_AFTER.equals(localName)) {
 				inModification = false;
 				modification.setContent(contents);
 				final Conditional cond = conditionals.peek();
@@ -684,7 +669,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
                 // This is the default...
                 this.preserveWhitespace = preserveWhitespaceTemp;
             } else {
-                this.preserveWhitespace = ("preserve".equals(this.spaceStack.peek()));
+                this.preserveWhitespace = "preserve".equals(this.spaceStack.peek());
             }
         }
     }
@@ -778,8 +763,7 @@ public class XUpdateProcessor implements ContentHandler, LexicalHandler {
 				throw new SAXException(treeParser.getErrorMessage());
 			}
 			expr.analyze(new AnalyzeContextInfo());
-			final Sequence seq = expr.eval(null, null);
-			return seq;
+			return expr.eval(null, null);
 		} catch (final RecognitionException | TokenStreamException e) {
 			LOG.warn("error while creating variable", e);
 			throw new SAXException(e);

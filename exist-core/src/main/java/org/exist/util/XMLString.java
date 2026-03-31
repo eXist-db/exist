@@ -33,18 +33,18 @@ import org.xml.sax.SAXException;
 @NotThreadSafe
 public final class XMLString implements CharSequence, Comparable<CharSequence> {
 
-    public final static int SUPPRESS_NONE = 0;
-    public final static int SUPPRESS_LEADING_WS = 0x01;
-    public final static int SUPPRESS_TRAILING_WS = 0x02;
-    public final static int COLLAPSE_WS = 0x04;
-    public final static int SUPPRESS_BOTH = SUPPRESS_LEADING_WS | SUPPRESS_TRAILING_WS;
-    public final static int NORMALIZE = SUPPRESS_LEADING_WS | SUPPRESS_TRAILING_WS | COLLAPSE_WS;
+    public static final int SUPPRESS_NONE = 0;
+    public static final int SUPPRESS_LEADING_WS = 0x01;
+    public static final int SUPPRESS_TRAILING_WS = 0x02;
+    public static final int COLLAPSE_WS = 0x04;
+    public static final int SUPPRESS_BOTH = SUPPRESS_LEADING_WS | SUPPRESS_TRAILING_WS;
+    public static final int NORMALIZE = SUPPRESS_LEADING_WS | SUPPRESS_TRAILING_WS | COLLAPSE_WS;
 
-    public final static int DEFAULT_CAPACITY = 16;
+    public static final int DEFAULT_CAPACITY = 16;
 
-    private char[] value_ = null;
-    private int start_ = 0;
-    private int length_ = 0;
+    private char[] value_;
+    private int start_;
+    private int length_;
 
     public XMLString() {
         value_ = CharArrayPool.getCharArray(DEFAULT_CAPACITY);

@@ -25,21 +25,16 @@ import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
+import org.exist.collections.Collection;
 import org.exist.security.PermissionDeniedException;
+import org.exist.storage.txn.TransactionManager;
+import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
+import org.exist.test.TestConstants;
 import org.exist.util.LockException;
 import org.exist.util.MimeType;
 import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;
-import org.exist.test.TestConstants;
-import org.exist.collections.Collection;
-import org.exist.storage.txn.TransactionManager;
-import org.exist.storage.txn.Txn;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.exist.samples.Samples.SAMPLES;
-import static org.junit.Assert.fail;
-import static org.junit.Assert.assertNotNull;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.xml.sax.SAXException;
@@ -48,6 +43,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Optional;
 import java.util.concurrent.*;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.exist.samples.Samples.SAMPLES;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 public class DirtyShutdownTest {
 

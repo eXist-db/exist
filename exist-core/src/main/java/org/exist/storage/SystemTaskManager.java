@@ -33,7 +33,7 @@ import java.util.Deque;
 
 public class SystemTaskManager implements BrokerPoolService {
 
-    private final static Logger LOG = LogManager.getLogger(SystemTaskManager.class);
+    private static final Logger LOG = LogManager.getLogger(SystemTaskManager.class);
 
     /**
 	 * The pending system maintenance tasks of the database instance.

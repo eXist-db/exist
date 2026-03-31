@@ -46,7 +46,7 @@ public class JavaFunctionsTest {
     @ClassRule
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
-    private boolean javabindingenabled = false;
+    private boolean javabindingenabled;
 
     /**
      * Tests simple list functions to make sure java functions are being
@@ -64,7 +64,7 @@ public class JavaFunctionsTest {
             assertEquals("b", r);
         } catch (XMLDBException e) {
             //if exception is a java binding exception and java binding is disabled then this is a success
-            if (e.getMessage().indexOf("Java binding is disabled in the current configuration") > -1 && !javabindingenabled) {
+            if (e.getMessage().contains("Java binding is disabled in the current configuration") && !javabindingenabled) {
                 return;
             }
 

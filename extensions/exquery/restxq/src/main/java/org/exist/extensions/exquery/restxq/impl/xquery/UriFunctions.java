@@ -46,7 +46,7 @@ import org.exquery.restxq.RestXqErrorCodes;
  */
 public class UriFunctions extends BasicFunction {
     
-    public final static FunctionSignature signatures[] = {
+    public static final FunctionSignature[] signatures = {
 		
         new FunctionSignature(
             new QName("base-uri", RestXqModule.NAMESPACE_URI, RestXqModule.PREFIX),

@@ -23,11 +23,7 @@ package org.exist.xquery;
 
 import antlr.RecognitionException;
 import antlr.TokenStreamException;
-import org.exist.xquery.parser.XQueryAST;
-import org.exist.xquery.parser.XQueryLexer;
-import org.exist.xquery.parser.XQueryParser;
-import org.exist.xquery.parser.XQueryTokenTypes;
-import org.exist.xquery.parser.XQueryTreeParser;
+import org.exist.xquery.parser.*;
 import org.junit.jupiter.api.Test;
 
 import java.io.StringReader;

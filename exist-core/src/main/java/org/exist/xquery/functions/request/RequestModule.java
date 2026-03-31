@@ -21,13 +21,13 @@
  */
 package org.exist.xquery.functions.request;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.xquery.*;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Module function definitions for transform module.
@@ -37,12 +37,12 @@ import org.exist.xquery.*;
  */
 public class RequestModule extends AbstractInternalModule {
 
-    private final static Logger LOG = LogManager.getLogger(RequestModule.class);
+    private static final Logger LOG = LogManager.getLogger(RequestModule.class);
 
     public static final String NAMESPACE_URI = "http://exist-db.org/xquery/request";
     public static final String PREFIX = "request";
-    public final static String INCLUSION_DATE = "2004-09-12, 2006-04-09";
-    public final static String RELEASED_IN_VERSION = "pre eXist-1.0 (Many functions originally in this module have been moved into new modules response and session.)";
+    public static final String INCLUSION_DATE = "2004-09-12, 2006-04-09";
+    public static final String RELEASED_IN_VERSION = "pre eXist-1.0 (Many functions originally in this module have been moved into new modules response and session.)";
 
     public static final FunctionDef[] functions = {
             new FunctionDef(GetRequestAttribute.signatures[0], GetRequestAttribute.class),

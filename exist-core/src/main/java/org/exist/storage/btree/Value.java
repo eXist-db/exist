@@ -81,11 +81,11 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class Value implements Comparable<Object> {
 
-    public final static Value EMPTY_VALUE = new Value(new byte[0]);
+    public static final Value EMPTY_VALUE = new Value(new byte[0]);
 
     // TOOD(AR) could be make private final in future
-    protected byte[] data = null;
-    protected int pos = 0;
+    protected byte[] data;
+    protected int pos;
     protected int len = -1;
 
     private long address = -1;

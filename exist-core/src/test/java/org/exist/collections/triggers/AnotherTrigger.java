@@ -36,9 +36,9 @@ import java.util.Map;
  */
 public class AnotherTrigger extends SAXTrigger {
     
-    protected static StringBuilder sb = null;
+    protected static StringBuilder sb;
 
-    protected static int count = 0;
+    protected static int count;
     protected static byte createDocumentEvents = 0;
 
     public void configure(DBBroker broker, Txn transaction, org.exist.collections.Collection parent, Map<String, List<?>> parameters) throws TriggerException {

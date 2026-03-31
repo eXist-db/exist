@@ -51,7 +51,7 @@ import static org.junit.Assert.assertNotNull;
  */
 public class StartupLockingTest {
 
-    private static LockCountListener lockCountListener = new LockCountListener();
+    private static final LockCountListener lockCountListener = new LockCountListener();
 
     /**
      * Very useful for debugging lock life cycles
@@ -68,14 +68,16 @@ public class StartupLockingTest {
     public void addListener() {
         lockTable = existEmbeddedServer.getBrokerPool().getLockManager().getLockTable();
         lockTable.registerListener(lockCountListener);
-        while(!lockCountListener.isRegistered()) {}
+        while(!lockCountListener.isRegistered()) {
+            continue;}
     }
 
     @After
     public void removeListener() {
         if (lockCountListener.isRegistered()) {
             lockTable.deregisterListener(lockCountListener);
-            while (lockCountListener.isRegistered()) {}
+            while (lockCountListener.isRegistered()) {
+                continue;}
         }
     }
 
@@ -92,7 +94,8 @@ public class StartupLockingTest {
         lockTable.deregisterListener(lockCountListener);
 
         // wait for the listener to be deregistered
-        while(lockCountListener.isRegistered()) {}
+        while(lockCountListener.isRegistered()) {
+            continue;}
 
         //check all locks are zero!
         final Tuple2<Long, Long> lockCount = lockCountListener.getlockCount();
@@ -112,7 +115,8 @@ public class StartupLockingTest {
         lockTable.deregisterListener(lockCountListener);
 
         // wait for the listener to be deregistered
-        while(lockCountListener.isRegistered()) {}
+        while(lockCountListener.isRegistered()) {
+            continue;}
 
         final Tuple2<Long, Long> preLockCount = lockCountListener.getlockCount();
 
@@ -132,7 +136,8 @@ public class StartupLockingTest {
         }
 
         // wait for the listener to be deregistered
-        while(lockCountListener.isRegistered()) {}
+        while(lockCountListener.isRegistered()) {
+            continue;}
 
 
         //check that we haven't gained any locks

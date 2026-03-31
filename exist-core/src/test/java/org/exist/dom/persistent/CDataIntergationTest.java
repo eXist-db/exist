@@ -22,13 +22,13 @@
 
 package org.exist.dom.persistent;
 
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.fluent.Executor;
 import org.apache.http.client.fluent.Request;
 import org.exist.TestUtils;
 import org.exist.test.ExistWebServer;
-import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xmldb.DatabaseImpl;
 import org.exist.xmldb.XmldbURI;
 import org.junit.ClassRule;
@@ -59,8 +59,8 @@ public class CDataIntergationTest {
     @ClassRule
     public static final TemporaryFolder tempFolder = new TemporaryFolder();
 
-    private final static String cdata_content = "Hello there \"Bob?\"";
-    private final static String cdata_xml = "<elem1><![CDATA[" + cdata_content + "]]></elem1>";
+    private static final String cdata_content = "Hello there \"Bob?\"";
+    private static final String cdata_xml = "<elem1><![CDATA[" + cdata_content + "]]></elem1>";
 
     @Test
     public void cdataRestApi() throws IOException {

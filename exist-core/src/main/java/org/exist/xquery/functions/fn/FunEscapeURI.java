@@ -31,12 +31,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 /**
  * @author wolf
@@ -45,7 +40,7 @@ import org.exist.xquery.value.Type;
 @Deprecated
 public class FunEscapeURI extends BasicFunction {
 
-    public final static FunctionSignature signature =
+    public static final FunctionSignature signature =
         new FunctionSignature(
             new QName("escape-uri", Function.BUILTIN_FUNCTION_NS),
             "This function applies the URI escaping rules defined in section 2 " +
@@ -106,7 +101,7 @@ public class FunEscapeURI extends BasicFunction {
             if ((c>='a' && c<='z') || (c>='A' && c<='Z') || (c>='0' && c<='9')) {
                 sb.append(c);
             } else if (c<=0x20 || c>=0x7f) {
-                escapeChar(c, ((i+1)<s.length() ? s.charAt(i+1) : ' '), sb);
+                escapeChar(c, (i+1)<s.length() ? s.charAt(i+1) : ' ', sb);
             } else if (escapeReserved) {
                 if ("-_.!~*'()%".indexOf(c)>=0) {
                     sb.append(c);
@@ -130,7 +125,7 @@ public class FunEscapeURI extends BasicFunction {
         final byte[] array = new byte[4];
         final int used = UTF8.getUTF8Encoding(c, c2, array);
         for (int b=0; b<used; b++) {
-            final int v = (array[b]>=0 ? array[b] : 256 + array[b]);
+            final int v = array[b]>=0 ? array[b] : 256 + array[b];
             sb.append('%');
             sb.append(hex.charAt(v/16));
             sb.append(hex.charAt(v%16));

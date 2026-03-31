@@ -35,29 +35,13 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.modules.sql.SQLModule;
 import org.exist.xquery.modules.sql.SQLUtils;
-import org.exist.xquery.value.BooleanValue;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.IntegerValue;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import java.io.PrintStream;
-import java.sql.CallableStatement;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.sql.SQLRecoverableException;
-import java.sql.Statement;
-import java.sql.Timestamp;
-import java.sql.Types;
+import java.sql.*;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -76,7 +60,7 @@ import java.util.Date;
  */
 public class ExecuteFunction extends BasicFunction {
 
-    final static FunctionSignature[] signatures = {
+    static final FunctionSignature[] signatures = {
             new FunctionSignature(
                     new QName("execute", OracleModule.NAMESPACE_URI, OracleModule.PREFIX),
                     "Executes a PL/SQL stored procedure passed as the second argument against an Oracle RDBMS specified by the connection " +
@@ -115,10 +99,10 @@ public class ExecuteFunction extends BasicFunction {
             )
     };
     private static final Logger LOG = LogManager.getLogger(ExecuteFunction.class);
-    private final static String PARAMETERS_ELEMENT_NAME = "parameters";
-    private final static String PARAM_ELEMENT_NAME = "param";
-    private final static String TYPE_ATTRIBUTE_NAME = "type";
-    private final static String POSITION_ATTRIBUTE_NAME = "pos";
+    private static final String PARAMETERS_ELEMENT_NAME = "parameters";
+    private static final String PARAM_ELEMENT_NAME = "param";
+    private static final String TYPE_ATTRIBUTE_NAME = "type";
+    private static final String POSITION_ATTRIBUTE_NAME = "pos";
 
     private final DateFormat xmlDf;
 
@@ -139,7 +123,7 @@ public class ExecuteFunction extends BasicFunction {
         if (args.length == 5 || args.length == 6) {
             // was a connection and PL/SQL statement specified?
             if (args[0].isEmpty() || args[1].isEmpty()) {
-                return (Sequence.EMPTY_SEQUENCE);
+                return Sequence.EMPTY_SEQUENCE;
             }
 
             // get the Connection
@@ -147,7 +131,7 @@ public class ExecuteFunction extends BasicFunction {
             final Connection connection = SQLModule.retrieveConnection(context, connectionUID);
 
             if (connection == null) {
-                return (Sequence.EMPTY_SEQUENCE);
+                return Sequence.EMPTY_SEQUENCE;
             }
 
             // get the PL/SQL statement
@@ -197,7 +181,7 @@ public class ExecuteFunction extends BasicFunction {
                     final int returnCode = statement.getInt(1);
                     if (returnCode != plSqlSuccess) {
                         LOG.error("{} failed [{}]", plSql, returnCode);
-                        return (Sequence.EMPTY_SEQUENCE);
+                        return Sequence.EMPTY_SEQUENCE;
                     }
                 }
 
@@ -283,10 +267,10 @@ public class ExecuteFunction extends BasicFunction {
                     builder.endDocument();
 
                     // return the XML result set
-                    return (node);
+                    return node;
                 } else {
                     // there was no result set so just return an empty sequence
-                    return (Sequence.EMPTY_SEQUENCE);
+                    return Sequence.EMPTY_SEQUENCE;
                 }
             } catch (final SQLException sqle) {
 
@@ -378,11 +362,11 @@ public class ExecuteFunction extends BasicFunction {
 
     private void setParametersOnPreparedStatement(final Statement stmt, final Element parametersElement) throws SQLException, XPathException {
 
-        if (parametersElement.getNamespaceURI().equals(OracleModule.NAMESPACE_URI) && parametersElement.getLocalName().equals(PARAMETERS_ELEMENT_NAME)) {
+        if (OracleModule.NAMESPACE_URI.equals(parametersElement.getNamespaceURI()) && PARAMETERS_ELEMENT_NAME.equals(parametersElement.getLocalName())) {
             final NodeList paramElements = parametersElement.getElementsByTagNameNS(OracleModule.NAMESPACE_URI, PARAM_ELEMENT_NAME);
 
             for (int i = 0; i < paramElements.getLength(); i++) {
-                final Element param = ((Element) paramElements.item(i));
+                final Element param = (Element) paramElements.item(i);
                 final String value = param.getFirstChild().getNodeValue();
                 final String type = param.getAttributeNS(OracleModule.NAMESPACE_URI, TYPE_ATTRIBUTE_NAME);
                 final int position = Integer.parseInt(param.getAttributeNS(OracleModule.NAMESPACE_URI, POSITION_ATTRIBUTE_NAME));

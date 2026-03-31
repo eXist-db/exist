@@ -21,20 +21,20 @@
  */
 package org.exist.storage.dom;
 
-import java.nio.ByteBuffer;
-
 import org.exist.storage.DBBroker;
 import org.exist.storage.NativeBroker;
 import org.exist.storage.journal.AbstractLoggable;
 import org.exist.storage.journal.LogException;
 import org.exist.storage.txn.Txn;
 
+import java.nio.ByteBuffer;
+
 public class AddValueLoggable extends AbstractLoggable {
     protected DOMFile domDb;
     protected long pageNum;
     protected short tid;
     protected byte[] value;
-    protected boolean isOverflow = false;
+    protected boolean isOverflow;
 
     public AddValueLoggable() {
         super(DOMFile.LOG_ADD_VALUE, 0);

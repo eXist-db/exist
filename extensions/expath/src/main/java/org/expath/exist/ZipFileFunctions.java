@@ -21,19 +21,21 @@
  */
 package org.expath.exist;
 
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.QName;
-import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.memtree.MemTreeBuilder;
+import org.exist.dom.persistent.BinaryDocument;
+import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.PermissionDeniedException;
-import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
+import org.exist.storage.lock.Lock.LockMode;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
-import org.exist.storage.lock.Lock.LockMode;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -42,9 +44,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-
 /**
  * Created by Alister Pillow on 10/07/2014.
  */
@@ -52,14 +51,14 @@ public class ZipFileFunctions extends BasicFunction {
 
     private static final Logger logger = LogManager.getLogger(ZipFileFunctions.class);
 
-    private final static FunctionParameterSequenceType HREF_PARAM =  new FunctionParameterSequenceType("href", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The URI for locating the Zip file");
-    private final static FunctionParameterSequenceType ENTRY_PARAM = new FunctionParameterSequenceType("entry", Type.ELEMENT, Cardinality.EXACTLY_ONE, "A zip:entry element describing the contents of the file");
+    private static final FunctionParameterSequenceType HREF_PARAM =  new FunctionParameterSequenceType("href", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The URI for locating the Zip file");
+    private static final FunctionParameterSequenceType ENTRY_PARAM = new FunctionParameterSequenceType("entry", Type.ELEMENT, Cardinality.EXACTLY_ONE, "A zip:entry element describing the contents of the file");
 
-    private final static String FILE_ENTRIES = "entries";
-    private final static String ZIP_FILE = "zip-file";
-    private final static String UPDATE_ENTRIES = "update";
+    private static final String FILE_ENTRIES = "entries";
+    private static final String ZIP_FILE = "zip-file";
+    private static final String UPDATE_ENTRIES = "update";
 
-    public final static FunctionSignature signatures[] = {
+    public static final FunctionSignature[] signatures = {
             //zip:entries($href as xs:anyURI) as as element(zip:file)
             new FunctionSignature(
                     new QName(FILE_ENTRIES, ZipModule.NAMESPACE_URI, ZipModule.PREFIX),
@@ -161,8 +160,9 @@ public class ZipFileFunctions extends BasicFunction {
                     } else {               // copy file across
                         ZipEntry nze = new ZipEntry(zen);
                         zos.putNextEntry(nze);
-                        while((bytes_read = zis.read(buffer)) != -1)
+                        while ((bytes_read = zis.read(buffer)) != -1) {
                             zos.write(buffer, 0, bytes_read);
+                        }
                     }
 
                 }
@@ -227,7 +227,7 @@ public class ZipFileFunctions extends BasicFunction {
 
             builder.endElement();
             xmlResponse = (NodeValue) builder.getDocument().getDocumentElement();
-            return (xmlResponse);
+            return xmlResponse;
         } finally {
             context.popDocumentContext();
         }
@@ -254,7 +254,7 @@ public class ZipFileFunctions extends BasicFunction {
             }
             child = child.getNextSibling();
         }
-        return( Sequence.EMPTY_SEQUENCE );
+        return Sequence.EMPTY_SEQUENCE;
     }
 
     // copied from
@@ -264,7 +264,7 @@ public class ZipFileFunctions extends BasicFunction {
     }
 
     private class ZipFileFromDb implements ZipFileSource {
-        private LockedDocument binaryDoc = null;
+        private LockedDocument binaryDoc;
         private final XmldbURI uri;
 
         public ZipFileFromDb(XmldbURI uri) {
@@ -304,7 +304,7 @@ public class ZipFileFunctions extends BasicFunction {
 
     // copied from AccountManagementFunction
     private String[] getPaths(final Sequence seq) {
-        final String paths[] = new String[seq.getItemCount()];
+        final String[] paths = new String[seq.getItemCount()];
         for(int i = 0; i < seq.getItemCount(); i++) {
             paths[i] = seq.itemAt(i).toString();
         }
@@ -313,7 +313,7 @@ public class ZipFileFunctions extends BasicFunction {
 
 
     private BinaryValue[] getBinaryData(final Sequence seq) {
-        final BinaryValue binaries[] = new BinaryValue[seq.getItemCount()];
+        final BinaryValue[] binaries = new BinaryValue[seq.getItemCount()];
         for(int i = 0; i < seq.getItemCount(); i++) {
             binaries[i] = (BinaryValue) seq.itemAt(i);
         }

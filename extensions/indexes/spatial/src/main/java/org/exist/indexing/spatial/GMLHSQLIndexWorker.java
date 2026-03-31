@@ -21,11 +21,7 @@
  */
 package org.exist.indexing.spatial;
 
-import java.sql.*;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.TreeMap;
-
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.collections.Collection;
@@ -39,18 +35,15 @@ import org.exist.storage.NodePath;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.QueryRewriter;
 import org.exist.xquery.XPathException;
-import org.exist.xquery.value.AtomicValue;
-import org.exist.xquery.value.BooleanValue;
-import org.exist.xquery.value.DoubleValue;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.ValueSequence;
-
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.*;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
-import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
-import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.Base64BinaryValueType;
-import org.exist.xquery.value.BinaryValueFromInputStream;
+
+import java.sql.*;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * @author <a href="mailto:pierrick.brihaye@free.fr">Pierrick Brihaye</a>
@@ -148,11 +141,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
             //Should always be true (the GML SAX parser makes a too severe check)
             /*IS_VALID*/
             ps.setBoolean(26, geometry.isValid());
-            try {
-                return (ps.executeUpdate() == 1);
-            } catch (final SQLDataException e) {
-                throw e;
-            }
+            return ps.executeUpdate() == 1;
         } finally {
             //Let's help the garbage collector...
             geometry = null;
@@ -180,7 +169,7 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
         nodeId.serialize(bytes, 0);
         ps.setBytes(3, bytes);
         try {
-            return (ps.executeUpdate() == 1);
+            return ps.executeUpdate() == 1;
         } finally {
             ps.close();
         }
@@ -354,8 +343,9 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
                                 throw ee;
                             }
                         }
-                        if (geometryMatches)
+                        if (geometryMatches) {
                             result.add(p);
+                        }
                     }
                 }
             }
@@ -364,10 +354,12 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
             }
             return result;
         } finally {
-            if (rs != null)
+            if (rs != null) {
                 rs.close();
-            if (ps != null)
+            }
+            if (ps != null) {
                 ps.close();
+            }
         }
     }
 
@@ -394,10 +386,12 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
             ee.initCause(e);
             throw ee;
         } finally {
-            if (rs != null)
+            if (rs != null) {
                 rs.close();
-            if (ps != null)
+            }
+            if (ps != null) {
                 ps.close();
+            }
         }
     }
 
@@ -416,9 +410,10 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
         ResultSet rs = null;
         try {
             rs = ps.executeQuery();
-            if (!rs.next())
+            if (!rs.next()) {
                 //Nothing returned
                 return null;
+            }
             final Geometry geometry = wkbReader.read(rs.getBytes(1));
             if (rs.next()) {
                 //Should be impossible
@@ -432,8 +427,9 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
             ee.initCause(e);
             throw ee;
         } finally {
-            if (rs != null)
+            if (rs != null) {
                 rs.close();
+            }
             ps.close();
         }
     }
@@ -514,9 +510,10 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
         ResultSet rs = null;
         try {
             rs = ps.executeQuery();
-            if (!rs.next())
+            if (!rs.next()) {
                 //Nothing returned
                 return AtomicValue.EMPTY_VALUE;
+            }
             AtomicValue result = null;
             if (rs.getMetaData().getColumnClassName(1).equals(Boolean.class.getName())) {
                 result = new BooleanValue(rs.getBoolean(1));
@@ -526,16 +523,18 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
                 result = new StringValue(rs.getString(1));
             } else if (rs.getMetaData().getColumnType(1) == java.sql.Types.BINARY) {
                 result = BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new UnsynchronizedByteArrayInputStream(rs.getBytes(1)), null);
-            } else 
-                throw new SQLException("Unable to make an atomic value from '" + rs.getMetaData().getColumnClassName(1) + "'");		
+            } else {
+                throw new SQLException("Unable to make an atomic value from '" + rs.getMetaData().getColumnClassName(1) + "'");
+            }		
             if (rs.next()) {
                 //Should be impossible
                 throw new SQLException("More than one geometry for node " + p);
             }
             return result;
         } finally {
-            if (rs != null)
+            if (rs != null) {
                 rs.close();
+            }
             ps.close();
         }
     }
@@ -571,10 +570,11 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
                         " FROM " + GMLHSQLIndex.TABLE_NAME + (refine_query_on_doc ? " WHERE " + docConstraint : "")
         ); final ResultSet rs = ps.executeQuery()) {
             final ValueSequence result;
-            if (contextSet == null)
+            if (contextSet == null) {
                 result = new ValueSequence();
-            else
+            } else {
                 result = new ValueSequence(contextSet.getLength());
+            }
             while (rs.next()) {
                 DocumentImpl doc = null;
                 try {
@@ -590,8 +590,9 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
                         result.add(AtomicValue.EMPTY_VALUE);
                     } else if (rs.getMetaData().getColumnType(1) == Types.BINARY) {
                         result.add(AtomicValue.EMPTY_VALUE);
-                    } else
+                    } else {
                         throw new SQLException("Unable to make an atomic value from '" + rs.getMetaData().getColumnClassName(1) + "'");
+                    }
                     //Ignore since the broker has no right on the document
                     continue;
                 }
@@ -610,8 +611,9 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
                             result.add(new StringValue(rs.getString(1)));
                         } else if (rs.getMetaData().getColumnType(1) == Types.BINARY) {
                             result.add(BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), new UnsynchronizedByteArrayInputStream(rs.getBytes(1)), null));
-                        } else
+                        } else {
                             throw new SQLException("Unable to make an atomic value from '" + rs.getMetaData().getColumnClassName(1) + "'");
+                        }
                     }
                 }
             }

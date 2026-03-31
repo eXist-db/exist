@@ -61,7 +61,7 @@ import java.util.Properties;
  */
 public class Transform extends BasicFunction {
 
-    public final static FunctionSignature[] signatures = {
+    public static final FunctionSignature[] signatures = {
             new FunctionSignature(
                     new QName("transform", TransformModule.NAMESPACE_URI, TransformModule.PREFIX),
                     "Applies an XSL stylesheet to the node tree passed as first argument. The stylesheet " +
@@ -139,7 +139,7 @@ public class Transform extends BasicFunction {
     private static final Logger logger = LogManager.getLogger(Transform.class);
 
     private boolean stopOnError = true;
-    private boolean stopOnWarn = false;
+    private boolean stopOnWarn;
 
     public Transform(XQueryContext context, FunctionSignature signature) {
         super(context, signature);

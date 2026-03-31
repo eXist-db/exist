@@ -23,24 +23,22 @@ package org.exist.dom.persistent;
 
 import com.googlecode.junittoolbox.ParallelRunner;
 import org.exist.EXistException;
+import org.exist.collections.Collection;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
+import org.exist.storage.BrokerPool;
+import org.exist.storage.DBBroker;
+import org.exist.storage.ElementValue;
 import org.exist.storage.lock.Lock;
+import org.exist.storage.serializers.Serializer;
+import org.exist.storage.txn.TransactionManager;
+import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.LockException;
 import org.exist.util.MimeType;
 import org.exist.util.StringInputSource;
 import org.exist.util.io.InputStreamUtil;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.exist.collections.Collection;
-import org.exist.storage.BrokerPool;
-import org.exist.storage.DBBroker;
-import org.exist.storage.ElementValue;
-import org.exist.storage.serializers.Serializer;
-import org.exist.storage.txn.TransactionManager;
-import org.exist.storage.txn.Txn;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.AncestorSelector;
 import org.exist.xquery.ChildSelector;
@@ -55,7 +53,10 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -65,11 +66,9 @@ import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.util.Optional;
 
-import org.junit.Test;
-
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.assertEquals;
 import static org.exist.samples.Samples.SAMPLES;
+import static org.junit.Assert.assertEquals;
 
 
 /**
@@ -82,7 +81,7 @@ import static org.exist.samples.Samples.SAMPLES;
 @RunWith(ParallelRunner.class)
 public class BasicNodeSetTest {
 
-    private final static String NESTED_XML =
+    private static final String NESTED_XML =
             "<section n='1'>" +
                     "<section n='1.1'>" +
                     "<section n='1.1.1'>" +
@@ -99,9 +98,9 @@ public class BasicNodeSetTest {
                     "</section>" +
                     "</section>";
 
-    private static Collection root = null;
-    private static Sequence seqSpeech = null;
-    private static DocumentSet docs = null;
+    private static Collection root;
+    private static Sequence seqSpeech;
+    private static DocumentSet docs;
 
     @Test
     public void childSelector() throws XPathException, EXistException {

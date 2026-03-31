@@ -49,7 +49,7 @@ import java.util.Set;
  */
 public class ClasspathHelper implements BrokerPoolService {
 
-    private final static Logger LOG = LogManager.getLogger(ClasspathHelper.class);
+    private static final Logger LOG = LogManager.getLogger(ClasspathHelper.class);
 
     @Override
     public void prepare(final BrokerPool brokerPool) {

@@ -30,15 +30,7 @@ import se.softhouse.jargo.ArgumentException;
 import se.softhouse.jargo.CommandLineParser;
 import se.softhouse.jargo.ParsedArguments;
 
-import javax.management.Attribute;
-import javax.management.AttributeList;
-import javax.management.AttributeNotFoundException;
-import javax.management.InstanceNotFoundException;
-import javax.management.MBeanException;
-import javax.management.MBeanServerConnection;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
-import javax.management.ReflectionException;
+import javax.management.*;
 import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.TabularData;
 import javax.management.remote.JMXConnector;
@@ -55,7 +47,7 @@ import static se.softhouse.jargo.Arguments.*;
 public class JMXClient {
 
     private MBeanServerConnection connection;
-    private String instance;
+    private final String instance;
 
     public JMXClient(String instanceName) {
         this.instance = instanceName;
@@ -99,10 +91,10 @@ public class JMXClient {
             final Long memCollCache = (Long) connection.getAttribute(name, "CollectionCacheMem");
             echo("%25s: %10d k".formatted("Collection cache memory", memCollCache / 1024));
 
-            final String cols[] = { "MaxBrokers", "AvailableBrokers", "ActiveBrokers" };
-            echo("\n%17s %17s %17s".formatted(cols[0], cols[1], cols[2]));
+            final String[] cols = { "MaxBrokers", "AvailableBrokers", "ActiveBrokers" };
+            echo("%n%17s %17s %17s".formatted(cols[0], cols[1], cols[2]));
             final AttributeList attrs = connection.getAttributes(name, cols);
-            final Object values[] = getValues(attrs);
+            final Object[] values = getValues(attrs);
             echo("%17d %17d %17d".formatted(values[0], values[1], values[2]));
 
             final TabularData table = (TabularData) connection.getAttribute(name, "ActiveBrokersMap");
@@ -122,10 +114,10 @@ public class JMXClient {
     public void cacheStats() {
         try {
             ObjectName name = new ObjectName("org.exist.management." + instance + ":type=CacheManager");
-            String cols[] = { "MaxTotal", "CurrentSize" };
+            String[] cols = { "MaxTotal", "CurrentSize" };
             AttributeList attrs = connection.getAttributes(name, cols);
-            Object values[] = getValues(attrs);
-            echo("\nCACHE [%8d pages max. / %8d pages allocated]".formatted(values[0], values[1]));
+            Object[] values = getValues(attrs);
+            echo("%nCACHE [%8d pages max. / %8d pages allocated]".formatted(values[0], values[1]));
 
             final Set<ObjectName> beans = connection.queryNames(new ObjectName("org.exist.management." + instance + ":type=CacheManager.Cache,*"), null);
             cols = new String[] {"Type", "FileName", "Size", "Used", "Hits", "Fails"};
@@ -143,7 +135,7 @@ public class JMXClient {
             attrs = connection.getAttributes(name, cols);
             values = getValues(attrs);
            echo("Collection Cache: %10d k max / %10d k allocated".formatted(
-                   ((Long)values[0] / 1024), ((Long)values[1] / 1024)));
+                   (Long)values[0] / 1024, (Long)values[1] / 1024));
         } catch (final Exception e) {
             error(e);
         }
@@ -187,7 +179,7 @@ public class JMXClient {
             echo("%22s: %s".formatted("Last check start", lastCheckStart));
             echo("%22s: %s".formatted("Last check end", lastCheckEnd));
             if (lastCheckStart != null && lastCheckEnd != null)
-                {echo("%22s: %dms".formatted("Check took", (lastCheckEnd.getTime() - lastCheckStart.getTime())));}
+                {echo("%22s: %dms".formatted("Check took", lastCheckEnd.getTime() - lastCheckStart.getTime()));}
 
             final TabularData table = (TabularData)
                     connection.getAttribute(name, "Errors");
@@ -355,13 +347,10 @@ public class JMXClient {
             stats.connect(address,port);
             stats.memoryStats();
             while (true) {
-                switch (mode) {
-                    case STATS :
-                        stats.cacheStats();
-                        break;
-                    case LOCKS :
-                        stats.lockTable();
-                        break;
+                if (mode == JMXClient.Mode.STATS) {
+                    stats.cacheStats();
+                } else if (mode == JMXClient.Mode.LOCKS) {
+                    stats.lockTable();
                 }
                 if (displayInstance) {stats.instanceStats();}
                 if (displayMem) {stats.memoryStats();}

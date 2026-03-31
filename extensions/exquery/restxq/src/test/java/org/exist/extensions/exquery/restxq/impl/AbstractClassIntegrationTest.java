@@ -40,7 +40,7 @@ public abstract class AbstractClassIntegrationTest extends AbstractIntegrationTe
     @ClassRule
     public static ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
 
-    protected static Executor executor = null;
+    protected static Executor executor;
 
     @BeforeClass
     public static void setupExecutor() {

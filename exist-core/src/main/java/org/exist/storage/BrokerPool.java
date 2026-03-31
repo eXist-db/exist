@@ -50,13 +50,12 @@ import org.exist.repo.ExistRepository;
 import org.exist.scheduler.Scheduler;
 import org.exist.scheduler.impl.QuartzSchedulerImpl;
 import org.exist.scheduler.impl.SystemTaskJobImpl;
-import org.exist.security.SecurityManager;
 import org.exist.security.*;
+import org.exist.security.SecurityManager;
 import org.exist.security.internal.SecurityManagerImpl;
 import org.exist.storage.blob.BlobStore;
 import org.exist.storage.blob.BlobStoreImplService;
 import org.exist.storage.blob.BlobStoreService;
-import org.exist.storage.vector.VectorStoreService;
 import org.exist.storage.journal.JournalManager;
 import org.exist.storage.lock.FileLockService;
 import org.exist.storage.lock.LockManager;
@@ -66,6 +65,7 @@ import org.exist.storage.sync.SyncTask;
 import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.storage.vector.VectorStoreService;
 import org.exist.util.*;
 import org.exist.xmldb.ShutdownListener;
 import org.exist.xmldb.XmldbURI;
@@ -111,11 +111,11 @@ import static org.exist.util.ThreadUtils.newInstanceThread;
 @ConfigurationClass("pool")
 public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Database {
 
-    private final static Logger LOG = LogManager.getLogger(BrokerPool.class);
+    private static final Logger LOG = LogManager.getLogger(BrokerPool.class);
 
     private final BrokerPoolServicesManager servicesManager = new BrokerPoolServicesManager();
 
-    private StatusReporter statusReporter = null;
+    private StatusReporter statusReporter;
 
     private final XQuery xqueryService = new XQuery();
 
@@ -129,7 +129,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
      * similar to a sudden power loss or the jvm being killed. The flag is used by some
      * junit tests to test the recovery process.
      */
-    public static boolean FORCE_CORRUPTION = false;
+    public static boolean FORCE_CORRUPTION;
 
     /**
      * <code>true</code> if the database instance is able to perform recovery.
@@ -195,7 +195,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
     /**
      * The number of brokers for the database instance
      */
-    private int brokersCount = 0;
+    private int brokersCount;
 
     /**
      * The minimal number of brokers for the database instance
@@ -239,7 +239,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
      */
     //TODO : rename as syncScheduled ?
     //TODO : alternatively, delete this member and create a Sync.NOSYNC event
-    private boolean syncRequired = false;
+    private boolean syncRequired;
 
     /**
      * The kind of scheduled cache synchronization event.
@@ -247,7 +247,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
      */
     private Sync syncEvent = Sync.MINOR;
 
-    private boolean checkpoint = false;
+    private boolean checkpoint;
 
     /**
      * Indicates whether the database is operating in read-only mode
@@ -267,7 +267,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
     /**
      * The transaction manager of the database instance.
      */
-    private TransactionManager transactionManager = null;
+    private TransactionManager transactionManager;
 
     /**
      * The Blob Store of the database instance.
@@ -313,18 +313,18 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
     /**
      * The listener that is notified when the database instance shuts down.
      */
-    private ShutdownListener shutdownListener = null;
+    private ShutdownListener shutdownListener;
 
     /**
      * The security manager of the database instance.
      */
-    private SecurityManager securityManager = null;
+    private SecurityManager securityManager;
 
     /**
      * The global notification service used to subscribe
      * to document updates.
      */
-    private NotificationService notificationService = null;
+    private NotificationService notificationService;
 
     /**
      * The cache in which the database instance may store items.
@@ -353,7 +353,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
     /**
      * The global manager for accessing collection configuration files from the database instance.
      */
-    private CollectionConfigurationManager collectionConfigurationManager = null;
+    private CollectionConfigurationManager collectionConfigurationManager;
 
     /**
      * The cache in which the database instance's collections are stored.
@@ -370,8 +370,8 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
 
     private final Lock globalXUpdateLock = new ReentrantLock();
 
-    private Subject serviceModeUser = null;
-    private boolean inServiceMode = false;
+    private Subject serviceModeUser;
+    private boolean inServiceMode;
 
     //the time that the database was started
     private final Calendar startupTime = Calendar.getInstance();
@@ -431,7 +431,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
         statusObserver.ifPresent(this.statusObservers::add);
 
         this.watchdog = Optional.ofNullable(System.getProperty(BrokerWatchdog.TRACE_BROKERS_PROPERTY_NAME))
-                .filter(value -> "yes".equals(value))
+                .filter("yes"::equals)
                 .map(value -> new BrokerWatchdog());
     }
 
@@ -1261,7 +1261,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                 //... create one
                 {
                     createBroker();
-                } else
+                } else {
                     //... or wait until there is one available
                     while(inactiveBrokers.isEmpty()) {
                         if(isShuttingDown()) {
@@ -1275,6 +1275,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                             throw new EXistException("Interrupted while waiting for a broker", e);
                         }
                     }
+                }
             }
             broker = inactiveBrokers.pop();
             broker.prepare();
@@ -1681,13 +1682,13 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                     //TODO : replace the following code by get()/release() statements ?
                     // WM: deadlock risk if not all brokers returned properly.
                     DBBroker broker = null;
-                    if (inactiveBrokers.isEmpty())
+                    if (inactiveBrokers.isEmpty()) {
                         try {
                             broker = createBroker();
                         } catch (final EXistException e) {
                             LOG.warn("could not create instance for shutdown. Giving up.");
                         }
-                    else
+                    } else
                     //TODO : this broker is *not* marked as active and may be reused by another process !
                     //TODO : use get() then release the broker ?
                     // WM: deadlock risk if not all brokers returned properly.
@@ -1858,7 +1859,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
         }
     }
 
-    private Debuggee debuggee = null;
+    private Debuggee debuggee;
 
     public Debuggee getDebuggee() {
         synchronized(this) {
@@ -1894,7 +1895,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
     @ThreadSafe
     private static class StatusReporter extends Observable implements Runnable {
         private String status;
-        private volatile boolean terminate = false;
+        private volatile boolean terminate;
 
         public StatusReporter(final String status) {
             this.status = status;
@@ -1971,7 +1972,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
      *
      * Used for tracing broker leases
      */
-    private static class TraceableBrokerLeaseChange extends TraceableStateChange<TraceableBrokerLeaseChange.BrokerInfo, TraceableBrokerLeaseChange.Change> {
+    private static final class TraceableBrokerLeaseChange extends TraceableStateChange<TraceableBrokerLeaseChange.BrokerInfo, TraceableBrokerLeaseChange.Change> {
         public enum Change {
             GET,
             RELEASE

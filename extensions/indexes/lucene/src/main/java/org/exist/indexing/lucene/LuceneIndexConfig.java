@@ -40,15 +40,15 @@ import java.util.*;
 
 public class LuceneIndexConfig {
 
-    private final static String IGNORE_ELEMENT = "ignore";
-    private final static String INLINE_ELEMENT = "inline";
-    private final static String MATCH_ATTR_ELEMENT = "match-attribute";
-    private final static String HAS_ATTR_ELEMENT = "has-attribute";
-    private final static String MATCH_SIBLING_ATTR_ELEMENT = "match-sibling-attribute";
-    private final static String HAS_SIBLING_ATTR_ELEMENT = "has-sibling-attribute";
-    private final static String FACET_ELEMENT = "facet";
-    private final static String FIELD_ELEMENT = "field";
-    private final static String VECTOR_FIELD_ELEMENT = "vector-field";
+    private static final String IGNORE_ELEMENT = "ignore";
+    private static final String INLINE_ELEMENT = "inline";
+    private static final String MATCH_ATTR_ELEMENT = "match-attribute";
+    private static final String HAS_ATTR_ELEMENT = "has-attribute";
+    private static final String MATCH_SIBLING_ATTR_ELEMENT = "match-sibling-attribute";
+    private static final String HAS_SIBLING_ATTR_ELEMENT = "has-sibling-attribute";
+    private static final String FACET_ELEMENT = "facet";
+    private static final String FIELD_ELEMENT = "field";
+    private static final String VECTOR_FIELD_ELEMENT = "vector-field";
 
     public static final String QNAME_ATTR = "qname";
     public static final String MATCH_ATTR = "match";
@@ -57,21 +57,21 @@ public class LuceneIndexConfig {
     public static final String TYPE_ATTR = "type";
     public static final String INDEX_ATTR = "index";
 
-    private String name = null;
+    private String name;
 
-    private NodePathPattern path = null;
+    private NodePathPattern path;
 
-    private boolean isQNameIndex = false;
+    private boolean isQNameIndex;
 
-    private Set<QName> inlineNodes = null;
+    private Set<QName> inlineNodes;
 
-    private Set<QName> ignoreNodes = null;
+    private Set<QName> ignoreNodes;
 
-    private List<AbstractFieldConfig> facetsAndFields = new ArrayList<>();
+    private final List<AbstractFieldConfig> facetsAndFields = new ArrayList<>();
 
-    private LuceneIndexConfig nextConfig = null;
+    private LuceneIndexConfig nextConfig;
 
-    private FieldType type = null;
+    private FieldType type;
 
     private boolean doIndex = true;
 
@@ -79,7 +79,7 @@ public class LuceneIndexConfig {
     // This is for the @attr match boosting
     // and the intention is to do a proper predicate check instead in the future. /ljo
     private MultiMap matchAttrs;
-    protected final static Logger LOG = LogManager.getLogger(LuceneIndexConfig.class);
+    protected static final Logger LOG = LogManager.getLogger(LuceneIndexConfig.class);
 
 
     public LuceneIndexConfig(LuceneConfig parent, Element config, Map<String, String> namespaces, AnalyzerConfig analyzers,
@@ -94,9 +94,10 @@ public class LuceneIndexConfig {
 
             try {
 				path = new NodePathPattern(namespaces, matchPath);
-				if (path.length() == 0)
-				    throw new DatabaseConfigurationException("Lucene module: Invalid match path in collection config: " +
-				        matchPath);
+                if (path.length() == 0) {
+                    throw new DatabaseConfigurationException("Lucene module: Invalid match path in collection config: " +
+                            matchPath);
+                }
 			} catch (IllegalArgumentException e) {
 				throw new DatabaseConfigurationException("Lucene module: invalid qname in configuration: " + e.getMessage());
 			}
@@ -172,8 +173,8 @@ public class LuceneIndexConfig {
                         case HAS_SIBLING_ATTR_ELEMENT:
                         case HAS_ATTR_ELEMENT:
                         case MATCH_ATTR_ELEMENT: {
-                            final boolean doMatch = localName.equals(MATCH_ATTR_ELEMENT) || localName.equals(MATCH_SIBLING_ATTR_ELEMENT);
-                            final boolean onSibling = localName.equals(HAS_SIBLING_ATTR_ELEMENT) || localName.equals(MATCH_SIBLING_ATTR_ELEMENT);
+                            final boolean doMatch = MATCH_ATTR_ELEMENT.equals(localName) || MATCH_SIBLING_ATTR_ELEMENT.equals(localName);
+                            final boolean onSibling = HAS_SIBLING_ATTR_ELEMENT.equals(localName) || MATCH_SIBLING_ATTR_ELEMENT.equals(localName);
 
                             if (onSibling && !isAttributeNode()) {
                                 throw new DatabaseConfigurationException(
@@ -206,8 +207,9 @@ public class LuceneIndexConfig {
                                 }
                             }
 
-                            if (matchAttrs == null)
+                            if (matchAttrs == null) {
                                 matchAttrs = new MultiValueMap();
+                            }
 
                             matchAttrs.put(qname, new MatchAttrData(qname, value, boost, onSibling));
                             break;
@@ -314,10 +316,11 @@ public class LuceneIndexConfig {
     }
 
     public void add(LuceneIndexConfig config) {
-	if (nextConfig == null)
-	    nextConfig = config;
-	else
-	    nextConfig.add(config);
+        if (nextConfig == null) {
+            nextConfig = config;
+        } else {
+            nextConfig.add(config);
+        }
     }
 
     public LuceneConfig getParent() {

@@ -21,21 +21,19 @@
  */
 package org.exist.http.urlrewrite;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.googlecode.junittoolbox.ParallelRunner;
-import org.easymock.EasyMock;
 import jakarta.servlet.http.HttpServletRequest;
+import org.easymock.EasyMock;
 import org.exist.http.urlrewrite.XQueryURLRewrite.RequestWrapper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.junit.Assert.assertEquals;
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.easymock.EasyMock.*;
 import static org.junit.Assert.assertArrayEquals;
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.replay;
-import static org.easymock.EasyMock.verify;
+import static org.junit.Assert.assertEquals;
 
 /**
  *
@@ -86,7 +84,7 @@ public class XQueryURLRewriteTest
     @Test
     public void requestWrapper_copiesRequestParams() {
 
-        final Map<String, String[]> testParameterMap = new HashMap<String, String[]>();
+        final Map<String, String[]> testParameterMap = new HashMap<>();
         testParameterMap.put("paramName1", new String[] {"value1", "value1.1"});
         testParameterMap.put("paramName2", new String[] {"value2", "value2.1"});
 
@@ -113,7 +111,7 @@ public class XQueryURLRewriteTest
     @Test
     public void requestWrapper_addsParamAftercopiesRequestParams() {
 
-        final Map<String, String[]> testParameterMap = new HashMap<String, String[]>();
+        final Map<String, String[]> testParameterMap = new HashMap<>();
         testParameterMap.put("paramName1", new String[] {"value1", "value1.1"});
         testParameterMap.put("paramName2", new String[] {"value2", "value2.1"});
 
@@ -134,7 +132,7 @@ public class XQueryURLRewriteTest
         wrapper.addParameter(newRequestParamName, newRequestParamValue);
         verify(mockHttpServletRequest);
 
-        final Map<String, String[]> newTestParameterMap = new HashMap<String, String[]>();
+        final Map<String, String[]> newTestParameterMap = new HashMap<>();
         newTestParameterMap.putAll(testParameterMap);
         newTestParameterMap.put(newRequestParamName, new String[] {newRequestParamValue });
 

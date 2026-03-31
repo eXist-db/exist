@@ -36,8 +36,8 @@ import org.exist.xquery.XPathException;
  */
 public class StandardQueryParserWrapper extends QueryParserWrapper {
 
-    private String field = null;
-    private StandardQueryParser parser = null;
+    private final String field;
+    private final StandardQueryParser parser;
 
     public StandardQueryParserWrapper(String field, Analyzer analyzer) {
         super(field, analyzer);

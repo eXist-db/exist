@@ -23,12 +23,12 @@ package org.exist.indexing.lucene;
 
 import org.apache.lucene.analysis.TokenFilter;
 import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.util.AttributeSource;
 
-import java.util.List;
-import java.util.LinkedList;
 import java.io.IOException;
 import java.util.Iterator;
-import org.apache.lucene.util.AttributeSource;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * A caching token filter which can be reset to a position marked
@@ -36,13 +36,13 @@ import org.apache.lucene.util.AttributeSource;
  */
 public class MarkableTokenFilter extends TokenFilter {
     
-    private List<AttributeSource.State> cache = null;
-    private Iterator<AttributeSource.State> iterator = null; 
+    private List<AttributeSource.State> cache;
+    private Iterator<AttributeSource.State> iterator; 
     private AttributeSource.State finalState;
     
 
     //private List<Token> cache = null;
-    private boolean isCaching = false;
+    private boolean isCaching;
 
     public MarkableTokenFilter(TokenStream tokenStream) {
         super(tokenStream);

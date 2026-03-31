@@ -32,7 +32,7 @@ import org.exist.xquery.value.*;
 
 public class GetIndex extends BasicFunction {
 
-    public final static FunctionSignature signature =
+    public static final FunctionSignature signature =
             new FunctionSignature(
                     new QName("index", SortModule.NAMESPACE_URI, SortModule.PREFIX),
                     "Look up a node in the sort index and return a number (&gt; 0) corresponding to the " +
@@ -52,8 +52,9 @@ public class GetIndex extends BasicFunction {
 
     @Override
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
-        if (args[1].isEmpty())
+        if (args[1].isEmpty()) {
             return Sequence.EMPTY_SEQUENCE;
+        }
         final String id = args[0].getStringValue();
         final NodeProxy node = (NodeProxy) args[1].itemAt(0);
         final SortIndexWorker index = (SortIndexWorker)

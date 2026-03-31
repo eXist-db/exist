@@ -48,7 +48,7 @@ public class ContextItem {
     }
 
     public boolean hasNextDirect() {
-        return (nextDirect != null);
+        return nextDirect != null;
     }
 
     public ContextItem getNextDirect() {

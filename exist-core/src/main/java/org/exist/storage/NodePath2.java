@@ -24,10 +24,10 @@ package org.exist.storage;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exist.dom.INode;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
-import org.exist.dom.INode;
 import org.xml.sax.Attributes;
 
 import javax.annotation.Nullable;
@@ -50,9 +50,9 @@ public class NodePath2 extends NodePath {
 
     private static final Logger LOG = LogManager.getLogger(NodePath2.class);
 
-    private Map<String, String> attribs[];
+    private Map<String, String>[] attribs;
 
-    private int n_pos = 0;
+    private int n_pos;
 
     public NodePath2() {
         super();

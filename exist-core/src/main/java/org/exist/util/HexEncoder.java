@@ -24,7 +24,7 @@ package org.exist.util;
 
 public class HexEncoder {
 
-    private final static char[] HEX_ARRAY = "0123456789abcdef".toCharArray();
+    private static final char[] HEX_ARRAY = "0123456789abcdef".toCharArray();
 
     public static String bytesToHex(final byte[] bytes) {
         final char[] hexChars = new char[bytes.length * 2];

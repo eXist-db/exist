@@ -21,11 +21,6 @@
  */
 package org.exist.xupdate;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 import org.exist.EXistException;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.DocumentSet;
@@ -42,12 +37,17 @@ import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Sequence;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 /**
  * @author wolf
  */
 public class Conditional extends Modification {
 
-	private List<Modification> modifications = new ArrayList<>(5);
+	private final List<Modification> modifications = new ArrayList<>(5);
 	
 	/**
 	 * @param broker the database broker.
@@ -84,12 +84,13 @@ public class Conditional extends Modification {
 		context.setStaticallyKnownDocuments(docs);
 		declareNamespaces(context);
 		declareVariables(context);
-		if(compiled == null)
-			try {
-				compiled = xquery.compile(context, source);
-			} catch (final IOException e) {
-				throw new EXistException("An exception occurred while compiling the query: " + e.getMessage());
-			}
+        if (compiled == null) {
+            try {
+                compiled = xquery.compile(context, source);
+            } catch (final IOException e) {
+                throw new EXistException("An exception occurred while compiling the query: " + e.getMessage());
+            }
+        }
 		
 		Sequence seq = null;
 		try {

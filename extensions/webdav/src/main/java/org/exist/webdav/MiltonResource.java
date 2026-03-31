@@ -45,8 +45,8 @@ import java.util.Properties;
  */
 public class MiltonResource implements Resource {
 
-    protected final static Logger LOG = LogManager.getLogger(MiltonResource.class);
-    protected final static String AUTHENTICATED = "AUTHENTICATED";
+    protected static final Logger LOG = LogManager.getLogger(MiltonResource.class);
+    protected static final String AUTHENTICATED = "AUTHENTICATED";
     protected XmldbURI resourceXmldbUri;
     protected BrokerPool brokerPool;
     protected String host;
@@ -203,10 +203,9 @@ public class MiltonResource implements Resource {
         // Copy username if existent
         final String lockOwner = lockInfo.lockedByUser != null ? lockInfo.lockedByUser : null;
 
-        final org.exist.dom.persistent.LockToken existToken = new org.exist.dom.persistent.LockToken(
+        return new org.exist.dom.persistent.LockToken(
                 lockType, lockDepth, lockScope, lockOwner, lockTimeout, null,
                 org.exist.dom.persistent.LockToken.ResourceType.NOT_SPECIFIED);
-        return existToken;
     }
 
 
@@ -264,14 +263,15 @@ public class MiltonResource implements Resource {
 
     @Override
     public String getName() {
-        return decodePath("" + resourceXmldbUri.lastSegment());
+        return decodePath(String.valueOf(resourceXmldbUri.lastSegment()));
     }
 
     @Override
     public Object authenticate(String username, String password) {
 
-        if (LOG.isDebugEnabled())
+        if (LOG.isDebugEnabled()) {
             LOG.debug("Authenticating user {} for {}", username, resourceXmldbUri);
+        }
 
         // Check if username is provided.
         if (username == null) {
@@ -280,8 +280,9 @@ public class MiltonResource implements Resource {
 
         // Check is subject was already authenticated.
         if (subject != null) {
-            if (LOG.isDebugEnabled())
+            if (LOG.isDebugEnabled()) {
                 LOG.debug("User was already authenticated.");
+            }
             return AUTHENTICATED;
         }
 
@@ -290,8 +291,9 @@ public class MiltonResource implements Resource {
 
         // Quick return if no subject object was returned
         if (subject == null) {
-            if (LOG.isDebugEnabled())
+            if (LOG.isDebugEnabled()) {
                 LOG.debug("User could not be authenticated.");
+            }
             return null;
         }
 
@@ -307,8 +309,9 @@ public class MiltonResource implements Resource {
         // Collect data for this resource
         existResource.initMetadata();
 
-        if (LOG.isDebugEnabled())
+        if (LOG.isDebugEnabled()) {
             LOG.debug("User '{}' has been authenticated.", subject.getName());
+        }
         return AUTHENTICATED;
     }
 
@@ -321,8 +324,9 @@ public class MiltonResource implements Resource {
          * First perform checks on Milton authentication
          */
         if (auth == null) {
-            if (LOG.isDebugEnabled())
+            if (LOG.isDebugEnabled()) {
                 LOG.debug("User hasn't been authenticated.");
+            }
             return false;
         }
 
@@ -337,8 +341,9 @@ public class MiltonResource implements Resource {
 
         // If object does not exist, there was no successfull authentication
         if (tag == null) {
-            if (LOG.isDebugEnabled())
+            if (LOG.isDebugEnabled()) {
                 LOG.debug("No tag, user {} not authenticated", userName);
+            }
             return false;
 
         } else if (tag instanceof String value) {
@@ -346,8 +351,9 @@ public class MiltonResource implements Resource {
                 // The correct TAG is returned!
 
             } else {
-                if (LOG.isDebugEnabled())
+                if (LOG.isDebugEnabled()) {
                     LOG.debug("Authentication tag contains wrong value, user {} is not authenticated", userName);
+                }
                 return false;
             }
         }
@@ -357,28 +363,32 @@ public class MiltonResource implements Resource {
          */
         if (method.isWrite) {
             if (!existResource.writeAllowed) {
-                if (LOG.isDebugEnabled())
+                if (LOG.isDebugEnabled()) {
                     LOG.debug("User {} is NOT authorized to write resource, abort.", userName);
+                }
                 return false;
             }
 
         } else {
             if (!existResource.readAllowed) {
-                if (LOG.isDebugEnabled())
+                if (LOG.isDebugEnabled()) {
                     LOG.debug("User {} is NOT authorized to read resource, abort.", userName);
+                }
                 return false;
             }
         }
 
         if (auth.getUri() == null) {
-            if (LOG.isTraceEnabled())
+            if (LOG.isTraceEnabled()) {
                 LOG.trace("URI is null");
+            }
             // not sure why the null value can be there
         }
 
         String action = method.isWrite ? "write" : "read";
-        if (LOG.isDebugEnabled())
+        if (LOG.isDebugEnabled()) {
             LOG.debug("User {} is authorized to {} resource {}", userName, action, resourceXmldbUri.toString());
+        }
 
         return true;
     }

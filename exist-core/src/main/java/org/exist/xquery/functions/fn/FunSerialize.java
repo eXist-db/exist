@@ -43,9 +43,9 @@ import static org.exist.Namespaces.XSLT_XQUERY_SERIALIZATION_NS;
 
 public class FunSerialize extends BasicFunction {
 
-    private final static String DEFAULT_ITEM_SEPARATOR = " ";
+    private static final String DEFAULT_ITEM_SEPARATOR = " ";
 
-    public final static FunctionSignature[] signatures = {
+    public static final FunctionSignature[] signatures = {
         new FunctionSignature(
                 new QName("serialize", Function.BUILTIN_FUNCTION_NS, FnModule.PREFIX),
                 "This function serializes the supplied input sequence $arg as described in XSLT and XQuery Serialization 3.0, returning the " +

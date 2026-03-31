@@ -38,12 +38,12 @@ import org.exist.xquery.value.*;
  */
 public class AccountManagementFunction extends BasicFunction {
     
-    public final static QName qnCreateAccount = new QName("create-account", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
-    public final static QName qnRemoveAccount = new QName("remove-account", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
-    public final static QName qnPasswd = new QName("passwd", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
-    public final static QName qnPasswdHash = new QName("passwd-hash", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    public static final QName qnCreateAccount = new QName("create-account", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    public static final QName qnRemoveAccount = new QName("remove-account", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    public static final QName qnPasswd = new QName("passwd", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    public static final QName qnPasswdHash = new QName("passwd-hash", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
     
-    public final static FunctionSignature FNS_CREATE_ACCOUNT = new FunctionSignature(
+    public static final FunctionSignature FNS_CREATE_ACCOUNT = new FunctionSignature(
         qnCreateAccount,
         "Creates a User Account.",
          new SequenceType[] {
@@ -55,7 +55,7 @@ public class AccountManagementFunction extends BasicFunction {
         new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)
     );
 
-    public final static FunctionSignature FNS_CREATE_ACCOUNT_WITH_METADATA = new FunctionSignature(
+    public static final FunctionSignature FNS_CREATE_ACCOUNT_WITH_METADATA = new FunctionSignature(
         qnCreateAccount,
         "Creates a User Account.",
         new SequenceType[] {
@@ -69,7 +69,7 @@ public class AccountManagementFunction extends BasicFunction {
         new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)
     );
     
-    public final static FunctionSignature FNS_CREATE_ACCOUNT_WITH_PERSONAL_GROUP = new FunctionSignature(
+    public static final FunctionSignature FNS_CREATE_ACCOUNT_WITH_PERSONAL_GROUP = new FunctionSignature(
         qnCreateAccount,
         "Creates a User Account and a personal group for that user. The personal group takes the same name as the user, and is set as the user's primary group.",
          new SequenceType[] {
@@ -80,7 +80,7 @@ public class AccountManagementFunction extends BasicFunction {
         new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)
     );
 
-    public final static FunctionSignature FNS_CREATE_ACCOUNT_WITH_PERSONAL_GROUP_WITH_METADATA = new FunctionSignature(
+    public static final FunctionSignature FNS_CREATE_ACCOUNT_WITH_PERSONAL_GROUP_WITH_METADATA = new FunctionSignature(
         qnCreateAccount,
         "Creates a User Account and a personal group for that user. The personal group takes the same name as the user, and is set as the user's primary group.",
         new SequenceType[] {
@@ -93,7 +93,7 @@ public class AccountManagementFunction extends BasicFunction {
         new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)
     );
 
-    public final static FunctionSignature FNS_REMOVE_ACCOUNT = new FunctionSignature(
+    public static final FunctionSignature FNS_REMOVE_ACCOUNT = new FunctionSignature(
         qnRemoveAccount,
         "Removes a User Account. If the user has a personal group you are responsible for removing that separately through sm:remove-group. ",
         new SequenceType[] {
@@ -102,7 +102,7 @@ public class AccountManagementFunction extends BasicFunction {
         new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)
     );
 
-    public final static FunctionSignature FNS_PASSWD = new FunctionSignature(
+    public static final FunctionSignature FNS_PASSWD = new FunctionSignature(
             qnPasswd,
             "Changes the password of a User Account.",
             new SequenceType[] {
@@ -112,7 +112,7 @@ public class AccountManagementFunction extends BasicFunction {
             new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)
     );
 
-    public final static FunctionSignature FNS_PASSWD_HASH = new FunctionSignature(
+    public static final FunctionSignature FNS_PASSWD_HASH = new FunctionSignature(
             qnPasswdHash,
             "Changes the password of a User Account by directly setting the stored digest password. The use-case for this function is migrating a user from one eXist instance to another.",
             new SequenceType[] {

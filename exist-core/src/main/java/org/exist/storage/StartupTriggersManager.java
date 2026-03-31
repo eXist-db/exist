@@ -37,7 +37,7 @@ import java.util.List;
  */
 public class StartupTriggersManager implements BrokerPoolService {
 
-    private final static Logger LOG = LogManager.getLogger(StartupTriggersManager.class);
+    private static final Logger LOG = LogManager.getLogger(StartupTriggersManager.class);
 
     private final List<Configuration.StartupTriggerConfig> startupTriggerConfigs = new ArrayList<>();
 

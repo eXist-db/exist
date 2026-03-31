@@ -58,7 +58,7 @@ public abstract class DOMTransaction<T> {
      * @param file a <code>DOMFile</code> value
      * @param acquireFn a <code>Supplier</code> value
      */
-    public DOMTransaction(final Object owner, final DOMFile file, final SupplierE<ManagedLock<ReentrantLock>, LockException> acquireFn) {
+    protected DOMTransaction(final Object owner, final DOMFile file, final SupplierE<ManagedLock<ReentrantLock>, LockException> acquireFn) {
         this(owner, file, acquireFn, null);
     }
 
@@ -70,7 +70,7 @@ public abstract class DOMTransaction<T> {
      * @param acquireFn a <code>Supplier</code> value
      * @param doc a <code>DocumentImpl</code> value
      */
-    public DOMTransaction(final Object owner, final DOMFile file, final SupplierE<ManagedLock<ReentrantLock>, LockException> acquireFn, final DocumentImpl doc) {
+    protected DOMTransaction(final Object owner, final DOMFile file, final SupplierE<ManagedLock<ReentrantLock>, LockException> acquireFn, final DocumentImpl doc) {
         this.ownerObject = owner;
         this.file = file;
         this.acquireFn = acquireFn;

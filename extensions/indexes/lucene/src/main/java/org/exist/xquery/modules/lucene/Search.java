@@ -46,7 +46,7 @@ public class Search extends BasicFunction {
     /**
      * Function signatures
      */
-    public final static FunctionSignature signatures[] = {
+    public static final FunctionSignature[] signatures = {
             new FunctionSignature(
                     new QName("search", LuceneModule.NAMESPACE_URI, LuceneModule.PREFIX),
                     "Search for (non-XML) data with lucene",
@@ -118,8 +118,9 @@ public class Search extends BasicFunction {
             List<String> toBeMatchedURIs = new ArrayList<>();
 
             Sequence pathSeq = getArgumentCount() > 1 ? args[0] : contextSequence;
-            if (pathSeq == null)
+            if (pathSeq == null) {
                 return Sequence.EMPTY_SEQUENCE;
+            }
 
             // Get first agument, these are the documents / collections to search in
             for (SequenceIterator i = pathSeq.iterate(); i.hasNext(); ) {
@@ -139,10 +140,11 @@ public class Search extends BasicFunction {
 
             // Get second argument, this is the query
             String query;
-            if (getArgumentCount() == 1)
+            if (getArgumentCount() == 1) {
                 query = args[0].itemAt(0).getStringValue();
-            else
+            } else {
                 query = args[1].itemAt(0).getStringValue();
+            }
 
             String[] fields = null;
             if (getArgumentCount() == 3) {

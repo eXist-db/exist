@@ -21,10 +21,10 @@
  */
 package org.exist.storage.lock;
 
+import org.exist.Debuggable;
+
 import java.io.PrintStream;
 import java.util.Arrays;
-
-import org.exist.Debuggable;
 
 /**
  * Encapsulates debug information about a lock. This information can be exported
@@ -32,19 +32,19 @@ import org.exist.Debuggable;
  */
 public class LockInfo implements Debuggable {
 
-    public final static String COLLECTION_LOCK = "COLLECTION";
-    public final static String RESOURCE_LOCK = "RESOURCE";
+    public static final String COLLECTION_LOCK = "COLLECTION";
+    public static final String RESOURCE_LOCK = "RESOURCE";
 
-    public final static String READ_LOCK = "READ";
-    public final static String WRITE_LOCK = "WRITE";
+    public static final String READ_LOCK = "READ";
+    public static final String WRITE_LOCK = "WRITE";
 
-    private String lockType;
+    private final String lockType;
 
-    private String lockMode;
+    private final String lockMode;
 
-    private String id;
+    private final String id;
 
-    private String[] owners;
+    private final String[] owners;
 
     private String[] waitingForWrite = new String[0];
 

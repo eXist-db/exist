@@ -35,10 +35,10 @@ import org.exist.xquery.value.Type;
  */
 public abstract class CombiningExpression extends AbstractExpression {
 
-	final protected PathExpr left;
-	final protected PathExpr right;
+	protected final PathExpr left;
+	protected final PathExpr right;
 
-	public CombiningExpression(final XQueryContext context, final PathExpr left, final PathExpr right) {
+	protected CombiningExpression(final XQueryContext context, final PathExpr left, final PathExpr right) {
 		super(context);
 		this.left = left;
 		this.right = right;

@@ -21,8 +21,6 @@
  */
 package org.exist.security.internal.aider;
 
-import java.util.*;
-
 import org.exist.config.Configuration;
 import org.exist.security.Account;
 import org.exist.security.Credential;
@@ -33,6 +31,8 @@ import org.exist.security.SchemaType;
 import org.exist.security.internal.RealmImpl;
 import org.exist.security.realm.Realm;
 import org.exist.storage.DBBroker;
+
+import java.util.*;
 
 /**
  * Account details.
@@ -49,8 +49,8 @@ public class UserAider implements Account {
     private final String name;
     private final int id;
     private final Map<SchemaType, String> metadata = new HashMap<>();
-    private String password = null;
-    private String passwordDigest = null;
+    private String password;
+    private String passwordDigest;
     private Map<String, Group> groups = new LinkedHashMap<>();
     private int umask = Permission.DEFAULT_UMASK;
     private boolean enabled = true;

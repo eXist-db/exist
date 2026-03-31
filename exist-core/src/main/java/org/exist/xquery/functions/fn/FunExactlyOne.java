@@ -23,7 +23,6 @@ package org.exist.xquery.functions.fn;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
@@ -33,12 +32,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 /**
  * Implements function fn:exactly-one().
@@ -47,7 +41,7 @@ import org.exist.xquery.value.Type;
  */
 public class FunExactlyOne extends Function {
 	protected static final Logger logger = LogManager.getLogger(FunExactlyOne.class);
-	public final static FunctionSignature signature =
+	public static final FunctionSignature signature =
 		new FunctionSignature(
 			new QName("exactly-one", Function.BUILTIN_FUNCTION_NS),
 			"Returns the argument sequence, $items, if it contains exactly one item. Otherwise, " +

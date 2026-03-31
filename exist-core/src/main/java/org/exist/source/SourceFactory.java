@@ -21,15 +21,6 @@
  */
 package org.exist.source;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
-import java.nio.file.Path;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
@@ -46,6 +37,14 @@ import org.exist.xmldb.XmldbURI;
 import org.xml.sax.SAXException;
 
 import javax.annotation.Nullable;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
 
 /**
  * Factory to create a {@link org.exist.source.Source} object for a given
@@ -55,7 +54,7 @@ import javax.annotation.Nullable;
  */
 public class SourceFactory {
 
-    private final static Logger LOG = LogManager.getLogger(SourceFactory.class);
+    private static final Logger LOG = LogManager.getLogger(SourceFactory.class);
 
     /**
      * Create a {@link Source} object for the given resource URL.
@@ -80,7 +79,7 @@ public class SourceFactory {
         /* resource: */
         if (location.startsWith(ClassLoaderSource.PROTOCOL)
                 || (contextPath != null && contextPath.startsWith(ClassLoaderSource.PROTOCOL))) {
-            source = getSource_fromClasspath(contextPath, location);
+            source = getSourceFromClasspath(contextPath, location);
         }
 
         /* xmldb */
@@ -101,7 +100,7 @@ public class SourceFactory {
             }
 
             if (pathUri != null) {
-                source = getSource_fromDb(broker, pathUri);
+                source = getSourceFromDb(broker, pathUri);
             }
         }
 
@@ -115,14 +114,14 @@ public class SourceFactory {
             } else {
                 pathUri = XmldbURI.create(contextPath).append(location);
             }
-            source = getSource_fromDb(broker, pathUri);
+            source = getSourceFromDb(broker, pathUri);
         }
 
         /* file:// or location without scheme (:/) is assumed to be a file */
         if (source == null
                 && (location.startsWith("file:/")
                 || !location.contains(":/"))) {
-            source = getSource_fromFile(contextPath, location, checkXQEncoding);
+            source = getSourceFromFile(contextPath, location, checkXQEncoding);
         }
 
         /* final attempt - any other URL */
@@ -150,7 +149,7 @@ public class SourceFactory {
                 .getRawCollectionPath();
     }
 
-    private static Source getSource_fromClasspath(final String contextPath, final String location) throws IOException {
+    private static Source getSourceFromClasspath(final String contextPath, final String location) throws IOException {
         if (contextPath == null || location.startsWith(ClassLoaderSource.PROTOCOL)) {
             return new ClassLoaderSource(location);
         }
@@ -178,7 +177,7 @@ public class SourceFactory {
      *
      * @return the source, or null if there is no such resource in the db indicated by {@code path}.
      */
-    private static @Nullable Source getSource_fromDb(final DBBroker broker, final XmldbURI path) throws PermissionDeniedException, IOException {
+    private static @Nullable Source getSourceFromDb(final DBBroker broker, final XmldbURI path) throws PermissionDeniedException, IOException {
         Source source = null;
         try(final LockedDocument lockedResource = broker.getXMLResource(path, LockMode.READ_LOCK)) {
             if (lockedResource != null) {
@@ -211,7 +210,7 @@ public class SourceFactory {
      *
      * @return the source, or null if there is no such resource in the db indicated by {@code path}.
      */
-    private static @Nullable Source getSource_fromFile(@Nullable final String contextPath, final String location, final boolean checkXQEncoding) {
+    private static @Nullable Source getSourceFromFile(@Nullable final String contextPath, final String location, final boolean checkXQEncoding) {
         String locationPath = location.replaceAll("^(file:)?/*(.*)$", "$2");
 
         Source source = null;

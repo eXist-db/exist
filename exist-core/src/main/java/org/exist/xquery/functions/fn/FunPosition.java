@@ -30,11 +30,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.IntegerValue;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 /**
  * xpath-library function: position()
@@ -42,7 +38,7 @@ import org.exist.xquery.value.Type;
  */
 public class FunPosition extends Function {
 
-	public final static FunctionSignature signature =
+	public static final FunctionSignature signature =
 		new FunctionSignature(
 			new QName("position", Function.BUILTIN_FUNCTION_NS),
 			"Returns the context position from the dynamic context. " +

@@ -434,7 +434,7 @@ public class XSuite extends ParentRunner<Runner> {
         }
     }
 
-    static ExistEmbeddedServer EXIST_EMBEDDED_SERVER_CLASS_INSTANCE = null;
+    static ExistEmbeddedServer EXIST_EMBEDDED_SERVER_CLASS_INSTANCE;
 
     static ExistEmbeddedServer newExistDbServer() {
         return new ExistEmbeddedServer(true, true);

@@ -21,9 +21,9 @@
  */
 package org.exist.client.security;
 
-import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.text.*;
+import java.awt.event.*;
 
 /**
  * Provides Auto Completion for JComboBox's.
@@ -40,10 +40,10 @@ public class AutoCompletion<E> extends PlainDocument {
 
     // flag to indicate if setSelectedItem has been called
     // subsequent calls to remove/insertString should be ignored
-    private boolean selecting = false;
+    private boolean selecting;
 
     private final boolean hidePopupOnFocusLoss;
-    private boolean hitBackspace = false;
+    private boolean hitBackspace;
     private boolean hitBackspaceOnSelection;
 
     private final KeyListener editorKeyListener;
@@ -76,18 +76,12 @@ public class AutoCompletion<E> extends PlainDocument {
                     comboBox.setPopupVisible(true);
                 }
                 hitBackspace = false;
-                switch (e.getKeyCode()) {
-                    // determine if the pressed key is backspace (needed by the remove method)
-                    case KeyEvent.VK_BACK_SPACE:
-                        hitBackspace = true;
-                        hitBackspaceOnSelection = editor.getSelectionStart() != editor.getSelectionEnd();
-                        break;
-
-                    // ignore delete key
-                    case KeyEvent.VK_DELETE:
-                        e.consume();
-                        comboBox.getToolkit().beep();
-                        break;
+                if (e.getKeyCode() == KeyEvent.VK_BACK_SPACE) {
+                    hitBackspace = true;
+                    hitBackspaceOnSelection = editor.getSelectionStart() != editor.getSelectionEnd();
+                } else if (e.getKeyCode() == KeyEvent.VK_DELETE) {
+                    e.consume();
+                    comboBox.getToolkit().beep();
                 }
             }
         };

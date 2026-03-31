@@ -21,19 +21,21 @@
  */
 package org.exist.management.client;
 
-import java.io.IOException;
-import java.io.StringWriter;
-import java.lang.management.ManagementFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.exist.dom.QName;
+import org.exist.dom.memtree.MemTreeBuilder;
+import org.exist.management.Cache;
+import org.exist.management.CacheManager;
+import org.exist.management.impl.*;
+import org.exist.start.CompatibleJavaVersionCheck;
+import org.exist.start.StartException;
+import org.exist.util.NamedThreadFactory;
+import org.exist.util.serializer.DOMSerializer;
+import org.exist.xquery.Expression;
+import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
 
-import static java.lang.management.ManagementFactory.CLASS_LOADING_MXBEAN_NAME;
-import static java.lang.management.ManagementFactory.MEMORY_MXBEAN_NAME;
-import static java.lang.management.ManagementFactory.OPERATING_SYSTEM_MXBEAN_NAME;
-import static java.lang.management.ManagementFactory.RUNTIME_MXBEAN_NAME;
-import static java.lang.management.ManagementFactory.THREAD_MXBEAN_NAME;
-
-import java.net.MalformedURLException;
-import java.util.*;
-import java.util.concurrent.*;
 import javax.management.*;
 import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.CompositeType;
@@ -44,21 +46,14 @@ import javax.management.remote.JMXServiceURL;
 import javax.xml.XMLConstants;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerException;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.lang.management.ManagementFactory;
+import java.net.MalformedURLException;
+import java.util.*;
+import java.util.concurrent.*;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.exist.dom.QName;
-import org.exist.management.Cache;
-import org.exist.management.CacheManager;
-import org.exist.management.impl.*;
-import org.exist.dom.memtree.MemTreeBuilder;
-import org.exist.start.CompatibleJavaVersionCheck;
-import org.exist.start.StartException;
-import org.exist.util.NamedThreadFactory;
-import org.exist.util.serializer.DOMSerializer;
-import org.exist.xquery.Expression;
-import org.w3c.dom.Element;
-import org.xml.sax.SAXException;
+import static java.lang.management.ManagementFactory.*;
 
 /**
  * Utility class to output database status information from eXist's JMX interface as XML.
@@ -67,9 +62,9 @@ import org.xml.sax.SAXException;
  */
 public class JMXtoXML {
 
-    private final static Logger LOG = LogManager.getLogger(JMXtoXML.class);
+    private static final Logger LOG = LogManager.getLogger(JMXtoXML.class);
 
-    private final static Map<String, ObjectName[]> CATEGORIES = new TreeMap<>();
+    private static final Map<String, ObjectName[]> CATEGORIES = new TreeMap<>();
 
     private static void putCategory(final String categoryName, final String... objectNames) {
         final ObjectName[] aryObjectNames = new ObjectName[objectNames.length];
@@ -181,7 +176,7 @@ public class JMXtoXML {
      * @throws TransformerException in case of serialization errors
      * @return string containing an XML report
      */
-    public String generateReport(final String categories[]) throws TransformerException {
+    public String generateReport(final String[] categories) throws TransformerException {
         final Element root = generateXMLReport(null, categories);
         final StringWriter writer = new StringWriter();
         final DOMSerializer streamer = new DOMSerializer(writer, defaultProperties);
@@ -252,7 +247,7 @@ public class JMXtoXML {
      * @param categories the categories to generate the report for
      * @return xml report
      */
-    public Element generateXMLReport(final String errcode, final String categories[]) {
+    public Element generateXMLReport(final String errcode, final String[] categories) {
         final MemTreeBuilder builder = new MemTreeBuilder((Expression) null);
 
         try {

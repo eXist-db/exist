@@ -21,11 +21,11 @@
  */
 package org.exist.util.serializer;
 
-import java.io.StringWriter;
-
 import org.exist.dom.QName;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.io.StringWriter;
 
 import static org.junit.Assert.assertEquals;
 

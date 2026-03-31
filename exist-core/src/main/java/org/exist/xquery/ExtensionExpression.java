@@ -38,7 +38,7 @@ import java.util.Arrays;
  */
 public class ExtensionExpression extends AbstractExpression {
 
-    @Nullable private Pragma[] pragmas = null;
+    @Nullable private Pragma[] pragmas;
     private Expression innerExpression;
 
     public ExtensionExpression(final XQueryContext context) {

@@ -31,7 +31,7 @@ import org.exist.numbering.NodeId;
  */
 public class ParentSelector implements NodeSelector {
 
-    private NodeSet parents;
+    private final NodeSet parents;
 
     public ParentSelector(NodeSet contextSet, int contextId) {
         this.parents = contextSet.getParents(contextId);

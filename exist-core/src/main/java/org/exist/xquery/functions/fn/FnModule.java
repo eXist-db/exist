@@ -21,14 +21,14 @@
  */
 package org.exist.xquery.functions.fn;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-
 import org.exist.dom.QName;
 import org.exist.xquery.*;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Module function definitions for xpath-functions module.
@@ -38,11 +38,11 @@ import org.exist.xquery.value.FunctionReturnSequenceType;
  */
 public class FnModule extends AbstractInternalModule {
 
-    public final static String PREFIX = "";
-    public final static String INCLUSION_DATE = "2004-01-29";
-    public final static String RELEASED_IN_VERSION = "pre eXist-1.0";
+    public static final String PREFIX = "";
+    public static final String INCLUSION_DATE = "2004-01-29";
+    public static final String RELEASED_IN_VERSION = "pre eXist-1.0";
 
-    public final static FunctionDef[] functions = {
+    public static final FunctionDef[] functions = {
         new FunctionDef(FunAbs.signature, FunAbs.class),
         new FunctionDef(FunAvg.signature, FunAvg.class),
         new FunctionDef(FunBaseURI.FS_BASE_URI_0, FunBaseURI.class),
@@ -279,8 +279,8 @@ public class FnModule extends AbstractInternalModule {
         Arrays.sort(functions, new FunctionComparator());
     }
 
-    public final static ErrorCodes.ErrorCode SENR0001 = new ErrorCodes.ErrorCode("SENR0001", "serialization error in fn:serialize");
-    public final static ErrorCodes.ErrorCode SEPM0019 = new ErrorCodes.ErrorCode("SEPM0019", "It is an error if an instance of the data model " +
+    public static final ErrorCodes.ErrorCode SENR0001 = new ErrorCodes.ErrorCode("SENR0001", "serialization error in fn:serialize");
+    public static final ErrorCodes.ErrorCode SEPM0019 = new ErrorCodes.ErrorCode("SEPM0019", "It is an error if an instance of the data model " +
             "used to specify the settings of serialization parameters specifies the value of the same parameter more than once.");
 
     public FnModule(Map<String, List<?>> parameters) {

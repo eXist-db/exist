@@ -27,8 +27,8 @@ package org.exist.config.mapping;
  */
 public class SubConfig {
 	
-	private String key = null;
-	private String secret = null;
+	private String key;
+	private String secret;
 	
 	public void setKey(String key) {
 		this.key = key;

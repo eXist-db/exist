@@ -34,12 +34,12 @@ public abstract class AbstractHashSet<K> implements Iterable<K> {
     private static final int DEFAULT_SIZE = 1031; // must be a prime number
 
     // marker for removed objects
-    protected final static Object REMOVED = new Object();
+    protected static final Object REMOVED = new Object();
 
     protected int tabSize;
     protected int items;
 
-    private int maxRehash = 0;
+    private int maxRehash;
 
     /**
      * Create a new hashset with default size (1031).
@@ -57,7 +57,7 @@ public abstract class AbstractHashSet<K> implements Iterable<K> {
      *
      * @param iSize Initial size of the hash set
      */
-    public AbstractHashSet(int iSize) {
+    protected AbstractHashSet(int iSize) {
         items = 0;
         if (iSize < 1) {
             tabSize = DEFAULT_SIZE;
@@ -127,7 +127,7 @@ public abstract class AbstractHashSet<K> implements Iterable<K> {
         }
     }
 
-    public final static class HashSetOverflowException extends Exception {
+    public static final class HashSetOverflowException extends Exception {
         private static final long serialVersionUID = -4679763007424266920L;
 
         public HashSetOverflowException() {

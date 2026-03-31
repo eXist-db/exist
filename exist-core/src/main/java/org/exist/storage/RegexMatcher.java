@@ -21,12 +21,12 @@
  */
 package org.exist.storage;
 
+import org.exist.EXistException;
+import org.exist.util.PatternFactory;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-
-import org.exist.EXistException;
-import org.exist.util.PatternFactory;
 
 /**
  * A {@link org.exist.storage.TermMatcher} that matches index entries against a

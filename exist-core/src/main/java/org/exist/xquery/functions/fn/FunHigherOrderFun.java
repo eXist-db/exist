@@ -137,8 +137,7 @@ public class FunHigherOrderFun extends BasicFunction {
     );
     public static final FunctionSignature FN_APPLY = functionSignature(
             Fn.APPLY.fname,
-            "Processes the supplied sequence from right to left, applying the supplied function repeatedly to each " +
-                    "item in turn, together with an accumulated result value.",
+            "Invokes the function item $function with arguments supplied in the array $array.",
             returnsOptMany(Type.ITEM, "return value of the function call"),
 
             param("function", Type.FUNCTION, "the function to call"),
@@ -314,7 +313,7 @@ public class FunHigherOrderFun extends BasicFunction {
         FOR_EACH_PAIR("for-each-pair"),
         APPLY("apply");
 
-        final static Map<String, FunHigherOrderFun.Fn> fnMap = new HashMap<>();
+        private static final Map<String, FunHigherOrderFun.Fn> fnMap = new HashMap<>();
 
         static {
             for (final FunHigherOrderFun.Fn fn : FunHigherOrderFun.Fn.values()) {

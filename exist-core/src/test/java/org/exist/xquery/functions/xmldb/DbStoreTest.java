@@ -40,7 +40,7 @@ public class DbStoreTest {
     @ClassRule
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
-    private final static String TEST_COLLECTION = "testAnyUri";
+    private static final String TEST_COLLECTION = "testAnyUri";
 
     @Test
     public final void simpleTest() throws XMLDBException {

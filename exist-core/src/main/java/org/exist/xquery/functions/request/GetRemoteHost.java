@@ -40,7 +40,7 @@ public class GetRemoteHost extends StrictRequestFunction {
 
 	protected static final Logger logger = LogManager.getLogger(GetRemoteHost.class);
 
-	public final static FunctionSignature signature =
+	public static final FunctionSignature signature =
 		new FunctionSignature(
 			new QName("get-remote-host", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
 			"Returns the fully qualified name of the client or the last proxy that sent the current request.",

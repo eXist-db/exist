@@ -21,13 +21,7 @@
  */
 package org.exist.xquery.functions.request;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.assertEquals;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
@@ -36,7 +30,6 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.message.BasicNameValuePair;
 import org.exist.http.RESTTest;
-import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.UserManagementService;
 import org.junit.AfterClass;
@@ -48,6 +41,12 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.BinaryResource;
 
 import javax.annotation.Nullable;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Tests expected behaviour of request:get-parameter() XQuery function
@@ -57,11 +56,11 @@ import javax.annotation.Nullable;
  */
 public class GetParameterTest extends RESTTest {
 
-    private final static String XQUERY = "for $param-name in request:get-parameter-names() return for $param-value in request:get-parameter($param-name, ()) return fn:concat($param-name, '=', $param-value)";
-    private final static String XQUERY_FILENAME = "test-get-parameter.xql";
+    private static final String XQUERY = "for $param-name in request:get-parameter-names() return for $param-value in request:get-parameter($param-name, ()) return fn:concat($param-name, '=', $param-value)";
+    private static final String XQUERY_FILENAME = "test-get-parameter.xql";
 
-    private final static String TEST_FILE_CONTENT = "hello world";
-    private final static String TEST_FILE_NAME = "helloworld.txt";
+    private static final String TEST_FILE_CONTENT = "hello world";
+    private static final String TEST_FILE_NAME = "helloworld.txt";
 
     private static Collection root;
 
@@ -74,7 +73,7 @@ public class GetParameterTest extends RESTTest {
         res.setContent(XQUERY);
         root.storeResource(res);
         UserManagementService ums = root.getService(UserManagementService.class);
-        ums.chmod(res, 0777);
+        ums.chmod(res, 511);
     }
 
     @AfterClass
@@ -381,7 +380,7 @@ public class GetParameterTest extends RESTTest {
                 }
             } else if(multipartParam instanceof TextFileUpload textFileUpload) {
                 multipart = multipart.addBinaryBody("fileUpload", textFileUpload.getData().getBytes(UTF_8), ContentType.TEXT_PLAIN, textFileUpload.getName());
-                buf.append("fileUpload=" + textFileUpload.getData());
+                buf.append("fileUpload=").append(textFileUpload.getData());
             }
         }
 
@@ -415,7 +414,7 @@ public class GetParameterTest extends RESTTest {
                 }
             } else if(multipartParam instanceof TextFileUpload textFileUpload) {
                 multipart = multipart.addBinaryBody("fileUpload", textFileUpload.getData().getBytes(UTF_8), ContentType.TEXT_PLAIN, textFileUpload.getName());
-                bodyBuf.append("fileUpload=" + textFileUpload.getData());
+                bodyBuf.append("fileUpload=").append(textFileUpload.getData());
             }
         }
 
@@ -438,9 +437,9 @@ public class GetParameterTest extends RESTTest {
     public class NameValues implements Param<String[]> {
 
         final String name;
-        final String values[];
+        final String[] values;
 
-        public NameValues(final String name, final String values[]) {
+        public NameValues(final String name, final String[] values) {
             this.name = name;
             this.values = values;
         }

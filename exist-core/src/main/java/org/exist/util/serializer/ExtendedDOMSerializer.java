@@ -21,11 +21,6 @@
  */
 package org.exist.util.serializer;
 
-import java.io.Writer;
-import java.util.Properties;
-
-import javax.xml.transform.TransformerException;
-
 import org.exist.dom.memtree.NodeImpl;
 import org.exist.dom.memtree.ReferenceNode;
 import org.exist.storage.DBBroker;
@@ -35,13 +30,17 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 
+import javax.xml.transform.TransformerException;
+import java.io.Writer;
+import java.util.Properties;
+
 
 /**
  * @author wolf
  */
 public class ExtendedDOMSerializer extends DOMSerializer {
 
-    private DBBroker broker;
+    private final DBBroker broker;
 
     /**
      * @param broker the database broker

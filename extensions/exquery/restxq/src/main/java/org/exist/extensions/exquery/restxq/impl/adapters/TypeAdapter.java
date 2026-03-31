@@ -37,7 +37,7 @@ import org.exist.xquery.value.Type;
 public class TypeAdapter {
     
     //eXist-db XQuery Type <-> EXQuery Type
-    private final static BidiMap mappings = new DualHashBidiMap();
+    private static final BidiMap mappings = new DualHashBidiMap();
     static {
             mappings.put(Type.NODE,
                 org.exquery.xquery.Type.NODE);

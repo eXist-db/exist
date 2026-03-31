@@ -42,8 +42,8 @@ public class VariableDeclaration extends AbstractExpression implements Rewritabl
 
     final QName qname;
     Optional<Expression> expression;
-    SequenceType sequenceType = null;
-    boolean analyzeDone = false;
+    SequenceType sequenceType;
+    boolean analyzeDone;
 
     public VariableDeclaration(final XQueryContext context, final QName qname, final Expression expr) {
         super(context);

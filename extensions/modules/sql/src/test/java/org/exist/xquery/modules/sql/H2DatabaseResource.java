@@ -60,8 +60,8 @@ public class H2DatabaseResource extends ExternalResource {
     private final String user;
     private final String password;
     private final Optional<Integer> tcpPort;
-    private Connection rootConnection = null;
-    private Server server = null;
+    private Connection rootConnection;
+    private Server server;
 
     public H2DatabaseResource() {
         this(DEFAULT_URL, DEFAULT_USER, DEFAULT_PASSWORD);

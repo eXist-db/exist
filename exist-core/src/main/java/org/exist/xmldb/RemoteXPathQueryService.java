@@ -21,10 +21,6 @@
  */
 package org.exist.xmldb;
 
-import java.io.IOException;
-import java.io.Writer;
-import java.util.*;
-
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.exist.source.Source;
 import org.exist.storage.serializers.EXistOutputKeys;
@@ -35,6 +31,9 @@ import org.xmldb.api.base.*;
 import org.xmldb.api.modules.XMLResource;
 
 import javax.xml.XMLConstants;
+import java.io.IOException;
+import java.io.Writer;
+import java.util.*;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.xmldb.api.base.ResourceType.XML_RESOURCE;
@@ -45,8 +44,8 @@ public class RemoteXPathQueryService extends AbstractRemoteService implements EX
     private final Map<String, String> namespaceMappings = new HashMap<>();
     private final Map<String, Object> variableDecls = new HashMap<>();
     private final Properties outputProperties;
-    private String moduleLoadPath = null;
-    private boolean protectedMode = false;
+    private String moduleLoadPath;
+    private boolean protectedMode;
 
     /**
      * Creates a new RemoteXPathQueryService instance.
@@ -269,7 +268,9 @@ public class RemoteXPathQueryService extends AbstractRemoteService implements EX
             return query((XMLResource) res, query);
         }
         finally {
-            if (res!=null && res instanceof AbstractRemoteResource remoteResource) remoteResource.freeResources();
+            if (res instanceof AbstractRemoteResource remoteResource) {
+                remoteResource.freeResources();
+            }
         }
     }
 

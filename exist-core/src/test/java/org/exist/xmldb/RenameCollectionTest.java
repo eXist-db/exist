@@ -100,7 +100,7 @@ public class RenameCollectionTest {
             fail("It should be impossible to rename a collection to the same name");
 
         } catch (final XMLDBException e) {
-            assertTrue(e.getMessage().indexOf("Cannot move collection to itself") > -1);
+            assertTrue(e.getMessage().contains("Cannot move collection to itself"));
         }
     }
 

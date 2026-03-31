@@ -29,8 +29,6 @@ import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.util.LockException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import static org.junit.Assert.*;
-
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.xmldb.api.DatabaseManager;
@@ -43,10 +41,12 @@ import org.xmldb.api.modules.XPathQueryService;
 
 import java.io.IOException;
 
+import static org.junit.Assert.*;
+
 public class AnnotationsTest {
 
     @ClassRule
-    public final static ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     @BeforeClass
     public static void setUp() throws XMLDBException, ClassNotFoundException, InstantiationException, IllegalAccessException {
@@ -220,7 +220,6 @@ public class AnnotationsTest {
    
     private XPathQueryService getQueryService() throws XMLDBException {
         Collection testCollection = getTestCollection();       
-        XPathQueryService service = testCollection.getService(XPathQueryService.class);
-        return service;
+        return testCollection.getService(XPathQueryService.class);
     }
 }

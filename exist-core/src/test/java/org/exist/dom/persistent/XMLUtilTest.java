@@ -21,7 +21,7 @@
  */
 package org.exist.dom.persistent;
 
-import static org.junit.Assert.*;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -29,7 +29,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import org.junit.Test;
+import static org.junit.Assert.*;
 
 public class XMLUtilTest {
 

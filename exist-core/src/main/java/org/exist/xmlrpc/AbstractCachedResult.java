@@ -32,16 +32,16 @@ import java.io.Closeable;
  */
 public abstract class AbstractCachedResult implements Closeable {
 
-    protected long queryTime = 0;
-    protected long creationTimestamp = 0;
-    protected long timestamp = 0;
+    protected long queryTime;
+    protected long creationTimestamp;
+    protected long timestamp;
     private boolean closed;
 
-    public AbstractCachedResult() {
+    protected AbstractCachedResult() {
         this(0);
     }
 
-    public AbstractCachedResult(final long queryTime) {
+    protected AbstractCachedResult(final long queryTime) {
         this.queryTime = queryTime;
         touch();
         this.creationTimestamp = this.timestamp;

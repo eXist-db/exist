@@ -140,7 +140,7 @@ public class BrokerPoolTest {
         try {
 
             // lease all brokers
-            final Thread brokerUsers[] = new Thread[maxBrokers];
+            final Thread[] brokerUsers = new Thread[maxBrokers];
             final CountDownLatch acquiredLatch = new CountDownLatch(maxBrokers);
 
             final Thread firstBrokerUser = new Thread(new BrokerUser(pool, acquiredLatch, firstBrokerReleaseLatch), "first-brokerUser");

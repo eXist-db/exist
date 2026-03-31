@@ -30,13 +30,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.AbstractDateTimeValue;
-import org.exist.xquery.value.DayTimeDurationValue;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 /**
  * Implements the xpath-functions for timezone adjustment 
@@ -44,16 +38,16 @@ import org.exist.xquery.value.Type;
  */
 public class FunAdjustTimezone extends BasicFunction {
 
-    public final static FunctionParameterSequenceType DATE_TIME_01_PARAM = new FunctionParameterSequenceType("date-time", Type.DATE_TIME, Cardinality.ZERO_OR_ONE, "The date-time");
-    public final static FunctionParameterSequenceType DATE_01_PARAM = new FunctionParameterSequenceType("date", Type.DATE, Cardinality.ZERO_OR_ONE, "The date");
-    public final static FunctionParameterSequenceType TIME_01_PARAM = new FunctionParameterSequenceType("time", Type.TIME, Cardinality.ZERO_OR_ONE, "The time");
-    public final static FunctionParameterSequenceType DURATION_01_PARAM = new FunctionParameterSequenceType("duration", Type.DAY_TIME_DURATION, Cardinality.ZERO_OR_ONE, "The duration");
+    public static final FunctionParameterSequenceType DATE_TIME_01_PARAM = new FunctionParameterSequenceType("date-time", Type.DATE_TIME, Cardinality.ZERO_OR_ONE, "The date-time");
+    public static final FunctionParameterSequenceType DATE_01_PARAM = new FunctionParameterSequenceType("date", Type.DATE, Cardinality.ZERO_OR_ONE, "The date");
+    public static final FunctionParameterSequenceType TIME_01_PARAM = new FunctionParameterSequenceType("time", Type.TIME, Cardinality.ZERO_OR_ONE, "The time");
+    public static final FunctionParameterSequenceType DURATION_01_PARAM = new FunctionParameterSequenceType("duration", Type.DAY_TIME_DURATION, Cardinality.ZERO_OR_ONE, "The duration");
 
-    public final static FunctionReturnSequenceType DATE_TIME_01_RETURN = new FunctionReturnSequenceType(Type.DATE_TIME, Cardinality.ZERO_OR_ONE, "the adjusted date-time");
-    public final static FunctionReturnSequenceType DATE_01_RETURN = new FunctionReturnSequenceType(Type.DATE, Cardinality.ZERO_OR_ONE, "the adjusted date");
-    public final static FunctionReturnSequenceType TIME_01_RETURN = new FunctionReturnSequenceType(Type.TIME, Cardinality.ZERO_OR_ONE, "the adjusted time");
+    public static final FunctionReturnSequenceType DATE_TIME_01_RETURN = new FunctionReturnSequenceType(Type.DATE_TIME, Cardinality.ZERO_OR_ONE, "the adjusted date-time");
+    public static final FunctionReturnSequenceType DATE_01_RETURN = new FunctionReturnSequenceType(Type.DATE, Cardinality.ZERO_OR_ONE, "the adjusted date");
+    public static final FunctionReturnSequenceType TIME_01_RETURN = new FunctionReturnSequenceType(Type.TIME, Cardinality.ZERO_OR_ONE, "the adjusted time");
 
-    public final static FunctionSignature[] fnAdjustDateTimeToTimezone = {
+    public static final FunctionSignature[] fnAdjustDateTimeToTimezone = {
         new FunctionSignature(
             new QName("adjust-dateTime-to-timezone", Function.BUILTIN_FUNCTION_NS),
             "Adjusts the xs:dateTime value $date-time to the implicit timezone of the current locale.",
@@ -72,7 +66,7 @@ public class FunAdjustTimezone extends BasicFunction {
             DATE_TIME_01_RETURN)
     };
 
-    public final static FunctionSignature[] fnAdjustDateToTimezone = {
+    public static final FunctionSignature[] fnAdjustDateToTimezone = {
         new FunctionSignature(
             new QName("adjust-date-to-timezone", Function.BUILTIN_FUNCTION_NS),
             "Adjusts the xs:date value $date to the implicit timezone of the current locale.",
@@ -91,7 +85,7 @@ public class FunAdjustTimezone extends BasicFunction {
             DATE_01_RETURN)
     };
 
-    public final static FunctionSignature[] fnAdjustTimeToTimezone = {
+    public static final FunctionSignature[] fnAdjustTimeToTimezone = {
         new FunctionSignature(
             new QName("adjust-time-to-timezone", Function.BUILTIN_FUNCTION_NS),
             "Adjusts the xs:time value $time to the implicit timezone of the current locale.",

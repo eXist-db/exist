@@ -21,14 +21,14 @@
  */
 package org.exist.http.urlrewrite;
 
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.exist.Namespaces;
 import org.exist.http.servlets.HttpResponseWrapper;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -47,12 +47,12 @@ public abstract class URLRewrite {
 
     protected String uri;
     protected String target;
-    protected String prefix = null;
-    protected String method = null;
-    protected Map<String, String> attributes = null;
-    protected Map<String, List<String>> parameters = null;
-    protected Map<String, String> headers = null;
-    protected boolean absolute = false;
+    protected String prefix;
+    protected String method;
+    protected Map<String, String> attributes;
+    protected Map<String, List<String>> parameters;
+    protected Map<String, String> headers;
+    protected boolean absolute;
 
     protected URLRewrite(final Element config, final String uri) {
         this.uri = uri;
@@ -239,7 +239,7 @@ public abstract class URLRewrite {
         if (attributes != null) {
             for (final Map.Entry<String, String> entry : attributes.entrySet()) {
                 final String value = entry.getValue();
-                if (value.equals(UNSET)) {
+                if (UNSET.equals(value)) {
                     request.removeAttribute(entry.getKey());
                 } else {
                     request.setAttribute(entry.getKey(), entry.getValue());

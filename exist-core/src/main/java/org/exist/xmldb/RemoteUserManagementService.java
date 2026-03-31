@@ -21,13 +21,16 @@
  */
 package org.exist.xmldb;
 
-import java.time.Instant;
-import java.util.*;
-import java.util.stream.Stream;
+import org.exist.security.ACLPermission;
+import org.exist.security.AXSchemaType;
+import org.exist.security.Account;
+import org.exist.security.EXistSchemaType;
 import org.exist.security.Group;
 import org.exist.security.Permission;
-import org.exist.security.Account;
+import org.exist.security.PermissionDeniedException;
+import org.exist.security.SchemaType;
 import org.exist.security.User;
+import org.exist.security.internal.aider.ACEAider;
 import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.internal.aider.UserAider;
 import org.xmldb.api.base.Collection;
@@ -35,12 +38,9 @@ import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 
-import org.exist.security.ACLPermission;
-import org.exist.security.AXSchemaType;
-import org.exist.security.EXistSchemaType;
-import org.exist.security.PermissionDeniedException;
-import org.exist.security.SchemaType;
-import org.exist.security.internal.aider.ACEAider;
+import java.time.Instant;
+import java.util.*;
+import java.util.stream.Stream;
 
 /**
  * @author Modified by {Marco.Tampucci, Massimo.Martinelli} @isti.cnr.it
@@ -428,7 +428,7 @@ public class RemoteUserManagementService extends AbstractRemoteService implement
             final List<Object> params = new ArrayList<>();
             params.add(collection.getPath());
             final Map result = (Map) collection.execute("listDocumentPermissions", params);
-            final Permission perm[] = new Permission[result.size()];
+            final Permission[] perm = new Permission[result.size()];
             int index = 0;
             for (String resource : collection.listResources()) {
                 Object[] t = (Object[]) result.get(resource);
@@ -452,7 +452,7 @@ public class RemoteUserManagementService extends AbstractRemoteService implement
             final List<Object> params = new ArrayList<>();
             params.add(collection.getPath());
             final Map result = (Map) collection.execute("listCollectionPermissions", params);
-            final Permission perm[] = new Permission[result.size()];
+            final Permission[] perm = new Permission[result.size()];
             int index = 0;
             for (String collection : collection.listChildCollections()) {
                 Object[] t = (Object[]) result.get(collection);
@@ -527,7 +527,7 @@ public class RemoteUserManagementService extends AbstractRemoteService implement
 
     @Override
     public Account[] getAccounts() throws XMLDBException {
-        final Object[] users = (Object[]) collection.execute("getAccounts", Collections.EMPTY_LIST);
+        final Object[] users = (Object[]) collection.execute("getAccounts", Collections.emptyList());
 
         final UserAider[] u = new UserAider[users.length];
         for (int i = 0; i < u.length; i++) {
@@ -632,7 +632,7 @@ public class RemoteUserManagementService extends AbstractRemoteService implement
             final List<Object> params = new ArrayList<>();
             params.add(group.getName());
 
-            final String managers[] = new String[group.getManagers().size()];
+            final String[] managers = new String[group.getManagers().size()];
             for (int i = 0; i < managers.length; i++) {
                 managers[i] = group.getManagers().get(i).getName();
             }
@@ -710,7 +710,7 @@ public class RemoteUserManagementService extends AbstractRemoteService implement
 
     @Override
     public String[] getGroups() throws XMLDBException {
-        final Object[] v = (Object[]) collection.execute("getGroups", Collections.EMPTY_LIST);
+        final Object[] v = (Object[]) collection.execute("getGroups", Collections.emptyList());
         final String[] groups = new String[v.length];
         System.arraycopy(v, 0, groups, 0, v.length);
         return groups;

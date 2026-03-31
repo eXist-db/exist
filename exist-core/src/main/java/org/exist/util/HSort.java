@@ -21,21 +21,21 @@
  */
 package org.exist.util;
 
-import java.util.Comparator;
-import java.util.List;
-
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.numbering.NodeId;
 
-/**
-	This class implements Floyd's version 
-	of the heapsort algorithm.
+import java.util.Comparator;
+import java.util.List;
 
-	http://users.encs.concordia.ca/~chvatal/notes/hsort.html
-	http://en.wikipedia.org/wiki/Heapsort#Variations
-	
-	@author José María Fernández (jmfg@users.sourceforge.net)
-*/
+/**
+ 	This class implements Floyd's version 
+ 	of the heapsort algorithm.
+ 
+ 	http://users.encs.concordia.ca/~chvatal/notes/hsort.html
+ 	http://en.wikipedia.org/wiki/Heapsort#Variations
+ 	
+ @author José María Fernández (jmfg@users.sourceforge.net)
+ */
 
 public final class HSort {
 	public static <C extends Comparable<? super C>> void sort(C[] a, int lo, int hi)
@@ -89,7 +89,7 @@ public final class HSort {
 				drop++;
 				first=k;
 			}
-			siftdown(a, b, hi+1, k, a[k],(b!=null)?b[k]:0, drop);
+			siftdown(a, b, hi+1, k, a[k],b!=null?b[k]:0, drop);
 		}
 		
 		// Next two lines does the same as floor_of_lg
@@ -207,7 +207,7 @@ public final class HSort {
 				drop++;
 				first=k;
 			}
-			siftdown(a, b, hi+1, k, a[k],(b!=null)?b[k]:null, drop);
+			siftdown(a, b, hi+1, k, a[k],b!=null?b[k]:null, drop);
 		}
 		
 		// Next two lines does the same as floor_of_lg
@@ -318,8 +318,10 @@ public final class HSort {
 	private static <C extends Comparable<? super C>> void siftdown(C[] a, int[] b, int n, int vacant, C missing, int missingB, int drop)
 	{
 		final int memo=vacant;
-		int child, parent;
-		int count, next_peek;
+        int child;
+        int parent;
+        int count;
+        int next_peek;
 
 		count=0;
 		next_peek=(drop+1)/2;
@@ -369,8 +371,10 @@ public final class HSort {
 	private static <C> void siftdown(C[] a, Comparator<C> c, int n, int vacant, C missing, int drop)
 	{
 		final int memo=vacant;
-		int child, parent;
-		int count, next_peek;
+        int child;
+        int parent;
+        int count;
+        int next_peek;
 
 		count=0;
 		next_peek=(drop+1)/2;
@@ -412,8 +416,10 @@ public final class HSort {
 	private static <C extends Comparable<? super C>> void siftdown(List<C> a, int n, int vacant, C missing, int drop)
 	{
 		final int memo=vacant;
-		int child, parent;
-		int count, next_peek;
+        int child;
+        int parent;
+        int count;
+        int next_peek;
 
 		count=0;
 		next_peek=(drop+1)/2;
@@ -455,8 +461,10 @@ public final class HSort {
 	private static void siftdown(long[] a, Object[] b, int n, int vacant, long missing, Object missingB, int drop)
 	{
 		final int memo=vacant;
-		int child, parent;
-		int count, next_peek;
+        int child;
+        int parent;
+        int count;
+        int next_peek;
 
 		count=0;
 		next_peek=(drop+1)/2;

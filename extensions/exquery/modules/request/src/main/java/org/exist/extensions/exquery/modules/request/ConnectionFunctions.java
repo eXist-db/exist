@@ -31,11 +31,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.IntegerValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 import org.exquery.http.HttpRequest;
 
 /**
@@ -44,33 +40,33 @@ import org.exquery.http.HttpRequest;
  */
 public class ConnectionFunctions extends AbstractRequestModuleFunction {
 
-    private final static QName qnAddress = new QName("address", RequestModule.NAMESPACE_URI, RequestModule.PREFIX);
-    private final static QName qnRemoteHostname = new QName("remote-hostname", RequestModule.NAMESPACE_URI, RequestModule.PREFIX);
-    private final static QName qnRemoteAddress = new QName("remote-address", RequestModule.NAMESPACE_URI, RequestModule.PREFIX);
-    private final static QName qnRemotePort = new QName("remote-port", RequestModule.NAMESPACE_URI, RequestModule.PREFIX);
+    private static final QName qnAddress = new QName("address", RequestModule.NAMESPACE_URI, RequestModule.PREFIX);
+    private static final QName qnRemoteHostname = new QName("remote-hostname", RequestModule.NAMESPACE_URI, RequestModule.PREFIX);
+    private static final QName qnRemoteAddress = new QName("remote-address", RequestModule.NAMESPACE_URI, RequestModule.PREFIX);
+    private static final QName qnRemotePort = new QName("remote-port", RequestModule.NAMESPACE_URI, RequestModule.PREFIX);
     
-    public final static FunctionSignature FNS_ADDRESS = new FunctionSignature(
+    public static final FunctionSignature FNS_ADDRESS = new FunctionSignature(
         qnAddress,
         "Gets the IP address of the server that received the HTTP Request",
         null,
         new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "The IP address of the server.")
     );
     
-    public final static FunctionSignature FNS_REMOTE_HOSTNAME = new FunctionSignature(
+    public static final FunctionSignature FNS_REMOTE_HOSTNAME = new FunctionSignature(
         qnRemoteHostname,
         "Gets the fully qualified hostname of the client or the last proxy that sent the HTTP Request. If the name of the remote host cannot be established, this method behaves as request:remote-address(), and returns the IP address.",
         null,
         new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "The Hostname of the client that issues the HTTP Request.")
     );
     
-    public final static FunctionSignature FNS_REMOTE_ADDRESS = new FunctionSignature(
+    public static final FunctionSignature FNS_REMOTE_ADDRESS = new FunctionSignature(
         qnRemoteAddress,
         "Gets the IP address of the client or the last proxy that sent the HTTP Request.",
         null,
         new FunctionReturnSequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE, "The IP address of the client.")
     );
     
-    public final static FunctionSignature FNS_REMOTE_PORT = new FunctionSignature(
+    public static final FunctionSignature FNS_REMOTE_PORT = new FunctionSignature(
         qnRemotePort,
         "Gets the TCP port number of the client socket or the last proxy that sent the HTTP Request..",
         null,

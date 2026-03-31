@@ -44,12 +44,12 @@ public abstract class AbstractBlobLoggable extends AbstractLoggable implements B
     protected DBBroker broker;
     private BlobId blobId;
 
-    public AbstractBlobLoggable(final byte type, final long transactionId, final BlobId blobId) {
+    protected AbstractBlobLoggable(final byte type, final long transactionId, final BlobId blobId) {
         super(type, transactionId);
         this.blobId = blobId;
     }
 
-    public AbstractBlobLoggable(final byte type, final DBBroker broker, final long transactionId) {
+    protected AbstractBlobLoggable(final byte type, final DBBroker broker, final long transactionId) {
         super(type, transactionId);
         this.broker = broker;
     }

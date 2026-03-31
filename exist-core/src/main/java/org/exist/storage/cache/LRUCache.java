@@ -41,7 +41,7 @@ import java.util.Iterator;
  */
 @NotThreadSafe
 public class LRUCache<T extends Cacheable> implements Cache<T> {
-    private final static Logger LOG = LogManager.getLogger(LRUCache.class);
+    private static final Logger LOG = LogManager.getLogger(LRUCache.class);
 
 	private final String name;
 	protected int max;
@@ -50,7 +50,7 @@ public class LRUCache<T extends Cacheable> implements Cache<T> {
 	protected SequencedLongHashMap<T> map;
     private final CacheType type;
     private int hitsOld = -1;
-    protected CacheManager cacheManager = null;
+    protected CacheManager cacheManager;
 
     public LRUCache(final String name, final int size, final double growthFactor, final double growthThreshold, final CacheType type) {
     	this.name = name;

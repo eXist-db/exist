@@ -21,13 +21,13 @@
  */
 package org.exist.storage.statistics;
 
-import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-
 import org.exist.storage.BrokerPool;
 import org.exist.test.ExistEmbeddedServer;
 import org.junit.*;
+
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import static org.exist.storage.NativeBroker.DEFAULT_DATA_DIR;
 import static org.junit.Assert.assertTrue;

@@ -30,12 +30,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.BooleanValue;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
 
@@ -49,7 +44,7 @@ import org.xmldb.api.base.XMLDBException;
 public class XMLDBReindex extends XMLDBAbstractCollectionManipulator {
 	protected static final Logger logger = LogManager.getLogger(XMLDBReindex.class);
 
-    public final static FunctionSignature FNS_REINDEX_COLLECTION = new FunctionSignature(
+    public static final FunctionSignature FNS_REINDEX_COLLECTION = new FunctionSignature(
             new QName("reindex", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
             "Reindex collection $collection-uri. " +
             XMLDBModule.COLLECTION_URI + " " +
@@ -60,7 +55,7 @@ public class XMLDBReindex extends XMLDBAbstractCollectionManipulator {
             new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if successfully reindexed, false() otherwise")
     );
 
-    public final static FunctionSignature FNS_REINDEX_2ARGS = new FunctionSignature(
+    public static final FunctionSignature FNS_REINDEX_2ARGS = new FunctionSignature(
             new QName("reindex", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
             "Reindex: if $arg2 is \"all\", \"fulltext\", or \"vector\", reindex collection with that scope; otherwise reindex document $arg2 from $collection-uri. " +
                     XMLDBModule.COLLECTION_URI + " " +
@@ -73,7 +68,7 @@ public class XMLDBReindex extends XMLDBAbstractCollectionManipulator {
             new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if successfully reindexed, false() otherwise")
     );
 
-    public final static FunctionSignature FNS_REINDEX_DOCUMENT_MODE = new FunctionSignature(
+    public static final FunctionSignature FNS_REINDEX_DOCUMENT_MODE = new FunctionSignature(
             new QName("reindex", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
             "Reindex document $doc-uri from $collection-uri with scope $mode. " +
                     XMLDBModule.COLLECTION_URI + " " +

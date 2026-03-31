@@ -23,10 +23,7 @@ package org.exist.storage.dom;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.NodeProxy;
-import org.exist.dom.persistent.IStoredNode;
-import org.exist.dom.persistent.StoredNode;
+import org.exist.dom.persistent.*;
 import org.exist.storage.DBBroker;
 import org.exist.storage.StorageAddress;
 import org.exist.storage.btree.BTree;
@@ -42,8 +39,6 @@ import org.exist.util.sanity.SanityCheck;
 import java.io.IOException;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.exist.dom.persistent.NodeHandle;
-
 /**
  * Class NodeIterator is used to iterate over nodes in the DOM storage.
  * This implementation locks the DOM file to read the node and unlocks
@@ -54,19 +49,19 @@ import org.exist.dom.persistent.NodeHandle;
  */
 public final class NodeIterator implements INodeIterator {
 
-    private final static Logger LOG = LogManager.getLogger(NodeIterator.class);
+    private static final Logger LOG = LogManager.getLogger(NodeIterator.class);
 
-    private DOMFile db = null;
+    private final DOMFile db;
     private NodeHandle node; //= null;
-    private DocumentImpl doc = null;
+    private final DocumentImpl doc;
     private int offset;
     private short lastTupleID = ItemId.UNKNOWN_ID;
-    private DOMFile.DOMPage page = null;
+    private DOMFile.DOMPage page;
     private long pageNum;
     private long startAddress = StoredNode.UNKNOWN_NODE_IMPL_ADDRESS;
-    private DBBroker broker;
+    private final DBBroker broker;
     private final LockManager lockManager;
-    private boolean useNodePool = false;
+    private final boolean useNodePool;
 
     public NodeIterator(DBBroker broker, DOMFile db, NodeHandle node, boolean poolable)
             throws BTreeException, IOException {

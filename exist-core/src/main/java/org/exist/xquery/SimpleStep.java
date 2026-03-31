@@ -24,8 +24,8 @@ package org.exist.xquery;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.MemoryNodeSet;
+import org.exist.xquery.value.Sequence;
 
 /**
  * Represents a primary expression in a simple path step like

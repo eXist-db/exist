@@ -23,12 +23,7 @@ package org.exist.xquery;
 
 import org.exist.dom.QName;
 import org.exist.xquery.util.ExpressionDumper;
-import org.exist.xquery.value.IntegerValue;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
+import org.exist.xquery.value.*;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -46,7 +41,7 @@ public class CountClause extends AbstractFLWORClause {
     final QName varName;
 
     // the count itself
-    private long count = 0;
+    private long count;
     private int step = 1;
 
     public CountClause(final XQueryContext context, final QName varName) {

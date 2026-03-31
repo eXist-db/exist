@@ -39,38 +39,38 @@ import org.exist.util.hashtable.SequencedLongHashMap;
  */
 public class Accounting {
     
-    private final static Logger LOG = LogManager.getLogger(Accounting.class);
+    private static final Logger LOG = LogManager.getLogger(Accounting.class);
 
-    private final static Object DUMMY = new Object();
+    private static final Object DUMMY = new Object();
     
     /** the period (in milliseconds) for which trashing is recorded. */
-    private int checkPeriod = 30000;
+    private final int checkPeriod = 30000;
     
     /** start of the last check period */
     private long checkPeriodStart = System.currentTimeMillis();
     
     /** max. entries to keep in the table of replaced pages */
-    private int maxEntries = 5000;
+    private final int maxEntries = 5000;
     
     /** total cache hits during the lifetime of the cache*/
-    private int hits = 0;
+    private int hits;
     
     /** total cache misses during the lifetime of the cache */
-    private int misses = 0;
+    private int misses;
     
     /** the current size of the cache */
-    private int totalSize = 0;
+    private int totalSize;
     
     /** the number of pages replaced and reloaded during the check period */
-    private int thrashing = 0;
+    private int thrashing;
     
     /** determines the amount of allowed trashing before a cache resize will
      * be requested. This is expressed as a fraction of the total cache size.
      */
-    private double thrashingFactor;
+    private final double thrashingFactor;
     
     /** the map used to track replaced page numbers */
-    private SequencedLongHashMap<Object> map;
+    private final SequencedLongHashMap<Object> map;
     
     public Accounting(double thrashingFactor) {
         map = new SequencedLongHashMap<>((maxEntries * 3) / 2);

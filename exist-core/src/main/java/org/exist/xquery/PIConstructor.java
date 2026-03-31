@@ -37,9 +37,9 @@ import java.util.regex.Pattern;
  */
 public class PIConstructor extends NodeConstructor {
 
-	private static Pattern wsContentStart = Pattern.compile("^(\\s)*(.*)");
+	private static final Pattern wsContentStart = Pattern.compile("^(\\s)*(.*)");
 	private final String target;
-	private String data = null;
+	private String data;
 	
 	public PIConstructor(XQueryContext context, String pi) throws XPathException {
 		super(context);
@@ -75,8 +75,7 @@ public class PIConstructor extends NodeConstructor {
         try {
             final MemTreeBuilder builder = context.getDocumentBuilder();
             final int nodeNr = builder.processingInstruction(target, data);
-            final NodeImpl node = builder.getDocument().getNode(nodeNr);
-            return node;
+            return builder.getDocument().getNode(nodeNr);
         } finally {
             if (newDocumentContext)
                 {context.popDocumentContext();}

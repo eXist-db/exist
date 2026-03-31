@@ -21,13 +21,8 @@
  */
 package org.exist.security;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import com.evolvedbinary.j8fu.Either;
+import com.evolvedbinary.j8fu.function.ConsumerE;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.collections.Collection;
@@ -38,11 +33,16 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.txn.Txn;
-import com.evolvedbinary.j8fu.function.ConsumerE;
 import org.exist.util.SyntaxException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.exist.security.AbstractUnixStylePermission.SIMPLE_SYMBOLIC_MODE_PATTERN;
 import static org.exist.security.AbstractUnixStylePermission.UNIX_SYMBOLIC_MODE_PATTERN;
@@ -56,7 +56,7 @@ import static org.exist.storage.DBBroker.POSIX_CHOWN_RESTRICTED_PROPERTY;
  */
 public class PermissionFactory {
 
-    private final static Logger LOG = LogManager.getLogger(PermissionFactory.class);
+    private static final Logger LOG = LogManager.getLogger(PermissionFactory.class);
 
     /**
      * Get the Default Resource permissions for the current Subject
@@ -321,7 +321,7 @@ public class PermissionFactory {
      * @throws PermissionDeniedException if the calling process has insufficient permissions.
      */
     public static void chmod_str(final DBBroker broker, final Txn transaction, final XmldbURI pathUri, final Optional<String> modeStr, final Optional<List<ACEAider>> acl) throws PermissionDeniedException {
-        updatePermissions(broker, transaction, pathUri, permission -> chmod_impl(broker, permission, modeStr.map(Either::Left), acl));
+        updatePermissions(broker, transaction, pathUri, permission -> chmodImpl(broker, permission, modeStr.map(Either::Left), acl));
     }
 
     /**
@@ -338,7 +338,7 @@ public class PermissionFactory {
      * @throws PermissionDeniedException if the calling process has insufficient permissions.
      */
     public static void chmod_str(final DBBroker broker, final Collection collection, final Optional<String> modeStr, final Optional<List<ACEAider>> acl) throws PermissionDeniedException {
-        chmod_impl(broker, collection.getPermissions(), modeStr.map(Either::Left), acl);
+        chmodImpl(broker, collection.getPermissions(), modeStr.map(Either::Left), acl);
     }
 
     /**
@@ -355,7 +355,7 @@ public class PermissionFactory {
      * @throws PermissionDeniedException if the calling process has insufficient permissions.
      */
     public static void chmod_str(final DBBroker broker, final DocumentImpl document, final Optional<String> modeStr, final Optional<List<ACEAider>> acl) throws PermissionDeniedException {
-        chmod_impl(broker, document.getPermissions(), modeStr.map(Either::Left), acl);
+        chmodImpl(broker, document.getPermissions(), modeStr.map(Either::Left), acl);
     }
 
     /**
@@ -371,7 +371,7 @@ public class PermissionFactory {
      * @throws PermissionDeniedException if the calling process has insufficient permissions.
      */
     public static void chmod(final DBBroker broker, final Txn transaction, final XmldbURI pathUri, final Optional<Integer> mode, final Optional<List<ACEAider>> acl) throws PermissionDeniedException {
-        updatePermissions(broker, transaction, pathUri, permission -> chmod_impl(broker, permission, mode.map(Either::Right), acl));
+        updatePermissions(broker, transaction, pathUri, permission -> chmodImpl(broker, permission, mode.map(Either::Right), acl));
     }
 
     /**
@@ -386,7 +386,7 @@ public class PermissionFactory {
      * @throws PermissionDeniedException if the calling process has insufficient permissions.
      */
     public static void chmod(final DBBroker broker, final Collection collection, final Optional<Integer> mode, final Optional<List<ACEAider>> acl) throws PermissionDeniedException {
-        chmod_impl(broker, collection.getPermissions(), mode.map(Either::Right), acl);
+        chmodImpl(broker, collection.getPermissions(), mode.map(Either::Right), acl);
     }
 
     /**
@@ -401,7 +401,7 @@ public class PermissionFactory {
      * @throws PermissionDeniedException if the calling process has insufficient permissions.
      */
     public static void chmod(final DBBroker broker, final DocumentImpl document, final Optional<Integer> mode, final Optional<List<ACEAider>> acl) throws PermissionDeniedException {
-        chmod_impl(broker, document.getPermissions(), mode.map(Either::Right), acl);
+        chmodImpl(broker, document.getPermissions(), mode.map(Either::Right), acl);
     }
 
     /**
@@ -416,7 +416,7 @@ public class PermissionFactory {
      * @throws PermissionDeniedException if the calling process has insufficient permissions.
      */
     public static void chmod_str(final DBBroker broker, final Permission permissions, final Optional<String> mode, final Optional<List<ACEAider>> acl) throws PermissionDeniedException {
-        chmod_impl(broker, permissions, mode.map(Either::Left), acl);
+        chmodImpl(broker, permissions, mode.map(Either::Left), acl);
     }
 
     /**
@@ -431,10 +431,10 @@ public class PermissionFactory {
      * @throws PermissionDeniedException if the calling process has insufficient permissions.
      */
     public static void chmod(final DBBroker broker, final Permission permissions, final Optional<Integer> mode, final Optional<List<ACEAider>> acl) throws PermissionDeniedException {
-        chmod_impl(broker, permissions, mode.map(Either::Right), acl);
+        chmodImpl(broker, permissions, mode.map(Either::Right), acl);
     }
 
-    private static void chmod_impl(final DBBroker broker, final Permission permission, final Optional<Either<String, Integer>> mode, final Optional<List<ACEAider>> acl) throws PermissionDeniedException {
+    private static void chmodImpl(final DBBroker broker, final Permission permission, final Optional<Either<String, Integer>> mode, final Optional<List<ACEAider>> acl) throws PermissionDeniedException {
         if ((mode.isEmpty()) && acl.isEmpty()) {
             throw new IllegalArgumentException("Either mode or acl must be provided");
         }

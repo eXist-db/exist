@@ -21,10 +21,11 @@
  */
 package org.exist.storage.util;
 
-import java.util.List;
-import java.util.Map;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * Module function definitions for xquery test module.
@@ -34,13 +35,13 @@ import org.exist.xquery.FunctionDef;
  */
 public class TestUtilModule extends AbstractInternalModule {
 
-    public final static String NAMESPACE_URI = "http://exist-db.org/xquery/test";
+    public static final String NAMESPACE_URI = "http://exist-db.org/xquery/test";
 
-    public final static String PREFIX = "test";
-    public final static String INCLUSION_DATE = "2008-12-03";
-    public final static String RELEASED_IN_VERSION = "eXist-1.4";
+    public static final String PREFIX = "test";
+    public static final String INCLUSION_DATE = "2008-12-03";
+    public static final String RELEASED_IN_VERSION = "eXist-1.4";
 
-    private final static FunctionDef functions[] = {
+    private static final FunctionDef[] functions = {
         new FunctionDef(PauseFunction.signature, PauseFunction.class)
     };
 

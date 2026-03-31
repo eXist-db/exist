@@ -53,7 +53,7 @@ public class DeleteTest {
     @ClassRule
     public static final TemporaryFolder tempFolder = new TemporaryFolder();
 
-    private static String PREV_PROPFIND_METHOD_XML_SIZE = null;
+    private static String PREV_PROPFIND_METHOD_XML_SIZE;
 
     @BeforeClass
     public static void setup() {

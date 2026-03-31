@@ -37,8 +37,8 @@ import java.util.List;
  */
 public class XMLDBListTask extends AbstractXMLDBTask
 {
-    private boolean hasCollections = false;
-    private boolean hasResources   = false;
+    private boolean hasCollections;
+    private boolean hasResources;
     private String  separator      = ",";
     private String  outputproperty;
 

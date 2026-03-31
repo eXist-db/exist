@@ -32,7 +32,7 @@ import org.exist.xquery.value.*;
 
 public class RemoveIndex extends BasicFunction {
 
-    public final static FunctionSignature signatures[] = {
+    public static final FunctionSignature[] signatures = {
             new FunctionSignature(
                     new QName("remove-index", SortModule.NAMESPACE_URI, SortModule.PREFIX),
                     "Remove a sort index identified by its name.",
@@ -65,9 +65,10 @@ public class RemoveIndex extends BasicFunction {
         try {
             if (getArgumentCount() == 2) {
                 final NodeValue nv = (NodeValue) args[1].itemAt(0);
-                if (nv.getImplementationType() == NodeValue.IN_MEMORY_NODE)
+                if (nv.getImplementationType() == NodeValue.IN_MEMORY_NODE) {
                     throw new XPathException(this, "Second argument to remove should be a persistent node, not " +
                             "an in-memory node.");
+                }
                 final NodeProxy proxy = (NodeProxy) nv;
                 index.remove(id, proxy.getOwnerDocument());
             } else {

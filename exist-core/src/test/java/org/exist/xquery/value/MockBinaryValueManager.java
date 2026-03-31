@@ -33,7 +33,7 @@ import static org.junit.Assert.fail;
  */
 public class MockBinaryValueManager implements BinaryValueManager {
 
-    private Deque<BinaryValue> values = new ArrayDeque<>();
+    private final Deque<BinaryValue> values = new ArrayDeque<>();
 
     @Override
     public void registerBinaryValueInstance(final BinaryValue binaryValue) {

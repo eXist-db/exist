@@ -144,7 +144,7 @@ public class IntegerValue extends NumericValue {
         try {
             this.value = new BigInteger(StringValue.trimWhitespace(stringValue));
             this.type = requiredType;
-            if (!(checkType())) {
+            if (!checkType()) {
                 throw new XPathException(getExpression(), ErrorCodes.FORG0001, "can not convert '" +
                         stringValue + "' to " + Type.getTypeName(type));
             }
@@ -305,7 +305,7 @@ public class IntegerValue extends NumericValue {
             case Type.STRING:
                 return new StringValue(getExpression(), getStringValue());
             case Type.BOOLEAN:
-                return (value.compareTo(ZERO_BIGINTEGER) == 0) ? BooleanValue.FALSE : BooleanValue.TRUE;
+                return value.compareTo(ZERO_BIGINTEGER) == 0 ? BooleanValue.FALSE : BooleanValue.TRUE;
             default:
                 throw new XPathException(getExpression(), ErrorCodes.FORG0001,
                         "cannot convert '"

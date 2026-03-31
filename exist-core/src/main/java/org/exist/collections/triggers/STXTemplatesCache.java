@@ -21,12 +21,6 @@
  */
 package org.exist.collections.triggers;
 
-import javax.xml.transform.Templates;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.sax.SAXTransformerFactory;
-import javax.xml.transform.sax.TemplatesHandler;
-
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import net.jcip.annotations.ThreadSafe;
@@ -40,6 +34,12 @@ import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.xml.sax.SAXException;
 
+import javax.xml.transform.Templates;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.sax.SAXTransformerFactory;
+import javax.xml.transform.sax.TemplatesHandler;
+
 /**
  * Cache for STX Templates.
  *
@@ -49,7 +49,7 @@ import org.xml.sax.SAXException;
  * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  */
 @ThreadSafe
-public class STXTemplatesCache {
+public final class STXTemplatesCache {
 
     private static final  Logger LOG = LogManager.getLogger(STXTemplatesCache.class);
     private static final STXTemplatesCache INSTANCE = new STXTemplatesCache();

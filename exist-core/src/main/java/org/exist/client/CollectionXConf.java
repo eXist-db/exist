@@ -21,24 +21,21 @@
  */
 package org.exist.client;
 
-import java.io.IOException;
-import java.util.*;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.exist.collections.CollectionConfiguration;
 import org.exist.collections.CollectionConfigurationManager;
-import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
+import java.util.*;
 
 import static org.xmldb.api.base.ResourceType.BINARY_RESOURCE;
 
@@ -55,16 +52,16 @@ public class CollectionXConf
     public static final String TYPE_QNAME = "qname";
     public static final String TYPE_PATH = "path";
 
-    private InteractiveClient client = null;	//the client
-	private String path = null;				//path of the collection.xconf file
-	Collection collection = null;				//the configuration collection
-	Resource resConfig = null;					//the collection.xconf resource
+    private final InteractiveClient client;	//the client
+	private final String path;				//path of the collection.xconf file
+	Collection collection;				//the configuration collection
+	Resource resConfig;					//the collection.xconf resource
 	
 	private LinkedHashMap<String, String> customNamespaces = null;		//custom namespaces
-	private RangeIndex[] rangeIndexes = null;			//range indexes model
-	private Trigger[] triggers = null;					//triggers model
+	private RangeIndex[] rangeIndexes;			//range indexes model
+	private Trigger[] triggers;					//triggers model
 	
-	private boolean hasChanged = false;	//indicates if changes have been made to the current collection configuration
+	private boolean hasChanged;	//indicates if changes have been made to the current collection configuration
 	
 	
 	/**
@@ -185,7 +182,7 @@ public class CollectionXConf
 			else
 			{
 				//else remove the item at index from the array
-				RangeIndex newRangeIndexes[] = new RangeIndex[rangeIndexes.length - 1];
+				RangeIndex[] newRangeIndexes = new RangeIndex[rangeIndexes.length - 1];
 				int x = 0;
 				for(int i = 0; i < rangeIndexes.length; i++)
 				{
@@ -240,7 +237,7 @@ public class CollectionXConf
 		}
 		else
 		{
-			RangeIndex newRangeIndexes[] = new RangeIndex[rangeIndexes.length + 1];
+			RangeIndex[] newRangeIndexes = new RangeIndex[rangeIndexes.length + 1];
 			System.arraycopy(rangeIndexes, 0, newRangeIndexes, 0, rangeIndexes.length);
 			newRangeIndexes[rangeIndexes.length] = new RangeIndex(type, XPath, xsType);
 			rangeIndexes = newRangeIndexes;
@@ -306,7 +303,7 @@ public class CollectionXConf
 			else
 			{
 				//else remove the item at index from the array
-				Trigger newTriggers[] = new Trigger[triggers.length - 1];
+				Trigger[] newTriggers = new Trigger[triggers.length - 1];
 				int x = 0;
 				for(int i = 0; i < triggers.length; i++)
 				{
@@ -360,7 +357,7 @@ public class CollectionXConf
 		}
 		else
 		{
-			Trigger newTriggers[] = new Trigger[triggers.length + 1];
+			Trigger[] newTriggers = new Trigger[triggers.length + 1];
 			System.arraycopy(triggers, 0, newTriggers, 0, triggers.length);
 			newTriggers[triggers.length] = new Trigger(triggerClass, parameters);
 			triggers = newTriggers;
@@ -567,8 +564,8 @@ public class CollectionXConf
 	protected class RangeIndex
 	{
         private String type = TYPE_QNAME;
-        private String XPath = null;
-		private String xsType = null;
+        private String XPath;
+		private String xsType;
 		
 		/**
 		 * Constructor
@@ -586,12 +583,12 @@ public class CollectionXConf
 		
 		public String getXPath()
 		{
-			return(XPath);	
+			return XPath;	
 		}
 		
 		public String getxsType()
 		{
-			return(xsType);
+			return xsType;
 		}
 
         public String getType() {
@@ -635,8 +632,8 @@ public class CollectionXConf
 	 */
 	protected static class Trigger
 	{
-		private String triggerClass = null;
-		private Properties parameters = null;
+		private String triggerClass;
+		private Properties parameters;
 		
 		/**
 		 * Constructor

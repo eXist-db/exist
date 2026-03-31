@@ -26,8 +26,6 @@
  */
 package org.exist.extensions.exquery.restxq.impl;
 
-import java.io.IOException;
-import java.net.URI;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.Permission;
@@ -39,13 +37,16 @@ import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 
+import java.io.IOException;
+import java.net.URI;
+
 /**
  *
  * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 class XQueryCompiler {
     
-    public final static String XQUERY_MIME_TYPE = "application/xquery";
+    public static final String XQUERY_MIME_TYPE = "application/xquery";
     
     public static CompiledXQuery compile(final DBBroker broker, final URI xqueryLocation) throws RestXqServiceCompilationException {
         
@@ -65,7 +66,7 @@ class XQueryCompiler {
         
         try {
             if(document instanceof BinaryDocument binaryDocument) {
-                if(document.getMimeType().equals(XQUERY_MIME_TYPE)){
+                if(XQUERY_MIME_TYPE.equals(document.getMimeType())){
             
                     //compile the query
                     final XQueryContext context = new XQueryContext(broker.getBrokerPool());

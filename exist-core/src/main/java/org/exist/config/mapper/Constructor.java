@@ -21,6 +21,14 @@
  */
 package org.exist.config.mapper;
 
+import org.exist.config.Configurable;
+import org.exist.config.Configuration;
+import org.exist.config.Configurator;
+import org.exist.config.annotation.NewClass;
+
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamReader;
+import javax.xml.stream.events.XMLEvent;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.invoke.LambdaMetafactory;
@@ -29,15 +37,6 @@ import java.lang.invoke.MethodHandles;
 import java.util.*;
 import java.util.function.Supplier;
 
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamReader;
-import javax.xml.stream.events.XMLEvent;
-
-import org.exist.config.Configurable;
-import org.exist.config.Configuration;
-import org.exist.config.Configurator;
-import org.exist.config.annotation.NewClass;
-
 import static java.lang.invoke.MethodType.methodType;
 
 /**
@@ -45,7 +44,7 @@ import static java.lang.invoke.MethodType.methodType;
  */
 public class Constructor {
 
-    private static Map<Object, Configuration> configurations = new HashMap<>();
+    private static final Map<Object, Configuration> configurations = new HashMap<>();
 
     public static Configuration getConfiguration(final Object obj) {
         return configurations.get(obj);
@@ -85,15 +84,14 @@ public class Constructor {
                 while (reader.hasNext()) {
                     eventType = reader.next();
 
-                    switch (eventType) {
-                        case XMLEvent.START_ELEMENT:
-                            String localName = reader.getLocalName();
+                    if (eventType == XMLEvent.START_ELEMENT) {
+                        String localName = reader.getLocalName();
 
-                            if ("class".equals(localName)) {
-                                if (!"name".equals(reader.getAttributeLocalName(0))) {
-                                    Configurator.LOG.error("class element first attribute must be 'name', skip instance creation.");
-                                    return null;
-                                }
+                        if ("class".equals(localName)) {
+                            if (!"name".equals(reader.getAttributeLocalName(0))) {
+                                Configurator.LOG.error("class element first attribute must be 'name', skip instance creation.");
+                                return null;
+                            }
 
                             final String clazzName = reader.getAttributeValue(0);
                             final Class<?> clazz = Class.forName(clazzName);
@@ -115,34 +113,31 @@ public class Constructor {
                                 instructions.peek().setValue(newInstance);
                             }
 
-                            } else if ("callMethod".equals(localName)) {
+                        } else if ("callMethod".equals(localName)) {
 
                             Configuration _conf_ = conf;
                             if (!instructions.isEmpty()) {
                                 _conf_ = instructions.peek().getConfiguration();
                             }
 
-                                final CallMethod call = new CallMethod(objs.peek(), _conf_);
+                            final CallMethod call = new CallMethod(objs.peek(), _conf_);
 
-                                for (int i = 0; i < reader.getAttributeCount(); i++) {
-                                    call.set(reader.getAttributeLocalName(i), reader.getAttributeValue(i));
-                                }
+                            for (int i = 0; i < reader.getAttributeCount(); i++) {
+                                call.set(reader.getAttributeLocalName(i), reader.getAttributeValue(i));
+                            }
 
                             instructions.push(call);
                         }
-                        break;
-                    case XMLEvent.END_ELEMENT:
-                        localName = reader.getLocalName();
+                    } else if (eventType == XMLEvent.END_ELEMENT) {
+                        final String localName = reader.getLocalName();
                         //System.out.println("END_ELEMENT "+localName);
 
-                            if ("class".equals(localName)) {
-                                objs.pop();
-                            } else if ("callMethod".equals(localName)) {
-                                final CallMethod call = instructions.pop();
-                                call.eval();
-                            }
-
-                            break;
+                        if ("class".equals(localName)) {
+                            objs.pop();
+                        } else if ("callMethod".equals(localName)) {
+                            final CallMethod call = instructions.pop();
+                            call.eval();
+                        }
                     }
                 }
 

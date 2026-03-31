@@ -21,6 +21,10 @@
  */
 package org.exist.xquery.modules.mail;
 
+import jakarta.activation.DataHandler;
+import jakarta.mail.*;
+import jakarta.mail.internet.*;
+import jakarta.mail.util.ByteArrayDataSource;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -31,11 +35,6 @@ import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-
-import jakarta.activation.DataHandler;
-import jakarta.mail.*;
-import jakarta.mail.internet.*;
-import jakarta.mail.util.ByteArrayDataSource;
 
 import javax.annotation.Nullable;
 import javax.xml.transform.Transformer;
@@ -65,7 +64,7 @@ public class SendEmailFunction extends BasicFunction {
     private static final Logger LOGGER = LogManager.getLogger(SendEmailFunction.class);
     private static final TransformerFactory TRANSFORMER_FACTORY = TransformerFactory.newInstance();
 
-    private final static int MIME_BASE64_MAX_LINE_LENGTH = 76; //RFC 2045, page 24
+    private static final int MIME_BASE64_MAX_LINE_LENGTH = 76; //RFC 2045, page 24
 
     /**
      * Regular expression for checking for an RFC 2045 non-token.
@@ -76,7 +75,7 @@ public class SendEmailFunction extends BasicFunction {
 
     private static final Random RANDOM = new Random();
 
-    public final static FunctionSignature deprecated = new FunctionSignature(
+    public static final FunctionSignature deprecated = new FunctionSignature(
             new QName("send-email", MailModule.NAMESPACE_URI, MailModule.PREFIX),
             "Sends an email through the SMTP Server.",
             new SequenceType[]
@@ -88,7 +87,7 @@ public class SendEmailFunction extends BasicFunction {
             new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ONE_OR_MORE, "true if the email message was successfully sent")
     );
 
-    public final static FunctionSignature[] signatures = {
+    public static final FunctionSignature[] signatures = {
             new FunctionSignature(
                     new QName("send-email", MailModule.NAMESPACE_URI, MailModule.PREFIX),
                     "Sends an email using javax.mail messaging libraries.",
@@ -1056,8 +1055,8 @@ public class SendEmailFunction extends BasicFunction {
 
         final TimeZone thisTZ = rightNow.getTimeZone();
         int tzOffset = thisTZ.getOffset(rightNow.getTime().getTime()); //get timezone offset in milliseconds
-        tzOffset = (tzOffset / 1000); //convert to seconds
-        tzOffset = (tzOffset / 60); //convert to minutes
+        tzOffset = tzOffset / 1000; //convert to seconds
+        tzOffset = tzOffset / 60; //convert to minutes
 
         //Sign
         if (tzOffset > 1) {
@@ -1070,14 +1069,14 @@ public class SendEmailFunction extends BasicFunction {
         //Calc Hours and Minutes?
         if (tzOffset >= 60) {
             //Minutes and Hours
-            tzHours += (tzOffset / 60); //hours
+            tzHours += tzOffset / 60; //hours
 
             // do we need to prepend a 0
             if (tzHours.length() == 1) {
                 tzHours = "0" + tzHours;
             }
 
-            tzMinutes += (tzOffset % 60); //minutes
+            tzMinutes += tzOffset % 60; //minutes
 
             // do we need to prepend a 0
             if (tzMinutes.length() == 1) {
@@ -1110,8 +1109,7 @@ public class SendEmailFunction extends BasicFunction {
     static String encode64(final String str, final String charset) throws java.io.UnsupportedEncodingException {
         String result = Base64.encodeBase64String(str.getBytes(charset));
         result = result.replaceAll("\n", "?=\n =?" + charset + "?B?");
-        result = "=?" + charset + "?B?" + result + "?=";
-        return result;
+        return "=?" + charset + "?B?" + result + "?=";
     }
 
     /**
@@ -1223,7 +1221,7 @@ public class SendEmailFunction extends BasicFunction {
 
         public List<String> getCC() {
             if (this.cc == null) {
-                return Collections.EMPTY_LIST;
+                return Collections.emptyList();
             }
             return cc;
         }

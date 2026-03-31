@@ -30,17 +30,13 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.IntegerValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 public class Profile extends BasicFunction {
 	
 	protected static final Logger logger = LogManager.getLogger(Profile.class);
 
-    public final static FunctionSignature[] signatures = {
+    public static final FunctionSignature[] signatures = {
         new FunctionSignature(
             new QName("enable-profiling", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
             "Enable profiling output within the query. The profiling starts with this function call and will " +

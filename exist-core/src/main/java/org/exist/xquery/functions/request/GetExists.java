@@ -44,7 +44,7 @@ import java.util.Optional;
 public class GetExists extends RequestFunction {
 	protected static final Logger logger = LogManager.getLogger(GetExists.class);
 
-	public final static FunctionSignature signature =
+	public static final FunctionSignature signature =
 		new FunctionSignature(
 			new QName( "exists", RequestModule.NAMESPACE_URI, RequestModule.PREFIX ),
 			"Returns whether a request object exists.",

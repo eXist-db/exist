@@ -617,7 +617,7 @@ public class TransactionManager implements BrokerPoolService {
          * (via {@link #getCount()} when {@link TransactionManager#shutdown()}
          * calls {@link TransactionManager#uncommittedTransaction()}.
          */
-        private volatile long counter = 0;
+        private volatile long counter;
 
         public TxnCounter increment() {
             counter++;

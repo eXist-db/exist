@@ -21,17 +21,17 @@
  */
 package org.exist.xmldb;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceIterator;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
+
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 public class RemoteResourceIterator implements ResourceIterator {
 
@@ -39,7 +39,7 @@ public class RemoteResourceIterator implements ResourceIterator {
     private final List<Object> resources;
     private final int indentXML;
     private final String encoding;
-    private int pos = 0;
+    private int pos;
 
     public RemoteResourceIterator(final RemoteCollection collection, final List<Object> resources, final int indentXML, final String encoding) {
         this.collection = collection;

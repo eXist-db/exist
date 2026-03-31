@@ -21,8 +21,6 @@
  */
 package org.exist.xquery.functions.util;
 
-import java.util.Properties;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
@@ -33,21 +31,16 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
-
+import org.exist.xquery.value.*;
 import org.xml.sax.SAXException;
+
+import java.util.Properties;
 
 public class DeepCopyFunction extends BasicFunction {
 	
 	protected static final Logger logger = LogManager.getLogger(DeepCopyFunction.class);
 
-	public final static FunctionSignature signature =
+	public static final FunctionSignature signature =
 		new FunctionSignature(
 			new QName("deep-copy", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 			"Creates a new, entirely in-memory copy of the passed in item.",

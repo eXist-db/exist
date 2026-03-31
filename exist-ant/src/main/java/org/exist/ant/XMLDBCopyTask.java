@@ -40,10 +40,10 @@ import java.net.URISyntaxException;
  */
 public class XMLDBCopyTask extends AbstractXMLDBTask
 {
-    private String resource    = null;
-    private String collection  = null;
-    private String destination = null;
-    private String name        = null;
+    private String resource;
+    private String collection;
+    private String destination;
+    private String name;
 
     @Override
     public void execute() throws BuildException

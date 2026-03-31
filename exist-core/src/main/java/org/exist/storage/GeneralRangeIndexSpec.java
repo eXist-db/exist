@@ -21,11 +21,11 @@
  */
 package org.exist.storage;
 
-import java.util.Map;
-
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Type;
+
+import java.util.Map;
 
 /**
  * Used to specify a range index on a node path.
@@ -36,7 +36,7 @@ import org.exist.xquery.value.Type;
  */
 public class GeneralRangeIndexSpec extends RangeIndexSpec {
     
-    private NodePath path;
+    private final NodePath path;
     
     public GeneralRangeIndexSpec(Map<String, String> namespaces, String pathStr, String typeStr) throws DatabaseConfigurationException {
         if(pathStr.isEmpty())

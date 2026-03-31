@@ -21,15 +21,6 @@
  */
 package org.exist.storage.lock;
 
-import static org.junit.Assert.*;
-
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
@@ -57,10 +48,19 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Database;
+import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
-import org.xmldb.api.base.Resource;
 import org.xmldb.api.modules.CollectionManagementService;
+
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
+import static org.junit.Assert.*;
 
 /**
  * Integration test for deadlock detection and resolution.
@@ -114,7 +114,7 @@ public class DeadlockIT {
     
     private static final int N_THREADS = 40;
 
-	private final static String generateXQ =
+	private static final String generateXQ =
 			"""
             declare function local:random-sequence($length as xs:integer, $G as map(xs:string, item())) {
               if ($length eq 0)
@@ -282,15 +282,16 @@ public class DeadlockIT {
 			final StringBuilder buf = new StringBuilder();
 			String collection = "/db";
 			int currentMode = mode;
-			if (mode == TEST_MIXED || currentMode == TEST_REMOVE)
-				currentMode = random.nextInt(4);
+            if (mode == TEST_MIXED || currentMode == TEST_REMOVE) {
+                currentMode = random.nextInt(4);
+            }
             if (currentMode == TEST_SINGLE_COLLECTION) {
 				int collectionId = random.nextInt(collectionCount);
 				collection = "/db/test/" + collectionId;
 				buf.append("collection('").append(collection)
 					.append("')//chapter/section[@id = 'sect1']");
 			} else if (currentMode == TEST_RANDOM_COLLECTION) {
-				List<Integer> collIds = new ArrayList<Integer>(7);
+				List<Integer> collIds = new ArrayList<>(7);
 				for (int i = 0; i < 3; i++) {
 					int r;
 					do {
@@ -300,8 +301,9 @@ public class DeadlockIT {
 				}
 				buf.append("(");
 				for (int i = 0; i < 3; i++) {
-					if (i > 0)
-						buf.append(", ");
+                    if (i > 0) {
+                        buf.append(", ");
+                    }
 					buf.append("collection('/db/test/").append(collIds.get(i))
 							.append("')");
 				}
@@ -319,8 +321,9 @@ public class DeadlockIT {
 			try {
 				org.xmldb.api.base.Collection testCollection = DatabaseManager
 						.getCollection("xmldb:exist://" + collection, "admin", null);
-                if (testCollection == null)
+                if (testCollection == null) {
                     return;
+                }
                 EXistXPathQueryService service = testCollection.getService(EXistXPathQueryService.class);
 				service.beginProtected();
 				try {

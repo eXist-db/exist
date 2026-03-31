@@ -21,13 +21,6 @@
  */
 package org.exist.security;
 
-import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Database;
@@ -49,6 +42,13 @@ import org.exist.util.ConcurrentValueWrapper;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 
+import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
@@ -63,13 +63,13 @@ public abstract class AbstractRealm implements Realm, Configurable {
     private final SecurityManager sm;
     protected Configuration configuration;
 
-    protected Collection collectionRealm = null;
-    protected Collection collectionAccounts = null;
-    protected Collection collectionGroups = null;
-    protected Collection collectionRemovedAccounts = null;
-    protected Collection collectionRemovedGroups = null;
+    protected Collection collectionRealm;
+    protected Collection collectionAccounts;
+    protected Collection collectionGroups;
+    protected Collection collectionRemovedAccounts;
+    protected Collection collectionRemovedGroups;
 	
-    public AbstractRealm(final SecurityManager sm, final Configuration config) {
+    protected AbstractRealm(final SecurityManager sm, final Configuration config) {
         this.sm = sm;
         this.configuration = Configurator.configure(this, config);
     }
@@ -387,7 +387,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
         //check: add account to group
         String[] groups = account.getGroups();
         for (final String group : groups) {
-            if (!(updatingAccount.hasGroup(group))) {
+            if (!updatingAccount.hasGroup(group)) {
                 updatingAccount.addGroup(group);
             }
         }
@@ -395,7 +395,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
         groups = updatingAccount.getGroups();
 
         for (final String group : groups) {
-            if (!(account.hasGroup(group))) {
+            if (!account.hasGroup(group)) {
                 updatingAccount.remGroup(group);
             }
         }
@@ -476,7 +476,7 @@ public abstract class AbstractRealm implements Realm, Configurable {
     //configuration methods
     @Override
     public boolean isConfigured() {
-        return (configuration != null);
+        return configuration != null;
     }
 
     @Override

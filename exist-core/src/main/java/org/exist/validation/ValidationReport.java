@@ -47,8 +47,8 @@ public class ValidationReport implements ErrorHandler {
     private long duration = -1L;
     private long start = -1L;
 
-    private Throwable throwed = null;
-    private String namespaceUri = null;
+    private Throwable throwed;
+    private String namespaceUri;
 
     private ValidationReportItem createValidationReportItem(final int type, final SAXParseException exception) {
 
@@ -128,7 +128,7 @@ public class ValidationReport implements ErrorHandler {
      * @return FALSE if no errors and warnings occurred.
      */
     public boolean isValid() {
-        return (validationReport.isEmpty() && (throwed == null));
+        return validationReport.isEmpty() && (throwed == null);
     }
 
     public List<ValidationReportItem> getValidationReportItemList() {

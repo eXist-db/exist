@@ -114,8 +114,7 @@ ProcessReportMXBean extends PerInstanceMBean {
         @Override
         public int hashCode() {
             int result = id;
-            result = 31 * result + key.hashCode();
-            return result;
+            return 31 * result + key.hashCode();
         }
 
         @Override

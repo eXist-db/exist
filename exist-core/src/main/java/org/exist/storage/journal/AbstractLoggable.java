@@ -32,7 +32,7 @@ public abstract class AbstractLoggable implements Loggable {
     protected long transactionId;
     protected Lsn lsn;
 
-    public AbstractLoggable(final byte type, final long transactionId) {
+    protected AbstractLoggable(final byte type, final long transactionId) {
         this.type = type;
         this.transactionId = transactionId;
     }

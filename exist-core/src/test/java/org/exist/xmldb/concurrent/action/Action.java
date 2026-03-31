@@ -36,7 +36,7 @@ public abstract class Action {
 	protected final String collectionPath;
 	protected final String resourceName;
 	
-	public Action(final String collectionPath, final String resourceName) {
+	protected Action(final String collectionPath, final String resourceName) {
 		this.collectionPath = collectionPath;
 		this.resourceName = resourceName;
 	}
@@ -46,5 +46,5 @@ public abstract class Action {
 	 *
 	 * @return true if execution completed successfully, false otherwise.
 	 */
-	abstract public boolean execute() throws XMLDBException, IOException;
+	public abstract boolean execute() throws XMLDBException, IOException;
 }

@@ -27,11 +27,6 @@ import org.exist.EXistException;
 import org.exist.Namespaces;
 import org.exist.collections.CollectionConfiguration;
 import org.exist.dom.QName;
-import org.exist.dom.persistent.AttrImpl;
-import org.exist.dom.persistent.CommentImpl;
-import org.exist.dom.persistent.ElementImpl;
-import org.exist.dom.persistent.ProcessingInstructionImpl;
-import org.exist.dom.persistent.TextImpl;
 import org.exist.dom.persistent.*;
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
@@ -71,12 +66,12 @@ public class DOMIndexer {
     private final org.exist.dom.persistent.DocumentImpl targetDoc;
     private final IndexSpec indexSpec;
 
-    private final Deque<ElementImpl> stack = new ArrayDeque<>();
-    private StoredNode prevNode = null;
+    private final Deque<org.exist.dom.persistent.ElementImpl> stack = new ArrayDeque<>();
+    private StoredNode prevNode;
 
-    private final TextImpl text = new TextImpl((Expression) null);
-    private final CommentImpl comment = new CommentImpl((Expression) null);
-    private final ProcessingInstructionImpl pi = new ProcessingInstructionImpl(null);
+    private final org.exist.dom.persistent.TextImpl text = new org.exist.dom.persistent.TextImpl((Expression) null);
+    private final org.exist.dom.persistent.CommentImpl comment = new org.exist.dom.persistent.CommentImpl((Expression) null);
+    private final org.exist.dom.persistent.ProcessingInstructionImpl pi = new org.exist.dom.persistent.ProcessingInstructionImpl((Expression) null);
 
     public DOMIndexer(final DBBroker broker, final Txn transaction, final DocumentImpl doc,
                       final org.exist.dom.persistent.DocumentImpl targetDoc) {
@@ -99,7 +94,7 @@ public class DOMIndexer {
      */
     public void scan() throws EXistException {
         //Creates a dummy DOCTYPE
-        final DocumentTypeImpl dt = new DocumentTypeImpl((doc != null) ? doc.getExpression() : null, "temp", null, "");
+        final DocumentTypeImpl dt = new DocumentTypeImpl(doc != null ? doc.getExpression() : null, "temp", null, "");
         targetDoc.setDocumentType(dt);
     }
 
@@ -108,7 +103,7 @@ public class DOMIndexer {
      */
     public void store() {
         //Create a wrapper element as root node
-        final ElementImpl elem = new ElementImpl(null, ROOT_QNAME, broker.getBrokerPool().getSymbols());
+        final org.exist.dom.persistent.ElementImpl elem = new org.exist.dom.persistent.ElementImpl(null, ROOT_QNAME, broker.getBrokerPool().getSymbols());
         elem.setNodeId(broker.getBrokerPool().getNodeFactory().createInstance());
         elem.setOwnerDocument(targetDoc);
         elem.setChildCount(doc.getChildCount());
@@ -120,7 +115,7 @@ public class DOMIndexer {
         targetDoc.appendChild((NodeHandle) elem);
         elem.setChildCount(0);
         // store the document nodes
-        int top = (doc.size > 1) ? 1 : -1;
+        int top = doc.size > 1 ? 1 : -1;
         while(top > 0) {
             store(top, path);
             top = doc.getNextSiblingFor(top);
@@ -170,7 +165,7 @@ public class DOMIndexer {
         switch(doc.nodeKind[nodeNr]) {
 
             case Node.ELEMENT_NODE: {
-                final ElementImpl elem = (ElementImpl) NodePool.getInstance().borrowNode(Node.ELEMENT_NODE);
+                final org.exist.dom.persistent.ElementImpl elem = (org.exist.dom.persistent.ElementImpl) NodePool.getInstance().borrowNode(Node.ELEMENT_NODE);
                 if(stack.isEmpty()) {
                     elem.setNodeId(broker.getBrokerPool().getNodeFactory().createInstance());
                     initElement(nodeNr, elem);
@@ -179,7 +174,7 @@ public class DOMIndexer {
                     targetDoc.appendChild((NodeHandle) elem);
                     elem.setChildCount(0);
                 } else {
-                    final ElementImpl last = stack.peek();
+                    final org.exist.dom.persistent.ElementImpl last = stack.peek();
                     initElement(nodeNr, elem);
                     last.appendChildInternal(prevNode, elem);
                     stack.push(elem);
@@ -196,7 +191,7 @@ public class DOMIndexer {
                 if((prevNode != null) && ((prevNode.getNodeType() == Node.TEXT_NODE) || (prevNode.getNodeType() == Node.CDATA_SECTION_NODE))) {
                     break;
                 }
-                final ElementImpl last = stack.peek();
+                final org.exist.dom.persistent.ElementImpl last = stack.peek();
                 text.setData(new String(doc.characters, doc.alpha[nodeNr], doc.alphaLen[nodeNr]));
                 text.setOwnerDocument(targetDoc);
                 last.appendChildInternal(prevNode, text);
@@ -206,7 +201,7 @@ public class DOMIndexer {
             }
 
             case Node.CDATA_SECTION_NODE: {
-                final ElementImpl last = stack.peek();
+                final org.exist.dom.persistent.ElementImpl last = stack.peek();
                 final org.exist.dom.persistent.CDATASectionImpl cdata = (org.exist.dom.persistent.CDATASectionImpl) NodePool.getInstance().borrowNode(Node.CDATA_SECTION_NODE);
                 cdata.setData(doc.characters, doc.alpha[nodeNr], doc.alphaLen[nodeNr]);
                 cdata.setOwnerDocument(targetDoc);
@@ -224,7 +219,7 @@ public class DOMIndexer {
                     targetDoc.appendChild((NodeHandle) comment);
                     broker.storeNode(transaction, comment, null, indexSpec);
                 } else {
-                    final ElementImpl last = stack.peek();
+                    final org.exist.dom.persistent.ElementImpl last = stack.peek();
                     last.appendChildInternal(prevNode, comment);
                     broker.storeNode(transaction, comment, null, indexSpec);
                     setPrevious(comment);
@@ -241,7 +236,7 @@ public class DOMIndexer {
                     pi.setNodeId(NodeId.DOCUMENT_NODE);
                     targetDoc.appendChild((NodeHandle) pi);
                 } else {
-                    final ElementImpl last = stack.peek();
+                    final org.exist.dom.persistent.ElementImpl last = stack.peek();
                     last.appendChildInternal(prevNode, pi);
                     setPrevious(pi);
                 }
@@ -261,7 +256,7 @@ public class DOMIndexer {
      * @param nodeNr
      * @param elem
      */
-    private void initElement(final int nodeNr, final ElementImpl elem) {
+    private void initElement(final int nodeNr, final org.exist.dom.persistent.ElementImpl elem) {
         final short attribs = (short) doc.getAttributesCountFor(nodeNr);
         elem.setOwnerDocument(targetDoc);
         elem.setAttributes(attribs);
@@ -304,12 +299,12 @@ public class DOMIndexer {
      * @param path   DOCUMENT ME!
      * @throws DOMException
      */
-    private void storeAttributes(final int nodeNr, final ElementImpl elem, final NodePath path) throws DOMException {
+    private void storeAttributes(final int nodeNr, final org.exist.dom.persistent.ElementImpl elem, final NodePath path) throws DOMException {
         int attr = doc.alpha[nodeNr];
         if(attr > -1) {
             while((attr < doc.nextAttr) && (doc.attrParent[attr] == nodeNr)) {
                 final QName qn = doc.attrName[attr];
-                final AttrImpl attrib = (AttrImpl) NodePool.getInstance().borrowNode(Node.ATTRIBUTE_NODE);
+                final org.exist.dom.persistent.AttrImpl attrib = (org.exist.dom.persistent.AttrImpl) NodePool.getInstance().borrowNode(Node.ATTRIBUTE_NODE);
                 attrib.setNodeName(qn, broker.getBrokerPool().getSymbols());
                 attrib.setValue(doc.attrValue[attr]);
                 attrib.setOwnerDocument(targetDoc);
@@ -329,7 +324,7 @@ public class DOMIndexer {
      */
     private void endNode(final int nodeNr, final NodePath currentPath) {
         if(doc.nodeKind[nodeNr] == Node.ELEMENT_NODE) {
-            final ElementImpl last = stack.pop();
+            final org.exist.dom.persistent.ElementImpl last = stack.pop();
             broker.endElement(last, currentPath, null);
             currentPath.removeLastComponent();
             setPrevious(last);

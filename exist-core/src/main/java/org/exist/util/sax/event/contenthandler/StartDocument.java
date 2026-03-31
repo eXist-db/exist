@@ -27,9 +27,9 @@ import org.xml.sax.SAXException;
 /**
  * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
-public class StartDocument implements ContentHandlerEvent {
+public final class StartDocument implements ContentHandlerEvent {
 
-    public final static StartDocument INSTANCE = new StartDocument();
+    public static final StartDocument INSTANCE = new StartDocument();
 
     /**
      * Constructor is private because this class

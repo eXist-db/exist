@@ -22,6 +22,11 @@
 package org.exist.xmlrpc;
 
 import com.evolvedbinary.j8fu.lazy.AtomicLazyValE;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.xmlrpc.XmlRpcException;
@@ -37,11 +42,6 @@ import org.exist.http.servlets.HttpServletRequestWrapper;
 import org.exist.storage.BrokerPool;
 import org.exist.util.Configuration;
 
-import jakarta.servlet.ServletConfig;
-import jakarta.servlet.ServletContext;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.Serial;
 import java.nio.charset.Charset;
@@ -62,7 +62,7 @@ public class RpcServlet extends XmlRpcServlet {
     private static final boolean DEFAULT_USE_DEFAULT_USER = true;
 
     private boolean useDefaultUser = DEFAULT_USE_DEFAULT_USER;
-    private Charset charset = null;
+    private Charset charset;
 
     @Override
     public void init(final ServletConfig pConfig) throws ServletException {
@@ -116,7 +116,7 @@ public class RpcServlet extends XmlRpcServlet {
         } catch (final EXistException e) {
             throw new ServletException(e);
         } finally {
-            if (request != null && request instanceof HttpServletRequestWrapper wrapper) {
+            if (request instanceof HttpServletRequestWrapper wrapper) {
                 wrapper.close();
             }
         }
@@ -157,7 +157,7 @@ public class RpcServlet extends XmlRpcServlet {
         }
     }
 
-    private static class DefaultHandlerMapping extends AbstractReflectiveHandlerMapping {
+    private static final class DefaultHandlerMapping extends AbstractReflectiveHandlerMapping {
         private DefaultHandlerMapping() throws XmlRpcException {
         }
 
@@ -177,7 +177,7 @@ public class RpcServlet extends XmlRpcServlet {
     /**
      * Filters parameters from an existing {@link ServletConfig}.
      */
-    private static class FilteredServletConfig implements ServletConfig {
+    private static final class FilteredServletConfig implements ServletConfig {
         private final ServletConfig config;
         private final Predicate<String> parameterPredicate;
 

@@ -42,39 +42,39 @@ class ItemId {
 	public static final short MAX_ID = (short)0x3FFE;
 	public static final short DEFRAG_LIMIT = (short)0x2FFE;
 	
-	public final static byte getFlags(short id) {
+	public static byte getFlags(short id) {
 		return (byte)((id & LINK_OR_RELOCATED_MASK) >>> 14);
 	}
 	
-	public final static short getId(short id) {
+	public static short getId(short id) {
 		return (short) (id & ID_MASK);
 	}
 	
-	public final static boolean matches(short id, short targetId) {
+	public static boolean matches(short id, short targetId) {
 		return ((short)(id & ID_MASK)) == targetId;
 	}
 	
-	public final static short setIsRelocated(short id) {
+	public static short setIsRelocated(short id) {
 		return (short)(id | RELOCATED_MASK);
 	}
 	
-	public final static boolean isLink(short id) {
+	public static boolean isLink(short id) {
 		return (id & LINK_MASK) == LINK_MASK;
 	}
 	
-	public final static short setIsLink(short id) {
+	public static short setIsLink(short id) {
 		return (short) (id | LINK_MASK);
 	}
 	
-	public final static boolean isRelocated(short id) {
+	public static boolean isRelocated(short id) {
 		return (id & RELOCATED_MASK) == RELOCATED_MASK;
 	} 
 	
-	public final static boolean isLinkOrRelocated(short id) {
+	public static boolean isLinkOrRelocated(short id) {
 	    return (id & LINK_OR_RELOCATED_MASK) != 0;
 	}
 	
-	public final static boolean isOrdinaryRecord(short id) {
+	public static boolean isOrdinaryRecord(short id) {
 	    return (id & LINK_OR_RELOCATED_MASK) == 0;
 	}
 }

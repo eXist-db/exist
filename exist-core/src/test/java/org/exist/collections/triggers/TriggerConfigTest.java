@@ -21,9 +21,6 @@
  */
 package org.exist.collections.triggers;
 
-import java.io.IOException;
-import java.util.Arrays;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
@@ -33,21 +30,22 @@ import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.util.LockException;
 import org.exist.xmldb.IndexQueryService;
 import org.junit.*;
-
-import static org.exist.collections.CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.*;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XQueryService;
 
-import org.junit.runners.Parameterized.Parameters;
+import java.io.IOException;
+import java.util.Arrays;
+
+import static org.exist.collections.CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 /**
  * Test proper configuration of triggers in collection.xconf, in particular if there's
@@ -82,7 +80,7 @@ public class TriggerConfigTest {
     	"<exist:collection xmlns:exist='http://exist-db.org/collection-config/1.0'>" +
         "</exist:collection>";
 
-    private final static String DOCUMENT_CONTENT =
+    private static final String DOCUMENT_CONTENT =
 		  "<test>"
 		+ "<item id='1'><price>5.6</price><stock>22</stock></item>"
 		+ "<item id='2'><price>7.4</price><stock>43</stock></item>"
@@ -90,7 +88,7 @@ public class TriggerConfigTest {
 		+ "<item id='4'><price>65.54</price><stock>16</stock></item>"
 		+ "</test>";
 
-    private final static String BASE_URI = "xmldb:exist://";
+    private static final String BASE_URI = "xmldb:exist://";
 
     @Parameter
     public String testCollection;

@@ -25,7 +25,6 @@ package org.exist.xquery.functions.fn;
 import com.googlecode.junittoolbox.ParallelParameterized;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.util.FileUtils;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -49,9 +48,7 @@ import java.nio.file.Path;
 import java.util.Arrays;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 import static org.xmldb.api.base.ResourceType.XML_RESOURCE;
 
 @RunWith(ParallelParameterized.class)

@@ -21,10 +21,6 @@
  */
 package org.exist.xmldb.concurrent;
 
-import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.List;
-
 import org.exist.util.FileUtils;
 import org.exist.xmldb.IndexQueryService;
 import org.exist.xmldb.XmldbURI;
@@ -32,6 +28,10 @@ import org.exist.xmldb.concurrent.action.RemoveAppendAction;
 import org.junit.After;
 import org.junit.Before;
 import org.xmldb.api.base.XMLDBException;
+
+import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.Assert.assertNotNull;
 

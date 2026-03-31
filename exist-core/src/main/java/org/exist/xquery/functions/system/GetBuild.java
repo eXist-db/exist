@@ -40,7 +40,7 @@ import org.exist.xquery.value.Type;
  */
 public class GetBuild extends BasicFunction {
 
-    public final static FunctionSignature signature = new FunctionSignature(
+    public static final FunctionSignature signature = new FunctionSignature(
         new QName("get-build", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
         "Returns the build of eXist running this query.",
         FunctionSignature.NO_ARGS,

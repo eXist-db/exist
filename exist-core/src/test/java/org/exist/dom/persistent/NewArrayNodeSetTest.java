@@ -94,7 +94,7 @@ public class NewArrayNodeSetTest {
     }
 
     private static NewArrayNodeSet mockNewArrayNodeSet(final int size) {
-        final NodeProxy mockNodes[] = new NodeProxy[size];
+        final NodeProxy[] mockNodes = new NodeProxy[size];
         for (int i = 0; i < mockNodes.length; i++) {
             final NodeProxy mockNodeProxy = createMock(NodeProxy.class);
             replay(mockNodeProxy);

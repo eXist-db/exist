@@ -21,13 +21,13 @@
  */
 package org.exist.security.realm.ldap;
 
-import javax.naming.NamingException;
-
 import org.exist.config.Configurable;
 import org.exist.config.Configuration;
 import org.exist.config.Configurator;
 import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationFieldAsElement;
+
+import javax.naming.NamingException;
 
 /**
  * @author aretter
@@ -36,19 +36,19 @@ import org.exist.config.annotation.ConfigurationFieldAsElement;
 public class LDAPSearchContext implements Configurable {
 
     @ConfigurationFieldAsElement("base")
-    protected String base = null;
+    protected String base;
 
     @ConfigurationFieldAsElement("default-username")
-    protected String defaultUsername = null;
+    protected String defaultUsername;
 
     @ConfigurationFieldAsElement("default-password")
-    protected String defaultPassword = null;
+    protected String defaultPassword;
 
     @ConfigurationFieldAsElement("account")
-    protected LDAPSearchAccount searchAccount = null;
+    protected LDAPSearchAccount searchAccount;
 
     @ConfigurationFieldAsElement("group")
-    protected LDAPSearchGroup searchGroup = null;
+    protected LDAPSearchGroup searchGroup;
 
     private final Configuration configuration;
 
@@ -94,7 +94,7 @@ public class LDAPSearchContext implements Configurable {
 
     @Override
     public boolean isConfigured() {
-        return (configuration != null);
+        return configuration != null;
     }
 
     @Override

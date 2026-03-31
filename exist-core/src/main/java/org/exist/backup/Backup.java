@@ -49,8 +49,8 @@ import java.awt.*;
 import java.io.*;
 import java.nio.file.Path;
 import java.time.Instant;
-import java.util.List;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -139,7 +139,7 @@ public class Backup {
                 out.append(t);
             }
         }
-        return (out.toString());
+        return out.toString();
     }
 
 
@@ -306,7 +306,7 @@ public class Backup {
             //The name should have come from an XmldbURI.toString() call
             attr.addAttribute(Namespaces.EXIST_NS, "name", "name", "CDATA", current.getName());
             writeUnixStylePermissionAttributes(attr, currentPerms);
-            attr.addAttribute(Namespaces.EXIST_NS, "created", "created", "CDATA", "" + new DateTimeValue(cur.getCreationTime()));
+            attr.addAttribute(Namespaces.EXIST_NS, "created", "created", "CDATA", String.valueOf(new DateTimeValue(cur.getCreationTime())));
             attr.addAttribute(Namespaces.EXIST_NS, "deduplicate-blobs", "deduplicate-blobs", "CDATA", Boolean.toString(deduplicateBlobs));
             attr.addAttribute(Namespaces.EXIST_NS, "version", "version", "CDATA", String.valueOf(BACKUP_FORMAT_VERSION));
 
@@ -411,12 +411,12 @@ public class Backup {
                     Instant date = ris.getCreationTime();
 
                     if (date != null) {
-                        attr.addAttribute(Namespaces.EXIST_NS, "created", "created", "CDATA", "" + new DateTimeValue(date));
+                        attr.addAttribute(Namespaces.EXIST_NS, "created", "created", "CDATA", String.valueOf(new DateTimeValue(date)));
                     }
                     date = ris.getLastModificationTime();
 
                     if (date != null) {
-                        attr.addAttribute(Namespaces.EXIST_NS, "modified", "modified", "CDATA", "" + new DateTimeValue(date));
+                        attr.addAttribute(Namespaces.EXIST_NS, "modified", "modified", "CDATA", String.valueOf(new DateTimeValue(date)));
                     }
 
                     attr.addAttribute(Namespaces.EXIST_NS, "filename", "filename", "CDATA", filename);
@@ -456,7 +456,7 @@ public class Backup {
             // write sub-collections
             for (final String collection : collections) {
 
-                if (current.getName().equals(XmldbURI.SYSTEM_COLLECTION) && "temp".equals(collection)) {
+                if (XmldbURI.SYSTEM_COLLECTION.equals(current.getName()) && "temp".equals(collection)) {
                     continue;
                 }
                 attr.clear();
@@ -480,7 +480,7 @@ public class Backup {
         for (final String collection : collections) {
             final Collection child = current.getChildCollection(collection);
 
-            if (child.getName().equals(XmldbURI.TEMP_COLLECTION)) {
+            if (XmldbURI.TEMP_COLLECTION.equals(child.getName())) {
                 continue;
             }
             output.newCollection(encode(URIUtils.urlDecodeUtf8(collection)));

@@ -21,11 +21,10 @@
  */
 package org.exist.http.urlrewrite;
 
-import org.w3c.dom.Element;
-
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.http.HttpServletRequest;
+import org.w3c.dom.Element;
 
 public class PassThrough extends Forward {
     private final ServletConfig servletConfig;

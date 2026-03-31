@@ -21,46 +21,6 @@
  */
 package org.exist.client;
 
-import java.awt.BorderLayout;
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.event.ItemEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.io.*;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JProgressBar;
-import javax.swing.JSpinner;
-import javax.swing.JSplitPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTextField;
-import javax.swing.JToolBar;
-import javax.swing.SpinnerNumberModel;
-import javax.swing.SwingWorker;
-import javax.swing.border.BevelBorder;
-import javax.swing.event.PopupMenuEvent;
-import javax.swing.event.PopupMenuListener;
-import javax.xml.transform.OutputKeys;
-
 import org.exist.security.PermissionDeniedException;
 import org.exist.util.Holder;
 import org.exist.xmldb.EXistXQueryService;
@@ -80,6 +40,27 @@ import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceIterator;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
+
+import javax.swing.*;
+import javax.swing.border.BevelBorder;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
+import javax.xml.transform.OutputKeys;
+import java.awt.BorderLayout;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.event.ItemEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.*;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.xmldb.api.base.ResourceType.XML_RESOURCE;
@@ -105,15 +86,15 @@ public class QueryDialog extends JFrame {
     private RTextScrollPane resultDisplayScrollPane;
     private RSyntaxTextArea exprDisplay;
     private RTextScrollPane exprDisplayScrollPane;
-    private JComboBox<String> collections = null;
+    private JComboBox<String> collections;
     private SpinnerNumberModel count;
     private DefaultComboBoxModel<String> history = new DefaultComboBoxModel<>();
     private JTextField statusMessage;
     private JProgressBar progress;
     private JButton submitButton;
     private JButton killButton;
-    private QueryRunnable queryRunnable = null;
-    private Resource resource = null;
+    private QueryRunnable queryRunnable;
+    private Resource resource;
 
     private QueryDialog(final InteractiveClient client, final Collection collection, final Properties properties, boolean loadedFromDb) {
         super(Messages.getString("QueryDialog.0"));
@@ -644,12 +625,13 @@ public class QueryDialog extends JFrame {
                     context.runCleanupTasks();
                 }
                 context = null;
-                if (result != null)
+                if (result != null) {
                     try {
                         result.clear();
                     } catch (final XMLDBException e) {
                         // ignore error
                     }
+                }
             }
             if (client.queryHistory.isEmpty() || !client.queryHistory.getLast().equals(xpath)) {
                 client.addToHistory(xpath);

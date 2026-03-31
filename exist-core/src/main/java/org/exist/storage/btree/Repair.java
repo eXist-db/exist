@@ -77,7 +77,7 @@ public class Repair {
             };
 
             if (btree == null) {
-                System.console().printf("Unkown index: %s\n", id);
+                System.console().printf("Unkown index: %s%n", id);
                 return;
             }
 
@@ -89,7 +89,7 @@ public class Repair {
             }
 
         } catch (Exception e) {
-            System.console().printf("An exception occurred during repair: %s\n", e.getMessage());
+            System.console().printf("An exception occurred during repair: %s%n", e.getMessage());
             e.printStackTrace();
         }
     }

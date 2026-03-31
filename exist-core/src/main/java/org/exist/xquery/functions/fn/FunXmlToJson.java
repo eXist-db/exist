@@ -66,9 +66,9 @@ public class FunXmlToJson extends BasicFunction {
 
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
         final Sequence result;
-        final Sequence seq = (getArgumentCount() > 0) ? args[0] : Sequence.EMPTY_SEQUENCE;
+        final Sequence seq = getArgumentCount() > 0 ? args[0] : Sequence.EMPTY_SEQUENCE;
         //TODO: implement handling of options
-        final MapType options = (getArgumentCount() == 2) ? (MapType) args[1].itemAt(0) : new MapType(this, context);
+        final MapType options = getArgumentCount() == 2 ? (MapType) args[1].itemAt(0) : new MapType(this, context);
 
         if (seq.isEmpty()) {
             result = Sequence.EMPTY_SEQUENCE;
@@ -176,6 +176,7 @@ public class FunXmlToJson extends BasicFunction {
                                 break;
                             case "map":
                                 while (!mapkeyArrayList.isEmpty() && mapkeyArrayList.removeLast() != stackSeparator) {
+                                    continue;
                                 }
                                 jsonGenerator.writeEndObject();
                                 break;
@@ -194,7 +195,7 @@ public class FunXmlToJson extends BasicFunction {
                                 }
                                 break;
                             case "string":
-                                if (elementValueIsEscaped == true) {
+                                if (elementValueIsEscaped) {
                                     //TODO: any unescaped occurrence of quotation mark, backspace, form-feed, newline, carriage return, tab, or solidus is replaced by \", \b, \f, \n, \r, \t, or \/ respectively;
                                     //TODO: any other codepoint in the range 1-31 or 127-159 is replaced by an escape in the form <backslash>uHHHH where HHHH is the upper-case hexadecimal representation of the codepoint value.
                                     jsonGenerator.writeString(unescapeEscapedJsonString(tempString));
@@ -236,7 +237,6 @@ public class FunXmlToJson extends BasicFunction {
     private String unescapeEscapedJsonString(final String escapedJsonString) throws IOException, XPathException {
         final JsonFactory jsonFactory = new JsonFactory();
         final StringBuilder unescapedJsonStringBuilder = new StringBuilder();
-        final String unescapedJsonString;
         try {
             final JsonParser jsonParser = jsonFactory.createParser("\"" + escapedJsonString + "\"");
             while (!jsonParser.isClosed()) {
@@ -249,7 +249,6 @@ public class FunXmlToJson extends BasicFunction {
             logger.error("fn:xml-to-json(): FOJS0007: Bad JSON escape sequence. XML claims string is escaped. String does not parse as valid JSON string. Offending string in double quotes : \"{}\"", escapedJsonString);
             throw new XPathException(this, ErrorCodes.FOJS0007, "Bad JSON escape sequence. XML claims string is escaped. String does not parse as valid JSON string. Offending string in error logs.");
         }
-        unescapedJsonString = unescapedJsonStringBuilder.toString();
-        return unescapedJsonString;
+        return unescapedJsonStringBuilder.toString();
     }
 }

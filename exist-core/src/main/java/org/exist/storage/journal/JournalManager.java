@@ -63,8 +63,8 @@ public class JournalManager implements BrokerPoolService {
     @GuardedBy("this") private boolean groupCommits;
     // package-private accessibility for testing
     @GuardedBy("this") Journal journal;
-    @GuardedBy("this") private boolean journallingDisabled = false;
-    @GuardedBy("this") private boolean initialized = false;
+    @GuardedBy("this") private boolean journallingDisabled;
+    @GuardedBy("this") private boolean initialized;
 
     private final List<JournalListener> journalListeners = new CopyOnWriteArrayList<>();
 

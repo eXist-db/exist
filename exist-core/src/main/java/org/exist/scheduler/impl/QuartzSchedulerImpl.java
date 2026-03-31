@@ -21,14 +21,6 @@
  */
 package org.exist.scheduler.impl;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.*;
-import java.util.Calendar;
-import java.util.stream.Collectors;
-
 import com.evolvedbinary.j8fu.Either;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -40,25 +32,27 @@ import org.exist.storage.BrokerPoolService;
 import org.exist.storage.BrokerPoolServiceException;
 import org.exist.storage.SystemTask;
 import org.exist.util.Configuration;
-
 import org.exist.util.ConfigurationHelper;
 import org.quartz.*;
-
-import static org.exist.util.ThreadUtils.nameInstanceSchedulerThread;
-import static org.exist.util.ThreadUtils.nameInstanceThread;
-import static org.exist.util.ThreadUtils.newInstanceSubThreadGroup;
-import static org.quartz.CronScheduleBuilder.cronSchedule;
-import static org.quartz.JobBuilder.newJob;
-import static org.quartz.SimpleScheduleBuilder.simpleSchedule;
-import static org.quartz.TriggerBuilder.newTrigger;
-
-import static org.exist.scheduler.JobDescription.*;
-import static org.quartz.impl.StdSchedulerFactory.*;
-
 import org.quartz.impl.StdSchedulerFactory;
 import org.quartz.impl.matchers.GroupMatcher;
 
 import javax.annotation.Nullable;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.*;
+import java.util.Calendar;
+import java.util.stream.Collectors;
+
+import static org.exist.scheduler.JobDescription.*;
+import static org.exist.util.ThreadUtils.*;
+import static org.quartz.CronScheduleBuilder.cronSchedule;
+import static org.quartz.JobBuilder.newJob;
+import static org.quartz.SimpleScheduleBuilder.simpleSchedule;
+import static org.quartz.TriggerBuilder.newTrigger;
+import static org.quartz.impl.StdSchedulerFactory.*;
 
 /**
  * A Scheduler to trigger Startup, System and User defined jobs.
@@ -68,9 +62,9 @@ import javax.annotation.Nullable;
  */
 public class QuartzSchedulerImpl implements Scheduler, BrokerPoolService {
 
-    private final static Logger LOG = LogManager.getLogger(QuartzSchedulerImpl.class);
+    private static final Logger LOG = LogManager.getLogger(QuartzSchedulerImpl.class);
 
-    private final static String PROPERTIES_FILE_NAME = "quartz.properties";
+    private static final String PROPERTIES_FILE_NAME = "quartz.properties";
 
     // the real scheduler
     private org.quartz.Scheduler scheduler;
@@ -113,7 +107,7 @@ public class QuartzSchedulerImpl implements Scheduler, BrokerPoolService {
         run(); // start running all the defined jobs
     }
 
-    private final static Properties defaultQuartzProperties = new Properties();
+    private static final Properties defaultQuartzProperties = new Properties();
 
     static {
         defaultQuartzProperties.setProperty(PROP_SCHED_RMI_EXPORT, "false");
@@ -468,7 +462,7 @@ public class QuartzSchedulerImpl implements Scheduler, BrokerPoolService {
      */
     @Override
     public ScheduledJobInfo[] getExecutingJobs() {
-        ScheduledJobInfo result[] = null;
+        ScheduledJobInfo[] result = null;
         try {
             final List<ScheduledJobInfo> jobs = getScheduler()
                 .getCurrentlyExecutingJobs()
@@ -595,7 +589,7 @@ public class QuartzSchedulerImpl implements Scheduler, BrokerPoolService {
     private static class QuartzSchedulerCreator implements Runnable {
         private final Properties quartzProperties;
         @Nullable
-        private volatile Either<SchedulerException, org.quartz.Scheduler> scheduler = null;
+        private volatile Either<SchedulerException, org.quartz.Scheduler> scheduler;
 
         public QuartzSchedulerCreator(final Properties quartzProperties) {
             this.quartzProperties = quartzProperties;

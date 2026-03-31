@@ -25,12 +25,7 @@ import org.exist.dom.QName;
 import org.exist.http.servlets.ResponseWrapper;
 import org.exist.xquery.*;
 import org.exist.xquery.functions.response.StrictResponseFunction;
-import org.exist.xquery.value.AnyURIValue;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 import javax.annotation.Nonnull;
 
@@ -40,7 +35,7 @@ import javax.annotation.Nonnull;
  */
 public class EncodeURL extends StrictResponseFunction {
 
-    public final static FunctionSignature signature =
+    public static final FunctionSignature signature =
             new FunctionSignature(
                     new QName("encode-url", SessionModule.NAMESPACE_URI, SessionModule.PREFIX),
                     "Encodes the specified URL with the current HTTP session-id.",

@@ -21,14 +21,6 @@
  */
 package org.exist.xquery.functions.validation;
 
-import java.net.MalformedURLException;
-
-import javax.xml.XMLConstants;
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
-import javax.xml.validation.Validator;
-
 import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.dom.memtree.NodeImpl;
@@ -38,13 +30,14 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.BooleanValue;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
+import org.exist.xquery.value.*;
+
+import javax.xml.XMLConstants;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+import javax.xml.validation.Validator;
+import java.net.MalformedURLException;
 
 /**
  *   xQuery function for validation of XML instance documents
@@ -77,7 +70,7 @@ public class Jaxv extends BasicFunction  {
             "(RELAX NG 1.0) http://relaxng.org/ns/structure/1.0";
 
     // Setup function signature
-    public final static FunctionSignature[] signatures = {
+    public static final FunctionSignature[] signatures = {
         
         new FunctionSignature(
                 new QName("jaxv", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX),
@@ -229,8 +222,7 @@ public class Jaxv extends BasicFunction  {
             context.pushDocumentContext();
             try {
                 final MemTreeBuilder builder = context.getDocumentBuilder();
-                final NodeImpl result = Shared.writeReport(report, builder);
-                return result;
+                return Shared.writeReport(report, builder);
             } finally {
                 context.popDocumentContext();
             }

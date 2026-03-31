@@ -24,6 +24,7 @@ package org.exist.vector;
 import ai.djl.huggingface.tokenizers.Encoding;
 import ai.djl.huggingface.tokenizers.HuggingFaceTokenizer;
 import ai.onnxruntime.OnnxTensor;
+import ai.onnxruntime.OnnxValue;
 import ai.onnxruntime.OrtEnvironment;
 import ai.onnxruntime.OrtSession;
 import ai.onnxruntime.OrtSession.Result;
@@ -32,8 +33,6 @@ import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import ai.onnxruntime.OnnxValue;
-
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;

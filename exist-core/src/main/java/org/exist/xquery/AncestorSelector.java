@@ -30,10 +30,10 @@ import org.exist.numbering.NodeId;
 public class AncestorSelector implements NodeSelector {
 
     private NodeSet ancestors;
-    private NodeSet descendants = null;
-    private int contextId;
-    private boolean includeSelf;
-    private boolean copyMatches;
+    private NodeSet descendants;
+    private final int contextId;
+    private final boolean includeSelf;
+    private final boolean copyMatches;
 
     public AncestorSelector(NodeSet descendants, int contextId,
             boolean includeSelf, boolean copyMatches) {

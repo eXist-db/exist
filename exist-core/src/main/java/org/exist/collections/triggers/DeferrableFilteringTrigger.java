@@ -46,7 +46,7 @@ import java.util.Deque;
  */
 public abstract class DeferrableFilteringTrigger extends FilteringTrigger {
 
-    private boolean defer = false;
+    private boolean defer;
     protected Deque<SAXEvent> deferred = new ArrayDeque<>();
 
     public boolean isDeferring() {
@@ -242,29 +242,29 @@ public abstract class DeferrableFilteringTrigger extends FilteringTrigger {
         SAXEvent event = null;
         while((event = deferred.poll()) != null) {
             switch (event) {
-                case SetDocumentLocator setDocumentLocator -> setDocumentLocator_deferred(setDocumentLocator.locator);
-                case StartDocument startDocument -> startDocument_deferred();
-                case EndDocument endDocument -> endDocument_deferred();
+                case SetDocumentLocator setDocumentLocator -> setDocumentLocatorDeferred(setDocumentLocator.locator);
+                case StartDocument startDocument -> startDocumentDeferred();
+                case EndDocument endDocument -> endDocumentDeferred();
                 case StartPrefixMapping startPrefixMapping ->
-                        startPrefixMapping_deferred(startPrefixMapping.prefix, startPrefixMapping.uri);
-                case EndPrefixMapping endPrefixMapping -> endPrefixMapping_deferred(endPrefixMapping.prefix);
+                        startPrefixMappingDeferred(startPrefixMapping.prefix, startPrefixMapping.uri);
+                case EndPrefixMapping endPrefixMapping -> endPrefixMappingDeferred(endPrefixMapping.prefix);
                 case StartElement startElement ->
-                        startElement_deferred(startElement.namespaceURI, startElement.localName, startElement.qname, startElement.attributes);
+                        startElementDeferred(startElement.namespaceURI, startElement.localName, startElement.qname, startElement.attributes);
                 case EndElement endElement ->
-                        endElement_deferred(endElement.namespaceURI, endElement.localName, endElement.qname);
-                case Characters characters -> characters_deferred(characters.ch, 0, characters.ch.length);
+                        endElementDeferred(endElement.namespaceURI, endElement.localName, endElement.qname);
+                case Characters characters -> charactersDeferred(characters.ch, 0, characters.ch.length);
                 case IgnorableWhitespace ignorableWhitespace ->
-                        ignorableWhitespace_deferred(ignorableWhitespace.ch, 0, ignorableWhitespace.ch.length);
+                        ignorableWhitespaceDeferred(ignorableWhitespace.ch, 0, ignorableWhitespace.ch.length);
                 case ProcessingInstruction processingInstruction ->
-                        processingInstruction_deferred(processingInstruction.target, processingInstruction.data);
-                case SkippedEntity skippedEntity -> skippedEntity_deferred(skippedEntity.name);
-                case StartDTD startDTD -> startDTD_deferred(startDTD.name, startDTD.publicId, startDTD.systemId);
-                case EndDTD endDTD -> endDTD_deferred();
-                case StartEntity startEntity -> startEntity_deferred(startEntity.name);
-                case EndEntity endEntity -> endEntity_deferred(endEntity.name);
-                case StartCDATA startCDATA -> startCDATA_deferred();
-                case EndCDATA endCDATA -> endCDATA_deferred();
-                case Comment comment -> comment_deferred(comment.ch, 0, comment.ch.length);
+                        processingInstructionDeferred(processingInstruction.target, processingInstruction.data);
+                case SkippedEntity skippedEntity -> skippedEntityDeferred(skippedEntity.name);
+                case StartDTD startDTD -> startDTDDeferred(startDTD.name, startDTD.publicId, startDTD.systemId);
+                case EndDTD endDTD -> endDTDDeferred();
+                case StartEntity startEntity -> startEntityDeferred(startEntity.name);
+                case EndEntity endEntity -> endEntityDeferred(endEntity.name);
+                case StartCDATA startCDATA -> startCDATADeferred();
+                case EndCDATA endCDATA -> endCDATADeferred();
+                case Comment comment -> commentDeferred(comment.ch, 0, comment.ch.length);
                 default -> {
                 }
             }
@@ -272,77 +272,77 @@ public abstract class DeferrableFilteringTrigger extends FilteringTrigger {
     }
 
     //<editor-fold desc="Deferred ContentHandler">
-    protected void setDocumentLocator_deferred(final Locator locator) {
+    protected void setDocumentLocatorDeferred(final Locator locator) {
         super.setDocumentLocator(locator);
     }
 
-    protected void startDocument_deferred() throws SAXException {
+    protected void startDocumentDeferred() throws SAXException {
         super.startDocument();
     }
 
-    protected void endDocument_deferred() throws SAXException {
+    protected void endDocumentDeferred() throws SAXException {
         super.endDocument();
     }
 
-    protected void startPrefixMapping_deferred(final String prefix, final String uri) throws SAXException {
+    protected void startPrefixMappingDeferred(final String prefix, final String uri) throws SAXException {
         super.startPrefixMapping(prefix, uri);
     }
 
-    protected void endPrefixMapping_deferred(final String prefix) throws SAXException {
+    protected void endPrefixMappingDeferred(final String prefix) throws SAXException {
         super.endPrefixMapping(prefix);
     }
 
-    protected void startElement_deferred(final String namespaceUri, final String localName, final String qName, final Attributes attrs) throws SAXException {
+    protected void startElementDeferred(final String namespaceUri, final String localName, final String qName, final Attributes attrs) throws SAXException {
         super.startElement(namespaceUri, localName, qName, attrs);
     }
 
-    protected void endElement_deferred(final String namespaceUri, final String localName, final String qName) throws SAXException {
+    protected void endElementDeferred(final String namespaceUri, final String localName, final String qName) throws SAXException {
         super.endElement(namespaceUri, localName, qName);
     }
 
-    protected void characters_deferred(final char[] ch, final int start, final int length) throws SAXException {
+    protected void charactersDeferred(final char[] ch, final int start, final int length) throws SAXException {
         super.characters(ch, start, length);
     }
 
-    protected void ignorableWhitespace_deferred(final char[] ch, final int start, final int length) throws SAXException {
+    protected void ignorableWhitespaceDeferred(final char[] ch, final int start, final int length) throws SAXException {
         super.ignorableWhitespace(ch, start, length);
     }
 
-    protected void processingInstruction_deferred(final String target, final String data) throws SAXException {
+    protected void processingInstructionDeferred(final String target, final String data) throws SAXException {
         super.processingInstruction(target, data);
     }
 
-    protected void skippedEntity_deferred(final String name) throws SAXException {
+    protected void skippedEntityDeferred(final String name) throws SAXException {
         super.skippedEntity(name);
     }
     //</editor-fold>
 
     //<editor-fold desc="Deferred Lexical">
-    protected void startDTD_deferred(final String name, final String publicId, final String systemId) throws SAXException {
+    protected void startDTDDeferred(final String name, final String publicId, final String systemId) throws SAXException {
         super.startDTD(name, publicId, systemId);
     }
     
-    protected void endDTD_deferred() throws SAXException {
+    protected void endDTDDeferred() throws SAXException {
         super.endDTD();
     }
     
-    protected void startEntity_deferred(final String name) throws SAXException {
+    protected void startEntityDeferred(final String name) throws SAXException {
         super.startEntity(name);
     }
     
-    protected void endEntity_deferred(final String name) throws SAXException {
+    protected void endEntityDeferred(final String name) throws SAXException {
         super.endEntity(name);
     }
     
-    protected void startCDATA_deferred() throws SAXException {
+    protected void startCDATADeferred() throws SAXException {
         super.startCDATA();
     }
     
-    protected void endCDATA_deferred() throws SAXException {
+    protected void endCDATADeferred() throws SAXException {
         super.endCDATA();
     }
     
-    protected void comment_deferred(final char[] ch, final int start, final int length) throws SAXException {
+    protected void commentDeferred(final char[] ch, final int start, final int length) throws SAXException {
         super.comment(ch, start, length);
     }
     //</editor-fold>

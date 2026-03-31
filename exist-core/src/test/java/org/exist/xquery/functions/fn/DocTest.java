@@ -31,27 +31,22 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.util.ExistSAXParserFactory;
+import org.exist.xmldb.EXistResource;
+import org.exist.xmldb.LocalXMLResource;
 import org.exist.xquery.*;
 import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.Sequence;
 import org.junit.*;
-
-import static com.evolvedbinary.j8fu.Either.Left;
-import static org.junit.Assert.*;
-
-import org.exist.xmldb.EXistResource;
-import org.exist.xmldb.LocalXMLResource;
 import org.w3c.dom.Node;
-
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
-import org.xmldb.api.modules.BinaryResource;
-import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.modules.BinaryResource;
+import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmlunit.builder.DiffBuilder;
 import org.xmlunit.builder.Input;
@@ -67,6 +62,9 @@ import java.io.StringReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import static com.evolvedbinary.j8fu.Either.Left;
+import static org.junit.Assert.*;
+
 /**
  *
  * @author Joe Wicentowski
@@ -78,11 +76,12 @@ public class DocTest {
     @ClassRule
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
-    private static SAXParserFactory saxParserFactory = ExistSAXParserFactory.getSAXParserFactory();
+    private static final SAXParserFactory saxParserFactory = ExistSAXParserFactory.getSAXParserFactory();
     static {
         saxParserFactory.setNamespaceAware(true);
     }
-    private Collection test = null;
+
+    private Collection test;
 
     @Before
     public void setUp() throws XMLDBException {

@@ -21,10 +21,10 @@
  */
 package org.exist.xquery;
 
-import org.exist.dom.persistent.*;
-import org.exist.indexing.StructuralIndex;
 import org.exist.dom.memtree.InMemoryNodeSet;
 import org.exist.dom.memtree.NodeImpl;
+import org.exist.dom.persistent.*;
+import org.exist.indexing.StructuralIndex;
 import org.exist.numbering.NodeId;
 import org.exist.stax.*;
 import org.exist.storage.ElementValue;
@@ -52,23 +52,23 @@ public class LocationStep extends Step {
 
     private static final int INDEX_SCAN_THRESHOLD = 10000;
 
-    private NodeSet currentSet = null;
-    private DocumentSet currentDocs = null;
-    protected UpdateListener listener = null;
-    protected Expression parent = null;
+    private NodeSet currentSet;
+    private DocumentSet currentDocs;
+    protected UpdateListener listener;
+    protected Expression parent;
 
     // Fields for caching the last result
-    protected CachedResult cached = null;
+    protected CachedResult cached;
 
     //private int parentDeps = Dependency.UNKNOWN_DEPENDENCY;
-    private boolean preloadedData = false;
-    protected boolean optimized = false;
+    private boolean preloadedData;
+    protected boolean optimized;
 //    private boolean inUpdate = false;
-    private boolean useDirectChildSelect = false;
+    private boolean useDirectChildSelect;
     private boolean applyPredicate = true;
 
     // Cache for the current NodeTest type
-    private Integer nodeTestType = null;
+    private Integer nodeTestType;
 
     /**
      * Creates a new instance.
@@ -879,7 +879,7 @@ public class LocationStep extends Step {
             // TODO : no test on preloaded data ?
             final DocumentSet docs = getDocumentSet(contextSet);
             synchronized (context) {
-                if (currentSet == null || currentDocs == null || !(docs.equalDocs(currentDocs))) {
+                if (currentSet == null || currentDocs == null || !docs.equalDocs(currentDocs)) {
                     final StructuralIndex index = context.getBroker().getStructuralIndex();
                     if (context.getProfiler().isEnabled()) {
                         context.getProfiler().message(
@@ -966,7 +966,7 @@ public class LocationStep extends Step {
             // TODO : no test on preloaded data ?
             final DocumentSet docs = getDocumentSet(contextSet);
             synchronized (context) {
-                if (currentSet == null || currentDocs == null || !(docs.equalDocs(currentDocs))) {
+                if (currentSet == null || currentDocs == null || !docs.equalDocs(currentDocs)) {
                     final StructuralIndex index = context.getBroker().getStructuralIndex();
                     if (context.getProfiler().isEnabled()) {
                         context.getProfiler().message(this, Profiler.OPTIMIZATIONS, "OPTIMIZATION",
@@ -1281,7 +1281,7 @@ public class LocationStep extends Step {
         final NodeTest test;
         final NodeSet result;
         final int limit;
-        int nodesRead = 0;
+        int nodesRead;
         final int contextId;
 
         AbstractFilterBase(final NodeTest test, final NodeSet result, final int contextId, final int limit) {
@@ -1299,7 +1299,7 @@ public class LocationStep extends Step {
     private class FollowingSiblingFilter extends AbstractFilterBase {
         final NodeProxy start;
         final int level;
-        boolean sibling = false;
+        boolean sibling;
 
         FollowingSiblingFilter(final NodeTest test, final NodeProxy start, final NodeSet result,
                 final int contextId, final int limit) {
@@ -1399,7 +1399,7 @@ public class LocationStep extends Step {
     private class FollowingFilter extends AbstractFilterBase {
         final NodeProxy root;
         final NodeProxy referenceNode;
-        boolean isAfter = false;
+        boolean isAfter;
 
         FollowingFilter(final NodeTest test, final NodeProxy root, final NodeProxy referenceNode, final NodeSet result,
                 final int contextId, final int limit) {

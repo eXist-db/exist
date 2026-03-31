@@ -34,8 +34,8 @@ package org.exist.storage.txn;
 
 public class CountingTxnListener implements TxnListener {
 
-    private int commit = 0;
-    private int abort = 0;
+    private int commit;
+    private int abort;
 
     @Override
     public void commit() {

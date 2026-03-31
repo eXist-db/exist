@@ -22,12 +22,9 @@
 package org.exist.indexing;
 
 import org.exist.collections.Collection;
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.DocumentSet;
-import org.exist.dom.persistent.IStoredNode;
-import org.exist.dom.persistent.NodeProxy;
-import org.exist.dom.persistent.NodeSet;
+import org.exist.dom.persistent.*;
 import org.exist.indexing.StreamListener.ReindexMode;
+import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.NodePath;
 import org.exist.util.DatabaseConfigurationException;
@@ -37,7 +34,6 @@ import org.exist.xquery.XQueryContext;
 import org.w3c.dom.NodeList;
 
 import java.util.Map;
-import org.exist.security.PermissionDeniedException;
 
 /**
  * Provide concurrent access to the index structure. Implements the core operations on the index.

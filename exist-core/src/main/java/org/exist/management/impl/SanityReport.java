@@ -21,10 +21,6 @@
  */
 package org.exist.management.impl;
 
-import java.util.*;
-
-import javax.management.*;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
@@ -40,31 +36,34 @@ import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
 
+import javax.management.*;
+import java.util.*;
+
 public class SanityReport extends NotificationBroadcasterSupport implements SanityReportMXBean {
 
-    private final static Logger LOG = LogManager.getLogger(SanityReport.class.getName());
+    private static final Logger LOG = LogManager.getLogger(SanityReport.class.getName());
 
-    public final static String STATUS_OK = "OK";
-    public final static String STATUS_FAIL = "FAIL";
+    public static final String STATUS_OK = "OK";
+    public static final String STATUS_FAIL = "FAIL";
 
-    public final static StringSource TEST_XQUERY = new StringSource("<r>{current-dateTime()}</r>");
+    public static final StringSource TEST_XQUERY = new StringSource("<r>{current-dateTime()}</r>");
 
-    public final static int PING_WAITING = -1;
-    public final static int PING_ERROR = -2;
+    public static final int PING_WAITING = -1;
+    public static final int PING_ERROR = -2;
 
-    private static List<ErrorReport> NO_ERRORS = new LinkedList<>();
+    private static final List<ErrorReport> NO_ERRORS = new LinkedList<>();
 
-    private int seqNum = 0;
+    private int seqNum;
 
-    private Date actualCheckStart = null;
+    private Date actualCheckStart;
 
-    private Date lastCheckStart = null;
+    private Date lastCheckStart;
 
-    private Date lastCheckEnd = null;
+    private Date lastCheckEnd;
 
     private String lastActionInfo = "nothing done";
 
-    private long lastPingRespTime = 0;
+    private long lastPingRespTime;
 
     private String output = "";
 
@@ -72,7 +71,7 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
 
     private List<ErrorReport> errors = NO_ERRORS;
 
-    private BrokerPool pool;
+    private final BrokerPool pool;
 
     public SanityReport(BrokerPool pool) {
         this.pool = pool;
@@ -221,7 +220,7 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
         final boolean doBackup = "YES".equalsIgnoreCase(backup);
 
         // This should be simplified
-        if (backup != null && (doBackup) || "no".equalsIgnoreCase(backup)) {
+        if (backup != null && doBackup || "no".equalsIgnoreCase(backup)) {
             properties.put("backup", backup);
         }
 

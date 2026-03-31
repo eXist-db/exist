@@ -36,7 +36,7 @@ import java.util.Observer;
 public class UtilityPanel extends JFrame implements Observer {
 
     private TextArea messages;
-    private JLabel statusLabel;
+    private final JLabel statusLabel;
     private JButton dashboardButton;
     private JButton eXideButton;
 
@@ -178,9 +178,9 @@ public class UtilityPanel extends JFrame implements Observer {
     @Override
     public void update(Observable observable, final Object o) {
         if (o instanceof ExistRepository.Notification notification) {
-            if (notification.getPackageURI().equals(Launcher.PACKAGE_DASHBOARD) && dashboardButton != null) {
+            if (Launcher.PACKAGE_DASHBOARD.equals(notification.getPackageURI()) && dashboardButton != null) {
                 dashboardButton.setEnabled(notification.getAction() == ExistRepository.Action.INSTALL);
-            } else if (notification.getPackageURI().equals(Launcher.PACKAGE_EXIDE) && eXideButton != null) {
+            } else if (Launcher.PACKAGE_EXIDE.equals(notification.getPackageURI()) && eXideButton != null) {
                 eXideButton.setEnabled(notification.getAction() == ExistRepository.Action.INSTALL);
             }
         } else {

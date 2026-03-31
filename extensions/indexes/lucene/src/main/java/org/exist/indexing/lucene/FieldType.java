@@ -37,21 +37,21 @@ import org.w3c.dom.Element;
  */
 public class FieldType {
 
-	private final static String ID_ATTR = "id";
-	private final static String ANALYZER_ID_ATTR = "analyzer";
-	private final static String BOOST_ATTRIB = "boost";
-	private final static String STORE_ATTRIB = "store";
+	private static final String ID_ATTR = "id";
+	private static final String ANALYZER_ID_ATTR = "analyzer";
+	private static final String BOOST_ATTRIB = "boost";
+	private static final String STORE_ATTRIB = "store";
 	
-	private String id = null;
+	private String id;
 	
-	private String analyzerId = null;
+	private String analyzerId;
 	
     // save Analyzer for later use in LuceneMatchListener
     private final MetaAnalyzer analyzer;
 
 	private float boost = -1;
     
-	private Field.Store store = null;
+	private Field.Store store;
 	
     public FieldType(Element config, AnalyzerConfig analyzers) throws DatabaseConfigurationException {
         

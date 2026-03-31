@@ -56,15 +56,15 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 @NotThreadSafe
 public class LockEventXmlListener implements LockTable.LockEventListener {
 
-    private final static Logger LOG = LogManager.getLogger(LockEventXmlListener.class);
+    private static final Logger LOG = LogManager.getLogger(LockEventXmlListener.class);
 
-    private volatile boolean registered = false;
+    private volatile boolean registered;
 
     private final Path xmlFile;
     private final boolean prettyPrint;
 
-    private OutputStream os = null;
-    private XMLStreamWriter xmlStreamWriter = null;
+    private OutputStream os;
+    private XMLStreamWriter xmlStreamWriter;
 
 
     public LockEventXmlListener(final Path xmlFile) {

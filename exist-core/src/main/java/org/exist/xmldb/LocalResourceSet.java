@@ -21,10 +21,6 @@
  */
 package org.exist.xmldb;
 
-import java.io.IOException;
-import java.io.StringWriter;
-import java.util.*;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Namespaces;
@@ -46,9 +42,13 @@ import org.xmldb.api.base.ResourceIterator;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 
+import java.io.IOException;
+import java.io.StringWriter;
+import java.util.*;
+
 public class LocalResourceSet extends AbstractLocal implements ResourceSet {
 
-    private final static Logger LOG = LogManager.getLogger(LocalResourceSet.class);
+    private static final Logger LOG = LogManager.getLogger(LocalResourceSet.class);
 
     private final List<Object> resources = new ArrayList<>();
     private final Properties outputProperties;
@@ -99,7 +99,7 @@ public class LocalResourceSet extends AbstractLocal implements ResourceSet {
     @Override
     public void clear() throws XMLDBException {
         //cleanup any binary values
-        resources.stream().filter((resource) -> (resource instanceof BinaryValue)).forEach((resource) -> {
+        resources.stream().filter(resource -> (resource instanceof BinaryValue)).forEach(resource -> {
             try {
                 ((BinaryValue) resource).close();
             } catch(final IOException ioe) {
@@ -121,7 +121,7 @@ public class LocalResourceSet extends AbstractLocal implements ResourceSet {
 
     @Override
     public Resource getMembersAsResource() throws XMLDBException {
-        return this.<Resource>withDb((broker, transaction) -> {
+        return this.withDb((broker, transaction) -> {
             final Serializer serializer = broker.borrowSerializer();
             final SAXSerializer handler = (SAXSerializer) SerializerPool.getInstance().borrowObject(SAXSerializer.class);
             final StringWriter writer = new StringWriter();
@@ -236,7 +236,7 @@ public class LocalResourceSet extends AbstractLocal implements ResourceSet {
     }
 
     class NewResourceIterator implements ResourceIterator {
-        long pos = 0;
+        long pos;
 
         public NewResourceIterator() {
         }

@@ -21,9 +21,11 @@
  */
 package org.exist.util.serializer.json;
 
+import org.junit.Test;
+
 import java.io.IOException;
 import java.io.StringWriter;
-import org.junit.Test;
+
 import static org.junit.Assert.assertEquals;
 
 /**

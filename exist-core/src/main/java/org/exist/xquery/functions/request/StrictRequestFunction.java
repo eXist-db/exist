@@ -38,7 +38,7 @@ import java.util.Optional;
  */
 public abstract class StrictRequestFunction extends RequestFunction {
 
-    public StrictRequestFunction(final XQueryContext context, final FunctionSignature signature) {
+    protected StrictRequestFunction(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
 

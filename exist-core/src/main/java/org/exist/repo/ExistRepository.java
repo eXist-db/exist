@@ -26,11 +26,7 @@ import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.security.PermissionDeniedException;
 import org.exist.source.DBSource;
-import org.exist.storage.BrokerPool;
-import org.exist.storage.BrokerPoolService;
-import org.exist.storage.BrokerPoolServiceException;
-import org.exist.storage.DBBroker;
-import org.exist.storage.NativeBroker;
+import org.exist.storage.*;
 import org.exist.util.Configuration;
 import org.exist.util.FileUtils;
 import org.exist.xmldb.XmldbURI;
@@ -42,8 +38,8 @@ import org.exist.xquery.XQueryContext;
 import org.expath.pkg.repo.FileSystemStorage;
 import org.expath.pkg.repo.FileSystemStorage.FileSystemResolver;
 import org.expath.pkg.repo.Package;
-import org.expath.pkg.repo.Packages;
 import org.expath.pkg.repo.PackageException;
+import org.expath.pkg.repo.Packages;
 import org.expath.pkg.repo.Repository;
 import org.expath.pkg.repo.URISpace;
 import org.w3c.dom.Document;
@@ -58,12 +54,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Observable;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * A repository as viewed by eXist.
@@ -76,8 +67,8 @@ import java.util.Optional;
  */
 public class ExistRepository extends Observable implements BrokerPoolService {
 
-    private final static Logger EXIST_LOG = LogManager.getLogger(BrokerPool.class);
-    private final static Logger LOG = LogManager.getLogger(ExistRepository.class);
+    private static final Logger EXIST_LOG = LogManager.getLogger(BrokerPool.class);
+    private static final Logger LOG = LogManager.getLogger(ExistRepository.class);
     private static final String EXPATH_REPO_DIR_NAME = "expathrepo";
     private static final String LEGACY_DEFAULT_EXPATH_REPO_DIR = "webapp/WEB-INF/" + EXPATH_REPO_DIR_NAME;
 
@@ -262,7 +253,7 @@ public class ExistRepository extends Observable implements BrokerPoolService {
             } catch (final PackageException ex) {
                 throw new XPathException((Expression) null, ErrorCodes.XQST0059, "Error resolving the query library: " + namespace, ex);
             } finally {
-                if (src != null && src instanceof StreamSource streamSource) {
+                if (src instanceof StreamSource streamSource) {
                     try {
                         if (streamSource.getInputStream() != null) {
                             streamSource.getInputStream().close();
@@ -296,14 +287,14 @@ public class ExistRepository extends Observable implements BrokerPoolService {
         // 1. attempt to locate it within a library
         XmldbURI xqueryDbPath = XmldbURI.create("xmldb:exist:///db/system/repo/" + relXQueryPath);
         @Nullable Document doc = broker.getXMLResource(xqueryDbPath);
-        if (doc != null && doc instanceof BinaryDocument document) {
+        if (doc instanceof BinaryDocument document) {
             return new DBSource(broker.getBrokerPool(), document, false);
         }
 
         // 2. attempt to locate it within an app
         xqueryDbPath = XmldbURI.create("xmldb:exist:///db/apps/" + relXQueryPath);
         doc = broker.getXMLResource(xqueryDbPath);
-        if (doc != null && doc instanceof BinaryDocument document) {
+        if (doc instanceof BinaryDocument document) {
             return new DBSource(broker.getBrokerPool(), document, false);
         }
 
@@ -373,7 +364,7 @@ public class ExistRepository extends Observable implements BrokerPoolService {
         INSTALL, UNINSTALL
     }
 
-    public final static class Notification {
+    public static final class Notification {
         private final Action action;
         private final String packageURI;
 

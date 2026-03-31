@@ -21,13 +21,13 @@
  */
 package org.exist.util;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.UUID;
-
 import com.fasterxml.uuid.Generators;
 import com.fasterxml.uuid.impl.NameBasedGenerator;
 import com.fasterxml.uuid.impl.RandomBasedGenerator;
+
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.UUID;
 
 /**
  * UUID generator.
@@ -39,10 +39,10 @@ import com.fasterxml.uuid.impl.RandomBasedGenerator;
  */
 public class UUIDGenerator {
 
-    private final static UUID EXISTDB_UUID_NAMESPACE = UUID.fromString("a99c2b03-67c4-49fb-b812-aa4c12099e65");
+    private static final UUID EXISTDB_UUID_NAMESPACE = UUID.fromString("a99c2b03-67c4-49fb-b812-aa4c12099e65");
 
-    private final static RandomBasedGenerator UUIDv4_GENERATOR = Generators.randomBasedGenerator();
-    private final static NameBasedGenerator UUIDv3_GENERATOR;
+    private static final RandomBasedGenerator UUIDv4_GENERATOR = Generators.randomBasedGenerator();
+    private static final NameBasedGenerator UUIDv3_GENERATOR;
     static {
         try {
             UUIDv3_GENERATOR = Generators.nameBasedGenerator(EXISTDB_UUID_NAMESPACE, MessageDigest.getInstance("MD5"));

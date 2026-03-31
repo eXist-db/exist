@@ -21,10 +21,8 @@
  */
 package org.exist.util.serializer;
 
-import java.util.*;
-
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.dom.QName.IllegalQNameException;
 import org.exist.dom.memtree.ReferenceNode;
@@ -41,6 +39,7 @@ import org.xml.sax.helpers.AttributesImpl;
 import org.xml.sax.helpers.NamespaceSupport;
 
 import javax.xml.XMLConstants;
+import java.util.*;
 
 /**
  * General purpose class to stream a DOM node to SAX.
@@ -51,8 +50,8 @@ public class DOMStreamer {
 
     private static final Logger LOG = LogManager.getLogger(DOMStreamer.class);
 
-    private ContentHandler contentHandler = null;
-    private LexicalHandler lexicalHandler = null;
+    private ContentHandler contentHandler;
+    private LexicalHandler lexicalHandler;
     private final NamespaceSupport nsSupport = new NamespaceSupport();
     private final Map<String, String> namespaceDecls = new HashMap<>();
     private final Deque<ElementInfo> stack = new ArrayDeque<>();
@@ -311,7 +310,7 @@ public class DOMStreamer {
 
     private static class ElementInfo {
         final Node element;
-        String[] prefixes = null;
+        String[] prefixes;
 
         public ElementInfo(final Node element) {
             this.element = element;

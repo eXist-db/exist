@@ -21,12 +21,12 @@
  */
 package org.exist.config;
 
-import java.util.List;
-
 import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationFieldAsAttribute;
 import org.exist.config.annotation.ConfigurationFieldAsElement;
 import org.exist.config.annotation.ConfigurationFieldClassMask;
+
+import java.util.List;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -48,14 +48,14 @@ public class ConfigurableObject implements Configurable {
 	protected int defaultInteger = 3;
 
 	@ConfigurationFieldAsAttribute("valueboolean")
-	protected boolean someboolean = false;
+	protected boolean someboolean;
 
 	@ConfigurationFieldAsAttribute("valueBoolean")
 	protected Boolean someBoolean = true;
 
 	@ConfigurationFieldAsElement("spice")
 	@ConfigurationFieldClassMask("org.exist.config.Spice")
-	protected List<Spice> spices = null;
+	protected List<Spice> spices;
 
 	private Configuration configuration;
 	
@@ -76,7 +76,7 @@ public class ConfigurableObject implements Configurable {
 	 */
 	@Override
 	public boolean isConfigured() {
-		return (configuration == null);
+		return configuration == null;
 	}
 
 	@Override

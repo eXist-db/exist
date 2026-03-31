@@ -21,16 +21,13 @@
  */
 package org.exist.xmldb;
 
+import org.exist.test.TestConstants;
+import org.junit.Test;
+
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import org.exist.test.TestConstants;
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 public class XmldbURITest {
 
@@ -115,14 +112,14 @@ public class XmldbURITest {
         XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/exist/xmlrpc");
         assertEquals("exist", xmldbURI.getInstanceName());
         assertEquals("localhost", xmldbURI.getHost());
-        assertEquals("8080", "" + xmldbURI.getPort());
+        assertEquals("8080", String.valueOf(xmldbURI.getPort()));
         assertEquals("/exist/xmlrpc", xmldbURI.getContext());
         assertEquals("", xmldbURI.getCollectionPath());
         assertEquals(XmldbURI.API_XMLRPC, xmldbURI.getApiName());
         xmldbURI = XmldbURI.create("xmldb:exist://localhost:8080/exist/xmlrpc");
         assertEquals("exist", xmldbURI.getInstanceName());
         assertEquals("localhost", xmldbURI.getHost());
-        assertEquals("8080", "" + xmldbURI.getPort());
+        assertEquals("8080", String.valueOf(xmldbURI.getPort()));
         assertEquals("/exist/xmlrpc", xmldbURI.getContext());
         assertEquals("", xmldbURI.getCollectionPath());
         assertEquals(XmldbURI.API_XMLRPC, xmldbURI.getApiName());
@@ -133,14 +130,14 @@ public class XmldbURITest {
         XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/xmlrpc");
         assertEquals("exist", xmldbURI.getInstanceName());
         assertEquals("localhost", xmldbURI.getHost());
-        assertEquals("8080", "" + xmldbURI.getPort());
+        assertEquals("8080", String.valueOf(xmldbURI.getPort()));
         assertEquals("/xmlrpc", xmldbURI.getContext());
         assertEquals("", xmldbURI.getCollectionPath());
         assertEquals(XmldbURI.API_XMLRPC, xmldbURI.getApiName());
         xmldbURI = XmldbURI.create("xmldb:exist://localhost:8080/xmlrpc");
         assertEquals("exist", xmldbURI.getInstanceName());
         assertEquals("localhost", xmldbURI.getHost());
-        assertEquals("8080", "" + xmldbURI.getPort());
+        assertEquals("8080", String.valueOf(xmldbURI.getPort()));
         assertEquals("/xmlrpc", xmldbURI.getContext());
         assertEquals("", xmldbURI.getCollectionPath());
         assertEquals("xmlrpc", xmldbURI.getApiName());
@@ -151,14 +148,14 @@ public class XmldbURITest {
         XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/webdav");
         assertEquals("exist", xmldbURI.getInstanceName());
         assertEquals("localhost", xmldbURI.getHost());
-        assertEquals("8080", "" + xmldbURI.getPort());
+        assertEquals("8080", String.valueOf(xmldbURI.getPort()));
         assertEquals("/webdav", xmldbURI.getContext());
         assertEquals("", xmldbURI.getCollectionPath());
         assertEquals(XmldbURI.API_WEBDAV, xmldbURI.getApiName());
         xmldbURI = XmldbURI.create("xmldb:exist://localhost:8080/webdav");
         assertEquals("exist", xmldbURI.getInstanceName());
         assertEquals("localhost", xmldbURI.getHost());
-        assertEquals("8080", "" + xmldbURI.getPort());
+        assertEquals("8080", String.valueOf(xmldbURI.getPort()));
         assertEquals("/webdav", xmldbURI.getContext());
         assertEquals("", xmldbURI.getCollectionPath());
         assertEquals(XmldbURI.API_WEBDAV, xmldbURI.getApiName());
@@ -187,14 +184,14 @@ public class XmldbURITest {
         XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/xmlrpc/db");
         assertEquals("exist", xmldbURI.getInstanceName());
         assertEquals("localhost", xmldbURI.getHost());
-        assertEquals("8080", "" + xmldbURI.getPort());
+        assertEquals("8080", String.valueOf(xmldbURI.getPort()));
         assertEquals("/xmlrpc", xmldbURI.getContext());
         assertEquals("/db", xmldbURI.getCollectionPath());
         assertEquals(XmldbURI.API_XMLRPC, xmldbURI.getApiName());
         xmldbURI = XmldbURI.create("xmldb:exist://localhost:8080/xmlrpc/db");
         assertEquals("exist", xmldbURI.getInstanceName());
         assertEquals("localhost", xmldbURI.getHost());
-        assertEquals("8080", "" + xmldbURI.getPort());
+        assertEquals("8080", String.valueOf(xmldbURI.getPort()));
         assertEquals("/xmlrpc", xmldbURI.getContext());
         assertEquals("/db", xmldbURI.getCollectionPath());
         assertEquals(XmldbURI.API_XMLRPC, xmldbURI.getApiName());
@@ -205,14 +202,14 @@ public class XmldbURITest {
         XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/webdav/db");
         assertEquals("exist", xmldbURI.getInstanceName());
         assertEquals("localhost", xmldbURI.getHost());
-        assertEquals("8080", "" + xmldbURI.getPort());
+        assertEquals("8080", String.valueOf(xmldbURI.getPort()));
         assertEquals("/webdav", xmldbURI.getContext());
         assertEquals("/db", xmldbURI.getCollectionPath());
         assertEquals(XmldbURI.API_WEBDAV, xmldbURI.getApiName());
         xmldbURI = XmldbURI.create("xmldb:exist://localhost:8080/webdav/db");
         assertEquals("exist", xmldbURI.getInstanceName());
         assertEquals("localhost", xmldbURI.getHost());
-        assertEquals("8080", "" + xmldbURI.getPort());
+        assertEquals("8080", String.valueOf(xmldbURI.getPort()));
         assertEquals("/webdav", xmldbURI.getContext());
         assertEquals("/db", xmldbURI.getCollectionPath());
         assertEquals(XmldbURI.API_WEBDAV, xmldbURI.getApiName());
@@ -223,14 +220,14 @@ public class XmldbURITest {
         XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/xmlrpc/webdav/db");
         assertEquals("exist", xmldbURI.getInstanceName());
         assertEquals("localhost", xmldbURI.getHost());
-        assertEquals("8080", "" + xmldbURI.getPort());
+        assertEquals("8080", String.valueOf(xmldbURI.getPort()));
         assertEquals("/xmlrpc/webdav", xmldbURI.getContext());
         assertEquals("/db", xmldbURI.getCollectionPath());
         assertEquals(XmldbURI.API_WEBDAV, xmldbURI.getApiName());
         xmldbURI = XmldbURI.create("xmldb:exist://localhost:8080/xmlrpc/webdav/db");
         assertEquals("exist", xmldbURI.getInstanceName());
         assertEquals("localhost", xmldbURI.getHost());
-        assertEquals("8080", "" + xmldbURI.getPort());
+        assertEquals("8080", String.valueOf(xmldbURI.getPort()));
         assertEquals("/xmlrpc/webdav", xmldbURI.getContext());
         assertEquals("/db", xmldbURI.getCollectionPath());
         assertEquals(XmldbURI.API_WEBDAV, xmldbURI.getApiName());
@@ -241,14 +238,14 @@ public class XmldbURITest {
         XmldbURI xmldbURI = XmldbURI.xmldbUriFor("xmldb:exist://localhost:8080/webdav/xmlrpc/db");
         assertEquals("exist", xmldbURI.getInstanceName());
         assertEquals("localhost", xmldbURI.getHost());
-        assertEquals("8080", "" + xmldbURI.getPort());
+        assertEquals("8080", String.valueOf(xmldbURI.getPort()));
         assertEquals("/webdav/xmlrpc", xmldbURI.getContext());
         assertEquals("/db", xmldbURI.getCollectionPath());
         assertEquals(XmldbURI.API_XMLRPC, xmldbURI.getApiName());
         xmldbURI = XmldbURI.create("xmldb:exist://localhost:8080/webdav/xmlrpc/db");
         assertEquals("exist", xmldbURI.getInstanceName());
         assertEquals("localhost", xmldbURI.getHost());
-        assertEquals("8080", "" + xmldbURI.getPort());
+        assertEquals("8080", String.valueOf(xmldbURI.getPort()));
         assertEquals("/webdav/xmlrpc", xmldbURI.getContext());
         assertEquals("/db", xmldbURI.getCollectionPath());
         assertEquals(XmldbURI.API_XMLRPC, xmldbURI.getApiName());
@@ -827,7 +824,7 @@ public class XmldbURITest {
         assertEquals( 
                     TestConstants.TEST_COLLECTION_URI.toString() 
                     + "/" + TestConstants.TEST_BINARY_URI.toString() ,
-                    (TestConstants.TEST_COLLECTION_URI.append(TestConstants.TEST_BINARY_URI)).toString()
+                    TestConstants.TEST_COLLECTION_URI.append(TestConstants.TEST_BINARY_URI).toString()
                 );
     }
     

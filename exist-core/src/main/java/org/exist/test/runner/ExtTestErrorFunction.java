@@ -77,11 +77,11 @@ public class ExtTestErrorFunction extends JUnitIntegrationFunction {
         }
         try {
             final Sequence seqModule = errorMap.get(new StringValue(this, "module"));
-            final String modulePath = (seqModule != null && !seqModule.isEmpty())
+            final String modulePath = seqModule != null && !seqModule.isEmpty()
                 ? seqModule.itemAt(0).getStringValue() : null;
             final String file = modulePath != null ? modulePath.replaceFirst("^.*[/\\\\]", "") : "xquery";
             final Sequence seqLine = errorMap.get(new StringValue(this, "line-number"));
-            final int line = (seqLine != null && !seqLine.isEmpty())
+            final int line = seqLine != null && !seqLine.isEmpty()
                 ? seqLine.itemAt(0).toJavaObject(int.class) : 0;
             final String oneLine = "XQuery failure: " + file + (line > 0 ? ":" + line + " " : " ") + testName;
             XQueryFailureLog.log(oneLine);

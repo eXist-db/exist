@@ -41,9 +41,7 @@ import org.w3c.dom.*;
 import java.io.IOException;
 import java.util.Optional;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 /**
  * Tests basic DOM methods like getChildNodes(), getAttribute() ...
@@ -65,7 +63,7 @@ public class NodeTest {
             "<d>jkl</d>" +
 	    "</test>" +
         "<!-- doc ends here -->";
-	private static Collection root = null;
+	private static Collection root;
 
     @Test
     public void document() throws EXistException, LockException, PermissionDeniedException {

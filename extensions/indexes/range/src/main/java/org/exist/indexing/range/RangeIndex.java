@@ -41,7 +41,7 @@ public class RangeIndex extends LuceneIndex {
 
     protected static final Logger LOG = LogManager.getLogger(RangeIndex.class);
 
-    public final static String ID = RangeIndex.class.getName();
+    public static final String ID = RangeIndex.class.getName();
 
     /**
      * Enumeration of supported operators and optimized functions.
@@ -89,7 +89,7 @@ public class RangeIndex extends LuceneIndex {
 
     private static final String DIR_NAME = "range";
 
-    private Analyzer defaultAnalyzer = new KeywordAnalyzer();
+    private final Analyzer defaultAnalyzer = new KeywordAnalyzer();
 
     @Override
     public String getDirName() {

@@ -726,9 +726,7 @@ public class FnFormatNumbers extends BasicFunction {
         }
 
         // Rule 14 - concatenate prefix, formatted number, and suffix
-        final String result = subPicture.getPrefixString() + formatted + subPicture.getSuffixString();
-
-        return result;
+        return subPicture.getPrefixString() + formatted + subPicture.getSuffixString();
     }
 
     /**
@@ -748,10 +746,10 @@ public class FnFormatNumbers extends BasicFunction {
         private StringBuilder suffix;
 
         // state needed for adjustment
-        private boolean hasIntegerOptionalDigit = false;
-        private boolean hasPercent = false;
-        private boolean hasPerMille = false;
-        private boolean hasDecimalSeparator = false;
+        private boolean hasIntegerOptionalDigit;
+        private boolean hasPercent;
+        private boolean hasPerMille;
+        private boolean hasDecimalSeparator;
 
         public SubPicture copy() {
             final SubPicture copy = new SubPicture();

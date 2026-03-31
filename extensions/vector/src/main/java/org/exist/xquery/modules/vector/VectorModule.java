@@ -21,9 +21,6 @@
  */
 package org.exist.xquery.modules.vector;
 
-import java.util.List;
-import java.util.Map;
-
 import org.exist.dom.QName;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.ErrorCodes;
@@ -32,6 +29,9 @@ import org.exist.xquery.FunctionDef;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
+
+import java.util.List;
+import java.util.Map;
 
 
 /**

@@ -148,7 +148,7 @@ public class MemTreeBuilder {
         }
 
         if (prefix == null) {
-            prefix = (prefixIdx != Constants.STRING_NOT_FOUND) ? qname.substring(0, prefixIdx) : null;
+            prefix = prefixIdx != Constants.STRING_NOT_FOUND ? qname.substring(0, prefixIdx) : null;
         }
 
         if (localName.isEmpty()) {
@@ -181,10 +181,10 @@ public class MemTreeBuilder {
                 final String attrQName = attributes.getQName(i);
 
                 // skip xmlns-attributes
-                if(!(attrQName.startsWith(XMLConstants.XMLNS_ATTRIBUTE))) {
+                if(!attrQName.startsWith(XMLConstants.XMLNS_ATTRIBUTE)) {
                     final int p = attrQName.indexOf(':');
                     final String attrNS = attributes.getURI(i);
-                    final String attrPrefix = (p != Constants.STRING_NOT_FOUND) ? attrQName.substring(0, p) : null;
+                    final String attrPrefix = p != Constants.STRING_NOT_FOUND ? attrQName.substring(0, p) : null;
 
                     String attrLocalName = attributes.getLocalName(i);
                     if (p == Constants.STRING_NOT_FOUND && attrLocalName.isEmpty()) {
@@ -218,12 +218,12 @@ public class MemTreeBuilder {
 
 
     private int getAttribType(final QName qname, final String type) {
-        if(qname.equals(Namespaces.XML_ID_QNAME) || type.equals(Indexer.ATTR_ID_TYPE)) {
+        if(qname.equals(Namespaces.XML_ID_QNAME) || Indexer.ATTR_ID_TYPE.equals(type)) {
             // an xml:id attribute.
             return AttrImpl.ATTR_ID_TYPE;
-        } else if(type.equals(Indexer.ATTR_IDREF_TYPE)) {
+        } else if(Indexer.ATTR_IDREF_TYPE.equals(type)) {
             return AttrImpl.ATTR_IDREF_TYPE;
-        } else if(type.equals(Indexer.ATTR_IDREFS_TYPE)) {
+        } else if(Indexer.ATTR_IDREFS_TYPE.equals(type)) {
             return AttrImpl.ATTR_IDREFS_TYPE;
         } else {
             return AttrImpl.ATTR_CDATA_TYPE;
@@ -285,12 +285,10 @@ public class MemTreeBuilder {
         //} else {
         //lastNode = doc.addAttribute(lastNode, qname, value);
         //}
-        final int nodeNr = doc.addAttribute(lastNode, qname, value, getAttribType(qname, Indexer.ATTR_CDATA_TYPE));
-
         //TODO :
         //1) call linkNode(nodeNr); ?
         //2) is there a relationship between lastNode and nodeNr ?
-        return nodeNr;
+        return doc.addAttribute(lastNode, qname, value, getAttribType(qname, Indexer.ATTR_CDATA_TYPE));
     }
 
 
@@ -438,7 +436,7 @@ public class MemTreeBuilder {
     public int processingInstruction(final String target, final String data) {
         final QName qname = new QName(target, null, null);
         final int nodeNr = doc.addNode(Node.PROCESSING_INSTRUCTION_NODE, level, qname);
-        doc.addChars(nodeNr, (data == null) ? "" : data);
+        doc.addChars(nodeNr, data == null ? "" : data);
         linkNode(nodeNr);
         return nodeNr;
     }
@@ -463,9 +461,9 @@ public class MemTreeBuilder {
         if(doc.nodeName != null) {
             final QName elemQN = doc.nodeName[lastNode];
             if(elemQN != null) {
-                final String elemPrefix = (elemQN.getPrefix() == null) ? XMLConstants.DEFAULT_NS_PREFIX : elemQN.getPrefix();
-                final String elemNs = (elemQN.getNamespaceURI() == null) ? XMLConstants.NULL_NS_URI : elemQN.getNamespaceURI();
-                final String qnPrefix = (qname.getPrefix() == null) ? XMLConstants.DEFAULT_NS_PREFIX : qname.getPrefix();
+                final String elemPrefix = elemQN.getPrefix() == null ? XMLConstants.DEFAULT_NS_PREFIX : elemQN.getPrefix();
+                final String elemNs = elemQN.getNamespaceURI() == null ? XMLConstants.NULL_NS_URI : elemQN.getNamespaceURI();
+                final String qnPrefix = qname.getPrefix() == null ? XMLConstants.DEFAULT_NS_PREFIX : qname.getPrefix();
                 if (checkNS
                     && XMLConstants.DEFAULT_NS_PREFIX.equals(elemPrefix)
                     && XMLConstants.NULL_NS_URI.equals(elemNs)
@@ -482,7 +480,7 @@ public class MemTreeBuilder {
                 }
             }
         }
-        return (addNode ? doc.addNamespace(lastNode, qname) : -1);
+        return addNode ? doc.addNamespace(lastNode, qname) : -1;
     }
 
 

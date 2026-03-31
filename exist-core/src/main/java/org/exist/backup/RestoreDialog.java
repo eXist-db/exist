@@ -39,14 +39,14 @@ public class RestoreDialog extends JDialog {
     JProgressBar progress;
     JButton dismissButton;
 
-    private long totalRestoreUncompressedSize = 0;
-    private long zippedUncompressedSize = 0;
+    private long totalRestoreUncompressedSize;
+    private long zippedUncompressedSize;
 
-    private long totalTransferSize = 0;
-    private long transferredSize = 0;
+    private long totalTransferSize;
+    private long transferredSize;
 
-    private long totalNumberOfFiles = 0;
-    private long fileCounter = 0;
+    private long totalNumberOfFiles;
+    private long fileCounter;
 
 
     /**

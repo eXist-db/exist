@@ -21,9 +21,6 @@
  */
 package org.exist.xquery.functions.session;
 
-import java.util.Enumeration;
-import java.util.Optional;
-
 import org.exist.dom.QName;
 import org.exist.http.servlets.SessionWrapper;
 import org.exist.xquery.*;
@@ -32,6 +29,8 @@ import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
 import javax.annotation.Nonnull;
+import java.util.Enumeration;
+import java.util.Optional;
 
 /**
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
@@ -39,7 +38,7 @@ import javax.annotation.Nonnull;
  */
 public class Clear extends StrictSessionFunction {
 
-    public final static FunctionSignature signature =
+    public static final FunctionSignature signature =
             new FunctionSignature(
                     new QName("clear", SessionModule.NAMESPACE_URI, SessionModule.PREFIX),
                     "Removes all attributes from the current HTTP session. Does NOT invalidate the session.",

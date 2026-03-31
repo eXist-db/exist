@@ -54,16 +54,14 @@ import java.io.StringReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class CollectionTest {
 
     @ClassRule
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
-    private static SAXParserFactory saxParserFactory = ExistSAXParserFactory.getSAXParserFactory();
+    private static final SAXParserFactory saxParserFactory = ExistSAXParserFactory.getSAXParserFactory();
     static {
         saxParserFactory.setNamespaceAware(true);
     }

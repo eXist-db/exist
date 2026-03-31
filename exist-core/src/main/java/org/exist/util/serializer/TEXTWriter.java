@@ -21,15 +21,16 @@
  */
 package org.exist.util.serializer;
 
+import org.exist.dom.QName;
+import org.exist.util.CharSlice;
+import org.exist.util.serializer.encodings.CharacterSet;
+
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.TransformerException;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Objects;
 import java.util.Properties;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.TransformerException;
-import org.exist.dom.QName;
-import org.exist.util.CharSlice;
-import org.exist.util.serializer.encodings.CharacterSet;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -46,7 +47,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class TEXTWriter extends XMLWriter {
     
-    protected final static Properties defaultProperties = new Properties();
+    protected static final Properties defaultProperties = new Properties();
     
     private final char[] charref = new char[10];
     

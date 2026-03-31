@@ -25,7 +25,7 @@ import javax.annotation.Nullable;
 import java.io.InputStream;
 import java.net.URL;
 
-public class Samples {
+public final class Samples {
 
     public static final Samples SAMPLES = new Samples();
 

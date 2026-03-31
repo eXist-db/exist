@@ -551,7 +551,7 @@ public class WindowExpr extends BindingExpression {
         return windowReturnVariable;
     }
 
-    private static class WindowContextVariables {
+    private static final class WindowContextVariables {
         final @Nullable
         LocalVariable currentItem;
         final @Nullable

@@ -42,11 +42,11 @@ import java.nio.charset.Charset;
  * @version 1.0
  */
 public class TarFunction extends AbstractCompressFunction {
-    private final static QName TAR_FUNCTION_NAME = new QName("tar", CompressionModule.NAMESPACE_URI, CompressionModule.PREFIX);
-    private final static String TAR_FUNCTION_DESCRIPTION = "Tars nodes, resources and collections.";
+    private static final QName TAR_FUNCTION_NAME = new QName("tar", CompressionModule.NAMESPACE_URI, CompressionModule.PREFIX);
+    private static final String TAR_FUNCTION_DESCRIPTION = "Tars nodes, resources and collections.";
 
 
-    public final static FunctionSignature[] signatures = {
+    public static final FunctionSignature[] signatures = {
 
             new FunctionSignature(
                     TAR_FUNCTION_NAME,

@@ -21,11 +21,11 @@
  */
 package org.exist.storage.txn;
 
-import java.nio.ByteBuffer;
-
 import org.exist.storage.DBBroker;
 import org.exist.storage.journal.AbstractLoggable;
 import org.exist.storage.journal.LogEntryTypes;
+
+import java.nio.ByteBuffer;
 
 public class TxnAbort extends AbstractLoggable {
 

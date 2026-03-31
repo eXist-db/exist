@@ -21,10 +21,11 @@
  */
 package org.exist.xquery.modules.file;
 
-import java.util.List;
-import java.util.Map;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * eXist File Module Extension
@@ -41,14 +42,14 @@ import org.exist.xquery.FunctionDef;
  */
 public class FileModule extends AbstractInternalModule
 {
-	public final static String NAMESPACE_URI = "http://exist-db.org/xquery/file";
+	public static final String NAMESPACE_URI = "http://exist-db.org/xquery/file";
 	
-	public final static String PREFIX = "file";
-    public final static String INCLUSION_DATE = "2008-03-07";
-    public final static String RELEASED_IN_VERSION = "eXist-1.4";
+	public static final String PREFIX = "file";
+    public static final String INCLUSION_DATE = "2008-03-07";
+    public static final String RELEASED_IN_VERSION = "eXist-1.4";
 
 	
-	private final static FunctionDef[] functions = {
+	private static final FunctionDef[] functions = {
         new FunctionDef( Directory.signatures[0],               Directory.class ),
 		new FunctionDef( DirectoryList.signatures[0],           DirectoryList.class ),
 		new FunctionDef( FileRead.signatures[0], 				FileRead.class ),
@@ -80,18 +81,18 @@ public class FileModule extends AbstractInternalModule
 
 	public String getNamespaceURI() 
 	{
-		return( NAMESPACE_URI );
+		return NAMESPACE_URI;
 	}
 	
 
 	public String getDefaultPrefix() {
-		return( PREFIX );
+		return PREFIX;
 	}
 	
 
 	public String getDescription() 
 	{
-		return( "A module for performing various operations on files and directories stored in the server file system." );
+		return "A module for performing various operations on files and directories stored in the server file system.";
 	}
 
     public String getReleaseVersion() {

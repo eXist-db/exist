@@ -21,41 +21,31 @@
  */
 package org.exist.xquery.functions.validation;
 
+import com.evolvedbinary.j8fu.function.ConsumerE;
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.exist.dom.memtree.MemTreeBuilder;
+import org.exist.dom.memtree.NodeImpl;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.storage.DBBroker;
+import org.exist.storage.serializers.Serializer;
+import org.exist.validation.ValidationReport;
+import org.exist.validation.ValidationReportItem;
+import org.exist.validation.internal.node.NodeInputStream;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.*;
+import org.xml.sax.InputSource;
+import org.xml.sax.helpers.AttributesImpl;
+
+import javax.xml.transform.stream.StreamSource;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
-
-import javax.xml.transform.stream.StreamSource;
-
-import com.evolvedbinary.j8fu.function.ConsumerE;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import org.exist.dom.persistent.NodeProxy;
-import org.exist.dom.memtree.MemTreeBuilder;
-import org.exist.dom.memtree.NodeImpl;
-import org.exist.storage.DBBroker;
-import org.exist.storage.serializers.Serializer;
-import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
-import org.exist.validation.ValidationReport;
-import org.exist.validation.ValidationReportItem;
-import org.exist.validation.internal.node.NodeInputStream;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.Base64BinaryDocument;
-import org.exist.xquery.value.BinaryValue;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.JavaObjectValue;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.Type;
-
-import org.xml.sax.InputSource;
-import org.xml.sax.helpers.AttributesImpl;
 
 /**
  *  Shared methods for validation functions.
@@ -64,12 +54,12 @@ import org.xml.sax.helpers.AttributesImpl;
  */
 public class Shared {
 
-    private final static Logger LOG = LogManager.getLogger(Shared.class);
-    public final static String simplereportText = "true() if the " +
+    private static final Logger LOG = LogManager.getLogger(Shared.class);
+    public static final String simplereportText = "true() if the " +
             "document is valid and no single problem occured, false() for " +
             "all other conditions. For detailed validation information " +
             "use the corresponding -report() function.";
-    public final static String xmlreportText = "a validation report.";
+    public static final String xmlreportText = "a validation report.";
 
     /**
      *  Get input stream for specified resource
@@ -291,7 +281,7 @@ public class Shared {
      * @param builder Helperclass to create in memory XML.
      * @return Validation report as node.
      */
-    static public NodeImpl writeReport(ValidationReport report, MemTreeBuilder builder) {
+    public static NodeImpl writeReport(ValidationReport report, MemTreeBuilder builder) {
 
         // start root element
         final int nodeNr = builder.startElement("", "report", "report", null);
@@ -318,7 +308,7 @@ public class Shared {
         durationAttribs.addAttribute("", "unit", "unit", "CDATA", "msec");
 
         builder.startElement("", "duration", "duration", durationAttribs);
-        builder.characters("" + report.getValidationDuration());
+        builder.characters(String.valueOf(report.getValidationDuration()));
         builder.endElement();
 
         // print exceptions if any

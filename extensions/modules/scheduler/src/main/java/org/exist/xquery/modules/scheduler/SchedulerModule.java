@@ -21,10 +21,11 @@
  */
 package org.exist.xquery.modules.scheduler;
 
-import java.util.List;
-import java.util.Map;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
+
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -42,13 +43,13 @@ import org.exist.xquery.FunctionDef;
  */
 public class SchedulerModule extends AbstractInternalModule
 {
-    public final static String         NAMESPACE_URI       = "http://exist-db.org/xquery/scheduler";
+    public static final String         NAMESPACE_URI       = "http://exist-db.org/xquery/scheduler";
 
-    public final static String         PREFIX              = "scheduler";
-    public final static String         INCLUSION_DATE      = "2006-11-16, 2009-02-06, 2010-03-10";
-    public final static String         RELEASED_IN_VERSION = "eXist-1.2 (job-name argument-version in trunk)";
+    public static final String         PREFIX              = "scheduler";
+    public static final String         INCLUSION_DATE      = "2006-11-16, 2009-02-06, 2010-03-10";
+    public static final String         RELEASED_IN_VERSION = "eXist-1.2 (job-name argument-version in trunk)";
 
-    private final static FunctionDef[] functions           = {
+    private static final FunctionDef[] functions           = {
         new FunctionDef( ScheduleFunctions.signatures[0], ScheduleFunctions.class ),
         new FunctionDef( ScheduleFunctions.signatures[1], ScheduleFunctions.class ),
         new FunctionDef( ScheduleFunctions.signatures[2], ScheduleFunctions.class ),
@@ -70,25 +71,25 @@ public class SchedulerModule extends AbstractInternalModule
 
     public String getNamespaceURI()
     {
-        return( NAMESPACE_URI );
+        return NAMESPACE_URI;
     }
 
 
     public String getDefaultPrefix()
     {
-        return( PREFIX );
+        return PREFIX;
     }
 
 
     public String getDescription()
     {
-        return( "A module for scheduling jobs using the Quartz Scheduler" );
+        return "A module for scheduling jobs using the Quartz Scheduler";
     }
 
 
     public String getReleaseVersion()
     {
-        return( RELEASED_IN_VERSION );
+        return RELEASED_IN_VERSION;
     }
 
 }

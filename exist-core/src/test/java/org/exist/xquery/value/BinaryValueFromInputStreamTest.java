@@ -21,17 +21,17 @@
  */
 package org.exist.xquery.value;
 
-import java.io.FilterInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-
 import com.googlecode.junittoolbox.ParallelRunner;
-import org.exist.util.io.CachingFilterInputStream;
 import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
+import org.exist.util.io.CachingFilterInputStream;
 import org.exist.xquery.XPathException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.io.FilterInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 import static org.junit.Assert.*;
 

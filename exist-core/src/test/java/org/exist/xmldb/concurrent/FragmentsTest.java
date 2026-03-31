@@ -37,7 +37,7 @@ public class FragmentsTest extends ConcurrentTestBase {
     /** Second root-level collection for XQuery runner; base provides C1 only. */
     private static final String SECOND_QUERY_COLLECTION = "C2";
 
-    private final static String QUERY =
+    private static final String QUERY =
         "let $node := " +
         "   <root>" +
         "       <nodeA><nodeB>BBB</nodeB></nodeA>" +

@@ -47,7 +47,7 @@ public class LocalXMLResourceDOMTest {
     @ClassRule
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
-    private static String TEST_RESOURCE_NAME = "doc1.xml";
+    private static final String TEST_RESOURCE_NAME = "doc1.xml";
 
     @BeforeClass
     public static void setup() throws XMLDBException {
@@ -84,7 +84,7 @@ public class LocalXMLResourceDOMTest {
         final ResourceIterator i1 = rs1.getIterator();
         final ResourceIterator i2 = rs2.getIterator();
 
-        for (; i1.hasMoreResources() && i1.hasMoreResources(); ) {
+        while (i1.hasMoreResources() && i1.hasMoreResources()) {
 
             final XMLResource r1 = (XMLResource) i1.nextResource();
             final XMLResource r2 = (XMLResource) i2.nextResource();

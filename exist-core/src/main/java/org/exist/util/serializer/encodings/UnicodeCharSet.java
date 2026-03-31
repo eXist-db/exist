@@ -23,7 +23,7 @@
 
 public class UnicodeCharSet extends CharacterSet {
 
-	protected final static CharacterSet instance = new UnicodeCharSet();
+	protected static final CharacterSet instance = new UnicodeCharSet();
 	
 	/* (non-Javadoc)
 	 * @see org.exist.util.serializer.encodings.CharacterSet#inCharacterSet(char)

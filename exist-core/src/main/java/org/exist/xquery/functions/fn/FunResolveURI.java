@@ -21,9 +21,6 @@
  */
 package org.exist.xquery.functions.fn;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
@@ -33,13 +30,10 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.AnyURIValue;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
+
+import java.net.URI;
+import java.net.URISyntaxException;
 
 /**
  * Implements the fn:resolve-uri() function.
@@ -76,7 +70,7 @@ public class FunResolveURI extends Function {
 	protected static final FunctionParameterSequenceType BASE_ARG = new FunctionParameterSequenceType("base", Type.STRING, Cardinality.EXACTLY_ONE, "The base URI");
 	protected static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.ZERO_OR_ONE, "the absolute URI");
 	
-    public final static FunctionSignature[] signatures = {
+    public static final FunctionSignature[] signatures = {
     	new FunctionSignature(
     		      new QName("resolve-uri", Function.BUILTIN_FUNCTION_NS),
     		      FUNCTION_DESCRIPTION_1_PARAM + FUNCTION_DESCRIPTION_COMMON,

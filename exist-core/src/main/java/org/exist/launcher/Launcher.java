@@ -116,13 +116,13 @@ public class Launcher extends Observable implements Observer {
      */
     @Nullable private final ServiceManager serviceManager;
     @Nullable private final SystemTray tray;
-    private TrayIcon trayIcon = null;
-    private SplashScreen splash;
+    private TrayIcon trayIcon;
+    private final SplashScreen splash;
     private final Path jettyConfig;
     private Optional<JettyStart> jetty = Optional.empty();
     private UtilityPanel utilityPanel;
-    private ConfigurationDialog configDialog;
-    private boolean isInstallingService = false;
+    private final ConfigurationDialog configDialog;
+    private boolean isInstallingService;
 
     Launcher(final String[] args) {
         if (SystemTray.isSupported()) {
@@ -156,7 +156,7 @@ public class Launcher extends Observable implements Observer {
                 try {
                     if (serviceManager != null && serviceManager.isInstalled()) {
                         splash.setStatus("eXist-db is already installed as service! Attaching to it ...");
-                        final Timer timer = new Timer(3000, (event) -> splash.setVisible(false));
+                        final Timer timer = new Timer(3000, event -> splash.setVisible(false));
                         timer.setRepeats(false);
                         timer.start();
                     } else {
@@ -721,13 +721,13 @@ public class Launcher extends Observable implements Observer {
     public void update(final Observable observable, final Object o) {
         final ExistRepository.Notification notification = (ExistRepository.Notification) o;
 
-        if (notification.getPackageURI().equals(PACKAGE_DASHBOARD) && dashboardItem != null) {
+        if (PACKAGE_DASHBOARD.equals(notification.getPackageURI()) && dashboardItem != null) {
             dashboardItem.setEnabled(notification.getAction() == ExistRepository.Action.INSTALL);
 
-        } else if (notification.getPackageURI().equals(PACKAGE_EXIDE) && eXideItem != null) {
+        } else if (PACKAGE_EXIDE.equals(notification.getPackageURI()) && eXideItem != null) {
             eXideItem.setEnabled(notification.getAction() == ExistRepository.Action.INSTALL);
 
-        } else if (notification.getPackageURI().equals(PACKAGE_MONEX) && monexItem != null) {
+        } else if (PACKAGE_MONEX.equals(notification.getPackageURI()) && monexItem != null) {
             monexItem.setEnabled(notification.getAction() == ExistRepository.Action.INSTALL);
         }
     }

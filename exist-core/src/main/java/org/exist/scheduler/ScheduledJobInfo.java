@@ -21,12 +21,13 @@
  */
 package org.exist.scheduler;
 
-import java.util.Date;
 import org.quartz.CronTrigger;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.SimpleTrigger;
 import org.quartz.Trigger;
+
+import java.util.Date;
 
 /**
  * Information about a Scheduled Job.

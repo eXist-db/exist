@@ -21,8 +21,6 @@
  */
 package org.expath.exist;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -45,10 +43,13 @@ import org.expath.httpclient.HttpRequest;
 import org.expath.httpclient.HttpResponse;
 import org.expath.httpclient.impl.ApacheHttpConnection;
 import org.expath.httpclient.impl.RequestParser;
+import org.expath.httpclient.model.exist.EXistResult;
 import org.expath.tools.model.Element;
 import org.expath.tools.model.exist.EXistElement;
-import org.expath.httpclient.model.exist.EXistResult;
 import org.expath.tools.model.exist.EXistSequence;
+
+import java.net.URI;
+import java.net.URISyntaxException;
 
 /**
  * @author <a href="mailto:adam@existsolutions.com">Adam Retter</a>
@@ -58,12 +59,12 @@ public class SendRequestFunction extends BasicFunction {
 
     private static final Logger logger = LogManager.getLogger(SendRequestFunction.class);
     
-    private final static FunctionParameterSequenceType REQUEST_PARAM = new FunctionParameterSequenceType("request", Type.ELEMENT, Cardinality.ZERO_OR_ONE, "request contains the various parameters of the request, for instance the HTTP method to use or the HTTP headers. Among other things, it can also contain the other param's values: the URI and the bodies. If they are not set as parameter to the function, their value in $request, if any, is used instead. See the following section (http://www.expath.org/spec/http-client#d2e183) for the detailed definition of the http:request element. If the parameter does not follow the grammar defined in this spec, this is an error [err:HC005].");
-    private final static FunctionParameterSequenceType HREF_PARAM = new FunctionParameterSequenceType("href", Type.STRING, Cardinality.ZERO_OR_ONE, "$href is the HTTP or HTTPS URI to send the request to. It is an xs:anyURI, but is declared as a string to be able to pass literal strings (without requiring to explicitly cast it to an xs:anyURI)");
-    private final static FunctionParameterSequenceType BODIES_PARAM = new FunctionParameterSequenceType("bodies", Type.ITEM, Cardinality.ZERO_OR_MORE, "$bodies is the request body content, for HTTP methods that can contain a body in the request (e.g. POST). This is an error if this param is not the empty sequence for methods that must be empty (e.g. DELETE). The details of the methods are defined in their respective specs (e.g. [RFC 2616] or [RFC 4918]). In case of a multipart request, it can be a sequence of several items, each one is the body of the corresponding body descriptor in $request.");
-    private final static FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.ITEM, Cardinality.ONE_OR_MORE, "A sequence representing the response from the server. This sequence has an http:response element as first item, which is followed by an additional item for each body or body part in the response. Further detail can be found here - http://www.expath.org/spec/http-client#d2e483");
+    private static final FunctionParameterSequenceType REQUEST_PARAM = new FunctionParameterSequenceType("request", Type.ELEMENT, Cardinality.ZERO_OR_ONE, "request contains the various parameters of the request, for instance the HTTP method to use or the HTTP headers. Among other things, it can also contain the other param's values: the URI and the bodies. If they are not set as parameter to the function, their value in $request, if any, is used instead. See the following section (http://www.expath.org/spec/http-client#d2e183) for the detailed definition of the http:request element. If the parameter does not follow the grammar defined in this spec, this is an error [err:HC005].");
+    private static final FunctionParameterSequenceType HREF_PARAM = new FunctionParameterSequenceType("href", Type.STRING, Cardinality.ZERO_OR_ONE, "$href is the HTTP or HTTPS URI to send the request to. It is an xs:anyURI, but is declared as a string to be able to pass literal strings (without requiring to explicitly cast it to an xs:anyURI)");
+    private static final FunctionParameterSequenceType BODIES_PARAM = new FunctionParameterSequenceType("bodies", Type.ITEM, Cardinality.ZERO_OR_MORE, "$bodies is the request body content, for HTTP methods that can contain a body in the request (e.g. POST). This is an error if this param is not the empty sequence for methods that must be empty (e.g. DELETE). The details of the methods are defined in their respective specs (e.g. [RFC 2616] or [RFC 4918]). In case of a multipart request, it can be a sequence of several items, each one is the body of the corresponding body descriptor in $request.");
+    private static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.ITEM, Cardinality.ONE_OR_MORE, "A sequence representing the response from the server. This sequence has an http:response element as first item, which is followed by an additional item for each body or body part in the response. Further detail can be found here - http://www.expath.org/spec/http-client#d2e483");
     
-    public final static FunctionSignature signatures[] = {
+    public static final FunctionSignature[] signatures = {
         //http:send-request($request as element(http:request)?) as item()+
         new FunctionSignature(
             new QName("send-request", HttpClientModule.NAMESPACE_URI, HttpClientModule.PREFIX),
@@ -116,11 +117,13 @@ public class SendRequestFunction extends BasicFunction {
         switch(getArgumentCount()) {
             case 3:
                 bodies = args[2];
+                //fall through to case 2 to also set href
             case 2: {
                 Item i = args[1].itemAt(0);
-                if ( i != null ) {
+                if (i != null) {
                     href = i.getStringValue();
                 }
+                //fall through to case 1 to also set request
             }
             case 1:
                 request = (NodeValue)args[0].itemAt(0);

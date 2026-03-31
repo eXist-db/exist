@@ -21,6 +21,8 @@
  */
 package org.exist.http.servlets;
 
+import jakarta.servlet.*;
+import jakarta.servlet.http.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.util.IterableEnumeration;
@@ -28,8 +30,6 @@ import org.exist.util.io.CachingFilterInputStream;
 import org.exist.util.io.FilterInputStreamCache;
 import org.exist.util.io.FilterInputStreamCacheFactory;
 
-import jakarta.servlet.*;
-import jakarta.servlet.http.*;
 import java.io.*;
 import java.net.URLDecoder;
 import java.security.Principal;
@@ -136,7 +136,7 @@ public class HttpServletRequestWrapper implements HttpServletRequest, Closeable 
     private void parseContentBodyParameters() {
         try (final Reader reader = getReader()) {
             final StringBuilder body = new StringBuilder();
-            final char buf[] = new char[16 * 1024];
+            final char[] buf = new char[16 * 1024];
             int read = -1;
             while((read = reader.read(buf)) > -1) {
                 body.append(buf, 0, read);
@@ -652,12 +652,12 @@ public class HttpServletRequestWrapper implements HttpServletRequest, Closeable 
         }
 
         @Override
-        public int read(final byte b[]) throws IOException {
+        public int read(final byte[] b) throws IOException {
             return is.read(b);
         }
 
         @Override
-        public int read(final byte b[], final int off, final int len) throws IOException {
+        public int read(final byte[] b, final int off, final int len) throws IOException {
             return is.read(b, off, len);
         }
 
@@ -716,7 +716,7 @@ public class HttpServletRequestWrapper implements HttpServletRequest, Closeable 
          * @return Value of Request parameter
          */
         public String getValue() {
-            return (value);
+            return value;
         }
 
         /**
@@ -725,7 +725,7 @@ public class HttpServletRequestWrapper implements HttpServletRequest, Closeable 
          * @return Source of Request parameter
          */
         public ParameterSource getSource() {
-            return (source);
+            return source;
         }
     }
 }

@@ -34,7 +34,7 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class IncludeXMLFilter extends DefaultHandler {
 
-    private ContentHandler handler;
+    private final ContentHandler handler;
 
 
     /**

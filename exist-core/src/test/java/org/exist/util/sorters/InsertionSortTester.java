@@ -22,11 +22,11 @@
 
 package org.exist.util.sorters;
 
-import java.util.Comparator;
-import java.util.List;
-
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.util.InsertionSort;
+
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * Interface to the insertion sort methods.
@@ -49,7 +49,7 @@ class InsertionSortTester extends SortingAlgorithmTester {
 		InsertionSort.sort(a, lo, hi);
 	}
 
-	public <C> void invokeSort(C a[], Comparator<C> c, int lo, int hi)
+	public <C> void invokeSort(C[] a, Comparator<C> c, int lo, int hi)
 		throws Exception
 	{
 		InsertionSort.sort(a, c, lo, hi);

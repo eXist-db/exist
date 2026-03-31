@@ -38,9 +38,9 @@ public abstract class UserSwitchingBasicFunction extends BasicFunction {
      * Flag which indicates how many subjects we have pushed, and so we must later
      * pop the same number of subjects when the expression is reset, see {@link UserSwitchingBasicFunction#resetState(boolean)}
      */
-    private int pushedSubjects = 0;
+    private int pushedSubjects;
 
-    public UserSwitchingBasicFunction(final XQueryContext context, final FunctionSignature signature) {
+    protected UserSwitchingBasicFunction(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
 

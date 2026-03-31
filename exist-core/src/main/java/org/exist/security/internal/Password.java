@@ -21,9 +21,6 @@
  */
 package org.exist.security.internal;
 
-import java.util.Objects;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.apache.commons.codec.binary.Base64;
 import org.bouncycastle.crypto.digests.GeneralDigest;
 import org.bouncycastle.crypto.digests.MD5Digest;
@@ -31,6 +28,10 @@ import org.bouncycastle.crypto.digests.RIPEMD160Digest;
 import org.exist.security.Account;
 import org.exist.security.Credential;
 import org.exist.security.MessageDigester;
+
+import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -49,7 +50,7 @@ public class Password implements Credential {
     private final String pw;
     private final String digestPw;
     
-    public final static Hash DEFAULT_ALGORITHM = Hash.RIPEMD160;
+    public static final Hash DEFAULT_ALGORITHM = Hash.RIPEMD160;
     private final Hash algorithm;
     
     final Pattern ptnHash = Pattern.compile("\\{([A-Z0-9]+)\\}(.*)");
@@ -161,7 +162,7 @@ public class Password implements Credential {
                 }
                 yield Objects.equals(pw, password.pw);
             }
-            case String s -> (hashAndEncode(s)).equals(pw);
+            case String s -> hashAndEncode(s).equals(pw);
             case null, default -> false;
         };
     }

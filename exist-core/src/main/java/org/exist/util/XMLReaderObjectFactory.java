@@ -21,26 +21,23 @@
  */
 package org.exist.util;
 
-import javax.annotation.Nullable;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-
 import org.apache.commons.pool2.BasePooledObjectFactory;
 import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import org.exist.Namespaces;
 import org.exist.resolver.XercesXmlResolverAdapter;
 import org.exist.storage.BrokerPoolService;
 import org.exist.validation.GrammarPool;
-
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
 import org.xmlresolver.Resolver;
 
+import javax.annotation.Nullable;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 import java.util.Map;
 
 /**

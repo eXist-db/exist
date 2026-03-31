@@ -38,14 +38,14 @@ import java.util.List;
  */
 public class CustomMatchListenerFactory {
 
-    private final static Logger LOG = LogManager.getLogger(CustomMatchListenerFactory.class);
+    private static final Logger LOG = LogManager.getLogger(CustomMatchListenerFactory.class);
 
-    public final static String CONFIGURATION_ELEMENT = "custom-filter";
-    public final static String CONFIGURATION_ATTR_CLASS = "class";
-    public final static String CONFIG_MATCH_LISTENERS = "serialization.custom-match-listeners";
+    public static final String CONFIGURATION_ELEMENT = "custom-filter";
+    public static final String CONFIGURATION_ATTR_CLASS = "class";
+    public static final String CONFIG_MATCH_LISTENERS = "serialization.custom-match-listeners";
 
-    private CustomMatchListener first = null;
-    private CustomMatchListener last = null;
+    private CustomMatchListener first;
+    private CustomMatchListener last;
 
     public CustomMatchListenerFactory(final DBBroker broker, final Configuration config) {
         this(broker, config, null);

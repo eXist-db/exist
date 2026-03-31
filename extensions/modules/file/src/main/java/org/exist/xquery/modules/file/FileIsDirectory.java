@@ -21,25 +21,19 @@
  */
 package org.exist.xquery.modules.file;
 
-import java.nio.file.Files;
-import java.nio.file.LinkOption;
-import java.nio.file.Path;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.BooleanValue;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
+
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.Path;
 
 /**
  * @see java.nio.file.Files#isDirectory(Path, LinkOption...)
@@ -49,9 +43,9 @@ import org.exist.xquery.value.Type;
  */
 public class FileIsDirectory extends BasicFunction {
 	
-	private final static Logger logger = LogManager.getLogger(FileIsDirectory.class);
+	private static final Logger logger = LogManager.getLogger(FileIsDirectory.class);
 	
-	public final static FunctionSignature signatures[] = {
+	public static final FunctionSignature[] signatures = {
 		new FunctionSignature(
 			new QName( "is-directory", FileModule.NAMESPACE_URI, FileModule.PREFIX ),
 			"Tests if a path is a directory.  This method is only available to the DBA role.",

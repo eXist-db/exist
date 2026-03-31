@@ -49,7 +49,7 @@ import static org.junit.Assert.assertTrue;
 @RunWith(ParallelRunner.class)
 public class MemtreeTest {
 
-    private final static String XML =
+    private static final String XML =
             """
             <?xml version="1.0" encoding="UTF-8"?>
             <!-- comment before doc 1 -->

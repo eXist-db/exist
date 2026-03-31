@@ -21,16 +21,15 @@
  */
 package org.exist.http.servlets;
 
+import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import jakarta.servlet.http.Part;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import jakarta.servlet.RequestDispatcher;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
 import org.exist.util.FileUtils;
 import org.exist.util.io.InputStreamUtil;
 
@@ -87,10 +86,10 @@ public class HttpRequestWrapper implements RequestWrapper {
     // flag to indicate whether multipart form data was processed
     private final boolean isFormDataParsed;
 
-    @Nullable private Map<Part, Path> temporaryUploadedFilesPathCache = null;
+    @Nullable private Map<Part, Path> temporaryUploadedFilesPathCache;
 
-    private boolean parsedQueryString = false;
-    @Nullable private Map<String, Object> queryStringParameters = null;
+    private boolean parsedQueryString;
+    @Nullable private Map<String, Object> queryStringParameters;
 
     /**
      * Constructs a wrapper for the given servlet request. multipart/form-data 
@@ -928,24 +927,5 @@ public class HttpRequestWrapper implements RequestWrapper {
     @Override
     public RequestDispatcher getRequestDispatcher(final String path) {
         return servletRequest.getRequestDispatcher(path);
-    }
-
-    @Override
-    protected void finalize() {
-        if (temporaryUploadedFilesPathCache == null) {
-            return;
-        }
-
-        for (final Map.Entry<Part, Path> temporaryUploadedFilePathCache : temporaryUploadedFilesPathCache.entrySet()) {
-            final Part part = temporaryUploadedFilePathCache.getKey();
-            try {
-                part.delete();
-            } catch (final IOException e) {
-                LOG.error("Unable to delete: {}", part.getSubmittedFileName(), e);
-            }
-
-            final Path temporaryFile = temporaryUploadedFilePathCache.getValue();
-            FileUtils.deleteQuietly(temporaryFile);
-        }
     }
 }

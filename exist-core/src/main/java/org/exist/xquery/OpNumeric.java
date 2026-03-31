@@ -21,19 +21,15 @@
  */
 package org.exist.xquery;
 
-import java.util.Map;
-import java.util.TreeMap;
-
 import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.storage.DBBroker;
 import org.exist.xquery.Constants.ArithmeticOperator;
 import org.exist.xquery.util.ExpressionDumper;
-import org.exist.xquery.value.ComputableValue;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.NumericValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
+
+import java.util.Map;
+import java.util.TreeMap;
 
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 
@@ -45,7 +41,7 @@ public class OpNumeric extends BinaryOp {
 
     protected final ArithmeticOperator operator;
     protected int returnType = Type.ANY_ATOMIC_TYPE;
-    protected NodeSet temp = null;
+    protected NodeSet temp;
     protected DBBroker broker;
 
     public OpNumeric(final XQueryContext context, final ArithmeticOperator operator) {
@@ -376,7 +372,9 @@ public class OpNumeric extends BinaryOp {
 
     private static class OpEntry implements Comparable<OpEntry> {
         public final ArithmeticOperator op;
-        public final int typeA, typeB, typeResult;
+        public final int typeA;
+        public final int typeB;
+        public final int typeResult;
 
         public OpEntry(final ArithmeticOperator op, final int typeA, final int typeB) {
             this(op, typeA, typeB, Type.ANY_ATOMIC_TYPE);

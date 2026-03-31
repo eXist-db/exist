@@ -21,10 +21,6 @@
  */
 package org.exist.collections;
 
-import java.beans.ConstructorProperties;
-import java.util.Optional;
-import java.util.function.Function;
-
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.Weigher;
@@ -39,6 +35,9 @@ import org.exist.util.Configuration;
 import org.exist.xmldb.XmldbURI;
 
 import javax.annotation.Nullable;
+import java.beans.ConstructorProperties;
+import java.util.Optional;
+import java.util.function.Function;
 
 /**
  * Global cache for {@link org.exist.collections.Collection} objects.
@@ -52,7 +51,7 @@ import javax.annotation.Nullable;
  */
 @ThreadSafe
 public class CollectionCache implements BrokerPoolService {
-    private final static Logger LOG = LogManager.getLogger(CollectionCache.class);
+    private static final Logger LOG = LogManager.getLogger(CollectionCache.class);
 
     public static final int DEFAULT_CACHE_SIZE_BYTES = 64 * 1024 * 1024;   // 64 MB
     public static final String CACHE_SIZE_ATTRIBUTE = "collectionCache";

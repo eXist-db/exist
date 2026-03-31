@@ -37,7 +37,7 @@ public class WeakLazyStripesStressTest {
     @Outcome(id = "true", expect = Expect.ACCEPTABLE, desc = "Same Object for Same Key")
     @State
     public static class SameObjectForSameKey {
-        WeakLazyStripes<String, Lock> lockMap = new WeakLazyStripes<>((key) -> new ReentrantLock());
+        WeakLazyStripes<String, Lock> lockMap = new WeakLazyStripes<>(key -> new ReentrantLock());
         Object ar1;
         Object ar2;
         Object ar3;
@@ -99,7 +99,7 @@ public class WeakLazyStripesStressTest {
     @Outcome(id = "true", expect = Expect.ACCEPTABLE, desc = "Different Object for Different Keys")
     @State
     public static class DifferentObjectForDifferentKeys {
-        WeakLazyStripes<String, Lock> lockMap = new WeakLazyStripes<>((key) -> new ReentrantLock());
+        WeakLazyStripes<String, Lock> lockMap = new WeakLazyStripes<>(key -> new ReentrantLock());
         Object ar1;
         Object ar2;
         Object ar3;

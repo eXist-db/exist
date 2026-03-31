@@ -42,9 +42,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
-import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertFalse;
-import static junit.framework.TestCase.assertNull;
+import static junit.framework.TestCase.*;
 
 /**
  * Test if inline functions and functions defined in imported modules are properly reset.
@@ -53,29 +51,29 @@ import static junit.framework.TestCase.assertNull;
  */
 public class CleanupTest {
 
-    private final static String MODULE_NS = "http://exist-db.org/test";
+    private static final String MODULE_NS = "http://exist-db.org/test";
 
-    private final static String TEST_MODULE = "module namespace t=\"" + MODULE_NS + "\";\n" +
+    private static final String TEST_MODULE = "module namespace t=\"" + MODULE_NS + "\";\n" +
             "declare variable $t:VAR := 123;\n" +
             "declare variable $t:VAR2 := 456;\n" +
             "declare function t:test($a) { $a || $t:VAR };\n" +
             "declare function t:inline($a) { function() { $a } };";
 
-    private final static String TEST_QUERY = "import module namespace t=\"" + MODULE_NS + "\" at " +
+    private static final String TEST_QUERY = "import module namespace t=\"" + MODULE_NS + "\" at " +
             "\"xmldb:exist:///db/test/test-module.xql\";" +
             "t:test('Hello world')";
 
-    private final static String TEST_INLINE = """
+    private static final String TEST_INLINE = """
             let $a := "a"
             let $func := function() { $a }
             return
                $func""";
 
-    private final static String INTERNAL_MODULE_TEST = "import module namespace tt=\"" + MODULE_NS + "\" at " +
+    private static final String INTERNAL_MODULE_TEST = "import module namespace tt=\"" + MODULE_NS + "\" at " +
             "\"java:org.exist.xquery.TestModule\";" +
             "tt:test()";
 
-    private final static String INTERNAL_MODULE_EVAL_TEST = "import module namespace tt=\"" + MODULE_NS + "\" at " +
+    private static final String INTERNAL_MODULE_EVAL_TEST = "import module namespace tt=\"" + MODULE_NS + "\" at " +
             "\"java:org.exist.xquery.TestModule\";" +
             "util:eval('123')," +
             "tt:test()";

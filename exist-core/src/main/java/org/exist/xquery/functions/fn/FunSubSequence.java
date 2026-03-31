@@ -114,7 +114,7 @@ public class FunSubSequence extends Function {
             result = Sequence.EMPTY_SEQUENCE;
         } else {
             return subsequence(seq,
-                    ((DoubleValue)getArgument(1).eval(contextSequence, contextItem).convertTo(Type.DOUBLE)),
+                    (DoubleValue)getArgument(1).eval(contextSequence, contextItem).convertTo(Type.DOUBLE),
                     getArgumentCount() != 3 ? null : ((DoubleValue)getArgument(2).eval(contextSequence, contextItem).convertTo(Type.DOUBLE))
             );
         }

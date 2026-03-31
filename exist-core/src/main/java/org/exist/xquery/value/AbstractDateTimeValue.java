@@ -54,22 +54,24 @@ import java.util.regex.Pattern;
  */
 public abstract class AbstractDateTimeValue extends ComputableValue {
 
-    public final static int YEAR = 0;
-    public final static int MONTH = 1;
-    public final static int DAY = 2;
-    public final static int HOUR = 3;
-    public final static int MINUTE = 4;
-    public final static int SECOND = 5;
-    public final static int MILLISECOND = 6;
+    public static final int YEAR = 0;
+    public static final int MONTH = 1;
+    public static final int DAY = 2;
+    public static final int HOUR = 3;
+    public static final int MINUTE = 4;
+    public static final int SECOND = 5;
+    public static final int MILLISECOND = 6;
     protected static final Pattern negativeDateStart = Pattern.compile("^\\d\\d?-(\\d+)-(.*)");
     protected static final short[] monthData = {306, 337, 0, 31, 61, 92, 122, 153, 184, 214, 245, 275};
-    private final static Logger LOG = LogManager.getLogger(AbstractDateTimeValue.class);
+    private static final Logger LOG = LogManager.getLogger(AbstractDateTimeValue.class);
     private static final Duration tzLowerBound = TimeUtils.getInstance().newDurationDayTime("-PT14H");
     private static final Duration tzUpperBound = tzLowerBound.negate();
     protected static byte[] daysPerMonth = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
     //Provisionally public
     public final XMLGregorianCalendar calendar;
-    private XMLGregorianCalendar implicitCalendar, canonicalCalendar, trimmedCalendar;
+    private XMLGregorianCalendar implicitCalendar;
+    private XMLGregorianCalendar canonicalCalendar;
+    private XMLGregorianCalendar trimmedCalendar;
 
     /**
      * Create a new date time value based on the given calendar.  The calendar is
@@ -210,7 +212,9 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
                 // TODO: replace following algorithm in JDK 1.5 with fract.stripTrailingZeros();
                 final String s = fract.toString();
                 int i = s.length();
-                while (i > 0 && s.charAt(i - 1) == '0') i--;
+                while (i > 0 && s.charAt(i - 1) == '0') {
+                    i--;
+                }
                 if (i == 0) {
                     trimmedCalendar.setFractionalSecond(null);
                 } else if (i != s.length()) {
@@ -453,7 +457,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
         }
 
         final AtomicValue other = (AtomicValue) o;
-        if (Type.subTypeOf(other.getType(), Type.DATE_TIME))
+        if (Type.subTypeOf(other.getType(), Type.DATE_TIME)) {
             try {
                 //TODO : find something that will consume less resources
                 return calendar.compare(TimeUtils.getInstance().newXMLGregorianCalendar(other.getStringValue()));
@@ -462,7 +466,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
                 //Why not ?
                 return Constants.SUPERIOR;
             }
-        else {
+        } else {
             return getType() > other.getType() ? Constants.SUPERIOR : Constants.INFERIOR;
         }
     }
@@ -623,7 +627,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
         private int fidx;
         private int vidx;
 
-        private BigInteger year = null;
+        private BigInteger year;
         private int month = DatatypeConstants.FIELD_UNDEFINED;
         private int day = DatatypeConstants.FIELD_UNDEFINED;
 
@@ -633,7 +637,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
         private int minute = DatatypeConstants.FIELD_UNDEFINED;
         private int second = DatatypeConstants.FIELD_UNDEFINED;
 
-        private BigDecimal fractionalSecond = null;
+        private BigDecimal fractionalSecond;
 
         private Parser(String format, String value) {
             this.format = format;
@@ -701,10 +705,11 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
                             skip(':');
                             final int m = parseInt(2, 2);
 
-                            if (m >= 60 || m < 0)
+                            if (m >= 60 || m < 0) {
                                 throw new IllegalArgumentException(
                                         DatatypeMessageFormatter.formatMessage(null, "InvalidFieldValue", new Object[]{m, "timezone minutes"})
                                 );
+                            }
 
                             timezone = (h * 60 + m) * (vch == '+' ? 1 : -1);
                         }
@@ -721,10 +726,11 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
                             skip(':');
                             final int m = parseInt(2, 2);
 
-                            if (m >= 60 || m < 0)
+                            if (m >= 60 || m < 0) {
                                 throw new IllegalArgumentException(
                                         DatatypeMessageFormatter.formatMessage(null, "InvalidFieldValue", new Object[]{m, "timezone minutes"})
                                 );
+                            }
 
                             timezone = (h * 60 + m) * (vch == '+' ? 1 : -1);
                         } else {

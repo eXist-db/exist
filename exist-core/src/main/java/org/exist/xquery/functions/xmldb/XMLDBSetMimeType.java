@@ -21,11 +21,10 @@
  */
 package org.exist.xquery.functions.xmldb;
 
-import java.net.URISyntaxException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.QName;
+import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
@@ -36,11 +35,9 @@ import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
-import org.exist.xquery.value.AnyURIValue;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
+
+import java.net.URISyntaxException;
 
 import static org.exist.xquery.XPathException.execAndAddErrorIfMissing;
 
@@ -49,7 +46,7 @@ import static org.exist.xquery.XPathException.execAndAddErrorIfMissing;
  */
 public class XMLDBSetMimeType extends BasicFunction {
 	protected static final Logger logger = LogManager.getLogger(XMLDBSetMimeType.class);
-	public final static FunctionSignature signature =
+	public static final FunctionSignature signature =
 		new FunctionSignature(
 			new QName("set-mime-type", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 			"Set the MIME type of the resource $resource-uri." +

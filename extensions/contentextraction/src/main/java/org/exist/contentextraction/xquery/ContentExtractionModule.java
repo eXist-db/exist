@@ -21,11 +21,12 @@
  */
 package org.exist.contentextraction.xquery;
 
-import java.util.List;
-import java.util.Map;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 import org.exist.xquery.XPathException;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:dulip.withanage@gmail.com">Dulip Withanage</a>
@@ -33,12 +34,12 @@ import org.exist.xquery.XPathException;
  */
 public class ContentExtractionModule extends AbstractInternalModule {
 
-    public final static String NAMESPACE_URI = "http://exist-db.org/xquery/contentextraction";
-    public final static String PREFIX = "contentextraction";
-    public final static String INCLUSION_DATE = "2011-01-20";
-    public final static String RELEASED_IN_VERSION = "eXist-1.5";
+    public static final String NAMESPACE_URI = "http://exist-db.org/xquery/contentextraction";
+    public static final String PREFIX = "contentextraction";
+    public static final String INCLUSION_DATE = "2011-01-20";
+    public static final String RELEASED_IN_VERSION = "eXist-1.5";
 
-    public final static FunctionDef[] functions = {
+    public static final FunctionDef[] functions = {
         new FunctionDef(ContentFunctions.getMeatadata, ContentFunctions.class),
         new FunctionDef(ContentFunctions.getMetadataAndContent, ContentFunctions.class),
         new FunctionDef(ContentFunctions.streamContent, ContentFunctions.class)
@@ -57,21 +58,21 @@ public class ContentExtractionModule extends AbstractInternalModule {
 
     @Override
     public String getNamespaceURI() {
-        return (NAMESPACE_URI);
+        return NAMESPACE_URI;
     }
 
     @Override
     public String getDefaultPrefix() {
-        return (PREFIX);
+        return PREFIX;
     }
 
     @Override
     public String getDescription() {
-        return ("Module for processing content and returning metadata and content");
+        return "Module for processing content and returning metadata and content";
     }
 
     @Override
     public String getReleaseVersion() {
-        return (RELEASED_IN_VERSION);
+        return RELEASED_IN_VERSION;
     }
 }

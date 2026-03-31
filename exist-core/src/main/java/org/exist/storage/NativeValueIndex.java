@@ -27,10 +27,10 @@ import net.jcip.annotations.GuardedBy;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
+import org.exist.collections.Collection;
+import org.exist.dom.QName;
 import org.exist.dom.TypedQNameComparator;
 import org.exist.dom.persistent.*;
-import org.exist.dom.QName;
-import org.exist.collections.Collection;
 import org.exist.indexing.AbstractStreamListener;
 import org.exist.indexing.IndexUtils;
 import org.exist.indexing.IndexWorker;
@@ -48,6 +48,7 @@ import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.storage.lock.LockManager;
 import org.exist.storage.lock.ManagedLock;
 import org.exist.storage.txn.Txn;
+import org.exist.util.*;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.Constants.StringTruncationOperator;
@@ -57,8 +58,6 @@ import org.exist.xquery.XQueryWatchDog;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
-import org.exist.util.*;
-
 import org.w3c.dom.Node;
 
 import javax.annotation.Nullable;
@@ -119,7 +118,7 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class NativeValueIndex implements ContentLoadingObserver {
 
-    private final static Logger LOG = LogManager.getLogger(NativeValueIndex.class);
+    private static final Logger LOG = LogManager.getLogger(NativeValueIndex.class);
 
     public static final String FILE_NAME = "values.dbx";
     public static final short FILE_FORMAT_VERSION_ID = 15;
@@ -135,8 +134,8 @@ public class NativeValueIndex implements ContentLoadingObserver {
     public static final int OFFSET_VALUE_TYPE = OFFSET_COLLECTION_ID + Collection.LENGTH_COLLECTION_ID; //2
     public static final int OFFSET_DATA = OFFSET_VALUE_TYPE + NativeValueIndex.LENGTH_VALUE_TYPE; //3
 
-    public final static String INDEX_CASE_SENSITIVE_ATTRIBUTE = "caseSensitive";
-    public final static String PROPERTY_INDEX_CASE_SENSITIVE = "indexer.case-sensitive";
+    public static final String INDEX_CASE_SENSITIVE_ATTRIBUTE = "caseSensitive";
+    public static final String PROPERTY_INDEX_CASE_SENSITIVE = "indexer.case-sensitive";
 
     /**
      * The broker that is using this value index.
@@ -169,7 +168,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
     /**
      * Work output Stream that should be cleared before every use.
      */
-    private VariableByteOutputStream os = new VariableByteOutputStream();
+    private final VariableByteOutputStream os = new VariableByteOutputStream();
 
     private final boolean caseSensitive;
 
@@ -196,15 +195,15 @@ public class NativeValueIndex implements ContentLoadingObserver {
     }
 
     private String getFileName() {
-        return (FILE_NAME);
+        return FILE_NAME;
     }
 
     private String getConfigKeyForFile() {
-        return (FILE_KEY_IN_CONFIG);
+        return FILE_KEY_IN_CONFIG;
     }
 
     private NativeValueIndex getInstance() {
-        return (this);
+        return this;
     }
 
     @Override
@@ -275,7 +274,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
 
     @Override
     public void storeAttribute(final AttrImpl attr, final NodePath currentPath, final RangeIndexSpec spec, final boolean remove) {
-        storeAttribute(attr, attr.getValue(), spec.getType(), (spec.getQName() == null) ? IndexType.GENERIC : IndexType.QNAME, remove);
+        storeAttribute(attr, attr.getValue(), spec.getType(), spec.getQName() == null ? IndexType.GENERIC : IndexType.QNAME, remove);
     }
 
     public void storeAttribute(final AttrImpl attr, final String value, final int xpathType, final IndexType indexType, final boolean remove) {
@@ -308,7 +307,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
         this.doc = node.getOwnerDocument();
         final NodePath path = new NodePath(nodePath);
         IStoredNode root = null;
-        IStoredNode currentNode = (node.getNodeType() == Node.ELEMENT_NODE || node.getNodeType() == Node.ATTRIBUTE_NODE) ? node : node.getParentStoredNode();
+        IStoredNode currentNode = node.getNodeType() == Node.ELEMENT_NODE || node.getNodeType() == Node.ATTRIBUTE_NODE ? node : node.getParentStoredNode();
 
         while (currentNode != null) {
             final GeneralRangeIndexSpec rSpec = doc.getCollection().getIndexByPathConfiguration(broker, path);
@@ -983,7 +982,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
     }
 
     private int toIndexQueryOp(final Comparison comparison) {
-        final int indexOp = switch (comparison) {
+        return switch (comparison) {
             case LT -> IndexQuery.LT;
             case LTEQ -> IndexQuery.LEQ;
             case GT -> IndexQuery.GT;
@@ -991,8 +990,6 @@ public class NativeValueIndex implements ContentLoadingObserver {
             case NEQ -> IndexQuery.NEQ;
             default -> IndexQuery.EQ;
         };
-
-        return indexOp;
     }
 
 
@@ -1064,7 +1061,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
     //*
     //***************************************************************************/
 
-    private final static class ExactMatcher implements TermMatcher {
+    private static final class ExactMatcher implements TermMatcher {
         private final String expr;
 
         ExactMatcher(final String expr) throws EXistException {
@@ -1078,7 +1075,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
     }
 
 
-    private final static class ContainsMatcher implements TermMatcher {
+    private static final class ContainsMatcher implements TermMatcher {
         private final String expr;
 
         ContainsMatcher(final String expr) throws EXistException {
@@ -1092,7 +1089,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
     }
 
 
-    private final static class StartsWithMatcher implements TermMatcher {
+    private static final class StartsWithMatcher implements TermMatcher {
         private final String expr;
 
         StartsWithMatcher(final String expr) throws EXistException {
@@ -1105,7 +1102,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
         }
     }
 
-    private final static class EndsWithMatcher implements TermMatcher {
+    private static final class EndsWithMatcher implements TermMatcher {
         private final String expr;
 
         EndsWithMatcher(final String expr) throws EXistException {
@@ -1118,7 +1115,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
         }
     }
 
-    private final static class CollatorMatcher implements TermMatcher {
+    private static final class CollatorMatcher implements TermMatcher {
         private final String expr;
         private final StringTruncationOperator truncation;
         private final Collator collator;
@@ -1135,14 +1132,12 @@ public class NativeValueIndex implements ContentLoadingObserver {
 
         @Override
         public boolean matches(final CharSequence term) {
-            final boolean matches = switch (truncation) {
+            return switch (truncation) {
                 case LEFT -> Collations.endsWith(collator, term.toString(), expr);
                 case RIGHT -> Collations.startsWith(collator, term.toString(), expr);
                 case BOTH -> Collations.contains(collator, term.toString(), expr);
                 default -> Collations.equals(collator, term.toString(), expr);
             };
-
-            return matches;
         }
     }
 
@@ -1172,7 +1167,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
                 is = dbValues.getAsStream(pointer);
             } catch (final IOException e) {
                 LOG.error(e.getMessage(), e);
-                return (true);
+                return true;
             }
 
             try {
@@ -1364,7 +1359,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
     //***************************************************************************/
 
     private static class QNameKey implements Comparable<QNameKey> {
-        private final static TypedQNameComparator comparator = new TypedQNameComparator();
+        private static final TypedQNameComparator comparator = new TypedQNameComparator();
 
         private final QName qname;
         private final AtomicValue value;
@@ -1386,7 +1381,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
         }
     }
 
-    private final static class SimpleValue extends Value {
+    private static final class SimpleValue extends Value {
         static final int OFFSET_IDX_TYPE = 0;
         static final int LENGTH_IDX_TYPE = 1; //sizeof byte
         static final int OFFSET_COLLECTION_ID = OFFSET_IDX_TYPE + LENGTH_IDX_TYPE; //1
@@ -1486,7 +1481,7 @@ public class NativeValueIndex implements ContentLoadingObserver {
     }
 
     private class ValueIndexStreamListener extends AbstractStreamListener {
-        private Deque<XMLString> contentStack = null;
+        private Deque<XMLString> contentStack;
 
         ValueIndexStreamListener() {
             super();

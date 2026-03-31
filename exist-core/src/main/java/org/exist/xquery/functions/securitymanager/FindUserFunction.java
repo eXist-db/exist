@@ -21,8 +21,6 @@
  */
 package org.exist.xquery.functions.securitymanager;
 
-import java.util.Collections;
-import java.util.List;
 import org.exist.dom.QName;
 import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
@@ -32,14 +30,10 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.BooleanValue;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
+import org.exist.xquery.value.*;
+
+import java.util.Collections;
+import java.util.List;
 
 
 /**
@@ -48,14 +42,14 @@ import org.exist.xquery.value.ValueSequence;
  */
 public class FindUserFunction extends BasicFunction {
 
-    private final static QName qnFindUsersByUsername = new QName("find-users-by-username", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
-    private final static QName qnFindUsersByName = new QName("find-users-by-name", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
-    private final static QName qnFindUsersByNamePart = new QName("find-users-by-name-part", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
-    private final static QName qnListUsers = new QName("list-users", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
-    private final static QName qnUserExists = new QName("user-exists", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    private static final QName qnFindUsersByUsername = new QName("find-users-by-username", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    private static final QName qnFindUsersByName = new QName("find-users-by-name", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    private static final QName qnFindUsersByNamePart = new QName("find-users-by-name-part", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    private static final QName qnListUsers = new QName("list-users", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    private static final QName qnUserExists = new QName("user-exists", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
     
     
-    public final static FunctionSignature FNS_FIND_USERS_BY_USERNAME = new FunctionSignature(
+    public static final FunctionSignature FNS_FIND_USERS_BY_USERNAME = new FunctionSignature(
         qnFindUsersByUsername,
         "Finds users whoose username starts with a matching string",
         new SequenceType[] {
@@ -63,7 +57,7 @@ public class FindUserFunction extends BasicFunction {
         },
         new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "The list of matching usernames")
     );
-    public final static FunctionSignature FNS_FIND_USERS_BY_NAME = new FunctionSignature(
+    public static final FunctionSignature FNS_FIND_USERS_BY_NAME = new FunctionSignature(
         qnFindUsersByName,
         "Finds users whoose personal name starts with a matching string",
         new SequenceType[] {
@@ -72,7 +66,7 @@ public class FindUserFunction extends BasicFunction {
         new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "The list of matching usernames")
     );
     
-    public final static FunctionSignature FNS_FIND_USERS_BY_NAME_PART = new FunctionSignature(
+    public static final FunctionSignature FNS_FIND_USERS_BY_NAME_PART = new FunctionSignature(
         qnFindUsersByNamePart,
         "Finds users whoose first name or last name starts with a matching string",
         new SequenceType[] {
@@ -81,14 +75,14 @@ public class FindUserFunction extends BasicFunction {
         new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "The list of matching usernames")
     );
     
-    public final static FunctionSignature FNS_LIST_USERS = new FunctionSignature(
+    public static final FunctionSignature FNS_LIST_USERS = new FunctionSignature(
         qnListUsers,
         "List all users. You must be a DBA to enumerate all users, if you are not a DBA you will just get the username of the currently logged in user.",
         null,
         new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE_OR_MORE, "The list of users.")
     );
     
-    public final static FunctionSignature FNS_USER_EXISTS = new FunctionSignature(
+    public static final FunctionSignature FNS_USER_EXISTS = new FunctionSignature(
         qnUserExists,
         "Determines whether a user exists.",
         new SequenceType[] {
@@ -114,14 +108,14 @@ public class FindUserFunction extends BasicFunction {
         
         if(isCalledAs(qnListUsers.getLocalPart())) {
             result = new ValueSequence();
-            if(currentUser.getName().equals(SecurityManager.GUEST_USER)) {
+            if(SecurityManager.GUEST_USER.equals(currentUser.getName())) {
                 result.add(new StringValue(this, SecurityManager.GUEST_USER));
             } else {
                 addUserNamesToSequence(securityManager.findAllUserNames(), result);
             }
         } else {
         
-            if(currentUser.getName().equals(SecurityManager.GUEST_USER)) {
+            if(SecurityManager.GUEST_USER.equals(currentUser.getName())) {
                 throw new XPathException(this, "You must be an authenticated user");
             }
             

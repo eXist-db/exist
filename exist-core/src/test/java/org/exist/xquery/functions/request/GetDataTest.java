@@ -28,33 +28,33 @@ import org.apache.http.HttpStatus;
 import org.apache.http.HttpVersion;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.entity.ContentType;
-import org.exist.xmldb.UserManagementService;
-import java.io.IOException;
-import java.io.InputStream;
-
 import org.exist.http.RESTTest;
 import org.exist.xmldb.EXistResource;
+import org.exist.xmldb.UserManagementService;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertArrayEquals;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.BinaryResource;
+
+import java.io.IOException;
+import java.io.InputStream;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.commons.codec.binary.Base64.encodeBase64String;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 public class GetDataTest extends RESTTest {
 
-    private final static String CONTAINER_ELEMENT_NAME = "data";
-    private final static String XQUERY = wrapInElement("{request:get-data()}");
-    private final static String XQUERY_FILENAME = "test-get-data.xql";
+    private static final String CONTAINER_ELEMENT_NAME = "data";
+    private static final String XQUERY = wrapInElement("{request:get-data()}");
+    private static final String XQUERY_FILENAME = "test-get-data.xql";
 
     private static Collection root;
 
@@ -70,7 +70,7 @@ public class GetDataTest extends RESTTest {
         res.setContent(XQUERY);
         root.storeResource(res);
         UserManagementService ums = root.getService(UserManagementService.class);
-        ums.chmod(res, 0777);
+        ums.chmod(res, 511);
     }
 
     @AfterClass
@@ -201,11 +201,11 @@ public class GetDataTest extends RESTTest {
         testRequest(post, wrapInElement(testData).getBytes());
     }
     
-    private void testRequest(Request method, final byte expectedResponse[]) throws IOException {
+    private void testRequest(Request method, final byte[] expectedResponse) throws IOException {
         testRequest(method, expectedResponse, false);
     }
     
-    private void testRequest(Request method, byte expectedResponse[], boolean stripWhitespaceAndFormatting) throws IOException {
+    private void testRequest(Request method, byte[] expectedResponse, boolean stripWhitespaceAndFormatting) throws IOException {
         final HttpResponse response = method.execute().returnResponse();
 
             assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
@@ -213,7 +213,7 @@ public class GetDataTest extends RESTTest {
             try (final UnsynchronizedByteArrayOutputStream os = new UnsynchronizedByteArrayOutputStream()) {
                 response.getEntity().writeTo(os);
 
-                byte actualResponse[] = os.toByteArray();
+                byte[] actualResponse = os.toByteArray();
                 if(stripWhitespaceAndFormatting) {
                     expectedResponse = new String(expectedResponse).replace("\n", "").replace("\t", "").replace(" ", "").getBytes(UTF_8);
                     actualResponse = new String(actualResponse).replace("\n", "").replace("\t","").replace(" ", "").getBytes(UTF_8);

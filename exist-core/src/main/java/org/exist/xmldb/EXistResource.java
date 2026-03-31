@@ -21,9 +21,6 @@
  */
 package org.exist.xmldb;
 
-import java.time.Instant;
-import java.util.Properties;
-
 import org.exist.security.Permission;
 import org.w3c.dom.DocumentType;
 import org.xml.sax.ext.LexicalHandler;
@@ -31,6 +28,8 @@ import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
+import java.util.Properties;
 
 /**
  * Defines additional methods implemented by XML and binary

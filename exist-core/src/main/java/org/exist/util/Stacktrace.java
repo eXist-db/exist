@@ -30,7 +30,7 @@ import java.util.Arrays;
  */
 public class Stacktrace {
 
-    public final static int DEFAULT_STACK_TOP = 10;
+    public static final int DEFAULT_STACK_TOP = 10;
 
     /**
      * Gets the top N frames from the stack trace and

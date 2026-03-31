@@ -32,7 +32,7 @@ public class PrologFunctions extends BasicFunction {
 	
 	protected static final Logger logger = LogManager.getLogger(PrologFunctions.class);
 
-	public final static FunctionSignature[] signatures = {
+	public static final FunctionSignature[] signatures = {
 		new FunctionSignature(
 			new QName("import-module", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 			"Dynamically imports an XQuery module into the current context. The parameters have the same " +

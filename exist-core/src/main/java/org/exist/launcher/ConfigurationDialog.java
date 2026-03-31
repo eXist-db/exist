@@ -21,6 +21,17 @@
  */
 package org.exist.launcher;
 
+import org.apache.commons.lang3.SystemUtils;
+import org.exist.collections.CollectionCache;
+import org.exist.storage.BrokerPool;
+import org.exist.storage.DefaultCacheManager;
+import org.exist.util.Configuration;
+import org.exist.util.ConfigurationHelper;
+import org.exist.util.DatabaseConfigurationException;
+import org.exist.util.FileUtils;
+
+import javax.swing.*;
+import javax.xml.transform.TransformerException;
 import java.awt.*;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -32,17 +43,6 @@ import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
-import javax.swing.*;
-import javax.xml.transform.TransformerException;
-
-import org.apache.commons.lang3.SystemUtils;
-import org.exist.collections.CollectionCache;
-import org.exist.storage.BrokerPool;
-import org.exist.storage.DefaultCacheManager;
-import org.exist.util.Configuration;
-import org.exist.util.ConfigurationHelper;
-import org.exist.util.DatabaseConfigurationException;
-import org.exist.util.FileUtils;
 
 import static org.exist.launcher.ConfigurationUtility.LAUNCHER_PROPERTY_MAX_MEM;
 import static org.exist.launcher.ConfigurationUtility.LAUNCHER_PROPERTY_MIN_MEM;
@@ -56,10 +56,10 @@ import static org.exist.launcher.ConfigurationUtility.LAUNCHER_PROPERTY_MIN_MEM;
 public class ConfigurationDialog extends JDialog {
 
     private final Consumer<Boolean> callback;
-    private boolean changed = false;
-    private boolean dataDirChanged = false;
-    private boolean jettyConfigChanged = false;
-    private boolean beforeStart = false;
+    private boolean changed;
+    private boolean dataDirChanged;
+    private boolean jettyConfigChanged;
+    private boolean beforeStart;
 
     /**
      * Creates new form ConfigurationDialog
@@ -475,8 +475,9 @@ public class ConfigurationDialog extends JDialog {
     }//GEN-LAST:event_maxMemoryChanged
 
     private boolean checkDataDir() {
-        if (!dataDirChanged)
+        if (!dataDirChanged) {
             return true;
+        }
 
         Path dir = Path.of(dataDir.getText());
         if (Files.exists(dir)) {
@@ -524,8 +525,9 @@ public class ConfigurationDialog extends JDialog {
             setVisible(false);
             return;
         }
-        if (!checkDataDir())
+        if (!checkDataDir()) {
             return;
+        }
         try {
             final Properties properties = new Properties();
             properties.setProperty("memory.max", maxMemory.getValue().toString());
@@ -625,9 +627,9 @@ public class ConfigurationDialog extends JDialog {
         final SpinnerNumberModel collectionCacheModel = (SpinnerNumberModel) collectionCache.getModel();
         int maxCache;
         if (max <= 2048) {
-            maxCache = (max / 3);
+            maxCache = max / 3;
         } else {
-            maxCache = (max / 2);
+            maxCache = max / 2;
         }
         cacheModel.setMaximum(maxCache - 48);
         if (((Integer)cacheModel.getMaximum()).compareTo((Integer)cacheModel.getValue()) < 0) {

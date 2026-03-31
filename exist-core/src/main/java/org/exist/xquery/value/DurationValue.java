@@ -39,19 +39,17 @@ import java.math.RoundingMode;
  */
 public class DurationValue extends ComputableValue {
 
-    public final static int YEAR = 0;
-    public final static int MONTH = 1;
-    public final static int DAY = 2;
-    public final static int HOUR = 3;
-    public final static int MINUTE = 4;
-    public final static int SIGN = 5;
-    protected static final BigInteger
-            TWELVE = BigInteger.valueOf(12),
-            TWENTY_FOUR = BigInteger.valueOf(24),
-            SIXTY = BigInteger.valueOf(60);
-    protected static final BigDecimal
-            SIXTY_DECIMAL = BigDecimal.valueOf(60),
-            ZERO_DECIMAL = BigDecimal.ZERO;
+    public static final int YEAR = 0;
+    public static final int MONTH = 1;
+    public static final int DAY = 2;
+    public static final int HOUR = 3;
+    public static final int MINUTE = 4;
+    public static final int SIGN = 5;
+    protected static final BigInteger TWELVE = BigInteger.valueOf(12);
+    protected static final BigInteger TWENTY_FOUR = BigInteger.valueOf(24);
+    protected static final BigInteger SIXTY = BigInteger.valueOf(60);
+    protected static final BigDecimal SIXTY_DECIMAL = BigDecimal.valueOf(60);
+    protected static final BigDecimal ZERO_DECIMAL = BigDecimal.ZERO;
     protected static final Duration CANONICAL_ZERO_DURATION =
             TimeUtils.getInstance().newDuration(true, null, null, null, null, null, ZERO_DECIMAL);
     protected final Duration duration;
@@ -169,7 +167,11 @@ public class DurationValue extends ComputableValue {
             return;
         }
 
-        BigInteger years, months, days, hours, minutes;
+        BigInteger years;
+        BigInteger months;
+        BigInteger days;
+        BigInteger hours;
+        BigInteger minutes;
         BigDecimal seconds;
         BigInteger[] r;
 
@@ -322,7 +324,7 @@ public class DurationValue extends ComputableValue {
     public boolean compareTo(Collator collator, Comparison operator, AtomicValue other) throws XPathException {
         switch (operator) {
             case EQ: {
-                if (!(DurationValue.class.isAssignableFrom(other.getClass()))) {
+                if (!DurationValue.class.isAssignableFrom(other.getClass())) {
                     throw new XPathException(getExpression(), ErrorCodes.XPTY0004, "invalid operand type: " + Type.getTypeName(other.getType()));
                 }
                 //TODO : upgrade so that P365D is *not* equal to P1Y
@@ -334,7 +336,7 @@ public class DurationValue extends ComputableValue {
                 return r;
             }
             case NEQ: {
-                if (!(DurationValue.class.isAssignableFrom(other.getClass()))) {
+                if (!DurationValue.class.isAssignableFrom(other.getClass())) {
                     throw new XPathException(getExpression(), ErrorCodes.XPTY0004, "invalid operand type: " + Type.getTypeName(other.getType()));
                 }
                 //TODO : upgrade so that P365D is *not* equal to P1Y
@@ -356,7 +358,7 @@ public class DurationValue extends ComputableValue {
     }
 
     public int compareTo(Collator collator, AtomicValue other) throws XPathException {
-        if (!(DurationValue.class.isAssignableFrom(other.getClass()))) {
+        if (!DurationValue.class.isAssignableFrom(other.getClass())) {
             throw new XPathException(getExpression(), ErrorCodes.XPTY0004, "invalid operand type: " + Type.getTypeName(other.getType()));
         }
         //TODO : what to do with the collator ?

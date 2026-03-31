@@ -21,12 +21,12 @@
  */
 package org.exist.client;
 
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 import javax.swing.AbstractButton;
+import javax.swing.JComboBox;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
-import javax.swing.JComboBox;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 
 /**
  * The class EnterKeyAdapter listens for VK_ENTER key events 

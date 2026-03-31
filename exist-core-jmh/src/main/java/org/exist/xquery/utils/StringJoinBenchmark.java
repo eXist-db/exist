@@ -142,7 +142,7 @@ public class StringJoinBenchmark {
         return String.join(", ", strings);
     }
 
-    public static void main(final String args[]) {
+    public static void main(final String[] args) {
         // NOTE: just for running with the java debugger
         final StringJoinBenchmark stringJoinBenchmark = new StringJoinBenchmark();
         // stringJoinBenchmark.forApproach();

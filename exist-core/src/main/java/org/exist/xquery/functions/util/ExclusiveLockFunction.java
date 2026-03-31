@@ -32,7 +32,7 @@ import org.exist.xquery.value.Type;
 
 public class ExclusiveLockFunction extends LockFunction {
 
-    public final static FunctionSignature signature =
+    public static final FunctionSignature signature =
 		new FunctionSignature(
 			new QName("exclusive-lock", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 			"Puts an exclusive lock on the owner documents of all nodes in the first argument $nodes. " +

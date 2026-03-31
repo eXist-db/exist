@@ -21,6 +21,12 @@
  */
 package org.exist.security.realm.iprange;
 
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.http.servlets.ExistExtensionServlet;
@@ -29,12 +35,6 @@ import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
 import org.exist.xquery.XQueryContext;
 
-import jakarta.servlet.ServletConfig;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Serial;
@@ -46,7 +46,7 @@ import java.io.Serial;
  */
 public class IPRangeServlet extends HttpServlet implements ExistExtensionServlet  {
 
-    protected final static Logger LOG = LogManager.getLogger(IPRangeServlet.class);
+    protected static final Logger LOG = LogManager.getLogger(IPRangeServlet.class);
     @Serial
     private static final long serialVersionUID = -568037449837549034L;
 
@@ -72,7 +72,9 @@ public class IPRangeServlet extends HttpServlet implements ExistExtensionServlet
         if(ipAddress != null && !ipAddress.isEmpty()) {
             ipAddress = ipAddress.replaceAll("\\s","");
             String[] xFFs = ipAddress.split(",");
-            if(xFFs.length > 1) ipAddress = xFFs[xFFs.length - 1];
+            if (xFFs.length > 1) {
+                ipAddress = xFFs[xFFs.length - 1];
+            }
         } else {
             ipAddress = request.getRemoteAddr();
         }

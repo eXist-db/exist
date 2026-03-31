@@ -21,6 +21,12 @@
  */
 package org.exist.http.servlets;
 
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
@@ -42,12 +48,6 @@ import org.exist.xquery.*;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 
-import jakarta.servlet.ServletConfig;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.ServletOutputStream;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import javax.xml.transform.OutputKeys;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -108,16 +108,16 @@ public class XQueryServlet extends AbstractExistHttpServlet {
     public static final String ATTR_MAX_NODES = "xquery.max-nodes";
     public static final String ATTR_MODULE_LOAD_PATH = "xquery.module-load-path";
 
-    public final static XmldbURI DEFAULT_URI = XmldbURI.EMBEDDED_SERVER_URI.append(XmldbURI.ROOT_COLLECTION_URI);
-    public final static String DEFAULT_CONTENT_TYPE = "text/html";
+    public static final XmldbURI DEFAULT_URI = XmldbURI.EMBEDDED_SERVER_URI.append(XmldbURI.ROOT_COLLECTION_URI);
+    public static final String DEFAULT_CONTENT_TYPE = "text/html";
     
-    public final static String DRIVER = "org.exist.xmldb.DatabaseImpl";
+    public static final String DRIVER = "org.exist.xmldb.DatabaseImpl";
     
-    private XmldbURI collectionURI = null;
+    private XmldbURI collectionURI;
     
-    private String encoding = null;
-    private String contentType = null;
-    private boolean hideErrorMessages = false;
+    private String encoding;
+    private String contentType;
+    private boolean hideErrorMessages;
 
     @Override
     public Logger getLog() {
@@ -181,7 +181,7 @@ public class XQueryServlet extends AbstractExistHttpServlet {
 
             process(request, response);
         } finally {
-            if (request != null && request instanceof HttpServletRequestWrapper wrapper) {
+            if (request instanceof HttpServletRequestWrapper wrapper) {
                 wrapper.close();
             }
         }
@@ -216,7 +216,7 @@ public class XQueryServlet extends AbstractExistHttpServlet {
 
             process(request, response);
         } finally {
-            if (request != null && request instanceof HttpServletRequestWrapper wrapper) {
+            if (request instanceof HttpServletRequestWrapper wrapper) {
                 wrapper.close();
             }
         }
@@ -328,15 +328,17 @@ public class XQueryServlet extends AbstractExistHttpServlet {
         final Object urlAttrib = request.getAttribute(ATTR_XQUERY_URL);
         if (sourceAttrib != null) {
             String s;
-            if (sourceAttrib instanceof Item item)
+            if (sourceAttrib instanceof Item item) {
                 try {
                     s = item.getStringValue();
                 } catch (final XPathException e) {
                     throw new ServletException("Failed to read XQuery source string from " +
-                        "request attribute '" + ATTR_XQUERY_SOURCE + "': " + e.getMessage(), e);
+                            "request attribute '" + ATTR_XQUERY_SOURCE + "': " + e.getMessage(), e);
                 }
-            else
-                {s = sourceAttrib.toString();}
+            } else
+            {
+                s = sourceAttrib.toString();
+            }
             
             source = new StringSource(s);
             
@@ -378,8 +380,9 @@ public class XQueryServlet extends AbstractExistHttpServlet {
         if("GET".equals(request.getMethod().toUpperCase())) {
             String option;
             boolean allowSource = false;
-            if((option = request.getParameter("_source")) != null)
+            if ((option = request.getParameter("_source")) != null) {
                 allowSource = "yes".equals(option);
+            }
             
             //Should we display the source of the XQuery or execute it
             if(allowSource && descriptor != null) {
@@ -496,8 +499,9 @@ public class XQueryServlet extends AbstractExistHttpServlet {
                 	{if (MimeTable.getInstance().isTextContent(mediaType)) {
                 		response.setContentType(mediaType + "; charset=" + getFormEncoding());
                         response.setCharacterEncoding(getFormEncoding());
-                    } else
-                		response.setContentType(mediaType);}
+                    } else {
+                        response.setContentType(mediaType);
+                    }}
                 
             } else {
 	            String contentType = this.contentType;
@@ -569,13 +573,14 @@ public class XQueryServlet extends AbstractExistHttpServlet {
     private String getValue(Object obj) {
         if(obj == null)
             {return null;}
-        
-        if(obj instanceof Sequence sequence)
+
+        if (obj instanceof Sequence sequence) {
             try {
                 return sequence.getStringValue();
             } catch (final XPathException e) {
                 return null;
             }
+        }
         return obj.toString();
     }
 

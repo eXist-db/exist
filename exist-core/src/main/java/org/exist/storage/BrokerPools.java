@@ -21,6 +21,7 @@
  */
 package org.exist.storage;
 
+import com.evolvedbinary.j8fu.function.ConsumerE;
 import net.jcip.annotations.GuardedBy;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -29,7 +30,6 @@ import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.lock.ManagedLock;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
-import com.evolvedbinary.j8fu.function.ConsumerE;
 
 import java.util.*;
 import java.util.concurrent.locks.ReadWriteLock;

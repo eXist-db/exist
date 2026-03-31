@@ -22,13 +22,13 @@
 package org.exist.indexing.range;
 
 import org.exist.dom.QName;
+import org.exist.indexing.range.RangeIndex.Operator;
 import org.exist.storage.ElementValue;
 import org.exist.storage.NodePath;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.xquery.*;
 import org.exist.xquery.modules.range.RangeQueryRewriter;
-import org.exist.indexing.range.RangeIndex.Operator;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.NumericValue;
 import org.exist.xquery.value.Sequence;
@@ -59,9 +59,9 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
     private final Operator operator;
     private final boolean caseSensitive;
     private final boolean numericComparison;
-    private Double numericValue = null;
-    private String lowercaseValue = null;
-    private Pattern pattern = null;
+    private Double numericValue;
+    private String lowercaseValue;
+    private Pattern pattern;
 
     public RangeIndexConfigAttributeCondition(final Element elem, final NodePath parentPath) throws DatabaseConfigurationException {
 

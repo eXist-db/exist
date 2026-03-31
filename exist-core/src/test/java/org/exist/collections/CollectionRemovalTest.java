@@ -44,10 +44,6 @@ import org.exist.util.StringInputSource;
 import org.exist.xmldb.EXistXPathQueryService;
 import org.exist.xmldb.XmldbURI;
 import org.junit.*;
-
-import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
-import static org.junit.Assert.*;
-
 import org.xml.sax.SAXException;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Database;
@@ -60,6 +56,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
+import static org.junit.Assert.*;
+
 /**
  * Creates 3 collections, /db/test/test2, /db/test/test2/test3 and /db/test/test2/test4
  * and stores one document into each. Collection /db/test/test2/test3 is only writable for
@@ -69,15 +68,15 @@ import java.util.Optional;
  */
 public class CollectionRemovalTest {
 
-    private final static String DATA =
+    private static final String DATA =
             "<document>" +
             "   <chapter>" +
             "       <title>Chapter 1</title>" +
             "   </chapter>" +
             "</document>";
 
-    private final static String QUERY1 = "/document/chapter";
-    private final static String QUERY2 = "//chapter[title = 'Chapter 1']";
+    private static final String QUERY1 = "/document/chapter";
+    private static final String QUERY2 = "//chapter[title = 'Chapter 1']";
 
     @ClassRule
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
@@ -184,8 +183,8 @@ public class CollectionRemovalTest {
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn transaction = transact.beginTransaction()) {
 
-            final int worldReadable = 0744;
-            final int worldForbidden = 0700;
+            final int worldReadable = 484;
+            final int worldForbidden = 448;
 
             /*
              * Creates 3 collections: /db/test, /db/test/test2, /db/test/test2/test3 and /db/test/test2/test4,

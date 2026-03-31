@@ -61,8 +61,8 @@ import static org.xmldb.api.base.ResourceType.XML_RESOURCE;
  */
 public class RemoteCollectionTest extends RemoteDBTest {
 
-    private final static String XML_CONTENT = "<xml/>";
-    private final static String BINARY_CONTENT = "TEXT";
+    private static final String XML_CONTENT = "<xml/>";
+    private static final String BINARY_CONTENT = "TEXT";
 
     @Before
     public void setUp() throws ClassNotFoundException, InstantiationException, XMLDBException, IllegalAccessException {

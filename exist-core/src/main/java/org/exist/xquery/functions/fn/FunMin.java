@@ -32,20 +32,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.AtomicValue;
-import org.exist.xquery.value.ComputableValue;
-import org.exist.xquery.value.DoubleValue;
-import org.exist.xquery.value.DurationValue;
-import org.exist.xquery.value.FloatValue;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.NumericValue;
-import org.exist.xquery.value.QNameValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 /**
  * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
@@ -100,7 +87,7 @@ the smallest value is made according to the collation that is used. """;
 		"The collation used by the invocation of this function is determined " +
 		"according to the rules in 7.3.1 Collations.";
 
-	public final static FunctionSignature[] signatures = {
+	public static final FunctionSignature[] signatures = {
 		new FunctionSignature(
 			new QName("min", Function.BUILTIN_FUNCTION_NS),
             FUNCTION_DESCRIPTION_COMMON_1 +

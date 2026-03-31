@@ -21,13 +21,6 @@
  */
 package org.exist.storage;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.List;
-import java.util.Properties;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
@@ -43,34 +36,41 @@ import org.exist.util.Configuration;
 import org.exist.xquery.Expression;
 import org.exist.xquery.TerminatedException;
 
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.Properties;
+
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class ConsistencyCheckTask implements SystemTask {
 
-    private final static Logger LOG = LogManager.getLogger(ConsistencyCheckTask.class);
+    private static final Logger LOG = LogManager.getLogger(ConsistencyCheckTask.class);
 
     private String exportDir;
-    private boolean createBackup = false;
+    private boolean createBackup;
     private boolean createZip = true;
-    private boolean paused = false;
-    private boolean incremental = false;
-    private boolean incrementalCheck = false;
-    private boolean checkDocs = false;
+    private boolean paused;
+    private boolean incremental;
+    private boolean incrementalCheck;
+    private boolean checkDocs;
     private int maxInc = -1;
 
-    private Path lastExportedBackup = null;
+    private Path lastExportedBackup;
 
-    private ProcessMonitor.Monitor monitor = new ProcessMonitor.Monitor();
+    private final ProcessMonitor.Monitor monitor = new ProcessMonitor.Monitor();
     
-    public final static String OUTPUT_PROP_NAME = "output";
-    public final static String ZIP_PROP_NAME = "zip";
-    public final static String BACKUP_PROP_NAME = "backup";
-    public final static String INCREMENTAL_PROP_NAME = "incremental";
-    public final static String INCREMENTAL_CHECK_PROP_NAME = "incremental-check";
-    public final static String MAX_PROP_NAME = "max";
-    public final static String CHECK_DOCS_PROP_NAME = "check-documents";
+    public static final String OUTPUT_PROP_NAME = "output";
+    public static final String ZIP_PROP_NAME = "zip";
+    public static final String BACKUP_PROP_NAME = "backup";
+    public static final String INCREMENTAL_PROP_NAME = "incremental";
+    public static final String INCREMENTAL_CHECK_PROP_NAME = "incremental-check";
+    public static final String MAX_PROP_NAME = "max";
+    public static final String CHECK_DOCS_PROP_NAME = "check-documents";
 
-    private final static LoggingCallback logCallback = new LoggingCallback();
+    private static final LoggingCallback logCallback = new LoggingCallback();
     
     @Override
     public boolean afterCheckpoint() {
@@ -250,10 +250,10 @@ public class ConsistencyCheckTask implements SystemTask {
 		}
     	
     }
-    
-    private class CheckCallback implements ConsistencyCheck.ProgressCallback, SystemExport.StatusCallback {
+
+    private final class CheckCallback implements ConsistencyCheck.ProgressCallback, SystemExport.StatusCallback {
         private final PrintWriter log;
-        private boolean errorFound = false;
+        private boolean errorFound;
 
         private CheckCallback(final PrintWriter log) {
             this.log = log;
@@ -268,7 +268,7 @@ public class ConsistencyCheckTask implements SystemTask {
                 log.write("  DOCUMENT: ");
                 log.write(Integer.toString(current));
                 log.write(" of ");
-                log.write(Integer.valueOf(count).toString());
+                log.write(Integer.toString(count));
                 log.write('\n');
                 log.flush();
             }

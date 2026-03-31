@@ -35,7 +35,7 @@ import java.util.Optional;
  */
 public abstract class RequestFunction extends BasicFunction {
 
-    public RequestFunction(final XQueryContext context, final FunctionSignature signature) {
+    protected RequestFunction(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
 

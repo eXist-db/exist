@@ -34,10 +34,10 @@ import org.exist.security.realm.ldap.LdapContextFactory;
 public class ContextFactory extends LdapContextFactory {
 
 	@ConfigurationFieldAsElement("domain")
-	protected String domain = null;
+	protected String domain;
 
 	@ConfigurationFieldAsElement("searchBase")
-	private String searchBase = null;
+	private String searchBase;
 
 	protected ContextFactory(Configuration config) {
 		super(config);

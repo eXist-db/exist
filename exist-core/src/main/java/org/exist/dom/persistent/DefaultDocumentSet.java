@@ -48,7 +48,7 @@ import java.util.*;
 public class DefaultDocumentSet implements MutableDocumentSet {
 
     private static final int DEFAULT_SIZE = 29;
-    private static final float DEFAULT_GROWTH = 1.75f;
+    private static final float DEFAULT_GROWTH = 1.75F;
 
     private final BitSet docIds = new BitSet();
     private final Map<Integer, DocumentImpl> docs;

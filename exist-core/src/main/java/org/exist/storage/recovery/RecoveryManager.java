@@ -21,6 +21,22 @@
  */
 package org.exist.storage.recovery;
 
+import com.evolvedbinary.j8fu.function.SupplierE;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.exist.storage.BrokerPool;
+import org.exist.storage.DBBroker;
+import org.exist.storage.blob.BlobStore;
+import org.exist.storage.journal.*;
+import org.exist.storage.sync.Sync;
+import org.exist.storage.txn.Checkpoint;
+import org.exist.util.FileUtils;
+import org.exist.util.ProgressBar;
+import org.exist.util.sanity.SanityCheck;
+
+import javax.annotation.Nullable;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -29,23 +45,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.exist.storage.DBBroker;
-import org.exist.storage.BrokerPool;
-import org.exist.storage.blob.BlobStore;
-import org.exist.storage.journal.*;
-import org.exist.storage.sync.Sync;
-import org.exist.storage.txn.Checkpoint;
-import org.exist.util.FileUtils;
-import org.exist.util.ProgressBar;
-import com.evolvedbinary.j8fu.function.SupplierE;
-import org.exist.util.sanity.SanityCheck;
-
-import javax.annotation.Nullable;
 
 /**
  * Database recovery. This class is used once during startup to check
@@ -56,7 +55,7 @@ import javax.annotation.Nullable;
  */
 public class RecoveryManager {
 	
-	private final static Logger LOG = LogManager.getLogger(RecoveryManager.class);
+	private static final Logger LOG = LogManager.getLogger(RecoveryManager.class);
 
     private final DBBroker broker;
     private final JournalRecoveryAccessor journalRecovery;

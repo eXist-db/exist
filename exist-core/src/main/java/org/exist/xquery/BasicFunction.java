@@ -21,9 +21,9 @@
  */
 package org.exist.xquery;
 
+import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
-import org.exist.xquery.util.ExpressionDumper;
 
 /**
  * Abstract base class for simple functions. Subclasses should overwrite
@@ -33,7 +33,7 @@ import org.exist.xquery.util.ExpressionDumper;
  */
 public abstract class BasicFunction extends Function {
 
-    public BasicFunction(final XQueryContext context, final FunctionSignature signature) {
+    protected BasicFunction(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
 

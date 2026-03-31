@@ -43,11 +43,11 @@ import org.apache.logging.log4j.Logger;
  */
 @NotThreadSafe
 public class LRDCache<T extends Cacheable> extends GClockCache<T> {
-	private final static Logger LOG = LogManager.getLogger(LRDCache.class);
+	private static final Logger LOG = LogManager.getLogger(LRDCache.class);
 	
 	private final int maxReferences;
 	private final int ageingPeriod;
-    private int totalReferences = 0;
+    private int totalReferences;
     private int nextCleanup;
 	
 	public LRDCache(final String name, final Class<T> cacheableClazz, final int size, final double growthFactor, final double growthThreshold, final CacheType type) {

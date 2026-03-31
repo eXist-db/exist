@@ -21,16 +21,10 @@
  */
 package org.exist.xquery.functions.validation;
 
-import java.io.InputStream;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.xerces.parsers.XMLGrammarPreparser;
 import org.apache.xerces.xni.grammars.Grammar;
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 import org.apache.xerces.xni.parser.XMLInputSource;
-
 import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
@@ -43,17 +37,13 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.IntegerValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
-
+import org.exist.xquery.value.*;
 import org.xml.sax.helpers.AttributesImpl;
+
+import java.io.InputStream;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *   xQuery function for validation of XML instance documents
@@ -71,7 +61,7 @@ public class GrammarTooling extends BasicFunction  {
     private final Configuration config;
 
 
-    public final static String cacheReport="""
+    public static final String cacheReport="""
             <report>
             	<grammar type="..."
             		<Namespace>....
@@ -85,7 +75,7 @@ public class GrammarTooling extends BasicFunction  {
             """;
     
     // Setup function signature
-    public final static FunctionSignature[] signatures = {
+    public static final FunctionSignature[] signatures = {
         new FunctionSignature(
             new QName("clear-grammar-cache", ValidationModule.NAMESPACE_URI,
             ValidationModule.PREFIX),
@@ -165,8 +155,7 @@ public class GrammarTooling extends BasicFunction  {
             context.pushDocumentContext();
             try {
                 final MemTreeBuilder builder = context.getDocumentBuilder();
-                final NodeImpl result = writeReport(grammarpool, builder);
-                return result;
+                return writeReport(grammarpool, builder);
             } finally {
                 context.popDocumentContext();
             }
@@ -243,8 +232,8 @@ public class GrammarTooling extends BasicFunction  {
     
     private int countTotalNumberOfGrammar( GrammarPool grammarpool){
         
-        return (grammarpool.retrieveInitialGrammarSet(TYPE_XSD).length
-            + grammarpool.retrieveInitialGrammarSet(TYPE_DTD).length);
+        return grammarpool.retrieveInitialGrammarSet(TYPE_XSD).length
+            + grammarpool.retrieveInitialGrammarSet(TYPE_DTD).length;
         
     }
     

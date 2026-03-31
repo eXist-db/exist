@@ -36,14 +36,14 @@ public abstract class AbstractArrayNodeSet extends AbstractNodeSet implements Do
 
     protected static final int INITIAL_SIZE = 64;
 
-    protected int size = 0;
+    protected int size;
 
-    protected boolean isSorted = false;
-    protected boolean hasOne = false;
+    protected boolean isSorted;
+    protected boolean hasOne;
 
-    protected int state = 0;
+    protected int state;
 
-    private NodeProxy lastAdded = null;
+    private NodeProxy lastAdded;
 
     //  used to keep track of the type of added items.
     protected int itemType = Type.ANY_TYPE;
@@ -110,7 +110,6 @@ public abstract class AbstractArrayNodeSet extends AbstractNodeSet implements Do
     @Override
     public void addAll(final NodeSet other) {
         if(other.isEmpty()) {
-            return;
         } else if(other.hasOne()) {
             add((NodeProxy) other.itemAt(0));
         } else {
@@ -143,7 +142,7 @@ public abstract class AbstractArrayNodeSet extends AbstractNodeSet implements Do
     }
 
     private void setHasChanged() {
-        this.state = (state == Integer.MAX_VALUE ? 0 : state + 1);
+        this.state = state == Integer.MAX_VALUE ? 0 : state + 1;
     }
 
     @Override

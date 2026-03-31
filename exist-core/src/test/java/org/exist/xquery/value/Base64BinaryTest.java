@@ -24,10 +24,11 @@ package org.exist.xquery.value;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.junit.ClassRule;
 import org.junit.Test;
-import static org.junit.Assert.assertEquals;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XQueryService;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  *

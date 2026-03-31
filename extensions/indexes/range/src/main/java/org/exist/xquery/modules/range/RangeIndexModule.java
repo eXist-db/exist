@@ -33,11 +33,11 @@ import java.util.Map;
 
 public class RangeIndexModule extends AbstractInternalModule {
 
-    public final static String NAMESPACE_URI = "http://exist-db.org/xquery/range";
-    public final static String PREFIX = "range";
-    public final static String RELEASED_IN_VERSION = "eXist-2.2";
+    public static final String NAMESPACE_URI = "http://exist-db.org/xquery/range";
+    public static final String PREFIX = "range";
+    public static final String RELEASED_IN_VERSION = "eXist-2.2";
 
-    public final static FunctionDef[] functions = {
+    public static final FunctionDef[] functions = {
         new FunctionDef(Lookup.signatures[0], Lookup.class),
         new FunctionDef(Lookup.signatures[1], Lookup.class),
         new FunctionDef(Lookup.signatures[2], Lookup.class),
@@ -64,7 +64,7 @@ public class RangeIndexModule extends AbstractInternalModule {
         new FunctionDef(IndexKeys.signatures[1], IndexKeys.class)
     };
 
-    public final static Map<String, RangeIndex.Operator> OPERATOR_MAP = new HashMap<>();
+    public static final Map<String, RangeIndex.Operator> OPERATOR_MAP = new HashMap<>();
     static {
         OPERATOR_MAP.put("eq", RangeIndex.Operator.EQ);
         OPERATOR_MAP.put("lt", RangeIndex.Operator.LT);
@@ -79,7 +79,7 @@ public class RangeIndexModule extends AbstractInternalModule {
 
     }
 
-    protected final static class RangeIndexErrorCode extends ErrorCodes.ErrorCode {
+    protected static final class RangeIndexErrorCode extends ErrorCodes.ErrorCode {
 
         public RangeIndexErrorCode(String code, String description) {
             super(new QName(code, NAMESPACE_URI, PREFIX), description);
@@ -87,7 +87,7 @@ public class RangeIndexModule extends AbstractInternalModule {
 
     }
 
-    public final static ErrorCodes.ErrorCode EXXQDYFT0001 = new RangeIndexErrorCode("EXXQDYFT0001", "Collation not " +
+    public static final ErrorCodes.ErrorCode EXXQDYFT0001 = new RangeIndexErrorCode("EXXQDYFT0001", "Collation not " +
             "supported");
 
     public RangeIndexModule(Map<String, List<? extends Object>> parameters) {

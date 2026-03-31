@@ -39,7 +39,7 @@ import java.util.Properties;
 public class CharacterMappingWriter implements SerializerWriter {
 
     private SerializerWriter wrappedSerializerWriter;
-    private @Nullable Int2ObjectMap<String> characterMap = null;
+    private @Nullable Int2ObjectMap<String> characterMap;
 
     @Override
     public void setOutputProperties(final Properties properties) {

@@ -21,13 +21,6 @@
  */
 package org.exist.collections.triggers;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
-import java.net.URISyntaxException;
-
-import javax.xml.transform.OutputKeys;
-
 import org.apache.commons.codec.binary.Base64;
 import org.exist.TestUtils;
 import org.exist.test.ExistXmldbEmbeddedServer;
@@ -40,11 +33,13 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
-import org.xmldb.api.modules.BinaryResource;
-import org.xmldb.api.modules.CollectionManagementService;
-import org.xmldb.api.modules.XMLResource;
-import org.xmldb.api.modules.XPathQueryService;
-import org.xmldb.api.modules.XUpdateQueryService;
+import org.xmldb.api.modules.*;
+
+import javax.xml.transform.OutputKeys;
+import java.net.URISyntaxException;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /** class under test : {@link XQueryTrigger}
  * @author <a href="mailto:pierrick.brihaye@free.fr">Pierrick Brihaye</a>
@@ -54,12 +49,12 @@ public class XQueryTriggerTest {
     @ClassRule
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
-	private final static String TEST_COLLECTION = "testXQueryTrigger";
+	private static final String TEST_COLLECTION = "testXQueryTrigger";
 
     /** XQuery module implementing the trigger under test */
-    private final static String MODULE_NAME = "XQueryTriggerLogger.xqm";
+    private static final String MODULE_NAME = "XQueryTriggerLogger.xqm";
 
-    private final static String COLLECTION_CONFIG =
+    private static final String COLLECTION_CONFIG =
     	"<exist:collection xmlns:exist='http://exist-db.org/collection-config/1.0'>" +
 	    "  <exist:triggers>" +
 		"     <exist:trigger class='org.exist.collections.triggers.XQueryTrigger'>" +
@@ -68,12 +63,12 @@ public class XQueryTriggerTest {
 		"  </exist:triggers>" +
         "</exist:collection>";    
 
-    private final static String EMPTY_COLLECTION_CONFIG =
+    private static final String EMPTY_COLLECTION_CONFIG =
     	"<exist:collection xmlns:exist='http://exist-db.org/collection-config/1.0'/>";
     
-    private final static String DOCUMENT_NAME = "test.xml";
+    private static final String DOCUMENT_NAME = "test.xml";
     
-    private final static String DOCUMENT_CONTENT = 
+    private static final String DOCUMENT_CONTENT = 
 		  "<test>"
 		+ "<item id='1'><price>5.6</price><stock>22</stock></item>"
 		+ "<item id='2'><price>7.4</price><stock>43</stock></item>"
@@ -82,7 +77,7 @@ public class XQueryTriggerTest {
 		+ "</test>";    
 
     /** XUpdate document update specification */
-    private final static String DOCUMENT_UPDATE =
+    private static final String DOCUMENT_UPDATE =
         "<xu:modifications xmlns:xu='http://www.xmldb.org/xupdate' version='1.0'>" +
         "<!-- special offer -->" +
         "<xu:update select='/test/item[@id = \"3\"]/price'>" +       
@@ -90,18 +85,18 @@ public class XQueryTriggerTest {
         "</xu:update>" +
       "</xu:modifications>";
    
-    private final static String BINARY_DOCUMENT_NAME = "1x1.gif";
-    private final static String BINARY_DOCUMENT_CONTENT = "R0lGODlhAQABAIABAAD/AP///yH+EUNyZWF0ZWQgd2l0aCBHSU1QACwAAAAAAQABAAACAkQBADs=";    
+    private static final String BINARY_DOCUMENT_NAME = "1x1.gif";
+    private static final String BINARY_DOCUMENT_CONTENT = "R0lGODlhAQABAIABAAD/AP///yH+EUNyZWF0ZWQgd2l0aCBHSU1QACwAAAAAAQABAAACAkQBADs=";    
     
     /** "log" document that will be updated by the trigger */
-    private final static String LOG_NAME = "XQueryTriggerLog.xml";
+    private static final String LOG_NAME = "XQueryTriggerLog.xml";
     
     /** initial content of the "log" document */
-    private final static String EMPTY_LOG = "<events/>";
+    private static final String EMPTY_LOG = "<events/>";
     
     /** XQuery module implementing the trigger under test; 
      * the log() XQuery function will add an <event> element inside <events> element */
-    private final static String MODULE =
+    private static final String MODULE =
     	"module namespace trigger='http://exist-db.org/xquery/trigger'; " +
     	"import module namespace xmldb='http://exist-db.org/xquery/xmldb'; " +
     	"import module namespace util='http://exist-db.org/xquery/util'; " +
@@ -210,7 +205,7 @@ public class XQueryTriggerTest {
     private static Collection testCollection;
 
       /** XQuery module implementing the invalid trigger under test */
-    private final static String INVALID_MODULE =
+    private static final String INVALID_MODULE =
     	"module namespace log='log'; " +
     	"import module namespace xmldb='http://exist-db.org/xquery/xmldb'; " +
     	"declare variable $log:type external;" +
@@ -221,26 +216,26 @@ public class XQueryTriggerTest {
     	"   undeclared-function-causes-trigger-error()" +
         "};";
     
-    private final static String EVENTS = "/events/event";
+    private static final String EVENTS = "/events/event";
 
-    private final static String BEFORE = EVENTS+"[@type = 'before']";
-    private final static String AFTER = EVENTS+"[@type = 'after']";
+    private static final String BEFORE = EVENTS+"[@type = 'before']";
+    private static final String AFTER = EVENTS+"[@type = 'after']";
 
-    private final static String CREATE = "[@event = 'create']";
-    private final static String UPDATE = "[@event = 'update']";
-    private final static String COPY   = "[@event = 'copy']";
-    private final static String MOVE   = "[@event = 'move']";
-    private final static String DELETE = "[@event = 'delete']";
+    private static final String CREATE = "[@event = 'create']";
+    private static final String UPDATE = "[@event = 'update']";
+    private static final String COPY   = "[@event = 'copy']";
+    private static final String MOVE   = "[@event = 'move']";
+    private static final String DELETE = "[@event = 'delete']";
 
-    private final static String COLLECTION = "[@object-type = 'collection']";
-    private final static String DOCUMENT = "[@object-type = 'document']";
+    private static final String COLLECTION = "[@object-type = 'collection']";
+    private static final String DOCUMENT = "[@object-type = 'document']";
     
-    private final static String testCollectionURI = "[uri/text() = '/db/testXQueryTrigger/test']";
-    private final static String testDstCollectionURI = "[uri/text() = '/db/testXQueryTrigger/test-dst']";
-    private final static String testDstTestCollectionURI = "[uri/text() = '/db/testXQueryTrigger/test-dst/test']";
+    private static final String testCollectionURI = "[uri/text() = '/db/testXQueryTrigger/test']";
+    private static final String testDstCollectionURI = "[uri/text() = '/db/testXQueryTrigger/test-dst']";
+    private static final String testDstTestCollectionURI = "[uri/text() = '/db/testXQueryTrigger/test-dst/test']";
 
-    private final static String documentURI = "[uri/text() = '/db/testXQueryTrigger/test.xml']";
-    private final static String binaryURI = "[uri/text() = '/db/testXQueryTrigger/1x1.gif']";
+    private static final String documentURI = "[uri/text() = '/db/testXQueryTrigger/test.xml']";
+    private static final String binaryURI = "[uri/text() = '/db/testXQueryTrigger/1x1.gif']";
 
     /** create "log" document that will be updated by the trigger,
      * and store the XQuery module implementing the trigger under test */
@@ -731,7 +726,7 @@ public class XQueryTriggerTest {
                 doc.setContent(DOCUMENT_CONTENT);
                 testCollection.storeResource(doc);
             } catch(XMLDBException xdbe) {
-               if (xdbe.getCause() instanceof TriggerException && xdbe.getCause().getMessage().equals(XQueryTrigger.PREPARE_EXCEPTION_MESSAGE)) {
+               if (xdbe.getCause() instanceof TriggerException && XQueryTrigger.PREPARE_EXCEPTION_MESSAGE.equals(xdbe.getCause().getMessage())) {
                    count_prepare_exceptions++;
                }
             }

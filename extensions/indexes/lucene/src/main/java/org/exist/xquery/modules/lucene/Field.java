@@ -260,7 +260,7 @@ public class Field extends BasicFunction {
                         final Query query = terms.get(token);
                         if (query != null) {
                             if (query instanceof PhraseQuery phraseQuery) {
-                                final Term phraseTerms[] = phraseQuery.getTerms();
+                                final Term[] phraseTerms = phraseQuery.getTerms();
                                 if (token.equals(phraseTerms[0].text())) {
                                     // Scan the following text and collect tokens to see
                                     // if they are part of the phrase.
@@ -326,7 +326,7 @@ public class Field extends BasicFunction {
     static @Nullable LuceneMatch getMatch(NodeProxy proxy) {
         Match match = proxy.getMatches();
         while (match != null) {
-            if (match.getIndexId().equals(LuceneIndex.ID)) {
+            if (LuceneIndex.ID.equals(match.getIndexId())) {
                 return (LuceneMatch) match;
             }
             match = match.getNextMatch();

@@ -21,6 +21,12 @@
  */
 package org.exist.xquery.value;
 
+import org.apache.commons.codec.binary.Base64InputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
+import org.exist.util.ConfigurationHelper;
+import org.exist.xquery.XPathException;
+import org.junit.Test;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
@@ -28,13 +34,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
 
-import org.apache.commons.codec.binary.Base64InputStream;
-import org.exist.util.ConfigurationHelper;
-import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
-import org.exist.xquery.XPathException;
-import org.junit.Test;
-import static org.junit.Assert.assertNotNull;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.Assert.assertNotNull;
 
 /**
  *

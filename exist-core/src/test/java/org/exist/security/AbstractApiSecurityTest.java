@@ -22,12 +22,12 @@
 package org.exist.security;
 
 import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import static org.exist.TestUtils.ADMIN_DB_PWD;
 import static org.exist.TestUtils.ADMIN_DB_USER;
 import static org.junit.Assert.*;
-import org.junit.Before;
-import org.junit.Test;
 
 /**
  *
@@ -35,26 +35,26 @@ import org.junit.Test;
  */
 public abstract class AbstractApiSecurityTest {
     
-    protected final static String TEST_COLLECTION1_NAME = "securityTest1";
+    protected static final String TEST_COLLECTION1_NAME = "securityTest1";
     
-    protected final static String TEST_COLLECTION1 = "/db/" + TEST_COLLECTION1_NAME;
+    protected static final String TEST_COLLECTION1 = "/db/" + TEST_COLLECTION1_NAME;
     
-    protected final static String TEST_XML_DOC1_NAME = "test.xml";
-    protected final static String TEST_XML_DOC1 = TEST_COLLECTION1 + "/" + TEST_XML_DOC1_NAME;
-    protected final static String TEST_XML_DOC1_CONTENT = "<test/>";
+    protected static final String TEST_XML_DOC1_NAME = "test.xml";
+    protected static final String TEST_XML_DOC1 = TEST_COLLECTION1 + "/" + TEST_XML_DOC1_NAME;
+    protected static final String TEST_XML_DOC1_CONTENT = "<test/>";
     
-    protected final static String TEST_BIN_DOC1_NAME = "test.bin";
-    protected final static String TEST_BIN_DOC1 = TEST_COLLECTION1 + "/" + TEST_BIN_DOC1_NAME;
-    protected final static byte[] TEST_BIN_DOC1_CONTENT = "binary-test".getBytes();
+    protected static final String TEST_BIN_DOC1_NAME = "test.bin";
+    protected static final String TEST_BIN_DOC1 = TEST_COLLECTION1 + "/" + TEST_BIN_DOC1_NAME;
+    protected static final byte[] TEST_BIN_DOC1_CONTENT = "binary-test".getBytes();
     
-    protected final static String TEST_USER1_UID = "test1";
-    protected final static String TEST_USER1_PWD = TEST_USER1_UID;
+    protected static final String TEST_USER1_UID = "test1";
+    protected static final String TEST_USER1_PWD = TEST_USER1_UID;
     
-    protected final static String TEST_USER2_UID = "test2";
-    protected final static String TEST_USER2_PWD = TEST_USER2_UID;
+    protected static final String TEST_USER2_UID = "test2";
+    protected static final String TEST_USER2_PWD = TEST_USER2_UID;
     
-    protected final static String TEST_GROUP_GID = "group1";
-    protected final static String TEST_GROUP_PWD = TEST_GROUP_GID;
+    protected static final String TEST_GROUP_GID = "group1";
+    protected static final String TEST_GROUP_PWD = TEST_GROUP_GID;
     
     @Test
     public void canReadXmlResourceWithOnlyExecutePermissionOnParentCollection() throws ApiException {

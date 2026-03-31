@@ -44,7 +44,7 @@ public class TerminatedException extends XPathException {
         super(line, column, message);
     }
 
-    public final static class TimeoutException extends TerminatedException {
+    public static final class TimeoutException extends TerminatedException {
 
         @Serial
         private static final long serialVersionUID = 1193758368058763151L;
@@ -54,7 +54,7 @@ public class TerminatedException extends XPathException {
         }
     }
     
-    public final static class SizeLimitException extends TerminatedException {
+    public static final class SizeLimitException extends TerminatedException {
 
         @Serial
         private static final long serialVersionUID = -697205233217384556L;

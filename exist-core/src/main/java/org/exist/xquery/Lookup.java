@@ -35,8 +35,8 @@ import org.exist.xquery.value.*;
 public class Lookup extends AbstractExpression {
 
     private Expression contextExpression;
-    private Sequence keys = null;
-    private Expression keyExpression = null;
+    private Sequence keys;
+    private Expression keyExpression;
 
     public Lookup(XQueryContext context, Expression ctxExpr) {
         super(context);

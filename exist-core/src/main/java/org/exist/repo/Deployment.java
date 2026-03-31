@@ -45,8 +45,8 @@ import org.exist.xquery.value.DateTimeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
-import org.expath.pkg.repo.Package;
 import org.expath.pkg.repo.*;
+import org.expath.pkg.repo.Package;
 import org.expath.pkg.repo.deps.DependencyVersion;
 import org.expath.pkg.repo.tui.BatchUserInteraction;
 import org.w3c.dom.Element;
@@ -72,13 +72,13 @@ import java.util.stream.Stream;
  */
 public class Deployment {
 
-    public final static String PROPERTY_APP_ROOT = "repo.root-collection";
-    public final static String PROCESSOR_NAME = "http://exist-db.org";
-    private final static Logger LOG = LogManager.getLogger(Deployment.class);
-    private final static String REPO_NAMESPACE = "http://exist-db.org/xquery/repo";
-    private final static String PKG_NAMESPACE = "http://expath.org/ns/pkg";
+    public static final String PROPERTY_APP_ROOT = "repo.root-collection";
+    public static final String PROCESSOR_NAME = "http://exist-db.org";
+    private static final Logger LOG = LogManager.getLogger(Deployment.class);
+    private static final String REPO_NAMESPACE = "http://exist-db.org/xquery/repo";
+    private static final String PKG_NAMESPACE = "http://expath.org/ns/pkg";
 
-    private final static QName SETUP_ELEMENT = new QName("setup", REPO_NAMESPACE);
+    private static final QName SETUP_ELEMENT = new QName("setup", REPO_NAMESPACE);
     private static final QName PRE_SETUP_ELEMENT = new QName("prepare", REPO_NAMESPACE);
     private static final QName POST_SETUP_ELEMENT = new QName("finish", REPO_NAMESPACE);
     private static final QName TARGET_COLL_ELEMENT = new QName("target", REPO_NAMESPACE);
@@ -192,7 +192,7 @@ public class Deployment {
                         version = new PackageLoader.Version(versionStr, false);
                     }
 
-                    if (processor.equals(PROCESSOR_NAME) && version != null) {
+                    if (PROCESSOR_NAME.equals(processor) && version != null) {
                         checkProcessorVersion(version);
                     } else if (!pkgName.isEmpty()) {
                         LOG.info("Package {} depends on {}", name, pkgName);
@@ -742,7 +742,7 @@ public class Deployment {
         } catch (final IOException ioe) {
             LOG.error(ioe);
             errors.add(FileUtils.fileName(directory) + ": " + ioe.getMessage());
-            files = Collections.EMPTY_LIST;
+            files = Collections.emptyList();
         }
 
         final MimeTable mimeTab = MimeTable.getInstance();
@@ -898,7 +898,7 @@ public class Deployment {
         }
     }
 
-    private static class RequestedPerms {
+    private static final class RequestedPerms {
         final String user;
         final String password;
         final Optional<String> group;

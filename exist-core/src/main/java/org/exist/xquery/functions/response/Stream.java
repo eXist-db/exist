@@ -21,11 +21,6 @@
  */
 package org.exist.xquery.functions.response;
 
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.util.Properties;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
@@ -44,6 +39,10 @@ import org.exist.xquery.value.Type;
 import org.xml.sax.SAXException;
 
 import javax.annotation.Nonnull;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.util.Properties;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -51,7 +50,7 @@ public class Stream extends StrictResponseFunction {
 
     private static final Logger logger = LogManager.getLogger(Stream.class);
 
-    public final static FunctionSignature signature =
+    public static final FunctionSignature signature =
             new FunctionSignature(
                     new QName("stream", ResponseModule.NAMESPACE_URI, ResponseModule.PREFIX),
                     "Stream can only be used within a servlet context. It directly streams its input to the servlet's output stream. " +

@@ -21,11 +21,10 @@
  */
 package org.exist.util;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import com.evolvedbinary.j8fu.Either;
 import com.evolvedbinary.j8fu.function.FunctionE;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.util.crypto.digest.DigestOutputStream;
 import org.exist.util.crypto.digest.StreamableDigest;
 
@@ -34,13 +33,11 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.function.Predicate;
 
-import static java.nio.file.StandardOpenOption.READ;
-import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
-import static java.nio.file.StandardOpenOption.WRITE;
+import static java.nio.file.StandardOpenOption.*;
 
 /**
  * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
@@ -48,7 +45,7 @@ import static java.nio.file.StandardOpenOption.WRITE;
  */
 public class FileUtils {
 
-    private final static Logger LOG = LogManager.getLogger(FileUtils.class);
+    private static final Logger LOG = LogManager.getLogger(FileUtils.class);
 
     /**
      * Convert an array of {@link java.io.File}
@@ -77,7 +74,7 @@ public class FileUtils {
     public static List<Path> asPathsList(final File[] files) {
         return Optional.ofNullable(files)
                 .map(fs -> Arrays.stream(fs).map(File::toPath).collect(Collectors.toList()))
-                .orElse(Collections.EMPTY_LIST);
+                .orElse(Collections.emptyList());
     }
 
     /**
@@ -162,7 +159,7 @@ public class FileUtils {
         }
     }
 
-    private final static SimpleFileVisitor<Path> copyDirVisitor(final Path source, final Path destination) throws IOException {
+    private static SimpleFileVisitor<Path> copyDirVisitor(final Path source, final Path destination) throws IOException {
         if (!Files.isDirectory(source)) {
             throw new IOException("source must be a directory");
         }
@@ -198,7 +195,7 @@ public class FileUtils {
         }
     }
 
-    private final static SimpleFileVisitor<Path> deleteDirVisitor = new DeleteDirVisitor();
+    private static final SimpleFileVisitor<Path> deleteDirVisitor = new DeleteDirVisitor();
 
     private static class DeleteDirVisitor extends SimpleFileVisitor<Path> {
         @Override
@@ -288,7 +285,7 @@ public class FileUtils {
 
     private static class DirSizeVisitor extends SimpleFileVisitor<Path> {
 
-        private long size = 0;
+        private long size;
 
         @Override
         public FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {

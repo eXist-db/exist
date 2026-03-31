@@ -21,15 +21,14 @@
  */
 package org.exist.management;
 
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-
 import javax.management.openmbean.CompositeDataSupport;
 import javax.management.openmbean.CompositeType;
 import javax.management.openmbean.OpenDataException;
 import javax.management.openmbean.SimpleType;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 public class TaskStatus {
 
@@ -41,8 +40,8 @@ public class TaskStatus {
     private Status status = Status.NA;
 
     private Date _statusChangeTime = Calendar.getInstance().getTime();
-    private Object _reason = null;
-    private int _percentageDone = 0;
+    private Object _reason;
+    private int _percentageDone;
 
     public TaskStatus(Status newStatus) {
         setStatus(newStatus);
@@ -126,7 +125,7 @@ public class TaskStatus {
         final TaskStatus status = new TaskStatus((Status)compositeData.get("status"));
         status._reason = compositeData.get("reason");
         status._statusChangeTime = (Date) compositeData.get("statusChangeTime");
-        status._percentageDone = ((Integer) compositeData.get("percentage"));
+        status._percentageDone = (Integer) compositeData.get("percentage");
         return status;
     }
 

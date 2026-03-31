@@ -175,12 +175,13 @@ public abstract class NumericValue extends ComputableValue {
         if (obj == null) {
             return false;
         }
-        if (NumericValue.class.isAssignableFrom(obj.getClass()))
+        if (NumericValue.class.isAssignableFrom(obj.getClass())) {
             try {
-                return compareTo(null, Comparison.EQ, (NumericValue) obj);
+                return compareTo(null, Comparison.EQ, (NumericValue)obj);
             } catch (final XPathException e) {
                 // should not be possible due to type check
             }
+        }
         return false;
     }
 

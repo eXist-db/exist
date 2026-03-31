@@ -21,12 +21,12 @@
  */
 package org.expath.exist;
 
-import java.util.List;
-import java.util.Map;
-
-import org.expath.httpclient.HttpConstants;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
+import org.expath.httpclient.HttpConstants;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:adam@existsolutions.com">Adam Retter</a>
@@ -34,13 +34,13 @@ import org.exist.xquery.FunctionDef;
  */
 public class HttpClientModule extends AbstractInternalModule {
 
-    public final static String NAMESPACE_URI = HttpConstants.HTTP_CLIENT_NS_URI;
+    public static final String NAMESPACE_URI = HttpConstants.HTTP_CLIENT_NS_URI;
 
-    public final static String PREFIX = "http";
-    public final static String INCLUSION_DATE = "2011-03-17";
-    public final static String RELEASED_IN_VERSION = "1.5";
+    public static final String PREFIX = "http";
+    public static final String INCLUSION_DATE = "2011-03-17";
+    public static final String RELEASED_IN_VERSION = "1.5";
 
-    private final static FunctionDef[] functions = {
+    private static final FunctionDef[] functions = {
         new FunctionDef(SendRequestFunction.signatures[0], SendRequestFunction.class),
         new FunctionDef(SendRequestFunction.signatures[1], SendRequestFunction.class),
         new FunctionDef(SendRequestFunction.signatures[2], SendRequestFunction.class),

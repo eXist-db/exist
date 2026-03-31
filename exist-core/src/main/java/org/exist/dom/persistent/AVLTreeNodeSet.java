@@ -33,8 +33,8 @@ import java.util.Iterator;
 public class AVLTreeNodeSet extends AbstractNodeSet {
 
     private Node root;
-    private int size = 0;
-    private int state = 0;
+    private int size;
+    private int state;
 
     @Override
     public SequenceIterator iterate() {
@@ -183,10 +183,9 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
             }
             if(currentParent.leftHeight() - currentParent.rightHeight()
                 == 2) {
-                Node nodeA = currentParent,
-                    nodeB = nodeA.getLeftChild(),
-                    //nodeC = nodeB.getLeftChild(),
-                    nodeD = nodeB.getRightChild();
+                Node nodeA = currentParent;
+                Node nodeB = nodeA.getLeftChild();
+                Node nodeD = nodeB.getRightChild();
                 if(nodeB.leftHeight() > nodeB.rightHeight()) {
                     // right rotation for Case 2
                     nodeA.addLeftChild(nodeD);
@@ -455,7 +454,7 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
     }
 
     private void setHasChanged() {
-        state = (state == Integer.MAX_VALUE ? 0 : state + 1);
+        state = state == Integer.MAX_VALUE ? 0 : state + 1;
     }
 
     private static class InorderTraversal implements NodeSetIterator, SequenceIterator {
@@ -563,11 +562,11 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
         }
 
         public boolean hasLeftChild() {
-            return (leftChild != null);
+            return leftChild != null;
         }
 
         public boolean hasRightChild() {
-            return (rightChild != null);
+            return rightChild != null;
         }
 
         public Node getLeftChild() {
@@ -579,7 +578,7 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
         }
 
         public boolean balanced() {
-            return (Math.abs(leftHeight() - rightHeight()) <= 1);
+            return Math.abs(leftHeight() - rightHeight()) <= 1;
         }
 
         public Node addLeft(final NodeProxy data) {
@@ -640,23 +639,23 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
         }
 
         public boolean isLeftChild() {
-            return (this == parent.leftChild);
+            return this == parent.leftChild;
         }
 
         public boolean isRightChild() {
-            return (this == parent.rightChild);
+            return this == parent.rightChild;
         }
 
         public int leftHeight() {
             if(hasLeftChild()) {
-                return (1 + leftChild.height);
+                return 1 + leftChild.height;
             }
             return 0;
         }
 
         public int rightHeight() {
             if(hasRightChild()) {
-                return (1 + rightChild.height);
+                return 1 + rightChild.height;
             }
             return 0;
         }

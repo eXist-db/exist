@@ -35,8 +35,8 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class ChmodTask extends UserTask
 {
-    private String resource = null;
-    private String mode     = null;
+    private String resource;
+    private String mode;
 
     /* (non-Javadoc)
      * @see org.apache.tools.ant.Task#execute()

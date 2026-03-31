@@ -48,14 +48,14 @@ public class UTF8 {
      *
      * @throws IllegalStateException Bad format.
      */
-    public final static XMLString decode(@Nullable final byte[] code) {
+    public static XMLString decode(@Nullable final byte[] code) {
         if (null == code) {
             return null;
         }
         return decode(code, 0, code.length);
     }
 
-    public final static XMLString decode(@Nullable final byte[] code, final int off, final int many) {
+    public static XMLString decode(@Nullable final byte[] code, final int off, final int many) {
         if (null == code || 0 >= code.length) {
             return null;
         }
@@ -77,13 +77,13 @@ public class UTF8 {
      *
      * @throws IllegalStateException Bad format.
      */
-    public final static XMLString decode(@Nullable final byte[] code, final int off, final int many, final XMLString xs) {
+    public static XMLString decode(@Nullable final byte[] code, final int off, final int many, final XMLString xs) {
         if (null == code || 0 >= code.length) {
             return null;
         }
 
         char ch;
-        final int end = (off + many);
+        final int end = off + many;
         byte cc;
 
         for (int c = off; c < end; c++) {
@@ -96,34 +96,34 @@ public class UTF8 {
 
                 if (b11000000 == (cc & b11100000)) {
 
-                    ch |= (code[c + 1] & b00111111);
+                    ch |= code[c + 1] & b00111111;
                     ch |= (cc & b00011111) << 6;
 
                     c += 1;
                 } else if (b11100000 == (cc & b11110000)) {
 
-                    ch |= (code[c + 2] & b00111111);
+                    ch |= code[c + 2] & b00111111;
                     ch |= (code[c + 1] & b00111111) << 6;
                     ch |= (cc & b00001111) << 12;
 
                     c += 2;
                 } else if (b11110000 == (cc & b11111000)) {
 
-                    ch |= (code[c + 3] & b00111111);
+                    ch |= code[c + 3] & b00111111;
                     ch |= (code[c + 2] & b00111111) << 6;
                     ch |= (code[c + 1] & b00111111) << 12;
 
                     c += 3;
                 } else if (b11111000 == (cc & b11111100)) {
 
-                    ch |= (code[c + 4] & b00111111);
+                    ch |= code[c + 4] & b00111111;
                     ch |= (code[c + 3] & b00111111) << 6;
                     ch |= (code[c + 2] & b00111111) << 12;
 
                     c += 4;
                 } else if (b11111100 == (cc & b11111110)) {
 
-                    ch |= (code[c + 5] & b00111111);
+                    ch |= code[c + 5] & b00111111;
                     ch |= (code[c + 4] & b00111111) << 6;
                     ch |= (code[c + 3] & b00111111) << 12;
 
@@ -147,7 +147,7 @@ public class UTF8 {
      *
      * @return the encoded string
      */
-    public final static byte[] encode(@Nullable final char[] str) {
+    public static byte[] encode(@Nullable final char[] str) {
         if (null == str || 0 >= str.length) {
             return null;
         }
@@ -168,7 +168,7 @@ public class UTF8 {
      *
      * @return the encoded string
      */
-    public final static byte[] encode(@Nullable final char[] str, final int start, final int length, @Nullable byte[] bytbuf, int offset) {
+    public static byte[] encode(@Nullable final char[] str, final int start, final int length, @Nullable byte[] bytbuf, int offset) {
         if (null == str || 0 >= length) {
             return bytbuf;
         }
@@ -177,7 +177,8 @@ public class UTF8 {
             bytbuf = new byte[encoded(str, start, length)];
         }
 
-        char ch, sch;
+        char ch;
+        char sch;
         final int end = start + length;
         for (int c = start; c < end; c++) {
 
@@ -216,7 +217,7 @@ public class UTF8 {
         return bytbuf;
     }
 
-    public final static byte[] encode(@Nullable final String str, @Nullable final byte[] bytbuf, final int offset) {
+    public static byte[] encode(@Nullable final String str, @Nullable final byte[] bytbuf, final int offset) {
         return encode(str, 0, str.length(), bytbuf, offset);
     }
 
@@ -234,12 +235,13 @@ public class UTF8 {
      *
      * @return the encoded string
      */
-    public final static byte[] encode(@Nullable final String str, final int start, final int length, final byte[] bytbuf, int offset) {
+    public static byte[] encode(@Nullable final String str, final int start, final int length, final byte[] bytbuf, int offset) {
         if (null == str || 0 >= length) {
             return bytbuf;
         }
 
-        char ch, sch;
+        char ch;
+        char sch;
         final int end = start + length;
         for (int c = start; c < end; c++) {
 
@@ -285,7 +287,7 @@ public class UTF8 {
      *
      * @return the encoded string
      */
-    public final static byte[] encode(@Nullable final String s) {
+    public static byte[] encode(@Nullable final String s) {
         if (null == s) {
             return null;
         } else {
@@ -315,7 +317,7 @@ public class UTF8 {
      * @param str the string
      * @return the length of the encoded string
      */
-    public final static int encoded(@Nullable final String str) {
+    public static int encoded(@Nullable final String str) {
         if (null == str) {
             return 0;
         }
@@ -348,7 +350,7 @@ public class UTF8 {
      * @param len the length of the string
      * @return the length of the encoded string
      */
-    public final static int encoded(@Nullable final char[] str, final int start, final int len) {
+    public static int encoded(@Nullable final char[] str, final int start, final int len) {
         if (null == str || 0 >= len) {
             return 0;
         }

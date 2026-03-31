@@ -38,7 +38,7 @@ import java.util.Optional;
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class BinaryValueInputSource extends EXistInputSource {
-    private final static Logger LOG = LogManager.getLogger(BinaryValueInputSource.class);
+    private static final Logger LOG = LogManager.getLogger(BinaryValueInputSource.class);
 
     private Optional<BinaryValue> binaryValue = Optional.empty();
     private Optional<InputStream> inputStream = Optional.empty();

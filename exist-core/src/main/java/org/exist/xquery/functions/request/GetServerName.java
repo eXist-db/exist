@@ -40,7 +40,7 @@ public class GetServerName extends StrictRequestFunction {
 
 	protected static final Logger logger = LogManager.getLogger(GetServerName.class);
 
-	public final static FunctionSignature signature =
+	public static final FunctionSignature signature =
 		new FunctionSignature(
 			new QName("get-server-name", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
 			"Returns the server nodename of the current request.",

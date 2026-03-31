@@ -54,9 +54,7 @@ import java.util.regex.Pattern;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 @RunWith(Parameterized.class)
 public class XPathQueryTest {
@@ -86,11 +84,11 @@ public class XPathQueryTest {
         return baseUri.replace(PORT_PLACEHOLDER, Integer.toString(existWebServer.getPort()));
     }
 
-    private final static String nested =
+    private static final String nested =
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
             + "<test><c></c><b><c><b></b></c></b><b></b><c></c></test>";
     
-    private final static String numbers =
+    private static final String numbers =
             "<test>"
             + "<item id='1' type='alphanum'><price>5.6</price><stock>22</stock></item>"
             + "<item id='2'><price>7.4</price><stock>43</stock></item>"
@@ -98,7 +96,7 @@ public class XPathQueryTest {
             + "<item id='4'><price>65.54</price><stock>16</stock></item>"
             + "</test>";
     
-    private final static String numbers2 =
+    private static final String numbers2 =
             "<test xmlns=\"http://numbers.org\">"
             + "<item id='1' type='alphanum'><price>5.6</price><stock>22</stock></item>"
             + "<item id='2'><price>7.4</price><stock>43</stock></item>"
@@ -106,7 +104,7 @@ public class XPathQueryTest {
             + "<item id='4'><price>65.54</price><stock>16</stock></item>"
             + "</test>";
     
-    private final static String namespaces =
+    private static final String namespaces =
             "<test xmlns='http://www.foo.com'>"
             + "  <section>"
             + "      <title>Test Document</title>"
@@ -114,21 +112,21 @@ public class XPathQueryTest {
             + "  </section>"
             + "</test>";
     
-    private final static String strings =
+    private static final String strings =
             "<test>"
             + "<string>Hello World!</string>"
             + "<string value='Hello World!'/>"
             + "<string>Hello</string>"
             + "</test>";
     
-    private final static String nested2 =
+    private static final String nested2 =
             "<RootElement>" +
             "<ChildA>" +
             "<ChildB id=\"2\"/>" +
             "</ChildA>" +
             "</RootElement>";
     
-    private final static String nested3 =
+    private static final String nested3 =
             "<test>" +
             "   <a>" +
             "       <t>1</t>" +
@@ -141,7 +139,7 @@ public class XPathQueryTest {
             "   </a>" +
             "</test>";
     
-    private final static String siblings =
+    private static final String siblings =
             "<!-- 1 --><!-- 2 -->" +
             "<test>" +
             "   <a> <s>A</s> <n>1</n> </a>" +
@@ -153,9 +151,9 @@ public class XPathQueryTest {
             "</test>" +
             "<!-- 3 -->";
 
-    private final static String siblings_attr = "<a b='c' bb='cc'/>";
+    private static final String siblings_attr = "<a b='c' bb='cc'/>";
 
-    private final static String siblings_named1 =
+    private static final String siblings_named1 =
             """
             <x>
                 <y n="1"/>
@@ -163,7 +161,7 @@ public class XPathQueryTest {
                 <y n="3"/>
             </x>""";
 
-    private final static String siblings_named2 =
+    private static final String siblings_named2 =
             """
             <y>
                 <y n="1"/>
@@ -171,7 +169,7 @@ public class XPathQueryTest {
                 <y n="3"/>
             </y>""";
 
-    private final static String ids_content =
+    private static final String ids_content =
             "<test xml:space=\"preserve\">" +
             "<a ref=\"id1\"/>" +
             "<a ref=\"id1\"/>" +
@@ -180,7 +178,7 @@ public class XPathQueryTest {
             "<c xml:id=\"     id2     \"><name>two</name></c>" +
             "</test>";
 
-    private final static String ids =
+    private static final String ids =
             "<!DOCTYPE test [" +
             "<!ELEMENT test (a | b | c | d)*>" +
             "<!ATTLIST test xml:space CDATA #IMPLIED>" +
@@ -195,19 +193,19 @@ public class XPathQueryTest {
             "<!ATTLIST c xml:id ID #IMPLIED>]>" +
             ids_content;
     
-    private final static String date =
+    private static final String date =
             "<timestamp date=\"2006-04-29+02:00\"/>";
     
-    private final static String quotes =
+    private static final String quotes =
             "<test><title>&quot;Hello&quot;</title></test>";
     
-    private final static String ws =
+    private static final String ws =
             "<test><parent xml:space=\"preserve\"><text> </text><text xml:space=\"default\"> </text></parent></test>";
     
-    private final static String self =
+    private static final String self =
             "<test-self><a>Hello</a><b>World!</b></test-self>";
 
-    private final static String predicates =
+    private static final String predicates =
         """
         <elem1>
          <elem2>
@@ -222,11 +220,11 @@ public class XPathQueryTest {
         </elem1>""";
     
     // Added by Geoff Shuetrim (geoff@galexy.net) to highlight problems with XPath queries of elements called 'xpointer'.
-    private final static String xpointerElementName =
+    private static final String xpointerElementName =
             "<test><xpointer/></test>";
 
-    private final static String cdata_content = "Hello there \"Bob?\"";
-    private final static String cdata_xml = "<elem1><![CDATA[" + cdata_content + "]]></elem1>";
+    private static final String cdata_content = "Hello there \"Bob?\"";
+    private static final String cdata_xml = "<elem1><![CDATA[" + cdata_content + "]]></elem1>";
     
     private Collection testCollection;
     
@@ -281,7 +279,7 @@ public class XPathQueryTest {
         } catch (XMLDBException e) {
             message = e.getMessage();
         }
-        assertTrue("Exception wanted: " + message, message.indexOf("XPTY0019") > -1);
+        assertTrue("Exception wanted: " + message, message.contains("XPTY0019"));
 
         //Undefined context sequence
         message = "";
@@ -290,7 +288,7 @@ public class XPathQueryTest {
         } catch (XMLDBException e) {
             message = e.getMessage();
         }
-        assertTrue("Exception wanted: " + message, message.indexOf("XPDY0002") > -1);
+        assertTrue("Exception wanted: " + message, message.contains("XPDY0002"));
 
         message = "";
         try {
@@ -300,7 +298,7 @@ public class XPathQueryTest {
             message = e.getMessage();
         }
         //No effective boolean value for such a kind of sequence !
-        assertTrue("Exception wanted: " + message, message.indexOf("FORG0006") >-1);
+        assertTrue("Exception wanted: " + message, message.contains("FORG0006"));
 
         queryAndAssert(service, "let $a := ('a', 'b', 'c') return $a[2 to 2]", 1, null);
         queryAndAssert(service, "let $a := ('a', 'b', 'c') return $a[(2 to 2)]", 1, null);
@@ -330,8 +328,9 @@ public class XPathQueryTest {
 
         XMLResource resource = (XMLResource)result.getResource(0);
         Node node = resource.getContentAsDOM();
-        if (node.getNodeType() == Node.DOCUMENT_NODE)
+        if (node.getNodeType() == Node.DOCUMENT_NODE) {
             node = node.getFirstChild();
+        }
         assertEquals("XPath: " + query, "item", node.getNodeName());
 
         query = "/test/item [ @type='alphanum' ]";
@@ -943,7 +942,7 @@ public class XPathQueryTest {
         } catch (XMLDBException e) {
             message = e.getMessage();
         }
-        assertTrue(message.indexOf("XPTY0004") > -1);
+        assertTrue(message.contains("XPTY0004"));
     }
 
     @Test
@@ -1542,7 +1541,7 @@ public class XPathQueryTest {
         } catch (XMLDBException e) {
             message = e.getMessage();
         }
-        assertTrue(message.indexOf("FORG0006") > -1);
+        assertTrue(message.contains("FORG0006"));
     }
 
     @Test
@@ -1737,7 +1736,7 @@ public class XPathQueryTest {
             //e.printStackTrace();
             message = e.getMessage();
         }
-        assertTrue(message.indexOf("XPTY0004") > -1);
+        assertTrue(message.contains("XPTY0004"));
 
         service = storeXMLStringAndGetQueryService("strings.xml", strings);
 
@@ -1755,7 +1754,7 @@ public class XPathQueryTest {
             //e.printStackTrace();
             message = e.getMessage();
         }
-        assertTrue(message.indexOf("XPTY0004") > -1);
+        assertTrue(message.contains("XPTY0004"));
     }
     
     @Test
@@ -1974,7 +1973,7 @@ public class XPathQueryTest {
         } catch (XMLDBException e) {
             message = e.getMessage();
         }
-        assertTrue(message.indexOf("XPTY0004") > -1);
+        assertTrue(message.contains("XPTY0004"));
 
         message = "";
         try {
@@ -1983,7 +1982,7 @@ public class XPathQueryTest {
         } catch (XMLDBException e) {
             message = e.getMessage();
         }
-        assertTrue(message.indexOf("XPTY0004") > -1);
+        assertTrue(message.contains("XPTY0004"));
 
         query = "<a/>  union ()";
         queryAndAssert(service, query, 1, "");
@@ -2011,7 +2010,7 @@ public class XPathQueryTest {
         } catch (XMLDBException e) {
             message = e.getMessage();
         }
-        assertTrue(message.indexOf("XPTY0004") > -1);
+        assertTrue(message.contains("XPTY0004"));
 
         query = "<a/>  except ()";
         queryAndAssert(service, query, 1, "");
@@ -2325,9 +2324,8 @@ public class XPathQueryTest {
 
     /** For queries without associated data */
     private XQueryService getQueryService() throws XMLDBException {
-        final XQueryService service = (XQueryService) testCollection.getService(
+        return (XQueryService) testCollection.getService(
             XPathQueryService.class);
-        return service;
     }
 
     /** stores XML String and get Query Service
@@ -2343,9 +2341,7 @@ public class XPathQueryTest {
                 documentName, XMLResource.class );
         doc.setContent(content);
         testCollection.storeResource(doc);
-        final XQueryService service =
-            (XQueryService) testCollection.getService(
+        return (XQueryService) testCollection.getService(
                 XPathQueryService.class);
-        return service;
     }
 }

@@ -23,11 +23,7 @@ package org.exist.xquery.update;
 
 import org.exist.EXistException;
 import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.persistent.AttrImpl;
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.ElementImpl;
-import org.exist.dom.persistent.StoredNode;
-import org.exist.dom.persistent.TextImpl;
+import org.exist.dom.persistent.*;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.NotificationService;
@@ -43,12 +39,7 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.util.Error;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.util.Messages;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
+import org.exist.xquery.value.*;
 import org.w3c.dom.Node;
 
 /**
@@ -125,7 +116,7 @@ public class Replace extends Modification {
         
         //start a transaction
         try (final Txn transaction = getTransaction()) {
-            final StoredNode ql[] = selectAndLock(transaction, inSeq);
+            final StoredNode[] ql = selectAndLock(transaction, inSeq);
             final NotificationService notifier = context.getBroker().getBrokerPool().getNotificationService();
             Item temp;
             TextImpl text;

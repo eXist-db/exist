@@ -45,10 +45,10 @@ import java.net.URI;
  */
 public class ExistResolver implements EntityResolver2, URIResolver {
 
-    private final static Logger LOG = LogManager.getLogger(ExistResolver.class);
-    private final static String LOCALURI = "xmldb:exist:///";
-    private final static String SHORTLOCALURI = "xmldb:///";
-    private BrokerPool brokerPool = null;
+    private static final Logger LOG = LogManager.getLogger(ExistResolver.class);
+    private static final String LOCALURI = "xmldb:exist:///";
+    private static final String SHORTLOCALURI = "xmldb:///";
+    private final BrokerPool brokerPool;
 
     public ExistResolver(final BrokerPool brokerPool) {
         this.brokerPool = brokerPool;

@@ -31,9 +31,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.function.Consumer;
 
+import static org.assertj.core.api.Assertions.*;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
-import static org.assertj.core.api.Assertions.*;
 
 /**
  * @author <a href="mailto:patrick@reini.net">Patrick Reinhart</a>

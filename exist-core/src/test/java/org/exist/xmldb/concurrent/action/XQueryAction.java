@@ -35,8 +35,8 @@ import org.xmldb.api.modules.XMLResource;
 public class XQueryAction extends Action {
 	
 	private final String xquery;
-	private long runningTime = 0;
-	private int called = 0;
+	private long runningTime;
+	private int called;
 
 	public XQueryAction(final String collectionPath, final String resourceName, final String xquery) {
 		super(collectionPath, resourceName);
@@ -61,7 +61,7 @@ public class XQueryAction extends Action {
 		}
 //		service.endProtected();
 		
-		runningTime += (System.currentTimeMillis() - start);
+		runningTime += System.currentTimeMillis() - start;
 		called++;
 
 		return true;

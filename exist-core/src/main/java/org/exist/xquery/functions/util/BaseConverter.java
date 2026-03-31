@@ -23,20 +23,13 @@ package org.exist.xquery.functions.util;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.IntegerValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 /**
  * Converts the supplied number in given base to other base.
@@ -52,7 +45,7 @@ public class BaseConverter extends BasicFunction {
 	private static final FunctionReturnSequenceType int_result = new FunctionReturnSequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE, "the xs:integer representation of $number in base $base");
 	private static final FunctionReturnSequenceType string_result = new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the xs:string representation of $number in base $base");
 	
-    public final static FunctionSignature[] signatures = {
+    public static final FunctionSignature[] signatures = {
             new FunctionSignature(
                     new QName("base-to-integer", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
                     "Converts the number $number from base $base to xs:integer.",
@@ -73,7 +66,7 @@ public class BaseConverter extends BasicFunction {
             this.base = base;
         }
 
-        static public Base getBase(int otherBase)  {
+        public static Base getBase(int otherBase)  {
             for (final Base b : Base.values()) {
                 if (otherBase == b.base) {
                     return b;

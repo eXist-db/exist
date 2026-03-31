@@ -26,15 +26,6 @@
  */
 package org.exist.extensions.exquery.restxq.impl;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import org.exist.extensions.exquery.restxq.impl.adapters.AnnotationAdapter;
 import org.exist.source.DBSource;
 import org.exist.source.Source;
@@ -50,6 +41,10 @@ import org.exquery.restxq.ResourceFunction;
 import org.exquery.restxq.RestXqService;
 import org.exquery.restxq.impl.ResourceFunctionFactory;
 import org.exquery.restxq.impl.annotation.RestAnnotationFactory;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.*;
 
 /**
  *
@@ -68,7 +63,7 @@ class XQueryInspector {
             final Set<URI> xqueryLocations = new HashSet<>();
             while(itFunctions.hasNext()) {
                 final UserDefinedFunction function = itFunctions.next();
-                final Annotation annotations[] = function.getSignature().getAnnotations();
+                final Annotation[] annotations = function.getSignature().getAnnotations();
 
                 Set<org.exquery.xquery3.Annotation> functionRestAnnotations = null;
 
@@ -146,7 +141,7 @@ class XQueryInspector {
     }
     
     private static String getDbUri(final Source source) {
-        if(source != null && source instanceof DBSource) {
+        if(source instanceof DBSource) {
             return source.path();
         } else {
             return null;

@@ -34,13 +34,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.BooleanValue;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 /**
  * Built-in function fn:lang().
@@ -73,7 +67,7 @@ if the context item is not a node [err:XPTY0004]XP.
 
 If $lang is the empty sequence it is interpreted as the zero-length string.""";
 
-	public final static FunctionSignature[] signatures = {
+	public static final FunctionSignature[] signatures = {
 		new FunctionSignature(
 			new QName("lang", Function.BUILTIN_FUNCTION_NS),
 			FUNCTION_DESCRIPTION_1_PARAM + FUNCTION_DESCRIPTION_BOTH,
@@ -126,7 +120,7 @@ If $lang is the empty sequence it is interpreted as the zero-length string.""";
 			{throw new XPathException(this, ErrorCodes.XPDY0002, "Undefined context item");}
 		
         Sequence result; 
-		if (!(Type.subTypeOf(contextSequence.getItemType(), Type.NODE)))
+		if (!Type.subTypeOf(contextSequence.getItemType(), Type.NODE))
 			{throw new XPathException(this, ErrorCodes.XPTY0004, "Context item is not a node");}
         else {
 			final String lang = getArgument(0).eval(contextSequence, null).getStringValue();

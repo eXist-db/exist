@@ -21,30 +21,29 @@
  */
 package org.exist.xmldb;
 
-import javax.xml.transform.TransformerException;
-import org.exist.security.Permission;
 import org.exist.security.Account;
+import org.exist.security.Permission;
 import org.exist.test.ExistXmldbEmbeddedServer;
-import org.junit.ClassRule;
-import org.xmldb.api.base.XMLDBException;
-import org.xmldb.api.modules.CollectionManagementService;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Test;
-
 import org.w3c.dom.Node;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceSet;
+import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XQueryService;
 
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import java.io.IOException;
 import java.io.StringWriter;
 
@@ -61,16 +60,16 @@ public class ContentAsDOMTest {
     @ClassRule
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
-    private final static String XML =
+    private static final String XML =
         "<root><test>ABCDEF</test></root>";
     
-    private final static String XQUERY =
+    private static final String XQUERY =
         "let $t := /root/test " +
         "return (" +
         "<!-- Comment -->," +
         "<output>{$t}</output>)";
 
-    private final static String TEST_COLLECTION = "testContentAsDOM";
+    private static final String TEST_COLLECTION = "testContentAsDOM";
 
 
     @Test

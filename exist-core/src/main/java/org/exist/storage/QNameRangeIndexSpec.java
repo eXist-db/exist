@@ -21,12 +21,12 @@
  */
 package org.exist.storage;
 
-import java.util.Map;
-
 import org.exist.dom.QName;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Type;
+
+import java.util.Map;
 
 public class QNameRangeIndexSpec extends RangeIndexSpec {
 

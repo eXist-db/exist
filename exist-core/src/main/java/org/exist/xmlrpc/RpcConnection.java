@@ -21,20 +21,25 @@
  */
 package org.exist.xmlrpc;
 
+import com.evolvedbinary.j8fu.function.ConsumerE;
+import com.evolvedbinary.j8fu.function.Function2E;
+import com.evolvedbinary.j8fu.function.Function3E;
+import com.evolvedbinary.j8fu.function.SupplierE;
+import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.exist.backup.Restore;
-import org.exist.backup.restore.listener.RestoreListener;
-import org.exist.dom.QName;
-import org.exist.dom.persistent.*;
 import org.exist.EXistException;
 import org.exist.Namespaces;
 import org.exist.Version;
 import org.exist.backup.Backup;
+import org.exist.backup.Restore;
+import org.exist.backup.restore.listener.RestoreListener;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.CollectionConfigurationManager;
+import org.exist.dom.QName;
 import org.exist.dom.memtree.NodeImpl;
+import org.exist.dom.persistent.*;
 import org.exist.numbering.NodeId;
 import org.exist.protocolhandler.embedded.EmbeddedInputStream;
 import org.exist.protocolhandler.xmldb.XmldbURL;
@@ -93,13 +98,12 @@ import org.w3c.dom.DocumentType;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
+import org.xmldb.api.base.*;
 
-import com.evolvedbinary.j8fu.function.ConsumerE;
-import com.evolvedbinary.j8fu.function.Function2E;
-import com.evolvedbinary.j8fu.function.Function3E;
-import com.evolvedbinary.j8fu.function.SupplierE;
-import com.evolvedbinary.j8fu.tuple.Tuple2;
-
+import javax.annotation.Nullable;
+import javax.annotation.concurrent.GuardedBy;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
 import java.io.*;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
@@ -113,16 +117,10 @@ import java.util.concurrent.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.zip.DeflaterOutputStream;
-import javax.annotation.Nullable;
-import javax.annotation.concurrent.GuardedBy;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
-
-import org.xmldb.api.base.*;
 
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
-import static org.exist.xmldb.EXistXPathQueryService.BEGIN_PROTECTED_MAX_LOCKING_RETRIES;
 import static java.nio.file.StandardOpenOption.*;
+import static org.exist.xmldb.EXistXPathQueryService.BEGIN_PROTECTED_MAX_LOCKING_RETRIES;
 
 /**
  * This class implements the actual methods defined by
@@ -450,7 +448,7 @@ public class RpcConnection implements RpcAPI {
     @Override
     public Map<String, Object> getCollectionDesc(final String rootCollection) throws EXistException, PermissionDeniedException {
         try {
-            return getCollectionDesc((rootCollection == null) ? XmldbURI.ROOT_COLLECTION_URI : XmldbURI.xmldbUriFor(rootCollection));
+            return getCollectionDesc(rootCollection == null ? XmldbURI.ROOT_COLLECTION_URI : XmldbURI.xmldbUriFor(rootCollection));
         } catch (final URISyntaxException e) {
             throw new EXistException(e);
         }
@@ -524,7 +522,7 @@ public class RpcConnection implements RpcAPI {
                                 ? "BinaryResource"
                                 : "XMLResource");
                 final long resourceLength = document.getContentLength();
-                hash.put("content-length", (resourceLength > (long) Integer.MAX_VALUE) ? Integer.MAX_VALUE : (int) resourceLength);
+                hash.put("content-length", resourceLength > (long) Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) resourceLength);
                 hash.put("content-length-64bit", Long.toString(resourceLength));
                 hash.put("mime-type", document.getMimeType());
                 hash.put("created", new Date(document.getCreated()));
@@ -549,7 +547,7 @@ public class RpcConnection implements RpcAPI {
     @Override
     public Map<String, Object> describeCollection(final String rootCollection) throws EXistException, PermissionDeniedException {
         try {
-            return describeCollection((rootCollection == null) ? XmldbURI.ROOT_COLLECTION_URI : XmldbURI.xmldbUriFor(rootCollection));
+            return describeCollection(rootCollection == null ? XmldbURI.ROOT_COLLECTION_URI : XmldbURI.xmldbUriFor(rootCollection));
         } catch (final URISyntaxException e) {
             throw new EXistException(e);
         }
@@ -879,7 +877,7 @@ public class RpcConnection implements RpcAPI {
                 //TODO : register a lock (which one ?) in the transaction ?
                 final DocumentSet  docs = collectionRef.allDocs(broker, new DefaultDocumentSet(), true);
                 final XUpdateProcessor processor = new XUpdateProcessor(broker, docs);
-                final Modification modifications[] = processor.parse(new InputSource(reader));
+                final Modification[] modifications = processor.parse(new InputSource(reader));
                 long mods = 0;
                 for (final Modification modification : modifications) {
                     mods += modification.process(transaction);
@@ -912,7 +910,7 @@ public class RpcConnection implements RpcAPI {
 
             try(final Reader reader = new StringReader(xupdate)) {
                 final XUpdateProcessor processor = new XUpdateProcessor(broker, docs);
-                final Modification modifications[] = processor.parse(new InputSource(reader));
+                final Modification[] modifications = processor.parse(new InputSource(reader));
                 long mods = 0;
                 for (final Modification modification : modifications) {
                     mods += modification.process(transaction);
@@ -948,7 +946,7 @@ public class RpcConnection implements RpcAPI {
     public List<String> getDocumentListing() throws EXistException, PermissionDeniedException {
         return withDb((broker, transaction) -> {
             final DocumentSet docs = broker.getAllXMLResources(new DefaultDocumentSet());
-            final XmldbURI names[] = docs.getNames();
+            final XmldbURI[] names = docs.getNames();
             final List<String> list = new ArrayList<>();
             for (final XmldbURI name : names) {
                 list.add(name.toString());
@@ -972,7 +970,7 @@ public class RpcConnection implements RpcAPI {
                 return list;
             });
         } catch (final EXistException e) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
     }
 
@@ -996,7 +994,7 @@ public class RpcConnection implements RpcAPI {
             if(LOG.isDebugEnabled()) {
                 LOG.debug(e);
             }
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
     }
 
@@ -1696,7 +1694,7 @@ public class RpcConnection implements RpcAPI {
                     if (qr.hasErrors()) {
                         throw qr.getException();
                     }
-                    return printAll(broker, qr.result, howmany, start, parameters, (System.currentTimeMillis() - startTime));
+                    return printAll(broker, qr.result, howmany, start, parameters, System.currentTimeMillis() - startTime);
                 }
             } catch (final XPathException e) {
                 throw new EXistException(e);
@@ -1719,7 +1717,7 @@ public class RpcConnection implements RpcAPI {
     public Map<String, Object> queryP(final String xpath, final String documentPath,
                                       final String s_id, final Map<String, Object> parameters) throws URISyntaxException, EXistException, PermissionDeniedException {
         return queryP(xpath,
-                (documentPath == null) ? null : XmldbURI.xmldbUriFor(documentPath),
+                documentPath == null ? null : XmldbURI.xmldbUriFor(documentPath),
                 s_id, parameters);
     }
 
@@ -1767,9 +1765,8 @@ public class RpcConnection implements RpcAPI {
             }
 
             try {
-                final Map<String, Object> rpcResponse = this.<Map<String, Object>>compileQuery(broker, transaction, source, parameters)
+                return this.<Map<String, Object>>compileQuery(broker, transaction, source, parameters)
                         .apply(compiledQuery -> queryResultToRpcResponse(startTime, doQuery(broker, compiledQuery, nodes, parameters), sortBy));
-                return rpcResponse;
             } catch (final XPathException e) {
                 throw new EXistException(e);
             }
@@ -1833,7 +1830,7 @@ public class RpcConnection implements RpcAPI {
         }
 
         queryResult.result = resultSeq;
-        queryResult.queryTime = (System.currentTimeMillis() - startTime);
+        queryResult.queryTime = System.currentTimeMillis() - startTime;
         final int id = factory.resultSets.add(queryResult);
         ret.put("id", id);
         ret.put("hash", queryResult.hashCode());
@@ -1884,9 +1881,8 @@ public class RpcConnection implements RpcAPI {
             }
 
             try {
-                final Map<String, Object> rpcResponse = this.<Map<String, Object>>compileQuery(broker, transaction, source, parameters)
+                return this.<Map<String, Object>>compileQuery(broker, transaction, source, parameters)
                         .apply(compiledQuery -> queryResultToTypedRpcResponse(startTime, doQuery(broker, compiledQuery, nodes, parameters), sortBy));
-                return rpcResponse;
             } catch (final XPathException e) {
                 throw new EXistException(e);
             }
@@ -1946,7 +1942,7 @@ public class RpcConnection implements RpcAPI {
         }
 
         queryResult.result = resultSeq;
-        queryResult.queryTime = (System.currentTimeMillis() - startTime);
+        queryResult.queryTime = System.currentTimeMillis() - startTime;
         final int id = factory.resultSets.add(queryResult);
         ret.put("id", id);
         ret.put("hash", queryResult.hashCode());
@@ -2010,9 +2006,8 @@ public class RpcConnection implements RpcAPI {
             final Source source = new DBSource(broker.getBrokerPool(), xquery, true);
 
             try {
-                final Map<String, Object> rpcResponse = this.<Map<String, Object>>compileQuery(broker, transaction, source, parameters)
+                return this.<Map<String, Object>>compileQuery(broker, transaction, source, parameters)
                         .apply(compiledQuery -> queryResultToRpcResponse(startTime, doQuery(broker, compiledQuery, null, parameters), sortBy));
-                return rpcResponse;
             } catch (final XPathException e) {
                 throw new EXistException(e);
             }
@@ -2038,9 +2033,8 @@ public class RpcConnection implements RpcAPI {
             final Source source = new DBSource(broker.getBrokerPool(), xquery, true);
 
             try {
-                final Map<String, Object> rpcResponse = this.<Map<String, Object>>compileQuery(broker, transaction, source, parameters)
+                return this.<Map<String, Object>>compileQuery(broker, transaction, source, parameters)
                         .apply(compiledQuery -> queryResultToTypedRpcResponse(startTime, doQuery(broker, compiledQuery, null, parameters), sortBy));
-                return rpcResponse;
             } catch (final XPathException e) {
                 throw new EXistException(e);
             }
@@ -2926,7 +2920,7 @@ public class RpcConnection implements RpcAPI {
     public Map<String, Object> summary(final String xpath) throws EXistException, PermissionDeniedException {
         final Source source = new StringSource(xpath);
 
-        return this.<Map<String, Object>>withDb((broker, transaction) -> {
+        return this.withDb((broker, transaction) -> {
             final long startTime = System.currentTimeMillis();
 
             final Map<String, Object> parameters = new HashMap<>();
@@ -3109,7 +3103,7 @@ public class RpcConnection implements RpcAPI {
         if (FileUtils.sizeQuietly(file) < start + len) {
             throw new EXistException("address too big " + name);
         }
-        final byte buffer[] = new byte[len];
+        final byte[] buffer = new byte[len];
         try (final RandomAccessFile os = new RandomAccessFile(file.toFile(), "r")) {
             if(LOG.isDebugEnabled()) {
                 LOG.debug("Read from: {} to: {}", start, start + len);
@@ -3420,7 +3414,8 @@ public class RpcConnection implements RpcAPI {
         }
 
         //Copy i file
-        int p, dsize = documents.length;
+        int p;
+        int dsize = documents.length;
         for (Object document : documents) {
             final Map<String, Object> hash = (Map<String, Object>) document;
             String docName = (String) hash.get("name");

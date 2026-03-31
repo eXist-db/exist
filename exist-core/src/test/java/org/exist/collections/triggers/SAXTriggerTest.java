@@ -21,8 +21,6 @@
  */
 package org.exist.collections.triggers;
 
-import static org.junit.Assert.*;
-
 import org.exist.EXistException;
 import org.exist.TestUtils;
 import org.exist.security.PermissionDeniedException;
@@ -40,12 +38,14 @@ import org.xmldb.api.modules.XMLResource;
 
 import java.io.IOException;
 
+import static org.junit.Assert.*;
+
 public class SAXTriggerTest {
 
     @ClassRule
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
-    private final static String DOCUMENT1_CONTENT = 
+    private static final String DOCUMENT1_CONTENT = 
         "<test>"
         + "<item id='1'><price>5.6</price><stock>22</stock></item>"
         + "<item id='2'><price>7.4</price><stock>43</stock></item>"
@@ -53,12 +53,12 @@ public class SAXTriggerTest {
         + "<item id='4'><price>65.54</price><stock>16</stock></item>"
         + "</test>";
 
-    private final static String DOCUMENT2_CONTENT = 
+    private static final String DOCUMENT2_CONTENT = 
             "<test>"
             + "<item id='1'><price>5.6</price><stock>22</stock></item>"
             + "</test>";
 
-    private final static String DOCUMENT3_CONTENT = 
+    private static final String DOCUMENT3_CONTENT = 
         """
         <test test="valueTest">
             <item id="1" test="valueTest">
@@ -67,7 +67,7 @@ public class SAXTriggerTest {
             </item>
         </test>""";
     
-    private final static String COLLECTION_CONFIG = 
+    private static final String COLLECTION_CONFIG = 
             "<exist:collection xmlns:exist='http://exist-db.org/collection-config/1.0'>"
             + "  <exist:triggers>"
             + "     <exist:trigger class='org.exist.collections.triggers.StoreTrigger'/>"
@@ -75,9 +75,9 @@ public class SAXTriggerTest {
             + "</exist:collection>";
 
 
-    private final static String BASE_URI = "xmldb:exist://";
+    private static final String BASE_URI = "xmldb:exist://";
 
-    private final static String testCollection = "/db/triggers";
+    private static final String testCollection = "/db/triggers";
 
     @Test
     public void test() throws EXistException, XMLDBException {

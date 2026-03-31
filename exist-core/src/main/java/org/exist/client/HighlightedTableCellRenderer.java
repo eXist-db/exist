@@ -21,23 +21,24 @@
  */
 package org.exist.client;
 
-import java.awt.Color;
-import java.awt.Component;
+import org.exist.client.ClientFrame.ResourceTableModel;
+import org.exist.xmldb.XmldbURI;
+
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
-import org.exist.client.ClientFrame.ResourceTableModel;
-import org.exist.xmldb.XmldbURI;
+import java.awt.Color;
+import java.awt.Component;
 
 public class HighlightedTableCellRenderer<T extends AbstractTableModel> extends DefaultTableCellRenderer {
     
-    private final static Color collectionBackground = new Color(225, 235, 224);
-    private final static Color collectionForeground = Color.black;
-    private final static Color highBackground = new Color(115, 130, 189);
-    private final static Color highForeground = Color.white;
-    private final static Color altBackground = new Color(235, 235, 235);
+    private static final Color collectionBackground = new Color(225, 235, 224);
+    private static final Color collectionForeground = Color.black;
+    private static final Color highBackground = new Color(115, 130, 189);
+    private static final Color highForeground = Color.white;
+    private static final Color altBackground = new Color(235, 235, 235);
         
     /*
      * (non-Javadoc)

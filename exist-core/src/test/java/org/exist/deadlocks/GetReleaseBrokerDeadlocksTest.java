@@ -21,12 +21,6 @@
  */
 package org.exist.deadlocks;
 
-import static org.junit.Assert.*;
-
-import java.util.Map;
-import java.util.Optional;
-import java.util.Random;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Database;
@@ -38,6 +32,12 @@ import org.exist.xquery.FunctionFactory;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.util.Map;
+import java.util.Optional;
+import java.util.Random;
+
+import static org.junit.Assert.*;
+
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
@@ -46,7 +46,7 @@ public class GetReleaseBrokerDeadlocksTest {
 
 	private static final Logger LOG = LogManager.getLogger(GetReleaseBrokerDeadlocksTest.class);
 	
-	private static Random rd = new Random();
+	private static final Random rd = new Random();
 
 	@Test
 	@Ignore("Deadlock test — hangs indefinitely")
@@ -140,9 +140,10 @@ public class GetReleaseBrokerDeadlocksTest {
                             sb.append("\n");
                         }
 		            }
-		            
-		            if (stackTraces.isEmpty())
-		            	sb.append("No threads.");
+
+                    if (stackTraces.isEmpty()) {
+                        sb.append("No threads.");
+                    }
 		            
 //		            System.out.println(sb.toString());
 		        }
@@ -159,7 +160,7 @@ public class GetReleaseBrokerDeadlocksTest {
 		}
 	}
 
-	private static Throwable ex = null;
+	private static Throwable ex;
 	
 	class GetRelease implements Runnable {
 

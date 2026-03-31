@@ -32,7 +32,7 @@ import java.net.URISyntaxException;
  */
 public class ValueIndexByQNameTest extends ValueIndexTest {
 
-    private String config =
+    private final String config =
     	"<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" + 
     	"	<index xmlns:x=\"http://www.foo.com\" xmlns:xx=\"http://test.com\">" + 
     	"		<create qname=\"itemno\" type=\"xs:integer\"/>" +

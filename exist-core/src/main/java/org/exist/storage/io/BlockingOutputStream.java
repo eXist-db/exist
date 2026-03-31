@@ -32,7 +32,7 @@ import java.io.OutputStream;
  */
 public class BlockingOutputStream extends OutputStream {
 
-    private BlockingInputStream bis;
+    private final BlockingInputStream bis;
     
     /** Create a new BlockingOutputStream adapter.
      *
@@ -85,7 +85,7 @@ public class BlockingOutputStream extends OutputStream {
      *             stream is closed.
      */
     @Override
-    public void write(byte b[], int off, int len) throws IOException {
+    public void write(byte[] b, int off, int len) throws IOException {
         bis.writeOutputStream(b, off, len);
     }
 

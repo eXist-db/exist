@@ -21,10 +21,10 @@
  */
 package org.exist.client.security;
 
-import java.io.Serial;
-import java.text.ParseException;
 import javax.swing.JFormattedTextField.AbstractFormatter;
 import javax.swing.text.DocumentFilter;
+import java.io.Serial;
+import java.text.ParseException;
 
 /**
  *

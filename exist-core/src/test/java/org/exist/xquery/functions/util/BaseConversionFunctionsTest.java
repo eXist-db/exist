@@ -28,6 +28,7 @@ import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.StringValue;
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 
 /**
@@ -44,7 +45,7 @@ public class BaseConversionFunctionsTest {
        final XQueryContext mckContext = EasyMock.createMock(XQueryContext.class);
 
        final BaseConversionFunctions baseConversionFunctions = new BaseConversionFunctions(mckContext, BaseConversionFunctions.FNS_INT_TO_OCTAL);
-       Sequence args[] = {
+       Sequence[] args = {
            new IntegerValue(511)
        };
        
@@ -59,7 +60,7 @@ public class BaseConversionFunctionsTest {
        final XQueryContext mckContext = EasyMock.createMock(XQueryContext.class);
 
        final BaseConversionFunctions baseConversionFunctions = new BaseConversionFunctions(mckContext, BaseConversionFunctions.FNS_OCTAL_TO_INT);
-       Sequence args[] = {
+       Sequence[] args = {
            new StringValue("0777")
        };
        

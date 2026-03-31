@@ -21,8 +21,6 @@
  */
 package org.expath.tools.model.exist;
 
-import java.util.*;
-
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.NodeValue;
@@ -39,6 +37,7 @@ import org.w3c.dom.NodeList;
 
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
+import java.util.*;
 
 /**
  * @author <a href="mailto:adam@existsolutions.com">Adam Retter</a>
@@ -60,11 +59,11 @@ public class EXistElement implements Element {
 
             private final NamedNodeMap attrs = element.getNode().getAttributes();
             private final int length = attrs.getLength();
-            private int position = 0;
+            private int position;
 
             @Override
             public boolean hasNext() {
-                return (position < length);
+                return position < length;
             }
 
             @Override
@@ -139,7 +138,7 @@ public class EXistElement implements Element {
         final NodeList children = element.getNode().getChildNodes();
         for(int i = 0; i < children.getLength(); i++) {
             final Node child = children.item(i);
-            if(child.getNamespaceURI() == null && child.getPrefix() == null || child.getNamespaceURI().equals(XMLConstants.NULL_NS_URI)) {
+            if(child.getNamespaceURI() == null && child.getPrefix() == null || XMLConstants.NULL_NS_URI.equals(child.getNamespaceURI())) {
                 return true;
             }
         }
@@ -169,7 +168,7 @@ public class EXistElement implements Element {
             final String ns = attr.getNamespaceURI();
 
             if( ns != null && Arrays.binarySearch(sorted_ns, ns) >= 0 ) {
-                if(ns.equals(HttpConstants.HTTP_CLIENT_NS_URI)) {
+                if(HttpConstants.HTTP_CLIENT_NS_URI.equals(ns)) {
                     throw new ToolsException("@" + attr_name + " in namespace " + ns + " not allowed on " + getDisplayName());
                 }
             } else if (ns!= null && ! ns.isEmpty() ) {
@@ -204,7 +203,7 @@ public class EXistElement implements Element {
     public class IterableElement implements Iterable<Element> {
 
         private final Node node;
-        private String inNamespaceURI = null;
+        private String inNamespaceURI;
 
         public IterableElement(Node node) {
             this.node = node;
@@ -227,8 +226,8 @@ public class EXistElement implements Element {
         private final Node parent;
         private final String inNamespaceURI;
         
-        private List<org.w3c.dom.Element> elements = null;
-        private int position = 0;
+        private List<org.w3c.dom.Element> elements;
+        private int position;
         
         public ElementIterator(Node parent, String inNamespaceURI) {
             this.parent = parent;
@@ -237,7 +236,7 @@ public class EXistElement implements Element {
 
         @Override
         public boolean hasNext() {
-            return(position < getLength());
+            return position < getLength();
         }
 
         @Override
@@ -272,7 +271,7 @@ public class EXistElement implements Element {
                     if(child.getNodeType() == Node.ELEMENT_NODE) {
                         if(inNamespaceURI != null) {
                             final String ns = child.getNamespaceURI();
-                            if(ns != null && inNamespaceURI.equals(ns)){
+                            if(inNamespaceURI.equals(ns)){
                                 elements.add((org.w3c.dom.Element)child);
                             }
                         } else {

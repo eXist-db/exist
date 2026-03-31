@@ -30,14 +30,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.AnyURIValue;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.QNameValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 /**
  * @author wolf
@@ -45,7 +38,7 @@ import org.exist.xquery.value.Type;
  */
 public class QNameFunctions extends BasicFunction {
 
-	public final static FunctionSignature prefixFromQName =
+	public static final FunctionSignature prefixFromQName =
 		new FunctionSignature(
 				new QName("prefix-from-QName", Function.BUILTIN_FUNCTION_NS),
 				"Returns an xs:NCName representing the prefix of $arg. If $arg is the empty " +
@@ -55,7 +48,7 @@ public class QNameFunctions extends BasicFunction {
 				},
 				new FunctionReturnSequenceType(Type.NCNAME, Cardinality.ZERO_OR_ONE, "the prefix"));
 	
-	public final static FunctionSignature localNameFromQName =
+	public static final FunctionSignature localNameFromQName =
 		new FunctionSignature(
 				new QName("local-name-from-QName", Function.BUILTIN_FUNCTION_NS),
 				"Returns an xs:NCName representing the local part of $arg. If $arg is the empty " +
@@ -65,7 +58,7 @@ public class QNameFunctions extends BasicFunction {
 				},
 				new FunctionReturnSequenceType(Type.NCNAME, Cardinality.ZERO_OR_ONE, "the local name"));
 	
-	public final static FunctionSignature namespaceURIFromQName =
+	public static final FunctionSignature namespaceURIFromQName =
 		new FunctionSignature(
 				new QName("namespace-uri-from-QName", Function.BUILTIN_FUNCTION_NS),
 				"Returns the namespace URI for $arg. If $arg is the empty " +

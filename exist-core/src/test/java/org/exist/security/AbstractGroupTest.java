@@ -21,20 +21,20 @@
  */
 package org.exist.security;
 
-import org.exist.Database;
-import java.util.ArrayList;
-import java.util.List;
 import org.easymock.EasyMock;
-import static org.easymock.EasyMock.verify;
-import static org.easymock.EasyMock.replay;
-import static org.easymock.EasyMock.expect;
+import org.exist.Database;
 import org.exist.config.ConfigurationException;
 import org.exist.config.Reference;
 import org.exist.config.ReferenceImpl;
 import org.exist.storage.DBBroker;
 import org.junit.Test;
-import static org.junit.Assert.assertTrue;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.easymock.EasyMock.*;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  *

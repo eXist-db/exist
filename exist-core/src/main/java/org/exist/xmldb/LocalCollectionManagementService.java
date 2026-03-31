@@ -21,10 +21,6 @@
  */
 package org.exist.xmldb;
 
-import java.net.URISyntaxException;
-import java.util.Date;
-import java.util.Optional;
-
 import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.exist.EXistException;
 import org.exist.collections.triggers.TriggerException;
@@ -42,6 +38,9 @@ import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 
 import javax.annotation.Nullable;
+import java.net.URISyntaxException;
+import java.util.Date;
+import java.util.Optional;
 
 public class LocalCollectionManagementService extends AbstractLocalService implements EXistCollectionManagementService {
 

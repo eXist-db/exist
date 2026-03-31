@@ -77,7 +77,7 @@ import static org.junit.Assume.assumeTrue;
  */
 public class XQueryTest {
 
-    private final static Logger LOG = LogManager.getLogger(XQueryTest.class);
+    private static final Logger LOG = LogManager.getLogger(XQueryTest.class);
 
     @ClassRule
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
@@ -97,46 +97,46 @@ public class XQueryTest {
     private static final String CHILD1_MODULE_NAME = "child1.xqm";
     private static final String CHILD2_MODULE_NAME = "child2.xqm";
     private static final String NAMESPACED_NAME = "namespaced.xml";
-    private final static String LOCAL_URI = XmldbURI.LOCAL_DB;
-    private final static String numbers =
+    private static final String LOCAL_URI = XmldbURI.LOCAL_DB;
+    private static final String numbers =
             "<test>" + "<item id='1'><price>5.6</price><stock>22</stock></item>" + "<item id='2'><price>7.4</price><stock>43</stock></item>" + "<item id='3'><price>18.4</price><stock>5</stock></item>" + "<item id='4'><price>65.54</price><stock>16</stock></item>" + "</test>";
-    private final static String module1 =
+    private static final String module1 =
             """
             module namespace blah="blah";
             declare variable $blah:param := "value-1";
             """;
-    private final static String module2 =
+    private static final String module2 =
             """
             module namespace foo="";
             declare variable $foo:bar := "bar";
             """;
-    private final static String module3 =
+    private static final String module3 =
             """
             module namespace foo="foo";
             declare variable $bar:bar := "bar";
             """;
-    private final static String module4 =
+    private static final String module4 =
             "module namespace foo=\"foo\";\n" //An external prefix in the statically known namespaces
             + "declare variable $exist:bar external;\n" + "declare function foo:bar() {\n" + "$exist:bar\n" + "};";
-    private final static String module5 =
+    private static final String module5 =
             """
             module namespace foo="foo";
             declare variable $foo:bar := "bar";
             """;
-    private final static String module6 =
+    private static final String module6 =
             """
             module namespace foo="foo";
             declare variable $foo:bar := "bar";
             declare variable $foo:bar := "bar";
             """;
-    private final static String module7 =
+    private static final String module7 =
             """
             module namespace foo="foo";
             declare namespace xhtml="http://www.w3.org/1999/xhtml";
             declare function foo:link() { <a href='#'>Link</a> };
             declare function foo:copy($node) { element { node-name($node) } { $node/text() } };
             """;
-    private final static String module8 =
+    private static final String module8 =
             """
             module namespace dr = "double-root2";\s
             declare function dr:documentIn() as document-node() {\s
@@ -145,13 +145,13 @@ public class XQueryTest {
             };
             """;
     
-    private final static String fatherModule =
+    private static final String fatherModule =
             "module namespace foo=\"foo\";\n" + "import module namespace foo1=\"foo1\" at \"" + LOCAL_URI + "/test/" + CHILD1_MODULE_NAME + "\";\n" + "import module namespace foo2=\"foo2\" at \"" + LOCAL_URI + "/test/" + CHILD2_MODULE_NAME + "\";\n" + "declare variable $foo:bar := \"bar\";\n " + "declare variable $foo:bar1 := $foo1:bar;\n" + "declare variable $foo:bar2 := $foo2:bar;\n";
-    private final static String child1Module =
+    private static final String child1Module =
             "module namespace foo=\"foo1\";\n" + "import module namespace blah=\"blah\" at \"" + LOCAL_URI + "/test/" + MODULE1_NAME + "\";\n" + "declare variable $foo:bar := \"bar1\";";
-    private final static String child2Module =
+    private static final String child2Module =
             "module namespace foo=\"foo2\";\n" + "import module namespace blah=\"blah\" at \"" + LOCAL_URI + "/test/" + MODULE1_NAME + "\";\n" + "declare variable $foo:bar := \"bar2\";";
-    private final static String namespacedDocument =
+    private static final String namespacedDocument =
             """
             <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
             xmlns:dc="http://purl.org/dc/elements/1.1/"
@@ -163,7 +163,7 @@ public class XQueryTest {
                     <x:edition>place</x:edition>
                 </rdf:Description>
             </rdf:RDF>""";
-    private final static String bowling =
+    private static final String bowling =
             "<series>" +
             "<game>" +
             "<frame/>" +
@@ -172,16 +172,16 @@ public class XQueryTest {
             "<frame/>" +
             "</game>" +
             "</series>";
-    private final static String attributes =
+    private static final String attributes =
         "<blob>" +
         "<test att='a' />" +
         "<test att='b' />" +
         "<test att='c' />" +
         "</blob>";
 
-    private static int stringSize = 512;
-    private static int nbElem = 1;
-    private String file_name = "detail_xml.xml";
+    private static final int stringSize = 512;
+    private static final int nbElem = 1;
+    private final String file_name = "detail_xml.xml";
     private String xml;
 
     @Before
@@ -443,7 +443,7 @@ public class XQueryTest {
         } catch (XMLDBException e) {
             message = e.getMessage();
         }
-        assertTrue(message.indexOf("XQST0049") > -1);
+        assertTrue(message.contains("XQST0049"));
         query = "xquery version \"1.0\";\n" + "declare namespace param=\"param\";\n" + "declare function param:f() { $param:a };\n" + "declare variable $param:a := \"a\";\n" + "param:f()";
         result = service.query(query);
         assertEquals("XQuery: " + query, 1, result.getSize());
@@ -857,7 +857,7 @@ public class XQueryTest {
         } catch (XMLDBException e) {
             message = e.getMessage();
         }
-        assertTrue(message.indexOf("XQST0033") > -1);
+        assertTrue(message.contains("XQST0033"));
         query = "xquery version \"1.0\";\n" + "import module namespace blah=\"blah\" at \"" + LOCAL_URI + "/test/" + MODULE1_NAME + "\";\n" + "(:: redefine existing prefix with same getUri ::)\n" + "declare namespace blah=\"blah\";\n" + "declare variable $blah:param := \"value-2\";\n" + "$blah:param";
         try {
             message = "";
@@ -865,7 +865,7 @@ public class XQueryTest {
         } catch (XMLDBException e) {
             message = e.getMessage();
         }
-        assertTrue(message.indexOf("XQST0033") > -1);
+        assertTrue(message.contains("XQST0033"));
         query = "xquery version \"1.0\";\n" + "import module namespace foo=\"ho\" at \"" + LOCAL_URI + "/test/" + MODULE1_NAME + "\";\n" + "$foo:bar";
         try {
             message = "";
@@ -873,7 +873,7 @@ public class XQueryTest {
         } catch (XMLDBException e) {
             message = e.getMessage();
         }
-        assertTrue(message.indexOf("does not match namespace URI") > -1);
+        assertTrue(message.contains("does not match namespace URI"));
         query = "xquery version \"1.0\";\n" + "import module namespace foo=\"ho\" at \"" + LOCAL_URI + "/test/" + MODULE2_NAME + "\";\n" + "$bar";
         try {
             message = "";
@@ -881,7 +881,7 @@ public class XQueryTest {
         } catch (XMLDBException e) {
             message = e.getMessage();
         }
-        assertTrue(message.indexOf("No namespace defined for prefix") > -1);
+        assertTrue(message.contains("No namespace defined for prefix"));
         query = "xquery version \"1.0\";\n" + "import module namespace foo=\"blah\" at \"" + LOCAL_URI + "/test/" + MODULE2_NAME + "\";\n" + "$bar";
         try {
             message = "";
@@ -889,7 +889,7 @@ public class XQueryTest {
         } catch (XMLDBException e) {
             message = e.getMessage();
         }
-        assertTrue(message.indexOf("No namespace defined for prefix") > -1);
+        assertTrue(message.contains("No namespace defined for prefix"));
         query = "declare namespace x = \"http://www.foo.com\"; \n" +
                 "let $a := doc('" + XmldbURI.ROOT_COLLECTION + "/test/" + NAMESPACED_NAME + "') \n" +
                 "return $a//x:edition";
@@ -982,7 +982,7 @@ public class XQueryTest {
         assertTrue(content.startsWith("<html xmlns=\"http://www.w3.org/1999/xhtml\">"));
 
         //check the content
-        assertTrue(content.indexOf("<div>text</div>") > -1);
+        assertTrue(content.contains("<div>text</div>"));
     }
 
     @Test
@@ -1050,7 +1050,7 @@ public class XQueryTest {
         } catch (XMLDBException e) {
             message = e.getMessage();
         }
-        assertTrue(message.indexOf("does not match namespace URI") > -1);
+        assertTrue(message.contains("does not match namespace URI"));
         query = "xquery version \"1.0\";\n" + "import module namespace foo=\"foo\" at \"" + LOCAL_URI + "/test/" + FATHER_MODULE_NAME + "\";\n" + "$foo:bar, $foo:bar1, $foo:bar2";
         result = service.query(query);
         assertEquals("XQuery: " + query, 3, result.getSize());
@@ -1066,7 +1066,7 @@ public class XQueryTest {
         } catch (XMLDBException e) {
             message = e.getMessage();
         }
-        assertTrue(message.indexOf("XPST0008") > -1);
+        assertTrue(message.contains("XPST0008"));
 
 //			Non-transitive inheritance check
         query = "xquery version \"1.0\";\n" + "import module namespace foo=\"foo\" at \"" + LOCAL_URI + "/test/" + FATHER_MODULE_NAME + "\";\n" + "declare namespace foo2=\"foo2\"; \n" + "$foo2:bar";
@@ -1076,7 +1076,7 @@ public class XQueryTest {
         } catch (XMLDBException e) {
             message = e.getMessage();
         }
-        assertTrue(message.indexOf("XPST0008") > -1);
+        assertTrue(message.contains("XPST0008"));
         query = "xquery version \"1.0\";\n" + "import module namespace foo1=\"foo\" at \"" + LOCAL_URI + "/test/" + CHILD1_MODULE_NAME + "\";\n" + "import module namespace foo2=\"foo\" at \"" + LOCAL_URI + "/test/" + CHILD1_MODULE_NAME + "\";\n" + "$foo1:bar";
         try {
             message = "";
@@ -1085,7 +1085,7 @@ public class XQueryTest {
             message = e.getMessage();
         }
 //			Should be a XQST0047 error
-        assertTrue(message.indexOf("does not match namespace URI") > -1);
+        assertTrue(message.contains("does not match namespace URI"));
         query = "xquery version \"1.0\";\n" + "import module namespace foo=\"foo\" at \"" + LOCAL_URI + "/test/" + MODULE3_NAME + "\";\n" + "$bar:bar";
         try {
             message = "";
@@ -1093,7 +1093,7 @@ public class XQueryTest {
         } catch (XMLDBException e) {
             message = e.getMessage();
         }
-        assertTrue(message.indexOf("No namespace defined for prefix") > -1);
+        assertTrue(message.contains("No namespace defined for prefix"));
         query = "xquery version \"1.0\";\n" + "import module namespace foo=\"foo\" at \"" + LOCAL_URI + "/test/" + MODULE4_NAME + "\";\n" + "foo:bar()";
         try {
             message = "";
@@ -1272,7 +1272,7 @@ public class XQueryTest {
             query = "xquery version \"1.0\";\n" + "import module namespace foo=\"foo\" at \"" + LOCAL_URI + "/test/" + MODULE6_NAME + "\";\n" + "$foo:bar";
             result = service.query(query);
         } catch (XMLDBException e) {
-            assertTrue("Test should generate err:XQST0049, got: " + e.getMessage(), e.getMessage().indexOf("err:XQST0049") > -1);
+            assertTrue("Test should generate err:XQST0049, got: " + e.getMessage(), e.getMessage().contains("err:XQST0049"));
             gotException = true;
         }
         assertTrue("Duplicate global variable should generate error", gotException);
@@ -1281,7 +1281,7 @@ public class XQueryTest {
             query = "xquery version \"1.0\";\n" + "declare variable $local:a := 'abc';" + "declare variable $local:a := 'abc';" + "$local:a";
             result = service.query(query);
         } catch (XMLDBException e) {
-            assertTrue("Test should generate err:XQST0049, got: " + e.getMessage(), e.getMessage().indexOf("err:XQST0049") > -1);
+            assertTrue("Test should generate err:XQST0049, got: " + e.getMessage(), e.getMessage().contains("err:XQST0049"));
             gotException = true;
         }
         assertTrue("Duplicate global variable should generate error", gotException);
@@ -1347,7 +1347,7 @@ public class XQueryTest {
             URL url = URI.create("http://www.w3.org/").toURL();
             URLConnection con = url.openConnection();
             if (con instanceof HttpURLConnection httpConnection) {
-                hasInternetAccess = (httpConnection.getResponseCode() == HttpURLConnection.HTTP_OK);
+                hasInternetAccess = httpConnection.getResponseCode() == HttpURLConnection.HTTP_OK;
             }
         } catch(MalformedURLException e) {
             fail(e.getMessage());
@@ -1386,7 +1386,7 @@ public class XQueryTest {
     }
 
     private String makeString(final int n) {
-        final char buf[] = new char[n];
+        final char[] buf = new char[n];
         Arrays.fill(buf, 'a');
         return new String(buf);
     }
@@ -1633,7 +1633,7 @@ public class XQueryTest {
             } catch (XMLDBException e) {
                 message = e.getMessage();
             }
-            assertTrue(message.indexOf("XQDY0025") > -1);
+            assertTrue(message.contains("XQDY0025"));
 
             query = "let $a := <foo name='bar'/> return $a/@name";
             try {
@@ -3027,9 +3027,7 @@ public class XQueryTest {
                 documentName, XMLResource.class);
         doc.setContent(content);
         testCollection.storeResource(doc);
-        XPathQueryService service =
-                testCollection.getService(
+        return testCollection.getService(
                 XPathQueryService.class);
-        return service;
     }
 }

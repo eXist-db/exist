@@ -54,7 +54,7 @@ public class LogFunction extends BasicFunction {
     public static final String FUNCTION_LOGAPP = "log-app";
     public static final String FUNCTION_LOG_SYSTEM_OUT = "log-system-out";
     public static final String FUNCTION_LOG_SYSTEM_ERR = "log-system-err";
-    public final static FunctionSignature[] signatures = {
+    public static final FunctionSignature[] signatures = {
             new FunctionSignature(
                     new QName(FUNCTION_LOG, UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
                     "Logs the message to the current logger.",
@@ -100,21 +100,21 @@ public class LogFunction extends BasicFunction {
             case FUNCTION_LOG:
                 i = args[1].unorderedIterator();
                 if (args[1].isEmpty()) {
-                    return (Sequence.EMPTY_SEQUENCE);
+                    return Sequence.EMPTY_SEQUENCE;
                 }
                 break;
 
             case FUNCTION_LOGAPP:
                 i = args[2].unorderedIterator();
                 if (args[2].isEmpty()) {
-                    return (Sequence.EMPTY_SEQUENCE);
+                    return Sequence.EMPTY_SEQUENCE;
                 }
                 break;
 
             default:
                 i = args[0].unorderedIterator();
                 if (args[0].isEmpty()) {
-                    return (Sequence.EMPTY_SEQUENCE);
+                    return Sequence.EMPTY_SEQUENCE;
                 }
                 break;
         }
@@ -175,14 +175,14 @@ public class LogFunction extends BasicFunction {
                 final String logname = args[1].getStringValue();
 
                 // Use specific logger when provided
-                final Logger logger = (logname == null || logname.isEmpty()) ? LOG : LogManager.getLogger(logname);
+                final Logger logger = logname == null || logname.isEmpty() ? LOG : LogManager.getLogger(logname);
 
                 writeLog(buf, loglevelapp, logger);
                 break;
             }
         }
 
-        return (Sequence.EMPTY_SEQUENCE);
+        return Sequence.EMPTY_SEQUENCE;
     }
 
     /**

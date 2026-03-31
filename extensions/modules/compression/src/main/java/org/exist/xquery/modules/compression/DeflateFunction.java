@@ -48,9 +48,9 @@ import java.util.zip.DeflaterOutputStream;
  * @version 1.0
  */
 public class DeflateFunction extends BasicFunction {
-    private final static QName DEFLATE_FUNCTION_NAME = new QName("deflate", CompressionModule.NAMESPACE_URI, CompressionModule.PREFIX);
+    private static final QName DEFLATE_FUNCTION_NAME = new QName("deflate", CompressionModule.NAMESPACE_URI, CompressionModule.PREFIX);
 
-    public final static FunctionSignature[] signatures = {
+    public static final FunctionSignature[] signatures = {
             new FunctionSignature(
                     DEFLATE_FUNCTION_NAME,
                     "Deflate data (RFC 1950)",
@@ -80,14 +80,16 @@ public class DeflateFunction extends BasicFunction {
     @Override
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
         // is there some data to Deflate?
-        if (args[0].isEmpty())
+        if (args[0].isEmpty()) {
             return Sequence.EMPTY_SEQUENCE;
+        }
 
         final BinaryValue bin = (BinaryValue) args[0].itemAt(0);
 
         boolean rawflag = false;
-        if (args.length > 1 && !args[1].isEmpty())
+        if (args.length > 1 && !args[1].isEmpty()) {
             rawflag = args[1].itemAt(0).convertTo(Type.BOOLEAN).effectiveBooleanValue();
+        }
 
         final Deflater defl = new Deflater(Deflater.DEFAULT_COMPRESSION, rawflag);
 

@@ -23,9 +23,6 @@ package org.exist.xquery.functions.xmldb;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.nio.file.Path;
-
 import org.apache.tools.ant.DirectoryScanner;
 import org.exist.dom.QName;
 import org.exist.util.FileUtils;
@@ -36,16 +33,12 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
+import org.exist.xquery.value.*;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
+
+import java.nio.file.Path;
 
 /**
  * @author wolf
@@ -54,28 +47,28 @@ import org.xmldb.api.base.XMLDBException;
 public class XMLDBLoadFromPattern extends XMLDBAbstractCollectionManipulator {
     protected static final Logger logger = LogManager.getLogger(XMLDBLoadFromPattern.class);
 
-    protected final static QName FUNCTION_NAME = new QName("store-files-from-pattern", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX);
+    protected static final QName FUNCTION_NAME = new QName("store-files-from-pattern", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX);
 
-    protected final static String FUNCTION_DESCRIPTION = "Stores new resources into the database. Resources are read from the server's " +
+    protected static final String FUNCTION_DESCRIPTION = "Stores new resources into the database. Resources are read from the server's " +
             "file system, using file patterns. " +
             "The function returns a sequence of all document paths added " +
             "to the db. These can be directly passed to fn:doc() to retrieve the document(s).";
 
-    protected final static SequenceType PARAM_COLLECTION = new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collection-uri where resources should be stored. " + XMLDBModule.COLLECTION_URI);
-    protected final static SequenceType PARAM_FS_DIRECTORY = new FunctionParameterSequenceType("directory", Type.STRING, Cardinality.EXACTLY_ONE, "The directory in the file system from where the files are read.");
+    protected static final SequenceType PARAM_COLLECTION = new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collection-uri where resources should be stored. " + XMLDBModule.COLLECTION_URI);
+    protected static final SequenceType PARAM_FS_DIRECTORY = new FunctionParameterSequenceType("directory", Type.STRING, Cardinality.EXACTLY_ONE, "The directory in the file system from where the files are read.");
 
     // fixit! - security - we should say some words about sanity   
     // DBA role should be required for anything short of chroot/jail
     // easily setup per installation/execution host for each function. /ljo
 
-    protected final static SequenceType PARAM_FS_PATTERN = new FunctionParameterSequenceType("pattern", Type.STRING, Cardinality.ONE_OR_MORE, "The file matching pattern. Based on code from Apache's Ant, thus following the same conventions. For example: *.xml matches any file ending with .xml in the current directory, **/*.xml matches files in any directory below the current one");
-    protected final static SequenceType PARAM_MIME_TYPE = new FunctionParameterSequenceType("mime-type", Type.STRING, Cardinality.ZERO_OR_ONE, "If the mime-type is something other than 'text/xml' or 'application/xml', the resource will be stored as a binary resource.");
+    protected static final SequenceType PARAM_FS_PATTERN = new FunctionParameterSequenceType("pattern", Type.STRING, Cardinality.ONE_OR_MORE, "The file matching pattern. Based on code from Apache's Ant, thus following the same conventions. For example: *.xml matches any file ending with .xml in the current directory, **/*.xml matches files in any directory below the current one");
+    protected static final SequenceType PARAM_MIME_TYPE = new FunctionParameterSequenceType("mime-type", Type.STRING, Cardinality.ZERO_OR_ONE, "If the mime-type is something other than 'text/xml' or 'application/xml', the resource will be stored as a binary resource.");
     protected static final SequenceType PARAM_PRESERVE_STRUCTURE = new FunctionParameterSequenceType("preserve-structure", Type.BOOLEAN, Cardinality.EXACTLY_ONE, "If preserve-structure is true(), the filesystem directory structure will be mirrored in the collection. Otherwise all the matching resources, including the ones in sub-directories, will be stored in the collection given in the first argument flatly.");
-    protected final static SequenceType PARAM_EXCLUDES = new FunctionParameterSequenceType("exclude", Type.STRING, Cardinality.ZERO_OR_MORE, "A sequence of file patterns to exclude");
+    protected static final SequenceType PARAM_EXCLUDES = new FunctionParameterSequenceType("exclude", Type.STRING, Cardinality.ZERO_OR_MORE, "A sequence of file patterns to exclude");
     protected static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "the sequence of document paths");
 
 
-    public final static FunctionSignature[] signatures = {
+    public static final FunctionSignature[] signatures = {
             new FunctionSignature(
                     FUNCTION_NAME,
                     FUNCTION_DESCRIPTION,

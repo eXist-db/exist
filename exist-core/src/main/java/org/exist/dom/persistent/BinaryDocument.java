@@ -45,7 +45,7 @@ import java.io.IOException;
  */
 public class BinaryDocument extends DocumentImpl {
     private BlobId blobId;
-    private long realSize = 0L;
+    private long realSize;
 
     /**
      * Creates a new persistent binary Document instance.

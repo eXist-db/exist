@@ -40,8 +40,8 @@ import org.xmldb.api.modules.CollectionManagementService;
  */
 public class XMLDBRemoveTask extends AbstractXMLDBTask
 {
-    private String resource   = null;
-    private String collection = null;
+    private String resource;
+    private String collection;
 
     @Override
     public void execute() throws BuildException

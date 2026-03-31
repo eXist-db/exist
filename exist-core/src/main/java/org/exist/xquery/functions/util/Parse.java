@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.functions.util;
 
+import com.evolvedbinary.j8fu.Either;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Namespaces;
@@ -29,15 +30,10 @@ import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.dom.memtree.NodeImpl;
 import org.exist.dom.memtree.SAXAdapter;
 import org.exist.util.HtmlToXmlParser;
-import com.evolvedbinary.j8fu.Either;
 import org.exist.validation.ValidationReport;
 import org.exist.xquery.*;
 import org.exist.xquery.functions.validation.Shared;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -54,7 +50,7 @@ public class Parse extends BasicFunction {
 
 	private static final Logger logger = LogManager.getLogger(Parse.class);
 
-    public final static FunctionSignature signature =
+    public static final FunctionSignature signature =
         new FunctionSignature(
             new QName( "parse-html", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
             "Parses the passed string value into an XML fragment. The HTML string may not be " +

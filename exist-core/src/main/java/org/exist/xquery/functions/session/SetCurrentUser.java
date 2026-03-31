@@ -29,13 +29,7 @@ import org.exist.security.AuthenticationException;
 import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
 import org.exist.xquery.*;
-import org.exist.xquery.value.BooleanValue;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 import java.util.Optional;
 
@@ -48,7 +42,7 @@ public class SetCurrentUser extends UserSwitchingBasicFunction {
 
     private static final Logger logger = LogManager.getLogger(SetCurrentUser.class);
 
-    public final static FunctionSignature signature =
+    public static final FunctionSignature signature =
             new FunctionSignature(
                     new QName("set-current-user", SessionModule.NAMESPACE_URI, SessionModule.PREFIX),
                     "Change the user identity for the current HTTP session. Subsequent XQueries in the session will run with the " +

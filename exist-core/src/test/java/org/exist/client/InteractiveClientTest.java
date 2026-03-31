@@ -57,8 +57,8 @@ import static org.exist.client.InteractiveClient.PERMISSIONS;
 
 @ExtendWith(EasyMockExtension.class)
 class InteractiveClientTest {
-    private final static String EOL = System.getProperty("line.separator");
-    private final static String FILE_SEPARATOR = System.getProperty("file.separator");
+    private static final String EOL = System.getProperty("line.separator");
+    private static final String FILE_SEPARATOR = System.getProperty("file.separator");
 
     @Mock
     Collection collection;

@@ -21,13 +21,12 @@
  */
 package org.exist.management.impl;
 
-import java.nio.charset.Charset;
-import java.util.Locale;
-
 import org.exist.SystemProperties;
 
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
+import java.nio.charset.Charset;
+import java.util.Locale;
 
 /**
  * Class SystemInfo

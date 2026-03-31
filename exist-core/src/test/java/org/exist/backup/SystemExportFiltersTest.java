@@ -167,7 +167,7 @@ public class SystemExportFiltersTest {
 
             doc = getDoc(broker, test, doc11uri.lastSegment());
             assertTrue(doc instanceof BinaryDocument);
-            try (final InputStream is = broker.getBinaryResource(transaction, ((BinaryDocument)doc))) {
+            try (final InputStream is = broker.getBinaryResource(transaction, (BinaryDocument)doc)) {
                 assertEquals(BINARY, InputStreamUtil.readString(is, UTF_8));
             }
 
@@ -182,7 +182,7 @@ public class SystemExportFiltersTest {
         return doc;
     }
 
-    private final static Properties contentsOutputProps = new Properties();
+    private static final Properties contentsOutputProps = new Properties();
     static {
         contentsOutputProps.setProperty( OutputKeys.INDENT, "yes" );
         contentsOutputProps.setProperty( EXistOutputKeys.OUTPUT_DOCTYPE, "yes" );

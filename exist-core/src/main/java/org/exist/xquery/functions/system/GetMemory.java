@@ -41,9 +41,9 @@ import org.exist.xquery.value.Type;
  */
 public class GetMemory extends BasicFunction
 {
-    protected final static Logger logger = LogManager.getLogger(GetMemory.class);
+    protected static final Logger logger = LogManager.getLogger(GetMemory.class);
 
-	public final static FunctionSignature getMemoryMax =
+	public static final FunctionSignature getMemoryMax =
 		new FunctionSignature(
 			new QName("get-memory-max", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
 			"Returns the maximum amount of memory eXist may use.",
@@ -51,7 +51,7 @@ public class GetMemory extends BasicFunction
 			new FunctionReturnSequenceType(Type.LONG, Cardinality.EXACTLY_ONE, "the size of memory")
 		);
 	
-	public final static FunctionSignature getMemoryTotal =
+	public static final FunctionSignature getMemoryTotal =
 		new FunctionSignature(
 			new QName("get-memory-total", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
 			"Returns the total amount of memory in use by eXist.",
@@ -59,7 +59,7 @@ public class GetMemory extends BasicFunction
 			new FunctionReturnSequenceType(Type.LONG, Cardinality.EXACTLY_ONE, "the size of memory")
 		);
 	
-	public final static FunctionSignature getMemoryFree =
+	public static final FunctionSignature getMemoryFree =
 		new FunctionSignature(
 				new QName("get-memory-free", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
 				"Returns the amount of free memory available to eXist.",

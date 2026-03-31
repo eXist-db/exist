@@ -113,11 +113,11 @@ public class ExportMain {
             }
             config.setProperty(BrokerPool.PROPERTY_EXPORT_ONLY, Boolean.TRUE);
             BrokerPool.configure(1, 5, config);
-            return (BrokerPool.getInstance());
+            return BrokerPool.getInstance();
         } catch (final DatabaseConfigurationException | EXistException e) {
             System.err.println("ERROR: Failed to open database: " + e.getMessage());
         }
-        return (null);
+        return null;
     }
 
 
@@ -224,7 +224,7 @@ public class ExportMain {
 
     private static class Callback implements SystemExport.StatusCallback {
 
-        private boolean verbose = false;
+        private boolean verbose;
 
         public Callback(final boolean verbose) {
             this.verbose = verbose;

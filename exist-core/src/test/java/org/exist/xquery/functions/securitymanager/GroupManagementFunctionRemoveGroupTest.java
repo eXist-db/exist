@@ -307,8 +307,7 @@ public class GroupManagementFunctionRemoveGroupTest {
 
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             final XQuery xquery = existWebServer.getBrokerPool().getXQueryService();
-            final Sequence result = xquery.execute(broker, query, null);
-            return result;
+            return xquery.execute(broker, query, null);
         }
     }
 
@@ -316,7 +315,7 @@ public class GroupManagementFunctionRemoveGroupTest {
         try {
             runnable.run();
         } catch (final XPathException e) {
-            if (e.getCause() != null && e.getCause() instanceof PermissionDeniedException) {
+            if (e.getCause() instanceof PermissionDeniedException) {
                 throw (PermissionDeniedException)e.getCause();
             } else {
                 throw e;

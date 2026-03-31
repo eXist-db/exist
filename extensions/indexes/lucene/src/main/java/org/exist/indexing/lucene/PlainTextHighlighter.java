@@ -21,13 +21,6 @@
  */
 package org.exist.indexing.lucene;
 
-import java.io.IOException;
-import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
@@ -39,6 +32,13 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.util.AttributeSource.State;
 import org.exist.Namespaces;
 import org.exist.dom.memtree.MemTreeBuilder;
+
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 public class PlainTextHighlighter {
 
@@ -54,15 +54,17 @@ public class PlainTextHighlighter {
 		} else {
 			int lastOffset = 0;
 			for (Offset offset : offsets) {
-				if (offset.startOffset() > lastOffset)
-					builder.characters(content.substring(lastOffset, offset.startOffset()));
+                if (offset.startOffset() > lastOffset) {
+                    builder.characters(content.substring(lastOffset, offset.startOffset()));
+                }
 				builder.startElement(Namespaces.EXIST_NS, "match", "exist:match", null);
 				builder.characters(content.substring(offset.startOffset(), offset.endOffset()));
 				builder.endElement();
 				lastOffset = offset.endOffset();
 			}
-			if (lastOffset < content.length())
-				builder.characters(content.substring(lastOffset));
+            if (lastOffset < content.length()) {
+                builder.characters(content.substring(lastOffset));
+            }
 		}
 	}
 	
@@ -103,8 +105,9 @@ public class PlainTextHighlighter {
                                 }
                             }
                             if (stateList.size() == terms.length) {
-                                if (offsets == null)
+                                if (offsets == null) {
                                     offsets = new ArrayList<>();
+                                }
 
 
                                 stream.restoreState(stateList.getFirst());
@@ -118,8 +121,9 @@ public class PlainTextHighlighter {
                             }
                         }
                     } else {
-                        if (offsets == null)
+                        if (offsets == null) {
                             offsets = new ArrayList<>();
+                        }
 
                         OffsetAttribute offsetAttr = stream.getAttribute(OffsetAttribute.class);
                         offsets.add(new Offset(offsetAttr.startOffset(), offsetAttr.endOffset()));
@@ -135,9 +139,8 @@ public class PlainTextHighlighter {
 	}
 	
 	public static class Offset {
-		
-		protected int startOffset;
-		protected int endOffset;
+        protected int startOffset;
+        protected int endOffset;
 		
 		Offset(int start, int end) {
 			this.startOffset = start;

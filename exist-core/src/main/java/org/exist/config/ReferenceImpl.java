@@ -91,7 +91,9 @@ public class ReferenceImpl<R, O extends Configurable> implements Reference<R, O>
     @Override
     public Configuration getConfiguration() {
         final O obj = resolve();
-        if (obj == null) return null;
+        if (obj == null) {
+            return null;
+        }
 
         return obj.getConfiguration();
     }

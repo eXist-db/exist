@@ -21,19 +21,16 @@
  */
 package org.exist.xquery.util;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.*;
-import java.util.Optional;
-import java.util.regex.Pattern;
-
 import org.exist.Namespaces;
+import org.exist.dom.memtree.SAXAdapter;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.LockedDocument;
 import org.exist.dom.persistent.NodeProxy;
-import org.exist.dom.memtree.SAXAdapter;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
+import org.exist.source.Source;
+import org.exist.source.SourceFactory;
+import org.exist.source.URLSource;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.util.XMLReaderPool;
@@ -44,16 +41,14 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.Sequence;
-import org.exist.source.Source;
-import org.exist.source.SourceFactory;
-import org.exist.source.URLSource;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXNotSupportedException;
-import org.xml.sax.XMLReader;
+import org.xml.sax.*;
 
 import javax.annotation.Nullable;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.*;
+import java.util.Optional;
+import java.util.regex.Pattern;
 
 import static com.evolvedbinary.j8fu.Try.Try;
 
@@ -84,7 +79,7 @@ public class DocUtils {
     public static boolean isDocumentAvailable(final XQueryContext context, final String path, final Expression expression) throws XPathException {
         try {
             final Sequence seq = getDocumentByPath(context, path, expression);
-            return (seq != null && seq.effectiveBooleanValue());
+            return seq != null && seq.effectiveBooleanValue();
         } catch (final PermissionDeniedException e) {
             return false;
         }

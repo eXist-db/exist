@@ -34,15 +34,7 @@ import org.exist.xquery.Profiler;
 import org.exist.xquery.ValueComparison;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.AtomicValue;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.IntegerValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
+import org.exist.xquery.value.*;
 
 /**
  * @author wolf
@@ -86,7 +78,7 @@ The first item in a sequence is at position 1, not position 0.
 
 The result sequence is in ascending numeric order.""";
 
-	public final static FunctionSignature[] fnIndexOf = {
+	public static final FunctionSignature[] fnIndexOf = {
 			new FunctionSignature(
 					new QName("index-of", Function.BUILTIN_FUNCTION_NS),
 					FUNCTION_DESCRIPTION,

@@ -33,9 +33,9 @@ import static java.lang.invoke.MethodType.methodType;
 @ThreadSafe
 public class AgentFactory {
 
-    private final static Logger LOG = LogManager.getLogger(AgentFactory.class);
+    private static final Logger LOG = LogManager.getLogger(AgentFactory.class);
 
-    private static Agent instance = null;
+    private static Agent instance;
 
     public static synchronized Agent getInstance() {
         if (instance == null) {

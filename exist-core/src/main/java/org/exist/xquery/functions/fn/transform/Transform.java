@@ -458,7 +458,9 @@ public class Transform {
         private Optional<TransformerException> lastFatal;
 
         public Optional<TransformerException> getWorst() {
-            if (lastFatal.isPresent()) return lastFatal;
+            if (lastFatal.isPresent()) {
+                return lastFatal;
+            }
             return lastError;
         }
 

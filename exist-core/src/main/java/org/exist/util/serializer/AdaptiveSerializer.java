@@ -41,7 +41,7 @@ import java.util.Properties;
  */
 public class AdaptiveSerializer extends AbstractSerializer {
 
-    private final static String DEFAULT_ITEM_SEPARATOR = "\n";
+    private static final String DEFAULT_ITEM_SEPARATOR = "\n";
 
     private final DBBroker broker;
     private AdaptiveWriter adaptiveWriter;

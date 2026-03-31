@@ -44,7 +44,7 @@ public class FileSystemWriter implements BackupWriter {
     private Path currentContents;
     private Writer currentContentsOut;
     private OutputStream currentOut;
-    private boolean dataWritten = false;
+    private boolean dataWritten;
 
     public FileSystemWriter(final String path) throws IOException {
         this(Path.of(path));
@@ -95,7 +95,7 @@ public class FileSystemWriter implements BackupWriter {
         currentContents = currentDir.resolve("__contents__.xml");
         currentContentsOut = Files.newBufferedWriter(currentContents, StandardCharsets.UTF_8);
         dataWritten = true;
-        return (currentContentsOut);
+        return currentContentsOut;
     }
 
     @Override
@@ -107,7 +107,7 @@ public class FileSystemWriter implements BackupWriter {
     public OutputStream newEntry(final String name) throws IOException {
         currentOut = new BufferedOutputStream(Files.newOutputStream(currentDir.resolve(name)));
         dataWritten = true;
-        return (currentOut);
+        return currentOut;
     }
 
     @Override

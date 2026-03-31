@@ -21,16 +21,6 @@
  */
 package org.expath.tools.model.exist;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.nio.charset.StandardCharsets;
-import java.util.Properties;
-import javax.xml.XMLConstants;
-import javax.xml.namespace.QName;
-import javax.xml.transform.OutputKeys;
-
 import org.apache.commons.io.output.CloseShieldOutputStream;
 import org.exist.storage.serializers.Serializer;
 import org.exist.util.serializer.XQuerySerializer;
@@ -42,6 +32,16 @@ import org.expath.tools.ToolsException;
 import org.expath.tools.model.Sequence;
 import org.expath.tools.serial.SerialParameters;
 import org.xml.sax.SAXException;
+
+import javax.xml.XMLConstants;
+import javax.xml.namespace.QName;
+import javax.xml.transform.OutputKeys;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.nio.charset.StandardCharsets;
+import java.util.Properties;
 
 /**
  * @author <a href="mailto:adam@existsolutions.com">Adam Retter</a>
@@ -151,7 +151,7 @@ public class EXistSequence implements Sequence {
             throws ToolsException
     {
         if ( value != null ) {
-            if ( value.getNamespaceURI() != null && !value.getNamespaceURI().equals(XMLConstants.NULL_NS_URI) ) {
+            if ( value.getNamespaceURI() != null && !XMLConstants.NULL_NS_URI.equals(value.getNamespaceURI()) ) {
                 throw new ToolsException(
                         "A QName with a non-null namespace not supported as a serialization param: {"
                                 + value.getNamespaceURI() + "}" + value.getLocalPart());

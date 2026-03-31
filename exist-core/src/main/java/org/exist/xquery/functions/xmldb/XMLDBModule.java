@@ -21,10 +21,6 @@
  */
 package org.exist.xquery.functions.xmldb;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-
 import org.exist.dom.QName;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDSL;
@@ -32,6 +28,10 @@ import org.exist.xquery.FunctionDef;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Module function definitions for xmldb module.
@@ -42,19 +42,19 @@ import org.exist.xquery.value.FunctionReturnSequenceType;
  */
 public class XMLDBModule extends AbstractInternalModule {
 
-    public final static String NAMESPACE_URI = "http://exist-db.org/xquery/xmldb";
+    public static final String NAMESPACE_URI = "http://exist-db.org/xquery/xmldb";
 
-    public final static String PREFIX = "xmldb";
-    public final static String INCLUSION_DATE = "2004-09-12";
-    public final static String RELEASED_IN_VERSION = "pre eXist-1.0";
+    public static final String PREFIX = "xmldb";
+    public static final String INCLUSION_DATE = "2004-09-12";
+    public static final String RELEASED_IN_VERSION = "pre eXist-1.0";
 
-    public final static String NEED_PRIV_USER = "The XQuery owner must have appropriate privileges to do this, e.g. having DBA role.";
-    public final static String NEED_PRIV_USER_NOT_CURRENT = "The XQuery owner must have appropriate privileges to do this, e.g. having DBA role, and not being the owner of the currently running XQuery.";
-    public final static String REMEMBER_OCTAL_CALC = "PLEASE REMEMBER that octal number 0755 is 7*64+5*8+5 i.e. 493 in decimal NOT 755. You can use util:base-to-integer(0755, 8) as argument for convenience.";
-    public final static String COLLECTION_URI = "Collection URIs can be specified either as a simple collection path or an XMLDB URI.";
-    public final static String ANY_URI = "Resource URIs can be specified either as a simple collection path, an XMLDB URI or any URI.";
+    public static final String NEED_PRIV_USER = "The XQuery owner must have appropriate privileges to do this, e.g. having DBA role.";
+    public static final String NEED_PRIV_USER_NOT_CURRENT = "The XQuery owner must have appropriate privileges to do this, e.g. having DBA role, and not being the owner of the currently running XQuery.";
+    public static final String REMEMBER_OCTAL_CALC = "PLEASE REMEMBER that octal number 0755 is 7*64+5*8+5 i.e. 493 in decimal NOT 755. You can use util:base-to-integer(0755, 8) as argument for convenience.";
+    public static final String COLLECTION_URI = "Collection URIs can be specified either as a simple collection path or an XMLDB URI.";
+    public static final String ANY_URI = "Resource URIs can be specified either as a simple collection path, an XMLDB URI or any URI.";
 
-    public final static FunctionDef[] functions = {
+    public static final FunctionDef[] functions = {
             new FunctionDef(XMLDBCreateCollection.signature, XMLDBCreateCollection.class),
             new FunctionDef(XMLDBRegisterDatabase.signature, XMLDBRegisterDatabase.class),
             new FunctionDef(XMLDBStore.FS_STORE[0], XMLDBStore.class),
@@ -109,7 +109,7 @@ public class XMLDBModule extends AbstractInternalModule {
             new FunctionDef(XMLDBAuthenticate.loginSignatures[1], XMLDBAuthenticate.class)
     };
 
-    private boolean allowAnyUri = false;
+    private boolean allowAnyUri;
 
     static {
         Arrays.sort(functions, new FunctionComparator());

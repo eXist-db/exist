@@ -22,11 +22,11 @@
 
 package org.exist.util.sorters;
 
-import java.util.Comparator;
-import java.util.List;
-
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.util.HeapSort;
+
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * Interface to the heapsort methods.
@@ -50,7 +50,7 @@ class HeapSortTester extends SortingAlgorithmTester {
 		HeapSort.sort(a, lo, hi);
 	}
 
-	public <C> void invokeSort(C a[], Comparator<C> c, int lo, int hi)
+	public <C> void invokeSort(C[] a, Comparator<C> c, int lo, int hi)
 		throws Exception
 	{
 		HeapSort.sort(a, c, lo, hi);

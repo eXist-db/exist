@@ -21,8 +21,8 @@
  */
 package org.exist.util.serializer;
 
-import org.exist.dom.persistent.AttrImpl;
 import org.exist.dom.QName;
+import org.exist.dom.persistent.AttrImpl;
 import org.exist.numbering.NodeId;
 
 /**
@@ -39,7 +39,7 @@ public class AttrList {
 	protected QName[] names = new QName[4];
 	protected String[] values = new String[4];
     protected int[] type = new int[4];
-    protected int size = 0;
+    protected int size;
 
     public void addAttribute(QName name, String value) {
         addAttribute(name, value, AttrImpl.CDATA);

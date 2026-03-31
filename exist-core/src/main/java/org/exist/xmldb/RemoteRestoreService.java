@@ -164,6 +164,7 @@ public class RemoteRestoreService implements EXistRestoreService {
                         final String strCount = event.substring(1, sep);
                         final String message = event.substring(sep + 1);
                         restoreListener.skipResources(message, Long.valueOf(strCount));
+                        break;
 
                     case INFO:
                         restoreListener.info(event.substring(1));

@@ -60,8 +60,9 @@ public class RemoveAppendAction extends Action {
 	}
 	
 	private void remove(final XUpdateQueryService service) throws XMLDBException {
-		for(int i = 0; i < 10; i++)
-			service.update(REMOVE);
+        for (int i = 0; i < 10; i++) {
+            service.update(REMOVE);
+        }
 	}
 	
 	private void append(final XUpdateQueryService service) throws XMLDBException, IOException {

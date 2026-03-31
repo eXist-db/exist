@@ -25,7 +25,6 @@ import org.exist.TestDataGenerator;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.xmldb.EXistXPathQueryService;
 import org.junit.AfterClass;
-import static org.junit.Assert.assertEquals;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -40,15 +39,17 @@ import org.xmldb.api.modules.XMLResource;
 import java.nio.file.Path;
 import java.util.Random;
 
+import static org.junit.Assert.assertEquals;
+
 public class ProtectedModeTest {
 
     @ClassRule
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
     
-    private final static int COLLECTION_COUNT = 20;
-    private final static int DOCUMENT_COUNT = 20;
+    private static final int COLLECTION_COUNT = 20;
+    private static final int DOCUMENT_COUNT = 20;
 
-    private final static String generateXQ =
+    private static final String generateXQ =
             """
             declare function local:random-sequence($length as xs:integer, $G as map(xs:string, item())) {
               if ($length eq 0)

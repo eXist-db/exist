@@ -35,7 +35,7 @@ import java.util.Properties;
 
 public abstract class AbstractBackupDescriptor implements BackupDescriptor {
 
-    protected long numberOfFiles = 0;
+    protected long numberOfFiles;
     protected Date date;
 
     public Date getDate() {
@@ -58,12 +58,12 @@ public abstract class AbstractBackupDescriptor implements BackupDescriptor {
                 date = new Date(0);
             }
         }
-        return (date);
+        return date;
     }
 
 
     public boolean before(final long timestamp) {
-        return (timestamp > getDate().getTime());
+        return timestamp > getDate().getTime();
     }
 
     @Override

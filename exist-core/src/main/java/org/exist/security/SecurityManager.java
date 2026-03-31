@@ -21,7 +21,6 @@
  */
 package org.exist.security;
 
-import java.util.List;
 import org.exist.Database;
 import org.exist.EXistException;
 import org.exist.config.Configurable;
@@ -31,6 +30,8 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
 import org.exist.xmldb.XmldbURI;
+
+import java.util.List;
 
 /**
  * SecurityManager is responsible for managing users and groups.

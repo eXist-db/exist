@@ -46,14 +46,14 @@ public class XmlLibraryChecker {
     /**
      * Possible XML Parsers, at least one must be valid
      */
-    private final static ClassVersion[] validParsers = {
+    private static final ClassVersion[] validParsers = {
             new ClassVersion("Xerces", "Xerces-J 2.10.0", "org.apache.xerces.impl.Version.getVersion()")
     };
 
     /**
      * Possible XML Transformers, at least one must be valid
      */
-    private final static ClassVersion[] validTransformers = {
+    private static final ClassVersion[] validTransformers = {
             new ClassVersion("Saxon", "8.9.0", "net.sf.saxon.Version.getProductVersion()"),
             new ClassVersion("Xalan", "Xalan Java 2.7.1", "org.apache.xalan.Version.getVersion()"),
     };
@@ -61,12 +61,12 @@ public class XmlLibraryChecker {
     /**
      * Possible XML resolvers, at least one must be valid
      */
-    private final static ClassVersion[] validResolvers = {
+    private static final ClassVersion[] validResolvers = {
             new ClassVersion("Resolver", "XmlResolver 1.2", "org.apache.xml.resolver.Version.getVersion()"),
     };
 
 
-    private final static Logger logger = LogManager.getLogger(XmlLibraryChecker.class);
+    private static final Logger logger = LogManager.getLogger(XmlLibraryChecker.class);
 
 
     /**

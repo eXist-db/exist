@@ -54,9 +54,6 @@ public class InitCollectionConfigurationTest {
             try (final Collection collection = broker.openCollection(XmldbURI.CONFIG_COLLECTION_URI.append("db"), Lock.LockMode.READ_LOCK)) {
                 final LockedDocument confDoc = collection.getDocumentWithLock(broker, DEFAULT_COLLECTION_CONFIG_FILE_URI, Lock.LockMode.READ_LOCK);
 
-                // asymmetrical - release collection lock
-                collection.close();
-
                 assertNotNull(confDoc);
             }
         }

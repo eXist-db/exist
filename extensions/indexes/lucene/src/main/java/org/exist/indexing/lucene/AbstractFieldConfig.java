@@ -54,15 +54,15 @@ import java.util.Optional;
  */
 public abstract class AbstractFieldConfig {
 
-    public final static String XPATH_ATTR = "expression";
+    public static final String XPATH_ATTR = "expression";
 
     protected static final Logger LOG = LogManager.getLogger(AbstractFieldConfig.class);
 
     protected final Optional<String> expression;
     protected boolean isValid = true;
-    private CompiledXQuery compiled = null;
+    private CompiledXQuery compiled;
 
-    public AbstractFieldConfig(final LuceneConfig config, final Element configElement, final Map<String, String> namespaces) {
+    protected AbstractFieldConfig(final LuceneConfig config, final Element configElement, final Map<String, String> namespaces) {
         final String xpath = configElement.getAttribute(XPATH_ATTR);
         if (xpath.isEmpty()) {
             expression = Optional.empty();
@@ -76,7 +76,7 @@ public abstract class AbstractFieldConfig {
                 sb.append("=\"").append(uri).append("\";\n");
             }
         });
-        config.getImports().ifPresent(moduleImports -> moduleImports.forEach((moduleImport -> {
+        config.getImports().ifPresent(moduleImports -> moduleImports.forEach(moduleImport -> {
             sb.append("import module namespace ");
             sb.append(moduleImport.prefix);
             sb.append("=\"");
@@ -84,7 +84,7 @@ public abstract class AbstractFieldConfig {
             sb.append("\" at \"");
             sb.append(resolveURI(configElement.getBaseURI(), moduleImport.at));
             sb.append("\";\n");
-        })));
+        }));
         sb.append(xpath);
 
         expression = Optional.of(sb.toString());
@@ -133,7 +133,7 @@ public abstract class AbstractFieldConfig {
 
     private void compile(final DBBroker broker) {
         if (compiled == null && isValid) {
-            expression.ifPresent((code) -> compiled = compile(broker, code));
+            expression.ifPresent(code -> compiled = compile(broker, code));
         }
     }
 

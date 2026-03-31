@@ -26,11 +26,11 @@ import org.exist.TestUtils;
 import org.exist.security.PermissionDeniedException;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.util.LockException;
-import org.xmldb.api.base.Collection;
 import org.exist.xmldb.EXistCollectionManagementService;
 import org.exist.xmldb.IndexQueryService;
 import org.exist.xmldb.XmldbURI;
 import org.junit.*;
+import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
 
 import java.io.IOException;
@@ -43,7 +43,7 @@ public class CollectionTriggerTest {
     @ClassRule
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
-    private final static String TEST_COLLECTION = "testCollectionTrigger";
+    private static final String TEST_COLLECTION = "testCollectionTrigger";
     private static Collection testCollection;
     private static EXistCollectionManagementService rootSrv;
 
@@ -100,7 +100,7 @@ public class CollectionTriggerTest {
         rootSrv = null;
     }
 
-    private final static String COLLECTION_CONFIG =
+    private static final String COLLECTION_CONFIG =
         "<exist:collection xmlns:exist='http://exist-db.org/collection-config/1.0'>" +
         "  <exist:triggers>" +
         "     <exist:trigger class='org.exist.collections.triggers.CountingCollectionTrigger'/>" +

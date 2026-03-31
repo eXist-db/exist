@@ -31,9 +31,9 @@ import static org.junit.Assert.assertEquals;
 
 public class VariableByteStreamTest {
 
-    private final static int SIZE = 1000;
+    private static final int SIZE = 1000;
     
-	private long[] values = new long[1000 * 3];
+	private final long[] values = new long[1000 * 3];
 
 	@Before
 	public void setUp() {
@@ -96,14 +96,14 @@ public class VariableByteStreamTest {
 		while(is.available() > 0) {
 			int count = is.readShort();
 			boolean skip = rand.nextBoolean();
-			if(skip)
-				is.skip(count);
-			else {
-				os.writeShort(count);
-				is.copyTo(os, count);
-				valuesCopied += count;
-				dataLen += 2 * count + 2;
-			}
+            if (skip) {
+                is.skip(count);
+            } else {
+                os.writeShort(count);
+                is.copyTo(os, count);
+                valuesCopied += count;
+                dataLen += 2 * count + 2;
+            }
 		}
 		data = os.toByteArray();
 

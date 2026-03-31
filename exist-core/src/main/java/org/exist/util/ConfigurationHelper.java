@@ -21,6 +21,12 @@
  */
 package org.exist.util;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.exist.storage.BrokerPool;
+import org.exist.xmldb.DatabaseImpl;
+
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -31,15 +37,8 @@ import java.nio.file.Path;
 import java.util.Optional;
 import java.util.Properties;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.exist.storage.BrokerPool;
-import org.exist.xmldb.DatabaseImpl;
-
-import javax.annotation.Nullable;
-
 public class ConfigurationHelper {
-    private final static Logger LOG = LogManager.getLogger(ConfigurationHelper.class); //Logger
+    private static final Logger LOG = LogManager.getLogger(ConfigurationHelper.class); //Logger
 
     public static final String PROP_EXIST_CONFIGURATION_FILE = "exist.configurationFile";
 

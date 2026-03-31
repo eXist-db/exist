@@ -23,15 +23,16 @@ package org.exist.client.security;
 
 import org.exist.client.DialogCompleteWithResponse;
 import org.exist.client.DialogWithResponse;
+import org.exist.security.Account;
+import org.exist.xmldb.UserManagementService;
+import org.xmldb.api.base.XMLDBException;
+
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import javax.swing.ComboBoxModel;
-import javax.swing.DefaultComboBoxModel;
-import org.exist.security.Account;
-import org.exist.xmldb.UserManagementService;
-import org.xmldb.api.base.XMLDBException;
 
 /**
  *

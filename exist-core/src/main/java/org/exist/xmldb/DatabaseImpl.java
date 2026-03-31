@@ -25,7 +25,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
-
 import org.exist.EXistException;
 import org.exist.security.AuthenticationException;
 import org.exist.security.SecurityManager;
@@ -35,7 +34,6 @@ import org.exist.storage.journal.Journal;
 import org.exist.util.Configuration;
 import org.exist.util.Leasable;
 import org.exist.util.SSLHelper;
-
 import org.exist.xmlrpc.ExistRpcTypeFactory;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
@@ -72,28 +70,28 @@ import java.util.Optional;
  */
 public class DatabaseImpl implements Database {
 
-    private final static Logger LOG = LogManager.getLogger(DatabaseImpl.class);
+    private static final Logger LOG = LogManager.getLogger(DatabaseImpl.class);
 
     //TODO : discuss about other possible values
-    protected final static String LOCAL_HOSTNAME = "";
+    protected static final String LOCAL_HOSTNAME = "";
 
-    protected final static int UNKNOWN_CONNECTION = -1;
-    protected final static int LOCAL_CONNECTION = 0;
-    protected final static int REMOTE_CONNECTION = 1;
+    protected static final int UNKNOWN_CONNECTION = -1;
+    protected static final int LOCAL_CONNECTION = 0;
+    protected static final int REMOTE_CONNECTION = 1;
 
     /**
      * Default config filename to configure an Instance
      */
-    public final static String CONF_XML = "conf.xml";
+    public static final String CONF_XML = "conf.xml";
 
-    private boolean autoCreate = false;
-    private String configuration = null;
-    private String dataDir = null;
-    private String journalDir = null;
-    private String currentInstanceName = null;
+    private boolean autoCreate;
+    private String configuration;
+    private String dataDir;
+    private String journalDir;
+    private String currentInstanceName;
 
     private final Map<String, Leasable<XmlRpcClient>> rpcClients = new HashMap<>();
-    private ShutdownListener shutdown = null;
+    private ShutdownListener shutdown;
     private int mode = UNKNOWN_CONNECTION;
 
     private Boolean ssl_enable = false;
@@ -362,14 +360,14 @@ public class DatabaseImpl implements Database {
         return currentInstanceName != null ? currentInstanceName : "exist";
     }
 
-    public final static String CREATE_DATABASE = "create-database";
-    public final static String DATABASE_ID = "database-id";
-    public final static String CONFIGURATION = "configuration";
-    public final static String DATA_DIR = "data-dir";
-    public final static String JOURNAL_DIR = "journal-dir";
-    public final static String SSL_ENABLE = "ssl-enable";
-    public final static String SSL_ALLOW_SELF_SIGNED = "ssl-allow-self-signed";
-    public final static String SSL_VERIFY_HOSTNAME = "ssl-verify-hostname";
+    public static final String CREATE_DATABASE = "create-database";
+    public static final String DATABASE_ID = "database-id";
+    public static final String CONFIGURATION = "configuration";
+    public static final String DATA_DIR = "data-dir";
+    public static final String JOURNAL_DIR = "journal-dir";
+    public static final String SSL_ENABLE = "ssl-enable";
+    public static final String SSL_ALLOW_SELF_SIGNED = "ssl-allow-self-signed";
+    public static final String SSL_VERIFY_HOSTNAME = "ssl-verify-hostname";
 
     @Override
     public String getProperty(final String property) throws XMLDBException {
@@ -378,8 +376,8 @@ public class DatabaseImpl implements Database {
 
     @Override
     public String getProperty(final String property, final String defaultValue) throws XMLDBException {
-        final String value = switch (property) {
-            case CREATE_DATABASE -> Boolean.valueOf(autoCreate).toString();
+        return switch (property) {
+            case CREATE_DATABASE -> Boolean.toString(autoCreate);
             case DATABASE_ID -> currentInstanceName;
             case CONFIGURATION -> configuration;
             case DATA_DIR -> dataDir;
@@ -389,7 +387,6 @@ public class DatabaseImpl implements Database {
             case SSL_VERIFY_HOSTNAME -> ssl_verify_hostname.toString();
             default -> defaultValue;
         };
-        return value;
     }
 
     @Override

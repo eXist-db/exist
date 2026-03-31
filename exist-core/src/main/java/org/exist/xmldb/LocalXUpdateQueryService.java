@@ -23,7 +23,6 @@ package org.exist.xmldb;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import org.exist.dom.persistent.DefaultDocumentSet;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.LockedDocument;
@@ -50,9 +49,9 @@ import java.net.URISyntaxException;
  */
 public class LocalXUpdateQueryService extends AbstractLocalService implements XUpdateQueryService {
 
-	private final static Logger LOG = LogManager.getLogger(LocalXUpdateQueryService.class);
+	private static final Logger LOG = LogManager.getLogger(LocalXUpdateQueryService.class);
 
-    private XUpdateProcessor processor = null;
+    private XUpdateProcessor processor;
 
     public LocalXUpdateQueryService(final Subject user, final BrokerPool pool, final LocalCollection parent) {
         super(user, pool, parent);
@@ -108,7 +107,7 @@ public class LocalXUpdateQueryService extends AbstractLocalService implements XU
                     processor.setDocumentSet(docs);
                 }
 
-                final Modification modifications[] = processor.parse(new InputSource(reader));
+                final Modification[] modifications = processor.parse(new InputSource(reader));
                 long mods = 0;
                 for (Modification modification : modifications) {
                     mods += modification.process(transaction);

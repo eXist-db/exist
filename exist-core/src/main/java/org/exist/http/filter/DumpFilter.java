@@ -21,12 +21,12 @@
  */
 package org.exist.http.filter;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import jakarta.servlet.*;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.Enumeration;
@@ -34,7 +34,7 @@ import java.util.Locale;
 
 public class DumpFilter implements Filter {
 
-    private final static Logger LOG = LogManager.getLogger(DumpFilter.class);
+    private static final Logger LOG = LogManager.getLogger(DumpFilter.class);
 
 
     // ----------------------------------------------------- Instance Variables
@@ -44,7 +44,7 @@ public class DumpFilter implements Filter {
      * The filter configuration object we are associated with.  If this value
      * is null, this filter instance is not currently configured.
      */
-    private FilterConfig filterConfig = null;
+    private FilterConfig filterConfig;
 
 
     // --------------------------------------------------------- Public Methods
@@ -104,7 +104,7 @@ public class DumpFilter implements Filter {
             final String name = (String) names.nextElement();
             buffer = new StringBuilder();
             buffer.append("         parameter=").append(name).append("=");
-            final String values[] = request.getParameterValues(name);
+            final String[] values = request.getParameterValues(name);
             for (int i = 0; i < values.length; i++) {
                 if (i > 0)
                     {buffer.append(", ");}
@@ -124,7 +124,7 @@ public class DumpFilter implements Filter {
         if (request instanceof HttpServletRequest hrequest) {
             LOG.info("---------------------------------------------");
             LOG.info("       contextPath={}", hrequest.getContextPath());
-            Cookie cookies[] = hrequest.getCookies();
+            Cookie[] cookies = hrequest.getCookies();
             if (cookies == null)
                 {cookies = new Cookie[0];}
             for (Cookie cookie : cookies) {
@@ -170,7 +170,7 @@ public class DumpFilter implements Filter {
     public String toString() {
 
         if (filterConfig == null) {
-            return ("RequestDumperFilter()");
+            return "RequestDumperFilter()";
         }
 
         return "RequestDumperFilter(" + filterConfig + ")";

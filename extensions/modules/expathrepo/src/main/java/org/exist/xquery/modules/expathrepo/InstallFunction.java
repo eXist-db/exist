@@ -21,20 +21,16 @@
  */
 package org.exist.xquery.modules.expathrepo;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Optional;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exist.dom.QName;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.QName;
 import org.exist.dom.persistent.LockedDocument;
+import org.exist.repo.ClasspathHelper;
 import org.exist.repo.ExistPkgInfo;
 import org.exist.repo.ExistRepository;
 import org.exist.security.PermissionDeniedException;
-import org.exist.repo.ClasspathHelper;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.Txn;
@@ -44,16 +40,14 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.BooleanValue;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 import org.expath.pkg.repo.*;
 import org.expath.pkg.repo.Package;
 import org.expath.pkg.repo.tui.BatchUserInteraction;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Optional;
 
 
 /**
@@ -65,16 +59,16 @@ import org.expath.pkg.repo.tui.BatchUserInteraction;
  */
 public class InstallFunction extends BasicFunction {
 
-    private final static Logger logger = LogManager.getLogger(InstallFunction.class);
+    private static final Logger logger = LogManager.getLogger(InstallFunction.class);
 
-    public final static FunctionSignature signatureInstall =
+    public static final FunctionSignature signatureInstall =
             new FunctionSignature(
                     new QName("install", ExpathPackageModule.NAMESPACE_URI, ExpathPackageModule.PREFIX),
                     "Install package from repository.",
                     new SequenceType[]{new FunctionParameterSequenceType("pkgName", Type.STRING, Cardinality.EXACTLY_ONE, "package name")},
                     new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if successful, false otherwise"));
 
-    public final static FunctionSignature signatureInstallFromDB =
+    public static final FunctionSignature signatureInstallFromDB =
             new FunctionSignature(
                     new QName("install-from-db", ExpathPackageModule.NAMESPACE_URI, ExpathPackageModule.PREFIX),
                     "Install package stored in database.",
@@ -114,8 +108,9 @@ public class InstallFunction extends BasicFunction {
 				    }
                 }
                 ExistPkgInfo info = (ExistPkgInfo) pkg.getInfo("exist");
-                if (info != null && !info.getJars().isEmpty())
+                if (info != null && !info.getJars().isEmpty()) {
                     ClasspathHelper.updateClasspath(context.getBroker().getBrokerPool(), pkg);
+                }
                 // TODO: expath libs do not provide a way to see if there were any XQuery modules installed at all
                 context.getBroker().getBrokerPool().getXQueryPool().clear();
                 removed = BooleanValue.TRUE;

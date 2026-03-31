@@ -45,13 +45,13 @@ public class ConfigurableObject2 implements Configurable {
 	protected int defaultInteger = 3;
 
 	@ConfigurationFieldAsAttribute("valueboolean")
-	protected boolean someboolean = false;
+	protected boolean someboolean;
 
 	@ConfigurationFieldAsAttribute("valueBoolean")
 	protected Boolean someBoolean = true;
 
 	@ConfigurationFieldAsAttribute("sp")
-	protected Sp sp = null;
+	protected Sp sp;
 
 	private Configuration configuration;
 	
@@ -64,7 +64,7 @@ public class ConfigurableObject2 implements Configurable {
 	 */
 	@Override
 	public boolean isConfigured() {
-		return (configuration == null);
+		return configuration == null;
 	}
 
 	@Override

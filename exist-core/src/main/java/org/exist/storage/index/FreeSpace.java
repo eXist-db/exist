@@ -34,11 +34,11 @@ import org.exist.xquery.Constants;
  */
 public class FreeSpace {
 
-	protected int free = 0;
+	protected int free;
     protected long page = Page.NO_PAGE;
     
-    protected FreeSpace next = null;
-    protected FreeSpace previous = null;
+    protected FreeSpace next;
+    protected FreeSpace previous;
 
     public FreeSpace(long pageNum, int space) {
         page = pageNum;
@@ -53,8 +53,16 @@ public class FreeSpace {
         else
             {return Constants.EQUAL;}
 	}
-    
-    public boolean equals(FreeSpace other) {
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+        FreeSpace other = (FreeSpace)obj;
 		return page == other.page;
 	}
     

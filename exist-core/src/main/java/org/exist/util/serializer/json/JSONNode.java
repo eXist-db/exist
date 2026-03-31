@@ -26,23 +26,23 @@ import java.io.Writer;
 
 public abstract class JSONNode {
 
-    protected final static String ANONYMOUS_OBJECT = "#anonymous";
+    protected static final String ANONYMOUS_OBJECT = "#anonymous";
 
     public enum SerializationType { AS_OBJECT, AS_ARRAY}
     public enum SerializationDataType { AS_STRING, AS_LITERAL}
 
     public enum Type { OBJECT_TYPE, VALUE_TYPE, SIMPLE_PROPERTY_TYPE }
 
-    private Type type;
+    private final Type type;
     private String name;
     private SerializationType serializationType = SerializationType.AS_OBJECT;
     private SerializationDataType serializationDataType = SerializationDataType.AS_STRING;
-    private boolean indent = false;
+    private boolean indent;
 
-    private JSONNode next = null;
-    private JSONNode nextOfSame = null;
+    private JSONNode next;
+    private JSONNode nextOfSame;
 
-    public JSONNode(final Type type, final String name) {
+    protected JSONNode(final Type type, final String name) {
         this.type = type;
         this.name = name;
     }
@@ -56,7 +56,7 @@ public abstract class JSONNode {
     }
 
     public boolean isNamed() {
-        return !getName().equals(ANONYMOUS_OBJECT);
+        return !ANONYMOUS_OBJECT.equals(getName());
     }
 
     public boolean isArray() {

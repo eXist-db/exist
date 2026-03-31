@@ -21,26 +21,18 @@
  */
 package org.exist.util.serializer;
 
-import static org.easymock.EasyMock.aryEq;
-import static org.easymock.EasyMock.capture;
-import static org.easymock.EasyMock.eq;
-import static org.easymock.EasyMock.isNull;
-import static org.easymock.EasyMock.matches;
-import static org.easymock.EasyMock.createMock;
-import static org.easymock.EasyMock.replay;
-import static org.easymock.EasyMock.verify;
-import static org.junit.Assert.assertEquals;
-
-import java.io.OutputStream;
-import java.util.List;
-
+import com.siemens.ct.exi.main.api.sax.SAXEncoder;
 import org.easymock.Capture;
 import org.exist.dom.QName;
 import org.junit.Before;
 import org.junit.Test;
 import org.xml.sax.Attributes;
 
-import com.siemens.ct.exi.main.api.sax.SAXEncoder;
+import java.io.OutputStream;
+import java.util.List;
+
+import static org.easymock.EasyMock.*;
+import static org.junit.Assert.assertEquals;
 
 public class EXISerializerTest {
 

@@ -21,15 +21,13 @@
  */
 package org.exist.security;
 
-import java.io.IOException;
-import java.util.Arrays;
-
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 
-import static org.exist.security.PermissionRequired.IS_DBA;
-import static org.exist.security.PermissionRequired.IS_OWNER;
-import static org.exist.security.PermissionRequired.ACL_WRITE;
+import java.io.IOException;
+import java.util.Arrays;
+
+import static org.exist.security.PermissionRequired.*;
 
 /**
  * A simple ACL (Access Control List) implementation
@@ -335,13 +333,13 @@ public class SimpleACLPermission extends UnixStylePermission implements ACLPermi
             if ((aceTarget & ACE_TARGET.USER.getVal()) == ACE_TARGET.USER.getVal()) {
                 //check for a user
                 if (id == userId && (aceMode & mode) == mode) {
-                    return (accessType == ACE_ACCESS_TYPE.ALLOWED.getVal());
+                    return accessType == ACE_ACCESS_TYPE.ALLOWED.getVal();
                 }
             } else if ((aceTarget & ACE_TARGET.GROUP.getVal()) == ACE_TARGET.GROUP.getVal()) {
                 //check for a group
                 for (final int userGroupId : userGroupIds) {
                     if (userGroupId == id && (aceMode & mode) == mode) {
-                        return (accessType == ACE_ACCESS_TYPE.ALLOWED.getVal());
+                        return accessType == ACE_ACCESS_TYPE.ALLOWED.getVal();
                     }
                 }
             }

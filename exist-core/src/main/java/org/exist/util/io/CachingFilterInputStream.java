@@ -52,8 +52,8 @@ public class CachingFilterInputStream extends FilterInputStream {
     //then we could just use its capabilities?
     private final FilterInputStreamCache cache;
 
-    private int srcOffset = 0;
-    private int mark = 0;
+    private int srcOffset;
+    private int mark;
 
     /**
      * Constructor which uses an existing Cache from a CachingFilterInputStream,
@@ -126,8 +126,7 @@ public class CachingFilterInputStream extends FilterInputStream {
 
         //Read from cache
         if (useCache()) {
-            final int data = getCache().get(srcOffset++);
-            return data;
+            return getCache().get(srcOffset++);
         } else {
             final int data = getCache().read();
             
@@ -155,7 +154,7 @@ public class CachingFilterInputStream extends FilterInputStream {
         if (useCache()) {
 
             //copy data from the cache
-            int actualLen = (len > getCache().getLength() - this.srcOffset ? getCache().getLength() - this.srcOffset : len);
+            int actualLen = len > getCache().getLength() - this.srcOffset ? getCache().getLength() - this.srcOffset : len;
             getCache().copyTo(this.srcOffset, b, off, actualLen);
             this.srcOffset += actualLen;
 
@@ -251,7 +250,7 @@ public class CachingFilterInputStream extends FilterInputStream {
         if (useCache()) {
 
             //skip data from the cache
-            long actualLen = (len > getCache().getLength() - this.srcOffset ? getCache().getLength() - this.srcOffset : len);
+            long actualLen = len > getCache().getLength() - this.srcOffset ? getCache().getLength() - this.srcOffset : len;
 
             //if the requested bytes were more than what is present in the cache, then also read from the src
             if (actualLen < len) {

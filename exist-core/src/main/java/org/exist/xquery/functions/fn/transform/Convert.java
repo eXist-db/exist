@@ -22,6 +22,7 @@
 
 package org.exist.xquery.functions.fn.transform;
 
+import io.lacuna.bifurcan.IEntry;
 import net.sf.saxon.s9api.*;
 import net.sf.saxon.type.BuiltInAtomicType;
 import org.exist.dom.QName;
@@ -34,8 +35,6 @@ import org.exist.xquery.functions.map.AbstractMapType;
 import org.exist.xquery.value.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
-
-import io.lacuna.bifurcan.IEntry;
 
 import javax.xml.transform.dom.DOMSource;
 import java.util.ArrayList;
@@ -58,13 +57,13 @@ import java.util.Map;
  *     It's not clear how easy or hard that would be.
  * </p>
  */
-class Convert {
+final class Convert {
 
     private Convert() {
         super();
     }
 
-    static class ToExist {
+    static final class ToExist {
 
         private ToExist() { super(); }
 
@@ -109,7 +108,7 @@ class Convert {
         }
     }
 
-    static final private String COULD_NOT_BE_CONVERTED = " could not be converted to an eXist ";
+    private static final String COULD_NOT_BE_CONVERTED = " could not be converted to an eXist ";
 
     abstract static class ToSaxon {
 
@@ -138,7 +137,7 @@ class Convert {
                     "Item " + item + " of type " + Type.getTypeName(itemType) + COULD_NOT_BE_CONVERTED + "XdmValue");
         }
 
-        static private XdmValue ofAtomic(final AtomicValue atomicValue) throws XPathException {
+        private static XdmValue ofAtomic(final AtomicValue atomicValue) throws XPathException {
             final int itemType = atomicValue.getType();
             if (Type.subTypeOf(itemType, Type.INTEGER)) {
                 return XdmValue.makeValue(((IntegerValue) atomicValue).getInt());
@@ -175,7 +174,7 @@ class Convert {
         }
 
         private XdmValue ofMap(final AbstractMapType map) throws XPathException {
-            Map<XdmAtomicValue, XdmValue> xdmMap = new HashMap<XdmAtomicValue, XdmValue>();
+            Map<XdmAtomicValue, XdmValue> xdmMap = new HashMap<>();
             for (IEntry<AtomicValue, Sequence> entry : map) {
                 XdmAtomicValue key = (XdmAtomicValue) ofAtomic(entry.key());
                 XdmValue value = of(entry.value());

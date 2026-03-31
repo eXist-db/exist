@@ -21,17 +21,15 @@
  */
 package org.exist.xquery;
 
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Item;
 import org.easymock.EasyMock;
+import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.junit.Test;
+
+import static org.easymock.EasyMock.*;
 import static org.junit.Assert.assertNull;
-import static org.easymock.EasyMock.replay;
-import static org.easymock.EasyMock.verify;
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.anyObject;
 
 /**
  * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>

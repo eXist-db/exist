@@ -21,14 +21,14 @@
  */
 package org.exist.xquery.functions.util;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-
 import org.exist.dom.QName;
 import org.exist.xquery.*;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -41,15 +41,15 @@ import org.exist.xquery.value.FunctionReturnSequenceType;
  */
 public class UtilModule extends AbstractInternalModule {
 
-    public final static String NAMESPACE_URI = "http://exist-db.org/xquery/util";
+    public static final String NAMESPACE_URI = "http://exist-db.org/xquery/util";
 
-    public final static String PREFIX = "util";
-    public final static String INCLUSION_DATE = "2004-09-12";
-    public final static String RELEASED_IN_VERSION = "pre eXist-1.0";
+    public static final String PREFIX = "util";
+    public static final String INCLUSION_DATE = "2004-09-12";
+    public static final String RELEASED_IN_VERSION = "pre eXist-1.0";
 
-    public boolean evalDisabled = false;
+    public boolean evalDisabled;
 
-    public final static FunctionDef[] functions = {
+    public static final FunctionDef[] functions = {
             new FunctionDef(BuiltinFunctions.signatures[0], BuiltinFunctions.class),
             new FunctionDef(BuiltinFunctions.signatures[1], BuiltinFunctions.class),
             new FunctionDef(BuiltinFunctions.signatures[2], BuiltinFunctions.class),
@@ -159,11 +159,11 @@ public class UtilModule extends AbstractInternalModule {
         Arrays.sort(functions, new FunctionComparator());
     }
 
-    public final static QName EXCEPTION_QNAME = new QName("exception", UtilModule.NAMESPACE_URI, UtilModule.PREFIX);
+    public static final QName EXCEPTION_QNAME = new QName("exception", UtilModule.NAMESPACE_URI, UtilModule.PREFIX);
 
-    public final static QName EXCEPTION_MESSAGE_QNAME = new QName("exception-message", UtilModule.NAMESPACE_URI, UtilModule.PREFIX);
+    public static final QName EXCEPTION_MESSAGE_QNAME = new QName("exception-message", UtilModule.NAMESPACE_URI, UtilModule.PREFIX);
 
-    public final static QName ERROR_CODE_QNAME = new QName("error-code", UtilModule.NAMESPACE_URI, UtilModule.PREFIX);
+    public static final QName ERROR_CODE_QNAME = new QName("error-code", UtilModule.NAMESPACE_URI, UtilModule.PREFIX);
 
     public UtilModule(final Map<String, List<? extends Object>> parameters) throws XPathException {
         super(functions, parameters, true);

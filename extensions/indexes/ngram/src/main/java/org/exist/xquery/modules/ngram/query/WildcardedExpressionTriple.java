@@ -21,20 +21,20 @@
  */
 package org.exist.xquery.modules.ngram.query;
 
-import java.util.List;
-import java.util.Optional;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exist.dom.QName;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.Match;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.NodeSet;
-import org.exist.dom.QName;
 import org.exist.indexing.ngram.NGramIndexWorker;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.modules.ngram.utils.NodeProxies;
 import org.exist.xquery.modules.ngram.utils.NodeSets;
+
+import java.util.List;
+import java.util.Optional;
 
 public class WildcardedExpressionTriple implements EvaluatableExpression {
     /**
@@ -70,12 +70,10 @@ public class WildcardedExpressionTriple implements EvaluatableExpression {
             return tailNodes;
         }
 
-        final NodeSet result = NodeSets.transformNodes(headNodes, headNode ->
+        return NodeSets.transformNodes(headNodes, headNode ->
                 Optional.ofNullable(tailNodes.get(headNode))
                         .map(tailNode -> getMatchingNode(headNode, tailNode, expressionId))
                         .orElse(null));
-
-        return result;
     }
 
     private NodeProxy getMatchingNode(NodeProxy headNode, NodeProxy tailNode, final int expressionId) {
@@ -91,7 +89,7 @@ public class WildcardedExpressionTriple implements EvaluatableExpression {
                 .getNextMatch()) {
 
                 match = headMatch.followedBy(tailMatch, wildcard.getMinimumLength(), wildcard.getMaximumLength());
-                found = (match != null);
+                found = match != null;
 
             }
         }

@@ -21,11 +21,11 @@
  */
 package org.exist.storage.btree;
 
-import java.nio.ByteBuffer;
-
 import org.exist.storage.DBBroker;
 import org.exist.storage.journal.LogException;
 import org.exist.storage.txn.Txn;
+
+import java.nio.ByteBuffer;
 
 /**
  * @author wolf
@@ -34,8 +34,8 @@ import org.exist.storage.txn.Txn;
 public class UpdatePageLoggable extends BTAbstractLoggable {
 
     protected Value prefix = Value.EMPTY_VALUE;
-    protected Value values[];
-    protected long pointers[];
+    protected Value[] values;
+    protected long[] pointers;
     protected long pageNum;
     protected int nValues;
     protected int nPointers;
@@ -50,8 +50,8 @@ public class UpdatePageLoggable extends BTAbstractLoggable {
      * @param pointers the pointers
      * @param nPointers the number of pointers
      */
-    public UpdatePageLoggable(Txn transaction, byte fileId, long pageNum, Value prefix, Value values[], int nValues,
-            long pointers[], int nPointers) {
+    public UpdatePageLoggable(Txn transaction, byte fileId, long pageNum, Value prefix, Value[] values, int nValues,
+            long[] pointers, int nPointers) {
         super(BTree.LOG_UPDATE_PAGE, fileId, transaction);
         this.pageNum = pageNum;
         this.prefix = prefix;
@@ -124,8 +124,9 @@ public class UpdatePageLoggable extends BTAbstractLoggable {
     @Override
     public int getLogSize() {
         int len = super.getLogSize() + 14 + (nPointers * 8) + prefix.getLength();
-        for (int i = 0; i < nValues; i++)
+        for (int i = 0; i < nValues; i++) {
             len += values[i].getLength() + 2;
+        }
         return len;
     }
 

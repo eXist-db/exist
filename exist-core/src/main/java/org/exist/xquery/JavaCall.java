@@ -21,18 +21,18 @@
  */
 package org.exist.xquery;
 
+import org.exist.dom.QName;
+import org.exist.xquery.value.Item;
+import org.exist.xquery.value.JavaObjectValue;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.Type;
+
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.exist.dom.QName;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.JavaObjectValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.Type;
 
 /**
  * A special function call to a Java method or constructor.
@@ -46,8 +46,8 @@ public class JavaCall extends Function {
 
 	private final QName qname;
 	private String name;
-	private Class<?> myClass = null;
-	private List<AccessibleObject> candidateMethods = new ArrayList<>(5);
+	private Class<?> myClass;
+	private final List<AccessibleObject> candidateMethods = new ArrayList<>(5);
 
 	/**
 	 * Create new call on the Java method or constructor identified by the QName.
@@ -124,7 +124,7 @@ public class JavaCall extends Function {
 			final Constructor<?>[] constructors = myClass.getConstructors();
             for (final Constructor<?> constructor : constructors) {
                 if (Modifier.isPublic(constructor.getModifiers())) {
-                    final Class<?> paramTypes[] = constructor.getParameterTypes();
+                    final Class<?>[] paramTypes = constructor.getParameterTypes();
                     if (paramTypes.length == argCount) {
 						LOG.debug("Found constructor {}", constructor.toString());
                         candidateMethods.add(constructor);
@@ -142,7 +142,7 @@ public class JavaCall extends Function {
             for (final Method method : methods) {
                 if (Modifier.isPublic(method.getModifiers())
                         && method.getName().equals(name)) {
-                    final Class<?> paramTypes[] = method.getParameterTypes();
+                    final Class<?>[] paramTypes = method.getParameterTypes();
                     if (Modifier.isStatic(method.getModifiers())) {
                         if (paramTypes.length == argCount) {
 							LOG.debug("Found static method {}", method.toString());
@@ -186,13 +186,13 @@ public class JavaCall extends Function {
         }
 
 		// get the actual arguments
-		final Sequence args[] = getArguments(contextSequence, contextItem);
+		final Sequence[] args = getArguments(contextSequence, contextItem);
 
 		AccessibleObject bestMethod = candidateMethods.getFirst();
-		int conversionPrefs[] = getConversionPreferences(bestMethod, args);
+		int[] conversionPrefs = getConversionPreferences(bestMethod, args);
 
 		for (AccessibleObject nextMethod : candidateMethods) {
-			int prefs[] = getConversionPreferences(nextMethod, args);
+			int[] prefs = getConversionPreferences(nextMethod, args);
 			for (int j = 0; j < prefs.length; j++) {
 				if (prefs[j] < conversionPrefs[j]) {
 					bestMethod = nextMethod;
@@ -202,7 +202,7 @@ public class JavaCall extends Function {
 			}
 		}
 //		LOG.debug("calling method " + bestMethod.toString());
-		Class<?> paramTypes[] = null;
+		Class<?>[] paramTypes = null;
 		boolean isStatic = true;
 		if (bestMethod instanceof Constructor<?> constructor)
 			{paramTypes = constructor.getParameterTypes();}
@@ -294,8 +294,8 @@ public class JavaCall extends Function {
 	}
 	
 	private int[] getConversionPreferences(AccessibleObject method, Sequence[] args) {
-		final int prefs[] = new int[args.length];
-		Class<?> paramTypes[] = null;
+		final int[] prefs = new int[args.length];
+		Class<?>[] paramTypes = null;
 		boolean isStatic = true;
 		if (method instanceof Constructor<?> constructor)
 			{paramTypes = constructor.getParameterTypes();}
@@ -303,7 +303,7 @@ public class JavaCall extends Function {
 			paramTypes = ((Method) method).getParameterTypes();
 			isStatic = Modifier.isStatic(((Method) method).getModifiers());
 			if (!isStatic) {
-				Class<?> nonStaticTypes[] = new Class[paramTypes.length + 1];
+				Class<?>[] nonStaticTypes = new Class[paramTypes.length + 1];
 				nonStaticTypes[0] = myClass;
 				System.arraycopy(paramTypes, 0, nonStaticTypes, 1, paramTypes.length);
 				paramTypes = nonStaticTypes;

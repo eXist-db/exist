@@ -29,8 +29,8 @@ import javax.swing.AbstractSpinnerModel;
  */
 public class UmaskSpinnerModel extends AbstractSpinnerModel {
     
-    private int umask = 0765;
-    public final static int OCTAL_RADIX = 8;
+    private int umask = 501;
+    public static final int OCTAL_RADIX = 8;
     
     @Override
     public Object getValue() {
@@ -54,7 +54,7 @@ public class UmaskSpinnerModel extends AbstractSpinnerModel {
     @Override
     public Object getNextValue() {
         final String result;
-        if(umask < 0777) {
+        if(umask < 511) {
             result = intToOctalUmask(nextUmask(umask));
         } else {
             result = "0777";
@@ -74,22 +74,22 @@ public class UmaskSpinnerModel extends AbstractSpinnerModel {
     }
     
     private int prevUmask(int umask) {
-        if(umask == 0070) {
-            return 0007;
-        } else if(umask == 0700) {
-            return 0077;
+        if(umask == 56) {
+            return 7;
+        } else if(umask == 448) {
+            return 63;
         } else {
-            return umask - 01;
+            return umask - 1;
         }
     }
     
     private int nextUmask(int umask) {
-        if(umask == 0007) {
-            return 0010;
-        } else if(umask == 0070) {
-            return 0100;
+        if(umask == 7) {
+            return 8;
+        } else if(umask == 56) {
+            return 64;
         } else {
-            return umask + 01;
+            return umask + 1;
         }
     }
     

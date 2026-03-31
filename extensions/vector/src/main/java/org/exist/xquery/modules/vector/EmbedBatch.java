@@ -21,21 +21,16 @@
  */
 package org.exist.xquery.modules.vector;
 
+import org.exist.vector.VectorEmbeddingProvider;
+import org.exist.vector.VectorEmbeddingService;
+import org.exist.vector.VectorModelConstants;
 import org.exist.xquery.BasicFunction;
+import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.array.ArrayType;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.value.DoubleValue;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.Type;
-import org.exist.vector.VectorEmbeddingProvider;
-import org.exist.vector.VectorEmbeddingService;
-import org.exist.vector.VectorModelConstants;
+import org.exist.xquery.value.*;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;

@@ -23,6 +23,7 @@ package org.exist.xquery.modules.lucene;
 
 import org.exist.dom.QName;
 import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.persistent.VirtualNodeSet;
 import org.exist.indexing.lucene.LuceneIndex;
@@ -35,13 +36,7 @@ import org.w3c.dom.Element;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.exist.dom.persistent.NodeProxy;
+import java.util.*;
 
 import static org.exist.xquery.FunctionDSL.*;
 import static org.exist.xquery.modules.lucene.LuceneModule.functionSignatures;
@@ -51,7 +46,7 @@ public class Query extends Function implements Optimizable {
     private static final FunctionParameterSequenceType FS_PARAM_NODES = optManyParam("nodes", Type.NODE, "The node set to search using a Lucene full text index which is defined on those nodes");
     private static final FunctionParameterSequenceType FS_PARAM_QUERY = optParam("query", Type.ITEM, "The query to search for, provided either as a string or text in Lucene's default query syntax or as an XML fragment to bypass Lucene's default query parser");
 
-    final static FunctionSignature[] signatures = functionSignatures(
+    static final FunctionSignature[] signatures = functionSignatures(
             "query",
             """
                     Queries a node set using a Lucene full text index; a lucene index
@@ -88,12 +83,12 @@ public class Query extends Function implements Optimizable {
             )
     );
 
-    private LocationStep contextStep = null;
-    @Nullable private QName contextQNames[] = null;
+    private LocationStep contextStep;
+    @Nullable private QName[] contextQNames;
     protected int axis = Constants.UNKNOWN_AXIS;
-    private NodeSet preselectResult = null;
-    protected boolean optimizeSelf = false;
-    protected boolean optimizeChild = false;
+    private NodeSet preselectResult;
+    protected boolean optimizeSelf;
+    protected boolean optimizeChild;
 
     public Query(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);

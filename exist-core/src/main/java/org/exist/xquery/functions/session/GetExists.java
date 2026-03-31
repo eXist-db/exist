@@ -39,7 +39,7 @@ import java.util.Optional;
  * @author Loren Cahlander
  */
 public class GetExists extends SessionFunction {
-    public final static FunctionSignature signature =
+    public static final FunctionSignature signature =
             new FunctionSignature(
                     new QName("exists", SessionModule.NAMESPACE_URI, SessionModule.PREFIX),
                     "Returns whether a session object exists.",

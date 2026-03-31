@@ -21,11 +21,12 @@
  */
 package org.exist.xslt;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import javax.annotation.Nullable;
 import javax.xml.transform.ErrorListener;
 import javax.xml.transform.TransformerException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -44,7 +45,7 @@ public abstract class XSLTErrorsListener<E extends Exception> implements ErrorLi
   @Nullable private ErrorType errorType;
   @Nullable private TransformerException exception;
 
-  public XSLTErrorsListener(final boolean stopOnError, final boolean stopOnWarn) {
+  protected XSLTErrorsListener(final boolean stopOnError, final boolean stopOnWarn) {
     this.stopOnError = stopOnError;
     this.stopOnWarn = stopOnWarn;
   }

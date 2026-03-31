@@ -53,9 +53,7 @@ import java.io.IOException;
 import java.util.Optional;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class PermissionsFunctionChmodTest {
 
@@ -345,7 +343,7 @@ public class PermissionsFunctionChmodTest {
         try {
             runnable.run();
         } catch (final XPathException e) {
-            if (e.getCause() != null && e.getCause() instanceof PermissionDeniedException) {
+            if (e.getCause() instanceof PermissionDeniedException) {
                 throw (PermissionDeniedException)e.getCause();
             } else {
                 throw e;

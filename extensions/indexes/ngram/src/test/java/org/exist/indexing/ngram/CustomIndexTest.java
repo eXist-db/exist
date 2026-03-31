@@ -69,20 +69,20 @@ import static org.junit.Assert.assertNotNull;
  */
 public class CustomIndexTest {
 
-    private static String XML =
+    private static final String XML =
             "<test>" +
             "   <item id='1' attr='attribute'><description>Chair</description></item>" +
             "   <item id='2'><description>Table</description><price>892.25</price></item>" +
             "   <item id='3'><description>Cabinet</description><price>1525.00</price></item>" +
             "</test>";
 
-    private static String XML2 =
+    private static final String XML2 =
             "<section>" +
             "   <para>01234</para>" +
             "   <para>56789</para>" +
             "</section>";
     
-    private static String COLLECTION_CONFIG =
+    private static final String COLLECTION_CONFIG =
         "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
         "   <index>" +
         "       <ngram qname=\"item\"/>" +
@@ -91,10 +91,10 @@ public class CustomIndexTest {
         "   </index>" +
         "</collection>";
 
-    private static String XUPDATE_START =
+    private static final String XUPDATE_START =
         "<xu:modifications version=\"1.0\" xmlns:xu=\"http://www.xmldb.org/xupdate\">";
 
-    private static String XUPDATE_END =
+    private static final String XUPDATE_END =
         "</xu:modifications>";
 
     private MutableDocumentSet docs;
@@ -638,8 +638,9 @@ public class CustomIndexTest {
         Occurrences[] occurrences = index.scanIndex(context, docs, null, null);
         int found = 0;
         for (Occurrences occurrence : occurrences) {
-            if (occurrence.getTerm().compareTo(term) == 0)
+            if (occurrence.getTerm().compareTo(term) == 0) {
                 found++;
+            }
         }        
         assertEquals(count, found);        
     }

@@ -40,9 +40,9 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.exist.samples.Samples.SAMPLES;
 import static org.exist.util.PropertiesBuilder.propertiesBuilder;
 import static org.junit.Assert.assertEquals;
-import static org.exist.samples.Samples.SAMPLES;
 
 /**
  *
@@ -51,22 +51,22 @@ import static org.exist.samples.Samples.SAMPLES;
 public class OptimizerTest {
 
     @ClassRule
-    public final static ExistXmldbEmbeddedServer server = new ExistXmldbEmbeddedServer(false, true, true);
+    public static final ExistXmldbEmbeddedServer server = new ExistXmldbEmbeddedServer(false, true, true);
 
-    private final static String OPTIMIZE = "declare option exist:optimize 'enable=yes';";
-    private final static String NO_OPTIMIZE = "declare option exist:optimize 'enable=no';";
-    private final static String NAMESPACES = "declare namespace mods='http://www.loc.gov/mods/v3';";
+    private static final String OPTIMIZE = "declare option exist:optimize 'enable=yes';";
+    private static final String NO_OPTIMIZE = "declare option exist:optimize 'enable=no';";
+    private static final String NAMESPACES = "declare namespace mods='http://www.loc.gov/mods/v3';";
 
     private static final String MSG_OPT_ERROR = "Optimized query should return same number of results.";
 
-    private final static String XML =
+    private static final String XML =
             "<root>" +
                     "   <a><b>one</b></a>" +
                     "   <a><c><b>one</b></c></a>" +
                     "   <c><a><c><b>two</b></c></a></c>" +
                     "</root>";
 
-    private final static String COLLECTION_CONFIG =
+    private static final String COLLECTION_CONFIG =
             "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
                     "	<index xmlns:mods=\"http://www.loc.gov/mods/v3\">" +
                     "		<lucene>" +

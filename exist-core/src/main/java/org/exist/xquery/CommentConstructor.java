@@ -55,8 +55,7 @@ public class CommentConstructor extends NodeConstructor {
         try {
             final MemTreeBuilder builder = context.getDocumentBuilder();
             final int nodeNr = builder.comment(data);
-            final NodeImpl node = builder.getDocument().getNode(nodeNr);
-            return node;
+            return builder.getDocument().getNode(nodeNr);
         } finally {
             if (newDocumentContext)
                 {context.popDocumentContext();}

@@ -84,9 +84,9 @@ public abstract class Match implements Comparable<Match> {
     private int[] offsets;
     private int[] lengths;
 
-    private int currentOffset = 0;
+    private int currentOffset;
 
-    private @Nullable Match nextMatch = null;
+    private @Nullable Match nextMatch;
 
     protected Match(final int contextId, final NodeId nodeId, @Nullable final String matchTerm) {
         this(contextId, nodeId, matchTerm, 1);

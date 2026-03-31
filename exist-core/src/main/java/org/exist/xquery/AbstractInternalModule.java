@@ -21,12 +21,11 @@
  */
 package org.exist.xquery;
 
-import java.util.*;
-
 import org.exist.dom.QName;
 import org.exist.xquery.value.Sequence;
 
 import javax.annotation.Nullable;
+import java.util.*;
 
 /**
  * Abstract base class for an {@link org.exist.xquery.InternalModule}.
@@ -54,11 +53,11 @@ public abstract class AbstractInternalModule implements InternalModule {
 
     protected final Map<QName, Variable> mGlobalVariables = new HashMap<>();
 
-    public AbstractInternalModule(final FunctionDef[] functions, final Map<String, List<?>> parameters) {
+    protected AbstractInternalModule(final FunctionDef[] functions, final Map<String, List<?>> parameters) {
         this(functions, parameters, false);
     }
 
-    public AbstractInternalModule(final FunctionDef[] functions, final Map<String, List<?>> parameters,
+    protected AbstractInternalModule(final FunctionDef[] functions, final Map<String, List<?>> parameters,
                                   final boolean functionsOrdered) {
         this.mFunctions = functions;
         this.ordered = functionsOrdered;

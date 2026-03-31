@@ -25,18 +25,18 @@ import org.exist.test.ExistXmldbEmbeddedServer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
+import org.junit.Test;
 import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.base.Resource;
-import org.xmldb.api.modules.CollectionManagementService;
+import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.BinaryResource;
+import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
 
-import org.junit.Test;
 import static org.junit.Assert.assertNotNull;
 
 public class BinaryResourceUpdateTest  {
@@ -44,7 +44,7 @@ public class BinaryResourceUpdateTest  {
     @ClassRule
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
-    private final static String TEST_COLLECTION = "testBinaryResource";
+    private static final String TEST_COLLECTION = "testBinaryResource";
 
     private Collection testCollection;
 

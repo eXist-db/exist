@@ -57,13 +57,13 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * @author <a href="mailto:peter.klotz@blue-elephant-systems.com">Peter Klotz</a>
  */
 public class XMLDBXQueryTask extends AbstractXMLDBTask {
-    private String text = null;
-    private String queryUri = null;
-    private String query = null;
-    private File queryFile = null;
-    private File destDir = null;
+    private String text;
+    private String queryUri;
+    private String query;
+    private File queryFile;
+    private File destDir;
     private String outputproperty;
-    private List<Variable> variables = new ArrayList<>();
+    private final List<Variable> variables = new ArrayList<>();
 
     @Override
     public void execute() throws BuildException {
@@ -253,8 +253,8 @@ public class XMLDBXQueryTask extends AbstractXMLDBTask {
      * Defines a nested element to set an XQuery variable.
      */
     public static class Variable {
-        private String name = null;
-        private String value = null;
+        private String name;
+        private String value;
 
         public Variable() {
         }

@@ -33,7 +33,7 @@ import javax.xml.transform.Source;
  * Implementation of a Hamcrest Matcher
  * which will compare XML nodes constructed from Strings.
  */
-public class XmlStringDiffMatcher extends DiagnosingMatcher<String> {
+public final class XmlStringDiffMatcher extends DiagnosingMatcher<String> {
     private final Source expectedSource;
     private final boolean identical;
 

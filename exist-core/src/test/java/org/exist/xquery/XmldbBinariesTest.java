@@ -73,7 +73,7 @@ public class XmldbBinariesTest extends AbstractBinariesTest<ResourceSet, Resourc
     protected void storeBinaryFile(final XmldbURI filePath, byte[] content) throws Exception {
         try (Collection colRoot = DatabaseManager.getCollection(getBaseUri() + "/db", ADMIN_DB_USER, ADMIN_DB_PWD)) {
 
-            final XmldbURI collectionNames[] = filePath.removeLastSegment().getPathSegments();
+            final XmldbURI[] collectionNames = filePath.removeLastSegment().getPathSegments();
 
             final Deque<Collection> cols = new ArrayDeque<>();
             try {

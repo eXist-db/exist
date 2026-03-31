@@ -21,8 +21,6 @@
  */
 package org.exist.xquery;
 
-import javax.xml.transform.OutputKeys;
-
 import com.googlecode.junittoolbox.ParallelRunner;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.junit.ClassRule;
@@ -31,6 +29,8 @@ import org.junit.runner.RunWith;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XQueryService;
+
+import javax.xml.transform.OutputKeys;
 
 import static org.junit.Assert.assertEquals;
 
@@ -70,7 +70,7 @@ public class ConstructedNodesTest {
                 	}\
                 """;
 		
-		String expectedResults [] = { 
+		String [] expectedResults = { 
 			"<option value=\"1\">Fruit</option>",
 			"<option value=\"2\">Vegetable</option>",
 			"<option value=\"3\">Meat</option>",
@@ -105,7 +105,7 @@ public class ConstructedNodesTest {
             
             for $category in $categories/category order by $category/@uid descending return $category""";
 		
-		String expectedResults [] = { 
+		String [] expectedResults = { 
 				"<category uid=\"4\">Dairy</category>",
 				"<category uid=\"3\">Meat</category>",
 				"<category uid=\"2\">Vegetable</category>",
@@ -141,7 +141,7 @@ public class ConstructedNodesTest {
             $categories/category[1],
             $categories/category[position() eq 1]""";
 		
-		String expectedResults [] = { 
+		String [] expectedResults = { 
 				"<category uid=\"1\">Fruit</category>",
 				"<category uid=\"1\">Fruit</category>"
 		};
@@ -169,7 +169,7 @@ public class ConstructedNodesTest {
             declare variable $hello-text-last := <a><b>world</b>{ "hello" }</a>;
             ($hello-text-first, $hello-text-last)""";
 		
-		String expectedResults [] = { 
+		String [] expectedResults = { 
 				"<a>hello<b>world</b></a>",
 				"<a><b>world</b>hello</a>"
 				};

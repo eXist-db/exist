@@ -21,15 +21,10 @@
  */
 package org.exist.indexing;
 
-import org.exist.dom.persistent.AttrImpl;
-import org.exist.dom.persistent.NodeProxy;
-import org.exist.dom.persistent.TextImpl;
-import org.exist.dom.persistent.AbstractCharacterData;
-import org.exist.dom.persistent.ElementImpl;
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.IStoredNode;
 import org.exist.collections.Collection;
+import org.exist.dom.persistent.*;
 import org.exist.indexing.StreamListener.ReindexMode;
+import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.NodePath;
 import org.exist.storage.txn.Txn;
@@ -43,7 +38,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.exist.security.PermissionDeniedException;
 
 /**
  * Internally used to dispatch an operation to each of the
@@ -55,8 +49,8 @@ public class IndexController {
     private final Map<String, IndexWorker> indexWorkers = new HashMap<>();
 
     private final DBBroker broker;
-    private StreamListener listener = null;
-    private DocumentImpl currentDoc = null;
+    private StreamListener listener;
+    private DocumentImpl currentDoc;
     private ReindexMode currentMode = ReindexMode.UNKNOWN;
     private boolean reindexing;
     private ReindexScope reindexScope = ReindexScope.ALL;

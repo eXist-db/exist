@@ -21,10 +21,10 @@
  */
 package org.exist.collections.triggers;
 
-import java.util.Map.Entry;
 import org.exist.collections.Collection;
 import org.exist.dom.persistent.DefaultDocumentSet;
 import org.exist.dom.persistent.DocumentImpl;
+import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
@@ -33,7 +33,7 @@ import org.exist.xmldb.XmldbURI;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import org.exist.security.PermissionDeniedException;
+import java.util.Map.Entry;
 
 /**
  * @author wolf

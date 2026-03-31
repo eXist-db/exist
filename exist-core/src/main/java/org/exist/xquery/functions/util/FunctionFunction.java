@@ -42,7 +42,7 @@ public class FunctionFunction extends BasicFunction {
 	protected static final FunctionParameterSequenceType arity = new FunctionParameterSequenceType("arity", Type.INTEGER, Cardinality.EXACTLY_ONE, "The arity of the function");
 	protected static final FunctionReturnSequenceType result = new FunctionReturnSequenceType(Type.FUNCTION, Cardinality.EXACTLY_ONE, "the reference to the XQuery function");
 
-    public final static FunctionSignature signature =
+    public static final FunctionSignature signature =
         new FunctionSignature(
             new QName("function", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
             "Creates a reference to an XQuery function which can later be called from util:call. " +
@@ -58,7 +58,7 @@ public class FunctionFunction extends BasicFunction {
             result
         );
     
-    private FunctionCall resolvedFunction = null;
+    private FunctionCall resolvedFunction;
 
     public FunctionFunction(XQueryContext context) {
         super(context, signature);

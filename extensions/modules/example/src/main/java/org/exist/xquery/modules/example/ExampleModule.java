@@ -21,10 +21,11 @@
  */
 package org.exist.xquery.modules.example;
 
-import java.util.List;
-import java.util.Map;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
@@ -32,13 +33,13 @@ import org.exist.xquery.FunctionDef;
  */
 public class ExampleModule extends AbstractInternalModule {
 
-	public final static String NAMESPACE_URI = "http://exist-db.org/xquery/examples";
+	public static final String NAMESPACE_URI = "http://exist-db.org/xquery/examples";
 	
-	public final static String PREFIX = "example";
-    public final static String INCLUSION_DATE = "2005-04-20";
-    public final static String RELEASED_IN_VERSION = "eXist-1.2";
+	public static final String PREFIX = "example";
+    public static final String INCLUSION_DATE = "2005-04-20";
+    public static final String RELEASED_IN_VERSION = "eXist-1.2";
 
-	private final static FunctionDef[] functions = {
+	private static final FunctionDef[] functions = {
 		new FunctionDef(EchoFunction.signature, EchoFunction.class)
 	};
 	

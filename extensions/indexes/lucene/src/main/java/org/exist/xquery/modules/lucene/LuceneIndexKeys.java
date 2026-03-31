@@ -36,7 +36,7 @@ import java.util.Map;
 
 public class LuceneIndexKeys extends BasicFunction {
 
-    public final static FunctionSignature[] signatures = {
+    public static final FunctionSignature[] signatures = {
             new FunctionSignature(
                     new QName("index-keys-for-field", LuceneModule.NAMESPACE_URI, LuceneModule.PREFIX),
                     "Similar to the util:index-keys functions, but returns index entries for a field " +
@@ -69,7 +69,7 @@ public class LuceneIndexKeys extends BasicFunction {
         }
         IntegerValue max = null;
         if (args[3].hasOne()) {
-            max = ((IntegerValue) args[3].itemAt(0));
+            max = (IntegerValue) args[3].itemAt(0);
         }
         if (max != null && max.getInt() > -1) {
             hints.put(IndexWorker.VALUE_COUNT, max);
@@ -78,7 +78,7 @@ public class LuceneIndexKeys extends BasicFunction {
         try (final FunctionReference ref = (FunctionReference) args[2].itemAt(0)) {
             final LuceneIndexWorker index = (LuceneIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
             final Occurrences[] occur = index.scanIndexByField(fieldName, docs, hints);
-            final Sequence params[] = new Sequence[2];
+            final Sequence[] params = new Sequence[2];
             final ValueSequence data = new ValueSequence();
             for (int j = 0; j < occur.length; j++) {
                 params[0] = new StringValue(this, occur[j].getTerm().toString());

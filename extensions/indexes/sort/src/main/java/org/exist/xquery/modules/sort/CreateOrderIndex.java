@@ -40,7 +40,7 @@ import java.util.List;
 
 public class CreateOrderIndex extends BasicFunction {
 
-    public final static FunctionSignature[] signatures = {
+    public static final FunctionSignature[] signatures = {
             new FunctionSignature(
                     new QName("create-index", SortModule.NAMESPACE_URI, SortModule.PREFIX),
                     "Create a sort index to be used within an 'order by' expression.",
@@ -79,8 +79,8 @@ public class CreateOrderIndex extends BasicFunction {
 
     protected static final Logger LOG = LogManager.getLogger(CreateOrderIndex.class);
 
-    private boolean descending = false;
-    private boolean emptyLeast = false;
+    private boolean descending;
+    private boolean emptyLeast;
 
     public CreateOrderIndex(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
@@ -88,15 +88,17 @@ public class CreateOrderIndex extends BasicFunction {
 
     @Override
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
-        if (args[1].isEmpty())
+        if (args[1].isEmpty()) {
             return Sequence.EMPTY_SEQUENCE;
+        }
         final String id = args[0].getStringValue();
         // check how the function was called and prepare callback
         FunctionReference call = null;
         if (isCalledAs("create-index-callback")) {
             call = (FunctionReference) args[2].itemAt(0);
-        } else if (args[2].getItemCount() != args[1].getItemCount())
+        } else if (args[2].getItemCount() != args[1].getItemCount()) {
             throw new XPathException(this, "$nodes and $values sequences need to have the same length.");
+        }
 
         // options
         if (args[3].getItemCount() > 0) {
@@ -110,8 +112,9 @@ public class CreateOrderIndex extends BasicFunction {
         final List<SortItem> items = new ArrayList<>(args[1].getItemCount());
         final Sequence[] params = new Sequence[1];
         SequenceIterator valuesIter = null;
-        if (call == null)
+        if (call == null) {
             valuesIter = args[2].iterate();
+        }
         int c = 0;
         final int len = args[1].getItemCount();
 
@@ -119,8 +122,9 @@ public class CreateOrderIndex extends BasicFunction {
 
         for (final SequenceIterator nodesIter = args[1].iterate(); nodesIter.hasNext(); ) {
             final NodeValue nv = (NodeValue) nodesIter.nextItem();
-            if (nv.getImplementationType() == NodeValue.IN_MEMORY_NODE)
+            if (nv.getImplementationType() == NodeValue.IN_MEMORY_NODE) {
                 throw new XPathException(this, "Cannot create order-index on an in-memory node");
+            }
             final NodeProxy node = (NodeProxy) nv;
             final SortItem si = new SortItemImpl(node);
 
@@ -135,15 +139,17 @@ public class CreateOrderIndex extends BasicFunction {
                 final Sequence r = call.evalFunction(contextSequence, null, params);
                 if (!r.isEmpty()) {
                     AtomicValue v = r.itemAt(0).atomize();
-                    if (v.getType() == Type.UNTYPED_ATOMIC)
+                    if (v.getType() == Type.UNTYPED_ATOMIC) {
                         v = v.convertTo(Type.STRING);
+                    }
                     si.setValue(v);
                 }
             } else {
                 // no callback, take value from second sequence
                 AtomicValue v = valuesIter.nextItem().atomize();
-                if (v.getType() == Type.UNTYPED_ATOMIC)
+                if (v.getType() == Type.UNTYPED_ATOMIC) {
                     v = v.convertTo(Type.STRING);
+                }
                 si.setValue(v);
             }
             items.add(si);
@@ -182,44 +188,51 @@ public class CreateOrderIndex extends BasicFunction {
         }
 
         public void setValue(final AtomicValue value) {
-            if (value.hasOne())
+            if (value.hasOne()) {
                 this.value = value;
+            }
         }
 
         public int compareTo(final SortItem other) {
             int cmp = 0;
             final AtomicValue a = this.value;
             final AtomicValue b = other.getValue();
-            final boolean aIsEmpty = (a.isEmpty() || (Type.subTypeOfUnion(a.getType(), Type.NUMERIC) && ((NumericValue) a).isNaN()));
-            final boolean bIsEmpty = (b.isEmpty() || (Type.subTypeOfUnion(b.getType(), Type.NUMERIC) && ((NumericValue) b).isNaN()));
+            final boolean aIsEmpty = a.isEmpty() || (Type.subTypeOfUnion(a.getType(), Type.NUMERIC) && ((NumericValue) a).isNaN());
+            final boolean bIsEmpty = b.isEmpty() || (Type.subTypeOfUnion(b.getType(), Type.NUMERIC) && ((NumericValue) b).isNaN());
             if (aIsEmpty) {
-                if (bIsEmpty)
+                if (bIsEmpty) {
                     // both values are empty
                     return Constants.EQUAL;
-                else if (emptyLeast)
+                } else if (emptyLeast) {
                     cmp = Constants.INFERIOR;
-                else
+                } else {
                     cmp = Constants.SUPERIOR;
+                }
             } else if (bIsEmpty) {
                 // we don't need to check for equality since we know a is not empty
-                if (emptyLeast)
+                if (emptyLeast) {
                     cmp = Constants.SUPERIOR;
-                else
+                } else {
                     cmp = Constants.INFERIOR;
+                }
             } else if (a == AtomicValue.EMPTY_VALUE && b != AtomicValue.EMPTY_VALUE) {
-                if (emptyLeast)
+                if (emptyLeast) {
                     cmp = Constants.INFERIOR;
-                else
+                } else {
                     cmp = Constants.SUPERIOR;
+                }
             } else if (b == AtomicValue.EMPTY_VALUE && a != AtomicValue.EMPTY_VALUE) {
-                if (emptyLeast)
+                if (emptyLeast) {
                     cmp = Constants.SUPERIOR;
-                else
+                } else {
                     cmp = Constants.INFERIOR;
-            } else
+                }
+            } else {
                 cmp = a.compareTo(b);
-            if (descending)
+            }
+            if (descending) {
                 cmp = cmp * -1;
+            }
             return cmp;
         }
     }

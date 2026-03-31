@@ -38,7 +38,7 @@ public class ZipWriter implements BackupWriter
     private String currentPath;
     private final ZipOutputStream out;
     private StringWriter contents;
-    private boolean dataWritten = false;
+    private boolean dataWritten;
 
     public ZipWriter(final String zipFile, final String collection) throws IOException
     {
@@ -55,7 +55,7 @@ public class ZipWriter implements BackupWriter
     public Writer newContents() throws IOException
     {
         contents = new StringWriter();
-        return( contents );
+        return contents;
     }
 
 
@@ -77,7 +77,7 @@ public class ZipWriter implements BackupWriter
         final ZipEntry entry = new ZipEntry( mkRelative( currentPath ) + '/' + name );
         out.putNextEntry( entry );
         dataWritten = true;
-        return( out );
+        return out;
     }
 
     public OutputStream newBlobEntry(final String blobId) throws IOException
@@ -137,8 +137,8 @@ public class ZipWriter implements BackupWriter
     private String mkRelative(final String path )
     {
         if( (!path.isEmpty()) && ( path.charAt( 0 ) == '/' ) ) {
-            return( path.substring( 1 ) );
+            return path.substring( 1 );
         }
-        return( path );
+        return path;
     }
 }

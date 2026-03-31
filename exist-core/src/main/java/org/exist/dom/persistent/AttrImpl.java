@@ -54,7 +54,7 @@ public class AttrImpl extends NamedNode<AttrImpl> implements Attr {
 
     private int attributeType = DEFAULT_ATTRIBUTE_TYPE;
     private int indexType = RangeIndexSpec.NO_INDEX;
-    private XMLString value = null;
+    private XMLString value;
 
     public AttrImpl() {
         this((Expression) null);

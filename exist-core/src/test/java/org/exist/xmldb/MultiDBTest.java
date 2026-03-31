@@ -47,9 +47,9 @@ import static org.exist.samples.Samples.SAMPLES;
  */
 public class MultiDBTest {
 
-    private final static int INSTANCE_COUNT = 5;
+    private static final int INSTANCE_COUNT = 5;
 
-    private final static String CONFIG =
+    private static final String CONFIG =
             "<exist>" +
             "   <db-connection database=\"native\" files=\".\" cacheSize=\"32M\">" +
             "       <pool min=\"1\" max=\"5\" sync-period=\"120000\"/>" +

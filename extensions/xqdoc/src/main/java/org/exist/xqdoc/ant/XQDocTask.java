@@ -21,12 +21,6 @@
  */
 package org.exist.xqdoc.ant;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
@@ -42,9 +36,15 @@ import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+
 public class XQDocTask extends AbstractXMLDBTask {
 
-    private final static String XQUERY =
+    private static final String XQUERY =
         """
         import module namespace xqdm="http://exist-db.org/xquery/xqdoc";
         import module namespace xdb="http://exist-db.org/xquery/xmldb";
@@ -64,31 +64,34 @@ public class XQDocTask extends AbstractXMLDBTask {
         return
            xdb:store($collection, $docName, $xml, 'application/xml')""";
 
-    private String moduleURI = null;
-    private boolean createCollection = false;
-    private List<FileSet> fileSets = null;
+    private String moduleURI;
+    private boolean createCollection;
+    private List<FileSet> fileSets;
 
     @Override
     public void execute() throws BuildException {
         registerDatabase();
         try {
             int p = uri.indexOf(XmldbURI.ROOT_COLLECTION);
-            if (p == Constants.STRING_NOT_FOUND)
+            if (p == Constants.STRING_NOT_FOUND) {
                 throw new BuildException("invalid uri: '" + uri + "'");
+            }
             String baseURI = uri.substring(0, p);
             String path;
-            if (p == uri.length() - 3)
+            if (p == uri.length() - 3) {
                 path = "";
-            else
+            } else {
                 path = uri.substring(p + 3);
+            }
 
             Collection root = null;
             if (createCollection)
             {
                 root = DatabaseManager.getCollection(baseURI + XmldbURI.ROOT_COLLECTION, user, password);
                 root = mkcol(root, baseURI, XmldbURI.ROOT_COLLECTION, path);
-            } else
+            } else {
                 root = DatabaseManager.getCollection(uri, user, password);
+            }
 
             EXistXQueryService service = root.getService(EXistXQueryService.class);
             Source source = new StringSource(XQUERY);
@@ -116,20 +119,22 @@ public class XQDocTask extends AbstractXMLDBTask {
                             service.execute(source);
                         } catch (XMLDBException e) {
                             String msg = "XMLDB exception caught: " + e.getMessage();
-                            if (failonerror)
+                            if (failonerror) {
                                 throw new BuildException(msg, e);
-                            else
+                            } else {
                                 log(msg, e, Project.MSG_ERR);
+                            }
                         }
                     }
                 }
             }
         } catch (XMLDBException e) {
             String msg="XMLDB exception caught: " + e.getMessage();
-            if(failonerror)
-                throw new BuildException(msg,e);
-            else
-                log(msg,e, Project.MSG_ERR);
+            if (failonerror) {
+                throw new BuildException(msg, e);
+            } else {
+                log(msg, e, Project.MSG_ERR);
+            }
         }
     }
 
@@ -142,8 +147,9 @@ public class XQDocTask extends AbstractXMLDBTask {
     }
 
     public void addFileset(FileSet set) {
-        if (fileSets == null)
+        if (fileSets == null) {
             fileSets = new ArrayList<>();
+        }
         fileSets.add(set);
     }
 

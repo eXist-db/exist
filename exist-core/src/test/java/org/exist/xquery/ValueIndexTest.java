@@ -21,25 +21,21 @@
  */
 package org.exist.xquery;
 
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Path;
-
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.xmldb.IndexQueryService;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.Resource;
-import org.xmldb.api.base.ResourceIterator;
-import org.xmldb.api.base.ResourceSet;
-import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.base.*;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XPathQueryService;
 import org.xmldb.api.modules.XUpdateQueryService;
+
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Path;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -55,7 +51,7 @@ public class ValueIndexTest {
     protected static final String ITEMS_FILENAME = "items.xml";
     protected URL ITEMS_FILE = getClass().getResource(ITEMS_FILENAME);
 
-    private String CONFIG_PATH =
+    private final String CONFIG_PATH =
     	"<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" + 
     	"	<index xmlns:x=\"http://www.foo.com\" xmlns:xx=\"http://test.com\">" +
     	"		<create path=\"//item/itemno\" type=\"xs:integer\"/>" +
@@ -71,7 +67,7 @@ public class ValueIndexTest {
         "	</index>" +
     	"</collection>";
 
-    private String CONFIG_QNAME =
+    private final String CONFIG_QNAME =
     	"<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
     	"	<index xmlns:x=\"http://www.foo.com\" xmlns:xx=\"http://test.com\">" +
         "       <create qname=\"itemno\" type=\"xs:integer\"/>" +
@@ -84,7 +80,7 @@ public class ValueIndexTest {
         "	</index>" +
     	"</collection>";
 
-    private String CITY =
+    private final String CITY =
             "<mondial>" +
             "   <city id=\"cty-Germany-Berlin\" is_country_cap=\"yes\" is_state_cap=\"yes\" " +
             "       country=\"D\" province=\"prov-cid-cia-Germany-4\">" +
@@ -414,10 +410,11 @@ public class ValueIndexTest {
             String resource, String query, int expected, String message)
             throws XMLDBException {
         ResourceSet result = service.queryResource(resource, query);
-        if (message == null)
+        if (message == null) {
             assertEquals(expected, result.getSize());
-        else
+        } else {
             assertEquals(message, expected, result.getSize());
+        }
         return result;
     }
 
@@ -431,7 +428,6 @@ public class ValueIndexTest {
         Path f = Path.of(srcFile.toURI());
         doc.setContent(f);
         testCollection.storeResource(doc);
-        XPathQueryService service = testCollection.getService(XPathQueryService.class);
-        return service;
+        return testCollection.getService(XPathQueryService.class);
     }
 }

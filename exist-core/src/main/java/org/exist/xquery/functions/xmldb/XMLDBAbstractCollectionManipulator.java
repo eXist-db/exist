@@ -21,9 +21,6 @@
  */
 package org.exist.xquery.functions.xmldb;
 
-import java.util.Optional;
-import java.util.StringTokenizer;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.NodeProxy;
@@ -34,15 +31,14 @@ import org.exist.xquery.Expression;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.AnyURIValue;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
+
+import java.util.Optional;
+import java.util.StringTokenizer;
 
 import static org.exist.xquery.XPathException.execAndAddErrorIfMissing;
 
@@ -59,11 +55,11 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
 
     private final int paramNumber = 0;  //collecton will be passed as parameter number 0 by default
 
-    public XMLDBAbstractCollectionManipulator(final XQueryContext context, final FunctionSignature signature) {
+    protected XMLDBAbstractCollectionManipulator(final XQueryContext context, final FunctionSignature signature) {
         this(context, signature, true);
     }
 
-    public XMLDBAbstractCollectionManipulator(final XQueryContext context, final FunctionSignature signature, final boolean errorIfAbsent) {
+    protected XMLDBAbstractCollectionManipulator(final XQueryContext context, final FunctionSignature signature, final boolean errorIfAbsent) {
         super(context, signature);
         this.errorIfAbsent = errorIfAbsent;
     }
@@ -179,9 +175,9 @@ public abstract class XMLDBAbstractCollectionManipulator extends BasicFunction {
         return s;
     }
 
-    abstract protected Sequence evalWithCollection(final Collection c, final Sequence[] args, final Sequence contextSequence) throws XPathException;
+    protected abstract Sequence evalWithCollection(final Collection c, final Sequence[] args, final Sequence contextSequence) throws XPathException;
 
-    static public final Collection createCollection(final Collection parentColl, final String name) throws XMLDBException {
+    public static Collection createCollection(final Collection parentColl, final String name) throws XMLDBException {
         final Collection child = parentColl.getChildCollection(name);
         if (child == null) {
             final CollectionManagementService mgtService = parentColl.getService(CollectionManagementService.class);

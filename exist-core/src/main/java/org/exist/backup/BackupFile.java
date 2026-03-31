@@ -45,31 +45,31 @@ public class BackupFile {
     }
 
     public boolean after(final BackupFile other) {
-        return (date.after(other.date));
+        return date.after(other.date);
     }
 
 
     public boolean after(final long time) {
-        return (date.getTime() > time);
+        return date.getTime() > time;
     }
 
 
     public boolean before(final BackupFile other) {
-        return (date.before(other.date));
+        return date.before(other.date);
     }
 
 
     public boolean before(final long time) {
-        return (time > date.getTime());
+        return time > date.getTime();
     }
 
 
     public File getFile() {
-        return (file);
+        return file;
     }
 
 
     public Date getDate() {
-        return (date);
+        return date;
     }
 }

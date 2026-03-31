@@ -21,8 +21,6 @@
  */
 package org.exist.storage.journal;
 
-import java.util.function.BiFunction;
-
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import org.exist.storage.DBBroker;
@@ -30,6 +28,8 @@ import org.exist.storage.txn.Checkpoint;
 import org.exist.storage.txn.TxnAbort;
 import org.exist.storage.txn.TxnCommit;
 import org.exist.storage.txn.TxnStart;
+
+import java.util.function.BiFunction;
 
 /**
  * Registry for log entry types. All classes that can be read from or written to the journal
@@ -40,12 +40,12 @@ import org.exist.storage.txn.TxnStart;
  */
 public class LogEntryTypes {
 
-    public final static byte TXN_START = 0;
-    public final static byte TXN_COMMIT = 1;
-    public final static byte CHECKPOINT = 2;
-    public final static byte TXN_ABORT = 3;
+    public static final byte TXN_START = 0;
+    public static final byte TXN_COMMIT = 1;
+    public static final byte CHECKPOINT = 2;
+    public static final byte TXN_ABORT = 3;
 
-    private final static Int2ObjectMap<BiFunction<DBBroker, Long, Loggable>> entryTypes = new Int2ObjectOpenHashMap<>();
+    private static final Int2ObjectMap<BiFunction<DBBroker, Long, Loggable>> entryTypes = new Int2ObjectOpenHashMap<>();
 
     static {
         // register the common entry types
@@ -61,7 +61,7 @@ public class LogEntryTypes {
      * @param type The type of the Loggable
      * @param cstr Function for constructing a Loggable of the indicated type
      */
-    public final static void addEntryType(final byte type, final BiFunction<DBBroker, Long, Loggable> cstr) {
+    public static void addEntryType(final byte type, final BiFunction<DBBroker, Long, Loggable> cstr) {
         entryTypes.put(type, cstr);
     }
 
@@ -76,7 +76,7 @@ public class LogEntryTypes {
      *
      * @throws LogException if the entry could not be created
      */
-    public final static Loggable create(final byte type, final DBBroker broker, final long transactionId) throws LogException {
+    public static Loggable create(final byte type, final DBBroker broker, final long transactionId) throws LogException {
         final BiFunction<DBBroker, Long, Loggable> cstr = entryTypes.get(type);
         if (cstr == null) {
             return null;

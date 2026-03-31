@@ -47,7 +47,7 @@ public abstract class QueryParserWrapper {
     private static final Logger LOG = LogManager.getLogger(QueryParserWrapper.class);
     private static final MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
 
-    public QueryParserWrapper(String field, Analyzer analyzer) {
+    protected QueryParserWrapper(String field, Analyzer analyzer) {
     }
 
     public abstract CommonQueryParserConfiguration getConfiguration();

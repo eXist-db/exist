@@ -21,20 +21,20 @@
  */
 package org.exist.storage.dom;
 
-import java.nio.ByteBuffer;
-
 import org.exist.storage.DBBroker;
 import org.exist.storage.NativeBroker;
 import org.exist.storage.journal.AbstractLoggable;
 import org.exist.storage.journal.LogException;
 import org.exist.storage.txn.Txn;
 
+import java.nio.ByteBuffer;
+
 public class UpdateLinkLoggable extends AbstractLoggable {
     protected long pageNum;
     protected int offset;
     protected long link;
     protected long oldLink;
-    private DOMFile domDb = null;
+    private DOMFile domDb;
 
     public UpdateLinkLoggable(final Txn transaction, final long pageNum, final int offset, final long link, final long oldLink) {
         super(DOMFile.LOG_UPDATE_LINK, transaction.getId());

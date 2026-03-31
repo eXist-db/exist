@@ -37,7 +37,7 @@ public class XQueryFilenameFilter implements FilenameFilter {
         final MimeTable mimetab = MimeTable.getInstance();
         final MimeType mime = mimetab.getContentTypeFor(name);
 
-        return mime != null && !mime.isXMLType() && mime.getName().equals(MEDIA_TYPE_APPLICATION_XQUERY);
+        return mime != null && !mime.isXMLType() && MEDIA_TYPE_APPLICATION_XQUERY.equals(mime.getName());
     }
 
     public static Predicate<Path> asPredicate() {
@@ -45,7 +45,7 @@ public class XQueryFilenameFilter implements FilenameFilter {
         return path -> {
             if(!Files.isDirectory(path)) {
                 final MimeType mime = mimetab.getContentTypeFor(FileUtils.fileName(path));
-                return mime != null && !mime.isXMLType() && mime.getName().equals(MEDIA_TYPE_APPLICATION_XQUERY);
+                return mime != null && !mime.isXMLType() && MEDIA_TYPE_APPLICATION_XQUERY.equals(mime.getName());
             }
             return false;
         };

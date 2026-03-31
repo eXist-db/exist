@@ -50,7 +50,7 @@ import java.util.Properties;
 public class ExistResourceFactory implements ResourceFactory {
 
     private static final Logger LOG = LogManager.getLogger(ExistResourceFactory.class);
-    private BrokerPool brokerPool = null;
+    private BrokerPool brokerPool;
 
     /**
      * XML serialization options
@@ -174,16 +174,9 @@ public class ExistResourceFactory implements ResourceFactory {
 
         // MacOsX finder specific files
         String documentSeqment = xmldbUri.lastSegment().toString();
-        if (documentSeqment.startsWith("._") || ".DS_Store".equals(documentSeqment)) {
-            //LOG.debug(String.format("Ignoring MacOSX file '%s'", xmldbUri.lastSegment().toString()));
-            //return ResourceType.IGNORABLE;
-        }
-
-        // Documents that start with a dot
-        if (documentSeqment.startsWith(".")) {
-            //LOG.debug(String.format("Ignoring '.' file '%s'", xmldbUri.lastSegment().toString()));
-            //return ResourceType.IGNORABLE;
-        }
+        documentSeqment.startsWith("._");
+        ".DS_Store".equals(documentSeqment);
+        documentSeqment.startsWith(".");
 
         // Try to read as system user. Note that the actual user is not know
         // yet. In MiltonResource the actual authentication and authorization

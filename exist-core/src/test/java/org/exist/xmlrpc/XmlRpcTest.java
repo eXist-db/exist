@@ -21,43 +21,35 @@
  */
 package org.exist.xmlrpc;
 
-import java.io.IOException;
-
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
 import org.exist.Version;
 import org.exist.security.MessageDigester;
+import org.exist.security.Permission;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.test.ExistWebServer;
 import org.exist.test.TestConstants;
 import org.exist.util.Compressor;
 import org.exist.util.MimeType;
-import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
-import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xmldb.XmldbURI;
-
-import static java.lang.Boolean.FALSE;
-import static java.lang.Boolean.TRUE;
-import static org.exist.test.TestConstants.TEST_XML_URI;
-import static org.exist.xmldb.RemoteCollection.MAX_UPLOAD_CHUNK;
-import static org.exist.xmlrpc.RpcConnection.MAX_DOWNLOAD_CHUNK_SIZE;
-
+import org.junit.After;
 import org.junit.ClassRule;
 import org.junit.Test;
+import org.xml.sax.SAXException;
+import org.xmlunit.builder.DiffBuilder;
+import org.xmlunit.builder.Input;
+import org.xmlunit.diff.Diff;
 
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Source;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-
-import org.exist.security.Permission;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.assertj.core.api.Assertions.*;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -66,11 +58,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import org.junit.After;
-import org.xml.sax.SAXException;
-import org.xmlunit.builder.DiffBuilder;
-import org.xmlunit.builder.Input;
-import org.xmlunit.diff.Diff;
+import static java.lang.Boolean.FALSE;
+import static java.lang.Boolean.TRUE;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.assertj.core.api.Assertions.*;
+import static org.exist.test.TestConstants.TEST_XML_URI;
+import static org.exist.xmldb.RemoteCollection.MAX_UPLOAD_CHUNK;
+import static org.exist.xmlrpc.RpcConnection.MAX_DOWNLOAD_CHUNK_SIZE;
 
 /**
  * JUnit test for XMLRPC interface methods.
@@ -82,25 +76,25 @@ import org.xmlunit.diff.Diff;
 public class XmlRpcTest {
 
     @ClassRule
-    public final static ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
+    public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
 
-    private final static XmldbURI TARGET_COLLECTION = XmldbURI.ROOT_COLLECTION_URI.append("xmlrpc");
+    private static final XmldbURI TARGET_COLLECTION = XmldbURI.ROOT_COLLECTION_URI.append("xmlrpc");
 
-    private final static XmldbURI TARGET_RESOURCE = TARGET_COLLECTION.append(TEST_XML_URI);
+    private static final XmldbURI TARGET_RESOURCE = TARGET_COLLECTION.append(TEST_XML_URI);
 
-    public final static XmldbURI MODULE_RESOURCE = TARGET_COLLECTION.append(TestConstants.TEST_MODULE_URI);
+    public static final XmldbURI MODULE_RESOURCE = TARGET_COLLECTION.append(TestConstants.TEST_MODULE_URI);
 
-    private final static XmldbURI SPECIAL_COLLECTION = TARGET_COLLECTION.append(TestConstants.SPECIAL_NAME);
+    private static final XmldbURI SPECIAL_COLLECTION = TARGET_COLLECTION.append(TestConstants.SPECIAL_NAME);
 
-    private final static XmldbURI SPECIAL_RESOURCE = SPECIAL_COLLECTION.append(TestConstants.SPECIAL_XML_URI);
+    private static final XmldbURI SPECIAL_RESOURCE = SPECIAL_COLLECTION.append(TestConstants.SPECIAL_XML_URI);
 
-    private final static String XML_DATA
+    private static final String XML_DATA
             = "<test>"
             + "<para>\u00E4\u00E4\u00F6\u00F6\u00FC\u00FC\u00C4\u00C4\u00D6\u00D6\u00DC\u00DC\u00DF\u00DF</para>"
             + "<para>\uC5F4\uB2E8\uACC4</para>"
             + "</test>";
 
-    private final static String XSL_DATA
+    private static final String XSL_DATA
             = "<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"2.0\">"
             + "<xsl:output omit-xml-declaration=\"no\"/>"
             + "<xsl:param name=\"testparam\"/>"
@@ -109,11 +103,11 @@ public class XmlRpcTest {
             + "<p><xsl:value-of select=\"$testparam\"/>: <xsl:apply-templates/></p></xsl:template>"
             + "</xsl:stylesheet>";
 
-    public final static String MODULE_DATA
+    public static final String MODULE_DATA
             = "module namespace tm = \"http://exist-db.org/test/module\"; "
             + "declare variable $tm:imported-external-string as xs:string external;";
 
-    public final static String QUERY_MODULE_DATA
+    public static final String QUERY_MODULE_DATA
             = "xquery version \"1.0\";"
             + "declare namespace tm-query = \"http://exist-db.org/test/module/query\";"
             + "import module namespace tm = \"http://exist-db.org/test/module\" "
@@ -567,10 +561,9 @@ public class XmlRpcTest {
 
         assertThat((Object[]) xmlrpc.execute("getGroups", Collections.emptyList()))
                 .containsExactlyInAnyOrder("dba", "guest", "nogroup")
-                .allSatisfy(groupName -> {
+                .allSatisfy(groupName ->
                     assertThat((Map<String, Object>) xmlrpc.execute("getGroup", List.of(groupName)))
-                            .hasSize(5).containsEntry("name", groupName);
-                });
+                            .hasSize(5).containsEntry("name", groupName));
 
         assertThat(xmlrpc.execute("addGroup", List.of("testGroup", Map.of()))).isEqualTo(TRUE);
         assertThat((Object[]) xmlrpc.execute("getGroups", Collections.emptyList()))

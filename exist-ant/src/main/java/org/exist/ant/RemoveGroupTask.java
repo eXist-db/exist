@@ -32,7 +32,7 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class RemoveGroupTask extends UserTask
 {
-    private String name = null;
+    private String name;
 
     /* (non-Javadoc)
      * @see org.apache.tools.ant.Task#execute()

@@ -32,11 +32,6 @@
  */
 package org.exist.storage;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Arrays;
-
 import org.apache.commons.io.input.CountingInputStream;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
@@ -54,6 +49,11 @@ import org.junit.rules.TemporaryFolder;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Arrays;
+
 import static java.nio.file.StandardOpenOption.CREATE_NEW;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -65,8 +65,8 @@ public class RecoverBinaryTest extends AbstractRecoverTest {
 
     @ClassRule
     public static final TemporaryFolder temporaryFolder = new TemporaryFolder();
-    private static Path testFile1 = null;
-    private static Path testFile2 = null;
+    private static Path testFile1;
+    private static Path testFile2;
 
     @BeforeClass
     public static void storeTempBinaryDocs() throws IOException {

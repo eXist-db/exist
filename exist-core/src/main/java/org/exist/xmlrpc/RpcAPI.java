@@ -21,12 +21,6 @@
  */
 package org.exist.xmlrpc;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-
 import org.exist.EXistException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.internal.aider.ACEAider;
@@ -35,6 +29,11 @@ import org.exist.xquery.XPathException;
 import org.xml.sax.SAXException;
 
 import javax.annotation.Nullable;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Defines the methods callable through the XMLRPC interface.

@@ -59,7 +59,7 @@ class DigitsIntegerPicture extends IntegerPicture {
     // Fields determining the layout of decimal digits
     // These fields are generated when we parse the primaryFormatToken into groups
     private final List<Group> groups = new ArrayList<>();
-    private boolean groupsAreRegular = false;
+    private boolean groupsAreRegular;
     private int mandatoryDigits = 1;
     private int digitFamily = -1;
 
@@ -182,10 +182,18 @@ class DigitsIntegerPicture extends IntegerPicture {
         for (int i = 1; i < groups.size(); i++) {
             final Group group = groups.get(i);
 
-            if (group.separator.isEmpty()) group.separator = prev.separator;
-            if (i > 1 && (group.total() != prev.total())) return;
-            if (i == 1 && prev.total() > group.total()) return;
-            if (!group.separator.equals(prev.separator)) return;
+            if (group.separator.isEmpty()) {
+                group.separator = prev.separator;
+            }
+            if (i > 1 && (group.total() != prev.total())) {
+                return;
+            }
+            if (i == 1 && prev.total() > group.total()) {
+                return;
+            }
+            if (!group.separator.equals(prev.separator)) {
+                return;
+            }
 
             prev = group;
         }
@@ -324,7 +332,9 @@ class DigitsIntegerPicture extends IntegerPicture {
             int matchPoints = 0;
             for (int matchStatus = U_MATCH; offset[0] < matchLimit && matchStatus == U_MATCH;) {
                 matchStatus = unicodeSet.matches(target, offset, length, false);
-                if (matchStatus == U_MATCH) matchPoints++;
+                if (matchStatus == U_MATCH) {
+                    matchPoints++;
+                }
             }
             if (offset[0] > matchStart) {
                 lastMatch = matchStart;
@@ -345,7 +355,7 @@ class DigitsIntegerPicture extends IntegerPicture {
         }
 
         boolean end() {
-            return (offset[0] >= length);
+            return offset[0] >= length;
         }
 
         int pos() {

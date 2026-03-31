@@ -45,7 +45,7 @@ public abstract class JUnitIntegrationFunction extends UserDefinedFunction {
     protected final String suiteName;
     protected final RunNotifier notifier;
 
-    public JUnitIntegrationFunction(final String functionName, final FunctionParameterSequenceType[] paramTypes, final XQueryContext context, final String suiteName, final RunNotifier notifier) {
+    protected JUnitIntegrationFunction(final String functionName, final FunctionParameterSequenceType[] paramTypes, final XQueryContext context, final String suiteName, final RunNotifier notifier) {
         super(context,
                 functionSignature(
                         new QName(functionName,  XMLConstants.NULL_NS_URI),

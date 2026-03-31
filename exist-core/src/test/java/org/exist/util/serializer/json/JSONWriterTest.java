@@ -22,8 +22,8 @@
 
 package org.exist.util.serializer.json;
 
-import org.exist.storage.serializers.EXistOutputKeys;
 import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
+import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.serializer.SAXSerializer;
 import org.junit.Test;
 import org.w3c.dom.Document;
@@ -54,6 +54,7 @@ public class JSONWriterTest {
     static {
         documentBuilderFactory.setIgnoringElementContentWhitespace(false);
     }
+
     private static final TransformerFactory transformerFactory;
     static {
         transformerFactory = TransformerFactory.newInstance("net.sf.saxon.TransformerFactoryImpl", null);

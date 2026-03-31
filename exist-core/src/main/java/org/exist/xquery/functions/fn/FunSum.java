@@ -30,26 +30,14 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.AtomicValue;
-import org.exist.xquery.value.ComputableValue;
-import org.exist.xquery.value.DoubleValue;
-import org.exist.xquery.value.DurationValue;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.IntegerValue;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.NumericValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 public class FunSum extends Function {
 	
 	//Used to detect overflows : currently not used.
-	private boolean gotInfinity = false;
+	private boolean gotInfinity;
 
-	public final static FunctionSignature[] signatures = {
+	public static final FunctionSignature[] signatures = {
 		new FunctionSignature(
 			new QName("sum", Function.BUILTIN_FUNCTION_NS),
 			"Returns a value obtained by adding together the values in $arg. " +
@@ -128,10 +116,8 @@ public class FunSum extends Function {
         }
         
 		if (!gotInfinity) {
-			if (Type.subTypeOfUnion(result.getItemType(), Type.NUMERIC) && ((NumericValue)result).isInfinite()) {
-				//Throw an overflow eception here since we get an infinity 
-				//whereas is hasn't been provided by the sequence
-			}
+            Type.subTypeOfUnion(result.getItemType(), Type.NUMERIC);
+            ((NumericValue)result).isInfinite();
 		}
 
         if (context.getProfiler().isEnabled())

@@ -21,12 +21,11 @@
  */
 package org.exist.xquery;
 
-import java.util.Iterator;
-
 import org.exist.dom.QName;
 import org.exist.xquery.value.Sequence;
 
 import javax.annotation.Nullable;
+import java.util.Iterator;
 
 /**
  * Defines an XQuery library module. A module consists of function definitions

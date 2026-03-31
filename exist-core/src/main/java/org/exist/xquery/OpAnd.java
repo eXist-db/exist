@@ -89,7 +89,7 @@ public class OpAnd extends LogicalOp {
                         result = BooleanValue.FALSE;
                     } else {
                         final boolean rr = rs.effectiveBooleanValue();
-                        result = (rl && rr) ? BooleanValue.TRUE : BooleanValue.FALSE;
+                        result = rl && rr ? BooleanValue.TRUE : BooleanValue.FALSE;
                     }
             	}
             } else {
@@ -100,7 +100,7 @@ public class OpAnd extends LogicalOp {
                 } else {
                     final Sequence rs = right.eval(contextSequence, null);
                     final boolean rr = rs.effectiveBooleanValue();
-                    result = (rl && rr) ? BooleanValue.TRUE : BooleanValue.FALSE;
+                    result = rl && rr ? BooleanValue.TRUE : BooleanValue.FALSE;
                 }
             }
         }

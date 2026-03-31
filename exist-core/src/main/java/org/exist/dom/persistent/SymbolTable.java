@@ -105,14 +105,14 @@ public class SymbolTable implements BrokerPoolService, Closeable {
     /**
      * set to true if the symbol table needs to be saved
      */
-    private boolean changed = false;
+    private boolean changed;
 
     /**
      * the underlying symbols.dbx file
      */
     private Path file;
     private final VariableByteOutputStream outBuffer = new VariableByteOutputStream(256);
-    private OutputStream os = null;
+    private OutputStream os;
 
     @Override
     public void configure(final Configuration configuration) {
@@ -142,7 +142,7 @@ public class SymbolTable implements BrokerPoolService, Closeable {
         }
     }
 
-    public static final String getFileName() {
+    public static String getFileName() {
         return FILE_NAME;
     }
 
@@ -458,7 +458,7 @@ public class SymbolTable implements BrokerPoolService, Closeable {
         /**
          * contains the offset of the last symbol
          */
-        protected short offset = 0;
+        protected short offset;
 
         public SymbolCollection(final SymbolType symbolType, final int initialSize) {
             this.symbolType = symbolType;

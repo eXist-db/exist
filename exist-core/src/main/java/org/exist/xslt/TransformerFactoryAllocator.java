@@ -21,15 +21,14 @@
  */
 package org.exist.xslt;
 
-import java.util.Hashtable;
-import java.util.Map;
-
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.sax.SAXTransformerFactory;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.storage.BrokerPool;
+
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.sax.SAXTransformerFactory;
+import java.util.Hashtable;
+import java.util.Map;
 
 /**
  * Allows the TransformerFactory that is used for XSLT to be
@@ -42,20 +41,20 @@ import org.exist.storage.BrokerPool;
  * @author <a href="mailto:andrzej@chaeron.com">Andrzej Taramina</a>
  */
 
-public class TransformerFactoryAllocator {
-    private final static Logger LOG = LogManager.getLogger(TransformerFactoryAllocator.class);
+public final class TransformerFactoryAllocator {
+    private static final Logger LOG = LogManager.getLogger(TransformerFactoryAllocator.class);
 
     public static final String CONFIGURATION_ELEMENT_NAME = "transformer";
-    public final static String TRANSFORMER_CLASS_ATTRIBUTE = "class";
-    public final static String PROPERTY_TRANSFORMER_CLASS = "transformer.class";
+    public static final String TRANSFORMER_CLASS_ATTRIBUTE = "class";
+    public static final String PROPERTY_TRANSFORMER_CLASS = "transformer.class";
 
-    public final static String CONFIGURATION_TRANSFORMER_ATTRIBUTE_ELEMENT_NAME = "attribute";
-    public final static String PROPERTY_TRANSFORMER_ATTRIBUTES = "transformer.attributes";
+    public static final String CONFIGURATION_TRANSFORMER_ATTRIBUTE_ELEMENT_NAME = "attribute";
+    public static final String PROPERTY_TRANSFORMER_ATTRIBUTES = "transformer.attributes";
 
-    public final static String TRANSFORMER_CACHING_ATTRIBUTE = "caching";
-    public final static String PROPERTY_CACHING_ATTRIBUTE = "transformer.caching";
+    public static final String TRANSFORMER_CACHING_ATTRIBUTE = "caching";
+    public static final String PROPERTY_CACHING_ATTRIBUTE = "transformer.caching";
 
-    public final static String PROPERTY_BROKER_POOL = "transformer.brokerPool";
+    public static final String PROPERTY_BROKER_POOL = "transformer.brokerPool";
 
     //private constructor
     private TransformerFactoryAllocator() {

@@ -21,9 +21,10 @@
  */
 package org.exist.numbering;
 
+import org.exist.storage.io.VariableByteInput;
+
 import java.io.IOException;
 import java.util.Arrays;
-import org.exist.storage.io.VariableByteInput;
 
 /**
  * Base class representing a node id in the form of a dynamic level number (DLN).
@@ -45,9 +46,9 @@ public class DLNBase {
      * The default number of bits used per fixed
      * size unit.
      */
-    public final static int BITS_PER_UNIT = 4;
+    public static final int BITS_PER_UNIT = 4;
 
-    public final static int[] BIT_MASK = new int[8];
+    public static final int[] BIT_MASK = new int[8];
 
     static {
         BIT_MASK[0] = 0x80;
@@ -65,10 +66,10 @@ public class DLNBase {
      * number to be encoded by 1 unit is 7, for 2 units it's 71, for
      * 3 units 583 ...
      */
-    protected final static int[] PER_COMPONENT_SIZE = initComponents();
+    protected static final int[] PER_COMPONENT_SIZE = initComponents();
 
     private static int[] initComponents() {
-        final int size[] = new int[10];
+        final int[] size = new int[10];
         size[0] = 7;  // = Math.pow(2, 3) - 1;
         int components;
         int numBits;
@@ -80,16 +81,16 @@ public class DLNBase {
         return size;
     }
 
-    protected final static int UNIT_SHIFT = 3;
+    protected static final int UNIT_SHIFT = 3;
 
     /** A 0-bit is used to mark the start of a new level */
-    protected final static int LEVEL_SEPARATOR = 0;
+    protected static final int LEVEL_SEPARATOR = 0;
 
     /** 
      * A 1-bit marks the start of a sub level, which is logically a part
      * of the current level.
      */
-    protected final static int SUBLEVEL_SEPARATOR = 1;
+    protected static final int SUBLEVEL_SEPARATOR = 1;
     
     // the bits are stored in a byte[] 
     protected byte[] bits;
@@ -582,7 +583,7 @@ public class DLNBase {
         return buf.toString();
     }
 
-    private final static char[] digits = { '0', '1' };
+    private static final char[] digits = { '0', '1' };
 
     /**
      * Returns a string showing the bit representation

@@ -55,9 +55,9 @@ import java.nio.file.StandardOpenOption;
  */
 public class IndexStatistics extends AbstractIndex implements RawBackupSupport {
 
-    public final static String ID = IndexStatistics.class.getName();
+    public static final String ID = IndexStatistics.class.getName();
 
-    protected final static Logger LOG = LogManager.getLogger(IndexStatistics.class);
+    protected static final Logger LOG = LogManager.getLogger(IndexStatistics.class);
 
     private Path dataFile;
     private DataGuide dataGuide = new DataGuide();

@@ -51,12 +51,12 @@ public class CodePointStringTest {
     /**
      * Equivalent to &#110000;
      */
-    private final static String UNDEFINED_110000 = String.valueOf(Character.toChars(110000));
+    private static final String UNDEFINED_110000 = String.valueOf(Character.toChars(110000));
 
     /**
      * Equivalent to &#110001;
      */
-    private final static String UNDEFINED_110001 = String.valueOf(Character.toChars(110001));
+    private static final String UNDEFINED_110001 = String.valueOf(Character.toChars(110001));
 
     @Test
     public void roundtrip() {

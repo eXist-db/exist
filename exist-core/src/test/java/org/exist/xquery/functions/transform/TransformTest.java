@@ -56,10 +56,7 @@ import java.io.IOException;
 import java.util.Optional;
 
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 /**
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
@@ -229,7 +226,7 @@ public class TransformTest {
             assertEquals(1, sequence.getItemCount());
             final Item item = sequence.itemAt(0);
             assertTrue(item instanceof Element);
-            final Element dsn_flat = ((Element)item);
+            final Element dsn_flat = (Element)item;
             assertEquals("DSN_FLAT", dsn_flat.getNodeName());
 
             final NodeList nodeList = dsn_flat.getElementsByTagName("listOpsEntry");

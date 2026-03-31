@@ -41,7 +41,6 @@ import java.nio.file.Files;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.*;
-import static org.junit.Assert.assertEquals;
 
 public class SerializationTest {
 
@@ -55,7 +54,7 @@ public class SerializationTest {
             <?xml version="1.1" encoding="ISO-8859-1" standalone="yes"?>
             <bookmap id="bookmap-2"/>""";
 
-    private static String PREV_PROPFIND_METHOD_XML_SIZE = null;
+    private static String PREV_PROPFIND_METHOD_XML_SIZE;
 
     @ClassRule
     public static final ExistWebServer EXIST_WEB_SERVER = new ExistWebServer(true, false, true, true);

@@ -35,11 +35,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.array.ArrayType;
 import org.exist.xquery.functions.map.AbstractMapType;
-import org.exist.xquery.value.AtomicValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.NodeValue;
+import org.exist.xquery.value.*;
 
 import javax.annotation.Nullable;
 import javax.xml.stream.XMLStreamException;
@@ -67,18 +63,18 @@ public class QueryOptions {
         AND
     }
 
-    protected String queryAnalyzerId = null;
+    protected String queryAnalyzerId;
     protected DefaultOperator defaultOperator = DefaultOperator.AND;
-    protected boolean allowLeadingWildcard = false;
+    protected boolean allowLeadingWildcard;
     protected Optional<Integer> phraseSlop = Optional.empty();
 
-    protected boolean filterRewrite = false;
-    protected boolean lowercaseExpandedTerms = false;
+    protected boolean filterRewrite;
+    protected boolean lowercaseExpandedTerms;
     protected Optional<Map<String, FacetQuery>> facets = Optional.empty();
-    protected Set<String> fields = null;
-    protected String filterQuery = null;
-    protected String filterField = null;
-    protected Object filterValue = null;
+    protected Set<String> fields;
+    protected String filterQuery;
+    protected String filterField;
+    protected Object filterValue;
 
     public QueryOptions() {
         // default options
@@ -111,7 +107,7 @@ public class QueryOptions {
     public QueryOptions(final AbstractMapType map) throws XPathException {
         for (final IEntry<AtomicValue, Sequence> entry: map) {
             final String key = entry.key().getStringValue();
-            if (key.equals(OPTION_FACETS) && entry.value().hasOne() && entry.value().getItemType() == Type.MAP_ITEM) {
+            if (OPTION_FACETS.equals(key) && entry.value().hasOne() && entry.value().getItemType() == Type.MAP_ITEM) {
 
                 // iterate over each dimension and collect its values into a FacetQuery
                 final AbstractMapType subMap = (AbstractMapType) entry.value().itemAt(0);
@@ -130,7 +126,7 @@ public class QueryOptions {
                     tf.put(facet.key().getStringValue(), values);
                 }
                 facets = Optional.of(tf);
-            } else if (key.equals(OPTION_FILTER) && entry.value().hasOne() && entry.value().getItemType() == Type.MAP_ITEM) {
+            } else if (OPTION_FILTER.equals(key) && entry.value().hasOne() && entry.value().getItemType() == Type.MAP_ITEM) {
                 final AbstractMapType filterMap = (AbstractMapType) entry.value().itemAt(0);
                 filterField = getMapString(filterMap, "field");
                 filterValue = getMapValue(filterMap, "value");
@@ -193,7 +189,7 @@ public class QueryOptions {
          * @throws XPathException in case of conversion errors
          */
         public FacetQuery(final ArrayType input) throws XPathException {
-            final Sequence items[] = input.toArray();
+            final Sequence[] items = input.toArray();
             values = new ArrayList<>(items.length);
             for (Sequence seq : items) {
                 final List<String> subValues = new ArrayList<>(seq.getItemCount());
@@ -256,7 +252,7 @@ public class QueryOptions {
     private void set(String key, String value) throws XPathException {
         switch (key) {
             case OPTION_DEFAULT_OPERATOR:
-                if (value.equalsIgnoreCase(DEFAULT_OPERATOR_OR)) {
+                if (DEFAULT_OPERATOR_OR.equalsIgnoreCase(value)) {
                     defaultOperator = OR;
                 }
                 break;
@@ -290,24 +286,20 @@ public class QueryOptions {
 
     public void configureParser(CommonQueryParserConfiguration parser) {
         if (parser instanceof QueryParserBase base) {
-            switch (defaultOperator) {
-                case OR:
-                    base.setDefaultOperator(QueryParser.OR_OPERATOR);
-                    break;
-                default:
-                    base.setDefaultOperator(QueryParser.AND_OPERATOR);
-                    break;
+            if (defaultOperator == QueryOptions.DefaultOperator.OR) {
+                base.setDefaultOperator(QueryParser.OR_OPERATOR);
+            } else {
+                base.setDefaultOperator(QueryParser.AND_OPERATOR);
             }
         }
-        if (allowLeadingWildcard)
+        if (allowLeadingWildcard) {
             parser.setAllowLeadingWildcard(true);
+        }
         phraseSlop.ifPresent(parser::setPhraseSlop);
-        if (filterRewrite)
+        if (filterRewrite) {
             parser.setMultiTermRewriteMethod(MultiTermQuery.CONSTANT_SCORE_REWRITE);
-        else
+        } else {
             parser.setMultiTermRewriteMethod(MultiTermQuery.SCORING_BOOLEAN_REWRITE);
-        if (lowercaseExpandedTerms) {
-            // parser.setLowercaseExpandedTerms(lowercaseExpandedTerms);
         }
     }
 

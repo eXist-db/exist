@@ -60,7 +60,7 @@ public class InMemoryXMLStreamReader implements ExtendedXMLStreamReader {
 
     @Override
     public Object getProperty(final String name) throws IllegalArgumentException {
-        if(name.equals(PROPERTY_NODE_ID)) {
+        if(PROPERTY_NODE_ID.equals(name)) {
 
             if(currentNode < 0 || currentNode >= doc.size) {
                 return null;

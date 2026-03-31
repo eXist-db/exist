@@ -29,7 +29,7 @@ import java.util.*;
 
 public class FunctionCallVisitor extends DefaultExpressionVisitor {
 
-    private Set<FunctionSignature> functionCalls = new HashSet<>();
+    private final Set<FunctionSignature> functionCalls = new HashSet<>();
 
     public Set<FunctionSignature> getFunctionCalls() {
         return functionCalls;

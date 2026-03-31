@@ -21,10 +21,8 @@
  */
 package org.exist.protocolhandler.embedded;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
@@ -40,19 +38,21 @@ import org.exist.util.CachingFilterInputStreamInputSource;
 import org.exist.util.Configuration;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
-import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
-import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.util.io.CachingFilterInputStream;
 import org.exist.util.io.FilterInputStreamCache;
 import org.exist.util.io.FilterInputStreamCacheFactory;
 import org.exist.xmldb.XmldbURI;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  */
 public class InMemoryOutputStream extends OutputStream {
 
-  private final static Logger LOG = LogManager.getLogger(InMemoryOutputStream.class);
+  private static final Logger LOG = LogManager.getLogger(InMemoryOutputStream.class);
 
   private final XmldbURL xmldbURL;
   private final UnsynchronizedByteArrayOutputStream buffer;

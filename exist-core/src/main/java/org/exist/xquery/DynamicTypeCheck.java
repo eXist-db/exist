@@ -33,8 +33,8 @@ import org.exist.xquery.value.*;
  */
 public class DynamicTypeCheck extends AbstractExpression {
 
-	final private Expression expression;
-	final private int requiredType;
+	private final Expression expression;
+	private final int requiredType;
 	
 	public DynamicTypeCheck(XQueryContext context, int requiredType, Expression expr) {
 		super(context);
@@ -140,7 +140,7 @@ public class DynamicTypeCheck extends AbstractExpression {
                     item = item.convertTo(Type.STRING);
                     type = Type.STRING;
             } else {
-                if (!(Type.subTypeOf(type, requiredType))) {
+                if (!Type.subTypeOf(type, requiredType)) {
                     throw new XPathException(expression, ErrorCodes.XPTY0004,
                             Type.getTypeName(item.getType()) + "(" + item.getStringValue() +
                             ") is not a sub-type of " + Type.getTypeName(requiredType));

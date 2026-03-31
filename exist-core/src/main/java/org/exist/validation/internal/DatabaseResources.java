@@ -47,27 +47,27 @@ import java.util.*;
  */
 public class DatabaseResources {
 
-    public final static String QUERY_LOCATION = "org/exist/validation/internal/query/";
+    public static final String QUERY_LOCATION = "org/exist/validation/internal/query/";
 
-    public final static String FIND_XSD = QUERY_LOCATION + "find_schema_by_targetNamespace.xq";
+    public static final String FIND_XSD = QUERY_LOCATION + "find_schema_by_targetNamespace.xq";
 
-    public final static String FIND_CATALOGS_WITH_DTD = QUERY_LOCATION + "find_catalogs_with_dtd.xq";
+    public static final String FIND_CATALOGS_WITH_DTD = QUERY_LOCATION + "find_catalogs_with_dtd.xq";
 
-    public final static String PUBLICID = "publicId";
+    public static final String PUBLICID = "publicId";
 
-    public final static String TARGETNAMESPACE = "targetNamespace";
+    public static final String TARGETNAMESPACE = "targetNamespace";
 
-    public final static String CATALOG = "catalog";
+    public static final String CATALOG = "catalog";
 
-    public final static String COLLECTION = "collection";
+    public static final String COLLECTION = "collection";
     /**
      * Local logger
      */
-    private final static Logger logger = LogManager.getLogger(DatabaseResources.class);
+    private static final Logger logger = LogManager.getLogger(DatabaseResources.class);
     /**
      * Local reference to database
      */
-    private BrokerPool brokerPool = null;
+    private final BrokerPool brokerPool;
 
 
     /**

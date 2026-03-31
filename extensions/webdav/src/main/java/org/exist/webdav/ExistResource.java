@@ -39,24 +39,24 @@ import java.util.Properties;
  */
 public abstract class ExistResource {
 
-    protected final static Logger LOG = LogManager.getLogger(ExistResource.class);
-    protected boolean isInitialized = false;
+    protected static final Logger LOG = LogManager.getLogger(ExistResource.class);
+    protected boolean isInitialized;
     protected BrokerPool brokerPool;
     protected Subject subject;
     protected XmldbURI xmldbUri;
     protected Permission permissions;
     protected Long creationTime;
     protected Long lastModified;
-    protected boolean readAllowed = false;
-    protected boolean writeAllowed = false;
-    protected boolean executeAllowed = false;
+    protected boolean readAllowed;
+    protected boolean writeAllowed;
+    protected boolean executeAllowed;
 
     protected String ownerUser;
     protected String ownerGroup;
 
     protected final Properties configuration;
 
-    public ExistResource(final Properties configuration) {
+    protected ExistResource(final Properties configuration) {
         this.configuration = configuration;
     }
 

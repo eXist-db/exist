@@ -21,13 +21,11 @@
  */
 package org.exist.xquery.functions.fn;
 
-import java.util.Iterator;
-
+import org.exist.dom.QName;
+import org.exist.dom.memtree.NodeImpl;
 import org.exist.dom.persistent.ElementImpl;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.NodeSet;
-import org.exist.dom.QName;
-import org.exist.dom.memtree.NodeImpl;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
@@ -37,22 +35,17 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.EmptySequence;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.QNameValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+
+import java.util.Iterator;
 
 import static org.exist.dom.QName.Validity.VALID;
 
 public class FunResolveQName extends BasicFunction {
 
-    public final static FunctionSignature signature = 
+    public static final FunctionSignature signature = 
     	new FunctionSignature(new QName("resolve-QName", Function.BUILTIN_FUNCTION_NS), 
     			"""
                 Returns an xs:QName value (that is, an expanded-QName) by taking an xs:string that has the lexical \

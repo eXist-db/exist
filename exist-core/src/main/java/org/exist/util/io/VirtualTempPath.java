@@ -22,16 +22,16 @@
 
 package org.exist.util.io;
 
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.concurrent.locks.StampedLock;
-
 import net.jcip.annotations.GuardedBy;
 import net.jcip.annotations.ThreadSafe;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.exist.util.FileUtils;
+
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.concurrent.locks.StampedLock;
 
 /**
  * @author <a href="mailto:patrick@reini.net">Patrick Reinhart</a>

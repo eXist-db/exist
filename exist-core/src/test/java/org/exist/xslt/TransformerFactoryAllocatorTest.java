@@ -21,23 +21,22 @@
  */
 package org.exist.xslt;
 
-import java.util.Arrays;
-import java.util.Collection;
-import org.junit.runners.Parameterized.Parameters;
-import org.junit.runners.Parameterized;
-import org.junit.runner.RunWith;
-import java.util.Hashtable;
-import org.exist.util.Configuration;
-import javax.xml.transform.sax.SAXTransformerFactory;
 import org.easymock.EasyMock;
 import org.exist.storage.BrokerPool;
+import org.exist.util.Configuration;
 import org.junit.Test;
-
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.verify;
-import static org.easymock.EasyMock.replay;
-import static org.junit.Assert.assertEquals;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
+
+import javax.xml.transform.sax.SAXTransformerFactory;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Hashtable;
+
+import static org.easymock.EasyMock.*;
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
@@ -58,7 +57,7 @@ public class TransformerFactoryAllocatorTest {
     @Test
     public void getTransformerFactory() {
 
-        final  Hashtable<String,Object> testAttributes = new Hashtable<String,Object>();
+        final  Hashtable<String,Object> testAttributes = new Hashtable<>();
 
         BrokerPool mockBrokerPool = EasyMock.createMock(BrokerPool.class);
         Configuration mockConfiguration = EasyMock.createMock(Configuration.class);

@@ -21,8 +21,6 @@
  */
 package org.exist.xquery.modules.expathrepo;
 
-import java.util.Optional;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
@@ -32,14 +30,11 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
-
+import org.exist.xquery.value.*;
 import org.expath.pkg.repo.Packages;
 import org.expath.pkg.repo.Repository;
+
+import java.util.Optional;
 
 /**
  * List function: Lists out repository packages
@@ -50,9 +45,9 @@ import org.expath.pkg.repo.Repository;
  */
 public class ListFunction extends BasicFunction {
     @SuppressWarnings("unused")
-	private final static Logger logger = LogManager.getLogger(ListFunction.class);
+	private static final Logger logger = LogManager.getLogger(ListFunction.class);
 
-    public final static FunctionSignature signature =
+    public static final FunctionSignature signature =
 		new FunctionSignature(
 			new QName("list", ExpathPackageModule.NAMESPACE_URI, ExpathPackageModule.PREFIX),
 			"List repository packages.",

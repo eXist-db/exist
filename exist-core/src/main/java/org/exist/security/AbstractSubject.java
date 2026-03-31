@@ -21,12 +21,12 @@
  */
 package org.exist.security;
 
-import java.util.Optional;
-import java.util.Set;
-
 import org.exist.config.Configuration;
 import org.exist.security.realm.Realm;
 import org.exist.storage.DBBroker;
+
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -37,7 +37,7 @@ public abstract class AbstractSubject implements Subject {
     protected final AbstractAccount account;
     protected final Session session;
 
-    public AbstractSubject(final AbstractAccount account) {
+    protected AbstractSubject(final AbstractAccount account) {
         this.account = account;
         this.session = new Session(this);
     }

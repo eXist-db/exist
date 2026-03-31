@@ -27,11 +27,9 @@
 package org.exist.extensions.exquery.restxq.impl.xquery.exist;
 
 
-import java.util.*;
-
+import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.QName;
 import org.exist.extensions.exquery.restxq.impl.ExistXqueryRegistry;
 import org.exist.extensions.exquery.restxq.impl.RestXqServiceRegistryManager;
 import org.exist.security.Permission;
@@ -48,25 +46,27 @@ import org.exquery.restxq.RestXqService;
 import org.exquery.restxq.RestXqServiceRegistry;
 import org.xml.sax.helpers.AttributesImpl;
 
+import java.util.*;
+
 /**
  *
  * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 public class RegistryFunctions extends BasicFunction {
     
-    private final static QName qnFindResourceFunctions = new QName("find-resource-functions", ExistRestXqModule.NAMESPACE_URI, ExistRestXqModule.PREFIX);
-    private final static QName qnRegisterModule = new QName("register-module", ExistRestXqModule.NAMESPACE_URI, ExistRestXqModule.PREFIX);
-    private final static QName qnDeregisterModule = new QName("deregister-module", ExistRestXqModule.NAMESPACE_URI, ExistRestXqModule.PREFIX);
-    private final static QName qnRegisterResourceFunction = new QName("register-resource-function", ExistRestXqModule.NAMESPACE_URI, ExistRestXqModule.PREFIX);
-    private final static QName qnDeregisterResourceFunction = new QName("deregister-resource-function", ExistRestXqModule.NAMESPACE_URI, ExistRestXqModule.PREFIX);
-    private final static QName qnInvalidModules = new QName("invalid-modules", ExistRestXqModule.NAMESPACE_URI, ExistRestXqModule.PREFIX);
-    private final static QName qnMissingDependencies = new QName("missing-dependencies", ExistRestXqModule.NAMESPACE_URI, ExistRestXqModule.PREFIX);
-    private final static QName qnDependencies = new QName("dependencies", ExistRestXqModule.NAMESPACE_URI, ExistRestXqModule.PREFIX);
+    private static final QName qnFindResourceFunctions = new QName("find-resource-functions", ExistRestXqModule.NAMESPACE_URI, ExistRestXqModule.PREFIX);
+    private static final QName qnRegisterModule = new QName("register-module", ExistRestXqModule.NAMESPACE_URI, ExistRestXqModule.PREFIX);
+    private static final QName qnDeregisterModule = new QName("deregister-module", ExistRestXqModule.NAMESPACE_URI, ExistRestXqModule.PREFIX);
+    private static final QName qnRegisterResourceFunction = new QName("register-resource-function", ExistRestXqModule.NAMESPACE_URI, ExistRestXqModule.PREFIX);
+    private static final QName qnDeregisterResourceFunction = new QName("deregister-resource-function", ExistRestXqModule.NAMESPACE_URI, ExistRestXqModule.PREFIX);
+    private static final QName qnInvalidModules = new QName("invalid-modules", ExistRestXqModule.NAMESPACE_URI, ExistRestXqModule.PREFIX);
+    private static final QName qnMissingDependencies = new QName("missing-dependencies", ExistRestXqModule.NAMESPACE_URI, ExistRestXqModule.PREFIX);
+    private static final QName qnDependencies = new QName("dependencies", ExistRestXqModule.NAMESPACE_URI, ExistRestXqModule.PREFIX);
     
-    private final static SequenceType PARAM_MODULE = new FunctionParameterSequenceType("module", Type.ANY_URI, Cardinality.EXACTLY_ONE, "A URI pointing to an XQuery module.");
-    private final static SequenceType PARAM_RESOURCE_FUNCTION = new FunctionParameterSequenceType("function-signature", Type.STRING, Cardinality.EXACTLY_ONE, "A signature identifying a resource function. Takes the format {namespace}local-name#arity e.g. {http://somenamespace}some-function#2");
+    private static final SequenceType PARAM_MODULE = new FunctionParameterSequenceType("module", Type.ANY_URI, Cardinality.EXACTLY_ONE, "A URI pointing to an XQuery module.");
+    private static final SequenceType PARAM_RESOURCE_FUNCTION = new FunctionParameterSequenceType("function-signature", Type.STRING, Cardinality.EXACTLY_ONE, "A signature identifying a resource function. Takes the format {namespace}local-name#arity e.g. {http://somenamespace}some-function#2");
         
-    public final static FunctionSignature FNS_REGISTER_MODULE = new FunctionSignature(
+    public static final FunctionSignature FNS_REGISTER_MODULE = new FunctionSignature(
         qnRegisterModule,
         "Registers all resource functions identified in the XQuery Module with the RestXQ Registry.",
         new SequenceType[]{
@@ -75,7 +75,7 @@ public class RegistryFunctions extends BasicFunction {
         new FunctionReturnSequenceType(Type.DOCUMENT, Cardinality.EXACTLY_ONE, "The list of newly registered resource functions.")
     );
         
-    public final static FunctionSignature FNS_DEREGISTER_MODULE = new FunctionSignature(
+    public static final FunctionSignature FNS_DEREGISTER_MODULE = new FunctionSignature(
         qnDeregisterModule,
         "Deregisters all resource functions identified in the XQuery Module from the RestXQ Registry.",
         new SequenceType[]{
@@ -84,7 +84,7 @@ public class RegistryFunctions extends BasicFunction {
         new FunctionReturnSequenceType(Type.DOCUMENT, Cardinality.EXACTLY_ONE, "The list of deregistered resource functions.")
     );
         
-    public final static FunctionSignature FNS_FIND_RESOURCE_FUNCTIONS = new FunctionSignature(
+    public static final FunctionSignature FNS_FIND_RESOURCE_FUNCTIONS = new FunctionSignature(
         qnFindResourceFunctions,
         "Compiles the XQuery Module and examines it, producing a list of all the declared resource functions.",
         new SequenceType[]{
@@ -93,7 +93,7 @@ public class RegistryFunctions extends BasicFunction {
         new FunctionReturnSequenceType(Type.DOCUMENT, Cardinality.EXACTLY_ONE, "The list of newly registered resource functions.")
     );
         
-    public final static FunctionSignature FNS_REGISTER_RESOURCE_FUNCTION = new FunctionSignature(
+    public static final FunctionSignature FNS_REGISTER_RESOURCE_FUNCTION = new FunctionSignature(
         qnRegisterResourceFunction,
         "Registers a resource function from the XQuery Module with the RestXQ Registry.",
         new SequenceType[]{
@@ -103,7 +103,7 @@ public class RegistryFunctions extends BasicFunction {
         new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if the function was registered, false otherwise.")
     );
         
-    public final static FunctionSignature FNS_DEREGISTER_RESOURCE_FUNCTION = new FunctionSignature(
+    public static final FunctionSignature FNS_DEREGISTER_RESOURCE_FUNCTION = new FunctionSignature(
         qnDeregisterResourceFunction,
         "Deregisters a resource function from the RestXQ Registry.",
         new SequenceType[]{
@@ -113,34 +113,34 @@ public class RegistryFunctions extends BasicFunction {
         new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if the function was deregistered, false otherwise.")
     );
 
-    public final static FunctionSignature FNS_INVALID_MODULES = new FunctionSignature(
+    public static final FunctionSignature FNS_INVALID_MODULES = new FunctionSignature(
             qnInvalidModules,
         "Gets a list of all the invalid XQuery modules discovered by RESTXQ in the process of discovering resource functions.",
         FunctionSignature.NO_ARGS,
         new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "The list of invalid XQuery modules.")
     );
 
-    public final static FunctionSignature FNS_MISSING_DEPENDENCIES = new FunctionSignature(
+    public static final FunctionSignature FNS_MISSING_DEPENDENCIES = new FunctionSignature(
         qnMissingDependencies,
         "Gets a list of all the missing dependencies for XQuery modules discovered by RESTXQ in the process of discovering resource functions.",
         FunctionSignature.NO_ARGS,
         new FunctionReturnSequenceType(Type.DOCUMENT, Cardinality.EXACTLY_ONE, "The list of missing dependencies.")
     );
 
-    public final static FunctionSignature FNS_DEPENDENCIES = new FunctionSignature(
+    public static final FunctionSignature FNS_DEPENDENCIES = new FunctionSignature(
         qnDependencies,
         "Gets a list of all the dependencies of compiled XQuery modules discovered by RESTXQ in the process of discovering resource functions.",
         FunctionSignature.NO_ARGS,
         new FunctionReturnSequenceType(Type.DOCUMENT, Cardinality.EXACTLY_ONE, "The list of dependencies.")
     );
 
-    private final static QName MISSING_DEPENDENCIES = new QName("missing-dependencies", ExistRestXqModule.NAMESPACE_URI, ExistRestXqModule.PREFIX);
-    private final static QName MISSING_DEPENDENCY = new QName("missing-dependency", ExistRestXqModule.NAMESPACE_URI, ExistRestXqModule.PREFIX);
-    private final static QName REQUIRED_BY = new QName("required-by", ExistRestXqModule.NAMESPACE_URI, ExistRestXqModule.PREFIX);
-    private final static QName DEPENDENCIES = new QName("dependencies", ExistRestXqModule.NAMESPACE_URI, ExistRestXqModule.PREFIX);
-    private final static QName MODULE = new QName("module", ExistRestXqModule.NAMESPACE_URI, ExistRestXqModule.PREFIX);
-    private final static QName REQUIRES = new QName("requires", ExistRestXqModule.NAMESPACE_URI, ExistRestXqModule.PREFIX);
-    private final static String XQUERY_URI = "xquery-uri";
+    private static final QName MISSING_DEPENDENCIES = new QName("missing-dependencies", ExistRestXqModule.NAMESPACE_URI, ExistRestXqModule.PREFIX);
+    private static final QName MISSING_DEPENDENCY = new QName("missing-dependency", ExistRestXqModule.NAMESPACE_URI, ExistRestXqModule.PREFIX);
+    private static final QName REQUIRED_BY = new QName("required-by", ExistRestXqModule.NAMESPACE_URI, ExistRestXqModule.PREFIX);
+    private static final QName DEPENDENCIES = new QName("dependencies", ExistRestXqModule.NAMESPACE_URI, ExistRestXqModule.PREFIX);
+    private static final QName MODULE = new QName("module", ExistRestXqModule.NAMESPACE_URI, ExistRestXqModule.PREFIX);
+    private static final QName REQUIRES = new QName("requires", ExistRestXqModule.NAMESPACE_URI, ExistRestXqModule.PREFIX);
+    private static final String XQUERY_URI = "xquery-uri";
 
     public RegistryFunctions(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);

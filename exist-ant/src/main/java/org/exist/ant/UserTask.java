@@ -37,8 +37,8 @@ import org.xmldb.api.base.XMLDBException;
  */
 public abstract class UserTask extends AbstractXMLDBTask
 {
-    protected UserManagementService service = null;
-    protected Collection            base    = null;
+    protected UserManagementService service;
+    protected Collection            base;
 
     /* (non-Javadoc)
      * @see org.apache.tools.ant.Task#execute()

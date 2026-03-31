@@ -21,14 +21,6 @@
  */
 package org.exist.xquery.modules.sql;
 
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.mock;
-import static org.easymock.EasyMock.verify;
-import static org.easymock.EasyMock.replay;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import org.exist.dom.QName;
 import org.exist.dom.memtree.ElementImpl;
 import org.exist.dom.memtree.MemTreeBuilder;
@@ -41,13 +33,16 @@ import org.w3c.dom.Node;
 
 import java.sql.*;
 
+import static org.easymock.EasyMock.*;
+import static org.junit.Assert.*;
+
 /**
  * Unit Tests for sql:execute
  */
 public class ExecuteFunctionTest {
 
     // the function that will be tested
-    final static QName functionName = new QName("execute", SQLModule.NAMESPACE_URI, SQLModule.PREFIX);
+    static final QName functionName = new QName("execute", SQLModule.NAMESPACE_URI, SQLModule.PREFIX);
 
 
     @Test

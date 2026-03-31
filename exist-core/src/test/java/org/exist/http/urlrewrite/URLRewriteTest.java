@@ -21,23 +21,23 @@
  */
 package org.exist.http.urlrewrite;
 
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.easymock.EasyMock;
+import org.exist.Namespaces;
+import org.junit.Test;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import org.easymock.EasyMock;
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.verify;
-import static org.easymock.EasyMock.replay;
-import org.exist.Namespaces;
-import org.junit.Test;
+
+import static org.easymock.EasyMock.*;
 import static org.junit.Assert.assertEquals;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 /**
  *
@@ -86,8 +86,8 @@ public class URLRewriteTest {
 
         verify(mockConfig, mockParameter1, mockParameter2);
 
-        final Map<String, List<String>> testParameters = new HashMap<String, List<String>>();
-        List<String> values = new ArrayList<String>();
+        final Map<String, List<String>> testParameters = new HashMap<>();
+        List<String> values = new ArrayList<>();
         values.add(PARAM_VALUE_1);
         values.add(PARAM_VALUE_2);
         testParameters.put(PARAM_NAME, values);

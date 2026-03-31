@@ -22,19 +22,18 @@
 package org.exist.dom.persistent;
 
 import com.googlecode.junittoolbox.ParallelRunner;
+import org.easymock.Capture;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.BrokerPoolServiceException;
 import org.exist.storage.io.VariableByteInput;
-import org.easymock.Capture;
 import org.exist.storage.io.VariableByteOutputStream;
+import org.exist.util.Configuration;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-
-import org.exist.util.Configuration;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import static org.easymock.EasyMock.*;
 import static org.junit.Assert.assertEquals;

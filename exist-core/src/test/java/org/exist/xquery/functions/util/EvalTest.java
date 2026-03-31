@@ -24,20 +24,18 @@ package org.exist.xquery.functions.util;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.xmldb.*;
 import org.exist.xquery.ErrorCodes;
-import org.junit.*;
-
-import static org.junit.Assert.*;
-
 import org.exist.xquery.XPathException;
+import org.junit.*;
 import org.w3c.dom.Node;
-
-import org.xmldb.api.base.Collection;
 import org.xmldb.api.DatabaseManager;
+import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.BinaryResource;
 import org.xmldb.api.modules.CollectionManagementService;
+
+import static org.junit.Assert.*;
 
 /**
  *
@@ -51,8 +49,8 @@ public class EvalTest {
 
     private static Resource invokableQuery;
 
-    private final static String INVOKABLE_QUERY_FILENAME = "invokable.xql";
-    private final static String INVOKABLE_QUERY_EXTERNAL_VAR_NAME = "some-value";
+    private static final String INVOKABLE_QUERY_FILENAME = "invokable.xql";
+    private static final String INVOKABLE_QUERY_EXTERNAL_VAR_NAME = "some-value";
 
     @BeforeClass
     public static void setUp() throws Exception {

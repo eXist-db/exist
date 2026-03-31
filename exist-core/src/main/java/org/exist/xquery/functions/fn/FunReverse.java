@@ -23,14 +23,7 @@ package org.exist.xquery.functions.fn;
 
 import org.exist.dom.QName;
 import org.exist.xquery.*;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
+import org.exist.xquery.value.*;
 
 /**
  * Implements the fn:reverse function.
@@ -39,7 +32,7 @@ import org.exist.xquery.value.ValueSequence;
  */
 public class FunReverse extends Function {
 
-	public final static FunctionSignature signature =
+	public static final FunctionSignature signature =
 		new FunctionSignature(
 			new QName("reverse", Function.BUILTIN_FUNCTION_NS),
 			"Reverses the order of items in a sequence.  If the argument is an empty" +

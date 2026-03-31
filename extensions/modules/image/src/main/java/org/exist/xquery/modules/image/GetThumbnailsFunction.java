@@ -21,9 +21,32 @@
  */
 package org.exist.xquery.modules.image;
 
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exist.collections.Collection;
+import org.exist.dom.QName;
+import org.exist.dom.persistent.BinaryDocument;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.security.PermissionDeniedException;
+import org.exist.storage.BrokerPool;
+import org.exist.storage.DBBroker;
+import org.exist.storage.journal.JournalManager;
+import org.exist.storage.txn.TransactionManager;
+import org.exist.storage.txn.Txn;
+import org.exist.util.FileUtils;
+import org.exist.util.LockException;
+import org.exist.util.MimeType;
+import org.exist.util.StringInputSource;
+import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.BasicFunction;
+import org.exist.xquery.Cardinality;
+import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.*;
 
+import javax.imageio.ImageIO;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -34,39 +57,6 @@ import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-
-import javax.imageio.ImageIO;
-
-import org.exist.collections.Collection;
-import org.exist.dom.persistent.BinaryDocument;
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.QName;
-import org.exist.security.PermissionDeniedException;
-import org.exist.storage.BrokerPool;
-import org.exist.storage.DBBroker;
-import org.exist.storage.journal.JournalManager;
-import org.exist.storage.txn.TransactionManager;
-import org.exist.storage.txn.Txn;
-import org.exist.util.FileUtils;
-import org.exist.util.LockException;
-import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
-import org.exist.util.MimeType;
-import org.exist.util.StringInputSource;
-import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.BasicFunction;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.FunctionSignature;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.AnyURIValue;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.IntegerValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
 
 /**
  * 
@@ -79,15 +69,15 @@ public class GetThumbnailsFunction extends BasicFunction {
 	@SuppressWarnings("unused")
 	private static final Logger logger = LogManager.getLogger(GetThumbnailsFunction.class);
 	
-	private final static int MAXTHUMBHEIGHT = 100;
+	private static final int MAXTHUMBHEIGHT = 100;
 
-	private final static int MAXTHUMBWIDTH = 100;
+	private static final int MAXTHUMBWIDTH = 100;
 
-	private final static String THUMBPREFIX = "";
+	private static final String THUMBPREFIX = "";
 
-	private final static String THUMBPATH = "thumbs";
+	private static final String THUMBPATH = "thumbs";
 
-	public final static FunctionSignature signature = new FunctionSignature(
+	public static final FunctionSignature signature = new FunctionSignature(
 			new QName("thumbnail", ImageModule.NAMESPACE_URI,
 					ImageModule.PREFIX),
 			"Generate thumbnails from the given database collection",
@@ -140,8 +130,9 @@ public class GetThumbnailsFunction extends BasicFunction {
 				isSaveToDataBase = true;
 				try {
 					XmldbURI thumbsURI = XmldbURI.xmldbUriFor(thumbPath.getStringValue());
-					if (!thumbsURI.isAbsolute())
-						thumbsURI = picturePath.toXmldbURI().append(thumbPath.toString());
+                    if (!thumbsURI.isAbsolute()) {
+                        thumbsURI = picturePath.toXmldbURI().append(thumbPath.toString());
+                    }
 					thumbPath = new AnyURIValue(this, thumbsURI.toString());
 				} catch (URISyntaxException e) {
 					throw new XPathException(this, e.getMessage());
@@ -158,8 +149,9 @@ public class GetThumbnailsFunction extends BasicFunction {
 
 		if (!args[2].isEmpty()) {
 			maxThumbHeight = ((IntegerValue) args[2].itemAt(0)).getInt();
-			if (args[2].hasMany())
-				maxThumbWidth = ((IntegerValue) args[2].itemAt(1)).getInt();
+            if (args[2].hasMany()) {
+                maxThumbWidth = ((IntegerValue)args[2].itemAt(1)).getInt();
+            }
 		}
 
 		String prefix = THUMBPREFIX;
@@ -198,12 +190,13 @@ public class GetThumbnailsFunction extends BasicFunction {
                 }
             } else {
                 thumbDir = Path.of(thumbPath.toString());
-                if (!Files.isDirectory(thumbDir))
+                if (!Files.isDirectory(thumbDir)) {
                     try {
                         Files.createDirectories(thumbDir);
                     } catch (IOException e) {
                         throw new XPathException(this, e.getMessage());
                     }
+                }
 
             }
 
@@ -246,12 +239,12 @@ public class GetThumbnailsFunction extends BasicFunction {
                     // is not already existing??
                     if (!((fileExist(context.getBroker(), existingThumbsCol, docImage, prefix)) || (fileExist(
                             existingThumbsArray, docImage, prefix)))) {
-                        if (docImage.getResourceType() == DocumentImpl.BINARY_FILE)
+                        if (docImage.getResourceType() == DocumentImpl.BINARY_FILE) {
                             // TODO maybe extends for gifs too.
                             if (docImage.getMimeType().startsWith(
                                     "image/jpeg")) {
 
-                                binImage = (BinaryDocument) docImage;
+                                binImage = (BinaryDocument)docImage;
 
                                 // get a byte array representing the image
 
@@ -304,6 +297,7 @@ public class GetThumbnailsFunction extends BasicFunction {
                                     // + docImage.getFileURI()));
                                 }
                             }
+                        }
                     } else {
 
                         // result.add(new StringValue(""+docImage.getURI()+"|"
@@ -333,18 +327,20 @@ public class GetThumbnailsFunction extends BasicFunction {
 	}
 
 	private boolean fileExist(DBBroker broker, Collection col, DocumentImpl file, String prefix) throws PermissionDeniedException {
-		if (col != null)
-			return col.hasDocument(broker, XmldbURI.create(prefix + file.getFileURI()));
+        if (col != null) {
+            return col.hasDocument(broker, XmldbURI.create(prefix + file.getFileURI()));
+        }
 		return false;
 	}
 
 	private boolean fileExist(List<Path> cols, DocumentImpl file, String prefix) {
-		if (cols != null)
+        if (cols != null) {
             for (Path col : cols) {
                 if (FileUtils.fileName(col).endsWith(prefix + file.getFileURI())) {
                     return true;
                 }
             }
+        }
 
 		return false;
 	}

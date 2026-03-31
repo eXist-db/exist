@@ -26,7 +26,7 @@ import java.util.Properties;
 /**
  * Simple fluent builder pattern for {@link Properties}
  */
-public class PropertiesBuilder {
+public final class PropertiesBuilder {
 
     private final Properties properties;
 

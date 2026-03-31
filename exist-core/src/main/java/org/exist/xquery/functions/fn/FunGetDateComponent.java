@@ -23,7 +23,6 @@ package org.exist.xquery.functions.fn;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -33,15 +32,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.AbstractDateTimeValue;
-import org.exist.xquery.value.DateValue;
-import org.exist.xquery.value.DecimalValue;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.IntegerValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 /**
  *
@@ -50,12 +41,12 @@ import org.exist.xquery.value.Type;
  */
 public class FunGetDateComponent extends BasicFunction {
 	protected static final Logger logger = LogManager.getLogger(FunGetDateComponent.class);
-    public final static FunctionParameterSequenceType DATE_01_PARAM = new FunctionParameterSequenceType("date", Type.DATE, Cardinality.ZERO_OR_ONE, "The date as xs:date");
-    public final static FunctionParameterSequenceType TIME_01_PARAM = new FunctionParameterSequenceType("time", Type.TIME, Cardinality.ZERO_OR_ONE, "The time as xs:time");
-        public final static FunctionParameterSequenceType DATE_TIME_01_PARAM = new FunctionParameterSequenceType("date-time", Type.DATE_TIME, Cardinality.ZERO_OR_ONE, "The date-time as xs:dateTime");
+    public static final FunctionParameterSequenceType DATE_01_PARAM = new FunctionParameterSequenceType("date", Type.DATE, Cardinality.ZERO_OR_ONE, "The date as xs:date");
+    public static final FunctionParameterSequenceType TIME_01_PARAM = new FunctionParameterSequenceType("time", Type.TIME, Cardinality.ZERO_OR_ONE, "The time as xs:time");
+        public static final FunctionParameterSequenceType DATE_TIME_01_PARAM = new FunctionParameterSequenceType("date-time", Type.DATE_TIME, Cardinality.ZERO_OR_ONE, "The date-time as xs:dateTime");
 
 	// ----- fromDate
-	public final static FunctionSignature fnDayFromDate =
+	public static final FunctionSignature fnDayFromDate =
 		new FunctionSignature(
 			new QName("day-from-date", Function.BUILTIN_FUNCTION_NS),
 			"Returns an xs:integer between 1 and 31, both inclusive, representing " +
@@ -65,7 +56,7 @@ public class FunGetDateComponent extends BasicFunction {
             },
 			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "the day component from $date"));
 	
-	public final static FunctionSignature fnMonthFromDate =
+	public static final FunctionSignature fnMonthFromDate =
 		new FunctionSignature(
 			new QName("month-from-date", Function.BUILTIN_FUNCTION_NS),
 			"Returns an xs:integer between 1 and 12, both inclusive, representing the month " +
@@ -75,7 +66,7 @@ public class FunGetDateComponent extends BasicFunction {
             },
 			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "the month component from $date"));
 	
-	public final static FunctionSignature fnYearFromDate =
+	public static final FunctionSignature fnYearFromDate =
 		new FunctionSignature(
 			new QName("year-from-date", Function.BUILTIN_FUNCTION_NS),
 			"Returns an xs:integer representing the year in the localized value of $date. The value may be negative.",
@@ -84,7 +75,7 @@ public class FunGetDateComponent extends BasicFunction {
             },
 			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "the year component from $date"));
 	
-	public final static FunctionSignature fnTimezoneFromDate =
+	public static final FunctionSignature fnTimezoneFromDate =
 		new FunctionSignature(
 			new QName("timezone-from-date", Function.BUILTIN_FUNCTION_NS),
             "Returns the timezone component of $date if any. If $date has a timezone component, then the result is an xs:dayTimeDuration that indicates deviation from UTC; its value may range from +14:00 to -14:00 hours, both inclusive. Otherwise, the result is the empty sequence." +
@@ -95,7 +86,7 @@ public class FunGetDateComponent extends BasicFunction {
             new FunctionReturnSequenceType(Type.DAY_TIME_DURATION, Cardinality.ZERO_OR_ONE, "the timezone component from $date"));
 
 	// ----- fromTime
-	public final static FunctionSignature fnHoursFromTime =
+	public static final FunctionSignature fnHoursFromTime =
 		new FunctionSignature(
 			new QName("hours-from-time", Function.BUILTIN_FUNCTION_NS),
 			"Returns an xs:integer between 0 and 23, both inclusive, representing the " +
@@ -105,7 +96,7 @@ public class FunGetDateComponent extends BasicFunction {
             },
 			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "the hours component from $time"));
 	
-	public final static FunctionSignature fnMinutesFromTime =
+	public static final FunctionSignature fnMinutesFromTime =
 		new FunctionSignature(
 			new QName("minutes-from-time", Function.BUILTIN_FUNCTION_NS),
 			"Returns an xs:integer value between 0 to 59, both inclusive, representing the value of " +
@@ -115,7 +106,7 @@ public class FunGetDateComponent extends BasicFunction {
             },
 			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "the minutes component from $time"));
 	
-	public final static FunctionSignature fnSecondsFromTime =
+	public static final FunctionSignature fnSecondsFromTime =
 		new FunctionSignature(
 			new QName("seconds-from-time", Function.BUILTIN_FUNCTION_NS),
 			"Returns an xs:decimal value between 0 and 60.999..., both inclusive, representing the " +
@@ -127,7 +118,7 @@ public class FunGetDateComponent extends BasicFunction {
             },
 			new FunctionReturnSequenceType(Type.DECIMAL, Cardinality.ZERO_OR_ONE, "the seconds component from $time"));
 	
-	public final static FunctionSignature fnTimezoneFromTime =
+	public static final FunctionSignature fnTimezoneFromTime =
 		new FunctionSignature(
 			new QName("timezone-from-time", Function.BUILTIN_FUNCTION_NS),
 			"Returns the timezone component of $time if any. If $time has a timezone component, " +
@@ -140,7 +131,7 @@ public class FunGetDateComponent extends BasicFunction {
 
 	
 	// ----- fromDateTime
-	public final static FunctionSignature fnDayFromDateTime =
+	public static final FunctionSignature fnDayFromDateTime =
 		new FunctionSignature(
 			new QName("day-from-dateTime", Function.BUILTIN_FUNCTION_NS),
 			"Returns an xs:integer between 1 and 31, both inclusive, representing " +
@@ -150,7 +141,7 @@ public class FunGetDateComponent extends BasicFunction {
             },
 			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "the day component from $date-time"));
 	
-	public final static FunctionSignature fnMonthFromDateTime =
+	public static final FunctionSignature fnMonthFromDateTime =
 		new FunctionSignature(
 			new QName("month-from-dateTime", Function.BUILTIN_FUNCTION_NS),
 			"Returns an xs:integer between 1 and 12, both inclusive, representing the month " +
@@ -160,7 +151,7 @@ public class FunGetDateComponent extends BasicFunction {
             },
 			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "the month component from $date-time"));
 	
-	public final static FunctionSignature fnYearFromDateTime =
+	public static final FunctionSignature fnYearFromDateTime =
 		new FunctionSignature(
 			new QName("year-from-dateTime", Function.BUILTIN_FUNCTION_NS),
 			"Returns an xs:integer representing the year in the localized value of $date-time. The value may be negative.",
@@ -169,7 +160,7 @@ public class FunGetDateComponent extends BasicFunction {
             },
 			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "the year component from $date-time"));
 	
-	public final static FunctionSignature fnHoursFromDateTime =
+	public static final FunctionSignature fnHoursFromDateTime =
 		new FunctionSignature(
 			new QName("hours-from-dateTime", Function.BUILTIN_FUNCTION_NS),
 			"Returns an xs:integer between 0 and 23, both inclusive, representing the " +
@@ -179,7 +170,7 @@ public class FunGetDateComponent extends BasicFunction {
             },
 			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "the hours component from $date-time"));
 	
-	public final static FunctionSignature fnMinutesFromDateTime =
+	public static final FunctionSignature fnMinutesFromDateTime =
 		new FunctionSignature(
 			new QName("minutes-from-dateTime", Function.BUILTIN_FUNCTION_NS),
 			"Returns an xs:integer value between 0 to 59, both inclusive, representing the value of " +
@@ -189,7 +180,7 @@ public class FunGetDateComponent extends BasicFunction {
             },
 			new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE, "the minutes component from $date-time"));
 	
-	public final static FunctionSignature fnSecondsFromDateTime =
+	public static final FunctionSignature fnSecondsFromDateTime =
 		new FunctionSignature(
 			new QName("seconds-from-dateTime", Function.BUILTIN_FUNCTION_NS),
 			"Returns an xs:decimal value between 0 and 60.999..., both inclusive, representing the " +
@@ -201,7 +192,7 @@ public class FunGetDateComponent extends BasicFunction {
             },
 			new FunctionReturnSequenceType(Type.DECIMAL, Cardinality.ZERO_OR_ONE, "the seconds component from $date-time"));
 	
-	public final static FunctionSignature fnTimezoneFromDateTime =
+	public static final FunctionSignature fnTimezoneFromDateTime =
 		new FunctionSignature(
 			new QName("timezone-from-dateTime", Function.BUILTIN_FUNCTION_NS),
 			"Returns the timezone component of $date-time if any. If $date-time has a timezone component, " +

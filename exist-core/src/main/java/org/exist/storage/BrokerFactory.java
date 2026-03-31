@@ -21,18 +21,18 @@
  */
 package org.exist.storage;
 
-import java.lang.invoke.*;
-import java.util.Locale;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.function.BiFunction;
-
 import com.evolvedbinary.j8fu.Either;
 import com.evolvedbinary.j8fu.lazy.LazyValE;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.util.Configuration;
+
+import java.lang.invoke.*;
+import java.util.Locale;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.function.BiFunction;
 
 import static com.evolvedbinary.j8fu.Either.Left;
 import static com.evolvedbinary.j8fu.Either.Right;

@@ -31,7 +31,6 @@ import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 
 import javax.annotation.Nullable;
-
 import java.nio.file.Path;
 
 public class LocalRestoreService extends AbstractLocalService implements EXistRestoreService {

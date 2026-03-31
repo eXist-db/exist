@@ -111,22 +111,19 @@ public class NodePathPattern {
         int pos = 0;
         while (pos < matchPattern.length()) {
             final char ch = matchPattern.charAt(pos);
-            switch (ch) {
-                case '/':
-                    final String next = token.toString();
-                    token.setLength(0);
-                    if (!next.isEmpty()) {
-                        addSegment(namespaces, next);
-                    }
-                    if (matchPattern.charAt(++pos) == '/') {
-                        qnPath.addComponent(NodePath.SKIP);
-                        predicates.add(CONST_TRUE_PREDICATE);
-                    }
-                    break;
-                default:
-                    token.append(ch);
-                    pos++;
-                    break;
+            if (ch == '/') {
+                final String next = token.toString();
+                token.setLength(0);
+                if (!next.isEmpty()) {
+                    addSegment(namespaces, next);
+                }
+                if (matchPattern.charAt(++pos) == '/') {
+                    qnPath.addComponent(NodePath.SKIP);
+                    predicates.add(CONST_TRUE_PREDICATE);
+                }
+            } else {
+                token.append(ch);
+                pos++;
             }
         }
         if (!token.isEmpty()) {
@@ -241,8 +238,9 @@ public class NodePathPattern {
             if (i == len) {
                 return qnPath.includeDescendants();
             }
-            if (components_i == null)
+            if (components_i == null) {
                 components_i = qnPath.getComponent(i);
+            }
 
             if (components_i == NodePath.SKIP) {
                 components_i = qnPath.getComponent(++i);
@@ -262,7 +260,7 @@ public class NodePathPattern {
             }
         }
 
-        return (i == len);
+        return i == len;
     }
 
     @Override

@@ -21,28 +21,21 @@
  */
 package org.exist.xquery.modules.xslfo;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.util.Properties;
-
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
-
-import org.exist.util.ParametersExtractor;
 import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.exist.util.ParametersExtractor;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.Base64BinaryValueType;
-import org.exist.xquery.value.BinaryValueFromInputStream;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.util.Properties;
 
 import static org.exist.xquery.FunctionDSL.*;
 import static org.exist.xquery.modules.xslfo.XSLFOModule.functionSignatures;
@@ -61,7 +54,7 @@ public class RenderFunction extends BasicFunction {
     private static final FunctionParameterSequenceType FN_PARAM_PARAMETERS = optParam("parameters", Type.NODE, "parameters for the transform");
 
     private static final String FN_RENDER = "render";
-    public final static FunctionSignature[] signatures = functionSignatures(
+    public static final FunctionSignature[] signatures = functionSignatures(
         FN_RENDER,
         "Renders a given FO document. "
                 + "Returns an xs:base64binary of the result. "

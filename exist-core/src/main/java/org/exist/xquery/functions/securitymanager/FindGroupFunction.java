@@ -21,9 +21,6 @@
  */
 package org.exist.xquery.functions.securitymanager;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import org.exist.dom.QName;
 import org.exist.security.Account;
 import org.exist.security.SecurityManager;
@@ -36,6 +33,10 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.*;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 
 /**
  *
@@ -43,22 +44,22 @@ import org.exist.xquery.value.*;
  */
 public class FindGroupFunction extends BasicFunction {
 
-    private final static QName qnFindGroupsByGroupname = new QName("find-groups-by-groupname", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
-    private final static QName qnListGroups = new QName("list-groups", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
-    private final static QName qnFindGroupsWhereGroupnameContains = new QName("find-groups-where-groupname-contains", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
-    private final static QName qnGetUserGroups = new QName("get-user-groups", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
-    private final static QName qnGetUserPrimaryGroup = new QName("get-user-primary-group", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
-    private final static QName qnGroupExists = new QName("group-exists", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    private static final QName qnFindGroupsByGroupname = new QName("find-groups-by-groupname", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    private static final QName qnListGroups = new QName("list-groups", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    private static final QName qnFindGroupsWhereGroupnameContains = new QName("find-groups-where-groupname-contains", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    private static final QName qnGetUserGroups = new QName("get-user-groups", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    private static final QName qnGetUserPrimaryGroup = new QName("get-user-primary-group", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    private static final QName qnGroupExists = new QName("group-exists", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
     
     
-    public final static FunctionSignature FNS_LIST_GROUPS = new FunctionSignature(
+    public static final FunctionSignature FNS_LIST_GROUPS = new FunctionSignature(
         qnListGroups,
         "List all groups",
         null,
         new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "The list of groups")
     );
 
-    public final static FunctionSignature FNS_FIND_GROUPS_BY_GROUPNAME = new FunctionSignature(
+    public static final FunctionSignature FNS_FIND_GROUPS_BY_GROUPNAME = new FunctionSignature(
         qnFindGroupsByGroupname,
         "Finds groups whoose group name starts with a matching string",
         new SequenceType[] {
@@ -67,7 +68,7 @@ public class FindGroupFunction extends BasicFunction {
         new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "The list of matching group names")
     );
     
-    public final static FunctionSignature FNS_FIND_GROUPS_WHERE_GROUPNAME_CONTAINS = new FunctionSignature(
+    public static final FunctionSignature FNS_FIND_GROUPS_WHERE_GROUPNAME_CONTAINS = new FunctionSignature(
         qnFindGroupsWhereGroupnameContains,
         "Finds groups whoose group name contains the string fragment",
         new SequenceType[] {
@@ -76,7 +77,7 @@ public class FindGroupFunction extends BasicFunction {
         new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "The list of matching group names")
     );
     
-    public final static FunctionSignature FNS_GET_USER_GROUPS = new FunctionSignature(
+    public static final FunctionSignature FNS_GET_USER_GROUPS = new FunctionSignature(
         qnGetUserGroups,            
         "Returns the sequence of groups that the user $user is a member of. You must be a DBA or logged in as the user for which you are trying to retrieve group details for.",
         new SequenceType[] {
@@ -85,7 +86,7 @@ public class FindGroupFunction extends BasicFunction {
         new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE_OR_MORE, "The users group memberships")
     );
     
-    public final static FunctionSignature FNS_GET_USER_PRIMARY_GROUP = new FunctionSignature(
+    public static final FunctionSignature FNS_GET_USER_PRIMARY_GROUP = new FunctionSignature(
         qnGetUserPrimaryGroup,            
         "Returns the primary group of the user $user. You must be a DBA or logged in as the user for which you are trying to retrieve group details for.",
         new SequenceType[] {
@@ -94,7 +95,7 @@ public class FindGroupFunction extends BasicFunction {
         new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "The users primary group")
     );
 
-    public final static FunctionSignature FNS_GROUP_EXISTS = new FunctionSignature(
+    public static final FunctionSignature FNS_GROUP_EXISTS = new FunctionSignature(
         qnGroupExists,
         "Determines whether a user group exists.",
         new SequenceType[] {
@@ -113,7 +114,7 @@ public class FindGroupFunction extends BasicFunction {
         final DBBroker broker = getContext().getBroker();
         final Subject currentUser = broker.getCurrentSubject();
         
-        if(!isCalledAs(qnGetUserGroups.getLocalPart()) && currentUser.getName().equals(SecurityManager.GUEST_USER)) {
+        if(!isCalledAs(qnGetUserGroups.getLocalPart()) && SecurityManager.GUEST_USER.equals(currentUser.getName())) {
             throw new XPathException(this, "You must be an authenticated user");
         }
 

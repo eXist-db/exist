@@ -36,7 +36,7 @@ import org.exist.xquery.value.Type;
  */
 public class GetProductName extends BasicFunction {
 
-    public final static FunctionSignature signature = new FunctionSignature(
+    public static final FunctionSignature signature = new FunctionSignature(
         new QName("get-product-name", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
         "Returns the product name of the software running this query.",
         FunctionSignature.NO_ARGS,

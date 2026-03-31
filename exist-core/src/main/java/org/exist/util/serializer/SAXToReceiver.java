@@ -21,19 +21,19 @@
  */
 package org.exist.util.serializer;
 
-import org.xml.sax.ext.LexicalHandler;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.Locator;
-import org.xml.sax.SAXException;
-import org.xml.sax.Attributes;
 import org.exist.dom.QName;
 import org.exist.dom.persistent.AttrImpl;
 import org.exist.util.XMLString;
+import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.Locator;
+import org.xml.sax.SAXException;
+import org.xml.sax.ext.LexicalHandler;
 
 public class SAXToReceiver implements ContentHandler, LexicalHandler {
 
     private Receiver receiver;
-    private boolean inCDATASection = false;
+    private boolean inCDATASection;
     private boolean suppressWhitespace = true;
 
     public SAXToReceiver(Receiver receiver) {

@@ -59,12 +59,12 @@ public class TestDataGenerator {
 
     private static final Logger LOG = LogManager.getLogger(TestDataGenerator.class);
 
-    private final static Properties outputProps = new Properties();
+    private static final Properties outputProps = new Properties();
     static {
         outputProps.setProperty(OutputKeys.INDENT, "yes");
     }
 
-    private final static String IMPORT =
+    private static final String IMPORT =
             """
             import module namespace pt='http://exist-db.org/xquery/test/performance' \
             at 'java:org.exist.performance.xquery.PerfTestModule';
@@ -72,9 +72,9 @@ public class TestDataGenerator {
             declare variable $count external;
             """;
 
-    private String prefix;
-    private int count;
-    private Path[] generatedFiles;
+    private final String prefix;
+    private final int count;
+    private final Path[] generatedFiles;
 
     public TestDataGenerator(final String prefix, final int count) {
         this.prefix = prefix;

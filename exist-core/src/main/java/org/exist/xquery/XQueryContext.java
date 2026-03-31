@@ -21,36 +21,12 @@
  */
 package org.exist.xquery;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.charset.Charset;
-import java.nio.file.Path;
-import java.util.*;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
-
-import javax.annotation.Nullable;
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.Duration;
-import javax.xml.datatype.XMLGregorianCalendar;
-import javax.xml.stream.XMLStreamException;
-
 import antlr.RecognitionException;
 import antlr.TokenStreamException;
 import antlr.collections.AST;
 import com.evolvedbinary.j8fu.Either;
-import com.evolvedbinary.j8fu.function.TriFunctionE;
 import com.evolvedbinary.j8fu.function.QuadFunctionE;
+import com.evolvedbinary.j8fu.function.TriFunctionE;
 import com.evolvedbinary.j8fu.tuple.Tuple2;
 import com.ibm.icu.text.Collator;
 import it.unimi.dsi.fastutil.Hash;
@@ -65,12 +41,12 @@ import org.exist.Namespaces;
 import org.exist.collections.Collection;
 import org.exist.debuggee.Debuggee;
 import org.exist.debuggee.DebuggeeJoint;
-import org.exist.dom.persistent.*;
 import org.exist.dom.QName;
-import org.exist.http.servlets.*;
 import org.exist.dom.memtree.InMemoryXMLStreamReader;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.dom.memtree.NodeImpl;
+import org.exist.dom.persistent.*;
+import org.exist.http.servlets.*;
 import org.exist.numbering.NodeId;
 import org.exist.repo.ExistRepository;
 import org.exist.security.AuthenticationException;
@@ -102,6 +78,29 @@ import org.jgrapht.opt.graph.fastutil.FastutilMapGraph;
 import org.jgrapht.util.ConcurrencyUtil;
 import org.jgrapht.util.SupplierUtil;
 import org.w3c.dom.Node;
+
+import javax.annotation.Nullable;
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.Duration;
+import javax.xml.datatype.XMLGregorianCalendar;
+import javax.xml.stream.XMLStreamException;
+import java.io.IOException;
+import java.io.Reader;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.charset.Charset;
+import java.nio.file.Path;
+import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import static com.evolvedbinary.j8fu.OptionalUtil.or;
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
@@ -185,14 +184,14 @@ public class XQueryContext implements BinaryValueManager, Context {
     protected Map<QName, Variable> globalVariables = new Object2ObjectRBTreeMap<>();
 
     // The last element in the linked list of local in-scope variables
-    private LocalVariable lastVar = null;
+    private LocalVariable lastVar;
 
     private Deque<LocalVariable> contextStack = new ArrayDeque<>();
 
     private final Deque<FunctionSignature> callStack = new ArrayDeque<>();
 
     // The current size of the variable stack
-    private int variableStackSize = 0;
+    private int variableStackSize;
 
     // Unresolved references to user defined functions
     private final Deque<FunctionCall> forwardReferences = new ArrayDeque<>();
@@ -201,14 +200,14 @@ public class XQueryContext implements BinaryValueManager, Context {
     private final Deque<UserDefinedFunction> closures = new ArrayDeque<>();
 
     // List of options declared for this query at compile time - i.e. declare option
-    private List<Option> staticOptions = null;
+    private List<Option> staticOptions;
 
     // List of options declared for this query at run time - i.e. util:declare-option()
-    private List<Option> dynamicOptions = null;
+    private List<Option> dynamicOptions;
 
     //The Calendar for this context : may be changed by some options
-    private XMLGregorianCalendar calendar = null;
-    private TimeZone implicitTimeZone = null;
+    private XMLGregorianCalendar calendar;
+    private TimeZone implicitTimeZone;
 
     private final Map<String, Sequence> cachedUriCollectionResults = new HashMap<>();
 
@@ -252,39 +251,39 @@ public class XQueryContext implements BinaryValueManager, Context {
     /**
      * The set of statically known documents specified as an array of paths to documents and collections.
      */
-    private XmldbURI[] staticDocumentPaths = null;
+    private XmldbURI[] staticDocumentPaths;
 
     /**
      * The actual set of statically known documents. This will be generated on demand from staticDocumentPaths.
      */
-    private DocumentSet staticDocuments = null;
+    private DocumentSet staticDocuments;
 
     /**
      * The available documents of the dynamic context.
      * <p>
      * {@see https://www.w3.org/TR/xpath-31/#dt-available-docs}.
      */
-    private Map<String, TriFunctionE<DBBroker, Txn, String, Either<org.exist.dom.memtree.DocumentImpl, DocumentImpl>, XPathException>> dynamicDocuments = null;
+    private Map<String, TriFunctionE<DBBroker, Txn, String, Either<org.exist.dom.memtree.DocumentImpl, DocumentImpl>, XPathException>> dynamicDocuments;
 
     /**
      * The available test resources of the dynamic context.
      * <p>
      * {@see https://www.w3.org/TR/xpath-31/#dt-available-text-resources}.
      */
-    private Map<Tuple2<String, Charset>, QuadFunctionE<DBBroker, Txn, String, Charset, Reader, XPathException>> dynamicTextResources = null;
+    private Map<Tuple2<String, Charset>, QuadFunctionE<DBBroker, Txn, String, Charset, Reader, XPathException>> dynamicTextResources;
 
     /**
      * The available collections of the dynamic context.
      * <p>
      * {@see https://www.w3.org/TR/xpath-31/#dt-available-collections}.
      */
-    private Map<String, TriFunctionE<DBBroker, Txn, String, Sequence, XPathException>> dynamicCollections = null;
+    private Map<String, TriFunctionE<DBBroker, Txn, String, Sequence, XPathException>> dynamicCollections;
 
     /**
      * A set of documents which were modified during the query, usually through an XQuery update extension. The documents will be checked after the
      * query completed to see if a defragmentation run is needed.
      */
-    protected MutableDocumentSet modifiedDocuments = null;
+    protected MutableDocumentSet modifiedDocuments;
 
     /**
      * A general-purpose map to set attributes in the current query context.
@@ -293,7 +292,7 @@ public class XQueryContext implements BinaryValueManager, Context {
 
     protected AnyURIValue baseURI = AnyURIValue.EMPTY_URI;
 
-    private boolean baseURISetInProlog = false;
+    private boolean baseURISetInProlog;
 
     protected String moduleLoadPath = ".";
 
@@ -314,12 +313,12 @@ public class XQueryContext implements BinaryValueManager, Context {
     /**
      * Default Collator. Will be null for the default unicode codepoint collation.
      */
-    private Collator defaultCollator = null;
+    private Collator defaultCollator;
 
     /**
      * Set to true to enable XPath 1.0 backwards compatibility.
      */
-    private boolean backwardsCompatible = false;
+    private boolean backwardsCompatible;
 
     /**
      * Should whitespace inside node constructors be stripped?
@@ -329,12 +328,12 @@ public class XQueryContext implements BinaryValueManager, Context {
     /**
      * Should empty order greatest or least?
      */
-    private boolean orderEmptyGreatest = false;
+    private boolean orderEmptyGreatest;
 
     /**
      * XQuery 3.0 - declare context item :=
      */
-    private ContextItemDeclaration contextItemDeclaration = null;
+    private ContextItemDeclaration contextItemDeclaration;
 
     /**
      * The context item set in the query prolog or externally
@@ -345,13 +344,13 @@ public class XQueryContext implements BinaryValueManager, Context {
      * The position of the currently processed item in the context sequence. This field has to be set on demand, for example, before calling the
      * fn:position() function.
      */
-    private int contextPosition = 0;
-    private Sequence contextSequence = null;
+    private int contextPosition;
+    private Sequence contextSequence;
 
     /**
      * Shared name pool used by all in-memory documents constructed in this query context.
      */
-    private NamePool sharedNamePool = null;
+    private NamePool sharedNamePool;
 
     /**
      * Stack for temporary document fragments.
@@ -366,9 +365,9 @@ public class XQueryContext implements BinaryValueManager, Context {
     /**
      * An incremental counter to count the expressions in the current XQuery. Used during compilation to assign a unique ID to every expression.
      */
-    private int expressionCounter = 0;
+    private int expressionCounter;
 
-    private LockedDocumentMap protectedDocuments = null;
+    private LockedDocumentMap protectedDocuments;
 
     /**
      * The profiler instance used by this context.
@@ -378,17 +377,17 @@ public class XQueryContext implements BinaryValueManager, Context {
     //For holding the environment variables
     private Map<String, String> envs;
 
-    private ContextUpdateListener updateListener = null;
+    private ContextUpdateListener updateListener;
 
     private boolean enableOptimizer = true;
 
     private boolean raiseErrorOnFailedRetrieval = XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL_DEFAULT;
 
-    private boolean isShared = false;
+    private boolean isShared;
 
-    private Source source = null;
+    private Source source;
 
-    private DebuggeeJoint debuggeeJoint = null;
+    private DebuggeeJoint debuggeeJoint;
 
     private int xqueryVersion = 31;
 
@@ -396,7 +395,7 @@ public class XQueryContext implements BinaryValueManager, Context {
 
     protected Configuration configuration;
 
-    private boolean analyzed = false;
+    private boolean analyzed;
 
     /**
      * The Subject of the User that requested the execution of the XQuery
@@ -411,14 +410,14 @@ public class XQueryContext implements BinaryValueManager, Context {
      * was pushed onto the current broker from {@link XQueryContext#prepareForExecution()},
      * if so then we must pop the user in {@link XQueryContext#reset(boolean)}
      */
-    private boolean pushedUserFromHttpSession = false;
+    private boolean pushedUserFromHttpSession;
 
     /**
      * The HTTP context within which the XQuery
      * is executing, or null if there is no
      * HTTP context.
      */
-    private @Nullable HttpContext httpContext = null;
+    private @Nullable HttpContext httpContext;
     private static final QName UNNAMED_DECIMAL_FORMAT = new QName("__UNNAMED__", Function.BUILTIN_FUNCTION_NS);
 
     private final Map<QName, DecimalFormat> staticDecimalFormats = hashMap(Tuple(UNNAMED_DECIMAL_FORMAT, DecimalFormat.UNNAMED));
@@ -434,7 +433,7 @@ public class XQueryContext implements BinaryValueManager, Context {
      * NOTE(AR) - This is needed to ensure that these "imported contexts" are
      * also correctly reset and cleaned up when this XQuery is finished.
      */
-    private Set<XQueryContext> importedContexts = null;
+    private Set<XQueryContext> importedContexts;
 
     /**
      * Holds a list of the {@link #runCleanupTasks(Predicate)} functions
@@ -444,7 +443,7 @@ public class XQueryContext implements BinaryValueManager, Context {
      * {@link #reset()} or {@link #runCleanupTasks(Predicate)}
      * in any order.
      */
-    private List<Consumer<Predicate<Object>>> importedContextsCleanupTasksFns = null;
+    private List<Consumer<Predicate<Object>>> importedContextsCleanupTasksFns;
 
     public XQueryContext() {
         this(null, null, null);
@@ -976,14 +975,14 @@ public class XQueryContext implements BinaryValueManager, Context {
     @Override
     public String getURIForPrefix(final String prefix) {
         // try in-scope namespace declarations
-        String uri = (inScopeNamespaces == null) ? null : inScopeNamespaces.get(prefix);
+        String uri = inScopeNamespaces == null ? null : inScopeNamespaces.get(prefix);
 
         if (uri != null) {
             return uri;
         }
 
         if (inheritNamespaces) {
-            uri = (inheritedInScopeNamespaces == null) ? null : inheritedInScopeNamespaces.get(prefix);
+            uri = inheritedInScopeNamespaces == null ? null : inheritedInScopeNamespaces.get(prefix);
 
             if (uri != null) {
                 return uri;
@@ -994,14 +993,14 @@ public class XQueryContext implements BinaryValueManager, Context {
 
     @Override
     public String getPrefixForURI(final String uri) {
-        String prefix = (inScopePrefixes == null) ? null : inScopePrefixes.get(uri);
+        String prefix = inScopePrefixes == null ? null : inScopePrefixes.get(uri);
 
         if (prefix != null) {
             return prefix;
         }
 
         if (inheritNamespaces) {
-            prefix = (inheritedInScopePrefixes == null) ? null : inheritedInScopePrefixes.get(uri);
+            prefix = inheritedInScopePrefixes == null ? null : inheritedInScopePrefixes.get(uri);
 
             if (prefix != null) {
                 return prefix;
@@ -1019,7 +1018,7 @@ public class XQueryContext implements BinaryValueManager, Context {
     public void setDefaultFunctionNamespace(final String uri) throws XPathException {
         //Not sure for the 2nd clause : eXist-db forces the function NS as default.
         if (defaultFunctionNamespace != null
-                && !defaultFunctionNamespace.equals(Function.BUILTIN_FUNCTION_NS)
+                && !Function.BUILTIN_FUNCTION_NS.equals(defaultFunctionNamespace)
                 && !defaultFunctionNamespace.equals(uri)) {
             throw new XPathException(rootExpression, ErrorCodes.XQST0066,
                     "Default function namespace is already set to: '" + defaultFunctionNamespace + "'");
@@ -1062,7 +1061,7 @@ public class XQueryContext implements BinaryValueManager, Context {
 
     @Override
     public void setDefaultCollation(final String uri) throws XPathException {
-        if (uri.equals(Collations.UNICODE_CODEPOINT_COLLATION_URI) || uri.equals(Collations.CODEPOINT_SHORT)) {
+        if (Collations.UNICODE_CODEPOINT_COLLATION_URI.equals(uri) || Collations.CODEPOINT_SHORT.equals(uri)) {
             defaultCollation = Collations.UNICODE_CODEPOINT_COLLATION_URI;
             defaultCollator = null;
         }
@@ -1272,7 +1271,7 @@ public class XQueryContext implements BinaryValueManager, Context {
             return null;
         }
 
-        return docSupplier.apply(getBroker(), getBroker().getCurrentTransaction(), uri).fold(md -> md, pd -> (Sequence) pd);
+        return docSupplier.apply(getBroker(), getBroker().getCurrentTransaction(), uri).fold(md -> md, Sequence.class::cast);
     }
 
     /**
@@ -1739,7 +1738,7 @@ public class XQueryContext implements BinaryValueManager, Context {
 
             final Class<?> mClass = Class.forName(moduleClassName, false, existClassLoader);
 
-            if (!(Module.class.isAssignableFrom(mClass))) {
+            if (!Module.class.isAssignableFrom(mClass)) {
                 LOG.info("failed to load module. {} is not an instance of org.exist.xquery.Module.", moduleClassName);
                 return null;
             }
@@ -2211,7 +2210,7 @@ public class XQueryContext implements BinaryValueManager, Context {
     /**
      * The builder used for creating in-memory document fragments.
      */
-    private MemTreeBuilder documentBuilder = null;
+    private MemTreeBuilder documentBuilder;
 
     @Override
     public MemTreeBuilder getDocumentBuilder() {
@@ -2948,10 +2947,10 @@ public class XQueryContext implements BinaryValueManager, Context {
      * Save state
      */
     private class SavedState {
-        private Object2ObjectOpenHashMap<String, Module[]> modulesSaved = null;
-        private Object2ObjectOpenHashMap<String, Module[]> allModulesSaved = null;
-        private Map<String, String> staticNamespacesSaved = null;
-        private Map<String, String> staticPrefixesSaved = null;
+        private Object2ObjectOpenHashMap<String, Module[]> modulesSaved;
+        private Object2ObjectOpenHashMap<String, Module[]> allModulesSaved;
+        private Map<String, String> staticNamespacesSaved;
+        private Map<String, String> staticPrefixesSaved;
 
         void save() {
             if (modulesSaved != null) {
@@ -3388,7 +3387,7 @@ public class XQueryContext implements BinaryValueManager, Context {
             binaryValueInstances = new ArrayDeque<>();
         }
 
-        if (cleanupTasks.isEmpty() || cleanupTasks.stream().noneMatch(ct -> ct instanceof BinaryValueCleanupTask)) {
+        if (cleanupTasks.isEmpty() || cleanupTasks.stream().noneMatch(BinaryValueCleanupTask.class::isInstance)) {
             cleanupTasks.add(new BinaryValueCleanupTask());
         }
 
@@ -3717,8 +3716,7 @@ public class XQueryContext implements BinaryValueManager, Context {
         @Override
         public int hashCode() {
             int result = namespaceURI.hashCode();
-            result = 31 * result + location.hashCode();
-            return result;
+            return 31 * result + location.hashCode();
         }
 
         @Override

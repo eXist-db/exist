@@ -23,7 +23,10 @@ package org.exist.xqj;
 
 import com.googlecode.junittoolbox.ParallelRunner;
 import org.exist.EXistException;
+import org.exist.collections.Collection;
 import org.exist.collections.triggers.TriggerException;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.NodeProxy;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -35,30 +38,26 @@ import org.exist.util.LockException;
 import org.exist.util.MimeType;
 import org.exist.util.StringInputSource;
 import org.exist.util.serializer.SAXSerializer;
+import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.*;
-import org.exist.collections.Collection;
-import org.exist.xmldb.XmldbURI;
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.NodeProxy;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import org.junit.runner.RunWith;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
 import javax.xml.stream.XMLStreamException;
 import java.io.IOException;
-import java.io.StringWriter;
 import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.Optional;
 import java.util.Properties;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Wolfgang Meier

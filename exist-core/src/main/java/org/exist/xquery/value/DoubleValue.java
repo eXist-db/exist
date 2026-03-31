@@ -136,12 +136,12 @@ public class DoubleValue extends NumericValue {
 
     @Override
     public boolean isNegative() {
-        return (Double.compare(value, 0.0) < Constants.EQUAL);
+        return Double.compare(value, 0.0) < Constants.EQUAL;
     }
 
     @Override
     public boolean isPositive() {
-        return (Double.compare(value, 0.0) > Constants.EQUAL);
+        return Double.compare(value, 0.0) > Constants.EQUAL;
     }
 
     @Override

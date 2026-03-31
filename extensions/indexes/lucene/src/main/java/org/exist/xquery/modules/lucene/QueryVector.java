@@ -38,10 +38,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-import static org.exist.xquery.FunctionDSL.optManyParam;
-import static org.exist.xquery.FunctionDSL.optParam;
-import static org.exist.xquery.FunctionDSL.param;
-import static org.exist.xquery.FunctionDSL.returnsOptMany;
+import static org.exist.xquery.FunctionDSL.*;
 import static org.exist.xquery.modules.lucene.LuceneModule.functionSignature;
 
 /**
@@ -58,7 +55,7 @@ public class QueryVector extends BasicFunction {
     private static final FunctionParameterSequenceType FS_PARAM_OPTIONS = optParam("options", Type.ITEM,
             "Optional map with filter-query, filter, facets.");
 
-    final static FunctionSignature[] signatures = {
+    static final FunctionSignature[] signatures = {
             functionSignature("query-vector",
                     "KNN vector search. Returns k nearest nodes. Vector field is resolved from index config.",
                     returnsOptMany(Type.NODE, "Nodes matching the vector query, ordered by similarity."),

@@ -21,9 +21,6 @@
  */
 package org.exist.security.internal;
 
-import java.security.Principal;
-import java.util.*;
-import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
@@ -41,12 +38,16 @@ import org.exist.security.Group;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
-import org.exist.util.UUIDGenerator;
 import org.exist.security.internal.aider.UserAider;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
+import org.exist.util.UUIDGenerator;
 import org.exist.xmldb.XmldbURI;
+
+import java.security.Principal;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -54,22 +55,22 @@ import org.exist.xmldb.XmldbURI;
  */
 public class RealmImpl extends AbstractRealm {
 
-    private final static Logger LOG = LogManager.getLogger(RealmImpl.class);
+    private static final Logger LOG = LogManager.getLogger(RealmImpl.class);
 
     public static String ID = "exist"; //TODO: final "eXist-db";
 
-    static public void setPasswordRealm(final String value) {
+    public static void setPasswordRealm(final String value) {
         ID = value;
     }
 
-    public final static int SYSTEM_ACCOUNT_ID = 1048575;
-    public final static int ADMIN_ACCOUNT_ID = 1048574;
-    public final static int GUEST_ACCOUNT_ID = 1048573;
-    public final static int UNKNOWN_ACCOUNT_ID = 1048572;
+    public static final int SYSTEM_ACCOUNT_ID = 1048575;
+    public static final int ADMIN_ACCOUNT_ID = 1048574;
+    public static final int GUEST_ACCOUNT_ID = 1048573;
+    public static final int UNKNOWN_ACCOUNT_ID = 1048572;
 
-    public final static int DBA_GROUP_ID = 1048575;
-    public final static int GUEST_GROUP_ID = 1048574;
-    public final static int UNKNOWN_GROUP_ID = 1048573;
+    public static final int DBA_GROUP_ID = 1048575;
+    public static final int GUEST_GROUP_ID = 1048574;
+    public static final int UNKNOWN_GROUP_ID = 1048573;
 
     final AccountImpl ACCOUNT_SYSTEM;
     final AccountImpl ACCOUNT_UNKNOWN;

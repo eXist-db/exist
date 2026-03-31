@@ -22,11 +22,11 @@
 
 package org.exist.util.io;
 
-import static java.lang.Math.min;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.atomic.AtomicLongFieldUpdater;
+
+import static java.lang.Math.min;
 
 /**
  * @author <a href="mailto:patrick@reini.net">Patrick Reinhart</a>
@@ -42,7 +42,7 @@ final class MemoryContentsInputStream extends InputStream {
             .newUpdater(MemoryContentsInputStream.class, "position");
 
     private final MemoryContents memoryContents;
-    private byte[] singleByteBuffer;
+    private final byte[] singleByteBuffer;
 
     @SuppressWarnings("unused") // POSITION_UPDATER
     private volatile long position;

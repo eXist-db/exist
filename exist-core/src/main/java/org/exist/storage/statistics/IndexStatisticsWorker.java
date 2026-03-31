@@ -22,18 +22,9 @@
 package org.exist.storage.statistics;
 
 import org.exist.collections.Collection;
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.DocumentSet;
-import org.exist.dom.persistent.ElementImpl;
-import org.exist.dom.persistent.IStoredNode;
-import org.exist.dom.persistent.NodeProxy;
-import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.QName;
-import org.exist.indexing.AbstractStreamListener;
-import org.exist.indexing.IndexController;
-import org.exist.indexing.IndexWorker;
-import org.exist.indexing.MatchListener;
-import org.exist.indexing.StreamListener;
+import org.exist.dom.persistent.*;
+import org.exist.indexing.*;
 import org.exist.indexing.StreamListener.ReindexMode;
 import org.exist.numbering.NodeId;
 import org.exist.stax.ExtendedXMLStreamReader;
@@ -64,9 +55,9 @@ public class IndexStatisticsWorker implements IndexWorker {
     private final IndexStatistics index;
     private final StatisticsListener listener = new StatisticsListener();
 
-    private DataGuide perDocGuide = null;
+    private DataGuide perDocGuide;
     private ReindexMode mode = ReindexMode.STORE;
-    private DocumentImpl currentDoc = null;
+    private DocumentImpl currentDoc;
 
     public IndexStatisticsWorker(final IndexStatistics index) {
         this.index = index;
@@ -247,7 +238,7 @@ public class IndexStatisticsWorker implements IndexWorker {
         }
     }
 
-    private class DocumentCallback implements BTreeCallback {
+    private final class DocumentCallback implements BTreeCallback {
         private final DBBroker broker;
 
         private DocumentCallback(final DBBroker broker) {
