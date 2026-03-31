@@ -64,7 +64,7 @@ public class JSON extends BasicFunction {
                 ),
                 arity(
                         FS_PARAM_JSON_TEXT,
-                        param("options", Type.MAP_ITEM, "Parsing options")
+                        optParam("options", Type.MAP_ITEM, "Parsing options")
                 )
             )
     );
