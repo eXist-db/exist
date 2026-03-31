@@ -28,13 +28,13 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- 	This class implements Floyd's version 
- 	of the heapsort algorithm.
- 
- 	http://users.encs.concordia.ca/~chvatal/notes/hsort.html
- 	http://en.wikipedia.org/wiki/Heapsort#Variations
- 	
- @author José María Fernández (jmfg@users.sourceforge.net)
+ * This class implements Floyd's version
+ * of the heapsort algorithm.
+ *
+ * http://users.encs.concordia.ca/~chvatal/notes/hsort.html
+ * http://en.wikipedia.org/wiki/Heapsort#Variations
+ *
+ * @author José María Fernández (jmfg@users.sourceforge.net)
  */
 
 public final class HSort {
