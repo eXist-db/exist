@@ -138,7 +138,7 @@
 
         <!-- needed just for the license-maven-plugin in this module! -->
         <project.parent.relativePath>.</project.parent.relativePath>
-        
+
         <!-- Sonar cloud-->
         <sonar.projectKey>eXist-db_exist</sonar.projectKey>
         <sonar.organization>exist-db</sonar.organization>
@@ -1008,7 +1008,7 @@
                             <excludes>
                                 <exclude>FDB-backport-LGPL-21-ONLY-license.template.txt</exclude>
                                 <exclude>FDB-backport-LGPL-21-ONLY-license.xml.template.txt</exclude>
-                                <exclude>LGPL-21-license.template.txt</exclude>                    
+                                <exclude>LGPL-21-license.template.txt</exclude>
                                 <exclude>LGPL-21-license.txt</exclude>
                                 <exclude>LGPL-21-license.template.txt</exclude>
                                 <exclude>**/README.md</exclude>
