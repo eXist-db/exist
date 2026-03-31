@@ -35,8 +35,21 @@ import org.exist.util.LockException;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.*;
-import org.exist.xquery.value.*;
+import org.exist.xquery.BasicFunction;
+import org.exist.xquery.Expression;
+import org.exist.xquery.ExpressionVisitor;
+import org.exist.xquery.FunctionCall;
+import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.UserDefinedFunction;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.BinaryValue;
+import org.exist.xquery.value.BooleanValue;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReference;
+import org.exist.xquery.value.Item;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.Type;
 import org.xml.sax.SAXException;
 
 import java.io.BufferedOutputStream;
@@ -49,7 +62,13 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Optional;
 
-import static org.exist.xquery.FunctionDSL.*;
+import static org.exist.xquery.FunctionDSL.arities;
+import static org.exist.xquery.FunctionDSL.arity;
+import static org.exist.xquery.FunctionDSL.optManyParam;
+import static org.exist.xquery.FunctionDSL.optParam;
+import static org.exist.xquery.FunctionDSL.param;
+import static org.exist.xquery.FunctionDSL.returns;
+import static org.exist.xquery.FunctionDSL.returnsNothing;
 import static org.exist.xquery.modules.compression.CompressionModule.functionSignature;
 import static org.exist.xquery.modules.compression.CompressionModule.functionSignatures;
 
@@ -122,6 +141,25 @@ public class EntryFunctions extends BasicFunction {
         super(context, signature);
     }
 
+    /**
+     * Convert path (URL, file path) to a File object.
+     *
+     * @param path Path written as OS specific path or as URL
+     * @return File object
+     * @throws XPathException Thrown when the URL cannot be used.
+     */
+    public static Path getFile(final String path, final Expression expression) throws XPathException {
+        if (path.startsWith("file:")) {
+            try {
+                return Paths.get(new URI(path));
+            } catch (final Exception ex) { // catch all (URISyntaxException)
+                throw new XPathException(expression, path + " is not a valid URI: '" + ex.getMessage() + "'");
+            }
+        } else {
+            return Paths.get(path);
+        }
+    }
+
     @Override
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
         return switch (getName().getLocalPart()) {
@@ -142,7 +180,7 @@ public class EntryFunctions extends BasicFunction {
     }
 
     private void checkIsDBA() throws XPathException {
-        if(!context.getSubject().hasDbaRole()) {
+        if (!context.getSubject().hasDbaRole()) {
             final XPathException xpe = new XPathException(this, "Permission denied, calling user '" + context.getSubject().getName() + "' must be a DBA to call this function.");
             LOG.error("Invalid user", xpe);
             throw xpe;
@@ -173,6 +211,11 @@ public class EntryFunctions extends BasicFunction {
     private FunctionReference dbStoreEntry4(final Sequence[] args) throws XPathException {
         final XmldbURI destCollection = XmldbURI.create(args[0].itemAt(0).toString());
         return new FunctionReference(this, new FunctionCall(context, new StoreDbFunction4(context, destCollection)));
+    }
+
+    private enum DataType {
+        RESOURCE,
+        DIRECTORY
     }
 
     private static class StoreFsFunction3 extends StoreFsFunction {
@@ -217,19 +260,19 @@ public class EntryFunctions extends BasicFunction {
 
             switch (dataType) {
 
-                case resource:
+                case RESOURCE:
                     mkdirs(destPath.getParent());
-                    if(data.isPresent()) {
+                    if (data.isPresent()) {
                         // store the resource
                         try (final OutputStream os = new BufferedOutputStream(Files.newOutputStream(destPath, StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING))) {
-                            ((BinaryValue)data.get()).streamBinaryTo(os);
+                            ((BinaryValue) data.get()).streamBinaryTo(os);
                         } catch (final IOException e) {
                             throw new XPathException(this, "Cannot serialize file. A problem occurred while serializing the binary data: " + e.getMessage(), e);
                         }
                     }
                     break;
 
-                case directory:
+                case DIRECTORY:
                     mkdirs(destPath);
                     break;
             }
@@ -269,7 +312,7 @@ public class EntryFunctions extends BasicFunction {
 
             switch (dataType) {
 
-                case resource:
+                case RESOURCE:
                     mkcols(destPath.removeLastSegment());
                     if (data.isPresent()) {
                         // store the resource
@@ -281,13 +324,14 @@ public class EntryFunctions extends BasicFunction {
                                 context.getBroker().storeDocument(transaction, destPath.lastSegment(), new BinaryValueInputSource(binaryValue), mimeType, collection);
                             }
                             transaction.commit();
-                        } catch (final IOException | PermissionDeniedException | EXistException | LockException | SAXException e) {
+                        } catch (final IOException | PermissionDeniedException | EXistException | LockException |
+                                       SAXException e) {
                             throw new XPathException(this, "Cannot serialize file. A problem occurred while serializing the binary data: " + e.getMessage(), e);
                         }
                     }
                     break;
 
-                case directory:
+                case DIRECTORY:
                     mkcols(destPath);
                     break;
             }
@@ -331,7 +375,7 @@ public class EntryFunctions extends BasicFunction {
 
             final Sequence dataSeq = getCurrentArguments()[2];
             final Optional<Item> data;
-            if(!dataSeq.isEmpty()) {
+            if (!dataSeq.isEmpty()) {
                 data = Optional.of(dataSeq.itemAt(0));
             } else {
                 data = Optional.empty();
@@ -343,29 +387,5 @@ public class EntryFunctions extends BasicFunction {
         }
 
         protected abstract void eval(final String path, final DataType dataType, final Optional<Item> data) throws XPathException;
-    }
-
-    private enum DataType {
-        resource,
-        directory
-    }
-
-    /**
-     *  Convert path (URL, file path) to a File object.
-     *
-     * @param path Path written as OS specific path or as URL
-     * @return File object
-     * @throws XPathException Thrown when the URL cannot be used.
-     */
-    public static Path getFile(final String path, final Expression expression) throws XPathException {
-        if(path.startsWith("file:")){
-            try {
-                return Paths.get(new URI(path));
-            } catch (Exception ex) { // catch all (URISyntaxException)
-                throw new XPathException(expression, path + " is not a valid URI: '"+ ex.getMessage() +"'");
-            }
-        } else {
-            return Paths.get(path);
-        }
     }
 }

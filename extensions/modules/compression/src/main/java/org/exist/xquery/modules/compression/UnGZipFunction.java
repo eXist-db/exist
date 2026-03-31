@@ -21,11 +21,8 @@
  */
 package org.exist.xquery.modules.compression;
 
-import java.io.IOException;
-import java.util.zip.GZIPInputStream;
-
-import org.exist.dom.QName;
 import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
+import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -39,48 +36,48 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
+import java.io.IOException;
+import java.util.zip.GZIPInputStream;
+
 
 /**
  * Compression into a GZip file
- * 
+ *
  * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  * @version 1.1
  */
-public class UnGZipFunction extends BasicFunction
-{
+public class UnGZipFunction extends BasicFunction {
 
-    public final static FunctionSignature signatures[] = {
-        new FunctionSignature(
-            new QName("ungzip", CompressionModule.NAMESPACE_URI, CompressionModule.PREFIX),
-            "UnGZip's data",
-            new SequenceType[] {
-                new FunctionParameterSequenceType("gzip-data", Type.BASE64_BINARY, Cardinality.EXACTLY_ONE, "The gzip data to uncompress.")
-            },
-            new SequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE)
-        )
+    public final static FunctionSignature[] signatures = {
+            new FunctionSignature(
+                    new QName("ungzip", CompressionModule.NAMESPACE_URI, CompressionModule.PREFIX),
+                    "UnGZip's data",
+                    new SequenceType[]{
+                            new FunctionParameterSequenceType("gzip-data", Type.BASE64_BINARY, Cardinality.EXACTLY_ONE, "The gzip data to uncompress.")
+                    },
+                    new SequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE)
+            )
     };
 
-    public UnGZipFunction(XQueryContext context, FunctionSignature signature)
-    {
-            super(context, signature);
+    public UnGZipFunction(final XQueryContext context, final FunctionSignature signature) {
+        super(context, signature);
     }
 
     @Override
-    public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
-    {
+    public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
         // is there some data to unGZip?
-        if(args[0].isEmpty())
+        if (args[0].isEmpty())
             return Sequence.EMPTY_SEQUENCE;
 
         final BinaryValue bin = (BinaryValue) args[0].itemAt(0);
 
         //TODO(AR) just pass the GZIPInputStream straight into BinaryValueFromInputStream.getInstance
         // ungzip the data
-        try(final GZIPInputStream gzis = new GZIPInputStream(bin.getInputStream());
-                final UnsynchronizedByteArrayOutputStream baos = UnsynchronizedByteArrayOutputStream.builder().get()) {
+        try (final GZIPInputStream gzis = new GZIPInputStream(bin.getInputStream());
+             final UnsynchronizedByteArrayOutputStream baos = UnsynchronizedByteArrayOutputStream.builder().get()) {
             baos.write(gzis);
             return BinaryValueFromInputStream.getInstance(context, new Base64BinaryValueType(), baos.toInputStream(), this);
-        } catch(final IOException ioe) {
+        } catch (final IOException ioe) {
             throw new XPathException(this, ioe.getMessage(), ioe);
         }
     }

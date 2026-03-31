@@ -326,6 +326,13 @@ function mt:merge-duplicate-keys-combine-has-duplicates-empty-third() {
         ($specialWeek(7))
 };
 
+(: see https://github.com/eXist-db/exist/issues/6125 :)
+declare
+    %test:assertEquals(1)
+function mt:merge-duplicate-keys-empty-sequence() {
+    map:merge((map{1: 1},map{1: 3}), map{"duplicates": ()})?1
+};
+
 declare
     %test:assertEmpty
 function mt:mapEmptyValue() {

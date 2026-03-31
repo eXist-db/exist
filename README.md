@@ -13,11 +13,12 @@
 [![Java 21](https://img.shields.io/badge/java-21-blue.svg)](https://adoptopenjdk.net/)
 [![License](https://img.shields.io/badge/license-LGPL%202.1-blue.svg)](https://www.gnu.org/licenses/lgpl-2.1.html)
 [![Download](https://img.shields.io/github/v/release/eXist-db/exist.svg)](https://github.com/eXist-db/exist/releases/)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.exist-db/exist/badge.svg)](https://search.maven.org/search?q=g:org.exist-db)
+[![Maven Central](https://img.shields.io/badge/Sonatype%20Central-org.exist--db-blue?logo=sonatype)](https://central.sonatype.com/search?q=g:org.exist-db&smo=true)
 [![javadoc](https://javadoc.io/badge2/org.exist-db/exist-core/javadoc.svg)](https://javadoc.io/doc/org.exist-db/exist-core)
 [![Slack](https://img.shields.io/badge/exist--db-slack-3e103f.svg)](https://exist-db.slack.com)
 [![OpenCollective](https://opencollective.com/existdb/backers/badge.svg)](https://opencollective.com/existdb#backer)
 [![Code of Conduct](https://img.shields.io/badge/code%20of%20conduct-contributor%20covenant-%235e0d73.svg)](https://contributor-covenant.org/version/1/4/)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/eXist-db/exist)
 
 eXist-db is a high-performance open source native XML database—a NoSQL document database and application platform built entirely around XML technologies. The main homepage for eXist-db can be found at [exist-db.org](https://exist-db.org "eXist Homepage"). This is the GitHub repository of eXist source code, and this page links to resources for downloading, building, and contributing to eXist-db, below.
 

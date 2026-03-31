@@ -1,0 +1,6 @@
+Source path,Artifact ID,Group ID,Name,Description,Version,Parent project,Module count
+exist-parent/pom.xml,exist-parent,org.exist-db,eXist-db Parent,eXist-db NoSQL Database,7.0.0-SNAPSHOT,,
+exist-start/pom.xml,exist-start,,eXist-db Startup,Startup for eXist-db NoSQL Database Client/Server,,org.exist-db:exist-parent:7.0.0-SNAPSHOT,
+exist-jetty-config/pom.xml,exist-jetty-config,,eXist-db Jetty Configuration,Configuration for eXist-db NoSQL Database Jetty Server,,org.exist-db:exist-parent:7.0.0-SNAPSHOT,
+exist-samples/pom.xml,exist-samples,,eXist-db Data Samples,Data samples for eXist-db NoSQL Database,,org.exist-db:exist-parent:7.0.0-SNAPSHOT,
+exist-core/pom.xml,exist-core,,eXist-db Core,eXist-db NoSQL Database Core,,org.exist-db:exist-parent:7.0.0-SNAPSHOT,
