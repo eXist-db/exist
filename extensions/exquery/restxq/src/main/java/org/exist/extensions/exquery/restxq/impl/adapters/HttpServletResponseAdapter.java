@@ -51,7 +51,6 @@ public class HttpServletResponseAdapter implements HttpResponse {
 
     @Override
     public void setStatus(final HttpStatus status, final String reason) {
-        // setStatus(int, String) removed in Servlet 6.0; reason phrase ignored
         response.setStatus(status.getStatus());
     }
 

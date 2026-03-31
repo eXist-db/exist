@@ -441,7 +441,6 @@ public class HttpServletRequestWrapper implements HttpServletRequest, Closeable 
         return request.isRequestedSessionIdFromURL();
     }
 
-    // isRequestedSessionIdFromUrl() removed in Servlet 6.0
 
     @Override
     public boolean authenticate(final HttpServletResponse httpServletResponse) throws IOException, ServletException {
@@ -567,8 +566,6 @@ public class HttpServletRequestWrapper implements HttpServletRequest, Closeable 
     public RequestDispatcher getRequestDispatcher(final String name) {
         return request.getRequestDispatcher(name);
     }
-
-    // getRealPath(String) removed in Servlet 6.0 — use ServletContext.getRealPath() instead
 
     @Override
     public int getRemotePort() {

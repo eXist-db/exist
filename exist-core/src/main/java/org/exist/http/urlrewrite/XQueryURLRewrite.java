@@ -382,7 +382,6 @@ public class XQueryURLRewrite extends HttpServlet {
     }
 
     private void applyViews(final ModelAndView modelView, final List<URLRewrite> views, final HttpServletResponse response, final RequestWrapper modifiedRequest, final HttpServletResponse currentResponse) throws IOException, ServletException {
-        //int status;
         HttpServletResponse wrappedResponse = currentResponse;
         for (int i = 0; i < views.size(); i++) {
             final URLRewrite view = views.get(i);
@@ -1381,7 +1380,6 @@ public class XQueryURLRewrite extends HttpServlet {
             super.setStatus(i);
         }
 
-        // setStatus(int, String) removed in Servlet 6.0
 
         @Override
         public void sendError(final int i, final String msg) throws IOException {

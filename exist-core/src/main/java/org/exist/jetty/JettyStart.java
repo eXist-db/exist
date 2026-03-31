@@ -269,7 +269,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
 
             // start Jetty
             final Optional<Server> maybeServer = startJetty(configuredObjects);
-            if(!maybeServer.isPresent()) {
+            if(maybeServer.isEmpty()) {
                 logger.error("Unable to find a server to start in jetty configurations");
                 throw new IllegalStateException();
             }
@@ -354,7 +354,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
             notifyObservers(SIGNAL_ERROR);
 
         } catch (final Exception e) {
-            e.printStackTrace();
+            logger.fatal("An unexpected error occurred, web server can not be started: {}", e.getMessage(), e);
             setChanged();
             notifyObservers(SIGNAL_ERROR);
         }
@@ -573,7 +573,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
                             // make sure to stop the timer thread!
                             timer.cancel();
                         } catch (final Exception e) {
-                            e.printStackTrace();
+                            logger.error("An error occurred in the shutdown scheduler: {}", e.getMessage(), e);
                         }
                     }
                 }, 1000); // timer.schedule
@@ -614,6 +614,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
             try {
                 wait();
             } catch (final InterruptedException e) {
+                // nop
             }
         }
         return false;
