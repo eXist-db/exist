@@ -322,7 +322,12 @@ public class XMLWriter implements SerializerWriter {
     }
 
     public void namespace(final String prefix, final String nsURI) throws TransformerException {
-        if((nsURI == null) && (prefix == null || prefix.isEmpty())) {
+        if((nsURI == null || nsURI.isEmpty()) && (prefix == null || prefix.isEmpty())) {
+            return;
+        }
+
+        // The xml namespace is implicitly declared and never needs explicit serialization
+        if ("xml".equals(prefix)) {
             return;
         }
 

@@ -439,17 +439,20 @@ public class XHTMLWriter extends IndentingXMLWriter {
 
             // HTML5 method uses <meta charset="UTF-8">
             // XHTML and HTML4 use <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+            // XHTML mode requires self-closing tags (/>)  for valid XML output —
+            // the URL rewrite pipeline re-parses this as XML in the view step.
+            final boolean selfClose = !isHtmlMethod();
             if (isHtmlMethod() && isHtml5Version()) {
                 writer.write("<meta charset=\"");
                 writer.write(encoding);
-                writer.write("\">");
+                writer.write(selfClose ? "\" />" : "\">");
             } else {
                 final String mediaType = outputProperties.getProperty(OutputKeys.MEDIA_TYPE, "text/html");
                 writer.write("<meta http-equiv=\"Content-Type\" content=\"");
                 writer.write(mediaType);
                 writer.write("; charset=");
                 writer.write(encoding);
-                writer.write("\">");
+                writer.write(selfClose ? "\" />" : "\">");
             }
         } catch (IOException e) {
             throw new TransformerException(e.getMessage(), e);
