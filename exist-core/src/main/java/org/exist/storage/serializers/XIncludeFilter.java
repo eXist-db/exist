@@ -21,21 +21,21 @@
  */
 package org.exist.storage.serializers;
 
+import com.evolvedbinary.j8fu.Either;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Namespaces;
 import org.exist.dom.INodeHandle;
-import org.exist.dom.persistent.BinaryDocument;
-import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.SAXAdapter;
+import org.exist.dom.persistent.BinaryDocument;
+import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.source.DBSource;
 import org.exist.source.Source;
 import org.exist.source.StringSource;
 import org.exist.storage.XQueryPool;
-import com.evolvedbinary.j8fu.Either;
 import org.exist.util.XMLReaderPool;
 import org.exist.util.serializer.AttrList;
 import org.exist.util.serializer.Receiver;
@@ -90,7 +90,7 @@ public class XIncludeFilter implements Receiver {
     private static final String XI_INCLUDE = "include";
     private static final String XI_FALLBACK = "fallback";
 
-    private static class ResourceError {
+    private static final class ResourceError {
         private final String message;
         private final Optional<Exception> cause;
 
@@ -107,11 +107,11 @@ public class XIncludeFilter implements Receiver {
 
     private @Nullable Receiver receiver;
     private final Serializer serializer;
-    private @Nullable DocumentImpl document = null;
-    private @Nullable String moduleLoadPath = null;
-    private @Nullable Map<String, String> namespaces = null;
-    private boolean inFallback = false;
-    private @Nullable ResourceError error = null;
+    private @Nullable DocumentImpl document;
+    private @Nullable String moduleLoadPath;
+    private @Nullable Map<String, String> namespaces;
+    private boolean inFallback;
+    private @Nullable ResourceError error;
 
     public XIncludeFilter(final Serializer serializer, @Nullable final Receiver receiver) {
         this.receiver = receiver;
@@ -231,8 +231,8 @@ public class XIncludeFilter implements Receiver {
 
     @Override
     public void startElement(final QName qname, final AttrList attribs) throws SAXException {
-        if (qname.getNamespaceURI() != null && qname.getNamespaceURI().equals(Namespaces.XINCLUDE_NS)) {
-            if (qname.getLocalPart().equals(XI_INCLUDE)) {
+        if (Namespaces.XINCLUDE_NS.equals(qname.getNamespaceURI())) {
+            if (XI_INCLUDE.equals(qname.getLocalPart())) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("processing include ...");
                 }
@@ -246,7 +246,7 @@ public class XIncludeFilter implements Receiver {
                     }
                     error = resourceError;
                 }
-            } else if (qname.getLocalPart().equals(XI_FALLBACK)) {
+            } else if (XI_FALLBACK.equals(qname.getLocalPart())) {
                 inFallback = true;
             }
         } else if (!inFallback || error != null) {
@@ -591,15 +591,15 @@ public class XIncludeFilter implements Receiver {
         int end = 0;
         final int l = args.length();
         while ((start < l) && (end < l)) {
-            while ((end < l) && (args.charAt(end++) != '='))
-                ;
+            while ((end < l) && (args.charAt(end++) != '=')) {
+            }
             if (end == l) {
                 break;
             }
             String param = args.substring(start, end - 1);
             start = end;
-            while ((end < l) && (args.charAt(end++) != '&'))
-                ;
+            while ((end < l) && (args.charAt(end++) != '&')) {
+            }
             String value;
             if (end == l) {
                 value = args.substring(start);

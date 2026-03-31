@@ -39,8 +39,8 @@ public class OrderSpec {
 	
 	private final XQueryContext context;
 	private Expression expression;
-	private int modifiers = 0;
-	private Collator collator = null;
+	private int modifiers;
+	private Collator collator;
 
 	public OrderSpec(XQueryContext context, Expression sortExpr) {
 		this.expression = sortExpr;

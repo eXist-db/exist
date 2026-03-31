@@ -33,6 +33,8 @@
 package org.exist.storage.blob;
 
 import com.evolvedbinary.j8fu.tuple.Tuple2;
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.EXistException;
 import org.exist.scheduler.Scheduler;
 import org.exist.security.SecurityManager;
@@ -53,8 +55,6 @@ import org.exist.util.crypto.digest.DigestInputStream;
 import org.exist.util.crypto.digest.DigestType;
 import org.exist.util.crypto.digest.MessageDigest;
 import org.exist.util.crypto.digest.StreamableDigest;
-import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
-import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.junit.AfterClass;
 import org.junit.Rule;
 import org.junit.Test;

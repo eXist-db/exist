@@ -21,22 +21,20 @@
  */
 package org.exist.management.impl;
 
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.TreeMap;
-
 import org.exist.scheduler.ScheduledJobInfo;
 import org.exist.scheduler.Scheduler;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.ProcessMonitor;
+import org.exist.storage.ProcessMonitor.QueryHistory;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XQueryWatchDog;
 
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
-
-import org.exist.storage.ProcessMonitor.QueryHistory;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 public class ProcessReport implements ProcessReportMXBean {
     private final String instanceId;

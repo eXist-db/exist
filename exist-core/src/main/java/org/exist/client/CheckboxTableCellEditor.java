@@ -23,13 +23,13 @@ package org.exist.client;
 
 import com.evolvedbinary.j8fu.tuple.Tuple2;
 
-import java.awt.Component;
-import java.util.function.Function;
-import javax.swing.JTable;
-import javax.swing.table.TableCellEditor;
 import javax.swing.AbstractCellEditor;
 import javax.swing.JCheckBox;
+import javax.swing.JTable;
 import javax.swing.SwingConstants;
+import javax.swing.table.TableCellEditor;
+import java.awt.Component;
+import java.util.function.Function;
 
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 

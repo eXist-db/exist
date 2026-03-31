@@ -21,9 +21,6 @@
  */
 package org.exist.xmldb.concurrent.action;
 
-import java.io.IOException;
-import java.io.InputStream;
-
 import org.exist.util.io.InputStreamUtil;
 import org.exist.xmldb.EXistCollectionManagementService;
 import org.exist.xmldb.concurrent.DBUtils;
@@ -31,12 +28,15 @@ import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.samples.Samples.SAMPLES;
 
 public class CreateCollectionAction extends Action {
     
-    private int collectionCnt = 0;
+    private int collectionCnt;
     
     public CreateCollectionAction(final String collectionPath, final String resourceName) {
         super(collectionPath, resourceName);

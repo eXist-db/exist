@@ -40,7 +40,7 @@ public class GetMethod extends StrictRequestFunction {
 
 	protected static final Logger logger = LogManager.getLogger(GetMethod.class);
 
-	public final static FunctionSignature signature =
+	public static final FunctionSignature signature =
 		new FunctionSignature(
 			new QName("get-method", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
 			"Returns the HTTP method of the current request.",

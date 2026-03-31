@@ -21,13 +21,8 @@
  */
 package org.exist.xupdate;
 
-import java.io.IOException;
-import java.util.Random;
-import java.util.stream.IntStream;
-
 import org.exist.EXistException;
 import org.exist.TestUtils;
-
 import org.exist.collections.triggers.TriggerException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.test.ExistXmldbEmbeddedServer;
@@ -35,10 +30,6 @@ import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xmldb.concurrent.DBUtils;
 import org.junit.After;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -51,6 +42,13 @@ import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XPathQueryService;
 import org.xmldb.api.modules.XUpdateQueryService;
 
+import java.io.IOException;
+import java.util.Random;
+import java.util.stream.IntStream;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 /**
  * @author wolf
  */
@@ -58,7 +56,7 @@ public class StressTest {
 
     private static final String XML = "<root><a/><b/><c/></root>";
 
-    private final static int RUNS = 1000;
+    private static final int RUNS = 1000;
 
     private Collection testCol;
     private final Random rand = new Random();

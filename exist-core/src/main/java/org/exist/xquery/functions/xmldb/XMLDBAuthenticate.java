@@ -21,10 +21,8 @@
  */
 package org.exist.xquery.functions.xmldb;
 
-import java.util.Optional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import org.exist.EXistException;
 import org.exist.dom.QName;
 import org.exist.http.servlets.RequestWrapper;
@@ -34,14 +32,11 @@ import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.xquery.*;
-import org.exist.xquery.value.BooleanValue;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
+
+import java.util.Optional;
 
 /**
  * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
@@ -52,7 +47,7 @@ import org.xmldb.api.base.XMLDBException;
 public class XMLDBAuthenticate extends UserSwitchingBasicFunction {
     private static final Logger logger = LogManager.getLogger(XMLDBAuthenticate.class);
 
-    public final static FunctionSignature authenticateSignature =
+    public static final FunctionSignature authenticateSignature =
             new FunctionSignature(
                     new QName("authenticate", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
                     "Check if the user, $user-id, can authenticate against the database collection $collection-uri. The function simply tries to " +
@@ -68,7 +63,7 @@ public class XMLDBAuthenticate extends UserSwitchingBasicFunction {
                     new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() on successful authentication, false() otherwise")
             );
 
-    public final static FunctionSignature[] loginSignatures = {
+    public static final FunctionSignature[] loginSignatures = {
 
             new FunctionSignature(
                     new QName("login", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),

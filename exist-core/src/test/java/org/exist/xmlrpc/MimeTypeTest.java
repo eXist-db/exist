@@ -21,9 +21,6 @@
  */
 package org.exist.xmlrpc;
 
-import static org.assertj.core.api.Assertions.assertThatNoException;
-import static org.junit.Assert.assertEquals;
-
 import org.exist.TestUtils;
 import org.exist.test.ExistWebServer;
 import org.junit.AfterClass;
@@ -40,14 +37,17 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 
+import static org.assertj.core.api.Assertions.assertThatNoException;
+import static org.junit.Assert.assertEquals;
+
 public class MimeTypeTest {
 
 	@ClassRule
-    public final static ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
+    public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
 
-    private final static String COLLECTION_NAME = "rpctest";
+    private static final String COLLECTION_NAME = "rpctest";
     private static final String DOCUMENT_NAME = "myxmldoc";
-    private final static String XML_CONTENT = """
+    private static final String XML_CONTENT = """
     		<xml><it><is>
     		</is></it></xml>
     		""";

@@ -29,11 +29,11 @@ import java.util.Map;
 
 public class ProcessModule extends AbstractInternalModule {
 
-    public final static String NAMESPACE = "http://exist-db.org/xquery/process";
-    public final static String PREFIX = "process";
-    public final static String RELEASE = "2.0";
+    public static final String NAMESPACE = "http://exist-db.org/xquery/process";
+    public static final String PREFIX = "process";
+    public static final String RELEASE = "2.0";
 
-    public final static FunctionDef[] functions = {
+    public static final FunctionDef[] functions = {
         new FunctionDef(Execute.signature, Execute.class)
     };
 

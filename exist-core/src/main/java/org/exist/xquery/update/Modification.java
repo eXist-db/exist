@@ -21,8 +21,6 @@
  */
 package org.exist.xquery.update;
 
-import java.util.Iterator;
-
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import org.apache.logging.log4j.LogManager;
@@ -33,15 +31,15 @@ import org.exist.collections.ManagedLocks;
 import org.exist.collections.triggers.DocumentTrigger;
 import org.exist.collections.triggers.DocumentTriggers;
 import org.exist.collections.triggers.TriggerException;
+import org.exist.dom.memtree.DocumentBuilderReceiver;
+import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.dom.persistent.DefaultDocumentSet;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.MutableDocumentSet;
+import org.exist.dom.persistent.NodeHandle;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.StoredNode;
-import org.exist.dom.memtree.DocumentBuilderReceiver;
-import org.exist.dom.memtree.MemTreeBuilder;
-import org.exist.dom.persistent.NodeHandle;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.LockManager;
 import org.exist.storage.lock.ManagedDocumentLock;
@@ -49,12 +47,7 @@ import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.exist.xquery.*;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
+import org.exist.xquery.value.*;
 import org.w3c.dom.Attr;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
@@ -62,6 +55,7 @@ import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
 import javax.annotation.Nullable;
+import java.util.Iterator;
 
 /**
  * @author wolf
@@ -70,7 +64,7 @@ import javax.annotation.Nullable;
 public abstract class Modification extends AbstractExpression
 {
 
-    protected final static Logger LOG = LogManager.getLogger(Modification.class);
+    protected static final Logger LOG = LogManager.getLogger(Modification.class);
 
     protected final Expression select;
     protected final Expression value;
@@ -79,7 +73,7 @@ public abstract class Modification extends AbstractExpression
     protected MutableDocumentSet modifiedDocuments = new DefaultDocumentSet();
     protected final Int2ObjectMap<DocumentTrigger> triggers;
 
-    public Modification(XQueryContext context, Expression select, Expression value) {
+    protected Modification(XQueryContext context, Expression select, Expression value) {
         super(context);
         this.select = select;
         this.value = value;
@@ -154,7 +148,7 @@ public abstract class Modification extends AbstractExpression
             // during the modification
             lockedDocumentsLocks = lockedDocuments.lock(context.getBroker(), true);
 
-            final StoredNode ql[] = new StoredNode[nodes.getItemCount()];
+            final StoredNode[] ql = new StoredNode[nodes.getItemCount()];
             for (int i = 0; i < ql.length; i++) {
                 final Item item = nodes.itemAt(i);
                 if (!Type.subTypeOf(item.getType(), Type.NODE)) {

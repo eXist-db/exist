@@ -69,7 +69,7 @@ public abstract class AbstractSerializer {
     protected Properties outputProperties;
     protected SerializerWriter receiver;
 
-    public AbstractSerializer() {
+    protected AbstractSerializer() {
         super();
         receiver = getDefaultWriter();
     }

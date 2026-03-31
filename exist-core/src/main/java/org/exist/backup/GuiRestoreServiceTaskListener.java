@@ -31,7 +31,7 @@ import javax.swing.*;
  */
 public class GuiRestoreServiceTaskListener extends AbstractRestoreServiceTaskListener {
     private final RestoreDialog dialog;
-    private StringBuilder allProblems = null;
+    private StringBuilder allProblems;
 
     public GuiRestoreServiceTaskListener() {
         this(null);

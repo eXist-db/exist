@@ -23,8 +23,8 @@ package org.exist.util;
 
 public class Range {
 	
-	private long start_;
-	private long end_;
+	private final long start_;
+	private final long end_;
 	
 	public Range(long start, long end) {
 		start_ = start;

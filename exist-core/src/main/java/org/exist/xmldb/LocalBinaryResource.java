@@ -21,18 +21,21 @@
  */
 package org.exist.xmldb;
 
+import com.evolvedbinary.j8fu.function.SupplierE;
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.apache.commons.io.output.CountingOutputStream;
 import org.apache.commons.io.output.NullOutputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
+import org.exist.storage.DBBroker;
 import org.exist.storage.blob.BlobId;
+import org.exist.storage.txn.Txn;
 import org.exist.util.EXistInputSource;
 import org.exist.util.FileUtils;
 import org.exist.util.crypto.digest.DigestType;
 import org.exist.util.crypto.digest.MessageDigest;
-import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
-import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xquery.value.BinaryValue;
 import org.w3c.dom.DocumentType;
 import org.xml.sax.InputSource;
@@ -45,17 +48,14 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Properties;
-import org.exist.storage.DBBroker;
-import org.exist.storage.txn.Txn;
-import com.evolvedbinary.j8fu.function.SupplierE;
 
 public class LocalBinaryResource extends AbstractEXistResource implements ExtendedResource, EXistBinaryResource, EXistResource {
 
-    protected InputSource inputSource = null;
-    protected Path file = null;
-    protected byte[] rawData = null;
-    private BinaryValue binaryValue = null;
-    private boolean isExternal = false;
+    protected InputSource inputSource;
+    protected Path file;
+    protected byte[] rawData;
+    private BinaryValue binaryValue;
+    private boolean isExternal;
 
     public LocalBinaryResource(final Subject user, final BrokerPool brokerPool, final LocalCollection collection, final XmldbURI docId) {
         super(user, brokerPool, collection, docId, null);
@@ -74,7 +74,7 @@ public class LocalBinaryResource extends AbstractEXistResource implements Extend
 
     @Override
     public Object getExtendedContent() throws XMLDBException {
-        return getExtendedContent(() -> read((document, broker, transaction) -> broker.getBinaryResource(((BinaryDocument) document))));
+        return getExtendedContent(() -> read((document, broker, transaction) -> broker.getBinaryResource((BinaryDocument) document)));
     }
 
     /**
@@ -83,7 +83,7 @@ public class LocalBinaryResource extends AbstractEXistResource implements Extend
      * that are already working within a transaction
      */
     Object getExtendedContent(final DBBroker broker, final Txn transaction) throws XMLDBException {
-        return getExtendedContent(() -> read(broker, transaction).apply((document, broker1, transaction1) -> broker1.getBinaryResource(((BinaryDocument) document))));
+        return getExtendedContent(() -> read(broker, transaction).apply((document, broker1, transaction1) -> broker1.getBinaryResource((BinaryDocument) document)));
     }
 
     private Object getExtendedContent(final SupplierE<Object, XMLDBException> binaryResourceRead) throws XMLDBException {
@@ -100,7 +100,7 @@ public class LocalBinaryResource extends AbstractEXistResource implements Extend
             return binaryValue;
         }
 
-        return read((document, broker, transaction) -> broker.getBinaryResource(transaction, ((BinaryDocument) document)));
+        return read((document, broker, transaction) -> broker.getBinaryResource(transaction, (BinaryDocument) document));
     }
 
     @Override
@@ -179,7 +179,7 @@ public class LocalBinaryResource extends AbstractEXistResource implements Extend
 
     @Override
     public InputStream getStreamContent() throws XMLDBException {
-        return getStreamContent(() -> read((document, broker, transaction) -> broker.getBinaryResource(((BinaryDocument) document))));
+        return getStreamContent(() -> read((document, broker, transaction) -> broker.getBinaryResource((BinaryDocument) document)));
     }
 
     /**
@@ -188,7 +188,7 @@ public class LocalBinaryResource extends AbstractEXistResource implements Extend
      * that are already working within a transaction
      */
     InputStream getStreamContent(final DBBroker broker, final Txn transaction) throws XMLDBException {
-        return getStreamContent(() -> this.<InputStream>read(broker, transaction).apply((document, broker1, transaction1) -> broker.getBinaryResource(transaction, ((BinaryDocument) document))));
+        return getStreamContent(() -> this.<InputStream>read(broker, transaction).apply((document, broker1, transaction1) -> broker.getBinaryResource(transaction, (BinaryDocument) document)));
     }
 
     private InputStream getStreamContent(final SupplierE<InputStream, XMLDBException> streamContentRead) throws XMLDBException {
@@ -247,7 +247,7 @@ public class LocalBinaryResource extends AbstractEXistResource implements Extend
 
         if(file != null) {
             retval = FileUtils.sizeQuietly(file);
-        } else if(inputSource != null && inputSource instanceof EXistInputSource source) {
+        } else if(inputSource instanceof EXistInputSource source) {
             retval = source.getByteStreamLength();
         } else if(rawData != null) {
             retval = rawData.length;

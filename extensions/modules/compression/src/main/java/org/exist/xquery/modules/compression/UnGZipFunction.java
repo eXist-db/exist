@@ -48,7 +48,7 @@ import java.util.zip.GZIPInputStream;
  */
 public class UnGZipFunction extends BasicFunction {
 
-    public final static FunctionSignature[] signatures = {
+    public static final FunctionSignature[] signatures = {
             new FunctionSignature(
                     new QName("ungzip", CompressionModule.NAMESPACE_URI, CompressionModule.PREFIX),
                     "UnGZip's data",
@@ -66,8 +66,9 @@ public class UnGZipFunction extends BasicFunction {
     @Override
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
         // is there some data to unGZip?
-        if (args[0].isEmpty())
+        if (args[0].isEmpty()) {
             return Sequence.EMPTY_SEQUENCE;
+        }
 
         final BinaryValue bin = (BinaryValue) args[0].itemAt(0);
 

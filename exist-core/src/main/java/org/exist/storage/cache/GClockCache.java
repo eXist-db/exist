@@ -47,7 +47,7 @@ import java.lang.reflect.Array;
  */
 @NotThreadSafe
 public class GClockCache<T extends Cacheable> implements Cache<T> {
-	private final static Logger LOG = LogManager.getLogger(GClockCache.class);
+	private static final Logger LOG = LogManager.getLogger(GClockCache.class);
 
 	private final String name;
     private final Class<T> cacheableClazz;
@@ -57,10 +57,10 @@ public class GClockCache<T extends Cacheable> implements Cache<T> {
     private final CacheType type;
 	protected T[] items;
     protected Long2ObjectMap<T> map;
-	protected int count = 0;
-	protected int used = 0;
-    private int hitsOld = 0;
-	protected CacheManager cacheManager = null;
+	protected int count;
+	protected int used;
+    private int hitsOld;
+	protected CacheManager cacheManager;
 
     public GClockCache(final String name, final Class<T> cacheableClazz, final int size, final double growthFactor, final double growthThreshold, final CacheType type) {
 		this.name = name;

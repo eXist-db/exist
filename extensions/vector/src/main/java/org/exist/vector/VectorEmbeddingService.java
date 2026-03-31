@@ -99,7 +99,9 @@ public final class VectorEmbeddingService {
       if (useCache) {
         final String cacheKey = "http:" + modelId + ":" + path;
         final VectorEmbeddingProvider cached = cache.get(cacheKey);
-        if (cached != null) return cached;
+          if (cached != null) {
+              return cached;
+          }
       }
       final VectorEmbeddingProvider p = HttpVectorProvider.create(modelId, path, apiKey, dim);
       if (p != null) {

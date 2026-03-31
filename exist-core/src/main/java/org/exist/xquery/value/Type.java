@@ -42,105 +42,105 @@ import javax.annotation.Nullable;
  */
 public class Type {
 
-    private final static Logger LOG = LogManager.getLogger(Type.class);
+    private static final Logger LOG = LogManager.getLogger(Type.class);
 
     // Tombstone value used for FastUtil Int maps
     private static final int NO_SUCH_VALUE = -99;
 
-    public final static int ITEM = 1;
+    public static final int ITEM = 1;
 
-    public final static int ANY_TYPE = 2;
+    public static final int ANY_TYPE = 2;
 
-    public final static int ANY_SIMPLE_TYPE = 3;
+    public static final int ANY_SIMPLE_TYPE = 3;
 
     /* xs:anyAtomicType and its subtypes */
-    public final static int ANY_ATOMIC_TYPE = 4;
-    public final static int UNTYPED_ATOMIC = 5;
-    public final static int DATE_TIME = 6;
-    public final static int DATE_TIME_STAMP = 7;
-    public final static int DATE = 8;
-    public final static int TIME = 9;
-    public final static int DURATION = 10;
-    public final static int YEAR_MONTH_DURATION = 11;
-    public final static int DAY_TIME_DURATION = 12;
-    public final static int FLOAT = 13;
-    public final static int DOUBLE = 14;
-    public final static int DECIMAL = 15;
-    public final static int INTEGER = 16;
-    public final static int NON_POSITIVE_INTEGER = 17;
-    public final static int NEGATIVE_INTEGER = 18;
-    public final static int LONG = 19;
-    public final static int INT = 20;
-    public final static int SHORT = 21;
-    public final static int BYTE = 22;
-    public final static int NON_NEGATIVE_INTEGER = 23;
-    public final static int UNSIGNED_LONG = 24;
-    public final static int UNSIGNED_INT = 25;
-    public final static int UNSIGNED_SHORT = 26;
-    public final static int UNSIGNED_BYTE = 27;
-    public final static int POSITIVE_INTEGER = 28;
-    public final static int G_YEAR_MONTH = 29;
-    public final static int G_YEAR = 30;
-    public final static int G_MONTH_DAY = 31;
-    public final static int G_DAY = 32;
-    public final static int G_MONTH = 33;
-    public final static int STRING = 34;
-    public final static int NORMALIZED_STRING = 35;
-    public final static int TOKEN = 36;
-    public final static int LANGUAGE = 37;
-    public final static int NMTOKEN = 38;
-    public final static int NAME = 39;
-    public final static int NCNAME = 40;
-    public final static int ID = 41;
-    public final static int IDREF = 42;
-    public final static int ENTITY = 43;
-    public final static int BOOLEAN = 44;
-    public final static int BASE64_BINARY = 45;
-    public final static int HEX_BINARY = 46;
-    public final static int ANY_URI = 47;
-    public final static int QNAME = 48;
-    public final static int NOTATION = 49;
+    public static final int ANY_ATOMIC_TYPE = 4;
+    public static final int UNTYPED_ATOMIC = 5;
+    public static final int DATE_TIME = 6;
+    public static final int DATE_TIME_STAMP = 7;
+    public static final int DATE = 8;
+    public static final int TIME = 9;
+    public static final int DURATION = 10;
+    public static final int YEAR_MONTH_DURATION = 11;
+    public static final int DAY_TIME_DURATION = 12;
+    public static final int FLOAT = 13;
+    public static final int DOUBLE = 14;
+    public static final int DECIMAL = 15;
+    public static final int INTEGER = 16;
+    public static final int NON_POSITIVE_INTEGER = 17;
+    public static final int NEGATIVE_INTEGER = 18;
+    public static final int LONG = 19;
+    public static final int INT = 20;
+    public static final int SHORT = 21;
+    public static final int BYTE = 22;
+    public static final int NON_NEGATIVE_INTEGER = 23;
+    public static final int UNSIGNED_LONG = 24;
+    public static final int UNSIGNED_INT = 25;
+    public static final int UNSIGNED_SHORT = 26;
+    public static final int UNSIGNED_BYTE = 27;
+    public static final int POSITIVE_INTEGER = 28;
+    public static final int G_YEAR_MONTH = 29;
+    public static final int G_YEAR = 30;
+    public static final int G_MONTH_DAY = 31;
+    public static final int G_DAY = 32;
+    public static final int G_MONTH = 33;
+    public static final int STRING = 34;
+    public static final int NORMALIZED_STRING = 35;
+    public static final int TOKEN = 36;
+    public static final int LANGUAGE = 37;
+    public static final int NMTOKEN = 38;
+    public static final int NAME = 39;
+    public static final int NCNAME = 40;
+    public static final int ID = 41;
+    public static final int IDREF = 42;
+    public static final int ENTITY = 43;
+    public static final int BOOLEAN = 44;
+    public static final int BASE64_BINARY = 45;
+    public static final int HEX_BINARY = 46;
+    public static final int ANY_URI = 47;
+    public static final int QNAME = 48;
+    public static final int NOTATION = 49;
 
     /* list types */
-    public final static int NMTOKENS = 50;
-    public final static int IDREFS = 51;
-    public final static int ENTITIES = 52;
+    public static final int NMTOKENS = 50;
+    public static final int IDREFS = 51;
+    public static final int ENTITIES = 52;
 
     /* union types */
-    public final static int NUMERIC = 53;
-    public final static int ERROR = 54;
+    public static final int NUMERIC = 53;
+    public static final int ERROR = 54;
 
     /* complex types */
-    public final static int UNTYPED = 55;
+    public static final int UNTYPED = 55;
 
     /* nodes */
     public static final int NODE = 56;
-    public final static int ATTRIBUTE = 57;
-    public final static int COMMENT = 58;
-    public final static int DOCUMENT = 59;
-    public final static int ELEMENT = 60;
-    public final static int NAMESPACE = 61;
-    public final static int PROCESSING_INSTRUCTION = 62;
-    public final static int TEXT = 63;
+    public static final int ATTRIBUTE = 57;
+    public static final int COMMENT = 58;
+    public static final int DOCUMENT = 59;
+    public static final int ELEMENT = 60;
+    public static final int NAMESPACE = 61;
+    public static final int PROCESSING_INSTRUCTION = 62;
+    public static final int TEXT = 63;
 
     /* functions */
-    public final static int FUNCTION = 64;
-    public final static int ARRAY_ITEM = 65;
-    public final static int MAP_ITEM = 66;
+    public static final int FUNCTION = 64;
+    public static final int ARRAY_ITEM = 65;
+    public static final int MAP_ITEM = 66;
 
     // NOTE(AR) the types below do NOT appear in the XDM 3.1 spec - https://www.w3.org/TR/xpath-datamodel-31
-    public final static int CDATA_SECTION = 67;
-    public final static int JAVA_OBJECT = 68;
-    public final static int EMPTY_SEQUENCE = 69;  // NOTE(AR) this types does appear in the XQ 3.1 spec - https://www.w3.org/TR/xquery-31/#id-sequencetype-syntax
+    public static final int CDATA_SECTION = 67;
+    public static final int JAVA_OBJECT = 68;
+    public static final int EMPTY_SEQUENCE = 69;  // NOTE(AR) this types does appear in the XQ 3.1 spec - https://www.w3.org/TR/xquery-31/#id-sequencetype-syntax
 
-    private final static int[] superTypes = new int[69];
-    private final static Int2ObjectOpenHashMap<String[]> typeNames = new Int2ObjectOpenHashMap<>(69, Hash.FAST_LOAD_FACTOR);
-    private final static Object2IntOpenHashMap<String> typeCodes = new Object2IntOpenHashMap<>(78, Hash.FAST_LOAD_FACTOR);
+    private static final int[] superTypes = new int[69];
+    private static final Int2ObjectOpenHashMap<String[]> typeNames = new Int2ObjectOpenHashMap<>(69, Hash.FAST_LOAD_FACTOR);
+    private static final Object2IntOpenHashMap<String> typeCodes = new Object2IntOpenHashMap<>(78, Hash.FAST_LOAD_FACTOR);
     static {
         typeCodes.defaultReturnValue(NO_SUCH_VALUE);
     }
-    private final static Int2ObjectMap<IntArraySet> unionTypes = new Int2ObjectArrayMap<>(2);
-    private final static Int2IntOpenHashMap primitiveTypes = new Int2IntOpenHashMap(45, Hash.FAST_LOAD_FACTOR);
+    private static final Int2ObjectMap<IntArraySet> unionTypes = new Int2ObjectArrayMap<>(2);
+    private static final Int2IntOpenHashMap primitiveTypes = new Int2IntOpenHashMap(45, Hash.FAST_LOAD_FACTOR);
     static {
         primitiveTypes.defaultReturnValue(NO_SUCH_VALUE);
     }
@@ -465,9 +465,9 @@ public class Type {
      * @return one or more alias names
      */
     public static @Nullable String[] getTypeAliases(final int type) {
-        final String names[] = typeNames.get(type);
+        final String[] names = typeNames.get(type);
         if (names != null && names.length > 1) {
-            final String aliases[] = new String[names.length - 1];
+            final String[] aliases = new String[names.length - 1];
             System.arraycopy(names, 1, aliases, 0, names.length - 1);
             return aliases;
         }

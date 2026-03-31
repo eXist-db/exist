@@ -21,20 +21,6 @@
  */
 package org.exist.backup;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.*;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URISyntaxException;
-import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.Optional;
-import java.util.Properties;
-
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
-
 import org.exist.EXistException;
 import org.exist.TestUtils;
 import org.exist.backup.restore.listener.LogRestoreListener;
@@ -52,8 +38,6 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
 import org.exist.storage.txn.Txn;
-import static org.exist.test.TestConstants.TEST_COLLECTION_URI;
-
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.LockException;
 import org.exist.util.MimeType;
@@ -68,6 +52,20 @@ import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 import org.xml.sax.SAXException;
 import org.xmldb.api.base.XMLDBException;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URISyntaxException;
+import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.Optional;
+import java.util.Properties;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.exist.test.TestConstants.TEST_COLLECTION_URI;
+import static org.junit.Assert.*;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -170,7 +168,7 @@ public class SystemExportImportTest {
 
             doc = getDoc(broker, test, doc11uri.lastSegment());
             assertTrue(doc instanceof BinaryDocument);
-            try (final InputStream is = broker.getBinaryResource(transaction, ((BinaryDocument)doc))) {
+            try (final InputStream is = broker.getBinaryResource(transaction, (BinaryDocument)doc)) {
                 assertEquals(BINARY, InputStreamUtil.readString(is, UTF_8));
             }
 
@@ -185,7 +183,7 @@ public class SystemExportImportTest {
     	return doc;
 	}
 
-    private final static Properties contentsOutputProps = new Properties();
+    private static final Properties contentsOutputProps = new Properties();
     static {
         contentsOutputProps.setProperty( OutputKeys.INDENT, "yes" );
         contentsOutputProps.setProperty( EXistOutputKeys.OUTPUT_DOCTYPE, "yes" );

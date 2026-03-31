@@ -21,30 +21,13 @@
  */
 package org.exist.w3c.tests;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StringReader;
-import java.lang.reflect.Field;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Optional;
-import java.util.Properties;
-
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-import javax.xml.transform.OutputKeys;
-
 import junit.framework.Assert;
-
 import org.custommonkey.xmlunit.Diff;
 import org.exist.Namespaces;
 import org.exist.collections.Collection;
-import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.memtree.NodeImpl;
 import org.exist.dom.memtree.SAXAdapter;
+import org.exist.dom.persistent.NodeProxy;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -69,13 +52,28 @@ import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import javax.xml.transform.OutputKeys;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.StringReader;
+import java.lang.reflect.Field;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Optional;
+import java.util.Properties;
+
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
 public abstract class TestCase {
-    protected static DBBroker broker = null;
-    protected static Collection testCollection = null;
+    protected static DBBroker broker;
+    protected static Collection testCollection;
 
 	public static final String testLocation = "test/external/";
 
@@ -134,8 +132,9 @@ public abstract class TestCase {
 	}
 
 	public boolean compareResult(String testCase, String folder, Element outputFile, Sequence result) {
-		if (outputFile == null)
-			Assert.fail("no expected result information");
+        if (outputFile == null) {
+            Assert.fail("no expected result information");
+        }
 
 		Path expectedResult = Path.of(testLocation+folder, outputFile.getTextContent());
 		if (!Files.isReadable(expectedResult)) {
@@ -143,7 +142,9 @@ public abstract class TestCase {
 		}
 		
 		String compare = outputFile.getAttribute("compare");
-		if (compare.isEmpty()) compare = "Fragment";
+        if (compare.isEmpty()) {
+            compare = "Fragment";
+        }
 		compare = compare.toUpperCase();
 
 		try(final Reader reader = Files.newBufferedReader(expectedResult)) {
@@ -173,10 +174,9 @@ public abstract class TestCase {
 				//caught-on length on last result
 				else if (!i.hasNext()) {
 					l = (int) FileUtils.sizeQuietly(expectedResult);
-				}
-				
-				else
-					l = res.length();
+				} else {
+                    l = res.length();
+                }
 				
 				l += fixResultLength(testCase);
 				
@@ -217,44 +217,45 @@ public abstract class TestCase {
 				}
 
 				if (!ok) {
-					if (!expResult.equals(res))
-						if ("FRAGMENT".equals(compare) || "INSPECT".equals(compare)) {
-							
-							try {
-								ok = diffXML(expResult, res);
-							} catch (Exception e) {
-							}
-							
-							if (!ok) { 
-								//workaround problematic results
-								if ("<?pi ?>".equals(expResult) && ("<?pi?>".equals(res)))
-									;
-								else
-									return false;
-							}
-							
-						} else {
-							//workaround problematic results
-							if ("&amp;".equals(expResult) && "&".equals(res))
-								;
-							else if ("&lt;".equals(expResult) && "<".equals(res))
-								;
-							else {
-								//last try
-								expResult = expResult.replaceAll("&lt;","<");
-								expResult = expResult.replaceAll("&gt;",">");
-								expResult = expResult.replaceAll("&amp;","&");
-								if (!expResult.equals(res))
-									return false;
-							}
-						}
+                    if (!expResult.equals(res)) {
+                        if ("FRAGMENT".equals(compare) || "INSPECT".equals(compare)) {
+
+                            try {
+                                ok = diffXML(expResult, res);
+                            } catch (Exception e) {
+                            }
+
+                            if (!ok) {
+                                //workaround problematic results
+                                if ("<?pi ?>".equals(expResult) && ("<?pi?>".equals(res))) {
+                                } else {
+                                    return false;
+                                }
+                            }
+
+                        } else {
+                            //workaround problematic results
+                            if ("&amp;".equals(expResult) && "&".equals(res)) {
+                            } else if ("&lt;".equals(expResult) && "<".equals(res)) {
+                            } else {
+                                //last try
+                                expResult = expResult.replaceAll("&lt;", "<");
+                                expResult = expResult.replaceAll("&gt;", ">");
+                                expResult = expResult.replaceAll("&amp;", "&");
+                                if (!expResult.equals(res)) {
+                                    return false;
+                                }
+                            }
+                        }
+                    }
 						
 					if (("TEXT".equals(compare) || "FRAGMENT".equals(compare)) && (i.hasNext())) {
 						reader.mark(1);
-						if (' ' != (char)reader.read())
-							reader.reset();
-						else
-							pos++;
+                        if (' ' != (char)reader.read()) {
+                            reader.reset();
+                        } else {
+                            pos++;
+                        }
 					}
 				}
 			}
@@ -288,9 +289,9 @@ public abstract class TestCase {
         return true;
 	}
 
-    public final static String NORMALIZE_HTML = "normalize-html";
+    public static final String NORMALIZE_HTML = "normalize-html";
 
-    protected final static Properties defaultProperties = new Properties();
+    protected static final Properties defaultProperties = new Properties();
     static {
         defaultProperties.setProperty(OutputKeys.ENCODING, "UTF-8");
         defaultProperties.setProperty(OutputKeys.INDENT, "no");
@@ -313,10 +314,11 @@ public abstract class TestCase {
 		} else if (r instanceof AtomicValue) {
 			res = new LocalXMLResource(user, pool, collection, XmldbURI.EMPTY_URI);
 			res.setContent(r);
-		} else if (r instanceof LocalXMLResource resource)
-			res = resource;
-		else
-			throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "unknown object "+r.getClass());
+		} else if (r instanceof LocalXMLResource resource) {
+            res = resource;
+        } else {
+            throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "unknown object " + r.getClass());
+        }
 		
 		try {
 			Field field = res.getClass().getDeclaredField("outputProperties");
@@ -420,10 +422,14 @@ public abstract class TestCase {
 			for(SequenceIterator i = seq.iterate(); i.hasNext(); ) {
 				Resource resource = getResource(i.nextItem());
 				res.append(resource.getContent().toString());
-				if (i.hasNext()) res.append(" ");
-				
-				//avoid to big output
-				if (res.length() >= 1024) return "{TOO BIG}";
+                if (i.hasNext()) {
+                    res.append(" ");
+                }
+
+                //avoid to big output
+                if (res.length() >= 1024) {
+                    return "{TOO BIG}";
+                }
 			}
 		} catch (Exception e) {
 			res.append(e.getMessage());

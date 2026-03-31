@@ -21,9 +21,9 @@
  */
 package org.exist.xquery;
 
-import java.util.List;
-
 import org.exist.dom.QName;
+
+import java.util.List;
 
 /**
  * Defines an internal module implemented in Java. The class maintains a collection of 

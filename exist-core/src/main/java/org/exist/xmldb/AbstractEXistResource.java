@@ -21,6 +21,8 @@
  */
 package org.exist.xmldb;
 
+import com.evolvedbinary.j8fu.function.FunctionE;
+import com.evolvedbinary.j8fu.function.SupplierE;
 import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.Permission;
 import org.exist.security.Subject;
@@ -28,8 +30,6 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.txn.Txn;
-import com.evolvedbinary.j8fu.function.FunctionE;
-import com.evolvedbinary.j8fu.function.SupplierE;
 import org.exist.xmldb.function.LocalXmldbDocumentFunction;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
@@ -43,14 +43,14 @@ import java.util.Date;
  */
 public abstract class AbstractEXistResource extends AbstractLocal implements EXistResource {
     protected final XmldbURI docId;
-    private String mimeType = null;
-    protected boolean isNewResource = false;
+    private String mimeType;
+    protected boolean isNewResource;
 
-    protected Date datecreated = null;
-    protected Date datemodified = null;
+    protected Date datecreated;
+    protected Date datemodified;
     private boolean closed;
     
-    public AbstractEXistResource(final Subject user, final BrokerPool pool, final LocalCollection parent, final XmldbURI docId, final String mimeType) {
+    protected AbstractEXistResource(final Subject user, final BrokerPool pool, final LocalCollection parent, final XmldbURI docId, final String mimeType) {
         super(user, pool, parent);
         this.docId = docId.lastSegment();
         this.mimeType = mimeType;
@@ -103,7 +103,7 @@ public abstract class AbstractEXistResource extends AbstractLocal implements EXi
 
     @Override
     public Instant getLastModificationTime() throws XMLDBException {
-        return read((document, broker, transaction) -> Instant.ofEpochMilli((document.getLastModified())));
+        return read((document, broker, transaction) -> Instant.ofEpochMilli(document.getLastModified()));
     }
 
     @Override

@@ -21,8 +21,6 @@
  */
 package org.exist.xquery.functions.fn;
 
-import java.util.StringTokenizer;
-
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
@@ -32,13 +30,9 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
+
+import java.util.StringTokenizer;
 
 public class FunNormalizeSpace extends Function {
 
@@ -120,7 +114,7 @@ public class FunNormalizeSpace extends Function {
             if (contextSequence == null) {
                 throw new XPathException(this, ErrorCodes.XPDY0002, "Undefined context item");
             }
-            value = !contextSequence.isEmpty() ? contextSequence.itemAt(0).getStringValue() : "";
+            value = contextSequence.isEmpty() ? "" : contextSequence.itemAt(0).getStringValue();
         } else {
             final Sequence seq = getArgument(0).eval(contextSequence, null);
             if (seq == null) {

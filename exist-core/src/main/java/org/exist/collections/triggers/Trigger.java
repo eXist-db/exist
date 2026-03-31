@@ -21,14 +21,14 @@
  */
 package org.exist.collections.triggers;
 
-import java.util.List;
-import java.util.Map;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.collections.Collection;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * Defines the base interface for collection triggers. Triggers are registered through the

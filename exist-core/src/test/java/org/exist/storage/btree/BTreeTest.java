@@ -31,8 +31,6 @@ import org.exist.xquery.value.DoubleValue;
 import org.junit.*;
 import org.junit.rules.TemporaryFolder;
 
-import static org.junit.Assert.*;
-
 import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.file.Files;
@@ -41,17 +39,19 @@ import java.util.Map;
 import java.util.Random;
 import java.util.TreeMap;
 
+import static org.junit.Assert.*;
+
 /**
  * Low-level tests on the B+tree.
  */
 public class BTreeTest {
 
-    private final static byte BTREE_TEST_FILE_ID = 0x7F;
-    private final static short BTREE_TEST_FILE_VERSION = Short.MIN_VALUE;
+    private static final byte BTREE_TEST_FILE_ID = 0x7F;
+    private static final short BTREE_TEST_FILE_VERSION = Short.MIN_VALUE;
 
-    private Path file = null;
+    private Path file;
 
-    private int count = 0;
+    private int count;
     private static final int COUNT = 5000;
 
     @Test
@@ -177,7 +177,7 @@ public class BTreeTest {
             btree.flush();
 
             for (Map.Entry<String, Integer> entry: keys.entrySet()) {
-                long p = btree.findValue(new Value(entry.getKey().toString()));
+                long p = btree.findValue(new Value(entry.getKey()));
                 assertEquals(p, entry.getValue().intValue());
             }
         }

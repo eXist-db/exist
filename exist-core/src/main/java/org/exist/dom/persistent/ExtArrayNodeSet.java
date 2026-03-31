@@ -75,14 +75,14 @@ public class ExtArrayNodeSet extends AbstractArrayNodeSet implements DocumentSet
 
     private final int initialSize;
 
-    private int documentIds[];
+    private int[] documentIds;
     protected int lastDoc = -1;
 
-    private Part parts[];
-    private int partCount = 0;
-    protected Part lastPart = null;
+    private Part[] parts;
+    private int partCount;
+    protected Part lastPart;
 
-    private boolean keepUnOrdered = false;
+    private boolean keepUnOrdered;
 
 
     public ExtArrayNodeSet() {
@@ -144,10 +144,10 @@ public class ExtArrayNodeSet extends AbstractArrayNodeSet implements DocumentSet
     private void insertPart(final int docId, final Part part, final int idx) {
         if(partCount == parts.length) {
             final int nsize = parts.length == 0 ? 1 : parts.length * 2;
-            int ndocs[] = new int[nsize];
+            int[] ndocs = new int[nsize];
             System.arraycopy(documentIds, 0, ndocs, 0, documentIds.length);
             Arrays.fill(documentIds, -1);
-            final Part nparts[] = new Part[nsize];
+            final Part[] nparts = new Part[nsize];
             System.arraycopy(parts, 0, nparts, 0, parts.length);
             documentIds = ndocs;
             parts = nparts;
@@ -288,11 +288,9 @@ public class ExtArrayNodeSet extends AbstractArrayNodeSet implements DocumentSet
     @Override
     public void sort(final boolean mergeContexts) {
         if(isSorted || keepUnOrdered) {
-            return;
         } else if(hasOne) {
             isSorted = true; // shortcut: don't sort if there's just one item
             size = parts[0].removeDuplicates(mergeContexts);
-            return;
         } else {
             size = 0;
             for (int i = 0; i < partCount; i++) {
@@ -532,7 +530,7 @@ public class ExtArrayNodeSet extends AbstractArrayNodeSet implements DocumentSet
     }
 
     private class DocumentIterator implements Iterator<DocumentImpl> {
-        private int currentDoc = 0;
+        private int currentDoc;
 
         @Override
         public final boolean hasNext() {
@@ -588,9 +586,9 @@ public class ExtArrayNodeSet extends AbstractArrayNodeSet implements DocumentSet
 
     private final class Part {
 
-        private boolean isSorted = false;
-        private NodeProxy array[];
-        private int length = 0;
+        private boolean isSorted;
+        private NodeProxy[] array;
+        private int length;
 
         Part(final int initialSize) {
             this.array = new NodeProxy[initialSize];
@@ -700,7 +698,7 @@ public class ExtArrayNodeSet extends AbstractArrayNodeSet implements DocumentSet
                 //} ljo's modification
             } else if(length == array.length) {
                 final int newLength = length << 1;
-                final NodeProxy temp[] = new NodeProxy[newLength];
+                final NodeProxy[] temp = new NodeProxy[newLength];
                 System.arraycopy(array, 0, temp, 0, length);
                 array = temp;
             }
@@ -888,31 +886,26 @@ public class ExtArrayNodeSet extends AbstractArrayNodeSet implements DocumentSet
                         add = array[i].getNodeId() != NodeId.DOCUMENT_NODE;
                     }
                     if(add) {
-                        switch(mode) {
-
-                            case NodeSet.DESCENDANT:
-                                if(Expression.NO_CONTEXT_ID != contextId) {
-                                    array[i].deepCopyContext(parent, contextId);
-                                } else {
-                                    array[i].copyContext(parent);
-                                }
-                                if(copyMatches) {
-                                    array[i].addMatches(parent);
-                                }
-                                result.add(array[i]);
-                                break;
-
-                            case NodeSet.ANCESTOR:
-                                if(Expression.NO_CONTEXT_ID != contextId) {
-                                    parent.deepCopyContext(array[i], contextId);
-                                } else {
-                                    parent.copyContext(array[i]);
-                                }
-                                if(copyMatches) {
-                                    parent.addMatches(array[i]);
-                                }
-                                result.add(parent, 1);
-                                break;
+                        if (mode == NodeSet.DESCENDANT) {
+                            if (Expression.NO_CONTEXT_ID != contextId) {
+                                array[i].deepCopyContext(parent, contextId);
+                            } else {
+                                array[i].copyContext(parent);
+                            }
+                            if (copyMatches) {
+                                array[i].addMatches(parent);
+                            }
+                            result.add(array[i]);
+                        } else if (mode == NodeSet.ANCESTOR) {
+                            if (Expression.NO_CONTEXT_ID != contextId) {
+                                parent.deepCopyContext(array[i], contextId);
+                            } else {
+                                parent.copyContext(array[i]);
+                            }
+                            if (copyMatches) {
+                                parent.addMatches(array[i]);
+                            }
+                            result.add(parent, 1);
                         }
                     }
                 }
@@ -954,28 +947,23 @@ public class ExtArrayNodeSet extends AbstractArrayNodeSet implements DocumentSet
                             add = includeSelf;
                         }
                         if(add) {
-                            switch(mode) {
-
-                                case NodeSet.DESCENDANT:
-                                    if(Expression.NO_CONTEXT_ID != contextId) {
-                                        array[i].deepCopyContext(parent, contextId);
-                                    } else {
-                                        array[i].copyContext(parent);
-                                    }
-                                    array[i].addMatches(parent);
-                                    result.add(array[i]);
-                                    break;
-
-                                case NodeSet.ANCESTOR:
-                                    if(Expression.NO_CONTEXT_ID != contextId) {
-                                        //parent.addContextNode(contextId, array[i]);
-                                        parent.deepCopyContext(array[i], contextId);
-                                    } else {
-                                        parent.copyContext(array[i]);
-                                    }
-                                    parent.addMatches(array[i]);
-                                    result.add(parent, 1);
-                                    break;
+                            if (mode == NodeSet.DESCENDANT) {
+                                if (Expression.NO_CONTEXT_ID != contextId) {
+                                    array[i].deepCopyContext(parent, contextId);
+                                } else {
+                                    array[i].copyContext(parent);
+                                }
+                                array[i].addMatches(parent);
+                                result.add(array[i]);
+                            } else if (mode == NodeSet.ANCESTOR) {
+                                if (Expression.NO_CONTEXT_ID != contextId) {
+                                    //parent.addContextNode(contextId, array[i]);
+                                    parent.deepCopyContext(array[i], contextId);
+                                } else {
+                                    parent.copyContext(array[i]);
+                                }
+                                parent.addMatches(array[i]);
+                                result.add(parent, 1);
                             }
                         }
                     } else {
@@ -1046,10 +1034,10 @@ public class ExtArrayNodeSet extends AbstractArrayNodeSet implements DocumentSet
 
     private class ExtArrayIterator implements NodeSetIterator, SequenceIterator {
 
-        Part currentPart = null;
-        int partPos = 0;
-        int pos = 0;
-        NodeProxy next = null;
+        Part currentPart;
+        int partPos;
+        int pos;
+        NodeProxy next;
 
         ExtArrayIterator() {
             if(partPos < partCount) {

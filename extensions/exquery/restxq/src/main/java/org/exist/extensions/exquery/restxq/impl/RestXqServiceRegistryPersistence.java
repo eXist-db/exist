@@ -26,18 +26,6 @@
  */
 package org.exist.extensions.exquery.restxq.impl;
 
-import java.io.IOException;
-import java.io.LineNumberReader;
-import java.io.PrintWriter;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-import java.nio.file.StandardOpenOption;
-import java.util.*;
-import java.util.Map.Entry;
-import javax.xml.namespace.QName;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
@@ -53,19 +41,32 @@ import org.exquery.restxq.RestXqServiceRegistry;
 import org.exquery.restxq.RestXqServiceRegistryListener;
 import org.exquery.xquery3.FunctionSignature;
 
+import javax.xml.namespace.QName;
+import java.io.IOException;
+import java.io.LineNumberReader;
+import java.io.PrintWriter;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
+import java.util.*;
+import java.util.Map.Entry;
+
 /**
  *
  * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 public class RestXqServiceRegistryPersistence implements RestXqServiceRegistryListener {   
 
-    public final static int REGISTRY_FILE_VERSION = 0x1;
-    private final static String VERSION_LABEL = "version";
-    private final static String LABEL_SEP = ": ";
-    public final static String FIELD_SEP = ",";
-    public final static String ARITY_SEP = "#";
+    public static final int REGISTRY_FILE_VERSION = 0x1;
+    private static final String VERSION_LABEL = "version";
+    private static final String LABEL_SEP = ": ";
+    public static final String FIELD_SEP = ",";
+    public static final String ARITY_SEP = "#";
     
-    public final static String REGISTRY_FILENAME = "restxq.registry";
+    public static final String REGISTRY_FILENAME = "restxq.registry";
     
     private final Logger log = LogManager.getLogger(getClass());
     private final BrokerPool pool;

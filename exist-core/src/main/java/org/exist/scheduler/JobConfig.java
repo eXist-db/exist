@@ -21,10 +21,11 @@
  */
 package org.exist.scheduler;
 
+import org.exist.scheduler.JobException.JobExceptionAction;
+import org.exist.util.Configuration;
+
 import java.util.Objects;
 import java.util.Properties;
-import org.exist.util.Configuration;
-import org.exist.scheduler.JobException.JobExceptionAction;
 
 /**
  *

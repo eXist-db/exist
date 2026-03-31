@@ -21,35 +21,12 @@
  */
 package org.exist.xquery.modules.file;
 
-import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.StandardCopyOption;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.nio.file.attribute.FileTime;
-import java.net.URISyntaxException;
-import java.util.*;
-import java.util.stream.Stream;
-
-import javax.xml.XMLConstants;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.*;
-import javax.xml.transform.sax.SAXResult;
-import javax.xml.transform.sax.SAXTransformerFactory;
-import javax.xml.transform.sax.TransformerHandler;
-import javax.xml.transform.stream.StreamSource;
-
 import org.apache.tools.ant.DirectoryScanner;
 import org.exist.collections.Collection;
-import org.exist.dom.persistent.BinaryDocument;
-import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
+import org.exist.dom.persistent.BinaryDocument;
+import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.lock.ManagedLock;
@@ -73,6 +50,28 @@ import org.exist.xslt.TransformerFactoryAllocator;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 import uk.ac.ic.doc.slurp.multilock.MultiLock;
+
+import javax.xml.XMLConstants;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.*;
+import javax.xml.transform.sax.SAXResult;
+import javax.xml.transform.sax.SAXTransformerFactory;
+import javax.xml.transform.sax.TransformerHandler;
+import javax.xml.transform.stream.StreamSource;
+import java.io.*;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
+import java.util.*;
+import java.util.stream.Stream;
 
 public class Sync extends BasicFunction {
 
@@ -538,7 +537,7 @@ public class Sync extends BasicFunction {
         private final List<String> excludes;
         private final String root;
         private final MemTreeBuilder output;
-        private boolean hasExcludedChildren = false;
+        private boolean hasExcludedChildren;
 
         public DeleteDirWithExcludesVisitor(final String root, final List<String> excludes, final MemTreeBuilder output) {
             this.output = output;

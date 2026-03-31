@@ -22,9 +22,9 @@
 package org.exist.xquery;
 
 import org.exist.dom.INode;
+import org.exist.dom.QName;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.NodeProxy;
-import org.exist.dom.QName;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.*;
 import org.w3c.dom.Document;
@@ -38,8 +38,8 @@ import org.w3c.dom.Node;
  */
 public class DynamicNameCheck extends AbstractExpression {
 
-    final private NameTest test;
-    final private Expression expression;
+    private final NameTest test;
+    private final Expression expression;
 
     public DynamicNameCheck(XQueryContext context, NameTest test) {
         this(context, test, null);

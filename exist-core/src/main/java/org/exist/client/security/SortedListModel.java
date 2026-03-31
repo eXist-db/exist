@@ -21,13 +21,9 @@
  */
 package org.exist.client.security;
 
-import java.io.Serial;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import javax.swing.AbstractListModel;
+import java.io.Serial;
+import java.util.*;
 
 public class SortedListModel<T extends Object> extends AbstractListModel {
 
@@ -56,7 +52,7 @@ public class SortedListModel<T extends Object> extends AbstractListModel {
         }
     }
     
-    public void addAll(final T elements[]) {
+    public void addAll(final T[] elements) {
         final Collection<T> c = Arrays.asList(elements);
         model.addAll(c);
         fireContentsChanged(this, 0, getSize());

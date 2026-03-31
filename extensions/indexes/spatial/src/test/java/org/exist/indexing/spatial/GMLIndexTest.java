@@ -21,31 +21,16 @@
  */
 package org.exist.indexing.spatial;
 
-import java.io.IOException;
-import java.io.StringReader;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Path;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Optional;
-
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.CollectionConfigurationManager;
 import org.exist.collections.triggers.TriggerException;
+import org.exist.dom.memtree.SAXAdapter;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.LockedDocument;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.indexing.spatial.AbstractGMLJDBCIndex.SpatialOperator;
-import org.exist.dom.memtree.SAXAdapter;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -64,10 +49,23 @@ import org.geotools.gml.GMLFilterDocument;
 import org.geotools.gml.GMLFilterGeometry;
 import org.geotools.gml.GMLHandlerJTS;
 import org.junit.*;
+import org.locationtech.jts.geom.Geometry;
 import org.xml.sax.*;
 import org.xml.sax.helpers.XMLFilterImpl;
 
-import org.locationtech.jts.geom.Geometry;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import java.io.IOException;
+import java.io.StringReader;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Path;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Optional;
 
 import static org.junit.Assert.*;
 
@@ -185,6 +183,7 @@ public class GMLIndexTest {
                             ps.setString(1, testCollection.getURI().append(doc.getURI()).getRawCollectionPath());
                             final ResultSet rs = ps.executeQuery();
                             while (rs.next()) {
+                                continue;
                                 //Let be sure we have the right count
                             }
                             final int count = rs.getRow();

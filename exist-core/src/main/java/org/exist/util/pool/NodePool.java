@@ -21,20 +21,14 @@
  */
 package org.exist.util.pool;
 
-import java.util.LinkedList;
-
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.jcip.annotations.ThreadSafe;
-import org.exist.dom.persistent.AttrImpl;
-import org.exist.dom.persistent.CDATASectionImpl;
-import org.exist.dom.persistent.CommentImpl;
-import org.exist.dom.persistent.ElementImpl;
-import org.exist.dom.persistent.NodeImpl;
-import org.exist.dom.persistent.ProcessingInstructionImpl;
-import org.exist.dom.persistent.TextImpl;
+import org.exist.dom.persistent.*;
 import org.exist.xquery.Expression;
 import org.w3c.dom.Node;
+
+import java.util.LinkedList;
 
 /**
  * A pool of node objects. Storing a resource creates many, short-lived DOM node
@@ -42,7 +36,7 @@ import org.w3c.dom.Node;
  * of objects.
  */
 @ThreadSafe
-public class NodePool {
+public final class NodePool {
 
     public static final int MAX_OBJECTS = 20;
     private static final ThreadLocal<NodePool> pools = new PoolThreadLocal();

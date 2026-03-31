@@ -25,14 +25,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.*;
-import org.exist.xquery.value.BooleanValue;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.IntegerValue;
-import org.exist.xquery.value.QNameValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 import static org.apache.commons.lang3.ArrayUtils.isEmpty;
 
@@ -43,8 +36,8 @@ import static org.apache.commons.lang3.ArrayUtils.isEmpty;
  */
 public class FunctionAvailable extends BasicFunction {
 
-    protected final static Logger logger = LogManager.getLogger(FunctionAvailable.class);
-    public final static FunctionSignature signature =
+    protected static final Logger logger = LogManager.getLogger(FunctionAvailable.class);
+    public static final FunctionSignature signature =
             new FunctionSignature(
             new QName("function-available", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
             "Returns whether a function is available.",

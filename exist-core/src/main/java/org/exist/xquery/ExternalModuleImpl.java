@@ -21,13 +21,12 @@
  */
 package org.exist.xquery;
 
-import java.util.*;
-
 import org.exist.dom.QName;
 import org.exist.source.Source;
 import org.exist.xquery.value.Sequence;
 
 import javax.annotation.Nullable;
+import java.util.*;
 
 /**
  * Default implementation of an {@link org.exist.xquery.ExternalModule}.
@@ -40,17 +39,17 @@ public class ExternalModuleImpl implements ExternalModule {
     private String mPrefix;
 
     private String description = "User Defined Module";
-    private Map<String, String> metadata = null;
+    private Map<String, String> metadata;
 
-    private boolean isReady = false;
+    private boolean isReady;
 
-    final private TreeMap<FunctionId, UserDefinedFunction> mFunctionMap = new TreeMap<>();
-    final private TreeMap<QName, VariableDeclaration> mGlobalVariables = new TreeMap<>();
-    final private TreeMap<QName, Variable> mStaticVariables = new TreeMap<>();
+    private final TreeMap<FunctionId, UserDefinedFunction> mFunctionMap = new TreeMap<>();
+    private final TreeMap<QName, VariableDeclaration> mGlobalVariables = new TreeMap<>();
+    private final TreeMap<QName, Variable> mStaticVariables = new TreeMap<>();
 
-    private Source mSource = null;
+    private Source mSource;
 
-    private XQueryContext mContext = null;
+    private XQueryContext mContext;
 
     private boolean needsReset = true;
 
@@ -295,7 +294,7 @@ public class ExternalModuleImpl implements ExternalModule {
         }
     }
 
-    private Expression rootExpression = null;
+    private Expression rootExpression;
 
     /**
      * Set the root expression for this context.

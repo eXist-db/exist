@@ -21,47 +21,19 @@
  */
 package org.exist.storage.dom;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.Writer;
-import java.nio.file.Path;
-import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.List;
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.exist.storage.btree.Paged.Page.NO_PAGE;
-
 import it.unimi.dsi.fastutil.objects.Reference2LongMap;
 import it.unimi.dsi.fastutil.objects.Reference2LongOpenHashMap;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.exist.dom.persistent.AttrImpl;
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.ElementImpl;
-import org.exist.dom.persistent.IStoredNode;
-import org.exist.dom.persistent.NodeProxy;
-import org.exist.dom.persistent.StoredNode;
+import org.exist.dom.persistent.*;
 import org.exist.numbering.DLNBase;
 import org.exist.numbering.NodeId;
-import org.exist.stax.ExtendedXMLStreamReader;
 import org.exist.stax.EmbeddedXMLStreamReader;
-import org.exist.storage.BrokerPool;
-import org.exist.storage.BufferStats;
-import org.exist.storage.DBBroker;
-import org.exist.storage.NativeBroker;
+import org.exist.stax.ExtendedXMLStreamReader;
+import org.exist.storage.*;
 import org.exist.storage.NativeBroker.NodeRef;
-import org.exist.storage.Signatures;
-import org.exist.storage.StorageAddress;
-import org.exist.storage.btree.BTree;
-import org.exist.storage.btree.BTreeCallback;
-import org.exist.storage.btree.BTreeException;
-import org.exist.storage.btree.DBException;
-import org.exist.storage.btree.IndexQuery;
-import org.exist.storage.btree.Value;
+import org.exist.storage.btree.*;
 import org.exist.storage.cache.Cache;
 import org.exist.storage.cache.Cacheable;
 import org.exist.storage.cache.LRUCache;
@@ -72,10 +44,24 @@ import org.exist.storage.journal.Lsn;
 import org.exist.storage.lock.LockManager;
 import org.exist.storage.txn.Txn;
 import org.exist.util.*;
-import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.util.sanity.SanityCheck;
 import org.exist.xquery.TerminatedException;
 import org.w3c.dom.Node;
+
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.Writer;
+import java.nio.file.Path;
+import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.List;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.exist.storage.btree.Paged.Page.NO_PAGE;
 
 /**
  * This is the main storage for XML nodes. Nodes are stored in document order.
@@ -180,11 +166,11 @@ public class DOMFile extends BTree implements Lockable {
 
     private final BTreeFileHeader fileHeader;
 
-    private Object owner = null;
+    private Object owner;
 
     private final Reference2LongMap<Object> pages;
 
-    private DocumentImpl currentDocument = null;
+    private DocumentImpl currentDocument;
 
     private final AddValueLoggable addValueLog = new AddValueLoggable();
 
@@ -829,7 +815,7 @@ public class DOMFile extends BTree implements Lockable {
             pos += LENGTH_DATA_LENGTH;
             //If this is an overflow page, the real data length is always
             //LENGTH_LINK byte for the page number of the overflow page
-            final short realLen = (vlen == OVERFLOW ? LENGTH_OVERFLOW_LOCATION : vlen);
+            final short realLen = vlen == OVERFLOW ? LENGTH_OVERFLOW_LOCATION : vlen;
             //Check if we have room in the current split page
             if (nextSplitPage.len + LENGTH_TID + LENGTH_DATA_LENGTH +
                     LENGTH_ORIGINAL_LOCATION + realLen > fileHeader.getWorkSize()) {
@@ -2038,7 +2024,7 @@ public class DOMFile extends BTree implements Lockable {
             if (ItemId.isLink(rec.getTupleID())) {
                 //This is a link: skip it
                 //We position the offset *after* the next TupleID
-                rec.offset += (LENGTH_FORWARD_LOCATION + LENGTH_TID);
+                rec.offset += LENGTH_FORWARD_LOCATION + LENGTH_TID;
             } else {
                 //OK: node found
                 foundNext = true;
@@ -2459,7 +2445,7 @@ public class DOMFile extends BTree implements Lockable {
         offset += LENGTH_TID;
         if (ItemId.isLink(loggable.tid)) {
             System.arraycopy(loggable.oldData, 0, page.data, offset, LENGTH_FORWARD_LOCATION);
-            page.len += (LENGTH_TID + LENGTH_FORWARD_LOCATION);
+            page.len += LENGTH_TID + LENGTH_FORWARD_LOCATION;
         } else {
             // save data length
             // overflow pages have length 0
@@ -2476,7 +2462,7 @@ public class DOMFile extends BTree implements Lockable {
             }
             // save data
             System.arraycopy(loggable.oldData, 0, page.data, offset, vlen);
-            page.len += (LENGTH_TID + LENGTH_DATA_LENGTH + vlen);
+            page.len += LENGTH_TID + LENGTH_DATA_LENGTH + vlen;
         }
         pageHeader.incRecordCount();
         pageHeader.setDataLength(page.len);
@@ -2905,11 +2891,11 @@ public class DOMFile extends BTree implements Lockable {
 
     protected final class DOMFilePageHeader extends BTreePageHeader {
 
-        int dataLength = 0;
+        int dataLength;
         long nextDataPage = NO_PAGE;
         long previousDataPage = NO_PAGE;
         short tupleID = ItemId.UNKNOWN_ID;
-        private short records = 0;
+        private short records;
 
         static final short LENGTH_RECORDS_COUNT = 2; //sizeof short
         static final int LENGTH_DATA_LENGTH = 4; //sizeof int
@@ -3030,7 +3016,7 @@ public class DOMFile extends BTree implements Lockable {
         byte[] data;
 
         // the current size of the used data
-        int len = 0;
+        int len;
 
         // the low-level page
         Page page;
@@ -3038,15 +3024,15 @@ public class DOMFile extends BTree implements Lockable {
         DOMFilePageHeader pageHeader;
 
         // fields required by Cacheable
-        int refCount = 0;
+        int refCount;
 
-        int timestamp = 0;
+        int timestamp;
 
         // has the page been saved or is it dirty?
         boolean saved = true;
 
         // set to true if the page has been removed from the cache
-        boolean invalidated = false;
+        boolean invalidated;
 
         DOMPage() {
             this.page = createNewPage();
@@ -3377,7 +3363,7 @@ public class DOMFile extends BTree implements Lockable {
                     basebuf += len;
                     if(basebuf == chunkSize) {
                         fullbuf = currbuf;
-                        currbuf = (isaltbuf)? buf : altbuf;
+                        currbuf = isaltbuf? buf : altbuf;
                         isaltbuf = !isaltbuf;
                         basebuf = 0;
                         basemax = chunkSize;
@@ -3468,7 +3454,7 @@ public class DOMFile extends BTree implements Lockable {
                     final byte[] chunk = page.read();
                     os.write(chunk);
                     final long nextPageNumber = page.getPageHeader().getNextPage();
-                    page = (nextPageNumber == NO_PAGE) ? null : getPage(nextPageNumber);
+                    page = nextPageNumber == NO_PAGE ? null : getPage(nextPageNumber);
                 } catch (final IOException e) {
                     LOG.error("IO error while loading overflow page {}; read: {}", firstPage.getPageNum(), count, e);
                     //TODO : too soft ? throw the exception ?
@@ -3490,7 +3476,7 @@ public class DOMFile extends BTree implements Lockable {
                     writeToLog(loggable, page);
                 }
                 unlinkPages(page);
-                page = (nextPageNumber == NO_PAGE) ? null : getPage(nextPageNumber);
+                page = nextPageNumber == NO_PAGE ? null : getPage(nextPageNumber);
             }
         }
 
@@ -3516,15 +3502,14 @@ public class DOMFile extends BTree implements Lockable {
 
         @Override
         public boolean indexInfo(final Value value, final long pointer) {
-            switch (mode) {
-                case VALUES:
-                    final RecordPos rec = findRecord(pointer);
-                    final short vlen = ByteConversion.byteToShort(rec.getPage().data, rec.offset);
-                    values.add(new Value(rec.getPage().data, rec.offset + LENGTH_DATA_LENGTH, vlen));
-                    return true;
-                case KEYS:
-                    values.add(value);
-                    return true;
+            if (mode == VALUES) {
+                final RecordPos rec = findRecord(pointer);
+                final short vlen = ByteConversion.byteToShort(rec.getPage().data, rec.offset);
+                values.add(new Value(rec.getPage().data, rec.offset + LENGTH_DATA_LENGTH, vlen));
+                return true;
+            } else if (mode == KEYS) {
+                values.add(value);
+                return true;
             }
             return false;
         }

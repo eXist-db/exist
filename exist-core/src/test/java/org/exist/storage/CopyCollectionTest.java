@@ -70,10 +70,10 @@ public class CopyCollectionTest {
     private static final XmldbURI USER2_COL2 = XmldbURI.create("u2c2");
     private static final XmldbURI USER2_NEW_COL = XmldbURI.create("u2cx");
 
-    private static final int USER1_COL1_MODE = 0555;  // r-xr-xr-x
-    private static final int USER1_COL2_MODE = 0744;  // rwxr--r--
+    private static final int USER1_COL1_MODE = 365;  // r-xr-xr-x
+    private static final int USER1_COL2_MODE = 484;  // rwxr--r--
 
-    private static final int USER2_COL2_MODE = 0744;  // rwxr--r--
+    private static final int USER2_COL2_MODE = 484;  // rwxr--r--
 
     @ClassRule
     public static final ExistEmbeddedServer existWebServer = new ExistEmbeddedServer(true, true);

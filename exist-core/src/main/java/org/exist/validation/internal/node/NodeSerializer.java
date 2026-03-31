@@ -45,7 +45,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class NodeSerializer {
 
-    private final static Logger LOG = LogManager.getLogger(NodeSerializer.class);
+    private static final Logger LOG = LogManager.getLogger(NodeSerializer.class);
 
     public static void serialize(final Serializer serializer, final NodeValue node,
                                  final Properties outputProperties, final OutputStream os) throws IOException {

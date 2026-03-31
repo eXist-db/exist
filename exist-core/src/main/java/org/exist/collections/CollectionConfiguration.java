@@ -21,19 +21,9 @@
  */
 package org.exist.collections;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.exist.collections.triggers.CollectionTrigger;
-import org.exist.collections.triggers.CollectionTriggerProxy;
-import org.exist.collections.triggers.DocumentTrigger;
-import org.exist.collections.triggers.DocumentTriggerProxy;
-import org.exist.collections.triggers.Trigger;
-import org.exist.collections.triggers.TriggerException;
-import org.exist.collections.triggers.TriggerProxy;
+import org.exist.collections.triggers.*;
 import org.exist.config.annotation.ConfigurationClass;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -47,15 +37,19 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 @ConfigurationClass("collection")
 public class CollectionConfiguration {
 
-    public final static String COLLECTION_CONFIG_SUFFIX = ".xconf";
-    public final static XmldbURI COLLECTION_CONFIG_SUFFIX_URI = XmldbURI.create(COLLECTION_CONFIG_SUFFIX);
-    public final static String DEFAULT_COLLECTION_CONFIG_FILE = "collection" + COLLECTION_CONFIG_SUFFIX;
-    public final static XmldbURI DEFAULT_COLLECTION_CONFIG_FILE_URI = XmldbURI.create(DEFAULT_COLLECTION_CONFIG_FILE);
+    public static final String COLLECTION_CONFIG_SUFFIX = ".xconf";
+    public static final XmldbURI COLLECTION_CONFIG_SUFFIX_URI = XmldbURI.create(COLLECTION_CONFIG_SUFFIX);
+    public static final String DEFAULT_COLLECTION_CONFIG_FILE = "collection" + COLLECTION_CONFIG_SUFFIX;
+    public static final XmldbURI DEFAULT_COLLECTION_CONFIG_FILE_URI = XmldbURI.create(DEFAULT_COLLECTION_CONFIG_FILE);
 
-    public final static String NAMESPACE = "http://exist-db.org/collection-config/1.0";
+    public static final String NAMESPACE = "http://exist-db.org/collection-config/1.0";
 
     private static final String ROOT_ELEMENT = "collection";
 
@@ -83,9 +77,9 @@ public class CollectionConfiguration {
     private final List<TriggerProxy<? extends CollectionTrigger>> colTriggers = new ArrayList<>();
     private final List<TriggerProxy<? extends DocumentTrigger>> docTriggers = new ArrayList<>();
 
-    private IndexSpec indexSpec = null;
+    private IndexSpec indexSpec;
 
-    private XmldbURI docName = null;
+    private XmldbURI docName;
     private XmldbURI srcCollectionURI;
 
     private XMLReaderObjectFactory.VALIDATION_SETTING validationMode = XMLReaderObjectFactory.VALIDATION_SETTING.UNKNOWN;
@@ -138,7 +132,7 @@ public class CollectionConfiguration {
                         final NodeList triggers = node.getChildNodes();
                         for (int j = 0; j < triggers.getLength(); j++) {
                             node = triggers.item(j);
-                            if (node.getNodeType() == Node.ELEMENT_NODE && node.getLocalName().equals(TRIGGER_ELEMENT)) {
+                            if (node.getNodeType() == Node.ELEMENT_NODE && TRIGGER_ELEMENT.equals(node.getLocalName())) {
                                 configureTrigger(broker.getBrokerPool().getClassLoader(), (Element) node, srcCollectionURI, checkOnly);
                             }
                         }

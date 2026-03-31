@@ -38,7 +38,7 @@ import org.exist.xmldb.XmldbURI;
 
 public class ExampleTrigger extends SAXTrigger implements DocumentTrigger, CollectionTrigger {
 
-    private final static Logger LOG = LogManager.getLogger(ExampleTrigger.class);
+    private static final Logger LOG = LogManager.getLogger(ExampleTrigger.class);
 
     @Override
     public void beforeCreateCollection(DBBroker broker, Txn txn, XmldbURI uri) throws TriggerException {

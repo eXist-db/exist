@@ -113,7 +113,7 @@ class GrammarPoolTest {
 
         // fill cache
         for (int i = 0; i < 200; i++) {
-            final String txt = TEMPLATE.replace("TEMPLATE", "" + i);
+            final String txt = TEMPLATE.replace("TEMPLATE", String.valueOf(i));
             final Grammar xsd = constructFromText("systemid", txt);
             grammarPool.cacheGrammars(XMLGrammarDescription.XML_SCHEMA, new Grammar[]{xsd});
         }

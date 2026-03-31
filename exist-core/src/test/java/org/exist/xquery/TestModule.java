@@ -36,9 +36,9 @@ import java.util.Map;
  */
 public class TestModule extends AbstractInternalModule {
 
-    private final static String MODULE_NS = "http://exist-db.org/test";
+    private static final String MODULE_NS = "http://exist-db.org/test";
 
-    private final static FunctionDef[] functions = {
+    private static final FunctionDef[] functions = {
             new FunctionDef(TestFunction.signature, TestFunction.class)
     };
 
@@ -68,7 +68,7 @@ public class TestModule extends AbstractInternalModule {
 
     public static class TestFunction extends BasicFunction {
 
-        public final static FunctionSignature signature =
+        public static final FunctionSignature signature =
                 new FunctionSignature(
                         new QName("test", MODULE_NS),
                         "Test function",
@@ -79,7 +79,7 @@ public class TestModule extends AbstractInternalModule {
                 );
 
         // used to check if resetState is called on the function
-        public boolean dummyProperty = false;
+        public boolean dummyProperty;
 
         public TestFunction(XQueryContext context) {
             super(context, signature);

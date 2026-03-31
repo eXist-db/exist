@@ -21,17 +21,6 @@
  */
 package org.exist.indexing.spatial;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.List;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.backup.RawDataBackup;
@@ -44,17 +33,24 @@ import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.FileUtils;
 import org.w3c.dom.Element;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.sql.*;
+import java.util.List;
+
 /**
  * @author <a href="mailto:pierrick.brihaye@free.fr">Pierrick Brihaye</a>
  */
 public class GMLHSQLIndex extends AbstractGMLJDBCIndex implements RawBackupSupport {
 
-    private final static Logger LOG = LogManager.getLogger(GMLHSQLIndex.class);
+    private static final Logger LOG = LogManager.getLogger(GMLHSQLIndex.class);
 
     public static final String db_file_name_prefix = "spatial_index";
     //Keep this upper case ;-)
     public static final String TABLE_NAME = "SPATIAL_INDEX_V1";
-    private DBBroker connectionOwner = null;
+    private DBBroker connectionOwner;
     private long connectionTimeout = 100000L;
     
     @Override
@@ -78,8 +74,9 @@ public class GMLHSQLIndex extends AbstractGMLJDBCIndex implements RawBackupSuppo
             }
         }
 
-        if (LOG.isDebugEnabled())
+        if (LOG.isDebugEnabled()) {
             LOG.debug("max_docs_in_context_to_refine_query = {}", max_docs_in_context_to_refine_query);
+        }
     }
 
     @Override
@@ -107,8 +104,9 @@ public class GMLHSQLIndex extends AbstractGMLJDBCIndex implements RawBackupSuppo
                 stmt.executeQuery("SHUTDOWN");
                 stmt.close();
                 conn.close();
-                if (LOG.isDebugEnabled())
+                if (LOG.isDebugEnabled()) {
                     LOG.debug("GML index: {}/{} closed", getDataDir(), db_file_name_prefix);
+                }
             }
         } catch (final SQLException e) {
             throw new DBException(e.getMessage());
@@ -142,8 +140,9 @@ public class GMLHSQLIndex extends AbstractGMLJDBCIndex implements RawBackupSuppo
                 final Statement stmt = conn.createStatement();
                 final int nodeCount = stmt.executeUpdate("DELETE FROM " + GMLHSQLIndex.TABLE_NAME + ";");
                 stmt.close();
-                if (LOG.isDebugEnabled())
+                if (LOG.isDebugEnabled()) {
                     LOG.debug("GML index: {}/{}. {} nodes removed", getDataDir(), db_file_name_prefix, nodeCount);
+                }
             }
         } catch (final SQLException e) {
             throw new DBException(e.getMessage());
@@ -156,8 +155,9 @@ public class GMLHSQLIndex extends AbstractGMLJDBCIndex implements RawBackupSuppo
         synchronized (this) {
             if (connectionOwner == null) {
                 connectionOwner = broker;
-                if (conn == null)
+                if (conn == null) {
                     initializeConnection();
+                }
                 return conn;
             }
             final long timeOut_ = connectionTimeout;
@@ -168,10 +168,11 @@ public class GMLHSQLIndex extends AbstractGMLJDBCIndex implements RawBackupSuppo
                     wait(waitTime);
                     if (connectionOwner == null) {
                         connectionOwner = broker;
-                        if (conn == null)
+                        if (conn == null) {
                             //We should never get there since the connection should have been initialized
                             //by the first request from a worker
                             initializeConnection();
+                        }
                         return conn;
                     }
                     waitTime = timeOut_ - (System.currentTimeMillis() - start);
@@ -189,8 +190,9 @@ public class GMLHSQLIndex extends AbstractGMLJDBCIndex implements RawBackupSuppo
 
     @Override
     protected synchronized void releaseConnection(final DBBroker broker) throws SQLException {
-        if (connectionOwner == null)
+        if (connectionOwner == null) {
             throw new SQLException("Attempted to release a connection that wasn't acquired");
+        }
         connectionOwner = null;
     }
 
@@ -200,13 +202,15 @@ public class GMLHSQLIndex extends AbstractGMLJDBCIndex implements RawBackupSuppo
         System.setProperty("hsqldb.default_table_type", "cached");
         //Get a connection to the DB... and keep it
         this.conn = DriverManager.getConnection("jdbc:hsqldb:" + getDataDir() + "/" + db_file_name_prefix + ";sql.enforce_size=false" /* + ";shutdown=true" */, "sa", "");
-        if (LOG.isDebugEnabled())
+        if (LOG.isDebugEnabled()) {
             LOG.debug("Connected to GML index: {}/{}", getDataDir(), db_file_name_prefix);
+        }
         try (final ResultSet rs = this.conn.getMetaData().getTables(null, null, TABLE_NAME, new String[]{"TABLE"})) {
             rs.last();
             if (rs.getRow() == 1) {
-                if (LOG.isDebugEnabled())
+                if (LOG.isDebugEnabled()) {
                     LOG.debug("Opened GML index: {}/{}", getDataDir(), db_file_name_prefix);
+                }
                 //Create the data structure if it doesn't exist
             } else if (rs.getRow() == 0) {
                 final Statement stmt = conn.createStatement();
@@ -258,8 +262,9 @@ public class GMLHSQLIndex extends AbstractGMLJDBCIndex implements RawBackupSuppo
                 stmt.executeUpdate("CREATE INDEX EPSG4326_CENTROID_Y ON " + TABLE_NAME + " (EPSG4326_CENTROID_Y);");
                 //AREA ?
                 stmt.close();
-                if (LOG.isDebugEnabled())
+                if (LOG.isDebugEnabled()) {
                     LOG.debug("Created GML index: {}/{}", getDataDir(), db_file_name_prefix);
+                }
             } else {
                 throw new SQLException("2 tables with the same name ?");
             }

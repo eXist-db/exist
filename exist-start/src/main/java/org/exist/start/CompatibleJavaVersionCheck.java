@@ -135,7 +135,7 @@ public class CompatibleJavaVersionCheck {
                 .filter(ary -> ary.length > 0);
     }
 
-    static class IncompatibleJavaVersion {
+    static final class IncompatibleJavaVersion {
         final int major;
         /* @Nullable */  final Integer lessThanMinor;
         /* @Nullable */ final Integer lessThanPatch;

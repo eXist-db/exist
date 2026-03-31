@@ -84,8 +84,8 @@ public class JournalXmlTest extends AbstractJournalTest<String> {
 
     @ClassRule
     public static final TemporaryFolder temporaryFolder = new TemporaryFolder();
-    private static Path testFile1 = null;
-    private static Path testFile2 = null;
+    private static Path testFile1;
+    private static Path testFile2;
 
     @BeforeClass
     public static void storeTempXmlDocs() throws IOException {

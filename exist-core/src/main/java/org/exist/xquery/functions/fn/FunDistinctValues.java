@@ -21,9 +21,6 @@
  */
 package org.exist.xquery.functions.fn;
 
-import java.util.Comparator;
-import java.util.TreeSet;
-
 import com.ibm.icu.text.Collator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -39,16 +36,10 @@ import org.exist.xquery.Profiler;
 import org.exist.xquery.ValueComparison;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.AtomicValue;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.NumericValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
+import org.exist.xquery.value.*;
+
+import java.util.Comparator;
+import java.util.TreeSet;
 
 /**
  * Implements the fn:distinct-values standard library function.
@@ -60,7 +51,7 @@ public class FunDistinctValues extends CollatingFunction {
 
     protected static final Logger logger = LogManager.getLogger(FunDistinctValues.class);
 
-    public final static FunctionSignature[] signatures = {
+    public static final FunctionSignature[] signatures = {
         new FunctionSignature(
             new QName("distinct-values", Function.BUILTIN_FUNCTION_NS, FnModule.PREFIX),
             "Returns a sequence where duplicate values of $atomic-values, " +
@@ -150,7 +141,7 @@ public class FunDistinctValues extends CollatingFunction {
         return result;
     }
 
-    public final static class ValueComparator implements Comparator<AtomicValue> {
+    public static final class ValueComparator implements Comparator<AtomicValue> {
         Collator collator;
 
         public ValueComparator(Collator collator) {

@@ -31,10 +31,10 @@ import java.util.List;
  */
 public class ChainOfReceiversFactory {
 
-    private final static Logger LOG = LogManager.getLogger(ChainOfReceiversFactory.class);
+    private static final Logger LOG = LogManager.getLogger(ChainOfReceiversFactory.class);
 
-    private ChainOfReceivers first = null;
-    private ChainOfReceivers last = null;
+    private ChainOfReceivers first;
+    private ChainOfReceivers last;
 
     public ChainOfReceiversFactory(List<String> classes) {
 

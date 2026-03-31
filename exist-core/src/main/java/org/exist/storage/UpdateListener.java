@@ -30,13 +30,13 @@ public interface UpdateListener {
 	// Notification types:
 	
 	/** Notification type: a document was added to a collection */
-	public final static int ADD = 0;
+	public static final int ADD = 0;
 	
 	/** Notification type: a document has been updated */
-	public final static int UPDATE = 1;
+	public static final int UPDATE = 1;
 	
 	/** Notification type: a document was removed */
-	public final static int REMOVE = 2;
+	public static final int REMOVE = 2;
 	
 	/**
 	 * Called whenever a document is updated within the database.

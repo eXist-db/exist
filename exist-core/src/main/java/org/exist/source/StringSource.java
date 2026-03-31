@@ -21,11 +21,11 @@
  */
 package org.exist.source;
 
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
+
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
-
-import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 

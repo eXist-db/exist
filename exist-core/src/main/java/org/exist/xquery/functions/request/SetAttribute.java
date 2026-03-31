@@ -40,7 +40,7 @@ public class SetAttribute extends StrictRequestFunction {
 	
 	protected static final Logger logger = LogManager.getLogger(SetAttribute.class);
 	
-	public final static FunctionSignature signature =
+	public static final FunctionSignature signature =
 		new FunctionSignature(
 			new QName( "set-attribute", RequestModule.NAMESPACE_URI, RequestModule.PREFIX ),
 			"Stores a value in the current request using the supplied attribute name.",

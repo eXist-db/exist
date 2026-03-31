@@ -33,8 +33,8 @@ public class ValidationReportItem {
     private int type = -1;
     private int lineNumber = -1;
     private int columnNumber = -1;
-    private String publicId = null;
-    private String systemId = null;
+    private String publicId;
+    private String systemId;
     private String message = "";
     private int repeat = 1;
 
@@ -100,8 +100,8 @@ public class ValidationReportItem {
 
         final String reportType = getTypeText();
 
-        return (reportType
-                + " (" + lineNumber + "," + columnNumber + ") : " + message);
+        return reportType
+                + " (" + lineNumber + "," + columnNumber + ") : " + message;
     }
 
     public void increaseRepeat() {

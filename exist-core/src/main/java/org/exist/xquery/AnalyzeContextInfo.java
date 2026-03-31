@@ -33,16 +33,16 @@ import org.exist.xquery.value.Type;
  */
 public class AnalyzeContextInfo {
 
-    private XQueryContext context = null;
+    private XQueryContext context;
 
-    private Expression parent = null;
-    private int flags = 0;
+    private Expression parent;
+    private int flags;
     private int contextId = Expression.NO_CONTEXT_ID;
 
     private int staticType = Type.ITEM;
     private int staticReturnType = Type.ITEM;
 
-    private Expression contextStep = null;
+    private Expression contextStep;
 
     public AnalyzeContextInfo() {
         //Nothing to do

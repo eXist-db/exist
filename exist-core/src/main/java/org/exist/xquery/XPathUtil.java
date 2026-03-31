@@ -21,21 +21,16 @@
  */
 package org.exist.xquery;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.net.URISyntaxException;
-import java.util.List;
-
-import org.exist.dom.persistent.AVLTreeNodeSet;
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.NodeProxy;
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.exist.dom.memtree.DocumentBuilderReceiver;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.dom.memtree.NodeImpl;
+import org.exist.dom.persistent.AVLTreeNodeSet;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.NodeProxy;
 import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
-import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.exist.util.serializer.DOMStreamer;
 import org.exist.util.serializer.SerializerPool;
 import org.exist.xmldb.LocalXMLResource;
@@ -51,6 +46,11 @@ import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.net.URISyntaxException;
+import java.util.List;
+
 public class XPathUtil {
 
     /**
@@ -63,7 +63,7 @@ public class XPathUtil {
      * @return XQuery sequence
      * @throws XPathException in case of an error
      */
-    public static final Sequence javaObjectToXPath(Object obj, XQueryContext context)
+    public static Sequence javaObjectToXPath(Object obj, XQueryContext context)
             throws XPathException {
         return javaObjectToXPath(obj, context, null);
     }
@@ -79,17 +79,17 @@ public class XPathUtil {
      * @return XQuery sequence
      * @throws XPathException in case of an error
      */
-    public static final Sequence javaObjectToXPath(Object obj, XQueryContext context, final Expression expression)
+    public static Sequence javaObjectToXPath(Object obj, XQueryContext context, final Expression expression)
             throws XPathException {
         return javaObjectToXPath(obj, context, true, expression);
     }
 
-    public static final Sequence javaObjectToXPath(Object obj, XQueryContext context,
+    public static Sequence javaObjectToXPath(Object obj, XQueryContext context,
             boolean expandChars) throws XPathException {
         return javaObjectToXPath(obj, context, expandChars, null);
     }
 
-    public static final Sequence javaObjectToXPath(Object obj, XQueryContext context,
+    public static Sequence javaObjectToXPath(Object obj, XQueryContext context,
                                                    boolean expandChars, final Expression expression) throws XPathException {
 
         return switch (obj) {
@@ -210,7 +210,7 @@ public class XPathUtil {
         };
     }
 
-    public static final int javaClassToXPath(Class<?> clazz) {
+    public static int javaClassToXPath(Class<?> clazz) {
         if (clazz == String.class) {
             return Type.STRING;
         } else if (clazz == Boolean.class || clazz == boolean.class) {
@@ -239,7 +239,7 @@ public class XPathUtil {
      * @return A NodeProxy for accessing the content represented by xres
      * @throws XPathException if an XMLDBException is encountered
      */
-    public static final NodeProxy getNode(DBBroker broker, XMLResource xres) throws XPathException {
+    public static NodeProxy getNode(DBBroker broker, XMLResource xres) throws XPathException {
         return getNode(broker, xres, null);
     }
 
@@ -252,7 +252,7 @@ public class XPathUtil {
      * @return A NodeProxy for accessing the content represented by xres
      * @throws XPathException if an XMLDBException is encountered
      */
-    public static final NodeProxy getNode(DBBroker broker, XMLResource xres, final Expression expression) throws XPathException {
+    public static NodeProxy getNode(DBBroker broker, XMLResource xres, final Expression expression) throws XPathException {
         if (xres instanceof LocalXMLResource lres) {
             try {
                 return lres.getNode();

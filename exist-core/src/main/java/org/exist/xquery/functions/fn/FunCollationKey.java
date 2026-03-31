@@ -22,12 +22,11 @@
 
 package org.exist.xquery.functions.fn;
 
+import com.ibm.icu.text.Collator;
 import org.apache.commons.codec.binary.Base64;
 import org.exist.util.Collations;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
-
-import com.ibm.icu.text.Collator;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -62,13 +61,13 @@ public class FunCollationKey extends BasicFunction {
     }
 
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
-        final String source = (args.length >= 1) ? args[0].itemAt(0).toString() : "";
-        final Collator collator = (args.length >= 2) ? Collations.getCollationFromURI(args[1].itemAt(0).toString(), ErrorCodes.FOCH0002) : null;
+        final String source = args.length >= 1 ? args[0].itemAt(0).toString() : "";
+        final Collator collator = args.length >= 2 ? Collations.getCollationFromURI(args[1].itemAt(0).toString(), ErrorCodes.FOCH0002) : null;
         final Sequence sequence;
         try (BinaryValueFromBinaryString binaryValue = new BinaryValueFromBinaryString(
                 new Base64BinaryValueType(),
                 Base64.encodeBase64String(
-                        (collator == null) ?
+                        collator == null ?
                                 source.getBytes(StandardCharsets.UTF_8) :
                                 new String(collator.getCollationKey(source).toByteArray()).getBytes(StandardCharsets.UTF_8)))) {
             sequence = binaryValue.convertTo(new Base64BinaryValueType());

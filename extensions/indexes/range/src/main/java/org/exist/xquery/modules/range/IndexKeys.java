@@ -26,15 +26,15 @@ import org.exist.dom.persistent.DefaultDocumentSet;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.MutableDocumentSet;
 import org.exist.indexing.range.RangeIndexWorker;
-import org.exist.util.Occurrences;
 import org.exist.security.PermissionDeniedException;
 import org.exist.util.LockException;
+import org.exist.util.Occurrences;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 
 public class IndexKeys extends BasicFunction {
 
-    public final static FunctionSignature[] signatures = {
+    public static final FunctionSignature[] signatures = {
         new FunctionSignature(
             new QName("index-keys-for-field", RangeIndexModule.NAMESPACE_URI, RangeIndexModule.PREFIX),
             "Retrieve all index keys contained in a range index which has been defined with a field name. Similar to" +
@@ -107,8 +107,8 @@ public class IndexKeys extends BasicFunction {
                 }
             }
             Occurrences[] occur = worker.scanIndexByField(field, docs, start, max);
-            final int len = (max != -1 && occur.length > max ? max : occur.length);
-            final Sequence params[] = new Sequence[2];
+            final int len = max != -1 && occur.length > max ? max : occur.length;
+            final Sequence[] params = new Sequence[2];
             ValueSequence data = new ValueSequence();
             for (int j = 0; j < len; j++) {
                 params[0] = new StringValue(this, occur[j].getTerm().toString());

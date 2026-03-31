@@ -27,9 +27,9 @@ import org.xml.sax.ext.LexicalHandler;
 /**
  * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
-public class EndDTD implements LexicalHandlerEvent {
+public final class EndDTD implements LexicalHandlerEvent {
 
-    public final static EndDTD INSTANCE = new EndDTD();
+    public static final EndDTD INSTANCE = new EndDTD();
 
     /**
      * Constructor is private because this class

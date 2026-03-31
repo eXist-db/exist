@@ -23,18 +23,12 @@ package org.exist.xquery.functions.xmldb;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
 
@@ -45,7 +39,7 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class XMLDBCreateCollection extends XMLDBAbstractCollectionManipulator {
     private static final Logger logger = LogManager.getLogger(XMLDBCreateCollection.class);
-	public final static FunctionSignature signature = new FunctionSignature(
+	public static final FunctionSignature signature = new FunctionSignature(
 			new QName("create-collection", XMLDBModule.NAMESPACE_URI,
 					XMLDBModule.PREFIX),
             "Create a new collection with name $new-collection as a child of " +

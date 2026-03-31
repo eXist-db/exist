@@ -26,15 +26,6 @@
  */
 package org.exist.extensions.exquery.restxq.impl;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.BinaryDocument;
@@ -53,14 +44,18 @@ import org.exquery.ExQueryException;
 import org.exquery.restxq.RestXqService;
 import org.exquery.restxq.RestXqServiceRegistry;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.*;
+
 /**
  *
  * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
-public class ExistXqueryRegistry {
+public final class ExistXqueryRegistry {
 
     //singleton
-    private final static ExistXqueryRegistry instance = new ExistXqueryRegistry();
+    private static final ExistXqueryRegistry instance = new ExistXqueryRegistry();
     private ExistXqueryRegistry() {
     }
     
@@ -69,13 +64,13 @@ public class ExistXqueryRegistry {
     }
     
     
-    private final static Logger LOG = LogManager.getLogger(ExistXqueryRegistry.class);
+    private static final Logger LOG = LogManager.getLogger(ExistXqueryRegistry.class);
     
     /**
      * Key is XQuery Module URI
      * Value is set of XQuery Module URIs on which the Module indicated by the Key depends on
      */
-    private final static Map<String, Set<String>> dependenciesTree = new HashMap<>();
+    private static final Map<String, Set<String>> dependenciesTree = new HashMap<>();
 
     /**
      * Returns a copy of the known dependency tree
@@ -93,7 +88,7 @@ public class ExistXqueryRegistry {
      * Key is the missing Module URI
      * Value is the Set of XQuery Module URIs that require the missing Module indicated by the Key
      */
-    private final static Map<String, Set<String>> missingDependencies = new HashMap<>();
+    private static final Map<String, Set<String>> missingDependencies = new HashMap<>();
 
     /**
      * Returns a copy of the current known missing dependencies
@@ -111,7 +106,7 @@ public class ExistXqueryRegistry {
      * The list of XQuerys that could not be compiled
      * for reasons other than missing dependencies
      */
-    private final static Set<String> invalidQueries = new HashSet<>();
+    private static final Set<String> invalidQueries = new HashSet<>();
 
     /**
      * Returns a copy of the current known invalid queries
@@ -122,7 +117,7 @@ public class ExistXqueryRegistry {
     }
 
     public boolean isXquery(final DocumentImpl document) {
-         return document instanceof BinaryDocument && document.getMimeType().equals(XQueryCompiler.XQUERY_MIME_TYPE);
+         return document instanceof BinaryDocument && XQueryCompiler.XQUERY_MIME_TYPE.equals(document.getMimeType());
     }
     
     public void registerServices(final DBBroker broker, final List<RestXqService> services) {
@@ -368,8 +363,8 @@ public class ExistXqueryRegistry {
     }
 
     private static class MissingModuleHint {
-        public String moduleHint = null;
-        public String dependantModule = null;
+        public String moduleHint;
+        public String dependantModule;
     }
     
     private MissingModuleHint extractMissingModuleHint(final RestXqServiceCompilationException e) {

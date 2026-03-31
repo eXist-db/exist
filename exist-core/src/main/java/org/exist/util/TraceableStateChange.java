@@ -35,7 +35,7 @@ public abstract class TraceableStateChange<S, C> {
     private final S state;
     private final Thread thread;
 
-    public TraceableStateChange(final C change, final S subject) {
+    protected TraceableStateChange(final C change, final S subject) {
         this.change = change;
         this.trace = Stacktrace.substack(Thread.currentThread().getStackTrace(), 2, Stacktrace.DEFAULT_STACK_TOP);
         this.state = subject;

@@ -21,13 +21,6 @@
  */
 package org.exist.storage;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.List;
-import java.util.Optional;
-
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.triggers.TriggerException;
@@ -42,10 +35,16 @@ import org.exist.xmldb.XmldbURI;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import org.junit.rules.TemporaryFolder;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.Optional;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
@@ -60,12 +59,12 @@ import static org.junit.Assert.fail;
 public class Recovery3Test {
 
     // we don't use @ClassRule/@Rule as we want to force corruption in some tests
-    private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
+    private final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Rule
     public TemporaryFolder tempFolder = new TemporaryFolder();
 
-    private final static int RESOURCE_COUNT = 150;
+    private static final int RESOURCE_COUNT = 150;
 
     @Test
     public void storeThenRecoverRemoveAndReadd() throws DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, TriggerException, LockException {

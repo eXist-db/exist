@@ -36,14 +36,14 @@ import java.util.Map;
  */
 public class SimpleQLModule extends AbstractInternalModule {
 
-    public final static String NAMESPACE_URI = "http://exist-db.org/xquery/simple-ql";
+    public static final String NAMESPACE_URI = "http://exist-db.org/xquery/simple-ql";
     
-    public final static String PREFIX = "simpleql";
-    public final static String INCLUSION_DATE = "2005-10-03";
-    public final static String RELEASED_IN_VERSION = "eXist-1.2";
+    public static final String PREFIX = "simpleql";
+    public static final String INCLUSION_DATE = "2005-10-03";
+    public static final String RELEASED_IN_VERSION = "eXist-1.2";
 
 
-    private final static FunctionDef[] functions = {
+    private static final FunctionDef[] functions = {
         new FunctionDef(ParseSimpleQL.signature, ParseSimpleQL.class)
     };
     

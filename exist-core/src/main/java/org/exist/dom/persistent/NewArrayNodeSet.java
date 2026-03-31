@@ -67,27 +67,27 @@ import java.util.*;
  */
 public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet, DocumentSet {
 
-    private Set<Collection> cachedCollections = null;
+    private Set<Collection> cachedCollections;
 
-    private int documentCount = 0;
+    private int documentCount;
 
     /**
      * An array of Document IDs of length {@link #documentCount}
      */
-    private int documentIds[] = new int[16];
+    private int[] documentIds = new int[16];
 
     /**
      * An array of offsets into {@link #nodes},
      * the index is the index from {@link #documentNodesOffset}.
      */
-    private int documentNodesOffset[] = new int[16];
+    private int[] documentNodesOffset = new int[16];
 
     /**
      * An array of the node count for each document,
      * each value is a count of the nodes for a specific document,
      * the index is the index from {@link #documentNodesOffset}.
      */
-    private int documentNodesCount[] = new int[16];
+    private int[] documentNodesCount = new int[16];
 
     /**
      * An array of nodes from documents,
@@ -104,7 +104,7 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
      * System.arraycopy(nodes, nodeStartIdx, docNodes, 0, nodeCount);
      * }</pre>
      */
-    private NodeProxy nodes[];
+    private NodeProxy[] nodes;
 
     public NewArrayNodeSet() {
         this(INITIAL_SIZE);
@@ -133,7 +133,7 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
     private void ensureCapacity() {
         if(size == nodes.length) {
             final int nsize = size << 1;
-            final NodeProxy temp[] = new NodeProxy[nsize];
+            final NodeProxy[] temp = new NodeProxy[nsize];
             System.arraycopy(nodes, 0, temp, 0, size);
             nodes = temp;
         }
@@ -318,29 +318,26 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
                     add = nodes[i].getNodeId() != NodeId.DOCUMENT_NODE;
                 }
                 if(add) {
-                    switch(mode) {
-                        case NodeSet.DESCENDANT:
-                            if(Expression.NO_CONTEXT_ID != contextId) {
-                                nodes[i].deepCopyContext(parent, contextId);
-                            } else {
-                                nodes[i].copyContext(parent);
-                            }
-                            if(copyMatches) {
-                                nodes[i].addMatches(parent);
-                            }
-                            result.add(nodes[i]);
-                            break;
-                        case NodeSet.ANCESTOR:
-                            if(Expression.NO_CONTEXT_ID != contextId) {
-                                parent.deepCopyContext(nodes[i], contextId);
-                            } else {
-                                parent.copyContext(nodes[i]);
-                            }
-                            if(copyMatches) {
-                                parent.addMatches(nodes[i]);
-                            }
-                            result.add(parent, 1);
-                            break;
+                    if (mode == NodeSet.DESCENDANT) {
+                        if (Expression.NO_CONTEXT_ID != contextId) {
+                            nodes[i].deepCopyContext(parent, contextId);
+                        } else {
+                            nodes[i].copyContext(parent);
+                        }
+                        if (copyMatches) {
+                            nodes[i].addMatches(parent);
+                        }
+                        result.add(nodes[i]);
+                    } else if (mode == NodeSet.ANCESTOR) {
+                        if (Expression.NO_CONTEXT_ID != contextId) {
+                            parent.deepCopyContext(nodes[i], contextId);
+                        } else {
+                            parent.copyContext(nodes[i]);
+                        }
+                        if (copyMatches) {
+                            parent.addMatches(nodes[i]);
+                        }
+                        result.add(parent, 1);
                     }
                 }
             }
@@ -383,29 +380,26 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
                         add = includeSelf;
                     }
                     if(add) {
-                        switch(mode) {
-                            case NodeSet.DESCENDANT:
-                                if(Expression.NO_CONTEXT_ID != contextId) {
-                                    nodes[i].deepCopyContext(parent, contextId);
-                                } else {
-                                    nodes[i].copyContext(parent);
-                                }
-                                if(copyMatches) {
-                                    nodes[i].addMatches(parent);
-                                }
-                                result.add(nodes[i]);
-                                break;
-                            case NodeSet.ANCESTOR:
-                                if(Expression.NO_CONTEXT_ID != contextId) {
-                                    parent.deepCopyContext(nodes[i], contextId);
-                                } else {
-                                    parent.copyContext(nodes[i]);
-                                }
-                                if(copyMatches) {
-                                    parent.addMatches(nodes[i]);
-                                }
-                                result.add(parent, 1);
-                                break;
+                        if (mode == NodeSet.DESCENDANT) {
+                            if (Expression.NO_CONTEXT_ID != contextId) {
+                                nodes[i].deepCopyContext(parent, contextId);
+                            } else {
+                                nodes[i].copyContext(parent);
+                            }
+                            if (copyMatches) {
+                                nodes[i].addMatches(parent);
+                            }
+                            result.add(nodes[i]);
+                        } else if (mode == NodeSet.ANCESTOR) {
+                            if (Expression.NO_CONTEXT_ID != contextId) {
+                                parent.deepCopyContext(nodes[i], contextId);
+                            } else {
+                                parent.copyContext(nodes[i]);
+                            }
+                            if (copyMatches) {
+                                parent.addMatches(nodes[i]);
+                            }
+                            result.add(parent, 1);
                         }
                     }
                 } else {
@@ -496,12 +490,10 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
     @Override
     public void sort(final boolean mergeContexts) {
         if(isSorted) {
-            return;
         } else if(hasOne) {
             isSorted = true; // shortcut: don't sort if there's just one item
             removeDuplicates(mergeContexts);
             updateDocs();
-            return;
         } else {
             if(size > 0) {
                 FastQSort.sort(nodes, 0, size - 1);
@@ -1211,7 +1203,7 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
 
     private class DocumentIterator implements Iterator<DocumentImpl> {
 
-        private int currentDoc = 0;
+        private int currentDoc;
 
         @Override
         public final boolean hasNext() {
@@ -1241,7 +1233,7 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
     }
 
     protected class NewArrayIterator implements NodeSetIterator, SequenceIterator {
-        private int pos = 0;
+        private int pos;
 
         @Override
         public final boolean hasNext() {
@@ -1301,7 +1293,8 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
             if(docIdx > -1) {
                 int low = documentNodesOffset[docIdx];
                 int high = low + (documentNodesCount[docIdx] - 1);
-                int mid, cmp;
+                int mid;
+                int cmp;
                 NodeProxy p;
                 while(low <= high) {
                     mid = (low + high) / 2;

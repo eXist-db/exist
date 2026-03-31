@@ -63,15 +63,15 @@ public class XQueryTriggerSetGidTest {
     @ClassRule
     public static final ExistEmbeddedServer EXIST_EMBEDDED_SERVER = new ExistEmbeddedServer(true, true);
 
-	private final static XmldbURI TEST_COLLECTION_URI = XmldbURI.create("/db/testXQueryTriggerSetGid");
-    private final static XmldbURI TEST_TRIGGER_COLLECTION_URI = TEST_COLLECTION_URI.append("triggered");
-    private final static XmldbURI TEST_OUTPUT_COLLECTION_URI = TEST_COLLECTION_URI.append("output");
+	private static final XmldbURI TEST_COLLECTION_URI = XmldbURI.create("/db/testXQueryTriggerSetGid");
+    private static final XmldbURI TEST_TRIGGER_COLLECTION_URI = TEST_COLLECTION_URI.append("triggered");
+    private static final XmldbURI TEST_OUTPUT_COLLECTION_URI = TEST_COLLECTION_URI.append("output");
 
-    private final static XmldbURI TEST_OUTPUT_BEFORE_DOC_URI = TEST_OUTPUT_COLLECTION_URI.append("before.xml");
-    private final static XmldbURI TEST_OUTPUT_AFTER_DOC_URI = TEST_OUTPUT_COLLECTION_URI.append("after.xml");
+    private static final XmldbURI TEST_OUTPUT_BEFORE_DOC_URI = TEST_OUTPUT_COLLECTION_URI.append("before.xml");
+    private static final XmldbURI TEST_OUTPUT_AFTER_DOC_URI = TEST_OUTPUT_COLLECTION_URI.append("after.xml");
 
-    private final static XmldbURI TRIGGER_MODULE_URI = TEST_COLLECTION_URI.append("XQueryTriggerSetGid.xqm");
-    private final static String TRIGGER_MODULE =
+    private static final XmldbURI TRIGGER_MODULE_URI = TEST_COLLECTION_URI.append("XQueryTriggerSetGid.xqm");
+    private static final String TRIGGER_MODULE =
             "module namespace trigger = 'http://exist-db.org/xquery/trigger';\n" +
             "import module namespace sm = 'http://exist-db.org/xquery/securitymanager';\n" +
             "import module namespace xmldb = 'http://exist-db.org/xquery/xmldb';\n" +
@@ -84,7 +84,7 @@ public class XQueryTriggerSetGidTest {
             "  xmldb:store('" + TEST_OUTPUT_COLLECTION_URI + "', '" + TEST_OUTPUT_AFTER_DOC_URI.lastSegment() + "', sm:id())\n" +
             "};";
 
-    private final static String TRIGGER_COLLECTION_CONFIG =
+    private static final String TRIGGER_COLLECTION_CONFIG =
     	"<exist:collection xmlns:exist='http://exist-db.org/collection-config/1.0'>" +
 	    "  <exist:triggers>" +
 		"     <exist:trigger class='org.exist.collections.triggers.XQueryTrigger'>" +
@@ -96,9 +96,9 @@ public class XQueryTriggerSetGidTest {
 		"  </exist:triggers>" +
         "</exist:collection>";    
 
-    private final static XmldbURI TRIGGERING_DOCUMENT_URI = TEST_TRIGGER_COLLECTION_URI.append("test.xml");
+    private static final XmldbURI TRIGGERING_DOCUMENT_URI = TEST_TRIGGER_COLLECTION_URI.append("test.xml");
     
-    private final static String TRIGGERING_DOCUMENT_CONTENT =
+    private static final String TRIGGERING_DOCUMENT_CONTENT =
 		  "<test/>";
 
     @BeforeClass

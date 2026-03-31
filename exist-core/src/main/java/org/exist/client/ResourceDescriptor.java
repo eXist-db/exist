@@ -21,11 +21,11 @@
  */
 package org.exist.client;
 
-import java.time.Instant;
-
 import org.exist.security.ACLPermission;
 import org.exist.security.Permission;
 import org.exist.xmldb.XmldbURI;
+
+import java.time.Instant;
 
 /**
  * Description of a resource, suitable for display by the graphical
@@ -38,7 +38,7 @@ public abstract class ResourceDescriptor {
     protected final Permission permissions;
     private final Instant instant;
     
-    public ResourceDescriptor(final XmldbURI name, final Permission permissions, final Instant instant) {
+    protected ResourceDescriptor(final XmldbURI name, final Permission permissions, final Instant instant) {
         this.name = name;
         this.permissions = permissions;
         this.instant = instant;
@@ -80,7 +80,7 @@ public abstract class ResourceDescriptor {
 
         @Override
         public String getPermissionsDescription() {
-            return "-" + ((permissions instanceof ACLPermission aclp && aclp.getACECount() > 0) ? permissions.toString() + '+' : permissions.toString());
+            return "-" + (permissions instanceof ACLPermission aclp && aclp.getACECount() > 0 ? permissions.toString() + '+' : permissions.toString());
         }
     }
     
@@ -100,7 +100,7 @@ public abstract class ResourceDescriptor {
 
         @Override
         public String getPermissionsDescription() {
-            return "c" + ((permissions instanceof ACLPermission aclp && aclp.getACECount() > 0) ? permissions.toString() + '+' : permissions.toString());
+            return "c" + (permissions instanceof ACLPermission aclp && aclp.getACECount() > 0 ? permissions.toString() + '+' : permissions.toString());
         }
     }
     

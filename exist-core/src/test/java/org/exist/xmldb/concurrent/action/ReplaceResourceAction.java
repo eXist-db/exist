@@ -52,11 +52,11 @@ public class ReplaceResourceAction extends Action {
 		"</user>" +
 		"</config>";
 	
-	private final static String TEST_QUERY1 = "//user[@id = 'george']/phone[contains(., '69')]/text()";
-	private final static String TEST_QUERY2 = "//user[@id = 'sam']/customer-id[. = '993834']";
-	private final static String TEST_QUERY3 = "//user[email = 'sam@email.com']";
+	private static final String TEST_QUERY1 = "//user[@id = 'george']/phone[contains(., '69')]/text()";
+	private static final String TEST_QUERY2 = "//user[@id = 'sam']/customer-id[. = '993834']";
+	private static final String TEST_QUERY3 = "//user[email = 'sam@email.com']";
 	
-	private int count = 0;
+	private int count;
 
 	public ReplaceResourceAction(final String collectionPath, final String resourceName) {
 		super(collectionPath, resourceName);

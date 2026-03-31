@@ -35,8 +35,8 @@ import org.exist.xquery.value.Type;
 
 import java.util.Optional;
 
-import static org.exist.xquery.FunctionDSL.*;
 import static org.exist.repo.ExampleModule.functionSignature;
+import static org.exist.xquery.FunctionDSL.*;
 
 /**
  * Some very simple XQuery example functions implemented

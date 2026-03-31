@@ -21,20 +21,6 @@
  */
 package org.exist.indexing.lucene;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URISyntaxException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import org.exist.EXistException;
 import org.exist.TestUtils;
 import org.exist.collections.triggers.TriggerException;
@@ -55,7 +41,18 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XUpdateQueryService;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URISyntaxException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.samples.Samples.SAMPLES;
+import static org.junit.Assert.*;
 
 public class ConcurrencyTest {
 
@@ -64,7 +61,7 @@ public class ConcurrencyTest {
     @ClassRule
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
-    private static int CONCURRENT_THREADS = Math.min(16, Runtime.getRuntime().availableProcessors() * 3);
+    private static final int CONCURRENT_THREADS = Math.min(16, Runtime.getRuntime().availableProcessors() * 3);
 
     private static Collection test;
 

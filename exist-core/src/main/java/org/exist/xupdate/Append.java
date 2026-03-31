@@ -21,8 +21,6 @@
  */
 package org.exist.xupdate;
 
-import java.util.Map;
-
 import org.exist.EXistException;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.DocumentImpl;
@@ -41,6 +39,8 @@ import org.exist.util.LockException;
 import org.exist.xquery.XPathException;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import java.util.Map;
 
 /**
  * Implements an XUpate append statement.
@@ -81,7 +81,7 @@ public class Append extends Modification {
 	        {return 0;}
 		
 	    try {
-	        final StoredNode ql[] = selectAndLock(transaction);
+	        final StoredNode[] ql = selectAndLock(transaction);
 			final NotificationService notifier = broker.getBrokerPool().getNotificationService();
 			for (final StoredNode node : ql) {
 				final DocumentImpl doc = node.getOwnerDocument();

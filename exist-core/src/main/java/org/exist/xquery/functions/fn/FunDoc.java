@@ -23,22 +23,16 @@ package org.exist.xquery.functions.fn;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
+import org.exist.dom.QName;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.NodeHandle;
-import org.exist.dom.QName;
 import org.exist.numbering.NodeId;
 import org.exist.storage.UpdateListener;
 import org.exist.xquery.*;
 import org.exist.xquery.functions.xmldb.XMLDBModule;
 import org.exist.xquery.util.DocUtils;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 /**
  * Implements the built-in fn:doc() function.
@@ -51,7 +45,7 @@ public class FunDoc extends Function {
 
     protected static final Logger logger = LogManager.getLogger(FunDoc.class);
 
-    public final static FunctionSignature signature =
+    public static final FunctionSignature signature =
         new FunctionSignature(
             new QName("doc", Function.BUILTIN_FUNCTION_NS),
             "Returns the document node of $document-uri. " +
@@ -65,7 +59,7 @@ public class FunDoc extends Function {
         );
 
     // fixit! - security warning
-    private UpdateListener listener = null;
+    private UpdateListener listener;
 
     public FunDoc(XQueryContext context) {
         super(context, signature);

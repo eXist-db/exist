@@ -31,7 +31,7 @@ import org.exist.dom.QName;
 public class Annotation {
     
     private final QName name;
-    private final LiteralValue value[];
+    private final LiteralValue[] value;
     private final FunctionSignature signature;
     
     public Annotation(final QName name, final FunctionSignature signature) {

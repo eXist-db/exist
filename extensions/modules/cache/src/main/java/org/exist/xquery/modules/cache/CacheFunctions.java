@@ -32,7 +32,6 @@ import org.exist.xquery.value.*;
 import org.xml.sax.SAXException;
 
 import javax.xml.transform.OutputKeys;
-
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Properties;
@@ -47,7 +46,7 @@ import static org.exist.xquery.modules.cache.CacheModule.*;
  */
 public class CacheFunctions extends BasicFunction {
 
-    private final static Properties OUTPUT_PROPERTIES = new Properties();
+    private static final Properties OUTPUT_PROPERTIES = new Properties();
     static {
         OUTPUT_PROPERTIES.setProperty(OutputKeys.INDENT, "no");
         OUTPUT_PROPERTIES.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");

@@ -21,11 +21,11 @@
  */
 package org.exist.client.security;
 
-import java.awt.Component;
-import java.awt.Font;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import java.awt.Component;
+import java.awt.Font;
 
 /**
  *
@@ -33,7 +33,7 @@ import javax.swing.JList;
  */
 public class MemberOfGroupsListCellRenderer extends DefaultListCellRenderer {
     
-    private String cellOfInterest = null;
+    private String cellOfInterest;
     
     public void setCellOfInterest(final String cellOfInterest) {
         this.cellOfInterest = cellOfInterest;
@@ -44,7 +44,7 @@ public class MemberOfGroupsListCellRenderer extends DefaultListCellRenderer {
         final JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
         
         //make the cellOfInterest BOLD font
-        if(cellOfInterest != null && label.getText().equals(cellOfInterest)) {
+        if(label.getText().equals(cellOfInterest)) {
             label.setFont(label.getFont().deriveFont(Font.BOLD));
         }
         

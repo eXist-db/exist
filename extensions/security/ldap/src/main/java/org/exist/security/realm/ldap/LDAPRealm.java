@@ -21,24 +21,8 @@
  */
 package org.exist.security.realm.ldap;
 
-import java.lang.reflect.Field;
-import java.util.AbstractMap.SimpleEntry;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import javax.annotation.Nullable;
-import javax.naming.NamingEnumeration;
-import javax.naming.NamingException;
-import javax.naming.directory.Attribute;
-import javax.naming.directory.Attributes;
-import javax.naming.directory.DirContext;
-import javax.naming.directory.SearchControls;
-import javax.naming.directory.SearchResult;
-import javax.naming.ldap.LdapContext;
-
-import com.evolvedbinary.j8fu.tuple.Tuple2;
 import com.evolvedbinary.j8fu.function.BiFunction3E;
+import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
@@ -60,6 +44,18 @@ import org.exist.security.internal.aider.UserAider;
 import org.exist.security.realm.ldap.AbstractLDAPSearchPrincipal.LDAPSearchAttributeKey;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
+
+import javax.annotation.Nullable;
+import javax.naming.NamingEnumeration;
+import javax.naming.NamingException;
+import javax.naming.directory.*;
+import javax.naming.ldap.LdapContext;
+import java.lang.reflect.Field;
+import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 
@@ -236,7 +232,7 @@ public class LDAPRealm extends AbstractRealm {
                     //to the account group list
                     memberOf_groups.addFirst(getGroup(ctx2, broker, primaryGroup));
 
-                    final String accountGroups[] = account.getGroups();
+                    final String[] accountGroups = account.getGroups();
 
                     if (!accountGroups[0].equals(ensureCase(primaryGroup))) {
                         update |= UPDATE_GROUP;
@@ -360,8 +356,6 @@ public class LDAPRealm extends AbstractRealm {
                         userAider.setMetadataValue(metadata.getKey(), metadata.getValue());
                     }
 
-                    final Account account = getSecurityManager().addAccount(userAider);
-
                     //LDAPAccountImpl account = sm.addAccount(instantiateAccount(ID, username));
 
                     //TODO expand to a general method that rewrites the useraider based on the realTransformation
@@ -386,7 +380,7 @@ public class LDAPRealm extends AbstractRealm {
                         }
                     }*/
 
-                    return account;
+                    return getSecurityManager().addAccount(userAider);
             });
         } catch (final Exception e) {
             if (LOG.isDebugEnabled()) {
@@ -421,8 +415,8 @@ public class LDAPRealm extends AbstractRealm {
 
     private LdapContext getContext(final Optional<Subject> invokingUser) throws NamingException {
         final Optional<Tuple2<String, String>> credentials = invokingUser
-                .filter(subject -> subject instanceof AuthenticatedLdapSubjectAccreditedImpl)
-                .map(subject -> (AuthenticatedLdapSubjectAccreditedImpl) subject)
+                .filter(AuthenticatedLdapSubjectAccreditedImpl.class::isInstance)
+                .map(AuthenticatedLdapSubjectAccreditedImpl.class::cast)
                 .map(subject -> Tuple(subject.getUsername(), subject.getAuthenticatedCredentials()));
 
         return getContextWithCredentials(credentials);
@@ -832,7 +826,7 @@ public class LDAPRealm extends AbstractRealm {
     // configurable methods
     @Override
     public boolean isConfigured() {
-        return (configuration != null);
+        return configuration != null;
     }
 
     @Override

@@ -21,18 +21,18 @@
  */
 package org.exist.util;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.types.selectors.SelectorUtils;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class CollectionScanner {
 
-	public final static Resource[] scan(Collection current, String vpath, String pattern) 
+	public static Resource[] scan(Collection current, String vpath, String pattern) 
 	throws XMLDBException {
 		final List<Resource> list = new ArrayList<>();
 		scan(list, current, vpath, pattern);
@@ -40,7 +40,7 @@ public class CollectionScanner {
 		return (Resource[])list.toArray(resources);
 	}
 
-	public final static void scan(List<Resource> list, Collection current, String vpath, String pattern) 
+	public static void scan(List<Resource> list, Collection current, String vpath, String pattern) 
 	throws XMLDBException {
 		String name;
 		for (String resource : current.listResources()) {

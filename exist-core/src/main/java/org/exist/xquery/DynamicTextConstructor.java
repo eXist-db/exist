@@ -36,7 +36,7 @@ import org.exist.xquery.value.SequenceIterator;
  */
 public class DynamicTextConstructor extends NodeConstructor {
 
-    final private Expression content;
+    private final Expression content;
 
     public DynamicTextConstructor(XQueryContext context, Expression contentExpr) {
         super(context);

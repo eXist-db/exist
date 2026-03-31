@@ -35,7 +35,7 @@ import org.xml.sax.helpers.DefaultHandler;
 public class ValidationContentHandler extends DefaultHandler {
 
     private boolean isFirstElement = true;
-    private String namespaceUri = null;
+    private String namespaceUri;
 
 
     /**

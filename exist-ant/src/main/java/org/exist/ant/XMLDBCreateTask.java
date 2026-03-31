@@ -39,7 +39,7 @@ import java.net.URISyntaxException;
  */
 public class XMLDBCreateTask extends AbstractXMLDBTask
 {
-    private String collection = null;
+    private String collection;
 
     @Override
     public void execute() throws BuildException
@@ -145,6 +145,6 @@ public class XMLDBCreateTask extends AbstractXMLDBTask
                 current = c;
             }
         }
-        return( current );
+        return current;
     }
 }

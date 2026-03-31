@@ -21,12 +21,6 @@
  */
 package org.exist.storage;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.util.Optional;
-
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.dom.persistent.BinaryDocument;
@@ -50,13 +44,18 @@ import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.junit.*;
+import org.xml.sax.SAXException;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.util.Optional;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.exist.samples.Samples.SAMPLES;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.exist.samples.Samples.SAMPLES;
-
-import org.xml.sax.SAXException;
 
 /**
  * Test recovery after a forced database corruption.
@@ -66,7 +65,7 @@ import org.xml.sax.SAXException;
  */
 public class RecoveryTest {
     
-    private static String TEST_XML =
+    private static final String TEST_XML =
         "<?xml version=\"1.0\"?>" +
         "<test>" +
         "  <title>Hello</title>" +

@@ -23,8 +23,8 @@ package org.exist.xmldb;
 
 import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.CollectionConfigurationManager;
-import org.exist.indexing.ReindexScope;
 import org.exist.dom.persistent.LockedDocument;
+import org.exist.indexing.ReindexScope;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;

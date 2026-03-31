@@ -21,18 +21,17 @@
  */
 package org.exist.security;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.easymock.EasyMock;
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.verify;
-import static org.easymock.EasyMock.replay;
-import static org.junit.Assert.assertEquals;
-
 import org.exist.Database;
 import org.exist.config.ConfigurationException;
 import org.exist.storage.DBBroker;
 import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.easymock.EasyMock.*;
+import static org.junit.Assert.assertEquals;
 
 /**
  *
@@ -80,7 +79,7 @@ public class AbstractAccountTest {
         final String groupName = "testGroup";
 
         TestableAbstractAccount partialMockAccount = new TestableAbstractAccount(mockBroker, mockRealm, 1, "testGroup");
-        List<Group> groups = new ArrayList<Group>();
+        List<Group> groups = new ArrayList<>();
         groups.add(mockGroup);
         partialMockAccount.setInternalGroups(groups);
 

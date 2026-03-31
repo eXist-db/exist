@@ -21,11 +21,6 @@
  */
 package org.exist.client.security;
 
-import java.io.Serial;
-import java.util.regex.Pattern;
-import javax.swing.InputVerifier;
-import javax.swing.JOptionPane;
-import javax.swing.table.DefaultTableModel;
 import org.exist.client.DialogCompleteWithResponse;
 import org.exist.client.HighlightedTableCellRenderer;
 import org.exist.security.EXistSchemaType;
@@ -33,6 +28,12 @@ import org.exist.security.Group;
 import org.exist.security.internal.aider.GroupAider;
 import org.exist.xmldb.UserManagementService;
 import org.xmldb.api.base.XMLDBException;
+
+import javax.swing.InputVerifier;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
+import java.io.Serial;
+import java.util.regex.Pattern;
 
 /**
  *
@@ -48,7 +49,7 @@ public class GroupDialog extends javax.swing.JFrame {
     private final UserManagementService userManagementService;
     private final String currentUser;
     
-    private DefaultTableModel groupMembersTableModel = null;
+    private DefaultTableModel groupMembersTableModel;
 
     public GroupDialog(final UserManagementService userManagementService, final String currentUser) {
         this.userManagementService = userManagementService;

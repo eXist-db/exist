@@ -21,10 +21,10 @@
  */
 package org.exist.storage.index;
 
+import org.exist.util.ByteConversion;
+
 import java.io.IOException;
 import java.io.RandomAccessFile;
-
-import org.exist.util.ByteConversion;
 
 /**
  * Manages a list of pages containing unused sections.
@@ -45,11 +45,11 @@ public class FreeList {
 
     //private final static Logger LOG = LogManager.getLogger(FreeList.class);
 
-    public final static int MAX_FREE_LIST_LEN = 128;
+    public static final int MAX_FREE_LIST_LEN = 128;
 
-    protected FreeSpace header = null;
-    protected FreeSpace last = null;
-    protected int size = 0;
+    protected FreeSpace header;
+    protected FreeSpace last;
+    protected int size;
 
     /**
      * Append a new {@link FreeSpace} object to the list,

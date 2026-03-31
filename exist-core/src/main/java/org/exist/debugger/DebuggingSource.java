@@ -21,12 +21,12 @@
  */
 package org.exist.debugger;
 
-import java.io.IOException;
-import java.util.List;
-
 import org.exist.debugger.model.Breakpoint;
 import org.exist.debugger.model.Location;
 import org.exist.debugger.model.Variable;
+
+import java.io.IOException;
+import java.util.List;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>

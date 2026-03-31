@@ -34,7 +34,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * reused.
  */
 @ThreadSafe
-public class ByteArrayPool {
+public final class ByteArrayPool {
 
     private static final int POOL_SIZE = 32;
     private static final int MAX = 128;

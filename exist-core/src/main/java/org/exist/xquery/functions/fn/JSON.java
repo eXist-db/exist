@@ -279,29 +279,26 @@ public class JSON extends BasicFunction {
                     break;
             }
             if (parent != null) {
-                switch (parent.getType()) {
-                    case Type.ARRAY_ITEM:
-                        ((ArrayType)parent).add(next == null ? Sequence.EMPTY_SEQUENCE : next.toSequence());
-                        break;
-                    case Type.MAP_ITEM:
-                        final String currentName = parser.getCurrentName();
-                        if (currentName == null) {
-                            throw new XPathException(next, ErrorCodes.FOJS0001, "Invalid JSON object");
+                if (parent.getType() == Type.ARRAY_ITEM) {
+                    ((ArrayType)parent).add(next == null ? Sequence.EMPTY_SEQUENCE : next.toSequence());
+                } else if (parent.getType() == Type.MAP_ITEM) {
+                    final String currentName = parser.getCurrentName();
+                    if (currentName == null) {
+                        throw new XPathException(next, ErrorCodes.FOJS0001, "Invalid JSON object");
+                    }
+                    final StringValue name = new StringValue(currentName);
+                    final MapType map = (MapType)parent;
+                    if (map.contains(name)) {
+                        // handle duplicate keys
+                        if (OPTION_DUPLICATES_REJECT.equals(handleDuplicates)) {
+                            throw new XPathException(map.getExpression(), ErrorCodes.FOJS0003, "Duplicate key: " + currentName);
                         }
-                        final StringValue name = new StringValue(currentName);
-                        final MapType map = (MapType) parent;
-                        if (map.contains(name)) {
-                            // handle duplicate keys
-                            if (handleDuplicates.equals(OPTION_DUPLICATES_REJECT)) {
-                                throw new XPathException(map.getExpression(), ErrorCodes.FOJS0003, "Duplicate key: " + currentName);
-                            }
-                            if (handleDuplicates.equals(OPTION_DUPLICATES_USE_LAST)) {
-                                map.add(name, next == null ? Sequence.EMPTY_SEQUENCE : next.toSequence());
-                            }
-                        } else {
+                        if (OPTION_DUPLICATES_USE_LAST.equals(handleDuplicates)) {
                             map.add(name, next == null ? Sequence.EMPTY_SEQUENCE : next.toSequence());
                         }
-                        break;
+                    } else {
+                        map.add(name, next == null ? Sequence.EMPTY_SEQUENCE : next.toSequence());
+                    }
                 }
             }
         }

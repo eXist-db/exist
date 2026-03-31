@@ -42,7 +42,7 @@ import java.io.InputStream;
 @NotThreadSafe
 public class DescriptorResourceCounter {
 
-    private final static SAXParserFactory saxFactory = ExistSAXParserFactory.getSAXParserFactory();
+    private static final SAXParserFactory saxFactory = ExistSAXParserFactory.getSAXParserFactory();
     static {
         saxFactory.setNamespaceAware(true);
     }
@@ -68,7 +68,7 @@ public class DescriptorResourceCounter {
     }
 
     private static class CounterHandler extends DefaultHandler {
-        long numberOfFiles = 0;
+        long numberOfFiles;
 
         @Override
         public void startElement(final String uri, final String localName, final String qName, final Attributes attributes) throws SAXException {

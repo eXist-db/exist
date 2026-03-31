@@ -37,7 +37,7 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class XMLDBExistTask extends AbstractXMLDBTask implements Condition
 {
-    private String resource = null;
+    private String resource;
 
     @Override
     public boolean eval() throws BuildException
@@ -77,7 +77,7 @@ public class XMLDBExistTask extends AbstractXMLDBTask implements Condition
             exist = false;
         }
 
-        return( exist );
+        return exist;
     }
 
 

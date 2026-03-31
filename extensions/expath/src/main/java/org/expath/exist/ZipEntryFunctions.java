@@ -21,18 +21,10 @@
  */
 package org.expath.exist;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-import javax.annotation.Nullable;
-import javax.xml.transform.stream.StreamSource;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.QName;
+import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.PermissionDeniedException;
@@ -45,18 +37,16 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.modules.ModuleUtils;
-import org.exist.xquery.value.AnyURIValue;
-import org.exist.xquery.value.Base64BinaryValueType;
-import org.exist.xquery.value.BinaryValue;
-import org.exist.xquery.value.BinaryValueFromInputStream;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.StringValue;
+import org.exist.xquery.value.*;
 import org.xml.sax.SAXException;
+
+import javax.annotation.Nullable;
+import javax.xml.transform.stream.StreamSource;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -76,7 +66,7 @@ public class ZipEntryFunctions extends BasicFunction {
     private static final String TEXT_ENTRY_NAME = "text-entry";
     private static final String XML_ENTRY_NAME = "xml-entry";
 
-    public static final FunctionSignature signatures[] = {
+    public static final FunctionSignature[] signatures = {
             //zip:binary-entry($href as xs:anyURI, $entry as xs:string) as xs:base64Binary
             new FunctionSignature(
                     new QName(BINARY_ENTRY_NAME, ZipModule.NAMESPACE_URI, ZipModule.PREFIX),
@@ -189,7 +179,7 @@ public class ZipEntryFunctions extends BasicFunction {
     }
 
     private StringValue extractStringEntry(final ZipInputStream zis) throws XPathException, IOException {
-        final char buf[] = new char[4096];
+        final char[] buf = new char[4096];
         final StringBuilder builder = new StringBuilder();
         int read = -1;
         try (final Reader reader = new InputStreamReader(zis, UTF_8)) {
@@ -224,7 +214,7 @@ public class ZipEntryFunctions extends BasicFunction {
     }
 
     protected static class ZipFileFromDb implements ZipFileSource {
-        private LockedDocument binaryDoc = null;
+        private LockedDocument binaryDoc;
         private final XmldbURI uri;
 
         public ZipFileFromDb(final XmldbURI uri) {

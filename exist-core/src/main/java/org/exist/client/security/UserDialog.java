@@ -21,11 +21,6 @@
  */
 package org.exist.client.security;
 
-import java.io.Serial;
-import java.util.Iterator;
-import java.util.regex.Pattern;
-import javax.swing.InputVerifier;
-import javax.swing.JOptionPane;
 import org.exist.client.InteractiveClient;
 import org.exist.security.AXSchemaType;
 import org.exist.security.EXistSchemaType;
@@ -35,6 +30,12 @@ import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.internal.aider.UserAider;
 import org.exist.xmldb.UserManagementService;
 import org.xmldb.api.base.XMLDBException;
+
+import javax.swing.InputVerifier;
+import javax.swing.JOptionPane;
+import java.io.Serial;
+import java.util.Iterator;
+import java.util.regex.Pattern;
 
 /**
  *
@@ -48,11 +49,11 @@ public class UserDialog extends javax.swing.JFrame {
     private final Pattern PTN_USERNAME = Pattern.compile("[a-zA-Z0-9\\-\\._@]{3,}");
     private final Pattern PTN_PASSWORD = Pattern.compile(".{3,}");
     private UserManagementService userManagementService;
-    private SortedListModel<String> availableGroupsModel = null;
-    private SortedListModel<String> memberOfGroupsModel = null;
-    private String primaryGroup = null;
+    private SortedListModel<String> availableGroupsModel;
+    private SortedListModel<String> memberOfGroupsModel;
+    private String primaryGroup;
     
-    private MemberOfGroupsListCellRenderer memberOfGroupsListCellRenderer = null;
+    private MemberOfGroupsListCellRenderer memberOfGroupsListCellRenderer;
     
     public UserDialog(final UserManagementService userManagementService) {
         this.userManagementService = userManagementService;
@@ -512,7 +513,7 @@ public class UserDialog extends javax.swing.JFrame {
     protected SortedListModel getAvailableGroupsListModel() {
         if(availableGroupsModel == null) {
             try {
-                final String groupNames[] = getUserManagementService().getGroups();
+                final String[] groupNames = getUserManagementService().getGroups();
                 availableGroupsModel = new SortedListModel<>();
                 availableGroupsModel.addAll(groupNames);
             } catch (final XMLDBException xmldbe) {

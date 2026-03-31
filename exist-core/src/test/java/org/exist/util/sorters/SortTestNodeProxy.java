@@ -47,11 +47,13 @@ class SortTestNodeProxy extends NodeProxy {
 	}
 
 	public int compareTo(Object o) {
-		if (val < 0)
-			throw new IllegalStateException(
-					"Sort ought not be looking at the value");
-		if(!(o instanceof SortTestNodeProxy))
-			throw new IllegalStateException("Test implementation limitation hit");
+        if (val < 0) {
+            throw new IllegalStateException(
+                    "Sort ought not be looking at the value");
+        }
+        if (!(o instanceof SortTestNodeProxy)) {
+            throw new IllegalStateException("Test implementation limitation hit");
+        }
 			
 		return val - ((SortTestNodeProxy)o).val;
 	}

@@ -27,8 +27,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.apache.lucene.document.Document;
 import org.apache.lucene.document.*;
+import org.apache.lucene.document.Document;
 import org.apache.lucene.facet.DrillDownQuery;
 import org.apache.lucene.facet.Facets;
 import org.apache.lucene.facet.FacetsCollector;
@@ -56,9 +56,9 @@ import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.*;
 import org.exist.storage.btree.DBException;
-import org.exist.storage.vector.VectorStore;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.txn.Txn;
+import org.exist.storage.vector.VectorStore;
 import org.exist.util.*;
 import org.exist.util.pool.NodePool;
 import org.exist.xmldb.XmldbURI;
@@ -103,25 +103,25 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     
     protected LuceneIndex index;
     
-    private LuceneMatchListener matchListener = null;
+    private LuceneMatchListener matchListener;
 
-    private XMLToQuery queryTranslator;
+    private final XMLToQuery queryTranslator;
 
-    private DBBroker broker;
+    private final DBBroker broker;
 
-    private DocumentImpl currentDoc = null;
+    private DocumentImpl currentDoc;
     private ReindexMode mode = ReindexMode.STORE;
     
     private LuceneConfig config;
-    private Deque<TextExtractor> contentStack = null;
-    private Set<NodeId> nodesToRemove = null;
-    private List<PendingDoc> nodesToWrite = null;
-    private Document pendingDoc = null;
-    private boolean canFlush = false;
+    private Deque<TextExtractor> contentStack;
+    private Set<NodeId> nodesToRemove;
+    private List<PendingDoc> nodesToWrite;
+    private Document pendingDoc;
+    private boolean canFlush;
 
-    private int cachedNodesSize = 0;
+    private int cachedNodesSize;
 
-    private int maxCachedNodesSize = 4096 * 1024;
+    private final int maxCachedNodesSize = 4096 * 1024;
     
     private Analyzer analyzer;
 
@@ -187,10 +187,11 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         IndexSpec indexConf = document.getCollection().getIndexConfiguration(broker);
         if (indexConf != null) {
             config = (LuceneConfig) indexConf.getCustomIndexSpec(LuceneIndex.ID);
-            if (config != null)
-            	// Create a copy of the original LuceneConfig (there's only one per db instance), 
-            	// so we can safely work with it.
-            	config = new LuceneConfig(config);
+            if (config != null) {
+                // Create a copy of the original LuceneConfig (there's only one per db instance), 
+                // so we can safely work with it.
+                config = new LuceneConfig(config);
+            }
         } else {
             config = LuceneConfig.DEFAULT_CONFIG;
         }
@@ -202,10 +203,11 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         this.mode = mode;
         switch (mode) {
             case STORE:
-                if (nodesToWrite == null)
+                if (nodesToWrite == null) {
                     nodesToWrite = new ArrayList<>();
-                else
+                } else {
                     nodesToWrite.clear();
+                }
                 cachedNodesSize = 0;
                 break;
             case REMOVE_SOME_NODES:
@@ -246,7 +248,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             NamedNodeMap attributes = parentStoredNode.getAttributes();
             for (int i = 0; i < attributes.getLength(); ++i) {
                 IStoredNode<?> attr = (IStoredNode<?>) attributes.item(i);
-                if (attr.getPrefix() != null && XMLConstants.XMLNS_ATTRIBUTE.equals(attr.getPrefix())) {
+                if (XMLConstants.XMLNS_ATTRIBUTE.equals(attr.getPrefix())) {
                     continue;
                 }
                 configIt = config.getConfig(attr.getPath());
@@ -265,8 +267,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         NodePath2 p = new NodePath2((NodePath2)path);
         boolean reindexRequired = false;
 
-        if (node.getNodeType() == Node.ELEMENT_NODE && !includeSelf)
+        if (node.getNodeType() == Node.ELEMENT_NODE && !includeSelf) {
             p.removeLastNode();
+        }
         for (int i = 0; i < p.length(); i++) {
             if (config.matches(p)) {
                 reindexRequired = true;
@@ -278,11 +281,13 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             p = new NodePath2((NodePath2)path);
             IStoredNode topMost = null;
             IStoredNode currentNode = node;
-            if (currentNode.getNodeType() != Node.ELEMENT_NODE)
+            if (currentNode.getNodeType() != Node.ELEMENT_NODE) {
                 currentNode = currentNode.getParentStoredNode();
+            }
             while (currentNode != null) {
-                if (config.matches(p))
+                if (config.matches(p)) {
                     topMost = currentNode;
+                }
                 currentNode = currentNode.getParentStoredNode();
                 p.removeLastNode();
             }
@@ -301,18 +306,20 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         boolean needToFilter = false;
         Match nextMatch = proxy.getMatches();
         while (nextMatch != null) {
-            if (nextMatch.getIndexId().equals(LuceneIndex.ID)) {
+            if (LuceneIndex.ID.equals(nextMatch.getIndexId())) {
                 needToFilter = true;
                 break;
             }
             nextMatch = nextMatch.getNextMatch();
         }
-        if (!needToFilter)
+        if (!needToFilter) {
             return null;
-        if (matchListener == null)
+        }
+        if (matchListener == null) {
             matchListener = new LuceneMatchListener(index, broker, proxy);
-        else
+        } else {
             matchListener.reset(broker, proxy);
+        }
         return matchListener;
     }
 
@@ -382,8 +389,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     @Override
     public void removeCollection(Collection collection, DBBroker broker, boolean reindex) {
-        if (LOG.isDebugEnabled())
+        if (LOG.isDebugEnabled()) {
             LOG.debug("Removing collection {}", collection.getURI());
+        }
         final VectorStore vectorStore = broker.getBrokerPool().getVectorStore();
         final Txn txn = broker.getCurrentTransaction();
         if (vectorStore != null && txn != null) {
@@ -416,8 +424,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             }
             mode = ReindexMode.STORE;
         }
-        if (LOG.isDebugEnabled())
+        if (LOG.isDebugEnabled()) {
             LOG.debug("Collection removed.");
+        }
     }
 
     /**
@@ -426,8 +435,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      * mode.
      */
     protected void removeNodes() {
-    	if (nodesToRemove == null)
+        if (nodesToRemove == null) {
             return;
+        }
         removeVectorStoreForNodes(currentDoc.getURI().toString(), nodesToRemove);
         IndexWriter writer = null;
         try {
@@ -918,7 +928,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      */
     public void indexNonXML(NodeValue descriptor) throws DatabaseConfigurationException {
         // Verify input
-        if (!descriptor.getNode().getLocalName().contentEquals("doc")) {
+        if (!"doc".contentEquals(descriptor.getNode().getLocalName())) {
             // throw exception
             LOG.error("Expected <doc> got <{}>", descriptor.getNode().getLocalName());
             return;
@@ -952,10 +962,12 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             FieldType fieldType = config == null ? null : config.getFieldType(field.getName());
             
             Field.Store store = null;
-            if (fieldType != null)
-            	store = fieldType.getStore();
-            if (store == null)
-            	store = field.getStore();
+            if (fieldType != null) {
+                store = fieldType.getStore();
+            }
+            if (store == null) {
+                store = field.getStore();
+            }
             
             // Get name from SOLR field
             String contentFieldName = field.getName();
@@ -1106,7 +1118,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                         // setup attributes
                         AttributesImpl attribs = new AttributesImpl();
                         attribs.addAttribute("", "uri", "uri", "CDATA", fDocUri);
-                        attribs.addAttribute("", "score", "score", "CDATA", "" + score);
+                        attribs.addAttribute("", "score", "score", "CDATA", String.valueOf(score));
 
                         // write element and attributes
                         builder.startElement("", "search", "search", attribs);
@@ -1280,7 +1292,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         return false;
     }
 
-    private class LuceneHitCollector implements Collector {
+    private final class LuceneHitCollector implements Collector {
 
         private final QName qname;
         private final DocumentSet docs;
@@ -1455,8 +1467,8 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         final List<QName> indexes = new ArrayList<>(20);
         if (qnames != null && !qnames.isEmpty()) {
             for (final QName qname : qnames) {
-                if (qname.getLocalPart() == null || qname.getLocalPart().equals(QName.WILDCARD)
-                        || qname.getNamespaceURI() == null || qname.getNamespaceURI().equals(QName.WILDCARD)) {
+                if (qname.getLocalPart() == null || QName.WILDCARD.equals(qname.getLocalPart())
+                        || qname.getNamespaceURI() == null || QName.WILDCARD.equals(qname.getNamespaceURI())) {
                     getDefinedIndexesFor(qname, indexes);
                 } else {
                     indexes.add(qname);
@@ -1488,10 +1500,10 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     private static boolean matchQName(QName qname, QName candidate) {
         boolean match = true;
-        if (qname.getLocalPart() != null && (!qname.getLocalPart().equals(QName.WILDCARD))) {
+        if (qname.getLocalPart() != null && (!QName.WILDCARD.equals(qname.getLocalPart()))) {
             match = qname.getLocalPart().equals(candidate.getLocalPart());
         }
-        if (match && qname.getNamespaceURI() != null && (!qname.getNamespaceURI().equals(QName.WILDCARD)) && !qname.getNamespaceURI().isEmpty()) {
+        if (match && qname.getNamespaceURI() != null && (!QName.WILDCARD.equals(qname.getNamespaceURI())) && !qname.getNamespaceURI().isEmpty()) {
             match = qname.getNamespaceURI().equals(candidate.getNamespaceURI());
         }
         return match;
@@ -2100,8 +2112,9 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             }
 
             Iterator<LuceneIndexConfig> configIter = null;
-            if (config != null)
+            if (config != null) {
                 configIter = config.getConfig(path);
+            }
             if (mode != ReindexMode.REMOVE_ALL_NODES && configIter != null) {
                 if (mode == ReindexMode.REMOVE_SOME_NODES) {
                     nodesToRemove.add(attrib.getNodeId());

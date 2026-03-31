@@ -79,7 +79,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
     /**
      * The owner document of this node.
      */
-    private DocumentImpl doc = null;
+    private DocumentImpl doc;
 
     private NodeId nodeId;
 
@@ -104,11 +104,11 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      *
      * Matches are stored as a linked list.
      */
-    private Match match = null;
+    private Match match;
 
-    private ContextItem context = null;
+    private ContextItem context;
 
-    private QName qname = null;
+    private QName qname;
 
     private final Expression expression;
 
@@ -201,7 +201,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      * @param address    a <code>long</code> value
      */
     public NodeProxy(final Expression expression, final DocumentImpl doc, final NodeId nodeId, final short nodeType, final long address) {
-        this.expression = (expression == null && doc != null) ? doc.getExpression() : expression;
+        this.expression = expression == null && doc != null ? doc.getExpression() : expression;
         this.doc = doc;
         this.nodeType = nodeType;
         this.internalAddress = address;
@@ -233,7 +233,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      * @param n a <code>NodeHandle</code> value
      */
     public NodeProxy(final Expression expression, final NodeHandle n) {
-        this((expression == null && n instanceof NodeProxy np) ? np.getExpression() : expression, n.getOwnerDocument(), n.getNodeId(), n.getNodeType(), n.getInternalAddress());
+        this(expression == null && n instanceof NodeProxy np ? np.getExpression() : expression, n.getOwnerDocument(), n.getNodeId(), n.getNodeType(), n.getInternalAddress());
         if(n instanceof NodeProxy proxy) {
             this.match = proxy.match;
             this.context = proxy.context;
@@ -772,7 +772,7 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
             node = (NodeImpl) getNode();
         }
         if(nodeType == Node.ATTRIBUTE_NODE) {
-            final AttrImpl attr = (node == null ? (AttrImpl) getNode() : (AttrImpl) node);
+            final AttrImpl attr = node == null ? (AttrImpl) getNode() : (AttrImpl) node;
             receiver.attribute(attr.getQName(), attr.getValue());
         } else {
             receiver.addReferenceNode(this);

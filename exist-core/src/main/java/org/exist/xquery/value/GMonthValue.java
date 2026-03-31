@@ -35,7 +35,7 @@ import java.util.GregorianCalendar;
 
 public class GMonthValue extends AbstractDateTimeValue {
 
-    protected boolean addTrailingZ = false;
+    protected boolean addTrailingZ;
 
     public GMonthValue() throws XPathException {
         super(null, stripCalendar(TimeUtils.getInstance().newXMLGregorianCalendar(new GregorianCalendar())));

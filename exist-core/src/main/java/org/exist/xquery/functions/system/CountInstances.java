@@ -42,9 +42,9 @@ import org.exist.xquery.value.Type;
  */
 public class CountInstances extends BasicFunction
 {
-    protected final static Logger logger = LogManager.getLogger(CountInstances.class);
+    protected static final Logger logger = LogManager.getLogger(CountInstances.class);
 
-	public final static FunctionSignature countInstancesMax =
+	public static final FunctionSignature countInstancesMax =
 		new FunctionSignature(
 			new QName("count-instances-max", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
 			"Returns the maximum number of eXist instances.",
@@ -52,7 +52,7 @@ public class CountInstances extends BasicFunction
 			new FunctionParameterSequenceType("result", Type.INTEGER, Cardinality.EXACTLY_ONE, "the count")
 		);
 	
-	public final static FunctionSignature countInstancesActive =
+	public static final FunctionSignature countInstancesActive =
 		new FunctionSignature(
 			new QName("count-instances-active", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
 			"Returns the number of eXist instances that are active.",
@@ -60,7 +60,7 @@ public class CountInstances extends BasicFunction
 			new FunctionParameterSequenceType("result", Type.INTEGER, Cardinality.EXACTLY_ONE, "the count")
 		);
 	
-	public final static FunctionSignature countInstancesAvailable =
+	public static final FunctionSignature countInstancesAvailable =
 		new FunctionSignature(
 				new QName("count-instances-available", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
 				"Returns the number of eXist instances that are available.",
@@ -68,7 +68,7 @@ public class CountInstances extends BasicFunction
 				new FunctionParameterSequenceType("result", Type.INTEGER, Cardinality.EXACTLY_ONE, "the count")
 		);
 	
-	private BrokerPool bp = null;
+	private final BrokerPool bp;
 	
 
 	public CountInstances(XQueryContext context, FunctionSignature signature)

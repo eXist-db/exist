@@ -26,15 +26,15 @@
  */
 package org.exist.util.io;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.invoke.LambdaMetafactory;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.util.function.Function;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import static java.lang.invoke.MethodType.methodType;
 
@@ -43,7 +43,7 @@ import static java.lang.invoke.MethodType.methodType;
  *
  * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
-public class FilterInputStreamCacheFactory {
+public final class FilterInputStreamCacheFactory {
 
     private static final Logger LOG = LogManager.getLogger(FilterInputStreamCacheFactory.class);
     private static final MethodHandles.Lookup LOOKUP = MethodHandles.lookup();

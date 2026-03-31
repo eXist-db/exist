@@ -35,7 +35,7 @@ import org.exist.xquery.value.*;
  */
 public class PersistentLoginFunctions extends UserSwitchingBasicFunction {
 
-    public final static FunctionSignature signatures[] = {
+    public static final FunctionSignature[] signatures = {
             new FunctionSignature(
                     new QName("register", PersistentLoginModule.NAMESPACE, PersistentLoginModule.PREFIX),
                     "Try to log in the user and create a one-time login token. The token can be stored to a cookie and used to log in " +

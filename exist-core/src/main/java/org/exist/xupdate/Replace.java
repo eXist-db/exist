@@ -21,16 +21,9 @@
  */
 package org.exist.xupdate;
 
-import java.util.Map;
-
 import org.exist.EXistException;
 import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.persistent.AttrImpl;
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.DocumentSet;
-import org.exist.dom.persistent.ElementImpl;
-import org.exist.dom.persistent.StoredNode;
-import org.exist.dom.persistent.TextImpl;
+import org.exist.dom.persistent.*;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
@@ -41,6 +34,8 @@ import org.exist.util.LockException;
 import org.exist.xquery.XPathException;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import java.util.Map;
 
 /**
  * Implements xupdate:replace, an extension to the XUpdate standard.
@@ -74,7 +69,7 @@ public class Replace extends Modification {
         LOG.debug("processing replace ...");
         int modifications = children.getLength();
         try {
-            final StoredNode ql[] = selectAndLock(transaction);
+            final StoredNode[] ql = selectAndLock(transaction);
             final NotificationService notifier = broker.getBrokerPool().getNotificationService();
             Node temp;
             TextImpl text;

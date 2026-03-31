@@ -23,9 +23,9 @@ package org.exist.http.servlets;
 
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
-
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Locale;
@@ -43,7 +43,7 @@ public class HttpResponseWrapper implements ResponseWrapper {
 	/**
 	 * Used the feature "Guess last modification time for an XQuery result"
 	 */
-	private Object2LongMap<String> dateHeaders = null;
+	private Object2LongMap<String> dateHeaders;
 	private static final long NO_SUCH_DATE_HEADER = -1;
 
 	/**

@@ -51,7 +51,7 @@ import javax.xml.transform.Source;
  *
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
-public class DiffMatcher extends DiagnosingMatcher<Sequence> {
+public final class DiffMatcher extends DiagnosingMatcher<Sequence> {
     private final Source expectedSource;
     private final boolean identical;
 

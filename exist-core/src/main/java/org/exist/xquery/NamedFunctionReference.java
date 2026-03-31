@@ -21,9 +21,6 @@
  */
 package org.exist.xquery;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.exist.dom.QName;
 import org.exist.xquery.parser.XQueryAST;
 import org.exist.xquery.util.ExpressionDumper;
@@ -32,12 +29,15 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class NamedFunctionReference extends AbstractExpression {
 
-	private QName qname;
-	private int arity;
+	private final QName qname;
+	private final int arity;
 
-	private FunctionCall resolvedFunction = null;
+	private FunctionCall resolvedFunction;
 	
 	public NamedFunctionReference(XQueryContext context, QName qname, int arity) {
 		super(context);

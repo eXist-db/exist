@@ -21,12 +21,12 @@
  */
 package org.exist.xmlrpc.function;
 
+import com.evolvedbinary.j8fu.function.BiFunction2E;
 import org.exist.EXistException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
-import com.evolvedbinary.j8fu.function.BiFunction2E;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;

@@ -29,10 +29,10 @@ import java.io.StringWriter;
  */
 public class TreeMetrics {
 
-    private int leafPages = 0;
-    private int innerPages = 0;
-    private int dataPages = 0;
-    private String btreeName;
+    private int leafPages;
+    private int innerPages;
+    private int dataPages;
+    private final String btreeName;
 
     public TreeMetrics(String name) {
         this.btreeName = name;

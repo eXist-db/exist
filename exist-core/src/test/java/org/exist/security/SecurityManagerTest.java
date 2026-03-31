@@ -175,12 +175,12 @@ public class SecurityManagerTest {
     private boolean removedAccountExists(final DBBroker broker, final String username) throws XPathException, PermissionDeniedException {
         final XQuery queryService = broker.getBrokerPool().getXQueryService();
         final Sequence result = queryService.execute(broker, "declare namespace config='http://exist-db.org/Configuration'; collection('" + REMOVED_ACCOUNTS_URI + "')//config:account[config:name eq '" + username + "']", null);
-        return result.getItemCount() == 1 && result.itemAt(0).toJavaObject(Boolean.class) == true;
+        return result.getItemCount() == 1 && result.itemAt(0).toJavaObject(Boolean.class);
     }
 
     private boolean removedGroupExists(final DBBroker broker, final String groupName) throws XPathException, PermissionDeniedException {
         final XQuery queryService = broker.getBrokerPool().getXQueryService();
         final Sequence result = queryService.execute(broker, "declare namespace config='http://exist-db.org/Configuration'; collection('" + REMOVED_GROUPS_URI + "')//config:group[config:name eq '" + groupName + "']", null);
-        return result.getItemCount() == 1 && result.itemAt(0).toJavaObject(Boolean.class) == true;
+        return result.getItemCount() == 1 && result.itemAt(0).toJavaObject(Boolean.class);
     }
 }

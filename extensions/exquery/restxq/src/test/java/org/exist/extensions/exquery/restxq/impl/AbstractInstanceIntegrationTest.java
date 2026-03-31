@@ -41,7 +41,7 @@ public abstract class AbstractInstanceIntegrationTest extends AbstractIntegratio
     @Rule
     public ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
 
-    protected Executor executor = null;
+    protected Executor executor;
 
     @Before
     public void setupExecutor() {

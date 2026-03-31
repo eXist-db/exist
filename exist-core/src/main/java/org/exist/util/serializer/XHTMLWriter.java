@@ -21,14 +21,14 @@
  */
 package org.exist.util.serializer;
 
-import java.io.IOException;
-import java.io.Writer;
-import javax.xml.transform.TransformerException;
-
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import org.exist.Namespaces;
 import org.exist.dom.QName;
+
+import javax.xml.transform.TransformerException;
+import java.io.IOException;
+import java.io.Writer;
 
 /**
  * @author wolf
@@ -124,7 +124,7 @@ public class XHTMLWriter extends IndentingXMLWriter {
         return emptyTags.contains(tag);
     }
 
-    boolean haveCollapsedXhtmlPrefix = false;
+    boolean haveCollapsedXhtmlPrefix;
 
     @Override
     public void startElement(final QName qname) throws TransformerException {
@@ -147,7 +147,7 @@ public class XHTMLWriter extends IndentingXMLWriter {
     protected QName removeXhtmlPrefix(final QName qname) {
         final String prefix = qname.getPrefix();
         final String namespaceURI = qname.getNamespaceURI();
-        if(prefix != null && !prefix.isEmpty() && namespaceURI != null && namespaceURI.equals(Namespaces.XHTML_NS)) {
+        if(prefix != null && !prefix.isEmpty() && namespaceURI != null && Namespaces.XHTML_NS.equals(namespaceURI)) {
             haveCollapsedXhtmlPrefix = true;
             return new QName(qname.getLocalPart(), namespaceURI);
         }
@@ -177,7 +177,7 @@ public class XHTMLWriter extends IndentingXMLWriter {
     protected String removeXhtmlPrefix(final String namespaceURI, final String qname) {
         
         final int pos = qname.indexOf(':');
-        if(pos > 0 && namespaceURI != null && namespaceURI.equals(Namespaces.XHTML_NS)) {
+        if(pos > 0 && namespaceURI != null && Namespaces.XHTML_NS.equals(namespaceURI)) {
             haveCollapsedXhtmlPrefix = true;
             return qname.substring(pos+1);
             
@@ -188,7 +188,7 @@ public class XHTMLWriter extends IndentingXMLWriter {
 
     @Override
     public void namespace(final String prefix, final String nsURI) throws TransformerException {
-        if(haveCollapsedXhtmlPrefix && prefix != null && !prefix.isEmpty() && nsURI.equals(Namespaces.XHTML_NS)) {
+        if(haveCollapsedXhtmlPrefix && prefix != null && !prefix.isEmpty() && Namespaces.XHTML_NS.equals(nsURI)) {
             return; //dont output the xmlns:prefix for the collapsed nodes prefix
         }
         

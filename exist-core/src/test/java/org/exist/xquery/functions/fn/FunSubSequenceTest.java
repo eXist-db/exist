@@ -45,7 +45,7 @@ public class FunSubSequenceTest {
     @ClassRule
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
-    private static Collection test = null;
+    private static Collection test;
     private static final String SIMPLE_XML_FILENAME = "simple.xml";
     private static final String SIMPLE_XML = "<nums><i>1</i><i>2</i><i>3</i><i>4</i></nums>";
 

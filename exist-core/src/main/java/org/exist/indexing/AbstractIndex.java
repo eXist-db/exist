@@ -41,8 +41,8 @@ public abstract class AbstractIndex implements Index {
 
     protected BrokerPool pool;
     //Probably not useful for every kind of index. Anyway...
-    private Path dataDir = null;
-    protected String name = null;    
+    private Path dataDir;
+    protected String name;    
 
     @Override
     public void configure(final BrokerPool pool, final Path dataDir, final Element config)

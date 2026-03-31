@@ -21,16 +21,14 @@
  */
 package org.exist.xmlrpc;
 
-import java.io.IOException;
-
-import org.exist.xquery.XPathException;
-import org.exist.xquery.value.Sequence;
-
-import java.util.Properties;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exist.xquery.XPathException;
 import org.exist.xquery.value.BinaryValue;
+import org.exist.xquery.value.Sequence;
+
+import java.io.IOException;
+import java.util.Properties;
 
 /**
  * Simple container for the results of a query. Used to cache
@@ -41,11 +39,11 @@ import org.exist.xquery.value.BinaryValue;
  */
 public class QueryResult extends AbstractCachedResult {
 
-    private final static Logger LOG = LogManager.getLogger(QueryResult.class);
+    private static final Logger LOG = LogManager.getLogger(QueryResult.class);
     protected Sequence result;
-    protected Properties serialization = null;
+    protected Properties serialization;
     // set upon failure
-    protected XPathException exception = null;
+    protected XPathException exception;
 
     public QueryResult(final Sequence result, final Properties outputProperties) {
         this(result, outputProperties, 0);

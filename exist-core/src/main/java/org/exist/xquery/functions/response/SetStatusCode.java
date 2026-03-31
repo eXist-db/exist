@@ -23,15 +23,10 @@ package org.exist.xquery.functions.response;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import org.exist.dom.QName;
 import org.exist.http.servlets.ResponseWrapper;
 import org.exist.xquery.*;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.IntegerValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 import javax.annotation.Nonnull;
 
@@ -45,7 +40,7 @@ import javax.annotation.Nonnull;
 public class SetStatusCode extends StrictResponseFunction {
     private static final Logger logger = LogManager.getLogger(SetStatusCode.class);
 
-    public final static FunctionSignature signature =
+    public static final FunctionSignature signature =
             new FunctionSignature(
                     new QName("set-status-code", ResponseModule.NAMESPACE_URI, ResponseModule.PREFIX),
                     "Sets a HTTP server status code on the HTTP Response.",

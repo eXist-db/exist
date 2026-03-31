@@ -41,12 +41,12 @@ public class ComplexRangeIndexConfigElement extends RangeIndexConfigElement {
             Comparator.comparingInt(ComplexRangeIndexConfigElement::getNumberOfConditions).reversed();
 
 
-    public final static String FIELD_ELEMENT = "field";
-    public final static String CONDITION_ELEMENT = "condition";
+    public static final String FIELD_ELEMENT = "field";
+    public static final String CONDITION_ELEMENT = "condition";
 
     private static final Logger LOG = LogManager.getLogger(ComplexRangeIndexConfigElement.class);
 
-    private Map<String, RangeIndexConfigField> fields = new HashMap<>();
+    private final Map<String, RangeIndexConfigField> fields = new HashMap<>();
 
 
     protected ArrayList<RangeIndexConfigCondition> conditions = new ArrayList<>();
@@ -105,7 +105,7 @@ public class ComplexRangeIndexConfigElement extends RangeIndexConfigElement {
 
     @Override
     public boolean find(NodePath other) {
-        return (getField(other) != null);
+        return getField(other) != null;
     }
 
     @Override
@@ -123,16 +123,18 @@ public class ComplexRangeIndexConfigElement extends RangeIndexConfigElement {
 
     public RangeIndexConfigField getField(NodePath path) {
         for (RangeIndexConfigField field: fields.values()) {
-            if (field.match(path))
+            if (field.match(path)) {
                 return field;
+            }
         }
         return null;
     }
 
     public RangeIndexConfigField getField(NodePath parentPath, NodePath path) {
         for (RangeIndexConfigField field: fields.values()) {
-            if (field.match(parentPath, path))
+            if (field.match(parentPath, path)) {
                 return field;
+            }
         }
         return null;
     }
@@ -157,8 +159,9 @@ public class ComplexRangeIndexConfigElement extends RangeIndexConfigElement {
 
     public boolean matchConditions(Node node) {
         for (RangeIndexConfigCondition condition : conditions) {
-            if (!condition.matches(node))
+            if (!condition.matches(node)) {
                 return false;
+            }
         }
 
         return true;
@@ -166,8 +169,9 @@ public class ComplexRangeIndexConfigElement extends RangeIndexConfigElement {
 
     public boolean findCondition(Predicate predicate) {
         for (RangeIndexConfigCondition condition : conditions) {
-            if (condition.find(predicate))
+            if (condition.find(predicate)) {
                 return true;
+            }
         }
 
         return false;

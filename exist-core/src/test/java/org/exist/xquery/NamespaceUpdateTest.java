@@ -41,7 +41,7 @@ public class NamespaceUpdateTest {
 	@ClassRule
 	public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
-	private final static String namespaces =
+	private static final String namespaces =
 			"<test xmlns='http://www.foo.com'>"
 					+ "<section>"
 					+ "<title>Test Document</title>"

@@ -23,7 +23,6 @@ package org.exist.xquery.modules.counter;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import org.exist.EXistException;
 import org.exist.dom.QName;
 import org.exist.storage.BrokerPool;
@@ -32,13 +31,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.BooleanValue;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.IntegerValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 import java.nio.file.Path;
 
@@ -48,12 +41,12 @@ import java.nio.file.Path;
  */
 public class CounterFunctions extends BasicFunction {
 
-    private Counters counters = null;
+    private Counters counters;
     
 
     protected static final Logger logger = LogManager.getLogger(CounterFunctions.class);
     
-    public final static FunctionSignature createCounter =
+    public static final FunctionSignature createCounter =
             new FunctionSignature(
             new QName("create", CounterModule.NAMESPACE_URI, CounterModule.PREFIX),
             "Create a unique counter named $counter-name.",
@@ -64,7 +57,7 @@ public class CounterFunctions extends BasicFunction {
             new FunctionReturnSequenceType(Type.LONG, Cardinality.ZERO_OR_ONE,
                                                         "the value of the newly created counter."));
 
-    public final static FunctionSignature createCounterAndInit =
+    public static final FunctionSignature createCounterAndInit =
             new FunctionSignature(
             new QName("create", CounterModule.NAMESPACE_URI, CounterModule.PREFIX),
             "Create a unique counter named $counter-name and initialize it with value $init-value.",
@@ -78,7 +71,7 @@ public class CounterFunctions extends BasicFunction {
             new FunctionReturnSequenceType(Type.LONG, Cardinality.ZERO_OR_ONE,
                                                         "the value of the newly created counter."));
 
-    public final static FunctionSignature nextValue =
+    public static final FunctionSignature nextValue =
             new FunctionSignature(
             new QName("next-value", CounterModule.NAMESPACE_URI, CounterModule.PREFIX),
             "Increment the counter $counter-name and return its new value.",
@@ -90,7 +83,7 @@ public class CounterFunctions extends BasicFunction {
                                                         "the new value of the specified counter," +
                                                         " or -1 if the counter does not exist."));
 
-    public final static FunctionSignature destroyCounter =
+    public static final FunctionSignature destroyCounter =
             new FunctionSignature(
             new QName("destroy", CounterModule.NAMESPACE_URI, CounterModule.PREFIX),
             "Destroy the counter named $counter-name.",

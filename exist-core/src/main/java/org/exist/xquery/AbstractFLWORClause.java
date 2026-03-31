@@ -30,12 +30,12 @@ import org.exist.xquery.value.Type;
  */
 public abstract class AbstractFLWORClause extends AbstractExpression implements FLWORClause {
 
-    protected LocalVariable firstVariable = null;
-    private FLWORClause previousClause  = null;
+    protected LocalVariable firstVariable;
+    private FLWORClause previousClause;
     protected Expression returnExpr;
     private int actualReturnType = Type.ITEM;
 
-    public AbstractFLWORClause(XQueryContext context) {
+    protected AbstractFLWORClause(XQueryContext context) {
         super(context);
     }
 

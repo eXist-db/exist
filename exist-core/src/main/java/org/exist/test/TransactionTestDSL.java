@@ -150,7 +150,7 @@ public interface TransactionTestDSL {
      * Responsible for creating a Schedule Builder which is initialized
      * to the first transaction state.
      */
-    class BiTransactionScheduleBuilderFactory {
+    final class BiTransactionScheduleBuilderFactory {
         private static final BiTransactionScheduleBuilderFactory INSTANCE = new BiTransactionScheduleBuilderFactory();
 
         private BiTransactionScheduleBuilderFactory() { }
@@ -211,7 +211,7 @@ public interface TransactionTestDSL {
          * @param <B> A recursive type, holds the type of the previously scheduled
          *           operation(s).
          */
-        public static class BiTransactionScheduleBuilderOperation<T1, U1, T2, U2, B extends TransactionScheduleBuilder<B>> extends BiTransactionScheduleBuilder<BiTransactionScheduleBuilderOperation<T1, U1, T2, U2, B>> {
+        public static final class BiTransactionScheduleBuilderOperation<T1, U1, T2, U2, B extends TransactionScheduleBuilder<B>> extends BiTransactionScheduleBuilder<BiTransactionScheduleBuilderOperation<T1, U1, T2, U2, B>> {
 
             // was this created by a transformation on T1 (if not then T2)
             private final boolean operationOnT1;
@@ -228,7 +228,7 @@ public interface TransactionTestDSL {
             private final NamedCountDownLatch t2WaitLatch;
 
             // just a counter to help us name our latches for debugging
-            private static int countDownLatchNum = 0;
+            private static int countDownLatchNum;
 
             /**
              * Constructs an initial schedule builder.
@@ -478,7 +478,7 @@ public interface TransactionTestDSL {
      * @param <B> A recursive type, which enforces the types of all operations which
      *           which make up the schedule.
      */
-    class BiTransactionSchedule<T1, U1, T2, U2, B extends TransactionScheduleBuilder<B>> implements TransactionSchedule<Tuple2<U1, U2>> {
+    final class BiTransactionSchedule<T1, U1, T2, U2, B extends TransactionScheduleBuilder<B>> implements TransactionSchedule<Tuple2<U1, U2>> {
         private final BiTransactionScheduleBuilderOperation<T1, U1, T2, U2, B> lastOperation;
 
         private BiTransactionSchedule(final BiTransactionScheduleBuilderOperation<T1, U1, T2, U2, B> lastOperation) {

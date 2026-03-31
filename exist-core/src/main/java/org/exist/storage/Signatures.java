@@ -21,8 +21,8 @@
  */
 package org.exist.storage;
 
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.util.ByteConversion;
 import org.w3c.dom.Node;
 
@@ -42,26 +42,26 @@ import org.w3c.dom.Node;
  */
 public final class Signatures {
 
-    private final static Logger LOG = LogManager.getLogger(Signatures.class);
+    private static final Logger LOG = LogManager.getLogger(Signatures.class);
 
-    public final static int Char = 0x0;
-    public final static int Elem = 0x1;
-    public final static int Proc = 0x2;
-    public final static int Comm = 0x3;
-    public final static int Attr = 0x4;
-    public final static int Cdata = 0x5;
+    public static final int Char = 0x0;
+    public static final int Elem = 0x1;
+    public static final int Proc = 0x2;
+    public static final int Comm = 0x3;
+    public static final int Attr = 0x4;
+    public static final int Cdata = 0x5;
 
-    public final static int intContent = 0x1;
-    public final static int byteContent = 0x3;
-    public final static int noContent = 0x0;
-    public final static int shortContent = 0x2;
+    public static final int intContent = 0x1;
+    public static final int byteContent = 0x3;
+    public static final int noContent = 0x0;
+    public static final int shortContent = 0x2;
 
     /**
      *  @return the storage size of the given type as
      *  number of bytes required.
      * @param type given type
      */
-    public final static int getLength(int type) {
+    public static int getLength(int type) {
         return switch (type) {
             case intContent -> 4;
             case shortContent -> 2;
@@ -80,7 +80,7 @@ public final class Signatures {
      * @param length number of bytes required
      * @return one of IntContent, ShortContent, ByteContent or NoContent
      */
-    public final static byte getSizeType( int length ) {
+    public static byte getSizeType( int length ) {
         if (length > Short.MAX_VALUE)
             {return intContent;}
         else if (length > Byte.MAX_VALUE)
@@ -100,7 +100,7 @@ public final class Signatures {
      * @param signature in byte 0 of the node data
      * @return a constant as defined in {@link Node}.
      */
-    public final static short getType(byte signature) {
+    public static short getType(byte signature) {
         final byte type = (byte)((signature & 0xE0) >> 0x5);
         switch (type) {
             case Char:
@@ -121,7 +121,7 @@ public final class Signatures {
         return -1;
     }
     
-    public final static int read(int type, byte[] data, int pos) {
+    public static int read(int type, byte[] data, int pos) {
         return switch (type) {
             case intContent -> (int) ByteConversion.byteToInt(data, pos);
             case shortContent -> (int) ByteConversion.byteToShort(data, pos);
@@ -130,7 +130,7 @@ public final class Signatures {
         };
     }
 
-    public final static void write( int type, int size, byte[] data, int pos ) {
+    public static void write( int type, int size, byte[] data, int pos ) {
         switch ( type ) {
         case intContent:
             ByteConversion.intToByte( size, data, pos );

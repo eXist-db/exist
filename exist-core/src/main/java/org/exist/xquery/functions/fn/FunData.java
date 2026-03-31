@@ -30,13 +30,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
+import org.exist.xquery.value.*;
 
 /**
  * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
@@ -45,7 +39,7 @@ public class FunData extends Function {
 
     public static final QName qnData = new QName("data", Function.BUILTIN_FUNCTION_NS);
 
-    public final static FunctionSignature[] signatures = {
+    public static final FunctionSignature[] signatures = {
         new FunctionSignature(
             qnData,
             "Atomizes the context item, replacing all nodes in the sequence by their typed values.",

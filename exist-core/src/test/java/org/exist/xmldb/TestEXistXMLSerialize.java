@@ -21,37 +21,17 @@
  */
 package org.exist.xmldb;
 
-import org.exist.security.Account;
-import org.exist.test.ExistXmldbEmbeddedServer;
 import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
-import org.junit.ClassRule;
-import org.xmldb.api.modules.CollectionManagementService;
-import java.io.IOException;
-import java.io.StringWriter;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Path;
-import java.util.Properties;
-import javax.xml.parsers.ParserConfigurationException;
-
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-
 import org.apache.xml.serialize.OutputFormat;
 import org.apache.xml.serialize.XMLSerializer;
-
+import org.exist.security.Account;
+import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.util.serializer.DOMSerializer;
 import org.exist.util.serializer.SAXSerializer;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Test;
-
-import static org.exist.TestUtils.GUEST_DB_USER;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -59,7 +39,25 @@ import org.xml.sax.SAXException;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Path;
+import java.util.Properties;
+
+import static org.exist.TestUtils.GUEST_DB_USER;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 /**
  *
@@ -70,13 +68,13 @@ public class TestEXistXMLSerialize {
     @ClassRule
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
-	private final static String XML_DATA =
+	private static final String XML_DATA =
     	"<test>" +
     	"<para>ääööüüÄÄÖÖÜÜßß</para>" +
 		"<para>\uC5F4\uB2E8\uACC4</para>" +
     	"</test>";
     
-    private final static String XSL_DATA =
+    private static final String XSL_DATA =
     	"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" " +
     	"version=\"1.0\">" +
 		"<xsl:param name=\"testparam\"/>" +
@@ -87,7 +85,7 @@ public class TestEXistXMLSerialize {
     
     private final URL testFile = getClass().getResource("PerformanceTest.xml");
 
-    private final static String TEST_COLLECTION = "testXmlSerialize";
+    private static final String TEST_COLLECTION = "testXmlSerialize";
 
     @Before
     public void setUp() throws Exception {

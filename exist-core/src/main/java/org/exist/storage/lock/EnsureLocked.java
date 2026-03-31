@@ -32,13 +32,13 @@
  */
 package org.exist.storage.lock;
 
+import org.exist.storage.lock.Lock.LockMode;
+import org.exist.storage.lock.Lock.LockType;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-
-import org.exist.storage.lock.Lock.LockMode;
-import org.exist.storage.lock.Lock.LockType;
 
 /**
  * An annotation for indicating that certain locks

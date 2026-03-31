@@ -21,14 +21,14 @@
  */
 package org.exist.xquery;
 
-import java.util.List;
-
 import org.exist.xquery.functions.array.ArrayType;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.FunctionReference;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
+
+import java.util.List;
 
 public class DynamicFunctionCall extends AbstractExpression {
 

@@ -80,11 +80,11 @@ import org.exist.util.ByteConversion;
 import org.exist.util.FileUtils;
 import org.exist.xquery.Constants;
 
-import java.lang.AutoCloseable;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.RandomAccessFile;
+import java.lang.AutoCloseable;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.channels.NonWritableChannelException;
@@ -121,11 +121,11 @@ public abstract class Paged implements AutoCloseable {
     public static final int OFFSET_RECORD_COUNT = OFFSET_MAX_KEY_SIZE + LENGTH_MAX_KEY_SIZE; //43
     public static final int OFFSET_REMAINDER = OFFSET_RECORD_COUNT + LENGTH_RECORD_COUNT; //51
 
-    protected final static Logger LOG = LogManager.getLogger(Paged.class);
+    protected static final Logger LOG = LogManager.getLogger(Paged.class);
 
-    protected final static byte DELETED = 127;
-    protected final static byte OVERFLOW = 126;
-    protected final static byte UNUSED = 0;
+    protected static final byte DELETED = 127;
+    protected static final byte OVERFLOW = 126;
+    protected static final byte UNUSED = 0;
 
     protected static int PAGE_SIZE = 4096;
 
@@ -136,21 +136,21 @@ public abstract class Paged implements AutoCloseable {
 
     private RandomAccessFile raf;
     private Path file;
-    private boolean readOnly = false;
-    private boolean fileIsNew = false;
+    private boolean readOnly;
+    private boolean fileIsNew;
 	
-    public Paged(final BrokerPool pool, final short fileVersion) {
+    protected Paged(final BrokerPool pool, final short fileVersion) {
         this.fileVersion = fileVersion;
         this.fileHeader = createFileHeader(pool.getPageSize());
         this.tempPageData = new byte[fileHeader.pageSize];
         this.tempHeaderData = new byte[fileHeader.pageHeaderSize];
     }
 
-    public final static void setPageSize(final int pageSize) {
+    public static void setPageSize(final int pageSize) {
         PAGE_SIZE = pageSize;
     }
 
-    public final static int getPageSize() {
+    public static int getPageSize() {
         return PAGE_SIZE;
     }
 
@@ -562,7 +562,7 @@ public abstract class Paged implements AutoCloseable {
     public abstract class FileHeader {
         private short version;
 
-        private boolean dirty = false;
+        private boolean dirty;
         private long firstFreePage = Page.NO_PAGE;
 
         private short headerSize;
@@ -577,7 +577,7 @@ public abstract class Paged implements AutoCloseable {
 
         private final byte[] buf;
 
-        public FileHeader(final long pageCount, final int pageSize) {
+        protected FileHeader(final long pageCount, final int pageSize) {
             this.pageSize = pageSize;
             this.pageCount = pageCount;
             this.totalCount = pageCount;
@@ -870,7 +870,7 @@ public abstract class Paged implements AutoCloseable {
         /**  This page number */
         private long pageNum;
 
-        private int refCount = 0;
+        private int refCount;
 
         public Page() {
             this.header = createPageHeader();
@@ -1018,25 +1018,25 @@ public abstract class Paged implements AutoCloseable {
         }
     }
 
-    public static abstract class PageHeader {
+    public abstract static class PageHeader {
 
         public static final int LENGTH_PAGE_STATUS = 1; //sizeof byte
         public static final int LENGTH_PAGE_DATA_LENGTH = 4; //sizeof int
         public static final int LENGTH_PAGE_NEXT_PAGE = 8; //sizeof long
         public static final int LENGTH_PAGE_LSN = Lsn.RAW_LENGTH;
 
-        private int dataLen = 0;
-        private boolean dirty = false;
+        private int dataLen;
+        private boolean dirty;
         private long nextPage = Page.NO_PAGE;
 
         private byte status = UNUSED;
 
         private Lsn lsn = Lsn.LSN_INVALID;
         
-        public PageHeader() {
+        protected PageHeader() {
         }
 
-        public PageHeader(final byte[] data, final int offset) throws IOException {
+        protected PageHeader(final byte[] data, final int offset) throws IOException {
             read(data, offset);
         }
 
@@ -1158,7 +1158,7 @@ public abstract class Paged implements AutoCloseable {
         }
     }
 
-    private static String[] hex = {"0", "1", "2", "3", "4", "5", "6", "7",
+    private static final String[] hex = {"0", "1", "2", "3", "4", "5", "6", "7",
         "8", "9", "a", "b", "c", "d", "e", "f"};
 
     public static String hexDump(final byte[] data) {

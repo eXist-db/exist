@@ -617,7 +617,7 @@ class Options {
         }
     }
 
-    static class SystemProperties {
+    static final class SystemProperties {
 
         private final RetainedStaticContext retainedStaticContext;
 

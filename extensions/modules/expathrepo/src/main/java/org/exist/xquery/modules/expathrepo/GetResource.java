@@ -21,10 +21,6 @@
  */
 package org.exist.xquery.modules.expathrepo;
 
-import java.util.Optional;
-
-import javax.xml.transform.stream.StreamSource;
-
 import org.exist.dom.QName;
 import org.exist.repo.ExistRepository;
 import org.exist.xquery.BasicFunction;
@@ -39,9 +35,12 @@ import org.expath.pkg.repo.PackageException;
 import org.expath.pkg.repo.Packages;
 import org.expath.pkg.repo.Storage;
 
+import javax.xml.transform.stream.StreamSource;
+import java.util.Optional;
+
 public class GetResource extends BasicFunction {
 
-	public final static FunctionSignature signature =
+	public static final FunctionSignature signature =
 		new FunctionSignature(
 			new QName("get-resource", ExpathPackageModule.NAMESPACE_URI, ExpathPackageModule.PREFIX),
 			"Retrieves the specified resource from an installed expath application package.",

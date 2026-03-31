@@ -37,8 +37,8 @@ import java.util.Map;
 @NotThreadSafe
 public class LockedDocumentMap {
 
-    private final static int DEFAULT_SIZE = 29;
-    private final static float DEFAULT_GROWTH = 1.75f;
+    private static final int DEFAULT_SIZE = 29;
+    private static final float DEFAULT_GROWTH = 1.75F;
 
     private final Map<Integer, List<LockedDocument>> map = new LinkedHashMap<>(DEFAULT_SIZE, DEFAULT_GROWTH);
 

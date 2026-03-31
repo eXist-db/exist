@@ -23,11 +23,7 @@ package org.exist.xquery;
 
 import org.exist.dom.QName;
 import org.exist.xquery.util.ExpressionDumper;
-import org.exist.xquery.value.BooleanValue;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -40,8 +36,8 @@ import java.util.Set;
  */
 public class QuantifiedExpression extends BindingExpression {
 	
-	public final static int SOME = 0;
-	public final static int EVERY = 1;
+	public static final int SOME = 0;
+	public static final int EVERY = 1;
 	
 	private final int mode;
 
@@ -100,8 +96,8 @@ public class QuantifiedExpression extends BindingExpression {
 						", got " +Type.getTypeName(inSeq.getItemType()), inSeq);}
         }	
 
-		boolean found = (mode == EVERY) ? true : false;
-		boolean canDecide = (mode == EVERY) ? true : false;
+		boolean found = mode == EVERY ? true : false;
+		boolean canDecide = mode == EVERY ? true : false;
 
 		for (final SequenceIterator i = inSeq.iterate(); i.hasNext(); ) {
 			canDecide = true;

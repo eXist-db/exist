@@ -58,7 +58,7 @@ public abstract class AbstractMapType extends FunctionReference
      */
     public static final int MIXED_KEY_TYPES = Type.ANY_ATOMIC_TYPE;
 
-    private final static Logger LOG = LogManager.getLogger(AbstractMapType.class);
+    private static final Logger LOG = LogManager.getLogger(AbstractMapType.class);
 
     // the signature of the function which is evaluated if the map is called as a function item
     private static final FunctionSignature ACCESSOR =
@@ -70,7 +70,7 @@ public abstract class AbstractMapType extends FunctionReference
             },
             new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE));
 
-    private InternalFunctionCall accessorFunc = null;
+    private InternalFunctionCall accessorFunc;
 
     protected XQueryContext context;
 

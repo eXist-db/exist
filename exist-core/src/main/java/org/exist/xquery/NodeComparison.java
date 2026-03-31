@@ -24,11 +24,7 @@ package org.exist.xquery;
 import org.exist.xquery.Constants.NodeComparisonOperator;
 import org.exist.xquery.util.Error;
 import org.exist.xquery.util.ExpressionDumper;
-import org.exist.xquery.value.BooleanValue;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 /**
  * Implements node comparisons: is, isnot, &lt;&lt;, &gt;&gt;.

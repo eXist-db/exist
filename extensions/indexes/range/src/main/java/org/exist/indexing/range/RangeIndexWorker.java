@@ -21,18 +21,6 @@
  */
 package org.exist.indexing.range;
 
-import org.apache.lucene.util.BytesRefBuilder;
-import org.exist.dom.persistent.ElementImpl;
-import org.exist.dom.persistent.NodeSet;
-import org.exist.dom.persistent.NewArrayNodeSet;
-import org.exist.dom.persistent.NodeHandle;
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.IStoredNode;
-import org.exist.dom.persistent.AttrImpl;
-import org.exist.dom.persistent.DocumentSet;
-import org.exist.dom.QName;
-import org.exist.dom.persistent.AbstractCharacterData;
-import org.exist.dom.persistent.NodeProxy;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
@@ -43,9 +31,12 @@ import org.apache.lucene.index.*;
 import org.apache.lucene.search.*;
 import org.apache.lucene.util.Bits;
 import org.apache.lucene.util.BytesRef;
+import org.apache.lucene.util.BytesRefBuilder;
 import org.apache.lucene.util.automaton.Operations;
 import org.apache.lucene.util.automaton.RegExp;
 import org.exist.collections.Collection;
+import org.exist.dom.QName;
+import org.exist.dom.persistent.*;
 import org.exist.indexing.*;
 import org.exist.indexing.StreamListener.ReindexMode;
 import org.exist.indexing.lucene.BinaryTokenStream;
@@ -53,11 +44,7 @@ import org.exist.indexing.lucene.LuceneIndexWorker;
 import org.exist.indexing.lucene.LuceneUtil;
 import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
-import org.exist.storage.DBBroker;
-import org.exist.storage.ElementValue;
-import org.exist.storage.IndexSpec;
-import org.exist.storage.NodePath;
-import org.exist.storage.NodePath2;
+import org.exist.storage.*;
 import org.exist.storage.btree.DBException;
 import org.exist.storage.txn.Txn;
 import org.exist.util.ByteConversion;
@@ -88,7 +75,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     public static final String FIELD_ADDRESS = "address";
     public static final String FIELD_ID = "id";
 
-    private static Set<String> LOAD_FIELDS = new TreeSet<>();
+    private static final Set<String> LOAD_FIELDS = new TreeSet<>();
     static {
         LOAD_FIELDS.add(FIELD_DOC_ID);
         LOAD_FIELDS.add(FIELD_NODE_ID);
@@ -99,7 +86,9 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      * so utf8ToString() throws AssertionError. Use this for logging/debug output.
      */
     private static String safeBytesRefToDisplay(BytesRef ref) {
-        if (ref == null) return "null";
+        if (ref == null) {
+            return "null";
+        }
         try {
             return ref.utf8ToString();
         } catch (AssertionError e) {
@@ -112,13 +101,13 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     private DocumentImpl currentDoc;
     private ReindexMode mode = ReindexMode.STORE;
     private List<RangeIndexDoc> nodesToWrite;
-    private Set<NodeId> nodesToRemove = null;
-    private RangeIndexConfig config = null;
-    private RangeIndexListener listener = new RangeIndexListener();
-    private Deque<TextCollector> contentStack = null;
-    private int cachedNodesSize = 0;
+    private Set<NodeId> nodesToRemove;
+    private RangeIndexConfig config;
+    private final RangeIndexListener listener = new RangeIndexListener();
+    private Deque<TextCollector> contentStack;
+    private int cachedNodesSize;
 
-    private int maxCachedNodesSize = 4096 * 1024;
+    private final int maxCachedNodesSize = 4096 * 1024;
 
     public RangeIndexWorker(RangeIndex index, DBBroker broker) {
         this.index = index;
@@ -339,10 +328,11 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         IndexSpec indexConf = document.getCollection().getIndexConfiguration(broker);
         if (indexConf != null) {
             config = (RangeIndexConfig) indexConf.getCustomIndexSpec(RangeIndex.ID);
-            if (config != null)
+            if (config != null) {
                 // Create a copy of the original RangeIndexConfig (there's only one per db instance),
                 // so we can safely work with it.
                 config = new RangeIndexConfig(config);
+            }
         } else {
             config = RangeIndexConfig.DEFAULT_CONFIG;
         }
@@ -354,10 +344,11 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         this.mode = mode;
         switch (mode) {
             case STORE:
-                if (nodesToWrite == null)
+                if (nodesToWrite == null) {
                     nodesToWrite = new ArrayList<>();
-                else
+                } else {
                     nodesToWrite.clear();
+                }
                 cachedNodesSize = 0;
                 break;
             case REMOVE_SOME_NODES:
@@ -382,8 +373,9 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     public <T extends IStoredNode> IStoredNode getReindexRoot(IStoredNode<T> node, NodePath path, boolean insert, boolean includeSelf) {
 //        if (node.getNodeType() == Node.ATTRIBUTE_NODE)
 //            return null;
-        if (config == null)
+        if (config == null) {
             return null;
+        }
         NodePath2 p = new NodePath2((NodePath2)path);
         boolean reindexRequired = false;
         if (node.getNodeType() == Node.ELEMENT_NODE && !includeSelf) {
@@ -400,11 +392,13 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             p = new NodePath2((NodePath2)path);
             IStoredNode topMost = null;
             IStoredNode currentNode = node;
-            if (currentNode.getNodeType() != Node.ELEMENT_NODE)
+            if (currentNode.getNodeType() != Node.ELEMENT_NODE) {
                 currentNode = currentNode.getParentStoredNode();
+            }
             while (currentNode != null) {
-                if (config.matches(p))
+                if (config.matches(p)) {
                     topMost = currentNode;
+                }
                 currentNode = currentNode.getParentStoredNode();
                 p.removeLastNode();
             }
@@ -448,8 +442,9 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     @Override
     public void removeCollection(Collection collection, DBBroker broker, boolean reindex) throws PermissionDeniedException {
-        if (LOG.isDebugEnabled())
+        if (LOG.isDebugEnabled()) {
             LOG.debug("Removing collection {}", collection.getURI());
+        }
         IndexWriter writer = null;
         try {
             writer = index.getWriter();
@@ -470,8 +465,9 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             }
             mode = ReindexMode.STORE;
         }
-        if (LOG.isDebugEnabled())
+        if (LOG.isDebugEnabled()) {
             LOG.debug("Collection removed.");
+        }
     }
 
     protected void removeDocument(int docId) {
@@ -493,8 +489,9 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
      * mode.
      */
     protected void removeNodes() {
-        if (nodesToRemove == null)
+        if (nodesToRemove == null) {
             return;
+        }
         IndexWriter writer = null;
         try {
             writer = index.getWriter();
@@ -528,13 +525,15 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         pending.setAddress(nodeHandle.getInternalAddress());
         nodesToWrite.add(pending);
         cachedNodesSize += collector.length();
-        if (cachedNodesSize > maxCachedNodesSize)
+        if (cachedNodesSize > maxCachedNodesSize) {
             write();
+        }
     }
 
     private void write() {
-        if (nodesToWrite == null || nodesToWrite.isEmpty())
+        if (nodesToWrite == null || nodesToWrite.isEmpty()) {
             return;
+        }
         IndexWriter writer = null;
         try {
             writer = index.getWriter();
@@ -570,11 +569,12 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
                 for (TextCollector.Field field : pending.getCollector().getFields()) {
                     String contentField;
-                    if (field.isNamed())
+                    if (field.isNamed()) {
                         contentField = field.getName();
-                    else
+                    } else {
                         contentField = LuceneUtil.encodeQName(pending.getQName(), index.getBrokerPool().getSymbols());
-                    Field fld = pending.getConfig().convertToField(contentField, field.getContent().toString());
+                    }
+                    Field fld = pending.getConfig().convertToField(contentField, field.getContent());
                     if (fld != null) {
                         // Register field analyzer so TextField tokenization at index time matches query-time analyzeContent.
                         Analyzer fieldAnalyzer = pending.getConfig().getAnalyzer(contentField);
@@ -583,7 +583,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                         }
                         if (LOG.isDebugEnabled()) {
                             LOG.debug("INDEX field={} content={} analyzer={}",
-                                    contentField, field.getContent().toString(), fieldAnalyzer != null ? fieldAnalyzer.getClass().getSimpleName() : "null");
+                                    contentField, field.getContent(), fieldAnalyzer != null ? fieldAnalyzer.getClass().getSimpleName() : "null");
                         }
                         doc.add(fld);
                     }
@@ -755,7 +755,9 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     private int countRemaining(TermsEnum te) throws IOException {
         int c = 0;
-        while (te.next() != null) c++;
+        while (te.next() != null) {
+            c++;
+        }
         return c;
     }
 
@@ -847,8 +849,9 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                             resultSet.add(parentNode, sizeHint);
                             if (Expression.NO_CONTEXT_ID != contextId) {
                                 parentNode.deepCopyContext(storedNode, contextId);
-                            } else
+                            } else {
                                 parentNode.copyContext(storedNode);
+                            }
                         } else {
                             resultSet.add(storedNode, sizeHint);
                         }
@@ -883,10 +886,11 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         List<QName> indexes = new ArrayList<>(20);
         if (qnames != null && !qnames.isEmpty()) {
             for (QName qname : qnames) {
-                if (qname.getLocalPart() == null || qname.getNamespaceURI() == null)
+                if (qname.getLocalPart() == null || qname.getNamespaceURI() == null) {
                     getDefinedIndexesFor(qname, indexes);
-                else
+                } else {
                     indexes.add(qname);
+                }
             }
             return indexes;
         }
@@ -911,7 +915,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     protected BytesRef analyzeContent(String field, QName qname, String data, DocumentSet docs) throws XPathException {
         final Analyzer analyzer = getAnalyzer(qname, field, docs);
-        final String content = !isCaseSensitive(qname, field, docs) ? data.toLowerCase() : data;
+        final String content = isCaseSensitive(qname, field, docs) ? data : data.toLowerCase();
         if (LOG.isDebugEnabled()) {
             LOG.debug("ANALYZE field={} qname={} input={} analyzer={} caseSensitive={}",
                     field, qname, content, analyzer != null ? analyzer.getClass().getSimpleName() : "null", isCaseSensitive(qname, field, docs));
@@ -953,8 +957,9 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 RangeIndexConfig config = (RangeIndexConfig) idxConf.getCustomIndexSpec(RangeIndex.ID);
                 if (config != null) {
                     Analyzer analyzer = config.getAnalyzer(qname, fieldName);
-                    if (analyzer != null)
+                    if (analyzer != null) {
                         return analyzer;
+                    }
                 }
             }
         }
@@ -981,10 +986,12 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     private static boolean matchQName(QName qname, QName candidate) {
         boolean match = true;
-        if (qname.getLocalPart() != null)
+        if (qname.getLocalPart() != null) {
             match = qname.getLocalPart().equals(candidate.getLocalPart());
-        if (match && qname.getNamespaceURI() != null && !qname.getNamespaceURI().isEmpty())
+        }
+        if (match && qname.getNamespaceURI() != null && !qname.getNamespaceURI().isEmpty()) {
             match = qname.getNamespaceURI().equals(candidate.getNamespaceURI());
+        }
         return match;
     }
 
@@ -1025,8 +1032,9 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 }
             }
             Iterator<RangeIndexConfigElement> configIter = null;
-            if (config != null)
+            if (config != null) {
                 configIter = config.getConfig(path);
+            }
             if (mode != ReindexMode.REMOVE_ALL_NODES && configIter != null) {
                 if (mode == ReindexMode.REMOVE_SOME_NODES) {
                     nodesToRemove.add(attrib.getNodeId());
@@ -1069,7 +1077,9 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                                 match = collector instanceof ComplexTextCollector ctc
                                         ? match && ctc.getConfig().matchConditions(element)
                                         : match;
-                                if (match) indexText(element, element.getQName(), path, configuration, collector);
+                                if (match) {
+                                    indexText(element, element.getQName(), path, configuration, collector);
+                                }
                             }
                         }
                     }
@@ -1187,8 +1197,9 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             BinaryDocValues nodeIdValues = leafReader.getBinaryDocValues(FIELD_NODE_ID);
             Bits liveDocs = leafReader.getLiveDocs();
             Terms terms = leafReader.terms(field);
-            if (terms == null)
+            if (terms == null) {
                 continue;
+            }
             TermsEnum termsIter = terms.iterator();
             if (termsIter.next() == null) {
                 continue;
@@ -1203,10 +1214,12 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 }
                 boolean include = true;
                 if (end != null) {
-                    if (term.compareTo(end) > 0)
+                    if (term.compareTo(end) > 0) {
                         include = false;
-                } else if (start != null && !term.startsWith(start))
+                    }
+                } else if (start != null && !term.startsWith(start)) {
                     include = false;
+                }
                 if (include && (map.size() < max || map.containsKey(term))) {
                     /* Only skip when we've hit max and this would be a new term (#4805:
                        must aggregate existing terms across all segments before limiting). */
@@ -1224,8 +1237,9 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                             docId = leafReader.storedFields().document(postings.docID()).getField(FIELD_DOC_ID).numericValue().intValue();
                         }
                         DocumentImpl storedDocument = docs.getDoc(docId);
-                        if (storedDocument == null)
+                        if (storedDocument == null) {
                             continue;
+                        }
                         NodeId nodeId = null;
                         if (nodes != null) {
                             if (nodeIdValues != null && nodeIdValues.advanceExact(postings.docID())) {

@@ -30,16 +30,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.IntegerValue;
-import org.exist.xquery.value.NumericValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
+import org.exist.xquery.value.*;
 
 /**
  * Built-in function fn:substring().
@@ -49,7 +40,7 @@ import org.exist.xquery.value.ValueSequence;
  */
 public class FunSubstring extends Function {
 	
-	public final static FunctionSignature[] signatures = {
+	public static final FunctionSignature[] signatures = {
 			new FunctionSignature(
 				new QName("substring", Function.BUILTIN_FUNCTION_NS),
 				"Returns the portion of the value of $source beginning at the position indicated " +

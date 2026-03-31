@@ -21,19 +21,20 @@
  */
 package org.exist.util.serializer.json;
 
-import java.io.IOException;
-import java.io.Writer;
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.Properties;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.TransformerException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.dom.QName.IllegalQNameException;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.serializer.XMLWriter;
+
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.TransformerException;
+import java.io.IOException;
+import java.io.Writer;
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.Properties;
 
 /**
  * This class plugs into eXist's serialization to transform XML to JSON. It is used
@@ -70,30 +71,30 @@ import org.exist.util.serializer.XMLWriter;
  */
 public class JSONWriter extends XMLWriter {
 
-    private final static Logger LOG = LogManager.getLogger(JSONWriter.class);
+    private static final Logger LOG = LogManager.getLogger(JSONWriter.class);
     
-    private final static String ARRAY = "array";
-    private final static String LITERAL = "literal";
-    private final static String VALUE = "value";
-    private final static String NAME = "name";
+    private static final String ARRAY = "array";
+    private static final String LITERAL = "literal";
+    private static final String VALUE = "value";
+    private static final String NAME = "name";
     
-    private final static String JSON_ARRAY = "json:" + ARRAY;
-    private final static String JSON_LITERAL = "json:" + LITERAL;
-    private final static String JSON_VALUE = "json:" + VALUE;
-    private final static String JSON_NAME = "json:" + NAME;
+    private static final String JSON_ARRAY = "json:" + ARRAY;
+    private static final String JSON_LITERAL = "json:" + LITERAL;
+    private static final String JSON_VALUE = "json:" + VALUE;
+    private static final String JSON_NAME = "json:" + NAME;
     
-    public final static String JASON_NS = "http://www.json.org";
+    public static final String JASON_NS = "http://www.json.org";
 	
     protected JSONNode root;
 	
     protected final Deque<JSONObject> stack = new ArrayDeque<>();
 
-    protected boolean useNSPrefix = false;
+    protected boolean useNSPrefix;
     
-    protected boolean prefixAttributes = false;
-    protected boolean ignoreWhitespaceTextNodes = false;
-    private String jsonp = null;
-    private boolean indent = false;
+    protected boolean prefixAttributes;
+    protected boolean ignoreWhitespaceTextNodes;
+    private String jsonp;
+    private boolean indent;
 	
     public JSONWriter() {
         // empty
@@ -149,7 +150,7 @@ public class JSONWriter extends XMLWriter {
 
     @Override
     public void startElement(final String namespaceURI, final String localName, final String qname) throws TransformerException {
-        if(qname.equals(JSON_VALUE)) {
+        if(JSON_VALUE.equals(qname)) {
             processStartValue();
         } else if(useNSPrefix) {
             processStartElement(qname.replace(':', '_'), false);

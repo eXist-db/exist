@@ -39,12 +39,12 @@ import java.nio.file.StandardOpenOption;
 import java.util.Properties;
 
 public class SerializeToFile extends BasicFunction {
-	private final static Logger logger = LogManager.getLogger(SerializeToFile.class);
+	private static final Logger logger = LogManager.getLogger(SerializeToFile.class);
 
-	private final static String FN_SERIALIZE_LN = "serialize";
-    private final static String FN_SERIALIZE_BINARY_LN = "serialize-binary";
+	private static final String FN_SERIALIZE_LN = "serialize";
+    private static final String FN_SERIALIZE_BINARY_LN = "serialize-binary";
 
-	public final static FunctionSignature signatures[] = {
+	public static final FunctionSignature[] signatures = {
 		new FunctionSignature(
 			new QName( FN_SERIALIZE_LN, FileModule.NAMESPACE_URI, FileModule.PREFIX ),
 			"Writes the node set into a file on the file system. $parameters contains a " +
@@ -186,7 +186,7 @@ public class SerializeToFile extends BasicFunction {
             SequenceIterator siSerializeParams = sSerializeParams.iterate();
             while(siSerializeParams.hasNext()) {
                 final String serializeParam = siSerializeParams.nextItem().getStringValue();
-                final String opt[] = Option.parseKeyValuePair(serializeParam);
+                final String[] opt = Option.parseKeyValuePair(serializeParam);
                 if(opt != null && opt.length == 2) {
                     outputProperties.setProperty( opt[0], opt[1] );
                 }
@@ -199,7 +199,7 @@ public class SerializeToFile extends BasicFunction {
 	private void serializeXML(final SequenceIterator siNode, final Properties outputProperties, final Path file, final boolean doAppend) throws XPathException {
         final Serializer serializer = context.getBroker().borrowSerializer();
 
-        StandardOpenOption ops[] = doAppend ? new StandardOpenOption[]{StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.APPEND}
+        StandardOpenOption[] ops = doAppend ? new StandardOpenOption[]{StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.APPEND}
                 : new StandardOpenOption[]{StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING};
 
 
@@ -224,7 +224,7 @@ public class SerializeToFile extends BasicFunction {
 
     private void serializeBinary(final BinaryValue binary, final Path file, final boolean doAppend) throws XPathException {
 
-        StandardOpenOption ops[] = doAppend ? new StandardOpenOption[]{StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.APPEND}
+        StandardOpenOption[] ops = doAppend ? new StandardOpenOption[]{StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.APPEND}
                 : new StandardOpenOption[]{StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING};
 
         try(final OutputStream os = new BufferedOutputStream(Files.newOutputStream(file, ops))) {

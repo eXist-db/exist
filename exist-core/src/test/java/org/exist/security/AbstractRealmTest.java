@@ -21,17 +21,16 @@
  */
 package org.exist.security;
 
-import java.util.Collections;
-
-import org.exist.storage.DBBroker;
-import org.exist.Database;
-import org.junit.Test;
 import org.easymock.EasyMock;
+import org.exist.Database;
 import org.exist.EXistException;
 import org.exist.config.Configuration;
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.replay;
-import static org.easymock.EasyMock.verify;
+import org.exist.storage.DBBroker;
+import org.junit.Test;
+
+import java.util.Collections;
+
+import static org.easymock.EasyMock.*;
 
 /**
  *

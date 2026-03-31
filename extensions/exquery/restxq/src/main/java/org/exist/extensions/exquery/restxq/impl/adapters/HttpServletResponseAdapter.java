@@ -26,11 +26,12 @@
  */
 package org.exist.extensions.exquery.restxq.impl.adapters;
 
-import java.io.IOException;
-import java.io.OutputStream;
 import jakarta.servlet.http.HttpServletResponse;
 import org.exquery.http.HttpResponse;
 import org.exquery.http.HttpStatus;
+
+import java.io.IOException;
+import java.io.OutputStream;
 
 /**
  *

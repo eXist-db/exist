@@ -21,8 +21,13 @@
  */
 package org.exist.xquery.modules.file;
 
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.Marshaller;
+import jakarta.xml.bind.Unmarshaller;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
@@ -32,16 +37,11 @@ import org.apache.http.entity.ContentType;
 import org.exist.http.jaxb.Query;
 import org.exist.http.jaxb.Result;
 import org.exist.test.ExistWebServer;
-import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xmldb.XmldbURI;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
-import jakarta.xml.bind.JAXBContext;
-import jakarta.xml.bind.JAXBException;
-import jakarta.xml.bind.Marshaller;
-import jakarta.xml.bind.Unmarshaller;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -61,7 +61,7 @@ public class RestBinariesTest extends AbstractBinariesTest<Result, Result.Value,
     @ClassRule
     public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
 
-    private static Executor executor = null;
+    private static Executor executor;
 
     @BeforeClass
     public static void setupExecutor() {

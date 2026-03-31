@@ -21,20 +21,16 @@
  */
 package org.exist.xquery.modules.vector;
 
+import org.exist.vector.VectorEmbeddingProvider;
+import org.exist.vector.VectorEmbeddingService;
+import org.exist.vector.VectorModelConstants;
 import org.exist.xquery.BasicFunction;
+import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.array.ArrayType;
-import org.exist.xquery.value.DoubleValue;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.Cardinality;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.Type;
-import org.exist.vector.VectorEmbeddingProvider;
-import org.exist.vector.VectorEmbeddingService;
-import org.exist.vector.VectorModelConstants;
+import org.exist.xquery.value.*;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -58,7 +54,7 @@ public class Embed extends BasicFunction {
   private static final FunctionParameterSequenceType FS_PARAM_API_KEY = optParam("api-key", Type.STRING,
       "Optional API key for HTTP APIs (OpenAI, Cohere). Alternative to OPENAI_API_KEY/COHERE_API_KEY env vars.");
 
-  final static FunctionSignature[] signatures = {
+  static final FunctionSignature[] signatures = {
       functionSignature("embed",
           "Embed text for vector search. Returns array of floats for use with ft:query-vector.",
           new FunctionReturnSequenceType(Type.ARRAY_ITEM, Cardinality.EXACTLY_ONE, "Array of embedding floats"),

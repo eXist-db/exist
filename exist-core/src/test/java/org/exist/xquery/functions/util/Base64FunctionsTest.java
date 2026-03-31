@@ -22,14 +22,12 @@
 package org.exist.xquery.functions.util;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
-
-import static org.junit.Assert.*;
-
 import org.junit.ClassRule;
 import org.junit.Test;
-
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
+
+import static org.junit.Assert.*;
 
 
 /**

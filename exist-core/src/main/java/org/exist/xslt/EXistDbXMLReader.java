@@ -23,17 +23,8 @@ package org.exist.xslt;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import org.exist.storage.serializers.Serializer;
-
-import org.xml.sax.ContentHandler;
-import org.xml.sax.DTDHandler;
-import org.xml.sax.EntityResolver;
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.InputSource;
-import org.xml.sax.Locator;
-import org.xml.sax.SAXParseException;
-import org.xml.sax.XMLReader;
+import org.xml.sax.*;
 
 /**
  * {@link org.xml.sax.XMLReader} that uses an {@link org.exist.storage.serializers.Serializer}
@@ -42,7 +33,7 @@ import org.xml.sax.XMLReader;
  * @author <a href="mailto:Paul.L.Merchant.Jr@dartmouth.edu">Paul Merchant, Jr.</a>
  */
 public class EXistDbXMLReader implements XMLReader, Locator {
-    private final static Logger LOG = LogManager.getLogger(EXistDbSource.class);
+    private static final Logger LOG = LogManager.getLogger(EXistDbSource.class);
 
     private ContentHandler contentHandler;
     private ErrorHandler   errHandler;

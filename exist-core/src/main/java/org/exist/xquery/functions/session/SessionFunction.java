@@ -36,7 +36,7 @@ import java.util.Optional;
  */
 public abstract class SessionFunction extends BasicFunction {
 
-    public SessionFunction(final XQueryContext context, final FunctionSignature signature) {
+    protected SessionFunction(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
 

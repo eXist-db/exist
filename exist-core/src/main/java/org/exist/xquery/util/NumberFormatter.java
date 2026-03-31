@@ -38,11 +38,11 @@ import java.util.Locale;
  */
 public abstract class NumberFormatter {
 
-    private static char OPTIONAL_DIGIT_SIGN = '#';
+    private static final char OPTIONAL_DIGIT_SIGN = '#';
 
     private final Locale locale;
 
-    public NumberFormatter(final Locale locale) {
+    protected NumberFormatter(final Locale locale) {
         this.locale = locale;
     }
 
@@ -73,7 +73,7 @@ public abstract class NumberFormatter {
 
     public String formatNumber(final long number, String picture, final int min, final int max) throws XPathException {
         if (picture == null)
-            {return "" + number;}
+            {return String.valueOf(number);}
 
         boolean ordinal = false;
         if (picture.endsWith("o")) {

@@ -28,8 +28,8 @@ package org.exist.storage;
  */
 public class BufferStats {
 	
-	public final static int INDEX = 0;
-	public final static int DATA = 1;
+	public static final int INDEX = 0;
+	public static final int DATA = 1;
 
 	//private int type = 0;
 	private final int size;

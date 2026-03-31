@@ -21,14 +21,6 @@
  */
 package org.exist.security.realm.ldap;
 
-import java.text.MessageFormat;
-import java.util.Hashtable;
-import java.util.Map;
-import javax.naming.Context;
-import javax.naming.NamingException;
-import javax.naming.ldap.InitialLdapContext;
-import javax.naming.ldap.LdapContext;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.config.Configurable;
@@ -36,6 +28,14 @@ import org.exist.config.Configuration;
 import org.exist.config.Configurator;
 import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationFieldAsElement;
+
+import javax.naming.Context;
+import javax.naming.NamingException;
+import javax.naming.ldap.InitialLdapContext;
+import javax.naming.ldap.LdapContext;
+import java.text.MessageFormat;
+import java.util.Hashtable;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -54,24 +54,24 @@ public class LdapContextFactory implements Configurable {
     private final boolean ssl = false;
 
     @ConfigurationFieldAsElement("principal-pattern")
-    protected String principalPattern = null;
+    protected String principalPattern;
     protected MessageFormat principalPatternFormat;
 
     @ConfigurationFieldAsElement("url")
-    protected String url = null;
+    protected String url;
 
     @ConfigurationFieldAsElement("domain")
-    protected String domain = null;
+    protected String domain;
 
     protected String contextFactoryClassName = "com.sun.jndi.ldap.LdapCtxFactory";
 
-    protected String systemUsername = null;
+    protected String systemUsername;
 
-    protected String systemPassword = null;
+    protected String systemPassword;
 
     private boolean usePooling = true;
 
-    private Configuration configuration = null;
+    private Configuration configuration;
 
     @ConfigurationFieldAsElement("search")
     private LDAPSearchContext search;
@@ -164,7 +164,7 @@ public class LdapContextFactory implements Configurable {
     // configurable methods
     @Override
     public boolean isConfigured() {
-        return (configuration != null);
+        return configuration != null;
     }
 
     @Override

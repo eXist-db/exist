@@ -21,8 +21,6 @@
  */
 package org.exist.xquery.modules.lucene;
 
-import java.io.IOException;
-
 import org.exist.dom.QName;
 import org.exist.dom.persistent.LockedDocument;
 import org.exist.indexing.lucene.LuceneIndex;
@@ -35,15 +33,13 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
+
+import java.io.IOException;
 
 public class GetField extends BasicFunction {
 
-	public final static FunctionSignature signatures[] = {
+	public static final FunctionSignature[] signatures = {
         new FunctionSignature(
             new QName("get-field", LuceneModule.NAMESPACE_URI, LuceneModule.PREFIX),
             "Retrieve the stored content of a field.",

@@ -21,34 +21,35 @@
  */
 package org.exist.security;
 
-import java.io.IOException;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.util.SyntaxException;
 
+import java.io.IOException;
+
 
 public interface Permission {
 	
-    int DEFAULT_COLLECTION_PERM = 0777;
-    int DEFAULT_RESOURCE_PERM = 0666;
-    int DEFAULT_UMASK = 022;
+    int DEFAULT_COLLECTION_PERM = 511;
+    int DEFAULT_RESOURCE_PERM = 438;
+    int DEFAULT_UMASK = 18;
     
-    int DEFAULT_SYSTEM_COLLECTION_PERM = 0755;
-    int DEFAULT_SYSTEM_RESOURCE_PERM = 0770;
+    int DEFAULT_SYSTEM_COLLECTION_PERM = 493;
+    int DEFAULT_SYSTEM_RESOURCE_PERM = 504;
     
-    int DEFAULT_SYSTEM_ETC_COLLECTION_PERM = 0755;
-    int DEFAULT_SYSTEM_SECURITY_COLLECTION_PERM = 0770;
+    int DEFAULT_SYSTEM_ETC_COLLECTION_PERM = 493;
+    int DEFAULT_SYSTEM_SECURITY_COLLECTION_PERM = 504;
 
-    int DEFAULT_TEMPORARY_COLLECTION_PERM = 0771;
-    int DEFAULT_TEMPORARY_DOCUMENT_PERM = 0771;
+    int DEFAULT_TEMPORARY_COLLECTION_PERM = 505;
+    int DEFAULT_TEMPORARY_DOCUMENT_PERM = 505;
 
-    int SET_UID = 04;
-    int SET_GID = 02;
-    int STICKY = 01;
+    int SET_UID = 4;
+    int SET_GID = 2;
+    int STICKY = 1;
 
-    int READ = 04;
-    int WRITE = 02;
-    int EXECUTE = 01;
+    int READ = 4;
+    int WRITE = 2;
+    int EXECUTE = 1;
 	
     String USER_STRING = "user";
     String GROUP_STRING = "group";

@@ -53,11 +53,11 @@ import javax.xml.XMLConstants;
  */
 public class Insert extends Modification {
 
-    public final static int INSERT_BEFORE = 0;
+    public static final int INSERT_BEFORE = 0;
 
-    public final static int INSERT_AFTER = 1;
+    public static final int INSERT_AFTER = 1;
 
-    public final static int INSERT_APPEND = 2;
+    public static final int INSERT_APPEND = 2;
 
     private int mode = INSERT_BEFORE;
 
@@ -146,13 +146,10 @@ public class Insert extends Modification {
                     } else {
                         final NodeImpl<?> parent = (NodeImpl<?>) getParent(node);
                         validateNonDefaultNamespaces(contentList, parent);
-                        switch (mode) {
-                            case INSERT_BEFORE:
-                                parent.insertBefore(transaction, contentList, node);
-                                break;
-                            case INSERT_AFTER:
-                                parent.insertAfter(transaction, contentList, node);
-                                break;
+                        if (mode == INSERT_BEFORE) {
+                            parent.insertBefore(transaction, contentList, node);
+                        } else if (mode == INSERT_AFTER) {
+                            parent.insertAfter(transaction, contentList, node);
                         }
                     }
                     doc.setLastModified(System.currentTimeMillis());
@@ -180,7 +177,7 @@ public class Insert extends Modification {
 
     private QName nodeQName(Node node) {
         final String ns = node.getNamespaceURI();
-        final String prefix = (Namespaces.XML_NS.equals(ns) ? XMLConstants.XML_NS_PREFIX : node.getPrefix());
+        final String prefix = Namespaces.XML_NS.equals(ns) ? XMLConstants.XML_NS_PREFIX : node.getPrefix();
         String name = node.getLocalName();
         if(name == null) {
             name = node.getNodeName();

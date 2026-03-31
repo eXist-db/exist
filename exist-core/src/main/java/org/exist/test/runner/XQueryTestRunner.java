@@ -37,17 +37,13 @@ import org.exist.util.ConfigurationHelper;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.FileUtils;
 import org.exist.xquery.*;
-import org.exist.xquery.value.AnyURIValue;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.FunctionReference;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.*;
 import org.junit.runner.Description;
+import org.junit.runner.notification.RunNotifier;
+import org.junit.runners.model.InitializationError;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.junit.runner.notification.RunNotifier;
-import org.junit.runners.model.InitializationError;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -155,7 +151,7 @@ public class XQueryTestRunner extends AbstractTestRunner {
                     if (annotations != null) {
                         for (final Annotation annotation : annotations) {
                             final QName annotationName = annotation.getName();
-                            if (annotationName.getNamespaceURI().equals(XQSUITE_NAMESPACE)) {
+                            if (XQSUITE_NAMESPACE.equals(annotationName.getNamespaceURI())) {
                                 if (annotationName.getLocalPart().startsWith("assert")) {
                                     isTest = true;
                                     if (testName != null) {

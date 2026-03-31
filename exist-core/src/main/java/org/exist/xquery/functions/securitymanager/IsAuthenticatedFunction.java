@@ -38,14 +38,14 @@ import org.exist.xquery.value.Type;
  */
 public class IsAuthenticatedFunction extends BasicFunction {
 
-    public final static FunctionSignature FNS_IS_AUTHENTICATED = new FunctionSignature(
+    public static final FunctionSignature FNS_IS_AUTHENTICATED = new FunctionSignature(
         new QName("is-authenticated", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX),
         "Returns the true() if current account is authenticated, false() otherwise.",
         null,
         new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if user from the xquery context is authenticated, false() otherwise")
     );
 
-    public final static FunctionSignature FNS_IS_EXTERNALLY_AUTHENTICATED = new FunctionSignature(
+    public static final FunctionSignature FNS_IS_EXTERNALLY_AUTHENTICATED = new FunctionSignature(
         new QName("is-externally-authenticated", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX),
         "Returns the true() if current account is authenticated by an external realm, false() otherwise.",
         null,

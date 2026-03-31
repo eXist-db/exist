@@ -22,7 +22,6 @@
 package org.exist.client.security;
 
 import javax.swing.table.DefaultTableModel;
-
 import java.io.Serial;
 
 /**

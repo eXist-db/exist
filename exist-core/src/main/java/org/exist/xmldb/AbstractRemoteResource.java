@@ -21,24 +21,15 @@
  */
 package org.exist.xmldb;
 
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.time.Instant;
-import java.util.*;
-import java.util.zip.DataFormatException;
-import java.util.zip.Inflater;
-
 import com.evolvedbinary.j8fu.lazy.LazyVal;
-
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.security.Permission;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.EXistInputSource;
 import org.exist.util.FileUtils;
 import org.exist.util.io.ByteArrayContent;
 import org.exist.util.io.ContentFile;
-import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
-import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.util.io.TemporaryFileManager;
 import org.exist.util.io.VirtualTempPath;
 import org.xml.sax.InputSource;
@@ -46,6 +37,14 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
+
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.Instant;
+import java.util.*;
+import java.util.zip.DataFormatException;
+import java.util.zip.Inflater;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.util.io.InputStreamUtil.copy;
@@ -55,16 +54,16 @@ public abstract class AbstractRemoteResource extends AbstractRemote
     protected final XmldbURI path;
     private String mimeType;
 
-    protected Path file = null;
-    private ContentFile contentFile = null;
-    protected InputSource inputSource = null;
+    protected Path file;
+    private ContentFile contentFile;
+    protected InputSource inputSource;
     private long contentLen = -1L;
-    private Permission permissions = null;
+    private Permission permissions;
     private boolean closed;
     private LazyVal<Integer> inMemoryBufferSize;
 
-    Instant dateCreated = null;
-    Instant dateModified = null;
+    Instant dateCreated;
+    Instant dateModified;
 
     protected AbstractRemoteResource(final RemoteCollection parent, final XmldbURI documentName, final String mimeType) {
         super(parent);
@@ -454,7 +453,7 @@ public abstract class AbstractRemoteResource extends AbstractRemote
         final long retval;
         if (file != null) {
             retval = FileUtils.sizeQuietly(file);
-        } else if (inputSource != null && inputSource instanceof EXistInputSource source) {
+        } else if (inputSource instanceof EXistInputSource source) {
             retval = source.getByteStreamLength();
         } else if (obj != null) {
             switch (obj) {
@@ -477,7 +476,7 @@ public abstract class AbstractRemoteResource extends AbstractRemote
                     retval = Long.parseLong((String) o);
                 }
             } else {
-                retval = ((Integer) table.get("content-length"));
+                retval = (Integer) table.get("content-length");
             }
         }
 

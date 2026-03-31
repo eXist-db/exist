@@ -39,10 +39,10 @@ import java.util.List;
  */
 public class ArrowOperator extends AbstractExpression {
 
-    private QName qname = null;
-    private Expression leftExpr;
-    private FunctionCall fcall = null;
-    private Expression funcSpec = null;
+    private QName qname;
+    private final Expression leftExpr;
+    private FunctionCall fcall;
+    private Expression funcSpec;
     private List<Expression> parameters;
     private AnalyzeContextInfo cachedContextInfo;
 

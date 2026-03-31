@@ -93,7 +93,7 @@ public class DLNStorageTest {
             assertEquals("1.3.2.1", href.getNodeId().toString());
             // test Attr deserialization
             Attr attr = (Attr) href.getNode();
-            StorageAddress.toString(((NodeHandle)attr));
+            StorageAddress.toString((NodeHandle)attr);
             // test Attr fields
             assertEquals("href", attr.getNodeName());
             assertEquals("href", attr.getName());

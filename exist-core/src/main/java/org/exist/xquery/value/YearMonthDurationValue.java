@@ -101,10 +101,10 @@ public class YearMonthDurationValue extends OrderedDurationValue {
         }
         sb.append('P');
         if (getCanonicalDuration().getYears() != 0) {
-            sb.append(getCanonicalDuration().getYears() + "Y");
+            sb.append(getCanonicalDuration().getYears()).append("Y");
         }
         if (getCanonicalDuration().getMonths() != 0 || getCanonicalDuration().getYears() == 0) {
-            sb.append(getCanonicalDuration().getMonths() + "M");
+            sb.append(getCanonicalDuration().getMonths()).append("M");
         }
         return sb.toString();
     }
@@ -177,7 +177,7 @@ public class YearMonthDurationValue extends OrderedDurationValue {
         final YearMonthDurationValue product = fromDecimalMonths(
                 new BigDecimal(monthsValueSigned())
                         .multiply(factor.abs())
-                        .setScale(0, (isFactorNegative) ? BigDecimal.ROUND_HALF_DOWN : BigDecimal.ROUND_HALF_UP)
+                        .setScale(0, isFactorNegative ? BigDecimal.ROUND_HALF_DOWN : BigDecimal.ROUND_HALF_UP)
         );
 
         if (isFactorNegative) {
@@ -209,7 +209,7 @@ public class YearMonthDurationValue extends OrderedDurationValue {
 
         final YearMonthDurationValue quotient = fromDecimalMonths(
                 new BigDecimal(monthsValueSigned())
-                        .divide(divisor.abs(), 0, (isDivisorNegative) ? BigDecimal.ROUND_HALF_DOWN : BigDecimal.ROUND_HALF_UP));
+                        .divide(divisor.abs(), 0, isDivisorNegative ? BigDecimal.ROUND_HALF_DOWN : BigDecimal.ROUND_HALF_UP));
 
         if (isDivisorNegative) {
             return quotient.negate();

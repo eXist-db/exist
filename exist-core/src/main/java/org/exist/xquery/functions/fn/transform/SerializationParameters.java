@@ -50,7 +50,9 @@ class SerializationParameters {
             this.defaultValue = defaultValue;
             this.hasMany = hasMany;
             this.types = new ArrayList<>();
-            for (final int type : types) this.types.add(type);
+            for (final int type : types) {
+                this.types.add(type);
+            }
         }
 
         ParameterInfo(final String defaultValue, final int... types) {

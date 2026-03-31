@@ -24,9 +24,9 @@ package org.exist.xquery.functions.xmldb;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
+import org.exist.dom.QName;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.NodeSet;
-import org.exist.dom.QName;
 import org.exist.util.LockException;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -34,11 +34,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.update.Modification;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.IntegerValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 /**
  * Implments the xmldb:defragment() function. 
@@ -48,7 +44,7 @@ import org.exist.xquery.value.Type;
 public class XMLDBDefragment extends BasicFunction {
     private static final Logger logger = LogManager.getLogger(XMLDBDefragment.class);
 
-    public final static FunctionSignature[] signatures = {
+    public static final FunctionSignature[] signatures = {
             new FunctionSignature(
                     new QName("defragment", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
                     "Start a defragmentation run on each document which has a node in $nodes. " +

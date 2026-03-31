@@ -21,14 +21,14 @@
  */
 package org.exist.config;
 
+import org.exist.security.PermissionDeniedException;
+import org.exist.storage.DBBroker;
+import org.w3c.dom.Element;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-
-import org.exist.security.PermissionDeniedException;
-import org.exist.storage.DBBroker;
-import org.w3c.dom.Element;
 
 /**
  * Configuration interface provide methods to read settings.

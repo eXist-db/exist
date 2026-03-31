@@ -50,9 +50,9 @@ public class FilterInputStreamCacheMonitorTest {
     @ClassRule
     public static ExistXmldbEmbeddedServer existXmldbEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
-    protected final static Logger LOG = LogManager.getLogger(FilterInputStreamCacheMonitorTest.class);
+    protected static final Logger LOG = LogManager.getLogger(FilterInputStreamCacheMonitorTest.class);
 
-    private static String TEST_COLLECTION_NAME = "testFilterInputStreamCacheMonitor";
+    private static final String TEST_COLLECTION_NAME = "testFilterInputStreamCacheMonitor";
 
     @BeforeClass
     public static void setup() throws XMLDBException, URISyntaxException {

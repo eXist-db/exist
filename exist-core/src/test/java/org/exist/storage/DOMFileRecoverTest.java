@@ -21,13 +21,6 @@
  */
 package org.exist.storage;
 
-import java.io.IOException;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
-
 import org.exist.EXistException;
 import org.exist.numbering.NodeId;
 import org.exist.numbering.NodeIdFactory;
@@ -42,6 +35,13 @@ import org.exist.util.ReadOnlyException;
 import org.exist.xquery.TerminatedException;
 import org.junit.Rule;
 import org.junit.Test;
+
+import java.io.IOException;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
 
 import static org.junit.Assert.assertNotNull;
 
@@ -82,8 +82,9 @@ public class DOMFileRecoverTest {
                     NodeId id = idFact.createInstance(i);
                     long addr = domDb.put(txn, new NativeBroker.NodeRef(500, id), data);
 //              TODO : test addr ?
-                    if (i == 1)
+                    if (i == 1) {
                         firstToRemove = addr;
+                    }
                 }
 
                 domDb.closeDocument();
@@ -115,8 +116,9 @@ public class DOMFileRecoverTest {
                     byte[] data = ("Value" + i).getBytes();
                     long addr = domDb.put(txn, new NativeBroker.NodeRef(501, idFact.createInstance(i)), data);
 //              TODO : test addr ?                
-                    if (i == 1)
+                    if (i == 1) {
                         firstToRemove = addr;
+                    }
                 }
 
                 domDb.closeDocument();

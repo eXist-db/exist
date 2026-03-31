@@ -26,13 +26,6 @@
  */
 package org.exist.extensions.exquery.restxq.impl;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
 import org.exist.EXistException;
 import org.exist.extensions.exquery.restxq.impl.adapters.SequenceAdapter;
 import org.exist.storage.BrokerPool;
@@ -49,6 +42,14 @@ import org.exquery.xquery.Sequence;
 import org.exquery.xquery.Type;
 import org.exquery.xquery.TypedValue;
 import org.xml.sax.SAXException;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
 
 /**
  *

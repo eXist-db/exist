@@ -21,8 +21,9 @@
  */
 package org.exist.client.security;
 
-import javax.swing.table.DefaultTableModel;
 import org.exist.client.LabelledBoolean;
+
+import javax.swing.table.DefaultTableModel;
 
 /**
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>

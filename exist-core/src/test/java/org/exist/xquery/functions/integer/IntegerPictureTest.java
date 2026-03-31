@@ -451,7 +451,9 @@ public class IntegerPictureTest {
     public void math() throws XPathException {
         char[] chars = Character.toChars(0x1D7D8);
         StringBuilder sb = new StringBuilder();
-        for (final char c : chars) sb.append(c);
+        for (final char c : chars) {
+            sb.append(c);
+        }
         assertEquals("\uD835\uDFDC", fmt(sb.toString(), 4L));
         assertEquals("\uD835\uDFD9", fmt(sb.toString(), 1L));
         assertEquals("\uD835\uDFD8", fmt(sb.toString(), 0L));
@@ -461,7 +463,9 @@ public class IntegerPictureTest {
 
         chars = Character.toChars(0x1D7E2);
         sb = new StringBuilder();
-        for (final char c : chars) sb.append(c);
+        for (final char c : chars) {
+            sb.append(c);
+        }
         assertEquals("\uD835\uDFE2", fmt(sb.toString(), 0L));
     }
 

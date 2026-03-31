@@ -21,9 +21,6 @@
  */
 package org.exist.xquery;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.exist.source.Source;
@@ -36,6 +33,8 @@ import org.exist.xquery.value.Type;
 
 import javax.annotation.Nullable;
 import javax.xml.XMLConstants;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.apache.commons.lang3.ArrayUtils.isNotEmpty;
 
@@ -97,8 +96,8 @@ public class FunctionFactory {
             }
         //Check if the namespace belongs to one of the schema namespaces.
         //If yes, the function is a constructor function
-        } else if (uri.equals(Namespaces.SCHEMA_NS) ||
-                uri.equals(Namespaces.XPATH_DATATYPES_NS)) {
+        } else if (Namespaces.SCHEMA_NS.equals(uri) ||
+                Namespaces.XPATH_DATATYPES_NS.equals(uri)) {
             step = castExpression(context, ast, params, qname);
         //Check if the namespace URI starts with "java:". If yes, treat
         //the function call as a call to an arbitrary Java function.

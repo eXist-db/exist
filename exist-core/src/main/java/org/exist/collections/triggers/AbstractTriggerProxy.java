@@ -21,12 +21,12 @@
  */
 package org.exist.collections.triggers;
 
-import java.util.List;
-import java.util.Map;
-
 import org.exist.collections.Collection;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -37,11 +37,11 @@ public abstract class AbstractTriggerProxy<T extends Trigger> implements Trigger
     private final Class<? extends T> clazz;
     private Map<String, List<? extends Object>> parameters;
 
-    public AbstractTriggerProxy(final Class<? extends T> clazz) {
+    protected AbstractTriggerProxy(final Class<? extends T> clazz) {
         this.clazz = clazz;
     }
     
-    public AbstractTriggerProxy(final Class<? extends T> clazz, final Map<String, List<? extends Object>> parameters) {
+    protected AbstractTriggerProxy(final Class<? extends T> clazz, final Map<String, List<? extends Object>> parameters) {
         this.clazz = clazz;
         this.parameters = parameters;
     }

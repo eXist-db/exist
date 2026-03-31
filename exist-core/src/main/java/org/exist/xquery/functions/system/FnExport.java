@@ -23,6 +23,7 @@ package org.exist.xquery.functions.system;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exist.backup.SystemExport;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.storage.txn.Txn;
@@ -32,41 +33,34 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.TerminatedException;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
-
-import org.exist.backup.SystemExport;
+import org.exist.xquery.value.*;
 
 public class FnExport extends BasicFunction {
 
-    protected final static Logger logger = LogManager.getLogger(FnExport.class);
+    protected static final Logger logger = LogManager.getLogger(FnExport.class);
 
-    protected final static QName NAME =
+    protected static final QName NAME =
             new QName("export", SystemModule.NAMESPACE_URI, SystemModule.PREFIX);
 
-    protected final static String DESCRIPTION =
+    protected static final String DESCRIPTION =
             "Export a backup of the database (admin user only).";
 
-    protected final static FunctionParameterSequenceType DIRorFILE =
+    protected static final FunctionParameterSequenceType DIRorFILE =
             new FunctionParameterSequenceType("dir", Type.STRING, Cardinality.EXACTLY_ONE,
                     "This is an absolute path to where the backup will be written. Must be writeable by the eXist process.");
 
-    protected final static FunctionParameterSequenceType INCREMENTAL =
+    protected static final FunctionParameterSequenceType INCREMENTAL =
             new FunctionParameterSequenceType("incremental", Type.BOOLEAN, Cardinality.ZERO_OR_ONE,
                     "Flag to do incremental export.");
 
-    protected final static FunctionParameterSequenceType ZIP =
+    protected static final FunctionParameterSequenceType ZIP =
             new FunctionParameterSequenceType("zip", Type.BOOLEAN, Cardinality.ZERO_OR_ONE,
                     "Flag to do export to zip file.");
 
-    protected final static FunctionReturnSequenceType RESULT =
+    protected static final FunctionReturnSequenceType RESULT =
             new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE, "the export results");
 
-    public final static FunctionSignature[] signatures = {
+    public static final FunctionSignature[] signatures = {
             new FunctionSignature(
                     NAME,
                     DESCRIPTION,
@@ -90,7 +84,7 @@ public class FnExport extends BasicFunction {
             )
     };
 
-    public final static QName EXPORT_ELEMENT = new QName("export", SystemModule.NAMESPACE_URI, SystemModule.PREFIX);
+    public static final QName EXPORT_ELEMENT = new QName("export", SystemModule.NAMESPACE_URI, SystemModule.PREFIX);
 
     public FnExport(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
@@ -146,11 +140,11 @@ public class FnExport extends BasicFunction {
 
     private static class Callback implements SystemExport.StatusCallback {
 
-        public final static QName COLLECTION_ELEMENT = new QName("collection", SystemModule.NAMESPACE_URI, SystemModule.PREFIX);
-        public final static QName RESOURCE_ELEMENT = new QName("resource", SystemModule.NAMESPACE_URI, SystemModule.PREFIX);
+        public static final QName COLLECTION_ELEMENT = new QName("collection", SystemModule.NAMESPACE_URI, SystemModule.PREFIX);
+        public static final QName RESOURCE_ELEMENT = new QName("resource", SystemModule.NAMESPACE_URI, SystemModule.PREFIX);
         //        public final static QName INFO_ELEMENT = new QName("info", SystemModule.NAMESPACE_URI, SystemModule.PREFIX);
 //        public final static QName WARN_ELEMENT = new QName("warn", SystemModule.NAMESPACE_URI, SystemModule.PREFIX);
-        public final static QName ERROR_ELEMENT = new QName("error", SystemModule.NAMESPACE_URI, SystemModule.PREFIX);
+        public static final QName ERROR_ELEMENT = new QName("error", SystemModule.NAMESPACE_URI, SystemModule.PREFIX);
 
         private final MemTreeBuilder builder;
 

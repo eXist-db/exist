@@ -23,35 +23,26 @@ package org.exist.xquery.modules.lucene;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.QName;
-
+import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.LockedDocument;
 import org.exist.indexing.StreamListener.ReindexMode;
 import org.exist.indexing.lucene.LuceneIndex;
 import org.exist.indexing.lucene.LuceneIndexWorker;
-
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.xmldb.XmldbURI;
-
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 public class Index extends BasicFunction {
 
     private static final Logger logger = LogManager.getLogger(Index.class);
     
-    public final static FunctionSignature signatures[] = {
+    public static final FunctionSignature[] signatures = {
     	new FunctionSignature(
 	            new QName("index", LuceneModule.NAMESPACE_URI, LuceneModule.PREFIX),
 	            "Index an arbitrary chunk of (non-XML) data with Lucene. Syntax is inspired by Solr.",

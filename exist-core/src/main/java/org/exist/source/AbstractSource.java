@@ -21,11 +21,8 @@
  */
 package org.exist.source;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.Charset;
-
+import antlr.RecognitionException;
+import antlr.TokenStreamException;
 import net.jpountz.xxhash.XXHash64;
 import net.jpountz.xxhash.XXHashFactory;
 import org.exist.dom.QName;
@@ -35,8 +32,10 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.parser.DeclScanner;
 import org.exist.xquery.parser.XQueryLexer;
 
-import antlr.RecognitionException;
-import antlr.TokenStreamException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -69,7 +68,7 @@ public abstract class AbstractSource implements Source {
 
     @Override
     public boolean equals(final Object obj) {
-    	if (obj != null && obj instanceof Source source) {
+    	if (obj instanceof Source source) {
             return key == (source.getKey());
 		}
     	return false;

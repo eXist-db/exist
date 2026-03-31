@@ -21,9 +21,6 @@
  */
 package org.exist.xquery;
 
-import java.io.IOException;
-import java.util.Optional;
-
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.triggers.TriggerException;
@@ -44,6 +41,9 @@ import org.exist.xquery.value.Sequence;
 import org.junit.*;
 import org.xml.sax.SAXException;
 
+import java.io.IOException;
+import java.util.Optional;
+
 import static org.junit.Assert.*;
 
 public class XQueryUpdateTest {
@@ -57,7 +57,7 @@ public class XQueryUpdateTest {
     protected static String UPDATE_XML =
             "<progress total=\"100\" done=\"0\" failed=\"0\" passed=\"0\"/>";
 
-    protected final static int ITEMS_TO_APPEND = 500;
+    protected static final int ITEMS_TO_APPEND = 500;
 
     @Test
     public void append() throws EXistException, PermissionDeniedException, XPathException, SAXException {

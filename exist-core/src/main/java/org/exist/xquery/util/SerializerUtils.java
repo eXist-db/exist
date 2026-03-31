@@ -254,7 +254,9 @@ public class SerializerUtils {
             while (reader.hasNext()) {
                 /* advance to the first starting element (root node) of the options */
                 final int status = reader.next();
-                if (status == XMLStreamConstants.START_ELEMENT) break;
+                if (status == XMLStreamConstants.START_ELEMENT) {
+                    break;
+                }
             }
 
             if (!Namespaces.XSLT_XQUERY_SERIALIZATION_NS.equals(reader.getNamespaceURI())) {
@@ -289,7 +291,7 @@ public class SerializerUtils {
         if (properties.containsKey(local)) {
             throw new XPathException(parent, FnModule.SEPM0019, "serialization parameter specified twice: " + key);
         }
-        if (prefix.equals(OUTPUT_NAMESPACE) && !W3CParameterConventionKeys.contains(local)) {
+        if (OUTPUT_NAMESPACE.equals(prefix) && !W3CParameterConventionKeys.contains(local)) {
             throw new XPathException(ErrorCodes.SEPM0017, "serialization parameter not recognized: " + key);
         }
 
@@ -349,7 +351,9 @@ public class SerializerUtils {
                 depth += 1;
                 readCharacterMap(reader, characterMap);
             } else if (status == XMLStreamConstants.END_ELEMENT) {
-                if (depth == 0) return characterMap;
+                if (depth == 0) {
+                    return characterMap;
+                }
                 depth -= 1;
             }
         }
@@ -366,10 +370,10 @@ public class SerializerUtils {
     private static void readCharacterMap(final XMLStreamReader reader, final Int2ObjectMap<String> characterMap) throws XPathException {
 
         final javax.xml.namespace.QName qName = reader.getName();
-        if (!qName.getPrefix().equals(OUTPUT_NAMESPACE)) {
+        if (!OUTPUT_NAMESPACE.equals(qName.getPrefix())) {
             throw new XPathException(ErrorCodes.SEPM0017, EXistOutputKeys.USE_CHARACTER_MAPS + " element with unexpected prefix: " + qName);
         }
-        if (qName.getLocalPart().equals(CHARACTER_MAP_ELEMENT_KEY)) {
+        if (CHARACTER_MAP_ELEMENT_KEY.equals(qName.getLocalPart())) {
             if (reader.getAttributeCount() > 2) {
                 throw new XPathException(ErrorCodes.SEPM0017, EXistOutputKeys.USE_CHARACTER_MAPS + " element has unexpected attributes");
             }

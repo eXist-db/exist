@@ -42,7 +42,7 @@ import org.exist.xquery.value.Type;
  */
 public class FunDefaultCollation extends BasicFunction {
 
-    public final static FunctionSignature signature =
+    public static final FunctionSignature signature =
         new FunctionSignature(
             new QName("default-collation", Function.BUILTIN_FUNCTION_NS),
             "Returns the context's default collation. E.g. http://www.w3.org/" +

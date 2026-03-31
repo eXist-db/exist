@@ -38,15 +38,15 @@ import java.util.regex.Pattern;
 
 
 public class BackupDirectory {
-    public final static Logger LOG = LogManager.getLogger(BackupDirectory.class);
+    public static final Logger LOG = LogManager.getLogger(BackupDirectory.class);
 
 
-    public final static String PREFIX_FULL_BACKUP_FILE = "full";
-    public final static String PREFIX_INC_BACKUP_FILE = "inc";
+    public static final String PREFIX_FULL_BACKUP_FILE = "full";
+    public static final String PREFIX_INC_BACKUP_FILE = "inc";
 
-    public final static String FILE_REGEX = "(" + PREFIX_FULL_BACKUP_FILE + "|" + PREFIX_INC_BACKUP_FILE + ")(\\d{8}-\\d{4}).*";
+    public static final String FILE_REGEX = "(" + PREFIX_FULL_BACKUP_FILE + "|" + PREFIX_INC_BACKUP_FILE + ")(\\d{8}-\\d{4}).*";
 
-    public final static String DATE_FORMAT_PICTURE = "yyyyMMdd-HHmm";
+    public static final String DATE_FORMAT_PICTURE = "yyyyMMdd-HHmm";
     private final DateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT_PICTURE);
 
 
@@ -136,7 +136,7 @@ public class BackupDirectory {
                 e.printStackTrace();
             }
         }
-        return (descriptor);
+        return descriptor;
     }
 
 }

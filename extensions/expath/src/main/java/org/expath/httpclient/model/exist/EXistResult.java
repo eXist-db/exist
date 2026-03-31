@@ -21,15 +21,6 @@
  */
 package org.expath.httpclient.model.exist;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-import javax.xml.transform.Source;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.memtree.DocumentImpl;
@@ -50,6 +41,15 @@ import org.expath.httpclient.HttpClientException;
 import org.expath.httpclient.HttpResponse;
 import org.expath.httpclient.model.Result;
 import org.xml.sax.SAXException;
+
+import javax.xml.transform.Source;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 
 import static org.expath.httpclient.HttpClientError.HC001;
 
@@ -80,7 +80,7 @@ public class EXistResult implements Result {
         //TODO(AR) - replace with a deferred StringReader when eXist has this soon.
         final StringBuilder builder = new StringBuilder();
         try {
-            final char cbuf[] = new char[4096];
+            final char[] cbuf = new char[4096];
             int read = -1;
             while((read = reader.read(cbuf)) > -1) {
                 builder.append(cbuf, 0, read);

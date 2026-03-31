@@ -60,9 +60,9 @@ public class ExistXmldbEmbeddedServer extends ExternalResource {
     private final boolean asGuest;
     private final ExistEmbeddedServer existEmbeddedServer;
 
-    private Database database = null;
-    private Collection root = null;
-    private EXistXQueryService xpathQueryService = null;
+    private Database database;
+    private Collection root;
+    private EXistXQueryService xpathQueryService;
 
     public ExistXmldbEmbeddedServer() {
         this(false, false);

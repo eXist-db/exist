@@ -48,23 +48,23 @@ import java.util.*;
  */
 public class PersistentLogin {
 
-    private final static PersistentLogin instance = new PersistentLogin();
+    private static final PersistentLogin instance = new PersistentLogin();
 
     public static PersistentLogin getInstance() {
         return instance;
     }
 
-    private final static Logger LOG = LogManager.getLogger(PersistentLogin.class);
+    private static final Logger LOG = LogManager.getLogger(PersistentLogin.class);
 
-    public final static int DEFAULT_SERIES_LENGTH = 16;
+    public static final int DEFAULT_SERIES_LENGTH = 16;
 
-    public final static int DEFAULT_TOKEN_LENGTH = 16;
+    public static final int DEFAULT_TOKEN_LENGTH = 16;
 
-    public final static int INVALIDATION_TIMEOUT = 20000;
+    public static final int INVALIDATION_TIMEOUT = 20000;
 
-    private Map<String, LoginDetails> seriesMap = Collections.synchronizedMap(new HashMap<>());
+    private final Map<String, LoginDetails> seriesMap = Collections.synchronizedMap(new HashMap<>());
 
-    private SecureRandom random;
+    private final SecureRandom random;
 
     public PersistentLogin() {
         random = new SecureRandom();
@@ -162,7 +162,7 @@ public class PersistentLogin {
         private DurationValue timeToLive;
 
         // disable sequential token checking by default
-        private boolean seqBehavior = false;
+        private boolean seqBehavior;
 
         private Map<String, Long> invalidatedTokens = new HashMap<>();
 
@@ -202,8 +202,9 @@ public class PersistentLogin {
             }
             // check map of invalidating tokens
             Long timeout = invalidatedTokens.get(token);
-            if (timeout == null)
+            if (timeout == null) {
                 return false;
+            }
             // timed out: remove
             if (System.currentTimeMillis() > timeout) {
                 invalidatedTokens.remove(token);

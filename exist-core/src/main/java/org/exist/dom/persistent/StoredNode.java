@@ -52,9 +52,9 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
     public static final int LENGTH_SIGNATURE_LENGTH = 1; //sizeof byte
     public static final long UNKNOWN_NODE_IMPL_ADDRESS = -1;
 
-    protected NodeId nodeId = null;
+    protected NodeId nodeId;
 
-    protected DocumentImpl ownerDocument = null;
+    protected DocumentImpl ownerDocument;
 
     private long internalAddress = UNKNOWN_NODE_IMPL_ADDRESS;
 
@@ -545,8 +545,8 @@ public abstract class StoredNode<T extends StoredNode> extends NodeImpl<T> imple
     public boolean isSameNode(final Node other) {
         // This function is used by Saxon in some circumstances, and is required for proper Saxon operation.
         if(other instanceof IStoredNode<?> node) {
-            return (this.nodeId.equals(node.getNodeId()) &&
-                    this.ownerDocument.getDocId() == ((IStoredNode<? extends IStoredNode>) other).getOwnerDocument().getDocId());
+            return this.nodeId.equals(node.getNodeId()) &&
+                    this.ownerDocument.getDocId() == ((IStoredNode<? extends IStoredNode>) other).getOwnerDocument().getDocId();
         } else {
             return false;
         }

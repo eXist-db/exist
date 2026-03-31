@@ -22,9 +22,9 @@
 package org.exist.xquery.value;
 
 import org.apache.commons.io.output.CloseShieldOutputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 
@@ -43,10 +43,10 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class BinaryValueFromBinaryString extends BinaryValue {
 
-    private final static Logger LOG = LogManager.getLogger(BinaryValueFromBinaryString.class);
+    private static final Logger LOG = LogManager.getLogger(BinaryValueFromBinaryString.class);
 
     private final String value;
-    private boolean closed = false;
+    private boolean closed;
 
     public BinaryValueFromBinaryString(BinaryValueType binaryValueType, String value) throws XPathException {
         this(null, binaryValueType, value);
@@ -101,7 +101,7 @@ public class BinaryValueFromBinaryString extends BinaryValue {
         final FilterOutputStream fos = getBinaryValueType().getDecoder(safeOutputStream);
 
         //write with the decoder
-        final byte data[] = value.getBytes();
+        final byte[] data = value.getBytes();
         fos.write(data);
 
         //we do have to close the decoders output stream though
@@ -117,7 +117,7 @@ public class BinaryValueFromBinaryString extends BinaryValue {
     @Override
     public void streamTo(OutputStream os) throws IOException {
         //write
-        final byte data[] = value.getBytes(); //TODO consider a more efficient approach for writing large strings
+        final byte[] data = value.getBytes(); //TODO consider a more efficient approach for writing large strings
         os.write(data);
     }
 

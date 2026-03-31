@@ -33,13 +33,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.QNameValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
+import org.exist.xquery.value.*;
 
 /**
  * @author wolf
@@ -47,7 +41,7 @@ import org.exist.xquery.value.ValueSequence;
  */
 public class FunQName extends BasicFunction {
 
-	public final static FunctionSignature signature =
+	public static final FunctionSignature signature =
 		new FunctionSignature(
 			new QName("QName", Function.BUILTIN_FUNCTION_NS),
 			"""
@@ -113,21 +107,25 @@ public class FunQName extends BasicFunction {
         }
 		
 		if (namespace != null) {
-			if (namespace.equalsIgnoreCase(Namespaces.XMLNS_NS))
-				{if (prefix == null)
-					throw new XPathException(this, ErrorCodes.XQDY0044, "'"+Namespaces.XMLNS_NS+"' can't be use with no prefix");
-				else if (!"xmlns".equalsIgnoreCase(prefix))
-					throw new XPathException(this, ErrorCodes.XQDY0044, "'"+Namespaces.XMLNS_NS+"' can't be use with prefix '"+prefix+"'");}
+			if (Namespaces.XMLNS_NS.equalsIgnoreCase(namespace))
+				{
+                    if (prefix == null) {
+                        throw new XPathException(this, ErrorCodes.XQDY0044, "'" + Namespaces.XMLNS_NS + "' can't be use with no prefix");
+                    } else if (!"xmlns".equalsIgnoreCase(prefix)) {
+                        throw new XPathException(this, ErrorCodes.XQDY0044, "'" + Namespaces.XMLNS_NS + "' can't be use with prefix '" + prefix + "'");
+                    }}
 			
-			if (namespace.equalsIgnoreCase(Namespaces.XML_NS))
-				{if (prefix == null)
-					throw new XPathException(this, ErrorCodes.XQDY0044, "'"+Namespaces.XML_NS+"' can't be use with no prefix");
-				else if (!"xml".equalsIgnoreCase(prefix))
-					throw new XPathException(this, ErrorCodes.XQDY0044, "'"+Namespaces.XML_NS+"' can't be use with prefix '"+prefix+"'");}
+			if (Namespaces.XML_NS.equalsIgnoreCase(namespace))
+				{
+                    if (prefix == null) {
+                        throw new XPathException(this, ErrorCodes.XQDY0044, "'" + Namespaces.XML_NS + "' can't be use with no prefix");
+                    } else if (!"xml".equalsIgnoreCase(prefix)) {
+                        throw new XPathException(this, ErrorCodes.XQDY0044, "'" + Namespaces.XML_NS + "' can't be use with prefix '" + prefix + "'");
+                    }}
 		}
 		
 		if (prefix != null) {
-			if ("xml".equalsIgnoreCase(prefix) && !namespace.equalsIgnoreCase(Namespaces.XML_NS))
+			if ("xml".equalsIgnoreCase(prefix) && !Namespaces.XML_NS.equalsIgnoreCase(namespace))
 				{throw new XPathException(this, ErrorCodes.XQDY0044, "prefix 'xml' can be used only with '"+Namespaces.XML_NS+"'");}
 			
 		}

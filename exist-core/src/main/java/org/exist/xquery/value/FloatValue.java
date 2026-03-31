@@ -46,10 +46,10 @@ public class FloatValue extends NumericValue {
     // m × 2^e, where m is an integer whose absolute value is less than 2^24, 
     // and e is an integer between -149 and 104, inclusive.
     // In addition also -INF, +INF and NaN.
-    public final static FloatValue NaN = new FloatValue(Float.NaN);
-    public final static FloatValue POSITIVE_INFINITY = new FloatValue(Float.POSITIVE_INFINITY);
-    public final static FloatValue NEGATIVE_INFINITY = new FloatValue(Float.NEGATIVE_INFINITY);
-    public final static FloatValue ZERO = new FloatValue(0.0E0f);
+    public static final FloatValue NaN = new FloatValue(Float.NaN);
+    public static final FloatValue POSITIVE_INFINITY = new FloatValue(Float.POSITIVE_INFINITY);
+    public static final FloatValue NEGATIVE_INFINITY = new FloatValue(Float.NEGATIVE_INFINITY);
+    public static final FloatValue ZERO = new FloatValue(0.0E0f);
 
     final float value;
 
@@ -137,11 +137,11 @@ public class FloatValue extends NumericValue {
     }
 
     public boolean isNegative() {
-        return (Float.compare(value, 0f) < Constants.EQUAL);
+        return Float.compare(value, 0f) < Constants.EQUAL;
     }
 
     public boolean isPositive() {
-        return (Float.compare(value, 0f) > Constants.EQUAL);
+        return Float.compare(value, 0f) > Constants.EQUAL;
     }
 
     @Override
@@ -224,7 +224,7 @@ public class FloatValue extends NumericValue {
                             + Type.getTypeName(requiredType));
                 }
             case Type.BOOLEAN:
-                return (value == 0.0f || Float.isNaN(value))
+                return value == 0.0f || Float.isNaN(value)
                         ? BooleanValue.FALSE
                         : BooleanValue.TRUE;
             case Type.UNTYPED_ATOMIC:

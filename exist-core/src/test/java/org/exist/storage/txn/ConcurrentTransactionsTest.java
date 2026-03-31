@@ -54,16 +54,14 @@ import java.net.URISyntaxException;
 import java.util.Optional;
 import java.util.concurrent.*;
 
+import static org.exist.samples.Samples.SAMPLES;
+import static org.exist.test.TestConstants.TEST_COLLECTION_URI;
 import static org.exist.test.TransactionTestDSL.ExecutionListener;
 import static org.exist.test.TransactionTestDSL.NULL_SCHEDULE_LISTENER;
 import static org.exist.test.TransactionTestDSL.STD_OUT_SCHEDULE_LISTENER;
 import static org.exist.test.TransactionTestDSL.TransactionOperation.*;
 import static org.exist.test.TransactionTestDSL.TransactionScheduleBuilder.biSchedule;
-import static org.exist.test.TestConstants.TEST_COLLECTION_URI;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.exist.samples.Samples.SAMPLES;
+import static org.junit.Assert.*;
 
 /**
  * Tests for Transactional Operations on the database.

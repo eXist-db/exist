@@ -21,10 +21,6 @@
  */
 package org.exist.xquery.functions.system;
 
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
@@ -42,16 +38,21 @@ import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+
 public class GetScheduledJobs extends BasicFunction {
 
-    protected final static Logger logger = LogManager.getLogger(GetScheduledJobs.class);
+    protected static final Logger logger = LogManager.getLogger(GetScheduledJobs.class);
 
     private static final String TODAY_TIMESTAMP				= "HH:mm:ss.SSS Z";
 	private static final String DATE_TIME_FORMAT 			= "yyyy-MM-dd HH:mm:ss.SSS Z";
-	final static String NAMESPACE_URI                       = SystemModule.NAMESPACE_URI;
-    final static String PREFIX                              = SystemModule.PREFIX;
+	static final String NAMESPACE_URI                       = SystemModule.NAMESPACE_URI;
+    static final String PREFIX                              = SystemModule.PREFIX;
 
-    public final static FunctionSignature signature =
+    public static final FunctionSignature signature =
         new FunctionSignature(
                 new QName( "get-scheduled-jobs", SystemModule.NAMESPACE_URI, SystemModule.PREFIX ),
                 "Get a list of scheduled jobs (dba role only).",
@@ -106,7 +107,7 @@ public class GetScheduledJobs extends BasicFunction {
             builder.endElement();
             builder.endDocument();
 
-            return ((NodeValue) builder.getDocument().getDocumentElement());
+            return (NodeValue) builder.getDocument().getDocumentElement();
         } finally {
             context.popDocumentContext();
         }
@@ -137,7 +138,7 @@ public class GetScheduledJobs extends BasicFunction {
         builder.addAttribute(new QName("finalFireTime", null, null), dateText(finalFireTime));
         builder.addAttribute(new QName("triggerExpression", null, null), triggerExpression);
         builder.addAttribute(new QName("triggerState", null, null), triggerState.name());
-        builder.addAttribute(new QName("running", null, null), (isRunning) ? "RUNNING" : "SCHEDULED");
+        builder.addAttribute(new QName("running", null, null), isRunning ? "RUNNING" : "SCHEDULED");
         builder.endElement();
         logger.trace("Exiting addRow");
     }
@@ -157,7 +158,7 @@ public class GetScheduledJobs extends BasicFunction {
     		returnValue = format.format(aDate);
     	}
 		
-    	return( returnValue );
+    	return returnValue;
     }
 
     private boolean isToday( Date aDate )

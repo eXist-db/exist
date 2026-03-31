@@ -78,14 +78,14 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
     private static final String JETTY_PROPETIES_FILENAME = "jetty.properties";
     private static final Logger logger = LogManager.getLogger(JettyStart.class);
 
-    public final static String SIGNAL_STARTING = "jetty starting";
-    public final static String SIGNAL_STARTED = "jetty started";
-    public final static String SIGNAL_ERROR = "error";
+    public static final String SIGNAL_STARTING = "jetty starting";
+    public static final String SIGNAL_STARTED = "jetty started";
+    public static final String SIGNAL_ERROR = "error";
 
-    private final static int STATUS_STARTING = 0;
-    private final static int STATUS_STARTED = 1;
-    private final static int STATUS_STOPPING = 2;
-    private final static int STATUS_STOPPED = 3;
+    private static final int STATUS_STARTING = 0;
+    private static final int STATUS_STARTED = 1;
+    private static final int STATUS_STOPPING = 2;
+    private static final int STATUS_STOPPED = 3;
 
     /* general arguments */
     private static final Argument<String> jettyConfigFilePath = stringArgument()
@@ -416,8 +416,8 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
     private List<URI> getSeverURIs(final Server server) {
         final ContextHandler context = server.getChildHandlerByClass(ContextHandler.class);
         return Arrays.stream(server.getConnectors())
-                .filter(connector -> connector instanceof NetworkConnector)
-                .map(connector -> (NetworkConnector)connector)
+                .filter(NetworkConnector.class::isInstance)
+                .map(NetworkConnector.class::cast)
                 .map(networkConnector -> getURI(networkConnector, context))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
@@ -535,9 +535,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
                 String line = null;
                 while ((line = reader.readLine()) != null) {
                     final String tl = line.trim();
-                    if (tl.isEmpty() || tl.charAt(0) == '#') {
-                        continue;
-                    } else {
+                    if (!(tl.isEmpty() || tl.charAt(0) == '#')) {
                         final Path configFile = enabledJettyConfigs.getParent().resolve(tl);
                         if (Files.notExists(configFile)) {
                             throw new IOException("Cannot find enabled config: " + configFile);

@@ -53,11 +53,11 @@ import static org.junit.Assert.assertEquals;
 
 public class BackupRestoreSecurityPrincipalsTest {
 
-    private final static String BACKUP_FILE_PREFIX = "exist.BackupRestoreSecurityPrincipalsTest";
-    private final static String BACKUP_FILE_SUFFIX = ".backup.zip";
-    private final static String FRANK_USER = "frank";
-    private final static String JOE_USER = "joe";
-    private final static String JACK_USER = "jack";
+    private static final String BACKUP_FILE_PREFIX = "exist.BackupRestoreSecurityPrincipalsTest";
+    private static final String BACKUP_FILE_SUFFIX = ".backup.zip";
+    private static final String FRANK_USER = "frank";
+    private static final String JOE_USER = "joe";
+    private static final String JACK_USER = "jack";
 
     @ClassRule
     public static ExistXmldbEmbeddedServer server = new ExistXmldbEmbeddedServer(false, true, true);

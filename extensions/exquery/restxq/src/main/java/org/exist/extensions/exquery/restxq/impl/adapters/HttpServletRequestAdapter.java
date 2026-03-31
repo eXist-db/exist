@@ -26,12 +26,6 @@
  */
 package org.exist.extensions.exquery.restxq.impl.adapters;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import static java.nio.charset.StandardCharsets.UTF_8;
-import java.util.*;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import org.exist.util.io.CachingFilterInputStream;
@@ -41,6 +35,14 @@ import org.exist.util.io.FilterInputStreamCacheFactory.FilterInputStreamCacheCon
 import org.exquery.http.HttpMethod;
 import org.exquery.http.HttpRequest;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.util.*;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 /**
  *
  * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
@@ -49,8 +51,8 @@ public class HttpServletRequestAdapter implements HttpRequest {
 
     private final HttpServletRequest request;
     private final FilterInputStreamCacheConfiguration cacheConfiguration;
-    private InputStream is = null;
-    private Map<String, List<String>> formFields = null;
+    private InputStream is;
+    private Map<String, List<String>> formFields;
 
     public HttpServletRequestAdapter(final HttpServletRequest request, final FilterInputStreamCacheConfiguration cacheConfiguration) {
         this.request = request;

@@ -21,25 +21,21 @@
  */
 package org.exist.security;
 
-import java.io.IOException;
-import java.util.Random;
-
-import static org.easymock.EasyMock.expect;
-
 import com.googlecode.junittoolbox.ParallelRunner;
 import org.easymock.EasyMock;
-import static org.easymock.EasyMock.replay;
-import static org.easymock.EasyMock.verify;
 import org.exist.security.internal.RealmImpl;
 import org.exist.security.internal.SecurityManagerImpl;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
 import org.exist.util.SyntaxException;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.io.IOException;
+import java.util.Random;
+
+import static org.easymock.EasyMock.*;
+import static org.junit.Assert.*;
 
 /**
  *
@@ -55,7 +51,7 @@ public class UnixStylePermissionTest {
         final SecurityManager mockSecurityManager = EasyMock.createMock(SecurityManager.class);
 
         final int ownerId = new Random().nextInt();
-        final int mode = 0700;
+        final int mode = 448;
         final int ownerGroupId = new Random().nextInt();
 
         final VariableByteOutputStream mockOstream = EasyMock.createMock(VariableByteOutputStream.class);
@@ -89,7 +85,7 @@ public class UnixStylePermissionTest {
         final SecurityManager mockSecurityManager = EasyMock.createMock(SecurityManager.class);
 
         final int ownerId = new Random().nextInt(SecurityManagerImpl.MAX_USER_ID);
-        final int mode = 0700;
+        final int mode = 448;
         final int ownerGroupId = new Random().nextInt(SecurityManagerImpl.MAX_GROUP_ID);
         final boolean hasDbaRole = false;
 
@@ -119,7 +115,7 @@ public class UnixStylePermissionTest {
         final SecurityManager mockSecurityManager = EasyMock.createMock(SecurityManager.class);
 
         final int ownerId = new Random().nextInt(SecurityManagerImpl.MAX_USER_ID);
-        final int mode = 0077;
+        final int mode = 63;
         final int ownerGroupId = new Random(SecurityManagerImpl.MAX_GROUP_ID).nextInt();
         final boolean hasDbaRole = false;
 
@@ -149,7 +145,7 @@ public class UnixStylePermissionTest {
         final SecurityManager mockSecurityManager = EasyMock.createMock(SecurityManager.class);
 
         final int ownerId = new Random().nextInt(SecurityManagerImpl.MAX_USER_ID);
-        final int mode = 0077;
+        final int mode = 63;
         final int ownerGroupId = new Random().nextInt(SecurityManagerImpl.MAX_GROUP_ID);
         final boolean hasDbaRole = false;
 
@@ -181,7 +177,7 @@ public class UnixStylePermissionTest {
         final SecurityManager mockSecurityManager = EasyMock.createMock(SecurityManager.class);
 
         final int ownerId = new Random().nextInt(SecurityManagerImpl.MAX_USER_ID);
-        final int mode = 0007;
+        final int mode = 7;
         final int ownerGroupId = new Random().nextInt(SecurityManagerImpl.MAX_GROUP_ID);
         final boolean hasDbaRole = false;
 
@@ -215,7 +211,7 @@ public class UnixStylePermissionTest {
         final SecurityManager mockSecurityManager = EasyMock.createMock(SecurityManager.class);
 
         final int ownerId = new Random().nextInt(SecurityManagerImpl.MAX_USER_ID);
-        final int mode = 0077;
+        final int mode = 63;
         final int ownerGroupId = new Random().nextInt(SecurityManagerImpl.MAX_GROUP_ID);
         final boolean hasDbaRole = false;
 
@@ -242,7 +238,7 @@ public class UnixStylePermissionTest {
         final SecurityManager mockSecurityManager = EasyMock.createMock(SecurityManager.class);
 
         final int ownerId = new Random(SecurityManagerImpl.MAX_USER_ID).nextInt();
-        final int mode = 0007;
+        final int mode = 7;
         final int ownerGroupId = new Random().nextInt(SecurityManagerImpl.MAX_GROUP_ID);
         final boolean hasDbaRole = false;
 
@@ -268,7 +264,7 @@ public class UnixStylePermissionTest {
         final SecurityManager mockSecurityManager = EasyMock.createMock(SecurityManager.class);
 
         final int ownerId = RealmImpl.SYSTEM_ACCOUNT_ID;
-        final int mode = 0001;
+        final int mode = 1;
         final int ownerGroupId = RealmImpl.DBA_GROUP_ID;
         final boolean hasDbaRole = false;
 
@@ -298,67 +294,67 @@ public class UnixStylePermissionTest {
         final int ownerId = new Random().nextInt(SecurityManagerImpl.MAX_USER_ID);
         final int ownerGroupId = new Random().nextInt(SecurityManagerImpl.MAX_GROUP_ID);
 
-        Permission permission = new UnixStylePermission(mockSecurityManager, ownerId, ownerGroupId, 07777);
+        Permission permission = new UnixStylePermission(mockSecurityManager, ownerId, ownerGroupId, 4095);
         assertEquals("rwsrwsrwt", permission.toString());
 
-        permission = new UnixStylePermission(mockSecurityManager, ownerId, ownerGroupId, 04777);
+        permission = new UnixStylePermission(mockSecurityManager, ownerId, ownerGroupId, 2559);
         assertEquals("rwsrwxrwx", permission.toString());
 
-        permission = new UnixStylePermission(mockSecurityManager, ownerId, ownerGroupId, 04666);
+        permission = new UnixStylePermission(mockSecurityManager, ownerId, ownerGroupId, 2486);
         assertEquals("rwSrw-rw-", permission.toString());
         
-        permission = new UnixStylePermission(mockSecurityManager, ownerId, ownerGroupId, 02777);
+        permission = new UnixStylePermission(mockSecurityManager, ownerId, ownerGroupId, 1535);
         assertEquals("rwxrwsrwx", permission.toString());
 
-        permission = new UnixStylePermission(mockSecurityManager, ownerId, ownerGroupId, 02666);
+        permission = new UnixStylePermission(mockSecurityManager, ownerId, ownerGroupId, 1462);
         assertEquals("rw-rwSrw-", permission.toString());
         
-        permission = new UnixStylePermission(mockSecurityManager, ownerId, ownerGroupId, 01777);
+        permission = new UnixStylePermission(mockSecurityManager, ownerId, ownerGroupId, 1023);
         assertEquals("rwxrwxrwt", permission.toString());
 
-        permission = new UnixStylePermission(mockSecurityManager, ownerId, ownerGroupId, 07111);
+        permission = new UnixStylePermission(mockSecurityManager, ownerId, ownerGroupId, 3657);
         assertEquals("--s--s--t", permission.toString());
         
-        permission = new UnixStylePermission(mockSecurityManager, ownerId, ownerGroupId, 07000);
+        permission = new UnixStylePermission(mockSecurityManager, ownerId, ownerGroupId, 3584);
         assertEquals("--S--S--T", permission.toString());
 
-        permission = new UnixStylePermission(mockSecurityManager, ownerId, ownerGroupId, 04100);
+        permission = new UnixStylePermission(mockSecurityManager, ownerId, ownerGroupId, 2112);
         assertEquals("--s------", permission.toString());
         
-        permission = new UnixStylePermission(mockSecurityManager, ownerId, ownerGroupId, 04000);
+        permission = new UnixStylePermission(mockSecurityManager, ownerId, ownerGroupId, 2048);
         assertEquals("--S------", permission.toString());
 
-        permission = new UnixStylePermission(mockSecurityManager, ownerId, ownerGroupId, 02010);
+        permission = new UnixStylePermission(mockSecurityManager, ownerId, ownerGroupId, 1032);
         assertEquals("-----s---", permission.toString());
         
-        permission = new UnixStylePermission(mockSecurityManager, ownerId, ownerGroupId, 02000);
+        permission = new UnixStylePermission(mockSecurityManager, ownerId, ownerGroupId, 1024);
         assertEquals("-----S---", permission.toString());
 
-        permission = new UnixStylePermission(mockSecurityManager, ownerId, ownerGroupId, 01001);
+        permission = new UnixStylePermission(mockSecurityManager, ownerId, ownerGroupId, 513);
         assertEquals("--------t", permission.toString());
 
-        permission = new UnixStylePermission(mockSecurityManager, ownerId, ownerGroupId, 01000);
+        permission = new UnixStylePermission(mockSecurityManager, ownerId, ownerGroupId, 512);
         assertEquals("--------T", permission.toString());
         
-        permission = new UnixStylePermission(mockSecurityManager, ownerId, ownerGroupId, 0777);
+        permission = new UnixStylePermission(mockSecurityManager, ownerId, ownerGroupId, 511);
         assertEquals("rwxrwxrwx", permission.toString());
 
-        permission = new UnixStylePermission(mockSecurityManager, ownerId, ownerGroupId, 0770);
+        permission = new UnixStylePermission(mockSecurityManager, ownerId, ownerGroupId, 504);
         assertEquals("rwxrwx---", permission.toString());
 
-        permission = new UnixStylePermission(mockSecurityManager, ownerId, ownerGroupId, 0700);
+        permission = new UnixStylePermission(mockSecurityManager, ownerId, ownerGroupId, 448);
         assertEquals("rwx------", permission.toString());
 
-        permission = new UnixStylePermission(mockSecurityManager, ownerId, ownerGroupId, 0070);
+        permission = new UnixStylePermission(mockSecurityManager, ownerId, ownerGroupId, 56);
         assertEquals("---rwx---", permission.toString());
 
-        permission = new UnixStylePermission(mockSecurityManager, ownerId, ownerGroupId, 0007);
+        permission = new UnixStylePermission(mockSecurityManager, ownerId, ownerGroupId, 7);
         assertEquals("------rwx", permission.toString());
 
-        permission = new UnixStylePermission(mockSecurityManager, ownerId, ownerGroupId, 0744);
+        permission = new UnixStylePermission(mockSecurityManager, ownerId, ownerGroupId, 484);
         assertEquals("rwxr--r--", permission.toString());
 
-        permission = new UnixStylePermission(mockSecurityManager, ownerId, ownerGroupId, 0740);
+        permission = new UnixStylePermission(mockSecurityManager, ownerId, ownerGroupId, 480);
         assertEquals("rwxr-----", permission.toString());
     }
 
@@ -370,50 +366,50 @@ public class UnixStylePermissionTest {
 
     @Test
     public void testSafeSetExecutable() {
-        assertTestSafeExecutable(0100, 0100);
-        assertTestSafeExecutable(0110, 0110);
-        assertTestSafeExecutable(0111, 0111);
-        assertTestSafeExecutable(0200, 0300);
-        assertTestSafeExecutable(0220, 0330);
-        assertTestSafeExecutable(0222, 0333);
-        assertTestSafeExecutable(0300, 0300);
-        assertTestSafeExecutable(0330, 0330);
-        assertTestSafeExecutable(0333, 0333);
-        assertTestSafeExecutable(0444, 0555);
-        assertTestSafeExecutable(0440, 0550);
-        assertTestSafeExecutable(0400, 0500);
-        assertTestSafeExecutable(0555, 0555);
-        assertTestSafeExecutable(0550, 0550);
-        assertTestSafeExecutable(0500, 0500);
-        assertTestSafeExecutable(0600, 0700);
-        assertTestSafeExecutable(0620, 0730);
-        assertTestSafeExecutable(0622, 0733);
-        assertTestSafeExecutable(0621, 0731);
-        assertTestSafeExecutable(0640, 0750);
-        assertTestSafeExecutable(0642, 0753);
-        assertTestSafeExecutable(0644, 0755);
-        assertTestSafeExecutable(0655, 0755);
-        assertTestSafeExecutable(0755, 0755);
-        assertTestSafeExecutable(0777, 0777);
-        assertTestSafeExecutable(0770, 0770);
-        assertTestSafeExecutable(0700, 0700);
-        assertTestSafeExecutable(0070, 0170);
-        assertTestSafeExecutable(0007, 0107);
+        assertTestSafeExecutable(64, 64);
+        assertTestSafeExecutable(72, 72);
+        assertTestSafeExecutable(73, 73);
+        assertTestSafeExecutable(128, 192);
+        assertTestSafeExecutable(144, 216);
+        assertTestSafeExecutable(146, 219);
+        assertTestSafeExecutable(192, 192);
+        assertTestSafeExecutable(216, 216);
+        assertTestSafeExecutable(219, 219);
+        assertTestSafeExecutable(292, 365);
+        assertTestSafeExecutable(288, 360);
+        assertTestSafeExecutable(256, 320);
+        assertTestSafeExecutable(365, 365);
+        assertTestSafeExecutable(360, 360);
+        assertTestSafeExecutable(320, 320);
+        assertTestSafeExecutable(384, 448);
+        assertTestSafeExecutable(400, 472);
+        assertTestSafeExecutable(402, 475);
+        assertTestSafeExecutable(401, 473);
+        assertTestSafeExecutable(416, 488);
+        assertTestSafeExecutable(418, 491);
+        assertTestSafeExecutable(420, 493);
+        assertTestSafeExecutable(429, 493);
+        assertTestSafeExecutable(493, 493);
+        assertTestSafeExecutable(511, 511);
+        assertTestSafeExecutable(504, 504);
+        assertTestSafeExecutable(448, 448);
+        assertTestSafeExecutable(56, 120);
+        assertTestSafeExecutable(7, 71);
 
-        assertTestSafeExecutable(07777,07777);
-        assertTestSafeExecutable(04777, 04777);
-        assertTestSafeExecutable(02777, 02777);
-        assertTestSafeExecutable(01777, 01777);
+        assertTestSafeExecutable(4095,4095);
+        assertTestSafeExecutable(2559, 2559);
+        assertTestSafeExecutable(1535, 1535);
+        assertTestSafeExecutable(1023, 1023);
 
-        assertTestSafeExecutable(04666, 04777);
-        assertTestSafeExecutable(02666, 02777);
+        assertTestSafeExecutable(2486, 2559);
+        assertTestSafeExecutable(1462, 1535);
 
-        assertTestSafeExecutable(07111, 07111);
-        assertTestSafeExecutable(07000, 07100);
-        assertTestSafeExecutable(04000, 04100);
+        assertTestSafeExecutable(3657, 3657);
+        assertTestSafeExecutable(3584, 3648);
+        assertTestSafeExecutable(2048, 2112);
 
-        assertTestSafeExecutable(04100, 04100);
-        assertTestSafeExecutable(02010, 02110);
+        assertTestSafeExecutable(2112, 2112);
+        assertTestSafeExecutable(1032, 1096);
     }
 
     @Test
@@ -425,17 +421,17 @@ public class UnixStylePermissionTest {
 
         Permission permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 0);
         permission.setMode("user=+read,+write,-execute");
-        assertEquals(06, permission.getOwnerMode());
+        assertEquals(6, permission.getOwnerMode());
 
         permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 0);
         permission.setMode("user=+execute,group=+execute,other=+execute");
-        assertEquals(0111, permission.getMode());
+        assertEquals(73, permission.getMode());
 
-        permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 0666);
+        permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 438);
         permission.setMode("user=+execute,group=+execute,other=+execute");
-        assertEquals(0777, permission.getMode());
+        assertEquals(511, permission.getMode());
 
-        permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 0777);
+        permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 511);
         permission.setMode("user=-read,-write,-execute,group=-read,-write,-execute,other=-read,-write,-execute");
         assertEquals(0, permission.getMode());
     }
@@ -446,17 +442,17 @@ public class UnixStylePermissionTest {
         final int ownerId = new Random().nextInt(SecurityManagerImpl.MAX_USER_ID);
         final int ownerGroupId = new Random().nextInt(SecurityManagerImpl.MAX_GROUP_ID);
         
-        Permission permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 0555);
+        Permission permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 365);
         assertFalse(permission.isSetUid());
         permission.setSetUid(true);
         assertTrue(permission.isSetUid());
-        assertEquals(04555, permission.getMode());
+        assertEquals(2413, permission.getMode());
         
-        permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 04555);
+        permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 2413);
         assertTrue(permission.isSetUid());
         permission.setSetUid(false);
         assertFalse(permission.isSetUid());
-        assertEquals(0555, permission.getMode());
+        assertEquals(365, permission.getMode());
     }
     
     @Test
@@ -465,17 +461,17 @@ public class UnixStylePermissionTest {
         final int ownerId = new Random().nextInt(SecurityManagerImpl.MAX_USER_ID);
         final int ownerGroupId = new Random().nextInt(SecurityManagerImpl.MAX_GROUP_ID);
         
-        Permission permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 0555);
+        Permission permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 365);
         assertFalse(permission.isSetGid());
         permission.setSetGid(true);
         assertTrue(permission.isSetGid());
-        assertEquals(02555, permission.getMode());
+        assertEquals(1389, permission.getMode());
         
-        permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 02555);
+        permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 1389);
         assertTrue(permission.isSetGid());
         permission.setSetGid(false);
         assertFalse(permission.isSetGid());
-        assertEquals(0555, permission.getMode());
+        assertEquals(365, permission.getMode());
     }
     
     @Test
@@ -484,17 +480,17 @@ public class UnixStylePermissionTest {
         final int ownerId = new Random().nextInt(SecurityManagerImpl.MAX_USER_ID);
         final int ownerGroupId = new Random().nextInt(SecurityManagerImpl.MAX_GROUP_ID);
         
-        Permission permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 0555);
+        Permission permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 365);
         assertFalse(permission.isSticky());
         permission.setSticky(true);
         assertTrue(permission.isSticky());
-        assertEquals(01555, permission.getMode());
+        assertEquals(877, permission.getMode());
         
-        permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 01555);
+        permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 877);
         assertTrue(permission.isSticky());
         permission.setSticky(false);
         assertFalse(permission.isSticky());
-        assertEquals(0555, permission.getMode());
+        assertEquals(365, permission.getMode());
     }
     
     @Test
@@ -506,61 +502,61 @@ public class UnixStylePermissionTest {
 
         Permission permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 0);
         permission.setMode("u+rw-x");
-        assertEquals(06, permission.getOwnerMode());
+        assertEquals(6, permission.getOwnerMode());
         
         permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 0);
         permission.setMode("+rw-x");
-        assertEquals(0666, permission.getMode());
+        assertEquals(438, permission.getMode());
 
         permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 0);
         permission.setMode("u+x,g+x,o+x");
-        assertEquals(0111, permission.getMode());
+        assertEquals(73, permission.getMode());
 
-        permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 0666);
+        permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 438);
         permission.setMode("u+x,g+x,o+x");
-        assertEquals(0777, permission.getMode());
+        assertEquals(511, permission.getMode());
 
-        permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 0777);
+        permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 511);
         permission.setMode("u-rwx,g-rwx,o-rwx");
         assertEquals(0, permission.getMode());
         
-        permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 0555);
+        permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 365);
         permission.setMode("u+w");
-        assertEquals(0755, permission.getMode());
+        assertEquals(493, permission.getMode());
         
-        permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 0555);
+        permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 365);
         permission.setMode("u+w,g+w");
-        assertEquals(0775, permission.getMode());
+        assertEquals(509, permission.getMode());
         
         //setUid
-        permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 0555);
+        permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 365);
         permission.setMode("u+s");
-        assertEquals(04555, permission.getMode());
+        assertEquals(2413, permission.getMode());
         
         //setGid
-        permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 0555);
+        permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 365);
         permission.setMode("g+s");
-        assertEquals(02555, permission.getMode());
+        assertEquals(1389, permission.getMode());
         
         //setUid + setGid
-        permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 0555);
+        permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 365);
         permission.setMode("u+s,g+s");
-        assertEquals(06555, permission.getMode());
+        assertEquals(3437, permission.getMode());
         
         //setUid + setGid (simplified)
-        permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 0555);
+        permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 365);
         permission.setMode("+s");
-        assertEquals(06555, permission.getMode());
+        assertEquals(3437, permission.getMode());
         
         //sticky
-        permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 0555);
+        permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 365);
         permission.setMode("o+t");
-        assertEquals(01555, permission.getMode());
+        assertEquals(877, permission.getMode());
         
         //sticky (simplified)
-        permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 0555);
+        permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 365);
         permission.setMode("+t");
-        assertEquals(01555, permission.getMode());
+        assertEquals(877, permission.getMode());
     }
 
     @Test
@@ -572,55 +568,55 @@ public class UnixStylePermissionTest {
 
         Permission permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 0);
         permission.setMode("rw-------");
-        assertEquals(06, permission.getOwnerMode());
+        assertEquals(6, permission.getOwnerMode());
 
         permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 0);
         permission.setMode("rwxrwxrwx");
-        assertEquals(0777, permission.getMode());
+        assertEquals(511, permission.getMode());
 
-        permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 0666);
+        permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 438);
         permission.setMode("--x--x--x");
-        assertEquals(0111, permission.getMode());
+        assertEquals(73, permission.getMode());
 
-        permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 0777);
+        permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 511);
         permission.setMode("r--r--r--");
-        assertEquals(0444, permission.getMode());
+        assertEquals(292, permission.getMode());
 
-        permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 0777);
+        permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 511);
         permission.setMode("---------");
         assertEquals(0, permission.getMode());
         
         permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 0);
         permission.setMode("rwS------");
-        assertEquals(04600, permission.getMode());
+        assertEquals(2432, permission.getMode());
         
         permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 0);
         permission.setMode("rwx------");
-        assertEquals(0700, permission.getMode());
+        assertEquals(448, permission.getMode());
         
         permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 0);
         permission.setMode("rws------");
-        assertEquals(04700, permission.getMode());
+        assertEquals(2496, permission.getMode());
         
         permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 0);
         permission.setMode("rwxrwS---");
-        assertEquals(02760, permission.getMode());
+        assertEquals(1520, permission.getMode());
         
         permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 0);
         permission.setMode("rwxrwx---");
-        assertEquals(0770, permission.getMode());
+        assertEquals(504, permission.getMode());
         
         permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 0);
         permission.setMode("rwxrws---");
-        assertEquals(02770, permission.getMode());
+        assertEquals(1528, permission.getMode());
 
         permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 0);
         permission.setMode("rwxrwxrwt");
-        assertEquals(01777, permission.getMode());
+        assertEquals(1023, permission.getMode());
 
         permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, ownerId, ownerGroupId, 0);
         permission.setMode("rwxrwxrwT");
-        assertEquals(01776, permission.getMode());
+        assertEquals(1022, permission.getMode());
     }
 
     @Test
@@ -629,7 +625,7 @@ public class UnixStylePermissionTest {
 
         final Permission permission = new TestableUnixStylePermissionWithCurrentSubject(mockSecurityManager, 1, 1, 0);
 
-        for(int mode = 0; mode <= 07777; mode++) {
+        for(int mode = 0; mode <= 4095; mode++) {
             permission.setMode(mode);
             assertEquals(mode, permission.getMode());
         }

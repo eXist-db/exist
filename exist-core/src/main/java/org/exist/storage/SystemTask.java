@@ -21,11 +21,11 @@
  */
 package org.exist.storage;
 
-import java.util.Properties;
-
 import org.exist.EXistException;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
+
+import java.util.Properties;
 
 /**
  * Interface to be implemented by tasks used for system

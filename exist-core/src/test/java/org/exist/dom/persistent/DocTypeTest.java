@@ -23,18 +23,8 @@ package org.exist.dom.persistent;
 
 import com.googlecode.junittoolbox.ParallelRunner;
 import org.exist.EXistException;
-import org.exist.collections.triggers.TriggerException;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Optional;
-import java.util.Properties;
-
-import javax.xml.transform.OutputKeys;
-
 import org.exist.collections.Collection;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -52,9 +42,16 @@ import org.w3c.dom.DocumentType;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import javax.xml.transform.OutputKeys;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Optional;
+import java.util.Properties;
+
+import static org.junit.Assert.*;
 
 /**
  * Tests basic DOM methods like getChildNodes(), getAttribute() ...
@@ -65,7 +62,7 @@ import static org.junit.Assert.assertTrue;
 @RunWith(ParallelRunner.class)
 public class DocTypeTest {
 
-	public final static Properties OUTPUT_PROPERTIES = new Properties();
+	public static final Properties OUTPUT_PROPERTIES = new Properties();
     static {
     	OUTPUT_PROPERTIES.setProperty(OutputKeys.INDENT, "no");
     	OUTPUT_PROPERTIES.setProperty(OutputKeys.ENCODING, "UTF-8");
@@ -84,7 +81,7 @@ public class DocTypeTest {
         "   <body>ghi</body>" +
 		"</topic>";
 
-	private static Collection root = null;
+	private static Collection root;
 
     @Test
 	public void docType_usingInputSource() throws EXistException, URISyntaxException, LockException, SAXException, PermissionDeniedException, IOException {

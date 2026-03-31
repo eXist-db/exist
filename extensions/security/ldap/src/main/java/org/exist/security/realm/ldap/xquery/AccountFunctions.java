@@ -21,13 +21,13 @@
  */
 package org.exist.security.realm.ldap.xquery;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-
 import org.exist.dom.QName;
 import org.exist.security.Account;
 import org.exist.security.AuthenticationException;
 import org.exist.security.PermissionDeniedException;
+import org.exist.security.SecurityManager;
+import org.exist.security.realm.Realm;
+import org.exist.security.realm.ldap.LDAPRealm;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -36,16 +36,16 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
-import org.exist.security.SecurityManager;
-import org.exist.security.realm.Realm;
-import org.exist.security.realm.ldap.LDAPRealm;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 /**
  * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  */
 public class AccountFunctions extends BasicFunction {
 
-    public static final FunctionSignature signatures[] = {
+    public static final FunctionSignature[] signatures = {
             new FunctionSignature(
                     new QName("update-account", LDAPModule.NAMESPACE_URI, LDAPModule.PREFIX),
                     "Refreshed the cached LDAP account details from the LDAP directory",
@@ -68,8 +68,9 @@ public class AccountFunctions extends BasicFunction {
         final String accountName = args[0].itemAt(0).getStringValue();
 
         final Account ldapAccount = sm.getAccount(accountName);
-        if (ldapAccount == null)
+        if (ldapAccount == null) {
             throw new XPathException(this, "The Account '" + accountName + "' does not exist!");
+        }
 
         try {
             ldapRealm.refreshAccountFromLdap(ldapAccount);

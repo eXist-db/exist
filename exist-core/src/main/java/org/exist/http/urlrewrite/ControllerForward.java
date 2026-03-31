@@ -22,11 +22,10 @@
 
 package org.exist.http.urlrewrite;
 
-import org.exist.xmldb.XmldbURI;
-import org.w3c.dom.Element;
-
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.exist.xmldb.XmldbURI;
+import org.w3c.dom.Element;
 
 public class ControllerForward extends URLRewrite {
 
@@ -43,7 +42,7 @@ public class ControllerForward extends URLRewrite {
      * <br/>
      * If there is no server-name attribute on the root tag, then the server name is ignored while performing the URL rewriting.
      */
-    private String serverName = null;
+    private String serverName;
 
     public ControllerForward(final Element config, final String uri) {
         super(config, uri);

@@ -38,7 +38,7 @@ import java.util.Optional;
  * @author Loren Cahlander
  */
 public class Create extends SessionFunction {
-    public final static FunctionSignature signature =
+    public static final FunctionSignature signature =
             new FunctionSignature(
                     new QName("create", SessionModule.NAMESPACE_URI, SessionModule.PREFIX),
                     "Initialize an HTTP session if not already present (and valid)",

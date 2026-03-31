@@ -28,8 +28,8 @@ import org.exist.storage.index.BFile;
 
 public class IndexStats {
 
-	private BufferStats indexBufferStats = null;
-	private BufferStats dataBufferStats = null;
+	private BufferStats indexBufferStats;
+	private BufferStats dataBufferStats;
 	
 	public IndexStats(BFile db) {
 		indexBufferStats = db.getIndexBufferStats();

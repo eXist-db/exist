@@ -21,32 +21,31 @@
  */
 package org.exist.util.serializer;
 
-import java.io.IOException;
-import java.io.Writer;
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.Properties;
-
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.TransformerException;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.exist.storage.serializers.EXistOutputKeys;
 
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.TransformerException;
+import java.io.IOException;
+import java.io.Writer;
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.Properties;
+
 public class IndentingXMLWriter extends XMLWriter {
 
-    private final static Logger LOG = LogManager.getLogger(IndentingXMLWriter.class);
+    private static final Logger LOG = LogManager.getLogger(IndentingXMLWriter.class);
 
-    private boolean indent = false;
+    private boolean indent;
     private int indentAmount = 4;
     private String indentChars = "                                                                                           ";
-    private int level = 0;
-    private boolean afterTag = false;
-    private boolean sameline = false;
-    private boolean whitespacePreserve = false;
+    private int level;
+    private boolean afterTag;
+    private boolean sameline;
+    private boolean whitespacePreserve;
     private final Deque<Integer> whitespacePreserveStack = new ArrayDeque<>();
 
     public IndentingXMLWriter() {
@@ -210,7 +209,7 @@ public class IndentingXMLWriter extends XMLWriter {
     }
 
     private boolean isMatchTag(final String namespaceURI, final String localName) {
-        return namespaceURI != null && namespaceURI.equals(Namespaces.EXIST_NS) && "match".equals(localName);
+        return Namespaces.EXIST_NS.equals(namespaceURI) && "match".equals(localName);
     }
 
     protected void addSpaceIfIndent() throws IOException {

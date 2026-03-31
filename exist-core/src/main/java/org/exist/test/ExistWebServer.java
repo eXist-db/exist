@@ -37,9 +37,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
 
+import static org.exist.repo.AutoDeploymentTrigger.AUTODEPLOY_PROPERTY;
 import static org.exist.util.IPUtil.nextFreePort;
 import static org.junit.Assert.fail;
-import static org.exist.repo.AutoDeploymentTrigger.AUTODEPLOY_PROPERTY;
 
 /**
  * Exist Jetty Web Server Rule for JUnit
@@ -59,7 +59,7 @@ public class ExistWebServer extends ExternalResource {
     private static final int MAX_RANDOM_PORT = 65535;
     private static final int MAX_RANDOM_PORT_ATTEMPTS = 10;
 
-    private JettyStart server = null;
+    private JettyStart server;
     private String prevAutoDeploy = "off";
 
     private final boolean useRandomPort;

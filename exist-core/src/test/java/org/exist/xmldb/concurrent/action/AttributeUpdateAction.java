@@ -21,12 +21,12 @@
  */
 package org.exist.xmldb.concurrent.action;
 
-import java.util.Random;
-
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XUpdateQueryService;
+
+import java.util.Random;
 
 /**
  * @author wolf

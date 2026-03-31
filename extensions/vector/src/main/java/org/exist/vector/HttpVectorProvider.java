@@ -210,7 +210,9 @@ public final class HttpVectorProvider implements VectorEmbeddingProvider {
   public static HttpVectorProvider create(@Nonnull final String modelId, @Nonnull final String baseUrl,
       @Nullable final String apiKey, final int dimension) {
     final ApiType type = detectApiType(baseUrl);
-    if (type == null) return null;
+      if (type == null) {
+          return null;
+      }
     // Preferred: env vars (set before eXist starts). Fallback: explicit apiKey param.
     final String key = apiKey != null && !apiKey.isEmpty()
         ? apiKey
@@ -225,8 +227,12 @@ public final class HttpVectorProvider implements VectorEmbeddingProvider {
   @Nullable
   private static ApiType detectApiType(final String url) {
     final String lower = url.toLowerCase();
-    if (lower.contains("api.openai.com")) return ApiType.OPENAI;
-    if (lower.contains("api.cohere")) return ApiType.COHERE;
+      if (lower.contains("api.openai.com")) {
+          return ApiType.OPENAI;
+      }
+      if (lower.contains("api.cohere")) {
+          return ApiType.COHERE;
+      }
     return null;
   }
 

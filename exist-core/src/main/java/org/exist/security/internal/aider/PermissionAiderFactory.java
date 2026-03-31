@@ -31,7 +31,7 @@ import org.apache.logging.log4j.Logger;
  */
 public class PermissionAiderFactory {
 
-    private final static Logger LOG = LogManager.getLogger(PermissionAiderFactory.class);
+    private static final Logger LOG = LogManager.getLogger(PermissionAiderFactory.class);
 
     public static PermissionAider getPermission(String ownerName, String groupName, int mode) {
         PermissionAider permission = null;

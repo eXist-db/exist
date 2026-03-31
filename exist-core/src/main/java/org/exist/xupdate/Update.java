@@ -21,16 +21,9 @@
  */
 package org.exist.xupdate;
 
-import org.exist.dom.persistent.AttrImpl;
-import org.exist.dom.persistent.ElementImpl;
-import org.exist.dom.persistent.TextImpl;
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.DocumentSet;
-import org.exist.dom.persistent.StoredNode;
-import java.util.Map;
-
 import org.exist.EXistException;
 import org.exist.collections.triggers.TriggerException;
+import org.exist.dom.persistent.*;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
@@ -42,6 +35,8 @@ import org.exist.xquery.XPathException;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import java.util.Map;
 
 /**
  * Implements the XUpdate update modification.
@@ -70,7 +65,7 @@ public class Update extends Modification {
             {return 0;}
         int modifications = children.getLength();
         try {
-            final StoredNode ql[] = selectAndLock(transaction);
+            final StoredNode[] ql = selectAndLock(transaction);
             final NotificationService notifier = broker.getBrokerPool().getNotificationService();
             for (final StoredNode node : ql) {
                 if (node == null) {

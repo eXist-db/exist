@@ -21,15 +21,6 @@
  */
 package org.exist.xquery.modules.xslfo;
 
-import java.io.OutputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.HashSet;
-import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.Properties;
-import java.util.Set;
-
 import org.apache.avalon.framework.configuration.Configuration;
 import org.apache.avalon.framework.configuration.SAXConfigurationHandler;
 import org.apache.fop.apps.*;
@@ -39,8 +30,8 @@ import org.apache.fop.events.Event;
 import org.apache.fop.events.EventFormatter;
 import org.apache.fop.events.EventListener;
 import org.apache.fop.events.model.EventSeverity;
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.xmlgraphics.io.ResourceResolver;
 import org.apache.xmlgraphics.io.URIResolverAdapter;
 import org.exist.storage.DBBroker;
@@ -51,6 +42,14 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
 import javax.annotation.Nullable;
+import java.io.OutputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.HashSet;
+import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.Set;
 
 
 /**

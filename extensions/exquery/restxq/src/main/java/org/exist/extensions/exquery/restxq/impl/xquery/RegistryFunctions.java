@@ -27,11 +27,9 @@
 package org.exist.extensions.exquery.restxq.impl.xquery;
 
 
-import java.util.ArrayList;
-import java.util.List;
 import org.exist.dom.QName;
-import org.exist.extensions.exquery.restxq.impl.RestXqServiceRegistryManager;
 import org.exist.dom.memtree.MemTreeBuilder;
+import org.exist.extensions.exquery.restxq.impl.RestXqServiceRegistryManager;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -53,30 +51,33 @@ import org.exquery.xquery3.Annotation;
 import org.w3c.dom.Document;
 import org.xml.sax.helpers.AttributesImpl;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  *
  * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 public class RegistryFunctions extends BasicFunction {
     
-    private final static QName RESOURCE_FUNCTIONS = new QName("resource-functions", RestXqModule.NAMESPACE_URI, RestXqModule.PREFIX);
-    private final static QName RESOURCE_FUNCTION = new QName("resource-function", RestXqModule.NAMESPACE_URI, RestXqModule.PREFIX);
-    private final static QName ANNOTATIONS = new QName("annotations", RestXqModule.NAMESPACE_URI, RestXqModule.PREFIX);
-    private final static QName SEGMENT = new QName("segment", RestXqModule.NAMESPACE_URI, RestXqModule.PREFIX);
-    private final static QName INTERNET_MEDIA_TYPE = new QName("internet-media-type", RestXqModule.NAMESPACE_URI, RestXqModule.PREFIX);
+    private static final QName RESOURCE_FUNCTIONS = new QName("resource-functions", RestXqModule.NAMESPACE_URI, RestXqModule.PREFIX);
+    private static final QName RESOURCE_FUNCTION = new QName("resource-function", RestXqModule.NAMESPACE_URI, RestXqModule.PREFIX);
+    private static final QName ANNOTATIONS = new QName("annotations", RestXqModule.NAMESPACE_URI, RestXqModule.PREFIX);
+    private static final QName SEGMENT = new QName("segment", RestXqModule.NAMESPACE_URI, RestXqModule.PREFIX);
+    private static final QName INTERNET_MEDIA_TYPE = new QName("internet-media-type", RestXqModule.NAMESPACE_URI, RestXqModule.PREFIX);
 
-    private final static String XQUERY_URI = "xquery-uri";
-    private final static QName RESOURCE_FUNCTION_IDENTITY = new QName("identity", RestXqModule.NAMESPACE_URI, RestXqModule.PREFIX);
-    private final static String NAMESPACE = "namespace";
-    private final static String LOCAL_NAME = "local-name";
-    private final static String ARITY = "arity";
-    private final static String VALUE = "value";
-    private final static String NAME = "name";
-    private final static String ARGUMENT = "argument";
-    private final static String DEFAULT_VALUE = "default-value";
-    private final static String SPECIFICITY_METRIC = "specificity-metric";
+    private static final String XQUERY_URI = "xquery-uri";
+    private static final QName RESOURCE_FUNCTION_IDENTITY = new QName("identity", RestXqModule.NAMESPACE_URI, RestXqModule.PREFIX);
+    private static final String NAMESPACE = "namespace";
+    private static final String LOCAL_NAME = "local-name";
+    private static final String ARITY = "arity";
+    private static final String VALUE = "value";
+    private static final String NAME = "name";
+    private static final String ARGUMENT = "argument";
+    private static final String DEFAULT_VALUE = "default-value";
+    private static final String SPECIFICITY_METRIC = "specificity-metric";
     
-    public final static FunctionSignature signatures[] = {
+    public static final FunctionSignature[] signatures = {
 		
         new FunctionSignature(
             new QName(RESOURCE_FUNCTIONS.getLocalPart(), RestXqModule.NAMESPACE_URI, RestXqModule.PREFIX),
@@ -162,7 +163,7 @@ public class RegistryFunctions extends BasicFunction {
         for(final Annotation annotation : annotations) {
             builder.startElement(QName.fromJavaQName(annotation.getName()), null);
 
-            final Literal literals[] =  annotation.getLiterals();
+            final Literal[] literals =  annotation.getLiterals();
             if(literals != null) {
                 for(final Literal literal : literals) {
                     if(annotation instanceof ConsumesAnnotation || annotation instanceof ProducesAnnotation) {

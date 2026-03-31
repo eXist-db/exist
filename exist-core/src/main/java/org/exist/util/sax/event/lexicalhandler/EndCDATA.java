@@ -27,9 +27,9 @@ import org.xml.sax.ext.LexicalHandler;
 /**
  * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
-public class EndCDATA implements LexicalHandlerEvent {
+public final class EndCDATA implements LexicalHandlerEvent {
 
-    public final static EndCDATA INSTANCE = new EndCDATA();
+    public static final EndCDATA INSTANCE = new EndCDATA();
 
     /**
      * Constructor is private because this class

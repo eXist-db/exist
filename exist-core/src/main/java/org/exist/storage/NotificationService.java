@@ -25,12 +25,11 @@ import net.jcip.annotations.ThreadSafe;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.IStoredNode;
 import org.exist.numbering.NodeId;
 
 import java.util.IdentityHashMap;
 import java.util.Map;
-
-import org.exist.dom.persistent.IStoredNode;
 
 /**
  * Global notification service for document updates. Other classes

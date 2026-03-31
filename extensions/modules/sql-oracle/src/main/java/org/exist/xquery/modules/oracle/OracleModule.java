@@ -44,13 +44,13 @@ import java.util.Map;
  */
 public class OracleModule extends AbstractInternalModule {
 
-    public final static String NAMESPACE_URI = "http://exist-db.org/xquery/oracle";
+    public static final String NAMESPACE_URI = "http://exist-db.org/xquery/oracle";
 
-    public final static String PREFIX = "oracle";
-    public final static String INCLUSION_DATE = "2010-03-23";
-    public final static String RELEASED_IN_VERSION = "eXist-2.0";
+    public static final String PREFIX = "oracle";
+    public static final String INCLUSION_DATE = "2010-03-23";
+    public static final String RELEASED_IN_VERSION = "eXist-2.0";
 
-    private final static FunctionDef[] functions = {
+    private static final FunctionDef[] functions = {
             new FunctionDef(ExecuteFunction.signatures[0], ExecuteFunction.class),
             new FunctionDef(ExecuteFunction.signatures[1], ExecuteFunction.class)
     };

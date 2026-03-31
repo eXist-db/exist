@@ -21,13 +21,13 @@
  */
 package org.exist.storage.index;
 
-import java.nio.ByteBuffer;
-
 import org.exist.storage.DBBroker;
 import org.exist.storage.journal.LogException;
 import org.exist.storage.txn.Txn;
 import org.exist.util.ByteArray;
 import org.exist.util.FixedByteArray;
+
+import java.nio.ByteBuffer;
 
 /**
  * @author wolf
@@ -79,7 +79,7 @@ public class OverflowAppendLoggable extends AbstractBFileLoggable {
         super.read(in);
         pageNum = in.getInt();
         chunkSize = in.getInt();
-        final byte b[] = new byte[chunkSize];
+        final byte[] b = new byte[chunkSize];
         in.get(b);
         data = new FixedByteArray(b);
     }

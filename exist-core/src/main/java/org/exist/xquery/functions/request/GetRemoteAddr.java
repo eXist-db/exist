@@ -40,7 +40,7 @@ public class GetRemoteAddr extends StrictRequestFunction {
 
 	protected static final Logger logger = LogManager.getLogger(GetRemoteAddr.class);
 
-	public final static FunctionSignature signature =
+	public static final FunctionSignature signature =
 		new FunctionSignature(
 			new QName("get-remote-addr", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
 			"Returns the IP address of the client machine that made the current request, as a string.",

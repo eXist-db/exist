@@ -37,11 +37,11 @@ import java.io.IOException;
  */
 public class SelfImportCircularDependencyIntegrationTest extends AbstractClassIntegrationTest {
 
-    private static String TEST_COLLECTION = "/db/restxq/self-import-circular-dependency-integration-test";
+    private static final String TEST_COLLECTION = "/db/restxq/self-import-circular-dependency-integration-test";
 
-    private static String XQUERY_FILENAME = "mod1.xqm";
+    private static final String XQUERY_FILENAME = "mod1.xqm";
 
-    private static String STAGE1_XQUERY =
+    private static final String STAGE1_XQUERY =
             """
             xquery version "3.1";
             
@@ -52,7 +52,7 @@ public class SelfImportCircularDependencyIntegrationTest extends AbstractClassIn
             };\
             """;
 
-    private static String STAGE2_XQUERY =
+    private static final String STAGE2_XQUERY =
             "xquery version \"3.1\";\n" +
             "\n" +
             "module namespace test = \"test\";\n" +
@@ -63,7 +63,7 @@ public class SelfImportCircularDependencyIntegrationTest extends AbstractClassIn
             "    <f1/>\n" +
             "};";
 
-    private static String STAGE3_XQUERY = STAGE1_XQUERY;
+    private static final String STAGE3_XQUERY = STAGE1_XQUERY;
 
     @BeforeClass
     public static void storeResourceFunctions() throws IOException {

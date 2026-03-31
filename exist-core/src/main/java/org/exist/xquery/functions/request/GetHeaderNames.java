@@ -21,20 +21,15 @@
  */
 package org.exist.xquery.functions.request;
 
-import java.util.Enumeration;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.http.servlets.RequestWrapper;
 import org.exist.xquery.*;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
+import org.exist.xquery.value.*;
 
 import javax.annotation.Nonnull;
+import java.util.Enumeration;
 
 /**
  * @author <a href="mailto:alain.m.pannetier@gmail.com">Alain Pannetier</a>
@@ -45,7 +40,7 @@ public class GetHeaderNames extends StrictRequestFunction {
 
     protected static final Logger logger = LogManager.getLogger(GetHeaderNames.class);
 
-    public final static FunctionSignature signature =
+    public static final FunctionSignature signature =
             new FunctionSignature(
                     new QName(
                             "get-header-names",

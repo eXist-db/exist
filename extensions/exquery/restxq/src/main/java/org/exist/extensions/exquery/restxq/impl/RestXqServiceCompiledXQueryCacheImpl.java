@@ -26,11 +26,6 @@
  */
 package org.exist.extensions.exquery.restxq.impl;
 
-import java.net.URI;
-import java.util.Iterator;
-import java.util.Queue;
-import java.util.function.Function;
-
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import org.exist.extensions.exquery.restxq.RestXqServiceCompiledXQueryCache;
@@ -41,12 +36,17 @@ import org.exquery.restxq.RestXqService;
 import org.exquery.restxq.RestXqServiceException;
 import org.jctools.queues.atomic.MpmcAtomicArrayQueue;
 
+import java.net.URI;
+import java.util.Iterator;
+import java.util.Queue;
+import java.util.function.Function;
+
 /**
  * Compiled XQuery Cache for RESTXQ Resource Functions.
  *
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
-public class RestXqServiceCompiledXQueryCacheImpl implements RestXqServiceCompiledXQueryCache {
+public final class RestXqServiceCompiledXQueryCacheImpl implements RestXqServiceCompiledXQueryCache {
     
     private static final RestXqServiceCompiledXQueryCacheImpl INSTANCE = new RestXqServiceCompiledXQueryCacheImpl();
 

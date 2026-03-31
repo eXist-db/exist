@@ -27,9 +27,10 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.StringValue;
-import static org.junit.Assert.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import static org.junit.Assert.*;
 
 /**
  *
@@ -46,7 +47,7 @@ public class PermissionsFunctionModeConversionTest {
        final XQueryContext mckContext = EasyMock.createMock(XQueryContext.class);
 
        final PermissionsFunction permissionsFunctions = new PermissionsFunction(mckContext, PermissionsFunction.FNS_MODE_TO_OCTAL);
-       Sequence args[] = {
+       Sequence[] args = {
            new StringValue("rwxr-x---")
        };
        
@@ -61,7 +62,7 @@ public class PermissionsFunctionModeConversionTest {
        final XQueryContext mckContext = EasyMock.createMock(XQueryContext.class);
 
        final PermissionsFunction permissionsFunctions = new PermissionsFunction(mckContext, PermissionsFunction.FNS_MODE_TO_OCTAL);
-       Sequence args[] = {
+       Sequence[] args = {
            new StringValue("invalid")
        };
        
@@ -73,7 +74,7 @@ public class PermissionsFunctionModeConversionTest {
        final XQueryContext mckContext = EasyMock.createMock(XQueryContext.class);
 
        final PermissionsFunction permissionsFunctions = new PermissionsFunction(mckContext, PermissionsFunction.FNS_OCTAL_TO_MODE);
-       Sequence args[] = {
+       Sequence[] args = {
            new StringValue("0750")
        };
        

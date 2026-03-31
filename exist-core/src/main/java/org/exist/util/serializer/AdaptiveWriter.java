@@ -263,14 +263,11 @@ public class AdaptiveWriter extends IndentingXMLWriter {
         final StringBuilder sb = new StringBuilder(value.length() + 5);
         for (int i = 0; i < value.length(); i++) {
             final char ch = value.charAt(i);
-            switch (ch) {
-                case '"':
-                    sb.append(ch);
-                    sb.append(ch);
-                    break;
-                default:
-                    sb.append(ch);
-                    break;
+            if (ch == '"') {
+                sb.append(ch);
+                sb.append(ch);
+            } else {
+                sb.append(ch);
             }
         }
         return sb.toString();

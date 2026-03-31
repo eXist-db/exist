@@ -26,11 +26,12 @@
  */
 package org.exist.extensions.exquery.restxq.impl;
 
-import java.util.List;
-import java.util.Map;
 import org.exist.storage.DBBroker;
 import org.exist.storage.StartupTrigger;
 import org.exist.storage.txn.Txn;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * Loads the RESTXQ Registry from disk during database startup

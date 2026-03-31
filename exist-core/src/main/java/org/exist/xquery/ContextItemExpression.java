@@ -25,6 +25,7 @@ import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
+
 import static org.exist.xquery.ErrorCodes.XPDY0002;
 
 public class ContextItemExpression extends LocationStep {

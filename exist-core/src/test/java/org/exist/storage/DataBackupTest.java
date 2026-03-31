@@ -24,12 +24,12 @@ package org.exist.storage;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
+import org.exist.collections.triggers.TriggerException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
-import org.exist.collections.triggers.TriggerException;
 import org.exist.util.LockException;
 import org.exist.util.MimeType;
 import org.exist.util.StringInputSource;
@@ -50,9 +50,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 public class DataBackupTest {
 
@@ -151,8 +149,8 @@ public class DataBackupTest {
     }
 
     private class TestableDataBackup extends DataBackup {
-        private volatile boolean completed = false;
-        private volatile Throwable error = null;
+        private volatile boolean completed;
+        private volatile Throwable error;
 
         public TestableDataBackup(final Path destination) {
             super(destination);

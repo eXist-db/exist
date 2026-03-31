@@ -34,16 +34,16 @@ import java.util.Map;
  */
 public class PersistentLoginModule extends AbstractInternalModule {
 
-    public final static String NAMESPACE = "http://exist-db.org/xquery/persistentlogin";
+    public static final String NAMESPACE = "http://exist-db.org/xquery/persistentlogin";
 
-    public final static String PREFIX = "plogin";
+    public static final String PREFIX = "plogin";
 
-    private final static String DESCRIPTION = "Persistent login module. Provides functions for implementing a 'remember me' login feature. " +
+    private static final String DESCRIPTION = "Persistent login module. Provides functions for implementing a 'remember me' login feature. " +
         "Uses one-time tokens which are valid for a single request only.";
 
-    private final static String RELEASED_IN_VERSION = "eXist-2.0";
+    private static final String RELEASED_IN_VERSION = "eXist-2.0";
 
-    private final static FunctionDef[] functions = {
+    private static final FunctionDef[] functions = {
         new FunctionDef(PersistentLoginFunctions.signatures[0], PersistentLoginFunctions.class),
         new FunctionDef(PersistentLoginFunctions.signatures[1], PersistentLoginFunctions.class),
         new FunctionDef(PersistentLoginFunctions.signatures[2], PersistentLoginFunctions.class)

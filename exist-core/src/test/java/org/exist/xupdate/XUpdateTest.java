@@ -21,16 +21,6 @@
  */
 package org.exist.xupdate;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Arrays;
-
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Source;
-
 import org.exist.EXistException;
 import org.exist.TestUtils;
 import org.exist.collections.triggers.TriggerException;
@@ -38,18 +28,12 @@ import org.exist.security.Account;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.test.ExistXmldbEmbeddedServer;
-
 import org.exist.util.LockException;
 import org.exist.xmldb.UserManagementService;
 import org.junit.*;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertFalse;
-
 import org.junit.runners.Parameterized.Parameters;
 import org.xml.sax.SAXException;
 import org.xmldb.api.base.Collection;
@@ -61,6 +45,19 @@ import org.xmldb.api.modules.XUpdateQueryService;
 import org.xmlunit.builder.DiffBuilder;
 import org.xmlunit.builder.Input;
 import org.xmlunit.diff.Diff;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Source;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Arrays;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertFalse;
 
 /**
  * @author berlinge-to
@@ -111,14 +108,14 @@ public class XUpdateTest {
     @Parameter(value = 1)
     public String sourceFile;
 
-    private final static String XUPDATE_COLLECTION = "xupdate_tests";
+    private static final String XUPDATE_COLLECTION = "xupdate_tests";
 
-    private final static String MODIFICATION_DIR_NAME = "modifications";
-    private final static String RESULT_DIR_NAME = "results";
-    private final static String SOURCE_DIR_NAME = "input";
-    private final static String XUPDATE_FILE = "xu.xml";       // xml document name in eXist
+    private static final String MODIFICATION_DIR_NAME = "modifications";
+    private static final String RESULT_DIR_NAME = "results";
+    private static final String SOURCE_DIR_NAME = "input";
+    private static final String XUPDATE_FILE = "xu.xml";       // xml document name in eXist
 
-    private Collection col = null;
+    private Collection col;
 
     @Test
     public void xupdate() throws Exception {
@@ -184,7 +181,7 @@ public class XUpdateTest {
         service.update(xUpdateModifications);
 
         final XMLResource ret = (XMLResource) col.getResource(XUPDATE_FILE);
-        return ((String) ret.getContent());
+        return (String) ret.getContent();
     }
 
     @Before

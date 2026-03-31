@@ -21,17 +21,17 @@
  */
 package org.exist.xquery.modules.ngram.query;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
+import org.exist.dom.QName;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.ExtArrayNodeSet;
 import org.exist.dom.persistent.NodeSet;
-import org.exist.dom.QName;
 import org.exist.indexing.ngram.NGramIndexWorker;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.modules.ngram.NGramSearch;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class AlternativeStrings implements EvaluatableExpression, MergeableExpression {
     /**
@@ -74,14 +74,17 @@ public class AlternativeStrings implements EvaluatableExpression, MergeableExpre
 
         if (otherExpression instanceof FixedString fixedString) {
             concatenatedStrings = new HashSet<>(strings.size());
-            for (String s : strings)
+            for (String s : strings) {
                 concatenatedStrings.add(s + fixedString.fixedString);
+            }
         } else {
             AlternativeStrings otherAlternatives = (AlternativeStrings) otherExpression;
             concatenatedStrings = new HashSet<>(strings.size() * otherAlternatives.strings.size());
-            for (String s : strings)
-                for (String os : otherAlternatives.strings)
+            for (String s : strings) {
+                for (String os : otherAlternatives.strings) {
                     concatenatedStrings.add(s + os);
+                }
+            }
         }
 
         return new AlternativeStrings(this.nGramSearch, concatenatedStrings);
@@ -89,6 +92,6 @@ public class AlternativeStrings implements EvaluatableExpression, MergeableExpre
 
     @Override
     public boolean mergeableWith(final WildcardedExpression otherExpression) {
-        return ((otherExpression instanceof FixedString) || (otherExpression instanceof AlternativeStrings));
+        return (otherExpression instanceof FixedString) || (otherExpression instanceof AlternativeStrings);
     }
 }

@@ -21,26 +21,20 @@
  */
 package org.exist.xquery.modules.file;
 
-import java.io.IOException;
-import java.nio.file.CopyOption;
-import java.nio.file.Files;
-import java.nio.file.Path;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.BooleanValue;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
+
+import java.io.IOException;
+import java.nio.file.CopyOption;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 /**
  * @see java.nio.file.Files#move(Path, Path, CopyOption...)
@@ -50,9 +44,9 @@ import org.exist.xquery.value.Type;
  */
 public class FileMove extends BasicFunction {
 	
-	private final static Logger logger = LogManager.getLogger(FileMove.class);
+	private static final Logger logger = LogManager.getLogger(FileMove.class);
 	
-	public final static FunctionSignature signatures[] = {
+	public static final FunctionSignature[] signatures = {
 		new FunctionSignature(
 			new QName( "move", FileModule.NAMESPACE_URI, FileModule.PREFIX ),
 			"Move (rename) a file or directory. Exact operation is platform dependent. This " +

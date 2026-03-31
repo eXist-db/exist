@@ -106,7 +106,7 @@ public class SortComparatorTest {
 			int[] a = new int[1000];
 
 			for (int ii = 0; ii < 1000; ii++) {
-				a[ii] = (ii >= i && ii < i + 100) ? rnd.nextInt(1000)
+				a[ii] = ii >= i && ii < i + 100 ? rnd.nextInt(1000)
 						: 999 - ii;
 			}
 
@@ -130,7 +130,7 @@ public class SortComparatorTest {
 			int[] a = new int[1000];
 
 			for (int ii = 0; ii < 1000; ii++) {
-				a[ii] = (ii >= i && ii < i + 100) ? rnd.nextInt(1000) : ii;
+				a[ii] = ii >= i && ii < i + 100 ? rnd.nextInt(1000) : ii;
 			}
 
 			checker.init(a);
@@ -153,7 +153,7 @@ public class SortComparatorTest {
 			int[] a = new int[1000];
 
 			for (int ii = 0; ii < 1000; ii++) {
-				a[ii] = (ii >= i && ii < i + 100) ? rnd.nextInt(1000)
+				a[ii] = ii >= i && ii < i + 100 ? rnd.nextInt(1000)
 						: 999 - ii;
 			}
 
@@ -178,7 +178,7 @@ public class SortComparatorTest {
 			int[] a = new int[1000];
 
 			for (int ii = 0; ii < 1000; ii++) {
-				a[ii] = (ii >= i && ii < i + 100) ? rnd.nextInt(1000) : ii;
+				a[ii] = ii >= i && ii < i + 100 ? rnd.nextInt(1000) : ii;
 			}
 
 			checker.init(a);

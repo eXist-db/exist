@@ -70,11 +70,11 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
 
     protected String fieldName;
     protected int type = Type.STRING;
-    protected boolean binary = false;
+    protected boolean binary;
     protected boolean store = true;
-    protected Analyzer analyzer= null;
+    protected Analyzer analyzer;
     protected Optional<String> condition = Optional.empty();
-    protected CompiledXQuery compiledCondition = null;
+    protected CompiledXQuery compiledCondition;
 
     LuceneFieldConfig(LuceneConfig config, Element configElement, Map<String, String> namespaces, AnalyzerConfig analyzers) throws DatabaseConfigurationException {
         super(config, configElement, namespaces);

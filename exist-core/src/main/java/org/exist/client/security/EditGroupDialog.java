@@ -21,18 +21,19 @@
  */
 package org.exist.client.security;
 
-import java.io.Serial;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import javax.swing.JOptionPane;
 import org.exist.security.Account;
 import org.exist.security.EXistSchemaType;
 import org.exist.security.Group;
 import org.exist.security.PermissionDeniedException;
 import org.exist.xmldb.UserManagementService;
 import org.xmldb.api.base.XMLDBException;
+
+import javax.swing.JOptionPane;
+import java.io.Serial;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  *
@@ -156,7 +157,7 @@ public class EditGroupDialog extends GroupDialog {
     @Override
     protected boolean canModifyGroupMembers() {
         try {
-            return (getUserManagementService().getAccount(getCurrentUser()).hasDbaRole() || isGroupManager(group.getManagers(), getCurrentUser()));
+            return getUserManagementService().getAccount(getCurrentUser()).hasDbaRole() || isGroupManager(group.getManagers(), getCurrentUser());
         } catch(final XMLDBException | PermissionDeniedException xmldbe) {
             JOptionPane.showMessageDialog(this, "Could not establish user " + getCurrentUser() + "'s group permissions: " + xmldbe.getMessage(), "Edit Group Error", JOptionPane.ERROR_MESSAGE);
             return false;

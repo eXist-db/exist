@@ -21,9 +21,6 @@
  */
 package org.exist.storage;
 
-import java.io.IOException;
-import java.util.Optional;
-
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.security.PermissionDeniedException;
@@ -38,12 +35,14 @@ import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Sequence;
 import org.junit.ClassRule;
 import org.junit.Test;
+import org.xml.sax.SAXException;
 
+import java.io.IOException;
+import java.util.Optional;
+
+import static org.exist.samples.Samples.SAMPLES;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.exist.samples.Samples.SAMPLES;
-
-import org.xml.sax.SAXException;
 
 public class ShutdownTest {
 

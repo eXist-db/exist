@@ -22,10 +22,10 @@
 
 package org.exist.util.sorters;
 
+import org.exist.dom.persistent.NodeProxy;
+
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
-
-import org.exist.dom.persistent.NodeProxy;
 
 /**
  * check sortByNodeId(NodeProxy[])

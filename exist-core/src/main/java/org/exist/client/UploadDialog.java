@@ -21,24 +21,16 @@
  */
 package org.exist.client;
 
+import org.exist.storage.ElementIndex;
+import org.exist.util.ProgressIndicator;
+
+import javax.swing.*;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.io.Serial;
 import java.util.Observable;
 import java.util.Observer;
-
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JProgressBar;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-
-import org.exist.storage.ElementIndex;
-import org.exist.util.ProgressIndicator;
 
 class UploadDialog extends JFrame {
 
@@ -52,7 +44,7 @@ class UploadDialog extends JFrame {
 	JProgressBar progress;
 	JProgressBar byDirProgress;
 
-	boolean cancelled = false;
+	boolean cancelled;
 	final JButton closeBtn;
 	
 	public UploadDialog() {

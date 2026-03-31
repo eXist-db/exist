@@ -102,13 +102,10 @@ public class JSONSerializer {
             if (Type.subTypeOfUnion(item.getType(), Type.NUMERIC)) {
                 generator.writeNumber(item.getStringValue());
             } else {
-                switch (item.getType()) {
-                    case Type.BOOLEAN:
-                        generator.writeBoolean(((AtomicValue)item).effectiveBooleanValue());
-                        break;
-                    default:
-                        generator.writeString(item.getStringValue());
-                        break;
+                if (item.getType() == Type.BOOLEAN) {
+                    generator.writeBoolean(((AtomicValue)item).effectiveBooleanValue());
+                } else {
+                    generator.writeString(item.getStringValue());
                 }
             }
         } else if (Type.subTypeOf(item.getType(), Type.NODE)) {

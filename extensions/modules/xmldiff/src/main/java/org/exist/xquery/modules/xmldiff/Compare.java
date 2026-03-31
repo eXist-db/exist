@@ -34,14 +34,13 @@ package org.exist.xquery.modules.xmldiff;
 
 import io.lacuna.bifurcan.IMap;
 import org.exist.dom.persistent.NodeProxy;
+import org.exist.xquery.*;
 import org.exist.xquery.functions.map.MapType;
+import org.exist.xquery.value.*;
 import org.w3c.dom.Node;
 import org.xmlunit.builder.DiffBuilder;
 import org.xmlunit.builder.Input;
 import org.xmlunit.diff.Diff;
-
-import org.exist.xquery.*;
-import org.exist.xquery.value.*;
 
 import javax.annotation.Nullable;
 import javax.xml.transform.Source;

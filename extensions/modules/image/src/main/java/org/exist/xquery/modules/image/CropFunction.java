@@ -21,34 +21,25 @@
  */
 package org.exist.xquery.modules.image;
 
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.awt.Toolkit;
-import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.image.BufferedImage;
-import java.awt.image.CropImageFilter;
-import java.awt.image.FilteredImageSource;
-import java.io.InputStream;
-import javax.imageio.ImageIO;
-
 import org.exist.dom.QName;
-import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.Base64BinaryValueType;
-import org.exist.xquery.value.BinaryValue;
-import org.exist.xquery.value.BinaryValueFromInputStream;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.IntegerValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
+
+import javax.imageio.ImageIO;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.Toolkit;
+import java.awt.image.BufferedImage;
+import java.awt.image.CropImageFilter;
+import java.awt.image.FilteredImageSource;
+import java.io.InputStream;
 
 /**
  * eXist Image Module Extension CropFunction 
@@ -68,11 +59,11 @@ public class CropFunction extends BasicFunction {
     
     private static final Logger logger = LogManager.getLogger(CropFunction.class);
 	
-    private final static int MAXHEIGHT = 100;
-    private final static int MAXWIDTH = 100;
+    private static final int MAXHEIGHT = 100;
+    private static final int MAXWIDTH = 100;
 
 	
-    public final static FunctionSignature signature = new FunctionSignature(
+    public static final FunctionSignature signature = new FunctionSignature(
         new QName("crop", ImageModule.NAMESPACE_URI, ImageModule.PREFIX),
         "Crop the image $image to a specified dimension.  If no dimensions are specified, then the default values are 'y1 = 0', 'x1 = 0', 'x2 = 100' and 'y2 = 100'.",
         new SequenceType[] {

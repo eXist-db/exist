@@ -32,9 +32,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.easymock.EasyMock.replay;
-import static org.easymock.EasyMock.reset;
-import static org.easymock.EasyMock.verify;
+import static org.easymock.EasyMock.*;
 import static org.exist.util.io.ContentFilePool.PROPERTY_IN_MEMORY_SIZE;
 import static org.exist.util.io.ContentFilePool.PROPERTY_POOL_SIZE;
 

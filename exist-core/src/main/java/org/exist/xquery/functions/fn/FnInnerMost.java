@@ -34,7 +34,7 @@ import java.util.Set;
 
 public class FnInnerMost extends BasicFunction {
 
-    public final static FunctionSignature FNS_INNERMOST = new FunctionSignature(
+    public static final FunctionSignature FNS_INNERMOST = new FunctionSignature(
             new QName("innermost", Function.BUILTIN_FUNCTION_NS),
             "Returns every node within the input sequence that is not an ancestor of another member of the input sequence; the nodes are returned in document order with duplicates eliminated.",
             new SequenceType[] {
@@ -63,7 +63,7 @@ public class FnInnerMost extends BasicFunction {
             final SequenceIterator it = nodes.iterate();
             while(it.hasNext()) {
                 final Item item = it.nextItem();
-                final NodeValue node = ((NodeValue)item);
+                final NodeValue node = (NodeValue)item;
                 final NodeId currentNodeId = node.getNodeId();
 
                 if(!found.contains(currentNodeId) &&
@@ -82,7 +82,7 @@ public class FnInnerMost extends BasicFunction {
         final SequenceIterator it = nodes.iterate();
         while(it.hasNext()) {
             final Item item = it.nextItem();
-            final NodeValue node = ((NodeValue)item);
+            final NodeValue node = (NodeValue)item;
             nodeIds.add(node.getNodeId());
         }
         return nodeIds;

@@ -44,7 +44,7 @@ public class VariablesTest {
     @ClassRule
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
-    private final static String MODULE =
+    private static final String MODULE =
             """
             module namespace mod1 = "http://mod1";
             

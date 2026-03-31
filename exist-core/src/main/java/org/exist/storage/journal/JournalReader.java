@@ -213,7 +213,7 @@ public class JournalReader implements AutoCloseable {
             } else {
                 final int mark = header.position();
                 header.position(0);
-                final byte buf[] = new byte[LOG_ENTRY_HEADER_LEN];
+                final byte[] buf = new byte[LOG_ENTRY_HEADER_LEN];
                 header.get(buf);
                 xxHash64.update(buf, 0, LOG_ENTRY_HEADER_LEN);
                 header.position(mark);
@@ -262,7 +262,7 @@ public class JournalReader implements AutoCloseable {
             } else {
                 final int mark = payload.position();
                 payload.position(0);
-                final byte buf[] = new byte[size + LOG_ENTRY_BACK_LINK_LEN];
+                final byte[] buf = new byte[size + LOG_ENTRY_BACK_LINK_LEN];
                 payload.get(buf);
                 xxHash64.update(buf, 0, size + LOG_ENTRY_BACK_LINK_LEN);
                 payload.position(mark);

@@ -21,17 +21,6 @@
  */
 package org.exist.xquery.modules.jndi;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.naming.Context;
-import javax.naming.NamingException;
-import javax.naming.directory.Attribute;
-import javax.naming.directory.BasicAttribute;
-import javax.naming.directory.BasicAttributes;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.xquery.AbstractInternalModule;
@@ -42,6 +31,16 @@ import org.exist.xquery.value.Sequence;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import javax.naming.Context;
+import javax.naming.NamingException;
+import javax.naming.directory.Attribute;
+import javax.naming.directory.BasicAttribute;
+import javax.naming.directory.BasicAttributes;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * eXist JNDI Module Extension
@@ -59,15 +58,15 @@ import org.w3c.dom.NodeList;
 public class JNDIModule extends AbstractInternalModule 
 {
 
-	protected final static Logger LOG = LogManager.getLogger( JNDIModule.class );
+	protected static final Logger LOG = LogManager.getLogger( JNDIModule.class );
 
-	public final static String NAMESPACE_URI = "http://exist-db.org/xquery/jndi";
+	public static final String NAMESPACE_URI = "http://exist-db.org/xquery/jndi";
 
-	public final static String PREFIX = "jndi";
-    public final static String INCLUSION_DATE = "2008-12-04";
-    public final static String RELEASED_IN_VERSION = "eXist-1.4";
+	public static final String PREFIX = "jndi";
+    public static final String INCLUSION_DATE = "2008-12-04";
+    public static final String RELEASED_IN_VERSION = "eXist-1.4";
 
-	private final static FunctionDef[] functions = {
+	private static final FunctionDef[] functions = {
 			new FunctionDef( GetDirContextFunction.signatures[0], 	GetDirContextFunction.class ),
 			new FunctionDef( CloseContextFunction.signatures[0], 	CloseContextFunction.class ),
 			new FunctionDef( SearchFunction.signatures[0], 			SearchFunction.class ),
@@ -78,7 +77,7 @@ public class JNDIModule extends AbstractInternalModule
 			new FunctionDef( ModifyFunction.signatures[0], 			ModifyFunction.class )
 	};
 
-	public final static String 	JNDICONTEXTS_VARIABLE 	= "_eXist_jndi_contexts";
+	public static final String 	JNDICONTEXTS_VARIABLE 	= "_eXist_jndi_contexts";
 		
 	private static long 		currentContextID 		= System.currentTimeMillis();
 
@@ -90,17 +89,17 @@ public class JNDIModule extends AbstractInternalModule
 
 	public String getNamespaceURI() 
 	{
-		return( NAMESPACE_URI );
+		return NAMESPACE_URI;
 	}
 
 	public String getDefaultPrefix() 
 	{
-		return( PREFIX );
+		return PREFIX;
 	}
 
 	public String getDescription() 
 	{
-		return( "A module for performing JNDI queries against Directories, returning XML representations of the results." );
+		return "A module for performing JNDI queries against Directories, returning XML representations of the results.";
 	}
 	
     public String getReleaseVersion() {
@@ -115,7 +114,7 @@ public class JNDIModule extends AbstractInternalModule
 	 *
 	 * @return the JNDI context
 	 */
-	public final static Context retrieveJNDIContext( XQueryContext context, long ctxID ) 
+	public static Context retrieveJNDIContext( XQueryContext context, long ctxID ) 
 	{
 		Context jndiContext = null;
 		
@@ -126,7 +125,7 @@ public class JNDIModule extends AbstractInternalModule
 		 	jndiContext = (Context)contexts.get(ctxID);
 		}
 		
-		return( jndiContext );
+		return jndiContext;
 	}
 
 	
@@ -138,7 +137,7 @@ public class JNDIModule extends AbstractInternalModule
 	 * 
 	 * @return 			A unique ID representing the connection
 	 */
-	public final static synchronized long storeJNDIContext( XQueryContext context, Context jndiContext ) 
+	public static synchronized long storeJNDIContext( XQueryContext context, Context jndiContext ) 
 	{
 		// get the existing connections map from the context
 		HashMap contexts = (HashMap)context.getAttribute( JNDIModule.JNDICONTEXTS_VARIABLE );
@@ -157,7 +156,7 @@ public class JNDIModule extends AbstractInternalModule
 		// store the updated connections map back in the context
 		context.setAttribute( JNDIModule.JNDICONTEXTS_VARIABLE, contexts );
 
-		return( ctxID );
+		return ctxID;
 	}
 	
 	
@@ -167,7 +166,7 @@ public class JNDIModule extends AbstractInternalModule
 	 * @param context   	The context to close JNDI Contexts for
 	 * @param ctxID 		The ID of the JNDI Context to retrieve from the Context of the XQuery
 	 */
-	public final static void closeJNDIContext( XQueryContext context, long ctxID ) 
+	public static void closeJNDIContext( XQueryContext context, long ctxID ) 
 	{
 		// get the existing connections map from the context
 		HashMap contexts = (HashMap)context.getAttribute( JNDIModule.JNDICONTEXTS_VARIABLE );
@@ -186,7 +185,7 @@ public class JNDIModule extends AbstractInternalModule
 	 * @param ctxID 			The ID of the JNDI Context to retrieve from the Context of the XQuery
 	 * @param contexts 			The contexts hashmap
 	 */
-	private final static void closeJNDIContext( XQueryContext context, long ctxID, HashMap contexts ) 
+	private static void closeJNDIContext( XQueryContext context, long ctxID, HashMap contexts ) 
 	{
 		Context ctx = null;
 
@@ -214,7 +213,7 @@ public class JNDIModule extends AbstractInternalModule
 	 * 
 	 * @param xqueryContext 	The context to close JNDI Contexts for
 	 */
-	private final static void closeAllJNDIContexts( XQueryContext xqueryContext ) 
+	private static void closeAllJNDIContexts( XQueryContext xqueryContext ) 
 	{
 		// get the existing connections map from the context
 		HashMap contexts = (HashMap)xqueryContext.getAttribute( JNDIModule.JNDICONTEXTS_VARIABLE );
@@ -272,7 +271,7 @@ public class JNDIModule extends AbstractInternalModule
 	{
 		BasicAttributes attributes = new BasicAttributes();
 		
-		if( !( arg.isEmpty() ) ) {
+		if( !arg.isEmpty() ) {
 		
 			Node container = ( (NodeValue)arg.itemAt( 0 ) ).getNode();
 			
@@ -281,7 +280,7 @@ public class JNDIModule extends AbstractInternalModule
 				NodeList attrs = ((Element)container).getElementsByTagName( "attribute" );
 	
 				for( int i = 0; i < attrs.getLength(); i++ ) {
-					Element attr = ((Element)attrs.item( i ));
+					Element attr = (Element)attrs.item( i );
 	
 					String name  	= attr.getAttribute( "name" );
 					String value 	= attr.getAttribute( "value" );
@@ -302,6 +301,6 @@ public class JNDIModule extends AbstractInternalModule
 			}
 		}
 		
-		return( attributes );
+		return attributes;
 	}
 }

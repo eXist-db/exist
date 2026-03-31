@@ -21,6 +21,15 @@
  */
 package org.exist.protocolhandler.xmlrpc;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.xmlrpc.XmlRpcException;
+import org.apache.xmlrpc.client.XmlRpcClient;
+import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
+import org.exist.protocolhandler.xmldb.XmldbURL;
+import org.exist.storage.serializers.EXistOutputKeys;
+
+import javax.xml.transform.OutputKeys;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URL;
@@ -28,17 +37,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.apache.xmlrpc.XmlRpcException;
-import org.apache.xmlrpc.client.XmlRpcClient;
-import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
-
-import org.exist.protocolhandler.xmldb.XmldbURL;
-import org.exist.storage.serializers.EXistOutputKeys;
-
-import javax.xml.transform.OutputKeys;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -51,7 +49,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class XmlrpcDownload {
     
-    private final static Logger LOG = LogManager.getLogger(XmlrpcDownload.class);
+    private static final Logger LOG = LogManager.getLogger(XmlrpcDownload.class);
     
     /**
      * Write document referred by the URL to the output stream.

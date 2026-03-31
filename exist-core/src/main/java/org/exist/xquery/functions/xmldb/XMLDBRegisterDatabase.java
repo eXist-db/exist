@@ -23,19 +23,13 @@ package org.exist.xquery.functions.xmldb;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.BooleanValue;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Database;
 
@@ -46,7 +40,7 @@ import org.xmldb.api.base.Database;
  */
 public class XMLDBRegisterDatabase extends BasicFunction {
 	protected static final Logger logger = LogManager.getLogger(XMLDBRegisterDatabase.class);
-	public final static FunctionSignature signature = new FunctionSignature(
+	public static final FunctionSignature signature = new FunctionSignature(
 			new QName("register-database", XMLDBModule.NAMESPACE_URI,
 					XMLDBModule.PREFIX),
 			"Registers an XMLDB driver class with the XMLDB Database Manager. "

@@ -26,7 +26,6 @@
  */
 package org.exist.extensions.exquery.restxq.impl;
 
-import java.util.List;
 import org.exist.collections.triggers.SAXTrigger;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.DocumentImpl;
@@ -35,6 +34,8 @@ import org.exist.storage.txn.Txn;
 import org.exist.xmldb.XmldbURI;
 import org.exquery.ExQueryException;
 import org.exquery.restxq.RestXqService;
+
+import java.util.List;
 
 /**
  *

@@ -31,8 +31,8 @@ import org.exist.numbering.NodeId;
  */
 public class SelfSelector implements NodeSelector {
 
-    private int contextId;
-    private NodeSet context;
+    private final int contextId;
+    private final NodeSet context;
 
     public SelfSelector(NodeSet contextSet, int contextId) {
         this.context = contextSet;

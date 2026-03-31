@@ -34,9 +34,7 @@ import java.util.Random;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.test.TestConstants.TEST_COLLECTION_URI;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * Tests for accessing binaries using XQuery via various APIs.
@@ -84,7 +82,7 @@ public abstract class AbstractBinariesTest<T, U, E extends Exception> {
     }
 
     protected byte[] randomData(final int size) {
-        final byte data[] = new byte[size];
+        final byte[] data = new byte[size];
         new Random().nextBytes(data);
         return data;
     }

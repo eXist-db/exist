@@ -21,14 +21,14 @@
  */
 package org.exist.xquery.util;
 
+import org.exist.util.CodePointString;
+import org.exist.xmldb.XmldbURI;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.Arrays;
-
-import org.exist.util.CodePointString;
-import org.exist.xmldb.XmldbURI;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -270,8 +270,7 @@ public class URIUtils {
 		result = result.replaceAll("%2C", ",");		
 		result = result.replaceAll("%5B", "[");
 		result = result.replaceAll("%5D", "]");		
-		result = result.replaceAll("%25", "%");
-		return result;
+		return result.replaceAll("%25", "%");
 	}
 	
 	public static String escapeHtmlURI(String uri){
@@ -301,8 +300,7 @@ public class URIUtils {
 		result = result.replaceAll("%2C", ",");		
 		result = result.replaceAll("%5B", "[");
 		result = result.replaceAll("%5D", "]");		
-		result = result.replaceAll("%25", "%");		
-		return result;
+		return result.replaceAll("%25", "%");
 	}
 	
 	/**

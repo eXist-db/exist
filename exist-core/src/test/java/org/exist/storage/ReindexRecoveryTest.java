@@ -36,11 +36,6 @@ import org.exist.util.*;
 import org.exist.util.io.InputStreamUtil;
 import org.exist.xmldb.XmldbURI;
 import org.junit.After;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.*;
-import static org.exist.samples.Samples.SAMPLES;
-
 import org.junit.AfterClass;
 import org.junit.Test;
 import org.xml.sax.SAXException;
@@ -48,6 +43,10 @@ import org.xml.sax.SAXException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Optional;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.exist.samples.Samples.SAMPLES;
+import static org.junit.Assert.*;
 
 /**
  * Test crash recovery after reindexing a collection.
@@ -57,7 +56,7 @@ public class ReindexRecoveryTest {
     private static final Logger LOG = LogManager.getLogger(ReindexRecoveryTest.class);
 
     // we don't use @ClassRule/@Rule as we want to force corruption in some tests
-    private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
+    private final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Test
     public void reindexRecoveryTest() throws EXistException, PermissionDeniedException, IOException, DatabaseConfigurationException, LockException, TriggerException {

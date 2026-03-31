@@ -46,7 +46,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class ManagedLock<T> implements AutoCloseable {
     protected final T lock;
     private final Runnable closer;
-    protected volatile boolean closed = false;
+    protected volatile boolean closed;
 
     ManagedLock(final T lock, final Runnable closer) {
         this.lock = lock;

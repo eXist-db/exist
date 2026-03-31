@@ -38,14 +38,14 @@ import org.junit.Test;
 import java.io.IOException;
 import java.io.InputStream;
 
-import static org.junit.Assert.assertEquals;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.Assert.assertEquals;
 
 public class MediaTypeIntegrationTest extends AbstractClassIntegrationTest {
 
-    private static String TEST_COLLECTION = "/db/restxq/media-type-integration-test";
+    private static final String TEST_COLLECTION = "/db/restxq/media-type-integration-test";
 
-    private static String XQUERY1 =
+    private static final String XQUERY1 =
             """
             xquery version "3.0";
             
@@ -94,7 +94,7 @@ public class MediaTypeIntegrationTest extends AbstractClassIntegrationTest {
                 $mod1:data/person
             };
             """;
-    private static String XQUERY1_FILENAME = "restxq-tests1.xqm";
+    private static final String XQUERY1_FILENAME = "restxq-tests1.xqm";
 
     @BeforeClass
     public static void storeResourceFunctions() throws IOException {

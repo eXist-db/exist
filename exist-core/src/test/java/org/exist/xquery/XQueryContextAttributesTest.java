@@ -60,8 +60,8 @@ import java.io.IOException;
 import java.util.Optional;
 import java.util.Properties;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.*;
 
 /**
@@ -112,10 +112,10 @@ public class XQueryContextAttributesTest {
 
             final XmldbURI libraryQueryUri = XmldbURI.create("/db/mod1.xqm");
             final InputSource libraryQuery = new StringInputSource(
-                    ("""
+                    """
                     module namespace mod1 = 'http://mod1';
                     declare function mod1:f1() { <not-important/> };\
-                    """).getBytes(UTF_8)
+                    """.getBytes(UTF_8)
             );
             storeQuery(broker, transaction, libraryQueryUri, libraryQuery);
 

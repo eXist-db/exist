@@ -21,21 +21,8 @@
  */
 package org.exist.xmldb;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.Random;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.sax.SAXResult;
-
-import org.exist.test.ExistXmldbEmbeddedServer;
 import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
+import org.exist.test.ExistXmldbEmbeddedServer;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -51,6 +38,18 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Database;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.sax.SAXResult;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.Random;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
@@ -74,12 +73,12 @@ public class IndexingTest {
     private Random random;
 
     //	private static String driver = "org.exist.xmldb.DatabaseImpl";
-    private static String baseURI = XmldbURI.LOCAL_DB;
+    private static final String baseURI = XmldbURI.LOCAL_DB;
 
-    private static String username = "admin";
-    private static String password = ""; // <<<
-    private static String name = "test.xml";
-    private String EXIST_HOME = ""; // <<<
+    private static final String username = "admin";
+    private static final String password = ""; // <<<
+    private static final String name = "test.xml";
+    private final String EXIST_HOME = ""; // <<<
     private int effectiveSiblingCount;
     @SuppressWarnings("unused")
     private int effectiveDepth;
@@ -220,13 +219,15 @@ public class IndexingTest {
         int rdepth = 0;
         if (branchNode != null) {
             Node current = branchNode;
-            if (elementName == null || elementName == "")
+            if (elementName == null || "".equals(elementName)) {
                 elementName = "element";
+            }
 
-            if (randomSizes)
+            if (randomSizes) {
                 rdepth = random.nextInt(depth);
-            else
+            } else {
                 rdepth = depth;
+            }
             for (int j = 0; j < rdepth; j++) {
                 Element el = doc.createElement(elementName);
                 current.appendChild(el);
@@ -240,13 +241,15 @@ public class IndexingTest {
         int rdepth = 0;
         if (branchNode != null) {
             Node current = branchNode;
-            if (elementName == null || elementName == "")
+            if (elementName == null || "".equals(elementName)) {
                 elementName = "element";
+            }
 
-            if (randomSizes)
+            if (randomSizes) {
                 rdepth = random.nextInt(depth);
-            else
+            } else {
                 rdepth = depth;
+            }
             for (int j = 0; j < rdepth; j++) {
                 Element el = doc.createElement(elementName);
                 addChildren(el, arity, doc);
@@ -270,10 +273,11 @@ public class IndexingTest {
     private int addChildren(Node rootElem, int length, Document doc) {
         int rlength = 0;
         if (rootElem != null) {
-            if (randomSizes)
+            if (randomSizes) {
                 rlength = random.nextInt(length);
-            else
+            } else {
                 rlength = length;
+            }
             for (int j = 0; j < rlength; j++) {
                 Element el = doc.createElement("element");
                 rootElem.appendChild(el);

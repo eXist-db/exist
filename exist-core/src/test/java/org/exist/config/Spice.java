@@ -34,9 +34,9 @@ public class Spice implements Configurable {
 	@ConfigurationFieldAsAttribute("name")
 	protected String name;
 	
-	protected ConfigurableObject parent = null;
+	protected ConfigurableObject parent;
 	
-	private Configuration configuration = null;
+	private Configuration configuration;
 	
 	public Spice(ConfigurableObject parent, Configuration _config_) {
 		this.parent = parent;

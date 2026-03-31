@@ -43,7 +43,7 @@ public class DynamicAttributeConstructor extends NodeConstructor {
     private Expression qnameExpr;
     private Expression valueExpr;
     
-    private boolean replaceAttribute = false;
+    private boolean replaceAttribute;
 
     public DynamicAttributeConstructor(XQueryContext context) {
         super(context);
@@ -104,13 +104,13 @@ public class DynamicAttributeConstructor extends NodeConstructor {
             final Item qnItem = nameSeq.itemAt(0);
             QName qn;
             if (qnItem.getType() == Type.QNAME)
-                {qn = ((QNameValue) qnItem).getQName();}
-            else
-            	try {
-            		qn = QName.parse(context, nameSeq.getStringValue(), null);
-		    	} catch (final QName.IllegalQNameException e) {
-					throw new XPathException(this, ErrorCodes.XPTY0004, "'" + nameSeq.getStringValue() + "' is not a valid attribute name");
-				}
+                {qn = ((QNameValue) qnItem).getQName();} else {
+                try {
+                    qn = QName.parse(context, nameSeq.getStringValue(), null);
+                } catch (final QName.IllegalQNameException e) {
+                    throw new XPathException(this, ErrorCodes.XPTY0004, "'" + nameSeq.getStringValue() + "' is not a valid attribute name");
+                }
+            }
 
             //Not in the specs but... makes sense
             if(!XMLNames.isName(qn.getLocalPart()))

@@ -21,11 +21,11 @@
  */
 package org.exist.xquery.modules.file;
 
-import java.net.URI;
-import java.nio.file.Path;
-
 import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
+
+import java.net.URI;
+import java.nio.file.Path;
 
 /**
  *  Helper class for FileModule
@@ -34,7 +34,7 @@ import org.exist.xquery.XPathException;
  */
 
 
-public class FileModuleHelper {
+public final class FileModuleHelper {
 
     private FileModuleHelper() {
         // no instance

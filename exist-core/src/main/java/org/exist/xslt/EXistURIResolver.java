@@ -21,15 +21,6 @@
  */
 package org.exist.xslt;
 
-import java.io.IOException;
-import java.lang.reflect.Array;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import javax.xml.transform.Source;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.URIResolver;
-import javax.xml.transform.stream.StreamSource;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.BinaryDocument;
@@ -41,6 +32,16 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.txn.TransactionException;
 import org.exist.storage.txn.Txn;
 import org.exist.xmldb.XmldbURI;
+
+import javax.xml.transform.Source;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.URIResolver;
+import javax.xml.transform.stream.StreamSource;
+import java.io.IOException;
+import java.lang.reflect.Array;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 
 /**
  * Implementation of URIResolver which

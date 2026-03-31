@@ -24,13 +24,7 @@ package org.exist.xquery.functions.fn;
 import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.exist.dom.QName;
 import org.exist.xquery.*;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.IntegerValue;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 import javax.annotation.Nullable;
 
@@ -41,7 +35,7 @@ import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
  */
 public class FunStrLength extends Function {
 
-    public final static FunctionSignature[] signatures = {
+    public static final FunctionSignature[] signatures = {
             new FunctionSignature(
                     new QName("string-length", Function.BUILTIN_FUNCTION_NS),
                     """

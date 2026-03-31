@@ -21,19 +21,7 @@
  */
 package org.exist.xquery.modules;
 
-import java.io.InputStream;
-import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
-import java.math.BigInteger;
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import javax.annotation.Nullable;
-import javax.xml.transform.Source;
-import javax.xml.transform.sax.SAXSource;
-
+import com.evolvedbinary.j8fu.Either;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Namespaces;
@@ -44,12 +32,24 @@ import org.exist.dom.memtree.SAXAdapter;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.lock.ManagedLock;
 import org.exist.util.HtmlToXmlParser;
-import com.evolvedbinary.j8fu.Either;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.NodeValue;
 import org.w3c.dom.Document;
 import org.xml.sax.*;
+
+import javax.annotation.Nullable;
+import javax.xml.transform.Source;
+import javax.xml.transform.sax.SAXSource;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.io.StringReader;
+import java.math.BigInteger;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * Utility Functions for XQuery Extension Modules
@@ -238,7 +238,7 @@ public class ModuleUtils {
                 reader.parse(inputSource);
                 final Document doc = receiver.getDocument();
                 // return (NodeValue)doc.getDocumentElement();
-                return((NodeValue)doc);
+                return (NodeValue)doc;
             }  finally {
                 context.popDocumentContext();
 
@@ -279,7 +279,7 @@ public class ModuleUtils {
                 reader.setContentHandler(receiver);
                 reader.parse(src.getInputSource());
                 final Document doc = receiver.getDocument();
-                return((NodeValue)doc);
+                return (NodeValue)doc;
             }  finally {
                 context.popDocumentContext();
             }
@@ -477,10 +477,9 @@ public class ModuleUtils {
      * @return the object stored in the context or null
      */
     public static @Nullable <T> T retrieveObjectFromContextMap(final XQueryContext context, final String contextMapName, final long objectUID) {
-        return readContextMap(context, contextMapName, contextMap -> {
+        return readContextMap(context, contextMapName, contextMap ->
             // get the object
-            return (T) contextMap.get(objectUID);
-        });
+            (T) contextMap.get(objectUID));
     }
 
     /**
@@ -495,10 +494,9 @@ public class ModuleUtils {
      * @return the object that was removed from the context or null if there was no object for the UID
      */
     public static @Nullable <T> T removeObjectFromContextMap(final XQueryContext context, final String contextMapName, final long objectUID) {
-        return modifyContextMap(context, contextMapName, contextMap -> {
+        return modifyContextMap(context, contextMapName, contextMap ->
             // get the object
-            return (T) contextMap.remove(objectUID);
-        });
+            (T) contextMap.remove(objectUID));
     }
 
     /**
@@ -574,7 +572,7 @@ public class ModuleUtils {
         U read(final Map<Long, T> map);
     }
 
-    public static abstract class ContextMapEntryModifier<T> implements ContextMapModifierWithoutResult<T> {
+    public abstract static class ContextMapEntryModifier<T> implements ContextMapModifierWithoutResult<T> {
         @Override
         public void modifyWithoutResult(final Map<Long, T> map) {
             for(final Entry<Long, T> entry : map.entrySet()) {

@@ -42,7 +42,7 @@ import static org.junit.Assert.fail;
  */
 public class RemoteDatabaseImplTest extends RemoteDBTest {
 
-    protected final static String ADMIN_COLLECTION_NAME = "admin-collection";
+    protected static final String ADMIN_COLLECTION_NAME = "admin-collection";
 
     @Before
 	public void setUp() throws ClassNotFoundException, InstantiationException, XMLDBException, IllegalAccessException {

@@ -52,8 +52,8 @@ import java.util.concurrent.locks.ReentrantLock;
 public class SortIndexWorker implements IndexWorker {
 
     private ReindexMode mode = ReindexMode.STORE;
-    private DocumentImpl document = null;
-    private SortIndex index;
+    private DocumentImpl document;
+    private final SortIndex index;
     private final LockManager lockManager;
 
     public SortIndexWorker(final SortIndex index) {
@@ -81,10 +81,8 @@ public class SortIndexWorker implements IndexWorker {
 
     @Override
     public void flush() {
-        switch (mode) {
-            case REMOVE_ALL_NODES:
-                remove(document);
-                break;
+        if (mode == StreamListener.ReindexMode.REMOVE_ALL_NODES) {
+            remove(document);
         }
     }
 
@@ -177,8 +175,9 @@ public class SortIndexWorker implements IndexWorker {
     }
 
     public void remove(final DocumentImpl doc) {
-        if (index.btree == null)
+        if (index.btree == null) {
             return;
+        }
         final byte[] fromKey = new byte[]{1};
         final byte[] endKey = new byte[]{2};
 
@@ -325,13 +324,14 @@ public class SortIndexWorker implements IndexWorker {
         return new Occurrences[0];
     }
 
-    private final static class FindIdCallback implements BTreeCallback {
-        long max = 0;
-        List<Long> allIds = null;
+    private static final class FindIdCallback implements BTreeCallback {
+        long max;
+        List<Long> allIds;
 
         private FindIdCallback(final boolean findIds) {
-            if (findIds)
+            if (findIds) {
                 allIds = new ArrayList<>(10);
+            }
         }
 
         public boolean indexInfo(final Value value, final long pointer) throws TerminatedException {

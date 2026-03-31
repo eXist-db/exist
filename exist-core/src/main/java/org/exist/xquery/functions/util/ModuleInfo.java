@@ -21,10 +21,6 @@
  */
 package org.exist.xquery.functions.util;
 
-import java.net.URI;
-import java.util.Iterator;
-import java.util.Map;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
@@ -37,16 +33,12 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Module;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.BooleanValue;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
+import org.exist.xquery.value.*;
 
 import javax.xml.XMLConstants;
+import java.net.URI;
+import java.util.Iterator;
+import java.util.Map;
 
 import static org.apache.commons.lang3.ArrayUtils.isEmpty;
 
@@ -60,7 +52,7 @@ public class ModuleInfo extends BasicFunction {
 
 	protected static final Logger logger = LogManager.getLogger(ModuleInfo.class);
 
-	public final static FunctionSignature registeredModulesSig =
+	public static final FunctionSignature registeredModulesSig =
 		new FunctionSignature(
 			new QName("registered-modules", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 			"Returns a sequence containing the namespace URIs of all modules " +
@@ -68,14 +60,14 @@ public class ModuleInfo extends BasicFunction {
 			null,
 			new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE_OR_MORE, "the sequence of all of the active function modules namespace URIs"));
 	
-	public final static FunctionSignature registeredModuleSig =
+	public static final FunctionSignature registeredModuleSig =
 		new FunctionSignature(
 			new QName("is-module-registered", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 			"Returns a Boolean value if the module identified by the namespace URI is registered.",
 			new SequenceType[] { NAMESPACE_URI_PARAMETER },
 			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if the namespace URI is registered as an active function module"));
 
-    public final static FunctionSignature mappedModulesSig =
+    public static final FunctionSignature mappedModulesSig =
 		new FunctionSignature(
 			new QName("mapped-modules", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 			"Returns a sequence containing the namespace URIs of all XQuery modules " +
@@ -84,28 +76,28 @@ public class ModuleInfo extends BasicFunction {
 			null,
 			new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE_OR_MORE, "the sequence of all of the active function modules namespace URIs"));
 
-	public final static FunctionSignature mappedModuleSig =
+	public static final FunctionSignature mappedModuleSig =
 		new FunctionSignature(
 			new QName("is-module-mapped", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 			"Returns a Boolean value if the module statically mapped to a source location in the configuration file.",
 			new SequenceType[] { NAMESPACE_URI_PARAMETER },
 			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if the namespace URI is mapped as an active function module"));
 
-	public final static FunctionSignature mapModuleSig =
+	public static final FunctionSignature mapModuleSig =
 		new FunctionSignature(
 			new QName("map-module", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 			"Map the module to a source location. This function is only available to the DBA role.",
 			new SequenceType[] { NAMESPACE_URI_PARAMETER, LOCATION_URI_PARAMETER },
 			new FunctionReturnSequenceType( Type.ITEM, Cardinality.EMPTY_SEQUENCE, "Returns an empty sequence" ));
 
-	public final static FunctionSignature unmapModuleSig =
+	public static final FunctionSignature unmapModuleSig =
 		new FunctionSignature(
 			new QName("unmap-module", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 			"Remove relation between module namespace and source location. This function is only available to the DBA role.",
 			new SequenceType[] { NAMESPACE_URI_PARAMETER },
 			new FunctionReturnSequenceType( Type.ITEM, Cardinality.EMPTY_SEQUENCE, "Returns an empty sequence" ));
 
-	public final static FunctionSignature moduleDescriptionSig =
+	public static final FunctionSignature moduleDescriptionSig =
 		new FunctionSignature(
 			new QName("get-module-description", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 			"Returns a short description of the module identified by the namespace URI.",
@@ -114,7 +106,7 @@ public class ModuleInfo extends BasicFunction {
 				"Use inspect:inspect-module-uri#1 instead!"
         );
 	
-	public final static FunctionSignature moduleInfoSig =
+	public static final FunctionSignature moduleInfoSig =
 		new FunctionSignature(
 			new QName("get-module-info", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 			"Returns an XML fragment providing additional information about the module identified by the " +
@@ -124,7 +116,7 @@ public class ModuleInfo extends BasicFunction {
 					"the description of the active function module identified by the namespace URI")
         );
 	
-	public final static FunctionSignature moduleInfoWithURISig =
+	public static final FunctionSignature moduleInfoWithURISig =
             new FunctionSignature(
                 new QName("get-module-info", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
                 "Returns an XML fragment providing additional information about the module identified by the " +

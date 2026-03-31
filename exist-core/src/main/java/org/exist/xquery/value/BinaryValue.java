@@ -23,9 +23,9 @@ package org.exist.xquery.value;
 
 import com.ibm.icu.text.Collator;
 import org.apache.commons.io.output.CloseShieldOutputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Expression;
@@ -40,7 +40,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public abstract class BinaryValue extends AtomicValue implements Closeable {
 
-    private final static Logger LOG = LogManager.getLogger(BinaryValue.class);
+    private static final Logger LOG = LogManager.getLogger(BinaryValue.class);
 
     protected final int READ_BUFFER_SIZE = 16 * 1024; //16kb
 
@@ -280,8 +280,12 @@ public abstract class BinaryValue extends AtomicValue implements Closeable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         BinaryValue that = (BinaryValue) o;
         return compareTo(that) == 0;
     }

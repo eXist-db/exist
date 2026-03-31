@@ -39,7 +39,7 @@ import javax.annotation.Nullable;
 public class AbstractChainOfReceivers implements ChainOfReceivers {
 
     protected Receiver next;
-    protected NodeHandle currentNode = null;
+    protected NodeHandle currentNode;
 
     @Override
     public void setNextInChain(Receiver next) {

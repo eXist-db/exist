@@ -35,13 +35,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Option;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
@@ -55,7 +49,7 @@ public class Expand extends BasicFunction {
 
     private static final QName FQN_EXPAND = new QName("expand", UtilModule.NAMESPACE_URI, UtilModule.PREFIX);
 
-    public final static FunctionSignature[] signatures = {
+    public static final FunctionSignature[] signatures = {
         new FunctionSignature(
             FQN_EXPAND,
             "Creates an in-memory copy of the passed node set, using the specified " +

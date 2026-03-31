@@ -21,12 +21,12 @@
  */
 package org.exist.util;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import javax.xml.parsers.SAXParserFactory;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import javax.xml.parsers.SAXParserFactory;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 /**
  * Helper class for creating an instance of javax.xml.parsers.SAXParserFactory
@@ -35,9 +35,9 @@ import org.apache.logging.log4j.Logger;
  */
 public class ExistSAXParserFactory {
 
-    private final static Logger LOG = LogManager.getLogger(ExistSAXParserFactory.class);
+    private static final Logger LOG = LogManager.getLogger(ExistSAXParserFactory.class);
 
-    public final static String ORG_EXIST_SAXPARSERFACTORY = "org.exist.SAXParserFactory";
+    public static final String ORG_EXIST_SAXPARSERFACTORY = "org.exist.SAXParserFactory";
 
     /**
      * Get SAXParserFactory instance specified by factory class name.

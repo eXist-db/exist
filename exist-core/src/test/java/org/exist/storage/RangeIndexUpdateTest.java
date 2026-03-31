@@ -25,10 +25,10 @@ import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.CollectionConfigurationManager;
+import org.exist.dom.QName;
 import org.exist.dom.persistent.DefaultDocumentSet;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.MutableDocumentSet;
-import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
@@ -43,9 +43,6 @@ import org.exist.xquery.value.StringValue;
 import org.exist.xupdate.Modification;
 import org.exist.xupdate.XUpdateProcessor;
 import org.junit.*;
-
-import static org.junit.Assert.*;
-
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -53,6 +50,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.Optional;
+
+import static org.junit.Assert.*;
 
 public class RangeIndexUpdateTest {
 

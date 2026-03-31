@@ -23,23 +23,23 @@ package org.exist.xquery.modules.lucene;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exist.dom.QName;
+import org.exist.dom.persistent.Match;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.indexing.lucene.LuceneIndex;
 import org.exist.indexing.lucene.LuceneMatch;
 import org.exist.xquery.BasicFunction;
-import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Cardinality;
-import org.exist.xquery.XQueryContext;
+import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.*;
-import org.exist.dom.QName;
-import org.exist.dom.persistent.NodeProxy;
-import org.exist.dom.persistent.Match;
-import org.exist.indexing.lucene.LuceneIndex;
 
 public class Score extends BasicFunction {
 	
 	protected static final Logger logger = LogManager.getLogger(Score.class);
 
-    public final static FunctionSignature signature =
+    public static final FunctionSignature signature =
         new FunctionSignature(
             new QName("score", LuceneModule.NAMESPACE_URI, LuceneModule.PREFIX),
             "Returns a computed relevance score for the given node. The score is the sum of all " +
@@ -67,9 +67,9 @@ public class Score extends BasicFunction {
         }
         NodeProxy proxy = (NodeProxy) nodeValue;
         Match match = proxy.getMatches();
-        float score = 0.0f;
+        float score = 0.0F;
         while (match != null) {
-            if (match.getIndexId().equals(LuceneIndex.ID)) {
+            if (LuceneIndex.ID.equals(match.getIndexId())) {
                 float currentScore = ((LuceneMatch)match).getScore();
                 score += currentScore;
             }

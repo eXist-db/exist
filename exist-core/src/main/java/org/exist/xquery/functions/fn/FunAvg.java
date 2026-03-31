@@ -23,7 +23,6 @@ package org.exist.xquery.functions.fn;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
@@ -33,18 +32,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.AtomicValue;
-import org.exist.xquery.value.ComputableValue;
-import org.exist.xquery.value.DoubleValue;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.IntegerValue;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.NumericValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 /**
  * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
@@ -53,9 +41,9 @@ public class FunAvg extends Function {
 
     protected static final Logger logger = LogManager.getLogger(FunAvg.class);
 
-    private boolean gotInfinity = false;
+    private boolean gotInfinity;
 
-    public final static FunctionSignature signature =
+    public static final FunctionSignature signature =
         new FunctionSignature(
             new QName("avg", Function.BUILTIN_FUNCTION_NS),
             "Returns the average of the values in the input sequence $values, " +
@@ -134,8 +122,8 @@ public class FunAvg extends Function {
         if (!gotInfinity) {
             if (Type.subTypeOfUnion(result.getItemType(), Type.NUMERIC) &&
                 ((NumericValue)result).isInfinite()) {
-                //Throw an overflow exception here since we get an infinity 
-                //whereas is hasn't been provided by the sequence
+                //Throw an overflow exception here since we get an infinity
+                //whereas it hasn't been provided by the sequence
                 //TODO ? -pb
             }
         }

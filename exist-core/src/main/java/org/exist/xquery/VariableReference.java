@@ -130,8 +130,7 @@ public class VariableReference extends AbstractExpression {
             final Variable var = context.resolveVariable(qname);
             if (var != null) {
                 if (var.getValue() != null) {
-                    final int type = var.getValue().getItemType();
-                    return type;
+                    return var.getValue().getItemType();
                 } else {
                     return var.getType();
                 }
@@ -147,8 +146,7 @@ public class VariableReference extends AbstractExpression {
         try {
             final Variable var = context.resolveVariable(qname);
             if (var != null) {
-                final int deps = var.getDependencies(context);
-                return deps;
+                return var.getDependencies(context);
             }
         } catch (final XPathException e) {
             //TODO : don't ignore ? -pb
@@ -161,8 +159,7 @@ public class VariableReference extends AbstractExpression {
         try {
             final Variable var = context.resolveVariable(qname);
             if (var != null && var.getValue() != null) {
-                final Cardinality card = var.getValue().getCardinality();
-                return card;
+                return var.getValue().getCardinality();
             }
         } catch (final XPathException e) {
             //TODO : don't ignore ?

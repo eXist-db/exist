@@ -21,13 +21,12 @@
  */
 package org.exist.client;
 
+import org.exist.util.MimeTable;
+
+import javax.swing.filechooser.FileFilter;
 import java.io.File;
 import java.util.Iterator;
-
 import java.util.List;
-import javax.swing.filechooser.FileFilter;
-
-import org.exist.util.MimeTable;
 
 
 /**
@@ -38,8 +37,8 @@ import org.exist.util.MimeTable;
  */
 public class MimeTypeFileFilter extends FileFilter {
     
-    private String description = null;	
-    private List<String> extensions = null;
+    private final String description;	
+    private final List<String> extensions;
 
     public MimeTypeFileFilter(String mimeType) {
         description = MimeTable.getInstance().getContentType(mimeType).getDescription();

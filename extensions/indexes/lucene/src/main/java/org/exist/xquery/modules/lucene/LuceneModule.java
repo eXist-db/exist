@@ -21,9 +21,6 @@
  */
 package org.exist.xquery.modules.lucene;
 
-import java.util.List;
-import java.util.Map;
-
 import org.exist.dom.QName;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.ErrorCodes.ErrorCode;
@@ -32,6 +29,9 @@ import org.exist.xquery.FunctionDef;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * Module function definitions for Lucene-based full text indexed searching.
@@ -45,13 +45,13 @@ public class LuceneModule extends AbstractInternalModule {
     public static final String NAMESPACE_URI = "http://exist-db.org/xquery/lucene";
 
     public static final String PREFIX = "ft";
-    public final static String INCLUSION_DATE = "2008-09-03";
-    public final static String RELEASED_IN_VERSION = "eXist-1.4";
+    public static final String INCLUSION_DATE = "2008-09-03";
+    public static final String RELEASED_IN_VERSION = "eXist-1.4";
 
-    public final static ErrorCode EXXQDYFT0001 = new LuceneErrorCode("EXXQDYFT0001", "Permission denied.");
-    public final static ErrorCode EXXQDYFT0002 = new LuceneErrorCode("EXXQDYFT0002", "IO Exception in lucene index.");
-    public final static ErrorCode EXXQDYFT0003 = new LuceneErrorCode("EXXQDYFT0003", "Document not found.");
-    public final static ErrorCode EXXQDYFT0004 = new LuceneErrorCode("EXXQDYFT0004", "Wrong configuration passed to ft:query");
+    public static final ErrorCode EXXQDYFT0001 = new LuceneErrorCode("EXXQDYFT0001", "Permission denied.");
+    public static final ErrorCode EXXQDYFT0002 = new LuceneErrorCode("EXXQDYFT0002", "IO Exception in lucene index.");
+    public static final ErrorCode EXXQDYFT0003 = new LuceneErrorCode("EXXQDYFT0003", "Document not found.");
+    public static final ErrorCode EXXQDYFT0004 = new LuceneErrorCode("EXXQDYFT0004", "Wrong configuration passed to ft:query");
     
     public static final FunctionDef[] functions = {
         new FunctionDef(Query.signatures[0], Query.class),
@@ -117,7 +117,7 @@ public class LuceneModule extends AbstractInternalModule {
         return FunctionDSL.functionSignatures(new QName(name, NAMESPACE_URI, PREFIX), description, returnType, variableParamTypes);
     }
 
-    protected final static class LuceneErrorCode extends ErrorCode {
+    protected static final class LuceneErrorCode extends ErrorCode {
 
 		public LuceneErrorCode(String code, String description) {
 			super(new QName(code, NAMESPACE_URI, PREFIX), description);

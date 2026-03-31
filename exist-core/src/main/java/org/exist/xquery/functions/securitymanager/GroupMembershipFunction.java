@@ -21,9 +21,6 @@
  */
 package org.exist.xquery.functions.securitymanager;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.exist.EXistException;
 import org.exist.dom.QName;
 import org.exist.security.*;
@@ -36,6 +33,9 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 
 /**
  *
@@ -43,16 +43,16 @@ import org.exist.xquery.value.*;
  */
 public class GroupMembershipFunction extends BasicFunction {
 
-    private final static QName qnAddGroupMember = new QName("add-group-member", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
-    private final static QName qnRemoveGroupMember = new QName("remove-group-member", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
-    private final static QName qnGetGroupMembers = new QName("get-group-members", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
-    private final static QName qnAddGroupManager = new QName("add-group-manager", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
-    private final static QName qnRemoveGroupManager = new QName("remove-group-manager", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
-    private final static QName qnGetGroupManagers = new QName("get-group-managers", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
-    private final static QName qnIsDba = new QName("is-dba", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
-    private final static QName qnSetPrimaryGroup = new QName("set-user-primary-group", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    private static final QName qnAddGroupMember = new QName("add-group-member", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    private static final QName qnRemoveGroupMember = new QName("remove-group-member", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    private static final QName qnGetGroupMembers = new QName("get-group-members", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    private static final QName qnAddGroupManager = new QName("add-group-manager", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    private static final QName qnRemoveGroupManager = new QName("remove-group-manager", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    private static final QName qnGetGroupManagers = new QName("get-group-managers", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    private static final QName qnIsDba = new QName("is-dba", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    private static final QName qnSetPrimaryGroup = new QName("set-user-primary-group", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
 
-    public final static FunctionSignature FNS_ADD_GROUP_MEMBER = new FunctionSignature(
+    public static final FunctionSignature FNS_ADD_GROUP_MEMBER = new FunctionSignature(
         qnAddGroupMember,
         "Adds a user to a group. Can only be called by a group manager or DBA.",
         new SequenceType[] {
@@ -62,7 +62,7 @@ public class GroupMembershipFunction extends BasicFunction {
         new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)
     );
 
-    public final static FunctionSignature FNS_REMOVE_GROUP_MEMBER = new FunctionSignature(
+    public static final FunctionSignature FNS_REMOVE_GROUP_MEMBER = new FunctionSignature(
         qnRemoveGroupMember,
         "Removes a user from a group. Can only be called by a group manager of DBA.",
         new SequenceType[] {
@@ -72,7 +72,7 @@ public class GroupMembershipFunction extends BasicFunction {
         new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)
     );
 
-    public final static FunctionSignature FNS_GET_GROUP_MEMBERS = new FunctionSignature(
+    public static final FunctionSignature FNS_GET_GROUP_MEMBERS = new FunctionSignature(
         qnGetGroupMembers,
         "Gets a list of the group members.",
         new SequenceType[] {
@@ -81,7 +81,7 @@ public class GroupMembershipFunction extends BasicFunction {
         new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE_OR_MORE, "The list of group members for the group $group")
     );
 
-    public final static FunctionSignature FNS_ADD_GROUP_MANAGER = new FunctionSignature(
+    public static final FunctionSignature FNS_ADD_GROUP_MANAGER = new FunctionSignature(
         qnAddGroupManager,
         "Adds a manager to a groups managers. Can only be called by a group manager or DBA.",
         new SequenceType[] {
@@ -91,7 +91,7 @@ public class GroupMembershipFunction extends BasicFunction {
         new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)
     );
 
-    public final static FunctionSignature FNS_REMOVE_GROUP_MANAGER = new FunctionSignature(
+    public static final FunctionSignature FNS_REMOVE_GROUP_MANAGER = new FunctionSignature(
         qnRemoveGroupManager,
         "Removes a manager from a groups managers. Can only be called by a group manager of DBA.",
         new SequenceType[] {
@@ -101,7 +101,7 @@ public class GroupMembershipFunction extends BasicFunction {
         new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)
     );
 
-    public final static FunctionSignature FNS_GET_GROUP_MANAGERS = new FunctionSignature(
+    public static final FunctionSignature FNS_GET_GROUP_MANAGERS = new FunctionSignature(
         qnGetGroupManagers,
         "Gets a list of the group managers. Can only be called by a group manager.",
         new SequenceType[] {
@@ -110,7 +110,7 @@ public class GroupMembershipFunction extends BasicFunction {
         new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE_OR_MORE, "The list of group managers for the group $group")
     );
 
-    public final static FunctionSignature FNS_IS_DBA = new FunctionSignature(
+    public static final FunctionSignature FNS_IS_DBA = new FunctionSignature(
         qnIsDba,
         "Determines if the user is a DBA.",
         new SequenceType[] {
@@ -119,7 +119,7 @@ public class GroupMembershipFunction extends BasicFunction {
         new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true of the user is a DBA, false otherwise.")
     );
 
-    public final static FunctionSignature FNS_SET_USER_PRIMARY_GROUP = new FunctionSignature(
+    public static final FunctionSignature FNS_SET_USER_PRIMARY_GROUP = new FunctionSignature(
         qnSetPrimaryGroup,
         "Sets the primary group of a user account. If the user is not yet in the group, then they are added to the group first.",
         new SequenceType[] {

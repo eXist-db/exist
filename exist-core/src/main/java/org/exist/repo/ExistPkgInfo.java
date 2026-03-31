@@ -79,7 +79,7 @@ public class ExistPkgInfo
         myXquery.put(uri, file);
     }
 
-    private Set<String>      myJars = new HashSet<>();
-    private Map<URI, String> myJava = new HashMap<>();
-    private Map<URI, String> myXquery = new HashMap<>();
+    private final Set<String>      myJars = new HashSet<>();
+    private final Map<URI, String> myJava = new HashMap<>();
+    private final Map<URI, String> myXquery = new HashMap<>();
 }

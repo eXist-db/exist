@@ -21,9 +21,6 @@
  */
 package org.exist.xquery.functions.fn;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import net.sf.saxon.Configuration;
 import net.sf.saxon.functions.Replace;
 import net.sf.saxon.regex.RegularExpression;
@@ -33,6 +30,9 @@ import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.exist.xquery.FunctionDSL.*;
 import static org.exist.xquery.regex.RegexUtil.*;

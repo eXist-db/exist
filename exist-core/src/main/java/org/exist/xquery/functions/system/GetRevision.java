@@ -41,7 +41,7 @@ import org.exist.xquery.value.Type;
  */
 public class GetRevision extends BasicFunction {
 
-    public final static FunctionSignature signature = new FunctionSignature(
+    public static final FunctionSignature signature = new FunctionSignature(
         new QName("get-revision", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
         "Returns the Git commit ID of the eXist instance running this query.",
         FunctionSignature.NO_ARGS,

@@ -21,46 +21,16 @@
  */
 package org.exist.indexing.ngram;
 
-import java.io.IOException;
-import java.util.*;
-import java.util.concurrent.locks.ReentrantLock;
-
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.collections.Collection;
-import org.exist.dom.persistent.AttrImpl;
-import org.exist.dom.persistent.AbstractCharacterData;
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.DocumentSet;
-import org.exist.dom.persistent.ElementImpl;
-import org.exist.dom.persistent.ExtArrayNodeSet;
-import org.exist.dom.persistent.IStoredNode;
-import org.exist.dom.persistent.Match;
-import org.exist.dom.persistent.NodeProxy;
-import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.QName;
-import org.exist.dom.persistent.SymbolTable;
-import org.exist.indexing.AbstractMatchListener;
-import org.exist.indexing.AbstractStreamListener;
-import org.exist.indexing.Index;
-import org.exist.indexing.IndexController;
-import org.exist.indexing.IndexWorker;
-import org.exist.indexing.MatchListener;
-import org.exist.indexing.OrderedValuesIndex;
-import org.exist.indexing.QNamedKeysIndex;
-import org.exist.indexing.StreamListener;
+import org.exist.dom.persistent.*;
+import org.exist.indexing.*;
 import org.exist.indexing.StreamListener.ReindexMode;
 import org.exist.numbering.NodeId;
 import org.exist.stax.ExtendedXMLStreamReader;
-import org.exist.storage.DBBroker;
-import org.exist.storage.ElementValue;
-import org.exist.storage.IndexSpec;
-import org.exist.storage.NodePath;
-import org.exist.storage.OccurrenceList;
+import org.exist.storage.*;
 import org.exist.storage.btree.BTreeCallback;
 import org.exist.storage.btree.BTreeException;
 import org.exist.storage.btree.IndexQuery;
@@ -78,6 +48,13 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.locks.ReentrantLock;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -103,8 +80,8 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     private final org.exist.indexing.ngram.NGramIndex index;
 
     private ReindexMode mode = ReindexMode.STORE;
-    private char[] buf = new char[1024];
-    private DocumentImpl currentDoc = null;
+    private final char[] buf = new char[1024];
+    private DocumentImpl currentDoc;
     private Map<QName, ?> config;
     private final Deque<XMLString> contentStack = new ArrayDeque<>();
 
@@ -113,7 +90,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     private final Map<QNameTerm, OccurrenceList> ngrams = new TreeMap<>();
     private final VariableByteOutputStream os = new VariableByteOutputStream(128);
 
-    private NGramMatchListener matchListener = null;
+    private NGramMatchListener matchListener;
 
     public NGramIndexWorker(final DBBroker broker, final org.exist.indexing.ngram.NGramIndex index) {
         this.broker = broker;
@@ -698,22 +675,22 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         }
     }
 
-    private static class NGramMatchListener extends AbstractMatchListener {
+    private static final class NGramMatchListener extends AbstractMatchListener {
         private Match match;
-        private Deque<NodeOffset> offsetStack = null;
-        private NGramMatchCallback callback = null;
+        private Deque<NodeOffset> offsetStack;
+        private NGramMatchCallback callback;
         @SuppressWarnings("unused")
         private NodeProxy root;
         /** When a match spans text nodes, we emit startElement in the first chunk but defer endElement. */
-        private NodeId pendingMatchNodeId = null;
+        private NodeId pendingMatchNodeId;
         private int pendingMatchEndOffset = -1;
         /** True when we have an open exist:match element (emitted startElement but not endElement). */
-        private boolean pendingMatchOpen = false;
+        private boolean pendingMatchOpen;
         /** True when the current element had no events since startElement (i.e. empty). */
         private boolean elementJustStarted = true;
         /** One-event lookahead: when a pending match hits startElement, we buffer instead of closing. */
-        private QName bufferedStartQname = null;
-        private AttrList bufferedStartAttribs = null;
+        private QName bufferedStartQname;
+        private AttrList bufferedStartAttribs;
 
         private NGramMatchListener(final DBBroker broker, final NodeProxy proxy) {
             reset(broker, proxy);
@@ -911,7 +888,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     // scan all matches
                     Match next = match;
                     while (next != null) {
-                        if (next.getIndexId().equals(NGramIndex.ID) && next.getNodeId().equals(no.nodeId)) {
+                        if (NGramIndex.ID.equals(next.getIndexId()) && next.getNodeId().equals(no.nodeId)) {
                             final int freq = next.getFrequency();
                             for (int j = 0; j < freq; j++) {
                                 final Match.Offset offset = next.getOffset(j);
@@ -988,7 +965,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     private record ChunkOffset(int start, int len, NodeId nodeId, int absEnd, int matchEnd, boolean spansNextChunk) {}
 
-    private static class NodeOffset {
+    private static final class NodeOffset {
         private final NodeId nodeId;
         private int offset;
 
@@ -1217,7 +1194,7 @@ public class NGramIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                         //TODO : revisit
                         if (contextSet != null) {
                             final NodeProxy parentNode = contextSet.parentWithChild(storedDocument, nodeId, false, true);
-                            include = (parentNode != null);
+                            include = parentNode != null;
                         }
                         if (include) {
                             Occurrences oc = map.get(term);

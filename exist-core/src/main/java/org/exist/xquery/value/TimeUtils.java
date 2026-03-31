@@ -40,7 +40,7 @@ import java.util.TimeZone;
  *
  * @author <a href="mailto:piotr@ideanest.com">Piotr Kaminski</a>
  */
-public class TimeUtils {
+public final class TimeUtils {
 
     private static final TimeUtils INSTANCE = new TimeUtils();
     public static final Duration ONE_DAY = INSTANCE.factory.newDuration(true, 0, 0, 1, 0, 0, 0);

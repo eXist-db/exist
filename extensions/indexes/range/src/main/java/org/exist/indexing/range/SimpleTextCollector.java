@@ -21,9 +21,9 @@
  */
 package org.exist.indexing.range;
 
-import org.exist.dom.persistent.AttrImpl;
-import org.exist.dom.persistent.AbstractCharacterData;
 import org.exist.dom.QName;
+import org.exist.dom.persistent.AbstractCharacterData;
+import org.exist.dom.persistent.AttrImpl;
 import org.exist.storage.NodePath;
 import org.exist.util.XMLString;
 
@@ -33,7 +33,7 @@ import java.util.List;
 public class SimpleTextCollector implements TextCollector {
 
     private boolean includeNested = true;
-    private RangeIndexConfigElement config = null;
+    private RangeIndexConfigElement config;
     private XMLString buf = new XMLString();
     private int wsTreatment = XMLString.SUPPRESS_NONE;
     private boolean caseSensitive = true;

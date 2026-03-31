@@ -168,27 +168,27 @@ public class JournalTest {
 
     @Test
     public void getFiles() throws IOException {
-        List<String> input = Arrays.asList(new String[]{ "0000000001.log" });
+        List<String> input = Arrays.asList( "0000000001.log");
         Path mockJournalDir = createTempDirWithFiles(input);
         List<String> actual = Journal.getFiles(mockJournalDir).map(FileUtils::fileName).collect(Collectors.toList());
         assertEquals(input, actual);
 
-        input = Arrays.asList(new String[]{ "0000000001.log", "0000000002.log", "000000000a.log" });
+        input = Arrays.asList( "0000000001.log", "0000000002.log", "000000000a.log");
         mockJournalDir = createTempDirWithFiles(input);
         actual = Journal.getFiles(mockJournalDir).map(FileUtils::fileName).collect(Collectors.toList());
         Collections.sort(input);
         Collections.sort(actual);
         assertEquals(input, actual);
 
-        input = Arrays.asList(new String[]{ "0000000001.log", "0000000001.log" + Journal.BAK_FILE_SUFFIX, "0000000001_index.log", "journal.lck" });
+        input = Arrays.asList( "0000000001.log", "0000000001.log" + Journal.BAK_FILE_SUFFIX, "0000000001_index.log", "journal.lck");
         mockJournalDir = createTempDirWithFiles(input);
         actual = Journal.getFiles(mockJournalDir).map(FileUtils::fileName).collect(Collectors.toList());
-        assertEquals(Arrays.asList(new String[] { "0000000001.log" }), actual);
+        assertEquals(Arrays.asList( "0000000001.log"), actual);
     }
 
     @Test
     public void getFile() throws IOException {
-        List<String> input = Arrays.asList(new String[]{ "0000000001.log" });
+        List<String> input = Arrays.asList( "0000000001.log");
         Path mockJournalDir = createTempDirWithFiles(input);
 
         Path journalFile = Journal.getFile(mockJournalDir, (short)0);
@@ -219,7 +219,7 @@ public class JournalTest {
         assertFalse(Files.exists(journalFile));  // no such file!
         assertEquals("0000007fff.log", FileUtils.fileName(journalFile));
 
-        input = Arrays.asList(new String[]{ "0000000001.log", "00000000af.log", "000000000a.log", "000000000f.log" });
+        input = Arrays.asList( "0000000001.log", "00000000af.log", "000000000a.log", "000000000f.log");
         mockJournalDir = createTempDirWithFiles(input);
 
         journalFile = Journal.getFile(mockJournalDir, (short)1);

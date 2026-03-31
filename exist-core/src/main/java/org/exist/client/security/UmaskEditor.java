@@ -26,7 +26,6 @@ import javax.swing.JSpinner;
 import javax.swing.JSpinner.DefaultEditor;
 import javax.swing.JTextField;
 import javax.swing.text.DefaultFormatterFactory;
-
 import java.io.Serial;
 
 /**

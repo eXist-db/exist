@@ -56,10 +56,10 @@ public class HistoryTriggerTest {
     @ClassRule
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
-    private static XmldbURI TEST_COLLECTION_URI = XmldbURI.ROOT_COLLECTION_URI.append("test-history-trigger");
-    private static XmldbURI TEST_CONFIG_COLLECTION_URI = XmldbURI.CONFIG_COLLECTION_URI.append(TEST_COLLECTION_URI);
+    private static final XmldbURI TEST_COLLECTION_URI = XmldbURI.ROOT_COLLECTION_URI.append("test-history-trigger");
+    private static final XmldbURI TEST_CONFIG_COLLECTION_URI = XmldbURI.CONFIG_COLLECTION_URI.append(TEST_COLLECTION_URI);
 
-    private static String COLLECTION_CONFIG =
+    private static final String COLLECTION_CONFIG =
             """
             <collection xmlns="http://exist-db.org/collection-config/1.0">
                 <triggers>

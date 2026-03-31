@@ -28,8 +28,8 @@ package org.exist.security;
 public interface ACLPermission {
 
     enum ACE_ACCESS_TYPE {
-        DENIED(01),
-        ALLOWED(02);
+        DENIED(1),
+        ALLOWED(2);
         private final int val;
 
         ACE_ACCESS_TYPE(int val) {
@@ -52,8 +52,8 @@ public interface ACLPermission {
     }
 
     enum ACE_TARGET {
-        USER(01),
-        GROUP(02);
+        USER(1),
+        GROUP(2);
         private final int val;
 
         ACE_TARGET(int val) {

@@ -28,8 +28,8 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 
 import javax.annotation.Nullable;
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
@@ -105,7 +105,7 @@ public class BinaryValueFromFile extends BinaryValue {
         }
 
         try {
-            final byte data[] = new byte[READ_BUFFER_SIZE];
+            final byte[] data = new byte[READ_BUFFER_SIZE];
             while (buf.hasRemaining()) {
                 final int remaining = buf.remaining();
                 final int readLen = Math.min(remaining, READ_BUFFER_SIZE);

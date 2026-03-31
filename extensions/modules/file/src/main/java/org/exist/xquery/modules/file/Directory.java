@@ -21,15 +21,8 @@
  */
 package org.exist.xquery.modules.file;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Date;
-import java.util.stream.Stream;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.util.FileUtils;
@@ -38,14 +31,13 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.BooleanValue;
-import org.exist.xquery.value.DateTimeValue;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Date;
+import java.util.stream.Stream;
 
 /**
  * eXist File Module Extension DirectoryList
@@ -63,12 +55,12 @@ import org.exist.xquery.value.Type;
  */
 public class Directory extends BasicFunction {
 
-    private final static Logger logger = LogManager.getLogger(Directory.class);
+    private static final Logger logger = LogManager.getLogger(Directory.class);
 
-    final static String NAMESPACE_URI = FileModule.NAMESPACE_URI;
-    final static String PREFIX = FileModule.PREFIX;
+    static final String NAMESPACE_URI = FileModule.NAMESPACE_URI;
+    static final String PREFIX = FileModule.PREFIX;
     
-    public final static FunctionSignature[] signatures = {
+    public static final FunctionSignature[] signatures = {
         new FunctionSignature(
             new QName("list", NAMESPACE_URI, PREFIX),
             "List all files and directories under the specified directory. "
@@ -195,9 +187,9 @@ public class Directory extends BasicFunction {
 
         } else if (sizeDigits > 9) {
             if (sizeLong < 1073741824) {
-                humanSize = Math.abs((sizeLong / (1024 * 1024))) + "MB";
+                humanSize = Math.abs(sizeLong / (1024 * 1024)) + "MB";
             } else {
-                humanSize = Math.abs((sizeLong / (1024 * 1024 * 1024))) + "GB";
+                humanSize = Math.abs(sizeLong / (1024 * 1024 * 1024)) + "GB";
             }
         }
         return humanSize;

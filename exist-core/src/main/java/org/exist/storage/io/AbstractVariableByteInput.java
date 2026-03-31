@@ -43,8 +43,8 @@ public abstract class AbstractVariableByteInput implements VariableByteInput {
     @Override
     public short readShort() throws IOException {
         byte b = readByte();
-        short i = (short) (b & 0177);
-        for (int shift = 7; (b & 0200) != 0; shift += 7) {
+        short i = (short) (b & 127);
+        for (int shift = 7; (b & 128) != 0; shift += 7) {
             b = readByte();
             i |= (b & 0177L) << shift;
         }
@@ -54,8 +54,8 @@ public abstract class AbstractVariableByteInput implements VariableByteInput {
     @Override
     public int readInt() throws IOException {
         byte b = readByte();
-        int i = b & 0177;
-        for (int shift = 7; (b & 0200) != 0; shift += 7) {
+        int i = b & 127;
+        for (int shift = 7; (b & 128) != 0; shift += 7) {
             b = readByte();
             i |= (b & 0177L) << shift;
         }
@@ -73,8 +73,8 @@ public abstract class AbstractVariableByteInput implements VariableByteInput {
     @Override
     public long readLong() throws IOException {
         byte b = readByte();
-        long i = b & 0177;
-        for (int shift = 7; (b & 0200) != 0; shift += 7) {
+        long i = b & 127;
+        for (int shift = 7; (b & 128) != 0; shift += 7) {
             b = readByte();
             i |= (b & 0177L) << shift;
         }
@@ -84,7 +84,7 @@ public abstract class AbstractVariableByteInput implements VariableByteInput {
     @Override
     public String readUTF() throws IOException {
         final int len = readInt();
-        final byte data[] = new byte[len];
+        final byte[] data = new byte[len];
 
         read(data);
 
@@ -94,15 +94,16 @@ public abstract class AbstractVariableByteInput implements VariableByteInput {
     @Override
     public void skip(final int count) throws IOException {
         for (int i = 0; i < count && available() > 0; i++) {
-            while ((readByte() & 0200) > 0)
-                ;
+            while ((readByte() & 128) > 0) {
+            }
         }
     }
 
     @Override
     public void skipBytes(final long count) throws IOException {
-        for(long i = 0; i < count; i++)
+        for (long i = 0; i < count; i++) {
             readByte();
+        }
     }
 
     @Override
@@ -111,7 +112,7 @@ public abstract class AbstractVariableByteInput implements VariableByteInput {
     }
 
     @Override
-    public int read(final byte b[], final int off, final int len) throws IOException {
+    public int read(final byte[] b, final int off, final int len) throws IOException {
         if (b == null) {
             throw new NullPointerException();
         } else if ((off < 0) || (off > b.length) || (len < 0)
@@ -145,7 +146,7 @@ public abstract class AbstractVariableByteInput implements VariableByteInput {
         do {
             more = read();
             os.write((byte) more);
-            more &= 0200;
+            more &= 128;
         } while (more > 0);
     }
 
@@ -157,14 +158,14 @@ public abstract class AbstractVariableByteInput implements VariableByteInput {
             do {
                 more = read();
                 os.write((byte)more);
-                more &= 0200;
+                more &= 128;
             } while (more > 0);
         }
     }
 
     @Override
     public void copyRaw(final VariableByteOutputStream os, final int count) throws IOException {
-        final byte buf[] = new byte[count];
+        final byte[] buf = new byte[count];
         int totalRead = 0;
         int read;
         while((read = read(buf, 0, count - totalRead)) > 0) {

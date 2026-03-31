@@ -60,8 +60,8 @@ public class DatabaseInsertResourcesWithValidationTest {
                     .build(),
             true,
             true);
-    private final static String TEST_COLLECTION = "testValidationInsert";
-    private final static String VALIDATION_HOME_COLLECTION_URI = "/db/" + TEST_COLLECTION + "/" + TestTools.VALIDATION_HOME_COLLECTION;
+    private static final String TEST_COLLECTION = "testValidationInsert";
+    private static final String VALIDATION_HOME_COLLECTION_URI = "/db/" + TEST_COLLECTION + "/" + TestTools.VALIDATION_HOME_COLLECTION;
 
     @BeforeClass
     public static void startup() throws Exception {

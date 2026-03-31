@@ -21,29 +21,24 @@
  */
 package org.exist.util;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import javax.net.ssl.*;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
-
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 /**
  *  Helper class for accepting self-signed SSL certificates.
  * 
  * @author Dannes Wessels
  */
-public class SSLHelper {
+public final class SSLHelper {
 
-    private final static Logger LOG = LogManager.getLogger(SSLHelper.class);
-    private static TrustManager[] nonvalidatingTrustManager = null;
-    private static HostnameVerifier dummyHostnameVerifier = null;
+    private static final Logger LOG = LogManager.getLogger(SSLHelper.class);
+    private static TrustManager[] nonvalidatingTrustManager;
+    private static HostnameVerifier dummyHostnameVerifier;
 
     private SSLHelper() {
         // No

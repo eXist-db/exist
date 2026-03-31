@@ -31,13 +31,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.BooleanValue;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 public class FunStartsWith extends CollatingFunction {
 	
@@ -72,7 +66,7 @@ public class FunStartsWith extends CollatingFunction {
 	protected static final FunctionParameterSequenceType COLLATION_PARAM = new FunctionParameterSequenceType("collation-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collation URI");
 	protected static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if $prefix is a prefix of the string $source");
 	
-    public final static FunctionSignature[] signatures = {
+    public static final FunctionSignature[] signatures = {
 	new FunctionSignature (
 			       new QName("starts-with", Function.BUILTIN_FUNCTION_NS),
 			       FUNCTION_DESCRIPTION,

@@ -21,17 +21,17 @@
  */
 package org.exist.storage;
 
-import java.math.BigDecimal;
-import java.nio.ByteBuffer;
-
 import org.exist.EXistException;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import org.exist.storage.btree.Value;
 import org.exist.xquery.value.DecimalValue;
 import org.junit.Ignore;
 import org.junit.Test;
+
+import java.math.BigDecimal;
+import java.nio.ByteBuffer;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 
 public class ValueIndexFactoryTest {
@@ -102,7 +102,7 @@ public class ValueIndexFactoryTest {
     public void roundTripDecimal() throws EXistException {
         BigDecimal dec = new BigDecimal("123456789123456789123456789123456789.123456789123456789123456789");
 
-        byte data[] = ValueIndexFactory.serialize(new DecimalValue(dec), 0);
+        byte[] data = ValueIndexFactory.serialize(new DecimalValue(dec), 0);
 
         Indexable value = ValueIndexFactory.deserialize(data, 0, data.length);
         assertTrue(value instanceof DecimalValue);

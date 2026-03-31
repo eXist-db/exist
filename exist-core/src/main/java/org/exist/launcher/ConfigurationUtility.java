@@ -39,7 +39,6 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
-
 import java.util.Properties;
 
 import static java.nio.charset.StandardCharsets.UTF_8;

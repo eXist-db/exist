@@ -26,11 +26,12 @@
  */
 package org.exist.extensions.exquery.modules.request;
 
-import java.util.List;
-import java.util.Map;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 import org.exist.xquery.XPathException;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -41,9 +42,9 @@ public class RequestModule extends AbstractInternalModule {
     public static final String NAMESPACE_URI = "http://exquery.org/ns/request";
     public static final String PREFIX = "req";
     
-    public final static String RELEASED_IN_VERSION = "eXist 2.0";
+    public static final String RELEASED_IN_VERSION = "eXist 2.0";
     
-    public final static String EXQ_REQUEST_ATTR = "exquery-request";
+    public static final String EXQ_REQUEST_ATTR = "exquery-request";
     
     public static final FunctionDef[] functions = {
         

@@ -35,7 +35,7 @@ public class XMLStringTest {
 	public void appendcharArrayintint() {
 		final XMLString s = new XMLString();
 		try {
-			char ch[] = "Hello".toCharArray();
+			char[] ch = "Hello".toCharArray();
 			s.append(ch, 0, 5);
 			assertEquals(s.toString(), "Hello");
 		} finally {
@@ -48,7 +48,7 @@ public class XMLStringTest {
 		final XMLString s = new XMLString();
 		XMLString normalized =  null;
 		try {
-			final char ch[] = "\n	Hello World\r\n".toCharArray();
+			final char[] ch = "\n	Hello World\r\n".toCharArray();
 			s.append(ch, 0, ch.length);
 			normalized = s.normalize(XMLString.SUPPRESS_BOTH);
 			final String r = normalized.toString();
@@ -66,7 +66,7 @@ public class XMLStringTest {
 		final XMLString s = new XMLString();
 		XMLString normalized =  null;
 		try {
-			final char ch[] = "\n	Hello   World\r\n".toCharArray();
+			final char[] ch = "\n	Hello   World\r\n".toCharArray();
 			s.append(ch, 0, ch.length);
 			normalized = s.normalize(XMLString.NORMALIZE);
 			final String r = normalized.toString();
@@ -84,7 +84,7 @@ public class XMLStringTest {
 		final XMLString s = new XMLString();
 		XMLString normalized =  null;
 		try {
-			final char ch[] = "\n	Hello World\r\n".toCharArray();
+			final char[] ch = "\n	Hello World\r\n".toCharArray();
 			s.append(ch, 0, ch.length);
 			normalized = s.normalize(XMLString.SUPPRESS_BOTH);
 			final String r = normalized.substring(6, 5);
@@ -101,7 +101,7 @@ public class XMLStringTest {
 	public void insert() {
 		final XMLString s = new XMLString();
 		try {
-			final char ch[] = "Hello World".toCharArray();
+			final char[] ch = "Hello World".toCharArray();
 			s.append(ch, 0, ch.length);
 			s.insert(5, " happy");
 			String r = s.toString();

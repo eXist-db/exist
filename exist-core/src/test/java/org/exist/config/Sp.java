@@ -34,7 +34,7 @@ public class Sp implements Configurable {
 	@ConfigurationFieldAsAttribute("name")
 	protected String name;
 	
-	private Configuration configuration = null;
+	private Configuration configuration;
 	
 	public Sp(Configuration _config_) {
 		configuration = Configurator.configure(this, _config_);

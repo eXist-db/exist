@@ -33,13 +33,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 /**
  * Built-in function fn:substring-before($operand1 as xs:string?, $operand2 as xs:string?) as xs:string?
@@ -50,7 +44,7 @@ public class FunSubstringBefore extends CollatingFunction {
 	protected static final FunctionParameterSequenceType COLLATOR_ARG = new FunctionParameterSequenceType("collation-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collation URI");
 	protected static final FunctionParameterSequenceType SEARCH_ARG = new FunctionParameterSequenceType("search", Type.STRING, Cardinality.ZERO_OR_ONE, "The search string");
 	protected static final FunctionParameterSequenceType SOURCE_ARG = new FunctionParameterSequenceType("source", Type.STRING, Cardinality.ZERO_OR_ONE, "The input string");
-	public final static FunctionSignature[] signatures = {
+	public static final FunctionSignature[] signatures = {
 		new FunctionSignature(
 			new QName("substring-before", Function.BUILTIN_FUNCTION_NS),
 			"Returns the substring of the value of $source that precedes the first occurrence " +

@@ -21,21 +21,21 @@
  */
 package org.exist.indexing.range;
 
-import org.exist.dom.persistent.AttrImpl;
-import org.exist.dom.persistent.AbstractCharacterData;
 import org.exist.dom.QName;
+import org.exist.dom.persistent.AbstractCharacterData;
+import org.exist.dom.persistent.AttrImpl;
 import org.exist.storage.NodePath;
 
 import java.util.*;
 
 public class ComplexTextCollector implements TextCollector {
 
-    private NodePath parentPath;
-    private ComplexRangeIndexConfigElement config;
-    private List<Field> fields = new LinkedList<>();
-    private RangeIndexConfigField currentField = null;
+    private final NodePath parentPath;
+    private final ComplexRangeIndexConfigElement config;
+    private final List<Field> fields = new LinkedList<>();
+    private RangeIndexConfigField currentField;
     private int currentFieldPathLength = -1;
-    private int length = 0;
+    private int length;
 
     public ComplexTextCollector(ComplexRangeIndexConfigElement configuration, NodePath parentPath) {
         this.config = configuration;

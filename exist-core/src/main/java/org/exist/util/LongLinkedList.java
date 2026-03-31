@@ -21,9 +21,9 @@
  */
 package org.exist.util;
 
-import java.util.Iterator;
-
 import org.exist.xquery.Constants;
+
+import java.util.Iterator;
 
 public class LongLinkedList {
 
@@ -31,8 +31,8 @@ public class LongLinkedList {
 		
 		public long l;
 		
-		public ListItem next = null;
-		public ListItem prev = null;
+		public ListItem next;
+		public ListItem prev;
 
 		public ListItem() {
 		}
@@ -64,9 +64,9 @@ public class LongLinkedList {
 
 	}
 	
-	protected ListItem first = null;
-	protected ListItem last = null;
-	protected int count = 0;
+	protected ListItem first;
+	protected ListItem last;
+	protected int count;
 	
 	public void add( long l ) {
 		if(first == null) {

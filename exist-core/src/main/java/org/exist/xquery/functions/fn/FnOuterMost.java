@@ -34,7 +34,7 @@ import java.util.Set;
 
 public class FnOuterMost extends BasicFunction {
 
-    public final static FunctionSignature FNS_OUTERMOST = new FunctionSignature(
+    public static final FunctionSignature FNS_OUTERMOST = new FunctionSignature(
             new QName("outermost", Function.BUILTIN_FUNCTION_NS),
             "Returns every node within the input sequence that has no ancestor that is itself a member of the input sequence; the nodes are returned in document order with duplicates eliminated.",
             new SequenceType[] {
@@ -63,7 +63,7 @@ public class FnOuterMost extends BasicFunction {
             final SequenceIterator it = nodes.iterate();
             while(it.hasNext()) {
                 final Item item = it.nextItem();
-                final NodeValue node = ((NodeValue)item);
+                final NodeValue node = (NodeValue)item;
                 final NodeId currentNodeId = node.getNodeId();
 
                 if(!found.contains(currentNodeId) &&
@@ -82,7 +82,7 @@ public class FnOuterMost extends BasicFunction {
         final SequenceIterator it = nodes.iterate();
         while(it.hasNext()) {
             final Item item = it.nextItem();
-            final NodeValue node = ((NodeValue)item);
+            final NodeValue node = (NodeValue)item;
             nodeIds.add(node.getNodeId());
         }
         return nodeIds;

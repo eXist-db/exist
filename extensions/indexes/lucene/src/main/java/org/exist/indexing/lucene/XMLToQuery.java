@@ -29,11 +29,7 @@ import org.apache.lucene.index.LeafReaderContext;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.Terms;
 import org.apache.lucene.index.TermsEnum;
-import org.apache.lucene.queries.spans.SpanFirstQuery;
-import org.apache.lucene.queries.spans.SpanMultiTermQueryWrapper;
-import org.apache.lucene.queries.spans.SpanNearQuery;
-import org.apache.lucene.queries.spans.SpanQuery;
-import org.apache.lucene.queries.spans.SpanTermQuery;
+import org.apache.lucene.queries.spans.*;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.BoostQuery;
@@ -50,11 +46,7 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TermRangeQuery;
 import org.apache.lucene.search.WildcardQuery;
 import org.apache.lucene.util.BytesRef;
-import org.apache.lucene.util.automaton.Automaton;
-import org.apache.lucene.util.automaton.ByteRunAutomaton;
-import org.apache.lucene.util.automaton.LevenshteinAutomata;
-import org.apache.lucene.util.automaton.RunAutomaton;
-import org.apache.lucene.util.automaton.UTF32ToUTF8;
+import org.apache.lucene.util.automaton.*;
 import org.exist.util.Configuration;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
@@ -127,8 +119,9 @@ public class XMLToQuery {
                 throw new XPathException((Expression) null, "Error while parsing phrase query: " + qstr);
             }
             int slop = getSlop(node);
-            if (slop > -1)
+            if (slop > -1) {
                 builder.setSlop(slop);
+            }
             return builder.build();
         }
         MultiPhraseQuery.Builder builder = new MultiPhraseQuery.Builder();
@@ -138,30 +131,35 @@ public class XMLToQuery {
             if (text.indexOf('?') > -1 || text.indexOf('*') > -1) {
                 try {
                     Term[] expanded = expandTerms(field, text);
-                    if (expanded.length > 0)
+                    if (expanded.length > 0) {
                         builder.add(expanded);
+                    }
                 } catch (IOException e) {
                     throw new XPathException((Expression) null, "IO error while expanding query terms: " + e.getMessage(), e);
                 }
             } else {
                 String termStr = getTerm(field, text, analyzer);
-                if (termStr != null)
+                if (termStr != null) {
                     builder.add(new Term(field, termStr));
+                }
             }
         }
         int slop = getSlop(node);
-        if (slop > -1)
+        if (slop > -1) {
             builder.setSlop(slop);
+        }
         return builder.build();
     }
 
     private SpanQuery nearQuery(String field, Element node, Analyzer analyzer) throws XPathException {
         int slop = getSlop(node);
-        if (slop < 0)
+        if (slop < 0) {
             slop = 0;
+        }
         boolean inOrder = true;
-        if (node.hasAttribute("ordered"))
+        if (node.hasAttribute("ordered")) {
             inOrder = "yes".equals(node.getAttribute("ordered"));
+        }
 
         if (!hasElementContent(node)) {
             String qstr = getText(node);
@@ -184,8 +182,12 @@ public class XMLToQuery {
 
     /** SpanNearQuery requires at least 2 clauses; return single span or null for 0. */
     private SpanQuery spanNearOrSingle(SpanQuery[] clauses, int slop, boolean inOrder) {
-        if (clauses.length == 0) return null;
-        if (clauses.length == 1) return clauses[0];
+        if (clauses.length == 0) {
+            return null;
+        }
+        if (clauses.length == 1) {
+            return clauses[0];
+        }
         return new SpanNearQuery(clauses, slop, inOrder);
     }
 
@@ -202,7 +204,9 @@ public class XMLToQuery {
                             break;
                         case "near": {
                             SpanQuery sq = nearQuery(field, (Element) child, analyzer);
-                            if (sq != null) list.add(sq);
+                            if (sq != null) {
+                                list.add(sq);
+                            }
                             break;
                         }
                         case "first":
@@ -223,8 +227,9 @@ public class XMLToQuery {
 
     private void getSpanTerm(List<SpanQuery> list, String field, Element node, Analyzer analyzer) throws XPathException {
     	String termStr = getTerm(field, getText(node), analyzer);
-    	if (termStr != null)
-    		list.add(new SpanTermQuery(new Term(field, termStr)));
+        if (termStr != null) {
+            list.add(new SpanTermQuery(new Term(field, termStr)));
+        }
     }
 
     private SpanQuery getSpanRegex(String field, Element node, Analyzer analyzer) {
@@ -234,19 +239,22 @@ public class XMLToQuery {
     
     private SpanQuery getSpanFirst(String field, Element node, Analyzer analyzer) throws XPathException {
     	int slop = getSlop(node);
-        if (slop < 0)
+        if (slop < 0) {
             slop = 0;
+        }
         boolean inOrder = true;
-        if (node.hasAttribute("ordered"))
+        if (node.hasAttribute("ordered")) {
             inOrder = "yes".equals(node.getAttribute("ordered"));
+        }
         SpanQuery query = null;
         if (hasElementContent(node)) {
             SpanQuery[] children = parseSpanChildren(field, node, analyzer);
             query = new SpanNearQuery(children, slop, inOrder);
         } else {
         	String termStr = getTerm(field, getText(node), analyzer);
-        	if (termStr != null)
-        		query = new SpanTermQuery(new Term(field, termStr));
+            if (termStr != null) {
+                query = new SpanTermQuery(new Term(field, termStr));
+            }
         }
         int end = 0;
         if (node.hasAttribute("end")) {
@@ -397,7 +405,9 @@ public class XMLToQuery {
      * For other patterns, uses raw text (analyzer may alter wildcards undesirably).
      */
     private String normalizeMultiTermPattern(String field, String pattern, Analyzer analyzer) throws XPathException {
-        if (analyzer == null) return pattern;
+        if (analyzer == null) {
+            return pattern;
+        }
         int lastStar = pattern.lastIndexOf('*');
         int lastQ = pattern.lastIndexOf('?');
         boolean isSimplePrefix = lastStar == pattern.length() - 1 && lastQ < 0 && pattern.indexOf('*') == lastStar;
@@ -428,7 +438,9 @@ public class XMLToQuery {
         String prefix = getText(node);
         if (analyzer != null) {
             String term = getTerm(field, prefix, analyzer);
-            if (term != null) prefix = term;
+            if (term != null) {
+                prefix = term;
+            }
         }
         PrefixQuery query = new PrefixQuery(new Term(field, prefix));
         setRewriteMethod(query, node, options);
@@ -514,8 +526,12 @@ public class XMLToQuery {
 
         @Override
         public boolean equals(Object obj) {
-            if (this == obj) return true;
-            if (!(obj instanceof LazyRewriteQuery)) return false;
+            if (this == obj) {
+                return true;
+            }
+            if (!(obj instanceof LazyRewriteQuery)) {
+                return false;
+            }
             LazyRewriteQuery other = (LazyRewriteQuery) obj;
             return inner.equals(other.inner) && rewrite.equals(other.rewrite);
         }
@@ -523,8 +539,7 @@ public class XMLToQuery {
         @Override
         public int hashCode() {
             int h = inner.hashCode();
-            h = 31 * h + rewrite.hashCode();
-            return h;
+            return 31 * h + rewrite.hashCode();
         }
     }
 
@@ -540,7 +555,9 @@ public class XMLToQuery {
             if (!topAttr.isEmpty()) {
                 try {
                     int parsed = Integer.parseInt(topAttr);
-                    if (parsed > 0) topTermsLimit = parsed;
+                    if (parsed > 0) {
+                        topTermsLimit = parsed;
+                    }
                 } catch (NumberFormatException ignore) { }
             }
             return new LazyRewriteQuery(mtq, new MultiTermQuery.TopTermsScoringBooleanQueryRewrite(topTermsLimit));
@@ -571,7 +588,9 @@ public class XMLToQuery {
                     if (query instanceof BooleanQuery existing) {
                         // migrate to builder
                         BooleanQuery.Builder b = new BooleanQuery.Builder();
-                        for (BooleanClause c : existing) b.add(c);
+                        for (BooleanClause c : existing) {
+                            b.add(c);
+                        }
                         b.add(childQuery, BooleanClause.Occur.SHOULD);
                         query = b.build();
                     } else {
@@ -580,8 +599,9 @@ public class XMLToQuery {
                         boolBuilder.add(childQuery, BooleanClause.Occur.SHOULD);
                         query = boolBuilder.build();
                     }
-                } else
+                } else {
                     query = childQuery;
+                }
             }
             child = child.getNextSibling();
         }

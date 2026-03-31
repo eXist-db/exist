@@ -22,15 +22,15 @@
 package org.exist.indexing.lucene;
 
 import com.evolvedbinary.j8fu.function.FunctionE;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.lucene.facet.FacetsConfig;
-import org.apache.lucene.facet.taxonomy.directory.DirectoryTaxonomyReader;
 import org.apache.lucene.facet.taxonomy.FacetLabel;
+import org.apache.lucene.facet.taxonomy.directory.DirectoryTaxonomyReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Terms;
 import org.apache.lucene.index.TermsEnum;
 import org.apache.lucene.util.BytesRef;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.exist.collections.Collection;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -44,10 +44,10 @@ import org.exist.xquery.XQuery;
 import org.exist.xquery.value.Sequence;
 import org.junit.Test;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;

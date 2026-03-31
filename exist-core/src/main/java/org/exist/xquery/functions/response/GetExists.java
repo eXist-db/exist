@@ -23,7 +23,6 @@ package org.exist.xquery.functions.response;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import org.exist.dom.QName;
 import org.exist.http.servlets.ResponseWrapper;
 import org.exist.xquery.Cardinality;
@@ -46,7 +45,7 @@ import java.util.Optional;
 public class GetExists extends ResponseFunction {
     private static final Logger logger = LogManager.getLogger(GetExists.class);
 
-	public final static FunctionSignature signature =
+	public static final FunctionSignature signature =
 		new FunctionSignature(
 			new QName( "exists", ResponseModule.NAMESPACE_URI, ResponseModule.PREFIX ),
 			"Returns whether a response object exists.",

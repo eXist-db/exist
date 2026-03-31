@@ -21,10 +21,6 @@
  */
 package org.exist.xquery;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import org.exist.TestUtils;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.xmldb.XmldbURI;
@@ -37,9 +33,11 @@ import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XPathQueryService;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import static org.junit.Assert.*;
 
 public class SeqOpTest {
 	private static XPathQueryService query;

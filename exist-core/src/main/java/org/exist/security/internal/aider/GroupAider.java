@@ -21,11 +21,6 @@
  */
 package org.exist.security.internal.aider;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import org.exist.config.Configuration;
 import org.exist.security.Account;
 import org.exist.security.Group;
@@ -34,6 +29,8 @@ import org.exist.security.SchemaType;
 import org.exist.security.internal.RealmImpl;
 import org.exist.security.realm.Realm;
 import org.exist.storage.DBBroker;
+
+import java.util.*;
 
 /**
  * Group details.

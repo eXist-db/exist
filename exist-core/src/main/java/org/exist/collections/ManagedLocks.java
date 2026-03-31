@@ -40,7 +40,7 @@ import java.util.List;
  */
 public class ManagedLocks<T extends ManagedLock> implements Iterable<T>, AutoCloseable {
 
-    private final static Logger LOG = LogManager.getLogger(ManagedLocks.class);
+    private static final Logger LOG = LogManager.getLogger(ManagedLocks.class);
 
     private final List<T> managedLocks;
 

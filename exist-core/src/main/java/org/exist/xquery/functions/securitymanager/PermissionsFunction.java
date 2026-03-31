@@ -22,9 +22,9 @@
 package org.exist.xquery.functions.securitymanager;
 
 import org.exist.collections.Collection;
-import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
+import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.*;
 import org.exist.security.ACLPermission.ACE_ACCESS_TYPE;
 import org.exist.security.ACLPermission.ACE_TARGET;
@@ -38,14 +38,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.AnyURIValue;
-import org.exist.xquery.value.BooleanValue;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 import javax.xml.XMLConstants;
 import java.util.Optional;
@@ -56,25 +49,25 @@ import java.util.Optional;
  */
 public class PermissionsFunction extends BasicFunction {
 
-    private final static QName qnGetPermissions = new QName("get-permissions", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
-    private final static QName qnAddUserACE = new QName("add-user-ace", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
-    private final static QName qnAddGroupACE = new QName("add-group-ace", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
-    private final static QName qnInsertUserACE = new QName("insert-user-ace", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
-    private final static QName qnInsertGroupACE = new QName("insert-group-ace", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
-    private final static QName qnModifyACE = new QName("modify-ace", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
-    private final static QName qnRemoveACE = new QName("remove-ace", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
-    private final static QName qnClearACL = new QName("clear-acl", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    private static final QName qnGetPermissions = new QName("get-permissions", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    private static final QName qnAddUserACE = new QName("add-user-ace", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    private static final QName qnAddGroupACE = new QName("add-group-ace", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    private static final QName qnInsertUserACE = new QName("insert-user-ace", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    private static final QName qnInsertGroupACE = new QName("insert-group-ace", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    private static final QName qnModifyACE = new QName("modify-ace", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    private static final QName qnRemoveACE = new QName("remove-ace", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    private static final QName qnClearACL = new QName("clear-acl", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
 
-    private final static QName qnChMod = new QName("chmod", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
-    private final static QName qnChOwn = new QName("chown", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
-    private final static QName qnChGrp = new QName("chgrp", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    private static final QName qnChMod = new QName("chmod", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    private static final QName qnChOwn = new QName("chown", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    private static final QName qnChGrp = new QName("chgrp", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
     
-    private final static QName qnHasAccess = new QName("has-access", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    private static final QName qnHasAccess = new QName("has-access", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
     
-    private final static QName qnModeToOctal = new QName("mode-to-octal", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
-    private final static QName qnOctalToMode = new QName("octal-to-mode", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    private static final QName qnModeToOctal = new QName("mode-to-octal", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    private static final QName qnOctalToMode = new QName("octal-to-mode", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
 
-    public final static FunctionSignature FNS_GET_PERMISSIONS = new FunctionSignature(
+    public static final FunctionSignature FNS_GET_PERMISSIONS = new FunctionSignature(
         qnGetPermissions,
         "Gets the permissions of a resource or collection.",
         new SequenceType[] {
@@ -83,7 +76,7 @@ public class PermissionsFunction extends BasicFunction {
         new FunctionReturnSequenceType(Type.DOCUMENT, Cardinality.EXACTLY_ONE, "The permissions of the resource or collection")
     );
     
-    public final static FunctionSignature FNS_ADD_USER_ACE = new FunctionSignature(
+    public static final FunctionSignature FNS_ADD_USER_ACE = new FunctionSignature(
         qnAddUserACE,
         "Adds a User ACE to the ACL of a resource or collection.",
         new SequenceType[] {
@@ -95,7 +88,7 @@ public class PermissionsFunction extends BasicFunction {
         new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)
     );
     
-    public final static FunctionSignature FNS_ADD_GROUP_ACE = new FunctionSignature(
+    public static final FunctionSignature FNS_ADD_GROUP_ACE = new FunctionSignature(
         qnAddGroupACE,
         "Adds a Group ACE to the ACL of a resource or collection.",
         new SequenceType[] {
@@ -107,7 +100,7 @@ public class PermissionsFunction extends BasicFunction {
         new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)
     );
     
-    public final static FunctionSignature FNS_INSERT_USER_ACE = new FunctionSignature(
+    public static final FunctionSignature FNS_INSERT_USER_ACE = new FunctionSignature(
         qnInsertUserACE,
         "Inserts a User ACE into the ACL of a resource or collection.",
         new SequenceType[] {
@@ -120,7 +113,7 @@ public class PermissionsFunction extends BasicFunction {
         new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)
     );
     
-    public final static FunctionSignature FNS_INSERT_GROUP_ACE = new FunctionSignature(
+    public static final FunctionSignature FNS_INSERT_GROUP_ACE = new FunctionSignature(
         qnInsertGroupACE,
         "Inserts a Group ACE into the ACL of a resource or collection.",
         new SequenceType[] {
@@ -133,7 +126,7 @@ public class PermissionsFunction extends BasicFunction {
         new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)
     );
     
-    public final static FunctionSignature FNS_MODIFY_ACE = new FunctionSignature(
+    public static final FunctionSignature FNS_MODIFY_ACE = new FunctionSignature(
         qnModifyACE,
         "Modified an ACE of an ACL of a resource or collection.",
         new SequenceType[] {
@@ -145,7 +138,7 @@ public class PermissionsFunction extends BasicFunction {
         new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)
     );
     
-    public final static FunctionSignature FNS_REMOVE_ACE = new FunctionSignature(
+    public static final FunctionSignature FNS_REMOVE_ACE = new FunctionSignature(
         qnRemoveACE,
         "Removes an ACE from the ACL of a resource or collection.",
         new SequenceType[] {
@@ -155,7 +148,7 @@ public class PermissionsFunction extends BasicFunction {
         new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)
     );
     
-    public final static FunctionSignature FNS_CLEAR_ACL = new FunctionSignature(
+    public static final FunctionSignature FNS_CLEAR_ACL = new FunctionSignature(
         qnClearACL,
         "Removes all ACEs from the ACL of a resource or collection.",
         new SequenceType[] {
@@ -164,7 +157,7 @@ public class PermissionsFunction extends BasicFunction {
         new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)
     );
     
-    public final static FunctionSignature FNS_CHMOD = new FunctionSignature(
+    public static final FunctionSignature FNS_CHMOD = new FunctionSignature(
         qnChMod,
         "Changes the mode of a resource or collection.",
         new SequenceType[] {
@@ -174,7 +167,7 @@ public class PermissionsFunction extends BasicFunction {
         new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)
     );
     
-    public final static FunctionSignature FNS_CHOWN = new FunctionSignature(
+    public static final FunctionSignature FNS_CHOWN = new FunctionSignature(
         qnChOwn,
         "Changes the owner of a resource or collection.",
         new SequenceType[] {
@@ -184,7 +177,7 @@ public class PermissionsFunction extends BasicFunction {
         new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)
     );
     
-    public final static FunctionSignature FNS_CHGRP = new FunctionSignature(
+    public static final FunctionSignature FNS_CHGRP = new FunctionSignature(
         qnChGrp,
         "Changes the group owner of a resource or collection.",
         new SequenceType[] {
@@ -194,7 +187,7 @@ public class PermissionsFunction extends BasicFunction {
         new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)
     );
     
-    public final static FunctionSignature FNS_HAS_ACCESS = new FunctionSignature(
+    public static final FunctionSignature FNS_HAS_ACCESS = new FunctionSignature(
         qnHasAccess,
         "Checks whether the current user has access to the resource or collection.",
         new SequenceType[] {
@@ -204,7 +197,7 @@ public class PermissionsFunction extends BasicFunction {
         new SequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE)
      );
     
-    public final static FunctionSignature FNS_MODE_TO_OCTAL = new FunctionSignature(
+    public static final FunctionSignature FNS_MODE_TO_OCTAL = new FunctionSignature(
         qnModeToOctal,
         "Converts a mode string e.g. 'rwxrwxrwx' to an octal number e.g. 0777.",
         new SequenceType[] {
@@ -213,7 +206,7 @@ public class PermissionsFunction extends BasicFunction {
         new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
     );
     
-    public final static FunctionSignature FNS_OCTAL_TO_MODE = new FunctionSignature(
+    public static final FunctionSignature FNS_OCTAL_TO_MODE = new FunctionSignature(
         qnOctalToMode,
         "Converts an octal string e.g. '0777' to a mode string e.g. 'rwxrwxrwx'.",
         new SequenceType[] {
@@ -222,7 +215,7 @@ public class PermissionsFunction extends BasicFunction {
         new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
     );
 
-    final static char OWNER_GROUP_SEPARATOR = ':';
+    static final char OWNER_GROUP_SEPARATOR = ':';
 
     public PermissionsFunction(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
@@ -348,7 +341,7 @@ public class PermissionsFunction extends BasicFunction {
         final Optional<String> newOwner;
         final Optional<String> newGroup;
         if (owner.indexOf(OWNER_GROUP_SEPARATOR) > -1) {
-            newOwner = Optional.of(owner.substring(0, owner.indexOf((OWNER_GROUP_SEPARATOR)))).filter(s -> !s.isEmpty());
+            newOwner = Optional.of(owner.substring(0, owner.indexOf(OWNER_GROUP_SEPARATOR))).filter(s -> !s.isEmpty());
             newGroup = Optional.of(owner.substring(owner.indexOf(OWNER_GROUP_SEPARATOR) + 1)).filter(s -> !s.isEmpty());
         } else {
             newOwner = Optional.of(owner).filter(s -> !s.isEmpty());

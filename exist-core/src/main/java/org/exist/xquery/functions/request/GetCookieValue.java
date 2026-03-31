@@ -22,18 +22,12 @@
 package org.exist.xquery.functions.request;
 
 import jakarta.servlet.http.Cookie;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.http.servlets.RequestWrapper;
 import org.exist.xquery.*;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 import java.util.Optional;
 
@@ -46,7 +40,7 @@ public class GetCookieValue extends RequestFunction {
 
 	protected static final Logger logger = LogManager.getLogger(GetCookieValue.class);
 
-	public final static FunctionSignature signature =
+	public static final FunctionSignature signature =
 		new FunctionSignature(
 			new QName(
 				"get-cookie-value",

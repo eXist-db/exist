@@ -51,10 +51,10 @@ import org.exist.xquery.Expression;
 import org.exist.xquery.value.StringValue;
 import org.w3c.dom.*;
 
+import javax.annotation.Nonnull;
 import javax.xml.XMLConstants;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
-import javax.annotation.Nonnull;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -76,14 +76,14 @@ public class ElementImpl extends NamedNode<ElementImpl> implements Element {
     public static final int LENGTH_NS_ID = 2; //sizeof short
     public static final int LENGTH_PREFIX_LENGTH = 2; //sizeof short
 
-    private short attributes = 0; // number of attributes
-    private int children = 0; // number of elements AND attributes
+    private short attributes; // number of attributes
+    private int children; // number of elements AND attributes
 
-    private int position = 0;
-    private Map<String, String> namespaceMappings = null;
+    private int position;
+    private Map<String, String> namespaceMappings;
     private int indexType = RangeIndexSpec.NO_INDEX;
-    private boolean preserveWS = false;
-    private boolean isDirty = false;
+    private boolean preserveWS;
+    private boolean isDirty;
 
     public ElementImpl() {
         this((Expression) null);
@@ -637,7 +637,7 @@ public class ElementImpl extends NamedNode<ElementImpl> implements Element {
 
     private QName attrName(Attr attr) {
         final String ns = attr.getNamespaceURI();
-        final String prefix = (Namespaces.XML_NS.equals(ns) ? XMLConstants.XML_NS_PREFIX : attr.getPrefix());
+        final String prefix = Namespaces.XML_NS.equals(ns) ? XMLConstants.XML_NS_PREFIX : attr.getPrefix();
         String name = attr.getLocalName();
         if(name == null) {
             name = attr.getName();
@@ -1007,7 +1007,7 @@ public class ElementImpl extends NamedNode<ElementImpl> implements Element {
     @Override
     @Nonnull
     public NodeList getElementsByTagName(final String name) {
-        if(name != null && name.equals(QName.WILDCARD)) {
+        if(QName.WILDCARD.equals(name)) {
             return getElementsByTagName(new QName.WildcardLocalPartQName(XMLConstants.DEFAULT_NS_PREFIX));
         } else {
             try {
@@ -1021,8 +1021,8 @@ public class ElementImpl extends NamedNode<ElementImpl> implements Element {
     @Override
     @Nonnull
     public NodeList getElementsByTagNameNS(final String namespaceURI, final String localName) {
-        final boolean wildcardNS = namespaceURI != null && namespaceURI.equals(QName.WILDCARD);
-        final boolean wildcardLocalPart = localName != null && localName.equals(QName.WILDCARD);
+        final boolean wildcardNS = QName.WILDCARD.equals(namespaceURI);
+        final boolean wildcardLocalPart = QName.WILDCARD.equals(localName);
 
         if(wildcardNS && wildcardLocalPart) {
             return getElementsByTagName(QName.WildcardQName.getInstance());
@@ -1143,7 +1143,6 @@ public class ElementImpl extends NamedNode<ElementImpl> implements Element {
     public void removeAttributeNS(final String namespaceURI, final String name) throws DOMException {
         final Attr attr = getAttributeNodeNS(namespaceURI, name);
         if(attr == null) {
-            return;
         }
     }
 
@@ -1439,13 +1438,10 @@ public class ElementImpl extends NamedNode<ElementImpl> implements Element {
             final NodeList childNodes = getChildNodes();
             for (int i = 0; i < childNodes.getLength(); i++) {
                 final Node child = childNodes.item(i);
-                switch (child.getNodeType()) {
-                    case Node.ELEMENT_NODE:
-                        children.append(((ElementImpl) child).toString(false, namespaces));
-                        break;
-
-                    default:
-                        children.append(child);
+                if (child.getNodeType() == Node.ELEMENT_NODE) {
+                    children.append(((ElementImpl)child).toString(false, namespaces));
+                } else {
+                    children.append(child);
                 }
             }
 
@@ -1825,8 +1821,8 @@ public class ElementImpl extends NamedNode<ElementImpl> implements Element {
     }
 
     private class AttribVisitor implements NodeVisitor {
-        private IStoredNode lastAttrib = null;
-        private IStoredNode firstChild = null;
+        private IStoredNode lastAttrib;
+        private IStoredNode firstChild;
 
         @Override
         public boolean visit(final IStoredNode node) {

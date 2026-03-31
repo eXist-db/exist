@@ -39,7 +39,7 @@ import java.util.Set;
 public class WhereClause extends AbstractFLWORClause {
 
     protected Expression whereExpr;
-    protected boolean fastTrack = false;
+    protected boolean fastTrack;
 
     public WhereClause(XQueryContext context, Expression whereExpr) {
         super(context);

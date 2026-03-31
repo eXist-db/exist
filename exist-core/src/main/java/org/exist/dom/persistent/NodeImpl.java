@@ -270,7 +270,7 @@ public abstract class NodeImpl<T extends NodeImpl> implements INode<DocumentImpl
             case Node.ELEMENT_NODE:
             case Node.ATTRIBUTE_NODE:
                 final String nsUri = getQName().getNamespaceURI();
-                if(nsUri.equals(XMLConstants.NULL_NS_URI)) {
+                if(XMLConstants.NULL_NS_URI.equals(nsUri)) {
                     return null;
                 } else {
                     return nsUri;

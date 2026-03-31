@@ -33,7 +33,7 @@ import java.util.TreeMap;
  * https://creativecommons.org/licenses/by-sa/3.0
  * 
  */
-class RomanNumberHelper {
+final class RomanNumberHelper {
 
     private static final TreeMap<Integer, String> map = new TreeMap<>();
 

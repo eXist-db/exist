@@ -46,9 +46,9 @@ import java.io.StringWriter;
 import java.util.Optional;
 import java.util.Properties;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.test.Util.*;
 import static org.junit.Assert.assertEquals;
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertNotNull;
 
 public class ForwardReferenceTest {
@@ -60,7 +60,7 @@ public class ForwardReferenceTest {
 
     private static final XmldbURI CONFIG_MODULE_NAME = XmldbURI.create("config.xqm");
     private static final InputSource CONFIG_MODULE = new StringInputSource(
-            ("""
+            """
             xquery version "3.1";
             module namespace config = "http://example.com/config";
             
@@ -78,12 +78,12 @@ public class ForwardReferenceTest {
                     <meta property="og:title" content="{pages:generate-short-title($node, $model)}"/>
                 }
             };\
-            """).getBytes(UTF_8));
-    private static XmldbURI CONFIG_MODULE_URI = null;
+            """.getBytes(UTF_8));
+    private static XmldbURI CONFIG_MODULE_URI;
 
     private static final XmldbURI PAGES_MODULE_NAME = XmldbURI.create("pages.xqm");
     private static final InputSource PAGES_MODULE = new StringInputSource(
-            ("""
+            """
             xquery version "3.1";
             module namespace pages = "http://example.com/pages";
             
@@ -95,12 +95,12 @@ public class ForwardReferenceTest {
                     'My Default Short Title'
                 )[. ne ''][1]
             };\
-            """).getBytes(UTF_8));
-    private static XmldbURI PAGES_MODULE_URI = null;
+            """.getBytes(UTF_8));
+    private static XmldbURI PAGES_MODULE_URI;
 
     private static final XmldbURI TEST_PAGES_MODULE_NAME = XmldbURI.create("test-pages.xqm");
     private static final InputSource TEST_PAGES_MODULE = new StringInputSource(
-            ("""
+            """
             xquery version "3.1";
             module namespace test-pages = "http://example.com/test-pages";
             
@@ -114,8 +114,8 @@ public class ForwardReferenceTest {
             function test-pages:generate-short-title-default() {
                 pages:generate-short-title((),())
             };
-            """).getBytes(UTF_8));
-    private static XmldbURI TEST_PAGES_MODULE_URI = null;
+            """.getBytes(UTF_8));
+    private static XmldbURI TEST_PAGES_MODULE_URI;
 
     @BeforeClass
     public static void setup() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException {

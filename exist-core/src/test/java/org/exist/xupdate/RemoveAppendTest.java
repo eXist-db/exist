@@ -21,14 +21,8 @@
  */
 package org.exist.xupdate;
 
-import java.io.IOException;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.util.Random;
-
 import org.exist.EXistException;
 import org.exist.TestUtils;
-
 import org.exist.collections.triggers.TriggerException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.test.ExistXmldbEmbeddedServer;
@@ -36,10 +30,6 @@ import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xmldb.concurrent.DBUtils;
 import org.junit.*;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
@@ -47,13 +37,21 @@ import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XPathQueryService;
 import org.xmldb.api.modules.XUpdateQueryService;
 
+import java.io.IOException;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.util.Random;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 /**
  * @author wolf
  *
  */
 public class RemoveAppendTest {
     
-    private final static String XU_REMOVE =
+    private static final String XU_REMOVE =
         "<xu:modifications xmlns:xu=\""+ XUpdateProcessor.XUPDATE_NS + "\" version=\"1.0\">" +
         "   <xu:remove select=\"/test/item[@id='5'][2]\"/>" +
         "</xu:modifications>";

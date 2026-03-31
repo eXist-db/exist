@@ -44,7 +44,7 @@ import static org.exist.xquery.functions.map.MapType.newLinearMap;
 
 public class Facets extends BasicFunction {
 
-    public final static FunctionSignature[] signatures = {
+    public static final FunctionSignature[] signatures = {
         new FunctionSignature(
                 new QName("facets", LuceneModule.NAMESPACE_URI, LuceneModule.PREFIX),
                 "Return a map of facet labels and counts for the result of a Lucene query.",
@@ -136,7 +136,7 @@ public class Facets extends BasicFunction {
 
                 Match match = proxy.getMatches();
                 while (match != null) {
-                    if (match.getIndexId().equals(LuceneIndex.ID)) {
+                    if (LuceneIndex.ID.equals(match.getIndexId())) {
                         final LuceneMatch luceneMatch = (LuceneMatch) match;
                         luceneQueries.putIfAbsent(luceneMatch.getQuery(), luceneMatch);
                     }
@@ -148,7 +148,7 @@ public class Facets extends BasicFunction {
         // When multiple Lucene queries contributed to the result (e.g. variable-based path),
         // each has its own facets. We must merge all first, then apply the limit.
         // Otherwise we'd get N facets per query, merged = wrong count (GitHub #4190).
-        final int perQueryLimit = (luceneQueries.size() > 1 && count < Integer.MAX_VALUE)
+        final int perQueryLimit = luceneQueries.size() > 1 && count < Integer.MAX_VALUE
             ? Integer.MAX_VALUE
             : count;
 
@@ -162,7 +162,7 @@ public class Facets extends BasicFunction {
         }
 
         // Apply limit to merged result when we fetched all from multiple queries
-        final IMap<AtomicValue, Sequence> result = (perQueryLimit == Integer.MAX_VALUE && count < Integer.MAX_VALUE)
+        final IMap<AtomicValue, Sequence> result = perQueryLimit == Integer.MAX_VALUE && count < Integer.MAX_VALUE
             ? takeTopByCount(map, count)
             : map;
 

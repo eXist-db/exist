@@ -22,11 +22,11 @@
 
 package org.exist.util.io;
 
-import java.io.IOException;
-import java.io.OutputStream;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.io.IOException;
+import java.io.OutputStream;
 
 /**
  * @author <a href="mailto:patrick@reini.net">Patrick Reinhart</a>
@@ -39,7 +39,7 @@ final class OverflowToDiskStream extends OutputStream {
 
     private long count;
     private byte[] singleByteBuffer;
-    private MemoryContents memoryContents;
+    private final MemoryContents memoryContents;
     private OutputStream overflowOutputStream;
 
     OverflowToDiskStream(int inMemorySize, MemoryContents memoryContents, OutputStreamSupplier overflowStreamSupplier) {

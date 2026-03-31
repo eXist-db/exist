@@ -47,13 +47,13 @@ public class CollectionStore extends BFile {
     public static final String FILE_NAME = "collections.dbx";
     public static final String  FILE_KEY_IN_CONFIG = "db-connection.collections";
     
-    public final static String FREE_DOC_ID_KEY = "__free_doc_id";
-    public final static String NEXT_DOC_ID_KEY = "__next_doc_id";  
-    public final static String FREE_COLLECTION_ID_KEY = "__free_collection_id";
-    public final static String NEXT_COLLECTION_ID_KEY = "__next_collection_id";  
+    public static final String FREE_DOC_ID_KEY = "__free_doc_id";
+    public static final String NEXT_DOC_ID_KEY = "__next_doc_id";  
+    public static final String FREE_COLLECTION_ID_KEY = "__free_collection_id";
+    public static final String NEXT_COLLECTION_ID_KEY = "__next_collection_id";  
 
-    public final static byte KEY_TYPE_COLLECTION = 0;
-    public final static byte KEY_TYPE_DOCUMENT = 1;
+    public static final byte KEY_TYPE_COLLECTION = 0;
+    public static final byte KEY_TYPE_DOCUMENT = 1;
 
     private final Deque<Integer> freeResourceIds = new ConcurrentLinkedDeque<>();
     private final Deque<Integer> freeCollectionIds = new ConcurrentLinkedDeque<>();

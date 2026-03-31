@@ -35,7 +35,7 @@ public abstract class BinaryValueType<T extends FilterOutputStream> {
     private final int xqueryType;
     private final BiFunction<OutputStream, Boolean, T> coderFactory;
 
-    public BinaryValueType(final int xqueryType, final BiFunction<OutputStream, Boolean, T> coderFactory) {
+    protected BinaryValueType(final int xqueryType, final BiFunction<OutputStream, Boolean, T> coderFactory) {
         this.xqueryType = xqueryType;
         this.coderFactory = coderFactory;
     }

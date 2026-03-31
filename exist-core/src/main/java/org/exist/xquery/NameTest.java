@@ -22,10 +22,10 @@
 package org.exist.xquery;
 
 import org.exist.dom.INode;
-import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.NodeImpl;
 import org.exist.dom.memtree.ReferenceNode;
+import org.exist.dom.persistent.NodeProxy;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Type;
 import org.w3c.dom.Document;
@@ -141,28 +141,24 @@ public class NameTest extends TypeTest {
             return true;
         }
 
-        switch (ev) {
-            case XMLStreamReader.START_ELEMENT:
-                if (!(nodeName instanceof QName.WildcardNamespaceURIQName)) {
-                    String readerNs = reader.getNamespaceURI();
-                    if (readerNs == null) {
-                        readerNs = XMLConstants.NULL_NS_URI;
-                    }
-                    if (!nodeName.getNamespaceURI().equals(readerNs)) {
-                        return false;
-                    }
+        if (ev == XMLStreamReader.START_ELEMENT) {
+            if (!(nodeName instanceof QName.WildcardNamespaceURIQName)) {
+                String readerNs = reader.getNamespaceURI();
+                if (readerNs == null) {
+                    readerNs = XMLConstants.NULL_NS_URI;
                 }
+                if (!nodeName.getNamespaceURI().equals(readerNs)) {
+                    return false;
+                }
+            }
 
-                if (!(nodeName instanceof QName.WildcardLocalPartQName)) {
-                    return nodeName.getLocalPart().equals(reader.getLocalName());
-                }
-                break;
-
-            case XMLStreamReader.PROCESSING_INSTRUCTION:
-                if (!(nodeName instanceof QName.WildcardLocalPartQName)) {
-                    return nodeName.getLocalPart().equals(reader.getPITarget());
-                }
-                break;
+            if (!(nodeName instanceof QName.WildcardLocalPartQName)) {
+                return nodeName.getLocalPart().equals(reader.getLocalName());
+            }
+        } else if (ev == XMLStreamReader.PROCESSING_INSTRUCTION) {
+            if (!(nodeName instanceof QName.WildcardLocalPartQName)) {
+                return nodeName.getLocalPart().equals(reader.getPITarget());
+            }
         }
         return true;
     }

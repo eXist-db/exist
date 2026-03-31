@@ -296,9 +296,8 @@ public class SubSequence extends AbstractSequence {
                     } else {
                         nodeId = rootId.append(nodeId);
                     }
-                    final NodeProxy p = new NodeProxy(node.getExpression(), newDoc, nodeId, node.getNodeType());
                     // replace the node by the NodeProxy
-                    return p;
+                    return new NodeProxy(node.getExpression(), newDoc, nodeId, node.getNodeType());
                 }
             }
         }
@@ -491,7 +490,7 @@ public class SubSequence extends AbstractSequence {
 
     private static class CollectionIterator implements Iterator<Collection> {
         private final SequenceIterator iterator;
-        private Collection nextCollection = null;
+        private Collection nextCollection;
 
         CollectionIterator(final SequenceIterator iterator) {
             this.iterator = iterator;

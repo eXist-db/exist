@@ -31,8 +31,8 @@ import antlr.collections.AST;
  */
 public class XQueryAST extends CommonAST {
 	
-	private int line = 0;
-	private int column = 0;
+	private int line;
+	private int column;
 	
 	public XQueryAST() {
 		super();

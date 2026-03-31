@@ -35,7 +35,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * The pool is bound to the current thread.
  */
 @ThreadSafe
-public class CharArrayPool {
+public final class CharArrayPool {
 
     private static final int POOL_SIZE = 128;
     private static final int MAX = 128;

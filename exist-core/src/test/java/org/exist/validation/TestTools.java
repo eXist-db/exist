@@ -44,10 +44,10 @@ import java.net.URLConnection;
  */
 public class TestTools {
 
-    public final static String VALIDATION_HOME_COLLECTION = "validation";
-    public final static String VALIDATION_DTD_COLLECTION = "dtd";
-    public final static String VALIDATION_XSD_COLLECTION = "xsd";
-    public final static String VALIDATION_TMP_COLLECTION = "tmp";
+    public static final String VALIDATION_HOME_COLLECTION = "validation";
+    public static final String VALIDATION_DTD_COLLECTION = "dtd";
+    public static final String VALIDATION_XSD_COLLECTION = "xsd";
+    public static final String VALIDATION_TMP_COLLECTION = "tmp";
 
     /**
      *

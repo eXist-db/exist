@@ -41,7 +41,7 @@ public abstract class ManagedDocumentLock<T> extends ManagedLock<T> {
 
     protected final XmldbURI documentUri;
 
-    public ManagedDocumentLock(final XmldbURI documentUri, final T lock, final Runnable closer) {
+    protected ManagedDocumentLock(final XmldbURI documentUri, final T lock, final Runnable closer) {
         super(lock, closer);
         this.documentUri = documentUri;
     }

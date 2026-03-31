@@ -21,10 +21,11 @@
  */
 package org.exist.xquery.modules.spatial;
 
-import java.util.List;
-import java.util.Map;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:pierrick.brihaye@free.fr">Pierrick Brihaye</a>
@@ -35,8 +36,8 @@ public class SpatialModule extends AbstractInternalModule {
     public static final String NAMESPACE_URI = "http://exist-db.org/xquery/spatial";
 
     public static final String PREFIX = "spatial";
-    public final static String INCLUSION_DATE = "2007-05-28";
-    public final static String RELEASED_IN_VERSION = "eXist-1.2";
+    public static final String INCLUSION_DATE = "2007-05-28";
+    public static final String RELEASED_IN_VERSION = "eXist-1.2";
 
     public static final FunctionDef[] functions = {
         new FunctionDef(FunSpatialSearch.signatures[0], FunSpatialSearch.class),

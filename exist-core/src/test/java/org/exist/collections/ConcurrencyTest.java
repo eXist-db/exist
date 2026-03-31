@@ -26,8 +26,6 @@ import org.apache.logging.log4j.Logger;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.xmldb.EXistXPathQueryService;
 import org.junit.AfterClass;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -44,6 +42,9 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 /**
  * Test concurrent access to collections.
  */
@@ -54,7 +55,7 @@ public class ConcurrencyTest {
     @ClassRule
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
-    private static int CONCURRENT_THREADS = Math.min(16, Runtime.getRuntime().availableProcessors() * 3);
+    private static final int CONCURRENT_THREADS = Math.min(16, Runtime.getRuntime().availableProcessors() * 3);
     private static final int DOC_COUNT = CONCURRENT_THREADS * 10;
 
     private static final int QUERY_COUNT = 20;
@@ -109,7 +110,7 @@ public class ConcurrencyTest {
         });
     }
 
-    private static class QueryTask implements Runnable {
+    private static final class QueryTask implements Runnable {
         private final String query;
         private final int start;
 		private final boolean protect;

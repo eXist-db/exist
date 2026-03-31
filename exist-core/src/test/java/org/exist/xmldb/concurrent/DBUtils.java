@@ -21,11 +21,6 @@
  */
 package org.exist.xmldb.concurrent;
 
-import java.io.*;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-
 import org.exist.source.Source;
 import org.exist.source.StringSource;
 import org.exist.xmldb.EXistXQueryService;
@@ -33,6 +28,11 @@ import org.xmldb.api.base.*;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XPathQueryService;
+
+import java.io.*;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 

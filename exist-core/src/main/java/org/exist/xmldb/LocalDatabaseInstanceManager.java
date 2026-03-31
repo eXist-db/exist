@@ -21,8 +21,6 @@
  */
 package org.exist.xmldb;
 
-import java.util.Properties;
-
 import org.exist.scheduler.SystemTaskJob;
 import org.exist.scheduler.impl.ShutdownTask;
 import org.exist.scheduler.impl.SystemTaskJobImpl;
@@ -31,6 +29,8 @@ import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
+
+import java.util.Properties;
 
 /**
  * Local implementation of the DatabaseInstanceManager.

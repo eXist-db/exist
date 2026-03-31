@@ -21,8 +21,6 @@
  */
 package org.exist.security.realm;
 
-import java.util.Collection;
-import java.util.List;
 import org.exist.Database;
 import org.exist.LifeCycle;
 import org.exist.security.Account;
@@ -30,6 +28,9 @@ import org.exist.security.Group;
 import org.exist.security.SecurityManager;
 import org.exist.security.management.AccountsManagement;
 import org.exist.security.management.GroupsManagement;
+
+import java.util.Collection;
+import java.util.List;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>

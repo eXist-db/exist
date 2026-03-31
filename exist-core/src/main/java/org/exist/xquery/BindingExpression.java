@@ -36,18 +36,18 @@ import org.exist.xquery.value.*;
  */
 public abstract class BindingExpression extends AbstractFLWORClause implements RewritableExpression {
 
-	protected final static Logger LOG =
+	protected static final Logger LOG =
 		LogManager.getLogger(BindingExpression.class);
 
-    protected final static SequenceType POSITIONAL_VAR_TYPE = 
+    protected static final SequenceType POSITIONAL_VAR_TYPE = 
         new SequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE);
     
 	protected QName varName;
-	protected SequenceType sequenceType = null;
+	protected SequenceType sequenceType;
 	protected Expression inputSequence;
 	private ExprUpdateListener listener;
 
-    public BindingExpression(final XQueryContext context) {
+    protected BindingExpression(final XQueryContext context) {
 		super(context);
 	}
 
@@ -114,7 +114,7 @@ public abstract class BindingExpression extends AbstractFLWORClause implements R
 		}
 	}
 	
-	public final static void clearContext(final int contextId, final Sequence seq) throws XPathException {
+	public static void clearContext(final int contextId, final Sequence seq) throws XPathException {
 		if (seq != null && !(seq instanceof VirtualNodeSet)) {
             seq.clearContext(contextId);
 		}

@@ -32,18 +32,17 @@
  */
 package org.exist.storage;
 
+import com.evolvedbinary.j8fu.fsm.AtomicFSM;
+import com.evolvedbinary.j8fu.fsm.FSM;
 import net.jcip.annotations.NotThreadSafe;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
-import com.evolvedbinary.j8fu.fsm.AtomicFSM;
-import com.evolvedbinary.j8fu.fsm.FSM;
-
-import static com.evolvedbinary.j8fu.fsm.TransitionTable.transitionTable;
-import static org.exist.security.UnixStylePermission.LOG;
-
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.evolvedbinary.j8fu.fsm.TransitionTable.transitionTable;
+import static org.exist.security.UnixStylePermission.LOG;
 
 /**
  * This class simply maintains a list of {@link BrokerPoolService}

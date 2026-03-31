@@ -23,20 +23,16 @@ package org.exist.xquery.functions.xmldb;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.net.URISyntaxException;
 import org.exist.dom.QName;
 import org.exist.xmldb.EXistCollectionManagementService;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
-import org.exist.xquery.value.AnyURIValue;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
+
+import java.net.URISyntaxException;
 
 import static org.exist.xquery.XPathException.execAndAddErrorIfMissing;
 
@@ -46,7 +42,7 @@ import static org.exist.xquery.XPathException.execAndAddErrorIfMissing;
  */
 public class XMLDBRename extends XMLDBAbstractCollectionManipulator {
 	protected static final Logger logger = LogManager.getLogger(XMLDBRename.class);
-	public final static FunctionSignature[] signatures = {
+	public static final FunctionSignature[] signatures = {
 		new FunctionSignature(
 			new QName("rename", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
             "Renames the collection $source-collection-uri with new name $new-collection-name. " +

@@ -32,13 +32,13 @@
  */
 package org.exist.xquery.modules.xmldiff;
 
-import java.util.List;
-import java.util.Map;
-
 import org.exist.dom.QName;
 import org.exist.xquery.*;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
+
+import java.util.List;
+import java.util.Map;
 
 import static org.exist.xquery.FunctionDSL.functionDefs;
 
@@ -90,7 +90,7 @@ public class XmlDiffModule extends AbstractInternalModule {
         return FunctionDSL.functionSignature(new QName(name, NAMESPACE_URI, PREFIX), description, returnType, paramTypes);
     }
 
-    static class XmldDiffModuleErrorCode extends ErrorCodes.ErrorCode {
+    static final class XmldDiffModuleErrorCode extends ErrorCodes.ErrorCode {
         private XmldDiffModuleErrorCode(final String code, final String description) {
             super(new QName(code, NAMESPACE_URI, PREFIX), description);
         }

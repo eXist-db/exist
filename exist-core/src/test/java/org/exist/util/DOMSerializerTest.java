@@ -21,24 +21,23 @@
  */
 package org.exist.util;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
-import java.net.URISyntaxException;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
-
 import org.exist.util.serializer.DOMSerializer;
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import static org.junit.Assert.assertNotNull;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
+import java.net.URISyntaxException;
+
 import static org.exist.samples.Samples.SAMPLES;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * @author wolf

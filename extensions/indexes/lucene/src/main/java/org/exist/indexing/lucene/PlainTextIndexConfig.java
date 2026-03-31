@@ -21,9 +21,6 @@
  */
 package org.exist.indexing.lucene;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.lucene.document.Field;
 import org.exist.dom.memtree.NodeImpl;
 import org.exist.util.Configuration;
@@ -32,21 +29,24 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Private class for representing the add/doc Solr xml fragment 
  */
 public class PlainTextIndexConfig {
     
-    private PlainTextDoc solrDoc = new PlainTextDoc();
+    private final PlainTextDoc solrDoc = new PlainTextDoc();
     
-    private ArrayList<PlainTextField> solrFields = new ArrayList<>();
+    private final ArrayList<PlainTextField> solrFields = new ArrayList<>();
     
     /**
      * Helper method for retrieving boost value, defaults to 1.0f
      */
     private float getFloatValue(String value) {
         
-        float retVal = 1.0f;
+        float retVal = 1.0F;
 
         if (value != null && !value.isEmpty()) {
             try {
@@ -65,14 +65,15 @@ public class PlainTextIndexConfig {
      * Retrieve Solr configuration info from NodeValue structure
      */
     boolean parse(NodeValue descriptor) {
-        
-        if (descriptor.getImplementationType() == NodeValue.IN_MEMORY_NODE)
-        	((NodeImpl)descriptor).expand();
+
+        if (descriptor.getImplementationType() == NodeValue.IN_MEMORY_NODE) {
+            ((NodeImpl)descriptor).expand();
+        }
         
         /* Check <doc> and retrieve boost value */
         Node doc = descriptor.getNode();
         // Get QName and text from descriptor
-        if (!doc.getLocalName().contentEquals("doc")) {
+        if (!"doc".contentEquals(doc.getLocalName())) {
             // throw exception
             LuceneIndexWorker.LOG.error("Expected <doc> got <{}>", descriptor.getNode().getLocalName());
             return false;
@@ -157,7 +158,7 @@ public class PlainTextIndexConfig {
 
         private Field.Store store = Field.Store.NO;
         private String name;
-        private float boost = 1.0f;
+        private float boost = 1.0F;
         private CharSequence data;
 
         void setStore(boolean setStore){
@@ -197,7 +198,7 @@ public class PlainTextIndexConfig {
      * Private class representing the &lt;doc&gt; element (boost).
      */
     public static class PlainTextDoc {
-        private float boost = 1.0f;
+        private float boost = 1.0F;
 
         void setBoost(float value) {
             boost = value;

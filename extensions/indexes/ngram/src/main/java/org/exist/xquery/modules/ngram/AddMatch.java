@@ -21,34 +21,28 @@
  */
 package org.exist.xquery.modules.ngram;
 
-import java.io.IOException;
-
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-
+import org.exist.dom.QName;
 import org.exist.dom.persistent.Match;
 import org.exist.dom.persistent.NodeProxy;
-import org.exist.dom.QName;
 import org.exist.indexing.ngram.NGramMatch;
 import org.exist.numbering.NodeId;
 import org.exist.stax.ExtendedXMLStreamReader;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.ErrorCodes;
+import org.exist.xquery.value.*;
+
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+import java.io.IOException;
 
 public class AddMatch extends BasicFunction {
 
-	public final static FunctionSignature signature = new FunctionSignature(
+	public static final FunctionSignature signature = new FunctionSignature(
     	new QName("add-match", NGramModule.NAMESPACE_URI, NGramModule.PREFIX),
     		"For each of the nodes in the argument sequence, mark the entire first text descendant as a " +
     		"text match, just as if it had been found through a search operation. At serialization time, " +

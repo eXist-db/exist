@@ -43,10 +43,10 @@ import java.util.zip.ZipOutputStream;
  */
 public class ZipFunction extends AbstractCompressFunction {
 
-    private final static QName ZIP_FUNCTION_NAME = new QName("zip", CompressionModule.NAMESPACE_URI, CompressionModule.PREFIX);
-    private final static String ZIP_FUNCTION_DESCRIPTION = "Zips nodes, resources and collections.";
+    private static final QName ZIP_FUNCTION_NAME = new QName("zip", CompressionModule.NAMESPACE_URI, CompressionModule.PREFIX);
+    private static final String ZIP_FUNCTION_DESCRIPTION = "Zips nodes, resources and collections.";
 
-    public final static FunctionSignature[] signatures = {
+    public static final FunctionSignature[] signatures = {
 
             new FunctionSignature(
                     ZIP_FUNCTION_NAME,

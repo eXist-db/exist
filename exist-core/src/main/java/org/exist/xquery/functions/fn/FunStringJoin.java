@@ -30,14 +30,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 /**
  * 
@@ -46,7 +39,7 @@ import org.exist.xquery.value.Type;
  */
 public class FunStringJoin extends BasicFunction {
 
-	public final static FunctionSignature[] signatures = {
+	public static final FunctionSignature[] signatures = {
         new FunctionSignature(
             new QName("string-join", Function.BUILTIN_FUNCTION_NS),
             "Returns a xs:string created by concatenating the members of the " +

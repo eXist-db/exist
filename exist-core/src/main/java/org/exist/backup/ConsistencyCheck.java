@@ -474,24 +474,24 @@ public class ConsistencyCheck {
         void error(final org.exist.backup.ErrorReport error);
     }
 
-    private static class ElementNode {
+    private static final class ElementNode {
         private final ElementImpl elem;
-        private int childCount = 0;
-        private NodeId prevSibling = null;
+        private int childCount;
+        private NodeId prevSibling;
 
         private ElementNode(final ElementImpl element) {
             this.elem = element;
         }
     }
 
-    private class DocumentCallback implements BTreeCallback {
+    private final class DocumentCallback implements BTreeCallback {
         @Nullable
         private final List<ErrorReport> errors;
         @Nullable
         private final ProgressCallback progress;
         private final boolean checkDocs;
 
-        private int docCount = 0;
+        private int docCount;
         private int lastPercentage = -1;
         private final Agent jmxAgent = AgentFactory.getInstance();
         private final List<DocumentImpl> docs = new ArrayList<>(100);

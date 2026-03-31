@@ -26,11 +26,7 @@ import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.http.servlets.RequestWrapper;
 import org.exist.xquery.*;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 import java.util.Optional;
 
@@ -41,7 +37,7 @@ public class GetParameter extends RequestFunction {
 	
 	protected static final Logger logger = LogManager.getLogger(GetParameter.class);
 
-	public final static FunctionSignature[] signatures = {
+	public static final FunctionSignature[] signatures = {
 		new FunctionSignature(
 			new QName(
 			"get-parameter",

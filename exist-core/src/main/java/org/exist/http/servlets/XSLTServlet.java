@@ -21,6 +21,10 @@
  */
 package org.exist.http.servlets;
 
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
@@ -48,10 +52,6 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.sax.SAXResult;
@@ -76,16 +76,16 @@ public class XSLTServlet extends HttpServlet {
     @Serial
     private static final long serialVersionUID = -7258405385386062151L;
 
-    private final static String REQ_ATTRIBUTE_PREFIX = "xslt.";
+    private static final String REQ_ATTRIBUTE_PREFIX = "xslt.";
 
-    private final static String REQ_ATTRIBUTE_STYLESHEET = "xslt.stylesheet";
-    private final static String REQ_ATTRIBUTE_INPUT = "xslt.input";
-    private final static String REQ_ATTRIBUTE_OUTPUT = "xslt.output.";
-    private final static String REQ_ATTRIBUTE_BASE = "xslt.base";
+    private static final String REQ_ATTRIBUTE_STYLESHEET = "xslt.stylesheet";
+    private static final String REQ_ATTRIBUTE_INPUT = "xslt.input";
+    private static final String REQ_ATTRIBUTE_OUTPUT = "xslt.output.";
+    private static final String REQ_ATTRIBUTE_BASE = "xslt.base";
 
-    private final static Logger LOG = LogManager.getLogger(XSLTServlet.class);
+    private static final Logger LOG = LogManager.getLogger(XSLTServlet.class);
 
-    private final static XSLTErrorsListener<ServletException> errorListener =
+    private static final XSLTErrorsListener<ServletException> errorListener =
             new XSLTErrorsListener<>(true, false) {
 
                 @Override
@@ -96,7 +96,7 @@ public class XSLTServlet extends HttpServlet {
 
     private BrokerPool pool;
 
-    private Boolean caching = null;
+    private Boolean caching;
 
     /**
      * @return Value of TransformerFactoryAllocator.PROPERTY_CACHING_ATTRIBUTE or TRUE if not present.

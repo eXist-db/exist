@@ -21,7 +21,6 @@
  */
 package org.exist.security.internal;
 
-import java.util.List;
 import org.exist.config.Configuration;
 import org.exist.config.ConfigurationException;
 import org.exist.config.annotation.ConfigurationClass;
@@ -29,6 +28,8 @@ import org.exist.security.AbstractGroup;
 import org.exist.security.AbstractRealm;
 import org.exist.security.Account;
 import org.exist.storage.DBBroker;
+
+import java.util.List;
 
 @ConfigurationClass("group")
 public class GroupImpl extends AbstractGroup {

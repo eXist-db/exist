@@ -39,12 +39,12 @@ public abstract class LogicalOp extends BinaryOp {
 	 * nodes. The predicate class can then filter out the matching
 	 * nodes from the context set.
 	 */
-	protected boolean optimize = false;
-	protected boolean rewritable = false;
+	protected boolean optimize;
+	protected boolean rewritable;
 	
     protected Expression parent;
 
-	public LogicalOp(XQueryContext context) {
+	protected LogicalOp(XQueryContext context) {
 		super(context);
 	}
 
@@ -85,9 +85,9 @@ public abstract class LogicalOp extends BinaryOp {
 	public int returnsType() {		
 		return optimize ? 
 			//Possibly more expression types to add there
-			(getParent() instanceof EnclosedExpr ||
+			getParent() instanceof EnclosedExpr ||
 			//First, the intermediate PathExpr
-			(getParent() == null)) ?
+			(getParent() == null) ?
 			Type.BOOLEAN : Type.NODE 
 			:
 			Type.BOOLEAN;

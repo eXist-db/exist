@@ -61,8 +61,7 @@ public class TextConstructor extends NodeConstructor {
             final MemTreeBuilder builder = context.getDocumentBuilder();
             context.proceed(this, builder);
             final int nodeNr = builder.characters(text);
-            final NodeImpl node = builder.getDocument().getNode(nodeNr);
-            return node;
+            return builder.getDocument().getNode(nodeNr);
         } finally {
             if (newDocumentContext)
                 {context.popDocumentContext();}
@@ -84,7 +83,7 @@ public class TextConstructor extends NodeConstructor {
         return "text {" + text + "}";
     }
 
-    protected final static boolean isWhiteSpace(char ch) {
+    protected static boolean isWhiteSpace(char ch) {
         return (ch == 0x20) || (ch == 0x09) || (ch == 0xD) || (ch == 0xA);
     }
 

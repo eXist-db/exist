@@ -80,7 +80,7 @@ public class HttpClientTest {
             final URL url = URI.create("http://www.exist-db.org").toURL();
             final URLConnection con = url.openConnection();
             if (con instanceof HttpURLConnection httpConnection) {
-                hasInternetAccess = (httpConnection.getResponseCode() == HttpURLConnection.HTTP_OK);
+                hasInternetAccess = httpConnection.getResponseCode() == HttpURLConnection.HTTP_OK;
             }
         } catch(final MalformedURLException e) {
             fail(e.getMessage());

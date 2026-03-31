@@ -110,9 +110,9 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
     private static final String NON_APPLICABLE = "N/A";
     private static final String COLLECTION_MIME_TYPE = "exist/collection";
 
-    private int commandStart = 0;
+    private int commandStart;
 
-    private boolean gotUp = false;
+    private boolean gotUp;
     private DefaultStyledDocument doc;
     private JLabel statusbar;
     private JTable fileman;
@@ -121,9 +121,9 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
     private JPopupMenu shellPopup;
     private final ProcessRunnable processRunnable;
     private final Thread processThread;
-    private Preferences preferences;
+    private final Preferences preferences;
 
-    private XmldbURI path = null;
+    private XmldbURI path;
     private Properties properties;
     private final InteractiveClient client;
 
@@ -493,7 +493,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         menubar.add(HelpMenu);
 
         item = new JMenuItem(Messages.getString("ClientFrame.90"), KeyEvent.VK_A); //$NON-NLS-1$
-        item.addActionListener(e -> AboutAction());
+        item.addActionListener(e -> aboutAction());
         HelpMenu.add(item);
 
         return menubar;
@@ -659,11 +659,11 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
     @Override
     public void actionPerformed(final ActionEvent e) {
         final String cmd = e.getActionCommand();
-        if (cmd.equals(CUT)) {
+        if (CUT.equals(cmd)) {
             shell.cut();
-        } else if (cmd.equals(COPY)) {
+        } else if (COPY.equals(cmd)) {
             shell.copy();
-        } else if (cmd.equals(PASTE)) {
+        } else if (PASTE.equals(cmd)) {
             shell.paste();
         }
     }
@@ -927,7 +927,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
 
             for (int i = 0; i < selRows.length; i++) {
                 res[i] = resources.getRow(fileman.convertRowIndexToModel(selRows[i]));
-                if (!(res[i].isCollection())) {
+                if (!res[i].isCollection()) {
                     JOptionPane.showMessageDialog(this, Messages.getString("ClientFrame.136"), Messages.getString("ClientFrame.137"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$ //$NON-NLS-2$
                     return;
                 }
@@ -937,7 +937,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         if (JOptionPane.showConfirmDialog(this,
                 Messages.getString("ClientFrame.138"), //$NON-NLS-1$
                 Messages.getString("ClientFrame.139"), JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) { //$NON-NLS-1$
-            final ResourceDescriptor collections[] = res;
+            final ResourceDescriptor[] collections = res;
             final Runnable reindexThread = () -> {
                 ClientFrame.this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 final IndexQueryService service;
@@ -999,7 +999,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
 
         //get the collection to highlight in the backup dialog
         final String defaultSelectedCollection;
-        final ResourceDescriptor selResources[] = getSelectedResources();
+        final ResourceDescriptor[] selResources = getSelectedResources();
         if (selResources != null) {
             if (selResources.length == 1 && selResources[0].isCollection()) {
                 //use the selected collection
@@ -1111,7 +1111,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
 
                 listener.enableDismissDialogButton();
 
-                if (properties.getProperty(InteractiveClient.USER, SecurityManager.DBA_USER).equals(SecurityManager.DBA_USER) && dbaPassword != null) {
+                if (SecurityManager.DBA_USER.equals(properties.getProperty(InteractiveClient.USER, SecurityManager.DBA_USER)) && dbaPassword != null) {
                     properties.setProperty(InteractiveClient.PASSWORD, dbaPassword);
                 }
 
@@ -1482,7 +1482,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         System.exit(SystemExitCodes.OK_EXIT_CODE);
     }
 
-    private void AboutAction() {
+    private void aboutAction() {
         JOptionPane.showMessageDialog(this, client.getNotice());
     }
 
@@ -1584,7 +1584,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
                 , Messages.getString("ClientFrame.211") //$NON-NLS-1$
         };
 
-        private List<ResourceDescriptor> rows = null;
+        private List<ResourceDescriptor> rows;
 
         public void setData(final List<ResourceDescriptor> rows) {
             rows.sort(new ResourceComparator());
@@ -1696,7 +1696,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
 
             if (!connection.getUri().isEmpty()) {
                 properties.setProperty(InteractiveClient.URI, connection.getUri());
-                properties.setProperty(InteractiveClient.SSL_ENABLE, Boolean.valueOf(connection.isSsl()).toString().toUpperCase());
+                properties.setProperty(InteractiveClient.SSL_ENABLE, Boolean.toString(connection.isSsl()).toUpperCase());
                 properties.setProperty(InteractiveClient.LOCAL_MODE, "FALSE");
             } else {
                 properties.setProperty(InteractiveClient.CONFIGURATION, connection.getConfiguration());

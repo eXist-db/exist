@@ -21,20 +21,8 @@
  */
 package org.exist.xquery.functions.xmldb;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-import java.util.Properties;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.FileUtils;
 import org.exist.util.MimeTable;
@@ -46,15 +34,7 @@ import org.exist.xquery.Expression;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.AnyURIValue;
-import org.exist.xquery.value.BinaryValue;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.JavaObjectValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xmldb.api.base.Collection;
@@ -62,6 +42,17 @@ import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.BinaryResource;
 import org.xmldb.api.modules.XMLResource;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.util.Properties;
 
 import static org.exist.xquery.FunctionDSL.*;
 import static org.exist.xquery.XPathException.execAndAddErrorIfMissing;
@@ -153,7 +144,7 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
         }
 
         if (mimeType == null) {
-            mimeType = (storeAsBinary || !Type.subTypeOf(item.getType(), Type.NODE)) ? MimeType.BINARY_TYPE : MimeType.XML_TYPE;
+            mimeType = storeAsBinary || !Type.subTypeOf(item.getType(), Type.NODE) ? MimeType.BINARY_TYPE : MimeType.XML_TYPE;
         } else if (storeAsBinary) {
             mimeType = new MimeType(mimeType.getName(), MimeType.BINARY);
         }

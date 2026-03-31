@@ -21,10 +21,6 @@
  */
 package org.exist.collections.triggers;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 import org.exist.Indexer;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfiguration;
@@ -32,15 +28,13 @@ import org.exist.dom.persistent.DocumentImpl;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
 import org.exist.xmldb.XmldbURI;
-import org.xml.sax.Attributes;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.Locator;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
+import org.xml.sax.*;
 import org.xml.sax.ext.LexicalHandler;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -54,7 +48,7 @@ public class DocumentTriggers implements DocumentTrigger, ContentHandler, Lexica
     private LexicalHandler lexicalHandler;
     private ErrorHandler errorHandler;
     
-    private SAXTrigger last = null;
+    private SAXTrigger last;
     
     private final List<DocumentTrigger> triggers;
     
@@ -353,19 +347,22 @@ public class DocumentTriggers implements DocumentTrigger, ContentHandler, Lexica
 
     @Override
     public void warning(SAXParseException exception) throws SAXException {
-        if (errorHandler != null)
+        if (errorHandler != null) {
             errorHandler.warning(exception);
+        }
     }
 
     @Override
     public void error(SAXParseException exception) throws SAXException {
-        if (errorHandler != null)
+        if (errorHandler != null) {
             errorHandler.error(exception);
+        }
     }
 
     @Override
     public void fatalError(SAXParseException exception) throws SAXException {
-        if (errorHandler != null)
+        if (errorHandler != null) {
             errorHandler.fatalError(exception);
+        }
     }
 }

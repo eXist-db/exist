@@ -23,20 +23,10 @@ package org.exist.storage.serializers;
 
 import org.exist.Namespaces;
 import org.exist.dom.QName;
-import org.exist.dom.persistent.AttrImpl;
-import org.exist.dom.persistent.CDATASectionImpl;
-import org.exist.dom.persistent.CommentImpl;
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.DocumentTypeImpl;
-import org.exist.dom.persistent.ElementImpl;
-import org.exist.dom.persistent.IStoredNode;
-import org.exist.dom.persistent.Match;
-import org.exist.dom.persistent.NodeProxy;
-import org.exist.dom.persistent.ProcessingInstructionImpl;
-import org.exist.dom.persistent.TextImpl;
-import org.exist.dom.persistent.XMLDeclarationImpl;
+import org.exist.dom.persistent.*;
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
+import org.exist.storage.dom.INodeIterator;
 import org.exist.util.Configuration;
 import org.exist.util.serializer.AttrList;
 import org.exist.xquery.value.Type;
@@ -44,6 +34,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import javax.xml.XMLConstants;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
@@ -51,9 +42,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.exist.storage.dom.INodeIterator;
-
-import javax.xml.XMLConstants;
 
 /**
  * Serializer implementation for the native database backend.
@@ -64,17 +52,17 @@ public class NativeSerializer extends Serializer {
 
     // private final static AttributesImpl EMPTY_ATTRIBUTES = new AttributesImpl();
     
-    private final static QName TEXT_ELEMENT = new QName("text", Namespaces.EXIST_NS, Namespaces.EXIST_NS_PREFIX);
-    private final static QName ATTRIB_ELEMENT = new QName("attribute", Namespaces.EXIST_NS, Namespaces.EXIST_NS_PREFIX);
-    private final static QName SOURCE_ATTRIB = new QName("source", Namespaces.EXIST_NS, Namespaces.EXIST_NS_PREFIX);
-    private final static QName ID_ATTRIB = new QName("id", Namespaces.EXIST_NS, Namespaces.EXIST_NS_PREFIX);
+    private static final QName TEXT_ELEMENT = new QName("text", Namespaces.EXIST_NS, Namespaces.EXIST_NS_PREFIX);
+    private static final QName ATTRIB_ELEMENT = new QName("attribute", Namespaces.EXIST_NS, Namespaces.EXIST_NS_PREFIX);
+    private static final QName SOURCE_ATTRIB = new QName("source", Namespaces.EXIST_NS, Namespaces.EXIST_NS_PREFIX);
+    private static final QName ID_ATTRIB = new QName("id", Namespaces.EXIST_NS, Namespaces.EXIST_NS_PREFIX);
 
-    private final static QName MATCHES_ATTRIB = new QName("matches", Namespaces.EXIST_NS, Namespaces.EXIST_NS_PREFIX);
-    private final static QName MATCHES_OFFSET_ATTRIB = new QName("matches-offset", Namespaces.EXIST_NS, Namespaces.EXIST_NS_PREFIX);
-    private final static QName MATCHES_LENGTH_ATTRIB = new QName("matches-length", Namespaces.EXIST_NS, Namespaces.EXIST_NS_PREFIX);
+    private static final QName MATCHES_ATTRIB = new QName("matches", Namespaces.EXIST_NS, Namespaces.EXIST_NS_PREFIX);
+    private static final QName MATCHES_OFFSET_ATTRIB = new QName("matches-offset", Namespaces.EXIST_NS, Namespaces.EXIST_NS_PREFIX);
+    private static final QName MATCHES_LENGTH_ATTRIB = new QName("matches-length", Namespaces.EXIST_NS, Namespaces.EXIST_NS_PREFIX);
 
-    private final static Pattern P_ZERO_VALUES = Pattern.compile("0(,0)?");
-    private final static Matcher M_ZERO_VALUES = P_ZERO_VALUES.matcher("");
+    private static final Pattern P_ZERO_VALUES = Pattern.compile("0(,0)?");
+    private static final Matcher M_ZERO_VALUES = P_ZERO_VALUES.matcher("");
 
     public NativeSerializer(DBBroker broker, Configuration config) {
         this(broker, config, null);
@@ -168,8 +156,9 @@ public class NativeSerializer extends Serializer {
             receiver.setCurrentNode(node);
         	String defaultNS = null;
 	        if (((ElementImpl) node).declaresNamespacePrefixes()) {
-	        	// declare namespaces used by this element
-	        	String prefix, uri;
+                // declare namespaces used by this element
+                String prefix;
+                String uri;
 	        	for (final Iterator<String> i = ((ElementImpl) node).getPrefixes(); i.hasNext();) {
 	        		prefix = i.next();
 	        		if (prefix.isEmpty()) {
@@ -336,8 +325,7 @@ public class NativeSerializer extends Serializer {
                     receiver.endElement(ATTRIB_ELEMENT);
                 }
                 else {
-                	if (this.outputProperties.getProperty("output-method") != null &&
-                			"text".equals(this.outputProperties.getProperty("output-method"))) {
+                	if ("text".equals(this.outputProperties.getProperty("output-method"))) {
                 		receiver.characters(node.getNodeValue());                	
                 	} else {
                         LOG.warn("Error SENR0001: attribute '{}' has no parent element. While serializing document {}", node.getQName(), doc.getURI());
@@ -362,7 +350,7 @@ public class NativeSerializer extends Serializer {
             break;
         case Node.COMMENT_NODE:
             final String comment = ((CommentImpl) node).getData();
-            char data[] = new char[comment.length()];
+            char[] data = new char[comment.length()];
             comment.getChars(0, data.length, data, 0);
             receiver.comment(data, 0, data.length);
             node.release();

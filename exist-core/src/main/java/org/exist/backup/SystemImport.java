@@ -57,7 +57,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class SystemImport {
     
-    public final static Logger LOG = LogManager.getLogger( SystemImport.class );
+    public static final Logger LOG = LogManager.getLogger( SystemImport.class );
 
     private final Database db;
     

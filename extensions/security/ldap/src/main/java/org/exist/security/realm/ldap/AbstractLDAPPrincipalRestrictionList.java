@@ -21,14 +21,14 @@
  */
 package org.exist.security.realm.ldap;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.exist.config.Configurable;
 import org.exist.config.Configuration;
 import org.exist.config.Configurator;
 import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationFieldAsElement;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author aretter
@@ -41,7 +41,7 @@ public abstract class AbstractLDAPPrincipalRestrictionList implements Configurab
 
     protected Configuration configuration;
 
-    public AbstractLDAPPrincipalRestrictionList(final Configuration config) {
+    protected AbstractLDAPPrincipalRestrictionList(final Configuration config) {
         this.configuration = Configurator.configure(this, config);
     }
 
@@ -52,7 +52,7 @@ public abstract class AbstractLDAPPrincipalRestrictionList implements Configurab
 
     @Override
     public boolean isConfigured() {
-        return (configuration != null);
+        return configuration != null;
     }
 
     public List<String> getPrincipals() {

@@ -22,6 +22,13 @@
 
 package org.exist.webstart;
 
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.Serial;
@@ -30,13 +37,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.function.Supplier;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import static com.evolvedbinary.j8fu.OptionalUtil.or;
 
@@ -50,7 +50,7 @@ public class JnlpServlet extends HttpServlet {
 
     private static final Logger LOGGER = LogManager.getLogger(JnlpServlet.class);
 
-    private JnlpJarFiles jf = null;
+    private JnlpJarFiles jf;
 
     /**
      * Initialize servlet.

@@ -21,13 +21,10 @@
  */
 package org.exist.client.security;
 
-import java.util.*;
-import javax.swing.ComboBoxModel;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.table.DefaultTableModel;
 import org.exist.client.DialogCompleteWithResponse;
 import org.exist.client.DialogWithResponse;
 import org.exist.client.InteractiveClient;
+import org.exist.security.ACLPermission;
 import org.exist.security.ACLPermission.ACE_ACCESS_TYPE;
 import org.exist.security.ACLPermission.ACE_TARGET;
 import org.exist.security.Account;
@@ -35,6 +32,11 @@ import org.exist.security.Permission;
 import org.exist.security.internal.aider.ACEAider;
 import org.exist.xmldb.UserManagementService;
 import org.xmldb.api.base.XMLDBException;
+
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.table.DefaultTableModel;
+import java.util.*;
 
 /**
  *
@@ -44,10 +46,10 @@ public class AccessControlEntryDialog extends javax.swing.JFrame implements Dial
     
     private final UserManagementService userManagementService;
     
-    private DefaultTableModel permissionTableModel = null;
+    private DefaultTableModel permissionTableModel;
     private DefaultComboBoxModel<String> usernameModel;
     private final Set<String> allUsernames;
-    private DefaultComboBoxModel<String> groupNameModel = null;
+    private DefaultComboBoxModel<String> groupNameModel;
     private final Set<String> allGroupNames;
     private final List<DialogCompleteWithResponse<ACEAider>> dialogCompleteWithResponseCallbacks = new ArrayList<>();
 
@@ -298,16 +300,12 @@ public class AccessControlEntryDialog extends javax.swing.JFrame implements Dial
 
     private void cmbTargetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbTargetActionPerformed
         final ACE_TARGET aceTarget = ACE_TARGET.valueOf((String)cmbTarget.getSelectedItem());
-        switch(aceTarget) {
-            case USER:
-                cmbGroupName.setEnabled(false);
-                cmbUsername.setEnabled(true);
-                break;
-                
-            case GROUP:
-                cmbUsername.setEnabled(false);
-                cmbGroupName.setEnabled(true);
-                break;
+        if (aceTarget == ACLPermission.ACE_TARGET.USER) {
+            cmbGroupName.setEnabled(false);
+            cmbUsername.setEnabled(true);
+        } else if (aceTarget == ACLPermission.ACE_TARGET.GROUP) {
+            cmbUsername.setEnabled(false);
+            cmbGroupName.setEnabled(true);
         }
     }//GEN-LAST:event_cmbTargetActionPerformed
 

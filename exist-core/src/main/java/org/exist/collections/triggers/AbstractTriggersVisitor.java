@@ -21,12 +21,12 @@
  */
 package org.exist.collections.triggers;
 
-import java.util.List;
-import java.util.Map;
-
 import org.exist.collections.Collection;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -34,9 +34,9 @@ import org.exist.storage.txn.Txn;
  */
 public abstract class AbstractTriggersVisitor<T extends Trigger> implements TriggersVisitor<T> {
 
-    private List<T> triggers;
+    private final List<T> triggers;
     
-    public AbstractTriggersVisitor(List<T> triggers) {
+    protected AbstractTriggersVisitor(List<T> triggers) {
         this.triggers = triggers;
     }
     

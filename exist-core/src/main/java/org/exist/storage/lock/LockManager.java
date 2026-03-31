@@ -73,16 +73,16 @@ import java.util.function.Consumer;
 public class LockManager {
 
     // org.exist.util.Configuration properties
-    public final static String CONFIGURATION_UPGRADE_CHECK = "lock-manager.upgrade-check";
-    public final static String CONFIGURATION_WARN_WAIT_ON_READ_FOR_WRITE = "lock-manager.warn-wait-on-read-for-write";
-    public final static String CONFIGURATION_PATH_LOCKS_FOR_DOCUMENTS = "lock-manager.document.use-path-locks";
-    public final static String CONFIGURATION_PATHS_MULTI_WRITER = "lock-manager.paths-multi-writer";
+    public static final String CONFIGURATION_UPGRADE_CHECK = "lock-manager.upgrade-check";
+    public static final String CONFIGURATION_WARN_WAIT_ON_READ_FOR_WRITE = "lock-manager.warn-wait-on-read-for-write";
+    public static final String CONFIGURATION_PATH_LOCKS_FOR_DOCUMENTS = "lock-manager.document.use-path-locks";
+    public static final String CONFIGURATION_PATHS_MULTI_WRITER = "lock-manager.paths-multi-writer";
 
     //TODO(AR) remove eventually!
     // legacy properties for overriding the config
-    public final static String PROP_ENABLE_PATHS_MULTI_WRITER = "exist.lockmanager.paths-multiwriter";
-    public final static String PROP_UPGRADE_CHECK = "exist.lockmanager.upgrade.check";
-    public final static String PROP_WARN_WAIT_ON_READ_FOR_WRITE = "exist.lockmanager.warn.waitonreadforwrite";
+    public static final String PROP_ENABLE_PATHS_MULTI_WRITER = "exist.lockmanager.paths-multiwriter";
+    public static final String PROP_UPGRADE_CHECK = "exist.lockmanager.upgrade.check";
+    public static final String PROP_WARN_WAIT_ON_READ_FOR_WRITE = "exist.lockmanager.warn.waitonreadforwrite";
 
     private static final Logger LOG = LogManager.getLogger(LockManager.class);
 

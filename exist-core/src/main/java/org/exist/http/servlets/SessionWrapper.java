@@ -22,6 +22,7 @@
 package org.exist.http.servlets;
 
 import jakarta.servlet.http.HttpSession;
+
 import java.util.Enumeration;
 
 public interface SessionWrapper {

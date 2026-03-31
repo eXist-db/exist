@@ -23,21 +23,14 @@ package org.exist.xquery.functions.response;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import org.exist.dom.QName;
 import org.exist.http.servlets.ResponseWrapper;
 import org.exist.xquery.*;
-import org.exist.xquery.value.BooleanValue;
-import org.exist.xquery.value.DurationValue;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
-
-import java.util.Date;
+import org.exist.xquery.value.*;
 
 import javax.annotation.Nonnull;
 import javax.xml.datatype.Duration;
+import java.util.Date;
 
 
 /**
@@ -56,7 +49,7 @@ public class SetCookie extends StrictResponseFunction {
     private static final FunctionParameterSequenceType DOMAIN_PARAM = new FunctionParameterSequenceType("domain", Type.STRING, Cardinality.ZERO_OR_ONE, "The cookie domain");
     private static final FunctionParameterSequenceType PATH_PARAM = new FunctionParameterSequenceType("path", Type.STRING, Cardinality.ZERO_OR_ONE, "The cookie path");
 
-    public final static FunctionSignature[] signatures = {
+    public static final FunctionSignature[] signatures = {
             new FunctionSignature(
                     new QName("set-cookie", ResponseModule.NAMESPACE_URI, ResponseModule.PREFIX),
                     "Sets a HTTP Cookie on the HTTP Response.",
@@ -87,7 +80,9 @@ public class SetCookie extends StrictResponseFunction {
         final String value = args[1].getStringValue();
 
         final int maxAge;
-        final Sequence secureSeq, domainSeq, pathSeq;
+        final Sequence secureSeq;
+        final Sequence domainSeq;
+        final Sequence pathSeq;
         if (getArgumentCount() > 2) {
             final Sequence ageSeq = args[2];
             secureSeq = args[3];

@@ -93,9 +93,9 @@ public abstract class AbstractRestoreHandler extends DefaultHandler {
     @Nullable private final Set<String> pathsToIgnore;
 
     //handler state
-    private int version = 0;
-    private boolean deduplicateBlobs = false;
-    @Nullable private XmldbURI currentCollectionUri = null;
+    private int version;
+    private boolean deduplicateBlobs;
+    @Nullable private XmldbURI currentCollectionUri;
     private final Deque<DeferredPermission> deferredPermissions = new ArrayDeque<>();
 
     /**
@@ -139,7 +139,7 @@ public abstract class AbstractRestoreHandler extends DefaultHandler {
     public void startElement(final String namespaceURI, final String localName, final String qName, final Attributes atts) throws SAXException {
 
         // only process entries in the eXist-db namespace
-        if (namespaceURI != null && !namespaceURI.equals(Namespaces.EXIST_NS)) {
+        if (namespaceURI != null && !Namespaces.EXIST_NS.equals(namespaceURI)) {
             return;
         }
 
@@ -310,7 +310,7 @@ public abstract class AbstractRestoreHandler extends DefaultHandler {
             throw new SAXException("Resource requires a name attribute");
         }
 
-        final boolean xmlType = Optional.ofNullable(attributes.getValue("type")).filter(s -> "XMLResource".equals(s)).isPresent();
+        final boolean xmlType = Optional.ofNullable(attributes.getValue("type")).filter("XMLResource"::equals).isPresent();
         final String filename = getAttr(attributes, "filename", commonAttributes.name);
         @Nullable final String mimeTypeStr = attributes.getValue("mimetype");
         @Nullable final String dateModifiedStr = attributes.getValue("modified");
@@ -391,9 +391,6 @@ public abstract class AbstractRestoreHandler extends DefaultHandler {
                         notifyStartDocumentRestore(docUri, attributes);
 
                         transaction.commit();
-
-                        // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
-                        collection.close();
                     }
                 } finally {
                     /*
@@ -483,9 +480,6 @@ public abstract class AbstractRestoreHandler extends DefaultHandler {
                 }
 
                 transaction.commit();
-
-                // NOTE: early release of Collection lock inline with Asymmetrical Locking scheme
-                collection.close();
 
             } catch (final PermissionDeniedException | TransactionException | TriggerException | LockException | IOException e) {
                 listener.warn("Failed to remove deleted resource: " + name + ": " + e.getMessage());
@@ -620,7 +614,7 @@ public abstract class AbstractRestoreHandler extends DefaultHandler {
         // no-op by default, may be overridden by subclass
     }
 
-    private static class EntryCommonMetadataAttributes {
+    private static final class EntryCommonMetadataAttributes {
         final boolean skip;
         @Nullable final String name;
         final String owner;

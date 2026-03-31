@@ -21,10 +21,10 @@
  */
 package org.exist.storage;
 
-import java.util.Arrays;
-
 import org.exist.dom.QName;
 import org.exist.xquery.value.Type;
+
+import java.util.Arrays;
 
 public abstract class RangeIndexSpec {
 
@@ -86,7 +86,7 @@ public abstract class RangeIndexSpec {
 	 * @param type a bit set indicating the type
 	 * @return atomic XPath type
 	 */
-	public static final int indexTypeToXPath(int type) {
+	public static int indexTypeToXPath(int type) {
 	    return xpathTypes[type & RANGE_INDEX_MASK];
 	}
 
@@ -97,7 +97,7 @@ public abstract class RangeIndexSpec {
 	 * @param type XPath type
 	 * @return the index type bit mask
 	 */
-	public static final int xpathTypeToIndex(int type) {
+	public static int xpathTypeToIndex(int type) {
 	    return indexTypes[type];
 	}
 
@@ -108,15 +108,15 @@ public abstract class RangeIndexSpec {
 	 * @param type a bit set indicating the type
 	 * @return True if the index type bit mask has a range index bit set.
 	 */
-	public static final boolean hasRangeIndex(int type) {
+	public static boolean hasRangeIndex(int type) {
 		return (type & RANGE_INDEX_MASK) > 0 && !hasQNameIndex(type);
 	}
 
-	public static final boolean hasQNameIndex(int type) {
+	public static boolean hasQNameIndex(int type) {
 		return (type & QNAME_INDEX) != 0;
 	}
 	
-	public static final boolean hasQNameOrValueIndex(int type) {
+	public static boolean hasQNameOrValueIndex(int type) {
 		return (type & HAS_VALUE_OR_MIXED_INDEX_MASK) > 0;
 	}
 
@@ -128,7 +128,7 @@ public abstract class RangeIndexSpec {
 	 * @param type type to search super type for
 	 * @return the super type
      */
-    protected static final int getSuperType(int type) {
+    protected static int getSuperType(int type) {
         if (Type.subTypeOf(type, Type.INTEGER))
             {return Type.INTEGER;}
         if (Type.subTypeOf(type, Type.STRING))

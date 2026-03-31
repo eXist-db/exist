@@ -23,6 +23,7 @@ package org.exist.http.servlets;
 
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpSession;
+
 import java.util.Enumeration;
 
 /**

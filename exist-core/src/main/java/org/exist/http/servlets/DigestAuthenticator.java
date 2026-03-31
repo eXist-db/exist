@@ -21,6 +21,8 @@
  */
 package org.exist.http.servlets;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.exist.security.MessageDigester;
 import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
@@ -28,8 +30,6 @@ import org.exist.security.internal.AccountImpl;
 import org.exist.security.internal.SubjectAccreditedImpl;
 import org.exist.storage.BrokerPool;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -43,7 +43,7 @@ import static java.nio.charset.StandardCharsets.ISO_8859_1;
  */
 public class DigestAuthenticator implements Authenticator {
 
-	private BrokerPool pool;
+	private final BrokerPool pool;
 
 	public DigestAuthenticator(BrokerPool pool) {
 		this.pool = pool;
@@ -141,13 +141,13 @@ public class DigestAuthenticator implements Authenticator {
 	}
 
 	private static class Digest {
-		String method = null;
-		String username = null;
+		String method;
+		String username;
 		@SuppressWarnings("unused")
-		String realm = null;
-		String nonce = null;
-		String uri = null;
-		String response = null;
+		String realm;
+		String nonce;
+		String uri;
+		String response;
 
 		public Digest(String method) {
 			this.method = method;
@@ -176,7 +176,7 @@ public class DigestAuthenticator implements Authenticator {
 				final byte[] digest = md.digest();
 
 				// check digest
-				return (MessageDigester.byteArrayToHex(digest).equalsIgnoreCase(response));
+				return MessageDigester.byteArrayToHex(digest).equalsIgnoreCase(response);
 			} catch (final NoSuchAlgorithmException e) {
 				throw new RuntimeException("MD5 not supported");
 			}

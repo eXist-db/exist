@@ -21,22 +21,17 @@
  */
 package org.exist.xquery;
 
+import org.exist.dom.QName;
+import org.exist.xquery.util.ExpressionDumper;
+import org.exist.xquery.value.*;
+
+import javax.xml.XMLConstants;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.exist.dom.QName;
-import org.exist.xquery.util.ExpressionDumper;
-import org.exist.xquery.value.FunctionReference;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
-
-import javax.xml.XMLConstants;
-
 public class PartialFunctionApplication extends AbstractExpression {
 
-	public final static String PARTIAL_FUN_PREFIX = "partial";
+	public static final String PARTIAL_FUN_PREFIX = "partial";
 	
 	protected FunctionCall function;
 	protected AnalyzeContextInfo cachedContextInfo;
@@ -59,8 +54,7 @@ public class PartialFunctionApplication extends AbstractExpression {
 	@Override
 	public Sequence eval(Sequence contextSequence, Item contextItem)
 			throws XPathException {
-		final FunctionReference newRef = createPartial(contextSequence, contextItem, function);
-		return newRef;
+		return createPartial(contextSequence, contextItem, function);
 	}
 
 	@Override

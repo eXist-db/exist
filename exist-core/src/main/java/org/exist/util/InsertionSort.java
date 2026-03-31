@@ -21,24 +21,24 @@
  */
 package org.exist.util;
 
+import org.exist.dom.persistent.NodeProxy;
+
 import java.util.Comparator;
 import java.util.List;
 
-import org.exist.dom.persistent.NodeProxy;
-
 /**
-	This class implements a version 
-	of the insertion sort algorithm.
-
-	The implementation is inspired on
-	the work of Michael Maniscalco in
-	C++
-	http://www.michael-maniscalco.com/sorting.htm
-	
-	@author José María Fernández (jmfg@users.sourceforge.net)
-*/
+ 	This class implements a version 
+ 	of the insertion sort algorithm.
+ 
+ 	The implementation is inspired on
+ 	the work of Michael Maniscalco in
+ 	C++
+ 	http://www.michael-maniscalco.com/sorting.htm
+ 	
+ @author José María Fernández (jmfg@users.sourceforge.net)
+ */
 public final class InsertionSort {
-	public final static void sortByNodeId(NodeProxy[] a, int lo0, int hi0)
+	public static void sortByNodeId(NodeProxy[] a, int lo0, int hi0)
 	//------------------------------------------------------------
 	{
 		// First case, no element or only one!
@@ -66,7 +66,7 @@ public final class InsertionSort {
 		}
 	}
 	
-	public final static <C extends Comparable<? super C>> void sort(C[] a, int lo0, int hi0)
+	public static <C extends Comparable<? super C>> void sort(C[] a, int lo0, int hi0)
 	//------------------------------------------------------------
 	{
 		// First case, no element or only one!
@@ -94,7 +94,7 @@ public final class InsertionSort {
 		}
 	}
 
-	public final static <C extends Comparable<? super C>> void sort(C[] a, int lo0, int hi0, int[] b)
+	public static <C extends Comparable<? super C>> void sort(C[] a, int lo0, int hi0, int[] b)
 	//------------------------------------------------------------
 	{
 		// First case, no element or only one!
@@ -128,7 +128,7 @@ public final class InsertionSort {
 		}
 	}
 
-	public final static <C> void sort(C[] a, Comparator<C> comp, int lo0, int hi0)
+	public static <C> void sort(C[] a, Comparator<C> comp, int lo0, int hi0)
 	//------------------------------------------------------------
 	{
 		// First case, no element or only one!
@@ -156,14 +156,14 @@ public final class InsertionSort {
 		}
 	}
 		
-	public final static <C extends Comparable<? super C>> void sort(List<C> a, int lo0, int hi0)
+	public static <C extends Comparable<? super C>> void sort(List<C> a, int lo0, int hi0)
 	//------------------------------------------------------------
 	{
 		// First case, no element or only one!
 		if(lo0>=hi0)  {return;}
 		
 		// Second case, at least two elements
-		if((a.get(lo0)).compareTo(a.get(lo0+1)) > 0) {
+		if(a.get(lo0).compareTo(a.get(lo0+1)) > 0) {
 			SwapVals.swap(a,lo0,lo0+1);
 		}
 		
@@ -184,7 +184,7 @@ public final class InsertionSort {
 		}
 	}
 
-	public final static void sort(long[] a, int lo0, int hi0, Object[] b)
+	public static void sort(long[] a, int lo0, int hi0, Object[] b)
 	//------------------------------------------------------------
 	{
 		// First case, no element or only one!

@@ -95,7 +95,7 @@ public class NamespaceNode extends NodeImpl implements Attr {
 
     @Override
     public Element getOwnerElement() {
-        return ((Element) document.getNode(document.namespaceParent[nodeNumber]));
+        return (Element) document.getNode(document.namespaceParent[nodeNumber]);
     }
 
     @Override

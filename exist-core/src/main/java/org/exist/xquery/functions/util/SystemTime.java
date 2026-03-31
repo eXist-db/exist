@@ -21,9 +21,6 @@
  */
 package org.exist.xquery.functions.util;
 
-import java.util.Date;
-
-//import org.apache.logging.log4j.LogManager;
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
@@ -32,11 +29,9 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.DateTimeValue;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
+
+import java.util.Date;
 
 /**
  * @author Andrzej Taramina (andrzej@chaeron.com)
@@ -47,7 +42,7 @@ public class SystemTime extends Function
 {
 //	private static final Logger logger = LogManager.getLogger(SystemTime.class);
 
-	public final static FunctionSignature[] signatures = {
+	public static final FunctionSignature[] signatures = {
         new FunctionSignature(
             new QName( "system-time", UtilModule.NAMESPACE_URI, UtilModule.PREFIX ),
             "Returns the current xs:time (with timezone) as reported by the Java method System.currentTimeMillis(). " +
@@ -113,13 +108,13 @@ public class SystemTime extends Function
 			context.getProfiler().end( this, "", result );   
 		}
 
-		return( result );
+		return result;
     }
 	
 	
 	public int getDependencies() 
 	{
-        return( Dependency.CONTEXT_SET );
+        return Dependency.CONTEXT_SET;
     }
 
 }

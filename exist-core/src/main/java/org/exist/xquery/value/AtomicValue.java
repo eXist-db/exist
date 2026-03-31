@@ -379,7 +379,7 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
         // nothing to be done by default
     }
 
-    private final static class EmptyValue extends AtomicValue {
+    private static final class EmptyValue extends AtomicValue {
 
         @Override
         public boolean hasOne() {

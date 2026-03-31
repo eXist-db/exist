@@ -21,17 +21,13 @@
  */
 package org.exist.xquery.modules.vector;
 
+import org.exist.vector.ModelRegistry;
+import org.exist.vector.VectorModelConstants;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
-import org.exist.vector.ModelRegistry;
-import org.exist.vector.VectorModelConstants;
+import org.exist.xquery.value.*;
 
 import javax.annotation.Nullable;
 

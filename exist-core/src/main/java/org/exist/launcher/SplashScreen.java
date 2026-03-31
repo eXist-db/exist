@@ -21,6 +21,7 @@
  */
 package org.exist.launcher;
 
+import org.exist.SystemProperties;
 import org.exist.jetty.JettyStart;
 import org.exist.storage.BrokerPool;
 
@@ -32,8 +33,6 @@ import java.net.URL;
 import java.util.Observable;
 import java.util.Observer;
 
-import org.exist.SystemProperties;
-
 /**
  * Display a splash screen showing the eXist-db logo and a status line.
  *
@@ -44,9 +43,9 @@ public class SplashScreen extends JFrame implements Observer, Comparable {
     @Serial
     private static final long serialVersionUID = -8449133653386075548L;
 
-    private JLabel statusLabel;
-    private JLabel versionLabel;
-    private Launcher launcher;
+    private final JLabel statusLabel;
+    private final JLabel versionLabel;
+    private final Launcher launcher;
 
     public SplashScreen(Launcher launcher) {
         this.launcher = launcher;

@@ -26,12 +26,13 @@
  */
 package org.exist.extensions.exquery.restxq.impl.adapters;
 
-import javax.xml.namespace.QName;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.SequenceType;
 import org.exquery.xquery.FunctionArgument;
 import org.exquery.xquery3.Annotation;
 import org.exquery.xquery3.FunctionSignature;
+
+import javax.xml.namespace.QName;
 
 /**
  *

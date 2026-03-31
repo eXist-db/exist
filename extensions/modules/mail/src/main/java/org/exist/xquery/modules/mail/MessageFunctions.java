@@ -21,26 +21,19 @@
  */
 package org.exist.xquery.modules.mail;
 
-import org.exist.dom.memtree.MemTreeBuilder;
-import org.exist.dom.memtree.ElementImpl;
-import org.exist.dom.memtree.DocumentBuilderReceiver;
-import org.exist.dom.memtree.DocumentImpl;
-import java.io.*;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.regex.Pattern;
 import jakarta.activation.MimeType;
 import jakarta.activation.MimeTypeParameterList;
 import jakarta.activation.MimeTypeParseException;
 import jakarta.mail.*;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeBodyPart;
-import javax.xml.transform.stream.StreamSource;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
+import org.exist.dom.memtree.DocumentBuilderReceiver;
+import org.exist.dom.memtree.DocumentImpl;
+import org.exist.dom.memtree.ElementImpl;
+import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -49,6 +42,13 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.modules.ModuleUtils;
 import org.exist.xquery.value.*;
 import org.xml.sax.SAXException;
+
+import javax.xml.transform.stream.StreamSource;
+import java.io.*;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.regex.Pattern;
 
 /**
  * Modified by alisterpillow on 19/08/2014.
@@ -65,7 +65,7 @@ public class MessageFunctions extends BasicFunction {
     private static final String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
     private static final Pattern CONTENT_TYPE_RE = Pattern.compile(";\\s*boundary(.*)$"); // Remove unnecessary boundary= from content-type
 
-    public final static FunctionSignature signatures[] = {
+    public static final FunctionSignature[] signatures = {
             new FunctionSignature(
                     new QName("get-messages", MailModule.NAMESPACE_URI, MailModule.PREFIX),
                     "Returns a sequence of emails as XML.  If there are no messages-numbers in the list, an empty sequence will be returned. Please see get_messages_example.xql.",
@@ -253,7 +253,7 @@ public class MessageFunctions extends BasicFunction {
             builder.endElement();
             builder.endDocument();
             ret = (NodeValue) builder.getDocument().getDocumentElement();
-            return (ret);
+            return ret;
         } finally {
             context.popDocumentContext();
         }
@@ -268,7 +268,9 @@ public class MessageFunctions extends BasicFunction {
     private void addAddress(MemTreeBuilder builder, String element, String attrVal, Address addr ) {
 
         builder.startElement(new QName(element, MailModule.NAMESPACE_URI, MailModule.PREFIX), null);
-        if (attrVal != null) builder.addAttribute(new QName("type", null, null), attrVal);
+        if (attrVal != null) {
+            builder.addAttribute(new QName("type", null, null), attrVal);
+        }
         InternetAddress ia = (InternetAddress)addr;
         if (ia.getPersonal() != null) {
             builder.addAttribute(new QName("personal", null, null),ia.getPersonal());
@@ -284,7 +286,7 @@ public class MessageFunctions extends BasicFunction {
         SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT);
         String temp = sdf.format(date);
         formatted = temp.substring(0, temp.length() - 2) + ":" + temp.substring(temp.length() - 2);
-        return (formatted);
+        return formatted;
     }
 
 
@@ -348,14 +350,14 @@ public class MessageFunctions extends BasicFunction {
             }
 
 
-        } else if (disposition.equalsIgnoreCase(Part.ATTACHMENT)) {
+        } else if (Part.ATTACHMENT.equalsIgnoreCase(disposition)) {
             builder.startElement(new QName("attachment", MailModule.NAMESPACE_URI, MailModule.PREFIX), null);
             builder.addAttribute(new QName("filename", null, null), part.getFileName());
             mimeParamsToAttributes(builder, part.getContentType());
             handleBinaryContent(part, builder);
             builder.endElement();
 
-        } else if (disposition.equalsIgnoreCase(Part.INLINE)) {
+        } else if (Part.INLINE.equalsIgnoreCase(disposition)) {
             builder.startElement(new QName("inline", MailModule.NAMESPACE_URI, MailModule.PREFIX), null);
             MimeBodyPart mbp = (MimeBodyPart)part;
             builder.addAttribute(new QName("filename", null, null), mbp.getFileName());

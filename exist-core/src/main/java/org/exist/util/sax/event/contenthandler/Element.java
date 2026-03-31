@@ -30,7 +30,7 @@ public abstract class Element implements ContentHandlerEvent {
     public final String localName;
     public final String qname;
 
-    public Element(final String namespaceURI, final String localName, final String qname) {
+    protected Element(final String namespaceURI, final String localName, final String qname) {
         this.namespaceURI = namespaceURI;
         this.localName = localName;
         this.qname = qname;

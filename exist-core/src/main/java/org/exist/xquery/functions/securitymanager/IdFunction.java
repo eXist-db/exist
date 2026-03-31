@@ -42,7 +42,7 @@ import java.util.Arrays;
  */
 public class IdFunction extends BasicFunction {
 
-    public final static FunctionSignature FNS_ID = new FunctionSignature(
+    public static final FunctionSignature FNS_ID = new FunctionSignature(
         new QName("id", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX),    
         "Returns the user and group names of the account executing the XQuery. " +
         "If the real and effective accounts are different, then both the real " +

@@ -21,15 +21,15 @@
  */
 package org.exist.collections.triggers;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfiguration;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
 import org.exist.xmldb.XmldbURI;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>

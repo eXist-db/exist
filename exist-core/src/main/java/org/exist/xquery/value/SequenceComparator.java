@@ -50,7 +50,7 @@ public class SequenceComparator implements Comparator<Sequence> {
     protected static final Logger LOG = LogManager.getLogger(RESTServer.class);
 
     private final @Nullable Collator collator;
-    private @Nullable ItemComparator itemComparator = null;
+    private @Nullable ItemComparator itemComparator;
 
     public SequenceComparator() {
         this(null);

@@ -22,7 +22,6 @@
 package org.exist.xquery;
 
 import com.evolvedbinary.j8fu.Either;
-
 import org.exist.EXistException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
@@ -30,7 +29,6 @@ import org.exist.storage.DBBroker;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.StringValue;
-
 import org.junit.ClassRule;
 import org.junit.Test;
 

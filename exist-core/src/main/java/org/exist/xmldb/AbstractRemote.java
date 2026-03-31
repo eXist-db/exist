@@ -21,15 +21,16 @@
  */
 package org.exist.xmldb;
 
-import java.util.Arrays;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.exist.security.ACLPermission;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.internal.aider.ACEAider;
 import org.exist.security.internal.aider.PermissionAiderFactory;
+
+import java.util.Arrays;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Base class for Remote XMLDB classes
@@ -55,7 +56,7 @@ public abstract class AbstractRemote {
     protected Stream<ACEAider> extractAces(final Object aclParameter) {
         return Optional.ofNullable((Object[])aclParameter)
                 .map(Arrays::stream)
-                .map(stream -> stream.map(o -> (ACEAider)o))
+                .map(stream -> stream.map(ACEAider.class::cast))
                 .orElse(Stream.<ACEAider>empty());
     }
     

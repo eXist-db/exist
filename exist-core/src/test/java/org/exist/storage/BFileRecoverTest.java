@@ -21,11 +21,6 @@
  */
 package org.exist.storage;
 
-import java.io.IOException;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.util.Optional;
-
 import org.exist.EXistException;
 import org.exist.storage.btree.BTreeException;
 import org.exist.storage.btree.Value;
@@ -37,6 +32,11 @@ import org.exist.test.ExistEmbeddedServer;
 import org.exist.util.FixedByteArray;
 import org.junit.Rule;
 import org.junit.Test;
+
+import java.io.IOException;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.util.Optional;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 

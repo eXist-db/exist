@@ -36,14 +36,14 @@ import java.util.List;
  */
 abstract class AbstractDeferredPermission implements DeferredPermission {
 
-    final private RestoreListener listener;
-    final private XmldbURI target;
-    final private String owner;
-    final private String group;
-    final private int mode;
+    private final RestoreListener listener;
+    private final XmldbURI target;
+    private final String owner;
+    private final String group;
+    private final int mode;
     final List<ACEAider> aces = new ArrayList<>();
 
-    public AbstractDeferredPermission(final RestoreListener listener, final XmldbURI target, final String owner, final String group, final int mode) {
+    protected AbstractDeferredPermission(final RestoreListener listener, final XmldbURI target, final String owner, final String group, final int mode) {
         this.listener = listener;
         this.target = target;
         this.owner = owner;

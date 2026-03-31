@@ -39,9 +39,9 @@ import org.exist.xquery.value.Type;
 
 public class UpdateStatistics extends BasicFunction {
 
-	protected final static Logger logger = LogManager.getLogger(UpdateStatistics.class);
+	protected static final Logger logger = LogManager.getLogger(UpdateStatistics.class);
 
-    public final static FunctionSignature signature = new FunctionSignature(
+    public static final FunctionSignature signature = new FunctionSignature(
         new QName("update-statistics", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
         "This function is part of the unfinished index statistics module, which is not " +
         "yet usable in a normal eXist setup. update-statistics rebuilds index statistics " +

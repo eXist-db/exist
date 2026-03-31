@@ -27,10 +27,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
-import static org.junit.Assert.assertNotNull;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
+
+import static org.junit.Assert.assertNotNull;
 
 public class CollectionTest {
 

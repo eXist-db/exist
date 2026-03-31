@@ -39,8 +39,8 @@ public class BackupModule extends AbstractInternalModule
     public static final String        NAMESPACE_URI       = "http://exist-db.org/xquery/backups";
 
     public static final String        PREFIX              = "backups";
-    public final static String        INCLUSION_DATE      = "2009-02-02";
-    public final static String        RELEASED_IN_VERSION = "eXist-1.2.6";
+    public static final String        INCLUSION_DATE      = "2009-02-02";
+    public static final String        RELEASED_IN_VERSION = "eXist-1.2.6";
 
     public static final FunctionDef[] functions           = {
         new FunctionDef( ListBackups.signature, ListBackups.class ),
@@ -54,25 +54,25 @@ public class BackupModule extends AbstractInternalModule
 
     public String getNamespaceURI()
     {
-        return( NAMESPACE_URI );
+        return NAMESPACE_URI;
     }
 
 
     public String getDefaultPrefix()
     {
-        return( PREFIX );
+        return PREFIX;
     }
 
 
     public String getDescription()
     {
-        return( "A module for access to database backups available on the server file system" );
+        return "A module for access to database backups available on the server file system";
     }
 
 
     public String getReleaseVersion()
     {
-        return( RELEASED_IN_VERSION );
+        return RELEASED_IN_VERSION;
     }
 
 }

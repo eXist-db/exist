@@ -21,12 +21,12 @@
  */
 package org.exist.xslt;
 
-import java.io.InputStream;
-import java.io.Reader;
-
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.storage.DBBroker;
 import org.xml.sax.InputSource;
+
+import java.io.InputStream;
+import java.io.Reader;
 
 /**
  * {@link org.xml.sax.InputSource} identifying a document within the eXist database.

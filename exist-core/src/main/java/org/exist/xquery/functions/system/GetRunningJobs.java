@@ -21,8 +21,6 @@
  */
 package org.exist.xquery.functions.system;
 
-import java.util.Date;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
@@ -34,20 +32,18 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.DateTimeValue;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
+
+import java.util.Date;
 
 public class GetRunningJobs extends BasicFunction {
 
-    protected final static Logger logger = LogManager.getLogger(GetRunningJobs.class);
+    protected static final Logger logger = LogManager.getLogger(GetRunningJobs.class);
 
-    final static String NAMESPACE_URI                       = SystemModule.NAMESPACE_URI;
-    final static String PREFIX                              = SystemModule.PREFIX;
+    static final String NAMESPACE_URI                       = SystemModule.NAMESPACE_URI;
+    static final String PREFIX                              = SystemModule.PREFIX;
 
-    public final static FunctionSignature signature =
+    public static final FunctionSignature signature =
         new FunctionSignature(
                 new QName( "get-running-jobs", SystemModule.NAMESPACE_URI, SystemModule.PREFIX ),
                 "Get a list of running jobs (dba role only).",

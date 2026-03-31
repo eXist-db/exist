@@ -21,22 +21,12 @@
  */
 package org.exist.indexing.lucene;
 
-import static org.exist.util.PropertiesBuilder.propertiesBuilder;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
-import java.io.IOException;
-import java.io.StringReader;
-import java.util.*;
-import javax.xml.XMLConstants;
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.exist.EXistException;
 import org.exist.Indexer;
 import org.exist.TestUtils;
 import org.exist.collections.Collection;
-import org.exist.collections.CollectionConfigurationManager;
 import org.exist.collections.CollectionConfigurationException;
+import org.exist.collections.CollectionConfigurationManager;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.QName;
 import org.exist.dom.persistent.DefaultDocumentSet;
@@ -54,20 +44,27 @@ import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
 import org.exist.util.*;
 import org.exist.xmldb.XmldbURI;
-import org.exist.xquery.XQuery;
-import org.exist.xquery.XQueryContext;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.XQuery;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Sequence;
 import org.exist.xupdate.Modification;
 import org.exist.xupdate.XUpdateProcessor;
-
 import org.junit.*;
-
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import javax.xml.XMLConstants;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.*;
+
 import static org.exist.samples.Samples.SAMPLES;
+import static org.exist.util.PropertiesBuilder.propertiesBuilder;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class LuceneIndexTest {
 
@@ -913,7 +910,7 @@ public class LuceneIndexTest {
             checkIndex(docs, broker, new QName[] { new QName("item") }, null, 4);
             checkIndex(docs, broker, new QName[] { new QName("condition") }, "good", 0);
             checkIndex(docs, broker, new QName[] { new QName("item") }, "good", 0);
-            Occurrences o[] = checkIndex(docs, broker, new QName[] { new QName("description") }, "table", 1);
+            Occurrences[] o = checkIndex(docs, broker, new QName[] { new QName("description") }, "table", 1);
             assertEquals("table", o[0].getTerm());
             o = checkIndex(docs, broker, new QName[] { new QName("description") }, "cabinet", 1);
             assertEquals("cabinet", o[0].getTerm());
@@ -965,7 +962,7 @@ public class LuceneIndexTest {
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn transaction = transact.beginTransaction()) {
 
-            final Occurrences occur[] = checkIndex(docs, broker, new QName[] { new QName("description") }, "chair", 1);
+            final Occurrences[] occur = checkIndex(docs, broker, new QName[] { new QName("description") }, "chair", 1);
             assertEquals("chair", occur[0].getTerm());
             checkIndex(docs, broker, new QName[] { new QName("item") }, null, 5);
 
@@ -991,7 +988,7 @@ public class LuceneIndexTest {
             modifications[0].process(transaction);
             proc.reset();
 
-            Occurrences o[] = checkIndex(docs, broker, new QName[] { new QName("condition") }, null, 2);
+            Occurrences[] o = checkIndex(docs, broker, new QName[] { new QName("condition") }, null, 2);
             checkIndex(docs, broker, new QName[] { new QName("description") }, null, 4);
             checkIndex(docs, broker, new QName[] { new QName("item") }, null, 6);
 
@@ -1113,7 +1110,7 @@ public class LuceneIndexTest {
             modifications[0].process(transaction);
             proc.reset();
 
-            QName qnattr[] = { new QName("attr", XMLConstants.NULL_NS_URI, XMLConstants.DEFAULT_NS_PREFIX, ElementValue.ATTRIBUTE) };
+            QName[] qnattr = { new QName("attr", XMLConstants.NULL_NS_URI, XMLConstants.DEFAULT_NS_PREFIX, ElementValue.ATTRIBUTE) };
             o = checkIndex(docs, broker, qnattr, null, 1);
             assertEquals("abc", o[0].getTerm());
             checkIndex(docs, broker, qnattr, "attribute", 0);
@@ -1130,7 +1127,7 @@ public class LuceneIndexTest {
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn transaction = transact.beginTransaction()) {
 
-            final Occurrences occur[] = checkIndex(docs, broker, new QName[] { new QName("description") }, "chair", 1);
+            final Occurrences[] occur = checkIndex(docs, broker, new QName[] { new QName("description") }, "chair", 1);
             assertEquals("chair", occur[0].getTerm());
             checkIndex(docs, broker, new QName[] { new QName("item") }, null, 5);
 
@@ -1157,7 +1154,7 @@ public class LuceneIndexTest {
             checkIndex(docs, broker, new QName[] { new QName("item") }, null, 5);
             checkIndex(docs, broker, new QName[] { new QName("description") }, "chair", 0);
             checkIndex(docs, broker, new QName[] { new QName("item") }, "chair", 0);
-            Occurrences o[] = checkIndex(docs, broker, new QName[] { new QName("description") }, "wardrobe", 1);
+            Occurrences[] o = checkIndex(docs, broker, new QName[] { new QName("description") }, "wardrobe", 1);
             assertEquals("wardrobe", o[0].getTerm());
 
             // Update text node
@@ -1191,7 +1188,7 @@ public class LuceneIndexTest {
             modifications[0].process(transaction);
             proc.reset();
 
-            final QName qnattr[] = { new QName("attr", XMLConstants.NULL_NS_URI, XMLConstants.DEFAULT_NS_PREFIX, ElementValue.ATTRIBUTE) };
+            final QName[] qnattr = { new QName("attr", XMLConstants.NULL_NS_URI, XMLConstants.DEFAULT_NS_PREFIX, ElementValue.ATTRIBUTE) };
             o = checkIndex(docs, broker, qnattr, null, 1);
             assertEquals("abc", o[0].getTerm());
             checkIndex(docs, broker, qnattr, "attribute", 0);
@@ -1208,7 +1205,7 @@ public class LuceneIndexTest {
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
             final Txn transaction = transact.beginTransaction()) {
 
-            final Occurrences occur[] = checkIndex(docs, broker, new QName[] { new QName("description") }, "chair", 1);
+            final Occurrences[] occur = checkIndex(docs, broker, new QName[] { new QName("description") }, "chair", 1);
             assertEquals("chair", occur[0].getTerm());
             checkIndex(docs, broker, new QName[] { new QName("item") }, null, 5);
 
@@ -1238,7 +1235,7 @@ public class LuceneIndexTest {
             checkIndex(docs, broker, new QName[] { new QName("item") }, null, 6);
             checkIndex(docs, broker, new QName[] { new QName("description") }, "chair", 0);
             checkIndex(docs, broker, new QName[] { new QName("item") }, "chair", 0);
-            Occurrences o[] = checkIndex(docs, broker, new QName[] { new QName("description") }, "wheelchair", 1);
+            Occurrences[] o = checkIndex(docs, broker, new QName[] { new QName("description") }, "wheelchair", 1);
             assertEquals("wheelchair", o[0].getTerm());
             o = checkIndex(docs, broker, new QName[] { new QName("condition") }, "poor", 1);
             assertEquals("poor", o[0].getTerm());

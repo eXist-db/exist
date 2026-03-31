@@ -35,9 +35,9 @@ import static org.junit.Assert.assertEquals;
 public abstract class AbstractDescendantOrSelfNodeKindTest {
 
     @ClassRule
-    public final static ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
+    public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
-    protected final static String TEST_DOCUMENT = """
+    protected static final String TEST_DOCUMENT = """
         <doc xml:id="x">
         <?xml-stylesheet type="text/xsl" href="test"?>
             <a>

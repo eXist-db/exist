@@ -27,11 +27,11 @@ import org.exist.storage.NodePath;
 
 public class RangeIndexDoc {
 
-    private NodeId nodeId;
-    private QName qname;
-    private NodePath path;
-    private TextCollector collector;
-    private RangeIndexConfigElement config;
+    private final NodeId nodeId;
+    private final QName qname;
+    private final NodePath path;
+    private final TextCollector collector;
+    private final RangeIndexConfigElement config;
     private long address = -1;
 
     public RangeIndexDoc(NodeId nodeId, QName qname, NodePath path, TextCollector collector, RangeIndexConfigElement config) {

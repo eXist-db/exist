@@ -31,8 +31,8 @@ import org.exist.dom.QName;
 import org.exist.dom.QName.IllegalQNameException;
 import org.exist.dom.memtree.DocumentFragmentImpl;
 import org.exist.numbering.NodeId;
-import org.exist.security.SecurityManager;
 import org.exist.security.*;
+import org.exist.security.SecurityManager;
 import org.exist.storage.*;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
@@ -91,13 +91,13 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
     /**
      * number of child nodes
      */
-    private int children = 0;
-    private long[] childAddress = null;
+    private int children;
+    private long[] childAddress;
 
     /**
      * the collection this document belongs to
      */
-    private transient Collection collection = null;
+    private transient Collection collection;
 
     /**
      * the document's id
@@ -107,16 +107,16 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
     /**
      * Just the document's file name
      */
-    private XmldbURI fileURI = null;
+    private XmldbURI fileURI;
 
     /**
      * Lazily computed. Needs to be recomputed if {@link #fileURI} or {@link #collection} change
      */
-    private XmldbURI uri = null;
+    private XmldbURI uri;
 
-    private Permission permissions = null;
+    private Permission permissions;
 
-    private DocumentMetadata metadata = null;
+    private DocumentMetadata metadata;
 
     /**
      * The mimeType of the document
@@ -126,41 +126,41 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
     /**
      * The creation time of this document
      */
-    protected long created = 0;
+    protected long created;
 
     /**
      * Time of the last modification
      */
-    protected long lastModified = 0;
+    protected long lastModified;
 
     /**
      * The number of data pages occupied by this document
      */
-    protected int pageCount = 0;
+    protected int pageCount;
 
     /**
      * Contains the user id if a user lock is held on this resource
      */
-    protected int userLock = 0;
+    protected int userLock;
 
     /**
      * The document's XML Declaration - if specified.
      */
-    @Nullable private XMLDeclarationImpl xmlDecl = null;
+    @Nullable private XMLDeclarationImpl xmlDecl;
 
     /**
      * The document's doctype declaration - if specified.
      */
-    protected DocumentType docType = null;
+    protected DocumentType docType;
 
     /**
      * Associated lock token - if available
      */
-    protected LockToken lockToken = null;
+    protected LockToken lockToken;
 
-    protected transient int splitCount = 0;
+    protected transient int splitCount;
 
-    private boolean isReferenced = false;
+    private boolean isReferenced;
 
     /**
      * Creates a new <code>DocumentImpl</code> instance.
@@ -715,7 +715,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
      */
     @EnsureContainerLocked(mode=WRITE_LOCK)
     public void setUserLock(final Account user) {
-        this.userLock = (user == null ? 0 : user.getId());
+        this.userLock = user == null ? 0 : user.getId();
     }
 
     /**
@@ -743,7 +743,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
     @EnsureContainerLocked(mode=READ_LOCK)
     public long getContentLength() {
         final long length = pageCount * pool.getPageSize();
-        return (length < 0) ? 0 : length;
+        return length < 0 ? 0 : length;
     }
 
     /**
@@ -889,7 +889,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
         permissions.read(istream);
 
         final int children = istream.readInt();
-        final long childAddress[] = new long[children];
+        final long[] childAddress = new long[children];
         for (int i = 0; i < children; i++) {
             childAddress[i] = StorageAddress.createPointer(istream.readInt(), istream.readShort());
         }
@@ -1367,7 +1367,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
 
     @Override
     public NodeList getElementsByTagName(final String tagname) {
-        if(tagname != null && tagname.equals(QName.WILDCARD)) {
+        if(QName.WILDCARD.equals(tagname)) {
             return getElementsByTagName(new QName.WildcardLocalPartQName(XMLConstants.DEFAULT_NS_PREFIX));
         } else {
             try {
@@ -1380,8 +1380,8 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
 
     @Override
     public NodeList getElementsByTagNameNS(final String namespaceURI, final String localName) {
-        final boolean wildcardNS = namespaceURI != null && namespaceURI.equals(QName.WILDCARD);
-        final boolean wildcardLocalPart = localName != null && localName.equals(QName.WILDCARD);
+        final boolean wildcardNS = QName.WILDCARD.equals(namespaceURI);
+        final boolean wildcardLocalPart = QName.WILDCARD.equals(localName);
 
         if(wildcardNS && wildcardLocalPart) {
             return getElementsByTagName(QName.WildcardQName.getInstance());
@@ -1401,7 +1401,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Resource, Do
             docs.add(this);
 
             final NewArrayNodeSet contextSet = new NewArrayNodeSet();
-            final ElementImpl root = ((ElementImpl)getDocumentElement());
+            final ElementImpl root = (ElementImpl)getDocumentElement();
             contextSet.add(new NodeProxy(getExpression(), this, root.getNodeId(), root.getInternalAddress()));
 
             return broker.getStructuralIndex().scanByType(ElementValue.ELEMENT, Constants.DESCENDANT_SELF_AXIS,

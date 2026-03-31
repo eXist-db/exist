@@ -21,10 +21,6 @@
  */
 package org.exist.xquery.functions.util;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.*;
-import static org.xmldb.api.base.ResourceType.XML_RESOURCE;
-
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -32,6 +28,10 @@ import org.junit.Test;
 import org.w3c.dom.Node;
 import org.xmldb.api.base.*;
 import org.xmldb.api.modules.XMLResource;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.Assert.*;
+import static org.xmldb.api.base.ResourceType.XML_RESOURCE;
 
 /**
  * @author Casey Jordan

@@ -21,23 +21,23 @@
  */
 package org.exist.config.mapper;
 
-import java.lang.reflect.Method;
-
 import org.exist.config.Configuration;
 import org.exist.config.Configurator;
+
+import java.lang.reflect.Method;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  */
 public class CallMethod {
 
-    private Object obj = null;
-    private Configuration conf = null;
-    private Object value = null;
+    private final Object obj;
+    private final Configuration conf;
+    private Object value;
 
-    private String name = null;
-    private String attribute = null;
-    private String element = null;
+    private String name;
+    private String attribute;
+    private String element;
 
     public CallMethod(Object obj, Configuration conf) {
         this.obj = obj;
@@ -97,7 +97,9 @@ public class CallMethod {
     }
 
     public Configuration getConfiguration() {
-        if (element != null) return conf.getConfiguration(element);
+        if (element != null) {
+            return conf.getConfiguration(element);
+        }
         return conf;
     }
 }

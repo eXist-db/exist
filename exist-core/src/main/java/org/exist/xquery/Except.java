@@ -21,15 +21,10 @@
  */
 package org.exist.xquery;
 
+import org.exist.xquery.value.*;
+
 import java.util.Set;
 import java.util.TreeSet;
-
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.ItemComparator;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
 
 /**
  * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>

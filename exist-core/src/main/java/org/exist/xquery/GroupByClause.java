@@ -41,7 +41,7 @@ import java.util.*;
  */
 public class GroupByClause extends AbstractFLWORClause {
 
-    protected FLWORClause rootClause = null;
+    protected FLWORClause rootClause;
     private GroupSpec[] groupSpecs;
     private final Deque<GroupByData> stack = new ArrayDeque<>();
 
@@ -56,7 +56,7 @@ public class GroupByClause extends AbstractFLWORClause {
         private final Map<QName, LocalVariable> variables = new HashMap<>();
         private final List<LocalVariable> groupingVars = new ArrayList<>();
 
-        private boolean initialized = false;
+        private boolean initialized;
 
         public GroupByData(final Strategy<Sequence> keyHashStrategy) {
             this.groupedMap = new Object2ObjectLinkedOpenCustomHashMap<>(8, Hash.FAST_LOAD_FACTOR, keyHashStrategy);
@@ -179,8 +179,7 @@ public class GroupByClause extends AbstractFLWORClause {
             if (returnExpr instanceof FLWORClause flworClause) {
                 result = flworClause.postEval(result);
             }
-            result = super.postEval(result);
-            return result;
+            return super.postEval(result);
         }
         return seq;
     }
@@ -229,7 +228,7 @@ public class GroupByClause extends AbstractFLWORClause {
         }
     }
 
-    public void setGroupSpecs(final GroupSpec specs[]) {
+    public void setGroupSpecs(final GroupSpec[] specs) {
         final List<GroupSpec> distinctSpecs = new ArrayList<>(specs.length);
         for (int i = 0; i < specs.length; i++) {
             boolean duplicate = false;

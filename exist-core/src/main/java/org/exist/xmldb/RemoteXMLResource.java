@@ -21,22 +21,6 @@
  */
 package org.exist.xmldb;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING;
-
-import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-import javax.xml.transform.TransformerException;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Namespaces;
@@ -51,36 +35,42 @@ import org.exist.xquery.value.StringValue;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.Node;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXNotRecognizedException;
-import org.xml.sax.SAXNotSupportedException;
-import org.xml.sax.XMLReader;
+import org.xml.sax.*;
 import org.xml.sax.ext.LexicalHandler;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
 
+import javax.xml.parsers.*;
+import javax.xml.transform.TransformerException;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING;
+
 public class RemoteXMLResource
         extends AbstractRemoteResource
         implements XMLResource {
 
-    protected final static Logger LOG = LogManager.getLogger(RemoteXMLResource.class);
+    protected static final Logger LOG = LogManager.getLogger(RemoteXMLResource.class);
 
     /**
      * Use external XMLReader to parse XML.
      */
-    private XMLReader xmlReader = null;
+    private XMLReader xmlReader;
 
     private final Optional<String> id;
     private final Optional<String> type;
     private final int handle;
     private int pos = -1;
-    private String content = null;
+    private String content;
 
-    private Properties outputProperties = null;
-    private LexicalHandler lexicalHandler = null;
+    private Properties outputProperties;
+    private LexicalHandler lexicalHandler;
 
     /**
      * Construct a remote XML Resource.
@@ -211,7 +201,7 @@ public class RemoteXMLResource
             final DocumentBuilder builder = factory.newDocumentBuilder();
             final Document doc = builder.parse(is);
 
-            final boolean isDocumentNode = type.map(t -> "document-node()".equals(t)).orElse(true);
+            final boolean isDocumentNode = type.map("document-node()"::equals).orElse(true);
             if (isDocumentNode) {
                 return doc;
             } else {
@@ -334,8 +324,8 @@ public class RemoteXMLResource
     }
 
     private class InternalXMLSerializer extends SAXSerializer {
-        private VirtualTempPath  tempFile = null;
-        private OutputStreamWriter writer = null;
+        private VirtualTempPath  tempFile;
+        private OutputStreamWriter writer;
 
         public InternalXMLSerializer() {
             super();

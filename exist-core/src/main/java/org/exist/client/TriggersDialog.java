@@ -21,6 +21,15 @@
  */
 package org.exist.client;
 
+import org.exist.security.PermissionDeniedException;
+import org.exist.xmldb.XmldbURI;
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.XMLDBException;
+
+import javax.swing.*;
+import javax.swing.border.TitledBorder;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableCellRenderer;
 import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -31,24 +40,6 @@ import java.awt.event.WindowListener;
 import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.Box;
-import javax.swing.DefaultCellEditor;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
-import javax.swing.border.TitledBorder;
-import javax.swing.table.AbstractTableModel;
-import javax.swing.table.TableCellRenderer;
-import org.exist.security.PermissionDeniedException;
-import org.exist.xmldb.XmldbURI;
-import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.XMLDBException;
 
 /**
  * Dialog for viewing and editing Triggers in the Admin Client 
@@ -62,14 +53,14 @@ class TriggersDialog extends JFrame {
     @Serial
     private static final long serialVersionUID = 1L;
 
-    private CollectionXConf cx = null;
+    private CollectionXConf cx;
 
     private JComboBox cmbCollections;
 
     private JTable tblTriggers;
     private TriggersTableModel triggersModel;
 
-    private InteractiveClient client;
+    private final InteractiveClient client;
 
     public TriggersDialog(final String title, final InteractiveClient client) {
         super(title);
@@ -278,7 +269,7 @@ class TriggersDialog extends JFrame {
             }
     
             // Set the state
-            setSelected((value != null && (Boolean) value));
+            setSelected(value != null && (Boolean) value);
             return this;
         }
     }

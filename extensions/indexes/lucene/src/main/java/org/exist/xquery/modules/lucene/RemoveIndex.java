@@ -29,15 +29,11 @@ import org.exist.indexing.lucene.LuceneIndexWorker;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 public class RemoveIndex extends BasicFunction {
 
-	public final static FunctionSignature signature =
+	public static final FunctionSignature signature =
             new FunctionSignature(
             new QName("remove-index", LuceneModule.NAMESPACE_URI, LuceneModule.PREFIX),
             "Remove any (non-XML) Lucene index associated with the document identified by the " +

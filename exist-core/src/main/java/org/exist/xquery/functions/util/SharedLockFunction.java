@@ -37,7 +37,7 @@ public class SharedLockFunction extends LockFunction {
 
 	protected static final Logger logger = LogManager.getLogger(SharedLockFunction.class);
 
-	public final static FunctionSignature signature =
+	public static final FunctionSignature signature =
 		new FunctionSignature(
 			new QName("shared-lock", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 			"Puts a shared lock on the owner documents of all nodes in the first argument $nodes. " +

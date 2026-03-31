@@ -43,11 +43,11 @@ import org.exist.xquery.value.Type;
  */
 public class SetPrincipalMetadataFunction extends BasicFunction {
 
-    private final static QName qnSetAccountMetadata = new QName("set-account-metadata", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
-    private final static QName qnSetGroupMetadata = new QName("set-group-metadata", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    private static final QName qnSetAccountMetadata = new QName("set-account-metadata", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    private static final QName qnSetGroupMetadata = new QName("set-group-metadata", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
 
     
-    public final static FunctionSignature FNS_SET_ACCOUNT_METADATA = new FunctionSignature(
+    public static final FunctionSignature FNS_SET_ACCOUNT_METADATA = new FunctionSignature(
         qnSetAccountMetadata,
         "Sets a metadata attribute value for an account",
         new SequenceType[] {
@@ -58,7 +58,7 @@ public class SetPrincipalMetadataFunction extends BasicFunction {
         new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)
     );
     
-    public final static FunctionSignature FNS_SET_GROUP_METADATA = new FunctionSignature(
+    public static final FunctionSignature FNS_SET_GROUP_METADATA = new FunctionSignature(
         qnSetGroupMetadata,
         "Sets a metadata attribute value for a group",
         new SequenceType[] {
@@ -78,7 +78,7 @@ public class SetPrincipalMetadataFunction extends BasicFunction {
 
         final DBBroker broker = getContext().getBroker();
         final Subject currentUser = broker.getCurrentSubject();
-        if(currentUser.getName().equals(SecurityManager.GUEST_USER)) {
+        if(SecurityManager.GUEST_USER.equals(currentUser.getName())) {
             throw new XPathException(this, "You must be an authenticated user");
         }
 

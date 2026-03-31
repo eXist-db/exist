@@ -44,12 +44,12 @@ import java.nio.file.Path;
  */
 public class MemoryMappedFileFilterInputStreamCache extends AbstractFilterInputStreamCache {
 
-    private final static long DEFAULT_MEMORY_MAP_SIZE = 64 * 1024 * 1024; //64MB
+    private static final long DEFAULT_MEMORY_MAP_SIZE = 64 * 1024 * 1024; //64MB
 
     private final RandomAccessFile raf;
     private final FileChannel channel;
     private MappedByteBuffer buf;
-    private Path tempFile = null;
+    private Path tempFile;
     private final long memoryMapSize = DEFAULT_MEMORY_MAP_SIZE;
 
     private boolean externalFile = true;
@@ -87,7 +87,7 @@ public class MemoryMappedFileFilterInputStreamCache extends AbstractFilterInputS
 
     private void increaseSize(final long bytes) throws IOException {
 
-        long factor = (bytes / getMemoryMapSize());
+        long factor = bytes / getMemoryMapSize();
         if (factor == 0 || bytes % getMemoryMapSize() > 0) {
             factor++;
         }

@@ -21,15 +21,15 @@
  */
 package org.exist.security.realm.ldap;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.exist.config.Configurable;
 import org.exist.config.Configuration;
 import org.exist.config.Configurator;
-import org.exist.security.realm.TransformationContext;
 import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationFieldAsElement;
+import org.exist.security.realm.TransformationContext;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author aretter
@@ -56,7 +56,7 @@ public class LDAPTransformationContext implements TransformationContext, Configu
 
     @Override
     public boolean isConfigured() {
-        return (configuration != null);
+        return configuration != null;
     }
 
     @Override

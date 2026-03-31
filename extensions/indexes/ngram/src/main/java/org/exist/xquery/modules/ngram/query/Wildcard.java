@@ -46,13 +46,13 @@ public class Wildcard implements WildcardedExpression, MergeableExpression {
     @Override
     public WildcardedExpression mergeWith(final WildcardedExpression otherExpression) {
         Wildcard other = (Wildcard) otherExpression;
-        int newMaximumLength = (this.maximumLength == Integer.MAX_VALUE || other.maximumLength == Integer.MAX_VALUE) ? Integer.MAX_VALUE
+        int newMaximumLength = this.maximumLength == Integer.MAX_VALUE || other.maximumLength == Integer.MAX_VALUE ? Integer.MAX_VALUE
             : this.maximumLength + other.maximumLength;
         return new Wildcard(this.minimumLength + other.minimumLength, newMaximumLength);
     }
 
     @Override
     public boolean mergeableWith(final WildcardedExpression otherExpression) {
-        return (otherExpression instanceof Wildcard);
+        return otherExpression instanceof Wildcard;
     }
 }

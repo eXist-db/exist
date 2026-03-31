@@ -269,7 +269,7 @@ public class SortedNodeSet extends AbstractNodeSet {
 
     private static final class IteratorItem extends OrderedLinkedList.Node {
         private final NodeProxy proxy;
-        private String value = null;
+        private String value;
 
         public IteratorItem(final NodeProxy proxy, final PathExpr expr) {
             this.proxy = proxy;
@@ -283,7 +283,7 @@ public class SortedNodeSet extends AbstractNodeSet {
                     strings.add(new OrderedLinkedList.SimpleNode(item.getStringValue().toUpperCase()));
                 }
                 for(final Iterator<OrderedLinkedList.SimpleNode> j = strings.iterator(); j.hasNext(); ) {
-                    buf.append((j.next()).getData());
+                    buf.append(j.next().getData());
                 }
                 value = buf.toString();
             } catch(final XPathException e) {

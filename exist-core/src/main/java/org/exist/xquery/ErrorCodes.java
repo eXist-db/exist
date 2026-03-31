@@ -295,14 +295,14 @@ public class ErrorCodes {
         }
     }
 
-    public static class W3CErrorCode extends ErrorCode {
+    public static final class W3CErrorCode extends ErrorCode {
 
         private W3CErrorCode(String code, String description) {
             super(new QName(code, Namespaces.W3C_XQUERY_XPATH_ERROR_NS, Namespaces.W3C_XQUERY_XPATH_ERROR_PREFIX), description);
         }
     }
 
-    public static class EXistErrorCode extends ErrorCode {
+    public static final class EXistErrorCode extends ErrorCode {
 
         private EXistErrorCode(String code, String description) {
             super(new QName(code, Namespaces.EXIST_XQUERY_XPATH_ERROR_NS, Namespaces.EXIST_XQUERY_XPATH_ERROR_PREFIX), description);

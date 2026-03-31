@@ -21,12 +21,8 @@
  */
 package org.exist.xmldb;
 
-import java.io.InputStream;
-import java.net.URISyntaxException;
-import java.time.Instant;
-import java.util.*;
-import java.util.function.Supplier;
-import javax.xml.transform.OutputKeys;
+import com.evolvedbinary.j8fu.Either;
+import com.evolvedbinary.j8fu.function.FunctionE;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
@@ -45,20 +41,20 @@ import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.Txn;
 import org.exist.util.*;
-import com.evolvedbinary.j8fu.Either;
-import com.evolvedbinary.j8fu.function.FunctionE;
 import org.exist.xmldb.function.LocalXmldbCollectionFunction;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xmldb.api.base.*;
 import org.xmldb.api.base.ServiceProviderCache.ProviderRegistry;
-import org.xmldb.api.modules.BinaryResource;
-import org.xmldb.api.modules.CollectionManagementService;
-import org.xmldb.api.modules.XMLResource;
-import org.xmldb.api.modules.XPathQueryService;
-import org.xmldb.api.modules.XQueryService;
-import org.xmldb.api.modules.XUpdateQueryService;
+import org.xmldb.api.modules.*;
+
+import javax.xml.transform.OutputKeys;
+import java.io.InputStream;
+import java.net.URISyntaxException;
+import java.time.Instant;
+import java.util.*;
+import java.util.function.Supplier;
 
 import static com.evolvedbinary.j8fu.Try.Try;
 import static org.xmldb.api.base.ResourceType.BINARY_RESOURCE;
@@ -85,9 +81,9 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
      * (NekoHTML) instead of the XML parser. The HTML parser will normalize
      * the HTML into well-formed XML.
      */
-    public final static String NORMALIZE_HTML = "normalize-html";
+    public static final String NORMALIZE_HTML = "normalize-html";
 
-    private final static Properties defaultProperties = new Properties();
+    private static final Properties defaultProperties = new Properties();
     static {
         defaultProperties.setProperty(OutputKeys.INDENT, "yes");
         defaultProperties.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, "yes");
@@ -103,7 +99,7 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
     private final ServiceProviderCache serviceProviderCache = ServiceProviderCache.withRegistered(this::registerProvders);
 
     private Properties properties = new Properties(defaultProperties);
-    private boolean needsSync = false;
+    private boolean needsSync;
 
     /**
      * Create a collection with no parent (root collection).
@@ -287,7 +283,7 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
     @Override
     public org.xmldb.api.base.Collection getParentCollection() throws XMLDBException {
         return withDb((broker, transaction) -> {
-            if (getName(broker, transaction).equals(XmldbURI.ROOT_COLLECTION)) {
+            if (XmldbURI.ROOT_COLLECTION.equals(getName(broker, transaction))) {
                 return null;
             }
 
@@ -617,8 +613,9 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
                     final InputSource source;
                     if (uri != null) {
                         source = new InputSource(uri);
-                    } else
+                    } else {
                         source = Objects.requireNonNullElseGet(res.inputSource, () -> new StringInputSource(res.content));
+                    }
 
                     final XMLReader reader;
                     if (useHtmlReader(broker, transaction, res)) {
@@ -658,9 +655,9 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
      */
     private boolean useHtmlReader(final DBBroker broker, final Txn transaction, final LocalXMLResource res) throws XMLDBException {
         final String normalize = properties.getProperty(NORMALIZE_HTML, "no");
-        return (("yes".equalsIgnoreCase(normalize) || "true".equalsIgnoreCase(normalize)) &&
+        return ("yes".equalsIgnoreCase(normalize) || "true".equalsIgnoreCase(normalize)) &&
                 ("text/html".equals(res.getMimeType(broker, transaction)) || res.getId().endsWith(".htm") ||
-                        res.getId().endsWith(".html")));
+                        res.getId().endsWith(".html"));
     }
 
     /**

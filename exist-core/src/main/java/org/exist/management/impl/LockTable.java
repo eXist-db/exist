@@ -21,6 +21,7 @@
  */
 package org.exist.management.impl;
 
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.storage.BrokerPool;
@@ -29,7 +30,6 @@ import org.exist.storage.lock.Lock.LockType;
 import org.exist.storage.lock.LockTable.LockCountTraces;
 import org.exist.storage.lock.LockTable.LockModeOwner;
 import org.exist.storage.lock.LockTableUtils;
-import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
@@ -111,7 +111,7 @@ public class LockTable implements LockTableMXBean {
         }
     }
 
-    private final static Logger LOCK_LOG = LogManager.getLogger(org.exist.storage.lock.LockTable.class);
+    private static final Logger LOCK_LOG = LogManager.getLogger(org.exist.storage.lock.LockTable.class);
 
     @Override
     public void dumpToLog() {

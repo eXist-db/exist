@@ -21,6 +21,17 @@
  */
 package org.exist.xmldb;
 
+import org.exist.security.Account;
+import org.exist.test.ExistXmldbEmbeddedServer;
+import org.exist.util.io.InputStreamUtil;
+import org.junit.*;
+import org.xmldb.api.DatabaseManager;
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.Resource;
+import org.xmldb.api.base.Service;
+import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.modules.*;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
@@ -31,33 +42,17 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.exist.security.Account;
-import org.exist.test.ExistXmldbEmbeddedServer;
-import org.exist.util.io.InputStreamUtil;
-import org.junit.*;
-
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.TestUtils.*;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertArrayEquals;
 import static org.exist.samples.Samples.SAMPLES;
-
-import org.xmldb.api.DatabaseManager;
-import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.Resource;
-import org.xmldb.api.base.Service;
-import org.xmldb.api.base.XMLDBException;
-import org.xmldb.api.modules.*;
+import static org.junit.Assert.*;
 
 public class CreateCollectionsTest  {
 
     @ClassRule
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
-    private final static String TEST_COLLECTION = "testCreateCollection";
+    private static final String TEST_COLLECTION = "testCreateCollection";
 
     @Before
     public void setUp() throws XMLDBException {

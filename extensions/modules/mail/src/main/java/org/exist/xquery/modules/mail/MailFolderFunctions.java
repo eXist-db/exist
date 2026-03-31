@@ -25,7 +25,6 @@ package org.exist.xquery.modules.mail;
 import jakarta.mail.Folder;
 import jakarta.mail.MessagingException;
 import jakarta.mail.Store;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
@@ -34,13 +33,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.BooleanValue;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.IntegerValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 /**
  * eXist Mail Module Extension GetFolder
@@ -57,7 +50,7 @@ public class MailFolderFunctions extends BasicFunction
 {
 	protected static final Logger logger = LogManager.getLogger(MailFolderFunctions.class);
 
-	public final static FunctionSignature signatures[] = {
+	public static final FunctionSignature[] signatures = {
 		new FunctionSignature(
 			new QName( "get-mail-folder", MailModule.NAMESPACE_URI, MailModule.PREFIX ),
 			"Opens a mail folder.",
@@ -128,7 +121,7 @@ public class MailFolderFunctions extends BasicFunction
 		
 		// save the folder and return the handle of the folder
 			
-		return( new IntegerValue( this, MailModule.storeFolder( context, folder ), Type.LONG ) );
+		return new IntegerValue( this, MailModule.storeFolder( context, folder ), Type.LONG );
 	}
 	
 	private Sequence closeMailFolder( Sequence[] args, Sequence contextSequence ) throws XPathException
@@ -157,6 +150,6 @@ public class MailFolderFunctions extends BasicFunction
 			MailModule.removeFolder( context, folderHandle );
 		}
 			
-		return( Sequence.EMPTY_SEQUENCE );
+		return Sequence.EMPTY_SEQUENCE;
 	}
 }

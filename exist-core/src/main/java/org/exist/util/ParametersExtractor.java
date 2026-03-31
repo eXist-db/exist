@@ -21,15 +21,12 @@
  */
 package org.exist.util;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import java.util.*;
 
 /**
  * Utility class for extracting parameters from 
@@ -39,10 +36,10 @@ import org.w3c.dom.NodeList;
  */
 public class ParametersExtractor {
 
-    public final static String PARAMETERS_ELEMENT_NAME = "parameters";
-    public final static String PARAMETER_ELEMENT_NAME = "parameter";
-    private final static String PARAMETER_NAME_ATTRIBUTE = "name";
-    private final static String PARAMETER_VALUE_ATTRIBUTE = "value";
+    public static final String PARAMETERS_ELEMENT_NAME = "parameters";
+    public static final String PARAMETER_ELEMENT_NAME = "parameter";
+    private static final String PARAMETER_NAME_ATTRIBUTE = "name";
+    private static final String PARAMETER_VALUE_ATTRIBUTE = "value";
 
     /**
      * Extract the parameters.
@@ -55,7 +52,7 @@ public class ParametersExtractor {
 
         final Map<String, List<? extends Object>> result;
 
-        if(parameters == null || !parameters.getLocalName().equals(PARAMETERS_ELEMENT_NAME)) {
+        if(parameters == null || !PARAMETERS_ELEMENT_NAME.equals(parameters.getLocalName())) {
             result = new HashMap<>(0);
         } else {
 
@@ -253,7 +250,7 @@ public class ParametersExtractor {
         if (container != null && container.getNodeType() == Node.ELEMENT_NODE) {
             final NodeList params = ((Element) container).getElementsByTagName(elementName);
             for (int i = 0; i < params.getLength(); i++) {
-                final Element param = ((Element) params.item(i));
+                final Element param = (Element) params.item(i);
 
                 final String name = param.getAttribute("name");
                 final String value = param.getAttribute("value");

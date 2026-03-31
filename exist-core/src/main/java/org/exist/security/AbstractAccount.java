@@ -21,16 +21,17 @@
  */
 package org.exist.security;
 
-import java.util.*;
-
 import org.exist.config.Configuration;
 import org.exist.config.ConfigurationException;
 import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationFieldAsElement;
 import org.exist.config.annotation.ConfigurationFieldSettings;
-import static org.exist.config.annotation.ConfigurationFieldSettings.OCTAL_STRING_KEY;
 import org.exist.config.annotation.ConfigurationReferenceBy;
 import org.exist.storage.DBBroker;
+
+import java.util.*;
+
+import static org.exist.config.annotation.ConfigurationFieldSettings.OCTAL_STRING_KEY;
 
 @ConfigurationClass("")
 public abstract class AbstractAccount extends AbstractPrincipal implements Account {
@@ -40,13 +41,13 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
     protected List<Group> groups = new ArrayList<>();
 	
     //used for internal locking
-    private boolean accountLocked = false;
+    private boolean accountLocked;
 	
     @ConfigurationFieldAsElement("expired")
-    private boolean accountExpired = false;
+    private boolean accountExpired;
 	
     //@ConfigurationFieldAsElement("credentials-expired")
-    private boolean credentialsExpired = false;
+    private boolean credentialsExpired;
 
     @ConfigurationFieldAsElement("enabled")
     private boolean enabled = true;
@@ -58,18 +59,18 @@ public abstract class AbstractAccount extends AbstractPrincipal implements Accou
     @ConfigurationFieldAsElement("metadata")
     private Map<String, String> metadata = new HashMap<>();
     
-    protected Credential _cred = null;
+    protected Credential _cred;
 
     /**
      * Indicates if the user belongs to the dba group, i.e. is a superuser.
      */
-    protected boolean hasDbaRole = false;
+    protected boolean hasDbaRole;
 	
     protected AbstractAccount(final DBBroker broker, final AbstractRealm realm, final int id, final String name) throws ConfigurationException {
         super(broker, realm, realm.collectionAccounts, id, name);
     }
         
-    public AbstractAccount(final AbstractRealm realm, final Configuration configuration) throws ConfigurationException {
+    protected AbstractAccount(final AbstractRealm realm, final Configuration configuration) throws ConfigurationException {
         super(realm, configuration);
     }
 

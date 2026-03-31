@@ -49,17 +49,13 @@ import java.io.IOException;
 import java.util.Optional;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.exist.TestUtils.ADMIN_DB_USER;
 import static org.exist.TestUtils.ADMIN_DB_PWD;
+import static org.exist.TestUtils.ADMIN_DB_USER;
 import static org.exist.security.SecurityManager.DBA_GROUP;
 import static org.exist.storage.DBBroker.PreserveType.*;
 import static org.exist.test.TestConstants.TEST_COLLECTION_URI;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
 
 /**
  * Tests to ensure that document content and attributes
@@ -91,17 +87,17 @@ public class CopyResourceTest {
     private static final XmldbURI USER2_BIN_DOC3 = XmldbURI.create("u2d3.bin");
     private static final XmldbURI USER2_NEW_BIN_DOC = XmldbURI.create("u2nx.bin");
 
-    private static final int USER1_DOC1_MODE = 0444;  // r--r--r--
-    private static final int USER1_DOC2_MODE = 0644;  // rw-r--r--
-    private static final int USER1_DOC3_MODE = 0664;  // rw-rw--r--
-    private static final int USER1_BIN_DOC1_MODE = 0444;  // r--r--r--
-    private static final int USER1_BIN_DOC2_MODE = 0644;  // rw-r--r--
-    private static final int USER1_BIN_DOC3_MODE = 0664;  // rw-rw--r--
+    private static final int USER1_DOC1_MODE = 292;  // r--r--r--
+    private static final int USER1_DOC2_MODE = 420;  // rw-r--r--
+    private static final int USER1_DOC3_MODE = 436;  // rw-rw--r--
+    private static final int USER1_BIN_DOC1_MODE = 292;  // r--r--r--
+    private static final int USER1_BIN_DOC2_MODE = 420;  // rw-r--r--
+    private static final int USER1_BIN_DOC3_MODE = 436;  // rw-rw--r--
 
-    private static final int USER2_DOC2_MODE = 0644;  // rw-r--r--
-    private static final int USER2_DOC3_MODE = 0664;  // rw-rw--r--
-    private static final int USER2_BIN_DOC2_MODE = 0644;  // rw-r--r--
-    private static final int USER2_BIN_DOC3_MODE = 0664;  // rw-rw--r--
+    private static final int USER2_DOC2_MODE = 420;  // rw-r--r--
+    private static final int USER2_DOC3_MODE = 436;  // rw-rw--r--
+    private static final int USER2_BIN_DOC2_MODE = 420;  // rw-r--r--
+    private static final int USER2_BIN_DOC3_MODE = 436;  // rw-rw--r--
 
     @ClassRule
     public static final ExistEmbeddedServer existWebServer = new ExistEmbeddedServer(true, true);

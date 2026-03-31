@@ -23,20 +23,17 @@ package org.exist.xmldb;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import org.exist.xquery.Constants;
 import org.exist.xquery.util.URIUtils;
 import org.exist.xquery.value.AnyURIValue;
 
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
-
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
-
 import java.util.regex.Pattern;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -53,7 +50,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class XmldbURI implements Comparable<Object>, Serializable, Cloneable {
 
-    protected final static Logger LOG = LogManager.getLogger(XmldbURI.class);
+    protected static final Logger LOG = LogManager.getLogger(XmldbURI.class);
     public static final int NO_PORT = -1;
     //Should be provided by org.xmldb.api package !!!
     public static final String XMLDB_SCHEME = "xmldb";
@@ -66,56 +63,56 @@ public class XmldbURI implements Comparable<Object>, Serializable, Cloneable {
     /**
      * 'db' collection name
      */
-    public final static String ROOT_COLLECTION_NAME = "db";
+    public static final String ROOT_COLLECTION_NAME = "db";
     /**
      * '/db' collection name
      */
-    public final static String ROOT_COLLECTION = "/" + ROOT_COLLECTION_NAME;
+    public static final String ROOT_COLLECTION = "/" + ROOT_COLLECTION_NAME;
     /**
      * 'system' collection name
      */
-    public final static String SYSTEM_COLLECTION_NAME = "system";
+    public static final String SYSTEM_COLLECTION_NAME = "system";
     /**
      * '/db/system' collection name
      */
-    public final static String SYSTEM_COLLECTION = ROOT_COLLECTION + "/" + SYSTEM_COLLECTION_NAME;
+    public static final String SYSTEM_COLLECTION = ROOT_COLLECTION + "/" + SYSTEM_COLLECTION_NAME;
     /**
      * 'temp' collection name
      */
-    public final static String TEMP_COLLECTION_NAME = "temp";
+    public static final String TEMP_COLLECTION_NAME = "temp";
     /**
      * '/db/system/temp' collection name
      */
-    public final static String TEMP_COLLECTION = SYSTEM_COLLECTION + "/" + TEMP_COLLECTION_NAME;
+    public static final String TEMP_COLLECTION = SYSTEM_COLLECTION + "/" + TEMP_COLLECTION_NAME;
 
     /**
      * '/db/system/config' collection name
      */
     @Deprecated
-    public final static String CONFIG_COLLECTION = SYSTEM_COLLECTION + "/config";
+    public static final String CONFIG_COLLECTION = SYSTEM_COLLECTION + "/config";
 
     /**
      * '/db' collection *
      */
-    public final static XmldbURI DB = create(ROOT_COLLECTION);
-    public final static XmldbURI ROOT_COLLECTION_URI = create(ROOT_COLLECTION);
-    public final static XmldbURI RELATIVE_ROOT_COLLECTION_URI = create(ROOT_COLLECTION_NAME);
+    public static final XmldbURI DB = create(ROOT_COLLECTION);
+    public static final XmldbURI ROOT_COLLECTION_URI = create(ROOT_COLLECTION);
+    public static final XmldbURI RELATIVE_ROOT_COLLECTION_URI = create(ROOT_COLLECTION_NAME);
 
     /**
      * '/db/system' *
      */
-    public final static XmldbURI SYSTEM = create(SYSTEM_COLLECTION);
+    public static final XmldbURI SYSTEM = create(SYSTEM_COLLECTION);
     /**
      * '/db/system' *
      */
     @Deprecated
-    public final static XmldbURI SYSTEM_COLLECTION_URI = create(SYSTEM_COLLECTION);
+    public static final XmldbURI SYSTEM_COLLECTION_URI = create(SYSTEM_COLLECTION);
 
     @Deprecated
-    public final static XmldbURI CONFIG_COLLECTION_URI = create(CONFIG_COLLECTION);
+    public static final XmldbURI CONFIG_COLLECTION_URI = create(CONFIG_COLLECTION);
 
-    public final static XmldbURI TEMP_COLLECTION_URI = create(TEMP_COLLECTION);
-    public final static XmldbURI EMPTY_URI = createInternal("");
+    public static final XmldbURI TEMP_COLLECTION_URI = create(TEMP_COLLECTION);
+    public static final XmldbURI EMPTY_URI = createInternal("");
     public static final XmldbURI EMBEDDED_SERVER_URI = XmldbURI.create(EMBEDDED_SERVER_URI_PREFIX + EMBEDDED_SERVER_AUTHORITY);
     /**
      * 'xmldb:exist///db'
@@ -126,15 +123,15 @@ public class XmldbURI implements Comparable<Object>, Serializable, Cloneable {
      */
     public static final XmldbURI LOCAL_DB_URI = XmldbURI.create(EMBEDDED_SERVER_URI_PREFIX + ROOT_COLLECTION);
     //TODO : deprecate when we split at root collection
-    public final static String API_XMLRPC = "xmlrpc";
-    public final static String API_WEBDAV = "webdav";
-    public final static String API_REST = "rest-style";
-    public final static String API_LOCAL = "local";
+    public static final String API_XMLRPC = "xmlrpc";
+    public static final String API_WEBDAV = "webdav";
+    public static final String API_REST = "rest-style";
+    public static final String API_LOCAL = "local";
 
-    private final static XmldbURI[] NO_SEGMENTS = new XmldbURI[0];
+    private static final XmldbURI[] NO_SEGMENTS = new XmldbURI[0];
 
     private String encodedCollectionPath;
-    protected boolean hadXmldbPrefix = false;
+    protected boolean hadXmldbPrefix;
 
     protected XmldbURI(final URI xmldbURI) throws URISyntaxException {
         this(xmldbURI, true);
@@ -524,7 +521,7 @@ public class XmldbURI implements Comparable<Object>, Serializable, Cloneable {
             return NO_SEGMENTS;
         }
 
-        final int fix = ("".equals(split[0])) ? 1 : 0;
+        final int fix = "".equals(split[0]) ? 1 : 0;
         final XmldbURI[] segments = new XmldbURI[split.length - fix];
 
         for (int i = fix; i < split.length; i++) {
@@ -553,7 +550,7 @@ public class XmldbURI implements Comparable<Object>, Serializable, Cloneable {
             uri = uri.substring(0, last);
             last = uri.lastIndexOf('/');
         }
-        return (last <= 0) ? XmldbURI.EMPTY_URI : XmldbURI.create(uri.substring(0, last), hadXmldbPrefix);
+        return last <= 0 ? XmldbURI.EMPTY_URI : XmldbURI.create(uri.substring(0, last), hadXmldbPrefix);
     }
 
     public XmldbURI append(final String uri) {

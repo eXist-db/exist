@@ -21,20 +21,18 @@
  */
 package org.exist.indexing.lucene;
 
-import org.exist.dom.persistent.IStoredNode;
-import org.exist.dom.QName;
-import org.exist.dom.persistent.NodeHandle;
-import org.exist.dom.persistent.Match;
-import org.exist.dom.persistent.NodeProxy;
-import org.exist.dom.persistent.NewArrayNodeSet;
-import org.exist.dom.persistent.NodeSet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
+import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.Query;
 import org.apache.lucene.search.PhraseQuery;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.util.AttributeSource.State;
+import org.exist.dom.QName;
+import org.exist.dom.persistent.*;
 import org.exist.indexing.AbstractMatchListener;
 import org.exist.numbering.NodeId;
 import org.exist.stax.ExtendedXMLStreamReader;
@@ -53,10 +51,6 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.*;
-
-import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
-import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
-import org.apache.lucene.util.AttributeSource.State;
 
 public class LuceneMatchListener extends AbstractMatchListener {
 
@@ -79,7 +73,7 @@ public class LuceneMatchListener extends AbstractMatchListener {
     public boolean hasMatches(final NodeProxy proxy) {
         Match nextMatch = proxy.getMatches();
         while (nextMatch != null) {
-            if (nextMatch.getIndexId().equals(LuceneIndex.ID)) {
+            if (LuceneIndex.ID.equals(nextMatch.getIndexId())) {
                 return true;
             }
             nextMatch = nextMatch.getNextMatch();
@@ -352,14 +346,14 @@ public class LuceneMatchListener extends AbstractMatchListener {
     private void getTerms() {
         try {
             index.withReader(reader -> {
-                final Set<String> excludedFields = (config == null || config == LuceneConfig.DEFAULT_CONFIG)
+                final Set<String> excludedFields = config == null || config == LuceneConfig.DEFAULT_CONFIG
                         ? Collections.emptySet()
                         : config.getConfiguredFieldNames();
                 final Set<Query> queries = new HashSet<>();
                 final Map<Object, Query> rawTerms = new TreeMap<>();
                 Match nextMatch = this.match;
                 while (nextMatch != null) {
-                    if (nextMatch.getIndexId().equals(LuceneIndex.ID)) {
+                    if (LuceneIndex.ID.equals(nextMatch.getIndexId())) {
                         final Query query = ((LuceneMatch) nextMatch).getQuery();
                         if (!queries.contains(query)) {
                             queries.add(query);
@@ -386,7 +380,7 @@ public class LuceneMatchListener extends AbstractMatchListener {
         int[] offsets = new int[16];
         NodeId[] ids = new NodeId[16];
 
-        int len = 0;
+        int len;
 
         void add(final int offset, final NodeId nodeId) {
             if (len == offsets.length) {
@@ -446,8 +440,8 @@ public class LuceneMatchListener extends AbstractMatchListener {
             final NodeId nodeId = offsets.ids[idx];
             final int nodeStart = offsets.offsets[idx];
             final int nodeEnd = offsets.getSegmentEnd(idx, textLength);
-            final int relStart = (idx == idxStart) ? startOffset - nodeStart : 0;
-            final int relEnd = (idx == idxEnd) ? endOffset - nodeStart : nodeEnd - nodeStart;
+            final int relStart = idx == idxStart ? startOffset - nodeStart : 0;
+            final int relEnd = idx == idxEnd ? endOffset - nodeStart : nodeEnd - nodeStart;
             final Offset existing = nodesWithMatch.get(nodeId);
             if (existing != null) {
                 existing.add(relStart, relEnd);
@@ -460,7 +454,7 @@ public class LuceneMatchListener extends AbstractMatchListener {
     private static class Offset {
         private final int startOffset;
         private int endOffset;
-        private Offset next = null;
+        private Offset next;
 
         Offset(final int startOffset, final int endOffset) {
             this.startOffset = startOffset;

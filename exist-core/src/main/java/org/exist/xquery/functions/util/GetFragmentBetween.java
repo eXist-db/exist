@@ -21,39 +21,32 @@
  */
 package org.exist.xquery.functions.util;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.xml.XMLConstants;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
-import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.QName;
+import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.StoredNode;
 import org.exist.numbering.NodeId;
 import org.exist.stax.IEmbeddedXMLStreamReader;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.xquery.*;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 import org.w3c.dom.Attr;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import javax.xml.XMLConstants;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Delivers the fragment between two nodes (normally milestones) of a document.
@@ -162,7 +155,7 @@ public class GetFragmentBetween extends BasicFunction {
      */
     private StringBuilder getFragmentBetween(final Node node1, final Optional<Node> node2) throws XPathException {
         final StoredNode storedNode1 = (StoredNode) node1;
-        final Optional<StoredNode> storedNode2 = node2.map(n -> (StoredNode)n);
+        final Optional<StoredNode> storedNode2 = node2.map(StoredNode.class::cast);
 
         final NodeId node1NodeId = storedNode1.getNodeId();
         final Optional<NodeId> node2NodeId = storedNode2.map(StoredNode::getNodeId);
@@ -296,8 +289,7 @@ public class GetFragmentBetween extends BasicFunction {
 
     private String getCharacters(final XMLStreamReader reader) {
         String xmlChars = reader.getText();
-        xmlChars = escape(xmlChars);
-        return xmlChars;
+        return escape(xmlChars);
     }
 
     private String getCDataTag(final XMLStreamReader reader) {
@@ -368,7 +360,7 @@ public class GetFragmentBetween extends BasicFunction {
                 element = element.replaceAll(" eq ", "=");  // opening element: remove @ character
                 element = element.replaceAll("@", "");  // opening element: remove @ character
                 element = element.replaceAll("\\]", "");  // opening element: remove closing bracket
-                if (!(element.isEmpty())) {
+                if (!element.isEmpty()) {
                     result.append('<').append(element).append('>').append('\n');
                 }
             }
@@ -377,7 +369,7 @@ public class GetFragmentBetween extends BasicFunction {
             for (int i = elements.size() - 1; i >= 0; i--) {
                 String element = elements.get(i);
                 element = element.replaceAll("\\[[^\\]]*\\]", "");  // closing element: remove brackets with attributes
-                if (!(element.isEmpty())) {
+                if (!element.isEmpty()) {
                     result.append('<').append('/').append(element).append('>').append('\n');
                 }
             }

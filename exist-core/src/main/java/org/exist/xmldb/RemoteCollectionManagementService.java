@@ -21,17 +21,16 @@
  */
 package org.exist.xmldb;
 
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
 import org.w3c.dom.Document;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 
 import javax.annotation.Nullable;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 
 public class RemoteCollectionManagementService extends AbstractRemoteService implements EXistCollectionManagementService {

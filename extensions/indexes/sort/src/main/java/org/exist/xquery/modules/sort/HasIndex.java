@@ -31,7 +31,7 @@ import org.exist.xquery.value.*;
 
 public class HasIndex extends BasicFunction {
 
-    public final static FunctionSignature signature =
+    public static final FunctionSignature signature =
             new FunctionSignature(
                     new QName("has-index", SortModule.NAMESPACE_URI, SortModule.PREFIX),
                     "Check if the sort index, $id, exists.",

@@ -42,7 +42,7 @@ import java.io.InputStream;
  */
 public class BlockingInputStream extends InputStream {
 
-    private final static int EOS      = -1;
+    private static final int EOS      = -1;
     private static final int CAPACITY = 8192;
     private static final int SIZE     = CAPACITY + 1;
 
@@ -54,7 +54,7 @@ public class BlockingInputStream extends InputStream {
     private Exception  inException;  // Specified when closing input.
     private Exception outException;  // Specified when closing output.
 
-    private BlockingOutputStream bos = new BlockingOutputStream(this);
+    private final BlockingOutputStream bos = new BlockingOutputStream(this);
 
     /**
      * @return BlockingOutputStream adapter for this BlockingInputStream.
@@ -86,8 +86,8 @@ public class BlockingInputStream extends InputStream {
      */
     @Override
     public synchronized int read() throws IOException {
-        final byte bb[] = new byte[1];
-        return (read(bb, 0, 1) == EOS) ? EOS : bb[0];
+        final byte[] bb = new byte[1];
+        return read(bb, 0, 1) == EOS ? EOS : bb[0];
     }
 
     /**
@@ -111,7 +111,7 @@ public class BlockingInputStream extends InputStream {
      * @throws NullPointerException  if <code>b</code> is <code>null</code>.
      */
     @Override
-    public synchronized int read(byte b[], int off, int len) throws IOException {
+    public synchronized int read(byte[] b, int off, int len) throws IOException {
         if (b == null) {
             throw new NullPointerException();
         } else if ((off < 0) || (off > b.length) || (len < 0) ||
@@ -122,7 +122,9 @@ public class BlockingInputStream extends InputStream {
         }
         int count = EOS;
         try {
-            while (empty() && !closed()) wait();
+            while (empty() && !closed()) {
+                wait();
+            }
             if (outException != null) {throw new IOException(
               "BlockingOutputStream closed with an exception.", outException);}
             else if (!closed()) {
@@ -183,13 +185,13 @@ public class BlockingInputStream extends InputStream {
     }
 
     private int availablePart1() {
-        return (tail >= head) ? tail - head : SIZE - head; 
+        return tail >= head ? tail - head : SIZE - head; 
     }
 
     // DWES Never called?
     @SuppressWarnings("unused")
 	private int availablePart2() {
-        return (tail >= head) ? 0 : tail;
+        return tail >= head ? 0 : tail;
     }
 
     /* OutputStream methods */
@@ -208,7 +210,7 @@ public class BlockingInputStream extends InputStream {
      *             output stream has been closed.
      */
     synchronized void writeOutputStream(int b) throws IOException {
-        final byte bb[] = { (byte) b };
+        final byte[] bb = { (byte) b };
         writeOutputStream(bb, 0, 1);
     }
 
@@ -229,7 +231,7 @@ public class BlockingInputStream extends InputStream {
      *             an <code>IOException</code> is thrown if the output 
      *             stream is closed.
      */
-    synchronized void writeOutputStream(byte b[], int off, int len) throws IOException {
+    synchronized void writeOutputStream(byte[] b, int off, int len) throws IOException {
         if (b == null) {
             throw new NullPointerException();
         } else if ((off < 0) || (off > b.length) || (len < 0) ||
@@ -239,7 +241,9 @@ public class BlockingInputStream extends InputStream {
         while (len > 0) {
             int count;
             try {
-                while (full() && !closed()) wait();
+                while (full() && !closed()) {
+                    wait();
+                }
             if (inException != null) {throw new IOException(
               "BlockingInputStream closed with exception.", inException);}
             else if (closed()) {throw new IOException(
@@ -279,7 +283,9 @@ public class BlockingInputStream extends InputStream {
         outClosed = true;
         notifyAll();
         try {
-            while(!inClosed) wait();
+            while (!inClosed) {
+                wait();
+            }
             if (inException != null) {throw new IOException(
                 "BlockingInputStream closed with an exception.", inException);}
             else if (!empty()) {throw new IOException(
@@ -315,7 +321,9 @@ public class BlockingInputStream extends InputStream {
      */
     synchronized void flushOutputStream() throws IOException {
         try {
-            while(!empty() && !closed()) wait();
+            while (!empty() && !closed()) {
+                wait();
+            }
             if (inException != null) {throw new IOException(
                 "BlockingInputStream closed with an exception.", inException);}
             else if (!empty()) {throw new IOException(
@@ -344,14 +352,14 @@ public class BlockingInputStream extends InputStream {
 
     private int freePart1() {
         final int prevhead = prev(head);
-        return (prevhead >= tail) ? prevhead - tail : SIZE - tail;
+        return prevhead >= tail ? prevhead - tail : SIZE - tail;
     }
 
     // DWES Never called?
     @SuppressWarnings("unused")
 	private int freePart2() {
         final int prevhead = prev(head);
-        return (prevhead >= tail) ? 0 : prevhead;
+        return prevhead >= tail ? 0 : prevhead;
     }
 
     /* Buffer management methods */

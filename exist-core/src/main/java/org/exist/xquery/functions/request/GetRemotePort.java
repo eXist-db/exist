@@ -40,7 +40,7 @@ public class GetRemotePort extends StrictRequestFunction {
 
 	protected static final Logger logger = LogManager.getLogger(GetRemotePort.class);
 
-	public final static FunctionSignature signature =
+	public static final FunctionSignature signature =
 		new FunctionSignature(
 			new QName("get-remote-port", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
 			"Returns the Internet Protocol (IP) source port of the client or last proxy that sent the current request.",

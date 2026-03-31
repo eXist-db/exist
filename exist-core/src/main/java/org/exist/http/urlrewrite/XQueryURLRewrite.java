@@ -21,7 +21,12 @@
  */
 package org.exist.http.urlrewrite;
 
+import jakarta.servlet.*;
 import jakarta.servlet.annotation.MultipartConfig;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponseWrapper;
 import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.apache.logging.log4j.LogManager;
@@ -69,11 +74,6 @@ import org.xmldb.api.DatabaseManager;
 import org.xmldb.api.base.Database;
 
 import javax.annotation.Nullable;
-import jakarta.servlet.*;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpServletResponseWrapper;
 import javax.xml.transform.OutputKeys;
 import java.io.*;
 import java.net.URISyntaxException;
@@ -121,10 +121,10 @@ public class XQueryURLRewrite extends HttpServlet {
 
     private ServletConfig config;
     private final Map<String, ModelAndView> urlCache = Collections.synchronizedMap(new TreeMap<>());
-    private Subject defaultUser = null;
+    private Subject defaultUser;
     private BrokerPool pool;
     // path to the query
-    private String query = null;
+    private String query;
     private boolean compiledCache = true;
     private boolean sendChallenge = true;
     private RewriteConfig rewriteConfig;
@@ -969,12 +969,12 @@ public class XQueryURLRewrite extends HttpServlet {
         }
     }
 
-    private static class ModelAndView {
-        private URLRewrite rewrite = null;
+    private static final class ModelAndView {
+        private URLRewrite rewrite;
         private final List<URLRewrite> views = new LinkedList<>();
-        private List<URLRewrite> errorHandlers = null;
-        private boolean useCache = false;
-        private SourceInfo sourceInfo = null;
+        private List<URLRewrite> errorHandlers;
+        private boolean useCache;
+        private SourceInfo sourceInfo;
 
         private ModelAndView() {
         }
@@ -1023,7 +1023,7 @@ public class XQueryURLRewrite extends HttpServlet {
         }
     }
 
-    private static class SourceInfo {
+    private static final class SourceInfo {
         final Source source;
         final String moduleLoadPath;
         final String controllerPath;
@@ -1042,16 +1042,16 @@ public class XQueryURLRewrite extends HttpServlet {
     public static class RequestWrapper extends jakarta.servlet.http.HttpServletRequestWrapper {
         private final Map<String, List<String>> addedParams = new HashMap<>();
 
-        private ServletInputStream sis = null;
-        private BufferedReader reader = null;
+        private ServletInputStream sis;
+        private BufferedReader reader;
 
         private String contentType;
-        private int contentLength = 0;
-        private String characterEncoding = null;
-        private String method = null;
-        private String inContextPath = null;
+        private int contentLength;
+        private String characterEncoding;
+        private String method;
+        private String inContextPath;
         private String servletPath;
-        private String basePath = null;
+        private String basePath;
         private boolean allowCaching = true;
 
         private void addNameValue(final String name, final String value, final Map<String, List<String>> map) {
@@ -1173,7 +1173,7 @@ public class XQueryURLRewrite extends HttpServlet {
                 super.getPathTranslated();
             }
             if (pathInfo == null) {
-                return (null);
+                return null;
             }
             return super.getSession().getServletContext().getRealPath(pathInfo);
         }
@@ -1299,10 +1299,10 @@ public class XQueryURLRewrite extends HttpServlet {
     }
 
     private static class CachingResponseWrapper extends HttpServletResponseWrapper {
-        private CachingServletOutputStream sos = null;
-        private PrintWriter writer = null;
+        private CachingServletOutputStream sos;
+        private PrintWriter writer;
         private int status = HttpServletResponse.SC_OK;
-        private String contentType = null;
+        private String contentType;
         private final boolean cache;
 
         public CachingResponseWrapper(final HttpServletResponse servletResponse, final boolean cache) {
@@ -1438,12 +1438,12 @@ public class XQueryURLRewrite extends HttpServlet {
         }
 
         @Override
-        public void write(final byte b[]) throws IOException {
+        public void write(final byte[] b) throws IOException {
             ostream.write(b);
         }
 
         @Override
-        public void write(final byte b[], final int off, final int len) throws IOException {
+        public void write(final byte[] b, final int off, final int len) throws IOException {
             ostream.write(b, off, len);
         }
 
@@ -1471,12 +1471,12 @@ public class XQueryURLRewrite extends HttpServlet {
         }
 
         @Override
-        public int read(final byte b[]) throws IOException {
+        public int read(final byte[] b) throws IOException {
             return istream.read(b);
         }
 
         @Override
-        public int read(final byte b[], final int off, final int len) throws IOException {
+        public int read(final byte[] b, final int off, final int len) throws IOException {
             return istream.read(b, off, len);
         }
 

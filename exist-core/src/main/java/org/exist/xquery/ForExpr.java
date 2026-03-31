@@ -36,8 +36,8 @@ import java.util.Set;
  */
 public class ForExpr extends BindingExpression {
 
-    private QName positionalVariable = null;
-    private boolean allowEmpty = false;
+    private QName positionalVariable;
+    private final boolean allowEmpty;
     private boolean isOuterFor = true;
 
     public ForExpr(XQueryContext context, boolean allowingEmpty) {

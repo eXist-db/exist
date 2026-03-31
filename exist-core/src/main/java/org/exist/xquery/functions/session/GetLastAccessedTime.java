@@ -21,9 +21,6 @@
  */
 package org.exist.xquery.functions.session;
 
-import java.util.Date;
-import java.util.Optional;
-
 import org.exist.dom.QName;
 import org.exist.http.servlets.SessionWrapper;
 import org.exist.xquery.*;
@@ -31,6 +28,9 @@ import org.exist.xquery.value.DateTimeValue;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
+
+import java.util.Date;
+import java.util.Optional;
 
 /**
  * Returns the last time the client sent a request associated
@@ -42,7 +42,7 @@ import org.exist.xquery.value.Type;
  */
 public class GetLastAccessedTime extends SessionFunction {
 
-    public final static FunctionSignature signature =
+    public static final FunctionSignature signature =
             new FunctionSignature(
                     new QName("get-last-accessed-time", SessionModule.NAMESPACE_URI, SessionModule.PREFIX),
                     "Returns the last time the client sent a request associated with this session. " +

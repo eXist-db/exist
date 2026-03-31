@@ -26,10 +26,10 @@ import io.lacuna.bifurcan.IEntry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Namespaces;
-import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.NodeImpl;
 import org.exist.dom.memtree.ReferenceNode;
+import org.exist.dom.persistent.NodeProxy;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Dependency;
@@ -41,16 +41,7 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.array.ArrayType;
 import org.exist.xquery.functions.map.AbstractMapType;
-import org.exist.xquery.value.AtomicValue;
-import org.exist.xquery.value.BooleanValue;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.NumericValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
@@ -65,7 +56,7 @@ public class FunDeepEqual extends CollatingFunction {
 
     protected static final Logger logger = LogManager.getLogger(FunDeepEqual.class);
 
-    public final static FunctionSignature[] signatures = {
+    public static final FunctionSignature[] signatures = {
         new FunctionSignature(
             new QName("deep-equal", Function.BUILTIN_FUNCTION_NS),
             "Returns true() iff every item in $items-1 is deep-equal to the item " +
@@ -450,7 +441,7 @@ public class FunDeepEqual extends CollatingFunction {
             for (int i = 0; i < nnma.getLength(); i++) {
                 final Node ta = nnma.item(i);
                 final String nsA = ta.getNamespaceURI();
-                if (nsA != null && Namespaces.XMLNS_NS.equals(nsA)) {
+                if (Namespaces.XMLNS_NS.equals(nsA)) {
                     continue;
                 }
                 final Node tb = ta.getLocalName() == null ? nnmb.getNamedItem(ta.getNodeName()) : nnmb.getNamedItemNS(ta.getNamespaceURI(), ta.getLocalName());

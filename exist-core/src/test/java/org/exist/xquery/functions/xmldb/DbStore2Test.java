@@ -59,15 +59,15 @@ public class DbStore2Test {
     private static final long FILE_SIZE = 3l * 1024l * 1024l * 1024l; //3GiB file.
     private static final String TEST_COLLECTION = "testAnyUri2";
 
-    private static Path largeFileLocation = null;
-    private static Path jettyRootDir = null;
-    private static Path pictureLocation = null;
+    private static Path largeFileLocation;
+    private static Path jettyRootDir;
+    private static Path pictureLocation;
 
     //Second jetty server to mock HTTP resources for tests.
-    private static Server jettyServer = null;
+    private static Server jettyServer;
     private static int jettyPort = 30350;
 
-    private final static Path getConfig() {
+    private static Path getConfig() {
         try {
             final URL path = DbStoreTest.class.getClassLoader().getResource("org/exist/xmldb/allowAnyUri.xml");
             return Path.of(path.toURI());
@@ -86,7 +86,7 @@ public class DbStore2Test {
         pictureLocation = jettyRootDir.resolve("picture.jpg");
 
         try (final FileOutputStream fOut = new FileOutputStream(pictureLocation.toFile(), true)) {
-            final byte buff[] = new byte[BUFFER_SIZE];
+            final byte[] buff = new byte[BUFFER_SIZE];
             fOut.write(buff);
         }
 
@@ -133,7 +133,7 @@ public class DbStore2Test {
 
     @Test
     public final void testLargeFileStore() throws XMLDBException, IOException {
-        final byte buff[] = new byte[BUFFER_SIZE];
+        final byte[] buff = new byte[BUFFER_SIZE];
         try (final FileOutputStream fOut = new FileOutputStream(largeFileLocation.toFile(), true)) {
             for (long written = 0; written < FILE_SIZE; written += BUFFER_SIZE) {
                 fOut.write(buff);

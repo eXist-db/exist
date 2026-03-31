@@ -32,10 +32,6 @@
  */
 package org.exist.storage.lock;
 
-import java.io.Writer;
-import java.util.GregorianCalendar;
-import java.util.List;
-import java.util.Map;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.lock.Lock.LockType;
 import org.exist.storage.lock.LockTable.LockCountTraces;
@@ -46,6 +42,10 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
+import java.io.Writer;
+import java.util.GregorianCalendar;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Utilities for working with the Lock Table

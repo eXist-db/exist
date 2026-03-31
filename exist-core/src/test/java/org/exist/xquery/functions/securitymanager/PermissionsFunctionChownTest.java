@@ -56,9 +56,7 @@ import java.util.Optional;
 
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class PermissionsFunctionChownTest {
 
@@ -1546,7 +1544,7 @@ public class PermissionsFunctionChownTest {
 
             assertEquals(2, result.getItemCount());
 
-            final String expectedOwnerGroupParts[] = expectedOwnerGroup.split(":");
+            final String[] expectedOwnerGroupParts = expectedOwnerGroup.split(":");
             assertEquals(expectedOwnerGroupParts[0], result.itemAt(0).getStringValue());
             if (expectedOwnerGroupParts.length == 2) {
                 assertEquals(expectedOwnerGroupParts[1], result.itemAt(1).getStringValue());
@@ -1720,7 +1718,7 @@ public class PermissionsFunctionChownTest {
         try {
             runnable.run();
         } catch (final XPathException e) {
-            if (e.getCause() != null && e.getCause() instanceof PermissionDeniedException) {
+            if (e.getCause() instanceof PermissionDeniedException) {
                 throw (PermissionDeniedException)e.getCause();
             } else {
                 throw e;

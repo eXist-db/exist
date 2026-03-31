@@ -21,38 +21,16 @@
  */
 package org.exist.storage.serializers;
 
-import java.io.IOException;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.*;
-
-import javax.annotation.Nullable;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Source;
-import javax.xml.transform.Templates;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.URIResolver;
-import javax.xml.transform.sax.SAXResult;
-import javax.xml.transform.sax.SAXSource;
-import javax.xml.transform.sax.SAXTransformerFactory;
-import javax.xml.transform.sax.TemplatesHandler;
-import javax.xml.transform.sax.TransformerHandler;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.stream.StreamSource;
-
 import com.evolvedbinary.j8fu.lazy.LazyVal;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Namespaces;
+import org.exist.dom.QName;
 import org.exist.dom.memtree.NodeImpl;
 import org.exist.dom.memtree.ReferenceNode;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.NodeProxy;
-import org.exist.dom.QName;
 import org.exist.dom.persistent.XMLUtil;
 import org.exist.indexing.IndexController;
 import org.exist.indexing.MatchListener;
@@ -63,20 +41,12 @@ import org.exist.security.Subject;
 import org.exist.storage.DBBroker;
 import org.exist.util.Configuration;
 import org.exist.util.MimeType;
-import org.exist.util.serializer.AttrList;
-import org.exist.util.serializer.Receiver;
-import org.exist.util.serializer.ReceiverToSAX;
-import org.exist.util.serializer.SAXSerializer;
-import org.exist.util.serializer.SerializerPool;
+import org.exist.util.serializer.*;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 import org.exist.xslt.TransformerFactoryAllocator;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -84,6 +54,18 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.ProcessingInstruction;
 import org.xml.sax.*;
 import org.xml.sax.ext.LexicalHandler;
+
+import javax.annotation.Nullable;
+import javax.xml.transform.*;
+import javax.xml.transform.sax.*;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.*;
 
 /**
  * Serializer base class, used to serialize a document or document fragment
@@ -170,38 +152,38 @@ public abstract class Serializer implements XMLReader {
 
     protected final DBBroker broker;
 
-    private @Nullable EntityResolver entityResolver = null;
+    private @Nullable EntityResolver entityResolver;
 
-    private @Nullable ErrorHandler errorHandler = null;
+    private @Nullable ErrorHandler errorHandler;
 
     private final LazyVal<SAXTransformerFactory> factory;
-    protected boolean createContainerElements = false;
+    protected boolean createContainerElements;
 
     private final Properties defaultOutputProperties = new Properties();
     protected final Properties outputProperties = new Properties();
-    private @Nullable Templates templates = null;
-    private @Nullable TransformerHandler xslHandler = null;
+    private @Nullable Templates templates;
+    private @Nullable TransformerHandler xslHandler;
     private final XIncludeFilter xinclude;
     private final CustomMatchListenerFactory customMatchListeners;
-    protected @Nullable Receiver receiver = null;
-    private @Nullable LexicalHandler lexicalHandler = null;
-    private @Nullable Int2ObjectMap<String> useCharacterMaps = null;
-    private @Nullable Subject user = null;
+    protected @Nullable Receiver receiver;
+    private @Nullable LexicalHandler lexicalHandler;
+    private @Nullable Int2ObjectMap<String> useCharacterMaps;
+    private @Nullable Subject user;
 
-    protected @Nullable XQueryContext.HttpContext httpContext = null;
+    protected @Nullable XQueryContext.HttpContext httpContext;
 
-    protected boolean documentStarted = false;
+    protected boolean documentStarted;
 
     public void setHttpContext(final XQueryContext.HttpContext httpContext) {
         this.httpContext = httpContext;
     }
 
 
-    public Serializer(final DBBroker broker, final Configuration config) {
+    protected Serializer(final DBBroker broker, final Configuration config) {
         this(broker, config, null);
     }
 
-    public Serializer(final DBBroker broker, final Configuration config, final List<String> chainOfReceivers) {
+    protected Serializer(final DBBroker broker, final Configuration config, final List<String> chainOfReceivers) {
         this.broker = broker;
         this.factory = new LazyVal<>(() -> TransformerFactoryAllocator.getTransformerFactory(broker.getBrokerPool()));
 
@@ -229,7 +211,8 @@ public abstract class Serializer implements XMLReader {
             defaultOutputProperties.setProperty(EXistOutputKeys.ADD_EXIST_ID, option);
         }
 
-        boolean tagElements = true, tagAttributes = false;
+        boolean tagElements = true;
+        boolean tagAttributes = false;
         if ((option = (String) config.getProperty(PROPERTY_TAG_MATCHING_ELEMENTS)) != null) {
             tagElements = "yes".equals(option);
         }
@@ -261,9 +244,9 @@ public abstract class Serializer implements XMLReader {
 
         for (final Enumeration<?> e = properties.propertyNames(); e.hasMoreElements(); ) {
             final String key = (String) e.nextElement();
-            if (key.equals(Namespaces.SAX_LEXICAL_HANDLER)) {
+            if (Namespaces.SAX_LEXICAL_HANDLER.equals(key)) {
                 lexicalHandler = (LexicalHandler) properties.get(key);
-            } else if (key.equals(EXistOutputKeys.USE_CHARACTER_MAPS)) {
+            } else if (EXistOutputKeys.USE_CHARACTER_MAPS.equals(key)) {
                 useCharacterMaps = (Int2ObjectMap<String>) properties.get(key);
             } else {
                 setProperty(key, properties.getProperty(key));
@@ -374,8 +357,8 @@ public abstract class Serializer implements XMLReader {
 
     public boolean getFeature(final String name)
             throws SAXNotRecognizedException, SAXNotSupportedException {
-        if (name.equals(Namespaces.SAX_NAMESPACES)
-                || name.equals(Namespaces.SAX_NAMESPACES_PREFIXES)) {
+        if (Namespaces.SAX_NAMESPACES.equals(name)
+                || Namespaces.SAX_NAMESPACES_PREFIXES.equals(name)) {
             throw new SAXNotSupportedException(name);
         }
         throw new SAXNotRecognizedException(name);
@@ -383,7 +366,7 @@ public abstract class Serializer implements XMLReader {
 
     public Object getProperty(final String name)
             throws SAXNotRecognizedException, SAXNotSupportedException {
-        if (name.equals(Namespaces.SAX_LEXICAL_HANDLER)) {
+        if (Namespaces.SAX_LEXICAL_HANDLER.equals(name)) {
             return lexicalHandler;
         }
         throw new SAXNotRecognizedException(name);
@@ -665,7 +648,7 @@ public abstract class Serializer implements XMLReader {
      */
     public void setFeature(final String name, final boolean value)
             throws SAXNotRecognizedException, SAXNotSupportedException {
-        if (name.equals(Namespaces.SAX_NAMESPACES) || name.equals(Namespaces.SAX_NAMESPACES_PREFIXES)) {
+        if (Namespaces.SAX_NAMESPACES.equals(name) || Namespaces.SAX_NAMESPACES_PREFIXES.equals(name)) {
             throw new SAXNotSupportedException(name);
         }
         throw new SAXNotRecognizedException(name);
@@ -789,7 +772,7 @@ public abstract class Serializer implements XMLReader {
         } else {
             // if stylesheet is relative, add path to the
             // current collection and normalize
-            if (doc != null && doc instanceof DocumentImpl impl) {
+            if (doc instanceof DocumentImpl impl) {
                 stylesheetUri = impl.getCollection().getURI().resolveCollectionPath(stylesheetUri).normalizeCollectionPath();
             }
 
@@ -862,7 +845,7 @@ public abstract class Serializer implements XMLReader {
             final ReceiverToSAX filter;
             if (processXInclude) {
                 final Receiver xincludeReceiver = xinclude.getReceiver();
-                if (xincludeReceiver != null && xincludeReceiver instanceof SAXSerializer serializer) {
+                if (xincludeReceiver instanceof SAXSerializer serializer) {
                     filter = new ReceiverToSAX(serializer);
                 } else {
                     filter = (ReceiverToSAX) xincludeReceiver;

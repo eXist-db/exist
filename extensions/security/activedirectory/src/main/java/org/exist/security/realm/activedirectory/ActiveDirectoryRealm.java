@@ -21,9 +21,19 @@
  */
 package org.exist.security.realm.activedirectory;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.exist.config.Configuration;
+import org.exist.config.annotation.*;
+import org.exist.security.AbstractAccount;
+import org.exist.security.AuthenticationException;
+import org.exist.security.Subject;
+import org.exist.security.internal.SecurityManagerImpl;
+import org.exist.security.internal.SubjectAccreditedImpl;
+import org.exist.security.internal.aider.UserAider;
+import org.exist.security.realm.ldap.LDAPRealm;
+import org.exist.security.realm.ldap.LdapContextFactory;
+import org.exist.storage.DBBroker;
 
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
@@ -32,20 +42,9 @@ import javax.naming.directory.Attributes;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 import javax.naming.ldap.LdapContext;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.exist.config.Configuration;
-import org.exist.config.annotation.*;
-import org.exist.security.AuthenticationException;
-import org.exist.security.Subject;
-import org.exist.security.AbstractAccount;
-import org.exist.security.internal.SecurityManagerImpl;
-import org.exist.security.internal.SubjectAccreditedImpl;
-import org.exist.security.internal.aider.UserAider;
-import org.exist.security.realm.ldap.LDAPRealm;
-import org.exist.security.realm.ldap.LdapContextFactory;
-import org.exist.storage.DBBroker;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -54,13 +53,13 @@ import org.exist.storage.DBBroker;
 @ConfigurationClass("realm") //TODO: id = ActiveDirectory
 public class ActiveDirectoryRealm extends LDAPRealm {
 
-	private final static Logger LOG = LogManager.getLogger(LDAPRealm.class);
+	private static final Logger LOG = LogManager.getLogger(LDAPRealm.class);
 
     @ConfigurationFieldAsAttribute("id")
     public static String ID = "ActiveDirectory";
 
     @ConfigurationFieldAsAttribute("version")
-    public final static String version = "1.0";
+    public static final String version = "1.0";
 
 	public ActiveDirectoryRealm(SecurityManagerImpl sm, Configuration config) {
 		super(sm, config);
@@ -100,7 +99,7 @@ public class ActiveDirectoryRealm extends LDAPRealm {
     @Override
 	public Subject authenticate(final String username, Object credentials) throws AuthenticationException {
 
-		String returnedAtts[] = { "sn", "givenName", "mail" };
+		String[] returnedAtts = { "sn", "givenName", "mail" };
 		String searchFilter = "(&(objectClass=user)(sAMAccountName=" + username + "))";
 
 		// Create the search controls

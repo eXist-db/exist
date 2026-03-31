@@ -103,8 +103,12 @@ public class WordPicture extends IntegerPicture {
     static String getBestSpellout(final Locale locale, final FormatModifier formatModifier) {
 
         String spelloutPrefix = null;
-        if (formatModifier.numbering == FormatModifier.Numbering.CARDINAL) spelloutPrefix = WordPicture.SPELLOUT_PREFIX_CARDINAL;
-        if (formatModifier.numbering == FormatModifier.Numbering.ORDINAL) spelloutPrefix = WordPicture.SPELLOUT_PREFIX_ORDINAL;
+        if (formatModifier.numbering == FormatModifier.Numbering.CARDINAL) {
+            spelloutPrefix = WordPicture.SPELLOUT_PREFIX_CARDINAL;
+        }
+        if (formatModifier.numbering == FormatModifier.Numbering.ORDINAL) {
+            spelloutPrefix = WordPicture.SPELLOUT_PREFIX_ORDINAL;
+        }
 
         String spellout = WordPicture.getSpellout(locale, formatModifier, spelloutPrefix);
         if (spellout == null && formatModifier.numbering == FormatModifier.Numbering.ORDINAL) {
@@ -199,12 +203,11 @@ public class WordPicture extends IntegerPicture {
             final MessageFormat ruleBasedMessageFormatFormat = new MessageFormat("{0,spellout," + spelloutRule + "}", locale);
             final String formatted = ruleBasedMessageFormatFormat.format(new Object[]{value});
 
-            String result = switch (this) {
+            return switch (this) {
                 case UPPER -> formatted.toUpperCase(locale);
                 case LOWER -> formatted;
                 case CAPITALIZED -> StringUtils.capitalize(formatted);
             };
-            return result;
         }
     }
 

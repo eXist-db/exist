@@ -21,9 +21,6 @@
  */
 package org.exist.storage;
 
-import java.io.IOException;
-import java.util.Optional;
-
 import org.exist.EXistException;
 import org.exist.numbering.NodeId;
 import org.exist.numbering.NodeIdFactory;
@@ -40,6 +37,9 @@ import org.exist.xquery.TerminatedException;
 import org.junit.ClassRule;
 import org.junit.Test;
 
+import java.io.IOException;
+import java.util.Optional;
+
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -52,7 +52,7 @@ public class BTreeRecoverTest {
 
     @ClassRule
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
-    private int count = 0;
+    private int count;
 
     @Test
     public void addAndRead() throws EXistException, IOException, BTreeException, TerminatedException, DatabaseConfigurationException {

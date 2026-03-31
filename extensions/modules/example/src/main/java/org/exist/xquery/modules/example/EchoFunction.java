@@ -29,14 +29,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
+import org.exist.xquery.value.*;
 
 /**
  * This is an example module showing how to create a function module.
@@ -47,9 +40,9 @@ import org.exist.xquery.value.ValueSequence;
 public class EchoFunction extends BasicFunction {
 
     @SuppressWarnings("unused")
-	private final static Logger logger = LogManager.getLogger(EchoFunction.class);
+	private static final Logger logger = LogManager.getLogger(EchoFunction.class);
 
-    public final static FunctionSignature signature =
+    public static final FunctionSignature signature =
 		new FunctionSignature(
 			new QName("echo", ExampleModule.NAMESPACE_URI, ExampleModule.PREFIX),
 			"A useless example function. It just echoes the input parameters.",

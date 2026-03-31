@@ -21,6 +21,8 @@
  */
 package org.exist.collections.triggers;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.DefaultDocumentSet;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.MutableDocumentSet;
@@ -36,8 +38,6 @@ import org.xml.sax.InputSource;
 import java.io.StringReader;
 import java.util.List;
 import java.util.Map;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 /**
  * Test trigger to check if trigger configuration is working properly.
@@ -46,7 +46,7 @@ public class TestTrigger extends SAXTrigger implements DocumentTrigger {
 
     protected Logger LOG = LogManager.getLogger(getClass());
     
-    private final static String TEMPLATE = "<?xml version=\"1.0\"?><events></events>";
+    private static final String TEMPLATE = "<?xml version=\"1.0\"?><events></events>";
 
     private DocumentImpl doc;
 
@@ -85,7 +85,7 @@ public class TestTrigger extends SAXTrigger implements DocumentTrigger {
             // create the XUpdate processor
             XUpdateProcessor processor = new XUpdateProcessor(broker, docs);
             // process the XUpdate
-            Modification modifications[] = processor.parse(new InputSource(new StringReader(xupdate)));
+            Modification[] modifications = processor.parse(new InputSource(new StringReader(xupdate)));
             for (Modification modification : modifications) {
                 modification.process(transaction);
             }

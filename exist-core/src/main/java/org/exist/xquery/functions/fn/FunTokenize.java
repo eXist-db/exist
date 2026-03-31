@@ -21,17 +21,13 @@
  */
 package org.exist.xquery.functions.fn;
 
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
-
 import org.exist.dom.QName;
 import org.exist.util.PatternFactory;
 import org.exist.xquery.*;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
+import org.exist.xquery.value.*;
+
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import static org.exist.xquery.FunctionDSL.*;
 import static org.exist.xquery.regex.RegexUtil.*;
@@ -44,10 +40,10 @@ public class FunTokenize extends BasicFunction {
 
     private static final QName FS_TOKENIZE_NAME = new QName("tokenize", Function.BUILTIN_FUNCTION_NS);
 
-    private final static FunctionParameterSequenceType FS_TOKENIZE_PARAM_INPUT = optParam("input", Type.STRING, "The input string");
-    private final static FunctionParameterSequenceType FS_TOKENIZE_PARAM_PATTERN = param("pattern", Type.STRING, "The tokenization pattern");
+    private static final FunctionParameterSequenceType FS_TOKENIZE_PARAM_INPUT = optParam("input", Type.STRING, "The input string");
+    private static final FunctionParameterSequenceType FS_TOKENIZE_PARAM_PATTERN = param("pattern", Type.STRING, "The tokenization pattern");
 
-    public final static FunctionSignature[] FS_TOKENIZE = functionSignatures(
+    public static final FunctionSignature[] FS_TOKENIZE = functionSignatures(
             FS_TOKENIZE_NAME,
             "Breaks the input string $input into a sequence of strings, ",
             returnsOptMany(Type.STRING, "the token sequence"),

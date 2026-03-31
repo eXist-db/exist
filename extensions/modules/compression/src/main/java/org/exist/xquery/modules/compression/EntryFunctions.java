@@ -58,7 +58,9 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.Locale;
 import java.util.Optional;
 
 import static org.exist.xquery.FunctionDSL.arities;
@@ -77,7 +79,7 @@ import static org.exist.xquery.modules.compression.CompressionModule.functionSig
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class EntryFunctions extends BasicFunction {
-    private final static Logger LOG = LogManager.getLogger(EntryFunctions.class);
+    private static final Logger LOG = LogManager.getLogger(EntryFunctions.class);
 
     private static final FunctionParameterSequenceType FS_PARAM_PATH = param("path", Type.STRING, "The path of the entry");
     private static final FunctionParameterSequenceType FS_PARAM_DATA_TYPE = param("data-type", Type.STRING, "The type of the entry, either 'directory' or 'resource'.");
@@ -241,10 +243,10 @@ public class EntryFunctions extends BasicFunction {
         }
     }
 
-    private static abstract class StoreFsFunction extends StoreFunction {
+    private abstract static class StoreFsFunction extends StoreFunction {
         private final Path fsDest;
 
-        public StoreFsFunction(final XQueryContext context, final Path fsDest, final String functionName, final FunctionParameterSequenceType... paramTypes) {
+        protected StoreFsFunction(final XQueryContext context, final Path fsDest, final String functionName, final FunctionParameterSequenceType... paramTypes) {
             super(context, functionName, "Stores an entry to the filesystem.", paramTypes);
             this.fsDest = fsDest;
         }
@@ -293,10 +295,10 @@ public class EntryFunctions extends BasicFunction {
         }
     }
 
-    private static abstract class StoreDbFunction extends StoreFunction {
+    private abstract static class StoreDbFunction extends StoreFunction {
         private final XmldbURI destCollection;
 
-        public StoreDbFunction(final XQueryContext context, final XmldbURI destCollection, final String functionName, final FunctionParameterSequenceType... paramTypes) {
+        protected StoreDbFunction(final XQueryContext context, final XmldbURI destCollection, final String functionName, final FunctionParameterSequenceType... paramTypes) {
             super(context, functionName, "Stores an entry to the filesystem.", paramTypes);
             this.destCollection = destCollection;
         }
@@ -310,13 +312,10 @@ public class EntryFunctions extends BasicFunction {
             }
 
             switch (dataType) {
-
                 case RESOURCE:
                     mkcols(destPath.removeLastSegment());
                     if (data.isPresent()) {
-                        // store the resource
                         try (final Txn transaction = context.getBroker().getBrokerPool().getTransactionManager().beginTransaction()) {
-
                             try (final Collection collection = context.getBroker().openCollection(destPath.removeLastSegment(), Lock.LockMode.WRITE_LOCK)) {
                                 final BinaryValue binaryValue = (BinaryValue) data.get();
                                 final MimeType mimeType = MimeTable.getInstance().getContentTypeFor(destPath.lastSegment());
@@ -351,8 +350,8 @@ public class EntryFunctions extends BasicFunction {
         }
     }
 
-    private static abstract class StoreFunction extends UserDefinedFunction {
-        public StoreFunction(final XQueryContext context, final String functionName, final String description, final FunctionParameterSequenceType... paramTypes) {
+    private abstract static class StoreFunction extends UserDefinedFunction {
+        protected StoreFunction(final XQueryContext context, final String functionName, final String description, final FunctionParameterSequenceType... paramTypes) {
             super(context, functionSignature(functionName, description, returnsNothing(), paramTypes));
         }
 
@@ -380,7 +379,7 @@ public class EntryFunctions extends BasicFunction {
                 data = Optional.empty();
             }
 
-            eval(path, DataType.valueOf(dataType), data);
+            eval(path, DataType.valueOf(dataType.toUpperCase(Locale.ROOT)), data);
 
             return Sequence.EMPTY_SEQUENCE;
         }

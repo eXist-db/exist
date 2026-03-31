@@ -84,7 +84,7 @@ public class ExampleModule extends AbstractInternalModule {
         return FunctionDSL.functionSignatures(new QName(name, NAMESPACE_URI), description, returnType, variableParamTypes);
     }
 
-    static class ExpathBinModuleErrorCode extends ErrorCodes.ErrorCode {
+    static final class ExpathBinModuleErrorCode extends ErrorCodes.ErrorCode {
         private ExpathBinModuleErrorCode(final String code, final String description) {
             super(new QName(code, NAMESPACE_URI, PREFIX), description);
         }

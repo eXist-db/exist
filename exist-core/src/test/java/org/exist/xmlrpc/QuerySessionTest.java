@@ -48,9 +48,9 @@ public class QuerySessionTest {
     private static final Logger LOG = LogManager.getLogger(QuerySessionTest.class);
 
     @ClassRule
-    public final static ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
+    public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
 
-    private final static String generateXQ =
+    private static final String generateXQ =
             """
             declare function local:random-sequence($length as xs:integer, $G as map(xs:string, item())) {
               if ($length eq 0)
@@ -74,7 +74,7 @@ public class QuerySessionTest {
                </chapter>\
             </book>""";
 
-    private final static String QUERY =
+    private static final String QUERY =
             "declare variable $n external;" +
             "//chapter[@xml:id eq $n]";
 
@@ -82,11 +82,11 @@ public class QuerySessionTest {
         return "xmldb:exist://localhost:" + existWebServer.getPort() + "/xmlrpc";
     }
 
-    private final static int N_THREADS = 10;
+    private static final int N_THREADS = 10;
 
-    private final static int DOC_COUNT = 100;
+    private static final int DOC_COUNT = 100;
 
-    private Random random = new Random();
+    private final Random random = new Random();
 
     @Test (expected=XMLDBException.class)
     public void manualRelease() throws XMLDBException {
@@ -120,7 +120,7 @@ public class QuerySessionTest {
 		Assert.assertTrue(terminated);
     }
 
-    private class QueryTask implements Runnable {
+    private final class QueryTask implements Runnable {
 
         private String query;
 

@@ -174,7 +174,7 @@ public class ExistPkgExtension
     }
 
     public static final String EXIST_PKG_NS = "http://exist-db.org/ns/expath-pkg";
-    private XMLStreamHelper myXSHelper = new XMLStreamHelper(EXIST_PKG_NS);
+    private final XMLStreamHelper myXSHelper = new XMLStreamHelper(EXIST_PKG_NS);
 
     @Override
     public void install(Repository repository, Package pkg) throws PackageException {

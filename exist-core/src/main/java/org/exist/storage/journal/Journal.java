@@ -21,18 +21,6 @@
  */
 package org.exist.storage.journal;
 
-import java.io.*;
-import java.nio.BufferOverflowException;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
-import java.nio.channels.SeekableByteChannel;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-import java.text.DateFormat;
-import java.util.Optional;
-import java.util.stream.Stream;
-
 import net.jcip.annotations.GuardedBy;
 import net.jcip.annotations.ThreadSafe;
 import net.jpountz.xxhash.XXHash64;
@@ -51,6 +39,18 @@ import org.exist.util.Configuration;
 import org.exist.util.FileUtils;
 import org.exist.util.ReadOnlyException;
 import org.exist.util.sanity.SanityCheck;
+
+import java.io.*;
+import java.nio.BufferOverflowException;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.channels.SeekableByteChannel;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.text.DateFormat;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 import static java.nio.file.StandardOpenOption.CREATE_NEW;
 import static java.nio.file.StandardOpenOption.WRITE;
@@ -156,7 +156,7 @@ public final class Journal implements Closeable {
     /**
      * default sync on commit setting: true
      */
-    final static boolean DEFAULT_SYNC_ON_COMMIT = true;
+    static final boolean DEFAULT_SYNC_ON_COMMIT = true;
 
     /**
      * default maximum journal size: 100 MB
@@ -252,12 +252,12 @@ public final class Journal implements Closeable {
     /**
      * set to true while recovery is in progress
      */
-    @GuardedBy("this") private boolean inRecovery = false;
+    @GuardedBy("this") private boolean inRecovery;
 
     /**
      * true if the journal has been initialised
      */
-    @GuardedBy("this") private boolean initialised = false;
+    @GuardedBy("this") private boolean initialised;
 
 
     // NOTE(AR) called from BrokerPool.prepare -- single thread!

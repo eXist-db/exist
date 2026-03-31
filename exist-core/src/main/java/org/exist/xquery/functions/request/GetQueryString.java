@@ -41,7 +41,7 @@ public class GetQueryString extends StrictRequestFunction {
 
 	protected static final Logger logger = LogManager.getLogger(GetQueryString.class);
 
-	public final static FunctionSignature signature =
+	public static final FunctionSignature signature =
 		new FunctionSignature(
 			new QName("get-query-string", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
 			"Returns the full query string passed to the servlet (without the initial question mark).",

@@ -42,11 +42,11 @@ import static org.exist.xquery.FunctionDSL.*;
 public class FunContainsToken extends BasicFunction {
     private static final QName FS_CONTAINS_TOKEN_NAME = new QName("contains-token", Function.BUILTIN_FUNCTION_NS);
 
-    private final static FunctionParameterSequenceType FS_INPUT = optManyParam("input", Type.STRING, "The input string");
-    private final static FunctionParameterSequenceType FS_TOKEN = param("token", Type.STRING, "The token to be searched for");
-    private final static FunctionParameterSequenceType FS_COLLATION = param("pattern", Type.STRING, "Collation to use");
+    private static final FunctionParameterSequenceType FS_INPUT = optManyParam("input", Type.STRING, "The input string");
+    private static final FunctionParameterSequenceType FS_TOKEN = param("token", Type.STRING, "The token to be searched for");
+    private static final FunctionParameterSequenceType FS_COLLATION = param("pattern", Type.STRING, "Collation to use");
 
-    public final static FunctionSignature[] FS_CONTAINS_TOKEN = functionSignatures(
+    public static final FunctionSignature[] FS_CONTAINS_TOKEN = functionSignatures(
             FS_CONTAINS_TOKEN_NAME,
             "Determines whether or not any of the supplied strings, when tokenized at whitespace boundaries, " +
                     "contains the supplied token, under the rules of the supplied collation.",

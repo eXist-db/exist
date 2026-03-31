@@ -49,8 +49,8 @@ import static org.easymock.EasyMock.*;
  */
 public class TransactionManagerTestHelper {
 
-    BrokerPool mockBrokerPool = null;
-    NativeBroker mockBroker = null;
+    BrokerPool mockBrokerPool;
+    NativeBroker mockBroker;
 
     protected TransactionManager createTestableTransactionManager(final boolean expectTxnClose) throws NoSuchFieldException, IllegalAccessException, EXistException {
         mockBrokerPool = createMock(BrokerPool.class);

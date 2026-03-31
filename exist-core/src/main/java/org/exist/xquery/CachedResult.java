@@ -34,10 +34,10 @@ import org.exist.xquery.value.Type;
  */
 public class CachedResult {
 
-	final protected Sequence cachedResult;
-	final protected Sequence cachedContext;
-	final protected Item cachedItem;	
-	final protected int timestamp;
+	protected final Sequence cachedResult;
+	protected final Sequence cachedContext;
+	protected final Item cachedItem;	
+	protected final int timestamp;
 	
 	public CachedResult(Sequence context, Item contextItem, Sequence result) {
 		this.cachedContext = context;

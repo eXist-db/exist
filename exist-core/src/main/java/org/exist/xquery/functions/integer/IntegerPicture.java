@@ -178,7 +178,8 @@ public abstract class IntegerPicture {
         final StringBuilder sb = new StringBuilder(ruleBasedNumberFormat.format(value)).reverse();
         int i = 0;
         //noinspection StatementWithEmptyBody
-        for (; !sb.isEmpty() && Character.isAlphabetic(sb.charAt(i)); i++) ;
+        for (; !sb.isEmpty() && Character.isAlphabetic(sb.charAt(i)); i++) {
+        }
         return sb.delete(i, sb.length()).reverse().toString();
     }
 }

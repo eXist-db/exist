@@ -21,6 +21,11 @@
  */
 package org.exist.http.servlets;
 
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
@@ -40,11 +45,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-import jakarta.servlet.RequestDispatcher;
-import jakarta.servlet.ServletConfig;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.Serial;
 import java.net.URISyntaxException;
@@ -112,14 +112,14 @@ public class RedirectorServlet extends AbstractExistHttpServlet {
 
     private static final Logger LOG = LogManager.getLogger(RedirectorServlet.class);
 
-    public final static String DEFAULT_USER = "guest";
-    public final static String DEFAULT_PASS = "guest";
-    public final static XmldbURI DEFAULT_URI = XmldbURI.EMBEDDED_SERVER_URI.append(XmldbURI.ROOT_COLLECTION_URI);
+    public static final String DEFAULT_USER = "guest";
+    public static final String DEFAULT_PASS = "guest";
+    public static final XmldbURI DEFAULT_URI = XmldbURI.EMBEDDED_SERVER_URI.append(XmldbURI.ROOT_COLLECTION_URI);
 
-    private String user = null;
-    private String password = null;
-    private XmldbURI collectionURI = null;
-    private String query = null;
+    private String user;
+    private String password;
+    private XmldbURI collectionURI;
+    private String query;
 
     @Override
     public void init(final ServletConfig config) throws ServletException {
@@ -153,11 +153,12 @@ public class RedirectorServlet extends AbstractExistHttpServlet {
     protected void service(final HttpServletRequest req, final HttpServletResponse res) throws ServletException, IOException {
         final RequestWrapper request = new HttpRequestWrapper(req);
         final ResponseWrapper response = new HttpResponseWrapper(res);
-        if (request.getCharacterEncoding() == null)
+        if (request.getCharacterEncoding() == null) {
             try {
                 request.setCharacterEncoding(UTF_8.name());
             } catch (final IllegalStateException e) {
             }
+        }
         // Try to find the XQuery
         final String qpath = getServletContext().getRealPath(query);
         final Path p = Path.of(qpath);
@@ -302,7 +303,7 @@ public class RedirectorServlet extends AbstractExistHttpServlet {
         return LOG;
     }
 
-    private static class ModifiableRequestWrapper extends jakarta.servlet.http.HttpServletRequestWrapper {
+    private static final class ModifiableRequestWrapper extends jakarta.servlet.http.HttpServletRequestWrapper {
 
         private final Map<String, String[]> addedParams = new HashMap<>();
 

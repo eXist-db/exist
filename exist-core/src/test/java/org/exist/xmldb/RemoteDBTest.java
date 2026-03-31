@@ -42,10 +42,10 @@ public abstract class RemoteDBTest {
     @ClassRule
     public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
 
-    private final static String CHILD_COLLECTION = "unit-testing-collection-Citt\u00E0";
-    public final static String DB_DRIVER = "org.exist.xmldb.DatabaseImpl";
+    private static final String CHILD_COLLECTION = "unit-testing-collection-Citt\u00E0";
+    public static final String DB_DRIVER = "org.exist.xmldb.DatabaseImpl";
 
-    private RemoteCollection collection = null;
+    private RemoteCollection collection;
 
     public static String getUri() {
         return "xmldb:exist://localhost:" + existWebServer.getPort() + "/xmlrpc";

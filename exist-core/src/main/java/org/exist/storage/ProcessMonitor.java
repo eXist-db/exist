@@ -30,7 +30,6 @@ import org.exist.util.Configuration;
 import org.exist.xquery.Module;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XQueryWatchDog;
-
 import org.exist.xquery.functions.request.RequestModule;
 import org.exist.xquery.util.ExpressionDumper;
 
@@ -75,7 +74,7 @@ public class ProcessMonitor implements BrokerPoolService {
     private long maxShutdownWait;
     private long historyTimespan = QUERY_HISTORY_TIMEOUT;
     private long minTime = MIN_TIME;
-    private boolean trackRequests = false;
+    private boolean trackRequests;
 
     @Override
     public void configure(final Configuration configuration) {
@@ -174,7 +173,8 @@ public class ProcessMonitor implements BrokerPoolService {
 
     private void cleanHistory() {
         // remove timed out entries
-        while (history.poll() != null) ;
+        while (history.poll() != null) {
+        }
     }
 
     /**
@@ -223,10 +223,10 @@ public class ProcessMonitor implements BrokerPoolService {
     public static class QueryHistory implements Delayed {
 
         private final String source;
-        private String requestURI = null;
+        private String requestURI;
         private long mostRecentExecutionTime;
         private long mostRecentExecutionDuration;
-        private int invocationCount = 0;
+        private int invocationCount;
         private long expires;
 
         public QueryHistory(final String source, final long delay) {
@@ -307,8 +307,8 @@ public class ProcessMonitor implements BrokerPoolService {
         }
     }
 
-    public final static class Monitor {
-        boolean stop = false;
+    public static final class Monitor {
+        boolean stop;
 
         public boolean proceed() {
             return !stop;
@@ -320,13 +320,13 @@ public class ProcessMonitor implements BrokerPoolService {
         }
     }
 
-    public final static class JobInfo {
+    public static final class JobInfo {
         private final Thread thread;
         private final String action;
         private final long startTime;
         private final Monitor monitor;
 
-        private Object addInfo = null;
+        private Object addInfo;
 
         public JobInfo(final String action, final Monitor monitor) {
             this.thread = Thread.currentThread();

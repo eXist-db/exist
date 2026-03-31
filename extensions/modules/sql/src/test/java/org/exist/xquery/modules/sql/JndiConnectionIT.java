@@ -90,7 +90,7 @@ public class JndiConnectionIT {
     @Rule
     public H2DatabaseResource h2Database = new H2DatabaseResource();
 
-    private Context ctx = null;
+    private Context ctx;
 
     @Before
     public void setupJndiEnvironment() throws NamingException {

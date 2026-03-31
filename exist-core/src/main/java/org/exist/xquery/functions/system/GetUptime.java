@@ -21,9 +21,6 @@
  */
 package org.exist.xquery.functions.system;
 
-import java.util.Calendar;
-import javax.xml.datatype.XMLGregorianCalendar;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
@@ -37,6 +34,9 @@ import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 
+import javax.xml.datatype.XMLGregorianCalendar;
+import java.util.Calendar;
+
 /**
  * Return the duration since eXist was started
  * 
@@ -44,9 +44,9 @@ import org.exist.xquery.value.Type;
  */
 public class GetUptime extends BasicFunction {
 
-    protected final static Logger logger = LogManager.getLogger(GetUptime.class);
+    protected static final Logger logger = LogManager.getLogger(GetUptime.class);
     
-    public final static FunctionSignature signature = new FunctionSignature(
+    public static final FunctionSignature signature = new FunctionSignature(
         new QName("get-uptime", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
         "Returns the time since eXist-db was started. The value is stable over the lifetime of a query.",
         FunctionSignature.NO_ARGS,

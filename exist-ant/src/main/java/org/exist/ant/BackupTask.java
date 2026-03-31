@@ -36,8 +36,8 @@ import java.nio.file.Path;
  */
 public class BackupTask extends AbstractXMLDBTask
 {
-    private String dir = null;
-    private boolean deduplicateBlobs = false;
+    private String dir;
+    private boolean deduplicateBlobs;
 
     @Override
     public void execute() throws BuildException

@@ -25,8 +25,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Namespaces;
 import org.exist.collections.Collection;
-import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.QName;
+import org.exist.dom.persistent.NodeSet;
 import org.exist.indexing.StructuralIndex;
 import org.exist.storage.QNameRangeIndexSpec;
 import org.exist.xmldb.XmldbURI;
@@ -48,12 +48,12 @@ public class Optimize extends AbstractPragma {
     private boolean enabled = true;
     private final XQueryContext context;
     private Optimizable[] optimizables;
-    private Expression innerExpr = null;
-    private LocationStep contextStep = null;
-    private VariableReference contextVar = null;
+    private Expression innerExpr;
+    private LocationStep contextStep;
+    private VariableReference contextVar;
     private int contextId = Expression.NO_CONTEXT_ID;
 
-    private NodeSet cachedContext = null;
+    private NodeSet cachedContext;
     private int cachedTimestamp;
     private boolean cachedOptimize;
 

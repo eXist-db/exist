@@ -21,7 +21,6 @@
  */
 package org.exist.security.utils;
 
-import java.io.IOException;
 import org.exist.collections.Collection;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.security.Permission;
@@ -30,6 +29,8 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
+
+import java.io.IOException;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>

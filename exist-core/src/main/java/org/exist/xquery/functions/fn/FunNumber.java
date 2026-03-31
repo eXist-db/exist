@@ -30,13 +30,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.DoubleValue;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 /**
  * xpath-library function: number(object) $context/number()
@@ -78,7 +72,7 @@ public class FunNumber extends Function {
     protected static final FunctionParameterSequenceType ARG_PARAM = new FunctionParameterSequenceType("arg", Type.ANY_ATOMIC_TYPE, Cardinality.ZERO_OR_ONE, "The input item");
     protected static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the numerical value");
 
-    public final static FunctionSignature[] signatures = {
+    public static final FunctionSignature[] signatures = {
         new FunctionSignature(
             new QName("number", Function.BUILTIN_FUNCTION_NS),
             FUNCTION_DESCRIPTION_0_PARAM,

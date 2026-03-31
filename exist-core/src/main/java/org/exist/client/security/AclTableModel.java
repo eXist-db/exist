@@ -21,9 +21,10 @@
  */
 package org.exist.client.security;
 
-import javax.swing.table.DefaultTableModel;
 import org.exist.security.ACLPermission;
 import org.exist.security.Permission;
+
+import javax.swing.table.DefaultTableModel;
 
 /**
  *
@@ -31,7 +32,7 @@ import org.exist.security.Permission;
  */
 public class AclTableModel extends DefaultTableModel {
 
-    private final static String[] COLUMN_NAMES = new String [] {"Target", "Subject", "Access", "Read", "Write", "Execute"};
+    private static final String[] COLUMN_NAMES = new String [] {"Target", "Subject", "Access", "Read", "Write", "Execute"};
 
     public AclTableModel(final Permission permission) {
         super();

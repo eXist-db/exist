@@ -21,11 +21,8 @@
  */
 package org.exist.xquery.functions.xmldb;
 
-import java.net.URISyntaxException;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -33,20 +30,16 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.util.URIUtils;
-import org.exist.xquery.value.AnyURIValue;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
+
+import java.net.URISyntaxException;
 
 /**
  * @author cgeorg
  */
 public class XMLDBURIFunctions extends BasicFunction {
 	protected static final Logger logger = LogManager.getLogger(XMLDBURIFunctions.class);
-	public final static FunctionSignature[] signatures = new FunctionSignature[] {
+	public static final FunctionSignature[] signatures = new FunctionSignature[] {
 		new FunctionSignature(
 				new QName("encode", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
 				"Encodes the string $string such that it will be a valid collection or resource path. Provides similar functionality to java's URLEncoder.encode() function, with some enhancements.",
@@ -103,8 +96,7 @@ public class XMLDBURIFunctions extends BasicFunction {
 		} catch(final URISyntaxException e) {
             logger.error(e.getMessage(), e);
 			throw new XPathException(this, "URI Syntax Exception: " + e.getMessage(), e);
-		} finally {
-        }
+		}
 	}
 	
 }

@@ -22,11 +22,11 @@
 
 package org.exist.protocolhandler.xmldb;
 
+import org.exist.xmldb.XmldbURI;
+
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
-
-import org.exist.xmldb.XmldbURI;
 
 /**
  *  A utility class for xmldb URLs. Since, java.net.URL is final this class
@@ -178,7 +178,7 @@ public class XmldbURL {
             // found pattern "/db"
             if(path.endsWith("/")){
                 // -1 removes the slash
-                collectionName=path.substring(dbLocation, (path.length()-1) );
+                collectionName=path.substring(dbLocation, path.length()-1);
             } else {
                 final int lastSep=path.lastIndexOf('/');
                 if(lastSep==0){
@@ -196,7 +196,7 @@ public class XmldbURL {
             // pattern not found, taking full path
             if(path.endsWith("/")){
                 // -1 removes the slash
-                collectionName=path.substring(0, (path.length()-1) );
+                collectionName=path.substring(0, path.length()-1);
             } else {
                 final int lastSep=path.lastIndexOf('/');
                 if(lastSep!=-1){
@@ -336,7 +336,7 @@ public class XmldbURL {
      * @return TRUE when URL contains username
      */
     public boolean hasUserInfo(){
-        return (getUserInfo()!=null && getUsername()!=null);
+        return getUserInfo()!=null && getUsername()!=null;
     }
     
     /**
@@ -364,6 +364,6 @@ public class XmldbURL {
      * @return TRUE when URL refers to resource in embedded eXist-db.
      */
     public boolean isEmbedded(){
-        return (getHost()==null);
+        return getHost()==null;
     }
 }

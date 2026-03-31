@@ -54,13 +54,13 @@ public class NodePathPattern {
         boolean evaluate(NodePath2 nodePath, int elementIdx);
     }
 
-    private final static class ConstTruePredicate implements Predicate {
+    private static final class ConstTruePredicate implements Predicate {
         @Override
         public boolean evaluate(NodePath2 nodePath, int elementIdx) {
             return true;
         }
     }
-    private final static Predicate CONST_TRUE_PREDICATE = new ConstTruePredicate();
+    private static final Predicate CONST_TRUE_PREDICATE = new ConstTruePredicate();
 
     enum PredicateCode {
         EQUALS,      // =
@@ -112,22 +112,19 @@ public class NodePathPattern {
         int pos = 0;
         while (pos < matchPattern.length()) {
             final char ch = matchPattern.charAt(pos);
-            switch (ch) {
-                case '/':
-                    final String next = token.toString();
-                    token.setLength(0);
-                    if (!next.isEmpty()) {
-                        addSegment(namespaces, next);
-                    }
-                    if (matchPattern.charAt(++pos) == '/') {
-                        qnPath.addComponent(NodePath.SKIP);
-                        predicates.add(CONST_TRUE_PREDICATE);
-                    }
-                    break;
-                default:
-                    token.append(ch);
-                    pos++;
-                    break;
+            if (ch == '/') {
+                final String next = token.toString();
+                token.setLength(0);
+                if (!next.isEmpty()) {
+                    addSegment(namespaces, next);
+                }
+                if (matchPattern.charAt(++pos) == '/') {
+                    qnPath.addComponent(NodePath.SKIP);
+                    predicates.add(CONST_TRUE_PREDICATE);
+                }
+            } else {
+                token.append(ch);
+                pos++;
             }
         }
         if (!token.isEmpty()) {
@@ -180,7 +177,8 @@ public class NodePathPattern {
         String[] ops = { "!=", "=", " ne ", " eq "};
         PredicateCode[] pcodes = { PredicateCode.NOT_EQUALS, PredicateCode.EQUALS, PredicateCode.NE, PredicateCode.EQ };
         PredicateCode pcode = null;
-        int opIdx = 0, opIdxEnd = 0;
+        int opIdx = 0;
+        int opIdxEnd = 0;
         for (int i=0; i < ops.length; ++i) {
             opIdx = input.indexOf(ops[i]);
             if (opIdx >= 1) { // as input should start with `@`
@@ -241,8 +239,9 @@ public class NodePathPattern {
             if (i == len) {
                 return qnPath.includeDescendants();
             }
-            if (components_i == null)
+            if (components_i == null) {
                 components_i = qnPath.getComponent(i);
+            }
 
             if (components_i == NodePath.SKIP) {
                 components_i = qnPath.getComponent(++i);
@@ -262,7 +261,7 @@ public class NodePathPattern {
             }
         }
 
-        return (i == len);
+        return i == len;
     }
 
     @Override

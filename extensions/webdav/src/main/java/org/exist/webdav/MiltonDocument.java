@@ -57,14 +57,14 @@ public class MiltonDocument extends MiltonResource
 
     public static final String PROPFIND_METHOD_XML_SIZE = "org.exist.webdav.PROPFIND_METHOD_XML_SIZE";
     public static final String GET_METHOD_XML_SIZE = "org.exist.webdav.GET_METHOD_XML_SIZE";
-    private static SIZE_METHOD propfindSizeMethod = null;
-    private static SIZE_METHOD getSizeMethod = null;
+    private static SIZE_METHOD propfindSizeMethod;
+    private static SIZE_METHOD getSizeMethod;
 
-    private static UserAgentHelper userAgentHelper = null;
+    private static UserAgentHelper userAgentHelper;
     private final ExistDocument existDocument;
 
     // Only for PROPFIND the estimate size for an XML document must be shown
-    private boolean isPropFind = false;
+    private boolean isPropFind;
 
     /**
      * Constructor of representation of a Document in the Milton framework, without subject information.
@@ -440,10 +440,8 @@ public class MiltonDocument extends MiltonResource
         }
 
         // Construct Lock Info
-        LockToken miltonLT = convertToken(existLT);
-
         // Return values in Milton object
-        return miltonLT;
+        return convertToken(existLT);
     }
 
     @Override
@@ -503,7 +501,7 @@ public class MiltonDocument extends MiltonResource
         writer.writeAttribute("owner", existDocument.getOwnerUser());
         writer.writeAttribute("group", existDocument.getOwnerGroup());
         writer.writeAttribute("permissions", "" + existDocument.getPermissions().toString());
-        writer.writeAttribute("size", "" + existDocument.getContentLength());
+        writer.writeAttribute("size", String.valueOf(existDocument.getContentLength()));
         writer.writeEndElement();
     }
 

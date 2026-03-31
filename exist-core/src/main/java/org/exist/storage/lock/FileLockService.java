@@ -51,7 +51,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * A Simple Service wrapper for {@link FileLock}
  */
 public class FileLockService implements BrokerPoolService {
-    private final static Logger LOG = LogManager.getLogger(FileLockService.class);
+    private static final Logger LOG = LogManager.getLogger(FileLockService.class);
 
     private final String lockFileName;
     private final String confDirPropName;
@@ -59,7 +59,7 @@ public class FileLockService implements BrokerPoolService {
 
     private Path dataDir;
     private boolean writable;
-    private AtomicReference<FileLock> dataLock = new AtomicReference<>();
+    private final AtomicReference<FileLock> dataLock = new AtomicReference<>();
 
     public FileLockService(final String lockFileName, final String confDirPropName, final String defaultDirName) {
         this.lockFileName = lockFileName;

@@ -51,10 +51,10 @@ import java.util.List;
  */
 public class DataGuide {
 
-    private final static int BYTES_PER_NODE = 16;
+    private static final int BYTES_PER_NODE = 16;
 
     // the (virtual) root of the tree whose name will always be null.
-    private NodeStats root = new NodeStatsRoot();
+    private final NodeStats root = new NodeStatsRoot();
 
     public int getSize() {
         return root.getSize();
@@ -147,7 +147,7 @@ public class DataGuide {
         root.read(buffer, symbols);
     }
 
-    private static class NodeStatsRoot extends NodeStats {
+    private static final class NodeStatsRoot extends NodeStats {
 
         private NodeStatsRoot() {
             super(null);

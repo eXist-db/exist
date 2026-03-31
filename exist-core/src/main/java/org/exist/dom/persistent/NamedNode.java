@@ -33,7 +33,7 @@ import org.w3c.dom.DOMException;
  */
 public abstract class NamedNode<T extends NamedNode> extends StoredNode<T> {
 
-    protected QName nodeName = null;
+    protected QName nodeName;
 
     protected NamedNode(final short nodeType) {
         this(null, nodeType);

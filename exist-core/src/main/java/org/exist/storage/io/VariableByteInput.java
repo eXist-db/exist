@@ -52,7 +52,7 @@ public interface VariableByteInput {
      */
     public int read(byte[] data) throws IOException;
     
-    public int read(byte b[], int off, int len) throws IOException;
+    public int read(byte[] b, int off, int len) throws IOException;
     
     /**
      * Returns a value &gt; 0 if more bytes can be read

@@ -22,15 +22,14 @@
 package org.exist.security;
 
 import org.easymock.EasyMock;
-import org.exist.security.internal.AccountImpl;
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.replay;
-import static org.easymock.EasyMock.verify;
 import org.exist.Database;
 import org.exist.config.Configuration;
+import org.exist.security.internal.AccountImpl;
 import org.exist.security.internal.SecurityManagerImpl;
 import org.junit.Ignore;
 import org.junit.Test;
+
+import static org.easymock.EasyMock.*;
 
 /**
  *

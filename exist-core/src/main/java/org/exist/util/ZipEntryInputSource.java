@@ -42,7 +42,7 @@ import java.util.zip.ZipFile;
  * @author jmfernandez
  */
 public final class ZipEntryInputSource extends EXistInputSource {
-	private final static Logger LOG = LogManager.getLogger(ZipEntryInputSource.class);
+	private static final Logger LOG = LogManager.getLogger(ZipEntryInputSource.class);
 
 	private final ZipEntry zipEntry;
 	private final ZipFile zipFile;

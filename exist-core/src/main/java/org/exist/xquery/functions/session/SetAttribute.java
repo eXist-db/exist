@@ -38,7 +38,7 @@ import java.util.Optional;
  */
 public class SetAttribute extends SessionFunction {
 
-    public final static FunctionSignature signature =
+    public static final FunctionSignature signature =
             new FunctionSignature(
                     new QName("set-attribute", SessionModule.NAMESPACE_URI, SessionModule.PREFIX),
                     "Stores a value in the current session using the supplied attribute name. If no session exists, then one will be created.",

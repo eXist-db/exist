@@ -21,15 +21,14 @@
  */
 package org.exist.storage;
 
-import java.util.Arrays;
-import java.util.Map;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 
 import javax.annotation.Nullable;
 import javax.xml.XMLConstants;
+import java.util.Arrays;
+import java.util.Map;
 
 
 /**
@@ -59,7 +58,7 @@ public class NodePath implements Comparable<NodePath> {
     public static final QName WILDCARD = new QName("*", "");
 
     private QName[] components = new QName[DEFAULT_NODE_PATH_SIZE];
-    private int pos = 0;
+    private int pos;
     private boolean includeDescendants = true;
 
     public NodePath() {

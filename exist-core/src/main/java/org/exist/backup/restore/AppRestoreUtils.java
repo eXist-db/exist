@@ -51,9 +51,9 @@ import java.util.*;
  */
 public class AppRestoreUtils {
 
-    private final static Logger LOG = LogManager.getLogger(AppRestoreUtils.class);
+    private static final Logger LOG = LogManager.getLogger(AppRestoreUtils.class);
 
-    private final static String PKG_NAMESPACE = "http://expath.org/ns/pkg";
+    private static final String PKG_NAMESPACE = "http://expath.org/ns/pkg";
 
     /**
      * Inspects the apps contained in the backup against installed apps in the database
@@ -198,7 +198,7 @@ public class AppRestoreUtils {
         return appRoot;
     }
 
-    final static class AppDetail {
+    static final class AppDetail {
         protected final String path;
         protected final String name;
         protected final Semver version;

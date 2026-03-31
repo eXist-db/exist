@@ -43,7 +43,7 @@ import java.util.Optional;
  */
 class ResourceDeferredPermission extends AbstractDeferredPermission {
 
-    private final static Logger LOG = LogManager.getLogger(ResourceDeferredPermission.class);
+    private static final Logger LOG = LogManager.getLogger(ResourceDeferredPermission.class);
     
     public ResourceDeferredPermission(final RestoreListener listener, final XmldbURI resourceUri, final String owner, final String group, final Integer mode) {
         super(listener, resourceUri, owner, group, mode);

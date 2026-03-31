@@ -21,7 +21,6 @@
  */
 package org.exist.indexing.lucene;
 
-import java.util.function.BiFunction;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
@@ -36,6 +35,7 @@ import org.exist.xquery.XPathException;
 import java.lang.invoke.LambdaMetafactory;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
+import java.util.function.BiFunction;
 
 import static java.lang.invoke.MethodType.methodType;
 
@@ -50,7 +50,7 @@ public class ClassicQueryParserWrapper extends QueryParserWrapper {
     private static final Logger LOG = LogManager.getLogger(ClassicQueryParserWrapper.class);
     private static final MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
 
-    private QueryParserBase parser = null;
+    private QueryParserBase parser;
 
     /** Non-null default field for Lucene (avoids NPE per LUCENE-1418). */
     private static String defaultField(final String field) {

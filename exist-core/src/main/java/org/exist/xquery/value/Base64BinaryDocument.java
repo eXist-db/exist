@@ -31,9 +31,9 @@ import java.io.InputStream;
  *
  * @author dizzzzz
  */
-public class Base64BinaryDocument extends BinaryValueFromInputStream {
+public final class Base64BinaryDocument extends BinaryValueFromInputStream {
 
-    private String url = null;
+    private String url;
 
     private Base64BinaryDocument(final BinaryValueManager manager, final InputStream is) throws XPathException {
         this(null, manager, is);

@@ -21,24 +21,17 @@
  */
 package org.exist.xquery.modules.file;
 
-import java.nio.file.Path;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.Base64BinaryValueType;
-import org.exist.xquery.value.BinaryValueFromFile;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
+
+import java.nio.file.Path;
 
 /**
  * @author <a href="mailto:andrzej@chaeron.com">Andrzej Taramina</a>
@@ -47,7 +40,7 @@ public class FileReadBinary extends BasicFunction {
 
 	private static final Logger logger = LogManager.getLogger(FileReadBinary.class);
 	
-	public final static FunctionSignature signatures[] = {
+	public static final FunctionSignature[] signatures = {
 		new FunctionSignature(
 			new QName( "read-binary", FileModule.NAMESPACE_URI, FileModule.PREFIX ),
 			"Reads the contents of a binary file.  This method is only available to the DBA role.",

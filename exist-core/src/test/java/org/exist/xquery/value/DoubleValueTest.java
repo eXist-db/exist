@@ -69,7 +69,7 @@ public class DoubleValueTest {
 
     @Test(expected=XPathException.class)
     public void toJavaObject_int_upperBound() throws XPathException {
-        final double value = 2147483649d;  // NOTE: this is out of bounds for an XDM xs:int, so should generate an error
+        final double value = 2147483649D;  // NOTE: this is out of bounds for an XDM xs:int, so should generate an error
         final DoubleValue doubleValue = new DoubleValue(value);
 
         doubleValue.toJavaObject(int.class);

@@ -23,8 +23,6 @@ package org.exist.client;
 
 import com.evolvedbinary.j8fu.tuple.Tuple2;
 
-import java.awt.Component;
-import java.util.function.Function;
 import javax.swing.JCheckBox;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
@@ -33,6 +31,8 @@ import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.plaf.UIResource;
 import javax.swing.table.TableCellRenderer;
+import java.awt.Component;
+import java.util.function.Function;
 
 /**
  * Renders a T as a JCheckBox.

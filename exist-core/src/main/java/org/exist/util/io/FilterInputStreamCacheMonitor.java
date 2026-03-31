@@ -31,7 +31,7 @@ import java.util.concurrent.ConcurrentMap;
  *
  * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
-public class FilterInputStreamCacheMonitor {
+public final class FilterInputStreamCacheMonitor {
 
     private static final FilterInputStreamCacheMonitor INSTANCE = new FilterInputStreamCacheMonitor();
 

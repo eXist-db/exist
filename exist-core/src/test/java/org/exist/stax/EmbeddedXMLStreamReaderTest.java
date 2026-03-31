@@ -56,10 +56,10 @@ import java.util.*;
 import java.util.function.Function;
 
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
+import static org.exist.stax.EmbeddedXMLStreamReaderTest.NamedEvent.*;
 import static org.exist.stax.ExtendedXMLStreamReader.PROPERTY_NODE_ID;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.exist.stax.EmbeddedXMLStreamReaderTest.NamedEvent.*;
 
 @RunWith(ParallelRunner.class)
 public class EmbeddedXMLStreamReaderTest {

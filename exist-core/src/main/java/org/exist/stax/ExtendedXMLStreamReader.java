@@ -28,7 +28,7 @@ import javax.xml.stream.XMLStreamReader;
 
 public interface ExtendedXMLStreamReader extends XMLStreamReader {
 
-    public final static String PROPERTY_NODE_ID = "node-id";
+    public static final String PROPERTY_NODE_ID = "node-id";
     
     public QName getAttributeQName(int index);
 

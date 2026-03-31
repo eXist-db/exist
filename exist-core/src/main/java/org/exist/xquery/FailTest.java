@@ -36,7 +36,7 @@ import javax.xml.stream.XMLStreamReader;
  *
  * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  */
-public class FailTest implements NodeTest {
+public final class FailTest implements NodeTest {
     private static final int NO_TYPE = Integer.MIN_VALUE;
 
     public static final FailTest INSTANCE = new FailTest();

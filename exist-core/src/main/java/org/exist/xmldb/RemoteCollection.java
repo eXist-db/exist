@@ -21,9 +21,26 @@
  */
 package org.exist.xmldb;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.xmldb.api.base.ResourceType.BINARY_RESOURCE;
-import static org.xmldb.api.base.ResourceType.XML_RESOURCE;
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.xmlrpc.XmlRpcException;
+import org.apache.xmlrpc.client.XmlRpcClient;
+import org.exist.security.Permission;
+import org.exist.security.PermissionDeniedException;
+import org.exist.security.internal.aider.ACEAider;
+import org.exist.storage.blob.BlobId;
+import org.exist.util.Compressor;
+import org.exist.util.EXistInputSource;
+import org.exist.util.FileUtils;
+import org.exist.util.Leasable;
+import org.exist.util.crypto.digest.DigestType;
+import org.exist.util.crypto.digest.MessageDigest;
+import org.xml.sax.InputSource;
+import org.xmldb.api.base.*;
+import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.ServiceProviderCache.ProviderRegistry;
+import org.xmldb.api.modules.*;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -39,31 +56,9 @@ import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.apache.xmlrpc.XmlRpcException;
-import org.apache.xmlrpc.client.XmlRpcClient;
-import org.exist.security.Permission;
-import org.exist.security.PermissionDeniedException;
-import org.exist.security.internal.aider.ACEAider;
-import org.exist.storage.blob.BlobId;
-import org.exist.util.Compressor;
-import org.exist.util.EXistInputSource;
-import org.exist.util.FileUtils;
-import org.exist.util.Leasable;
-import org.exist.util.crypto.digest.DigestType;
-import org.exist.util.crypto.digest.MessageDigest;
-import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
-import org.xml.sax.InputSource;
-import org.xmldb.api.base.*;
-import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.ServiceProviderCache.ProviderRegistry;
-import org.xmldb.api.modules.BinaryResource;
-import org.xmldb.api.modules.CollectionManagementService;
-import org.xmldb.api.modules.XMLResource;
-import org.xmldb.api.modules.XPathQueryService;
-import org.xmldb.api.modules.XQueryService;
-import org.xmldb.api.modules.XUpdateQueryService;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.xmldb.api.base.ResourceType.BINARY_RESOURCE;
+import static org.xmldb.api.base.ResourceType.XML_RESOURCE;
 
 /**
  * A remote implementation of the Collection interface. This implementation
@@ -74,7 +69,7 @@ import org.xmldb.api.modules.XUpdateQueryService;
  */
 public class RemoteCollection extends AbstractRemote implements EXistCollection {
 
-    protected final static Logger LOG = LogManager.getLogger(RemoteCollection.class);
+    protected static final Logger LOG = LogManager.getLogger(RemoteCollection.class);
 
     // Max size of a resource to be send to the server.
     // If the resource exceeds this limit, the data is split into
@@ -155,7 +150,7 @@ public class RemoteCollection extends AbstractRemote implements EXistCollection 
     @Override
     public <R extends Resource> R createResource(String id, Class<R> type) throws XMLDBException {
         try {
-            final XmldbURI newId = (id == null) ? XmldbURI.xmldbUriFor(createId()) : XmldbURI.xmldbUriFor(id);
+            final XmldbURI newId = id == null ? XmldbURI.xmldbUriFor(createId()) : XmldbURI.xmldbUriFor(id);
             if (XMLResource.class.isAssignableFrom(type)) {
                 return (R)new RemoteXMLResource(this, -1, -1, newId, Optional.empty());
             } else if (BinaryResource.class.isAssignableFrom(type)) {
@@ -472,7 +467,7 @@ public class RemoteCollection extends AbstractRemote implements EXistCollection 
     @Override
     public void storeResource(final Resource res, final Instant a, final Instant b) throws XMLDBException {
 
-        final Object content = (res instanceof ExtendedResource er)
+        final Object content = res instanceof ExtendedResource er
                 ? er.getExtendedContent()
                 : res.getContent();
 
@@ -663,7 +658,7 @@ public class RemoteCollection extends AbstractRemote implements EXistCollection 
                     params.add(rxres.getMimeType());
                     paramsEx.add(rxres.getMimeType());
                     // This one is only for the new style!!!!
-                    paramsEx.add((XML_RESOURCE.equals(res.getResourceType()))
+                    paramsEx.add(XML_RESOURCE.equals(res.getResourceType())
                             ? Boolean.FALSE : Boolean.TRUE);
                     if (rxres.getCreationTime() != null) {
                         params.add(rxres.getCreationTime());

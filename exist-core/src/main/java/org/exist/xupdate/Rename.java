@@ -21,12 +21,10 @@
  */
 package org.exist.xupdate;
 
-import java.util.Map;
-
 import org.exist.EXistException;
 import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.persistent.*;
 import org.exist.dom.QName;
+import org.exist.dom.persistent.*;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
@@ -37,6 +35,8 @@ import org.exist.util.LockException;
 import org.exist.xquery.XPathException;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import java.util.Map;
 
 /**
  * Implements an XUpdate rename operation.

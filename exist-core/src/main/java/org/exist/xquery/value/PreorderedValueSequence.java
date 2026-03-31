@@ -47,7 +47,7 @@ public class PreorderedValueSequence extends AbstractSequence {
     private final OrderSpec[] orderSpecs;
     private final OrderedNodeProxy[] nodes;
 
-    public PreorderedValueSequence(final OrderSpec specs[], final Sequence input, final int contextId) throws XPathException {
+    public PreorderedValueSequence(final OrderSpec[] specs, final Sequence input, final int contextId) throws XPathException {
         this.orderSpecs = specs;
         this.nodes = new OrderedNodeProxy[input.getItemCount()];
         int j = 0;
@@ -218,7 +218,7 @@ public class PreorderedValueSequence extends AbstractSequence {
     }
 
     private class PreorderedValueSequenceIterator implements SequenceIterator {
-        private int pos = 0;
+        private int pos;
 
         @Override
         public boolean hasNext() {

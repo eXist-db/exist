@@ -21,21 +21,15 @@
  */
 package org.exist.security.internal;
 
-import java.util.Map;
-
-import javax.security.auth.Subject;
-import javax.security.auth.callback.Callback;
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.callback.NameCallback;
-import javax.security.auth.callback.PasswordCallback;
-import javax.security.auth.callback.UnsupportedCallbackException;
-import javax.security.auth.login.FailedLoginException;
-import javax.security.auth.login.LoginException;
-
-//import org.apache.logging.log4j.LogManager;
 import org.exist.EXistException;
 import org.exist.security.AuthenticationException;
 import org.exist.storage.BrokerPool;
+
+import javax.security.auth.Subject;
+import javax.security.auth.callback.*;
+import javax.security.auth.login.FailedLoginException;
+import javax.security.auth.login.LoginException;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -52,12 +46,12 @@ public class EXistDBLoginModule implements javax.security.auth.spi.LoginModule {
 //	private Map<String, ?> options;
 
 	// configurable option
-	private boolean debug = false;
+	private boolean debug;
 
 	// the authentication status
-	private boolean succeeded = false;
-	private boolean commitSucceeded = false;
-	private org.exist.security.Subject userPrincipal = null;
+	private boolean succeeded;
+	private boolean commitSucceeded;
+	private org.exist.security.Subject userPrincipal;
 
 	/**
 	 * Initialize this <code>LoginModule</code>.
@@ -225,7 +219,7 @@ public class EXistDBLoginModule implements javax.security.auth.spi.LoginModule {
 	 *         failed, and true otherwise.
 	 */
 	public boolean abort() throws LoginException {
-		if (succeeded == false) {
+		if (!succeeded) {
 			return false;
 		} else if (succeeded && !commitSucceeded) {
 			// login succeeded but overall authentication failed

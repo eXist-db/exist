@@ -1436,9 +1436,9 @@ public class BlobStoreImpl implements BlobStore {
      * after the transaction has been completed (aborted or committed) and
      * a checkpoint has been written.
      */
-    private static abstract class CommitThenCheckpointListener implements TxnListener, JournalManager.JournalListener {
+    private abstract static class CommitThenCheckpointListener implements TxnListener, JournalManager.JournalListener {
         // written from single-thread, read from multiple threads
-        private volatile boolean committedOrAborted = false;
+        private volatile boolean committedOrAborted;
 
         @Override
         public void commit() {
@@ -1741,12 +1741,6 @@ public class BlobStoreImpl implements BlobStore {
 
                     // NOTE: DELETING is the last state of a BlobReference#count -- there is no coming back from this!
 
-                } else {
-                    /*
-                     * no-op: ignore this blob as it now again has active references,
-                     * so we don't need to delete it, instead it has been recycled :-)
-                     * Therefore we can just continue...
-                     */
                 }
 
                 // we serviced this request!

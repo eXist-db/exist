@@ -55,14 +55,9 @@ public class MicroXmlWriter extends IndentingXMLWriter {
         final CharBuffer buf = CharBuffer.allocate(charSeq.length());
 
         for(int i = 0; i < charSeq.length(); i++) {
-            switch(charSeq.charAt(i)) {
-
-                case '>':
-                    //ignore char
-                    break;
-
-                default:
-                    buf.append(charSeq.charAt(i));
+            if (charSeq.charAt(i) == '>') {
+            } else {
+                buf.append(charSeq.charAt(i));
             }
         }
         buf.compact();

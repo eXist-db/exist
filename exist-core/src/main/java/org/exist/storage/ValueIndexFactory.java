@@ -21,18 +21,17 @@
  */
 package org.exist.storage;
 
-import java.math.BigDecimal;
-
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeConstants;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.XMLGregorianCalendar;
-
 import org.exist.EXistException;
 import org.exist.util.ByteConversion;
 import org.exist.util.UTF8;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.*;
+
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeConstants;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
+import java.math.BigDecimal;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -44,7 +43,7 @@ public class ValueIndexFactory {
 
     private static final int LENGTH_VALUE_TYPE = 1; // sizeof byte
 
-    public final static Indexable deserialize(final byte[] data, final int start, final int len) throws EXistException {
+    public static Indexable deserialize(final byte[] data, final int start, final int len) throws EXistException {
         final int type = data[start];  // NOTE(AR) the XDM type from org.exist.xquery.value.Type will always fit within a single byte
         // TODO : improve deserialization (use static methods in the org.exist.xquery.Value package
         /* xs:string */
@@ -121,13 +120,13 @@ public class ValueIndexFactory {
         }
     }
 
-    public final static byte[] serialize(final Indexable value, final int offset) throws EXistException {
+    public static byte[] serialize(final Indexable value, final int offset) throws EXistException {
         // TODO : refactor (only strings are case sensitive)
         return serialize(value, offset, true);
     }
 
     // TODO(AR) switch implementation to various serialize methods in the AtomicValues (requires major version bump)
-    public final static byte[] serialize(final Indexable value, final int offset, final boolean caseSensitive) throws EXistException {
+    public static byte[] serialize(final Indexable value, final int offset, final boolean caseSensitive) throws EXistException {
         /* xs:string */
         if (Type.subTypeOf(value.getType(), Type.STRING)) {
             final String val = caseSensitive ?
@@ -152,7 +151,7 @@ public class ValueIndexFactory {
             final int ms = utccal.getMillisecond();
             ByteConversion.shortToByteH((short) (ms == DatatypeConstants.FIELD_UNDEFINED ? 0 : ms),
                     data, offset + 10);
-            return (data); // return the byte array
+            return data; // return the byte array
         }
         /* xs:date */
         else if (Type.subTypeOf(value.getType(), Type.DATE)) {

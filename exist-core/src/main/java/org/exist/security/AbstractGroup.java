@@ -22,25 +22,21 @@
 
 package org.exist.security;
 
-import java.util.*;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.exist.config.Configuration;
-import org.exist.config.ConfigurationException;
-import org.exist.config.Configurator;
-import org.exist.config.Reference;
-import org.exist.config.ReferenceImpl;
+import org.exist.config.*;
 import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationFieldAsElement;
 import org.exist.config.annotation.ConfigurationReferenceBy;
 import org.exist.security.internal.GroupImpl;
 import org.exist.storage.DBBroker;
 
+import java.util.*;
+
 @ConfigurationClass("")
 public abstract class AbstractGroup extends AbstractPrincipal implements Comparable<Object>, Group {
 
-    private final static Logger LOG = LogManager.getLogger(AbstractGroup.class);
+    private static final Logger LOG = LogManager.getLogger(AbstractGroup.class);
     
     @ConfigurationFieldAsElement("manager")
     @ConfigurationReferenceBy("name")
@@ -49,7 +45,7 @@ public abstract class AbstractGroup extends AbstractPrincipal implements Compara
     @ConfigurationFieldAsElement("metadata")
     private Map<String, String> metadata = new HashMap<>();
 
-    public AbstractGroup(final DBBroker broker, final AbstractRealm realm, final int id, final String name, final List<Account> managers) throws ConfigurationException {
+    protected AbstractGroup(final DBBroker broker, final AbstractRealm realm, final int id, final String name, final List<Account> managers) throws ConfigurationException {
         super(broker, realm, realm.collectionGroups, id, name);
         
         if(managers != null) {
@@ -59,11 +55,11 @@ public abstract class AbstractGroup extends AbstractPrincipal implements Compara
         }
     }
 
-    public AbstractGroup(final DBBroker broker, final AbstractRealm realm, final String name) throws ConfigurationException {
+    protected AbstractGroup(final DBBroker broker, final AbstractRealm realm, final String name) throws ConfigurationException {
         super(broker, realm, realm.collectionGroups, UNDEFINED_ID, name);
     }
 
-    public AbstractGroup(final AbstractRealm realm, final Configuration configuration) throws ConfigurationException {
+    protected AbstractGroup(final AbstractRealm realm, final Configuration configuration) throws ConfigurationException {
         super(realm, configuration);
 
         //it require, because class's fields initializing after super constructor

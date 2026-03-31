@@ -21,9 +21,6 @@
  */
 package org.exist.xquery.functions.system;
 
-import java.util.List;
-import java.util.Map;
-
 import org.exist.dom.QName;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDSL;
@@ -31,6 +28,9 @@ import org.exist.xquery.FunctionDef;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * Module function definitions for system module.
@@ -42,8 +42,8 @@ public class SystemModule extends AbstractInternalModule {
 
 	public static final String NAMESPACE_URI = "http://exist-db.org/xquery/system";
 	public static final String PREFIX = "system";
-    public final static String INCLUSION_DATE = "2005-06-15";
-    public final static String RELEASED_IN_VERSION = "eXist-1.0";
+    public static final String INCLUSION_DATE = "2005-06-15";
+    public static final String RELEASED_IN_VERSION = "eXist-1.0";
 
     public static final FunctionDef[] functions = {
             new FunctionDef(FnExport.signatures[0], FnExport.class),

@@ -21,15 +21,6 @@
  */
 package org.exist.xquery.modules.xslfo;
 
-import java.io.OutputStream;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
-import java.util.Properties;
-import javax.xml.transform.Source;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.URIResolver;
-import javax.xml.transform.dom.DOMSource;
-
 import org.exist.EXistException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
@@ -43,12 +34,21 @@ import org.w3c.dom.Node;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
+import javax.xml.transform.Source;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.URIResolver;
+import javax.xml.transform.dom.DOMSource;
+import java.io.OutputStream;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.util.Properties;
+
 /**
  * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  */
 public class RenderXXepProcessorAdapter implements ProcessorAdapter {
 
-    private Object formatter = null;
+    private Object formatter;
 
     static {
         System.setProperty("com.renderx.jaxp.uriresolver", "org.exist.xquery.modules.xslfo.RenderXXepProcessorAdapter.EXistURISchemeAndURIResolver");
@@ -57,7 +57,7 @@ public class RenderXXepProcessorAdapter implements ProcessorAdapter {
     public static class EXistURISchemeAndURIResolver implements URIResolver {
         private static final String DEFAULT_BASE_URI = "exist://localhost/db/";
 
-        private static URIResolver existUriSchemeAndURIResolver = null;
+        private static URIResolver existUriSchemeAndURIResolver;
 
         @Override
         public Source resolve(final String href, final String base) throws TransformerException {

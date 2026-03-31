@@ -21,35 +21,27 @@
  */
 package org.exist.xquery.functions.util;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
-import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
-import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.Base64BinaryValueType;
-import org.exist.xquery.value.BinaryValue;
-import org.exist.xquery.value.BinaryValueFromInputStream;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
+
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class BinaryToString extends BasicFunction {
 
     protected static final Logger logger = LogManager.getLogger(BinaryToString.class);
-    public final static FunctionSignature[] signatures = {
+    public static final FunctionSignature[] signatures = {
         new FunctionSignature(
         new QName("binary-to-string", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
         "Returns the contents of a binary resource as an xs:string value. The binary data "

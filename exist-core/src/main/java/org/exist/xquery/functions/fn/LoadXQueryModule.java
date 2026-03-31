@@ -49,7 +49,7 @@ import static org.exist.xquery.functions.map.MapType.newLinearMap;
  */
 public class LoadXQueryModule extends BasicFunction {
 
-    public final static FunctionSignature LOAD_XQUERY_MODULE_1 = new FunctionSignature(
+    public static final FunctionSignature LOAD_XQUERY_MODULE_1 = new FunctionSignature(
             new QName("load-xquery-module", Function.BUILTIN_FUNCTION_NS, FnModule.PREFIX),
             "Provides access to the public functions and global variables of a dynamically-loaded XQuery library module.",
             new SequenceType[] {
@@ -70,7 +70,7 @@ public class LoadXQueryModule extends BasicFunction {
                             "function invocation.")
     );
 
-    public final static FunctionSignature LOAD_XQUERY_MODULE_2 = new FunctionSignature(
+    public static final FunctionSignature LOAD_XQUERY_MODULE_2 = new FunctionSignature(
             new QName("load-xquery-module", Function.BUILTIN_FUNCTION_NS, FnModule.PREFIX),
             "Provides access to the public functions and global variables of a dynamically-loaded XQuery library module.",
             new SequenceType[] {
@@ -93,14 +93,14 @@ public class LoadXQueryModule extends BasicFunction {
                             "function invocation.")
     );
 
-    public final static StringValue OPTIONS_LOCATION_HINTS = new StringValue("location-hints");
-    public final static StringValue OPTIONS_XQUERY_VERSION = new StringValue("xquery-version");
-    public final static StringValue OPTIONS_VARIABLES = new StringValue("variables");
-    public final static StringValue OPTIONS_CONTEXT_ITEM = new StringValue("context-item");
-    public final static StringValue OPTIONS_VENDOR = new StringValue("vendor-options");
+    public static final StringValue OPTIONS_LOCATION_HINTS = new StringValue("location-hints");
+    public static final StringValue OPTIONS_XQUERY_VERSION = new StringValue("xquery-version");
+    public static final StringValue OPTIONS_VARIABLES = new StringValue("variables");
+    public static final StringValue OPTIONS_CONTEXT_ITEM = new StringValue("context-item");
+    public static final StringValue OPTIONS_VENDOR = new StringValue("vendor-options");
 
-    public final static StringValue RESULT_FUNCTIONS = new StringValue("functions");
-    public final static StringValue RESULT_VARIABLES = new StringValue("variables");
+    public static final StringValue RESULT_FUNCTIONS = new StringValue("functions");
+    public static final StringValue RESULT_VARIABLES = new StringValue("variables");
 
     public LoadXQueryModule(XQueryContext context, FunctionSignature signature) {
         super(context, signature);

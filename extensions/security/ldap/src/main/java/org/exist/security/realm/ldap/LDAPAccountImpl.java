@@ -24,10 +24,10 @@ package org.exist.security.realm.ldap;
 import org.exist.config.Configuration;
 import org.exist.config.ConfigurationException;
 import org.exist.config.annotation.ConfigurationClass;
+import org.exist.security.AbstractRealm;
 import org.exist.security.Account;
 import org.exist.security.Group;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.AbstractRealm;
 import org.exist.security.internal.AccountImpl;
 import org.exist.storage.DBBroker;
 

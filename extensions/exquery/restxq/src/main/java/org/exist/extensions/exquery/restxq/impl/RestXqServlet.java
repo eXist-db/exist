@@ -26,8 +26,6 @@
  */
 package org.exist.extensions.exquery.restxq.impl;
 
-import java.io.IOException;
-import java.util.Optional;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -45,6 +43,9 @@ import org.exquery.http.HttpRequest;
 import org.exquery.restxq.RestXqService;
 import org.exquery.restxq.RestXqServiceException;
 import org.exquery.restxq.RestXqServiceRegistry;
+
+import java.io.IOException;
+import java.util.Optional;
 
 /**
  *

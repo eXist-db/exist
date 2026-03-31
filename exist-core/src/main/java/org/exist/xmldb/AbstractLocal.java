@@ -21,6 +21,7 @@
  */
 package org.exist.xmldb;
 
+import com.evolvedbinary.j8fu.function.FunctionE;
 import org.exist.EXistException;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
@@ -28,7 +29,6 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.txn.Txn;
-import com.evolvedbinary.j8fu.function.FunctionE;
 import org.exist.xmldb.function.LocalXmldbCollectionFunction;
 import org.exist.xmldb.function.LocalXmldbFunction;
 import org.xmldb.api.base.Collection;
@@ -45,7 +45,7 @@ import java.util.function.Function;
  */
 public abstract class AbstractLocal {
 
-    public final static String PROP_JOIN_TRANSACTION_IF_PRESENT = "exist.api.xmldb.local.join-transaction-if-present";
+    public static final String PROP_JOIN_TRANSACTION_IF_PRESENT = "exist.api.xmldb.local.join-transaction-if-present";
 
     protected final BrokerPool brokerPool;
     protected final Subject user;
@@ -118,7 +118,7 @@ public abstract class AbstractLocal {
      * @throws XMLDBException if an error occurs whilst reading.
      */
     protected <R> FunctionE<LocalXmldbCollectionFunction<R>, R, XMLDBException> read(final DBBroker broker, final Txn transaction, final XmldbURI collectionUri) throws XMLDBException {
-        return this.<R>with(LockMode.READ_LOCK, broker, transaction, collectionUri);
+        return this.with(LockMode.READ_LOCK, broker, transaction, collectionUri);
     }
 
     /**
@@ -135,7 +135,7 @@ public abstract class AbstractLocal {
      * @throws XMLDBException if an error occurs whilst reading.
      */
     protected <R> FunctionE<LocalXmldbCollectionFunction<R>, R, XMLDBException> read(final DBBroker broker, final Txn transaction, final XmldbURI collectionUri, final int errorCode) throws XMLDBException {
-        return this.<R>with(LockMode.READ_LOCK, broker, transaction, collectionUri, errorCode);
+        return this.with(LockMode.READ_LOCK, broker, transaction, collectionUri, errorCode);
     }
 
     /**
@@ -165,7 +165,7 @@ public abstract class AbstractLocal {
      * @throws XMLDBException if an error occurs whilst modifying.
      */
     protected <R> FunctionE<LocalXmldbCollectionFunction<R>, R, XMLDBException> modify(final DBBroker broker, final Txn transaction, final XmldbURI collectionUri) throws XMLDBException {
-        return this.<R>with(LockMode.WRITE_LOCK, broker, transaction, collectionUri);
+        return this.with(LockMode.WRITE_LOCK, broker, transaction, collectionUri);
     }
 
     /**
@@ -215,8 +215,7 @@ public abstract class AbstractLocal {
                     throw new XMLDBException(errorCode, "Collection " + collectionUri.toString() + " not found");
                 }
 
-                final R result = collectionOp.apply(coll, broker, transaction);
-                return result;
+                return collectionOp.apply(coll, broker, transaction);
             } catch (final PermissionDeniedException e) {
                 throw new XMLDBException(ErrorCodes.PERMISSION_DENIED, e.getMessage(), e);
             }
@@ -243,7 +242,7 @@ public abstract class AbstractLocal {
         if(joinTransactionIfPresent) {
             return DBBroker::continueOrBeginTransaction;
         } else {
-            return (broker) -> broker.getBrokerPool().getTransactionManager().beginTransaction();
+            return broker -> broker.getBrokerPool().getTransactionManager().beginTransaction();
         }
     }
 

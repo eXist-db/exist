@@ -21,13 +21,13 @@
  */
 package org.exist.xmldb.function;
 
+import com.evolvedbinary.j8fu.function.TriFunctionE;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.exist.util.SyntaxException;
-import com.evolvedbinary.j8fu.function.TriFunctionE;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 

@@ -21,9 +21,10 @@
  */
 package org.exist.util.pool;
 
+import org.exist.dom.persistent.NodeImpl;
 import org.junit.Test;
 import org.w3c.dom.Node;
-import org.exist.dom.persistent.NodeImpl;
+
 import static junit.framework.Assert.*;
 
 public class NodePoolTest {
@@ -34,7 +35,7 @@ public class NodePoolTest {
     @Test
     public void testPool() {
         NodePool pool = NodePool.getInstance();
-        NodeImpl nodes[] = new NodeImpl[100];
+        NodeImpl[] nodes = new NodeImpl[100];
 
         for (int i = 0; i < 100; i++) {
             nodes[i] = pool.borrowNode(Node.ELEMENT_NODE);

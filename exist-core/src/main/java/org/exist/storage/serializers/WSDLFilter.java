@@ -47,9 +47,9 @@ import org.xml.sax.SAXException;
  */
 public class WSDLFilter implements ContentHandler
 {
-	protected ContentHandler outputHandler = null;
-	protected String tnsNamespaceUri = null;
-	protected final static String soapencNamespaceUri = "http://schemas.xmlsoap.org/soap/encoding/";
+	protected ContentHandler outputHandler;
+	protected String tnsNamespaceUri;
+	protected static final String soapencNamespaceUri = "http://schemas.xmlsoap.org/soap/encoding/";
 	
 	
 	public WSDLFilter(ContentHandler outputHandler, String tnsNamespaceUri)

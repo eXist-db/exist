@@ -39,13 +39,13 @@ import java.util.Map;
  */
 public class CounterModule extends AbstractInternalModule {
 
-	public final static String NAMESPACE_URI = "http://exist-db.org/xquery/counter";
+	public static final String NAMESPACE_URI = "http://exist-db.org/xquery/counter";
 
-	public final static String PREFIX = "counter";
-    public final static String INCLUSION_DATE = "2009-10-27";
-    public final static String RELEASED_IN_VERSION = "eXist-1.4";
+	public static final String PREFIX = "counter";
+    public static final String INCLUSION_DATE = "2009-10-27";
+    public static final String RELEASED_IN_VERSION = "eXist-1.4";
 
-	public final static FunctionDef[] functions = {
+	public static final FunctionDef[] functions = {
 	
         new FunctionDef(CounterFunctions.createCounter, CounterFunctions.class),
         new FunctionDef(CounterFunctions.createCounterAndInit, CounterFunctions.class),
@@ -58,10 +58,10 @@ public class CounterModule extends AbstractInternalModule {
         Arrays.sort(functions, new FunctionComparator());
     }
 
-    public final static QName EXCEPTION_QNAME =
+    public static final QName EXCEPTION_QNAME =
 	    new QName("exception", CounterModule.NAMESPACE_URI, CounterModule.PREFIX);
 
-    public final static QName EXCEPTION_MESSAGE_QNAME =
+    public static final QName EXCEPTION_MESSAGE_QNAME =
         new QName("exception-message", CounterModule.NAMESPACE_URI, CounterModule.PREFIX);
 
 	public CounterModule(Map<String, List<?>> parameters) throws XPathException {

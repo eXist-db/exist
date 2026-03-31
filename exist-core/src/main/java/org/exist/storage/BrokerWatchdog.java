@@ -21,13 +21,13 @@
  */
 package org.exist.storage;
 
+import org.exist.EXistException;
+
 import java.io.PrintWriter;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.IdentityHashMap;
 import java.util.Map;
-
-import org.exist.EXistException;
 
 /**
  * Traces the lease of a Broker

@@ -21,9 +21,6 @@
  */
 package org.exist.xquery.functions.util;
 
-import java.math.BigInteger;
-import java.util.Random;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
@@ -32,19 +29,16 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.DoubleValue;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.IntegerValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
+
+import java.math.BigInteger;
+import java.util.Random;
 
 public class RandomFunction extends BasicFunction {
     
     protected static final Logger logger = LogManager.getLogger(RandomFunction.class);
 	
-    public final static FunctionSignature[] signatures = {
+    public static final FunctionSignature[] signatures = {
         new FunctionSignature(
             new QName("random", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
             "Returns a random number between 0.0 and 1.0",

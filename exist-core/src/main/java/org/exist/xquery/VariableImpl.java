@@ -21,9 +21,9 @@
  */
 package org.exist.xquery;
 
-import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.NodeImpl;
+import org.exist.dom.persistent.DocumentSet;
 import org.exist.xquery.util.Error;
 import org.exist.xquery.util.Messages;
 import org.exist.xquery.value.*;
@@ -43,18 +43,18 @@ public class VariableImpl implements Variable {
 	private final QName qname;
 	
 	// the current value assigned to the variable
-	private Sequence value = null;
+	private Sequence value;
 	
 	// the context position of this variable in the local variable stack
 	// this can be used to determine if a variable has been declared
 	// before another
-	private int positionInStack = 0;
+	private int positionInStack;
 	
 	// the context document set
-	private DocumentSet contextDocs = null;
+	private DocumentSet contextDocs;
 	
     // the sequence type of this variable if known
-    private SequenceType type = null;
+    private SequenceType type;
 
     private int staticType = Type.ITEM;
 

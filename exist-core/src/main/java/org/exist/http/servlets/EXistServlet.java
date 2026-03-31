@@ -21,15 +21,15 @@
  */
 package org.exist.http.servlets;
 
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.http.Descriptor;
-import org.exist.http.RESTServer;
-import org.exist.http.NotFoundException;
-import org.exist.http.BadRequestException;
-import org.exist.http.MethodNotAllowedException;
+import org.exist.http.*;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.storage.DBBroker;
@@ -38,10 +38,6 @@ import org.exist.util.Configuration;
 import org.exist.validation.XmlLibraryChecker;
 import org.exist.xmldb.XmldbURI;
 
-import jakarta.servlet.ServletConfig;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.Serial;
@@ -59,7 +55,7 @@ public class EXistServlet extends AbstractExistHttpServlet {
 
     @Serial
     private static final long serialVersionUID = -3563999345725645647L;
-    private final static Logger LOG = LogManager.getLogger(EXistServlet.class);
+    private static final Logger LOG = LogManager.getLogger(EXistServlet.class);
     private RESTServer srvREST;
 
     public enum FeatureEnabled {

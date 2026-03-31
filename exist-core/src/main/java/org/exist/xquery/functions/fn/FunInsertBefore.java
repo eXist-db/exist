@@ -29,14 +29,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.DoubleValue;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
+import org.exist.xquery.value.*;
 
 /**
  * Implements the fn:insert-before function.
@@ -65,7 +58,7 @@ value of $position is one (1). If $position is greater than the number \
 of items in $target, then the effective value of $position is \
 equal to the number of items in $target plus 1.""";
 
-	public final static FunctionSignature signature =
+	public static final FunctionSignature signature =
 		new FunctionSignature(
 			new QName("insert-before", Function.BUILTIN_FUNCTION_NS),
 			FUNCTION_DESCRIPTION,

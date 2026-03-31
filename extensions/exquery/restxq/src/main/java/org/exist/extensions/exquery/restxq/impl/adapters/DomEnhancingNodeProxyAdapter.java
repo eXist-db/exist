@@ -34,14 +34,7 @@ import org.exist.dom.persistent.NodeHandle;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.xquery.Expression;
 import org.exist.xquery.value.Type;
-import org.w3c.dom.Attr;
-import org.w3c.dom.Comment;
-import org.w3c.dom.CDATASection;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.ProcessingInstruction;
-import org.w3c.dom.Text;
+import org.w3c.dom.*;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -74,14 +67,12 @@ class DomEnhancingNodeProxyAdapter {
                 .intercept(MethodCall.invokeSelf().on(nodeProxy));
 
         try {
-            final NodeProxy nodeProxyProxy = byteBuddyBuilder
+            return byteBuddyBuilder
                     .make()
                     .load(nodeProxy.getClass().getClassLoader())
                     .getLoaded()
                     .getDeclaredConstructor(Expression.class, NodeHandle.class)
                     .newInstance(nodeProxy.getExpression(), nodeProxy);
-
-            return nodeProxyProxy;
         } catch (final NoSuchMethodException | InstantiationException | IllegalAccessException |
                        InvocationTargetException e) {
             throw new IllegalStateException(e.getMessage(), e);

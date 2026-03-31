@@ -22,10 +22,10 @@
 
 package org.exist.util.sorters;
 
+import java.util.Comparator;
+
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
-
-import java.util.Comparator;
 
 /**
  * check sort(Comparable[])
@@ -127,10 +127,11 @@ class PlainArrayChecker extends ComparatorChecker {
             case DESCENDING -> (o1, o2) -> o2.intValue() - o1.intValue();
             case RANDOM -> (o1, o2) -> rnd.nextBoolean() ? -1 : 1;
             case UNSTABLE -> (o1, o2) -> {
-                if (o1.intValue() <= o2.intValue())
+                if (o1.intValue() <= o2.intValue()) {
                     return (o2.intValue() - o1.intValue()) % 3 - 1;
-                else
+                } else {
                     return 1 - (o1.intValue() - o2.intValue()) % 3;
+                }
             };
         };
     }

@@ -21,8 +21,8 @@
  */
 package org.exist.xquery;
 
-import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.QName;
+import org.exist.dom.persistent.DocumentSet;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
@@ -55,9 +55,9 @@ public class TypeswitchExpression extends AbstractExpression {
         }
     }
     
-    private Expression operand;
-    private Case defaultClause = null;
-    private List<Case> cases = new ArrayList<>(5);
+    private final Expression operand;
+    private Case defaultClause;
+    private final List<Case> cases = new ArrayList<>(5);
     
     public TypeswitchExpression(XQueryContext context, Expression operand) {
         super(context);

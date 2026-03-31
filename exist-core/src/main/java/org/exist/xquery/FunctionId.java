@@ -75,8 +75,7 @@ public class FunctionId implements Comparable<FunctionId> {
     @Override
     public int hashCode() {
         int result = qname.hashCode();
-        result = 31 * result + argCount;
-        return result;
+        return 31 * result + argCount;
     }
 
     @Override

@@ -63,8 +63,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class ExistDocument extends ExistResource {
 
     private String mimeType;
-    private long contentLength = 0;
-    private boolean isXmlDocument = false;
+    private long contentLength;
+    private boolean isXmlDocument;
 
     /**
      * Constructor.
@@ -476,7 +476,7 @@ public class ExistDocument extends ExistResource {
             // Check if Resource is already locked.
             if (lock == null) {
                 LOG.debug("Resource {} is not locked.", xmldbUri);
-                throw new DocumentNotLockedException("" + xmldbUri);
+                throw new DocumentNotLockedException(String.valueOf(xmldbUri));
             }
 
             // Check if Resource is from subject

@@ -34,11 +34,11 @@ package org.exist.xquery.pragmas;
 
 import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.apache.logging.log4j.Level;
-import org.exist.xquery.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Namespaces;
 import org.exist.dom.QName;
+import org.exist.xquery.*;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Sequence;
 
@@ -73,7 +73,7 @@ public class TimePragma extends AbstractPragma {
     public static final String DEPRECATED_TIMER_PRAGMA_LOCAL_NAME = "timer";
 
     private final Options options;
-    @Nullable private Timing timing = null;
+    @Nullable private Timing timing;
 
     public TimePragma(final Expression expression, final QName qname, final String contents) throws XPathException {
         super(expression, qname, contents);
@@ -380,7 +380,7 @@ public class TimePragma extends AbstractPragma {
     /**
      * Holds the options for the Timer Pragma.
      */
-    private static class Options {
+    private static final class Options {
         final boolean verbose;
         final Logger logger;
         final Level loggingLevel;
@@ -418,9 +418,9 @@ public class TimePragma extends AbstractPragma {
         private long minElapsed = UNSET;
         private long maxElapsed = UNSET;
         private long lastElapsed = UNSET;
-        private long totalElapsed = 0;
+        private long totalElapsed;
 
-        private int iterations = 0;
+        private int iterations;
 
         /**
          * Set the start timestamp of an iteration.

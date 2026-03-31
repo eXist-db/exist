@@ -113,7 +113,7 @@ public class FunUriCollection extends BasicFunction {
 
             final String uriWithQueryString = args[0].toString();
             final int queryStringIndex = uriWithQueryString.indexOf('?');
-            final String uriWithoutQueryString = (queryStringIndex >= 0) ? uriWithQueryString.substring(0, queryStringIndex) : uriWithQueryString;
+            final String uriWithoutQueryString = queryStringIndex >= 0 ? uriWithQueryString.substring(0, queryStringIndex) : uriWithQueryString;
             String uriWithoutStableQueryString = uriWithQueryString.replaceAll("%s\\s*=\\s*\\byes|no\\b\\s*&+".formatted(KEY_STABLE), "");
             if (uriWithoutStableQueryString.endsWith("?")) {
                 uriWithoutStableQueryString = uriWithoutStableQueryString.substring(0, uriWithoutStableQueryString.length() - 1);
@@ -129,18 +129,18 @@ public class FunUriCollection extends BasicFunction {
             final Map<String, String> queryStringMap = parseQueryString(uriWithQueryString);
             checkQueryStringMap(queryStringMap);
 
-            if ((!queryStringMap.containsKey(KEY_STABLE) || queryStringMap.get(KEY_STABLE).equals(VALUE_STABLE_YES)) &&
+            if ((!queryStringMap.containsKey(KEY_STABLE) || VALUE_STABLE_YES.equals(queryStringMap.get(KEY_STABLE))) &&
                     context.getCachedUriCollectionResults().containsKey(uriWithoutStableQueryString)) {
                 result = context.getCachedUriCollectionResults().get(uriWithoutStableQueryString);
             } else {
                 final boolean binaryUrisIncluded = !queryStringMap.containsKey(KEY_CONTENT_TYPE) ||
-                        (queryStringMap.get(KEY_CONTENT_TYPE).equals(VALUE_CONTENT_TYPE_DOCUMENT) ||
-                         queryStringMap.get(KEY_CONTENT_TYPE).equals(VALUE_CONTENT_TYPE_DOCUMENT_BINARY));
+                        (VALUE_CONTENT_TYPE_DOCUMENT.equals(queryStringMap.get(KEY_CONTENT_TYPE)) ||
+                         VALUE_CONTENT_TYPE_DOCUMENT_BINARY.equals(queryStringMap.get(KEY_CONTENT_TYPE)));
                 final boolean subcollectionUrisIncluded = !queryStringMap.containsKey(KEY_CONTENT_TYPE) ||
-                        queryStringMap.get(KEY_CONTENT_TYPE).equals(VALUE_CONTENT_TYPE_SUBCOLLECTION);
+                        VALUE_CONTENT_TYPE_SUBCOLLECTION.equals(queryStringMap.get(KEY_CONTENT_TYPE));
                 final boolean xmlUrisIncluded = !queryStringMap.containsKey(KEY_CONTENT_TYPE) ||
-                        (queryStringMap.get(KEY_CONTENT_TYPE).equals(VALUE_CONTENT_TYPE_DOCUMENT) ||
-                                queryStringMap.get(KEY_CONTENT_TYPE).equals(VALUE_CONTENT_TYPE_DOCUMENT_XML));
+                        (VALUE_CONTENT_TYPE_DOCUMENT.equals(queryStringMap.get(KEY_CONTENT_TYPE)) ||
+                                VALUE_CONTENT_TYPE_DOCUMENT_XML.equals(queryStringMap.get(KEY_CONTENT_TYPE)));
 
                 try (final Collection collection = context.getBroker().openCollection(uri, Lock.LockMode.READ_LOCK)) {
                     if (collection != null) {
@@ -224,15 +224,15 @@ public class FunUriCollection extends BasicFunction {
         for (Map.Entry<String, String> queryStringEntry : queryStringMap.entrySet()) {
             final String key = queryStringEntry.getKey();
             final String value = queryStringEntry.getValue();
-            if (key.equals(KEY_CONTENT_TYPE)) {
+            if (KEY_CONTENT_TYPE.equals(key)) {
                 if (Arrays.stream(VALUE_CONTENT_TYPES).noneMatch(contentTypeValue -> contentTypeValue.equals(value))) {
                     throw new XPathException(this, ErrorCodes.FODC0004, "Invalid query-string value \"%s\".".formatted(queryStringEntry));
                 }
-            } else if (key.equals(KEY_STABLE)) {
+            } else if (KEY_STABLE.equals(key)) {
                 if (Arrays.stream(VALUE_STABLES).noneMatch(stableValue -> stableValue.equals(value))) {
                     throw new XPathException(this, ErrorCodes.FODC0004, "Invalid query-string value \"%s\".".formatted(queryStringEntry));
                 }
-            } else if (!key.equals(KEY_MATCH)) {
+            } else if (!KEY_MATCH.equals(key)) {
                 throw new XPathException(this, ErrorCodes.FODC0004, "Unexpected query string \"%s\".".formatted(queryStringEntry));
             }
         }

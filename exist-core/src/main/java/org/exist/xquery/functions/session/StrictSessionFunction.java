@@ -41,7 +41,7 @@ import java.util.Optional;
  */
 public abstract class StrictSessionFunction extends SessionFunction {
 
-    public StrictSessionFunction(final XQueryContext context, final FunctionSignature signature) {
+    protected StrictSessionFunction(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
 

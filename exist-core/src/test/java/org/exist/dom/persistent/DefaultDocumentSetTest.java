@@ -30,10 +30,7 @@ import org.junit.runner.RunWith;
 import java.util.Iterator;
 
 import static junit.framework.TestCase.assertFalse;
-import static org.easymock.EasyMock.createMock;
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.replay;
-import static org.easymock.EasyMock.verify;
+import static org.easymock.EasyMock.*;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -392,7 +389,7 @@ public class DefaultDocumentSetTest {
         expect(documentSet.getDocumentCount()).andReturn(docs.length);
 
         expect(documentSet.getDocumentIterator()).andReturn(new Iterator<DocumentImpl>(){
-            private int idx = 0;
+            private int idx;
 
             @Override
             public boolean hasNext() {

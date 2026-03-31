@@ -21,12 +21,6 @@
  */
 package org.exist.collections.triggers;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.dom.persistent.DocumentImpl;
@@ -37,6 +31,12 @@ import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.DateTimeValue;
+
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 /**
  * This collection trigger will save all old versions of documents before

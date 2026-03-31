@@ -124,7 +124,7 @@ public class CompressionModule extends AbstractInternalModule {
         return RELEASED_IN_VERSION;
     }
 
-    static class CompressionModuleErrorCode extends ErrorCodes.ErrorCode {
+    static final class CompressionModuleErrorCode extends ErrorCodes.ErrorCode {
         private CompressionModuleErrorCode(final String code, final String description) {
             super(new QName(code, NAMESPACE_URI, PREFIX), description);
         }

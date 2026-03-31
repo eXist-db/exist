@@ -21,18 +21,18 @@
  */
 package org.exist.security.internal.web;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.security.Subject;
 
-import jakarta.servlet.http.HttpServletRequest;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.Principal;
 
 public class HttpAccount {
 
-    private final static Logger LOG = LogManager.getLogger(HttpAccount.class);
+    private static final Logger LOG = LogManager.getLogger(HttpAccount.class);
 
     public static Subject getUserFromServletRequest(final HttpServletRequest request) {
         final Principal principal = request.getUserPrincipal();

@@ -29,11 +29,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Global model registry. Loads from the {@code <vector-models>} section in conf.xml.
@@ -86,7 +82,9 @@ public final class ModelRegistry {
         return;
       }
       final org.w3c.dom.Document doc = parseXml(confFile);
-      if (doc == null) return;
+        if (doc == null) {
+            return;
+        }
       final org.w3c.dom.NodeList vectorModelsList = doc.getElementsByTagName("vector-models");
       if (vectorModelsList.getLength() == 0) {
         LOG.debug("No <vector-models> in {}", confFile);
@@ -99,7 +97,9 @@ public final class ModelRegistry {
         final String id = el.getAttribute("id");
         final String path = el.getAttribute("path");
         final String dimStr = el.getAttribute("dimension");
-        if (id == null || id.isEmpty() || path == null || path.isEmpty()) continue;
+          if (id == null || id.isEmpty() || path == null || path.isEmpty()) {
+              continue;
+          }
         final int dim = parseDimension(dimStr, 384);
         entries.put(id.trim(), new ModelEntry(path.trim(), dim));
       }
@@ -125,7 +125,9 @@ public final class ModelRegistry {
   }
 
   private static int parseDimension(final String s, final int defaultVal) {
-    if (s == null || s.isEmpty()) return defaultVal;
+      if (s == null || s.isEmpty()) {
+          return defaultVal;
+      }
     try {
       return Integer.parseInt(s.trim());
     } catch (final NumberFormatException e) {

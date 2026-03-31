@@ -31,16 +31,15 @@ import org.exist.indexing.ReindexScope;
 import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
+import org.exist.storage.txn.Txn;
 import org.exist.storage.vector.VectorStore;
+import org.exist.vector.HttpVectorProvider;
+import org.exist.vector.VectorEmbeddingProvider;
+import org.exist.vector.VectorEmbeddingService;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.w3c.dom.Element;
-
-import org.exist.storage.txn.Txn;
-import org.exist.vector.HttpVectorProvider;
-import org.exist.vector.VectorEmbeddingProvider;
-import org.exist.vector.VectorEmbeddingService;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

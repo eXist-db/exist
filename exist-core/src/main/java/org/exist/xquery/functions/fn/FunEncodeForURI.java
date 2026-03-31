@@ -30,13 +30,7 @@ import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.util.URIUtils;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 /**
  *
@@ -45,7 +39,7 @@ import org.exist.xquery.value.Type;
  */
 public class FunEncodeForURI extends Function {
 
-    public final static FunctionSignature signature = new FunctionSignature(
+    public static final FunctionSignature signature = new FunctionSignature(
         new QName("encode-for-uri", Function.BUILTIN_FUNCTION_NS),
             "Escapes reserved characters in $uri-part by replacing it " +
                 "with its percent-encoded form as described in [RFC 3986]. " +

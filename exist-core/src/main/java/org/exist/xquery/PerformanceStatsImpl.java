@@ -30,14 +30,9 @@ import org.xml.sax.helpers.AttributesImpl;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
-import java.io.StringWriter;
 import java.io.PrintWriter;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.io.StringWriter;
+import java.util.*;
 
 /**
  * Implementation of a PerformanceStats that is designed
@@ -74,7 +69,7 @@ public class PerformanceStatsImpl implements PerformanceStats {
         this.enabler = enabler;
     }
 
-    private static class IndexStats {
+    private static final class IndexStats {
         final String source;
         final String indexType;
         final int line;
@@ -82,7 +77,7 @@ public class PerformanceStatsImpl implements PerformanceStats {
         final IndexOptimizationLevel indexOptimizationLevel;
 
         int usageCount = 1;
-        long executionTime = 0;
+        long executionTime;
 
         private IndexStats(final String indexType, final String source, final int line, final int column, final IndexOptimizationLevel indexOptimizationLevel) {
             this.indexType = indexType;
@@ -122,7 +117,7 @@ public class PerformanceStatsImpl implements PerformanceStats {
     private static class QueryStats {
         final String source;
 
-        long executionTime = 0;
+        long executionTime;
         int callCount = 1;
 
         QueryStats(final String source) {

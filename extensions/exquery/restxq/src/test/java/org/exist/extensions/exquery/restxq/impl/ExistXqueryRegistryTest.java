@@ -28,9 +28,10 @@ package org.exist.extensions.exquery.restxq.impl;
 
 import com.googlecode.junittoolbox.ParallelRunner;
 import org.exist.xmldb.XmldbURI;
-import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * Tests for ResourceFunctionFactory

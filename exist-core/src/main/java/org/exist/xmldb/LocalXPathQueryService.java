@@ -21,10 +21,13 @@
  */
 package org.exist.xmldb;
 
+import com.evolvedbinary.j8fu.Either;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.debuggee.Debuggee;
+import org.exist.dom.persistent.*;
+import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.Subject;
 import org.exist.source.DBSource;
@@ -39,6 +42,10 @@ import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.exist.xmldb.function.LocalXmldbFunction;
+import org.exist.xquery.CompiledXQuery;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQuery;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.BinaryValue;
 import org.exist.xquery.value.Sequence;
@@ -49,32 +56,18 @@ import org.xmldb.api.modules.XMLResource;
 import java.io.Writer;
 import java.util.*;
 
-import org.exist.dom.persistent.BinaryDocument;
-import org.exist.dom.persistent.DefaultDocumentSet;
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.ExtArrayNodeSet;
-import org.exist.dom.persistent.MutableDocumentSet;
-import org.exist.dom.persistent.NodeProxy;
-import org.exist.dom.persistent.NodeSet;
-import org.exist.security.Permission;
-import com.evolvedbinary.j8fu.Either;
-import org.exist.xquery.CompiledXQuery;
-import org.exist.xquery.XPathException;
-import org.exist.xquery.XQuery;
-import org.exist.xquery.XQueryContext;
-
 public class LocalXPathQueryService extends AbstractLocalService implements EXistXPathQueryService, EXistXQueryService {
 
-	private final static Logger LOG = LogManager.getLogger(LocalXPathQueryService.class);
+	private static final Logger LOG = LogManager.getLogger(LocalXPathQueryService.class);
 
     private final TreeMap<String, String> namespaceDecls = new TreeMap<>();
     private final TreeMap<String, Object> variableDecls = new TreeMap<>();
     private boolean xpathCompatible = true;
-    private String moduleLoadPath = null;
+    private String moduleLoadPath;
     private final  Properties properties;
-    private boolean lockDocuments = false;
-    private LockedDocumentMap lockedDocuments = null;
-    private DBBroker reservedBroker = null;
+    private boolean lockDocuments;
+    private LockedDocumentMap lockedDocuments;
+    private DBBroker reservedBroker;
 
     public LocalXPathQueryService(final Subject user, final BrokerPool pool, final LocalCollection collection) {
         super(user, pool, collection);
@@ -135,7 +128,7 @@ public class LocalXPathQueryService extends AbstractLocalService implements EXis
         final Node n = ((LocalXMLResource) res).root;
 
         return withDb((broker, transaction) -> {
-            if (n != null && n instanceof org.exist.dom.memtree.NodeImpl impl) {
+            if (n instanceof org.exist.dom.memtree.NodeImpl impl) {
                 final XmldbURI[] docs = new XmldbURI[]{ getCollectionUri(broker, transaction, res.getParentCollection()) };
                 return doQuery(broker, transaction, query, docs, impl, sortBy);
             }

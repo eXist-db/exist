@@ -21,12 +21,6 @@
  */
 package org.exist;
 
-import java.io.IOException;
-import java.io.StringWriter;
-import java.util.Optional;
-import java.util.Properties;
-import javax.xml.transform.OutputKeys;
-
 import org.exist.collections.Collection;
 import org.exist.security.AuthenticationException;
 import org.exist.security.PermissionDeniedException;
@@ -46,10 +40,15 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.junit.*;
+import org.xml.sax.SAXException;
+
+import javax.xml.transform.OutputKeys;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.util.Optional;
+import java.util.Properties;
 
 import static org.junit.Assert.assertEquals;
-
-import org.xml.sax.SAXException;
 
 /**
  * Tests the indexer.
@@ -61,7 +60,7 @@ public class Indexer3Test {
     @ClassRule
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
-    private final static String XML1 =
+    private static final String XML1 =
             """
             <?xml version="1.0"?>
             <k>
@@ -72,7 +71,7 @@ public class Indexer3Test {
             </k>
             """;
 
-    private final static String XML2 =
+    private static final String XML2 =
             """
             <?xml version="1.0"?>
             <k>
@@ -80,7 +79,7 @@ public class Indexer3Test {
             </k>
             """;
 
-    private final static String XML3 =
+    private static final String XML3 =
             """
             <?xml version="1.0"?>
             <k>
@@ -88,7 +87,7 @@ public class Indexer3Test {
             </k>
             """;
 
-    private final static String XML4 =
+    private static final String XML4 =
             """
             <?xml version="1.0"?>
             <k>
@@ -96,7 +95,7 @@ public class Indexer3Test {
             </k>
             """;
 
-    private final static String XML5 =
+    private static final String XML5 =
             """
             <?xml version="1.0"?>
             <k>
@@ -104,7 +103,7 @@ public class Indexer3Test {
             </k>
             """;
 
-    private final static String XML6 =
+    private static final String XML6 =
             """
             <?xml version="1.0"?>
             <k>
@@ -113,7 +112,7 @@ public class Indexer3Test {
             </k>
             """;
 
-    private final static String XML7 =
+    private static final String XML7 =
             """
             <?xml version="1.0"?>
             <k>
@@ -121,7 +120,7 @@ public class Indexer3Test {
             </k>
             """;
 
-    private final static String RESULT_SUPPRESS_WS_NONE_XML1 =
+    private static final String RESULT_SUPPRESS_WS_NONE_XML1 =
             """
             <result>\
             <k>
@@ -132,7 +131,7 @@ public class Indexer3Test {
             </k>\
             </result>""";
 
-    private final static String RESULT_SUPPRESS_WS_NONE_XML2 =
+    private static final String RESULT_SUPPRESS_WS_NONE_XML2 =
             """
             <result>\
             <k>
@@ -140,7 +139,7 @@ public class Indexer3Test {
             </k>\
             </result>""";
 
-    private final static String RESULT_SUPPRESS_WS_NONE_XML3 =
+    private static final String RESULT_SUPPRESS_WS_NONE_XML3 =
             """
             <result>\
             <k>
@@ -148,7 +147,7 @@ public class Indexer3Test {
             </k>\
             </result>""";
 
-    private final static String RESULT_SUPPRESS_WS_NONE_XML4 =
+    private static final String RESULT_SUPPRESS_WS_NONE_XML4 =
             """
             <result>\
             <k>
@@ -156,7 +155,7 @@ public class Indexer3Test {
             </k>\
             </result>""";
 
-    private final static String RESULT_SUPPRESS_WS_NONE_XML5 =
+    private static final String RESULT_SUPPRESS_WS_NONE_XML5 =
             """
             <result>\
             <k>
@@ -164,7 +163,7 @@ public class Indexer3Test {
             </k>\
             </result>""";
 
-    private final static String RESULT_SUPPRESS_WS_NONE_XML6 =
+    private static final String RESULT_SUPPRESS_WS_NONE_XML6 =
             """
             <result>\
             <k>
@@ -173,7 +172,7 @@ public class Indexer3Test {
             </k>\
             </result>""";
 
-    private final static String RESULT_SUPPRESS_WS_NONE_XML7 =
+    private static final String RESULT_SUPPRESS_WS_NONE_XML7 =
             """
             <result>\
             <k>
@@ -181,7 +180,7 @@ public class Indexer3Test {
             </k>\
             </result>""";
 
-    private final static String RESULT_SUPPRESS_WS_LEADING_XML1 =
+    private static final String RESULT_SUPPRESS_WS_LEADING_XML1 =
             "<result>" +
                     "<k>" +
                     "<l>a <b>b</b> c <d>d </d> <e>  </e> f</l>" +
@@ -191,35 +190,35 @@ public class Indexer3Test {
                     "</k>" +
                     "</result>";
 
-    private final static String RESULT_SUPPRESS_WS_LEADING_XML2 =
+    private static final String RESULT_SUPPRESS_WS_LEADING_XML2 =
             "<result>" +
                     "<k>" +
                     "<l>a <b>b</b> c <d>d </d> <e>  </e> f</l>" +
                     "</k>" +
                     "</result>";
 
-    private final static String RESULT_SUPPRESS_WS_LEADING_XML3 =
+    private static final String RESULT_SUPPRESS_WS_LEADING_XML3 =
             "<result>" +
                     "<k>" +
                     "<m>a <b>b</b> c <d>d </d> <e>  </e> f </m>" +
                     "</k>" +
                     "</result>";
 
-    private final static String RESULT_SUPPRESS_WS_LEADING_XML4 =
+    private static final String RESULT_SUPPRESS_WS_LEADING_XML4 =
             "<result>" +
                     "<k>" +
                     "<n>a<b>b</b> c <d>d </d>  <e>  </e>f </n>" +
                     "</k>" +
                     "</result>";
 
-    private final static String RESULT_SUPPRESS_WS_LEADING_XML5 =
+    private static final String RESULT_SUPPRESS_WS_LEADING_XML5 =
             "<result>" +
                     "<k>" +
                     "<o> <b>b</b> c <d>d </d> <e>  </e>  </o>" +
                     "</k>" +
                     "</result>";
 
-    private final static String RESULT_SUPPRESS_WS_LEADING_XML6 =
+    private static final String RESULT_SUPPRESS_WS_LEADING_XML6 =
             """
             <result>\
             <k>
@@ -228,7 +227,7 @@ public class Indexer3Test {
             </k>\
             </result>""";
 
-    private final static String RESULT_SUPPRESS_WS_LEADING_XML7 =
+    private static final String RESULT_SUPPRESS_WS_LEADING_XML7 =
             """
             <result>\
             <k>
@@ -236,7 +235,7 @@ public class Indexer3Test {
             </k>\
             </result>""";
 
-    private final static String RESULT_SUPPRESS_WS_TRAILING_XML1 =
+    private static final String RESULT_SUPPRESS_WS_TRAILING_XML1 =
             "<result>" +
                     "<k>" +
                     "<l>a <b>b</b> c <d> d</d>  <e>  </e> f</l>" +
@@ -246,35 +245,35 @@ public class Indexer3Test {
                     "</k>" +
                     "</result>";
 
-    private final static String RESULT_SUPPRESS_WS_TRAILING_XML2 =
+    private static final String RESULT_SUPPRESS_WS_TRAILING_XML2 =
             "<result>" +
                     "<k>" +
                     "<l>a <b>b</b> c <d> d</d>  <e>  </e> f</l>" +
                     "</k>" +
                     "</result>";
 
-    private final static String RESULT_SUPPRESS_WS_TRAILING_XML3 =
+    private static final String RESULT_SUPPRESS_WS_TRAILING_XML3 =
             "<result>" +
                     "<k>" +
                     "<m> a <b>b</b> c <d> d</d>  <e>  </e> f</m>" +
                     "</k>" +
                     "</result>";
 
-    private final static String RESULT_SUPPRESS_WS_TRAILING_XML4 =
+    private static final String RESULT_SUPPRESS_WS_TRAILING_XML4 =
             "<result>" +
                     "<k>" +
                     "<n> a<b>b</b> c <d> d</d>  <e>  </e>f</n>" + // kolla " a" och "f "
                     "</k>" +
                     "</result>";
 
-    private final static String RESULT_SUPPRESS_WS_TRAILING_XML5 =
+    private static final String RESULT_SUPPRESS_WS_TRAILING_XML5 =
             "<result>" +
                     "<k>" +
                     "<o>  <b>b</b> c <d> d</d>  <e>  </e> </o>" +
                     "</k>" +
                     "</result>";
 
-    private final static String RESULT_SUPPRESS_WS_TRAILING_XML6 =
+    private static final String RESULT_SUPPRESS_WS_TRAILING_XML6 =
             """
             <result>\
             <k>
@@ -283,7 +282,7 @@ public class Indexer3Test {
             </k>\
             </result>""";
 
-    private final static String RESULT_SUPPRESS_WS_TRAILING_XML7 =
+    private static final String RESULT_SUPPRESS_WS_TRAILING_XML7 =
             """
             <result>\
             <k>
@@ -291,7 +290,7 @@ public class Indexer3Test {
             </k>\
             </result>""";
 
-    private final static String RESULT_SUPPRESS_WS_BOTH_XML1 =
+    private static final String RESULT_SUPPRESS_WS_BOTH_XML1 =
             "<result>" +
                     "<k>\n" +
                     "<l>a <b>b</b> c <d>d</d>  <e>  </e> f</l>\n" +  // kolla "a"
@@ -301,21 +300,21 @@ public class Indexer3Test {
                     "</k>" +
                     "</result>";
 
-    private final static String RESULT_SUPPRESS_WS_BOTH_XML2 =
+    private static final String RESULT_SUPPRESS_WS_BOTH_XML2 =
             "<result>" +
                     "<k>\n" +
                     "<l>a <b>b</b> c <d>d</d>  <e>  </e> f</l>\n" +  // kolla "a"
                     "</k>" +
                     "</result>";
 
-    private final static String RESULT_SUPPRESS_WS_BOTH_XML3 =
+    private static final String RESULT_SUPPRESS_WS_BOTH_XML3 =
             "<result>" +
                     "<k>\n" +
                     "<m>a <b>b</b> c <d>d</d>  <e>  </e> f</m>\n" +  // kolla "f "
                     "</k>" +
                     "</result>";
 
-    private final static String RESULT_SUPPRESS_WS_BOTH_XML4 =
+    private static final String RESULT_SUPPRESS_WS_BOTH_XML4 =
             """
             <result>\
             <k>
@@ -323,7 +322,7 @@ public class Indexer3Test {
             </k>\
             </result>""";
 
-    private final static String RESULT_SUPPRESS_WS_BOTH_XML5 =
+    private static final String RESULT_SUPPRESS_WS_BOTH_XML5 =
             """
             <result>\
             <k>
@@ -331,7 +330,7 @@ public class Indexer3Test {
             </k>\
             </result>""";
 
-    private final static String RESULT_SUPPRESS_WS_BOTH_XML6 =
+    private static final String RESULT_SUPPRESS_WS_BOTH_XML6 =
             """
             <result>\
             <k>
@@ -340,7 +339,7 @@ public class Indexer3Test {
             </k>\
             </result>""";
 
-    private final static String RESULT_SUPPRESS_WS_BOTH_XML7 =
+    private static final String RESULT_SUPPRESS_WS_BOTH_XML7 =
             """
             <result>\
             <k>
@@ -348,7 +347,7 @@ public class Indexer3Test {
             </k>\
             </result>""";
 
-    private final static String XQUERY =
+    private static final String XQUERY =
             "let $test := doc('" + TestConstants.TEST_COLLECTION_URI.toString() + "/" + TestConstants.TEST_XML_URI.toString() + "') " +
                     "return " +
                     "    <result>{$test/k}</result>";

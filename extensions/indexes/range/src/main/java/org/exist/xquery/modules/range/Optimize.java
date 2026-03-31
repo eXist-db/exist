@@ -32,7 +32,7 @@ import org.exist.xquery.value.Type;
 
 public class Optimize extends BasicFunction {
 
-    public final static FunctionSignature signature =
+    public static final FunctionSignature signature =
         new FunctionSignature(
             new QName("optimize", RangeIndexModule.NAMESPACE_URI, RangeIndexModule.PREFIX),
             "Calls Lucene's optimize method to merge all index segments " +
@@ -49,9 +49,10 @@ public class Optimize extends BasicFunction {
     }
 
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
-        if (!context.getSubject().hasDbaRole())
+        if (!context.getSubject().hasDbaRole()) {
             throw new XPathException(this, "user has to be a member of the dba group to call " +
-                "the optimize function. Calling user was " + context.getSubject().getName());
+                    "the optimize function. Calling user was " + context.getSubject().getName());
+        }
         RangeIndexWorker index = (RangeIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(RangeIndex.ID);
         index.optimize();
         return Sequence.EMPTY_SEQUENCE;

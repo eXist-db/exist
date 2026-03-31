@@ -24,8 +24,8 @@ package org.exist.storage;
 
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.indexing.ReindexScope;
 import org.exist.collections.triggers.TriggerException;
+import org.exist.indexing.ReindexScope;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.Txn;

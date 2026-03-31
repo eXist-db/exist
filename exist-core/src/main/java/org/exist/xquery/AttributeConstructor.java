@@ -22,11 +22,7 @@
 package org.exist.xquery;
 
 import org.exist.xquery.util.ExpressionDumper;
-import org.exist.xquery.value.AtomicValue;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.StringValue;
+import org.exist.xquery.value.*;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -41,7 +37,7 @@ public class AttributeConstructor extends NodeConstructor {
 
 	final String qname;
 	public final List<Object> contents = new ArrayList<>(5);
-	boolean isNamespaceDecl = false;
+	boolean isNamespaceDecl;
 	
 	public AttributeConstructor(XQueryContext context, String name) {
 		super(context);
@@ -97,11 +93,10 @@ public class AttributeConstructor extends NodeConstructor {
 				{buf.append(next);}
 		}
 		//TODO : include that tricky attribute normalization here
-		final StringValue result = new StringValue(this, buf.toString());
-        // String values as expressions are already expanded by
+		// String values as expressions are already expanded by
         // the parser -- Alex
 		//result.expand();
-		return result;
+		return new StringValue(this, buf.toString());
 	}
 
 	private void evalEnclosedExpr(Sequence seq, StringBuilder buf) throws XPathException {

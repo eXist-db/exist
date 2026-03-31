@@ -21,20 +21,20 @@
  */
 package org.exist.security.realm.activedirectory;
 
-import static org.junit.Assert.*;
-
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.exist.config.Configuration;
 import org.exist.config.Configurator;
 import org.exist.security.AuthenticationException;
 import org.exist.security.Subject;
-import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+
+import static org.junit.Assert.*;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -42,7 +42,7 @@ import org.junit.Test;
  */
 public class ActiveDirectoryRealmTest {
 
-	private static String config = 
+	private static final String config = 
 		"<ActiveDirectory xmlns='http://exist-db.org/Configuration'>" +
 		"	<context>" +
 //		"		principalPattern='CN={0},OU=users,DC=bnb,DC=bulungur,dc=nb' " +

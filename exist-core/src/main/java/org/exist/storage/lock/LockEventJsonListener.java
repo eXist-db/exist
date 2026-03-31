@@ -55,15 +55,15 @@ import java.nio.file.StandardOpenOption;
 @NotThreadSafe
 public class LockEventJsonListener implements LockTable.LockEventListener {
 
-    private final static Logger LOG = LogManager.getLogger(LockEventJsonListener.class);
+    private static final Logger LOG = LogManager.getLogger(LockEventJsonListener.class);
 
-    private volatile boolean registered = false;
+    private volatile boolean registered;
 
     private final Path jsonFile;
     private final boolean prettyPrint;
 
-    private OutputStream os = null;
-    private JsonGenerator jsonGenerator = null;
+    private OutputStream os;
+    private JsonGenerator jsonGenerator;
 
 
     public LockEventJsonListener(final Path jsonFile) {

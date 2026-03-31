@@ -21,8 +21,9 @@
  */
 package org.exist.xquery.functions.util;
 
-import java.io.StringReader;
-
+import antlr.RecognitionException;
+import antlr.TokenStreamException;
+import antlr.collections.AST;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
@@ -39,25 +40,16 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.parser.XQueryLexer;
 import org.exist.xquery.parser.XQueryParser;
 import org.exist.xquery.parser.XQueryTreeParser;
-import org.exist.xquery.value.EmptySequence;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
-
-import antlr.RecognitionException;
-import antlr.TokenStreamException;
-import antlr.collections.AST;
+import org.exist.xquery.value.*;
 
 import javax.xml.XMLConstants;
+import java.io.StringReader;
 
 public class Compile extends BasicFunction {
 	
 	protected static final Logger logger = LogManager.getLogger(Compile.class);
 
-	public final static FunctionSignature[] signatures = {
+	public static final FunctionSignature[] signatures = {
 		new FunctionSignature(
 			new QName("compile", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 			"Compiles the XQuery expression given in parameter $expression. Returns an empty string " +

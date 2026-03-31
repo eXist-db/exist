@@ -33,7 +33,7 @@ import java.util.List;
  */
 
 public final class SwapVals {
-	public final static void swap(long[] a, int i, int j)
+	public static void swap(long[] a, int i, int j)
 	//-----------------------------------------------
 	{
 		long T = a[i];
@@ -41,7 +41,7 @@ public final class SwapVals {
 		a[j] = T;
 	}
 
-	public final static void swap(int[] a, int i, int j)
+	public static void swap(int[] a, int i, int j)
 	//-----------------------------------------------
 	{
 		int T = a[i];
@@ -49,7 +49,7 @@ public final class SwapVals {
 		a[j] = T;
 	}
 
-	public final static void swap(Object[] a, int i, int j)
+	public static void swap(Object[] a, int i, int j)
 	//-----------------------------------------------
 	{
 //		assert a != null : "Trying to swap elements in a null array!";
@@ -59,7 +59,7 @@ public final class SwapVals {
 		a[j] = T;
 	}
 
-	public final static <C> void swap(List<C> a, int i, int j)
+	public static <C> void swap(List<C> a, int i, int j)
 	//-----------------------------------------------
 	{
 		C T;

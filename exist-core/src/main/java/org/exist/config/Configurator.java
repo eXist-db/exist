@@ -21,32 +21,8 @@
  */
 package org.exist.config;
 
-import java.io.*;
-import java.lang.annotation.Annotation;
-import java.lang.invoke.LambdaMetafactory;
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
-import java.lang.ref.WeakReference;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ConcurrentSkipListSet;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import javax.xml.XMLConstants;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-
+import com.evolvedbinary.j8fu.function.ConsumerE;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Database;
@@ -56,9 +32,9 @@ import org.exist.Namespaces;
 import org.exist.collections.Collection;
 import org.exist.config.annotation.*;
 import org.exist.config.annotation.ConfigurationFieldSettings.SettingKey;
-import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.SAXAdapter;
+import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.*;
 import org.exist.security.SecurityManager;
 import org.exist.storage.BrokerPool;
@@ -69,8 +45,6 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.ExistSAXParserFactory;
 import org.exist.util.LockException;
 import org.exist.util.MimeType;
-import com.evolvedbinary.j8fu.function.ConsumerE;
-import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.util.StringInputSource;
 import org.exist.util.serializer.SAXSerializer;
 import org.exist.xmldb.FullXmldbURI;
@@ -80,6 +54,28 @@ import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
+
+import javax.xml.XMLConstants;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import java.io.*;
+import java.lang.annotation.Annotation;
+import java.lang.invoke.LambdaMetafactory;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.ref.WeakReference;
+import java.lang.reflect.*;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.lang.invoke.MethodType.methodType;
 import static javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING;
@@ -93,8 +89,8 @@ import static javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING;
  */
 public class Configurator {
 
-    public final static Logger LOG = LogManager.getLogger(Configurator.class);
-    private final static String EOL = System.getProperty("line.separator", "\n");
+    public static final Logger LOG = LogManager.getLogger(Configurator.class);
+    private static final String EOL = System.getProperty("line.separator", "\n");
     protected static final ConcurrentMap<FullXmldbURI, Configuration> hotConfigs = new ConcurrentHashMap<>();
 
     protected static AFields getConfigurationAnnotatedFields(Class<?> clazz) {
@@ -332,25 +328,26 @@ public class Configurator {
                     //skip contents, they will be processed as structure in the next loop on ConfigurationFieldAsElement
                     value = configuration.getPropertyMap(property);
 
-                } else if(List.class == fieldType) {
+                } else if(List.class != fieldType) {
+     if (XmldbURI.class ==  fieldType) {
+                        //use annotation ConfigurationFieldClassMask
+                        value = org.exist.xmldb.XmldbURI.create(configuration.getProperty(property));
+                    
+                    } else {
+                        Configuration conf = configuration.getConfiguration(property);
+                        if (conf == null) {
+                            conf = configuration;
+                        }
+                    
+                        value = create(conf, instance, fieldType);
+                        if (value == null) {
+                            value = configuration.getProperty(property);
+                        }
+                    }
                     //List
                     //skip, will be processed as structure in the next loop on ConfigurationFieldAsElement
                     //TODO what about simple generic types?
 
-                } else if (XmldbURI.class ==  fieldType) {
-                    //use annotation ConfigurationFieldClassMask
-                    value = org.exist.xmldb.XmldbURI.create(configuration.getProperty(property));
-                    
-                } else {
-                    Configuration conf = configuration.getConfiguration(property);
-                    if (conf == null) {
-                        conf = configuration;
-                    }
-                    
-                    value = create(conf, instance, fieldType);
-                    if (value == null) {
-                        value = configuration.getProperty(property);
-                    }
                 }
                 
                 if (value != null && !value.equals(field.get(instance))) {
@@ -496,7 +493,7 @@ public class Configurator {
                             if(applicableConfs.size() == confs.size()) {
                                 LOG.debug("Configuration was removed, will attempt to replace [{}].", obj);
                                 if(list.size() > i) {
-                                    Configurable old = ((Configurable) list.remove(i));
+                                    Configurable old = (Configurable) list.remove(i);
                                     String key = old.getConfiguration().getProperty(referenceBy.orElse(Configuration.ID));
 
                                     if (key != null) {
@@ -1069,7 +1066,7 @@ public class Configurator {
         //determine the list entries type from its generic type
         final Type fieldGenericType = field.getGenericType();
         if (fieldGenericType instanceof ParameterizedType type) {
-            final Type genericTypeArgs[] = type.getActualTypeArguments();
+            final Type[] genericTypeArgs = type.getActualTypeArguments();
             if (genericTypeArgs != null && genericTypeArgs.length == 1) {
                 final Type genericListType = genericTypeArgs[0];
                 if (genericListType.equals(String.class)) {

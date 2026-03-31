@@ -57,7 +57,7 @@ import static org.junit.Assert.assertNotNull;
 
 public abstract class AbstractIntegrationTest {
 
-    private static String COLLECTION_CONFIG =
+    private static final String COLLECTION_CONFIG =
             """
             <?xml version="1.0" encoding="UTF-8"?>
             <collection xmlns="http://exist-db.org/collection-config/1.0">
@@ -66,7 +66,7 @@ public abstract class AbstractIntegrationTest {
                 </triggers>
             </collection>""";
 
-    private static ContentType XQUERY_CONTENT_TYPE = ContentType.create("application/xquery", UTF_8);
+    private static final ContentType XQUERY_CONTENT_TYPE = ContentType.create("application/xquery", UTF_8);
 
     protected static String getServerUri(final ExistWebServer existWebServer) {
         return "http://localhost:" + existWebServer.getPort();
@@ -147,7 +147,7 @@ public abstract class AbstractIntegrationTest {
     protected static String asString(final InputStream inputStream) throws IOException {
         final StringBuilder builder = new StringBuilder();
         try (final Reader reader = new InputStreamReader(inputStream, UTF_8)) {
-            final char cbuf[] = new char[4096];
+            final char[] cbuf = new char[4096];
             int read = -1;
             while((read = reader.read(cbuf)) > -1) {
                 builder.append(cbuf, 0, read);

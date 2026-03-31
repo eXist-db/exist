@@ -21,8 +21,6 @@
  */
 package org.exist.indexing.lucene;
 
-import java.util.*;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
@@ -39,21 +37,22 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import javax.annotation.Nullable;
+import java.util.*;
 
 public class LuceneConfig {
 
-    public final static LuceneConfig DEFAULT_CONFIG = new LuceneConfig();
+    public static final LuceneConfig DEFAULT_CONFIG = new LuceneConfig();
 
-	private final static Logger LOG = LogManager.getLogger(LuceneConfig.class);
+	private static final Logger LOG = LogManager.getLogger(LuceneConfig.class);
 	
-    private final static String CONFIG_ROOT = "lucene";
-    private final static String INDEX_ELEMENT = "text";
-    private final static String ANALYZER_ELEMENT = "analyzer";
-    private final static String PARSER_ELEMENT = "parser";
-    protected final static String FIELD_TYPE_ELEMENT = "fieldType";
+    private static final String CONFIG_ROOT = "lucene";
+    private static final String INDEX_ELEMENT = "text";
+    private static final String ANALYZER_ELEMENT = "analyzer";
+    private static final String PARSER_ELEMENT = "parser";
+    protected static final String FIELD_TYPE_ELEMENT = "fieldType";
     private static final String INLINE_ELEMENT = "inline";
     private static final String IGNORE_ELEMENT = "ignore";
-    private final static String BOOST_ATTRIB = "boost";
+    private static final String BOOST_ATTRIB = "boost";
     private static final String DIACRITICS = "diacritics";
     private static final String VECTOR_STORE = "vector-store";
     private static final String VECTOR_STORE_LUCENE = "lucene";
@@ -69,8 +68,8 @@ public class LuceneConfig {
     
     private Map<String, FieldType> fieldTypes = new HashMap<>();
     
-    private Set<QName> inlineNodes = null;
-    private Set<QName> ignoreNodes = null;
+    private Set<QName> inlineNodes;
+    private Set<QName> ignoreNodes;
 
     private final PathIterator iterator = new PathIterator();
     
@@ -81,9 +80,9 @@ public class LuceneConfig {
 
     private AnalyzerConfig analyzers = new AnalyzerConfig();
 
-    private String queryParser = null;
+    private String queryParser;
 
-    private List<ModuleImport> imports = null;
+    private List<ModuleImport> imports;
 
     protected FacetsConfig facetsConfig = new FacetsConfig();
 
@@ -175,8 +174,9 @@ public class LuceneConfig {
         LuceneIndexConfig config;
         for (LuceneIndexConfig wildcardPath : wildcardPaths) {
             config = wildcardPath;
-            if (config.match(path))
+            if (config.match(path)) {
                 return config;
+            }
         }
         return null;
     }
@@ -273,7 +273,7 @@ public class LuceneConfig {
     private LuceneIndexConfig findByFallback(final QName qname) {
         final String local = qname.getLocalPart();
         final String ns = qname.getNamespaceURI();
-        if (local == null || local.equals(QName.WILDCARD)) {
+        if (local == null || QName.WILDCARD.equals(local)) {
             return null;
         }
         for (LuceneIndexConfig config : paths.values()) {
@@ -329,20 +329,23 @@ public class LuceneConfig {
         }
         LuceneIndexConfig idxConf = paths.get(nodePath.getLastComponent());
         while (idxConf != null) {
-            if (!idxConf.isNamed() && idxConf.match(nodePath))
+            if (!idxConf.isNamed() && idxConf.match(nodePath)) {
                 break;
+            }
             idxConf = idxConf.getNext();
         }
         if (idxConf == null) {
             for (LuceneIndexConfig config : wildcardPaths) {
-                if (config.match(nodePath))
+                if (config.match(nodePath)) {
                     return config.getAnalyzer();
+                }
             }
         }
         if (idxConf != null) {
             String id = idxConf.getAnalyzerId();
-            if (id != null)
+            if (id != null) {
                 return analyzers.getAnalyzerById(idxConf.getAnalyzerId());
+            }
         }
         return analyzers.getDefaultAnalyzer();
     }
@@ -358,8 +361,9 @@ public class LuceneConfig {
                     // Substitute <analyzer-id>:index with <analyzer-id>:query
                     String qid = id.substring(0, id.length() - indexSuffix.length()) + ":query";
                     Analyzer queryAnalyzer = analyzers.getAnalyzerById(qid);
-                    if (queryAnalyzer != null)
+                    if (queryAnalyzer != null) {
                         return queryAnalyzer;
+                    }
 
                     LOG.warn("Failed to substitute %s with %s analyzer".formatted(id, qid));
                 }
@@ -383,13 +387,17 @@ public class LuceneConfig {
             LuceneIndexConfig config = idxConf;
             while (config != null) {
                 Analyzer a = getFieldAnalyzerFromConfig(config, field);
-                if (a != null) return a;
+                if (a != null) {
+                    return a;
+                }
                 config = config.getNext();
             }
         }
         for (LuceneIndexConfig config : wildcardPaths) {
             Analyzer a = getFieldAnalyzerFromConfig(config, field);
-            if (a != null) return a;
+            if (a != null) {
+                return a;
+            }
         }
         return null;
     }
@@ -397,7 +405,9 @@ public class LuceneConfig {
     private Analyzer getFieldAnalyzerFromConfig(LuceneIndexConfig config, String field) {
         for (AbstractFieldConfig fc : config.getFacetsAndFields()) {
             if (fc instanceof LuceneFieldConfig lfc && field.equals(lfc.getName())) {
-                if (lfc.getAnalyzer() != null) return lfc.getAnalyzer();
+                if (lfc.getAnalyzer() != null) {
+                    return lfc.getAnalyzer();
+                }
                 // Field exists but has no analyzer: inherit from parent index
                 String id = config.getAnalyzerId();
                 return id != null ? analyzers.getAnalyzerById(id) : null;
@@ -580,7 +590,7 @@ public class LuceneConfig {
 
         private LuceneIndexConfig nextConfig;
         private NodePath path;
-        private boolean atLast = false;
+        private boolean atLast;
 
         protected void reset(NodePath path) {
             this.atLast = false;
@@ -594,13 +604,14 @@ public class LuceneConfig {
 
         @Override
         public boolean hasNext() {
-            return (nextConfig != null);
+            return nextConfig != null;
         }
 
         @Override
         public LuceneIndexConfig next() {
-            if (nextConfig == null)
+            if (nextConfig == null) {
                 return null;
+            }
 
             LuceneIndexConfig currentConfig = nextConfig;
             nextConfig = nextConfig.getNext();

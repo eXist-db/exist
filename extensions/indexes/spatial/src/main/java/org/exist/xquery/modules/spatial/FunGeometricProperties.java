@@ -21,50 +21,40 @@
  */
 package org.exist.xquery.modules.spatial;
 
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.QName;
+import org.exist.dom.persistent.NodeProxy;
 import org.exist.indexing.spatial.AbstractGMLJDBCIndex;
 import org.exist.indexing.spatial.AbstractGMLJDBCIndexWorker;
 import org.exist.indexing.spatial.SpatialIndexException;
-import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.IndexUseReporter;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.Base64BinaryValueType;
-import org.exist.xquery.value.BinaryValueFromInputStream;
-import org.exist.xquery.value.BooleanValue;
-import org.exist.xquery.value.DoubleValue;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
-import org.w3c.dom.Element;
-
+import org.exist.xquery.value.*;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.WKBWriter;
 import org.locationtech.jts.io.WKTWriter;
+import org.w3c.dom.Element;
 
 import java.io.IOException;
 
 /**
-  * @author <a href="mailto:pierrick.brihaye@free.fr">Pierrick Brihaye</a>
-  * @author ljo
-  */
+ * @author <a href="mailto:pierrick.brihaye@free.fr">Pierrick Brihaye</a>
+ * @author ljo
+ */
 public class FunGeometricProperties extends BasicFunction implements IndexUseReporter {
     protected static final Logger logger = LogManager.getLogger(FunGeometricProperties.class);
-    boolean hasUsedIndex = false;
+    boolean hasUsedIndex;
 
     protected final WKTWriter wktWriter = new WKTWriter();
     protected final WKBWriter wkbWriter = new WKBWriter();
 
-    public final static FunctionSignature[] signatures = {
+    public static final FunctionSignature[] signatures = {
         new FunctionSignature(
             new QName("getWKT", SpatialModule.NAMESPACE_URI, SpatialModule.PREFIX),
             "Returns the WKT representation of geometry $geometry",

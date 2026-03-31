@@ -21,21 +21,20 @@
  */
 package org.exist.security.realm.ldap;
 
-import static org.junit.Assert.*;
-
-import java.io.InputStream;
-
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.exist.config.Configuration;
 import org.exist.config.Configurator;
-import org.exist.security.AuthenticationException;
 import org.exist.security.Account;
-import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
+import org.exist.security.AuthenticationException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.io.InputStream;
+
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.Assert.*;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -43,7 +42,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class LDAPRealmTest {
 
-	private static String config = 
+	private static final String config = 
 		"<realm id=\"LDAP\">" +
 		"	<context>" +
 		"		<principalPattern>cn={0},dc=local</principalPattern>" +

@@ -41,9 +41,9 @@ import java.util.Map;
  */
 public class SAXAdapter implements ContentHandler, LexicalHandler {
     private MemTreeBuilder builder;
-    private Map<String, String> namespaces = null;
-    private boolean replaceAttributeFlag = false;
-    private boolean cdataFlag = false;
+    private Map<String, String> namespaces;
+    private boolean replaceAttributeFlag;
+    private boolean cdataFlag;
     private final StringBuilder cdataBuf = new StringBuilder();
 
     public SAXAdapter() {

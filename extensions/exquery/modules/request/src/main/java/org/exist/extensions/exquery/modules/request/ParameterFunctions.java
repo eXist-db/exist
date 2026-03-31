@@ -26,22 +26,16 @@
  */
 package org.exist.extensions.exquery.modules.request;
 
-import java.util.List;
-import java.util.Objects;
-
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
+import org.exist.xquery.value.*;
 import org.exquery.http.HttpRequest;
+
+import java.util.List;
+import java.util.Objects;
 
 /**
  *
@@ -49,17 +43,17 @@ import org.exquery.http.HttpRequest;
  */
 public class ParameterFunctions extends AbstractRequestModuleFunction {
 
-    private final static QName qnParameterNames = new QName("parameter-names", RequestModule.NAMESPACE_URI, RequestModule.PREFIX);
-    private final static QName qnParameter = new QName("parameter", RequestModule.NAMESPACE_URI, RequestModule.PREFIX);
+    private static final QName qnParameterNames = new QName("parameter-names", RequestModule.NAMESPACE_URI, RequestModule.PREFIX);
+    private static final QName qnParameter = new QName("parameter", RequestModule.NAMESPACE_URI, RequestModule.PREFIX);
     
-    public final static FunctionSignature FNS_PARAMETER_NAMES = new FunctionSignature(
+    public static final FunctionSignature FNS_PARAMETER_NAMES = new FunctionSignature(
         qnParameterNames,
         "Gets the names of parameters available in the HTTP Request.",
         null,
         new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "The names of available parameters from the HTTP Request.")
     );
     
-    public final static FunctionSignature FNS_PARAMETER = new FunctionSignature(
+    public static final FunctionSignature FNS_PARAMETER = new FunctionSignature(
         qnParameter,
         "Gets the values of the named parameter from the HTTP Request. If there is no such parameter in the HTTP Request, then an empty sequence is returned.",
         new SequenceType[] {
@@ -68,7 +62,7 @@ public class ParameterFunctions extends AbstractRequestModuleFunction {
         new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_MORE, "The value(s) of the named parameter, or an empty sequence.")
     );
     
-    public final static FunctionSignature FNS_PARAMETER_WITH_DEFAULT = new FunctionSignature(
+    public static final FunctionSignature FNS_PARAMETER_WITH_DEFAULT = new FunctionSignature(
         qnParameter,
         "Gets the values of the named parameter from the HTTP Request. If there is no such parameter in the HTTP Request, then the value specified in $default is returned instead.",
         new SequenceType[] {

@@ -36,7 +36,7 @@ public final class SubjectImpl extends AbstractSubject {
         authenticate(credentials);
 	}
 	
-	private boolean authenticated = false;
+	private boolean authenticated;
 	
 	/* (non-Javadoc)
 	 * @see org.exist.security.Subject#authenticate(java.lang.Object)

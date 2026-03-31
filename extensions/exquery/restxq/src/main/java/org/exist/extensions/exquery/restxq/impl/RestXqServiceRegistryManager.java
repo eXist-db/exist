@@ -43,7 +43,7 @@ public final class RestXqServiceRegistryManager {
     
     private static final Logger LOG = LogManager.getLogger(RestXqServiceRegistryManager.class);
     
-    private static Map<BrokerPool, RestXqServiceRegistryImpl> registries = null;
+    private static Map<BrokerPool, RestXqServiceRegistryImpl> registries;
     
     
     public static synchronized RestXqServiceRegistry getRegistry(final BrokerPool pool) {

@@ -21,12 +21,12 @@
  */
 package org.exist.xquery.value;
 
-import java.net.URI;
-
 import org.exist.test.TestConstants;
 import org.exist.xquery.XPathException;
 import org.junit.Ignore;
 import org.junit.Test;
+
+import java.net.URI;
 
 import static org.junit.Assert.assertEquals;
 

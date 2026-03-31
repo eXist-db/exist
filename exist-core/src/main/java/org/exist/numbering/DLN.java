@@ -21,10 +21,10 @@
  */
 package org.exist.numbering;
 
-import java.io.IOException;
-
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
+
+import java.io.IOException;
 
 /**
  * Represents a node id in the form of a dynamic level number (DLN). DLN's are
@@ -222,7 +222,7 @@ public class DLN extends DLNBase implements NodeId {
         while(offset <= other.bitIndex) {
             boolean subLevel = false;
             if (offset > 0) {
-                subLevel = ((other.bits[offset >> UNIT_SHIFT] & (1 << ((7 - offset++) & 7))) != 0);
+                subLevel = (other.bits[offset >> UNIT_SHIFT] & (1 << ((7 - offset++) & 7))) != 0;
             }
             final int id = other.getLevelId(offset);
             newId.addLevelId(id, subLevel);
@@ -265,7 +265,7 @@ public class DLN extends DLNBase implements NodeId {
     public boolean isDescendantOrSelfOf(final NodeId other) {
         final DLN ancestor = (DLN) other;
         return startsWith(ancestor) &&
-            (bitIndex == ancestor.bitIndex || isLevelSeparator((ancestor).bitIndex + 1));
+            (bitIndex == ancestor.bitIndex || isLevelSeparator(ancestor.bitIndex + 1));
     }
 
     @Override
@@ -332,7 +332,7 @@ public class DLN extends DLNBase implements NodeId {
                 return (b1 & 0xFF) - (b2 & 0xFF);
             }
         }
-        return (a1len - a2len);
+        return a1len - a2len;
     }
 
     @Override

@@ -21,24 +21,17 @@
  */
 package org.exist.xquery.functions.request;
 
-import java.nio.file.Path;
-import java.util.List;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.http.servlets.RequestWrapper;
 import org.exist.util.FileUtils;
 import org.exist.xquery.*;
-import org.exist.xquery.value.DoubleValue;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
+import org.exist.xquery.value.*;
 
 import javax.annotation.Nonnull;
+import java.nio.file.Path;
+import java.util.List;
 
 /**
  * @author <a href="mailto:adam.retter@exist-db.org">Adam Retter</a>
@@ -47,7 +40,7 @@ public class GetUploadedFileSize extends StrictRequestFunction {
 
 	protected static final Logger logger = LogManager.getLogger(GetUploadedFileSize.class);
 
-	public final static FunctionSignature signature =
+	public static final FunctionSignature signature =
 		new FunctionSignature(
 			new QName("get-uploaded-file-size", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
 			"Retrieve the size of an uploaded file from a multi-part request. This returns the " +

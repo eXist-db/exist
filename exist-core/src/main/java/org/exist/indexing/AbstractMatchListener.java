@@ -21,8 +21,8 @@
  */
 package org.exist.indexing;
 
-import org.exist.dom.persistent.NodeHandle;
 import org.exist.dom.QName;
+import org.exist.dom.persistent.NodeHandle;
 import org.exist.util.serializer.AttrList;
 import org.exist.util.serializer.Receiver;
 import org.w3c.dom.Document;
@@ -39,7 +39,7 @@ import javax.annotation.Nullable;
 public class AbstractMatchListener implements MatchListener {
 
     protected Receiver nextListener;
-    protected NodeHandle currentNode = null;
+    protected NodeHandle currentNode;
 
     @Override
     public void setNextInChain(Receiver next) {
@@ -149,8 +149,5 @@ public class AbstractMatchListener implements MatchListener {
 
     @Override
     public void highlightText(CharSequence seq) throws SAXException {
-        if (nextListener != null) {
-            //Nothing to do
-        }
     }
 }

@@ -34,9 +34,9 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.exist.samples.Samples.SAMPLES;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.exist.samples.Samples.SAMPLES;
 
 /**
  * Integration test: check if database shutdown/restart works properly.
@@ -47,9 +47,9 @@ import static org.exist.samples.Samples.SAMPLES;
  */
 public class ShutdownIT {
 
-	private final static int ITERATIONS = 50;
+	private static final int ITERATIONS = 50;
 	
-	protected final static String XML =
+	protected static final String XML =
 		"<config>" +
 		"<user id=\"george\">" +
 		"<phone>+49 69 888478</phone>" +

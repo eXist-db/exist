@@ -21,11 +21,6 @@
  */
 package org.exist.storage.structural;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.file.Path;
-import java.util.concurrent.locks.ReentrantLock;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.backup.RawDataBackup;
@@ -44,13 +39,18 @@ import org.exist.util.FileUtils;
 import org.exist.util.LockException;
 import org.w3c.dom.Element;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.file.Path;
+import java.util.concurrent.locks.ReentrantLock;
+
 public class NativeStructuralIndex extends AbstractIndex implements RawBackupSupport {
 
     protected static final Logger LOG = LogManager.getLogger(NativeStructuralIndex.class);
 
-    public final static String ID = NativeStructuralIndex.class.getName();
+    public static final String ID = NativeStructuralIndex.class.getName();
     public static final String FILE_NAME = "structure.dbx";
-    public final static short FILE_FORMAT_VERSION_ID = 3;
+    public static final short FILE_FORMAT_VERSION_ID = 3;
 
     public static final byte STRUCTURAL_INDEX_ID = 1;
 

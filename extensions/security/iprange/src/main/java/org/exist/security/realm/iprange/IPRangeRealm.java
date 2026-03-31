@@ -51,13 +51,13 @@ import java.util.Properties;
 public class IPRangeRealm extends AbstractRealm {
 
     @ConfigurationFieldAsAttribute("id")
-    public final static String ID = "IPRange";
+    public static final String ID = "IPRange";
 
     @ConfigurationFieldAsAttribute("version")
-    public final static String version = "1.0";
+    public static final String version = "1.0";
 
-    private final static Logger LOG = LogManager.getLogger(IPRangeRealm.class);
-    private static IPRangeRealm instance = null;
+    private static final Logger LOG = LogManager.getLogger(IPRangeRealm.class);
+    private static IPRangeRealm instance;
 
     public IPRangeRealm(final SecurityManagerImpl sm, final Configuration config) throws ConfigurationException {
         super(sm, config);

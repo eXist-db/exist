@@ -21,12 +21,7 @@
  */
 package org.exist.xquery.modules.file;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.PushbackInputStream;
-import java.io.Reader;
-
+import java.io.*;
 
 
 /**
@@ -57,7 +52,7 @@ import java.io.Reader;
 public class UnicodeReader extends Reader 
 {
 	PushbackInputStream internalIn;
-	InputStreamReader   internalIn2 = null;
+	InputStreamReader   internalIn2;
 	String              defaultEnc;
 	
 	private static final int BOM_SIZE = 4;
@@ -91,7 +86,7 @@ public class UnicodeReader extends Reader
 	
 	public String getDefaultEncoding() 
 	{
-		return( defaultEnc );
+		return defaultEnc;
 	}
 	
 	
@@ -109,7 +104,7 @@ public class UnicodeReader extends Reader
 			ret = internalIn2.getEncoding();
 		}
 		
-		return( ret );
+		return ret;
 	}
 	
 	
@@ -124,7 +119,7 @@ public class UnicodeReader extends Reader
 		if( internalIn2 == null ) {
 		
 			String encoding;
-			byte bom[] = new byte[BOM_SIZE];
+			byte[] bom = new byte[BOM_SIZE];
 			int n;
 			int unread;
 			n = internalIn.read( bom, 0, bom.length );
@@ -153,7 +148,7 @@ public class UnicodeReader extends Reader
 			//System.out.println("read=" + n + ", unread=" + unread);
 			
 			if( unread > 0 ) {
-				internalIn.unread( bom, (n - unread), unread );
+				internalIn.unread( bom, n - unread, unread );
 			}
 			
 			// Use given encoding
@@ -175,7 +170,7 @@ public class UnicodeReader extends Reader
 	public int read( char[] cbuf, int off, int len ) throws IOException 
 	{
 		init();
-		return( internalIn2.read( cbuf, off, len ) );
+		return internalIn2.read( cbuf, off, len );
 	}
 	
 }

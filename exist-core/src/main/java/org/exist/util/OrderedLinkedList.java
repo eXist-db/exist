@@ -21,19 +21,19 @@
  */
 package org.exist.util;
 
-import java.util.Iterator;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.util.Iterator;
 
 public class OrderedLinkedList {
 
 	@SuppressWarnings("unused")
-	private final static Logger LOG = LogManager.getLogger(OrderedLinkedList.class);
+	private static final Logger LOG = LogManager.getLogger(OrderedLinkedList.class);
 	
 	public abstract static class Node {
-		Node next = null;
-		Node prev = null;
+		Node next;
+		Node prev;
 
 		public Node getNextNode() { return next; }
 		public Node getPrevNode() { return prev; }
@@ -63,10 +63,10 @@ public class OrderedLinkedList {
 		}
 	}
 	
-	protected Node header = null;
-    protected Node last = null;
+	protected Node header;
+    protected Node last;
     
-	private int size = 0;
+	private int size;
 
 	
 	public Node add(Node newNode) {
@@ -205,7 +205,7 @@ public class OrderedLinkedList {
 		return new OrderedListIterator(header);
 	}
 
-	private final static class OrderedListIterator implements Iterator {
+	private static final class OrderedListIterator implements Iterator {
 
 		private Node next;
 
@@ -214,7 +214,7 @@ public class OrderedLinkedList {
 		}
 
 		public boolean hasNext() {
-			return (next != null);
+			return next != null;
 		}
 
 		public Object next() {

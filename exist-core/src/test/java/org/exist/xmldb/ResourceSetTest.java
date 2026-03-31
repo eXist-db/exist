@@ -32,16 +32,16 @@ import org.xmldb.api.modules.*;
 
 import java.io.InputStream;
 
+import static org.exist.samples.Samples.SAMPLES;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.exist.samples.Samples.SAMPLES;
 
 public class ResourceSetTest {
 
 	@ClassRule
 	public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
-	private final static String TEST_COLLECTION = "testResourceSet";
+	private static final String TEST_COLLECTION = "testResourceSet";
 
 	private Collection testCollection;
 

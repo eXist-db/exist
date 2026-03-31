@@ -21,9 +21,9 @@
  */
 package org.exist.xquery.modules.sql;
 
-import java.sql.Types;
-
 import org.exist.xquery.value.Type;
+
+import java.sql.Types;
 
 /**
  * Utility class for converting to/from SQL types and escaping XML text and attributes.
@@ -102,7 +102,7 @@ public final class SQLUtils {
             work = work.replaceAll(">", "\\&gt;");
         }
 
-        return (work);
+        return work;
     }
 
     public static String escapeXmlAttr(String attr) {
@@ -114,6 +114,6 @@ public final class SQLUtils {
             work = work.replaceAll("\"", "\\&quot;");
         }
 
-        return (work);
+        return work;
     }
 }

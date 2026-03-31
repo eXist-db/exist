@@ -51,7 +51,7 @@ public final class XMLUtil {
         //Utility class of static methods
     }
 
-    public static final String dump(final DocumentFragment fragment) {
+    public static String dump(final DocumentFragment fragment) {
         final StringWriter writer = new StringWriter();
         final DOMSerializer serializer = new DOMSerializer(writer, null);
         try {
@@ -62,7 +62,7 @@ public final class XMLUtil {
         return writer.toString();
     }
 
-    public static final String encodeAttrMarkup(final String str) {
+    public static String encodeAttrMarkup(final String str) {
         final StringBuilder buf = new StringBuilder();
         char ch;
         for(int i = 0; i < str.length(); i++) {
@@ -100,7 +100,7 @@ public final class XMLUtil {
         return buf.toString();
     }
 
-    public static final String decodeAttrMarkup(final String str) {
+    public static String decodeAttrMarkup(final String str) {
         final StringBuilder out = new StringBuilder(str.length());
         char ch;
         String ent;
@@ -134,7 +134,7 @@ public final class XMLUtil {
         return out.toString();
     }
 
-    public static final Optional<Charset> getEncoding(final String xmlDecl) {
+    public static Optional<Charset> getEncoding(final String xmlDecl) {
         if(xmlDecl == null) {
             return Optional.empty();
         }
@@ -159,7 +159,7 @@ public final class XMLUtil {
         return Optional.empty();
     }
 
-    public static final String getXMLDecl(final byte[] data) {
+    public static String getXMLDecl(final byte[] data) {
         boolean foundTag = false;
         for(int i = 0; i < data.length && !foundTag; i++) {
             if(data[i] == '<') {
@@ -173,7 +173,7 @@ public final class XMLUtil {
                 boolean foundQuestionMark = false;
                 int placeInDeclString = 0;
                 final byte[] declString = new byte[4];
-                int x = (i + 1);
+                int x = i + 1;
                 for(; x < data.length; x++) {
 
                     if(data[x] == 0) {
@@ -207,7 +207,7 @@ public final class XMLUtil {
                     out.write('<');
                     out.write(declString, 0, 4);
 
-                    for(int j = (x + 1); j < data.length; j++) {
+                    for(int j = x + 1; j < data.length; j++) {
                         if(data[j] != 0) {
                             out.write(data[j]);
                         }
@@ -240,7 +240,7 @@ public final class XMLUtil {
     }
 
     @Deprecated
-    public static final String readFile(final Path file) throws IOException {
+    public static String readFile(final Path file) throws IOException {
         return readFile(file, UTF_8);
     }
 
@@ -282,6 +282,7 @@ public final class XMLUtil {
 
     public static String parseValue(final String value, int p) {
         while((p < value.length()) && (value.charAt(++p) != '"')) {
+            continue;
             // Do nothing
         }
         if(p == value.length()) {
@@ -289,6 +290,7 @@ public final class XMLUtil {
         }
         int e = ++p;
         while((e < value.length()) && (value.charAt(++e) != '"')) {
+            continue;
             // Do nothing
         }
         if(e == value.length()) {

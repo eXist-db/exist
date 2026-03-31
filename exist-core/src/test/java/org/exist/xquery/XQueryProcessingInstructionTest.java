@@ -21,17 +21,17 @@
  */
 package org.exist.xquery;
 
-import java.io.IOException;
-
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.junit.ClassRule;
 import org.junit.Test;
-
 import org.xml.sax.SAXException;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 
+import java.io.IOException;
+
 import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
+
 /**
  *
  * @author jimfuller

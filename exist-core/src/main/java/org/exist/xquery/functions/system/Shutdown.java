@@ -22,9 +22,6 @@
 package org.exist.xquery.functions.system;
 
 
-import java.util.Timer;
-import java.util.TimerTask;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
@@ -34,11 +31,10 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.NumericValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
+
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Shutdown the eXist server (must be dba)
@@ -47,9 +43,9 @@ import org.exist.xquery.value.Type;
  */
 public class Shutdown extends BasicFunction
 {
-	protected final static Logger logger = LogManager.getLogger(Shutdown.class);
+	protected static final Logger logger = LogManager.getLogger(Shutdown.class);
 
-	public final static FunctionSignature[] signatures = {
+	public static final FunctionSignature[] signatures = {
 		new FunctionSignature(
 			new QName("shutdown", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
 			"Shutdown eXist immediately.  This method is only available to the DBA role.",

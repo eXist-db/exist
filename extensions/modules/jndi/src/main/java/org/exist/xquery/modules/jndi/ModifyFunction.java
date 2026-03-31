@@ -22,14 +22,6 @@
 package org.exist.xquery.modules.jndi;
 
 
-import java.util.ArrayList;
-
-import javax.naming.NamingException;
-import javax.naming.directory.Attribute;
-import javax.naming.directory.BasicAttribute;
-import javax.naming.directory.DirContext;
-import javax.naming.directory.ModificationItem;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
@@ -38,15 +30,17 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.IntegerValue;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import javax.naming.NamingException;
+import javax.naming.directory.Attribute;
+import javax.naming.directory.BasicAttribute;
+import javax.naming.directory.DirContext;
+import javax.naming.directory.ModificationItem;
+import java.util.ArrayList;
 
 /**
  * eXist JNDI Module Extension ModifyFunction
@@ -64,11 +58,11 @@ public class ModifyFunction extends BasicFunction
 {
 	protected static final Logger logger = LogManager.getLogger(ModifyFunction.class);
 	
-	public final static String DSML_NAMESPACE = "http://www.dsml.org/DSML";
+	public static final String DSML_NAMESPACE = "http://www.dsml.org/DSML";
 
-	public final static String DSML_PREFIX = "dsml";
+	public static final String DSML_PREFIX = "dsml";
 
-	public final static FunctionSignature[] signatures = {
+	public static final FunctionSignature[] signatures = {
 			
 			new FunctionSignature(
 					new QName( "modify", JNDIModule.NAMESPACE_URI, JNDIModule.PREFIX ),
@@ -92,7 +86,7 @@ public class ModifyFunction extends BasicFunction
 	public Sequence eval( Sequence[] args, Sequence contextSequence ) throws XPathException 
 	{
 		// Was context handle or DN specified?
-		if( !( args[0].isEmpty() ) && !( args[1].isEmpty() ) ) {
+		if( !args[0].isEmpty() && !args[1].isEmpty() ) {
 			
 			String dn = args[1].getStringValue();
 			
@@ -117,7 +111,7 @@ public class ModifyFunction extends BasicFunction
 			}
 		}
 		
-		return( Sequence.EMPTY_SEQUENCE );
+		return Sequence.EMPTY_SEQUENCE;
 	}
 	
 	
@@ -135,7 +129,7 @@ public class ModifyFunction extends BasicFunction
 		
 		ModificationItem[] mi = new ModificationItem[1];
 		
-		if( !( arg.isEmpty() ) ) {
+		if( !arg.isEmpty() ) {
 		
 			Node container = ( (NodeValue)arg.itemAt( 0 ) ).getNode();
 			
@@ -144,7 +138,7 @@ public class ModifyFunction extends BasicFunction
 				NodeList attrs = ((Element)container).getElementsByTagName( "attribute" );
 	
 				for( int i = 0; i < attrs.getLength(); i++ ) {
-					Element attr = ((Element)attrs.item( i ));
+					Element attr = (Element)attrs.item( i );
 	
 					String name  	= attr.getAttribute( "name" );
 					String value 	= attr.getAttribute( "value" );

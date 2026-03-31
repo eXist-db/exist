@@ -23,8 +23,8 @@ package org.exist.xquery.update;
 
 import org.exist.EXistException;
 import org.exist.collections.triggers.TriggerException;
-import org.exist.dom.persistent.*;
 import org.exist.dom.QName;
+import org.exist.dom.persistent.*;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.NotificationService;
@@ -35,12 +35,7 @@ import org.exist.xquery.*;
 import org.exist.xquery.util.Error;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.util.Messages;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.QNameValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
+import org.exist.xquery.value.*;
 import org.w3c.dom.Node;
 
 /**

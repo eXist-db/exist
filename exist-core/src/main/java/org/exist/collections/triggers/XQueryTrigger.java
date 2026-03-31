@@ -21,15 +21,12 @@
  */
 package org.exist.collections.triggers;
 
-import java.io.IOException;
-import java.util.*;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.collections.Collection;
+import org.exist.dom.QName;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.NodeSet;
-import org.exist.dom.QName;
 import org.exist.security.PermissionDeniedException;
 import org.exist.source.DBSource;
 import org.exist.source.Source;
@@ -42,6 +39,9 @@ import org.exist.xquery.*;
 import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.StringValue;
+
+import java.io.IOException;
+import java.util.*;
 
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 
@@ -64,7 +64,7 @@ import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
  * @author <a href="mailto:pierrick.brihaye@free.fr">Pierrick Brihaye</a>
  * @author <a href="mailto:adam.retter@devon.gov.uk">Adam Retter</a>
  * @author <a href="mailto:gazdovsky@gmail.com">Evgeny Gazdovsky</a>
-*/
+ */
 public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, CollectionTrigger {
 
     private static final Logger LOG = LogManager.getLogger(XQueryTrigger.class);
@@ -103,17 +103,17 @@ public class XQueryTrigger extends SAXTrigger implements DocumentTrigger, Collec
 	public static final QName beforeDeleteDocument = new QName("before-delete-document", NAMESPACE);
 	public static final QName afterDeleteDocument = new QName("after-delete-document", NAMESPACE);
 
-	private Set<TriggerEvent> events = null;
-	private Collection collection = null;
-	private String strQuery = null;
-	private String urlQuery = null;
-	private Properties userDefinedVariables = null;
+	private Set<TriggerEvent> events;
+	private Collection collection;
+	private String strQuery;
+	private String urlQuery;
+	private Properties userDefinedVariables;
 	
 	/** Namespace prefix associated to trigger */
-	private String bindingPrefix = null;
+	private String bindingPrefix;
 	private XQuery service;
 
-    public final static String PREPARE_EXCEPTION_MESSAGE = "Error during trigger prepare";
+    public static final String PREPARE_EXCEPTION_MESSAGE = "Error during trigger prepare";
 
     @Override
 	public void configure(final DBBroker broker, final Txn transaction, final Collection parent, final Map<String, List<?>> parameters) throws TriggerException {

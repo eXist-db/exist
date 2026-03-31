@@ -21,11 +21,12 @@
  */
 package org.exist.scheduler;
 
-import java.util.Map;
 import org.exist.storage.BrokerPool;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+
+import java.util.Map;
 
 /**
  * Class to represent a User's Java Job.

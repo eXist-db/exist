@@ -25,7 +25,7 @@ public class ProgressBar {
 
 	protected String mMessage;
 	protected double mMax = 1;
-	protected int mPosition = 0;
+	protected int mPosition;
 
 	public ProgressBar(String message) {
 		mMessage = message;
@@ -52,10 +52,12 @@ public class ProgressBar {
 		buf.append(mMessage);
 		buf.append(" [");
 		int i = 0;
-		for(; i < pos; i++)
-			buf.append("=");
-		for(; i < 50; i++)
-			buf.append(" ");
+        for (; i < pos; i++) {
+            buf.append("=");
+        }
+        for (; i < 50; i++) {
+            buf.append(" ");
+        }
 		buf.append("] (");
 		buf.append(percent);
 		buf.append(" %)\r");

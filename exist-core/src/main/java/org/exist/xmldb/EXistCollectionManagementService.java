@@ -21,13 +21,12 @@
  */
 package org.exist.xmldb;
 
-import java.util.Date;
-
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
 
 import javax.annotation.Nullable;
+import java.util.Date;
 
 
 /**

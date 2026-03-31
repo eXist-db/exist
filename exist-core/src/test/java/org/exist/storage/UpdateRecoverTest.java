@@ -38,15 +38,14 @@ import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
 import org.exist.util.MimeType;
 import org.exist.util.StringInputSource;
-import org.exist.xmldb.EXistCollectionManagementService;
 import org.exist.xmldb.DatabaseImpl;
+import org.exist.xmldb.EXistCollectionManagementService;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 import org.exist.xupdate.Modification;
 import org.exist.xupdate.XUpdateProcessor;
 import org.junit.After;
 import org.junit.Test;
-import static org.junit.Assert.assertNotNull;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xmldb.api.DatabaseManager;
@@ -61,6 +60,8 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.Optional;
 
+import static org.junit.Assert.assertNotNull;
+
 /**
  * Tests recovery of XUpdate operations.
  * 
@@ -69,7 +70,7 @@ import java.util.Optional;
  */
 public class UpdateRecoverTest {
     
-    private static String TEST_XML =
+    private static final String TEST_XML =
         "<?xml version=\"1.0\"?>" +
         "<products>" +
         "   <product id=\"0\">" +
@@ -79,7 +80,7 @@ public class UpdateRecoverTest {
         "</products>";
 
     // we don't use @ClassRule/@Rule as we want to force corruption in some tests
-    private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
+    private final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Test
     public void storeAndRead() throws IllegalAccessException, PermissionDeniedException, DatabaseConfigurationException, InstantiationException, SAXException, XMLDBException, EXistException, ClassNotFoundException, LockException, ParserConfigurationException, XPathException, IOException {
@@ -148,7 +149,7 @@ public class UpdateRecoverTest {
                                     "</xu:modifications>";
                     proc.setBroker(broker);
                     proc.setDocumentSet(docs);
-                    final Modification modifications[] = proc.parse(new InputSource(new StringReader(xupdate)));
+                    final Modification[] modifications = proc.parse(new InputSource(new StringReader(xupdate)));
                     assertNotNull(modifications);
                     modifications[0].process(transaction);
                     proc.reset();
@@ -164,7 +165,7 @@ public class UpdateRecoverTest {
                                     "</xu:modifications>";
                     proc.setBroker(broker);
                     proc.setDocumentSet(docs);
-                    final Modification modifications[] = proc.parse(new InputSource(new StringReader(xupdate)));
+                    final Modification[] modifications = proc.parse(new InputSource(new StringReader(xupdate)));
                     assertNotNull(modifications);
                     modifications[0].process(transaction);
                     proc.reset();
@@ -183,7 +184,7 @@ public class UpdateRecoverTest {
                                     "</xu:modifications>";
                     proc.setBroker(broker);
                     proc.setDocumentSet(docs);
-                    final Modification modifications[] = proc.parse(new InputSource(new StringReader(xupdate)));
+                    final Modification[] modifications = proc.parse(new InputSource(new StringReader(xupdate)));
                     assertNotNull(modifications);
                     long mods = modifications[0].process(transaction);
                     proc.reset();
@@ -197,7 +198,7 @@ public class UpdateRecoverTest {
                                     "</xu:modifications>";
                     proc.setBroker(broker);
                     proc.setDocumentSet(docs);
-                    final Modification modifications[] = proc.parse(new InputSource(new StringReader(xupdate)));
+                    final Modification[] modifications = proc.parse(new InputSource(new StringReader(xupdate)));
                     assertNotNull(modifications);
                     modifications[0].process(transaction);
                     proc.reset();
@@ -217,7 +218,7 @@ public class UpdateRecoverTest {
                                     "</xu:modifications>";
                     proc.setBroker(broker);
                     proc.setDocumentSet(docs);
-                    final Modification modifications[] = proc.parse(new InputSource(new StringReader(xupdate)));
+                    final Modification[] modifications = proc.parse(new InputSource(new StringReader(xupdate)));
                     assertNotNull(modifications);
                     modifications[0].process(transaction);
                     proc.reset();
@@ -230,7 +231,7 @@ public class UpdateRecoverTest {
                                 "</xu:modifications>";
                 proc.setBroker(broker);
                 proc.setDocumentSet(docs);
-                Modification modifications[] = proc.parse(new InputSource(new StringReader(xupdate)));
+                Modification[] modifications = proc.parse(new InputSource(new StringReader(xupdate)));
                 assertNotNull(modifications);
                 modifications[0].process(transaction);
                 proc.reset();

@@ -21,13 +21,13 @@
  */
 package org.exist.http.filter;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.IOException;
 import java.util.Enumeration;
 
@@ -40,11 +40,11 @@ import java.util.Enumeration;
  */
 public class GuestFilter implements Filter {
 
-    private final static Logger LOG = LogManager.getLogger(GuestFilter.class);
+    private static final Logger LOG = LogManager.getLogger(GuestFilter.class);
 
-    private String sslPort = null;
+    private String sslPort;
 
-    private FilterConfig filterConfig = null;
+    private FilterConfig filterConfig;
 
     public void init(FilterConfig filterConfig) throws ServletException {
         LOG.info("Starting GuestFilter");

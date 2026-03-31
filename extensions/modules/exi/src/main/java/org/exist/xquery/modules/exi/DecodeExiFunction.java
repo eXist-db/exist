@@ -21,9 +21,12 @@
  */
 package org.exist.xquery.modules.exi;
 
-import java.io.IOException;
-import java.io.InputStream;
-
+import com.siemens.ct.exi.core.EXIFactory;
+import com.siemens.ct.exi.core.exceptions.EXIException;
+import com.siemens.ct.exi.core.grammars.Grammars;
+import com.siemens.ct.exi.core.helpers.DefaultEXIFactory;
+import com.siemens.ct.exi.grammars.GrammarFactory;
+import com.siemens.ct.exi.main.api.sax.SAXDecoder;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.AppendingSAXAdapter;
 import org.exist.dom.memtree.MemTreeBuilder;
@@ -34,23 +37,12 @@ import org.exist.xquery.ErrorCodes.JavaErrorCode;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.BinaryValue;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import com.siemens.ct.exi.core.EXIFactory;
-import com.siemens.ct.exi.grammars.GrammarFactory;
-import com.siemens.ct.exi.main.api.sax.SAXDecoder;
-import com.siemens.ct.exi.core.exceptions.EXIException;
-import com.siemens.ct.exi.core.grammars.Grammars;
-import com.siemens.ct.exi.core.helpers.DefaultEXIFactory;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * eXist EXI Module Extension DecodeExiFunction.
@@ -63,7 +55,7 @@ import com.siemens.ct.exi.core.helpers.DefaultEXIFactory;
  */
 public class DecodeExiFunction extends BasicFunction {
 
-    public final static FunctionSignature[] signatures = {
+    public static final FunctionSignature[] signatures = {
 		new FunctionSignature(
 				new QName("decode-to-xml", ExiModule.NAMESPACE_URI, ExiModule.PREFIX),
 				"A function which returns XML from a decoded EXI source",
@@ -93,7 +85,7 @@ public class DecodeExiFunction extends BasicFunction {
             return Sequence.EMPTY_SEQUENCE;
         }
 		try {
-			BinaryValue exiBinary = ((BinaryValue)args[0].itemAt(0));
+			BinaryValue exiBinary = (BinaryValue)args[0].itemAt(0);
 
 			context.pushDocumentContext();
 			try {

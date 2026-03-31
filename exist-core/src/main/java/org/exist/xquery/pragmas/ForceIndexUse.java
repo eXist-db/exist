@@ -21,9 +21,9 @@
  */
 package org.exist.xquery.pragmas;
 
-import org.exist.xquery.*;
 import org.exist.Namespaces;
 import org.exist.dom.QName;
+import org.exist.xquery.*;
 
 public class ForceIndexUse extends AbstractPragma {
     public static final String FORCE_INDEX_USE_PRAGMA_LOCAL_NAME = "force-index-use";

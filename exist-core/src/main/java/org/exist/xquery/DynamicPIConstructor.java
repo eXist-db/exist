@@ -115,8 +115,9 @@ public class DynamicPIConstructor extends NodeConstructor {
                         {buf.append(' ');}
                     buf.append(next.getStringValue());
                 }
-                while (!buf.isEmpty() && Character.isWhitespace(buf.charAt(0)))
+                while (!buf.isEmpty() && Character.isWhitespace(buf.charAt(0))) {
                     buf.deleteCharAt(0);
+                }
                 contentString = buf.toString();
             }
             if (contentString.contains("?>"))

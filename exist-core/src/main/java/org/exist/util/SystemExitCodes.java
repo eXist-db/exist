@@ -26,13 +26,13 @@ package org.exist.util;
  */
 public class SystemExitCodes {
 
-    public final static int OK_EXIT_CODE = 0;
+    public static final int OK_EXIT_CODE = 0;
 
-    public final static int CATCH_ALL_GENERAL_ERROR_EXIT_CODE = 1;
+    public static final int CATCH_ALL_GENERAL_ERROR_EXIT_CODE = 1;
 
-    public final static int INVALID_ARGUMENT_EXIT_CODE = 3;
-    public final static int NO_BROKER_EXIT_CODE = 4;
-    public final static int TERMINATED_EARLY_EXIT_CODE = 5;
-    public final static int PERMISSION_DENIED_EXIT_CODE = 6;
-    public final static int IO_ERROR_EXIT_CODE = 7;
+    public static final int INVALID_ARGUMENT_EXIT_CODE = 3;
+    public static final int NO_BROKER_EXIT_CODE = 4;
+    public static final int TERMINATED_EARLY_EXIT_CODE = 5;
+    public static final int PERMISSION_DENIED_EXIT_CODE = 6;
+    public static final int IO_ERROR_EXIT_CODE = 7;
 }

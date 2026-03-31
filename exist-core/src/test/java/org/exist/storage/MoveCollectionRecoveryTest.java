@@ -21,10 +21,6 @@
  */
 package org.exist.storage;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Optional;
-
 import org.exist.EXistException;
 import org.exist.TestUtils;
 import org.exist.collections.Collection;
@@ -42,8 +38,8 @@ import org.exist.util.LockException;
 import org.exist.util.MimeType;
 import org.exist.util.StringInputSource;
 import org.exist.util.io.InputStreamUtil;
-import org.exist.xmldb.EXistCollectionManagementService;
 import org.exist.xmldb.DatabaseImpl;
+import org.exist.xmldb.EXistCollectionManagementService;
 import org.exist.xmldb.XmldbURI;
 import org.junit.After;
 import org.junit.Rule;
@@ -55,9 +51,13 @@ import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Optional;
+
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.*;
 import static org.exist.samples.Samples.SAMPLES;
+import static org.junit.Assert.*;
 
 public class MoveCollectionRecoveryTest {
 

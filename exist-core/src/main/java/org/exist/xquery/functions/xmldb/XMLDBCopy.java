@@ -23,9 +23,6 @@ package org.exist.xquery.functions.xmldb;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.net.URISyntaxException;
-
 import org.exist.storage.DBBroker;
 import org.exist.xmldb.EXistCollectionManagementService;
 import org.exist.xmldb.XmldbURI;
@@ -37,6 +34,8 @@ import org.exist.xquery.value.*;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
+
+import java.net.URISyntaxException;
 
 import static org.exist.xquery.FunctionDSL.*;
 import static org.exist.xquery.XPathException.execAndAddErrorIfMissing;

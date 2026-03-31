@@ -28,7 +28,7 @@ import antlr.collections.AST;
  */
 public class XQueryFunctionAST extends XQueryAST {
 
-    private String doc = null;
+    private String doc;
 
     public XQueryFunctionAST() {
         super();

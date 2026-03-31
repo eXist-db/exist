@@ -31,7 +31,7 @@ public class LineNumber extends BasicFunction {
 
     protected static final Logger logger = LogManager.getLogger(LineNumber.class);
 
-    public final static FunctionSignature signature = new FunctionSignature(
+    public static final FunctionSignature signature = new FunctionSignature(
             new QName("line-number", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
             "Retrieves the line number of the expression",
             null,

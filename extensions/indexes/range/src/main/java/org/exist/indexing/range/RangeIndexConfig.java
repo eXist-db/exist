@@ -39,12 +39,12 @@ import java.util.*;
 
 public class RangeIndexConfig {
 
-    public final static RangeIndexConfig DEFAULT_CONFIG = new RangeIndexConfig();
+    public static final RangeIndexConfig DEFAULT_CONFIG = new RangeIndexConfig();
     
     static final String CONFIG_ROOT = "range";
     static final String CREATE_ELEM = "create";
     private static final String FIELD_ELEM = "field";
-    private final static String CONDITION_ELEM = "condition";
+    private static final String CONDITION_ELEM = "condition";
 
     private static final Logger LOG = LogManager.getLogger(RangeIndexConfig.class);
 
@@ -208,8 +208,9 @@ public class RangeIndexConfig {
     public boolean matches(NodePath path) {
         RangeIndexConfigElement idxConf = paths.get(path.getLastComponent());
         while (idxConf != null) {
-            if (idxConf.match(path))
+            if (idxConf.match(path)) {
                 return true;
+            }
             idxConf = idxConf.getNext();
         }
         return false;
@@ -231,7 +232,7 @@ public class RangeIndexConfig {
 
         private RangeIndexConfigElement nextConfig;
         private NodePath path;
-        private boolean atLast = false;
+        private boolean atLast;
 
         protected void reset(NodePath path) {
             this.atLast = false;
@@ -244,13 +245,14 @@ public class RangeIndexConfig {
 
         @Override
         public boolean hasNext() {
-            return (nextConfig != null);
+            return nextConfig != null;
         }
 
         @Override
         public RangeIndexConfigElement next() {
-            if (nextConfig == null)
+            if (nextConfig == null) {
                 return null;
+            }
 
             RangeIndexConfigElement currentConfig = nextConfig;
             nextConfig = nextConfig.getNext();

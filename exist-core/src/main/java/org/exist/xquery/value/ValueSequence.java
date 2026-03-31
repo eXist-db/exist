@@ -45,9 +45,9 @@ import java.util.*;
 public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
 
     //Do not change the -1 value since size computation relies on this start value
-    private final static int UNSET_SIZE = -1;
-    private final static int INITIAL_SIZE = 64;
-    private final static Logger LOG = LogManager.getLogger(ValueSequence.class);
+    private static final int UNSET_SIZE = -1;
+    private static final int INITIAL_SIZE = 64;
+    private static final Logger LOG = LogManager.getLogger(ValueSequence.class);
     protected Item[] values;
     protected int size = UNSET_SIZE;
 
@@ -56,21 +56,21 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
     // and Type.ITEM if there are items of mixed type.
     protected int itemType = Type.ANY_TYPE;
 
-    private boolean noDuplicates = false;
+    private boolean noDuplicates;
 
-    private boolean inMemNodeSet = false;
+    private boolean inMemNodeSet;
 
-    private boolean isOrdered = false;
+    private boolean isOrdered;
 
-    private boolean enforceOrder = false;
+    private boolean enforceOrder;
 
-    private boolean keepUnOrdered = false;
+    private boolean keepUnOrdered;
 
-    private Variable holderVar = null;
+    private Variable holderVar;
 
-    private int state = 0;
+    private int state;
 
-    private NodeSet cachedSet = null;
+    private NodeSet cachedSet;
 
     public ValueSequence() {
         this(false);
@@ -441,7 +441,7 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
     private void ensureCapacity() {
         if (size == values.length) {
             final int newSize = (int) Math.round((size == 0 ? 1 : size * 3) / (double) 2);
-            final Item newValues[] = new Item[newSize];
+            final Item[] newValues = new Item[newSize];
             System.arraycopy(values, 0, newValues, 0, size);
             values = newValues;
         }
@@ -515,7 +515,7 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
     }
 
     private void setHasChanged() {
-        state = (state == Integer.MAX_VALUE ? state = 0 : state + 1);
+        state = state == Integer.MAX_VALUE ? state = 0 : state + 1;
     }
 
     @Override
@@ -876,8 +876,8 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
     }
 
     private class CollectionIterator implements Iterator<Collection> {
-        private Collection nextCollection = null;
-        private int pos = 0;
+        private Collection nextCollection;
+        private int pos;
 
         CollectionIterator() {
             next();
@@ -910,7 +910,7 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
     }
 
     private class ValueSequenceIterator implements SequenceIterator {
-        private int pos = 0;
+        private int pos;
 
         @Override
         public boolean hasNext() {

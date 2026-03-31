@@ -64,8 +64,8 @@ import java.io.IOException;
 import java.util.Optional;
 import java.util.Properties;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.*;
 
 /**

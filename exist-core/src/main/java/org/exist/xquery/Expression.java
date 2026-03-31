@@ -40,52 +40,52 @@ public interface Expression extends Materializable {
      * some types of expressions in one single step for the whole input sequence.
      * So if the flag is not set, the expression is only called once.
      */
-    public final static int SINGLE_STEP_EXECUTION = 1;
+    public static final int SINGLE_STEP_EXECUTION = 1;
 
     /**
      * Indicates that the expression is within a predicate or the where clause of
      * a FLWOR.
      */
-    public final static int IN_PREDICATE = 2;
+    public static final int IN_PREDICATE = 2;
 
     /**
      * Indicates that the expression is within a where clause of a FLWOR. This
      * flag will be set in addition to {@link #IN_PREDICATE}.
      */
-    public final static int IN_WHERE_CLAUSE = 4;
+    public static final int IN_WHERE_CLAUSE = 4;
 
     /**
      * Indicates that the expression is used within an update statement. Subexpressions
      * should not cache any relevant data as it may be subject to change.
      */
-    public final static int IN_UPDATE = 8;
-    public final static int NEED_INDEX_INFO = 16;
-    public final static int USE_TREE_TRAVERSAL = 32;
-    public final static int POSITIONAL_PREDICATE = 64;
-    public final static int DOT_TEST = 128;
-    public final static int IN_NODE_CONSTRUCTOR = 256;
+    public static final int IN_UPDATE = 8;
+    public static final int NEED_INDEX_INFO = 16;
+    public static final int USE_TREE_TRAVERSAL = 32;
+    public static final int POSITIONAL_PREDICATE = 64;
+    public static final int DOT_TEST = 128;
+    public static final int IN_NODE_CONSTRUCTOR = 256;
 
     /**
      * Indicates that the expression will redirect subexpressions evaluation 
      * result to output stream after some manipulations.
      */
-    public final static int NON_STREAMABLE = 512;
+    public static final int NON_STREAMABLE = 512;
 
     /**
      * Indicates that sequence .
      */
-    public final static int UNORDERED = 1024;
+    public static final int UNORDERED = 1024;
 
     /**
      * Indicates that no context id is supplied to an expression.
      */
-    public final static int NO_CONTEXT_ID = -1;
-    public final static int IGNORE_CONTEXT = -2;
+    public static final int NO_CONTEXT_ID = -1;
+    public static final int IGNORE_CONTEXT = -2;
 
     /**
      * Marks an invalid expression id.
      */
-    public final static int EXPRESSION_ID_INVALID = -1;
+    public static final int EXPRESSION_ID_INVALID = -1;
 
     /**
      * Returns an id which uniquely identifies this expression

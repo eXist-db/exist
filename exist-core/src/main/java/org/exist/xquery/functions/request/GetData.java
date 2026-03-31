@@ -21,23 +21,19 @@
  */
 package org.exist.xquery.functions.request;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Optional;
-
 import org.apache.commons.io.input.CloseShieldInputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Namespaces;
 import org.exist.dom.QName;
-import org.exist.http.servlets.RequestWrapper;
 import org.exist.dom.memtree.DocumentBuilderReceiver;
 import org.exist.dom.memtree.MemTreeBuilder;
+import org.exist.http.servlets.RequestWrapper;
 import org.exist.util.Configuration;
 import org.exist.util.MimeTable;
 import org.exist.util.MimeType;
 import org.exist.util.io.CachingFilterInputStream;
-import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.util.io.FilterInputStreamCache;
 import org.exist.util.io.FilterInputStreamCacheFactory;
 import org.exist.xquery.*;
@@ -48,6 +44,9 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
 import javax.annotation.Nonnull;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Optional;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -59,7 +58,7 @@ public class GetData extends StrictRequestFunction {
 
     protected static final Logger logger = LogManager.getLogger(GetData.class);
 
-    public final static FunctionSignature signature = new FunctionSignature(
+    public static final FunctionSignature signature = new FunctionSignature(
             new QName("get-data", RequestModule.NAMESPACE_URI, RequestModule.PREFIX),
             "Returns the content of a POST request. "
             + "If the HTTP Content-Type header in the request identifies it as a binary document, then xs:base64Binary is returned. "

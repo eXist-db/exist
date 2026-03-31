@@ -21,9 +21,6 @@
  */
 package org.exist.xquery.functions.system;
 
-import java.nio.file.Path;
-import java.util.Optional;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
@@ -33,6 +30,9 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
+import java.nio.file.Path;
+import java.util.Optional;
+
 /**
  * Return the eXist home.
  *
@@ -40,9 +40,9 @@ import org.exist.xquery.value.Type;
  */
 public class GetExistHome extends BasicFunction {
     
-    protected final static Logger logger = LogManager.getLogger(GetExistHome.class);
+    protected static final Logger logger = LogManager.getLogger(GetExistHome.class);
 
-    public final static FunctionSignature signature =
+    public static final FunctionSignature signature =
             new FunctionSignature(
             new QName("get-exist-home", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
             "Returns the eXist home location.",

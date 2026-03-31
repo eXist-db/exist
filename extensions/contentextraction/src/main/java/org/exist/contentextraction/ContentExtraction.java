@@ -21,9 +21,6 @@
  */
 package org.exist.contentextraction;
 
-import java.io.IOException;
-import java.io.InputStream;
-
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.AutoDetectParser;
@@ -32,6 +29,9 @@ import org.exist.util.serializer.SAXToReceiver;
 import org.exist.xquery.value.BinaryValue;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * @author <a href="mailto:dulip.withanage@gmail.com">Dulip Withanage</a>

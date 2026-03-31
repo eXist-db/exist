@@ -21,24 +21,22 @@
  */
 package org.exist.xquery.functions.validate;
 
-import java.io.IOException;
-import java.io.InputStream;
-
 import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.util.io.InputStreamUtil;
 import org.junit.*;
-
-import static org.exist.collections.CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE;
-import static org.junit.Assert.*;
-
-import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
-import static org.exist.samples.Samples.SAMPLES;
-
 import org.xml.sax.SAXException;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
+
+import java.io.IOException;
+import java.io.InputStream;
+
+import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
+import static org.exist.collections.CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE;
+import static org.exist.samples.Samples.SAMPLES;
+import static org.junit.Assert.*;
 
 /**
  * Tests for the validation:jaxv() function with XSDs.

@@ -74,7 +74,7 @@ public class XmldbBinariesTest extends AbstractBinariesTest<ResourceSet, Resourc
         try {
             colRoot = DatabaseManager.getCollection(getBaseUri() + "/db", ADMIN_DB_USER, ADMIN_DB_PWD);
 
-            final XmldbURI collectionNames[] = filePath.removeLastSegment().getPathSegments();
+            final XmldbURI[] collectionNames = filePath.removeLastSegment().getPathSegments();
 
             final Deque<Collection> cols = new ArrayDeque<>();
             try {

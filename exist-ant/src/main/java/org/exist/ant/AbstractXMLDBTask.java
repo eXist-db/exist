@@ -51,12 +51,12 @@ public abstract class AbstractXMLDBTask extends Task
     protected String  		driver         		= "org.exist.xmldb.DatabaseImpl";
     protected String  		user           		= "guest";
     protected String  		password       		= "guest";
-    protected String  		uri            		= null;
-    protected boolean		ssl					= false;
-    protected boolean 	createDatabase 		= false;
-    protected String  		configuration  		= null;
+    protected String  		uri;
+    protected boolean		ssl;
+    protected boolean 	createDatabase;
+    protected String  		configuration;
     protected boolean 	failonerror    		= true;
-    protected String		permissions	   		= null;
+    protected String		permissions;
     
     private final String	UNIX_PERMS_REGEX 	= "([r-][w-][x-]){3}";
 
@@ -220,7 +220,7 @@ public abstract class AbstractXMLDBTask extends Task
                 current = collection;
             }
         }
-        return( current );
+        return current;
     }
     
     

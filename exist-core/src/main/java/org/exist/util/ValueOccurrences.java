@@ -34,9 +34,9 @@ import org.exist.xquery.value.AtomicValue;
  */
 public class ValueOccurrences {
 
-	private AtomicValue value;
-	private int occurrences = 0;
-	private MutableDocumentSet docs = new DefaultDocumentSet();
+	private final AtomicValue value;
+	private int occurrences;
+	private final MutableDocumentSet docs = new DefaultDocumentSet();
 
 	public ValueOccurrences(AtomicValue value) {
 		this.value = value;

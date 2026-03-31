@@ -33,7 +33,7 @@ import java.util.regex.Pattern;
  *
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
-public class PatternFactory {
+public final class PatternFactory {
 
     private static final PatternFactory instance = new PatternFactory();
 

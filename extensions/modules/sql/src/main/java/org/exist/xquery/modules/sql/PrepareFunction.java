@@ -23,19 +23,13 @@ package org.exist.xquery.modules.sql;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.IntegerValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -55,7 +49,7 @@ import java.sql.SQLException;
 public class PrepareFunction extends BasicFunction {
     private static final Logger LOG = LogManager.getLogger(PrepareFunction.class);
 
-    public final static FunctionSignature[] signatures = {
+    public static final FunctionSignature[] signatures = {
             new FunctionSignature(
                     new QName("prepare", SQLModule.NAMESPACE_URI, SQLModule.PREFIX),
                     "Prepares a SQL statement against a SQL db using the connection indicated by the connection handle.",
@@ -90,7 +84,7 @@ public class PrepareFunction extends BasicFunction {
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
         // was a connection and SQL statement specified?
         if (args[0].isEmpty() || args[1].isEmpty()) {
-            return (Sequence.EMPTY_SEQUENCE);
+            return Sequence.EMPTY_SEQUENCE;
         }
 
         // get the Connection
@@ -98,7 +92,7 @@ public class PrepareFunction extends BasicFunction {
         Connection con = SQLModule.retrieveConnection(context, connectionUID);
 
         if (con == null) {
-            return (Sequence.EMPTY_SEQUENCE);
+            return Sequence.EMPTY_SEQUENCE;
         }
 
         // get the SQL statement
@@ -112,7 +106,7 @@ public class PrepareFunction extends BasicFunction {
             stmt = con.prepareStatement(sql);
 
             // store the PreparedStatement and return the uid handle of the PreparedStatement
-            return (new IntegerValue(this, SQLModule.storePreparedStatement(context, new PreparedStatementWithSQL(sql, stmt)), Type.LONG));
+            return new IntegerValue(this, SQLModule.storePreparedStatement(context, new PreparedStatementWithSQL(sql, stmt)), Type.LONG);
         } catch (SQLException sqle) {
             LOG.error("sql:prepare() Caught SQLException \"{}\" for SQL: \"{}\"", sqle.getMessage(), sql, sqle);
 

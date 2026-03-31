@@ -35,7 +35,7 @@ import java.util.Objects;
  */
 abstract class FunRoundBase extends BasicFunction {
 
-    public FunRoundBase(final XQueryContext context, final FunctionSignature signature) {
+    protected FunRoundBase(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
     }
 
@@ -43,7 +43,7 @@ abstract class FunRoundBase extends BasicFunction {
         return Type.NUMERIC;
     }
 
-    abstract protected RoundingMode getFunctionRoundingMode(NumericValue value);
+    protected abstract RoundingMode getFunctionRoundingMode(NumericValue value);
 
     @Override
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {

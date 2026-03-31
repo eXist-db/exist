@@ -49,8 +49,8 @@ import java.util.Map;
  */
 public class LuceneFacetConfig extends AbstractFieldConfig {
 
-    public final static String DIMENSION = "dimension";
-    public final static String HIERARCHICAL = "hierarchical";
+    public static final String DIMENSION = "dimension";
+    public static final String HIERARCHICAL = "hierarchical";
 
     protected String dimension;
 

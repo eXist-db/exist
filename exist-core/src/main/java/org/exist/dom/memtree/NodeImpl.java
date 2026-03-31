@@ -57,11 +57,11 @@ public abstract class NodeImpl<T extends NodeImpl<T>> implements INode<DocumentI
     protected DocumentImpl document;
     private final Expression expression;
 
-    public NodeImpl(final DocumentImpl doc, final int nodeNumber) {
+    protected NodeImpl(final DocumentImpl doc, final int nodeNumber) {
         this(null, doc, nodeNumber);
     }
 
-    public NodeImpl(final Expression expression, final DocumentImpl doc, final int nodeNumber) {
+    protected NodeImpl(final Expression expression, final DocumentImpl doc, final int nodeNumber) {
         this.expression = expression;
         this.document = doc;
         this.nodeNumber = nodeNumber;
@@ -142,7 +142,7 @@ public abstract class NodeImpl<T extends NodeImpl<T>> implements INode<DocumentI
         return switch (getNodeType()) {
             case Node.ELEMENT_NODE, Node.ATTRIBUTE_NODE -> {
                 final String nsUri = getQName().getNamespaceURI();
-                if (nsUri.equals(XMLConstants.NULL_NS_URI)) {
+                if (XMLConstants.NULL_NS_URI.equals(nsUri)) {
                     yield null;
                 } else {
                     yield nsUri;
@@ -164,16 +164,15 @@ public abstract class NodeImpl<T extends NodeImpl<T>> implements INode<DocumentI
     @Override
     public void setPrefix(final String prefix) throws DOMException {
         if(prefix == null || getNodeType() == Node.DOCUMENT_NODE) {
-            return;
         } else if("1.0".equals(getOwnerDocument().getXmlVersion()) && !XMLChar.isValidNCName(prefix)) {
             throw new DOMException(DOMException.INVALID_CHARACTER_ERR, "Prefix '" + prefix + "' in XML 1.0 contains invalid characters");
         } else if("1.1".equals(getOwnerDocument().getXmlVersion()) && !XML11Char.isXML11ValidNCName(prefix)) {
             throw new DOMException(DOMException.INVALID_CHARACTER_ERR, "Prefix '" + prefix + "' in XML 1.1 contains invalid characters");
         } else if(getNamespaceURI() == null) {
             throw new DOMException(DOMException.NAMESPACE_ERR, "Cannot set prefix when namespace is null");
-        } else if(prefix.equals(XMLConstants.XML_NS_PREFIX) && !getNamespaceURI().equals(XMLConstants.XML_NS_URI)) {
+        } else if(XMLConstants.XML_NS_PREFIX.equals(prefix) && !XMLConstants.XML_NS_URI.equals(getNamespaceURI())) {
             throw new DOMException(DOMException.NAMESPACE_ERR, "Prefix '" + XMLConstants.XML_NS_PREFIX + "' is invalid for namespace '" + getNamespaceURI() + "'");
-        } else if(getNodeType() == Node.ATTRIBUTE_NODE && prefix.equals(XMLConstants.XMLNS_ATTRIBUTE) && !getNamespaceURI().equals(XMLConstants.XMLNS_ATTRIBUTE_NS_URI)) {
+        } else if(getNodeType() == Node.ATTRIBUTE_NODE && XMLConstants.XMLNS_ATTRIBUTE.equals(prefix) && !XMLConstants.XMLNS_ATTRIBUTE_NS_URI.equals(getNamespaceURI())) {
             throw new DOMException(DOMException.NAMESPACE_ERR, "Prefix '" + XMLConstants.XMLNS_ATTRIBUTE + "' is invalid for namespace '" + getNamespaceURI() + "'");
         } else if(getNodeType() == Node.ELEMENT_NODE || getNodeType() == Node.ATTRIBUTE_NODE) {
             final QName qname = getQName();
@@ -490,7 +489,7 @@ public abstract class NodeImpl<T extends NodeImpl<T>> implements INode<DocumentI
             }
             ++next;
         }
-        return ((buf == null) ? "" : buf.toString());
+        return buf == null ? "" : buf.toString();
     }
 
     @Override
@@ -923,7 +922,7 @@ public abstract class NodeImpl<T extends NodeImpl<T>> implements INode<DocumentI
         return new DOMException(DOMException.NOT_SUPPORTED_ERR, "not implemented on class: " + getClass().getName());
     }
 
-    private final static class SingleNodeIterator implements SequenceIterator {
+    private static final class SingleNodeIterator implements SequenceIterator {
         private NodeImpl node;
 
         public SingleNodeIterator(final NodeImpl node) {

@@ -74,10 +74,8 @@ package org.exist.storage.btree;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import org.exist.storage.BrokerPool;
 import org.exist.storage.BufferStats;
-
 import org.exist.storage.DefaultCacheManager;
 import org.exist.storage.NativeBroker;
 import org.exist.storage.cache.*;
@@ -108,30 +106,30 @@ import java.util.stream.Collectors;
  */
 public class BTree extends Paged implements Lockable {
 
-    protected final static Logger LOGSTATS = LogManager.getLogger( NativeBroker.EXIST_STATISTICS_LOGGER );
+    protected static final Logger LOGSTATS = LogManager.getLogger( NativeBroker.EXIST_STATISTICS_LOGGER );
     
     /** Used as return value, if a value was not found */
-    public final static long KEY_NOT_FOUND = -1;
+    public static final long KEY_NOT_FOUND = -1;
 
     /** Type of BTreeNode/Page */
-    protected final static byte LEAF = 1;
-    protected final static byte BRANCH = 2;
+    protected static final byte LEAF = 1;
+    protected static final byte BRANCH = 2;
 
-    protected final static int MIN_SPACE_PER_KEY = 32;
+    protected static final int MIN_SPACE_PER_KEY = 32;
 
     /** Log entry type for an insert value operation */
-    public final static byte LOG_INSERT_VALUE = 0x20;
+    public static final byte LOG_INSERT_VALUE = 0x20;
     /** Log entry type for creation of a new BTree node */
-    public final static byte LOG_CREATE_BNODE = 0x21;
+    public static final byte LOG_CREATE_BNODE = 0x21;
     /** Log entry type for a page update resulting from a page split */
-    public final static byte LOG_UPDATE_PAGE = 0x22;
+    public static final byte LOG_UPDATE_PAGE = 0x22;
     /** Log entry type for a parent page change resulting from a page split */
-    public final static byte LOG_SET_PARENT = 0x23;
+    public static final byte LOG_SET_PARENT = 0x23;
     /** Log entry type for a value update */
-    public final static byte LOG_UPDATE_VALUE = 0x24;
+    public static final byte LOG_UPDATE_VALUE = 0x24;
     /** Log entry type for removing a value */
-    public final static byte LOG_REMOVE_VALUE = 0x25;
-    public final static byte LOG_SET_LINK = 0x26;
+    public static final byte LOG_REMOVE_VALUE = 0x25;
+    public static final byte LOG_SET_LINK = 0x26;
 
     static {
         // register the log entry types used for the BTree
@@ -296,8 +294,8 @@ public class BTree extends Paged implements Lockable {
             throws IOException, BTreeException, TerminatedException {
         if (query != null && query.getOperator() == IndexQuery.TRUNC_RIGHT) {
             final Value val1 = query.getValue(0);
-            final byte data1[] = val1.getData();
-            final byte data2[] = new byte[data1.length];
+            final byte[] data1 = val1.getData();
+            final byte[] data2 = new byte[data1.length];
             System.arraycopy(data1, 0, data2, 0, data1.length);
             data2[data2.length - 1] += 1;
             query = new IndexQuery(query.getOperator(), val1, new Value(data2));
@@ -361,8 +359,8 @@ public class BTree extends Paged implements Lockable {
             throws IOException, BTreeException, TerminatedException {
         if (query != null && query.getOperator() == IndexQuery.TRUNC_RIGHT) {
             final Value val1 = query.getValue(0);
-            final byte data1[] = val1.getData();
-            final byte data2[] = new byte[data1.length];
+            final byte[] data1 = val1.getData();
+            final byte[] data2 = new byte[data1.length];
             System.arraycopy(data1, 0, data2, 0, data1.length);
             data2[data2.length - 1] += 1;
             query = new IndexQuery(query.getOperator(), val1, new Value(data2));
@@ -532,8 +530,7 @@ public class BTree extends Paged implements Lockable {
     @Override
     public boolean flush() throws DBException {
         boolean flushed = cache.flush();
-        flushed = flushed | super.flush();
-        return flushed;
+        return flushed | super.flush();
     }
 
     @Override
@@ -899,7 +896,7 @@ public class BTree extends Paged implements Lockable {
     protected final class BTreeNode implements BTreeCacheable {
 
         /** defines the default size for the keys array */
-        private final static int DEFAULT_INITIAL_ENTRIES = 32;
+        private static final int DEFAULT_INITIAL_ENTRIES = 32;
         /** the underlying Page object that stores the node's data */
         private final Page page;
         private final BTreePageHeader pageHeader;
@@ -910,7 +907,7 @@ public class BTree extends Paged implements Lockable {
         private Value prefix = Value.EMPTY_VALUE;
 
         /** the number of keys currently stored */
-        private int nKeys = 0;
+        private int nKeys;
 
         /** 
          * stores the page pointers to child nodes (for branches)
@@ -919,11 +916,11 @@ public class BTree extends Paged implements Lockable {
         private long[] ptrs;
 
         /** the number of pointers currently used */
-        private int nPtrs = 0;
+        private int nPtrs;
 
         /** fields used by the Cacheable interface */
-        private int refCount = 0;
-        private int timestamp = 0;
+        private int refCount;
+        private int timestamp;
 
         /** does this node need to be saved? */
         private boolean saved = true;
@@ -1243,7 +1240,7 @@ public class BTree extends Paged implements Lockable {
                     // keys that can be stored on one page. Each key is stored as follows:
                     // [valSize, prefixLen, value], where prefixLen specifies the number of
                     // leading bytes the key has in common with the previous key.
-                    final int prefixLen = (data[p++] & 0xFF);
+                    final int prefixLen = data[p++] & 0xFF;
                     try {
                         final byte[] t = new byte[valSize];
                         if (prefixLen > 0) {
@@ -1789,15 +1786,16 @@ public class BTree extends Paged implements Lockable {
                                 case IndexQuery.NIN :
                                 case IndexQuery.TRUNC_RIGHT :
                                 case IndexQuery.RANGE :
-                                    for (int i = 0; i < nPtrs; i++)
+                                    for (int i = 0; i < nPtrs; i++) {
                                         if ((i >= leftIdx && i <= rightIdx) == pos) {
                                             getChildNode(i).query(query, callback);
                                             if (query.getOperator() == IndexQuery.TRUNC_RIGHT ||
-                                                query.getOperator() == IndexQuery.RANGE) {
+                                                    query.getOperator() == IndexQuery.RANGE) {
 
                                                 break;
                                             }
                                         }
+                                    }
                                     break;
                                 case IndexQuery.NEQ :
                                     getChildNode(0).query(query, callback);
@@ -2138,8 +2136,8 @@ public class BTree extends Paged implements Lockable {
                 final boolean pos = query.getOperator() >= 0;
                 switch (pageHeader.getStatus()) {
                     case BRANCH :
-                        leftIdx = leftIdx < 0 ? - (leftIdx + 1) : leftIdx + 1;
-                        rightIdx = rightIdx < 0 ? - (rightIdx + 1) : rightIdx + 1;
+                        leftIdx = leftIdx < 0 ? -(leftIdx + 1) : leftIdx + 1;
+                        rightIdx = rightIdx < 0 ? -(rightIdx + 1) : rightIdx + 1;
                         switch (query.getOperator()) {
                             case IndexQuery.BWX :
                             case IndexQuery.NBWX :
@@ -2165,9 +2163,10 @@ public class BTree extends Paged implements Lockable {
                                         getChildNode(i).remove(transaction, query, callback);
                                     }
                                 }
+                                break;
                             case IndexQuery.LT :
                             case IndexQuery.GEQ :
-                                for (int i = 0; i < nPtrs; i++){
+                                for (int i = 0; i < nPtrs; i++) {
                                     if ((pos && (i <= leftIdx)) || (!pos && (i >= leftIdx))) {
                                         getChildNode(i).remove(transaction, query, callback);
                                     }
@@ -2391,7 +2390,7 @@ public class BTree extends Paged implements Lockable {
                 // No Query - Just Walk The Tree
                 switch (pageHeader.getStatus()) {
                     case BRANCH :
-                        for (int i = 0; i < nPtrs; i++) {
+                        for (int i = 0; i < nPtrs; --i, i++) {
                             if (transaction != null && isRecoveryEnabled()) {
                                 final RemoveValueLoggable log =
                                     new RemoveValueLoggable(transaction,
@@ -2404,7 +2403,6 @@ public class BTree extends Paged implements Lockable {
                             removeKey(i);
                             removePointer(i);
                             recalculateDataLen();
-                            --i;
                         }
                         break;
                     case LEAF :
@@ -2598,7 +2596,7 @@ public class BTree extends Paged implements Lockable {
         private void resizeKeys(final int minCapacity) {
             final int oldCapacity = keys.length;
             if (minCapacity > oldCapacity) {
-                final Value oldData[] = keys;
+                final Value[] oldData = keys;
                 int newCapacity = (oldCapacity * 3)/2 + 1;
                 if (newCapacity < minCapacity) {
                     newCapacity = minCapacity;
@@ -2662,7 +2660,7 @@ public class BTree extends Paged implements Lockable {
 
     protected class BTreeFileHeader extends FileHeader {
 
-        private long rootPage = 0;
+        private long rootPage;
         private short fixedLen = -1;
 
         public BTreeFileHeader(final long pageCount, final int pageSize) {
@@ -2728,7 +2726,7 @@ public class BTree extends Paged implements Lockable {
 
     protected static class BTreePageHeader extends PageHeader {
 
-        private short valueCount = 0;
+        private short valueCount;
         private long parentPage = Page.NO_PAGE;
 
         public BTreePageHeader() {

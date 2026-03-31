@@ -40,17 +40,17 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class URLStreamHandlerStartupTrigger implements StartupTrigger {
 
-    private final static Logger LOG = LogManager.getLogger(URLStreamHandlerStartupTrigger.class);
+    private static final Logger LOG = LogManager.getLogger(URLStreamHandlerStartupTrigger.class);
 
-    public final static String JAVA_PROTOCOL_HANDLER_PKGS="java.protocol.handler.pkgs";
-    public final static String EXIST_PROTOCOL_HANDLER="org.exist.protocolhandler.protocols";
+    public static final String JAVA_PROTOCOL_HANDLER_PKGS="java.protocol.handler.pkgs";
+    public static final String EXIST_PROTOCOL_HANDLER="org.exist.protocolhandler.protocols";
 
     /*
     eXist may be started and stopped multiple times within the same JVM,
     for example when running the test suite. This guard ensures that
     we only attempt the registration once per JVM session
     */
-    private final static AtomicBoolean registered = new AtomicBoolean();
+    private static final AtomicBoolean registered = new AtomicBoolean();
 
     @Override
     public void execute(final DBBroker sysBroker, final Txn transaction, final Map<String, List<? extends Object>> params) {

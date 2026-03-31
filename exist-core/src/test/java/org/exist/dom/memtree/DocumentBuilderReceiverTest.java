@@ -23,18 +23,16 @@ package org.exist.dom.memtree;
 
 import com.googlecode.junittoolbox.ParallelRunner;
 import org.easymock.EasyMock;
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.verify;
-import static org.easymock.EasyMock.replay;
 import org.exist.util.hashtable.NamePool;
 import org.exist.xquery.XQueryContext;
 import org.junit.Test;
-import static org.junit.Assert.assertEquals;
-
 import org.junit.runner.RunWith;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
+
+import static org.easymock.EasyMock.*;
+import static org.junit.Assert.assertEquals;
 
 /**
  *

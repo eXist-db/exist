@@ -71,7 +71,7 @@ public class IPUtil {
         throw new IllegalStateException("Exceeded MAX_RANDOM_PORT_ATTEMPTS");
     }
 
-    private synchronized static int random(final int min, final int max) {
+    private static synchronized int random(final int min, final int max) {
         return random.nextInt((max - min) + 1) + min;
     }
 

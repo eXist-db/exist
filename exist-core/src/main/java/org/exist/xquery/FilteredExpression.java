@@ -21,15 +21,14 @@
  */
 package org.exist.xquery;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.memtree.NodeImpl;
+import org.exist.dom.persistent.NodeSet;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.*;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * FilteredExpression represents a primary expression with a predicate. Examples:
@@ -41,7 +40,7 @@ import javax.annotation.Nullable;
 public class FilteredExpression extends AbstractExpression {
 
     private final Expression expression;
-    private boolean abbreviated = false;
+    private boolean abbreviated;
     private final List<Predicate> predicates = new ArrayList<>(2);
     private Expression parent;
 

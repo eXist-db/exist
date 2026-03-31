@@ -21,17 +21,17 @@
  */
 package org.exist.xquery.modules.cache;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.*;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static org.exist.xquery.FunctionDSL.functionDefs;
 
@@ -120,7 +120,7 @@ public class CacheModule extends AbstractInternalModule {
         return FunctionDSL.functionSignatures(new QName(name, NAMESPACE_URI, PREFIX), description, returnType, variableParamTypes);
     }
 
-    static class CacheModuleErrorCode extends ErrorCodes.ErrorCode {
+    static final class CacheModuleErrorCode extends ErrorCodes.ErrorCode {
         private CacheModuleErrorCode(final String code, final String description) {
             super(new QName(code, NAMESPACE_URI, PREFIX), description);
         }
@@ -186,9 +186,9 @@ public class CacheModule extends AbstractInternalModule {
     private static Optional<String> getFirstString(final Map<String, List<?>> parameters, final String paramName) {
         return Optional.ofNullable(parameters.get(paramName))
                 .filter(l -> l.size() == 1)
-                .map(l -> l.getFirst())
-                .filter(o -> o instanceof String)
-                .map(o -> (String)o);
+                .map(List::getFirst)
+                .filter(String.class::isInstance)
+                .map(String.class::cast);
     }
 
     Optional<CacheConfig> getLazyCacheConfig() {

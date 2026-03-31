@@ -21,10 +21,9 @@
  */
 package org.exist.xquery.value;
 
+import com.ibm.icu.text.Collator;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
-
-import com.ibm.icu.text.Collator;
 
 /**
  * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>

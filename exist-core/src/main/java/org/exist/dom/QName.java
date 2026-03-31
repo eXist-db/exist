@@ -21,10 +21,10 @@
  */
 package org.exist.dom;
 
-import org.exist.xquery.Context;
 import org.exist.storage.ElementValue;
 import org.exist.util.XMLNames;
 import org.exist.xquery.Constants;
+import org.exist.xquery.Context;
 
 import javax.xml.XMLConstants;
 import java.util.regex.Matcher;
@@ -115,7 +115,7 @@ public class QName implements Comparable<QName> {
      * @return true if there is a non-default namespace.
      */
     public boolean hasNamespace() {
-        return !namespaceURI.equals(XMLConstants.NULL_NS_URI);
+        return !XMLConstants.NULL_NS_URI.equals(namespaceURI);
     }
 
     public String getPrefix() {
@@ -237,23 +237,22 @@ public class QName implements Comparable<QName> {
         if (this == WildcardQName.instance || qnOther == WildcardQName.instance) {
             return true;
         }
-        if ((localPart.equals(WILDCARD) || qnOther.localPart.equals(WILDCARD))
+        if ((WILDCARD.equals(localPart) || WILDCARD.equals(qnOther.localPart))
                 && namespaceURI.equals(qnOther.namespaceURI)) {
             return true;
         }
-        if ((namespaceURI.equals(WILDCARD) || qnOther.namespaceURI.equals(WILDCARD))
+        if ((WILDCARD.equals(namespaceURI) || WILDCARD.equals(qnOther.namespaceURI))
                 && localPart.equals(qnOther.localPart)) {
             return true;
         }
-        return (namespaceURI.equals(WILDCARD) && localPart.equals(WILDCARD))
-                || (qnOther.namespaceURI.equals(WILDCARD) || qnOther.localPart.equals(WILDCARD));
+        return (WILDCARD.equals(namespaceURI) && WILDCARD.equals(localPart))
+                || (WILDCARD.equals(qnOther.namespaceURI) || WILDCARD.equals(qnOther.localPart));
     }
 
     @Override
     public int hashCode() {
         int result = namespaceURI.hashCode();
-        result = 31 * result + localPart.hashCode();
-        return result;
+        return 31 * result + localPart.hashCode();
     }
 
     public javax.xml.namespace.QName toJavaQName() {
@@ -454,8 +453,8 @@ public class QName implements Comparable<QName> {
     public interface PartialQName {
     }
 
-    public static class WildcardQName extends QName implements PartialQName {
-        private final static WildcardQName instance = new WildcardQName();
+    public static final class WildcardQName extends QName implements PartialQName {
+        private static final WildcardQName instance = new WildcardQName();
 
         public static WildcardQName getInstance() {
             return instance;

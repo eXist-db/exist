@@ -21,18 +21,6 @@
  */
 package org.exist.xmldb;
 
-import java.io.*;
-import java.util.List;
-import java.util.Properties;
-
-import javax.xml.XMLConstants;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-import javax.xml.transform.OutputKeys;
-
 import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.exist.dom.QName;
 import org.exist.security.Account;
@@ -43,11 +31,6 @@ import org.exist.util.io.InputStreamUtil;
 import org.exist.util.serializer.AttrList;
 import org.exist.util.serializer.SAXSerializer;
 import org.junit.*;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.exist.TestUtils.GUEST_DB_USER;
-import static org.exist.xmldb.AbstractLocal.PROP_JOIN_TRANSACTION_IF_PRESENT;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -63,8 +46,19 @@ import org.xmldb.api.modules.BinaryResource;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XPathQueryService;
+
+import javax.xml.XMLConstants;
+import javax.xml.parsers.*;
+import javax.xml.transform.OutputKeys;
+import java.io.*;
+import java.util.List;
+import java.util.Properties;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
+import static org.exist.TestUtils.GUEST_DB_USER;
 import static org.exist.samples.Samples.SAMPLES;
+import static org.exist.xmldb.AbstractLocal.PROP_JOIN_TRANSACTION_IF_PRESENT;
 import static org.junit.Assert.*;
 
 public class ResourceTest {
@@ -72,7 +66,7 @@ public class ResourceTest {
     @ClassRule
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
-    private final static String TEST_COLLECTION = "testResource";
+    private static final String TEST_COLLECTION = "testResource";
 
     @BeforeClass
     public static void prepareXmldbJoinTransactions() {
@@ -415,7 +409,7 @@ public class ResourceTest {
 
         @Override
         public void startElement(final QName qname, final AttrList attribs) throws SAXException {
-            if(qname.getLocalPart().equals(IMPORT_ELEM_NAME)) {
+            if(IMPORT_ELEM_NAME.equals(qname.getLocalPart())) {
                 importDoc(attribs.getValue(new QName(HREF_ATTR_NAME, XMLConstants.NULL_NS_URI)));
             } else {
                 super.startElement(qname, attribs);
@@ -425,7 +419,7 @@ public class ResourceTest {
         @Override
         public void startElement(final String uri, final String localName, final String qName,
                 final Attributes attributes) throws SAXException {
-            if(localName.equals(IMPORT_ELEM_NAME)) {
+            if(IMPORT_ELEM_NAME.equals(localName)) {
                 importDoc(attributes.getValue(HREF_ATTR_NAME));
             } else {
                 super.startElement(uri, localName, qName, attributes);
@@ -443,14 +437,14 @@ public class ResourceTest {
 
         @Override
         public void endElement(final QName qname) throws SAXException {
-            if(!qname.getLocalPart().equals(IMPORT_ELEM_NAME)) {
+            if(!IMPORT_ELEM_NAME.equals(qname.getLocalPart())) {
                 super.endElement(qname);
             }
         }
 
         @Override
         public void endElement(final String uri, final String localName, final String qName) throws SAXException {
-            if(!localName.equals(IMPORT_ELEM_NAME)) {
+            if(!IMPORT_ELEM_NAME.equals(localName)) {
                 super.endElement(uri, localName, qName);
             }
         }

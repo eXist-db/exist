@@ -26,14 +26,10 @@ import com.thaiopensource.validate.SchemaReader;
 import com.thaiopensource.validate.ValidateProperty;
 import com.thaiopensource.validate.ValidationDriver;
 import com.thaiopensource.validate.rng.CompactSchemaReader;
-
-import java.net.MalformedURLException;
-
 import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.dom.memtree.NodeImpl;
 import org.exist.storage.BrokerPool;
-
 import org.exist.validation.ValidationReport;
 import org.exist.validation.resolver.unstable.ExistResolver;
 import org.exist.xquery.BasicFunction;
@@ -41,15 +37,10 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.BooleanValue;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
-
+import org.exist.xquery.value.*;
 import org.xml.sax.InputSource;
+
+import java.net.MalformedURLException;
 
 /**
  *   xQuery function for validation of XML instance documents
@@ -76,7 +67,7 @@ public class Jing extends BasicFunction  {
     private final BrokerPool brokerPool;
     
     // Setup function signature
-    public final static FunctionSignature[] signatures = {
+    public static final FunctionSignature[] signatures = {
         
         new FunctionSignature(
                 new QName("jing", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX),
@@ -137,7 +128,7 @@ public class Jing extends BasicFunction  {
             // Special setup for compact notation
             final String grammarUrl = grammar.getSystemId();
             final SchemaReader schemaReader 
-                    = ( (grammarUrl != null) && (grammarUrl.endsWith(".rnc")) )
+                    = (grammarUrl != null) && (grammarUrl.endsWith(".rnc"))
                     ? CompactSchemaReader.getInstance() : null;
 
             // Setup validation properties. see Jing interface
@@ -182,8 +173,7 @@ public class Jing extends BasicFunction  {
             context.pushDocumentContext();
             try {
                 final MemTreeBuilder builder = context.getDocumentBuilder();
-                final NodeImpl result = Shared.writeReport(report, builder);
-                return result;
+                return Shared.writeReport(report, builder);
             } finally {
                 context.popDocumentContext();
             }

@@ -21,6 +21,9 @@
  */
 package org.exist.http;
 
+import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpSessionEvent;
+import jakarta.servlet.http.HttpSessionListener;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.BinaryDocument;
@@ -39,9 +42,6 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.Sequence;
 
-import jakarta.servlet.http.HttpSession;
-import jakarta.servlet.http.HttpSessionEvent;
-import jakarta.servlet.http.HttpSessionListener;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -75,7 +75,7 @@ public class AuditTrailSessionListener implements HttpSessionListener {
 
     @Override
     public void sessionDestroyed(final HttpSessionEvent sessionEvent) {
-        final HttpSession session = (sessionEvent != null) ? sessionEvent.getSession() : null;
+        final HttpSession session = sessionEvent != null ? sessionEvent.getSession() : null;
         if (session != null) {
             LOG.info("Destroyed session {}", session.getId());
         } else {

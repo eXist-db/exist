@@ -21,10 +21,7 @@
  */
 package org.exist.security;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
@@ -32,8 +29,11 @@ import org.apache.http.HttpStatus;
 import org.apache.http.client.fluent.Executor;
 import org.apache.http.client.fluent.Request;
 import org.exist.test.ExistWebServer;
-import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.junit.ClassRule;
+
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 
 /**
  *
@@ -44,7 +44,7 @@ public class RestApiSecurityTest extends AbstractApiSecurityTest {
     @ClassRule
     public static ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
 
-    private final static String baseUri = "/db";
+    private static final String baseUri = "/db";
 
     private static String getServerUri() {
         return "http://localhost:" + existWebServer.getPort() + "/rest";

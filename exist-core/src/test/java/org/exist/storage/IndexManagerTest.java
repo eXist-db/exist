@@ -22,20 +22,13 @@
 
 package org.exist.storage;
 
-import java.nio.file.Path;
-import java.util.Map;
-import java.util.Optional;
 import org.exist.collections.Collection;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.IStoredNode;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.NodeSet;
-import org.exist.indexing.Index;
-import org.exist.indexing.IndexController;
-import org.exist.indexing.IndexWorker;
-import org.exist.indexing.MatchListener;
-import org.exist.indexing.StreamListener;
+import org.exist.indexing.*;
 import org.exist.indexing.StreamListener.ReindexMode;
 import org.exist.storage.btree.BTree;
 import org.exist.test.ExistEmbeddedServer;
@@ -47,8 +40,12 @@ import org.junit.Test;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-import static org.junit.Assert.assertNull;
+import java.nio.file.Path;
+import java.util.Map;
+import java.util.Optional;
+
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 public class IndexManagerTest {
 

@@ -31,7 +31,7 @@ import org.exist.dom.persistent.MutableDocumentSet;
 public class Occurrences implements Comparable<Occurrences> {
 
 	private Comparable term;
-	private int occurrences = 0;
+	private int occurrences;
 	private MutableDocumentSet docs = new DefaultDocumentSet();
     
 	public Occurrences(final Comparable name) {

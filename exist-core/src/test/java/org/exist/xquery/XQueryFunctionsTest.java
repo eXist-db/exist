@@ -21,12 +21,6 @@
  */
 package org.exist.xquery;
 
-import java.net.URISyntaxException;
-import java.nio.file.Path;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
-
 import com.googlecode.junittoolbox.ParallelRunner;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.xmldb.XmldbURI;
@@ -39,6 +33,12 @@ import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.BinaryResource;
 import org.xmldb.api.modules.CollectionManagementService;
+
+import java.net.URISyntaxException;
+import java.nio.file.Path;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 import static org.junit.Assert.*;
 
@@ -63,7 +63,7 @@ public class XQueryFunctionsTest {
     @ClassRule
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
     
-    private final static String ROOT_COLLECTION_URI = "xmldb:exist:///db";
+    private static final String ROOT_COLLECTION_URI = "xmldb:exist:///db";
 
     @Test
     public void arguments() throws XMLDBException {

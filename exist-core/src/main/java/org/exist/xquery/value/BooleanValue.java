@@ -30,8 +30,8 @@ import org.exist.xquery.XPathException;
 
 public class BooleanValue extends AtomicValue {
 
-    public final static BooleanValue TRUE = new BooleanValue(true);
-    public final static BooleanValue FALSE = new BooleanValue(false);
+    public static final BooleanValue TRUE = new BooleanValue(true);
+    public static final BooleanValue FALSE = new BooleanValue(false);
 
     private final boolean value;
 
@@ -51,7 +51,7 @@ public class BooleanValue extends AtomicValue {
      * @param bool the boolean value to map
      * @return either {@link #TRUE} or {@link #FALSE}
      */
-    public final static BooleanValue valueOf(boolean bool) {
+    public static BooleanValue valueOf(boolean bool) {
         return bool ? TRUE : FALSE;
     }
 

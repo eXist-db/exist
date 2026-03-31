@@ -88,13 +88,13 @@ public class VariableByteArrayInput extends AbstractVariableByteInput {
             throw new EOFException();
         }
         byte b = data[position++];
-        short i = (short) (b & 0177);
-        for (int shift = 7; (b & 0200) != 0; shift += 7) {
+        short i = (short) (b & 127);
+        for (int shift = 7; (b & 128) != 0; shift += 7) {
             if (position == end) {
                 throw new EOFException();
             }
             b = data[position++];
-            i |= (b & 0177) << shift;
+            i |= (b & 127) << shift;
         }
         return i;
     }
@@ -105,13 +105,13 @@ public class VariableByteArrayInput extends AbstractVariableByteInput {
             throw new EOFException();
         }
         byte b = data[position++];
-        int i = b & 0177;
-        for (int shift = 7; (b & 0200) != 0; shift += 7) {
+        int i = b & 127;
+        for (int shift = 7; (b & 128) != 0; shift += 7) {
             if (position == end) {
                 throw new EOFException();
             }
             b = data[position++];
-            i |= (b & 0177) << shift;
+            i |= (b & 127) << shift;
         }
         return i;
     }
@@ -131,7 +131,7 @@ public class VariableByteArrayInput extends AbstractVariableByteInput {
         }
         byte b = data[position++];
         long i = b & 0177L;
-        for (int shift = 7; (b & 0200) != 0; shift += 7) {
+        for (int shift = 7; (b & 128) != 0; shift += 7) {
             if (position == end) {
                 throw new EOFException();
             }
@@ -169,7 +169,8 @@ public class VariableByteArrayInput extends AbstractVariableByteInput {
     @Override
     public void skip(final int count) throws IOException {
         for (int i = 0; i < count; i++) {
-            while (position < end && (data[position++] & 0200) > 0) {
+            while (position < end && (data[position++] & 128) > 0) {
+                continue;
                 //Nothing to do
             }
         }

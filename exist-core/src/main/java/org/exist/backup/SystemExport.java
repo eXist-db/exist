@@ -97,14 +97,14 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * #export(org.exist.collections.Collection, BackupWriter, java.util.Date, BackupDescriptor, java.util.List, org.exist.dom.persistent.MutableDocumentSet)}.
  */
 public class SystemExport {
-    public final static Logger LOG = LogManager.getLogger(SystemExport.class);
+    public static final Logger LOG = LogManager.getLogger(SystemExport.class);
 
     private static final XmldbURI TEMP_COLLECTION = XmldbURI.createInternal(XmldbURI.TEMP_COLLECTION);
     private static final XmldbURI CONTENTS_URI = XmldbURI.createInternal("__contents__.xml");
     private static final XmldbURI LOST_URI = XmldbURI.createInternal("__lost_and_found__");
 
-    public final static String CONFIGURATION_ELEMENT = "backup-filter";
-    public final static String CONFIG_FILTERS = "backup.serialization.filters";
+    public static final String CONFIGURATION_ELEMENT = "backup-filter";
+    public static final String CONFIG_FILTERS = "backup.serialization.filters";
 
     private static final int currVersion = 1;
 
@@ -117,9 +117,9 @@ public class SystemExport {
 
     private final DBBroker broker;
     private final Txn transaction;
-    private StatusCallback callback = null;
-    private boolean directAccess = false;
-    private ProcessMonitor.Monitor monitor = null;
+    private StatusCallback callback;
+    private boolean directAccess;
+    private ProcessMonitor.Monitor monitor;
     private ChainOfReceiversFactory chainFactory;
 
     public SystemExport(final DBBroker broker, final Txn transaction, final StatusCallback callback, final ProcessMonitor.Monitor monitor,
@@ -152,7 +152,7 @@ public class SystemExport {
     }
 
     public Path export(final String targetDir, final boolean incremental, final boolean zip, final List<ErrorReport> errorList) {
-        return (export(targetDir, incremental, -1, zip, errorList));
+        return export(targetDir, incremental, -1, zip, errorList);
     }
 
 
@@ -177,14 +177,14 @@ public class SystemExport {
 
             if (incremental) {
                 prevBackup = directory.lastBackupFile();
-                LOG.info("Creating incremental backup. Prev backup: {}", (prevBackup == null) ? "none" : prevBackup.getSymbolicPath());
+                LOG.info("Creating incremental backup. Prev backup: {}", prevBackup == null ? "none" : prevBackup.getSymbolicPath());
             }
 
             final Properties properties = new Properties();
             int seqNr = 1;
 
             if (incremental) {
-                properties.setProperty(BackupDescriptor.PREVIOUS_PROP_NAME, (prevBackup == null) ? "" : prevBackup.getName());
+                properties.setProperty(BackupDescriptor.PREVIOUS_PROP_NAME, prevBackup == null ? "" : prevBackup.getName());
 
                 if (prevBackup != null) {
                     final Properties prevProp = prevBackup.getProperties();
@@ -232,7 +232,7 @@ public class SystemExport {
 //            output.addToRoot(RepoBackup.REPO_ARCHIVE, repoBackup);
 //            FileUtils.forceDelete(repoBackup);
 
-                final Date date = (prevBackup == null) ? null : prevBackup.getDate();
+                final Date date = prevBackup == null ? null : prevBackup.getDate();
                 final CollectionCallback cb = new CollectionCallback(output, date, prevBackup, errorList, true);
                 broker.getCollectionsFailsafe(transaction, cb);
 
@@ -264,47 +264,47 @@ public class SystemExport {
 
     private static boolean isDamaged(final DocumentImpl doc, final List<ErrorReport> errorList) {
         if (errorList == null) {
-            return (false);
+            return false;
         }
 
         for (final org.exist.backup.ErrorReport report : errorList) {
 
             if ((report.getErrcode() == org.exist.backup.ErrorReport.RESOURCE_ACCESS_FAILED) && (((ErrorReport.ResourceError) report).getDocumentId() == doc.getDocId())) {
-                return (true);
+                return true;
             }
         }
-        return (false);
+        return false;
     }
 
 
     @SuppressWarnings("unused")
     private static boolean isDamaged(final Collection collection, final List<ErrorReport> errorList) {
         if (errorList == null) {
-            return (false);
+            return false;
         }
 
         for (final ErrorReport report : errorList) {
 
             if ((report.getErrcode() == org.exist.backup.ErrorReport.CHILD_COLLECTION) && (((ErrorReport.CollectionError) report).getCollectionId() == collection.getId())) {
-                return (true);
+                return true;
             }
         }
-        return (false);
+        return false;
     }
 
 
     private static boolean isDamagedChild(final XmldbURI uri, final List<ErrorReport> errorList) {
         if (errorList == null) {
-            return (false);
+            return false;
         }
 
         for (final org.exist.backup.ErrorReport report : errorList) {
 
             if ((report.getErrcode() == org.exist.backup.ErrorReport.CHILD_COLLECTION) && ((org.exist.backup.ErrorReport.CollectionError) report).getCollectionURI().equalsInternal(uri)) {
-                return (true);
+                return true;
             }
         }
-        return (false);
+        return false;
     }
 
 
@@ -521,9 +521,9 @@ public class SystemExport {
 
         // store permissions
         final AttributesImpl attr = new AttributesImpl();
-        attr.addAttribute(Namespaces.EXIST_NS, "type", "type", "CDATA", (doc.getResourceType() == DocumentImpl.BINARY_FILE) ? "BinaryResource" : "XMLResource");
+        attr.addAttribute(Namespaces.EXIST_NS, "type", "type", "CDATA", doc.getResourceType() == DocumentImpl.BINARY_FILE ? "BinaryResource" : "XMLResource");
         attr.addAttribute(Namespaces.EXIST_NS, "name", "name", "CDATA", doc.getFileURI().toString());
-        attr.addAttribute(Namespaces.EXIST_NS, "skip", "skip", "CDATA", (needsBackup ? "no" : "yes"));
+        attr.addAttribute(Namespaces.EXIST_NS, "skip", "skip", "CDATA", needsBackup ? "no" : "yes");
         Backup.writeUnixStylePermissionAttributes(attr, perms);
 
         // be careful when accessing document metadata: it is stored in a
@@ -692,7 +692,7 @@ public class SystemExport {
                 AccountImpl.getSecurityProperties().enableCheckPasswords(true);
             }
         }
-        return (collectionCount);
+        return collectionCount;
     }
 
     public interface StatusCallback {
@@ -705,13 +705,13 @@ public class SystemExport {
         void error(String message, Throwable exception);
     }
 
-    private class CollectionCallback implements BTreeCallback {
+    private final class CollectionCallback implements BTreeCallback {
         private final BackupWriter writer;
         private final BackupDescriptor prevBackup;
         private final Date date;
         private final List<ErrorReport> errors;
         private final MutableDocumentSet docs = new DefaultDocumentSet();
-        private int collectionCount = 0;
+        private int collectionCount;
         private final boolean exportCollection;
         private int lastPercentage = -1;
         private final Agent jmxAgent = AgentFactory.getInstance();
@@ -735,7 +735,7 @@ public class SystemExport {
                     uri = UTF8.decode(value.data(), value.start() + CollectionStore.CollectionKey.OFFSET_VALUE, value.getLength() - CollectionStore.CollectionKey.OFFSET_VALUE).toString();
 
                     if (CollectionStore.NEXT_COLLECTION_ID_KEY.equals(uri) || CollectionStore.NEXT_DOC_ID_KEY.equals(uri) || CollectionStore.FREE_COLLECTION_ID_KEY.equals(uri) || CollectionStore.FREE_DOC_ID_KEY.equals(uri)) {
-                        return (true);
+                        return true;
                     }
 
                     if (callback != null) {
@@ -762,23 +762,23 @@ public class SystemExport {
                 reportError("Terminating system export upon request", e);
 
                 // rethrow
-                throw (e);
+                throw e;
             } catch (final Exception e) {
                 reportError("Caught exception while scanning collections: " + uri, e);
             }
-            return (true);
+            return true;
         }
 
 
         public DocumentSet getDocs() {
-            return (docs);
+            return docs;
         }
     }
 
 
-    private class DocumentCallback implements BTreeCallback {
+    private final class DocumentCallback implements BTreeCallback {
         private final DocumentSet exportedDocs;
-        private Set<String> writtenDocs = null;
+        private Set<String> writtenDocs;
         private final SAXSerializer serializer;
         private final BackupWriter output;
         private final Date date;
@@ -830,12 +830,12 @@ public class SystemExport {
                     reportError("Caught an exception while scanning documents: " + e.getMessage(), e);
                 }
             }
-            return (true);
+            return true;
         }
     }
 
 
-    private class CheckDeletedHandler extends DefaultHandler {
+    private final class CheckDeletedHandler extends DefaultHandler {
         private final Collection collection;
         private final SAXSerializer serializer;
 
@@ -846,7 +846,7 @@ public class SystemExport {
 
         @Override
         public void startElement(final String uri, final String localName, final String qName, final Attributes attributes) throws SAXException {
-            if (uri.equals(Namespaces.EXIST_NS)) {
+            if (Namespaces.EXIST_NS.equals(uri)) {
 
                 try {
                     if ("subcollection".equals(localName)) {

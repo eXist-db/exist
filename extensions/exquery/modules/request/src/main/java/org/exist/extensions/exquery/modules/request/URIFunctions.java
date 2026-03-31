@@ -31,11 +31,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.IntegerValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 import org.exquery.http.HttpRequest;
 
 /**
@@ -44,49 +40,49 @@ import org.exquery.http.HttpRequest;
  */
 public class URIFunctions extends AbstractRequestModuleFunction {
 
-    private final static QName qnScheme = new QName("scheme", RequestModule.NAMESPACE_URI, RequestModule.PREFIX);
-    private final static QName qnHostname = new QName("hostname", RequestModule.NAMESPACE_URI, RequestModule.PREFIX);
-    private final static QName qnPort = new QName("port", RequestModule.NAMESPACE_URI, RequestModule.PREFIX);
-    private final static QName qnPath = new QName("path", RequestModule.NAMESPACE_URI, RequestModule.PREFIX);
-    private final static QName qnQuery = new QName("query", RequestModule.NAMESPACE_URI, RequestModule.PREFIX);
-    private final static QName qnUri = new QName("uri", RequestModule.NAMESPACE_URI, RequestModule.PREFIX);
+    private static final QName qnScheme = new QName("scheme", RequestModule.NAMESPACE_URI, RequestModule.PREFIX);
+    private static final QName qnHostname = new QName("hostname", RequestModule.NAMESPACE_URI, RequestModule.PREFIX);
+    private static final QName qnPort = new QName("port", RequestModule.NAMESPACE_URI, RequestModule.PREFIX);
+    private static final QName qnPath = new QName("path", RequestModule.NAMESPACE_URI, RequestModule.PREFIX);
+    private static final QName qnQuery = new QName("query", RequestModule.NAMESPACE_URI, RequestModule.PREFIX);
+    private static final QName qnUri = new QName("uri", RequestModule.NAMESPACE_URI, RequestModule.PREFIX);
     
-    public final static FunctionSignature FNS_SCHEME = new FunctionSignature(
+    public static final FunctionSignature FNS_SCHEME = new FunctionSignature(
         qnScheme,
         "Gets the Scheme of the HTTP Request e.g. https.",
         null,
         new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "The Scheme of the HTTP Request.")
     );
     
-    public final static FunctionSignature FNS_HOSTNAME = new FunctionSignature(
+    public static final FunctionSignature FNS_HOSTNAME = new FunctionSignature(
         qnHostname,
         "Gets the Hostname fragment of the Authority component of the URI of the HTTP Request.",
         null,
         new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "The Hostname of the HTTP Request.")
     );
     
-    public final static FunctionSignature FNS_PORT = new FunctionSignature(
+    public static final FunctionSignature FNS_PORT = new FunctionSignature(
         qnPort,
         "Gets the Port fragment of the Authority component of the URI of the HTTP Request. If the port is not explicitly specified in the URI, then the default port for the HTTP Scheme is returned (i.e. 21 for FTP, 80 for HTTP and 443 for HTTPS).",
         null,
         new FunctionReturnSequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE, "The Port of the HTTP Request.")
     );
     
-    public final static FunctionSignature FNS_PATH = new FunctionSignature(
+    public static final FunctionSignature FNS_PATH = new FunctionSignature(
         qnPath,
         "Gets the Path component of the URI of the HTTP Request.",
         null,
         new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "The Path of the URI of the HTTP Request.")
     );
     
-    public final static FunctionSignature FNS_QUERY = new FunctionSignature(
+    public static final FunctionSignature FNS_QUERY = new FunctionSignature(
         qnQuery,
         "Gets the Query Component of the HTTP Request URI, if there is no query component then an empty sequence is returned.",
         null,
         new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "The Query of the URI of the HTTP Request.")
     );
     
-    public final static FunctionSignature FNS_URI = new FunctionSignature(
+    public static final FunctionSignature FNS_URI = new FunctionSignature(
         qnUri,
         "Gets the URI of the HTTP Request URI.",
         null,

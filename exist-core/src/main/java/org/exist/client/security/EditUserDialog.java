@@ -21,9 +21,6 @@
  */
 package org.exist.client.security;
 
-import java.io.Serial;
-import java.util.*;
-import javax.swing.JOptionPane;
 import org.exist.client.DialogCompleteWithResponse;
 import org.exist.client.DialogWithResponse;
 import org.exist.security.AXSchemaType;
@@ -34,6 +31,10 @@ import org.exist.xmldb.EXistUserManagementService;
 import org.exist.xmldb.UserManagementService;
 import org.xmldb.api.base.XMLDBException;
 
+import javax.swing.JOptionPane;
+import java.io.Serial;
+import java.util.*;
+
 /**
  *
  * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
@@ -43,7 +44,7 @@ public class EditUserDialog extends UserDialog implements DialogWithResponse<Str
     @Serial
     private static final long serialVersionUID = 9097018734007436201L;
 
-    private final static String HIDDEN_PASSWORD_CONST = "password";
+    private static final String HIDDEN_PASSWORD_CONST = "password";
     
     private final Account account;
     private final List<DialogCompleteWithResponse<String>> dialogCompleteWithResponseCallbacks = new ArrayList<>();
@@ -146,7 +147,7 @@ public class EditUserDialog extends UserDialog implements DialogWithResponse<Str
     
     private boolean isPasswordChanged() {
         final String password = new String(txtPassword.getPassword());
-        return !password.equals(HIDDEN_PASSWORD_CONST);
+        return !HIDDEN_PASSWORD_CONST.equals(password);
     }
     
     private void modifyAccountGroupMembership() throws XMLDBException {

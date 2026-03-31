@@ -32,9 +32,6 @@
  */
 package org.exist.storage;
 
-import java.io.IOException;
-import java.util.Optional;
-
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.triggers.TriggerException;
@@ -47,6 +44,9 @@ import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.junit.Rule;
 import org.junit.Test;
+
+import java.io.IOException;
+import java.util.Optional;
 
 import static org.junit.Assert.*;
 

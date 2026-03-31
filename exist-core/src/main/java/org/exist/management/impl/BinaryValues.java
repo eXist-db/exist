@@ -21,13 +21,13 @@
  */
 package org.exist.management.impl;
 
+import org.exist.management.impl.BinaryInputStreamCacheInfo.CacheType;
 import org.exist.storage.BrokerPool;
 import org.exist.util.io.FileFilterInputStreamCache;
 import org.exist.util.io.FilterInputStreamCache;
 import org.exist.util.io.FilterInputStreamCacheMonitor;
 import org.exist.util.io.FilterInputStreamCacheMonitor.FilterInputStreamCacheInfo;
 import org.exist.util.io.MemoryMappedFileFilterInputStreamCache;
-import org.exist.management.impl.BinaryInputStreamCacheInfo.CacheType;
 
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;

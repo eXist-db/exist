@@ -92,7 +92,7 @@ public class LockTable {
      * Lock event listeners
      */
     private final StampedLock listenersLock = new StampedLock();
-    @GuardedBy("listenersWriteLock") private volatile LockEventListener[] listeners = null;
+    @GuardedBy("listenersWriteLock") private volatile LockEventListener[] listeners;
 
     /**
      * Table of threads attempting to acquire a lock
@@ -741,7 +741,7 @@ public class LockTable {
         for (final StackTraceElement stackTraceElement : stackTrace) {
             final String className = stackTraceElement.getClassName();
 
-            if (className.equals(NATIVE_BROKER_CLASS_NAME) || className.equals(COLLECTION_STORE_CLASS_NAME) || className.equals(TXN_CLASS_NAME)) {
+            if (NATIVE_BROKER_CLASS_NAME.equals(className) || COLLECTION_STORE_CLASS_NAME.equals(className) || TXN_CLASS_NAME.equals(className)) {
                 if (!(stackTraceElement.getMethodName().endsWith("LockCollection") || "lockCollectionCache".equals(stackTraceElement.getMethodName()))) {
                     return stackTraceElement.getMethodName() + '(' + stackTraceElement.getLineNumber() + ')';
                 }
@@ -762,7 +762,7 @@ public class LockTable {
      * and read first by the read-only reader thread to ensure correct visibility
      * of the member values.
      */
-    public static class Entry {
+    public static final class Entry {
         String id;
         LockType lockType;
         LockMode lockMode;
@@ -775,7 +775,7 @@ public class LockTable {
          * All variables visible before this point become available
          * to the reading thread.
          */
-        volatile int count = 0;
+        volatile int count;
 
         private Entry() {
         }
@@ -826,8 +826,12 @@ public class LockTable {
 
         @Override
         public boolean equals(final Object o) {
-            if (this == o) return true;
-            if (o == null || Entry.class != o.getClass()) return false;
+            if (this == o) {
+                return true;
+            }
+            if (o == null || Entry.class != o.getClass()) {
+                return false;
+            }
             Entry entry = (Entry) o;
             return lockType == entry.lockType &&
                     lockMode == entry.lockMode
@@ -838,8 +842,7 @@ public class LockTable {
         public int hashCode() {
             int result = id.hashCode();
             result = 31 * result + lockType.hashCode();
-            result = 31 * result + lockMode.hashCode();
-            return result;
+            return 31 * result + lockMode.hashCode();
         }
 
         public String getId() {

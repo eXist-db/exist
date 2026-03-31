@@ -21,26 +21,26 @@
  */
 package org.exist;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
-
 import com.evolvedbinary.j8fu.lazy.LazyVal;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
 
 /**
  *
  * @author aretter
  */
-public class SystemProperties {
+public final class SystemProperties {
 
     private static final Logger LOG = LogManager.getLogger(SystemProperties.class);
     private static final SystemProperties instance = new SystemProperties();
 
     private final LazyVal<Properties> properties = new LazyVal<>(this::load);
 
-    public final static SystemProperties getInstance() {
+    public static SystemProperties getInstance() {
         return instance;
     }
 

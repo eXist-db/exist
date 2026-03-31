@@ -21,14 +21,14 @@
  */
 package org.exist.xslt;
 
-import javax.xml.transform.sax.SAXSource;
-import org.xml.sax.InputSource;
-import org.xml.sax.XMLReader;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.storage.DBBroker;
+import org.xml.sax.InputSource;
+import org.xml.sax.XMLReader;
+
+import javax.xml.transform.sax.SAXSource;
 
 /**
  * {@link javax.xml.transform.sax.SAXSource} Supplying an XML document from the eXist database.
@@ -38,7 +38,7 @@ import org.exist.storage.DBBroker;
 
 
 public class EXistDbSource extends SAXSource {
-    private final static Logger LOG = LogManager.getLogger(EXistDbSource.class);
+    private static final Logger LOG = LogManager.getLogger(EXistDbSource.class);
 
     private InputSource source;
     
@@ -53,7 +53,7 @@ public class EXistDbSource extends SAXSource {
     
     @Override
     public String getSystemId() {
-        return (this.source == null) ? null : this.source.getSystemId();
+        return this.source == null ? null : this.source.getSystemId();
     }
     
     @Override

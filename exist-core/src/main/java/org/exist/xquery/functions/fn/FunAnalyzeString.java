@@ -21,9 +21,6 @@
  */
 package org.exist.xquery.functions.fn;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import net.sf.saxon.Configuration;
 import net.sf.saxon.om.Item;
 import net.sf.saxon.regex.RegexIterator;
@@ -40,6 +37,8 @@ import org.exist.xquery.value.Type;
 import org.xml.sax.helpers.AttributesImpl;
 
 import javax.xml.XMLConstants;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * XPath and XQuery 3.0 F+O fn:analyze-string()
@@ -48,14 +47,14 @@ import javax.xml.XMLConstants;
  */
 public class FunAnalyzeString extends BasicFunction {
 
-    private final static QName fnAnalyzeString = new QName("analyze-string", Function.BUILTIN_FUNCTION_NS);
+    private static final QName fnAnalyzeString = new QName("analyze-string", Function.BUILTIN_FUNCTION_NS);
 
-    private final static QName QN_MATCH = new QName("match", Function.BUILTIN_FUNCTION_NS);
-    private final static QName QN_GROUP = new QName("group", Function.BUILTIN_FUNCTION_NS);
-    private final static QName QN_NR = new QName("nr", XMLConstants.NULL_NS_URI);
-    private final static QName QN_NON_MATCH = new QName("non-match", Function.BUILTIN_FUNCTION_NS);
+    private static final QName QN_MATCH = new QName("match", Function.BUILTIN_FUNCTION_NS);
+    private static final QName QN_GROUP = new QName("group", Function.BUILTIN_FUNCTION_NS);
+    private static final QName QN_NR = new QName("nr", XMLConstants.NULL_NS_URI);
+    private static final QName QN_NON_MATCH = new QName("non-match", Function.BUILTIN_FUNCTION_NS);
     
-    public final static FunctionSignature[] signatures = {
+    public static final FunctionSignature[] signatures = {
         new FunctionSignature(
             fnAnalyzeString,
             "Analyzes a string using a regular expression, returning an XML " +

@@ -52,7 +52,7 @@ public abstract class AbstractSequence implements Sequence {
     private static final boolean OLD_EXIST_VERSION_COMPATIBILITY = false;
 
     protected boolean isEmpty = true;
-    protected boolean hasOne = false;
+    protected boolean hasOne;
 
     private static final Logger BASE_LOG = LogManager.getLogger(AbstractSequence.class);
 

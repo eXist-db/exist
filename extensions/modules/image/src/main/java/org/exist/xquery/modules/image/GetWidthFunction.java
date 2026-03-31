@@ -21,11 +21,6 @@
  */
 package org.exist.xquery.modules.image;
 
-import java.awt.Image;
-import java.io.IOException;
-import java.io.InputStream;
-import javax.imageio.ImageIO;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
@@ -34,13 +29,12 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.BinaryValue;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.IntegerValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
+
+import javax.imageio.ImageIO;
+import java.awt.Image;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * eXist Image Module Extension GetWidthFunction 
@@ -56,7 +50,7 @@ import org.exist.xquery.value.Type;
 public class GetWidthFunction extends BasicFunction {
 
     private static final Logger logger = LogManager.getLogger(GetWidthFunction.class);
-    public final static FunctionSignature signature =
+    public static final FunctionSignature signature =
             new FunctionSignature(
             new QName("get-width", ImageModule.NAMESPACE_URI, ImageModule.PREFIX),
             "Gets the width of the image passed in, returning an integer of the images width in pixels or an empty sequence if the image is invalid.",

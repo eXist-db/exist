@@ -21,18 +21,14 @@
  */
 package org.exist.storage;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.collections.Collection;
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.DocumentSet;
-import org.exist.dom.persistent.ExtNodeSet;
-import org.exist.dom.persistent.NodeProxy;
-import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.QName;
+import org.exist.dom.persistent.*;
 import org.exist.security.PermissionDeniedException;
 import org.exist.util.Occurrences;
 import org.exist.xquery.NodeSelector;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.Observable;
@@ -51,9 +47,9 @@ public abstract class ElementIndex extends Observable {
     /** The current document */
     protected DocumentImpl doc;
 
-    protected boolean inUpdateMode = false;
+    protected boolean inUpdateMode;
 
-    public ElementIndex(DBBroker broker) {
+    protected ElementIndex(DBBroker broker) {
         this.broker = broker;
     }
 

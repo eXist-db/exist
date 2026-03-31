@@ -23,15 +23,10 @@ package org.exist.xquery.functions.response;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import org.exist.dom.QName;
 import org.exist.http.servlets.ResponseWrapper;
 import org.exist.xquery.*;
-import org.exist.xquery.value.DateTimeValue;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 import javax.annotation.Nonnull;
 
@@ -47,7 +42,7 @@ public class SetDateHeader extends StrictResponseFunction {
     private static final FunctionParameterSequenceType NAME_PARAM = new FunctionParameterSequenceType("name", Type.STRING, Cardinality.EXACTLY_ONE, "The header name");
     private static final FunctionParameterSequenceType VALUE_PARAM = new FunctionParameterSequenceType("value", Type.STRING, Cardinality.EXACTLY_ONE, "The header value");
 
-    public final static FunctionSignature signature =
+    public static final FunctionSignature signature =
             new FunctionSignature(
                     new QName("set-date-header", ResponseModule.NAMESPACE_URI, ResponseModule.PREFIX),
                     "Sets a HTTP Header on the HTTP Response.",

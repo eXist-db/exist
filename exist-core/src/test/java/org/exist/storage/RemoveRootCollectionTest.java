@@ -21,11 +21,6 @@
  */
 package org.exist.storage;
 
-import static org.junit.Assert.*;
-import static org.exist.samples.Samples.SAMPLES;
-
-import java.util.Optional;
-
 import org.exist.collections.*;
 import org.exist.storage.txn.*;
 import org.exist.test.ExistEmbeddedServer;
@@ -33,6 +28,11 @@ import org.exist.util.InputStreamSupplierInputSource;
 import org.exist.util.MimeType;
 import org.exist.xmldb.XmldbURI;
 import org.junit.*;
+
+import java.util.Optional;
+
+import static org.exist.samples.Samples.SAMPLES;
+import static org.junit.Assert.*;
 
 public class RemoveRootCollectionTest {
 

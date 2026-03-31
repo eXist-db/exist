@@ -34,6 +34,8 @@ package org.exist.storage.blob;
 
 import com.evolvedbinary.j8fu.Try;
 import com.evolvedbinary.j8fu.tuple.Tuple2;
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.Database;
 import org.exist.storage.txn.Txn;
 import org.exist.util.FileUtils;
@@ -41,8 +43,6 @@ import org.exist.util.crypto.digest.DigestInputStream;
 import org.exist.util.crypto.digest.DigestType;
 import org.exist.util.crypto.digest.MessageDigest;
 import org.exist.util.crypto.digest.StreamableDigest;
-import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
-import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -56,13 +56,8 @@ import java.util.*;
 import static com.evolvedbinary.j8fu.Try.TaggedTryUnchecked;
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 import static org.bouncycastle.util.Arrays.reverse;
-import static org.easymock.EasyMock.createNiceMock;
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.replay;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.easymock.EasyMock.*;
+import static org.junit.Assert.*;
 
 public class BlobStoreImplTest {
 

@@ -24,6 +24,7 @@ package org.exist.client.security;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.internal.aider.UnixStylePermissionAider;
 import org.junit.Test;
+
 import static org.junit.Assert.assertEquals;
 
 public class BasicPermissionsTableModelTest {
@@ -31,28 +32,28 @@ public class BasicPermissionsTableModelTest {
     @Test
     public void getMode() throws PermissionDeniedException {
         
-        final int modes[] = {
+        final int[] modes = {
             0,
-            01,
-            04,
-            05,
-            07,
-            011,
-            044,
-            055,
-            077,
-            0111,
-            0444,
-            0555,
-            0777,
-            0711,
-            0744,
-            0755,
-            04000,
-            04100,
-            02000,
-            02010,
-            06777
+            1,
+            4,
+            5,
+            7,
+            9,
+            36,
+            45,
+            63,
+            73,
+            292,
+            365,
+            511,
+            457,
+            484,
+            493,
+            2048,
+            2112,
+            1024,
+            1032,
+            3583
         };
         
         for(final int mode : modes) {

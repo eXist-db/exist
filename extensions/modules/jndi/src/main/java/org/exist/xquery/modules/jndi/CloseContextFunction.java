@@ -30,11 +30,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.IntegerValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 /**
  * eXist JNDI Module Extension CloseContextFunction
@@ -52,7 +48,7 @@ public class CloseContextFunction extends BasicFunction
 {
 	protected static final Logger logger = LogManager.getLogger(CloseContextFunction.class);
 
-	public final static FunctionSignature[] signatures = {
+	public static final FunctionSignature[] signatures = {
 			
 			new FunctionSignature(
 					new QName( "close-context", JNDIModule.NAMESPACE_URI, JNDIModule.PREFIX ),
@@ -74,13 +70,13 @@ public class CloseContextFunction extends BasicFunction
 	{
 		// Was a Dir Context handle specified
 		if( args[0].isEmpty() ) {
-			return( Sequence.EMPTY_SEQUENCE );
+			return Sequence.EMPTY_SEQUENCE;
 		}
 
 		long ctxID = ((IntegerValue)args[0].itemAt(0)).getLong();
 			
 		JNDIModule.closeJNDIContext( context, ctxID );
 		
-		return( Sequence.EMPTY_SEQUENCE );
+		return Sequence.EMPTY_SEQUENCE;
 	}
 }

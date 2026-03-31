@@ -22,26 +22,20 @@
 package org.exist.xquery;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
+import org.exist.xmldb.EXistResource;
+import org.exist.xmldb.XmldbURI;
+import org.junit.*;
 import org.junit.rules.TemporaryFolder;
-import org.xmldb.api.base.Resource;
+import org.xmldb.api.DatabaseManager;
+import org.xmldb.api.base.*;
+import org.xmldb.api.modules.BinaryResource;
+import org.xmldb.api.modules.CollectionManagementService;
+import org.xmldb.api.modules.XQueryService;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import org.exist.xmldb.EXistResource;
-import org.exist.xmldb.XmldbURI;
-
-import org.xmldb.api.DatabaseManager;
-import org.xmldb.api.base.Collection;
-import org.xmldb.api.base.CompiledExpression;
-import org.xmldb.api.base.ResourceSet;
-import org.xmldb.api.base.XMLDBException;
-import org.xmldb.api.modules.BinaryResource;
-import org.xmldb.api.modules.CollectionManagementService;
-import org.xmldb.api.modules.XQueryService;
-
-import org.junit.*;
 import static org.junit.Assert.*;
 
 /**
@@ -56,7 +50,7 @@ public class StoredModuleTest {
     @ClassRule
     public static final TemporaryFolder temporaryFolder = new TemporaryFolder();
 
-    private final static String MODULE =
+    private static final String MODULE =
             """
             module namespace itg-modules = "http://localhost:80/itg/xquery";
             declare variable $itg-modules:colls as xs:string+ external;
@@ -98,7 +92,7 @@ public class StoredModuleTest {
         String query = "import module namespace itg-modules = \"http://localhost:80/itg/xquery\" at " +
                 "\"xmldb:exist://" + XmldbURI.ROOT_COLLECTION + "/test/test.xqm\"; itg-modules:check-coll()";
 
-        String cols[] = {"one", "two", "three"};
+        String[] cols = {"one", "two", "three"};
 
         final XQueryService xqService = existEmbeddedServer.getRoot().getService(XQueryService.class);
 

@@ -21,18 +21,11 @@
  */
 package org.exist.exiftool.xquery;
 
-import java.nio.file.Path;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
-
 import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.QName;
+import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.PermissionDeniedException;
 import org.exist.source.Source;
@@ -49,13 +42,16 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.modules.ModuleUtils;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.Path;
 
 import static com.evolvedbinary.j8fu.Try.TaggedTryUnchecked;
 
@@ -66,9 +62,9 @@ import static com.evolvedbinary.j8fu.Try.TaggedTryUnchecked;
 public class MetadataFunctions extends BasicFunction {
 
     @SuppressWarnings("unused")
-    private final static Logger logger = LogManager.getLogger(MetadataFunctions.class);
+    private static final Logger logger = LogManager.getLogger(MetadataFunctions.class);
 
-    public final static FunctionSignature getMetadata = new FunctionSignature(
+    public static final FunctionSignature getMetadata = new FunctionSignature(
             new QName("get-metadata", ExiftoolModule.NAMESPACE_URI, ExiftoolModule.PREFIX),
             "extracts the metadata",
             new SequenceType[]{
@@ -192,7 +188,7 @@ public class MetadataFunctions extends BasicFunction {
 
                         //write the remote data to stdOut
                         int read = -1;
-                        byte buf[] = new byte[4096];
+                        byte[] buf = new byte[4096];
                         while ((read = isSrc.read(buf)) > -1) {
                             stdOut.write(buf, 0, read);
                         }

@@ -33,13 +33,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.BooleanValue;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 import javax.annotation.Nullable;
 
@@ -50,7 +44,7 @@ import javax.annotation.Nullable;
  */
 public class FunCodepointEqual extends BasicFunction {
 
-    public final static FunctionSignature signature =
+    public static final FunctionSignature signature =
         new FunctionSignature(
             new QName("codepoint-equal", Function.BUILTIN_FUNCTION_NS, FnModule.PREFIX),
             "Returns true or false depending on whether the value of $string-1 " +

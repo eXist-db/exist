@@ -31,7 +31,7 @@ import org.exist.xquery.Cardinality;
  */
 public class FunctionReturnSequenceType extends SequenceType {
 
-    private String description = null;
+    private String description;
 
     /**
      * @param primaryType The <strong>Type</strong> of the parameter.

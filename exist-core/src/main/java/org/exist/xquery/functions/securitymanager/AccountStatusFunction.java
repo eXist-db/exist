@@ -33,12 +33,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.BooleanValue;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 /**
  *
@@ -46,10 +41,10 @@ import org.exist.xquery.value.Type;
  */
 public class AccountStatusFunction extends BasicFunction {
 
-    private final static QName qnIsAccountEnabled = new QName("is-account-enabled", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
-    private final static QName qnSetAccountEnabled = new QName("set-account-enabled", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    private static final QName qnIsAccountEnabled = new QName("is-account-enabled", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    private static final QName qnSetAccountEnabled = new QName("set-account-enabled", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
     
-    public final static FunctionSignature FNS_IS_ACCOUNT_ENABLED = new FunctionSignature(
+    public static final FunctionSignature FNS_IS_ACCOUNT_ENABLED = new FunctionSignature(
         qnIsAccountEnabled,
         "Determines whether a user account is enabled. You must be a DBA, or you must be enquiring about your own user account.",
         new SequenceType[] {
@@ -58,7 +53,7 @@ public class AccountStatusFunction extends BasicFunction {
         new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if the account is enabled, false otherwise.")
     );
     
-    public final static FunctionSignature FNS_SET_ACCOUNT_ENABLED = new FunctionSignature(
+    public static final FunctionSignature FNS_SET_ACCOUNT_ENABLED = new FunctionSignature(
         qnSetAccountEnabled,
         "Enabled or disables a users account. You must be a DBA to enable or disable an account.",
         new SequenceType[] {
@@ -86,7 +81,7 @@ public class AccountStatusFunction extends BasicFunction {
             }
             final Account account = securityManager.getAccount(username);
 
-            return (account==null) ? BooleanValue.FALSE
+            return account==null ? BooleanValue.FALSE
                                    : new BooleanValue(this, account.isEnabled());
 
         } else if(isCalledAs(qnSetAccountEnabled.getLocalPart())) {

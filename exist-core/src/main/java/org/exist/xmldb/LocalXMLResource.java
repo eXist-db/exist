@@ -21,25 +21,8 @@
  */
 package org.exist.xmldb;
 
-import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
-import static java.nio.charset.StandardCharsets.UTF_8;
-
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.StringWriter;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-import javax.xml.transform.TransformerException;
-
+import com.evolvedbinary.j8fu.function.ConsumerE;
+import com.evolvedbinary.j8fu.tuple.Tuple3;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.dynamic.DynamicType;
 import net.bytebuddy.implementation.InvocationHandlerAdapter;
@@ -75,26 +58,41 @@ import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
 
-import com.evolvedbinary.j8fu.function.ConsumerE;
-import com.evolvedbinary.j8fu.tuple.Tuple3;
+import javax.annotation.Nullable;
+import javax.xml.transform.TransformerException;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.StringWriter;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.stream.Stream;
+
+import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Local implementation of XMLResource.
  */
 public class LocalXMLResource extends AbstractEXistResource implements XMLResource {
 
-    private NodeProxy proxy = null;
+    private NodeProxy proxy;
 
     private Properties outputProperties;
-    private LexicalHandler lexicalHandler = null;
+    private LexicalHandler lexicalHandler;
 
     // those are the different types of content this resource
     // may have to deal with
-    protected String content = null;
-    protected Path file = null;
-    protected InputSource inputSource = null;
-    protected Node root = null;
-    protected AtomicValue value = null;
+    protected String content;
+    protected Path file;
+    protected InputSource inputSource;
+    protected Node root;
+    protected AtomicValue value;
 
     public LocalXMLResource(final Subject user, final BrokerPool brokerPool, final LocalCollection parent, final XmldbURI did) throws XMLDBException {
         super(user, brokerPool, parent, did, MimeType.XML_TYPE.getName());
@@ -347,13 +345,11 @@ public class LocalXMLResource extends AbstractEXistResource implements XMLResour
                 .intercept(InvocationHandlerAdapter.of(new DOMMethodInterceptor(node)));
 
         try {
-            final Node nodeProxy = byteBuddyBuilder
+            return byteBuddyBuilder
                     .make()
                     .load(getClass().getClassLoader())
                     .getLoaded()
                     .getDeclaredConstructor().newInstance();
-
-            return nodeProxy;
         } catch (final NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }

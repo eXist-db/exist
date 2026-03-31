@@ -58,8 +58,8 @@ import static org.junit.Assert.*;
 public class LockManagerTest {
 
     private static final int CONCURRENCY_LEVEL = 100;
-    private static String previousLockEventsState = null;
-    private static String previousPathsMultiWriterState = null;
+    private static String previousLockEventsState;
+    private static String previousPathsMultiWriterState;
 
     @Parameterized.Parameters(name = "{0}")
     public static java.util.Collection<Object[]> data() {
@@ -784,14 +784,16 @@ public class LockManagerTest {
         lockTable.registerListener(lockEventRecordingListener);
 
         // wait for the listener to be registered
-        while(!lockEventRecordingListener.isRegistered()) {}
+        while(!lockEventRecordingListener.isRegistered()) {
+            continue;}
 
         runnable.run();
 
         lockTable.deregisterListener(lockEventRecordingListener);
 
         // wait for the listener to be deregistered
-        while(lockEventRecordingListener.isRegistered()) {}
+        while(lockEventRecordingListener.isRegistered()) {
+            continue;}
 
         return lockEventRecordingListener.getEvents();
     }
@@ -834,7 +836,7 @@ public class LockManagerTest {
         }
     }
 
-    private static class LockAction {
+    private static final class LockAction {
         public final LockTable.LockEventType lockEventType;
         public final long groupId;
         public final String id;

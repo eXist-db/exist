@@ -21,23 +21,11 @@
  */
 package org.exist;
 
-import java.util.*;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.collections.CollectionConfiguration;
 import org.exist.dom.QName;
-import org.exist.dom.persistent.AttrImpl;
-import org.exist.dom.persistent.CDATASectionImpl;
-import org.exist.dom.persistent.CommentImpl;
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.DocumentTypeImpl;
-import org.exist.dom.persistent.ElementImpl;
-import org.exist.dom.persistent.NodeHandle;
-import org.exist.dom.persistent.ProcessingInstructionImpl;
-import org.exist.dom.persistent.StoredNode;
-import org.exist.dom.persistent.TextImpl;
-import org.exist.dom.persistent.XMLDeclarationImpl;
+import org.exist.dom.persistent.*;
 import org.exist.indexing.StreamListener;
 import org.exist.indexing.StreamListener.ReindexMode;
 import org.exist.storage.DBBroker;
@@ -55,15 +43,11 @@ import org.exist.xquery.value.StringValue;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.xml.sax.Attributes;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.Locator;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
+import org.xml.sax.*;
 import org.xml.sax.ext.LexicalHandler;
 
 import javax.annotation.Nullable;
+import java.util.*;
 
 /**
  * Parses a given input document via SAX, stores it to the database and handles
@@ -80,7 +64,7 @@ public class Indexer implements ContentHandler, LexicalHandler, ErrorHandler {
     public static final String ATTR_IDREF_TYPE = "IDREF";
     public static final String ATTR_IDREFS_TYPE = "IDREFS";
 
-    private final static Logger LOG = LogManager.getLogger(Indexer.class);
+    private static final Logger LOG = LogManager.getLogger(Indexer.class);
 
     public static final String CONFIGURATION_ELEMENT_NAME = "indexer";
     public static final String CONFIGURATION_INDEX_ELEMENT_NAME = "index";
@@ -88,7 +72,7 @@ public class Indexer implements ContentHandler, LexicalHandler, ErrorHandler {
     public static final String PRESERVE_WS_MIXED_CONTENT_ATTRIBUTE = "preserve-whitespace-mixed-content";
 
     public static final String PROPERTY_INDEXER_CONFIG = "indexer.config";
-    public final static String PROPERTY_SUPPRESS_WHITESPACE = "indexer.suppress-whitespace";
+    public static final String PROPERTY_SUPPRESS_WHITESPACE = "indexer.suppress-whitespace";
     public static final String PROPERTY_PRESERVE_WS_MIXED_CONTENT = "indexer.preserve-whitespace-mixed-content";
 
     private final DBBroker broker;
@@ -97,17 +81,17 @@ public class Indexer implements ContentHandler, LexicalHandler, ErrorHandler {
     private StreamListener indexListener;
 
     private XMLString charBuf = new XMLString();
-    private boolean inCDATASection = false;
-    private int currentLine = 0;
+    private boolean inCDATASection;
+    private int currentLine;
     private final NodePath2 currentPath = new NodePath2();
 
-    private DocumentImpl document = null;
-    private IndexSpec indexSpec = null;
+    private DocumentImpl document;
+    private IndexSpec indexSpec;
 
-    private boolean insideDTD = false;
-    private boolean validate = false;
-    private int level = 0;
-    private Locator locator = null;
+    private boolean insideDTD;
+    private boolean validate;
+    private int level;
+    private Locator locator;
     private int normalize = XMLString.SUPPRESS_BOTH;
     private final Map<String, String> nsMappings = new HashMap<>();
     private Element rootNode;
@@ -115,14 +99,14 @@ public class Indexer implements ContentHandler, LexicalHandler, ErrorHandler {
     private final Deque<ElementImpl> stack = new ArrayDeque<>();
     private final Deque<XMLString> nodeContentStack = new ArrayDeque<>();
 
-    private StoredNode prevNode = null;
+    private StoredNode prevNode;
 
-    private String ignorePrefix = null;
+    private String ignorePrefix;
     private ProgressIndicator progress;
 
-    protected boolean preserveWSmixed = false;
+    protected boolean preserveWSmixed;
 
-    protected int docSize = 0;
+    protected int docSize;
 
     private enum ProcessTextParent { COMMENT, PI, CDATA_START, ELEMENT_START, ELEMENT_END}
 
@@ -131,13 +115,13 @@ public class Indexer implements ContentHandler, LexicalHandler, ErrorHandler {
      * phase. later, when storing the nodes, we already know the child count and
      * don't need to update the element a second time.
      */
-    private int childCnt[] = new int[0x1000];
+    private int[] childCnt = new int[0x1000];
 
     // the current position in childCnt
-    private int elementCnt = 0;
+    private int elementCnt;
 
     // the current nodeFactoryInstanceCnt
-    private int nodeFactoryInstanceCnt = 0;
+    private int nodeFactoryInstanceCnt;
 
     // reusable fields
     private final TextImpl text = new TextImpl((Expression) null);
@@ -146,8 +130,8 @@ public class Indexer implements ContentHandler, LexicalHandler, ErrorHandler {
     // when storing the document data, validation will be switched off, so
     // entities will not be reported. We thus have to cache all needed entities
     // during the validation run.
-    private Map<String, String> entityMap = null;
-    private String currentEntityName = null;
+    private Map<String, String> entityMap;
+    private String currentEntityName;
     private final XMLString currentEntityValue = new XMLString();
     
     /**
@@ -394,7 +378,9 @@ public class Indexer implements ContentHandler, LexicalHandler, ErrorHandler {
 		text.setData(normalized);
 		text.setOwnerDocument(document);
 		last.appendChildInternal(prevNode, text);
-		if (!validate) storeText();
+            if (!validate) {
+                storeText();
+            }
 		setPrevious(text);
 	    }
 	    charBuf.reset();
@@ -455,7 +441,7 @@ public class Indexer implements ContentHandler, LexicalHandler, ErrorHandler {
 
     @Override
     public void endPrefixMapping(final String prefix) {
-        if (ignorePrefix != null && prefix.equals(ignorePrefix)) {
+        if (prefix.equals(ignorePrefix)) {
             ignorePrefix = null;
         } else {
             nsMappings.remove(prefix);
@@ -488,7 +474,9 @@ public class Indexer implements ContentHandler, LexicalHandler, ErrorHandler {
         if (stack.isEmpty()) {
             pi.setNodeId(broker.getBrokerPool().getNodeFactory().createInstance(nodeFactoryInstanceCnt++));
 
-            if (!validate) broker.storeNode(transaction, pi, currentPath, indexSpec);
+            if (!validate) {
+                broker.storeNode(transaction, pi, currentPath, indexSpec);
+            }
 
             document.appendChild((NodeHandle)pi);
         } else {
@@ -497,7 +485,9 @@ public class Indexer implements ContentHandler, LexicalHandler, ErrorHandler {
             last.appendChildInternal(prevNode, pi);
             setPrevious(pi);
 
-            if (!validate) broker.storeNode(transaction, pi, currentPath, indexSpec);
+            if (!validate) {
+                broker.storeNode(transaction, pi, currentPath, indexSpec);
+            }
         }
     }
 
@@ -569,14 +559,14 @@ public class Indexer implements ContentHandler, LexicalHandler, ErrorHandler {
             final String attrNS = attributes.getURI(i);
             final String attrQName = attributes.getQName(i);
             if (attrQName.startsWith("xmlns")
-                    || attrNS.equals(Namespaces.EXIST_NS)) {
+                    || Namespaces.EXIST_NS.equals(attrNS)) {
                 --attrLength;
             }
         }
 
         ElementImpl node;
         int p = qname.indexOf(':');
-        final String prefix = (p != Constants.STRING_NOT_FOUND) ? qname.substring(0, p) : "";
+        final String prefix = p != Constants.STRING_NOT_FOUND ? qname.substring(0, p) : "";
         final QName qn = broker.getBrokerPool().getSymbols().getQName(Node.ELEMENT_NODE, namespace, name, prefix);
 
         if (!stack.isEmpty()) {
@@ -587,7 +577,7 @@ public class Indexer implements ContentHandler, LexicalHandler, ErrorHandler {
                     node = usedElements.pop();
                     node.setNodeName(qn, broker.getBrokerPool().getSymbols());
                 } else {
-                    node = new ElementImpl((last != null) ? last.getExpression() : null, qn, broker.getBrokerPool().getSymbols());
+                    node = new ElementImpl(last != null ? last.getExpression() : null, qn, broker.getBrokerPool().getSymbols());
                 }
             } catch (final DOMException e) {
                 throw new SAXException(e.getMessage(), e);
@@ -646,11 +636,11 @@ public class Indexer implements ContentHandler, LexicalHandler, ErrorHandler {
             final String attrLocalName = attributes.getLocalName(i);
             final String attrQName = attributes.getQName(i);
             // skip xmlns-attributes and attributes in eXist's namespace
-            if (attrQName.startsWith("xmlns") || attrNS.equals(Namespaces.EXIST_NS)) {
+            if (attrQName.startsWith("xmlns") || Namespaces.EXIST_NS.equals(attrNS)) {
                 --attrLength;
             } else {
                 p = attrQName.indexOf(':');
-                final String attrPrefix = (p != Constants.STRING_NOT_FOUND) ? attrQName.substring(0, p) : null;
+                final String attrPrefix = p != Constants.STRING_NOT_FOUND ? attrQName.substring(0, p) : null;
                 final AttrImpl attr = (AttrImpl) NodePool.getInstance().borrowNode(Node.ATTRIBUTE_NODE);
                 final QName attrQN = broker.getBrokerPool().getSymbols().getQName(Node.ATTRIBUTE_NODE, attrNS, attrLocalName, attrPrefix);
                 try {
@@ -660,11 +650,11 @@ public class Indexer implements ContentHandler, LexicalHandler, ErrorHandler {
                 }
                 attr.setValue(attributes.getValue(i));
                 attr.setOwnerDocument(document);
-                if (attributes.getType(i).equals(ATTR_ID_TYPE)) {
+                if (ATTR_ID_TYPE.equals(attributes.getType(i))) {
                     attr.setType(AttrImpl.ID);
-                } else if (attributes.getType(i).equals(ATTR_IDREF_TYPE)) {
+                } else if (ATTR_IDREF_TYPE.equals(attributes.getType(i))) {
                     attr.setType(AttrImpl.IDREF);
-                } else if (attributes.getType(i).equals(ATTR_IDREFS_TYPE)) {
+                } else if (ATTR_IDREFS_TYPE.equals(attributes.getType(i))) {
                     attr.setType(AttrImpl.IDREFS);
                 } else if (attr.getQName().equals(Namespaces.XML_ID_QNAME)) {
                     // an xml:id attribute. Normalize the attribute and set its

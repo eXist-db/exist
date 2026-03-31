@@ -27,19 +27,14 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.IntegerValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 /**
  * @author Andrzej Taramina
  */
 public class Wait extends BasicFunction 
 {
-    public final static FunctionSignature[] signatures = {
+    public static final FunctionSignature[] signatures = {
             new FunctionSignature (
                     new QName( "wait", UtilModule.NAMESPACE_URI, UtilModule.PREFIX ),
                     "Wait for the specified number of milliseconds",
@@ -69,6 +64,6 @@ public class Wait extends BasicFunction
 			}
 		}
 
-        return( Sequence.EMPTY_SEQUENCE );
+        return Sequence.EMPTY_SEQUENCE;
     }
 }

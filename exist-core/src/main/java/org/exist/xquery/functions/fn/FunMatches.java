@@ -21,32 +21,27 @@
  */
 package org.exist.xquery.functions.fn;
 
+import net.sf.saxon.regex.RegularExpression;
 import org.exist.EXistException;
+import org.exist.dom.QName;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.ExtArrayNodeSet;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.NodeSet;
-import org.exist.dom.QName;
 import org.exist.storage.DBBroker;
 import org.exist.storage.ElementValue;
 import org.exist.storage.NativeValueIndex;
 import org.exist.util.PatternFactory;
-import org.exist.xquery.pragmas.Optimize;
 import org.exist.xquery.*;
+import org.exist.xquery.pragmas.Optimize;
 import org.exist.xquery.util.Error;
-import org.exist.xquery.value.BooleanValue;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-import net.sf.saxon.regex.RegularExpression;
 
 import static org.exist.xquery.FunctionDSL.*;
 import static org.exist.xquery.functions.fn.FnModule.functionSignatures;
@@ -97,7 +92,7 @@ public final class FunMatches extends Function implements Optimizable, IndexUseR
             An error is raised [err:FORX0001] if the value of $flags is invalid \
             according to the rules described in section 7.6.1 Regular Expression Syntax.""";
 
-    public final static FunctionSignature[] signatures = functionSignatures(
+    public static final FunctionSignature[] signatures = functionSignatures(
             FS_MATCHES_NAME,
             FS_DESCRIPTION,
             returns(Type.BOOLEAN, "true if the pattern is a match, false otherwise"),
@@ -114,15 +109,15 @@ public final class FunMatches extends Function implements Optimizable, IndexUseR
             )
     );
 
-    protected Matcher matcher = null;
-    protected Pattern pat = null;
+    protected Matcher matcher;
+    protected Pattern pat;
 
-    protected boolean hasUsedIndex = false;
+    protected boolean hasUsedIndex;
 
-    private LocationStep contextStep = null;
-    private QName contextQName = null;
+    private LocationStep contextStep;
+    private QName contextQName;
     private int axis = Constants.UNKNOWN_AXIS;
-    private NodeSet preselectResult = null;
+    private NodeSet preselectResult;
     private final GeneralComparison.IndexFlags idxflags = new GeneralComparison.IndexFlags();
 
     public FunMatches(final XQueryContext context, final FunctionSignature signature) {

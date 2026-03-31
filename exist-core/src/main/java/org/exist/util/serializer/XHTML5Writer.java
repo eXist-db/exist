@@ -21,11 +21,11 @@
  */
 package org.exist.util.serializer;
 
-import java.io.Writer;
-import javax.xml.transform.TransformerException;
-
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
+
+import javax.xml.transform.TransformerException;
+import java.io.Writer;
 
 /**
  * A writer which produces well-formed XHTML5.

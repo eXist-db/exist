@@ -21,16 +21,16 @@
  */
 package org.exist.xquery.modules.ngram.query;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
+import org.exist.dom.QName;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.NodeSet;
-import org.exist.dom.QName;
 import org.exist.indexing.ngram.NGramIndexWorker;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.modules.ngram.NGramSearch;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class FixedString implements EvaluatableExpression, MergeableExpression {
     /**
@@ -63,14 +63,15 @@ public class FixedString implements EvaluatableExpression, MergeableExpression {
         } else {
             AlternativeStrings otherAlternatives = (AlternativeStrings) otherExpression;
             Set<String> strings = new HashSet<>(otherAlternatives.strings.size());
-            for (String os : otherAlternatives.strings)
+            for (String os : otherAlternatives.strings) {
                 strings.add(fixedString + os);
+            }
             return new AlternativeStrings(this.nGramSearch, strings);
         }
     }
 
     @Override
     public boolean mergeableWith(final WildcardedExpression otherExpression) {
-        return ((otherExpression instanceof FixedString) || (otherExpression instanceof AlternativeStrings));
+        return (otherExpression instanceof FixedString) || (otherExpression instanceof AlternativeStrings);
     }
 }

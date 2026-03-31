@@ -29,11 +29,6 @@ import org.exist.security.PermissionDeniedException;
 import org.exist.storage.lock.Lock;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.exist.test.TestConstants.TEST_COLLECTION_URI;
-import static org.junit.Assert.*;
-
 import org.exist.util.LockException;
 import org.exist.util.MimeType;
 import org.exist.util.StringInputSource;
@@ -44,6 +39,10 @@ import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.util.Optional;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.exist.test.TestConstants.TEST_COLLECTION_URI;
+import static org.junit.Assert.*;
 
 public class ModificationTimeTest {
 

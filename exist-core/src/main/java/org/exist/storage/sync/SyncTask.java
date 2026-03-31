@@ -21,10 +21,6 @@
  */
 package org.exist.storage.sync;
 
-import java.nio.file.FileStore;
-import java.nio.file.Path;
-import java.util.Properties;
-
 import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -37,13 +33,17 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
 import org.exist.util.FileUtils;
 
+import java.nio.file.FileStore;
+import java.nio.file.Path;
+import java.util.Properties;
+
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 
 public class SyncTask implements SystemTask {
 
-    private final static Logger LOG = LogManager.getLogger(SyncTask.class);
+    private static final Logger LOG = LogManager.getLogger(SyncTask.class);
 
-    private final static String JOB_NAME = "Sync";
+    private static final String JOB_NAME = "Sync";
 
     public static String getJobName() {
         return JOB_NAME;

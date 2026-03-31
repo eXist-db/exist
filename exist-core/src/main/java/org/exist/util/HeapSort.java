@@ -21,10 +21,10 @@
  */
 package org.exist.util;
 
+import org.exist.dom.persistent.NodeProxy;
+
 import java.util.Comparator;
 import java.util.List;
-
-import org.exist.dom.persistent.NodeProxy;
 
 /**
  * This class implements a simple version 
@@ -60,10 +60,11 @@ public final class HeapSort {
      */
 	
 	public static <C extends Comparable<? super C>> void sort(C[] a, int lo, int hi) {
-		// Establish the heap property.
+        // Establish the heap property.
 
-		for (int i=hi-1; i>=lo; i--)
-			fixHeap(a,lo,i,hi);
+        for (int i = hi - 1; i >= lo; i--) {
+            fixHeap(a, lo, i, hi);
+        }
 
 		// Now place the largest element last,
 		// 2nd largest 2nd last, etc.
@@ -79,10 +80,11 @@ public final class HeapSort {
 	}
 
 	public static <C extends Comparable<? super C>> void sort(C[] a, int lo, int hi, int[] b) {
-		// Establish the heap property.
+        // Establish the heap property.
 
-		for (int i=hi-1; i>=lo; i--)
-			fixHeap(a,b,lo,i,hi);
+        for (int i = hi - 1; i >= lo; i--) {
+            fixHeap(a, b, lo, i, hi);
+        }
 
 		// Now place the largest element last,
 		// 2nd largest 2nd last, etc.
@@ -100,9 +102,10 @@ public final class HeapSort {
 	}
 
 	public static <C> void sort(C[] a, Comparator<C> c, int lo, int hi) {
-		// Establish the heap property.
-		for (int i=hi-1; i>=lo; i--)
-			fixHeap(a,c,lo,i,hi);
+        // Establish the heap property.
+        for (int i = hi - 1; i >= lo; i--) {
+            fixHeap(a, c, lo, i, hi);
+        }
 
 		// Now place the largest element last,
 		// 2nd largest 2nd last, etc.
@@ -118,9 +121,10 @@ public final class HeapSort {
 	}
 
 	public static <C extends Comparable<? super C>> void sort(List<C> a, int lo, int hi) {
-		// Establish the heap property.
-		for (int i=hi-1; i>=lo; i--)
-			fixHeap(a,lo,i,hi);
+        // Establish the heap property.
+        for (int i = hi - 1; i >= lo; i--) {
+            fixHeap(a, lo, i, hi);
+        }
 
 		// Now place the largest element last,
 		// 2nd largest 2nd last, etc.
@@ -136,9 +140,10 @@ public final class HeapSort {
 	}
 
 	public static void sort(long[] a, int lo, int hi, Object[] b) {
-		// Establish the heap property.
-		for (int i=hi-1; i>=lo; i--)
-			fixHeap(a,b,lo,i,hi);
+        // Establish the heap property.
+        for (int i = hi - 1; i >= lo; i--) {
+            fixHeap(a, b, lo, i, hi);
+        }
 
 		// Now place the largest element last,
 		// 2nd largest 2nd last, etc.
@@ -156,9 +161,10 @@ public final class HeapSort {
 	}
 
 	public static void sortByNodeId(NodeProxy[] a, int lo, int hi) {
-		// Establish the heap property.
-		for (int i=hi-1; i>=lo; i--)
-			fixHeapByNodeId(a,lo,i,hi);
+        // Establish the heap property.
+        for (int i = hi - 1; i >= lo; i--) {
+            fixHeapByNodeId(a, lo, i, hi);
+        }
 
 		// Now place the largest element last,
 		// 2nd largest 2nd last, etc.

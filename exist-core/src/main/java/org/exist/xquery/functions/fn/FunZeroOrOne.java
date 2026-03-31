@@ -30,12 +30,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 /**
  * Implements function fn:zero-or-one.
@@ -44,7 +39,7 @@ import org.exist.xquery.value.Type;
  */
 public class FunZeroOrOne extends Function {
 
-	public final static FunctionSignature signature =
+	public static final FunctionSignature signature =
 		new FunctionSignature(
 			new QName("zero-or-one", Function.BUILTIN_FUNCTION_NS),
 			"Returns the argument sequence $arg if it contains zero or one items. Otherwise, " +

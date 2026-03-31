@@ -36,13 +36,13 @@ import static org.exist.xquery.FunctionDSL.functionDefs;
 
 public class InspectionModule extends AbstractInternalModule {
 
-    public final static String NAMESPACE_URI = "http://exist-db.org/xquery/inspection";
+    public static final String NAMESPACE_URI = "http://exist-db.org/xquery/inspection";
 
-    public final static String PREFIX = "inspect";
+    public static final String PREFIX = "inspect";
 
-    public final static String RELEASE = "2.0";
+    public static final String RELEASE = "2.0";
 
-    public final static FunctionDef[] functions = functionDefs(
+    public static final FunctionDef[] functions = functionDefs(
         functionDefs(InspectFunction.class,
                 InspectFunction.FN_INSPECT_FUNCTION),
         functionDefs(InspectModule.class,

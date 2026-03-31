@@ -22,10 +22,6 @@
 
 package org.exist.storage;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Optional;
-
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.triggers.TriggerException;
@@ -44,9 +40,13 @@ import org.junit.AfterClass;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Optional;
+
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.fail;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 /**
  *  0 byte binary files cannot be retrieved from database. This test
@@ -56,11 +56,11 @@ import static org.junit.Assert.assertEquals;
  */
 public class ResourceTest {
     
-    private final static String EMPTY_BINARY_FILE = "";
-    private final static XmldbURI DOCUMENT_NAME_URI = XmldbURI.create("empty.txt");
+    private static final String EMPTY_BINARY_FILE = "";
+    private static final XmldbURI DOCUMENT_NAME_URI = XmldbURI.create("empty.txt");
 
     // we don't use @ClassRule/@Rule as we want to force corruption in some tests
-    private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
+    private final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @After
     public void tearDown() {

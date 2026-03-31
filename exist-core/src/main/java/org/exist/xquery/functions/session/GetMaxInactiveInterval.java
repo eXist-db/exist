@@ -39,7 +39,7 @@ import java.util.Optional;
  */
 public class GetMaxInactiveInterval extends SessionFunction {
 
-    public final static FunctionSignature signature =
+    public static final FunctionSignature signature =
             new FunctionSignature(
                     new QName("get-max-inactive-interval", SessionModule.NAMESPACE_URI, SessionModule.PREFIX),
                     "Returns the maximum time interval, in seconds, that the servlet container " +

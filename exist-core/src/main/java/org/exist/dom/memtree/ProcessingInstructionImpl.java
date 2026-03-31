@@ -99,7 +99,7 @@ public class ProcessingInstructionImpl extends NodeImpl implements ProcessingIns
             test = document.getParentNodeFor(parent);
 
             if(document.nodeKind[test] == Node.DOCUMENT_NODE) {
-                return (baseURI);
+                return baseURI;
             } else {
                 parent = test;
             }
@@ -108,7 +108,7 @@ public class ProcessingInstructionImpl extends NodeImpl implements ProcessingIns
         if(baseURI.isEmpty()) {
             baseURI = getOwnerDocument().getBaseURI();
         }
-        return (baseURI);
+        return baseURI;
     }
 
     @Override

@@ -21,25 +21,18 @@
  */
 package org.exist.indexing.lucene;
 
-import java.io.IOException;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
-
 import org.apache.lucene.facet.DrillDownQuery;
-import org.apache.lucene.index.LeafReaderContext;
 import org.apache.lucene.index.BinaryDocValues;
 import org.apache.lucene.index.Fields;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexReaderContext;
+import org.apache.lucene.index.LeafReaderContext;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.Terms;
 import org.apache.lucene.index.TermsEnum;
 import org.apache.lucene.search.*;
 import org.apache.lucene.util.AttributeSource;
 import org.apache.lucene.util.BytesRef;
-
 import org.exist.dom.QName;
 import org.exist.dom.persistent.SymbolTable;
 import org.exist.numbering.NodeId;
@@ -47,6 +40,11 @@ import org.exist.storage.BrokerPool;
 import org.exist.util.ByteConversion;
 
 import javax.xml.XMLConstants;
+import java.io.IOException;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 public class LuceneUtil {
 

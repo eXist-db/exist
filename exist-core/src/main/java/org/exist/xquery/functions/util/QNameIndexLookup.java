@@ -21,12 +21,10 @@
  */
 package org.exist.xquery.functions.util;
 
-import java.util.List;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.exist.dom.persistent.NodeSet;
 import org.exist.dom.QName;
+import org.exist.dom.persistent.NodeSet;
 import org.exist.storage.ElementValue;
 import org.exist.storage.NativeValueIndex;
 import org.exist.xquery.AnalyzeContextInfo;
@@ -42,12 +40,9 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.util.Error;
 import org.exist.xquery.util.Messages;
-import org.exist.xquery.value.AtomicValue;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.QNameValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
+
+import java.util.List;
 
 import static org.exist.xquery.FunctionDSL.*;
 import static org.exist.xquery.functions.util.UtilModule.functionSignatures;
@@ -64,8 +59,8 @@ public class QNameIndexLookup extends Function {
     private static final FunctionParameterSequenceType PARAM_COMPARISON_VALUE = param("comparison-value", Type.ANY_ATOMIC_TYPE, "The comparison value");
     private static final FunctionParameterSequenceType PARAM_ELEMENT_OR_ATTRIBUTE = param("element-or-attribute", Type.BOOLEAN, "true() to lookup an element, false to lookup an attribute");
 
-	private static String FN_QNAME_INDEX_LOOKUP_NAME = "qname-index-lookup";
-	public final static FunctionSignature[] FNS_QNAME_INDEX_LOOKUP = functionSignatures(
+	private static final String FN_QNAME_INDEX_LOOKUP_NAME = "qname-index-lookup";
+	public static final FunctionSignature[] FNS_QNAME_INDEX_LOOKUP = functionSignatures(
             FN_QNAME_INDEX_LOOKUP_NAME,
 			"Can be used to query existing qname indexes defined on a set of nodes.",
 			returnsOptMany(Type.NODE, "The result"),
@@ -155,17 +150,14 @@ public class QNameIndexLookup extends Function {
                     ));
         }
         QName qname = qval.getQName();
-        if (args.length == 3 && !(args[2].itemAt(0).toJavaObject(boolean.class))) {
+        if (args.length == 3 && !args[2].itemAt(0).toJavaObject(boolean.class)) {
             qname = new QName(qname.getLocalPart(), qname.getNamespaceURI(), qname.getPrefix(), ElementValue.ATTRIBUTE);
         }
 
         final AtomicValue comparisonCriterion = args[1].itemAt(0).atomize();
 
         final NativeValueIndex valueIndex = context.getBroker().getValueIndex();
-        final Sequence result =
-            valueIndex.find(context.getWatchDog(), Comparison.EQ, contextSequence.getDocumentSet(), null, NodeSet.ANCESTOR,
+        return valueIndex.find(context.getWatchDog(), Comparison.EQ, contextSequence.getDocumentSet(), null, NodeSet.ANCESTOR,
         qname, comparisonCriterion);
-
-        return result;
     }
 }

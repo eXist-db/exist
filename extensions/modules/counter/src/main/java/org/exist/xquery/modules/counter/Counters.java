@@ -21,6 +21,13 @@
  */
 package org.exist.xquery.modules.counter;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.exist.EXistException;
+import org.exist.backup.RawDataBackup;
+import org.exist.indexing.RawBackupSupport;
+import org.exist.util.FileUtils;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -33,28 +40,20 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import org.exist.EXistException;
-import org.exist.backup.RawDataBackup;
-import org.exist.indexing.RawBackupSupport;
-import org.exist.util.FileUtils;
-
 /**
  * @author <a href="mailto:jasper.linthorst@gmail.com">Jasper Linthorst</a>
  */
-public class Counters implements RawBackupSupport {
+public final class Counters implements RawBackupSupport {
 
-    private final static Logger LOG = LogManager.getLogger(Counters.class);
+    private static final Logger LOG = LogManager.getLogger(Counters.class);
     
     private static volatile Counters instance;
 
-    public final static String COUNTERSTORE = "counters";
-    public final static String DELIMITER = ";";
+    public static final String COUNTERSTORE = "counters";
+    public static final String DELIMITER = ";";
 
-    private Path store = null;
-    private Map<String, Long> counters = new Hashtable<>();
+    private final Path store;
+    private final Map<String, Long> counters = new Hashtable<>();
 
     private Counters(final Optional<Path> dataDir) throws EXistException {
         this.store = FileUtils.resolve(dataDir, COUNTERSTORE);

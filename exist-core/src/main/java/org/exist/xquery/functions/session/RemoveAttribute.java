@@ -37,7 +37,7 @@ import javax.annotation.Nonnull;
  */
 public class RemoveAttribute extends StrictSessionFunction {
 
-    public final static FunctionSignature signature =
+    public static final FunctionSignature signature =
             new FunctionSignature(
                     new QName("remove-attribute", SessionModule.NAMESPACE_URI, SessionModule.PREFIX),
                     "Removes the attribute with the supplied name from the current session",

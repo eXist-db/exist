@@ -22,12 +22,9 @@
 package org.exist.xquery.modules.mail;
 
 
-import java.util.Properties;
-
 import jakarta.mail.Authenticator;
 import jakarta.mail.PasswordAuthentication;
 import jakarta.mail.Session;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
@@ -37,15 +34,10 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.IntegerValue;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
-
+import org.exist.xquery.value.*;
 import org.w3c.dom.Element;
+
+import java.util.Properties;
 
 /**
  * eXist Mail Module Extension GetSession
@@ -63,7 +55,7 @@ public class MailSessionFunctions extends BasicFunction
 {
 	protected static final Logger logger = LogManager.getLogger(MailSessionFunctions.class);
 
-	public final static FunctionSignature signatures[] = {
+	public static final FunctionSignature[] signatures = {
 		new FunctionSignature(
 			new QName( "get-mail-session", MailModule.NAMESPACE_URI, MailModule.PREFIX ),
 			"Opens a JavaMail session.",

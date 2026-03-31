@@ -23,6 +23,8 @@
 package org.exist.http;
 
 import com.googlecode.junittoolbox.ParallelRunner;
+import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpSessionEvent;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.triggers.TriggerException;
@@ -43,9 +45,6 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.xml.sax.SAXException;
-
-import jakarta.servlet.http.HttpSession;
-import jakarta.servlet.http.HttpSessionEvent;
 
 import java.io.IOException;
 import java.util.Optional;

@@ -42,14 +42,14 @@ public class XMLDBTouch extends XMLDBAbstractCollectionManipulator {
 
     private static final Logger logger = LogManager.getLogger(XMLDBTouch.class);
 
-    private final static QName qnTouch = new QName("touch", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX);
+    private static final QName qnTouch = new QName("touch", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX);
 
-    private final static SequenceType PARAM_COLLECTION_URI = new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collection URI");
-    private final static SequenceType PARAM_RESOURCE = new FunctionParameterSequenceType("resource", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the resource in the collection");
+    private static final SequenceType PARAM_COLLECTION_URI = new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collection URI");
+    private static final SequenceType PARAM_RESOURCE = new FunctionParameterSequenceType("resource", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the resource in the collection");
 
-    private final static SequenceType RETURN_VAL = new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if the modification time was updated, false otherwise.");
+    private static final SequenceType RETURN_VAL = new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if the modification time was updated, false otherwise.");
 
-    public final static FunctionSignature FNS_TOUCH_DOCUMENT_NOW = new FunctionSignature(
+    public static final FunctionSignature FNS_TOUCH_DOCUMENT_NOW = new FunctionSignature(
         qnTouch,
         "Sets the modification time of a resource to the current system time. If not resource does not exist it is not created.",
         new SequenceType[] {
@@ -59,7 +59,7 @@ public class XMLDBTouch extends XMLDBAbstractCollectionManipulator {
         RETURN_VAL
     );
 
-    public final static FunctionSignature FNS_TOUCH_DOCUMENT = new FunctionSignature(
+    public static final FunctionSignature FNS_TOUCH_DOCUMENT = new FunctionSignature(
         qnTouch,
         "Sets the modification time of a resource.  If not resource does not exist it is not created.",
         new SequenceType[] {

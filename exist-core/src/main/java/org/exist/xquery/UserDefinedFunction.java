@@ -21,8 +21,8 @@
  */
 package org.exist.xquery;
 
-import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.QName;
+import org.exist.dom.persistent.DocumentSet;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
@@ -36,14 +36,14 @@ import java.util.List;
 public class UserDefinedFunction extends Function implements Cloneable {
 
     private final List<QName> parameters = new ArrayList<>(5);
-    protected boolean visited = false;
+    protected boolean visited;
     private Expression body;
-    private Sequence[] currentArguments = null;
-    private DocumentSet[] contextDocs = null;
-    private boolean bodyAnalyzed = false;
+    private Sequence[] currentArguments;
+    private DocumentSet[] contextDocs;
+    private boolean bodyAnalyzed;
     private FunctionCall call;
-    private boolean hasBeenReset = false;
-    private List<ClosureVariable> closureVariables = null;
+    private boolean hasBeenReset;
+    private List<ClosureVariable> closureVariables;
 
     public UserDefinedFunction(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
@@ -152,8 +152,7 @@ public class UserDefinedFunction extends Function implements Cloneable {
                             ", got " + currentArguments[j].getItemCount());
                 }
             }
-            result = body.eval(null, null);
-            return result;
+            return body.eval(null, null);
         } finally {
             // restore the local variable stack
             context.popLocalVariables(mark, result);

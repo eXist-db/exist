@@ -80,7 +80,7 @@ public class FluentBrokerAPI {
         return new FluentBrokerAPIBuilder(brokerPool);
     }
 
-    public static class FluentBrokerAPIBuilder {
+    public static final class FluentBrokerAPIBuilder {
         private final BrokerPool brokerPool;
 
         private FluentBrokerAPIBuilder(final BrokerPool brokerPool) {
@@ -103,7 +103,7 @@ public class FluentBrokerAPI {
 //            return new FluentBrokerAPIBuilder_ColN(collectionsAndLockModes);
 //        }
 
-        public class FluentBrokerAPIBuilder_Col1 {
+        public final class FluentBrokerAPIBuilder_Col1 {
             private final XmldbURI collectionUri;
             private final LockMode collectionLockMode;
 
@@ -137,7 +137,7 @@ public class FluentBrokerAPI {
                 return new FluentBrokerAPIBuilder_Col1_NoExec_Doc1(documentLookupFun);
             }
 
-            public class FluentBrokerAPIBuilder_Col1_Exec<CR> {
+            public final class FluentBrokerAPIBuilder_Col1_Exec<CR> {
                 private Function<Collection, CR> collectionOp;
 
                 private FluentBrokerAPIBuilder_Col1_Exec(final Function<Collection, CR> collectionOp) {
@@ -168,7 +168,7 @@ public class FluentBrokerAPI {
                     return result._1.get();
                 }
 
-                public class FluentBrokerAPIBuilder_Col1_Exec_Doc1 {
+                public final class FluentBrokerAPIBuilder_Col1_Exec_Doc1 {
                     private final Function<Collection, Tuple2<XmldbURI, LockMode>> documentLookupFun;
 
                     private FluentBrokerAPIBuilder_Col1_Exec_Doc1(final Function<Collection, Tuple2<XmldbURI, LockMode>> documentLookupFun) {
@@ -198,7 +198,7 @@ public class FluentBrokerAPI {
                         return new FluentBrokerAPIBuilder_Col1_Exec_Doc1_NoExec();
                     }
 
-                    public class FluentBrokerAPIBuilder_Col1_Exec_Doc1_Exec<CDR> {
+                    public final class FluentBrokerAPIBuilder_Col1_Exec_Doc1_Exec<CDR> {
                         private final BiFunction<Collection, DocumentImpl, CDR> collectionDocumentOp;
 
                         private FluentBrokerAPIBuilder_Col1_Exec_Doc1_Exec(final BiFunction<Collection, DocumentImpl, CDR> collectionDocumentOp) {
@@ -230,7 +230,7 @@ public class FluentBrokerAPI {
                             return new Tuple2<>(result._1.get(), result._2.get());
                         }
 
-                        public class FluentBrokerAPIBuilder_Col1_Exec_Doc1_Exec_Doc1 {
+                        public final class FluentBrokerAPIBuilder_Col1_Exec_Doc1_Exec_Doc1 {
                             private FluentBrokerAPIBuilder_Col1_Exec_Doc1_Exec_Doc1() {}
 
                             /**
@@ -248,7 +248,7 @@ public class FluentBrokerAPI {
                             }
                         }
 
-                        public class FluentBrokerAPIBuilder_Col1_Exec_Doc1_Exec_Doc1_Exec<DR> {
+                        public final class FluentBrokerAPIBuilder_Col1_Exec_Doc1_Exec_Doc1_Exec<DR> {
                             private final Function<DocumentImpl, DR> documentOp;
 
                             private FluentBrokerAPIBuilder_Col1_Exec_Doc1_Exec_Doc1_Exec(final Function<DocumentImpl, DR> documentOp) {
@@ -273,7 +273,7 @@ public class FluentBrokerAPI {
                         }
                     }
 
-                    public class FluentBrokerAPIBuilder_Col1_Exec_Doc1_NoExec {
+                    public final class FluentBrokerAPIBuilder_Col1_Exec_Doc1_NoExec {
                         private FluentBrokerAPIBuilder_Col1_Exec_Doc1_NoExec() {}
 
                         /**
@@ -303,7 +303,7 @@ public class FluentBrokerAPI {
                             return result._1.get();
                         }
 
-                        public class FluentBrokerAPIBuilder_Col1_Exec_Doc1_NoExec_Exec<DR> {
+                        public final class FluentBrokerAPIBuilder_Col1_Exec_Doc1_NoExec_Exec<DR> {
                             private final Function<DocumentImpl, DR> documentOp;
 
                             private FluentBrokerAPIBuilder_Col1_Exec_Doc1_NoExec_Exec(final Function<DocumentImpl, DR> documentOp) {
@@ -328,7 +328,7 @@ public class FluentBrokerAPI {
                 }
             }
 
-            public class FluentBrokerAPIBuilder_Col1_NoExec_Doc1 {
+            public final class FluentBrokerAPIBuilder_Col1_NoExec_Doc1 {
                 private final Function<Collection, Tuple2<XmldbURI, LockMode>> documentLookupFun;
 
                 private FluentBrokerAPIBuilder_Col1_NoExec_Doc1(final Function<Collection, Tuple2<XmldbURI, LockMode>> documentLookupFun) {
@@ -358,7 +358,7 @@ public class FluentBrokerAPI {
                     return new FluentBrokerAPIBuilder_Col1_NoExec_Doc1_NoExec();
                 }
 
-                public class FluentBrokerAPIBuilder_Col1_NoExec_Doc1_Exec<CDR> {
+                public final class FluentBrokerAPIBuilder_Col1_NoExec_Doc1_Exec<CDR> {
                     private final BiFunction<Collection, DocumentImpl, CDR> collectionDocumentOp;
 
                     private FluentBrokerAPIBuilder_Col1_NoExec_Doc1_Exec(final BiFunction<Collection, DocumentImpl, CDR> collectionDocumentOp) {
@@ -387,7 +387,7 @@ public class FluentBrokerAPI {
                         return result._2.get();
                     }
 
-                    public class FluentBrokerAPIBuilder_Col1_NoExec_Doc1_Exec_NoExec {
+                    public final class FluentBrokerAPIBuilder_Col1_NoExec_Doc1_Exec_NoExec {
                         private FluentBrokerAPIBuilder_Col1_NoExec_Doc1_Exec_NoExec() {}
 
                         /**
@@ -405,7 +405,7 @@ public class FluentBrokerAPI {
                         }
                     }
 
-                    public class FluentBrokerAPIBuilder_Col1_NoExec_Doc1_Exec_NoExec_Exec<DR> {
+                    public final class FluentBrokerAPIBuilder_Col1_NoExec_Doc1_Exec_NoExec_Exec<DR> {
                         private final Function<DocumentImpl, DR> documentOp;
 
                         private FluentBrokerAPIBuilder_Col1_NoExec_Doc1_Exec_NoExec_Exec(final Function<DocumentImpl, DR> documentOp) {
@@ -429,7 +429,7 @@ public class FluentBrokerAPI {
                     }
                 }
 
-                public class FluentBrokerAPIBuilder_Col1_NoExec_Doc1_NoExec {
+                public final class FluentBrokerAPIBuilder_Col1_NoExec_Doc1_NoExec {
                     private FluentBrokerAPIBuilder_Col1_NoExec_Doc1_NoExec() {}
 
                     /**
@@ -446,7 +446,7 @@ public class FluentBrokerAPI {
                         return new FluentBrokerAPIBuilder_Col1_NoExec_Doc1_NoExec_Exec<>(documentOp);
                     }
 
-                    public class FluentBrokerAPIBuilder_Col1_NoExec_Doc1_NoExec_Exec<DR> {
+                    public final class FluentBrokerAPIBuilder_Col1_NoExec_Doc1_NoExec_Exec<DR> {
                         private final Function<DocumentImpl, DR> documentOp;
 
                         private FluentBrokerAPIBuilder_Col1_NoExec_Doc1_NoExec_Exec(final Function<DocumentImpl, DR> documentOp) {

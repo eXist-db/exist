@@ -21,16 +21,6 @@
  */
 package org.exist.util;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.text.StringCharacterIterator;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import java.util.StringTokenizer;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
-
 import com.ibm.icu.text.*;
 import com.ibm.icu.util.ULocale;
 import com.ibm.icu.util.VersionInfo;
@@ -41,6 +31,15 @@ import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 
 import javax.annotation.Nullable;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.text.StringCharacterIterator;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+import java.util.StringTokenizer;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 /**
  * Utility methods dealing with collations.
@@ -50,55 +49,55 @@ import javax.annotation.Nullable;
  */
 public class Collations {
 
-    private final static Logger logger = LogManager.getLogger(Collations.class);
+    private static final Logger logger = LogManager.getLogger(Collations.class);
 
     /**
      * The default Unicode Codepoint Collation URI as defined by the XQuery
      * spec.
      */
-    public final static String UNICODE_CODEPOINT_COLLATION_URI = "http://www.w3.org/2005/xpath-functions/collation/codepoint";
+    public static final String UNICODE_CODEPOINT_COLLATION_URI = "http://www.w3.org/2005/xpath-functions/collation/codepoint";
 
     /**
      * Short string to select the default codepoint collation
      */
-    public final static String CODEPOINT_SHORT = "codepoint";
+    public static final String CODEPOINT_SHORT = "codepoint";
 
     /**
      * The UCA (Unicode Collation Algorithm) Codepoint URI as defined by the XQuery
      * spec.
      */
-    public final static String UCA_COLLATION_URI = "http://www.w3.org/2013/collation/UCA";
+    public static final String UCA_COLLATION_URI = "http://www.w3.org/2013/collation/UCA";
 
 
     /**
      * The HTML ASCII Case-Insensitive Collation as defined by the XPath F&amp;O spec.
      */
-    public final static String HTML_ASCII_CASE_INSENSITIVE_COLLATION_URI = "http://www.w3.org/2005/xpath-functions/collation/html-ascii-case-insensitive";
+    public static final String HTML_ASCII_CASE_INSENSITIVE_COLLATION_URI = "http://www.w3.org/2005/xpath-functions/collation/html-ascii-case-insensitive";
 
     /**
      * The XQTS ASCII Case-blind Collation as defined by the XQTS 3.1.
      */
-    public final static String XQTS_ASCII_CASE_BLIND_COLLATION_URI = "http://www.w3.org/2010/09/qt-fots-catalog/collation/caseblind";
+    public static final String XQTS_ASCII_CASE_BLIND_COLLATION_URI = "http://www.w3.org/2010/09/qt-fots-catalog/collation/caseblind";
 
     /**
      * The URI used to select collations in eXist.
      */
-    public final static String EXIST_COLLATION_URI = "http://exist-db.org/collation";
+    public static final String EXIST_COLLATION_URI = "http://exist-db.org/collation";
 
     /**
      * Lazy-initialized singleton Html Ascii Case Insensitive Collator
      */
-    private final static AtomicReference<Collator> htmlAsciiCaseInsensitiveCollator = new AtomicReference<>();
+    private static final AtomicReference<Collator> htmlAsciiCaseInsensitiveCollator = new AtomicReference<>();
 
     /**
      * Lazy-initialized singleton XQTS Case Blind Collator
      */
-    private final static AtomicReference<Collator> xqtsAsciiCaseBlindCollator = new AtomicReference<>();
+    private static final AtomicReference<Collator> xqtsAsciiCaseBlindCollator = new AtomicReference<>();
 
     /**
      * Lazy-initialized singleton Samisk Collator
      */
-    private final static AtomicReference<Collator> samiskCollator = new AtomicReference<>();
+    private static final AtomicReference<Collator> samiskCollator = new AtomicReference<>();
 
     /**
      * Get a {@link Comparator}from the specified URI.

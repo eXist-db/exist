@@ -30,8 +30,8 @@ import java.sql.PreparedStatement;
  * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
  */
 public class PreparedStatementWithSQL {
-    private String sql = null;
-    private PreparedStatement stmt = null;
+    private final String sql;
+    private final PreparedStatement stmt;
 
     public PreparedStatementWithSQL(String sql, PreparedStatement stmt) {
         this.sql = sql;
@@ -39,11 +39,11 @@ public class PreparedStatementWithSQL {
     }
 
     public String getSql() {
-        return (sql);
+        return sql;
     }
 
 
     public PreparedStatement getStmt() {
-        return (stmt);
+        return stmt;
     }
 }

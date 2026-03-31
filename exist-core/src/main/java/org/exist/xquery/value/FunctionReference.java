@@ -39,7 +39,7 @@ public class FunctionReference extends AtomicValue implements AutoCloseable {
     /** the expression from which this type derives */
     private Expression expression;
 
-    private final static Logger LOG = LogManager.getLogger(FunctionReference.class);
+    private static final Logger LOG = LogManager.getLogger(FunctionReference.class);
 
     protected final FunctionCall functionCall;
 

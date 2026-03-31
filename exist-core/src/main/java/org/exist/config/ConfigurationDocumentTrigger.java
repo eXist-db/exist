@@ -21,8 +21,6 @@
  */
 package org.exist.config;
 
-import java.util.*;
-
 import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -46,6 +44,8 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
+import java.util.*;
+
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 
 /**
@@ -61,11 +61,11 @@ import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
  */
 public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
 
-    private final static String ID_ATTR = "id";
+    private static final String ID_ATTR = "id";
 
     protected Logger LOG = LogManager.getLogger(getClass());
 
-    private DBBroker broker = null;
+    private DBBroker broker;
 
     /*
     Used for holding a pre-allocated id for either an account or group
@@ -75,40 +75,37 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
     /*
     Are we creating or updating a document?
     */
-    private boolean createOrUpdate = false;
+    private boolean createOrUpdate;
 
     /*
     Guard used to prevent processing group elements
     within account elements as though they were standalone
     group elements
     */
-    private boolean processingAccount = false;
+    private boolean processingAccount;
 
     /*
      When processing an account this will be set to true
      if the account has one or more group elements
      */
-    private boolean accountHasPrimaryGroup = false;
+    private boolean accountHasPrimaryGroup;
 
 
     @Deprecated
     public void finish(final int event, final DBBroker broker, final Txn txn, final XmldbURI documentPath, final DocumentImpl document) {
         
         Configuration conf;
-        switch (event) {
-        case REMOVE_DOCUMENT_EVENT:
+        if (event == REMOVE_DOCUMENT_EVENT) {
             conf = Configurator.getConfigurtion(broker.getBrokerPool(), documentPath);
             if (conf != null) {
                 Configurator.unregister(conf);
                 //XXX: inform object that configuration was deleted
             }
-            break;
-        default:
+        } else {
             conf = Configurator.getConfigurtion(broker.getBrokerPool(), documentPath);
             if (conf != null) {
                 conf.checkForUpdates(document.getDocumentElement());
             }
-            break;
         }
     }
 
@@ -240,13 +237,13 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
 
     @Override
     public void startElement(final String namespaceURI, final String localName, final String qname, final Attributes attributes) throws SAXException {
-        if(createOrUpdate && namespaceURI != null && namespaceURI.equals(Configuration.NS) && ( (localName.equals(PrincipalType.ACCOUNT.getElementName()) && attributes.getValue("id") != null )|| (localName.equals(PrincipalType.GROUP.getElementName()) && !processingAccount))) {
+        if(createOrUpdate && namespaceURI != null && Configuration.NS.equals(namespaceURI) && ( (localName.equals(PrincipalType.ACCOUNT.getElementName()) && attributes.getValue("id") != null )|| (localName.equals(PrincipalType.GROUP.getElementName()) && !processingAccount))) {
             processingAccount = localName.equals(PrincipalType.ACCOUNT.getElementName()); //set group account/group guard
             defer(true);
         }
 
         // check that account has a group element
-        if (processingAccount && namespaceURI != null && namespaceURI.equals(Configuration.NS) && localName.equals(PrincipalType.GROUP.getElementName())) {
+        if (processingAccount && namespaceURI != null && Configuration.NS.equals(namespaceURI) && localName.equals(PrincipalType.GROUP.getElementName())) {
             accountHasPrimaryGroup = true;
         }
 
@@ -258,7 +255,7 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
 
         super.endElement(namespaceURI, localName, qname);
 
-        if(createOrUpdate && namespaceURI != null && namespaceURI.equals(Configuration.NS) && (localName.equals(PrincipalType.ACCOUNT.getElementName()) || (localName.equals(PrincipalType.GROUP.getElementName()) && !processingAccount))) {
+        if(createOrUpdate && namespaceURI != null && Configuration.NS.equals(namespaceURI) && (localName.equals(PrincipalType.ACCOUNT.getElementName()) || (localName.equals(PrincipalType.GROUP.getElementName()) && !processingAccount))) {
 
             //we have now captured the entire account or group in our deferred queue,
             //so we can now process it in it's entirety
@@ -288,7 +285,7 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
             throw new SAXException("Unbalanced SAX Events");
         }
 
-        if(start.namespaceURI == null || !start.namespaceURI.equals(Configuration.NS) || !start.localName.equals(PrincipalType.ACCOUNT.getElementName())) {
+        if(start.namespaceURI == null || !Configuration.NS.equals(start.namespaceURI) || !start.localName.equals(PrincipalType.ACCOUNT.getElementName())) {
             throw new SAXException("First element does not match ending '" + PrincipalType.ACCOUNT.getElementName() + "' element");
         }
 
@@ -321,7 +318,7 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
             throw new SAXException("Unbalanced SAX Events");
         }
 
-        if(start.namespaceURI == null || !start.namespaceURI.equals(Configuration.NS) || !start.localName.equals(principalType.getElementName())) {
+        if(start.namespaceURI == null || !Configuration.NS.equals(start.namespaceURI) || !start.localName.equals(principalType.getElementName())) {
             throw new SAXException("First element does not match ending '" + principalType.getElementName() + "' element");
         }
 
@@ -422,7 +419,7 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
         final StringBuilder name = new StringBuilder();
         for (final SAXEvent event : deferred) {
             if (event instanceof Element element) {
-                if (element.namespaceURI != null && element.namespaceURI.equals(Configuration.NS) && "name".equals(element.localName)) {
+                if (Configuration.NS.equals(element.namespaceURI) && "name".equals(element.localName)) {
                     inName = !inName;
                 }
             }
@@ -554,14 +551,10 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
         }
 
         public void preAllocateId(final SecurityManager sm, final PreAllocatedIdReceiver receiver) throws PermissionDeniedException, EXistException {
-            switch(this) {
-                case ACCOUNT:
-                    sm.preAllocateAccountId(receiver);
-                    break;
-
-                case GROUP:
-                    sm.preAllocateGroupId(receiver);
-                    break;
+            if (this == ConfigurationDocumentTrigger.PrincipalType.ACCOUNT) {
+                sm.preAllocateAccountId(receiver);
+            } else if (this == ConfigurationDocumentTrigger.PrincipalType.GROUP) {
+                sm.preAllocateGroupId(receiver);
             }
         }
 
@@ -584,7 +577,7 @@ public class ConfigurationDocumentTrigger extends DeferrableFilteringTrigger {
     }
 
     private static class PreAllocatedIdReceiver implements SecurityManager.PrincipalIdReceiver {
-        Integer id = null;
+        Integer id;
 
         @Override
         public void allocate(final int id) {

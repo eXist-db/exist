@@ -43,7 +43,7 @@ public class eXistLSInput implements LSInput {
     private String publicId;
     private String baseURI;
     private String encoding;
-    private boolean certifiedText = false;
+    private boolean certifiedText;
 
     public Reader getCharacterStream() {
         return characterStream;

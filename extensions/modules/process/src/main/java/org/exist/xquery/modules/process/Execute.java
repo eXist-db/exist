@@ -41,7 +41,7 @@ import java.util.*;
 
 public class Execute extends BasicFunction {
 
-    public final static FunctionSignature signature =
+    public static final FunctionSignature signature =
         new FunctionSignature(
             new QName("execute", ProcessModule.NAMESPACE, ProcessModule.PREFIX),
             "",
@@ -55,10 +55,10 @@ public class Execute extends BasicFunction {
             },
             new FunctionReturnSequenceType(Type.ELEMENT, Cardinality.EXACTLY_ONE, "the sequence of code points"));
 
-    public final static QName RESULT_QNAME = new QName("execution", XMLConstants.NULL_NS_URI);
-    public final static QName COMMAND_LINE_QNAME = new QName("commandline", XMLConstants.NULL_NS_URI);
-    public final static QName STDOUT_QNAME = new QName("stdout", XMLConstants.NULL_NS_URI);
-    public final static QName LINE_QNAME = new QName("line", XMLConstants.NULL_NS_URI);
+    public static final QName RESULT_QNAME = new QName("execution", XMLConstants.NULL_NS_URI);
+    public static final QName COMMAND_LINE_QNAME = new QName("commandline", XMLConstants.NULL_NS_URI);
+    public static final QName STDOUT_QNAME = new QName("stdout", XMLConstants.NULL_NS_URI);
+    public static final QName LINE_QNAME = new QName("line", XMLConstants.NULL_NS_URI);
 
     public Execute(final XQueryContext context) {
         super(context, signature);
@@ -66,8 +66,9 @@ public class Execute extends BasicFunction {
 
     @Override
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
-        if (!context.getSubject().hasDbaRole())
+        if (!context.getSubject().hasDbaRole()) {
             throw new XPathException(this, "process:execute is only available to users with dba role");
+        }
 
         // create list of parameters to pass to shell
         List<String> cmdArgs = new ArrayList<>(args[0].getItemCount());
@@ -92,16 +93,19 @@ public class Execute extends BasicFunction {
                         if ("workingDir".equals(name)) {
                             workingDir = getWorkingDir(reader.getElementText());
                         } else if ("line".equals(name)) {
-                            if (stdin == null)
+                            if (stdin == null) {
                                 stdin = new ArrayList<>(21);
+                            }
                             stdin.add(reader.getElementText() + "\n");
                         } else if ("env".equals(name)) {
-                            if (environment == null)
+                            if (environment == null) {
                                 environment = new HashMap<>();
+                            }
                             String key = reader.getAttributeValue(null, "name");
                             String value = reader.getAttributeValue(null, "value");
-                            if (key != null && value != null)
+                            if (key != null && value != null) {
                                 environment.put(key, value);
+                            }
                         }
                     } else if (status == XMLStreamReader.END_ELEMENT) {
                         final NodeId otherId = (NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID);
@@ -116,13 +120,15 @@ public class Execute extends BasicFunction {
                 throw new XPathException(this, "Invalid XML fragment for options: " + e.getMessage(), e);
             }
         }
-        if (LOG.isDebugEnabled())
+        if (LOG.isDebugEnabled()) {
             LOG.debug("Creating process {}", cmdArgs.getFirst());
+        }
 
         ProcessBuilder pb = new ProcessBuilder(cmdArgs);
         pb.redirectErrorStream(true);
-        if (workingDir != null)
+        if (workingDir != null) {
             pb.directory(workingDir.toFile());
+        }
         if (environment != null) {
             Map<String, String> env = pb.environment();
             env.putAll(environment);

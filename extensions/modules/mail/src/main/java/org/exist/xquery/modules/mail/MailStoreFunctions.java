@@ -25,7 +25,6 @@ package org.exist.xquery.modules.mail;
 import jakarta.mail.MessagingException;
 import jakarta.mail.Session;
 import jakarta.mail.Store;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
@@ -34,12 +33,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.IntegerValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 /**
  * eXist Mail Module Extension GetStore
@@ -56,7 +50,7 @@ public class MailStoreFunctions extends BasicFunction
 {
 	protected static final Logger logger = LogManager.getLogger(MailStoreFunctions.class);
 
-	public final static FunctionSignature signatures[] = {
+	public static final FunctionSignature[] signatures = {
 		new FunctionSignature(
 			new QName( "get-mail-store", MailModule.NAMESPACE_URI, MailModule.PREFIX ),
 			"Opens a mail store. Host/User/Password/Protocol values will be obtained from the session.",
@@ -128,7 +122,7 @@ public class MailStoreFunctions extends BasicFunction
 		
 		// save the store and return the handle of the store
 			
-		return( new IntegerValue( this, MailModule.storeStore( context, store ), Type.LONG ) );
+		return new IntegerValue( this, MailModule.storeStore( context, store ), Type.LONG );
 	}
 
 	private Sequence closeMailStore( Sequence[] args, Sequence contextSequence ) throws XPathException
@@ -155,6 +149,6 @@ public class MailStoreFunctions extends BasicFunction
 			MailModule.removeStore( context, storeHandle );
 		}
 			
-		return( Sequence.EMPTY_SEQUENCE );
+		return Sequence.EMPTY_SEQUENCE;
 	}
 }

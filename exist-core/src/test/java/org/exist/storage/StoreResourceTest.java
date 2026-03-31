@@ -22,6 +22,7 @@
 
 package org.exist.storage;
 
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.triggers.TriggerException;
@@ -38,7 +39,6 @@ import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
 import org.exist.test.TestConstants;
 import org.exist.util.LockException;
-import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.util.MimeType;
 import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;
@@ -70,8 +70,8 @@ public class StoreResourceTest {
     private static final XmldbURI USER1_DOC1 = XmldbURI.create("u1d1.xml");
     private static final XmldbURI USER1_BIN_DOC1 = XmldbURI.create("u1d1.bin");
 
-    private static final int USER1_DOC1_MODE = 0664;  // rw-rw--r--
-    private static final int USER1_BIN_DOC1_MODE = 0664;  // rw-rw--r--
+    private static final int USER1_DOC1_MODE = 436;  // rw-rw--r--
+    private static final int USER1_BIN_DOC1_MODE = 436;  // rw-rw--r--
 
     @ClassRule
     public static final ExistEmbeddedServer existWebServer = new ExistEmbeddedServer(true, true);

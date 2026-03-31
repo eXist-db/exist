@@ -24,17 +24,17 @@ package org.exist.xquery.functions.system;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.exist.xquery.*;
-import org.exist.xquery.value.*;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.storage.BrokerPool;
+import org.exist.xquery.*;
+import org.exist.xquery.value.*;
 
 public class FunctionTrace extends BasicFunction {
 
-    protected final static Logger logger = LogManager.getLogger(FunctionTrace.class);
+    protected static final Logger logger = LogManager.getLogger(FunctionTrace.class);
 
-    public final static FunctionSignature[] signatures = {
+    public static final FunctionSignature[] signatures = {
         new FunctionSignature(
                 new QName( "trace", SystemModule.NAMESPACE_URI, SystemModule.PREFIX ),
                 "Returns function call statistics gathered by the trace log.",

@@ -33,5 +33,5 @@ public interface Cache<K, V> {
 
     void put(final K key, final V value);
 
-    @Nullable void remove(final K key);
+    void remove(final K key);
 }

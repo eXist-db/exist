@@ -23,20 +23,16 @@ package org.exist.xquery.functions.xmldb;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.net.URISyntaxException;
 import org.exist.dom.QName;
 import org.exist.xmldb.EXistCollectionManagementService;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
-import org.exist.xquery.value.AnyURIValue;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
+
+import java.net.URISyntaxException;
 
 import static org.exist.xquery.XPathException.execAndAddErrorIfMissing;
 
@@ -52,7 +48,7 @@ public class XMLDBMove extends XMLDBAbstractCollectionManipulator {
 	protected static final FunctionParameterSequenceType ARG_TARGET = new FunctionParameterSequenceType("target-collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The target collection URI");
 	protected static final FunctionParameterSequenceType ARG_RESOURCE = new FunctionParameterSequenceType("resource", Type.STRING, Cardinality.EXACTLY_ONE, "The resource");
 	
-    public final static FunctionSignature[] signatures = {
+    public static final FunctionSignature[] signatures = {
         new FunctionSignature(
         new QName("move", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
         "Moves the collection $source-collection-uri into the collection " +

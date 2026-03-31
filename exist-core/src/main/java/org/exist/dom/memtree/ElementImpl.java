@@ -36,8 +36,8 @@ import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
 import org.w3c.dom.*;
 
-import javax.xml.XMLConstants;
 import javax.annotation.Nonnull;
+import javax.xml.XMLConstants;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -213,7 +213,7 @@ public class ElementImpl extends NodeImpl implements Element {
         // add namespace declarations attached to this element
         int ns = document.alphaLen[nodeNumber];
         if(ns < 0) {
-            return (map);
+            return map;
         }
         while(ns < document.nextNamespace && document.namespaceParent[ns] == nodeNumber) {
             final NamespaceNode node = new NamespaceNode(getExpression(), document, ns);
@@ -354,7 +354,7 @@ public class ElementImpl extends NodeImpl implements Element {
     @Override
     @Nonnull
     public NodeList getElementsByTagName(final String name) {
-        if(name != null && name.equals(QName.WILDCARD)) {
+        if(QName.WILDCARD.equals(name)) {
             return getElementsByTagName(new QName.WildcardLocalPartQName(XMLConstants.DEFAULT_NS_PREFIX));
         } else {
             final QName qname;
@@ -374,8 +374,8 @@ public class ElementImpl extends NodeImpl implements Element {
     @Override
     @Nonnull
     public NodeList getElementsByTagNameNS(final String namespaceURI, final String localName) {
-        final boolean wildcardNS = namespaceURI != null && namespaceURI.equals(QName.WILDCARD);
-        final boolean wildcardLocalPart = localName != null && localName.equals(QName.WILDCARD);
+        final boolean wildcardNS = QName.WILDCARD.equals(namespaceURI);
+        final boolean wildcardLocalPart = QName.WILDCARD.equals(localName);
 
         if(wildcardNS && wildcardLocalPart) {
             return getElementsByTagName(QName.WildcardQName.getInstance());
@@ -452,7 +452,7 @@ public class ElementImpl extends NodeImpl implements Element {
             while((attr < document.nextAttr) && (document.attrParent[attr] == nodeNumber)) {
                 final QName name = document.attrName[attr];
                 if(name.getLocalPart().equals(localName) && name.getNamespaceURI().equals(namespaceURI)) {
-                    return (new AttrImpl(getExpression(), document, attr));
+                    return new AttrImpl(getExpression(), document, attr);
                 }
                 ++attr;
             }
@@ -463,7 +463,7 @@ public class ElementImpl extends NodeImpl implements Element {
                 while((ns < document.nextNamespace) && (document.namespaceParent[ns] == nodeNumber)) {
                     final QName nsQName = document.namespaceCode[ns];
                     if(nsQName.getLocalPart().equals(localName)) {
-                        return (new NamespaceNode(getExpression(), document, ns));
+                        return new NamespaceNode(getExpression(), document, ns);
                     }
                     ++ns;
                 }
@@ -641,9 +641,7 @@ public class ElementImpl extends NodeImpl implements Element {
         } else {
             if(nodeBaseURI == null) {
                 return XmldbURI.create(getOwnerDocument().getBaseURI(), false);
-            } else if(nodeNumber == 1) {
-                //nothing to do
-            } else {
+            } else if(nodeNumber != 1) {
                 final String docBaseURI = getOwnerDocument().getBaseURI();
                 if(docBaseURI.endsWith("/")) {
                     baseURI = XmldbURI.create(getOwnerDocument().getBaseURI(), false);
@@ -653,6 +651,7 @@ public class ElementImpl extends NodeImpl implements Element {
                     baseURI = baseURI.removeLastSegment();
                     baseURI.append(baseURI);
                 }
+                //nothing to do
             }
         }
         return baseURI;

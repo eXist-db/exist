@@ -38,7 +38,7 @@ import java.util.Map;
  */
 public class BouncyCastleJceProviderStartupTrigger implements StartupTrigger {
 
-    private final static Logger LOG = LogManager.getLogger(
+    private static final Logger LOG = LogManager.getLogger(
         BouncyCastleJceProviderStartupTrigger.class);
 
     @Override

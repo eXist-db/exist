@@ -90,13 +90,13 @@ abstract class OrderedDurationValue extends DurationValue {
             //compare fractional seconds to work around the JDK standard behaviour
             if (r == DatatypeConstants.EQUAL &&
                     duration.getField(DatatypeConstants.SECONDS) != null &&
-                    (((DurationValue) other).duration).getField(DatatypeConstants.SECONDS) != null) {
+                    ((DurationValue) other).duration.getField(DatatypeConstants.SECONDS) != null) {
                 if (((BigDecimal) duration.getField(DatatypeConstants.SECONDS)).compareTo(
-                        ((BigDecimal) (((DurationValue) other).duration).getField(DatatypeConstants.SECONDS))) == DatatypeConstants.EQUAL) {
+                        ((BigDecimal) ((DurationValue) other).duration.getField(DatatypeConstants.SECONDS))) == DatatypeConstants.EQUAL) {
                     return Constants.EQUAL;
                 }
                 return (((BigDecimal) duration.getField(DatatypeConstants.SECONDS)).compareTo(
-                        ((BigDecimal) (((DurationValue) other).duration).getField(DatatypeConstants.SECONDS)))) == DatatypeConstants.LESSER ?
+                        ((BigDecimal) ((DurationValue) other).duration.getField(DatatypeConstants.SECONDS)))) == DatatypeConstants.LESSER ?
                         Constants.INFERIOR : Constants.SUPERIOR;
             }
             if (r == DatatypeConstants.INDETERMINATE) {
@@ -235,7 +235,7 @@ abstract class OrderedDurationValue extends DurationValue {
         if (x.conversionPreference(BigDecimal.class) < Integer.MAX_VALUE) {
             return x.toJavaObject(BigDecimal.class);
         } else {
-            return new BigDecimal(((NumericValue) x).getDouble());
+            return BigDecimal.valueOf(((NumericValue)x).getDouble());
         }
     }
 }

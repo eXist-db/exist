@@ -270,8 +270,9 @@ public class ExistCollection extends ExistResource {
     public XmldbURI createFile(String newName, InputStream is, Long length, String contentType)
             throws IOException, PermissionDeniedException, CollectionDoesNotExistException {
 
-        if (LOG.isDebugEnabled())
+        if (LOG.isDebugEnabled()) {
             LOG.debug("Create '{}' in '{}'", newName, xmldbUri);
+        }
 
         XmldbURI newNameUri = XmldbURI.create(newName);
 
@@ -346,9 +347,7 @@ public class ExistCollection extends ExistResource {
         }
 
         // Send the result back to the client
-        XmldbURI newResource = xmldbUri.append(newName);
-
-        return newResource;
+        return xmldbUri.append(newName);
     }
 
     void resourceCopyMove(XmldbURI destCollectionUri, String newName, Mode mode) throws EXistException {

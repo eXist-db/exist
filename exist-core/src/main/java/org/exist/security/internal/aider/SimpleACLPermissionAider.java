@@ -21,13 +21,13 @@
  */
 package org.exist.security.internal.aider;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.exist.security.ACLPermission;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.security.SimpleACLPermission;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>

@@ -21,12 +21,12 @@
  */
 package org.exist.http.filter;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -41,7 +41,7 @@ import java.util.HashSet;
  * HTTP POST Query Document
  * HTTP DELETE
  * HTTP PUT
-
+ 
  * Created by IntelliJ IDEA.
  * User: lcahlander
  * Date: Aug 18, 2010
@@ -50,7 +50,7 @@ import java.util.HashSet;
  */
 public class PathFilter implements Filter {
 
-    private final static Logger LOG = LogManager.getLogger(PathFilter.class);
+    private static final Logger LOG = LogManager.getLogger(PathFilter.class);
 
     private FilterConfig filterConfig;
 
@@ -61,7 +61,7 @@ public class PathFilter implements Filter {
     private static final String TEST_DELETE = "HTTP DELETE";
     private static final String TEST_PUT = "HTTP PUT";
 
-    private boolean allowFirst = false;
+    private boolean allowFirst;
     private HashSet<String> allows = new HashSet<>();
     private HashSet<String> denys = new HashSet<>();
     private HashSet<String> filterNames = new HashSet<>();

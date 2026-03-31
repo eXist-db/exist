@@ -21,14 +21,6 @@
  */
 package org.exist.util.serializer;
 
-import java.io.Writer;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-
-import javax.xml.XMLConstants;
-import javax.xml.transform.TransformerException;
-
 import org.exist.dom.memtree.NodeImpl;
 import org.w3c.dom.Attr;
 import org.w3c.dom.CharacterData;
@@ -37,6 +29,13 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.ProcessingInstruction;
 import org.xml.sax.helpers.NamespaceSupport;
+
+import javax.xml.XMLConstants;
+import javax.xml.transform.TransformerException;
+import java.io.Writer;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 
 public class DOMSerializer extends AbstractSerializer {
 

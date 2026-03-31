@@ -42,7 +42,7 @@ import java.util.Properties;
 
 public class RetrieveBackup extends BasicFunction
 {
-    public final static FunctionSignature signature = new FunctionSignature( new QName( "retrieve", BackupModule.NAMESPACE_URI, BackupModule.PREFIX ), "Retrieves a zipped backup archive, $name, and directly streams it to the HTTP response. " + "For security reasons, the function will only read .zip files in the specified directory, $directory.", new SequenceType[] {
+    public static final FunctionSignature signature = new FunctionSignature( new QName( "retrieve", BackupModule.NAMESPACE_URI, BackupModule.PREFIX ), "Retrieves a zipped backup archive, $name, and directly streams it to the HTTP response. " + "For security reasons, the function will only read .zip files in the specified directory, $directory.", new SequenceType[] {
             new FunctionParameterSequenceType( "directory", Type.STRING, Cardinality.EXACTLY_ONE, "The path to the directory where the backup file is located." ),
             new FunctionParameterSequenceType( "name", Type.STRING, Cardinality.EXACTLY_ONE, "The name of the file to retrieve." )
         }, new SequenceType( Type.ITEM, Cardinality.EMPTY_SEQUENCE ) );
@@ -68,7 +68,7 @@ public class RetrieveBackup extends BasicFunction
         final Path   backupFile = dir.resolve(name);
 
         if( !Files.isReadable(backupFile)) {
-            return( Sequence.EMPTY_SEQUENCE );
+            return Sequence.EMPTY_SEQUENCE;
         }
 
         if( !name.endsWith( ".zip" ) ) {
@@ -111,6 +111,6 @@ public class RetrieveBackup extends BasicFunction
         catch( final IOException e ) {
             throw( new XPathException( this, "An IO error occurred while reading the backup archive" ) );
         }
-        return( Sequence.EMPTY_SEQUENCE );
+        return Sequence.EMPTY_SEQUENCE;
     }
 }

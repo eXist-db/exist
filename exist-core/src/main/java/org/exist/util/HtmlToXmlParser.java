@@ -21,9 +21,9 @@
  */
 package org.exist.util;
 
+import com.evolvedbinary.j8fu.Either;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import com.evolvedbinary.j8fu.Either;
 import org.xml.sax.*;
 
 import java.util.Map;
@@ -33,7 +33,7 @@ import java.util.Optional;
  * @author Adam Retter
  */
 public class HtmlToXmlParser {
-    private final static Logger LOG = LogManager.getLogger(HtmlToXmlParser.class);
+    private static final Logger LOG = LogManager.getLogger(HtmlToXmlParser.class);
 
     public static final String HTML_TO_XML_PARSER_ELEMENT = "html-to-xml";
     public static final String HTML_TO_XML_PARSER_CLASS_ATTRIBUTE = "class";
@@ -58,7 +58,7 @@ public class HtmlToXmlParser {
                 Optional.ofNullable((String)config.getProperty(HTML_TO_XML_PARSER_PROPERTY));
 
         // instantiate the parser
-        final Optional<Either<Throwable, XMLReader>> inst = parserClassName.map(cn -> {
+        return parserClassName.map(cn -> {
             Either<Throwable, XMLReader> result;
             try {
                 final Class clazz = Class.forName(cn);
@@ -88,7 +88,5 @@ public class HtmlToXmlParser {
             }
             return result;
         });
-
-        return inst;
     }
 }

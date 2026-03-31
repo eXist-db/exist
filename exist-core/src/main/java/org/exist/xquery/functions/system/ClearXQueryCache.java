@@ -41,7 +41,7 @@ import org.exist.xquery.value.Type;
  */
 public class ClearXQueryCache extends BasicFunction {
 
-    public final static FunctionSignature signature = new FunctionSignature(
+    public static final FunctionSignature signature = new FunctionSignature(
         new QName("clear-xquery-cache", SystemModule.NAMESPACE_URI, SystemModule.PREFIX),
         "Clear XQuery cache.",
         FunctionSignature.NO_ARGS,

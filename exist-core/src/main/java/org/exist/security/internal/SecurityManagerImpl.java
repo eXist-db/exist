@@ -25,40 +25,28 @@ import com.evolvedbinary.j8fu.lazy.AtomicLazyVal;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.jcip.annotations.ThreadSafe;
-import org.exist.scheduler.JobDescription;
-import org.exist.security.AbstractRealm;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.function.BiFunction;
-import java.util.stream.Collectors;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Database;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.config.Configuration;
-import org.exist.config.Configurator;
 import org.exist.config.ConfigurationException;
+import org.exist.config.Configurator;
 import org.exist.config.annotation.*;
 import org.exist.dom.persistent.DocumentImpl;
+import org.exist.scheduler.JobDescription;
+import org.exist.security.AbstractRealm;
+import org.exist.security.Account;
 import org.exist.security.AuthenticationException;
 import org.exist.security.Group;
+import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
+import org.exist.security.Principal;
+import org.exist.security.SchemaType;
 import org.exist.security.SecurityManager;
 import org.exist.security.Session;
 import org.exist.security.Subject;
-import org.exist.security.Account;
-import org.exist.security.Permission;
-import org.exist.security.Principal;
-import org.exist.security.SchemaType;
 import org.exist.security.internal.aider.GroupAider;
 import org.exist.security.realm.Realm;
 import org.exist.storage.BrokerPool;
@@ -74,6 +62,17 @@ import org.exist.xmldb.XmldbURI;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.SimpleTrigger;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 
 /**
  * SecurityManager is responsible for managing users and groups.
@@ -124,11 +123,11 @@ public class SecurityManagerImpl implements SecurityManager, BrokerPoolService {
     
     @ConfigurationFieldAsElement("events")
     //@ConfigurationFieldClassMask("org.exist.security.internal.SMEvents")
-    private SMEvents events = null;
+    private SMEvents events;
     
-    private Collection collection = null;
+    private Collection collection;
     
-    private Configuration configuration = null;
+    private Configuration configuration;
     
     public SecurityManagerImpl(final Database db) {
         this.db = db;

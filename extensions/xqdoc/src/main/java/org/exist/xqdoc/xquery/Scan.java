@@ -21,15 +21,11 @@
  */
 package org.exist.xqdoc.xquery;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.collections.Collection;
+import org.exist.dom.QName;
 import org.exist.dom.persistent.BinaryDocument;
 import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.QName;
 import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.PermissionDeniedException;
 import org.exist.source.*;
@@ -44,9 +40,14 @@ import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 import org.xqdoc.conversion.XQDocException;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class Scan extends BasicFunction {
 
-    public final static FunctionSignature[] signatures = {
+    public static final FunctionSignature[] signatures = {
         new FunctionSignature(
             new QName("scan", XQDocModule.NAMESPACE_URI, XQDocModule.PREFIX),
             "Scan and extract function documentation from an external XQuery function module according to the" +
@@ -77,11 +78,11 @@ public class Scan extends BasicFunction {
         )
     };
 
-    private final static Pattern NAME_PATTERN = Pattern.compile("([^/\\.]+)\\.?[^\\.]*$");
+    private static final Pattern NAME_PATTERN = Pattern.compile("([^/\\.]+)\\.?[^\\.]*$");
 
-    private final static String NORMALIZE_XQUERY = "resource:org/exist/xqdoc/xquery/normalize.xql";
+    private static final String NORMALIZE_XQUERY = "resource:org/exist/xqdoc/xquery/normalize.xql";
 
-    private CompiledXQuery normalizeXQuery = null;
+    private CompiledXQuery normalizeXQuery;
 
     public Scan(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
@@ -101,7 +102,7 @@ public class Scan extends BasicFunction {
         String name;
         if (getArgumentCount() == 2) {
             
-            byte data[];
+            byte[] data;
             try{
                 data = binaryValueToByteArray((BinaryValue)args[0].itemAt(0));
             } catch(IOException ioe) {
@@ -148,8 +149,9 @@ public class Scan extends BasicFunction {
             } else {
                 // first check if the URI points to a registered module
                 String location = context.getModuleLocation(uri);
-                if (location != null)
+                if (location != null) {
                     uri = location;
+                }
                 try {
                     source = SourceFactory.getSource(context.getBroker(), context.getModuleLoadPath(), uri, false);
                     if (source == null) {
@@ -167,8 +169,9 @@ public class Scan extends BasicFunction {
             XQDocHelper helper = new XQDocHelper();
             String xml = helper.scan(source, name);
             NodeValue root = ModuleUtils.stringToXML(context, xml, this);
-            if (root == null)
+            if (root == null) {
                 return Sequence.EMPTY_SEQUENCE;
+            }
             return normalize((NodeValue) ((Document) root).getDocumentElement());
         } catch (XQDocException | SAXException e) {
             throw new XPathException(this, "error while scanning module: " + e.getMessage(), e);

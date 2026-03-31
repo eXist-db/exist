@@ -43,9 +43,9 @@ import org.exquery.http.HttpRequest;
  */
 public class GeneralFunctions extends AbstractRequestModuleFunction {
 
-    private final static QName qnMethod = new QName("method", RequestModule.NAMESPACE_URI, RequestModule.PREFIX);
+    private static final QName qnMethod = new QName("method", RequestModule.NAMESPACE_URI, RequestModule.PREFIX);
     
-    public final static FunctionSignature FNS_METHOD = new FunctionSignature(
+    public static final FunctionSignature FNS_METHOD = new FunctionSignature(
         qnMethod,
         "Gets the HTTP Method of the Request e.g. GET.",
         null,

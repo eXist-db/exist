@@ -177,7 +177,7 @@ public class DeepEmbeddedBackupRestoreTest {
         return new CollectionsAndDocuments(collectionUris, documentInfos);
     }
 
-    private static class CollectionsAndDocuments {
+    private static final class CollectionsAndDocuments {
         final List<XmldbURI> collectionUris;
         final List<ResourceInfo> documentInfos;
 
@@ -187,7 +187,7 @@ public class DeepEmbeddedBackupRestoreTest {
         }
     }
 
-    private static class ResourceInfo {
+    private static final class ResourceInfo {
         final XmldbURI uri;
         final long hash;
 

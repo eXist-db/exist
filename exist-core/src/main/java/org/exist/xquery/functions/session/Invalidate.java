@@ -37,7 +37,7 @@ import java.util.Optional;
  */
 public class Invalidate extends SessionFunction {
 
-    public final static FunctionSignature signature =
+    public static final FunctionSignature signature =
             new FunctionSignature(
                     new QName("invalidate", SessionModule.NAMESPACE_URI, SessionModule.PREFIX),
                     "Invalidate (remove) the current HTTP session if present",

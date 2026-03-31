@@ -21,28 +21,23 @@
  */
 package org.exist.util;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.StringTokenizer;
-import java.util.TreeMap;
-
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.xmldb.XmldbURI;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.*;
 
 import static javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING;
 
@@ -62,7 +57,7 @@ import static javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING;
  */
 public class MimeTable {
 
-    private final static Logger LOG = LogManager.getLogger(MimeTable.class);
+    private static final Logger LOG = LogManager.getLogger(MimeTable.class);
 
     private static final String FILE_LOAD_FAILED_ERR = "Failed to load mime-type table from ";
     private static final String LOAD_FAILED_ERR = "Failed to load mime-type table from class loader";
@@ -70,7 +65,7 @@ public class MimeTable {
     private static final String MIME_TYPES_XML = "mime-types.xml";
     private static final String MIME_TYPES_XML_DEFAULT = "org/exist/util/" + MIME_TYPES_XML;    
     
-    private static MimeTable instance = null;
+    private static MimeTable instance;
     /** From where the mime table is loaded for message purpose */
     private String src;
     
@@ -116,7 +111,7 @@ public class MimeTable {
         return instance;
     }
 
-    private MimeType defaultMime = null;
+    private MimeType defaultMime;
     private Map<String, MimeType> mimeTypes = new TreeMap<>();
     private Map<String, MimeType> extensions = new TreeMap<>();
     private Map<String, String> preferredExtension = new TreeMap<>();
@@ -155,8 +150,8 @@ public class MimeTable {
     //TODO: deprecate?
     public MimeType getContentTypeFor(String fileName) {
         final String ext = getExtension(fileName);
-        final MimeType mt = (ext == null) ? defaultMime : extensions.get(ext);
-        return (mt == null) ? defaultMime : mt;
+        final MimeType mt = ext == null ? defaultMime : extensions.get(ext);
+        return mt == null ? defaultMime : mt;
     }
     
     public MimeType getContentTypeFor(XmldbURI fileName) {
@@ -304,7 +299,7 @@ public class MimeTable {
         private static final String MIME_TYPE = "mime-type";
         private static final String MIME_TYPES = "mime-types";
         
-        private MimeType mime = null;
+        private MimeType mime;
         private final StringBuilder charBuf = new StringBuilder(64);
 
         @Override
@@ -337,8 +332,6 @@ public class MimeTable {
                     } else if (type == MimeType.BINARY) {
                         defaultMime = MimeType.BINARY_TYPE;
                     }
-                } else {
-                    // the defaultMime is left to null, for backward compatibility with 1.2
                 }
 
                 // Put the default mime into the mime map
@@ -355,7 +348,7 @@ public class MimeTable {
                 }
                 int type = MimeType.BINARY;
                 final String typeAttr = attributes.getValue("type");
-                if (typeAttr != null && "xml".equals(typeAttr))
+                if ("xml".equals(typeAttr))
                     {type = MimeType.XML;}
                 mime = new MimeType(name, type);
                 mimeTypes.put(name, mime);

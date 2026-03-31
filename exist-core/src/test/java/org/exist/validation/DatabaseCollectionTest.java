@@ -48,8 +48,8 @@ public class DatabaseCollectionTest {
     @ClassRule
     public static final ExistXmldbEmbeddedServer existServer = new ExistXmldbEmbeddedServer(false, true, true);
 
-    private final static String ROOT_URI = XmldbURI.LOCAL_DB;
-    private final static String TEST_COLLECTION = "testValidationDatabaseCollection";
+    private static final String ROOT_URI = XmldbURI.LOCAL_DB;
+    private static final String TEST_COLLECTION = "testValidationDatabaseCollection";
 
     @Before
     public void setUp() throws XMLDBException {

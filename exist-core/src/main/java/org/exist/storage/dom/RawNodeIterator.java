@@ -49,15 +49,15 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class RawNodeIterator implements IRawNodeIterator {
 
-    private final static Logger LOG = LogManager.getLogger(RawNodeIterator.class);
+    private static final Logger LOG = LogManager.getLogger(RawNodeIterator.class);
 
-    private DBBroker broker;
+    private final DBBroker broker;
     private final LockManager lockManager;
     private final DOMFile db;
 
     private int offset;
     private short lastTupleID = ItemId.UNKNOWN_ID;
-    private DOMFile.DOMPage page = null;
+    private DOMFile.DOMPage page;
     private long pageNum;
 
     /**

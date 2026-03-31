@@ -21,18 +21,18 @@
  */
 package org.exist.util.serializer;
 
-import java.io.IOException;
-import java.io.Writer;
-import java.util.*;
-import javax.annotation.Nullable;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.TransformerException;
-
 import com.evolvedbinary.j8fu.lazy.LazyVal;
 import org.exist.dom.QName;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.CharSlice;
 import org.exist.util.serializer.encodings.CharacterSet;
+
+import javax.annotation.Nullable;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.TransformerException;
+import java.io.IOException;
+import java.io.Writer;
+import java.util.*;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -44,9 +44,9 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class XMLWriter implements SerializerWriter {
 
-    private final static IllegalStateException EX_CHARSET_NULL = new IllegalStateException("Charset should never be null!");
+    private static final IllegalStateException EX_CHARSET_NULL = new IllegalStateException("Charset should never be null!");
     
-    protected final static Properties defaultProperties = new Properties();
+    protected static final Properties defaultProperties = new Properties();
     static {
         defaultProperties.setProperty(EXistOutputKeys.OMIT_ORIGINAL_XML_DECLARATION, "no");
         defaultProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
@@ -56,17 +56,17 @@ public class XMLWriter implements SerializerWriter {
     private static final String DEFAULT_XML_VERSION = "1.0";
     private static final String DEFAULT_XML_ENCODING = UTF_8.name();
 
-    protected Writer writer = null;
+    protected Writer writer;
 
     protected CharacterSet charSet;
 
-    protected boolean tagIsOpen = false;
+    protected boolean tagIsOpen;
 
     protected boolean tagIsEmpty = true;
 
-    protected boolean declarationWritten = false;
+    protected boolean declarationWritten;
 
-    protected boolean doctypeWritten = false;
+    protected boolean doctypeWritten;
     
     protected Properties outputProperties;
 
@@ -85,11 +85,11 @@ public class XMLWriter implements SerializerWriter {
      * XDM has different serialization rules
      * compared to retrieving resources from the database.
      */
-    private boolean xdmSerialization = false;
+    private boolean xdmSerialization;
 
     private final Deque<QName> elementName = new ArrayDeque<>();
     private LazyVal<Set<QName>> cdataSectionElements = new LazyVal<>(this::parseCdataSectionElementNames);
-    private boolean cdataSetionElement = false;
+    private boolean cdataSetionElement;
 
     static {
         textSpecialChars = new boolean[128];
@@ -144,7 +144,7 @@ public class XMLWriter implements SerializerWriter {
     private Set<QName> parseCdataSectionElementNames() {
         final String s = outputProperties.getProperty(OutputKeys.CDATA_SECTION_ELEMENTS);
         if (s == null || s.isEmpty()) {
-            return Collections.EMPTY_SET;
+            return Collections.emptySet();
         }
 
         final Set<QName> qnames = new HashSet<>();
@@ -535,8 +535,8 @@ public class XMLWriter implements SerializerWriter {
         final String omitOriginalXmlDecl = outputProperties.getProperty(EXistOutputKeys.OMIT_ORIGINAL_XML_DECLARATION, "yes");
         if (originalXmlDecl != null && "no".equals(omitOriginalXmlDecl)) {
             // get the fields of the persisted xml declaration, but overridden with any properties from the serialization properties
-            final String version = outputProperties.getProperty(OutputKeys.VERSION, (originalXmlDecl.version != null ? originalXmlDecl.version : DEFAULT_XML_VERSION));
-            final String encoding = outputProperties.getProperty(OutputKeys.ENCODING, (originalXmlDecl.encoding != null ? originalXmlDecl.encoding : DEFAULT_XML_ENCODING));
+            final String version = outputProperties.getProperty(OutputKeys.VERSION, originalXmlDecl.version != null ? originalXmlDecl.version : DEFAULT_XML_VERSION);
+            final String encoding = outputProperties.getProperty(OutputKeys.ENCODING, originalXmlDecl.encoding != null ? originalXmlDecl.encoding : DEFAULT_XML_ENCODING);
             @Nullable final String standalone = outputProperties.getProperty(OutputKeys.STANDALONE, originalXmlDecl.standalone);
 
             writeDeclaration(version, encoding, standalone);
@@ -594,7 +594,8 @@ public class XMLWriter implements SerializerWriter {
         final boolean[] specialChars = inAttribute ? attrSpecialChars : textSpecialChars;
         char ch = 0;
         final int len = s.length();
-        int pos = 0, i;
+        int pos = 0;
+        int i;
         while(pos < len) {
             i = pos;
             while(i < len) {
@@ -672,7 +673,7 @@ public class XMLWriter implements SerializerWriter {
         writer.write(charref, 0, o);
     }
 
-    private static class XMLDeclaration {
+    private static final class XMLDeclaration {
         @Nullable final String version;
         @Nullable final String encoding;
         @Nullable final String standalone;

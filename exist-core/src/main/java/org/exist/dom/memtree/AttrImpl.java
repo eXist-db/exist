@@ -170,7 +170,7 @@ public class AttrImpl extends NodeImpl implements Attr {
 
     @Override
     public boolean isId() {
-        return (document.attrType[nodeNumber] == ATTR_ID_TYPE);
+        return document.attrType[nodeNumber] == ATTR_ID_TYPE;
     }
 
     @Override

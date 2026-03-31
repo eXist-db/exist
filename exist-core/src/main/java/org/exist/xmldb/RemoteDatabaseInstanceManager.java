@@ -60,26 +60,27 @@ public class RemoteDatabaseInstanceManager extends  AbstractRemoteService implem
 
     @Override
     public void shutdown() throws XMLDBException {
-        remoteCallSite.execute("shutdown", Collections.EMPTY_LIST);
+        remoteCallSite.execute("shutdown", Collections.emptyList());
     }
 
     @Override
     public void shutdown(long delay) throws XMLDBException {
         final List<Object> params = new ArrayList<>();
-        if (delay > 0)
-            params.add(Long.valueOf(delay).toString());
+        if (delay > 0) {
+            params.add(Long.toString(delay));
+        }
         remoteCallSite.execute("shutdown", params);
     }
 
     @Override
     public boolean enterServiceMode() throws XMLDBException {
-        remoteCallSite.execute("enterServiceMode", Collections.EMPTY_LIST);
+        remoteCallSite.execute("enterServiceMode", Collections.emptyList());
         return true;
     }
 
     @Override
     public void exitServiceMode() throws XMLDBException {
-        remoteCallSite.execute("exitServiceMode", Collections.EMPTY_LIST);
+        remoteCallSite.execute("exitServiceMode", Collections.emptyList());
     }
 
     @Override

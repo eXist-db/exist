@@ -32,8 +32,8 @@ import org.exist.xquery.value.ValueSequence;
  */
 public class OpSimpleMap extends AbstractExpression {
 
-    private Expression left;
-    private PathExpr right;
+    private final Expression left;
+    private final PathExpr right;
 
     public OpSimpleMap(XQueryContext context, PathExpr left, PathExpr right) {
         super(context);

@@ -21,6 +21,10 @@
  */
 package org.exist.webstart;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.exist.util.FileUtils;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -29,10 +33,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.exist.util.FileUtils;
 
 /**
  * Class for managing webstart jar files.
@@ -48,7 +48,7 @@ public class JnlpJarFiles {
 
     // Names of core jar files sans ".jar" extension.
     // Use %latest% token in place of a version string.
-    private final String allJarNames[] = new String[]{
+    private final String[] allJarNames = new String[]{
             "antlr-%latest%",
             "cglib-nodep-%latest%",
             "clj-ds-%latest%",
@@ -145,7 +145,7 @@ public class JnlpJarFiles {
      * @return list of jar files.
      */
     public List<Path> getAllWebstartJars() {
-        final List<Path> allWebstartJars = allFiles.values().stream().filter((file) -> (FileUtils.fileName(file).endsWith(".jar"))).collect(Collectors.toList());
+        final List<Path> allWebstartJars = allFiles.values().stream().filter(file -> (FileUtils.fileName(file).endsWith(".jar"))).collect(Collectors.toList());
         allWebstartJars.sort(Comparator.comparing(p -> p.toAbsolutePath().toString()));
         return allWebstartJars;
     }
@@ -180,6 +180,6 @@ public class JnlpJarFiles {
      * @throws IOException if the last modified time cannot be retrieved.
      */
     public long getLastModified() throws IOException {
-        return (mainJar == null) ? -1 : Files.getLastModifiedTime(mainJar).toMillis();
+        return mainJar == null ? -1 : Files.getLastModifiedTime(mainJar).toMillis();
     }
 }

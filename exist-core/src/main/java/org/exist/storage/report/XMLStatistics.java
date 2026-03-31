@@ -21,9 +21,6 @@
  */
 package org.exist.storage.report;
 
-import java.nio.file.Path;
-import java.util.Optional;
-
 import org.exist.collections.CollectionCache;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.BufferStats;
@@ -37,14 +34,17 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
+import java.nio.file.Path;
+import java.util.Optional;
+
 /** generate statistics about the XML storage - 
  * used by org.apache.cocoon.generation.StatusGenerator
  * @author jmv
  */
 public class XMLStatistics {
 
-    public final static String NAMESPACE = "http://exist.sourceforge.net/generators/status";
-    public final static String PREFIX = "status";
+    public static final String NAMESPACE = "http://exist.sourceforge.net/generators/status";
+    public static final String PREFIX = "status";
     public ContentHandler contentHandler;
 
     public XMLStatistics(ContentHandler contentHandler) {

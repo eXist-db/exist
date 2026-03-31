@@ -21,12 +21,6 @@
  */
 package org.exist.contentextraction.xquery;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-
 import org.apache.tika.metadata.Metadata;
 import org.exist.contentextraction.ContentExtraction;
 import org.exist.contentextraction.ContentExtractionException;
@@ -40,18 +34,16 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.BinaryValue;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReference;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
+
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.exist.Namespaces.XHTML_NS;
 
@@ -62,7 +54,7 @@ import static org.exist.Namespaces.XHTML_NS;
 public class ContentFunctions extends BasicFunction {
 
 
-    public final static FunctionSignature getMeatadata = new FunctionSignature(
+    public static final FunctionSignature getMeatadata = new FunctionSignature(
         new QName("get-metadata", ContentExtractionModule.NAMESPACE_URI, ContentExtractionModule.PREFIX),
         "extracts the metadata",
         new SequenceType[]{
@@ -71,7 +63,7 @@ public class ContentFunctions extends BasicFunction {
         new FunctionReturnSequenceType(Type.DOCUMENT, Cardinality.EXACTLY_ONE, "Extracted metadata")
     );
 
-    public final static FunctionSignature getMetadataAndContent = new FunctionSignature(
+    public static final FunctionSignature getMetadataAndContent = new FunctionSignature(
         new QName("get-metadata-and-content", ContentExtractionModule.NAMESPACE_URI, ContentExtractionModule.PREFIX),
         "extracts the metadata and contents",
         new SequenceType[]{
@@ -80,7 +72,7 @@ public class ContentFunctions extends BasicFunction {
         new FunctionReturnSequenceType(Type.DOCUMENT, Cardinality.EXACTLY_ONE, "Extracted content and metadata")
     );
 
-    public final static FunctionSignature streamContent = new FunctionSignature(
+    public static final FunctionSignature streamContent = new FunctionSignature(
         new QName("stream-content", ContentExtractionModule.NAMESPACE_URI, ContentExtractionModule.PREFIX),
         "extracts the metadata",
         new SequenceType[]{

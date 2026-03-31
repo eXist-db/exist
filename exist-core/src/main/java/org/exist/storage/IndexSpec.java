@@ -26,11 +26,7 @@ import org.exist.collections.CollectionConfiguration;
 import org.exist.dom.QName;
 import org.exist.dom.TypedQNameComparator;
 import org.exist.util.DatabaseConfigurationException;
-import org.w3c.dom.Attr;
-import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import org.w3c.dom.*;
 
 import java.util.*;
 
@@ -57,10 +53,10 @@ public class IndexSpec {
     private static final String CREATE_ELEMENT = "create";
     private static final String QNAME_ATTRIB = "qname";
 
-    private GeneralRangeIndexSpec specs[] = null;
+    private GeneralRangeIndexSpec[] specs;
     private Map<QName, QNameRangeIndexSpec> qnameSpecs = new TreeMap<>(new TypedQNameComparator());
 
-    private Map<String, Object> customIndexSpecs = null;
+    private Map<String, Object> customIndexSpecs;
 
     public IndexSpec(DBBroker broker, Element index) throws DatabaseConfigurationException {
         read(broker, index);
@@ -161,7 +157,7 @@ public class IndexSpec {
             specs = new GeneralRangeIndexSpec[1];
             specs[0] = valueIdx;
         } else {
-            GeneralRangeIndexSpec nspecs[] = new GeneralRangeIndexSpec[specs.length + 1];
+            GeneralRangeIndexSpec[] nspecs = new GeneralRangeIndexSpec[specs.length + 1];
             System.arraycopy(specs, 0, nspecs, 0, specs.length);
             nspecs[specs.length] = valueIdx;
             specs = nspecs;
@@ -189,9 +185,8 @@ public class IndexSpec {
         final NamedNodeMap attrs = elem.getAttributes();
         for(int i = 0; i < attrs.getLength(); i++) {
             final Attr attr = (Attr) attrs.item(i);
-            if (attr.getPrefix() != null
-                && "xmlns".equals(attr.getPrefix())
-                && !attr.getValue().equals(CollectionConfiguration.NAMESPACE)
+            if ("xmlns".equals(attr.getPrefix())
+                && !CollectionConfiguration.NAMESPACE.equals(attr.getValue())
             ) {
                 map.put(attr.getLocalName(), attr.getValue());
             }

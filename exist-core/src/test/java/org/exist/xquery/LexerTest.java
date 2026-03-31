@@ -21,12 +21,9 @@
  */
 package org.exist.xquery;
 
-import java.io.IOException;
-import java.io.StringReader;
-import java.util.Optional;
-
 import antlr.RecognitionException;
 import antlr.TokenStreamException;
+import antlr.collections.AST;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.security.PermissionDeniedException;
@@ -44,11 +41,13 @@ import org.exist.xquery.parser.XQueryLexer;
 import org.exist.xquery.parser.XQueryParser;
 import org.exist.xquery.parser.XQueryTreeParser;
 import org.exist.xquery.value.Sequence;
-
-import antlr.collections.AST;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.xml.sax.SAXException;
+
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.Optional;
 
 import static org.junit.Assert.fail;
 

@@ -49,7 +49,7 @@ import java.util.zip.InflaterInputStream;
  */
 public class InflateFunction extends BasicFunction {
 
-    public final static FunctionSignature[] signatures = {
+    public static final FunctionSignature[] signatures = {
             new FunctionSignature(
                     new QName("inflate", CompressionModule.NAMESPACE_URI, CompressionModule.PREFIX),
                     "Inflate data (RFC 1950)",
@@ -76,14 +76,16 @@ public class InflateFunction extends BasicFunction {
     @Override
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
         // is there some data to inflate?
-        if (args[0].isEmpty())
+        if (args[0].isEmpty()) {
             return Sequence.EMPTY_SEQUENCE;
+        }
 
         final BinaryValue bin = (BinaryValue) args[0].itemAt(0);
 
         boolean rawflag = false;
-        if (args.length > 1 && !args[1].isEmpty())
+        if (args.length > 1 && !args[1].isEmpty()) {
             rawflag = args[1].itemAt(0).convertTo(Type.BOOLEAN).effectiveBooleanValue();
+        }
 
         final Inflater infl = new Inflater(rawflag);
 

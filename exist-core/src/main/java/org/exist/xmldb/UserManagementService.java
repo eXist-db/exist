@@ -21,18 +21,18 @@
  */
 package org.exist.xmldb;
 
-import java.time.Instant;
-import java.util.List;
-
+import org.exist.security.Account;
 import org.exist.security.Group;
 import org.exist.security.Permission;
-import org.exist.security.Account;
 import org.exist.security.User;
 import org.exist.security.internal.aider.ACEAider;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.Service;
 import org.xmldb.api.base.XMLDBException;
+
+import java.time.Instant;
+import java.util.List;
 
 /**
  * An eXist-specific service which provides methods to manage users and

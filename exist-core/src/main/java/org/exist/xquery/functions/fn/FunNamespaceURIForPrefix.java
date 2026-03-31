@@ -21,8 +21,6 @@
  */
 package org.exist.xquery.functions.fn;
 
-import java.util.Map;
-
 import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
@@ -33,13 +31,9 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.AnyURIValue;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
+
+import java.util.Map;
 
 public class FunNamespaceURIForPrefix extends BasicFunction {
 	
@@ -58,7 +52,7 @@ Otherwise, it returns the empty sequence.
 Prefixes are equal only if their Unicode code points match exactly.""";
 
 
-	public final static FunctionSignature signature =
+	public static final FunctionSignature signature =
 		new FunctionSignature(
 			new QName("namespace-uri-for-prefix", Function.BUILTIN_FUNCTION_NS),
 			FUNCTION_DESCRIPTION,

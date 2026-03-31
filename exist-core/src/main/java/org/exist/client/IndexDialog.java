@@ -63,14 +63,14 @@ class IndexDialog extends JFrame {
 		"xs:string"
 	};
 	
-	private CollectionXConf cx = null;
+	private CollectionXConf cx;
 	
 	private JComboBox cmbCollections;
 	
 	private JTable tblRangeIndexes;
 	private RangeIndexTableModel rangeIndexModel;
 	
-	private InteractiveClient client;
+	private final InteractiveClient client;
 	
 	
 	public IndexDialog(String title, InteractiveClient client) 

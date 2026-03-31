@@ -24,7 +24,7 @@ package org.exist.start.classloader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-public class ReflectionUtils {
+public final class ReflectionUtils {
 
     /**
      * Private constructor to prevent instantiation of this utility class.

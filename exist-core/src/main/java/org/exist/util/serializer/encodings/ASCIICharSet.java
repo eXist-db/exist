@@ -26,7 +26,7 @@ package org.exist.util.serializer.encodings;
  */
 public class ASCIICharSet extends CharacterSet {
 
-	protected final static CharacterSet instance = new ASCIICharSet();
+	protected static final CharacterSet instance = new ASCIICharSet();
 	
 	/* (non-Javadoc)
 	 * @see org.exist.util.serializer.encodings.CharacterSet#inCharacterSet(char)

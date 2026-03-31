@@ -21,15 +21,15 @@
  */
 package org.exist.xquery;
 
-import java.util.ArrayDeque;
-import java.util.List;
-
 import org.exist.dom.QName;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.FunctionReference;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
+
+import java.util.ArrayDeque;
+import java.util.List;
 
 /**
  * An XQuery 3.0 inline function expression.
@@ -39,10 +39,10 @@ import org.exist.xquery.value.Type;
  */
 public class InlineFunction extends AbstractExpression {
 
-	public final static QName INLINE_FUNCTION_QNAME = QName.EMPTY_QNAME;
+	public static final QName INLINE_FUNCTION_QNAME = QName.EMPTY_QNAME;
 	
-	private UserDefinedFunction function;
-	private ArrayDeque<FunctionCall> calls = new ArrayDeque<>();
+	private final UserDefinedFunction function;
+	private final ArrayDeque<FunctionCall> calls = new ArrayDeque<>();
 	
     private AnalyzeContextInfo cachedContextInfo;
 

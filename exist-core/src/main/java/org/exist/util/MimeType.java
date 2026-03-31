@@ -27,37 +27,37 @@ import org.xmldb.api.modules.XMLResource;
 
 public class MimeType {
     
-    public final static int XML = 0;
-    public final static int BINARY = 1;
+    public static final int XML = 0;
+    public static final int BINARY = 1;
     
-    public final static MimeType BINARY_TYPE =
+    public static final MimeType BINARY_TYPE =
         new MimeType("application/octet-stream", BINARY);
     
-    public final static MimeType XML_TYPE =
+    public static final MimeType XML_TYPE =
         new MimeType("application/xml", XML);
     //public final static MimeType XML_APPLICATION_TYPE =
     //    new MimeType("application/xml", XML);
-    public final static MimeType XML_CONTENT_TYPE =
+    public static final MimeType XML_CONTENT_TYPE =
         new MimeType("application/xml; charset=UTF-8", XML);
-    public final static MimeType XML_LEGACY_TYPE =
+    public static final MimeType XML_LEGACY_TYPE =
     	new MimeType("text/xml", XML);
-    public final static MimeType XSL_TYPE =
+    public static final MimeType XSL_TYPE =
         new MimeType("text/xsl", XML); 
-    public final static MimeType XSLT_TYPE =
+    public static final MimeType XSLT_TYPE =
         new MimeType("application/xslt+xml", XML);
-    public final static MimeType XQUERY_TYPE =
+    public static final MimeType XQUERY_TYPE =
         new MimeType("application/xquery", BINARY);
-    public final static MimeType XPROC_TYPE =
+    public static final MimeType XPROC_TYPE =
         new MimeType("application/xml+xproc", XML);
-    public final static MimeType CSS_TYPE =
+    public static final MimeType CSS_TYPE =
         new MimeType("text/css", BINARY);
-    public final static MimeType HTML_TYPE =
+    public static final MimeType HTML_TYPE =
         new MimeType("text/html", BINARY);
-    public final static MimeType TEXT_TYPE =
+    public static final MimeType TEXT_TYPE =
         new MimeType("text/plain", BINARY);
-    public final static MimeType URL_ENCODED_TYPE =
+    public static final MimeType URL_ENCODED_TYPE =
     	new MimeType("application/x-www-form-urlencoded", BINARY);
-    public final static MimeType EXPATH_PKG_TYPE =
+    public static final MimeType EXPATH_PKG_TYPE =
         new MimeType("application/expath+xar", BINARY);
 
 

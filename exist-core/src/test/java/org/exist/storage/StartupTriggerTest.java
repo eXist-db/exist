@@ -46,8 +46,8 @@ import static org.junit.Assert.fail;
  */
 public class StartupTriggerTest {
 
-    private final static String USER = "testuser1";
-    private final static String PASSWORD = "testpass";
+    private static final String USER = "testuser1";
+    private static final String PASSWORD = "testpass";
 
     @ClassRule
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(null, null, properties(), true, true);
@@ -71,7 +71,7 @@ public class StartupTriggerTest {
 
     public static class TestStartupTrigger implements StartupTrigger {
 
-        static volatile boolean completed = false;
+        static volatile boolean completed;
 
         @Override
         public void execute(final DBBroker sysBroker, final Txn transaction, final Map<String, List<? extends Object>> params) {

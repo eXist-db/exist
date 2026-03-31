@@ -21,20 +21,20 @@
  */
 package org.exist.xmldb;
 
-import org.exist.test.ExistXmldbEmbeddedServer;
-import org.junit.After;
 import org.exist.security.Account;
 import org.exist.security.Permission;
+import org.exist.test.ExistXmldbEmbeddedServer;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
+import org.xmldb.api.DatabaseManager;
+import org.xmldb.api.base.*;
+import org.xmldb.api.modules.*;
 
 import static org.exist.TestUtils.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import org.xmldb.api.DatabaseManager;
-import org.xmldb.api.base.*;
-import org.xmldb.api.modules.*;
 
 
 public class CopyMoveTest {
@@ -42,7 +42,7 @@ public class CopyMoveTest {
     @ClassRule
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
-    private final static String TEST_COLLECTION = "testCopyMove";
+    private static final String TEST_COLLECTION = "testCopyMove";
 
     @Test
     public void copyResourceChangeName() throws XMLDBException {

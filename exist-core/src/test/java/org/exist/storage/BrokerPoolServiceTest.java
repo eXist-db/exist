@@ -100,9 +100,6 @@ public class BrokerPoolServiceTest {
 
             } catch (final CancellationException e) {
                 // ignore as the background job was cancelled OK
-            } catch (final ExecutionException e) {
-                // a background task threw an exception... shouldn't happen, so throw it!
-                throw e;
             } catch (final InterruptedException e) {
                 // interrupted while waiting on the future, can't recover...
 
@@ -126,7 +123,7 @@ public class BrokerPoolServiceTest {
         private final AtomicReference<BrokerPool> brokerPoolRef = new AtomicReference<>();
         private final ExecutorService executorService = Executors.newFixedThreadPool(NUM_THREADS);
         private final List<Future<List<BackgroundJobsBrokerPoolService.TimestampAndId>>> futures;
-        private volatile boolean stopBackgroundJobs = false;
+        private volatile boolean stopBackgroundJobs;
 
         public BackgroundJobsBrokerPoolService(final List<Future<List<BackgroundJobsBrokerPoolService.TimestampAndId>>> futures) {
             this.futures = futures;
@@ -221,7 +218,7 @@ public class BrokerPoolServiceTest {
             }
         }
 
-        private static class TimestampAndId {
+        private static final class TimestampAndId {
             public final long timestamp;
             public final String id;
 

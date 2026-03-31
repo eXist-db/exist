@@ -39,13 +39,13 @@ import java.util.List;
 class NodeStats {
 
     private QName qname;
-    private int nodeCount = 0;
-    private int maxDepth = 0;
+    private int nodeCount;
+    private int maxDepth;
 
-    transient private int depth = 0;
+    private transient int depth;
 
-    protected NodeStats parent = null;
-    protected NodeStats[] children = null;
+    protected NodeStats parent;
+    protected NodeStats[] children;
 
     protected NodeStats(QName qname) {
         this(null, qname);

@@ -21,11 +21,11 @@
  */
 package org.exist.xquery;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.storage.DBBroker;
 import org.exist.xquery.functions.array.ArrayConstructor;
 import org.exist.xquery.pragmas.Optimize;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.exist.xquery.util.ExpressionDumper;
 
 import javax.annotation.Nullable;
@@ -59,9 +59,9 @@ public class Optimizer extends DefaultExpressionVisitor {
     private final List<QueryRewriter> rewriters;
     private final FindOptimizable findOptimizable = new FindOptimizable();
 
-    private int predicates = 0;
+    private int predicates;
 
-    private boolean hasOptimized = false;
+    private boolean hasOptimized;
 
     public Optimizer(final XQueryContext context) {
         this.context = context;
@@ -392,7 +392,7 @@ public class Optimizer extends DefaultExpressionVisitor {
      * Try to find an expression object implementing interface Optimizable.
      */
     public static class FindOptimizable extends BasicExpressionVisitor {
-        private @Nullable Optimizable[] optimizables = null;
+        private @Nullable Optimizable[] optimizables;
 
         public @Nullable Optimizable[] getOptimizables() {
             return optimizables;

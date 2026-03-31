@@ -21,17 +21,6 @@
  */
 package org.exist.collections.triggers;
 
-import java.net.URISyntaxException;
-import java.util.List;
-import java.util.Map;
-
-import javax.xml.transform.Templates;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.sax.SAXTransformerFactory;
-import javax.xml.transform.sax.TransformerHandler;
-import javax.xml.transform.stream.StreamSource;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.collections.Collection;
@@ -44,6 +33,16 @@ import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
 import org.xml.sax.SAXException;
+
+import javax.xml.transform.Templates;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.sax.SAXTransformerFactory;
+import javax.xml.transform.sax.TransformerHandler;
+import javax.xml.transform.stream.StreamSource;
+import java.net.URISyntaxException;
+import java.util.List;
+import java.util.Map;
 
 /**
  * STXTransformerTrigger applies an STX stylesheet to the input SAX stream,
@@ -58,7 +57,7 @@ public class STXTransformerTrigger extends SAXTrigger implements DocumentTrigger
     protected Logger LOG = LogManager.getLogger(getClass());
     
     private final SAXTransformerFactory factory = (SAXTransformerFactory)TransformerFactory.newInstance("net.sf.joost.trax.TransformerFactoryImpl", getClass().getClassLoader());
-    private TransformerHandler handler = null;
+    private TransformerHandler handler;
 
     @Override
     public void configure(DBBroker broker, Txn transaction, Collection parent, Map<String, List<?>> parameters) throws TriggerException {

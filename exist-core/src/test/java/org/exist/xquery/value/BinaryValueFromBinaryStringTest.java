@@ -21,16 +21,16 @@
  */
 package org.exist.xquery.value;
 
-import org.apache.commons.codec.binary.Hex;
-import java.io.InputStream;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xquery.XPathException;
-import java.io.IOException;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;

@@ -21,13 +21,9 @@
  */
 package org.exist.xmldb.concurrent;
 
-import java.io.IOException;
-import java.util.*;
-import java.util.concurrent.*;
-
 import org.exist.test.ExistXmldbEmbeddedServer;
-import org.exist.xmldb.concurrent.action.Action;
 import org.exist.xmldb.IndexQueryService;
+import org.exist.xmldb.concurrent.action.Action;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -35,6 +31,10 @@ import org.junit.Test;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
+
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.*;
 
 import static org.junit.Assert.*;
 
@@ -46,7 +46,7 @@ import static org.junit.Assert.*;
  */
 public abstract class ConcurrentTestBase {
 
-    private static String COLLECTION_CONFIG =
+    private static final String COLLECTION_CONFIG =
         "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
     	"	<index>" +
         "       <lucene>" +

@@ -34,12 +34,12 @@ import java.nio.file.Path;
 
 public class BTreeTest {
 
-    private final static byte BTREE_TEST_FILE_ID = 0x7F;
-    private final static short BTREE_TEST_FILE_VERSION = Short.MIN_VALUE;
+    private static final byte BTREE_TEST_FILE_ID = 0x7F;
+    private static final short BTREE_TEST_FILE_VERSION = Short.MIN_VALUE;
 
-    private Path file;
+    private final Path file;
 
-    private BrokerPool pool = null;
+    private BrokerPool pool;
 
     public BTreeTest() {
         file = Path.of(System.getProperty("exist.home", ".")).resolve("test/test.dbx");

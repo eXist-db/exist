@@ -41,11 +41,7 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.util.Error;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.util.Messages;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
+import org.exist.xquery.value.*;
 import org.w3c.dom.Node;
 
 /**

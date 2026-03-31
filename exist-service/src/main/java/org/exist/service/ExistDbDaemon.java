@@ -32,10 +32,10 @@ public class ExistDbDaemon implements Daemon {
 
     private static final String MODE_JETTY = "jetty";
 
-    private Main main = null;
-    private String[] args = null;
+    private Main main;
+    private String[] args;
 
-    private void init(final String args[]) {
+    private void init(final String[] args) {
         this.main = new Main(Main.MODE_JETTY);
         this.args = args;
     }

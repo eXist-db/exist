@@ -21,14 +21,14 @@
  */
 package org.exist.xquery.value;
 
-import java.util.Arrays;
-
 import com.googlecode.junittoolbox.ParallelParameterized;
 import org.exist.xquery.XPathException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
+
+import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
 
@@ -55,7 +55,8 @@ public class NumericOpPromotionTest {
     public ComputableValue operand;
 
 	private static final double VALUE = 1.5;
-	private static final IntegerValue ZERO = new IntegerValue(0), ONE = new IntegerValue(1);
+    private static final IntegerValue ZERO = new IntegerValue(0);
+    private static final IntegerValue ONE = new IntegerValue(1);
 
     @Test
 	public void integerDiv() throws XPathException {
@@ -78,6 +79,6 @@ public class NumericOpPromotionTest {
 	}
 
     private void assertDoubleValue(double target, ComputableValue result) throws XPathException {
-        assertEquals(target, (result.toJavaObject(Double.class)).doubleValue(), 0);
+        assertEquals(target, result.toJavaObject(Double.class).doubleValue(), 0);
     }
 }

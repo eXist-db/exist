@@ -21,24 +21,18 @@
  */
 package org.exist.xquery.modules.file;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.BooleanValue;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 /**
  * @see java.nio.file.Files#isReadable(Path)
@@ -50,7 +44,7 @@ public class FileIsReadable extends BasicFunction {
 
 	private static final Logger logger = LogManager.getLogger(FileIsReadable.class);
 	
-	public final static FunctionSignature signatures[] = {
+	public static final FunctionSignature[] signatures = {
 		new FunctionSignature(
 			new QName( "is-readable", FileModule.NAMESPACE_URI, FileModule.PREFIX ),
 			"Tests if a file is readable.  This method is only available to the DBA role.",

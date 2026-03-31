@@ -21,14 +21,14 @@
  */
 package org.exist.storage.dom;
 
-import java.nio.ByteBuffer;
-
 import org.exist.storage.DBBroker;
 import org.exist.storage.NativeBroker;
 import org.exist.storage.journal.AbstractLoggable;
 import org.exist.storage.journal.LogException;
 import org.exist.storage.journal.Loggable;
 import org.exist.storage.txn.Txn;
+
+import java.nio.ByteBuffer;
 
 /**
  * @author wolf
@@ -39,7 +39,7 @@ public class SplitPageLoggable extends AbstractLoggable implements Loggable {
     protected int splitOffset;
     protected byte[] oldData;
     protected int oldLen;
-    private DOMFile domDb = null;
+    private DOMFile domDb;
 
     public SplitPageLoggable(final Txn transaction, final long pageNum, final int splitOffset, final byte[] oldData,
                              final int oldLen) {

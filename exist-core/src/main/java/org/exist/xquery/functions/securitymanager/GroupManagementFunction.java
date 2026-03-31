@@ -42,10 +42,10 @@ import java.util.List;
  */
 public class GroupManagementFunction extends BasicFunction {
 
-    private final static QName qnCreateGroup = new QName("create-group", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
-    private final static QName qnRemoveGroup = new QName("remove-group", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    private static final QName qnCreateGroup = new QName("create-group", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
+    private static final QName qnRemoveGroup = new QName("remove-group", SecurityManagerModule.NAMESPACE_URI, SecurityManagerModule.PREFIX);
 
-    public final static FunctionSignature FNS_CREATE_GROUP = new FunctionSignature(
+    public static final FunctionSignature FNS_CREATE_GROUP = new FunctionSignature(
         qnCreateGroup,
         "Creates a User Group. The current user will be set as the group's manager.",
         new SequenceType[]{
@@ -54,7 +54,7 @@ public class GroupManagementFunction extends BasicFunction {
         new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)
     );
 
-    public final static FunctionSignature FNS_CREATE_GROUP_WITH_METADATA = new FunctionSignature(
+    public static final FunctionSignature FNS_CREATE_GROUP_WITH_METADATA = new FunctionSignature(
         qnCreateGroup,
         "Creates a User Group. The current user will be set as the group's manager.",
         new SequenceType[]{
@@ -64,7 +64,7 @@ public class GroupManagementFunction extends BasicFunction {
         new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)
     );
 
-    public final static FunctionSignature FNS_CREATE_GROUP_WITH_MANAGERS_WITH_METADATA = new FunctionSignature(
+    public static final FunctionSignature FNS_CREATE_GROUP_WITH_MANAGERS_WITH_METADATA = new FunctionSignature(
         qnCreateGroup,
         "Creates a User Group. The current user will be set as a manager of the group in addition to the specified managers.",
         new SequenceType[]{
@@ -75,7 +75,7 @@ public class GroupManagementFunction extends BasicFunction {
         new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)
     );
 
-    public final static FunctionSignature FNS_REMOVE_GROUP = new FunctionSignature(
+    public static final FunctionSignature FNS_REMOVE_GROUP = new FunctionSignature(
         qnRemoveGroup,
         "Remove a User Group.",
         new SequenceType[]{

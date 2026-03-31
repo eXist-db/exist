@@ -25,9 +25,9 @@ import org.exist.TestUtils;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.xmldb.api.base.*;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xmldb.api.base.*;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XQueryService;
 

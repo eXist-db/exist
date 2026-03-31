@@ -21,14 +21,14 @@
  */
 package org.exist.security;
 
-import java.io.IOException;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.security.internal.RealmImpl;
 import org.exist.storage.DBBroker;
 import org.exist.storage.io.VariableByteInput;
 import org.exist.storage.io.VariableByteOutputStream;
+
+import java.io.IOException;
 
 import static org.exist.security.PermissionRequired.*;
 
@@ -46,7 +46,7 @@ import static org.exist.security.PermissionRequired.*;
  */
 public class UnixStylePermission extends AbstractUnixStylePermission implements Permission {
 
-    public final static Logger LOG = LogManager.getLogger(SecurityManager.class);
+    public static final Logger LOG = LogManager.getLogger(SecurityManager.class);
 
     protected final SecurityManager sm;
 
@@ -260,11 +260,11 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
      */
     @PermissionRequired(user = IS_DBA | IS_OWNER)
     @Override
-    final public void setMode(final int mode) { 
+    public final void setMode(final int mode) { 
         this.vector =
             ((vector >>> 32) << 32) |               //left shift current ownerId into position
             ((long)((mode >>> 11) & 1) << 31) |     //left shift setuid into position
-            ((((mode >>> 6) & 7)) << 28) |          //left shift new ownerMode into position
+            (((mode >>> 6) & 7) << 28) |          //left shift new ownerMode into position
             (((vector >>> 8) & 1048575) << 8) |     //left shift current groupId into position
             (((mode >>> 10) & 1) << 7) |            //left shift setgid into position
             (((mode >>> 3) & 7) << 4) |             //left shift new groupMode into position
@@ -433,13 +433,7 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
                 return (mode & ((vector >>> 4) & 7)) == mode;
             }
         }
-
-        //check other
-        if((mode & (vector & 7)) == mode) {
-            return true;
-        }
-
-        return false;
+        return (mode & (vector & 7)) == mode;
     }
 
     @Override

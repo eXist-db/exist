@@ -31,7 +31,7 @@ import java.io.IOException;
 
 public class XQDocHelper {
 
-    private XQDocController controller;
+    private final XQDocController controller;
 
     public XQDocHelper() throws XQDocException {
         controller = new XQDocController(XQDocController.JAN2007);

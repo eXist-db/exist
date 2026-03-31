@@ -21,9 +21,6 @@
  */
 package org.exist.xquery;
 
-import java.lang.reflect.Constructor;
-import java.util.List;
-
 import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.exist.dom.QName;
 import org.exist.xquery.parser.XQueryAST;
@@ -33,6 +30,8 @@ import org.exist.xquery.util.Messages;
 import org.exist.xquery.value.*;
 
 import javax.annotation.Nullable;
+import java.lang.reflect.Constructor;
+import java.util.List;
 
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 
@@ -53,7 +52,7 @@ import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 public abstract class Function extends PathExpr {
 
     // Declare it in Namespaces instead? /ljo
-    public final static String BUILTIN_FUNCTION_NS = "http://www.w3.org/2005/xpath-functions";
+    public static final String BUILTIN_FUNCTION_NS = "http://www.w3.org/2005/xpath-functions";
 
     /**
      * The module that declared the function.

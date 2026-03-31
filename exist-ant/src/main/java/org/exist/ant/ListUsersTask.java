@@ -34,7 +34,7 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class ListUsersTask extends UserTask
 {
-    private String outputproperty = null;
+    private String outputproperty;
     private String separator      = ",";
 
     /* (non-Javadoc)

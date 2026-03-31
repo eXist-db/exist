@@ -49,7 +49,7 @@ public class ParsingFunctions extends BasicFunction {
 
 	protected static final Logger logger = LogManager.getLogger(ParsingFunctions.class);
 
-	public final static FunctionSignature[] signatures = {
+	public static final FunctionSignature[] signatures = {
 			new FunctionSignature(
 					new QName("parse-xml", Function.BUILTIN_FUNCTION_NS),
 					"Parse an XML document represented as a string. "
@@ -130,7 +130,7 @@ public class ParsingFunctions extends BasicFunction {
     }
 
     private static class FragmentSAXAdapter extends SAXAdapter {
-        private boolean strippedFragmentWrapper = false;
+        private boolean strippedFragmentWrapper;
 
         public FragmentSAXAdapter(final Expression expression, final XQueryContext context) {
             super(expression, context);
@@ -138,7 +138,7 @@ public class ParsingFunctions extends BasicFunction {
 
         @Override
         public void startElement(final String namespaceURI, final String localName, final String qName, final Attributes atts) throws SAXException {
-            if (strippedFragmentWrapper || !localName.equals(FRAGMENT_WRAPPER_NAME)) {
+            if (strippedFragmentWrapper || !FRAGMENT_WRAPPER_NAME.equals(localName)) {
                 super.startElement(namespaceURI, localName, qName, atts);
             }
             // skip fragment wrapper element
@@ -146,7 +146,7 @@ public class ParsingFunctions extends BasicFunction {
 
         @Override
         public void endElement(final String namespaceURI, final String localName, final String qName) throws SAXException {
-            if (strippedFragmentWrapper || !localName.equals(FRAGMENT_WRAPPER_NAME)) {
+            if (strippedFragmentWrapper || !FRAGMENT_WRAPPER_NAME.equals(localName)) {
                 super.endElement(namespaceURI, localName, qName);
             } else {
                 strippedFragmentWrapper = true;

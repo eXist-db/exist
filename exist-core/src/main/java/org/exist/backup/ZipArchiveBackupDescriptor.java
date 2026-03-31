@@ -49,7 +49,7 @@ import java.util.zip.ZipFile;
 
 public class ZipArchiveBackupDescriptor extends AbstractBackupDescriptor {
 
-    private final static Logger LOG = LogManager.getLogger();
+    private static final Logger LOG = LogManager.getLogger();
 
     protected ZipFile archive;
     protected ZipEntry descriptor;

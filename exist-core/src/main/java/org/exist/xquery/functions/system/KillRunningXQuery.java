@@ -30,11 +30,7 @@ import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XQueryWatchDog;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.NumericValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 /**
  * Kill a running XQuery (must be dba)
@@ -47,13 +43,13 @@ public class KillRunningXQuery extends BasicFunction
 
 	protected static final FunctionParameterSequenceType XQUERY_ID_PARAM = new FunctionParameterSequenceType( "xquery-id", Type.INTEGER, Cardinality.EXACTLY_ONE, "The XQuery ID obtained from get-running-xqueries()" );
 
-	protected final static Logger logger = LogManager.getLogger(KillRunningXQuery.class);
+	protected static final Logger logger = LogManager.getLogger(KillRunningXQuery.class);
 
-	final static String NAMESPACE_URI                       = SystemModule.NAMESPACE_URI;
-    final static String PREFIX                              = SystemModule.PREFIX;
+	static final String NAMESPACE_URI                       = SystemModule.NAMESPACE_URI;
+    static final String PREFIX                              = SystemModule.PREFIX;
     
 
-	public final static FunctionSignature[] signatures = {
+	public static final FunctionSignature[] signatures = {
 		new FunctionSignature(
 			new QName( "kill-running-xquery", SystemModule.NAMESPACE_URI, SystemModule.PREFIX ),
 			"Kill a running XQuey (dba role only).",
@@ -87,7 +83,7 @@ public class KillRunningXQuery extends BasicFunction
 		
 		killXQuery( args );
 			
-		return( Sequence.EMPTY_SEQUENCE );
+		return Sequence.EMPTY_SEQUENCE;
 	}
 	
 	

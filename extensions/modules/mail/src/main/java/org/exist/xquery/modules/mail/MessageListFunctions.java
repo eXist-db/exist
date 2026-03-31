@@ -22,31 +22,8 @@
 package org.exist.xquery.modules.mail;
 
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Enumeration;
-import jakarta.mail.Address;
-import jakarta.mail.FetchProfile;
-import jakarta.mail.Flags;
-import jakarta.mail.Folder;
-import jakarta.mail.Header;
-import jakarta.mail.Message;
-import jakarta.mail.MessagingException;
-import jakarta.mail.search.AndTerm;
-import jakarta.mail.search.BodyTerm;
-import jakarta.mail.search.ComparisonTerm;
-import jakarta.mail.search.FlagTerm;
-import jakarta.mail.search.FromStringTerm;
-import jakarta.mail.search.HeaderTerm;
-import jakarta.mail.search.NotTerm;
-import jakarta.mail.search.OrTerm;
-import jakarta.mail.search.ReceivedDateTerm;
-import jakarta.mail.search.RecipientStringTerm;
-import jakarta.mail.search.SearchTerm;
-import jakarta.mail.search.SentDateTerm;
-import jakarta.mail.search.SubjectTerm;
+import jakarta.mail.*;
+import jakarta.mail.search.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
@@ -56,16 +33,16 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.IntegerValue;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Enumeration;
 
 /**
  * eXist Mail Module Extension GetMessageList
@@ -82,7 +59,7 @@ public class MessageListFunctions extends BasicFunction
 {
 	protected static final Logger logger = LogManager.getLogger(MessageListFunctions.class);
 
-	public final static FunctionSignature signatures[] = {
+	public static final FunctionSignature[] signatures = {
 		new FunctionSignature(
 			new QName( "get-message-list", MailModule.NAMESPACE_URI, MailModule.PREFIX ),
 			"Returns a message list of all messages in a folder.",
@@ -136,7 +113,7 @@ public class MessageListFunctions extends BasicFunction
 	
 	private static final String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
 	
-	private static final String PREFETCH_HEADERS[] = {
+	private static final String[] PREFETCH_HEADERS = {
 		"Return-Path",
 		"Delivered-To",
 		"Received",
@@ -206,7 +183,7 @@ public class MessageListFunctions extends BasicFunction
 		
 		// save the message list and return the handle of the message list
 			
-		return( new IntegerValue( this, MailModule.storeMessageList( context, msgList, folderHandle ), Type.LONG ) );
+		return new IntegerValue( this, MailModule.storeMessageList( context, msgList, folderHandle ), Type.LONG );
 	}
 
 	private Sequence searchMessageList( Sequence[] args, Sequence contextSequence ) throws XPathException
@@ -238,7 +215,7 @@ public class MessageListFunctions extends BasicFunction
 		
 		// save the message list and return the handle of the message list
 			
-		return( new IntegerValue( this, MailModule.storeMessageList( context, msgList, folderHandle ), Type.LONG ) );
+		return new IntegerValue( this, MailModule.storeMessageList( context, msgList, folderHandle ), Type.LONG );
 	}
 
 	private void prefetchMessages( Folder folder, Message[] msgList ) throws MessagingException
@@ -433,7 +410,7 @@ public class MessageListFunctions extends BasicFunction
 			}
 		}
 
-		return (ret);
+		return ret;
 	}
 
 	private String formatDate( Date date ) 
@@ -446,7 +423,7 @@ public class MessageListFunctions extends BasicFunction
 		
 		formatted = temp.substring( 0, temp.length() - 2 ) + ":" + temp.substring( temp.length() - 2 );
 		
-		return( formatted );
+		return formatted;
 	}
 
 	private Sequence closeMessageList( Sequence[] args, Sequence contextSequence ) throws XPathException
@@ -461,7 +438,7 @@ public class MessageListFunctions extends BasicFunction
 	
 		MailModule.removeMessageList( context, msgListHandle );
 			
-		return( Sequence.EMPTY_SEQUENCE );
+		return Sequence.EMPTY_SEQUENCE;
 	}
 	
 	

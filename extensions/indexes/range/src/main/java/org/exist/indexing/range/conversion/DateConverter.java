@@ -41,7 +41,7 @@ public class DateConverter implements TypeConverter {
 
     protected static final Logger LOG = LogManager.getLogger(DateConverter.class);
 
-    private final static Pattern DATE_REGEX = Pattern.compile("(-?\\d+)-(\\d+)-(\\d+)");
+    private static final Pattern DATE_REGEX = Pattern.compile("(-?\\d+)-(\\d+)-(\\d+)");
 
     @Override
     public Field toField(String fieldName, String content) {

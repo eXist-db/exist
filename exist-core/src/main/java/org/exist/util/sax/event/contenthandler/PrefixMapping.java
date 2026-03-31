@@ -27,7 +27,7 @@ package org.exist.util.sax.event.contenthandler;
 public abstract class PrefixMapping implements ContentHandlerEvent {
     public final String prefix;
 
-    public PrefixMapping(final String prefix) {
+    protected PrefixMapping(final String prefix) {
         this.prefix = prefix;
     }
 }

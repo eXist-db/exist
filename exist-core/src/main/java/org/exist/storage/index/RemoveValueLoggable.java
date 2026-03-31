@@ -21,11 +21,11 @@
  */
 package org.exist.storage.index;
 
-import java.nio.ByteBuffer;
-
 import org.exist.storage.DBBroker;
 import org.exist.storage.journal.LogException;
 import org.exist.storage.txn.Txn;
+
+import java.nio.ByteBuffer;
 
 /**
  * @author wolf
@@ -36,7 +36,7 @@ public class RemoveValueLoggable extends AbstractBFileLoggable {
     protected long page;
     protected short tid;
     protected byte[] oldData;
-    protected int offset = 0;
+    protected int offset;
     protected int len;
 
     /**

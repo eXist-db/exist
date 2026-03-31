@@ -21,10 +21,11 @@
  */
 package org.expath.exist;
 
-import java.util.List;
-import java.util.Map;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:adam@existsolutions.com">Adam Retter</a>
@@ -32,13 +33,13 @@ import org.exist.xquery.FunctionDef;
  */
 public class ZipModule extends AbstractInternalModule {
 
-    public final static String NAMESPACE_URI = "http://expath.org/ns/zip";
+    public static final String NAMESPACE_URI = "http://expath.org/ns/zip";
 
-    public final static String PREFIX = "zip";
-    public final static String INCLUSION_DATE = "2011-03-26";
-    public final static String RELEASED_IN_VERSION = "1.5";
+    public static final String PREFIX = "zip";
+    public static final String INCLUSION_DATE = "2011-03-26";
+    public static final String RELEASED_IN_VERSION = "1.5";
 
-    private final static FunctionDef[] functions = {
+    private static final FunctionDef[] functions = {
         new FunctionDef(ZipEntryFunctions.signatures[0], ZipEntryFunctions.class),
         new FunctionDef(ZipEntryFunctions.signatures[1], ZipEntryFunctions.class),
         new FunctionDef(ZipEntryFunctions.signatures[2], ZipEntryFunctions.class),

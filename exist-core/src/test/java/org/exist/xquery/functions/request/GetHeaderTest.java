@@ -21,20 +21,20 @@
  */
 package org.exist.xquery.functions.request;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
-import static org.junit.Assert.assertEquals;
-
-import java.io.IOException;
-import java.net.URLEncoder;
-
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.fluent.Request;
 import org.exist.http.RESTTest;
-import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.junit.Test;
 import org.xml.sax.SAXException;
+
+import java.io.IOException;
+import java.net.URLEncoder;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Tests expected behaviour of request:get-header() XQuery function
@@ -44,8 +44,8 @@ import org.xml.sax.SAXException;
  */
 public class GetHeaderTest extends RESTTest {
 
-	private final static String HTTP_HEADER_NAME = "header1";
-	private final static String xquery = "<request-header name=\""
+	private static final String HTTP_HEADER_NAME = "header1";
+	private static final String xquery = "<request-header name=\""
 			+ HTTP_HEADER_NAME + "\">{request:get-header(\"" + HTTP_HEADER_NAME
 			+ "\")}</request-header>";
 

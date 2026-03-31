@@ -88,13 +88,15 @@ public class XMLGenerator {
             writer.write("\"");
         }
         writer.write(">\n");
-        if(level < depth - 1)
+        if (level < depth - 1) {
             writeElement(writer, level + 1);
-        else
+        } else {
             writer.write(generateText(20));
+        }
         writer.write("\n</");
-        if (useNamespaces)
+        if (useNamespaces) {
             writer.write("t:");
+        }
         writer.write("ELEMENT");
         if(level > 0) {
             writer.write('-');

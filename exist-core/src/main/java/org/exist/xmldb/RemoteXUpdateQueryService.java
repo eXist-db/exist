@@ -21,20 +21,20 @@
  */
 package org.exist.xmldb;
 
-import java.util.List;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XUpdateQueryService;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 import java.util.ArrayList;
+import java.util.List;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class RemoteXUpdateQueryService implements XUpdateQueryService {
 
-	private final static Logger LOG = LogManager.getLogger(RemoteXUpdateQueryService.class);
+	private static final Logger LOG = LogManager.getLogger(RemoteXUpdateQueryService.class);
 
     private RemoteCollection parent;
 

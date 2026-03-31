@@ -21,20 +21,6 @@
  */
 package org.exist.xmldb;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.zip.DataFormatException;
-import java.util.zip.Inflater;
-import javax.xml.transform.OutputKeys;
-
 import com.evolvedbinary.j8fu.function.FunctionE;
 import com.evolvedbinary.j8fu.lazy.LazyVal;
 import org.apache.commons.codec.binary.Base64;
@@ -52,6 +38,20 @@ import org.xmldb.api.base.ResourceIterator;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 
+import javax.xml.transform.OutputKeys;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.zip.DataFormatException;
+import java.util.zip.Inflater;
+
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class RemoteResourceSet implements ResourceSet, AutoCloseable {
@@ -65,7 +65,7 @@ public class RemoteResourceSet implements ResourceSet, AutoCloseable {
     private boolean closed;
     private LazyVal<Integer> inMemoryBufferSize;
 
-    private static Logger LOG = LogManager.getLogger(RemoteResourceSet.class.getName());
+    private static final Logger LOG = LogManager.getLogger(RemoteResourceSet.class.getName());
 
     public RemoteResourceSet(final Leasable<XmlRpcClient> leasableXmlRpcClient, final RemoteCollection col, final Properties properties, final Object[] resources, final int handle, final int hash) {
         this.leasableXmlRpcClient = leasableXmlRpcClient;
@@ -102,8 +102,9 @@ public class RemoteResourceSet implements ResourceSet, AutoCloseable {
         }
         final List<Object> params = new ArrayList<>();
         params.add(handle);
-        if (hash > -1)
+        if (hash > -1) {
             params.add(hash);
+        }
         collection.execute("releaseQueryResult", params);
         hash = -1;
         resources.clear();
@@ -290,7 +291,7 @@ public class RemoteResourceSet implements ResourceSet, AutoCloseable {
     }
 
     class NewResourceIterator implements ResourceIterator {
-        long pos = 0;
+        long pos;
 
         public NewResourceIterator() {
         }

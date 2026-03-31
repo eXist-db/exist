@@ -28,11 +28,7 @@ import org.exist.start.StartException;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
-import org.exist.util.Configuration;
-import org.exist.util.MimeTable;
-import org.exist.util.MimeType;
-import org.exist.util.OSUtil;
-import org.exist.util.SystemExitCodes;
+import org.exist.util.*;
 import org.exist.xquery.TerminatedException;
 import se.softhouse.jargo.Argument;
 import se.softhouse.jargo.ArgumentException;
@@ -67,9 +63,9 @@ public class ExportGUI extends javax.swing.JFrame {
     /* general arguments */
     private static final Argument<?> helpArg = helpArgument("-h", "--help");
 
-    private BrokerPool pool = null;
-    private int documentCount = 0;
-    private PrintWriter logWriter = null;
+    private BrokerPool pool;
+    private int documentCount;
+    private PrintWriter logWriter;
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnChangeDir;
@@ -416,7 +412,7 @@ public class ExportGUI extends javax.swing.JFrame {
         chooser.setFileFilter(new FileFilter() {
             public boolean accept(final File f) {
                 if (f.isDirectory()) {
-                    return (true);
+                    return true;
                 }
                 final MimeType mime = MimeTable.getInstance().getContentTypeFor(f.getName());
 
@@ -428,7 +424,7 @@ public class ExportGUI extends javax.swing.JFrame {
 
 
             public String getDescription() {
-                return ("Database XML configuration file");
+                return "Database XML configuration file";
             }
 
         });
@@ -512,7 +508,7 @@ public class ExportGUI extends javax.swing.JFrame {
 
     private List<ErrorReport> checkDB() {
         if (!startDB()) {
-            return (null);
+            return null;
         }
 
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
@@ -583,7 +579,7 @@ public class ExportGUI extends javax.swing.JFrame {
             progress.setValue(0);
             currentTask.setText(" ");
         }
-        return (null);
+        return null;
     }
 
 

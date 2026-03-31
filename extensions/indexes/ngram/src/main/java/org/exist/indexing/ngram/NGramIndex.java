@@ -46,26 +46,28 @@ public class NGramIndex extends AbstractIndex implements RawBackupSupport {
 
     public static final short FILE_FORMAT_VERSION_ID = 14;
 
-    public final static String ID = NGramIndex.class.getName();
+    public static final String ID = NGramIndex.class.getName();
 
-    private final static Logger LOG = LogManager.getLogger(NGramIndex.class);
+    private static final Logger LOG = LogManager.getLogger(NGramIndex.class);
 
 	protected BFile db;
     private int gramSize = 3;
-    private Path dataFile = null;
+    private Path dataFile;
 
     @Override
     public void configure(BrokerPool pool, Path dataDir, Element config) throws DatabaseConfigurationException {
         super.configure(pool, dataDir, config);
         String fileName = "ngram.dbx";
-        if (config.hasAttribute("file"))
+        if (config.hasAttribute("file")) {
             fileName = config.getAttribute("file");
-        if (config.hasAttribute("n"))
+        }
+        if (config.hasAttribute("n")) {
             try {
                 gramSize = Integer.parseInt(config.getAttribute("n"));
             } catch (NumberFormatException e) {
                 throw new DatabaseConfigurationException("Configuration parameter 'n' should be an integer.");
             }
+        }
         dataFile = dataDir.resolve(fileName);
     }
 
@@ -77,8 +79,9 @@ public class NGramIndex extends AbstractIndex implements RawBackupSupport {
             throw new DatabaseConfigurationException("Failed to create index file: " + dataFile.toAbsolutePath() + ": " +
                 e.getMessage());
         }
-        if (LOG.isDebugEnabled())
+        if (LOG.isDebugEnabled()) {
             LOG.debug("Created NGram index: {}", dataFile.toAbsolutePath().toString());
+        }
     }
 
     @Override

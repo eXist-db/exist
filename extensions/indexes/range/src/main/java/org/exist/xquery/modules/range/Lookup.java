@@ -23,25 +23,20 @@ package org.exist.xquery.modules.range;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.lucene.util.automaton.RegExp;
 import org.exist.collections.Collection;
+import org.exist.dom.QName;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.NodeSet;
-import org.exist.dom.QName;
 import org.exist.dom.persistent.VirtualNodeSet;
-import org.exist.indexing.range.RangeIndex;
-import org.exist.indexing.range.RangeIndexConfig;
-import org.exist.indexing.range.XPathToLuceneRegexTranslator;
-import org.exist.indexing.range.RangeIndexConfigElement;
-import org.exist.indexing.range.RangeIndexWorker;
+import org.exist.indexing.range.*;
 import org.exist.storage.ElementValue;
 import org.exist.storage.IndexSpec;
 import org.exist.storage.NodePath;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
-
-import org.apache.lucene.util.automaton.RegExp;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -53,17 +48,17 @@ public class Lookup extends Function implements Optimizable, IndexUseReporter {
 
     private static final Logger LOG = LogManager.getLogger(Lookup.class);
 
-    private final static SequenceType[] PARAMETER_TYPE = new SequenceType[] {
+    private static final SequenceType[] PARAMETER_TYPE = new SequenceType[] {
             new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE,
                     "The node set to search using a range index which is defined on those nodes"),
             new FunctionParameterSequenceType("key", Type.ANY_ATOMIC_TYPE, Cardinality.ZERO_OR_MORE,
                     "The key to look up.")
     };
 
-    private final static String DESCRIPTION = "Search for nodes matching the given keys in the range " +
+    private static final String DESCRIPTION = "Search for nodes matching the given keys in the range " +
         "index. Normally this function will be called by the query optimizer.";
 
-    public final static FunctionSignature[] signatures = {
+    public static final FunctionSignature[] signatures = {
         new FunctionSignature(
             new QName("eq", RangeIndexModule.NAMESPACE_URI, RangeIndexModule.PREFIX),
                 DESCRIPTION,
@@ -151,15 +146,15 @@ public class Lookup extends Function implements Optimizable, IndexUseReporter {
         return null;
     }
 
-    @Nullable private LocationStep contextStep = null;
-    @Nullable private QName contextQName = null;
+    @Nullable private LocationStep contextStep;
+    @Nullable private QName contextQName;
     private int axis = Constants.UNKNOWN_AXIS;
-    @Nullable private NodeSet preselectResult = null;
-    private boolean canOptimize = false;
-    private boolean optimizeSelf = false;
-    private boolean optimizeChild = false;
-    private boolean usesCollation = false;
-    @Nullable private Expression fallback = null;
+    @Nullable private NodeSet preselectResult;
+    private boolean canOptimize;
+    private boolean optimizeSelf;
+    private boolean optimizeChild;
+    private boolean usesCollation;
+    @Nullable private Expression fallback;
     @Nullable private NodePath contextPath;
 
     /**
@@ -287,9 +282,10 @@ public class Lookup extends Function implements Optimizable, IndexUseReporter {
         if (!canOptimize) {
             return ((Optimizable)fallback).preSelect(contextSequence, useContext);
         }
-        if (contextSequence != null && !contextSequence.isPersistentSet())
+        if (contextSequence != null && !contextSequence.isPersistentSet()) {
             // in-memory docs won't have an index
             return NodeSet.EMPTY_SET;
+        }
 
         // throw an exception if substring match operation is applied to collated index
         final RangeIndex.Operator operator = getOperator();
@@ -403,17 +399,17 @@ public class Lookup extends Function implements Optimizable, IndexUseReporter {
         if (preselectResult == null) {
             long start = System.currentTimeMillis();
             Sequence input = getArgument(0).eval(effectiveContextSequence, null);
-            if (!(input instanceof VirtualNodeSet) && input.isEmpty())
+            if (!(input instanceof VirtualNodeSet) && input.isEmpty()) {
                 result = NodeSet.EMPTY_SET;
-            else {
-                RangeIndexWorker index = (RangeIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(RangeIndex.ID);
+            } else {
+                RangeIndexWorker index = (RangeIndexWorker)context.getBroker().getIndexController().getWorkerByIndexId(RangeIndex.ID);
                 AtomicValue[] keys = getKeys(effectiveContextSequence);
                 if (keys.length == 0) {
                     return NodeSet.EMPTY_SET;
                 }
                 final RangeIndex.Operator operator = getOperator();
                 if (requiresFallback(operator, keys)) {
-                    return ((Optimizable) fallback).preSelect(input.toNodeSet(), true);
+                    return ((Optimizable)fallback).preSelect(input.toNodeSet(), true);
                 }
                 List<QName> qnames = null;
                 if (contextQName != null) {

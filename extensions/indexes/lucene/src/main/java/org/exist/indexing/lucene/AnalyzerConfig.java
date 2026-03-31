@@ -21,6 +21,16 @@
  */
 package org.exist.indexing.lucene;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.CharArraySet;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.exist.collections.CollectionConfiguration;
+import org.exist.util.DatabaseConfigurationException;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+
 import java.io.Reader;
 import java.io.Serial;
 import java.lang.invoke.*;
@@ -32,19 +42,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.apache.lucene.analysis.CharArraySet;
-
-import org.exist.collections.CollectionConfiguration;
-import org.exist.util.DatabaseConfigurationException;
-
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 
 import static java.lang.invoke.MethodType.methodType;
 

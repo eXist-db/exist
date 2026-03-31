@@ -23,28 +23,19 @@ package org.exist.storage.structural;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.exist.dom.TypedQNameComparator;
-import org.exist.dom.persistent.AttrImpl;
-import org.exist.dom.persistent.NodeProxy;
-import org.exist.dom.QName;
-import org.exist.dom.persistent.ElementImpl;
-import org.exist.dom.persistent.DocumentSet;
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.IStoredNode;
-import org.exist.dom.persistent.SymbolTable;
-import org.exist.dom.persistent.NewArrayNodeSet;
-import org.exist.dom.persistent.ExtNodeSet;
-import org.exist.dom.persistent.NodeSet;
 import org.exist.collections.Collection;
+import org.exist.dom.QName;
+import org.exist.dom.TypedQNameComparator;
+import org.exist.dom.persistent.*;
 import org.exist.indexing.*;
 import org.exist.indexing.StreamListener.ReindexMode;
 import org.exist.numbering.NodeId;
+import org.exist.security.PermissionDeniedException;
 import org.exist.storage.*;
 import org.exist.storage.btree.BTree;
 import org.exist.storage.btree.BTreeCallback;
 import org.exist.storage.btree.IndexQuery;
 import org.exist.storage.btree.Value;
-
 import org.exist.storage.lock.ManagedLock;
 import org.exist.storage.txn.Txn;
 import org.exist.util.ByteConversion;
@@ -58,8 +49,6 @@ import org.w3c.dom.NodeList;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.exist.security.PermissionDeniedException;
-
 /**
  * Internal default implementation of the structural index. It uses a single btree, in which
  * each key represents a sequence of: [type, qname, documentId, nodeId]. The btree value is just a
@@ -67,15 +56,15 @@ import org.exist.security.PermissionDeniedException;
  */
 public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex {
 
-    private final static Logger LOG = LogManager.getLogger(NativeStructuralIndexWorker.class);
+    private static final Logger LOG = LogManager.getLogger(NativeStructuralIndexWorker.class);
 
-    private NativeStructuralIndex index;
+    private final NativeStructuralIndex index;
     private ReindexMode mode = ReindexMode.STORE;
     private DocumentImpl document;
 
     //TODO throw away this Comparator or use a different data struct here when we have moved
     //nameType out of QName
-    private Map<QName, List<NodeProxy>> pending = new TreeMap<>(new TypedQNameComparator());
+    private final Map<QName, List<NodeProxy>> pending = new TreeMap<>(new TypedQNameComparator());
 
     public NativeStructuralIndexWorker(NativeStructuralIndex index) {
         this.index = index;
@@ -161,7 +150,7 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
      * Internal helper class used by
      * {@link NativeStructuralIndexWorker#findElementsByTagName(byte, org.exist.dom.persistent.DocumentSet, org.exist.dom.QName, org.exist.xquery.NodeSelector)}.
      */
-    static class Range {
+    static final class Range {
         int start = -1;
         int end = -1;
 
@@ -275,7 +264,8 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
 	            for (final QName qname : qnames) {
 	            	if (test.getName() == null || test.matches(qname)) {
 	            		callback.setAncestor(doc, ancestor);
-	            		byte[] fromKey, toKey;
+                        byte[] fromKey;
+                        byte[] toKey;
 	                    if (ancestorId == NodeId.DOCUMENT_NODE) {
 	                        fromKey = computeKey(type, qname, doc.getDocId());
 	                        toKey = computeKey(type, qname, doc.getDocId() + 1);
@@ -359,7 +349,7 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
         DocumentImpl doc;
         int contextId;
         NewArrayNodeSet result;
-        boolean selfAsContext = false;
+        boolean selfAsContext;
         Expression parent;
 
         FindDescendantsCallback(byte type, int axis, QName qname, int contextId, NewArrayNodeSet result, Expression parent) {
@@ -460,7 +450,7 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
         return insert ? null : node;
     }
 
-    private NativeStructuralStreamListener listener = new NativeStructuralStreamListener();
+    private final NativeStructuralStreamListener listener = new NativeStructuralStreamListener();
     
     public StreamListener getListener() {
         return listener;
@@ -777,7 +767,7 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
         return new QName(symbols.getName(sym), symbols.getNamespace(nsSym), type);
     }
 
-    private class NativeStructuralStreamListener extends AbstractStreamListener {
+    private final class NativeStructuralStreamListener extends AbstractStreamListener {
 
         private NativeStructuralStreamListener() {
             //Nothing to do

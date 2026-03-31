@@ -23,6 +23,7 @@
 package org.exist.storage;
 
 import org.exist.EXistException;
+import org.exist.TestDataGenerator;
 import org.exist.collections.Collection;
 import org.exist.collections.CollectionConfigurationException;
 import org.exist.dom.persistent.DocumentImpl;
@@ -37,18 +38,18 @@ import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.LockException;
 import org.exist.util.MimeType;
 import org.exist.xmldb.XmldbURI;
-import org.exist.TestDataGenerator;
 import org.junit.After;
 import org.junit.AfterClass;
-import org.xml.sax.InputSource;
-import static org.junit.Assert.*;
 import org.junit.Test;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.Optional;
+
+import static org.junit.Assert.*;
 
 /**
  * Integration test for collection removal and recovery.
@@ -59,9 +60,9 @@ import java.util.Optional;
 public class RemoveCollectionIT {
 
     // we don't use @ClassRule/@Rule as we want to force corruption in some tests
-    private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
+    private final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
-    private final static String generateXQ =
+    private static final String generateXQ =
             """
             declare function local:random-sequence($length as xs:integer, $G as map(xs:string, item())) {
               if ($length eq 0)
@@ -85,7 +86,7 @@ public class RemoveCollectionIT {
                </chapter>\
             </book>""";
     
-    private final static int COUNT = 300;
+    private static final int COUNT = 300;
 
     @Test
     public void removeCollectionTests() throws PermissionDeniedException, IOException, LockException, CollectionConfigurationException, SAXException, EXistException, DatabaseConfigurationException {

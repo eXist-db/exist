@@ -21,9 +21,9 @@
  */
 package org.exist.indexing.range;
 
-import org.exist.dom.persistent.AttrImpl;
-import org.exist.dom.persistent.AbstractCharacterData;
 import org.exist.dom.QName;
+import org.exist.dom.persistent.AbstractCharacterData;
+import org.exist.dom.persistent.AttrImpl;
 import org.exist.storage.NodePath;
 import org.exist.util.XMLString;
 

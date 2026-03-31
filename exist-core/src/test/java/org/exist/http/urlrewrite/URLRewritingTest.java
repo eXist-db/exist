@@ -23,13 +23,13 @@
 package org.exist.http.urlrewrite;
 
 import com.evolvedbinary.j8fu.tuple.Tuple2;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.entity.ContentType;
 import org.exist.http.AbstractHttpTest;
 import org.exist.test.ExistWebServer;
-import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xmldb.XmldbURI;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;

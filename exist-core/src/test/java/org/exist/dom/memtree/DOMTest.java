@@ -21,14 +21,6 @@
  */
 package org.exist.dom.memtree;
 
-import java.io.IOException;
-import java.io.StringReader;
-import java.io.StringWriter;
-
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParserFactory;
-import javax.xml.transform.TransformerException;
-
 import com.googlecode.junittoolbox.ParallelRunner;
 import org.exist.dom.QName;
 import org.exist.util.ExistSAXParserFactory;
@@ -44,9 +36,14 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.AttributesImpl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParserFactory;
+import javax.xml.transform.TransformerException;
+import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
+
+import static org.junit.Assert.*;
 
 /**
  * @author wolf
@@ -54,7 +51,7 @@ import static org.junit.Assert.assertTrue;
 @RunWith(ParallelRunner.class)
 public class DOMTest {
 
-    private final static String XML =
+    private static final String XML =
             "<test count=\"1\" value=\"5543\" xmlns:x=\"http://foo.org\" xmlns=\"http://bla.org\"><x:title id=\"s1\">My title</x:title><paragraph>First paragraph</paragraph>"
                     + "<section><title>subsection</title></section></test>";
 

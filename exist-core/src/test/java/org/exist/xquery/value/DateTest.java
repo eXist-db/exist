@@ -27,9 +27,7 @@ import org.exist.xquery.XPathException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  *	note: some of these tests rely on local timezone override to -05:00, done in super.setUp()
@@ -222,35 +220,40 @@ public class DateTest extends AbstractTimeRelatedTestCase {
 
     @Test
 	public void compare1() throws XPathException {
-		AbstractDateTimeValue v1 = new DateValue("2004-12-25Z"), v2 = new DateValue("2004-12-25+07:00");
+        AbstractDateTimeValue v1 = new DateValue("2004-12-25Z");
+        AbstractDateTimeValue v2 = new DateValue("2004-12-25+07:00");
 		assertEquals(1, v1.compareTo(null, v2));
 		assertEquals(-1, v2.compareTo(null, v1));
 	}
 
     @Test
 	public void compare2() throws XPathException {
-		AbstractDateTimeValue v1 = new DateValue("2004-12-25-12:00"), v2 = new DateValue("2004-12-26+12:00");
+        AbstractDateTimeValue v1 = new DateValue("2004-12-25-12:00");
+        AbstractDateTimeValue v2 = new DateValue("2004-12-26+12:00");
 		assertEquals(0, v1.compareTo(null, v2));
 		assertEquals(0, v2.compareTo(null, v1));
 	}
 
     @Test
 	public void compare3() throws XPathException {
-		AbstractDateTimeValue v1 = new DateValue("2004-12-25Z"), v2 = new DateValue("2004-12-25-05:00");
+        AbstractDateTimeValue v1 = new DateValue("2004-12-25Z");
+        AbstractDateTimeValue v2 = new DateValue("2004-12-25-05:00");
 		assertEquals(-1, v1.compareTo(null, v2));
 		assertEquals(+1, v2.compareTo(null, v1));
 	}
 
     @Test
 	public void compare4() throws XPathException {
-		AbstractDateTimeValue v1 = new DateValue("2004-12-25Z"), v2 = new DateValue("2004-12-25+07:00");
+        AbstractDateTimeValue v1 = new DateValue("2004-12-25Z");
+        AbstractDateTimeValue v2 = new DateValue("2004-12-25+07:00");
 		assertEquals(1, v1.compareTo(null, v2));
 		assertEquals(-1, v2.compareTo(null, v1));
 	}
 
     @Test
 	public void compare5() throws XPathException {
-		AbstractDateTimeValue v1 = new DateValue("2004-12-25-12:00"), v2 = new DateValue("2004-12-26+12:00");
+        AbstractDateTimeValue v1 = new DateValue("2004-12-25-12:00");
+        AbstractDateTimeValue v2 = new DateValue("2004-12-26+12:00");
 		assertTrue(v1.compareTo(null, Comparison.EQ, v2));
 		assertFalse(v1.compareTo(null, Comparison.NEQ, v2));
 		assertFalse(v1.compareTo(null, Comparison.GT, v2));
@@ -261,7 +264,8 @@ public class DateTest extends AbstractTimeRelatedTestCase {
 
     @Test
 	public void compare7() throws XPathException {
-		AbstractDateTimeValue v1 = new DateValue("2004-12-25Z"), v2 = new DateValue("2004-12-25-05:00");
+        AbstractDateTimeValue v1 = new DateValue("2004-12-25Z");
+        AbstractDateTimeValue v2 = new DateValue("2004-12-25-05:00");
 		assertFalse(v1.compareTo(null, Comparison.EQ, v2));
 		assertTrue(v1.compareTo(null, Comparison.NEQ, v2));
 		assertFalse(v1.compareTo(null, Comparison.GT, v2));
@@ -272,7 +276,8 @@ public class DateTest extends AbstractTimeRelatedTestCase {
 
     @Test
 	public void minMax1() throws XPathException {
-		AbstractDateTimeValue v1 = new DateValue("2004-12-25Z"), v2 = new DateValue("2004-12-25-05:00");
+        AbstractDateTimeValue v1 = new DateValue("2004-12-25Z");
+        AbstractDateTimeValue v2 = new DateValue("2004-12-25-05:00");
 		assertDateEquals(v2, v1.max(null, v2));
 		assertDateEquals(v2, v2.max(null, v1));
 		assertDateEquals(v1, v1.min(null, v2));
@@ -353,7 +358,8 @@ public class DateTest extends AbstractTimeRelatedTestCase {
 
     @Test
 	public void minus6() throws XPathException {
-		DateValue d1 = new DateValue("2005-10-11"), d2 = new DateValue("2005-10-09");
+        DateValue d1 = new DateValue("2005-10-11");
+        DateValue d2 = new DateValue("2005-10-09");
 		DayTimeDurationValue r = (DayTimeDurationValue) d1.minus(d2);
 		assertEquals((double) 2*24*60*60, r.getValue(), 0);
 		assertEquals(2, r.getPart(DurationValue.DAY));
@@ -361,7 +367,8 @@ public class DateTest extends AbstractTimeRelatedTestCase {
 
     @Test
 	public void minus7() throws XPathException {
-		DateValue d1 = new DateValue("2005-10-10"), d2 = new DateValue("2005-10-09");
+        DateValue d1 = new DateValue("2005-10-10");
+        DateValue d2 = new DateValue("2005-10-09");
 		DayTimeDurationValue r = (DayTimeDurationValue) d1.minus(d2);
 		assertEquals((double) 1*24*60*60, r.getValue(), 0);
 		assertEquals(1, r.getPart(DurationValue.DAY));

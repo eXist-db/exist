@@ -22,12 +22,12 @@
 
 package org.exist.protocolhandler.xmlrpc;
 
+import org.exist.protocolhandler.xmldb.XmldbURL;
+import org.exist.storage.io.BlockingInputStream;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import org.exist.protocolhandler.xmldb.XmldbURL;
-import org.exist.storage.io.BlockingInputStream;
 
 /**
  * Read document from remote database (using xmlrpc) as a input stream.

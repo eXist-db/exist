@@ -21,30 +21,7 @@
  */
 package org.exist.xquery.functions.validation;
 
-import java.io.IOException;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.net.MalformedURLException;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.stream.StreamSource;
-
 import com.evolvedbinary.j8fu.tuple.Tuple2;
-
 import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.exist.Namespaces;
 import org.exist.dom.QName;
@@ -74,14 +51,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.BooleanValue;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.value.ValueSequence;
-
+import org.exist.xquery.value.*;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -89,6 +59,22 @@ import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
 import org.xmlresolver.Resolver;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import javax.xml.transform.*;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
+import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.net.MalformedURLException;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
 
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -122,7 +108,7 @@ public class Jaxp extends BasicFunction {
 
     private final BrokerPool brokerPool;
     // Setup function signature
-    public final static FunctionSignature[] signatures = {
+    public static final FunctionSignature[] signatures = {
         new FunctionSignature(
         new QName("jaxp", ValidationModule.NAMESPACE_URI, ValidationModule.PREFIX),
         simpleFunctionTxt,

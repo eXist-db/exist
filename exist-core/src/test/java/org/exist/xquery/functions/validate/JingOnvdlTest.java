@@ -21,20 +21,18 @@
  */
 package org.exist.xquery.functions.validate;
 
-import org.exist.test.ExistXmldbEmbeddedServer;
-import org.junit.*;
-import static org.junit.Assert.*;
-
-import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 import org.custommonkey.xmlunit.exceptions.XpathException;
-
+import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.xquery.XPathException;
-
+import org.junit.*;
+import org.xml.sax.SAXException;
 import org.xmldb.api.base.ResourceSet;
+import org.xmldb.api.base.XMLDBException;
 
 import java.io.IOException;
-import org.xml.sax.SAXException;
-import org.xmldb.api.base.XMLDBException;
+
+import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
+import static org.junit.Assert.*;
 
 /**
  * Tests for the validation:jing() function with NVDLs
@@ -47,7 +45,7 @@ public class JingOnvdlTest {
     @ClassRule
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
-    private final static String RNG_DATA1 =
+    private static final String RNG_DATA1 =
             "<element  name=\'Book\' xmlns='http://relaxng.org/ns/structure/1.0'  ns=\'http://www.books.org\'> " +
             "<element name=\'Title\'><text/></element>" +
             "<element name=\'Author\'><text/></element>" +
@@ -55,12 +53,12 @@ public class JingOnvdlTest {
             "<element name=\'ISBN\'><text/></element>" +
             "<element name=\'Publisher\'><text/></element>" +
             "</element>";
-    private final static String NVDL_DATA1 = "<rules xmlns='http://purl.oclc.org/dsdl/nvdl/ns/structure/1.0'> " +
+    private static final String NVDL_DATA1 = "<rules xmlns='http://purl.oclc.org/dsdl/nvdl/ns/structure/1.0'> " +
             "<namespace ns=\'http://www.books.org\'>" +
             "     <validate schema=\"Book.rng\" />" +
             "</namespace>" +
             "</rules>";
-    private final static String XML_DATA1 = "<Book xmlns='http://www.books.org'> " +
+    private static final String XML_DATA1 = "<Book xmlns='http://www.books.org'> " +
             "<Title>The Wisdom of Crowds</Title>" +
             "<Author>James Surowiecki</Author>" +
             "<Date>2005</Date>" +
@@ -68,7 +66,7 @@ public class JingOnvdlTest {
             "<Publisher>Anchor Books</Publisher>" +
             "</Book>";
 
-    private final static String XML_DATA2 = "<Book xmlns='http://www.books.org'> " +
+    private static final String XML_DATA2 = "<Book xmlns='http://www.books.org'> " +
             "<Title>The Wisdom of Crowds</Title>" +
             "<Author>James Surowiecki</Author>" +
             "<Dateee>2005</Dateee>" +

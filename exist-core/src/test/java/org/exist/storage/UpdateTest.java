@@ -30,13 +30,14 @@ import org.exist.util.LockException;
 import org.exist.xquery.XPathException;
 import org.exist.xupdate.Modification;
 import org.exist.xupdate.XUpdateProcessor;
-import static org.junit.Assert.assertNotNull;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.io.StringReader;
+
+import static org.junit.Assert.assertNotNull;
 
 public class UpdateTest extends AbstractUpdateTest {
 
@@ -66,7 +67,7 @@ public class UpdateTest extends AbstractUpdateTest {
                                 "</xu:modifications>";
                 proc.setBroker(broker);
                 proc.setDocumentSet(docs);
-                final Modification modifications[] = proc.parse(new InputSource(new StringReader(xupdate)));
+                final Modification[] modifications = proc.parse(new InputSource(new StringReader(xupdate)));
                 assertNotNull(modifications);
                 modifications[0].process(transaction);
                 proc.reset();
@@ -87,7 +88,7 @@ public class UpdateTest extends AbstractUpdateTest {
                 "</xu:modifications>";
             proc.setBroker(broker);
             proc.setDocumentSet(docs);
-            final Modification modifications[] = proc.parse(new InputSource(new StringReader(xupdate)));
+            final Modification[] modifications = proc.parse(new InputSource(new StringReader(xupdate)));
             assertNotNull(transaction);
             modifications[0].process(transaction);
             proc.reset();

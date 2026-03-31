@@ -27,20 +27,14 @@
 package org.exist.extensions.exquery.restxq.impl;
 
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.dom.QName;
+import org.exist.dom.memtree.DocumentImpl;
 import org.exist.extensions.exquery.restxq.RestXqServiceCompiledXQueryCache;
 import org.exist.extensions.exquery.restxq.impl.adapters.SequenceAdapter;
 import org.exist.extensions.exquery.restxq.impl.adapters.TypeAdapter;
-import org.exist.dom.memtree.DocumentImpl;
 import org.exist.security.EffectiveSubject;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
@@ -82,19 +76,25 @@ import org.exquery.xquery.TypedArgumentValue;
 import org.exquery.xquery.TypedValue;
 import org.exquery.xquery3.FunctionSignature;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
 /**
  *
  * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 public class ResourceFunctionExecutorImpl implements ResourceFunctionExecuter {
     
-    private final static Logger LOG = LogManager.getLogger(ResourceFunctionExecutorImpl.class);
+    private static final Logger LOG = LogManager.getLogger(ResourceFunctionExecutorImpl.class);
     
-    public final static QName XQ_VAR_BASE_URI = new QName("base-uri", Namespace.ANNOTATION_NS);
-    public final static QName XQ_VAR_URI = new QName("uri", Namespace.ANNOTATION_NS);
+    public static final QName XQ_VAR_BASE_URI = new QName("base-uri", Namespace.ANNOTATION_NS);
+    public static final QName XQ_VAR_URI = new QName("uri", Namespace.ANNOTATION_NS);
     
     //TODO generalise with RequestModule
-    private final static String EXQ_REQUEST_ATTR = "exquery-request";
+    private static final String EXQ_REQUEST_ATTR = "exquery-request";
     
     private final BrokerPool brokerPool;
     private final String uri;

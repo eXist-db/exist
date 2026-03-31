@@ -21,9 +21,7 @@
  */
 package org.exist.xmldb;
 
-import java.time.Instant;
-import java.util.*;
-
+import com.evolvedbinary.j8fu.function.FunctionE;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.security.*;
 import org.exist.security.SecurityManager;
@@ -31,9 +29,8 @@ import org.exist.security.internal.aider.ACEAider;
 import org.exist.security.internal.aider.UserAider;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
-import org.exist.storage.txn.Txn;
-import com.evolvedbinary.j8fu.function.FunctionE;
 import org.exist.storage.lock.ManagedDocumentLock;
+import org.exist.storage.txn.Txn;
 import org.exist.xmldb.function.LocalXmldbCollectionFunction;
 import org.exist.xmldb.function.LocalXmldbDocumentFunction;
 import org.exist.xmldb.function.LocalXmldbFunction;
@@ -43,6 +40,8 @@ import org.xmldb.api.base.Resource;
 import org.xmldb.api.base.XMLDBException;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
+import java.util.*;
 
 /**
  * Local Implementation (i.e. embedded) of an eXist-specific service
@@ -146,7 +145,7 @@ public class LocalUserManagementService extends AbstractLocalService implements 
 
     private Optional<List<ACEAider>> getAces(@Nullable final Permission permission) {
         final Optional<List<ACEAider>> maybeAces;
-        if (permission != null && permission instanceof ACLPermission aclPermission) {
+        if (permission instanceof ACLPermission aclPermission) {
             final List<ACEAider> aces = new ArrayList<>(aclPermission.getACECount());
             for (int i = 0; i < aclPermission.getACECount(); i++) {
                 aces.add(new ACEAider(aclPermission.getACEAccessType(i), aclPermission.getACETarget(i), aclPermission.getACEWho(i), aclPermission.getACEMode(i)));
@@ -358,7 +357,7 @@ public class LocalUserManagementService extends AbstractLocalService implements 
                 return new Permission[0];
             }
 
-            final Permission perms[] = new Permission[collection.getDocumentCount(broker)];
+            final Permission[] perms = new Permission[collection.getDocumentCount(broker)];
             final Iterator<DocumentImpl> itDocument = collection.iterator(broker);
             int i = 0;
             while (itDocument.hasNext()) {
@@ -380,7 +379,7 @@ public class LocalUserManagementService extends AbstractLocalService implements 
                 return new Permission[0];
             }
 
-            final Permission perms[] = new Permission[collection.getChildCollectionCount(broker)];
+            final Permission[] perms = new Permission[collection.getChildCollectionCount(broker)];
             final Iterator<XmldbURI> itChildCollectionUri = collection.collectionIterator(broker);
             int i = 0;
             while(itChildCollectionUri.hasNext()) {

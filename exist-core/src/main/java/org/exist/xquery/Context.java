@@ -21,20 +21,12 @@
  */
 package org.exist.xquery;
 
-import java.io.IOException;
-import java.util.*;
-import java.util.function.Predicate;
-
-import javax.annotation.Nullable;
-import javax.xml.datatype.XMLGregorianCalendar;
-import javax.xml.stream.XMLStreamException;
-
 import com.ibm.icu.text.Collator;
 import org.exist.debuggee.DebuggeeJoint;
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.DocumentSet;
 import org.exist.security.Subject;
 import org.exist.source.Source;
 import org.exist.stax.ExtendedXMLStreamReader;
@@ -47,6 +39,13 @@ import org.exist.xquery.value.AnyURIValue;
 import org.exist.xquery.value.BinaryValue;
 import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
+
+import javax.annotation.Nullable;
+import javax.xml.datatype.XMLGregorianCalendar;
+import javax.xml.stream.XMLStreamException;
+import java.io.IOException;
+import java.util.*;
+import java.util.function.Predicate;
 
 public interface Context {
 

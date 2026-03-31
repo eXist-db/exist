@@ -21,21 +21,10 @@
  */
 package org.exist.xmldb;
 
-import java.io.IOException;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.sax.SAXResult;
-
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.test.ExistXmldbEmbeddedServer;
-import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.w3c.dom.Document;
@@ -51,6 +40,16 @@ import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XPathQueryService;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.sax.SAXResult;
+import java.io.IOException;
+
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -63,7 +62,7 @@ public class DOMTest {
 	@ClassRule
 	public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
-	private static String name = "test.xml";
+	private static final String name = "test.xml";
 	
 	/** 
 	 * - Storing XML resource from XML string

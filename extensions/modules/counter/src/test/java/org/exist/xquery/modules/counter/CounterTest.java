@@ -21,14 +21,14 @@
  */
 package org.exist.xquery.modules.counter;
 
-import static org.junit.Assert.assertEquals;
-
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.xquery.XPathException;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Jasper Linthorst (jasper.linthorst@gmail.com)
@@ -38,7 +38,7 @@ public class CounterTest {
     @ClassRule
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true);
 
-    private final static String IMPORT = "import module namespace counter=\"" + CounterModule.NAMESPACE_URI + "\" " +
+    private static final String IMPORT = "import module namespace counter=\"" + CounterModule.NAMESPACE_URI + "\" " +
         "at \"java:org.exist.xquery.modules.counter.CounterModule\"; ";
     
     @Test

@@ -21,22 +21,22 @@
  */
 package org.exist.storage;
 
-import java.io.IOException;
-import java.util.Optional;
-
-import org.exist.collections.triggers.TriggerException;
-import org.exist.security.PermissionDeniedException;
-import org.exist.test.ExistEmbeddedServer;
-import org.exist.util.*;
-import org.junit.*;
-import org.exist.dom.persistent.BinaryDocument;
 import org.exist.EXistException;
-import org.exist.xmldb.XmldbURI;
-import org.exist.test.TestConstants;
 import org.exist.collections.Collection;
+import org.exist.collections.triggers.TriggerException;
+import org.exist.dom.persistent.BinaryDocument;
+import org.exist.security.PermissionDeniedException;
 import org.exist.storage.txn.TransactionManager;
 import org.exist.storage.txn.Txn;
+import org.exist.test.ExistEmbeddedServer;
+import org.exist.test.TestConstants;
+import org.exist.util.*;
+import org.exist.xmldb.XmldbURI;
+import org.junit.*;
 import org.xml.sax.SAXException;
+
+import java.io.IOException;
+import java.util.Optional;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.*;

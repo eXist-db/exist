@@ -21,22 +21,13 @@
  */
 package org.exist.xquery.modules.expathrepo;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.*;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-import java.util.Optional;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.SystemProperties;
-import org.exist.dom.persistent.BinaryDocument;
-import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
+import org.exist.dom.persistent.BinaryDocument;
+import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.LockedDocument;
 import org.exist.repo.Deployment;
 import org.exist.repo.PackageLoader;
@@ -53,11 +44,20 @@ import org.expath.pkg.repo.XarFileSource;
 import org.expath.pkg.repo.XarSource;
 import org.xml.sax.helpers.AttributesImpl;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.util.Optional;
+
 public class Deploy extends BasicFunction {
 
 	protected static final Logger logger = LogManager.getLogger(Deploy.class);
 	
-	public final static FunctionSignature signatures[] = {
+	public static final FunctionSignature[] signatures = {
 		new FunctionSignature(
 			new QName("deploy", ExpathPackageModule.NAMESPACE_URI, ExpathPackageModule.PREFIX),
 			"Deploy an application package. Installs package contents to the specified target collection, using the permissions " +
@@ -145,9 +145,10 @@ public class Deploy extends BasicFunction {
 	@Override
 	public Sequence eval(final Sequence[] args, final Sequence contextSequence)
 			throws XPathException {
-		if (!context.getSubject().hasDbaRole())
-			throw new XPathException(this, EXPathErrorCode.EXPDY003, "Permission denied. You need to be a member " +
-					"of the dba group to use repo:deploy/undeploy");
+        if (!context.getSubject().hasDbaRole()) {
+            throw new XPathException(this, EXPathErrorCode.EXPDY003, "Permission denied. You need to be a member " +
+                    "of the dba group to use repo:deploy/undeploy");
+        }
 		
 		final String pkgName = args[0].getStringValue();
         try {

@@ -67,21 +67,21 @@ public class VirtualNodeSet extends AbstractNodeSet {
     protected int axis = Constants.UNKNOWN_AXIS;
     protected NodeTest test;
     protected NodeSet context;
-    protected NodeSet realSet = null;
-    protected boolean realSetIsComplete = false;
-    protected boolean inPredicate = false;
-    protected boolean useSelfAsContext = false;
+    protected NodeSet realSet;
+    protected boolean realSetIsComplete;
+    protected boolean inPredicate;
+    protected boolean useSelfAsContext;
     protected int contextId = Expression.NO_CONTEXT_ID;
 
-    private DocumentSet realDocumentSet = null;
+    private DocumentSet realDocumentSet;
 
-    private boolean knownIsEmptyCardinality = false;
-    private boolean knownHasOneCardinality = false;
-    private boolean knownHasManyCardinality = false;
+    private boolean knownIsEmptyCardinality;
+    private boolean knownHasOneCardinality;
+    private boolean knownHasManyCardinality;
 
-    protected boolean hasMany = false;
+    protected boolean hasMany;
 
-    private DBBroker broker;
+    private final DBBroker broker;
 
     /**
      * Creates a new <code>VirtualNodeSet</code> instance.
@@ -105,12 +105,7 @@ public class VirtualNodeSet extends AbstractNodeSet {
     @Override
     public boolean contains(final NodeProxy p) {
         final NodeProxy firstParent = getFirstParent(p, null, axis == Constants.SELF_AXIS, 0);
-        // Timo Boehme: getFirstParent returns now only real parents
-        // therefore test if node is child of context
-        if(firstParent != null) {
-            return true;
-        }
-        return false;
+        return firstParent != null;
     }
 
     @Override

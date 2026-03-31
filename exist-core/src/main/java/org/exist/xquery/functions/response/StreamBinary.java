@@ -23,20 +23,14 @@ package org.exist.xquery.functions.response;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import org.exist.dom.QName;
 import org.exist.http.servlets.ResponseWrapper;
 import org.exist.xquery.*;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
-
-import java.io.IOException;
-import java.io.OutputStream;
-import org.exist.xquery.value.BinaryValue;
+import org.exist.xquery.value.*;
 
 import javax.annotation.Nonnull;
+import java.io.IOException;
+import java.io.OutputStream;
 
 public class StreamBinary extends StrictResponseFunction {
 
@@ -44,7 +38,7 @@ public class StreamBinary extends StrictResponseFunction {
     private static final FunctionParameterSequenceType BINARY_DATA_PARAM = new FunctionParameterSequenceType("binary-data", Type.BASE64_BINARY, Cardinality.EXACTLY_ONE, "The binary data to stream");
     private static final FunctionParameterSequenceType CONTENT_TYPE_PARAM = new FunctionParameterSequenceType("content-type", Type.STRING, Cardinality.EXACTLY_ONE, "The ContentType HTTP header value");
     private static final FunctionParameterSequenceType FILENAME_PARAM = new FunctionParameterSequenceType("filename", Type.STRING, Cardinality.ZERO_OR_ONE, "The filename.  If provided, a Content-Disposition header is set for the filename in the HTTP Response");
-    public final static FunctionSignature signature =
+    public static final FunctionSignature signature =
             new FunctionSignature(
             new QName("stream-binary", ResponseModule.NAMESPACE_URI, ResponseModule.PREFIX),
             "Streams the binary data to the current servlet response output stream. The ContentType "
@@ -62,7 +56,7 @@ public class StreamBinary extends StrictResponseFunction {
     @Override
     public Sequence eval(final Sequence[] args, @Nonnull final ResponseWrapper response) throws XPathException {
         if(args[0].isEmpty() || args[1].isEmpty()) {
-            return (Sequence.EMPTY_SEQUENCE);
+            return Sequence.EMPTY_SEQUENCE;
         }
 
         final BinaryValue binary = (BinaryValue) args[0].itemAt(0);

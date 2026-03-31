@@ -21,10 +21,10 @@
  */
 package org.exist.indexing;
 
+import org.exist.dom.QName;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.ExtNodeSet;
 import org.exist.dom.persistent.NodeSet;
-import org.exist.dom.QName;
 import org.exist.xquery.Expression;
 import org.exist.xquery.NodeSelector;
 import org.exist.xquery.NodeTest;
@@ -35,9 +35,9 @@ import org.exist.xquery.NodeTest;
  */
 public interface StructuralIndex {
 
-    public final static String STRUCTURAL_INDEX_ID = "structural-index";
+    public static final String STRUCTURAL_INDEX_ID = "structural-index";
 
-    public final static String DEFAULT_CLASS = "org.exist.storage.structural.NativeStructuralIndex";
+    public static final String DEFAULT_CLASS = "org.exist.storage.structural.NativeStructuralIndex";
 
     public boolean matchElementsByTagName(byte type, DocumentSet docs, QName qname, NodeSelector selector);
 

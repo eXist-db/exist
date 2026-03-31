@@ -22,13 +22,12 @@
 package org.exist.xquery.functions.validate;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
-import org.junit.*;
-import static org.junit.Assert.*;
-
 import org.exist.xquery.XPathException;
-
+import org.junit.*;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
+
+import static org.junit.Assert.*;
 
 /**
  * Additional tests for the validation:jing() function with RNGs and XSDs

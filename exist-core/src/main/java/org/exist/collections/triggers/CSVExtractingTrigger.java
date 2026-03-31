@@ -21,9 +21,6 @@
  */
 package org.exist.collections.triggers;
 
-import java.util.*;
-import javax.xml.XMLConstants;
-import javax.xml.namespace.QName;
 import org.exist.collections.Collection;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.storage.DBBroker;
@@ -31,6 +28,10 @@ import org.exist.storage.txn.Txn;
 import org.exist.xmldb.XmldbURI;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
+
+import javax.xml.XMLConstants;
+import javax.xml.namespace.QName;
+import java.util.*;
 
 /**
  * Extracts CSV data from an element into a number of new child elements
@@ -85,13 +86,13 @@ public class CSVExtractingTrigger extends FilteringTrigger {
     private String separator;
 
     //key is the xpath to extract for, and value is the extractions to make from the value at that path
-    private Map<String, Extraction> extractions = new HashMap<>();
+    private final Map<String, Extraction> extractions = new HashMap<>();
 
     //the current node path of the SAX stream
-    private NodePath currentNodePath = new NodePath();
+    private final NodePath currentNodePath = new NodePath();
 
-    private boolean capture = false; //flag to indicate whether to buffer character data for extraction of csv values
-    private StringBuilder charactersBuf = new StringBuilder(); //buffer for character data, which will then be parsed to extract csv values
+    private boolean capture; //flag to indicate whether to buffer character data for extraction of csv values
+    private final StringBuilder charactersBuf = new StringBuilder(); //buffer for character data, which will then be parsed to extract csv values
 
 
     @SuppressWarnings("unchecked")
@@ -289,7 +290,7 @@ public class CSVExtractingTrigger extends FilteringTrigger {
         }
 
         public boolean mustMatchAttribute() {
-            return(this.matchAttrName != null && this.matchAttrValue != null);
+            return this.matchAttrName != null && this.matchAttrValue != null;
         }
 
         public boolean matchesAttribute(final String attrName, final String attrValue) {

@@ -41,10 +41,10 @@ import static org.exist.xquery.functions.system.SystemModule.functionSignature;
  */
 public class AsUser extends Function {
 
-    private final static Logger logger = LogManager.getLogger(AsUser.class);
+    private static final Logger logger = LogManager.getLogger(AsUser.class);
 
-    private static String FS_AS_USER_NAME = "as-user";
-    public final static FunctionSignature FS_AS_USER = functionSignature(
+    private static final String FS_AS_USER_NAME = "as-user";
+    public static final FunctionSignature FS_AS_USER = functionSignature(
             FS_AS_USER_NAME,
             "A pseudo-function to execute a limited block of code as a different " +
             "user. The first argument is the name of the user, the second is the " +
@@ -58,8 +58,8 @@ public class AsUser extends Function {
             optManyParam("code-block", Type.ITEM, "The code block to run as the identified user")
     );
 
-    private static String FS_FUNCTION_AS_USER_NAME = "function-as-user";
-    public final static FunctionSignature FS_FUNCTION_AS_USER = functionSignature(
+    private static final String FS_FUNCTION_AS_USER_NAME = "function-as-user";
+    public static final FunctionSignature FS_FUNCTION_AS_USER = functionSignature(
             FS_FUNCTION_AS_USER_NAME,
             "A pseudo-function to execute a function as a different " +
                     "user. The first argument is the name of the user, the second is the " +

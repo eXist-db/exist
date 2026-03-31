@@ -21,6 +21,8 @@
  */
 package org.exist.client;
 
+import org.exist.xmldb.XmldbURI;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -32,7 +34,6 @@ import java.util.List;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.InvalidPreferencesFormatException;
 import java.util.prefs.Preferences;
-import org.exist.xmldb.XmldbURI;
 
 public class FavouriteConnections {
     
@@ -72,7 +73,7 @@ public class FavouriteConnections {
                 
                 favouriteNode.put(FavouriteConnection.URI, favourite.getUri());
                 favouriteNode.put(FavouriteConnection.CONFIGURATION, favourite.getConfiguration());
-                favouriteNode.put(FavouriteConnection.SSL, Boolean.valueOf(favourite.isSsl()).toString().toUpperCase());
+                favouriteNode.put(FavouriteConnection.SSL, Boolean.toString(favourite.isSsl()).toUpperCase());
             }
         }
     }
@@ -83,7 +84,7 @@ public class FavouriteConnections {
         final Preferences favouritesNode = prefs.node(FAVOURITES_NODE);
         
         // Get all favourites
-        String favouriteNodeNames[] =new String[0];
+        String[] favouriteNodeNames =new String[0];
         try {
             favouriteNodeNames = favouritesNode.childrenNames();
         } catch (final BackingStoreException ex) {

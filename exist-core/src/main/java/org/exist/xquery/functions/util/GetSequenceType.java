@@ -29,18 +29,13 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 public class GetSequenceType extends BasicFunction {
 	
 	protected static final Logger logger = LogManager.getLogger(GetSequenceType.class);
 
-	public final static FunctionSignature signature =
+	public static final FunctionSignature signature =
 		new FunctionSignature(
 			new QName("get-sequence-type", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 			"Returns the string representation of the type of sequence.",
@@ -57,8 +52,7 @@ public class GetSequenceType extends BasicFunction {
 			throws XPathException {		
 		
 		final Sequence seq = args[0];
-		final StringValue stringValue = new StringValue(this, Type.getTypeName(seq.getItemType()));
-		return stringValue;
+		return new StringValue(this, Type.getTypeName(seq.getItemType()));
 	}
 
 }

@@ -44,12 +44,9 @@ import org.xmlunit.builder.Input;
 import org.xmlunit.diff.Diff;
 
 import javax.xml.transform.Source;
-
 import java.util.Arrays;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 @RunWith(Parameterized.class)
 public class SerializationTest {

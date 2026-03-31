@@ -21,12 +21,6 @@
  */
 package org.exist.storage;
 
-import java.io.IOException;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.util.Iterator;
-import java.util.Optional;
-
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.triggers.TriggerException;
@@ -42,6 +36,13 @@ import org.exist.util.LockException;
 import org.exist.xmldb.XmldbURI;
 import org.junit.After;
 import org.junit.Test;
+
+import java.io.IOException;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.util.Iterator;
+import java.util.Optional;
+
 import static org.junit.Assert.assertNotNull;
 
 /**
@@ -50,10 +51,10 @@ import static org.junit.Assert.assertNotNull;
  */
 public class CollectionTest {
     
-    private static XmldbURI TEST_COLLECTION_URI = XmldbURI.ROOT_COLLECTION_URI.append("test");
+    private static final XmldbURI TEST_COLLECTION_URI = XmldbURI.ROOT_COLLECTION_URI.append("test");
 
     // we don't use @ClassRule/@Rule as we want to force corruption in some tests
-    private ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
+    private final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Test
     public void storeRead() throws EXistException, IOException, PermissionDeniedException, BTreeException, DatabaseConfigurationException, TriggerException, LockException {

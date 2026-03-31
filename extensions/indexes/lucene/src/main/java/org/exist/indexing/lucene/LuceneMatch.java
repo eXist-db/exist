@@ -35,7 +35,7 @@ import javax.annotation.Nullable;
 public class LuceneMatch extends Match {
 
     private final int luceneDocId;
-    private float score = 0.0f;
+    private float score = 0.0F;
     private final Query query;
 
     private final LuceneIndexWorker.LuceneFacets facets;

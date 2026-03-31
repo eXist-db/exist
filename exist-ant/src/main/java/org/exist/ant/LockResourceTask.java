@@ -35,8 +35,8 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class LockResourceTask extends UserTask
 {
-    private String name     = null;
-    private String resource = null;
+    private String name;
+    private String resource;
 
     /* (non-Javadoc)
      * @see org.apache.tools.ant.Task#execute()

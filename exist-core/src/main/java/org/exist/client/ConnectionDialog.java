@@ -21,6 +21,7 @@
  */
 package org.exist.client;
 
+import javax.swing.*;
 import java.awt.Graphics;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -30,13 +31,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.InvalidPreferencesFormatException;
-import javax.swing.ComboBoxModel;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultListModel;
-import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
-import javax.swing.ListModel;
-import javax.swing.SwingUtilities;
 
 /**
  * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
@@ -45,8 +39,8 @@ public class ConnectionDialog extends javax.swing.JDialog implements DialogWithR
 
     private static final String PROVIDED_PASSWORD_PLACEHOLDER = "__PROVIDED__PASSWORD__";
 
-    private ComboBoxModel connectionTypeModel = null;
-    private DefaultListModel favouritesModel = null;
+    private ComboBoxModel connectionTypeModel;
+    private DefaultListModel favouritesModel;
     private final DefaultConnectionSettings defaultConnectionSettings;
     private final boolean disableEmbeddedConnectionType;
     private Path config;
@@ -461,7 +455,7 @@ public class ConnectionDialog extends javax.swing.JDialog implements DialogWithR
     }//GEN-LAST:event_btnConnectActionPerformed
 
     private void cmbConnectionTypeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbConnectionTypeActionPerformed
-        final boolean remote = (((ConnectionType) cmbConnectionType.getSelectedItem()) == ConnectionType.Remote);
+        final boolean remote = ((ConnectionType) cmbConnectionType.getSelectedItem()) == ConnectionType.Remote;
 
         toggleRemoteEmbeddedDisplayTab(remote);
     }//GEN-LAST:event_cmbConnectionTypeActionPerformed

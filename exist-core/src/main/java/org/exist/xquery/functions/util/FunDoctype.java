@@ -21,22 +21,17 @@
  */
 package org.exist.xquery.functions.util;
 
-import org.exist.dom.persistent.NodeProxy;
-import org.exist.dom.QName;
-import org.exist.dom.persistent.DocumentImpl;
-import org.exist.dom.persistent.MutableDocumentSet;
-import org.exist.dom.persistent.ExtArrayNodeSet;
-import org.exist.dom.persistent.NodeSet;
-import org.exist.dom.persistent.DefaultDocumentSet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exist.dom.QName;
+import org.exist.dom.persistent.*;
 import org.exist.numbering.NodeId;
+import org.exist.security.PermissionDeniedException;
 import org.exist.util.LockException;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 
 import java.util.Iterator;
-import org.exist.security.PermissionDeniedException;
 
 /**
  * @author wolf
@@ -45,7 +40,7 @@ public class FunDoctype extends Function {
 	
 	protected static final Logger logger = LogManager.getLogger(FunDoctype.class);
 
-	public final static FunctionSignature signature =
+	public static final FunctionSignature signature =
 		new FunctionSignature(
 			new QName("doctype", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 			"Returns the document nodes of the documents with the given DOCTYPE(s).",

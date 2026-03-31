@@ -92,9 +92,7 @@ public abstract class AbstractTestUpdate {
                 documentName, XMLResource.class );
         doc.setContent(content);
         testCollection.storeResource(doc);
-        final XQueryService service =
-                testCollection.getService(XQueryService.class);
-        return service;
+        return testCollection.getService(XQueryService.class);
     }
 
     /** Helper that performs an XQuery and does JUnit assertion on result size.

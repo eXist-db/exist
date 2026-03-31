@@ -44,7 +44,7 @@ import java.util.List;
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 class TupleParser extends RecursiveTypeParserImpl {
-    private int level = 0;
+    private int level;
     private List<Object> list;
 
     /**

@@ -21,13 +21,13 @@
  */
 package org.exist.storage.dom;
 
-import java.nio.ByteBuffer;
-
 import org.exist.storage.DBBroker;
 import org.exist.storage.NativeBroker;
 import org.exist.storage.journal.AbstractLoggable;
 import org.exist.storage.journal.LogException;
 import org.exist.storage.txn.Txn;
+
+import java.nio.ByteBuffer;
 
 /**
  * Insert a value into a data page.
@@ -45,7 +45,7 @@ public class InsertValueLoggable extends AbstractLoggable {
     public InsertValueLoggable(final Txn transaction, final long pageNum, final boolean isOverflow, final short tid, final byte[] value, final int offset) {
         super(DOMFile.LOG_INSERT_RECORD, transaction.getId());
         this.pageNum = pageNum;
-        this.isOverflow = (isOverflow ? (byte) 1 : 0);
+        this.isOverflow = isOverflow ? (byte) 1 : 0;
         this.tid = tid;
         this.value = value;
         this.offset = offset;

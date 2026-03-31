@@ -24,19 +24,13 @@ package org.exist.xquery;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.NodeSet;
-import org.exist.xquery.value.AbstractSequence;
-import org.exist.xquery.value.IntegerValue;
-import org.exist.xquery.value.Item;
-import org.exist.xquery.value.MemoryNodeSet;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
 
 import java.math.BigInteger;
 
 public class RangeSequence extends AbstractSequence {
 
-    private final static Logger LOG = LogManager.getLogger(AbstractSequence.class);
+    private static final Logger LOG = LogManager.getLogger(AbstractSequence.class);
 
     private final IntegerValue start;
     private final IntegerValue end;
@@ -74,7 +68,7 @@ public class RangeSequence extends AbstractSequence {
         return new ReverseRangeSequenceIterator(start.getLong(), end.getLong());
     }
 
-    private static class RangeSequenceIterator implements SequenceIterator {
+    private static final class RangeSequenceIterator implements SequenceIterator {
         private long current;
         private final long end;
 
@@ -110,7 +104,7 @@ public class RangeSequence extends AbstractSequence {
         }
     }
 
-    private static class ReverseRangeSequenceIterator implements SequenceIterator {
+    private static final class ReverseRangeSequenceIterator implements SequenceIterator {
         private final long start;
         private long current;
 

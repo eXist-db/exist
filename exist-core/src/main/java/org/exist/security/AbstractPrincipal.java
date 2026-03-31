@@ -25,8 +25,8 @@ import org.exist.Database;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.config.Configuration;
-import org.exist.config.Configurator;
 import org.exist.config.ConfigurationException;
+import org.exist.config.Configurator;
 import org.exist.config.annotation.ConfigurationClass;
 import org.exist.config.annotation.ConfigurationFieldAsAttribute;
 import org.exist.config.annotation.ConfigurationFieldAsElement;
@@ -50,9 +50,9 @@ public abstract class AbstractPrincipal implements Principal {
     protected final int id;
 
     //XXX: this must be under org.exist.security.internal to make it protected
-    public boolean removed = false;
+    public boolean removed;
 
-    protected Configuration configuration = null;
+    protected Configuration configuration;
 
     protected AbstractPrincipal(final DBBroker broker, final Realm realm, final Collection collection, final int id, final String name)
             throws ConfigurationException {
@@ -69,7 +69,7 @@ public abstract class AbstractPrincipal implements Principal {
         }
     }
 
-    public AbstractPrincipal(final AbstractRealm realm, final Configuration _config_) throws ConfigurationException {
+    protected AbstractPrincipal(final AbstractRealm realm, final Configuration _config_) throws ConfigurationException {
         this.realm = realm;
 
         configuration = Configurator.configure(this, _config_);
@@ -119,7 +119,7 @@ public abstract class AbstractPrincipal implements Principal {
 
     @Override
     public final boolean isConfigured() {
-        return (configuration != null);
+        return configuration != null;
     }
 
     @Override

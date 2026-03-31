@@ -40,42 +40,41 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.Optional;
 
+import static org.exist.storage.ElementValue.ELEMENT;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-
-import static org.exist.storage.ElementValue.ELEMENT;
 
 public class MoveOverwriteCollectionTest {
 
     @ClassRule
     public static ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
-    private final static String XML1 =
+    private static final String XML1 =
             "<?xml version=\"1.0\"?>" +
                     "<test1>" +
                     "  <title>Hello1</title>" +
                     "</test1>";
 
-    private final static String XML2 =
+    private static final String XML2 =
             "<?xml version=\"1.0\"?>" +
                     "<test2>" +
                     "  <title>Hello2</title>" +
                     "</test2>";
 
-    private final static String XML3 =
+    private static final String XML3 =
             "<?xml version=\"1.0\"?>" +
                     "<test3>" +
                     "  <title>Hello3</title>" +
                     "</test3>";
 
-    private final static XmldbURI TEST_COLLECTION_URI = XmldbURI.ROOT_COLLECTION_URI.append("test");
-    private final static XmldbURI SUB_TEST_COLLECTION_URI = TEST_COLLECTION_URI.append("test2");
+    private static final XmldbURI TEST_COLLECTION_URI = XmldbURI.ROOT_COLLECTION_URI.append("test");
+    private static final XmldbURI SUB_TEST_COLLECTION_URI = TEST_COLLECTION_URI.append("test2");
 
-    private final static XmldbURI TEST3_COLLECTION_URI = XmldbURI.ROOT_COLLECTION_URI.append("test3");
+    private static final XmldbURI TEST3_COLLECTION_URI = XmldbURI.ROOT_COLLECTION_URI.append("test3");
 
-    private final static XmldbURI doc1Name = XmldbURI.create("doc1.xml");
-    private final static XmldbURI doc2Name = XmldbURI.create("doc2.xml");
-    private final static XmldbURI doc3Name = XmldbURI.create("doc3.xml");
+    private static final XmldbURI doc1Name = XmldbURI.create("doc1.xml");
+    private static final XmldbURI doc2Name = XmldbURI.create("doc2.xml");
+    private static final XmldbURI doc3Name = XmldbURI.create("doc3.xml");
 
     /**
      * This test ensures that when moving an Collection over the top of an existing Collection,

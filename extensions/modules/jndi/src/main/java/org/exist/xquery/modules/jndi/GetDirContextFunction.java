@@ -22,12 +22,6 @@
 package org.exist.xquery.modules.jndi;
 
 
-import java.util.Properties;
-
-import javax.naming.NamingException;
-import javax.naming.directory.DirContext;
-import javax.naming.directory.InitialDirContext;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
@@ -37,13 +31,12 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.FunctionParameterSequenceType;
-import org.exist.xquery.value.FunctionReturnSequenceType;
-import org.exist.xquery.value.IntegerValue;
-import org.exist.xquery.value.NodeValue;
-import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
+import org.exist.xquery.value.*;
+
+import javax.naming.NamingException;
+import javax.naming.directory.DirContext;
+import javax.naming.directory.InitialDirContext;
+import java.util.Properties;
 
 /**
  * eXist JNDI Module Extension GetDirContextFunction
@@ -61,7 +54,7 @@ public class GetDirContextFunction extends BasicFunction
 {
 	protected static final Logger logger = LogManager.getLogger(GetDirContextFunction.class);
 
-	public final static FunctionSignature[] signatures = {
+	public static final FunctionSignature[] signatures = {
 			
 			new FunctionSignature(
 					new QName( "get-dir-context", JNDIModule.NAMESPACE_URI, JNDIModule.PREFIX ),
@@ -82,7 +75,7 @@ public class GetDirContextFunction extends BasicFunction
 	{
 		// Were properties specified
 		if( args[0].isEmpty() ) {
-			return( Sequence.EMPTY_SEQUENCE );
+			return Sequence.EMPTY_SEQUENCE;
 		}
 
 		try {
@@ -94,7 +87,7 @@ public class GetDirContextFunction extends BasicFunction
 
 			// store the JNDI Directory Context and return the uid handle of the context
 			
-			return( new IntegerValue( this, JNDIModule.storeJNDIContext( context, dirCtx ) ) );
+			return new IntegerValue( this, JNDIModule.storeJNDIContext( context, dirCtx ) );
 		}
 		catch( NamingException ne ) {
 			logger.error( "jndi:get-dir-context() Cannot get JNDI directory context: ", ne );
