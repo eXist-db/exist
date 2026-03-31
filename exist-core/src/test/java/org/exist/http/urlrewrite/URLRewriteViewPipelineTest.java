@@ -52,7 +52,7 @@ import static org.junit.Assert.*;
 public class URLRewriteViewPipelineTest {
 
     @ClassRule
-    public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
+    public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true, false);
 
     private static final String TEST_COLLECTION = "/db/apps/test-url-rewrite";
 
@@ -111,7 +111,7 @@ public class URLRewriteViewPipelineTest {
     @BeforeClass
     public static void setup() throws Exception {
         // Store test files via REST API (admin user)
-        final String restUrl = "http://localhost:" + existWebServer.getPort() + "/rest" + TEST_COLLECTION;
+        final String restUrl = "http://localhost:" + existWebServer.getPort() + "/exist/rest" + TEST_COLLECTION;
 
         // Create collection and store files via HTTP PUT
         storeViaRest(restUrl + "/controller.xq", CONTROLLER_XQ, "application/xquery");
@@ -122,7 +122,7 @@ public class URLRewriteViewPipelineTest {
         // Set execute permissions on XQuery files
         final String chmod = "sm:chmod(xs:anyURI('" + TEST_COLLECTION + "/controller.xq'), 'rwxr-xr-x')," +
                 "sm:chmod(xs:anyURI('" + TEST_COLLECTION + "/view.xq'), 'rwxr-xr-x')";
-        Request.Get("http://localhost:" + existWebServer.getPort() + "/rest/db?_query=" +
+        Request.Get("http://localhost:" + existWebServer.getPort() + "/exist/rest/db?_query=" +
                 java.net.URLEncoder.encode(chmod, "UTF-8") + "&_wrap=no")
                 .addHeader("Authorization", "Basic " + java.util.Base64.getEncoder().encodeToString("admin:".getBytes()))
                 .execute();
@@ -131,7 +131,7 @@ public class URLRewriteViewPipelineTest {
     @AfterClass
     public static void teardown() throws Exception {
         // Remove test collection via REST
-        Request.Delete("http://localhost:" + existWebServer.getPort() + "/rest" + TEST_COLLECTION)
+        Request.Delete("http://localhost:" + existWebServer.getPort() + "/exist/rest" + TEST_COLLECTION)
                 .addHeader("Authorization", "Basic " + java.util.Base64.getEncoder().encodeToString("admin:".getBytes()))
                 .execute();
     }
@@ -144,7 +144,7 @@ public class URLRewriteViewPipelineTest {
     @Test
     public void htmlWithHeadThroughViewPipeline() throws IOException {
         final String url = "http://localhost:" + existWebServer.getPort()
-                + "/test-url-rewrite/with-head.html";
+                + "/exist/apps/test-url-rewrite/with-head.html";
 
         final HttpResponse response = Request.Get(url).execute().returnResponse();
         final int status = response.getStatusLine().getStatusCode();
@@ -178,7 +178,7 @@ public class URLRewriteViewPipelineTest {
     @Test
     public void htmlWithoutHeadThroughViewPipeline() throws IOException {
         final String url = "http://localhost:" + existWebServer.getPort()
-                + "/test-url-rewrite/no-head.html";
+                + "/exist/apps/test-url-rewrite/no-head.html";
 
         final HttpResponse response = Request.Get(url).execute().returnResponse();
         final int status = response.getStatusLine().getStatusCode();
