@@ -361,6 +361,14 @@ public class Eval extends BasicFunction {
                 exprContext = initContextSequence;
             }
 
+            // If no explicit context was provided and we have a context sequence
+            // from the calling expression (e.g., path expression step), use it.
+            // This allows relative expressions like <a><b/></a>/util:eval('*')
+            // to see the context item.
+            if (exprContext == null && contextSequence != null && !contextSequence.isEmpty()) {
+                exprContext = contextSequence;
+            }
+
             Sequence result = null;
             try {
                 if (!isCalledAs(FS_EVAL_AND_SERIALIZE_NAME)) {

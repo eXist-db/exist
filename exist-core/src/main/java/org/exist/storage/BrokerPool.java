@@ -93,6 +93,7 @@ import java.util.function.Consumer;
 
 import static com.evolvedbinary.j8fu.fsm.TransitionTable.transitionTable;
 import static org.exist.util.ThreadUtils.nameInstanceThreadGroup;
+import static org.exist.util.ThreadUtils.newInstanceDaemonThread;
 import static org.exist.util.ThreadUtils.newInstanceThread;
 
 /**
@@ -550,7 +551,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
             statusReporter = new StatusReporter(SIGNAL_STARTUP);
             statusObservers.forEach(statusReporter::addObserver);
 
-            final Thread statusThread = newInstanceThread(this, "startup-status-reporter", statusReporter);
+            final Thread statusThread = newInstanceDaemonThread(this, "startup-status-reporter", statusReporter);
             statusThread.start();
 
             // statusReporter may have to be terminated or the thread can/will hang.
@@ -1241,12 +1242,16 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
         //No active broker : get one ASAP
 
         while(serviceModeUser != null && subject.isPresent() && !subject.equals(Optional.ofNullable(serviceModeUser))) {
+            if(isShuttingDown()) {
+                break;
+            }
             try {
                 LOG.debug("Db instance is in service mode. Waiting for db to become available again ...");
-                wait();
+                wait(1000);
             } catch(final InterruptedException e) {
                 Thread.currentThread().interrupt();
-                LOG.error("Interrupt detected");
+                LOG.warn("Interrupted while waiting for service mode to end");
+                break;
             }
         }
 
@@ -1261,11 +1266,15 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                 } else
                     //... or wait until there is one available
                     while(inactiveBrokers.isEmpty()) {
+                        if(isShuttingDown()) {
+                            throw new EXistException("BrokerPool is shutting down");
+                        }
                         LOG.debug("waiting for a broker to become available");
                         try {
-                            this.wait();
+                            this.wait(1000);
                         } catch(final InterruptedException e) {
-                            //nothing to be done!
+                            Thread.currentThread().interrupt();
+                            throw new EXistException("Interrupted while waiting for a broker", e);
                         }
                     }
             }
@@ -1416,10 +1425,14 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
         synchronized(this) {
             if(!activeBrokers.isEmpty()) {
                 while(!inServiceMode) {
+                    if(isShuttingDown()) {
+                        break;
+                    }
                     try {
-                        wait();
+                        wait(1000);
                     } catch(final InterruptedException e) {
-                        //nothing to be done
+                        Thread.currentThread().interrupt();
+                        break;
                     }
                 }
             }
@@ -1626,7 +1639,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                 statusObservers.forEach(statusReporter::addObserver);
 
                 synchronized (this) {
-                    final Thread statusThread = newInstanceThread(this, "shutdown-status-reporter", statusReporter);
+                    final Thread statusThread = newInstanceDaemonThread(this, "shutdown-status-reporter", statusReporter);
                     statusThread.start();
 
                     // DW: only in debug mode
@@ -1653,7 +1666,9 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                                 //Wait until they become inactive...
                                 this.wait(1000);
                             } catch (final InterruptedException e) {
-                                //nothing to be done
+                                Thread.currentThread().interrupt();
+                                LOG.warn("Interrupted while waiting for active brokers to return during shutdown");
+                                break;
                             }
 
                             //...or force the shutdown
@@ -1761,7 +1776,13 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
                 statusReporter.terminate();
                 statusReporter = null;
 
-//                instanceThreadGroup.destroy();
+                // interrupt any remaining threads in the instance thread group
+                // to prevent the JVM from hanging on non-daemon threads
+                try {
+                    instanceThreadGroup.interrupt();
+                } catch (final SecurityException e) {
+                    LOG.warn("Could not interrupt instance thread group: {}", e.getMessage());
+                }
             }
         } finally {
             status.process(Event.FINISHED_SHUTDOWN);

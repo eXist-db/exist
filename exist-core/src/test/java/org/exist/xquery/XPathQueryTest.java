@@ -1623,7 +1623,6 @@ public class XPathQueryTest {
         queryResource(service, "ids.xml", "id('id4', /test)", 1);
     }
 
-    @Ignore("Not yet supported in eXist")
     @Test
     public void ids_memtree() throws XMLDBException {
         final XQueryService service = getQueryService();
@@ -2100,7 +2099,7 @@ public class XPathQueryTest {
      * XPath queries that involved the name of elements with the name 'xpointer'.
      * @throws XMLDBException
      */
-    @Ignore
+    @Ignore("Parser treats 'xpointer' as reserved keyword")
     @Test
     public void xpointerElementNameHandling() throws XMLDBException {
         final XQueryService service = storeXMLStringAndGetQueryService(

@@ -23,6 +23,8 @@ jobs:
           java-version: '21'
       - uses: ./.github/actions/maven-cache
       - uses: ./.github/actions/maven-github-settings
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
       - name: Deploy SNAPSHOT maven artefacts
         timeout-minutes: 40
         env:

@@ -189,29 +189,6 @@ public class ForExpr extends BindingExpression {
         }
 
         clearContext(getExpressionId(), in);
-        if (sequenceType != null) {
-            //Type.EMPTY is *not* a subtype of other types ; checking cardinality first
-            //only a check on empty sequence is accurate here
-            if (resultSequence.isEmpty() &&
-                    !sequenceType.getCardinality().isSuperCardinalityOrEqualOf(Cardinality.EMPTY_SEQUENCE))
-                {throw new XPathException(this, ErrorCodes.XPTY0004,
-                    "Invalid cardinality for variable $" + varName + ". Expected " +
-                    sequenceType.getCardinality().getHumanDescription() +
-                    ", got " + Cardinality.EMPTY_SEQUENCE.getHumanDescription());}
-            //TODO : ignore nodes right now ; they are returned as xs:untypedAtomicType
-            if (!Type.subTypeOf(sequenceType.getPrimaryType(), Type.NODE)) {
-                if (!resultSequence.isEmpty() &&
-                        !Type.subTypeOf(resultSequence.getItemType(),
-                        sequenceType.getPrimaryType()))
-                    {throw new XPathException(this, ErrorCodes.XPTY0004,
-                        "Invalid type for variable $" + varName +
-                        ". Expected " + Type.getTypeName(sequenceType.getPrimaryType()) +
-                        ", got " +Type.getTypeName(resultSequence.getItemType()));}
-            //trigger the old behaviour
-            } else {
-                var.checkType();
-            }
-        }
         setActualReturnType(resultSequence.getItemType());
 
         if (callPostEval()) {
@@ -235,8 +212,7 @@ public class ForExpr extends BindingExpression {
         final Sequence contextSequence = contextItem.toSequence();
         // set variable value to current item
         var.setValue(contextSequence);
-        if (sequenceType == null)
-            {var.checkType();} //because it makes some conversions !
+        var.checkType();
         //Reset the context position
         context.setContextSequencePosition(0, null);
 

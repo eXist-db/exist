@@ -27,7 +27,10 @@ import org.exist.EXistException;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.ElementImpl;
+import org.exist.dom.persistent.IStoredNode;
 import org.exist.dom.persistent.StoredNode;
+import org.exist.dom.persistent.TextImpl;
 import org.exist.security.Permission;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
@@ -36,6 +39,7 @@ import org.exist.storage.UpdateListener;
 import org.exist.storage.txn.Txn;
 import org.exist.util.LockException;
 import org.exist.xquery.XPathException;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
@@ -85,6 +89,10 @@ public class Append extends Modification {
 					throw new PermissionDeniedException("User '" + broker.getCurrentSubject().getName() + "' does not have permission to write to the document '" + doc.getDocumentURI() + "'!");
 				}
 				node.appendChildren(transaction, children, child);
+				// Merge adjacent text nodes to maintain XDM compliance (issue #6160)
+				if (node instanceof ElementImpl) {
+					mergeAdjacentTextNodes(transaction, (ElementImpl) node);
+				}
 				doc.setLastModified(System.currentTimeMillis());
 				modifiedDocuments.add(doc);
 				broker.storeXMLResource(transaction, doc);
@@ -96,6 +104,37 @@ public class Append extends Modification {
 	        // release all acquired locks
 	        unlockDocuments(transaction);
 	    }
+	}
+
+	/**
+	 * Merges adjacent text node children of the given element.
+	 * After an append, two text nodes may end up adjacent (e.g., the existing
+	 * last text child and a newly appended text node). The XDM spec requires
+	 * that adjacent text nodes be merged into a single text node.
+	 */
+	private void mergeAdjacentTextNodes(final Txn transaction, final ElementImpl element) {
+		final NodeList childNodes = element.getChildNodes();
+		final int length = childNodes.getLength();
+		IStoredNode<?> prevTextNode = null;
+		for (int i = 0; i < length; i++) {
+			final Node child = childNodes.item(i);
+			if (child.getNodeType() == Node.TEXT_NODE && child instanceof IStoredNode) {
+				if (prevTextNode != null) {
+					// Found adjacent text nodes: merge by updating prev and removing current
+					final String mergedValue = prevTextNode.getNodeValue() + child.getNodeValue();
+					final TextImpl mergedText = new TextImpl(prevTextNode.getExpression(), mergedValue);
+					mergedText.setOwnerDocument(element.getOwnerDocument());
+					element.updateChild(transaction, prevTextNode, mergedText);
+					element.removeChild(transaction, child);
+					// prevTextNode stays as the merged node for potential further merges
+					// but we need to re-read it since updateChild replaced it
+					return; // only one merge needed per append
+				}
+				prevTextNode = (IStoredNode<?>) child;
+			} else {
+				prevTextNode = null;
+			}
+		}
 	}
 
 	@Override

@@ -2,6 +2,10 @@
 # Required for resolving from maven.pkg.github.com/eXist-db/exist and exist-xqts-runner.
 name: Maven GitHub Packages settings
 description: Create settings.xml with github and github-xqts-runner servers
+inputs:
+  token:
+    description: 'GitHub token for package authentication'
+    required: true
 runs:
   using: 'composite'
   steps:
@@ -16,12 +20,12 @@ runs:
             <server>
               <id>github</id>
               <username>${OWNER}</username>
-              <password>${{ secrets.GITHUB_TOKEN }}</password>
+              <password>${{ inputs.token }}</password>
             </server>
             <server>
               <id>github-xqts-runner</id>
               <username>${OWNER}</username>
-              <password>${{ secrets.GITHUB_TOKEN }}</password>
+              <password>${{ inputs.token }}</password>
             </server>
           </servers>
         </settings>

@@ -17,6 +17,8 @@ jobs:
           java-version: '21'
       - uses: ./.github/actions/maven-cache
       - uses: ./.github/actions/maven-github-settings
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
       - name: Maven XQTS Build
         timeout-minutes: 25
         env:

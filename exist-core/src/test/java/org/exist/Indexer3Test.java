@@ -401,31 +401,31 @@ public class Indexer3Test {
         assertEquals(RESULT_SUPPRESS_WS_NONE_XML7, store_and_retrieve_suppress_type("none", XML7, XQUERY));
     }
 
-    @Ignore
+    @Ignore("Whitespace suppress-type not implemented, see #6156")
     @Test
     public void retrieve_suppress_ws_leading1() throws EXistException, IOException, LockException, AuthenticationException, PermissionDeniedException, SAXException, XPathException {
         assertEquals(RESULT_SUPPRESS_WS_LEADING_XML1, store_and_retrieve_suppress_type("leading", XML1, XQUERY));
     }
 
-    @Ignore
+    @Ignore("Whitespace suppress-type not implemented, see #6156")
     @Test
     public void retrieve_suppress_ws_leading2() throws EXistException, IOException, LockException, AuthenticationException, PermissionDeniedException, SAXException, XPathException {
         assertEquals(RESULT_SUPPRESS_WS_LEADING_XML2, store_and_retrieve_suppress_type("leading", XML2, XQUERY));
     }
 
-    @Ignore
+    @Ignore("Whitespace suppress-type not implemented, see #6156")
     @Test
     public void retrieve_suppress_ws_leading3() throws EXistException, IOException, LockException, AuthenticationException, PermissionDeniedException, SAXException, XPathException {
         assertEquals(RESULT_SUPPRESS_WS_LEADING_XML3, store_and_retrieve_suppress_type("leading", XML3, XQUERY));
     }
 
-    @Ignore
+    @Ignore("Whitespace suppress-type not implemented, see #6156")
     @Test
     public void retrieve_suppress_ws_leading4() throws EXistException, IOException, LockException, AuthenticationException, PermissionDeniedException, SAXException, XPathException {
         assertEquals(RESULT_SUPPRESS_WS_LEADING_XML4, store_and_retrieve_suppress_type("leading", XML4, XQUERY));
     }
 
-    @Ignore
+    @Ignore("Whitespace suppress-type not implemented, see #6156")
     @Test
     public void retrieve_suppress_ws_leading5() throws EXistException, IOException, LockException, AuthenticationException, PermissionDeniedException, SAXException, XPathException {
         assertEquals(RESULT_SUPPRESS_WS_LEADING_XML5, store_and_retrieve_suppress_type("leading", XML5, XQUERY));
@@ -441,31 +441,31 @@ public class Indexer3Test {
         assertEquals(RESULT_SUPPRESS_WS_LEADING_XML7, store_and_retrieve_suppress_type("leading", XML7, XQUERY));
     }
 
-    @Ignore
+    @Ignore("Whitespace suppress-type not implemented, see #6156")
     @Test
     public void retrieve_suppress_ws_trailing1() throws EXistException, IOException, LockException, AuthenticationException, PermissionDeniedException, SAXException, XPathException {
         assertEquals(RESULT_SUPPRESS_WS_TRAILING_XML1, store_and_retrieve_suppress_type("trailing", XML1, XQUERY));
     }
 
-    @Ignore
+    @Ignore("Whitespace suppress-type not implemented, see #6156")
     @Test
     public void retrieve_suppress_ws_trailing2() throws EXistException, IOException, LockException, AuthenticationException, PermissionDeniedException, SAXException, XPathException {
         assertEquals(RESULT_SUPPRESS_WS_TRAILING_XML2, store_and_retrieve_suppress_type("trailing", XML2, XQUERY));
     }
 
-    @Ignore
+    @Ignore("Whitespace suppress-type not implemented, see #6156")
     @Test
     public void retrieve_suppress_ws_trailing3() throws EXistException, IOException, LockException, AuthenticationException, PermissionDeniedException, SAXException, XPathException {
         assertEquals(RESULT_SUPPRESS_WS_TRAILING_XML3, store_and_retrieve_suppress_type("trailing", XML3, XQUERY));
     }
 
-    @Ignore
+    @Ignore("Whitespace suppress-type not implemented, see #6156")
     @Test
     public void retrieve_suppress_ws_trailing4() throws EXistException, IOException, LockException, AuthenticationException, PermissionDeniedException, SAXException, XPathException {
         assertEquals(RESULT_SUPPRESS_WS_TRAILING_XML4, store_and_retrieve_suppress_type("trailing", XML4, XQUERY));
     }
 
-    @Ignore
+    @Ignore("Whitespace suppress-type not implemented, see #6156")
     @Test
     public void retrieve_suppress_ws_trailing5() throws EXistException, IOException, LockException, AuthenticationException, PermissionDeniedException, SAXException, XPathException {
         assertEquals(RESULT_SUPPRESS_WS_TRAILING_XML5, store_and_retrieve_suppress_type("trailing", XML5, XQUERY));
@@ -481,31 +481,31 @@ public class Indexer3Test {
         assertEquals(RESULT_SUPPRESS_WS_TRAILING_XML7, store_and_retrieve_suppress_type("trailing", XML7, XQUERY));
     }
 
-    @Ignore
+    @Ignore("Whitespace suppress-type not implemented, see #6156")
     @Test
     public void retrieve_suppress_ws_both1() throws EXistException, IOException, LockException, AuthenticationException, PermissionDeniedException, SAXException, XPathException {
         assertEquals(RESULT_SUPPRESS_WS_BOTH_XML1, store_and_retrieve_suppress_type("both", XML1, XQUERY));
     }
 
-    @Ignore
+    @Ignore("Whitespace suppress-type not implemented, see #6156")
     @Test
     public void retrieve_suppress_ws_both2() throws EXistException, IOException, LockException, AuthenticationException, PermissionDeniedException, SAXException, XPathException {
         assertEquals(RESULT_SUPPRESS_WS_BOTH_XML2, store_and_retrieve_suppress_type("both", XML2, XQUERY));
     }
 
-    @Ignore
+    @Ignore("Whitespace suppress-type not implemented, see #6156")
     @Test
     public void retrieve_suppress_ws_both3() throws EXistException, IOException, LockException, AuthenticationException, PermissionDeniedException, SAXException, XPathException {
         assertEquals(RESULT_SUPPRESS_WS_BOTH_XML3, store_and_retrieve_suppress_type("both", XML3, XQUERY));
     }
 
-    @Ignore
+    @Ignore("Whitespace suppress-type not implemented, see #6156")
     @Test
     public void retrieve_suppress_ws_both4() throws EXistException, IOException, LockException, AuthenticationException, PermissionDeniedException, SAXException, XPathException {
         assertEquals(RESULT_SUPPRESS_WS_BOTH_XML4, store_and_retrieve_suppress_type("both", XML4, XQUERY));
     }
 
-    @Ignore
+    @Ignore("Whitespace suppress-type not implemented, see #6156")
     @Test
     public void retrieve_suppress_ws_both5() throws EXistException, IOException, LockException, AuthenticationException, PermissionDeniedException, SAXException, XPathException {
         assertEquals(RESULT_SUPPRESS_WS_BOTH_XML5, store_and_retrieve_suppress_type("both", XML5, XQUERY));

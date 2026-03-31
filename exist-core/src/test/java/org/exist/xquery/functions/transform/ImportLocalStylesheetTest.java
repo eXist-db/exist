@@ -116,7 +116,7 @@ public class ImportLocalStylesheetTest {
     }
 
     @Test
-    @Ignore
+    @Ignore("xmldb:exist: single-colon URI scheme not recognized")
     public void fromXmldbExistScheme() throws XMLDBException {
         final String xquery = getQuery("xmldb:exist:" + XSL_DB_LOCATION);
         final ResourceSet result = existXmldbEmbeddedServer.executeQuery(xquery);

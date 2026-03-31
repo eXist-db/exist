@@ -111,12 +111,12 @@
         <exquery.distribution.version>0.2.1</exquery.distribution.version>
         <icu.version>76.1</icu.version>
         <izpack.version>5.2.5</izpack.version>
-        <jansi.version>2.4.2</jansi.version>
+        <jansi.version>2.4.3</jansi.version>
         <jaxb.api.version>4.0.5</jaxb.api.version>
         <jaxb.impl.version>4.0.2</jaxb.impl.version>
         <eclipse.angus-activation.version>2.0.3</eclipse.angus-activation.version>
         <jetty.version>11.0.25</jetty.version>
-        <log4j.version>2.25.3</log4j.version>
+        <log4j.version>2.25.4</log4j.version>
         <lucene.version>10.3.0</lucene.version>
         <milton.version>1.8.1.3</milton.version>
         <milton.servlet.version>1.8.1.3-jakarta5</milton.servlet.version>
@@ -654,7 +654,7 @@
                 <plugin>
                     <groupId>io.github.git-commit-id</groupId>
                     <artifactId>git-commit-id-maven-plugin</artifactId>
-                    <version>9.0.2</version>
+                    <version>9.1.0</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>

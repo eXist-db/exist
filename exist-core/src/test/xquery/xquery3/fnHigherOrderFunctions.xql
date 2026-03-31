@@ -130,7 +130,6 @@ function hofs:declared-function-test () {
 
 (: https://github.com/eXist-db/exist/issues/3382 :)
 declare
-    %test:pending
     %test:assertError("XPTY0004")
 function hofs:function-has-wrong-return-type () {
     filter((0 to 1), function ($a) { $a })
@@ -138,7 +137,6 @@ function hofs:function-has-wrong-return-type () {
 
 (: https://github.com/eXist-db/exist/issues/3382 :)
 declare
-    %test:pending
     %test:assertError("XPTY0004")
 function hofs:return-mixed-types () {
     filter((true(), false(), 1, ""), function ($a) { $a })
@@ -168,3 +166,37 @@ declare
 function hofs:type-constructor () {
     filter((0 to 1), xs:boolean(?))
 };
+
+(:~
+ : this was taken from XQTS:fn-for-each-pair-015
+ : allowed return values are
+    <any-of>
+      <error code="XPTY0004" />
+      <error code="XPST0005" />
+      <assert-empty/>
+    </any-of>
+ :)
+declare
+    %test:assertError("XPTY0004")
+function hofs:reference-to-overloaded-function-arity-mismatch () {
+    for-each-pair((), (), concat#3)
+};
+
+declare
+    %test:assertEquals("true", "true", "false")
+function hofs:array-for-each-from-map () {
+    array:for-each(
+        ["Monday", "Friday", "Tuesday"],
+        map{"Monday":true(), "Tuesday":false(), "Wednesday":true(), "Thursday":4, "Friday":true()}
+    )?*
+};
+
+declare
+    %test:assertEquals("true", "true", "false")
+function hofs:array-for-each-from-array () {
+    array:for-each(
+        [1, 5, 2],
+        [true(), false(), true(), 4, true()]
+    )?*
+};
+
