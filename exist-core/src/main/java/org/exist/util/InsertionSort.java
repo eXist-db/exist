@@ -27,15 +27,15 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- 	This class implements a version 
- 	of the insertion sort algorithm.
- 
- 	The implementation is inspired on
- 	the work of Michael Maniscalco in
- 	C++
- 	http://www.michael-maniscalco.com/sorting.htm
- 	
- @author José María Fernández (jmfg@users.sourceforge.net)
+ * This class implements a version
+ * of the insertion sort algorithm.
+ *
+ * The implementation is inspired on
+ * the work of Michael Maniscalco in
+ * C++
+ * http://www.michael-maniscalco.com/sorting.htm
+ *
+ * @author José María Fernández (jmfg@users.sourceforge.net)
  */
 public final class InsertionSort {
 	public static void sortByNodeId(NodeProxy[] a, int lo0, int hi0)
