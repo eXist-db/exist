@@ -127,14 +127,11 @@ public final class OnnxVectorProvider implements VectorEmbeddingProvider {
   }
 
   private float[] extractSentenceEmbedding(final Result result) throws Exception {
-    final OnnxTensor tensor = (OnnxTensor) result.get(0);
-    try {
+    try (final OnnxTensor tensor = (OnnxTensor) result.get(0)) {
       final float[][] data = (float[][]) tensor.getValue();
       if (data != null && data.length > 0 && data[0].length == dimension) {
         return data[0];
       }
-    } finally {
-      tensor.close();
     }
     return null;
   }
@@ -156,15 +153,12 @@ public final class OnnxVectorProvider implements VectorEmbeddingProvider {
   }
 
   private float[] meanPool(final Result result, final int seqLen, final long[] attentionMask) throws Exception {
-    final OnnxTensor tensor = findHiddenStateTensor(result);
-    try {
+    try (final OnnxTensor tensor = findHiddenStateTensor(result)) {
       final float[][][] hidden = (float[][][]) tensor.getValue();
       if (hidden == null || hidden.length == 0 || hidden[0].length == 0 || hidden[0][0].length != dimension) {
         return null;
       }
       return computeMeanPool(hidden[0], seqLen, attentionMask);
-    } finally {
-      tensor.close();
     }
   }
 

@@ -170,8 +170,8 @@ public class SequenceType {
         }
         // it's a document... we need to get the document element's name
         final Document doc;
-        if (nvItem instanceof Document) {
-            doc = (Document) nvItem;
+        if (nvItem instanceof Document document) {
+            doc = document;
         } else {
             doc = nvItem.getOwnerDocument();
         }

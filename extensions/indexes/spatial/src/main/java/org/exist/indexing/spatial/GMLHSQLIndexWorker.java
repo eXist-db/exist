@@ -168,10 +168,8 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
         final byte[] bytes = new byte[nodeId.size()];
         nodeId.serialize(bytes, 0);
         ps.setBytes(3, bytes);
-        try {
+        try (ps) {
             return ps.executeUpdate() == 1;
-        } finally {
-            ps.close();
         }
     }
 

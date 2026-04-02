@@ -98,6 +98,20 @@ public abstract class BinaryValue extends AtomicValue implements Closeable {
         }
     }
 
+    /**
+     * Closes a stream from {@link #getInputStream()} and releases shared cache references.
+     * Failures are logged and not propagated (required for {@link #compareTo} / {@link #hashCode}).
+     */
+    private static void closeBinaryInputStream(final InputStream in) {
+        if (in != null) {
+            try {
+                in.close();
+            } catch (final IOException ioe) {
+                LOG.warn("Unable to close binary input stream: {}", ioe.getMessage(), ioe);
+            }
+        }
+    }
+
     private int compareTo(BinaryValue otherValue) {
 
         final InputStream is = getInputStream();
@@ -106,34 +120,42 @@ public abstract class BinaryValue extends AtomicValue implements Closeable {
         if (is == null && otherIs == null) {
             return 0;
         } else if (is == null) {
+            closeBinaryInputStream(otherIs);
             return -1;
         } else if (otherIs == null) {
+            closeBinaryInputStream(is);
             return 1;
         } else if (is == otherIs) {
+            closeBinaryInputStream(is);
             return 0;
         } else {
-            int read;
-            int otherRead;
-            do {
+            try {
+                int read;
+                int otherRead;
+                do {
 
-                try {
-                    read = is.read();
-                } catch (final IOException ioe) {
-                    return -1;
-                }
+                    try {
+                        read = is.read();
+                    } catch (final IOException ioe) {
+                        return -1;
+                    }
 
-                try {
-                    otherRead = otherIs.read();
-                } catch (final IOException ioe) {
-                    return 1;
-                }
+                    try {
+                        otherRead = otherIs.read();
+                    } catch (final IOException ioe) {
+                        return 1;
+                    }
 
-                final int readComparison = Integer.compare(read, otherRead);
-                if (readComparison != 0) {
-                    return readComparison;
-                }
-            } while (read != -1 && otherRead != -1);
-            return 0;
+                    final int readComparison = Integer.compare(read, otherRead);
+                    if (readComparison != 0) {
+                        return readComparison;
+                    }
+                } while (read != -1 && otherRead != -1);
+                return 0;
+            } finally {
+                closeBinaryInputStream(otherIs);
+                closeBinaryInputStream(is);
+            }
         }
     }
 
@@ -221,16 +243,10 @@ public abstract class BinaryValue extends AtomicValue implements Closeable {
     @Override
     public String getStringValue() throws XPathException {
         final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream();
-        try {
+        try (baos) {
             streamTo(baos);
         } catch (final IOException ex) {
             throw new XPathException(getExpression(), "Unable to encode string value: " + ex.getMessage(), ex);
-        } finally {
-            try {
-                baos.close();   //close the stream to ensure all data is flushed
-            } catch (final IOException ioe) {
-                LOG.error("Unable to close stream: {}", ioe.getMessage(), ioe);
-            }
         }
         return baos.toString(UTF_8);
     }
@@ -292,10 +308,13 @@ public abstract class BinaryValue extends AtomicValue implements Closeable {
 
     @Override
     public int hashCode() {
-        final InputStream is = getInputStream();
         int hash = 7;
+        final InputStream is = getInputStream();
 
-        if (is != null) {
+        if (is == null) {
+            return hash;
+        }
+        try {
             int read;
             do {
                 try {
@@ -307,6 +326,8 @@ public abstract class BinaryValue extends AtomicValue implements Closeable {
                     read = -1;
                 }
             } while (read != -1);
+        } finally {
+            closeBinaryInputStream(is);
         }
         return hash;
     }

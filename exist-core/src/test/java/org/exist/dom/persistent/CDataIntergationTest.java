@@ -99,17 +99,15 @@ public class CDataIntergationTest {
         DatabaseManager.registerDatabase(database);
 
         // store document
-        Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
-        try {
-            final Resource resource = root.createResource(docName, XMLResource.class);
+        try (final Collection storeCollection =
+                     DatabaseManager.getCollection(XmldbURI.LOCAL_DB, TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD)) {
+            final Resource resource = storeCollection.createResource(docName, XMLResource.class);
             resource.setContent(cdata_xml);
-            root.storeResource(resource);
-        } finally {
-            root.close();
+            storeCollection.storeResource(resource);
         }
 
         // retrieve document
-        root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
+        Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
         try {
             final Resource resource = root.getResource(docName);
             assertNotNull(resource);

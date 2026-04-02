@@ -367,20 +367,20 @@ public class Backup {
                     }
 
                     final OutputStream os;
-                    if (resource instanceof ExtendedResource) {
+                    if (resource instanceof ExtendedResource extendedResource) {
                         if (deduplicateBlobs && resource instanceof EXistBinaryResource binaryResource) {
                             // only add distinct blobs to the Blob Store once!
                             final String blobId = binaryResource.getBlobId().toString();
                             if (!seenBlobIds.contains(blobId)) {
                                 os = output.newBlobEntry(blobId);
-                                ((ExtendedResource) resource).getContentIntoAStream(os);
+                                extendedResource.getContentIntoAStream(os);
                                 output.closeEntry();
 
                                 seenBlobIds.add(blobId);
                             }
                         } else {
                             os = output.newEntry(filename);
-                            ((ExtendedResource) resource).getContentIntoAStream(os);
+                            extendedResource.getContentIntoAStream(os);
                             output.closeEntry();
                         }
                     } else {
