@@ -393,7 +393,7 @@
         <dependency>
             <groupId>org.exist-db</groupId>
             <artifactId>exist-saxon-regex</artifactId>
-            <version>9.4.0-9.e1</version>
+            <version>10.6.e1</version>
             <exclusions>
                 <exclusion>
                     <!-- we have our own dependency on Saxon -->
