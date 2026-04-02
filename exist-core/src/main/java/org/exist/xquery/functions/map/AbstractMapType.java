@@ -285,9 +285,7 @@ public abstract class AbstractMapType extends FunctionReference
 
     public FunctionSignature getSignature() {
         return ACCESSOR;
-    };
-
-    /**
+    }/**
      * Lazy initialization of the accessor function. Creating
      * this for every map would be too expensive and we thus
      * only instantiate it on demand.

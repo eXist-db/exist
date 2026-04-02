@@ -58,7 +58,6 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.charset.UnsupportedCharsetException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 /**
  * @author <a href="mailto:adam@exist-db.org">Adam Retter</a>
@@ -186,7 +185,7 @@ public abstract class AbstractExtractFunction extends BasicFunction {
                         XMLDBAbstractCollectionManipulator.createCollection(root, path);
 
                     } else {
-                        final Path file = Paths.get(path).normalize();
+                        final Path file = Path.of(path).normalize();
                         name = FileUtils.fileName(file);
                         path = file.getParent().toAbsolutePath().toString();
 

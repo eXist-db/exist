@@ -121,16 +121,11 @@ public class XmldbBinariesTest extends AbstractBinariesTest<ResourceSet, Resourc
         try {
             colRoot = DatabaseManager.getCollection(getBaseUri() + "/db", ADMIN_DB_USER, ADMIN_DB_PWD);
 
-            final Collection colTest = colRoot.getChildCollection("test");
-            try {
+            try (final Collection colTest = colRoot.getChildCollection("test")) {
                 final CollectionManagementService cms = colTest.getService(CollectionManagementService.class);
 
                 final String testCollectionName = collectionUri.lastSegment().toString();
                 cms.removeCollection(testCollectionName);
-            } finally {
-                if(colTest != null) {
-                    colTest.close();
-                }
             }
         } finally {
             if(colRoot != null) {

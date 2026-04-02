@@ -74,7 +74,7 @@ public class PlainTextHighlighter {
         MarkableTokenFilter stream = new MarkableTokenFilter(tokenStream);
         //Token token;
         List<Offset> offsets = null;
-        try {
+        try (stream) {
             while (stream.incrementToken()) {
                 String text = stream.getAttribute(CharTermAttribute.class).toString();
                 Query termQuery = termMap.get(text);
@@ -132,8 +132,6 @@ public class PlainTextHighlighter {
             }
         } catch (IOException e) {
         	e.printStackTrace();
-        } finally {
-            stream.close();
         }
         return offsets;
 	}

@@ -462,12 +462,12 @@ public class ExtArrayNodeSet extends AbstractArrayNodeSet implements DocumentSet
 
     @Override
     public boolean contains(final Item item) {
-        if (item instanceof Node) {
+        if (item instanceof Node node) {
             @Nullable final Document doc;
             if (item instanceof Document document) {
                 doc = document;
             } else {
-                doc = ((Node) item).getOwnerDocument();
+                doc = node.getOwnerDocument();
             }
 
             if (doc == null || !(doc instanceof DocumentImpl || doc instanceof org.exist.dom.memtree.DocumentImpl)) {

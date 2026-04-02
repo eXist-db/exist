@@ -929,14 +929,12 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             TokenStream stream = analyzer.tokenStream(field, new StringReader(content));
             TermToBytesRefAttribute termAttr = stream.addAttribute(TermToBytesRefAttribute.class);
             BytesRef token = null;
-            try {
+            try (stream) {
                 stream.reset();
                 if (stream.incrementToken()) {
                     token = BytesRef.deepCopyOf(termAttr.getBytesRef());
                 }
                 stream.end();
-            } finally {
-                stream.close();
             }
             if (LOG.isDebugEnabled()) {
                 LOG.debug("ANALYZE result token={}", safeBytesRefToDisplay(token));
