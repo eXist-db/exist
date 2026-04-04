@@ -86,8 +86,33 @@ public class XMLWriter implements SerializerWriter {
      * compared to retrieving resources from the database.
      */
     private boolean xdmSerialization = false;
+    private boolean xml11 = false;
+    private boolean canonical = false;
+    @Nullable private java.text.Normalizer.Form normalizationForm = null;
+
+    // Canonical XML: buffer namespaces and attributes for sorting
+    private final List<String[]> canonicalNamespaces = new ArrayList<>();  // [prefix, uri]
+    private final List<String[]> canonicalAttributes = new ArrayList<>();  // [nsUri, localName, qname, value]
 
     private final Deque<QName> elementName = new ArrayDeque<>();
+
+    /**
+     * Returns true if cdata-section-elements should be applied.
+     * Subclasses (e.g., XHTMLWriter for HTML method) can override
+     * to suppress CDATA sections.
+     */
+    protected boolean shouldUseCdataSections() {
+        return xdmSerialization;
+    }
+
+    /**
+     * Returns the namespace URI of the current (innermost) element,
+     * or null if no element is on the stack.
+     */
+    protected String currentElementNamespaceURI() {
+        final QName top = elementName.peek();
+        return top != null ? top.getNamespaceURI() : null;
+    }
     private LazyVal<Set<QName>> cdataSectionElements = new LazyVal<>(this::parseCdataSectionElementNames);
     private boolean cdataSetionElement = false;
 
@@ -96,8 +121,9 @@ public class XMLWriter implements SerializerWriter {
         Arrays.fill(textSpecialChars, false);
         textSpecialChars['<'] = true;
         textSpecialChars['>'] = true;
-        // textSpecialChars['\r'] = true;
+                textSpecialChars['\r'] = true;
         textSpecialChars['&'] = true;
+        textSpecialChars[0x7F] = true; // DEL must be escaped as &#x7F;
 
         attrSpecialChars = new boolean[128];
         Arrays.fill(attrSpecialChars, false);
@@ -108,6 +134,7 @@ public class XMLWriter implements SerializerWriter {
         attrSpecialChars['\t'] = true;
         attrSpecialChars['&'] = true;
         attrSpecialChars['"'] = true;
+        attrSpecialChars[0x7F] = true; // DEL must be escaped as &#x7F;
     }
 
     @Nullable private XMLDeclaration originalXmlDecl;
@@ -139,6 +166,10 @@ public class XMLWriter implements SerializerWriter {
         }
 
         this.xdmSerialization = "yes".equals(outputProperties.getProperty(EXistOutputKeys.XDM_SERIALIZATION, "no"));
+        this.xml11 = "1.1".equals(outputProperties.getProperty(OutputKeys.VERSION));
+        this.normalizationForm = parseNormalizationForm(outputProperties.getProperty("normalization-form", "none"));
+        final String canonicalProp = outputProperties.getProperty(EXistOutputKeys.CANONICAL);
+        this.canonical = "yes".equals(canonicalProp) || "true".equals(canonicalProp) || "1".equals(canonicalProp);
     }
 
     private Set<QName> parseCdataSectionElementNames() {
@@ -291,13 +322,38 @@ public class XMLWriter implements SerializerWriter {
     }
 
     public void namespace(final String prefix, final String nsURI) throws TransformerException {
-        if((nsURI == null) && (prefix == null || prefix.isEmpty())) {
+        if((nsURI == null || nsURI.isEmpty()) && (prefix == null || prefix.isEmpty())) {
             return;
         }
 
-        try {						
+        // The xml namespace is implicitly declared and never needs explicit serialization
+        if ("xml".equals(prefix)) {
+            return;
+        }
+
+        try {
             if(!tagIsOpen) {
                 throw new TransformerException("Found a namespace declaration outside an element");
+            }
+
+            if (canonical) {
+                // Buffer for sorting — emitted in closeStartTag
+                final String pfx = prefix != null ? prefix : "";
+                final String uri = nsURI != null ? nsURI : "";
+                // Validate: reject relative namespace URIs (SERE0024)
+                if (!uri.isEmpty() && isRelativeUri(uri)) {
+                    throw new TransformerException("err:SERE0024 Canonical serialization does not allow relative namespace URIs: " + uri);
+                }
+                if (pfx.isEmpty() && uri.isEmpty()) {
+                    return;  // Skip xmlns="" in canonical (not meaningful for no-namespace elements)
+                }
+                // Deduplicate: replace existing binding for same prefix
+                canonicalNamespaces.removeIf(ns -> ns[0].equals(pfx));
+                canonicalNamespaces.add(new String[]{pfx, uri});
+                if (pfx.isEmpty()) {
+                    defaultNamespace = uri;
+                }
+                return;
             }
 
             if(prefix != null && !prefix.isEmpty()) {
@@ -310,7 +366,7 @@ public class XMLWriter implements SerializerWriter {
                 writer.write('"');
             } else {
                 if(defaultNamespace.equals(nsURI)) {
-                    return;	
+                    return;
                 }
                 writer.write(' ');
                 writer.write("xmlns");
@@ -329,8 +385,13 @@ public class XMLWriter implements SerializerWriter {
             if(!tagIsOpen) {
                     characters(value);
                     return;
-                    // throw new TransformerException("Found an attribute outside an
-                    // element");
+            }
+            if (canonical) {
+                // Buffer for sorting — extract namespace URI from qname if prefixed
+                final int colon = qname.indexOf(':');
+                final String nsUri = colon > 0 ? "" : "";  // string qname doesn't carry namespace
+                canonicalAttributes.add(new String[]{nsUri, colon > 0 ? qname.substring(colon + 1) : qname, qname, value.toString()});
+                return;
             }
             writer.write(' ');
             writer.write(qname);
@@ -347,8 +408,18 @@ public class XMLWriter implements SerializerWriter {
             if(!tagIsOpen) {
                 characters(value);
                 return;
-                // throw new TransformerException("Found an attribute outside an
-                // element");
+            }
+            if (canonical) {
+                final String nsUri = qname.getNamespaceURI() != null ? qname.getNamespaceURI() : "";
+                final String localName = qname.getLocalPart();
+                final String fullName;
+                if (qname.getPrefix() != null && !qname.getPrefix().isEmpty()) {
+                    fullName = qname.getPrefix() + ":" + localName;
+                } else {
+                    fullName = localName;
+                }
+                canonicalAttributes.add(new String[]{nsUri, localName, fullName, value.toString()});
+                return;
             }
             writer.write(' ');
             if(qname.getPrefix() != null && !qname.getPrefix().isEmpty()) {
@@ -373,9 +444,65 @@ public class XMLWriter implements SerializerWriter {
             if(tagIsOpen) {
                 closeStartTag(false);
             }
-            writeChars(chars, false);
+            // When xdmSerialization is active and current element is in cdata-section-elements,
+            // wrap text content in CDATA instead of escaping it (per W3C Serialization 3.1)
+            if (shouldUseCdataSections() && !elementName.isEmpty()
+                    && cdataSectionElements.get().contains(elementName.peek())) {
+                writeCdataContent(chars);
+            } else {
+                writeChars(chars, false);
+            }
         } catch(final IOException ioe) {
             throw new TransformerException(ioe.getMessage(), ioe);
+        }
+    }
+
+    private void writeCdataContent(final CharSequence chars) throws IOException {
+        // CDATA sections must be split when:
+        // 1. The content contains "]]>" (which would end the CDATA prematurely)
+        // 2. A character cannot be represented in the output encoding (must be escaped as &#xNN;)
+        final String s = normalize(chars).toString();
+        boolean inCdata = false;
+        for (int i = 0; i < s.length(); ) {
+            final int cp = s.codePointAt(i);
+            final int cpLen = Character.charCount(cp);
+
+            // Check for "]]>" sequence
+            if (cp == ']' && i + 2 < s.length() && s.charAt(i + 1) == ']' && s.charAt(i + 2) == '>') {
+                if (!inCdata) {
+                    writer.write("<![CDATA[");
+                    inCdata = true;
+                }
+                writer.write("]]");
+                writer.write("]]>");
+                inCdata = false;
+                i += 2; // skip "]]", the ">" will be picked up next
+                continue;
+            }
+
+            // Check if character is encodable in the output charset
+            if (!charSet.inCharacterSet((char) cp)) {
+                // Close any open CDATA section
+                if (inCdata) {
+                    writer.write("]]>");
+                    inCdata = false;
+                }
+                // Write as character reference
+                writer.write("&#x");
+                writer.write(Integer.toHexString(cp));
+                writer.write(';');
+            } else {
+                // Encodable character — write inside CDATA
+                if (!inCdata) {
+                    writer.write("<![CDATA[");
+                    inCdata = true;
+                }
+                writer.write(s, i, cpLen);
+            }
+            i += cpLen;
+        }
+        if (inCdata) {
+            writer.write("]]>");
         }
     }
 
@@ -510,8 +637,23 @@ public class XMLWriter implements SerializerWriter {
     protected void closeStartTag(final boolean isEmpty) throws TransformerException {
         try {
             if(tagIsOpen) {
-                if(isEmpty) {
+                if (canonical) {
+                    flushCanonicalBuffers();
+                }
+                if(isEmpty && !canonical) {
+                    // Canonical XML: empty elements expanded to <elem></elem>
                     writer.write("/>");
+                } else if (isEmpty) {
+                    // Canonical: write ></qname> for empty elements
+                    writer.write('>');
+                    final QName currentElem = elementName.peek();
+                    writer.write("</");
+                    if (currentElem.getPrefix() != null && !currentElem.getPrefix().isEmpty()) {
+                        writer.write(currentElem.getPrefix());
+                        writer.write(':');
+                    }
+                    writer.write(currentElem.getLocalPart());
+                    writer.write('>');
                 } else {
                     writer.write('>');
                 }
@@ -520,6 +662,52 @@ public class XMLWriter implements SerializerWriter {
         } catch(final IOException ioe) {
             throw new TransformerException(ioe.getMessage(), ioe);
         }
+    }
+
+    protected boolean isCanonical() {
+        return canonical;
+    }
+
+    protected void flushCanonicalBuffersXhtml() throws TransformerException {
+        try {
+            flushCanonicalBuffers();
+        } catch (final IOException ioe) {
+            throw new TransformerException(ioe.getMessage(), ioe);
+        }
+    }
+
+    private void flushCanonicalBuffers() throws IOException {
+        // Sort namespaces by prefix (default namespace first, then alphabetical)
+        canonicalNamespaces.sort((a, b) -> a[0].compareTo(b[0]));
+        // Write sorted namespaces
+        for (final String[] ns : canonicalNamespaces) {
+            writer.write(' ');
+            if (ns[0].isEmpty()) {
+                writer.write("xmlns=\"");
+            } else {
+                writer.write("xmlns:");
+                writer.write(ns[0]);
+                writer.write("=\"");
+            }
+            writeChars(ns[1], true);
+            writer.write('"');
+        }
+        canonicalNamespaces.clear();
+
+        // Sort attributes by namespace URI (primary), then local name (secondary)
+        canonicalAttributes.sort((a, b) -> {
+            final int cmp = a[0].compareTo(b[0]);
+            return cmp != 0 ? cmp : a[1].compareTo(b[1]);
+        });
+        // Write sorted attributes
+        for (final String[] attr : canonicalAttributes) {
+            writer.write(' ');
+            writer.write(attr[2]);  // qualified name
+            writer.write("=\"");
+            writeChars(attr[3], true);
+            writer.write('"');
+        }
+        canonicalAttributes.clear();
     }
 
     protected void writeDeclaration() throws TransformerException {
@@ -537,7 +725,9 @@ public class XMLWriter implements SerializerWriter {
             // get the fields of the persisted xml declaration, but overridden with any properties from the serialization properties
             final String version = outputProperties.getProperty(OutputKeys.VERSION, (originalXmlDecl.version != null ? originalXmlDecl.version : DEFAULT_XML_VERSION));
             final String encoding = outputProperties.getProperty(OutputKeys.ENCODING, (originalXmlDecl.encoding != null ? originalXmlDecl.encoding : DEFAULT_XML_ENCODING));
-            @Nullable final String standalone = outputProperties.getProperty(OutputKeys.STANDALONE, originalXmlDecl.standalone);
+            @Nullable final String standaloneOrig = outputProperties.getProperty(OutputKeys.STANDALONE, originalXmlDecl.standalone);
+            // "omit" means standalone should be absent from the declaration
+            @Nullable final String standalone = (standaloneOrig != null && "omit".equalsIgnoreCase(standaloneOrig.trim())) ? null : standaloneOrig;
 
             writeDeclaration(version, encoding, standalone);
 
@@ -545,11 +735,15 @@ public class XMLWriter implements SerializerWriter {
         }
 
         final String omitXmlDecl = outputProperties.getProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-        if ("no".equals(omitXmlDecl)) {
+        @Nullable final String standaloneRaw = outputProperties.getProperty(OutputKeys.STANDALONE);
+        // "omit" means standalone should be absent from the declaration
+        @Nullable final String standalone = (standaloneRaw != null && "omit".equalsIgnoreCase(standaloneRaw.trim())) ? null : standaloneRaw;
+        // Per W3C Serialization 3.1: output declaration if omit-xml-declaration is false/no/0,
+        // or if standalone is explicitly set (the declaration is required to carry standalone)
+        if (isBooleanFalse(omitXmlDecl) || standalone != null) {
             // get the fields of the declaration from the serialization properties
             final String version = outputProperties.getProperty(OutputKeys.VERSION, DEFAULT_XML_VERSION);
             final String encoding = outputProperties.getProperty(OutputKeys.ENCODING, DEFAULT_XML_ENCODING);
-            @Nullable final String standalone = outputProperties.getProperty(OutputKeys.STANDALONE);
 
             writeDeclaration(version, encoding, standalone);
         }
@@ -564,7 +758,15 @@ public class XMLWriter implements SerializerWriter {
             writer.write('"');
             if(standalone != null) {
                 writer.write(" standalone=\"");
-                writer.write(standalone);
+                // Normalize boolean values to yes/no for XML declaration
+                final String standaloneVal = standalone.trim();
+                if ("true".equals(standaloneVal) || "1".equals(standaloneVal)) {
+                    writer.write("yes");
+                } else if ("false".equals(standaloneVal) || "0".equals(standaloneVal)) {
+                    writer.write("no");
+                } else {
+                    writer.write(standaloneVal);
+                }
                 writer.write('"');
             }
             writer.write("?>\n");
@@ -589,36 +791,79 @@ public class XMLWriter implements SerializerWriter {
     protected boolean needsEscape(final char ch) {
     	return true;
     }
+
+    /**
+     * Whether &amp; before { should be escaped. HTML output returns false
+     * per W3C HTML serialization spec. XML output returns true (always escape &amp;).
+     */
+    protected boolean escapeAmpersandBeforeBrace() {
+        return true;
+    }
+
+    /**
+     * Check if a serialization boolean parameter value is false.
+     * W3C Serialization 3.1 accepts "no", "false", "0" (with optional whitespace) as false.
+     */
+    protected static boolean isBooleanFalse(final String value) {
+        if (value == null) {
+            return false;
+        }
+        final String trimmed = value.trim();
+        return "no".equals(trimmed) || "false".equals(trimmed) || "0".equals(trimmed);
+    }
+
+    /**
+     * Whether the given character needs escaping. Subclasses can override
+     * to suppress escaping for specific contexts (e.g., HTML raw text elements).
+     *
+     * @param ch the character to check
+     * @param inAttribute true if we're writing an attribute value
+     */
+    protected boolean needsEscape(final char ch, final boolean inAttribute) {
+        return needsEscape(ch);
+    }
     
     protected void writeChars(final CharSequence s, final boolean inAttribute) throws IOException {
+        // Apply Unicode normalization if configured
+        final CharSequence text = normalize(s);
         final boolean[] specialChars = inAttribute ? attrSpecialChars : textSpecialChars;
         char ch = 0;
-        final int len = s.length();
+        final int len = text.length();
         int pos = 0, i;
         while(pos < len) {
             i = pos;
             while(i < len) {
-                ch = s.charAt(i);
+                ch = text.charAt(i);
                 if(ch < 128) {
                     if(specialChars[ch]) {
+                        break;
+                    } else if(xml11 && ch >= 0x01 && ch <= 0x1F
+                            && ch != 0x09 && ch != 0x0A && ch != 0x0D) {
+                        // XML 1.1: C0 control chars (except TAB, LF, CR) must be escaped
                         break;
                     } else {
                         i++;
                     }
                 } else if(!charSet.inCharacterSet(ch)) {
                     break;
+                } else if(ch >= 0x7F && ch <= 0x9F) {
+                    // Control chars 0x7F-0x9F must be serialized as character references
+                    break;
+                } else if(ch == 0x2028) {
+                    // LINE SEPARATOR must be serialized as character reference
+                    break;
                 } else {
                     i++;
                 }
             }
-            writeCharSeq(s, pos, i);
+            writeCharSeq(text, pos, i);
             // writer.write(s.subSequence(pos, i).toString());
             
             if (i >= len) {
                 return;
             }
             
-            if(needsEscape(ch)) {
+            if(needsEscape(ch, inAttribute)) {
                 switch(ch) {
                     case '<':
                         writer.write("&lt;");
@@ -627,7 +872,12 @@ public class XMLWriter implements SerializerWriter {
                         writer.write("&gt;");
                         break;
                     case '&':
-                        writer.write("&amp;");
+                        // HTML spec: & before { in attribute values should not be escaped
+                        if (inAttribute && i + 1 < len && text.charAt(i + 1) == '{' && !escapeAmpersandBeforeBrace()) {
+                            writer.write('&');
+                        } else {
+                            writer.write("&amp;");
+                        }
                         break;
                     case '\r':
                         writer.write("&#xD;");
@@ -670,6 +920,38 @@ public class XMLWriter implements SerializerWriter {
         }
         charref[o++] = ';';
         writer.write(charref, 0, o);
+    }
+
+    @Nullable
+    private static java.text.Normalizer.Form parseNormalizationForm(final String value) {
+        if (value == null) return null;
+        return switch (value.trim().toUpperCase(java.util.Locale.ROOT)) {
+            case "NFC" -> java.text.Normalizer.Form.NFC;
+            case "NFD" -> java.text.Normalizer.Form.NFD;
+            case "NFKC" -> java.text.Normalizer.Form.NFKC;
+            case "NFKD" -> java.text.Normalizer.Form.NFKD;
+            case "NONE", "" -> null;
+            default -> null;  // "fully-normalized" or unknown — treated as none
+        };
+    }
+
+    /**
+     * Apply Unicode normalization if a normalization-form is set.
+     */
+    protected CharSequence normalize(final CharSequence text) {
+        if (normalizationForm == null) return text;
+        final String s = text.toString();
+        if (java.text.Normalizer.isNormalized(s, normalizationForm)) return text;
+        return java.text.Normalizer.normalize(s, normalizationForm);
+    }
+
+    private static boolean isRelativeUri(final String uri) {
+        for (int i = 0; i < uri.length(); i++) {
+            final char c = uri.charAt(i);
+            if (c == ':') return false;
+            if (c == '/' || c == '?' || c == '#') return true;
+        }
+        return true;
     }
 
     private static class XMLDeclaration {
