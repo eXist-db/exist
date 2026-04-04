@@ -297,7 +297,6 @@ public class SerializerUtils {
 
         final javax.xml.namespace.QName key = reader.getName();
         final String local = key.getLocalPart();
-        final String prefix = key.getPrefix();
         final String nsURI = key.getNamespaceURI();
         if (properties.containsKey(local)) {
             throw new XPathException(parent, FnModule.SEPM0019, "serialization parameter specified twice: " + key);
