@@ -379,15 +379,14 @@ public class StringValue extends AtomicValue {
             case Type.LANGUAGE:
                 final Matcher matcher = langPattern.matcher(value);
                 if (!matcher.matches()) {
-                    throw new XPathException(getExpression(),
-                            "Type error: string "
-                                    + value
-                                    + " is not valid for type xs:language");
+                    throw new XPathException(getExpression(), ErrorCodes.FORG0001,
+                            "String '" + value + "' is not valid for type xs:language");
                 }
                 return;
             case Type.NAME:
                 if (QName.isQName(value) != VALID.val) {
-                    throw new XPathException(getExpression(), "Type error: string " + value + " is not a valid xs:Name");
+                    throw new XPathException(getExpression(), ErrorCodes.FORG0001,
+                            "String '" + value + "' is not a valid xs:Name");
                 }
                 return;
             case Type.NCNAME:
@@ -395,12 +394,14 @@ public class StringValue extends AtomicValue {
             case Type.IDREF:
             case Type.ENTITY:
                 if (!XMLNames.isNCName(value)) {
-                    throw new XPathException(getExpression(), "Type error: string " + value + " is not a valid " + Type.getTypeName(type));
+                    throw new XPathException(getExpression(), ErrorCodes.FORG0001,
+                            "String '" + value + "' is not a valid " + Type.getTypeName(type));
                 }
                 return;
             case Type.NMTOKEN:
                 if (!XMLNames.isNmToken(value)) {
-                    throw new XPathException(getExpression(), "Type error: string " + value + " is not a valid xs:NMTOKEN");
+                    throw new XPathException(getExpression(), ErrorCodes.FORG0001,
+                            "String '" + value + "' is not a valid xs:NMTOKEN");
                 }
         }
     }
@@ -489,7 +490,7 @@ public class StringValue extends AtomicValue {
             case Type.G_YEAR_MONTH -> new GYearMonthValue(getExpression(), value);
             case Type.G_MONTH_DAY -> new GMonthDayValue(getExpression(), value);
             case Type.UNTYPED_ATOMIC -> new UntypedAtomicValue(getExpression(), getStringValue());
-            default -> throw new XPathException(getExpression(), ErrorCodes.FORG0001, "cannot cast '" +
+            default -> throw new XPathException(getExpression(), ErrorCodes.XPTY0004, "cannot cast '" +
                         Type.getTypeName(this.getItemType()) + "(\"" + getStringValue() + "\")' to " +
                         Type.getTypeName(requiredType));
         };

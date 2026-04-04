@@ -65,7 +65,7 @@ public class JavaObjectValue extends AtomicValue {
         if (requiredType == Type.JAVA_OBJECT) {
             return this;
         }
-        throw new XPathException(getExpression(), ErrorCodes.FORG0001,
+        throw new XPathException(getExpression(), ErrorCodes.XPTY0004,
                 "cannot convert Java object to " + Type.getTypeName(requiredType));
     }
 

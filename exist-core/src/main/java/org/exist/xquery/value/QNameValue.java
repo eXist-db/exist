@@ -136,7 +136,7 @@ public class QNameValue extends AtomicValue {
             case Type.UNTYPED_ATOMIC:
                 return new UntypedAtomicValue(getExpression(), getStringValue());
             default:
-                throw new XPathException(getExpression(), ErrorCodes.FORG0001,
+                throw new XPathException(getExpression(), ErrorCodes.XPTY0004,
                         "A QName cannot be converted to " + Type.getTypeName(requiredType));
         }
     }

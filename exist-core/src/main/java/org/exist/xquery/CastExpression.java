@@ -84,13 +84,15 @@ public class CastExpression extends AbstractExpression {
             }
         }
 
-        // Should be handled by the parser
-        if (requiredType == Type.ANY_ATOMIC_TYPE || (requiredType == Type.NOTATION && expression.returnsType() != Type.NOTATION)) {
+        // XPST0080: cannot cast to abstract or special types
+        if (requiredType == Type.ANY_ATOMIC_TYPE || requiredType == Type.ANY_SIMPLE_TYPE
+                || requiredType == Type.ANY_TYPE || requiredType == Type.UNTYPED
+                || (requiredType == Type.NOTATION && expression.returnsType() != Type.NOTATION)) {
             throw new XPathException(this, ErrorCodes.XPST0080, "cannot cast to " + Type.getTypeName(requiredType));
         }
 
-        if (requiredType == Type.ANY_SIMPLE_TYPE || expression.returnsType() == Type.ANY_SIMPLE_TYPE || requiredType == Type.UNTYPED || expression.returnsType() == Type.UNTYPED) {
-            throw new XPathException(this, ErrorCodes.XPST0051, "cannot cast to " + Type.getTypeName(requiredType));
+        if (expression.returnsType() == Type.ANY_SIMPLE_TYPE || expression.returnsType() == Type.UNTYPED) {
+            throw new XPathException(this, ErrorCodes.XPST0051, "cannot cast from " + Type.getTypeName(expression.returnsType()));
         }
 
         final Sequence result;
