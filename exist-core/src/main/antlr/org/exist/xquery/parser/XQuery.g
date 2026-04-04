@@ -269,6 +269,9 @@ prolog throws XPathException
 			( "declare" "function" )
 			=> functionDeclUp { inSetters = false; }
 			|
+			( "declare" "updating" "function" )
+			=> updatingFunctionDeclUp { inSetters = false; }
+			|
 			( "declare" "variable" )
 			=> varDeclUp { inSetters = false; }
 			|
@@ -428,7 +431,7 @@ annotateDecl! throws XPathException
 :
 	decl:"declare"! ann:annotations!
 	(
-	    ("function") => f:functionDecl[#ann] { #annotateDecl = #f; }
+	    ("function") => f:functionDecl[#ann, false] { #annotateDecl = #f; }
 	    |
 	    ("variable") => v:varDecl[#decl, #ann] { #annotateDecl = #v; }
 	)
@@ -496,10 +499,15 @@ bracedUriLiteral returns [String uri]
 
 functionDeclUp! throws XPathException
 :
-	"declare"! f:functionDecl[null] { #functionDeclUp = #f; }
+	"declare"! f:functionDecl[null, false] { #functionDeclUp = #f; }
     ;
 
-functionDecl [XQueryAST ann] throws XPathException
+updatingFunctionDeclUp! throws XPathException
+:
+	"declare"! "updating"! f:functionDecl[null, true] { #updatingFunctionDeclUp = #f; }
+    ;
+
+functionDecl [XQueryAST ann, boolean updating] throws XPathException
 { String name= null; }
 :
 	"function"! name=eqName! lp:LPAREN! ( paramList )?
@@ -509,6 +517,9 @@ functionDecl [XQueryAST ann] throws XPathException
 	  	#functionDecl= #(#[FUNCTION_DECL, name, org.exist.xquery.parser.XQueryFunctionAST.class.getName()], #ann, #functionDecl);
 		#functionDecl.copyLexInfo(#lp);
 		#functionDecl.setDoc(getXQDoc());
+		if (updating) {
+			((XQueryFunctionAST) #functionDecl).setUpdating(true);
+		}
 	}
 	exception catch [RecognitionException e]
 	{
@@ -708,11 +719,20 @@ exprSingle throws XPathException
 	| ( "if" LPAREN ) => ifExpr
 	| ( "switch" LPAREN ) => switchExpr
 	| ( "typeswitch" LPAREN ) => typeswitchExpr
+	// === Legacy update (DEPRECATED - use W3C XQuery Update Facility 3.0 syntax instead) ===
 	| ( "update" ( "replace" | "value" | "insert" | "delete" | "rename" )) => updateExpr
+	// === W3C XQuery Update Facility 3.0 ===
+	| ( "insert" ( "node" | "nodes" ) ) => xqufInsertExpr
+	| ( "delete" ( "node" | "nodes" ) ) => xqufDeleteExpr
+	| ( "replace" ( "node" | "value" ) ) => xqufReplaceExpr
+	| ( "rename" "node" ) => xqufRenameExpr
+	| ( "copy" DOLLAR ) => xqufTransformExpr
 	| orExpr
 	;
 
-// === Xupdate ===
+// === Legacy update (DEPRECATED - use W3C XQuery Update Facility 3.0 syntax instead) ===
+// To remove legacy update support, delete this section and the updateExpr
+// alternative in exprSingle above.
 
 updateExpr throws XPathException
 :
@@ -750,6 +770,57 @@ deleteExpr throws XPathException
 renameExpr throws XPathException
 :
 	"rename" exprSingle "as"! exprSingle
+	;
+
+// === W3C XQuery Update Facility 3.0 ===
+
+xqufInsertExpr throws XPathException
+:
+	"insert"^ ( "node"! | "nodes"! ) exprSingle
+	(
+		( "as" "first" "into" ) => "as"! "first" "into"! exprSingle
+		| ( "as" "last" "into" ) => "as"! "last" "into"! exprSingle
+		| "into" exprSingle
+		| "before" exprSingle
+		| "after" exprSingle
+	)
+	;
+
+xqufDeleteExpr throws XPathException
+:
+	"delete"^ ( "node"! | "nodes"! ) exprSingle
+	;
+
+xqufReplaceExpr throws XPathException
+:
+	"replace"^
+	(
+		( "value" "of" "node" ) => "value" "of"! "node"! exprSingle "with"! exprSingle
+		| "node"! exprSingle "with"! exprSingle
+	)
+	;
+
+xqufRenameExpr throws XPathException
+:
+	"rename"^ "node"! exprSingle "as"! exprSingle
+	;
+
+xqufTransformExpr throws XPathException
+:
+	"copy"^
+	xqufCopyBinding ( COMMA! xqufCopyBinding )*
+	"modify"! exprSingle
+	"return"! exprSingle
+	;
+
+xqufCopyBinding throws XPathException
+{ String varName; }
+:
+	DOLLAR! varName=v:varName! COLON! EQ! exprSingle
+	{
+		#xqufCopyBinding = #(#[VARIABLE_BINDING, varName], #xqufCopyBinding);
+		#xqufCopyBinding.copyLexInfo(#v);
+	}
 	;
 
 // === try/catch ===
@@ -2229,8 +2300,12 @@ reservedKeywords returns [String name]
 	|
 	"base-uri" { name = "base-uri"; }
 	|
+	// Legacy update keyword (DEPRECATED - only "update" is legacy-only;
+	// the others below are shared with W3C XQUF 3.0).
+	// To remove: delete "update" and keep the rest.
 	"update" { name = "update"; }
 	|
+	// Shared by legacy update and W3C XQUF 3.0
 	"replace" { name = "replace"; }
 	|
 	"delete" { name = "delete"; }
@@ -2304,6 +2379,49 @@ reservedKeywords returns [String name]
 	"next" { name = "next"; }
 	|
 	"when" { name = "when"; }
+	|
+	// W3C XQuery Update Facility 3.0 keywords
+	"copy" { name = "copy"; }
+	|
+	"modify" { name = "modify"; }
+	|
+	"nodes" { name = "nodes"; }
+	|
+	"before" { name = "before"; }
+	|
+	"after" { name = "after"; }
+	|
+	"first" { name = "first"; }
+	|
+	"last" { name = "last"; }
+	|
+	"updating" { name = "updating"; }
+	|
+	"ascending" { name = "ascending"; }
+	|
+	"descending" { name = "descending"; }
+	|
+	"greatest" { name = "greatest"; }
+	|
+	"least" { name = "least"; }
+	|
+	"satisfies" { name = "satisfies"; }
+	|
+	"schema-attribute" { name = "schema-attribute"; }
+	|
+	"revalidation" { name = "revalidation"; }
+	|
+	"skip" { name = "skip"; }
+	|
+	"strict" { name = "strict"; }
+	|
+	"lax" { name = "lax"; }
+	|
+	"castable" { name = "castable"; }
+	|
+	"idiv" { name = "idiv"; }
+	|
+	"processing-instruction" { name = "processing-instruction"; }
 	;
 
 
