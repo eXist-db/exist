@@ -192,6 +192,40 @@ imaginaryTokenDefinitions
 	PREVIOUS_ITEM
 	NEXT_ITEM
 	WINDOW_VARS
+	// Full Text (W3C XQuery and XPath Full Text 3.0)
+	FT_CONTAINS
+	FT_SELECTION
+	FT_OR
+	FT_AND
+	FT_MILD_NOT
+	FT_UNARY_NOT
+	FT_PRIMARY_WITH_OPTIONS
+	FT_WORDS
+	FT_ANYALL_OPTION
+	FT_TIMES
+	FT_RANGE
+	FT_ORDER
+	FT_WINDOW
+	FT_DISTANCE
+	FT_SCOPE
+	FT_CONTENT
+	FT_MATCH_OPTION
+	FT_CASE_OPTION
+	FT_DIACRITICS_OPTION
+	FT_STEM_OPTION
+	FT_THESAURUS_OPTION
+	FT_THESAURUS_ID
+	FT_STOP_WORD_OPTION
+	FT_STOP_WORDS
+	FT_STOP_WORDS_EXCEPT
+	FT_LANGUAGE_OPTION
+	FT_WILDCARD_OPTION
+	FT_EXTENSION_OPTION
+	FT_EXTENSION_SELECTION
+	FT_IGNORE_OPTION
+	FT_WEIGHT
+	FT_SCORE_VAR
+	FT_OPTION_DECL
 	;
 
 // === XPointer ===
@@ -261,6 +295,16 @@ prolog throws XPathException
 			{
 				if(!inSetters)
 					throw new XPathException(#s, "Default declarations have to come first");
+			}
+            |
+			( "declare" "ft-option" )
+			=> fto:ftOptionDecl
+			{
+				// XQFT 3.0 §2.6: FTOptionDecl is in the first section of the prolog
+				// (same level as setters and imports), not the second section.
+				if (!inSetters)
+					throw new XPathException(#fto, ErrorCodes.XPST0003,
+						"'declare ft-option' must appear before variable and function declarations");
 			}
             |
 			( "declare" "option" )
@@ -702,7 +746,7 @@ expr throws XPathException
 
 exprSingle throws XPathException
 :
-	( ( "for" | "let" ) ("tumbling" | "sliding" | DOLLAR ) ) => flworExpr
+	( ( "for" | "let" ) ("tumbling" | "sliding" | "score" | DOLLAR ) ) => flworExpr
 	| ( "try" LCURLY ) => tryCatchExpr
 	| ( ( "some" | "every" ) DOLLAR ) => quantifiedExpr
 	| ( "if" LPAREN ) => ifExpr
@@ -838,7 +882,8 @@ forClause throws XPathException
 
 letClause throws XPathException
 :
-	"let"^ letVarBinding ( COMMA! letVarBinding )*
+	"let"^ ( ( "score" ) => ftScoreVarBinding | letVarBinding )
+		( COMMA! ( ( "score" ) => ftScoreVarBinding | letVarBinding ) )*
 	;
 
 windowClause throws XPathException
@@ -851,6 +896,7 @@ inVarBinding throws XPathException
 :
 	DOLLAR! varName=v:varName! ( typeDeclaration )? ( allowingEmpty )?
 	( positionalVar )?
+	( ftScoreVar )?
 	"in"! exprSingle
 	{
 		#inVarBinding= #(#[VARIABLE_BINDING, varName], #inVarBinding);
@@ -909,6 +955,25 @@ letVarBinding throws XPathException
 	{
 		#letVarBinding= #(#[VARIABLE_BINDING, varName], #letVarBinding);
 		#letVarBinding.copyLexInfo(#v);
+	}
+	;
+
+// XQFT 3.0: FTScoreVar in for binding - "score" "$" VarName
+ftScoreVar
+{ String varName; }
+:
+	"score" DOLLAR! varName=varName
+	{ #ftScoreVar= #[FT_SCORE_VAR, varName]; }
+	;
+
+// XQFT 3.0: FTScoreVar as let clause - "score" "$" VarName ":=" ExprSingle
+ftScoreVarBinding throws XPathException
+{ String varName; }
+:
+	"score"! DOLLAR! varName=v:varName! COLON! EQ! exprSingle
+	{
+		#ftScoreVarBinding= #(#[VARIABLE_BINDING, varName], #[FT_SCORE_VAR, "score"], #ftScoreVarBinding);
+		#ftScoreVarBinding.copyLexInfo(#v);
 	}
 	;
 
@@ -1066,15 +1131,33 @@ castExpr throws XPathException
 
 comparisonExpr throws XPathException
 :
-	r1:stringConcatExpr (
-		( BEFORE ) => BEFORE^ stringConcatExpr
+	r1:ftContainsExpr (
+		( BEFORE ) => BEFORE^ ftContainsExpr
 		|
-		( AFTER ) => AFTER^ stringConcatExpr
-		| ( ( "eq"^ | "ne"^ | "lt"^ | "le"^ | "gt"^ | "ge"^ ) stringConcatExpr )
-		| ( GT EQ ) => GT^ EQ^ r2:rangeExpr
+		( AFTER ) => AFTER^ ftContainsExpr
+		| ( ( "eq"^ | "ne"^ | "lt"^ | "le"^ | "gt"^ | "ge"^ ) ftContainsExpr )
+		| ( GT EQ ) => GT^ EQ^ r2:ftContainsExpr
 			{ #comparisonExpr = #(#[GTEQ, ">="], #r1, #r2); }
-		| ( ( EQ^ | NEQ^ | GT^ | LT^ | LTEQ^ ) stringConcatExpr )
-		| ( ( "is"^ | "isnot"^ ) stringConcatExpr )
+		| ( ( EQ^ | NEQ^ | GT^ | LT^ | LTEQ^ ) ftContainsExpr )
+		| ( ( "is"^ | "isnot"^ ) ftContainsExpr )
+	)?
+	;
+
+// XQFT 3.0: FTContainsExpr sits between StringConcatExpr and ComparisonExpr
+ftContainsExpr throws XPathException
+:
+	r1:stringConcatExpr (
+		( "contains" "text" ) => "contains"! "text"! ft:ftSelection ( ( "without" ) => fti:ftIgnoreOption )?
+			{
+				// Break auto-tree sibling links to prevent circular refs in ASTFactory.make()
+				#r1.setNextSibling(null);
+				#ft.setNextSibling(null);
+				if (#fti != null) {
+					#ftContainsExpr = #(#[FT_CONTAINS, "contains text"], #r1, #ft, #fti);
+				} else {
+					#ftContainsExpr = #(#[FT_CONTAINS, "contains text"], #r1, #ft);
+				}
+			}
 	)?
 	;
 
@@ -2062,6 +2145,397 @@ attributeEnclosedExpr throws XPathException
 	}
 	;
 
+// === Full Text (W3C XQuery and XPath Full Text 3.0) ===
+// Spec: https://www.w3.org/TR/xpath-full-text-30/
+
+ftSelection throws XPathException
+:
+	ftOr
+	(
+		( "ordered" | "window" | "distance" | "same" | "different" | "entire" | "at" ( "start" | "end" ) ) =>
+		ftPosFilter
+	)*
+	{ #ftSelection = #(#[FT_SELECTION, "FTSelection"], #ftSelection); }
+	;
+
+ftOr throws XPathException
+{ boolean hasOr = false; }
+:
+	ftAnd ( "ftor"! ftAnd { hasOr = true; } )*
+	{
+		if (hasOr)
+			#ftOr = #(#[FT_OR, "ftor"], #ftOr);
+	}
+	;
+
+ftAnd throws XPathException
+{ boolean hasAnd = false; }
+:
+	ftMildNot ( "ftand"! ftMildNot { hasAnd = true; } )*
+	{
+		if (hasAnd)
+			#ftAnd = #(#[FT_AND, "ftand"], #ftAnd);
+	}
+	;
+
+ftMildNot throws XPathException
+{ boolean hasMildNot = false; }
+:
+	ftUnaryNot ( ( "not" "in" ) => "not"! "in"! ftUnaryNot { hasMildNot = true; } )*
+	{
+		if (hasMildNot)
+			#ftMildNot = #(#[FT_MILD_NOT, "not in"], #ftMildNot);
+	}
+	;
+
+ftUnaryNot throws XPathException
+{ boolean negated = false; }
+:
+	( "ftnot"! { negated = true; } )? ftPrimaryWithOptions
+	{
+		if (negated)
+			#ftUnaryNot = #(#[FT_UNARY_NOT, "ftnot"], #ftUnaryNot);
+	}
+	;
+
+ftPrimaryWithOptions throws XPathException
+{ boolean hasOptions = false; }
+:
+	ftPrimary
+	( ( "using" ) => ftMatchOptions { hasOptions = true; } )?
+	( ( "weight" LCURLY ) => ftWeight { hasOptions = true; } )?
+	{
+		if (hasOptions)
+			#ftPrimaryWithOptions = #(#[FT_PRIMARY_WITH_OPTIONS, "FTPrimaryWithOptions"], #ftPrimaryWithOptions);
+	}
+	;
+
+ftPrimary throws XPathException
+:
+	ftWords
+	|
+	LPAREN! ftSelection RPAREN!
+	|
+	ftExtensionSelection
+	;
+
+// XQFT 3.0 §3.4.8: FTExtensionSelection ::= Pragma+ "{" FTSelection? "}"
+// Pragmas are parsed but ignored (no FT-specific pragma support).
+// If all pragmas are unrecognized and the body is empty, XQST0079 applies.
+ftExtensionSelection throws XPathException
+{ boolean hasBody = false; }
+:
+	( pragma )+ LCURLY! ( ftSelection { hasBody = true; } )? RCURLY!
+	{
+		#ftExtensionSelection = #(#[FT_EXTENSION_SELECTION, "FTExtensionSelection"], #ftExtensionSelection);
+	}
+	;
+
+ftWords throws XPathException
+:
+	ftWordsValue ( ftAnyallOption )? ( ( "occurs" ) => ftTimes )?
+	{ #ftWords = #(#[FT_WORDS, "FTWords"], #ftWords); }
+	;
+
+ftWordsValue throws XPathException
+:
+	STRING_LITERAL
+	|
+	LCURLY! expr RCURLY!
+	;
+
+ftAnyallOption
+:
+	( "any" "word" ) => "any"! "word"!
+	{ #ftAnyallOption = #[FT_ANYALL_OPTION, "any word"]; }
+	|
+	"any"!
+	{ #ftAnyallOption = #[FT_ANYALL_OPTION, "any"]; }
+	|
+	( "all" "words" ) => "all"! "words"!
+	{ #ftAnyallOption = #[FT_ANYALL_OPTION, "all words"]; }
+	|
+	"all"!
+	{ #ftAnyallOption = #[FT_ANYALL_OPTION, "all"]; }
+	|
+	"phrase"!
+	{ #ftAnyallOption = #[FT_ANYALL_OPTION, "phrase"]; }
+	;
+
+ftTimes throws XPathException
+:
+	"occurs"! ftRange "times"!
+	{ #ftTimes = #(#[FT_TIMES, "FTTimes"], #ftTimes); }
+	;
+
+ftRange throws XPathException
+:
+	( "exactly" ) => "exactly"! additiveExpr
+	{ #ftRange = #(#[FT_RANGE, "exactly"], #ftRange); }
+	|
+	( "at" "least" ) => "at"! "least"! additiveExpr
+	{ #ftRange = #(#[FT_RANGE, "at least"], #ftRange); }
+	|
+	( "at" "most" ) => "at"! "most"! additiveExpr
+	{ #ftRange = #(#[FT_RANGE, "at most"], #ftRange); }
+	|
+	"from"! additiveExpr "to"! additiveExpr
+	{ #ftRange = #(#[FT_RANGE, "from"], #ftRange); }
+	;
+
+ftPosFilter throws XPathException
+:
+	( "ordered" ) => ftOrder
+	|
+	( "window" ) => ftWindow
+	|
+	( "distance" ) => ftDistance
+	|
+	( "same" ) => ftScope
+	|
+	( "different" ) => ftScope
+	|
+	( "at" "start" ) => ftContent
+	|
+	( "at" "end" ) => ftContent
+	|
+	( "entire" ) => ftContent
+	;
+
+ftOrder
+:
+	"ordered"!
+	{ #ftOrder = #[FT_ORDER, "ordered"]; }
+	;
+
+ftWindow throws XPathException
+:
+	"window"! additiveExpr ftUnit
+	{ #ftWindow = #(#[FT_WINDOW, "window"], #ftWindow); }
+	;
+
+ftDistance throws XPathException
+:
+	"distance"! ftRange ftUnit
+	{ #ftDistance = #(#[FT_DISTANCE, "distance"], #ftDistance); }
+	;
+
+ftScope
+:
+	( "same" "sentence" ) => "same"! "sentence"!
+	{ #ftScope = #[FT_SCOPE, "same sentence"]; }
+	|
+	( "same" "paragraph" ) => "same"! "paragraph"!
+	{ #ftScope = #[FT_SCOPE, "same paragraph"]; }
+	|
+	( "different" "sentence" ) => "different"! "sentence"!
+	{ #ftScope = #[FT_SCOPE, "different sentence"]; }
+	|
+	"different"! "paragraph"!
+	{ #ftScope = #[FT_SCOPE, "different paragraph"]; }
+	;
+
+ftContent
+:
+	( "at" "start" ) => "at"! "start"!
+	{ #ftContent = #[FT_CONTENT, "at start"]; }
+	|
+	( "at" "end" ) => "at"! "end"!
+	{ #ftContent = #[FT_CONTENT, "at end"]; }
+	|
+	"entire"! "content"!
+	{ #ftContent = #[FT_CONTENT, "entire content"]; }
+	;
+
+ftUnit
+:
+	"words" | "sentences" | "paragraphs"
+	;
+
+// === Full Text Option Declaration (prolog) ===
+// XQFT 3.0 §5.2: declare ft-option using <match-options>
+
+ftOptionDecl throws XPathException
+:
+	"declare"! "ft-option"! ftMatchOptions
+	{ #ftOptionDecl = #(#[FT_OPTION_DECL, "ft-option"], #ftOptionDecl); }
+	;
+
+// === Full Text Match Options ===
+
+ftMatchOptions throws XPathException
+:
+	( "using"! ftMatchOption )+
+	;
+
+ftMatchOption throws XPathException
+:
+	( "case" ) => ftCaseOption
+	|
+	( "lowercase" ) => ftCaseOption
+	|
+	( "uppercase" ) => ftCaseOption
+	|
+	( "diacritics" ) => ftDiacriticsOption
+	|
+	( "stemming" ) => ftStemOption
+	|
+	( "no" "stemming" ) => ftStemOption
+	|
+	( "thesaurus" ) => ftThesaurusOption
+	|
+	( "no" "thesaurus" ) => ftThesaurusOption
+	|
+	( "stop" ) => ftStopWordOption
+	|
+	( "no" "stop" ) => ftStopWordOption
+	|
+	( "language" ) => ftLanguageOption
+	|
+	( "wildcards" ) => ftWildCardOption
+	|
+	( "no" "wildcards" ) => ftWildCardOption
+	|
+	ftExtensionOption
+	;
+
+ftCaseOption
+:
+	( "case" "insensitive" ) => "case"! "insensitive"!
+	{ #ftCaseOption = #[FT_CASE_OPTION, "insensitive"]; }
+	|
+	( "case" "sensitive" ) => "case"! "sensitive"!
+	{ #ftCaseOption = #[FT_CASE_OPTION, "sensitive"]; }
+	|
+	"lowercase"!
+	{ #ftCaseOption = #[FT_CASE_OPTION, "lowercase"]; }
+	|
+	"uppercase"!
+	{ #ftCaseOption = #[FT_CASE_OPTION, "uppercase"]; }
+	;
+
+ftDiacriticsOption
+:
+	( "diacritics" "insensitive" ) => "diacritics"! "insensitive"!
+	{ #ftDiacriticsOption = #[FT_DIACRITICS_OPTION, "insensitive"]; }
+	|
+	"diacritics"! "sensitive"!
+	{ #ftDiacriticsOption = #[FT_DIACRITICS_OPTION, "sensitive"]; }
+	;
+
+ftStemOption
+:
+	"stemming"!
+	{ #ftStemOption = #[FT_STEM_OPTION, "stemming"]; }
+	|
+	"no"! "stemming"!
+	{ #ftStemOption = #[FT_STEM_OPTION, "no stemming"]; }
+	;
+
+ftThesaurusOption throws XPathException
+:
+	( "no" "thesaurus" ) => "no"! "thesaurus"!
+	{ #ftThesaurusOption = #[FT_THESAURUS_OPTION, "no thesaurus"]; }
+	|
+	( "thesaurus" LPAREN ) => "thesaurus"! LPAREN! ftThesaurusIDOrDefault ( COMMA! ftThesaurusID )* RPAREN!
+	{ #ftThesaurusOption = #(#[FT_THESAURUS_OPTION, "thesaurus list"], #ftThesaurusOption); }
+	|
+	"thesaurus"! ftThesaurusIDOrDefault
+	{ #ftThesaurusOption = #(#[FT_THESAURUS_OPTION, "thesaurus"], #ftThesaurusOption); }
+	;
+
+ftThesaurusIDOrDefault throws XPathException
+:
+	( "default" ) => "default"!
+	{ #ftThesaurusIDOrDefault = #[FT_THESAURUS_ID, "default"]; }
+	|
+	ftThesaurusID
+	;
+
+ftThesaurusID throws XPathException
+:
+	"at"! STRING_LITERAL ( "relationship"! STRING_LITERAL )? ( ftLiteralRange "levels"! )?
+	{ #ftThesaurusID = #(#[FT_THESAURUS_ID, "at"], #ftThesaurusID); }
+	;
+
+ftLiteralRange
+:
+	( "exactly" ) => "exactly"! INTEGER_LITERAL
+	{ #ftLiteralRange = #(#[FT_RANGE, "exactly"], #ftLiteralRange); }
+	|
+	( "at" "least" ) => "at"! "least"! INTEGER_LITERAL
+	{ #ftLiteralRange = #(#[FT_RANGE, "at least"], #ftLiteralRange); }
+	|
+	( "at" "most" ) => "at"! "most"! INTEGER_LITERAL
+	{ #ftLiteralRange = #(#[FT_RANGE, "at most"], #ftLiteralRange); }
+	|
+	"from"! INTEGER_LITERAL "to"! INTEGER_LITERAL
+	{ #ftLiteralRange = #(#[FT_RANGE, "from"], #ftLiteralRange); }
+	;
+
+ftStopWordOption throws XPathException
+:
+	( "no" "stop" ) => "no"! "stop"! "words"!
+	{ #ftStopWordOption = #[FT_STOP_WORD_OPTION, "no stop words"]; }
+	|
+	( "stop" "words" "default" ) => "stop"! "words"! "default"! ( ftStopWordsInclExcl )*
+	{ #ftStopWordOption = #(#[FT_STOP_WORD_OPTION, "stop words default"], #ftStopWordOption); }
+	|
+	"stop"! "words"! ftStopWords ( ftStopWordsInclExcl )*
+	{ #ftStopWordOption = #(#[FT_STOP_WORD_OPTION, "stop words"], #ftStopWordOption); }
+	;
+
+ftStopWords
+:
+	( "at" ) => "at"! STRING_LITERAL
+	{ #ftStopWords = #(#[FT_STOP_WORDS, "at"], #ftStopWords); }
+	|
+	LPAREN! STRING_LITERAL ( COMMA! STRING_LITERAL )* RPAREN!
+	{ #ftStopWords = #(#[FT_STOP_WORDS, "list"], #ftStopWords); }
+	;
+
+ftStopWordsInclExcl
+:
+	"union"! ftStopWords
+	|
+	"except"! ftStopWords
+	{ #ftStopWordsInclExcl = #(#[FT_STOP_WORDS_EXCEPT, "except"], #ftStopWordsInclExcl); }
+	;
+
+ftLanguageOption
+:
+	"language"! STRING_LITERAL
+	{ #ftLanguageOption = #(#[FT_LANGUAGE_OPTION, "language"], #ftLanguageOption); }
+	;
+
+ftWildCardOption
+:
+	"wildcards"!
+	{ #ftWildCardOption = #[FT_WILDCARD_OPTION, "wildcards"]; }
+	|
+	"no"! "wildcards"!
+	{ #ftWildCardOption = #[FT_WILDCARD_OPTION, "no wildcards"]; }
+	;
+
+ftExtensionOption throws XPathException
+{ String name; }
+:
+	"option"! name=eqName STRING_LITERAL
+	{ #ftExtensionOption = #(#[FT_EXTENSION_OPTION, name], #ftExtensionOption); }
+	;
+
+ftWeight throws XPathException
+:
+	"weight"! LCURLY! expr RCURLY!
+	{ #ftWeight = #(#[FT_WEIGHT, "weight"], #ftWeight); }
+	;
+
+ftIgnoreOption throws XPathException
+:
+	"without"! "content"! unionExpr
+	{ #ftIgnoreOption = #(#[FT_IGNORE_OPTION, "without content"], #ftIgnoreOption); }
+	;
+
 /* All of the literals used in this grammar can also be
  * part of a valid QName. We thus have to test for each
  * of them below.
@@ -2304,6 +2778,91 @@ reservedKeywords returns [String name]
 	"next" { name = "next"; }
 	|
 	"when" { name = "when"; }
+	|
+	// Full Text keywords
+	"contains" { name = "contains"; }
+	|
+	"score" { name = "score"; }
+	|
+	"content" { name = "content"; }
+	|
+	"ftor" { name = "ftor"; }
+	|
+	"ftand" { name = "ftand"; }
+	|
+	"ftnot" { name = "ftnot"; }
+	|
+	"stemming" { name = "stemming"; }
+	|
+	"thesaurus" { name = "thesaurus"; }
+	|
+	"diacritics" { name = "diacritics"; }
+	|
+	"sensitive" { name = "sensitive"; }
+	|
+	"insensitive" { name = "insensitive"; }
+	|
+	"language" { name = "language"; }
+	|
+	"wildcards" { name = "wildcards"; }
+	|
+	"lowercase" { name = "lowercase"; }
+	|
+	"uppercase" { name = "uppercase"; }
+	|
+	"distance" { name = "distance"; }
+	|
+	"entire" { name = "entire"; }
+	|
+	"words" { name = "words"; }
+	|
+	"sentences" { name = "sentences"; }
+	|
+	"paragraphs" { name = "paragraphs"; }
+	|
+	"sentence" { name = "sentence"; }
+	|
+	"paragraph" { name = "paragraph"; }
+	|
+	"occurs" { name = "occurs"; }
+	|
+	"times" { name = "times"; }
+	|
+	"weight" { name = "weight"; }
+	|
+	"without" { name = "without"; }
+	|
+	"same" { name = "same"; }
+	|
+	"different" { name = "different"; }
+	|
+	"relationship" { name = "relationship"; }
+	|
+	"levels" { name = "levels"; }
+	|
+	"stop" { name = "stop"; }
+	|
+	"least" { name = "least"; }
+	|
+	"most" { name = "most"; }
+	|
+	"exactly" { name = "exactly"; }
+	|
+	"no" { name = "no"; }
+	|
+	"not" { name = "not"; }
+	|
+	"all" { name = "all"; }
+	|
+	"any" { name = "any"; }
+	|
+	"word" { name = "word"; }
+	|
+	"phrase" { name = "phrase"; }
+	|
+	"using" { name = "using"; }
+	|
+	"from" { name = "from"; }
 	;
 
 
