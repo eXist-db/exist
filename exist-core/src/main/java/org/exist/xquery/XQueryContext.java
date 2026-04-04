@@ -3383,9 +3383,16 @@ public class XQueryContext implements BinaryValueManager, Context {
     @Override
     public void checkOptions(final Properties properties) throws XPathException {
         checkLegacyOptions(properties);
+
+        // Phase 1: Process parameter-document first (provides base settings)
+        processParameterDocument(dynamicOptions, properties);
+        processParameterDocument(staticOptions, properties);
+
+        // Phase 2: Process inline options (override parameter-document settings)
         if (dynamicOptions != null) {
             for (final Option option : dynamicOptions) {
-                if (Namespaces.XSLT_XQUERY_SERIALIZATION_NS.equals(option.getQName().getNamespaceURI())) {
+                if (Namespaces.XSLT_XQUERY_SERIALIZATION_NS.equals(option.getQName().getNamespaceURI())
+                        && !"parameter-document".equals(option.getQName().getLocalPart())) {
                     SerializerUtils.setProperty(option.getQName().getLocalPart(), option.getContents(), properties,
                             inScopeNamespaces::get);
                 }
@@ -3395,9 +3402,59 @@ public class XQueryContext implements BinaryValueManager, Context {
         if (staticOptions != null) {
             for (final Option option : staticOptions) {
                 if (Namespaces.XSLT_XQUERY_SERIALIZATION_NS.equals(option.getQName().getNamespaceURI())
+                        && !"parameter-document".equals(option.getQName().getLocalPart())
                         && !properties.containsKey(option.getQName().getLocalPart())) {
                     SerializerUtils.setProperty(option.getQName().getLocalPart(), option.getContents(), properties,
                             inScopeNamespaces::get);
+                }
+            }
+        }
+    }
+
+    /**
+     * Process the parameter-document serialization option if present.
+     * Loads the referenced XML file and extracts serialization parameters.
+     */
+    private void processParameterDocument(final java.util.List<Option> options, final Properties properties) throws XPathException {
+        if (options == null) return;
+        for (final Option option : options) {
+            if (Namespaces.XSLT_XQUERY_SERIALIZATION_NS.equals(option.getQName().getNamespaceURI())
+                    && "parameter-document".equals(option.getQName().getLocalPart())) {
+                final String docPath = option.getContents().trim();
+                if (docPath.isEmpty()) continue;
+                try {
+                    // Resolve relative to static base URI
+                    java.net.URI resolvedUri;
+                    final AnyURIValue baseURI = getBaseURI();
+                    if (baseURI != null && !baseURI.getStringValue().isEmpty()) {
+                        resolvedUri = new java.net.URI(baseURI.getStringValue()).resolve(docPath);
+                    } else {
+                        resolvedUri = new java.net.URI(docPath);
+                    }
+
+                    // Load and parse the XML document
+                    final java.io.InputStream is;
+                    if ("file".equals(resolvedUri.getScheme())) {
+                        is = new java.io.FileInputStream(new java.io.File(resolvedUri));
+                    } else if (resolvedUri.getScheme() == null) {
+                        // Bare path — try as file
+                        is = new java.io.FileInputStream(resolvedUri.getPath());
+                    } else {
+                        is = resolvedUri.toURL().openStream();
+                    }
+
+                    try (is) {
+                        final org.exist.dom.memtree.DocumentImpl doc = org.exist.xquery.util.DocUtils.parse(this, is);
+                        if (doc != null) {
+                            SerializerUtils.getSerializationOptions(
+                                    getRootExpression(), doc, properties);
+                        }
+                    }
+                } catch (final Exception e) {
+                    // Parameter document loading failure is not fatal — log and continue
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("Failed to load parameter-document '{}': {}", docPath, e.getMessage());
+                    }
                 }
             }
         }
