@@ -322,7 +322,7 @@ public class XMLWriter implements SerializerWriter {
     }
 
     public void namespace(final String prefix, final String nsURI) throws TransformerException {
-        if((nsURI == null || nsURI.isEmpty()) && (prefix == null || prefix.isEmpty())) {
+        if((nsURI == null) && (prefix == null || prefix.isEmpty())) {
             return;
         }
 
@@ -333,6 +333,10 @@ public class XMLWriter implements SerializerWriter {
 
         try {
             if(!tagIsOpen) {
+                // Empty default namespace outside a start tag is harmless — just skip it
+                if ((nsURI == null || nsURI.isEmpty()) && (prefix == null || prefix.isEmpty())) {
+                    return;
+                }
                 throw new TransformerException("Found a namespace declaration outside an element");
             }
 
