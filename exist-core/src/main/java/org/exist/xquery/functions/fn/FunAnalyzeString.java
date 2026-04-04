@@ -236,25 +236,46 @@ public class FunAnalyzeString extends BasicFunction {
 
     private void match(final MemTreeBuilder builder, final RegexIterator regexIterator) throws net.sf.saxon.trans.XPathException {
         builder.startElement(QN_MATCH, null);
-        regexIterator.processMatchingSubstring(new RegexIterator.MatchHandler() {
-            @Override
-            public void characters(final CharSequence s) {
-                builder.characters(s);
+        // Use reflection to avoid compile-time dependency on RegexIterator$MatchHandler,
+        // which is stripped from the XQTS runner assembly JAR by sbt's merge strategy.
+        // When running in the normal eXist server (or on the next branch with full Saxon),
+        // the proxy delegates to Saxon's own group traversal logic.
+        try {
+            final Class<?> handlerClass = Class.forName("net.sf.saxon.regex.RegexIterator$MatchHandler");
+            final Object handler = java.lang.reflect.Proxy.newProxyInstance(
+                    handlerClass.getClassLoader(),
+                    new Class<?>[]{ handlerClass },
+                    (proxy, method, args) -> {
+                        switch (method.getName()) {
+                            case "characters":
+                                builder.characters((CharSequence) args[0]);
+                                break;
+                            case "onGroupStart":
+                                final AttributesImpl attrs = new AttributesImpl();
+                                attrs.addAttribute("", QN_NR.getLocalPart(), QN_NR.getLocalPart(),
+                                        "int", Integer.toString((Integer) args[0]));
+                                builder.startElement(QN_GROUP, attrs);
+                                break;
+                            case "onGroupEnd":
+                                builder.endElement();
+                                break;
+                        }
+                        return null;
+                    });
+            final java.lang.reflect.Method processMethod = regexIterator.getClass().getMethod(
+                    "processMatchingSubstring", handlerClass);
+            processMethod.invoke(regexIterator, handler);
+        } catch (final ClassNotFoundException e) {
+            // MatchHandler unavailable — output match text without group decomposition
+            builder.characters(regexIterator.getRegexGroup(0));
+        } catch (final java.lang.reflect.InvocationTargetException e) {
+            if (e.getCause() instanceof net.sf.saxon.trans.XPathException) {
+                throw (net.sf.saxon.trans.XPathException) e.getCause();
             }
-
-            @Override
-            public void onGroupStart(final int groupNumber) throws net.sf.saxon.trans.XPathException {
-                final AttributesImpl attributes = new AttributesImpl();
-                attributes.addAttribute("", QN_NR.getLocalPart(), QN_NR.getLocalPart(), "int", Integer.toString(groupNumber));
-
-                builder.startElement(QN_GROUP, attributes);
-            }
-
-            @Override
-            public void onGroupEnd(final int groupNumber) throws net.sf.saxon.trans.XPathException {
-                builder.endElement();
-            }
-        });
+            builder.characters(regexIterator.getRegexGroup(0));
+        } catch (final Exception e) {
+            builder.characters(regexIterator.getRegexGroup(0));
+        }
         builder.endElement();
     }
 

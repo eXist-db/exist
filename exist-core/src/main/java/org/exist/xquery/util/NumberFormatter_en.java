@@ -36,7 +36,8 @@ public class NumberFormatter_en extends NumberFormatter {
 
     @Override
     public String getOrdinalSuffix(long number) {
-        if (number > 10 && number < 20)
+        final long lastTwo = number % 100;
+        if (lastTwo > 10 && lastTwo < 20)
             {return "th";}
         final long mod = number % 10;
         if (mod == 1)

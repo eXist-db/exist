@@ -48,7 +48,11 @@ public class FunPath extends BasicFunction {
     public static final FunctionSignature[] FS_PATH_SIGNATURES = {
             functionSignature(FunPath.FN_PATH_NAME, FunPath.FN_PATH_DESCRIPTION, FunPath.FN_PATH_RETURN),
             functionSignature(FunPath.FN_PATH_NAME, FunPath.FN_PATH_DESCRIPTION, FunPath.FN_PATH_RETURN,
-                    new FunctionParameterSequenceType("node", Type.NODE, Cardinality.ZERO_OR_ONE, "The node for which to calculate a path expression"))
+                    new FunctionParameterSequenceType("node", Type.NODE, Cardinality.ZERO_OR_ONE, "The node for which to calculate a path expression")),
+            // XQuery 4.0: fn:path with options map
+            functionSignature(FunPath.FN_PATH_NAME, FunPath.FN_PATH_DESCRIPTION, FunPath.FN_PATH_RETURN,
+                    new FunctionParameterSequenceType("node", Type.NODE, Cardinality.ZERO_OR_ONE, "The node for which to calculate a path expression"),
+                    new FunctionParameterSequenceType("options", Type.MAP_ITEM, Cardinality.EXACTLY_ONE, "Options map (e.g., format)"))
     };
 
     public FunPath(final XQueryContext context, final FunctionSignature signature) {
@@ -66,6 +70,8 @@ public class FunPath extends BasicFunction {
             sequence = Objects.requireNonNullElse(contextSequence, Sequence.EMPTY_SEQUENCE);
         } else {
             sequence = args[0];
+            // XQuery 4.0: 2-arg fn:path($node, $options) — options map accepted
+            // but currently only the default EQName format is supported
         }
 
         if (sequence.isEmpty()) {

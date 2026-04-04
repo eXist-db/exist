@@ -68,7 +68,11 @@ public class FunRound extends FunRoundBase {
 					optParam("arg", Type.NUMERIC, "The input number")),
 			functionSignature(FN_NAME, FunRound.description, FunRound.returnType,
 					optParam("arg", Type.NUMERIC, "The input number"),
-					optParam("precision", Type.INTEGER, "The input number"))
+					optParam("precision", Type.INTEGER, "The precision")),
+			functionSignature(FN_NAME, FunRound.description, FunRound.returnType,
+					optParam("arg", Type.NUMERIC, "The input number"),
+					optParam("precision", Type.INTEGER, "The precision"),
+					optParam("mode", Type.STRING, "The rounding mode"))
 	};
 
 	public FunRound(final XQueryContext context, final FunctionSignature signature) {

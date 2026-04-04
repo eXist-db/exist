@@ -245,7 +245,14 @@ public class FunctionFactory {
         		ErrorCodes.XPST0017, "Wrong number of arguments for constructor function");
         }
         final Expression arg = params.getFirst();
-        final int code = Type.getType(qname);
+        final int code;
+        try {
+            code = Type.getType(qname);
+        } catch (final XPathException e) {
+            // Unknown type name in xs: namespace → XPST0017 (no such function)
+            throw new XPathException(ast.getLine(), ast.getColumn(),
+                ErrorCodes.XPST0017, "Unknown constructor function: " + qname.getStringValue());
+        }
         final CastExpression castExpr = new CastExpression(context, arg, code, Cardinality.ZERO_OR_ONE);
         castExpr.setLocation(ast.getLine(), ast.getColumn());
         return castExpr;

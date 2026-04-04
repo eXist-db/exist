@@ -56,7 +56,7 @@ public class AttributeConstructor extends NodeConstructor {
 	
 	public void addEnclosedExpr(Expression expr) throws XPathException {
 		if(isNamespaceDecl)
-			{throw new XPathException(this, "enclosed expressions are not allowed in namespace " +
+			{throw new XPathException(this, ErrorCodes.XQST0022, "enclosed expressions are not allowed in namespace " +
 				"declaration attributes");}
 		contents.add(expr);
 	}
