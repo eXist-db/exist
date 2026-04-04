@@ -54,6 +54,7 @@ public class LetExpr extends BindingExpression {
         try {
             contextInfo.setParent(this);
             final AnalyzeContextInfo varContextInfo = new AnalyzeContextInfo(contextInfo);
+            varContextInfo.addFlag(NON_UPDATING_CONTEXT);
             inputSequence.analyze(varContextInfo);
             //Declare the iteration variable
             final LocalVariable inVar = new LocalVariable(varName);
