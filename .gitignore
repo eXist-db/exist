@@ -35,3 +35,5 @@ reindex-dbg.log
 
 # Temporary files occasionally created by Ant replaceregexp
 /tmp*tmp
+
+.xqts-runner/
