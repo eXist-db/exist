@@ -847,7 +847,7 @@ function ser:serialize-xml-134() {
 };
 
 declare
-    %test:assertEquals('<!DOCTYPE html> <option selected></option>')
+    %test:assertEquals('<option selected></option>')
 function ser:serialize-html-5-boolean-attribute-names() {
     <option selected="selected"/>
     => serialize($ser:opt-map-html5)
@@ -855,7 +855,7 @@ function ser:serialize-html-5-boolean-attribute-names() {
 };
 
 declare
-    %test:assertEquals('<!DOCTYPE html> <br>')
+    %test:assertEquals('<br>')
 function ser:serialize-html-5-empty-tags() {
     <br/>
     => serialize($ser:opt-map-html5)
@@ -876,7 +876,7 @@ function ser:serialize-html-5-raw-text-elements-body() {
 };
 
 declare
-    %test:assertEquals('<!DOCTYPE html> <html><head><style>ul > li { color:red; }</style><script>if (a < b) foo()</script></head><body></body></html>')
+    %test:assertEquals('<!DOCTYPE html> <html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><style>ul > li { color:red; }</style><script>if (a < b) foo()</script></head><body></body></html>')
 function ser:serialize-html-5-raw-text-elements-head() {
     <html>
         <head>
@@ -890,7 +890,7 @@ function ser:serialize-html-5-raw-text-elements-head() {
 };
 
 declare
-    %test:assertEquals('<!DOCTYPE html> <html><head><title>XML &amp;gt; JSON</title></head><body><textarea>if (a &amp;lt; b) foo()</textarea></body></html>')
+    %test:assertEquals('<!DOCTYPE html> <html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>XML &amp;gt; JSON</title></head><body><textarea>if (a &amp;lt; b) foo()</textarea></body></html>')
 function ser:serialize-html-5-needs-escape-elements() {
     <html>
         <head>
@@ -951,4 +951,60 @@ declare
     %test:assertEquals("1|2")
 function ser:item-separator-applies-to-array-members() {
     serialize([1,2], map { "item-separator": "|" })
+};
+
+declare
+    %test:assertTrue
+function ser:cdata-section-elements-no-namespace() {
+    (: Simple unprefixed CDATA test :)
+    let $result := serialize(
+        <root><b>bold</b><i>italic</i></root>,
+        map {
+            "method": "xml",
+            "cdata-section-elements": QName("", "b"),
+            "omit-xml-declaration": true()
+        }
+    )
+    return contains($result, "CDATA[bold]") and not(contains($result, "CDATA[italic]"))
+};
+
+declare
+    %test:assertTrue
+function ser:cdata-section-elements-with-namespace() {
+    (: Namespaced CDATA test :)
+    let $result := serialize(
+        <root><p:b xmlns:p="http://www.example.org/ns/p">BOLD</p:b><p:i xmlns:p="http://www.example.org/ns/p">ITALIC</p:i></root>,
+        map {
+            "method": "xml",
+            "cdata-section-elements": QName("http://www.example.org/ns/p", "b"),
+            "omit-xml-declaration": true()
+        }
+    )
+    return contains($result, "CDATA[BOLD]") and not(contains($result, "CDATA[ITALIC]"))
+};
+
+declare
+    %test:assertEquals('1|2|3')
+function ser:item-separator-with-atomics() {
+    (: Atomic items joined by item-separator :)
+    serialize(
+        (1, 2, 3),
+        map { "method": "xml", "item-separator": "|", "omit-xml-declaration": true() }
+    )
+};
+
+declare
+    %test:assertTrue
+function ser:cdata-section-elements-combined() {
+    (: Combined: both unprefixed and namespaced elements get CDATA :)
+    let $result := serialize(
+        <chapter><b>bold</b><i>italic</i><p:b xmlns:p="http://www.example.org/ns/p">BOLD</p:b><p:i xmlns:p="http://www.example.org/ns/p">ITALIC</p:i></chapter>,
+        map {
+            "method": "xml",
+            "cdata-section-elements": (QName("", "b"), QName("http://www.example.org/ns/p", "b")),
+            "omit-xml-declaration": true()
+        }
+    )
+    return contains($result, "CDATA[bold]") and contains($result, "CDATA[BOLD]")
+           and not(contains($result, "CDATA[italic]")) and not(contains($result, "CDATA[ITALIC]"))
 };

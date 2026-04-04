@@ -247,10 +247,43 @@ public class HTML5Writer extends XHTML5Writer {
     }
 
     @Override
+    public void processingInstruction(String target, String data) throws TransformerException {
+        try {
+            closeStartTag(false);
+            final Writer writer = getWriter();
+            writer.write("<?");
+            writer.write(target);
+            if (data != null && !data.isEmpty()) {
+                writer.write(' ');
+                writer.write(data);
+            }
+            writer.write('>');
+        } catch (IOException e) {
+            throw new TransformerException(e.getMessage(), e);
+        }
+    }
+
+    @Override
     protected boolean needsEscape(char ch) {
         if (RAW_TEXT_ELEMENTS.contains(currentTag)) {
             return false;
         }
         return super.needsEscape(ch);
     }
+
+    @Override
+    protected boolean needsEscape(final char ch, final boolean inAttribute) {
+        // In raw text elements (script, style), suppress escaping for TEXT content only.
+        // Attribute values must always be escaped, even on raw text elements.
+        if (!inAttribute && RAW_TEXT_ELEMENTS.contains(currentTag)) {
+            return false;
+        }
+        // For attributes, always return true (bypass the 1-arg override
+        // which returns false for all script/style content)
+        if (inAttribute) {
+            return true;
+        }
+        return super.needsEscape(ch, inAttribute);
+    }
+
 }
