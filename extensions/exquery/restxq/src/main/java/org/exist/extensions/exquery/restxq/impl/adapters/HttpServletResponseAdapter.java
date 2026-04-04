@@ -51,7 +51,9 @@ public class HttpServletResponseAdapter implements HttpResponse {
 
     @Override
     public void setStatus(final HttpStatus status, final String reason) {
-        response.setStatus(status.getStatus(), reason);
+        // Cannot use sendError(int, String) here: it commits the response and triggers
+        // error page handling, which would prevent RESTXQ from writing its response body.
+        response.setStatus(status.getStatus());
     }
 
     @Override

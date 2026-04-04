@@ -25,7 +25,6 @@ import org.apache.commons.io.FileUtils;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.DefaultHandler;
-import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.xmldb.concurrent.DBUtils;
@@ -92,12 +91,11 @@ public class DbStore2Test {
 
         jettyServer = new Server(jettyPort);
         final ResourceHandler resource_handler = new ResourceHandler();
-        resource_handler.setDirectoriesListed(true);
+        resource_handler.setDirAllowed(true);
         final String dir = jettyRootDir.toAbsolutePath().toFile().getCanonicalPath();
-        resource_handler.setResourceBase(dir);
+        resource_handler.setBaseResourceAsString(dir);
 
-        final HandlerList handlers = new HandlerList();
-        handlers.setHandlers(new Handler[]{resource_handler, new DefaultHandler()});
+        final Handler.Sequence handlers = new Handler.Sequence(resource_handler, new DefaultHandler());
 
         jettyServer.setHandler(handlers);
         jettyServer.start();
