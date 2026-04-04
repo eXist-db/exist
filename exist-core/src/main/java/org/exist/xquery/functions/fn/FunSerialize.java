@@ -35,6 +35,8 @@ import org.exist.xquery.value.*;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
+import javax.xml.transform.OutputKeys;
+
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Properties;
@@ -80,6 +82,9 @@ public class FunSerialize extends BasicFunction {
             outputProperties = new Properties();
         }
 
+        // SEPM0009: validate parameter consistency before serializing
+        validateSerializationParams(outputProperties);
+
         try(final StringWriter writer = new StringWriter()) {
             final XQuerySerializer xqSerializer = new XQuerySerializer(context.getBroker(), outputProperties, writer);
 
@@ -95,7 +100,12 @@ public class FunSerialize extends BasicFunction {
 
             return new StringValue(this, writer.toString());
         } catch (final IOException | SAXException e) {
-            throw new XPathException(this, FnModule.SENR0001, e.getMessage());
+            // Preserve specific serialization error codes from the message
+            final String msg = e.getMessage();
+            if (msg != null && msg.startsWith("err:SERE0024")) {
+                throw new XPathException(this, new ErrorCodes.ErrorCode("SERE0024", msg), msg);
+            }
+            throw new XPathException(this, FnModule.SENR0001, msg);
         }
     }
 
@@ -127,6 +137,60 @@ public class FunSerialize extends BasicFunction {
                     && "serialization-parameters".equals(element.getLocalName());
         } else {
             return false;
+        }
+    }
+
+    /**
+     * Check if a serialization boolean parameter value is true.
+     * W3C Serialization 3.1 accepts "yes", "true", "1" (with optional whitespace) as true.
+     */
+    private static boolean isBooleanTrue(final String value) {
+        if (value == null) {
+            return false;
+        }
+        final String trimmed = value.trim();
+        return "yes".equals(trimmed) || "true".equals(trimmed) || "1".equals(trimmed);
+    }
+
+    /**
+     * Validate serialization parameter consistency per W3C Serialization 3.1.
+     * Throws SEPM0009 if omit-xml-declaration=yes conflicts with standalone or
+     * version+doctype-system.
+     */
+    private void validateSerializationParams(final Properties props) throws XPathException {
+        final String omitXmlDecl = props.getProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+        if (isBooleanTrue(omitXmlDecl)) {
+            // SEPM0009: standalone must be omit (absent) when omit-xml-declaration=yes
+            final String standalone = props.getProperty(OutputKeys.STANDALONE);
+            if (standalone != null) {
+                throw new XPathException(this, ErrorCodes.SEPM0009,
+                        "omit-xml-declaration is yes but standalone is set to '" + standalone + "'");
+            }
+            // SEPM0009: version != 1.0 with doctype-system when omit-xml-declaration=yes
+            final String version = props.getProperty(OutputKeys.VERSION);
+            final String doctypeSystem = props.getProperty(OutputKeys.DOCTYPE_SYSTEM);
+            if (version != null && !"1.0".equals(version) && doctypeSystem != null) {
+                throw new XPathException(this, ErrorCodes.SEPM0009,
+                        "omit-xml-declaration is yes with version '" + version + "' and doctype-system set");
+            }
+        }
+
+        // Canonical serialization: force required parameters
+        final String canonical = props.getProperty(EXistOutputKeys.CANONICAL);
+        if (isBooleanTrue(canonical)) {
+            final String method = props.getProperty(OutputKeys.METHOD, "xml");
+            if ("json".equals(method)) {
+                // Canonical JSON (RFC 8785): handled in JSONSerializer
+                // Force no indent, no solidus escaping
+                props.setProperty(OutputKeys.INDENT, "no");
+                props.setProperty(EXistOutputKeys.ESCAPE_SOLIDUS, "no");
+            } else {
+                // Canonical XML/XHTML (C14N)
+                props.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+                props.setProperty(OutputKeys.ENCODING, "UTF-8");
+                props.remove(OutputKeys.CDATA_SECTION_ELEMENTS);
+                props.setProperty("include-content-type", "no");
+            }
         }
     }
 
@@ -173,6 +237,11 @@ public class FunSerialize extends BasicFunction {
                         "It is an error if an item in the sequence to serialize is an attribute node or a namespace node.");
                 }
                 step2.add(next);
+            } else if (itemType == Type.MAP_ITEM || itemType == Type.FUNCTION) {
+                // Maps and function items cannot be serialized with XML/HTML/XHTML/text methods (SENR0001)
+                throw new XPathException(callingExpr, FnModule.SENR0001,
+                    "It is an error if an item in the sequence to serialize is a " +
+                    Type.getTypeName(itemType) + ".");
             } else {
                 // atomic value
                 // "For each item in S1, if the item is atomic, obtain the lexical representation of the item by
