@@ -25,3 +25,4 @@ work/
 
 # Claude planning files
 plans/
+.xqts-runner/
