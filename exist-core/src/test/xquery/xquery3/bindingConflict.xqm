@@ -29,6 +29,8 @@ declare namespace xmldb="http://exist-db.org/xquery/xmldb";
 declare namespace myns="http://www.foo.com";
 declare namespace myns2="http://www.foo.net";
 
+(: ===== Legacy update tests (persistent documents) ===== :)
+
 (: insert node into a ns with a conflicting ns in parent tree :)
 declare %test:assertError("XUDY0023")
 function ut:insert-child-namespaced-attr-conflicted() {
