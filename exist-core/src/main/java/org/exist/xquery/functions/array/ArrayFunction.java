@@ -32,8 +32,10 @@ import org.exist.xquery.NamedFunctionReference;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.fn.FunData;
+import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReference;
+import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Sequence;
@@ -276,6 +278,33 @@ public class ArrayFunction extends BasicFunction {
             )
     );
 
+    // --- XQuery 4.0 array functions ---
+    public static final FunctionSignature ARRAY_EMPTY = functionSignature(
+            Fn.EMPTY.fname, "Returns true if the supplied array is empty.",
+            returns(Type.BOOLEAN, "true if the array is empty"),
+            INPUT_ARRAY
+    );
+    public static final FunctionSignature ARRAY_FOOT = functionSignature(
+            Fn.FOOT.fname, "Returns the last member of an array.",
+            returns(Type.ITEM, Cardinality.ZERO_OR_MORE, "The last member"),
+            INPUT_ARRAY
+    );
+    public static final FunctionSignature ARRAY_TRUNK = functionSignature(
+            Fn.TRUNK.fname, "Returns all members except the last.",
+            RESULT_ARRAY,
+            INPUT_ARRAY
+    );
+    public static final FunctionSignature ARRAY_ITEMS = functionSignature(
+            Fn.ITEMS.fname, "Returns the members of an array as a sequence.",
+            returns(Type.ITEM, Cardinality.ZERO_OR_MORE, "The members as a sequence"),
+            INPUT_ARRAY
+    );
+    public static final FunctionSignature ARRAY_MEMBERS = functionSignature(
+            Fn.MEMBERS.fname, "Returns each member as a map with a 'value' key.",
+            returns(Type.MAP_ITEM, Cardinality.ZERO_OR_MORE, "Sequence of member maps"),
+            INPUT_ARRAY
+    );
+
     private AnalyzeContextInfo cachedContextInfo;
 
     public ArrayFunction(XQueryContext context, FunctionSignature signature) {
@@ -314,6 +343,11 @@ public class ArrayFunction extends BasicFunction {
             case FOR_EACH_PAIR -> forEachPair(args);
             case SORT -> sort(args);
             case FLATTEN -> flatten(args);
+            case EMPTY -> arrayEmpty(args);
+            case FOOT -> foot(args);
+            case TRUNK -> trunk(args);
+            case ITEMS -> items(args);
+            case MEMBERS -> members(args);
         };
     }
 
@@ -493,6 +527,53 @@ public class ArrayFunction extends BasicFunction {
         }
     }
 
+    // --- XQuery 4.0 implementations ---
+
+    private BooleanValue arrayEmpty(Sequence[] args) {
+        final ArrayType array = (ArrayType) args[0].itemAt(0);
+        return BooleanValue.valueOf(array.getSize() == 0);
+    }
+
+    private Sequence foot(Sequence[] args) throws XPathException {
+        final ArrayType array = (ArrayType) args[0].itemAt(0);
+        if (array.getSize() == 0) {
+            throw new XPathException(this, ErrorCodes.FOAY0001, "Array is empty");
+        }
+        return array.get(array.getSize() - 1);
+    }
+
+    private ArrayType trunk(Sequence[] args) throws XPathException {
+        final ArrayType array = (ArrayType) args[0].itemAt(0);
+        if (array.getSize() == 0) {
+            throw new XPathException(this, ErrorCodes.FOAY0001, "Array is empty");
+        }
+        return array.subarray(0, array.getSize() - 1);
+    }
+
+    private Sequence items(Sequence[] args) throws XPathException {
+        final ArrayType array = (ArrayType) args[0].itemAt(0);
+        final ValueSequence result = new ValueSequence();
+        for (int i = 0; i < array.getSize(); i++) {
+            final Sequence member = array.get(i);
+            for (SequenceIterator si = member.iterate(); si.hasNext(); ) {
+                result.add(si.nextItem());
+            }
+        }
+        return result;
+    }
+
+    private Sequence members(Sequence[] args) throws XPathException {
+        final ArrayType array = (ArrayType) args[0].itemAt(0);
+        final ValueSequence result = new ValueSequence();
+        for (int i = 0; i < array.getSize(); i++) {
+            final org.exist.xquery.functions.map.MapType memberMap =
+                    new org.exist.xquery.functions.map.MapType(this, context, null);
+            memberMap.add(new StringValue("value"), array.get(i));
+            result.add(memberMap);
+        }
+        return result;
+    }
+
     private enum Fn {
         SIZE("size"),
         GET("get"),
@@ -511,7 +592,13 @@ public class ArrayFunction extends BasicFunction {
         FOLD_RIGHT("fold-right"),
         FOR_EACH_PAIR("for-each-pair"),
         SORT("sort"),
-        FLATTEN("flatten");
+        FLATTEN("flatten"),
+        // --- XQuery 4.0 ---
+        EMPTY("empty"),
+        FOOT("foot"),
+        TRUNK("trunk"),
+        ITEMS("items"),
+        MEMBERS("members");
 
         final static Map<String, Fn> fnMap = new HashMap<>();
         private final String fname;

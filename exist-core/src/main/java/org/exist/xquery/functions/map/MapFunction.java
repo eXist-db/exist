@@ -41,6 +41,7 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
+import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.ValueSequence;
 
 import java.util.ArrayList;
@@ -55,6 +56,8 @@ import static org.exist.xquery.FunctionDSL.optManyParam;
 import static org.exist.xquery.FunctionDSL.param;
 import static org.exist.xquery.FunctionDSL.params;
 import static org.exist.xquery.FunctionDSL.returns;
+import static org.exist.xquery.FunctionDSL.returnsMany;
+import static org.exist.xquery.FunctionDSL.returnsOptMany;
 import static org.exist.xquery.functions.map.MapModule.functionSignature;
 
 /**
@@ -169,6 +172,86 @@ public class MapFunction extends BasicFunction {
             )
     );
 
+    // --- XQuery 4.0 map functions ---
+    public static final FunctionSignature[] FNS_EMPTY = {
+            functionSignature(
+                    Fn.EMPTY.fname,
+                    "Returns an empty map.",
+                    RETURN_MAP
+            ),
+            functionSignature(
+                    Fn.EMPTY.fname,
+                    "Returns true if the map is empty.",
+                    new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if the map is empty"),
+                    PARAM_INPUT_MAP
+            )
+    };
+
+    public static final FunctionSignature FNS_GET_DEFAULT = functionSignature(
+            Fn.GET_DEFAULT.fname,
+            "Returns the value associated with a key, or a default value if the key is not present.",
+            RETURN_OPT_MANY_ITEM,
+            PARAM_INPUT_MAP,
+            PARAM_KEY,
+            optManyParam("default", Type.ITEM, "The default value")
+    );
+
+    public static final FunctionSignature BUILD_1 = functionSignature(
+            Fn.BUILD.fname,
+            "Builds a map from a sequence of items, using a key function.",
+            RETURN_MAP,
+            optManyParam("input", Type.ITEM, "The input sequence"),
+            funParam("key", params(optManyParam("item", Type.ITEM, "the item")),
+                    returns(Type.ANY_ATOMIC_TYPE, Cardinality.EXACTLY_ONE), "The key function")
+    );
+
+    public static final FunctionSignature BUILD_2 = functionSignature(
+            Fn.BUILD.fname,
+            "Builds a map from a sequence of items, using key and value functions.",
+            RETURN_MAP,
+            optManyParam("input", Type.ITEM, "The input sequence"),
+            funParam("key", params(optManyParam("item", Type.ITEM, "the item")),
+                    returns(Type.ANY_ATOMIC_TYPE, Cardinality.EXACTLY_ONE), "The key function"),
+            funParam("value", params(optManyParam("item", Type.ITEM, "the item")),
+                    returnsOptMany(Type.ITEM), "The value function")
+    );
+
+    public static final FunctionSignature ITEMS = functionSignature(
+            Fn.ITEMS.fname,
+            "Returns a sequence of maps, each with 'key' and 'value' entries.",
+            returnsOptMany(Type.MAP_ITEM, "A sequence of key-value pair maps"),
+            PARAM_INPUT_MAP
+    );
+
+    public static final FunctionSignature ENTRIES = functionSignature(
+            Fn.ENTRIES.fname,
+            "Returns a sequence of maps, each with 'key' and 'value' entries.",
+            returnsOptMany(Type.MAP_ITEM, "A sequence of key-value pair maps"),
+            PARAM_INPUT_MAP
+    );
+
+    public static final FunctionSignature FILTER_SIG = functionSignature(
+            Fn.FILTER.fname,
+            "Returns a map containing only entries matching the predicate.",
+            RETURN_MAP,
+            PARAM_INPUT_MAP,
+            funParam("predicate",
+                    params(param("key", Type.ANY_ATOMIC_TYPE, "the key"),
+                           optManyParam("value", Type.ITEM, "the value")),
+                    returns(Type.BOOLEAN, Cardinality.EXACTLY_ONE), "The filter predicate")
+    );
+
+    public static final FunctionSignature KEYS_WHERE = functionSignature(
+            Fn.KEYS_WHERE.fname,
+            "Returns keys whose entries match the predicate.",
+            returnsOptMany(Type.ANY_ATOMIC_TYPE, "The matching keys"),
+            PARAM_INPUT_MAP,
+            funParam("predicate",
+                    params(param("key", Type.ANY_ATOMIC_TYPE, "the key"),
+                           optManyParam("value", Type.ITEM, "the value")),
+                    returns(Type.BOOLEAN, Cardinality.EXACTLY_ONE), "The filter predicate")
+    );
+
     private AnalyzeContextInfo cachedContextInfo;
 
     public MapFunction(final XQueryContext context, final FunctionSignature signature) {
@@ -239,6 +322,25 @@ public class MapFunction extends BasicFunction {
             case ENTRY -> entry(args);
             case REMOVE -> remove(args);
             case FOR_EACH -> forEach(args);
+            case EMPTY -> {
+                if (args.length > 0 && !args[0].isEmpty()) {
+                    // 1-arity: map:empty($map) — check if map is empty
+                    final AbstractMapType map = (AbstractMapType) args[0].itemAt(0);
+                    yield BooleanValue.valueOf(map.size() == 0);
+                } else if (args.length > 0 && args[0].isEmpty()) {
+                    // empty sequence passed — type error
+                    throw new XPathException(this, ErrorCodes.XPTY0004,
+                            "Expected map(*) but got empty sequence");
+                } else {
+                    // 0-arity: map:empty() — return empty map
+                    yield new MapType(this, this.context);
+                }
+            }
+            case GET_DEFAULT -> getDefault(args);
+            case BUILD -> build(args);
+            case ITEMS, ENTRIES -> items(args);
+            case FILTER -> filter(args);
+            case KEYS_WHERE -> keysWhere(args);
         };
     }
 
@@ -433,6 +535,79 @@ public class MapFunction extends BasicFunction {
         }
     }
 
+    private Sequence getDefault(final Sequence[] args) throws XPathException {
+        final AbstractMapType map = (AbstractMapType) args[0].itemAt(0);
+        final AtomicValue key = (AtomicValue) args[1].itemAt(0);
+        final Sequence value = map.get(key);
+        if (value == null || value.isEmpty()) {
+            return args[2];
+        }
+        return value;
+    }
+
+    private Sequence build(final Sequence[] args) throws XPathException {
+        final Sequence input = args[0];
+        final FunctionReference keyFn = (FunctionReference) args[1].itemAt(0);
+        keyFn.analyze(cachedContextInfo);
+        final FunctionReference valueFn = args.length > 2 ?
+                (FunctionReference) args[2].itemAt(0) : null;
+        if (valueFn != null) { valueFn.analyze(cachedContextInfo); }
+
+        final MapType result = new MapType(this, context);
+        for (final SequenceIterator i = input.iterate(); i.hasNext(); ) {
+            final Item item = i.nextItem();
+            final Sequence itemSeq = item.toSequence();
+            final AtomicValue key = (AtomicValue) keyFn.evalFunction(null, null,
+                    new Sequence[]{itemSeq}).itemAt(0);
+            final Sequence value = valueFn != null ?
+                    valueFn.evalFunction(null, null, new Sequence[]{itemSeq}) : itemSeq;
+            result.add(key, value);
+        }
+        return result;
+    }
+
+    private Sequence items(final Sequence[] args) throws XPathException {
+        final AbstractMapType map = (AbstractMapType) args[0].itemAt(0);
+        final ValueSequence result = new ValueSequence();
+        for (final IEntry<AtomicValue, Sequence> entry : map) {
+            final MapType entryMap = new MapType(this, context);
+            entryMap.add(new StringValue("key"), entry.key().toSequence());
+            entryMap.add(new StringValue("value"), entry.value());
+            result.add(entryMap);
+        }
+        return result;
+    }
+
+    private Sequence filter(final Sequence[] args) throws XPathException {
+        final AbstractMapType map = (AbstractMapType) args[0].itemAt(0);
+        final FunctionReference pred = (FunctionReference) args[1].itemAt(0);
+        pred.analyze(cachedContextInfo);
+        final MapType result = new MapType(this, context);
+        for (final IEntry<AtomicValue, Sequence> entry : map) {
+            final Sequence testResult = pred.evalFunction(null, null,
+                    new Sequence[]{entry.key().toSequence(), entry.value()});
+            if (testResult.effectiveBooleanValue()) {
+                result.add(entry.key(), entry.value());
+            }
+        }
+        return result;
+    }
+
+    private Sequence keysWhere(final Sequence[] args) throws XPathException {
+        final AbstractMapType map = (AbstractMapType) args[0].itemAt(0);
+        final FunctionReference pred = (FunctionReference) args[1].itemAt(0);
+        pred.analyze(cachedContextInfo);
+        final ValueSequence result = new ValueSequence();
+        for (final IEntry<AtomicValue, Sequence> entry : map) {
+            final Sequence testResult = pred.evalFunction(null, null,
+                    new Sequence[]{entry.key().toSequence(), entry.value()});
+            if (testResult.effectiveBooleanValue()) {
+                result.add(entry.key());
+            }
+        }
+        return result;
+    }
+
     private enum Fn {
         SIZE("size"),
         ENTRY("entry"),
@@ -443,7 +618,15 @@ public class MapFunction extends BasicFunction {
         KEYS("keys"),
         REMOVE("remove"),
         FOR_EACH("for-each"),
-        FIND("find");
+        FIND("find"),
+        // --- XQuery 4.0 ---
+        EMPTY("empty"),
+        GET_DEFAULT("get-default"),
+        BUILD("build"),
+        ITEMS("items"),
+        ENTRIES("entries"),
+        FILTER("filter"),
+        KEYS_WHERE("keys-where");
 
         final static Map<String, MapFunction.Fn> fnMap = new HashMap<>();
 
