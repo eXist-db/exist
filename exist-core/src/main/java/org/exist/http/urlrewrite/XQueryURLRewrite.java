@@ -382,7 +382,6 @@ public class XQueryURLRewrite extends HttpServlet {
     }
 
     private void applyViews(final ModelAndView modelView, final List<URLRewrite> views, final HttpServletResponse response, final RequestWrapper modifiedRequest, final HttpServletResponse currentResponse) throws IOException, ServletException {
-        //int status;
         HttpServletResponse wrappedResponse = currentResponse;
         for (int i = 0; i < views.size(); i++) {
             final URLRewrite view = views.get(i);
@@ -475,7 +474,7 @@ public class XQueryURLRewrite extends HttpServlet {
             return null;
         }
 
-        try (final DBBroker broker = pool.get(Optional.ofNullable(user))) {
+        try (@SuppressWarnings("PMD.UnusedLocalVariable") final DBBroker broker = pool.get(Optional.ofNullable(user))) {
 
             if (model.getSourceInfo().source instanceof DBSource) {
                 ((DBSource) model.getSourceInfo().source).validate(Permission.EXECUTE);
@@ -506,25 +505,27 @@ public class XQueryURLRewrite extends HttpServlet {
      * @param request the http request
      * @param response the http response
      */
-    private void doRewrite(URLRewrite action, RequestWrapper request, final HttpServletResponse response) throws IOException, ServletException {
-        if (action.getTarget() != null && !(action instanceof Redirect)) {
-            final String uri = action.resolve(request);
-            final URLRewrite staticRewrite = rewriteConfig.lookup(uri, request.getServerName(), true, action);
+    private void doRewrite(final URLRewrite action, final RequestWrapper request, final HttpServletResponse response) throws IOException, ServletException {
+        URLRewrite effectiveAction = action;
+        RequestWrapper effectiveRequest = request;
+        if (effectiveAction.getTarget() != null && !(effectiveAction instanceof Redirect)) {
+            final String uri = effectiveAction.resolve(effectiveRequest);
+            final URLRewrite staticRewrite = rewriteConfig.lookup(uri, effectiveRequest.getServerName(), true, effectiveAction);
 
             if (staticRewrite != null) {
-                staticRewrite.copyFrom(action);
-                action = staticRewrite;
-                final RequestWrapper modifiedRequest = new RequestWrapper(request);
-                modifiedRequest.setPaths(uri, action.getPrefix());
+                staticRewrite.copyFrom(effectiveAction);
+                effectiveAction = staticRewrite;
+                final RequestWrapper modifiedRequest = new RequestWrapper(effectiveRequest);
+                modifiedRequest.setPaths(uri, effectiveAction.getPrefix());
 
                 if (LOG.isTraceEnabled()) {
-                    LOG.trace("Forwarding to : {} url: {}", action.toString(), action.getURI());
+                    LOG.trace("Forwarding to : {} url: {}", effectiveAction.toString(), effectiveAction.getURI());
                 }
-                request = modifiedRequest;
+                effectiveRequest = modifiedRequest;
             }
         }
-        action.prepareRequest(request);
-        action.doRewrite(request, response);
+        effectiveAction.prepareRequest(effectiveRequest);
+        effectiveAction.doRewrite(effectiveRequest, response);
     }
 
     protected ServletConfig getConfig() {
@@ -543,6 +544,7 @@ public class XQueryURLRewrite extends HttpServlet {
         return rewrite;
     }
 
+    @SuppressWarnings("PMD.UnusedPrivateMethod") // called from switch expression in service()
     private void parseViews(final HttpServletRequest request, final Element view, final ModelAndView modelView) throws ServletException {
         Node node = view.getFirstChild();
         while (node != null) {
@@ -557,6 +559,7 @@ public class XQueryURLRewrite extends HttpServlet {
         }
     }
 
+    @SuppressWarnings("PMD.UnusedPrivateMethod") // called from switch expression in service()
     private void parseErrorHandlers(final HttpServletRequest request, final Element view, final ModelAndView modelView) throws ServletException {
         Node node = view.getFirstChild();
         while (node != null) {
@@ -685,28 +688,30 @@ public class XQueryURLRewrite extends HttpServlet {
         }
     }
 
-    String adjustPathForSourceLookup(final String basePath, String path) {
+    String adjustPathForSourceLookup(final String basePath, final String path) {
         if (LOG.isTraceEnabled()) {
             LOG.trace("request path={}", path);
         }
 
-        if (basePath.startsWith(XmldbURI.EMBEDDED_SERVER_URI_PREFIX) && path.startsWith(basePath.replace(XmldbURI.EMBEDDED_SERVER_URI_PREFIX, ""))) {
-            path = path.replace(basePath.replace(XmldbURI.EMBEDDED_SERVER_URI_PREFIX, ""), "");
+        String adjustedPath = path;
+        if (basePath.startsWith(XmldbURI.EMBEDDED_SERVER_URI_PREFIX) && adjustedPath.startsWith(basePath.replace(XmldbURI.EMBEDDED_SERVER_URI_PREFIX, ""))) {
+            adjustedPath = adjustedPath.replace(basePath.replace(XmldbURI.EMBEDDED_SERVER_URI_PREFIX, ""), "");
 
-        } else if (path.startsWith("/db/")) {
-            path = path.substring(4);
+        } else if (adjustedPath.startsWith("/db/")) {
+            adjustedPath = adjustedPath.substring(4);
         }
 
-        if (path.startsWith("/")) {
-            path = path.substring(1);
+        if (adjustedPath.startsWith("/")) {
+            adjustedPath = adjustedPath.substring(1);
         }
 
         if (LOG.isTraceEnabled()) {
-            LOG.trace("adjusted request path={}", path);
+            LOG.trace("adjusted request path={}", adjustedPath);
         }
-        return path;
+        return adjustedPath;
     }
 
+    @SuppressWarnings("PMD.UnusedPrivateMethod") // called indirectly from getSourceInfo()
     private SourceInfo findSource(final HttpServletRequest request, final DBBroker broker, final String basePath) {
         if (LOG.isTraceEnabled()) {
             LOG.trace("basePath={}", basePath);
@@ -977,9 +982,6 @@ public class XQueryURLRewrite extends HttpServlet {
         private boolean useCache = false;
         private SourceInfo sourceInfo = null;
 
-        private ModelAndView() {
-        }
-
         public void setSourceInfo(final SourceInfo sourceInfo) {
             this.sourceInfo = sourceInfo;
         }
@@ -1179,12 +1181,10 @@ public class XQueryURLRewrite extends HttpServlet {
             return super.getSession().getServletContext().getRealPath(pathInfo);
         }
 
-        protected void setData(@Nullable byte[] data) {
-            if (data == null) {
-                data = new byte[0];
-            }
-            contentLength = data.length;
-            sis = new CachingServletInputStream(data);
+        protected void setData(@Nullable final byte[] data) {
+            final byte[] effectiveData = data == null ? new byte[0] : data;
+            contentLength = effectiveData.length;
+            sis = new CachingServletInputStream(effectiveData);
         }
 
         public void addParameter(final String name, final String value) {
@@ -1380,11 +1380,6 @@ public class XQueryURLRewrite extends HttpServlet {
             super.setStatus(i);
         }
 
-        @Override
-        public void setStatus(final int i, final String msg) {
-            this.status = i;
-            super.setStatus(i, msg);
-        }
 
         @Override
         public void sendError(final int i, final String msg) throws IOException {
@@ -1413,10 +1408,8 @@ public class XQueryURLRewrite extends HttpServlet {
         }
 
         public void flush() throws IOException {
-            if (cache) {
-                if (contentType != null) {
-                    super.setContentType(contentType);
-                }
+            if (cache && contentType != null) {
+                super.setContentType(contentType);
             }
             if (sos != null) {
                 final ServletOutputStream out = super.getOutputStream();

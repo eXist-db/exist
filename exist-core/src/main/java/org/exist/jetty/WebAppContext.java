@@ -27,17 +27,17 @@ import org.exist.storage.BrokerPool;
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  *
  */
-public class WebAppContext extends org.eclipse.jetty.webapp.WebAppContext {
-	
+public class WebAppContext extends org.eclipse.jetty.ee10.webapp.WebAppContext {
+
     @Override
 	public String toString() {
 		return "eXist-db Open Source Native XML Database";
 	}
-	
+
     @Override
 	protected void doStop() throws Exception {
 		super.doStop();
-		
+
 		BrokerPool.stopAll(true);
 	}
 

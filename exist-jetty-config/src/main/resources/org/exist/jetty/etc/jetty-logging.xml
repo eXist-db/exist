@@ -7,7 +7,7 @@
 <!-- other configuration files.  e.g.                                -->
 <!--    java -jar start.jar etc/jetty-logging.xml                    -->
 <!-- =============================================================== -->
-<Configure id="logging" class="org.eclipse.jetty.util.log.Log">
+<Configure id="logging" class="org.eclipse.jetty.util.component.ContainerLifeCycle">
 
     <New id="ServerLog" class="java.io.PrintStream">
       <Arg>
@@ -27,13 +27,7 @@
       </Arg>
     </New>
 
-    <Get name="rootLogger">
-      <Call name="info"><Arg>Redirecting stderr/stdout to <Ref refid="ServerLogName"/></Arg></Call>
-    </Get>
     <Call class="java.lang.System" name="setErr"><Arg><Ref refid="ServerLog"/></Arg></Call>
     <Call class="java.lang.System" name="setOut"><Arg><Ref refid="ServerLog"/></Arg></Call>
 
 </Configure>
-
-
-
