@@ -346,7 +346,24 @@ public class Collations {
      */
     public static int compare(@Nullable final Collator collator, final String s1,final  String s2) {
         if (collator == null) {
-            return s1 == null ? (s2 == null ? 0 : -1) : s1.compareTo(s2);
+            if (s1 == null) {
+                return s2 == null ? 0 : -1;
+            }
+            // Compare by Unicode codepoints, not UTF-16 code units.
+            // String.compareTo() compares char (UTF-16) values, which gives wrong
+            // ordering for supplementary characters (U+10000+) encoded as surrogate pairs.
+            int i1 = 0, i2 = 0;
+            while (i1 < s1.length() && i2 < s2.length()) {
+                final int cp1 = s1.codePointAt(i1);
+                final int cp2 = s2.codePointAt(i2);
+                if (cp1 != cp2) {
+                    return cp1 - cp2;
+                }
+                i1 += Character.charCount(cp1);
+                i2 += Character.charCount(cp2);
+            }
+            // Shorter string is less; equal length means equal
+            return (s1.length() - i1) - (s2.length() - i2);
         } else {
             return collator.compare(s1, s2);
         }

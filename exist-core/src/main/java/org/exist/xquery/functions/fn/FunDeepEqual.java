@@ -394,7 +394,7 @@ public class FunDeepEqual extends CollatingFunction {
                 }
                 break;
             default:
-                throw new RuntimeException("unexpected node type " + nodeTypeA);
+                break;
             }
             a = findNextTextOrElementNode(a.getNextSibling());
             b = findNextTextOrElementNode(b.getNextSibling());
