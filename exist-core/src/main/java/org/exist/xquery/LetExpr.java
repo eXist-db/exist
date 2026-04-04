@@ -37,8 +37,19 @@ import java.util.Set;
  */
 public class LetExpr extends BindingExpression {
 
+    private boolean scoreBinding = false;
+
     public LetExpr(XQueryContext context) {
         super(context);
+    }
+
+    /**
+     * XQFT 3.0 §2.3: Mark this let binding as a score variable binding.
+     * When true, the variable is bound to the score (xs:double in [0,1])
+     * of the input expression rather than the expression's value.
+     */
+    public void setScoreBinding(final boolean scoreBinding) {
+        this.scoreBinding = scoreBinding;
     }
 
     @Override
@@ -102,9 +113,15 @@ public class LetExpr extends BindingExpression {
                 var = createVariable(varName);
                 var.setSequenceType(sequenceType);
                 context.declareVariableBinding(var);
-                var.setValue(in);
+                if (scoreBinding) {
+                    // XQFT 3.0 §2.3: score binding — bind variable to the score
+                    // of the expression. Naive implementation: 1.0 if non-empty, 0.0 if empty.
+                    var.setValue(new DoubleValue(this, in.isEmpty() ? 0.0 : 1.0));
+                } else {
+                    var.setValue(in);
+                }
                 if (sequenceType == null)
-                    {var.checkType();} //Just because it makes conversions !                	
+                    {var.checkType();} //Just because it makes conversions !
                 var.setContextDocs(inputSequence.getContextDocSet());
                 registerUpdateListener(in);
 

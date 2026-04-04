@@ -88,6 +88,7 @@ import org.exist.storage.txn.Txn;
 import org.exist.util.*;
 import org.exist.util.hashtable.NamePool;
 import org.exist.xmldb.XmldbURI;
+import org.exist.xquery.ft.FTMatchOptions;
 import org.exist.xquery.parser.*;
 import org.exist.xquery.pragmas.*;
 import org.exist.xquery.update.Modification;
@@ -317,6 +318,18 @@ public class XQueryContext implements BinaryValueManager, Context {
      * The default collation URI.
      */
     private String defaultCollation = Collations.UNICODE_CODEPOINT_COLLATION_URI;
+
+    /**
+     * XQFT 3.0: default full-text match options declared via "declare ft-option".
+     */
+    private FTMatchOptions defaultFTMatchOptions;
+
+    /**
+     * XQFT 3.0: thesaurus URI-to-file mapping.
+     * Maps thesaurus URIs (e.g., "http://bstore1.example.com/UsabilityThesaurus.xml")
+     * to local file paths.
+     */
+    private final Map<String, Path> thesaurusRegistry = new HashMap<>();
 
     /**
      * The default language
@@ -1171,6 +1184,22 @@ public class XQueryContext implements BinaryValueManager, Context {
     @Override
     public String getDefaultCollation() {
         return defaultCollation;
+    }
+
+    public void setDefaultFTMatchOptions(final FTMatchOptions opts) {
+        this.defaultFTMatchOptions = opts;
+    }
+
+    public FTMatchOptions getDefaultFTMatchOptions() {
+        return defaultFTMatchOptions;
+    }
+
+    public void registerThesaurus(final String uri, final Path file) {
+        thesaurusRegistry.put(uri, file);
+    }
+
+    public Path resolveThesaurusURI(final String uri) {
+        return thesaurusRegistry.get(uri);
     }
 
     @Override
