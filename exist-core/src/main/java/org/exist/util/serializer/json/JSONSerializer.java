@@ -191,7 +191,7 @@ public class JSONSerializer {
         if (Type.subTypeOfUnion(item.getType(), Type.NUMERIC)) {
             if (canonical) {
                 // RFC 8785: cast to double, use shortest representation
-                final double d = ((org.exist.xquery.value.NumericValue) item).getDouble();
+                final double d = ((NumericValue) item).getDouble();
                 if (!Double.isFinite(d)) {
                     throw new SAXException("err:SERE0020 Numeric value " + item.getStringValue()
                             + " cannot be serialized in canonical JSON");
