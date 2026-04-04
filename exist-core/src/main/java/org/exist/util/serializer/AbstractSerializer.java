@@ -81,13 +81,27 @@ public abstract class AbstractSerializer {
     public void setOutput(Writer writer, Properties properties) {
         outputProperties = Objects.requireNonNullElseGet(properties, () -> new Properties(defaultProperties));
         final String method = outputProperties.getProperty(OutputKeys.METHOD, "xml");
-        final String htmlVersionProp = outputProperties.getProperty(EXistOutputKeys.HTML_VERSION, "1.0");
-
+        // For html/xhtml methods, determine HTML version:
+        // 1. Use html-version if explicitly set
+        // 2. Otherwise use version (W3C spec: version controls HTML version for html method)
+        // 3. Default to 5.0
         double htmlVersion;
-        try {
-            htmlVersion = Double.parseDouble(htmlVersionProp);
-        } catch (NumberFormatException e) {
-            htmlVersion = 1.0;
+        final String explicitHtmlVersion = outputProperties.getProperty(EXistOutputKeys.HTML_VERSION);
+        if (explicitHtmlVersion != null) {
+            try {
+                htmlVersion = Double.parseDouble(explicitHtmlVersion);
+            } catch (NumberFormatException e) {
+                htmlVersion = 5.0;
+            }
+        } else if (("html".equalsIgnoreCase(method) || "xhtml".equalsIgnoreCase(method))
+                && outputProperties.getProperty(OutputKeys.VERSION) != null) {
+            try {
+                htmlVersion = Double.parseDouble(outputProperties.getProperty(OutputKeys.VERSION));
+            } catch (NumberFormatException e) {
+                htmlVersion = 5.0;
+            }
+        } else {
+            htmlVersion = 5.0;
         }
 
         final SerializerWriter baseSerializerWriter = getBaseSerializerWriter(method, htmlVersion);
