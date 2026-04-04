@@ -139,6 +139,11 @@ options {
         List<WindowCondition> windowConditions = null;
         WindowExpr.WindowType windowType = null;
         boolean allowEmpty = false;
+        QName valueVarName = null;
+        SequenceType valueSequenceType = null;
+        // XQ4 destructuring
+        List<QName> destructureVarNames = null;
+        List<SequenceType> destructureVarTypes = null;
     }
 
     /**
@@ -267,14 +272,20 @@ throws PermissionDeniedException, EXistException, XPathException
             v:VERSION_DECL
             {
                 final String version = v.getText();
-                if (version.equals("3.1")) {
+                if (version.equals("4.0")) {
+                    context.setXQueryVersion(40);
+                    staticContext.setXQueryVersion(40);
+                } else if (version.equals("3.1")) {
                     context.setXQueryVersion(31);
+                    staticContext.setXQueryVersion(31);
                 } else if (version.equals("3.0")) {
                     context.setXQueryVersion(30);
+                    staticContext.setXQueryVersion(30);
                 } else if (version.equals("1.0")) {
                     context.setXQueryVersion(10);
+                    staticContext.setXQueryVersion(10);
                 } else {
-                    throw new XPathException(v, ErrorCodes.XQST0031, "Wrong XQuery version: require 1.0, 3.0 or 3.1");
+                    throw new XPathException(v, ErrorCodes.XQST0031, "Wrong XQuery version: require 1.0, 3.0, 3.1 or 4.0");
                 }
             }
             ( enc:STRING_LITERAL )?
@@ -828,7 +839,13 @@ throws PermissionDeniedException, EXistException, XPathException
         {
             QName qn= null;
             try {
-                qn = QName.parse(staticContext, name.getText(), staticContext.getDefaultFunctionNamespace());
+                // XQ4 (PR2200): unprefixed function declarations go into "no namespace"
+                // instead of the default function namespace (fn:)
+                if (name.getText() != null && !name.getText().contains(":") && staticContext.getXQueryVersion() >= 40) {
+                    qn = new QName(name.getText(), "");
+                } else {
+                    qn = QName.parse(staticContext, name.getText(), staticContext.getDefaultFunctionNamespace());
+                }
             } catch (final IllegalQNameException iqe) {
                 throw new XPathException(name.getLine(), name.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + name.getText());
             }
@@ -930,11 +947,42 @@ throws PermissionDeniedException, EXistException, XPathException
     )
     ;
 
+focusFunctionDecl [PathExpr path]
+returns [Expression step]
+throws PermissionDeniedException, EXistException, XPathException
+{ step = null; }:
+    #(
+        ff:FOCUS_FUNCTION
+        {
+            PathExpr body = new PathExpr(context);
+            body.setASTNode(focusFunctionDecl_AST_in);
+
+            // Create a function with a single implicit parameter
+            FunctionSignature signature = new FunctionSignature(InlineFunction.INLINE_FUNCTION_QNAME);
+            UserDefinedFunction func = new UserDefinedFunction(context, signature);
+            func.setASTNode(ff);
+
+            // Add the implicit focus parameter: $(.focus) as item()*
+            FunctionParameterSequenceType focusParam = new FunctionParameterSequenceType(
+                FocusFunction.FOCUS_PARAM_NAME, Type.ITEM, Cardinality.ZERO_OR_MORE,
+                "implicit focus parameter");
+            signature.setArgumentTypes(new SequenceType[] { focusParam });
+            signature.setReturnType(new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE));
+            func.addVariable(FocusFunction.FOCUS_PARAM_NAME);
+        }
+        ( expr [body] )?
+        {
+            func.setFunctionBody(body);
+            step = new FocusFunction(context, func);
+        }
+    )
+    ;
+
 /**
  * Parse params in function declaration.
  */
 paramList [List vars]
-throws XPathException
+throws PermissionDeniedException, EXistException, XPathException
 :
     param [vars] ( param [vars] )*
     ;
@@ -943,7 +991,7 @@ throws XPathException
  * Single function param.
  */
 param [List vars]
-throws XPathException
+throws PermissionDeniedException, EXistException, XPathException
 :
     #(
         varname:VARIABLE_BINDING
@@ -957,6 +1005,18 @@ throws XPathException
                 "as"
                 { var.setCardinality(Cardinality.EXACTLY_ONE); }
                 sequenceType [var]
+            )
+        )?
+        (
+            #(
+                PARAM_DEFAULT
+                {
+                    PathExpr defaultExpr = new PathExpr(context);
+                }
+                expr [defaultExpr]
+                {
+                    var.setDefaultValue(defaultExpr.simplify());
+                }
             )
         )?
     )
@@ -1133,6 +1193,38 @@ throws XPathException
         )
         |
         #(
+            RECORD_TEST { type.setPrimaryType(Type.RECORD); }
+            (
+                STAR
+                { type.setRecordExtensible(true); }
+                |
+                (
+                    (
+                        #(
+                            rf:RECORD_FIELD
+                            {
+                                final String fieldName = rf.getText();
+                                boolean optional = false;
+                                SequenceType fieldType = null;
+                            }
+                            ( QUESTION { optional = true; } )?
+                            (
+                                { fieldType = new SequenceType(); }
+                                sequenceType [fieldType]
+                            )?
+                            {
+                                type.addRecordField(new SequenceType.RecordField(
+                                    fieldName, optional, fieldType));
+                            }
+                        )
+                        |
+                        STAR { type.setRecordExtensible(true); }
+                    )*
+                )
+            )?
+        )
+        |
+        #(
             "item" { type.setPrimaryType(Type.ITEM); }
         )
         |
@@ -1262,6 +1354,37 @@ throws XPathException
                 #( "schema-element" EQNAME )
             )?
         )
+        |
+        #(
+            CHOICE_TYPE
+            {
+                List<SequenceType> alternatives = new ArrayList<SequenceType>();
+            }
+            (
+                {
+                    SequenceType altType = new SequenceType();
+                }
+                sequenceType [altType]
+                {
+                    alternatives.add(altType);
+                }
+            )+
+            {
+                for (final SequenceType alt : alternatives) {
+                    type.addChoiceAlternative(alt);
+                }
+                type.setPrimaryType(Type.ITEM);
+            }
+        )
+        |
+        #(
+            en:ENUM_TYPE
+            {
+                String enumText = en.getText();
+                String[] enumVals = enumText.split(",", -1);
+                type.setEnumValues(enumVals);
+            }
+        )
     )
     (
         STAR { type.setCardinality(Cardinality.ZERO_OR_MORE); }
@@ -1292,6 +1415,14 @@ throws PermissionDeniedException, EXistException, XPathException
         }
     |
     step=arrowOp [path]
+    |
+    step=mappingArrowOp [path]
+    |
+    step=pipelineOp [path]
+    |
+    step=methodCallOp [path]  // XQ4 method call operator =?>
+    |
+    step=otherwiseExpr [path]
     |
     step=typeCastExpr [path]
     |
@@ -1363,733 +1494,7 @@ throws PermissionDeniedException, EXistException, XPathException
         }
     )
     |
-    // conditional:
-    #(
-        astIf:"if"
-        {
-            PathExpr testExpr= new PathExpr(context);
-            PathExpr thenExpr= new PathExpr(context);
-            PathExpr elseExpr= new PathExpr(context);
-        }
-        step=expr [testExpr]
-        step=astThen:expr [thenExpr]
-        step=astElse:expr [elseExpr]
-        {
-            thenExpr.setASTNode(astThen);
-            elseExpr.setASTNode(astElse);
-            ConditionalExpression cond =
-                new ConditionalExpression(context, testExpr, thenExpr,
-                                          new DebuggableExpression(elseExpr));
-            cond.setASTNode(astIf);
-            path.add(cond);
-            step = cond;
-        }
-    )
-    |
-    // quantified expression: some
-    #(
-        "some"
-        {
-            List clauses= new ArrayList();
-            PathExpr satisfiesExpr = new PathExpr(context);
-            satisfiesExpr.setASTNode(expr_AST_in);
-        }
-        (
-            #(
-                someVarName:VARIABLE_BINDING
-                {
-                    ForLetClause clause= new ForLetClause();
-                    PathExpr inputSequence = new PathExpr(context);
-                    inputSequence.setASTNode(expr_AST_in);
-                }
-                (
-                    #(
-                        "as"
-                        { SequenceType type= new SequenceType(); }
-                        sequenceType[type]
-                    )
-                    { clause.sequenceType = type; }
-                )?
-                step=expr[inputSequence]
-                {
-                    try {
-                        clause.varName = QName.parse(staticContext, someVarName.getText(), null);
-                    } catch (final IllegalQNameException iqe) {
-                        throw new XPathException(someVarName.getLine(), someVarName.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + someVarName.getText());
-                    }
-                    clause.inputSequence= inputSequence;
-                    clauses.add(clause);
-                }
-            )
-        )*
-        step=expr[satisfiesExpr]
-        {
-            Expression action = satisfiesExpr;
-            for (int i= clauses.size() - 1; i >= 0; i--) {
-                ForLetClause clause= (ForLetClause) clauses.get(i);
-                BindingExpression expr = new QuantifiedExpression(context, QuantifiedExpression.SOME);
-                expr.setASTNode(expr_AST_in);
-                expr.setVariable(clause.varName);
-                expr.setSequenceType(clause.sequenceType);
-                expr.setInputSequence(clause.inputSequence);
-                expr.setReturnExpression(action);
-                satisfiesExpr= null;
-                action= expr;
-            }
-            path.add(action);
-            step = action;
-        }
-    )
-    |
-    // quantified expression: every
-    #(
-        "every"
-        {
-            List clauses= new ArrayList();
-            PathExpr satisfiesExpr = new PathExpr(context);
-            satisfiesExpr.setASTNode(expr_AST_in);
-        }
-        (
-            #(
-                everyVarName:VARIABLE_BINDING
-                {
-                    ForLetClause clause= new ForLetClause();
-                    PathExpr inputSequence = new PathExpr(context);
-                    inputSequence.setASTNode(expr_AST_in);
-                }
-                (
-                    #(
-                        "as"
-                        { SequenceType type= new SequenceType(); }
-                        sequenceType[type]
-                    )
-                    { clause.sequenceType = type; }
-                )?
-                step=expr[inputSequence]
-                {
-                    try {
-                        clause.varName = QName.parse(staticContext, everyVarName.getText(), null);
-                    } catch (final IllegalQNameException iqe) {
-                        throw new XPathException(everyVarName.getLine(), everyVarName.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + everyVarName.getText());
-                    }
-                    clause.inputSequence= inputSequence;
-                    clauses.add(clause);
-                }
-            )
-        )*
-        step=expr[satisfiesExpr]
-        {
-            Expression action = satisfiesExpr;
-            for (int i= clauses.size() - 1; i >= 0; i--) {
-                ForLetClause clause= (ForLetClause) clauses.get(i);
-                BindingExpression expr = new QuantifiedExpression(context, QuantifiedExpression.EVERY);
-                expr.setASTNode(expr_AST_in);
-                expr.setVariable(clause.varName);
-                expr.setSequenceType(clause.sequenceType);
-                expr.setInputSequence(clause.inputSequence);
-                expr.setReturnExpression(action);
-                satisfiesExpr= null;
-                action= expr;
-            }
-            path.add(action);
-            step = action;
-        }
-    )
-    |
-    //try/catch expression
-    #(
-        astTry:"try"
-        {
-            PathExpr tryTargetExpr = new PathExpr(context);
-            tryTargetExpr.setASTNode(expr_AST_in);
-        }
-        step=expr [tryTargetExpr]
-        {
-            TryCatchExpression cond = new TryCatchExpression(context, tryTargetExpr);
-            cond.setASTNode(astTry);
-            path.add(cond);
-        }
-        (
-            {
-                final List<QName> catchErrorList = new ArrayList<>(2);
-                final List<QName> catchVars = new ArrayList<>(3);
-                final PathExpr catchExpr = new PathExpr(context);
-                catchExpr.setASTNode(expr_AST_in);
-            }
-            #(
-                astCatch:"catch"
-                (catchErrorList [catchErrorList])
-                (
-                    {
-                        QName qncode = null;
-                        QName qndesc = null;
-                        QName qnval = null;
-                    }
-                    code:CATCH_ERROR_CODE
-                    {
-                        try {
-                            qncode = QName.parse(staticContext, code.getText());
-                            catchVars.add(qncode);
-                        } catch (final IllegalQNameException iqe) {
-                            throw new XPathException(code.getLine(), code.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + code.getText());
-                        }
-                    }
-                    (
-                        desc:CATCH_ERROR_DESC
-                        {
-                            try {
-                                qndesc = QName.parse(staticContext, desc.getText());
-                            catchVars.add(qndesc);
-                            } catch (final IllegalQNameException iqe) {
-                                throw new XPathException(desc.getLine(), desc.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + desc.getText());
-                            }
-                        }
-
-                        (
-                            val:CATCH_ERROR_VAL
-                            {
-                                try {
-                                    qnval = QName.parse(staticContext, val.getText());
-                                    catchVars.add(qnval);
-                                } catch (final IllegalQNameException iqe) {
-                                    throw new XPathException(val.getLine(), val.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + val.getText());
-                                }
-                            }
-
-                        )?
-                    )?
-                )?
-                step= expr [catchExpr]
-                {
-                  catchExpr.setASTNode(astCatch);
-                  cond.addCatchClause(catchErrorList, catchVars, catchExpr);
-                }
-            )
-        )+
-
-        {
-            step = cond;
-        }
-    )
-    |
-    // FLWOR expressions: let and for
-    #(
-        r:"return"
-        {
-            List<ForLetClause> clauses= new ArrayList<ForLetClause>();
-            Expression action= new PathExpr(context);
-            action.setASTNode(r);
-            PathExpr whereExpr= null;
-            List<OrderSpec> orderBy= null;
-        }
-        (
-            #(
-                f:"for"
-                (
-                    #(
-                        varName:VARIABLE_BINDING
-                        {
-                            ForLetClause clause= new ForLetClause();
-                            clause.ast = varName;
-                            PathExpr inputSequence= new PathExpr(context);
-                            inputSequence.setASTNode(expr_AST_in);inputSequence.setASTNode(expr_AST_in);
-			    final DistinctVariableNames distinctVariableNames = new DistinctVariableNames();
-                        }
-                        (
-                            #(
-                                "as"
-                                { clause.sequenceType= new SequenceType(); }
-                                sequenceType [clause.sequenceType]
-                            )
-                        )?
-                        (
-                                "empty"
-                                { clause.allowEmpty = true; }
-                        )?
-                        (
-                            posVar:POSITIONAL_VAR
-                            {
-                                try {
-                                    clause.posVar = distinctVariableNames.check(ErrorCodes.XQST0089, posVar, QName.parse(staticContext, posVar.getText(), null));
-                                } catch (final IllegalQNameException iqe) {
-                                    throw new XPathException(posVar.getLine(), posVar.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + posVar.getText());
-                                }
-                            }
-                        )?
-                        step=expr [inputSequence]
-                        {
-                            try {
-                                clause.varName = distinctVariableNames.check(ErrorCodes.XQST0089, varName, QName.parse(staticContext, varName.getText(), null));
-                            } catch (final IllegalQNameException iqe) {
-                                throw new XPathException(varName.getLine(), varName.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + varName.getText());
-                            }
-                            clause.inputSequence= inputSequence;
-                            clauses.add(clause);
-                        }
-                    )
-                )+
-            )
-            |
-            #(
-                l:"let"
-                (
-                    #(
-                        letVarName:VARIABLE_BINDING
-                        {
-                            ForLetClause clause= new ForLetClause();
-                            clause.ast = letVarName;
-                            clause.type = FLWORClause.ClauseType.LET;
-                            PathExpr inputSequence= new PathExpr(context);
-                            inputSequence.setASTNode(expr_AST_in);
-                        }
-                        (
-                            #(
-                                "as"
-                                { clause.sequenceType= new SequenceType(); }
-                                sequenceType [clause.sequenceType]
-                            )
-                        )?
-                        step=expr [inputSequence]
-                        {
-                            try {
-                                clause.varName = QName.parse(staticContext, letVarName.getText(), null);
-                            } catch (final IllegalQNameException iqe) {
-                                throw new XPathException(letVarName.getLine(), letVarName.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + letVarName.getText());
-                            }
-                            clause.inputSequence= inputSequence;
-                            clauses.add(clause);
-                        }
-                    )
-                )+
-            )
-            |
-	    #(
-            	wc:"window"
-            	{
-            	    ForLetClause clause= new ForLetClause();
-                    clause.type = FLWORClause.ClauseType.WINDOW;
-                    clause.windowConditions = new ArrayList<WindowCondition>(2);
-                    final DistinctVariableNames distinctVariableNames = new DistinctVariableNames();
-            	}
-            	(
-                    "tumbling"
-                    {
-                        clause.windowType = WindowExpr.WindowType.TUMBLING_WINDOW;
-                    }
-                    |
-                    "sliding"
-                    {
-                        clause.windowType = WindowExpr.WindowType.SLIDING_WINDOW;
-                    }
-                )?
-            	// invarBinding
-            	(
-            		#(
-            			windowWarName:VARIABLE_BINDING
-            			{
-            				clause.ast = windowWarName;
-            				PathExpr inputSequence= new PathExpr(context);
-            			}
-            			(
-            				#(
-            					"as"
-            					{ clause.sequenceType= new SequenceType(); }
-            					sequenceType [clause.sequenceType]
-            				)
-            			)?
-            			step=expr [inputSequence]
-            			{
-            			  try {
-            				  clause.varName = distinctVariableNames.check(ErrorCodes.XQST0103, windowWarName, QName.parse(staticContext, windowWarName.getText(), null));
-            				} catch (final IllegalQNameException iqe) {
-                      throw new XPathException(windowWarName.getLine(), windowWarName.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + windowWarName.getText());
-                    }
-            				clause.inputSequence= inputSequence;
-            				clauses.add(clause);
-            			}
-            		)
-            	)
-            	// windowStartCondition
-            	#(
-            	    "start"
-            	    {
-            	        PathExpr whenExpr = new PathExpr(context);
-                        QName currentItemName = null;
-                        QName previousItemName = null;
-                        QName nextItemName = null;
-                        QName windowStartPosVar = null;
-            	    }
-            	    #(
-                    	// WINDOW_VARS
-                    	WINDOW_VARS
-                    	(
-                    	    currentItem:CURRENT_ITEM
-                    	    {
-                    	        if (currentItem != null && currentItem.getText() != null) {
-                    	            try {
-                                        currentItemName = distinctVariableNames.check(ErrorCodes.XQST0103, currentItem, QName.parse(staticContext, currentItem.getText()));
-                                    } catch (final IllegalQNameException iqe) {
-                                        throw new XPathException(currentItem.getLine(), currentItem.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + currentItem.getText());
-                                    }
-                                }
-                    	    }
-                    	)?
-                    	(
-                    	    startPosVar:POSITIONAL_VAR
-                            {
-                                try {
-                                    windowStartPosVar = distinctVariableNames.check(ErrorCodes.XQST0103, startPosVar, QName.parse(staticContext, startPosVar.getText(), null));
-                                } catch (final IllegalQNameException iqe) {
-                                    throw new XPathException(startPosVar.getLine(), startPosVar.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + startPosVar.getText());
-                                }
-                            }
-                    	)?
-                    	(
-                            previousItem:PREVIOUS_ITEM
-                            {
-                                if (previousItem != null && previousItem.getText() != null) {
-                                    try {
-                                       previousItemName = distinctVariableNames.check(ErrorCodes.XQST0103, previousItem, QName.parse(staticContext, previousItem.getText()));
-                                   } catch (final IllegalQNameException iqe) {
-                                       throw new XPathException(previousItem.getLine(), previousItem.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + previousItem.getText());
-                                   }
-                                }
-                            }
-                        )?
-                        (
-                            nextItem:NEXT_ITEM
-                            {
-                                if (nextItem != null && nextItem.getText() != null) {
-                                    try {
-                                           nextItemName = distinctVariableNames.check(ErrorCodes.XQST0103, nextItem, QName.parse(staticContext, nextItem.getText()));
-                                    } catch (final IllegalQNameException iqe) {
-                                           throw new XPathException(nextItem.getLine(), nextItem.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + nextItem.getText());
-                                    }
-                                }
-                            }
-                        )?
-                    )
-                    "when"
-                    step=expr [whenExpr]
-                    {
-                        WindowCondition windowCondition = new WindowCondition(
-                        	context, false, currentItemName, windowStartPosVar, previousItemName, nextItemName, whenExpr
-                    	);
-                    	clause.windowConditions.add(windowCondition);
-                    }
-            	)
-            	// windowEndCondition
-            	(
-                    {
-                         PathExpr endWhenExpr = new PathExpr(context);
-                         QName endCurrentItemName = null;
-                         QName endPreviousItemName = null;
-                         QName endNextItemName = null;
-                         QName windowEndPosVar = null;
-                         Boolean only = false;
-                    }
-                    #(
-                        "end"
-                        (
-                            "only"
-                            {
-                                only = true;
-                            }
-                        )?
-                        #(
-                            // WINDOW_VARS
-                            WINDOW_VARS
-                           	(
-                           	    endCurrentItem:CURRENT_ITEM
-                           	    {
-                           	        if (endCurrentItem != null && endCurrentItem.getText() != null) {
-                           	            try {
-                                               endCurrentItemName = distinctVariableNames.check(ErrorCodes.XQST0103, endCurrentItem, QName.parse(staticContext, endCurrentItem.getText()));
-                                           } catch (final IllegalQNameException iqe) {
-                                               throw new XPathException(endCurrentItem.getLine(), endCurrentItem.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + endCurrentItem.getText());
-                                           }
-                                       }
-                           	    }
-                           	)?
-                           	(
-                           	    endPosVar:POSITIONAL_VAR
-                                {
-                                    try {
-                                        windowEndPosVar = distinctVariableNames.check(ErrorCodes.XQST0103, endPosVar, QName.parse(staticContext, endPosVar.getText(), null));
-                                    } catch (final IllegalQNameException iqe) {
-                                        throw new XPathException(endPosVar.getLine(), endPosVar.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + endPosVar.getText());
-                                    }
-                                }
-                           	)?
-                           	(
-                                endPreviousItem:PREVIOUS_ITEM
-                                {
-                                    if (endPreviousItem != null && endPreviousItem.getText() != null) {
-                                       try {
-                                            endPreviousItemName = distinctVariableNames.check(ErrorCodes.XQST0103, endPreviousItem, QName.parse(staticContext, endPreviousItem.getText()));
-                                       } catch (final IllegalQNameException iqe) {
-                                           throw new XPathException(endPreviousItem.getLine(), endPreviousItem.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + endPreviousItem.getText());
-                                       }
-                                    }
-                                }
-                            )?
-                            (
-                                endNextItem:NEXT_ITEM
-                                {
-                                    if (endNextItem != null && endNextItem.getText() != null) {
-                                        try {
-                                            endNextItemName = distinctVariableNames.check(ErrorCodes.XQST0103, endNextItem, QName.parse(staticContext, endNextItem.getText()));
-                                        } catch (final IllegalQNameException iqe) {
-                                               throw new XPathException(endNextItem.getLine(), endNextItem.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + endNextItem.getText());
-                                        }
-                                    }
-                                }
-                            )?
-                        )
-                        "when"
-                        step=expr [endWhenExpr]
-                        {
-                        	WindowCondition endWindowCondition = new WindowCondition(
-                            	context, only, endCurrentItemName, windowEndPosVar, endPreviousItemName, endNextItemName, endWhenExpr
-                        	);
-                            clause.windowConditions.add(endWindowCondition);
-                        }
-                    )
-                )?
-            )
-			|
-      // XQuery 3.0 group by clause
-      #(
-          gb:GROUP_BY
-          {
-              ForLetClause clause = new ForLetClause();
-              clause.ast = gb;
-              clause.type = FLWORClause.ClauseType.GROUPBY;
-              clause.groupSpecs = new ArrayList<GroupSpec>(4);
-              clauses.add(clause);
-          }
-          (
-              #(
-                  groupVarName:VARIABLE_BINDING
-                  { PathExpr groupSpecExpr = null; }
-                  (
-                    (
-                      #(
-                        "as"
-                        { clause.sequenceType = new SequenceType(); }
-                        sequenceType [clause.sequenceType]
-                      )
-                    )?
-                    // optional := exprSingle
-                    (
-                      {
-                          groupSpecExpr = new PathExpr(context);
-                          groupSpecExpr.setASTNode(expr_AST_in);
-                      }
-                        step=expr [groupSpecExpr]
-                    )
-                  )?
-                  {
-                      final QName groupKeyVar;
-                      try {
-                        groupKeyVar = QName.parse(staticContext, groupVarName.getText(), null);
-                      } catch (final IllegalQNameException iqe) {
-                          throw new XPathException(groupVarName.getLine(), groupVarName.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + groupVarName.getText());
-                      }
-
-                      GroupSpec groupSpec = new GroupSpec(context, groupSpecExpr, groupKeyVar, clause.sequenceType);
-                      clause.groupSpecs.add(groupSpec);
-                  }
-                  (
-                      "collation" groupCollURI:STRING_LITERAL
-                      {
-                          groupSpec.setCollator(groupCollURI.getText());
-                      }
-                  )?
-              )
-          )+
-      )
-      |
-      #(
-          ob:ORDER_BY { orderBy = new ArrayList(3); }
-          (
-              {
-                  PathExpr orderSpecExpr= new PathExpr(context);
-                  orderSpecExpr.setASTNode(expr_AST_in);
-              }
-              step=expr [orderSpecExpr]
-              {
-                  OrderSpec orderSpec= new OrderSpec(context, orderSpecExpr);
-                  int modifiers= 0;
-                  boolean orderDescending = false;
-                  orderBy.add(orderSpec);
-
-                  if (!context.orderEmptyGreatest()) {
-                      modifiers |= OrderSpec.EMPTY_LEAST;
-                      orderSpec.setModifiers(modifiers);
-                  }
-              }
-              (
-                  (
-
-                      "ascending"
-                      |
-                      "descending"
-                      {
-                          modifiers |= OrderSpec.DESCENDING_ORDER;
-                          orderSpec.setModifiers(modifiers);
-                          orderDescending = true;
-                      }
-                  )
-              )?
-              (
-                  "empty"
-                  (
-                      "greatest"
-                      {
-                          if (!context.orderEmptyGreatest())
-                              modifiers &= OrderSpec.EMPTY_GREATEST;
-                          if (orderDescending)
-                              modifiers |= OrderSpec.DESCENDING_ORDER;
-                          orderSpec.setModifiers(modifiers);
-                      }
-                      |
-                      "least"
-                      {
-                          modifiers |= OrderSpec.EMPTY_LEAST;
-                          orderSpec.setModifiers(modifiers);
-                      }
-                  )
-              )?
-              (
-                  "collation" collURI:STRING_LITERAL
-                  {
-                      orderSpec.setCollation(collURI.getText());
-                  }
-              )?
-          )+
-          {
-              ForLetClause clause= new ForLetClause();
-              clause.ast = ob;
-              clause.type = FLWORClause.ClauseType.ORDERBY;
-                            clause.orderSpecs = orderBy;
-              clauses.add(clause);
-          }
-      )
-            |
-            #(
-                w:"where"
-                {
-                    whereExpr= new PathExpr(context);
-                    whereExpr.setASTNode(expr_AST_in);
-                }
-                step=expr [whereExpr]
-                {
-                    ForLetClause clause = new ForLetClause();
-                    clause.ast = w;
-                    clause.type = FLWORClause.ClauseType.WHERE;
-                    clause.inputSequence = whereExpr;
-                    clauses.add(clause);
-                }
-            )
-            |
-            #(
-            	co:"count"
-            	countVarName:VARIABLE_BINDING
-                {
-                    ForLetClause clause = new ForLetClause();
-                    clause.ast = co;
-                    try {
-                        clause.varName = QName.parse(staticContext, countVarName.getText(), null);
-                    } catch (final IllegalQNameException iqe) {
-                        throw new XPathException(countVarName.getLine(), countVarName.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + countVarName.getText());
-                    }
-                    clause.type = FLWORClause.ClauseType.COUNT;
-                    clause.inputSequence = null;
-                    clauses.add(clause);
-                }
-            )
-		)+
-		step=expr [(PathExpr) action]
-		{
-            for (int i= clauses.size() - 1; i >= 0; i--) {
-                ForLetClause clause= (ForLetClause) clauses.get(i);
-                FLWORClause expr;
-                switch (clause.type) {
-                    case LET:
-                        expr = new LetExpr(context);
-                        expr.setASTNode(expr_AST_in);
-                        break;
-                    case GROUPBY:
-                        expr = new GroupByClause(context);
-                        break;
-                    case ORDERBY:
-                        expr = new OrderByClause(context, clause.orderSpecs);
-                        break;
-                    case WHERE:
-                        expr = new WhereClause(context, new DebuggableExpression(clause.inputSequence));
-                        break;
-                    case COUNT:
-                        expr = new CountClause(context, clause.varName);
-                        break;
-                    case WINDOW:
-                        expr = new WindowExpr(context, clause.windowType, clause.windowConditions.get(0), clause.windowConditions.size() > 1 ? clause.windowConditions.get(1) : null);
-                        break;
-                    default:
-                        expr = new ForExpr(context, clause.allowEmpty);
-                        break;
-                }
-                expr.setASTNode(clause.ast);
-                if (clause.type == FLWORClause.ClauseType.FOR || clause.type == FLWORClause.ClauseType.LET
-                		|| clause.type == FLWORClause.ClauseType.WINDOW) {
-                    final BindingExpression bind = (BindingExpression)expr;
-            bind.setVariable(clause.varName);
-            bind.setSequenceType(clause.sequenceType);
-            bind.setInputSequence(clause.inputSequence);
-            if (clause.type == FLWORClause.ClauseType.FOR) {
-                 ((ForExpr) bind).setPositionalVariable(clause.posVar);
-						 }
-				} else if (clause.type == FLWORClause.ClauseType.GROUPBY) {
-				    if (clause.groupSpecs != null) {
-                GroupSpec specs[] = new GroupSpec[clause.groupSpecs.size()];
-                int k = 0;
-                for (GroupSpec groupSpec : clause.groupSpecs) {
-                    specs[k++]= groupSpec;
-                }
-                ((GroupByClause)expr).setGroupSpecs(specs);
-            }
-            }
-        if (!(action instanceof FLWORClause))
-            expr.setReturnExpression(new DebuggableExpression(action));
-        else {
-            expr.setReturnExpression(action);
-            ((FLWORClause)action).setPreviousClause(expr);
-        }
-
-                action= expr;
-            }
-
-            path.add(action);
-            step = action;
-        }
-    )
-    |
-    // instance of:
-    #(
-        "instance"
-        {
-            PathExpr expr = new PathExpr(context);
-            expr.setASTNode(expr_AST_in);
-            SequenceType type= new SequenceType();
-        }
-        step=expr [expr]
-        sequenceType [type]
-        {
-            step = new InstanceOfExpression(context, expr, type);
-            step.setASTNode(expr_AST_in);
-            path.add(step);
-        }
-    )
+    step=exprFlowControl [path]
     |
     // treat as:
     #(
@@ -2114,10 +1519,17 @@ throws PermissionDeniedException, EXistException, XPathException
         {
             PathExpr operand = new PathExpr(context);
             operand.setASTNode(expr_AST_in);
+            boolean booleanMode = false;
         }
-        step=expr [operand]
+        (
+            SWITCH_BOOLEAN
+            { booleanMode = true; }
+        |
+            step=expr [operand]
+        )
         {
             SwitchExpression switchExpr = new SwitchExpression(context, operand);
+            switchExpr.setBooleanMode(booleanMode);
             switchExpr.setASTNode(switchAST);
             path.add(switchExpr);
         }
@@ -2413,6 +1825,1225 @@ throws PermissionDeniedException, EXistException, XPathException
     ;
 
 /**
+ * Flow control expressions extracted from expr to avoid
+ * Java method size limit (64KB bytecode).
+ * Handles: conditional, ternary, quantified (some/every),
+ * try/catch/finally, FLWOR, instance of.
+ */
+exprFlowControl [PathExpr path]
+returns [Expression step]
+throws PermissionDeniedException, EXistException, XPathException
+{ step = null; }
+:
+    // conditional:
+    #(
+        astIf:"if"
+        {
+            PathExpr testExpr= new PathExpr(context);
+            PathExpr thenExpr= new PathExpr(context);
+            PathExpr elseExpr= new PathExpr(context);
+        }
+        step=expr [testExpr]
+        step=astThen:expr [thenExpr]
+        step=astElse:expr [elseExpr]
+        {
+            thenExpr.setASTNode(astThen);
+            elseExpr.setASTNode(astElse);
+            ConditionalExpression cond =
+                new ConditionalExpression(context, testExpr, thenExpr,
+                                          new DebuggableExpression(elseExpr));
+            cond.setASTNode(astIf);
+            path.add(cond);
+            step = cond;
+        }
+    )
+    |
+    // ternary conditional: condition ?? then !! else
+    #(
+        astTernary:TERNARY
+        {
+            PathExpr ternTestExpr = new PathExpr(context);
+            PathExpr ternThenExpr = new PathExpr(context);
+            PathExpr ternElseExpr = new PathExpr(context);
+        }
+        step=expr [ternTestExpr]
+        step=expr [ternThenExpr]
+        step=expr [ternElseExpr]
+        {
+            ConditionalExpression ternCond =
+                new ConditionalExpression(context, ternTestExpr, ternThenExpr,
+                                          new DebuggableExpression(ternElseExpr));
+            ternCond.setASTNode(astTernary);
+            path.add(ternCond);
+            step = ternCond;
+        }
+    )
+    |
+    // quantified expression: some
+    #(
+        "some"
+        {
+            List clauses= new ArrayList();
+            PathExpr satisfiesExpr = new PathExpr(context);
+            satisfiesExpr.setASTNode(exprFlowControl_AST_in);
+        }
+        (
+            #(
+                someVarName:VARIABLE_BINDING
+                {
+                    ForLetClause clause= new ForLetClause();
+                    PathExpr inputSequence = new PathExpr(context);
+                    inputSequence.setASTNode(exprFlowControl_AST_in);
+                }
+                (
+                    #(
+                        "as"
+                        { SequenceType type= new SequenceType(); }
+                        sequenceType[type]
+                    )
+                    { clause.sequenceType = type; }
+                )?
+                step=expr[inputSequence]
+                {
+                    try {
+                        clause.varName = QName.parse(staticContext, someVarName.getText(), null);
+                    } catch (final IllegalQNameException iqe) {
+                        throw new XPathException(someVarName.getLine(), someVarName.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + someVarName.getText());
+                    }
+                    clause.inputSequence= inputSequence;
+                    clauses.add(clause);
+                }
+            )
+        )*
+        step=expr[satisfiesExpr]
+        {
+            Expression action = satisfiesExpr;
+            for (int i= clauses.size() - 1; i >= 0; i--) {
+                ForLetClause clause= (ForLetClause) clauses.get(i);
+                BindingExpression expr = new QuantifiedExpression(context, QuantifiedExpression.SOME);
+                expr.setASTNode(exprFlowControl_AST_in);
+                expr.setVariable(clause.varName);
+                expr.setSequenceType(clause.sequenceType);
+                expr.setInputSequence(clause.inputSequence);
+                expr.setReturnExpression(action);
+                satisfiesExpr= null;
+                action= expr;
+            }
+            path.add(action);
+            step = action;
+        }
+    )
+    |
+    // quantified expression: every
+    #(
+        "every"
+        {
+            List clauses= new ArrayList();
+            PathExpr satisfiesExpr = new PathExpr(context);
+            satisfiesExpr.setASTNode(exprFlowControl_AST_in);
+        }
+        (
+            #(
+                everyVarName:VARIABLE_BINDING
+                {
+                    ForLetClause clause= new ForLetClause();
+                    PathExpr inputSequence = new PathExpr(context);
+                    inputSequence.setASTNode(exprFlowControl_AST_in);
+                }
+                (
+                    #(
+                        "as"
+                        { SequenceType type= new SequenceType(); }
+                        sequenceType[type]
+                    )
+                    { clause.sequenceType = type; }
+                )?
+                step=expr[inputSequence]
+                {
+                    try {
+                        clause.varName = QName.parse(staticContext, everyVarName.getText(), null);
+                    } catch (final IllegalQNameException iqe) {
+                        throw new XPathException(everyVarName.getLine(), everyVarName.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + everyVarName.getText());
+                    }
+                    clause.inputSequence= inputSequence;
+                    clauses.add(clause);
+                }
+            )
+        )*
+        step=expr[satisfiesExpr]
+        {
+            Expression action = satisfiesExpr;
+            for (int i= clauses.size() - 1; i >= 0; i--) {
+                ForLetClause clause= (ForLetClause) clauses.get(i);
+                BindingExpression expr = new QuantifiedExpression(context, QuantifiedExpression.EVERY);
+                expr.setASTNode(exprFlowControl_AST_in);
+                expr.setVariable(clause.varName);
+                expr.setSequenceType(clause.sequenceType);
+                expr.setInputSequence(clause.inputSequence);
+                expr.setReturnExpression(action);
+                satisfiesExpr= null;
+                action= expr;
+            }
+            path.add(action);
+            step = action;
+        }
+    )
+    |
+    //try/catch expression
+    #(
+        astTry:"try"
+        {
+            PathExpr tryTargetExpr = new PathExpr(context);
+            tryTargetExpr.setASTNode(exprFlowControl_AST_in);
+        }
+        step=expr [tryTargetExpr]
+        {
+            TryCatchExpression cond = new TryCatchExpression(context, tryTargetExpr);
+            cond.setASTNode(astTry);
+            path.add(cond);
+        }
+        (
+            {
+                final List<QName> catchErrorList = new ArrayList<>(2);
+                final List<QName> catchVars = new ArrayList<>(3);
+                final PathExpr catchExpr = new PathExpr(context);
+                catchExpr.setASTNode(exprFlowControl_AST_in);
+            }
+            #(
+                astCatch:"catch"
+                (catchErrorList [catchErrorList])
+                (
+                    {
+                        QName qncode = null;
+                        QName qndesc = null;
+                        QName qnval = null;
+                    }
+                    code:CATCH_ERROR_CODE
+                    {
+                        try {
+                            qncode = QName.parse(staticContext, code.getText());
+                            catchVars.add(qncode);
+                        } catch (final IllegalQNameException iqe) {
+                            throw new XPathException(code.getLine(), code.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + code.getText());
+                        }
+                    }
+                    (
+                        desc:CATCH_ERROR_DESC
+                        {
+                            try {
+                                qndesc = QName.parse(staticContext, desc.getText());
+                            catchVars.add(qndesc);
+                            } catch (final IllegalQNameException iqe) {
+                                throw new XPathException(desc.getLine(), desc.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + desc.getText());
+                            }
+                        }
+
+                        (
+                            val:CATCH_ERROR_VAL
+                            {
+                                try {
+                                    qnval = QName.parse(staticContext, val.getText());
+                                    catchVars.add(qnval);
+                                } catch (final IllegalQNameException iqe) {
+                                    throw new XPathException(val.getLine(), val.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + val.getText());
+                                }
+                            }
+
+                        )?
+                    )?
+                )?
+                step= expr [catchExpr]
+                {
+                  catchExpr.setASTNode(astCatch);
+                  cond.addCatchClause(catchErrorList, catchVars, catchExpr);
+                }
+            )
+        )*
+        (
+            #(
+                astFinally:"finally"
+                {
+                    final PathExpr finallyExpr = new PathExpr(context);
+                    finallyExpr.setASTNode(astFinally);
+                }
+                (step=expr [finallyExpr])?
+                {
+                    finallyExpr.setASTNode(astFinally);
+                    cond.setFinallyExpr(finallyExpr);
+                }
+            )
+        )?
+
+        {
+            step = cond;
+        }
+    )
+    |
+    // FLWOR expressions: let and for
+    #(
+        r:"return"
+        {
+            List<ForLetClause> clauses= new ArrayList<ForLetClause>();
+            Expression action= new PathExpr(context);
+            action.setASTNode(r);
+            PathExpr whereExpr= null;
+            List<OrderSpec> orderBy= null;
+        }
+        (
+            #(
+                f:"for"
+                (
+                    #(
+                        varName:VARIABLE_BINDING
+                        {
+                            ForLetClause clause= new ForLetClause();
+                            clause.ast = varName;
+                            PathExpr inputSequence= new PathExpr(context);
+                            inputSequence.setASTNode(exprFlowControl_AST_in);inputSequence.setASTNode(exprFlowControl_AST_in);
+			    final DistinctVariableNames distinctVariableNames = new DistinctVariableNames();
+                        }
+                        (
+                            #(
+                                "as"
+                                { clause.sequenceType= new SequenceType(); }
+                                sequenceType [clause.sequenceType]
+                            )
+                        )?
+                        (
+                                "empty"
+                                { clause.allowEmpty = true; }
+                        )?
+                        (
+                            posVar:POSITIONAL_VAR
+                            {
+                                try {
+                                    clause.posVar = distinctVariableNames.check(ErrorCodes.XQST0089, posVar, QName.parse(staticContext, posVar.getText(), null));
+                                } catch (final IllegalQNameException iqe) {
+                                    throw new XPathException(posVar.getLine(), posVar.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + posVar.getText());
+                                }
+                            }
+                        )?
+                        step=expr [inputSequence]
+                        {
+                            try {
+                                clause.varName = distinctVariableNames.check(ErrorCodes.XQST0089, varName, QName.parse(staticContext, varName.getText(), null));
+                            } catch (final IllegalQNameException iqe) {
+                                throw new XPathException(varName.getLine(), varName.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + varName.getText());
+                            }
+                            clause.inputSequence= inputSequence;
+                            clauses.add(clause);
+                        }
+                    )
+                    |
+                    #(
+                        FOR_MEMBER
+                        #(
+                            memberVarName:VARIABLE_BINDING
+                            {
+                                ForLetClause clause= new ForLetClause();
+                                clause.ast = memberVarName;
+                                clause.type = FLWORClause.ClauseType.FOR_MEMBER;
+                                PathExpr inputSequence= new PathExpr(context);
+                                inputSequence.setASTNode(exprFlowControl_AST_in);
+                                final DistinctVariableNames memberDistinctVars = new DistinctVariableNames();
+                            }
+                            (
+                                #(
+                                    "as"
+                                    { clause.sequenceType= new SequenceType(); }
+                                    sequenceType [clause.sequenceType]
+                                )
+                            )?
+                            (
+                                memberPosVar:POSITIONAL_VAR
+                                {
+                                    try {
+                                        clause.posVar = memberDistinctVars.check(ErrorCodes.XQST0089, memberPosVar, QName.parse(staticContext, memberPosVar.getText(), null));
+                                    } catch (final IllegalQNameException iqe) {
+                                        throw new XPathException(memberPosVar.getLine(), memberPosVar.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + memberPosVar.getText());
+                                    }
+                                }
+                            )?
+                            step=expr [inputSequence]
+                            {
+                                try {
+                                    clause.varName = memberDistinctVars.check(ErrorCodes.XQST0089, memberVarName, QName.parse(staticContext, memberVarName.getText(), null));
+                                } catch (final IllegalQNameException iqe) {
+                                    throw new XPathException(memberVarName.getLine(), memberVarName.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + memberVarName.getText());
+                                }
+                                clause.inputSequence= inputSequence;
+                                clauses.add(clause);
+                            }
+                        )
+                    )
+                    |
+                    #(
+                        FOR_KEY
+                        #(
+                            keyVarName:VARIABLE_BINDING
+                            {
+                                ForLetClause clause= new ForLetClause();
+                                clause.ast = keyVarName;
+                                clause.type = FLWORClause.ClauseType.FOR_KEY;
+                                PathExpr inputSequence= new PathExpr(context);
+                                inputSequence.setASTNode(exprFlowControl_AST_in);
+                                final DistinctVariableNames keyDistinctVars = new DistinctVariableNames();
+                            }
+                            (
+                                #(
+                                    "as"
+                                    { clause.sequenceType= new SequenceType(); }
+                                    sequenceType [clause.sequenceType]
+                                )
+                            )?
+                            (
+                                keyPosVar:POSITIONAL_VAR
+                                {
+                                    try {
+                                        clause.posVar = keyDistinctVars.check(ErrorCodes.XQST0089, keyPosVar, QName.parse(staticContext, keyPosVar.getText(), null));
+                                    } catch (final IllegalQNameException iqe) {
+                                        throw new XPathException(keyPosVar.getLine(), keyPosVar.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + keyPosVar.getText());
+                                    }
+                                }
+                            )?
+                            step=expr [inputSequence]
+                            {
+                                try {
+                                    clause.varName = keyDistinctVars.check(ErrorCodes.XQST0089, keyVarName, QName.parse(staticContext, keyVarName.getText(), null));
+                                } catch (final IllegalQNameException iqe) {
+                                    throw new XPathException(keyVarName.getLine(), keyVarName.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + keyVarName.getText());
+                                }
+                                clause.inputSequence= inputSequence;
+                                clauses.add(clause);
+                            }
+                        )
+                    )
+                    |
+                    #(
+                        FOR_VALUE
+                        #(
+                            valueVarName:VARIABLE_BINDING
+                            {
+                                ForLetClause clause= new ForLetClause();
+                                clause.ast = valueVarName;
+                                clause.type = FLWORClause.ClauseType.FOR_VALUE;
+                                PathExpr inputSequence= new PathExpr(context);
+                                inputSequence.setASTNode(exprFlowControl_AST_in);
+                                final DistinctVariableNames valueDistinctVars = new DistinctVariableNames();
+                            }
+                            (
+                                #(
+                                    "as"
+                                    { clause.sequenceType= new SequenceType(); }
+                                    sequenceType [clause.sequenceType]
+                                )
+                            )?
+                            (
+                                valuePosVar:POSITIONAL_VAR
+                                {
+                                    try {
+                                        clause.posVar = valueDistinctVars.check(ErrorCodes.XQST0089, valuePosVar, QName.parse(staticContext, valuePosVar.getText(), null));
+                                    } catch (final IllegalQNameException iqe) {
+                                        throw new XPathException(valuePosVar.getLine(), valuePosVar.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + valuePosVar.getText());
+                                    }
+                                }
+                            )?
+                            step=expr [inputSequence]
+                            {
+                                try {
+                                    clause.varName = valueDistinctVars.check(ErrorCodes.XQST0089, valueVarName, QName.parse(staticContext, valueVarName.getText(), null));
+                                } catch (final IllegalQNameException iqe) {
+                                    throw new XPathException(valueVarName.getLine(), valueVarName.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + valueVarName.getText());
+                                }
+                                clause.inputSequence= inputSequence;
+                                clauses.add(clause);
+                            }
+                        )
+                    )
+                    |
+                    #(
+                        FOR_KEY_VALUE
+                        #(
+                            kvKeyVarName:VARIABLE_BINDING
+                            {
+                                ForLetClause clause= new ForLetClause();
+                                clause.ast = kvKeyVarName;
+                                clause.type = FLWORClause.ClauseType.FOR_KEY_VALUE;
+                                PathExpr inputSequence= new PathExpr(context);
+                                inputSequence.setASTNode(exprFlowControl_AST_in);
+                                final DistinctVariableNames kvDistinctVars = new DistinctVariableNames();
+                            }
+                            (
+                                #(
+                                    "as"
+                                    { clause.sequenceType= new SequenceType(); }
+                                    sequenceType [clause.sequenceType]
+                                )
+                            )?
+                            (
+                                #(
+                                    kvValueVar:VALUE_VAR
+                                    {
+                                        try {
+                                            clause.valueVarName = kvDistinctVars.check(ErrorCodes.XQST0089, kvValueVar, QName.parse(staticContext, kvValueVar.getText(), null));
+                                        } catch (final IllegalQNameException iqe) {
+                                            throw new XPathException(kvValueVar.getLine(), kvValueVar.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + kvValueVar.getText());
+                                        }
+                                    }
+                                    (
+                                        #(
+                                            "as"
+                                            { clause.valueSequenceType = new SequenceType(); }
+                                            sequenceType [clause.valueSequenceType]
+                                        )
+                                    )?
+                                )
+                            )?
+                            (
+                                kvPosVar:POSITIONAL_VAR
+                                {
+                                    try {
+                                        clause.posVar = kvDistinctVars.check(ErrorCodes.XQST0089, kvPosVar, QName.parse(staticContext, kvPosVar.getText(), null));
+                                    } catch (final IllegalQNameException iqe) {
+                                        throw new XPathException(kvPosVar.getLine(), kvPosVar.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + kvPosVar.getText());
+                                    }
+                                }
+                            )?
+                            step=expr [inputSequence]
+                            {
+                                try {
+                                    clause.varName = kvDistinctVars.check(ErrorCodes.XQST0089, kvKeyVarName, QName.parse(staticContext, kvKeyVarName.getText(), null));
+                                } catch (final IllegalQNameException iqe) {
+                                    throw new XPathException(kvKeyVarName.getLine(), kvKeyVarName.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + kvKeyVarName.getText());
+                                }
+                                clause.inputSequence= inputSequence;
+                                clauses.add(clause);
+                            }
+                        )
+                    )
+                )+
+            )
+            |
+            #(
+                l:"let"
+                (
+                    #(
+                        letVarName:VARIABLE_BINDING
+                        {
+                            ForLetClause clause= new ForLetClause();
+                            clause.ast = letVarName;
+                            clause.type = FLWORClause.ClauseType.LET;
+                            PathExpr inputSequence= new PathExpr(context);
+                            inputSequence.setASTNode(exprFlowControl_AST_in);
+                        }
+                        (
+                            #(
+                                "as"
+                                { clause.sequenceType= new SequenceType(); }
+                                sequenceType [clause.sequenceType]
+                            )
+                        )?
+                        step=expr [inputSequence]
+                        {
+                            try {
+                                clause.varName = QName.parse(staticContext, letVarName.getText(), null);
+                            } catch (final IllegalQNameException iqe) {
+                                throw new XPathException(letVarName.getLine(), letVarName.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + letVarName.getText());
+                            }
+                            clause.inputSequence= inputSequence;
+                            clauses.add(clause);
+                        }
+                    )
+                    |
+                    // XQ4: sequence destructuring
+                    #(
+                        seqDestAST:SEQ_DESTRUCTURE
+                        {
+                            ForLetClause seqClause = new ForLetClause();
+                            seqClause.ast = seqDestAST;
+                            seqClause.type = FLWORClause.ClauseType.LET_SEQ_DESTRUCTURE;
+                            seqClause.destructureVarNames = new ArrayList();
+                            seqClause.destructureVarTypes = new ArrayList();
+                            String[] seqVarNames = seqDestAST.getText().split(",", -1);
+                            int seqTypedIdx = 0;
+                            boolean[] seqHasType = new boolean[seqVarNames.length];
+                            for (int dv = 0; dv < seqVarNames.length; dv++) {
+                                String svn = seqVarNames[dv];
+                                seqHasType[dv] = svn.endsWith("+");
+                                if (seqHasType[dv]) svn = svn.substring(0, svn.length() - 1);
+                                try {
+                                    seqClause.destructureVarNames.add(
+                                        QName.parse(staticContext, svn, null));
+                                } catch (final IllegalQNameException iqe) {
+                                    throw new XPathException(seqDestAST.getLine(), seqDestAST.getColumn(),
+                                        ErrorCodes.XPST0081, "No namespace defined for prefix " + svn);
+                                }
+                                seqClause.destructureVarTypes.add(null);
+                            }
+                            PathExpr seqInput = new PathExpr(context);
+                            seqInput.setASTNode(exprFlowControl_AST_in);
+                        }
+                        (
+                            #(
+                                DESTRUCTURE_VAR_TYPE
+                                #(
+                                    "as"
+                                    {
+                                        SequenceType seqVarType = new SequenceType();
+                                        while (seqTypedIdx < seqHasType.length && !seqHasType[seqTypedIdx]) seqTypedIdx++;
+                                    }
+                                    sequenceType [seqVarType]
+                                    {
+                                        if (seqTypedIdx < seqClause.destructureVarTypes.size()) {
+                                            seqClause.destructureVarTypes.set(seqTypedIdx, seqVarType);
+                                        }
+                                        seqTypedIdx++;
+                                    }
+                                )
+                            )
+                        )*
+                        (
+                            #(
+                                "as"
+                                { seqClause.sequenceType = new SequenceType(); }
+                                sequenceType [seqClause.sequenceType]
+                            )
+                        )?
+                        step=expr [seqInput]
+                        {
+                            seqClause.inputSequence = seqInput;
+                            clauses.add(seqClause);
+                        }
+                    )
+                    |
+                    // XQ4: array destructuring
+                    #(
+                        arrDestAST:ARRAY_DESTRUCTURE
+                        {
+                            ForLetClause arrClause = new ForLetClause();
+                            arrClause.ast = arrDestAST;
+                            arrClause.type = FLWORClause.ClauseType.LET_ARRAY_DESTRUCTURE;
+                            arrClause.destructureVarNames = new ArrayList();
+                            arrClause.destructureVarTypes = new ArrayList();
+                            String[] arrVarNames = arrDestAST.getText().split(",", -1);
+                            int arrTypedIdx = 0;
+                            boolean[] arrHasType = new boolean[arrVarNames.length];
+                            for (int dv = 0; dv < arrVarNames.length; dv++) {
+                                String avn = arrVarNames[dv];
+                                arrHasType[dv] = avn.endsWith("+");
+                                if (arrHasType[dv]) avn = avn.substring(0, avn.length() - 1);
+                                try {
+                                    arrClause.destructureVarNames.add(
+                                        QName.parse(staticContext, avn, null));
+                                } catch (final IllegalQNameException iqe) {
+                                    throw new XPathException(arrDestAST.getLine(), arrDestAST.getColumn(),
+                                        ErrorCodes.XPST0081, "No namespace defined for prefix " + avn);
+                                }
+                                arrClause.destructureVarTypes.add(null);
+                            }
+                            PathExpr arrInput = new PathExpr(context);
+                            arrInput.setASTNode(exprFlowControl_AST_in);
+                        }
+                        (
+                            #(
+                                DESTRUCTURE_VAR_TYPE
+                                #(
+                                    "as"
+                                    {
+                                        SequenceType arrVarType = new SequenceType();
+                                        while (arrTypedIdx < arrHasType.length && !arrHasType[arrTypedIdx]) arrTypedIdx++;
+                                    }
+                                    sequenceType [arrVarType]
+                                    {
+                                        if (arrTypedIdx < arrClause.destructureVarTypes.size()) {
+                                            arrClause.destructureVarTypes.set(arrTypedIdx, arrVarType);
+                                        }
+                                        arrTypedIdx++;
+                                    }
+                                )
+                            )
+                        )*
+                        (
+                            #(
+                                "as"
+                                { arrClause.sequenceType = new SequenceType(); }
+                                sequenceType [arrClause.sequenceType]
+                            )
+                        )?
+                        step=expr [arrInput]
+                        {
+                            arrClause.inputSequence = arrInput;
+                            clauses.add(arrClause);
+                        }
+                    )
+                    |
+                    // XQ4: map destructuring
+                    #(
+                        mapDestAST:MAP_DESTRUCTURE
+                        {
+                            ForLetClause mapClause = new ForLetClause();
+                            mapClause.ast = mapDestAST;
+                            mapClause.type = FLWORClause.ClauseType.LET_MAP_DESTRUCTURE;
+                            mapClause.destructureVarNames = new ArrayList();
+                            mapClause.destructureVarTypes = new ArrayList();
+                            String[] mapVarNames = mapDestAST.getText().split(",", -1);
+                            int mapTypedIdx = 0;
+                            boolean[] mapHasType = new boolean[mapVarNames.length];
+                            for (int dv = 0; dv < mapVarNames.length; dv++) {
+                                String mvn = mapVarNames[dv];
+                                mapHasType[dv] = mvn.endsWith("+");
+                                if (mapHasType[dv]) mvn = mvn.substring(0, mvn.length() - 1);
+                                try {
+                                    mapClause.destructureVarNames.add(
+                                        QName.parse(staticContext, mvn, null));
+                                } catch (final IllegalQNameException iqe) {
+                                    throw new XPathException(mapDestAST.getLine(), mapDestAST.getColumn(),
+                                        ErrorCodes.XPST0081, "No namespace defined for prefix " + mvn);
+                                }
+                                mapClause.destructureVarTypes.add(null);
+                            }
+                            PathExpr mapInput = new PathExpr(context);
+                            mapInput.setASTNode(exprFlowControl_AST_in);
+                        }
+                        (
+                            #(
+                                DESTRUCTURE_VAR_TYPE
+                                #(
+                                    "as"
+                                    {
+                                        SequenceType mapVarType = new SequenceType();
+                                        while (mapTypedIdx < mapHasType.length && !mapHasType[mapTypedIdx]) mapTypedIdx++;
+                                    }
+                                    sequenceType [mapVarType]
+                                    {
+                                        if (mapTypedIdx < mapClause.destructureVarTypes.size()) {
+                                            mapClause.destructureVarTypes.set(mapTypedIdx, mapVarType);
+                                        }
+                                        mapTypedIdx++;
+                                    }
+                                )
+                            )
+                        )*
+                        (
+                            #(
+                                "as"
+                                { mapClause.sequenceType = new SequenceType(); }
+                                sequenceType [mapClause.sequenceType]
+                            )
+                        )?
+                        step=expr [mapInput]
+                        {
+                            mapClause.inputSequence = mapInput;
+                            clauses.add(mapClause);
+                        }
+                    )
+                )+
+            )
+            |
+	    #(
+            	wc:"window"
+            	{
+            	    ForLetClause clause= new ForLetClause();
+                    clause.type = FLWORClause.ClauseType.WINDOW;
+                    clause.windowConditions = new ArrayList<WindowCondition>(2);
+                    final DistinctVariableNames distinctVariableNames = new DistinctVariableNames();
+            	}
+            	(
+                    "tumbling"
+                    {
+                        clause.windowType = WindowExpr.WindowType.TUMBLING_WINDOW;
+                    }
+                    |
+                    "sliding"
+                    {
+                        clause.windowType = WindowExpr.WindowType.SLIDING_WINDOW;
+                    }
+                )?
+            	// invarBinding
+            	(
+            		#(
+            			windowWarName:VARIABLE_BINDING
+            			{
+            				clause.ast = windowWarName;
+            				PathExpr inputSequence= new PathExpr(context);
+            			}
+            			(
+            				#(
+            					"as"
+            					{ clause.sequenceType= new SequenceType(); }
+            					sequenceType [clause.sequenceType]
+            				)
+            			)?
+            			step=expr [inputSequence]
+            			{
+            			  try {
+            				  clause.varName = distinctVariableNames.check(ErrorCodes.XQST0103, windowWarName, QName.parse(staticContext, windowWarName.getText(), null));
+            				} catch (final IllegalQNameException iqe) {
+                      throw new XPathException(windowWarName.getLine(), windowWarName.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + windowWarName.getText());
+                    }
+            				clause.inputSequence= inputSequence;
+            				clauses.add(clause);
+            			}
+            		)
+            	)
+            	// windowStartCondition
+            	#(
+            	    "start"
+            	    {
+            	        PathExpr whenExpr = new PathExpr(context);
+                        QName currentItemName = null;
+                        QName previousItemName = null;
+                        QName nextItemName = null;
+                        QName windowStartPosVar = null;
+            	    }
+            	    #(
+                    	// WINDOW_VARS
+                    	WINDOW_VARS
+                    	(
+                    	    currentItem:CURRENT_ITEM
+                    	    {
+                    	        if (currentItem != null && currentItem.getText() != null) {
+                    	            try {
+                                        currentItemName = distinctVariableNames.check(ErrorCodes.XQST0103, currentItem, QName.parse(staticContext, currentItem.getText()));
+                                    } catch (final IllegalQNameException iqe) {
+                                        throw new XPathException(currentItem.getLine(), currentItem.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + currentItem.getText());
+                                    }
+                                }
+                    	    }
+                    	)?
+                    	(
+                    	    startPosVar:POSITIONAL_VAR
+                            {
+                                try {
+                                    windowStartPosVar = distinctVariableNames.check(ErrorCodes.XQST0103, startPosVar, QName.parse(staticContext, startPosVar.getText(), null));
+                                } catch (final IllegalQNameException iqe) {
+                                    throw new XPathException(startPosVar.getLine(), startPosVar.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + startPosVar.getText());
+                                }
+                            }
+                    	)?
+                    	(
+                            previousItem:PREVIOUS_ITEM
+                            {
+                                if (previousItem != null && previousItem.getText() != null) {
+                                    try {
+                                       previousItemName = distinctVariableNames.check(ErrorCodes.XQST0103, previousItem, QName.parse(staticContext, previousItem.getText()));
+                                   } catch (final IllegalQNameException iqe) {
+                                       throw new XPathException(previousItem.getLine(), previousItem.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + previousItem.getText());
+                                   }
+                                }
+                            }
+                        )?
+                        (
+                            nextItem:NEXT_ITEM
+                            {
+                                if (nextItem != null && nextItem.getText() != null) {
+                                    try {
+                                           nextItemName = distinctVariableNames.check(ErrorCodes.XQST0103, nextItem, QName.parse(staticContext, nextItem.getText()));
+                                    } catch (final IllegalQNameException iqe) {
+                                           throw new XPathException(nextItem.getLine(), nextItem.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + nextItem.getText());
+                                    }
+                                }
+                            }
+                        )?
+                    )
+                    "when"
+                    step=expr [whenExpr]
+                    {
+                        WindowCondition windowCondition = new WindowCondition(
+                        	context, false, currentItemName, windowStartPosVar, previousItemName, nextItemName, whenExpr
+                    	);
+                    	clause.windowConditions.add(windowCondition);
+                    }
+            	)
+            	// windowEndCondition
+            	(
+                    {
+                         PathExpr endWhenExpr = new PathExpr(context);
+                         QName endCurrentItemName = null;
+                         QName endPreviousItemName = null;
+                         QName endNextItemName = null;
+                         QName windowEndPosVar = null;
+                         Boolean only = false;
+                    }
+                    #(
+                        "end"
+                        (
+                            "only"
+                            {
+                                only = true;
+                            }
+                        )?
+                        #(
+                            // WINDOW_VARS
+                            WINDOW_VARS
+                           	(
+                           	    endCurrentItem:CURRENT_ITEM
+                           	    {
+                           	        if (endCurrentItem != null && endCurrentItem.getText() != null) {
+                           	            try {
+                                               endCurrentItemName = distinctVariableNames.check(ErrorCodes.XQST0103, endCurrentItem, QName.parse(staticContext, endCurrentItem.getText()));
+                                           } catch (final IllegalQNameException iqe) {
+                                               throw new XPathException(endCurrentItem.getLine(), endCurrentItem.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + endCurrentItem.getText());
+                                           }
+                                       }
+                           	    }
+                           	)?
+                           	(
+                           	    endPosVar:POSITIONAL_VAR
+                                {
+                                    try {
+                                        windowEndPosVar = distinctVariableNames.check(ErrorCodes.XQST0103, endPosVar, QName.parse(staticContext, endPosVar.getText(), null));
+                                    } catch (final IllegalQNameException iqe) {
+                                        throw new XPathException(endPosVar.getLine(), endPosVar.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + endPosVar.getText());
+                                    }
+                                }
+                           	)?
+                           	(
+                                endPreviousItem:PREVIOUS_ITEM
+                                {
+                                    if (endPreviousItem != null && endPreviousItem.getText() != null) {
+                                       try {
+                                            endPreviousItemName = distinctVariableNames.check(ErrorCodes.XQST0103, endPreviousItem, QName.parse(staticContext, endPreviousItem.getText()));
+                                       } catch (final IllegalQNameException iqe) {
+                                           throw new XPathException(endPreviousItem.getLine(), endPreviousItem.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + endPreviousItem.getText());
+                                       }
+                                    }
+                                }
+                            )?
+                            (
+                                endNextItem:NEXT_ITEM
+                                {
+                                    if (endNextItem != null && endNextItem.getText() != null) {
+                                        try {
+                                            endNextItemName = distinctVariableNames.check(ErrorCodes.XQST0103, endNextItem, QName.parse(staticContext, endNextItem.getText()));
+                                        } catch (final IllegalQNameException iqe) {
+                                               throw new XPathException(endNextItem.getLine(), endNextItem.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + endNextItem.getText());
+                                        }
+                                    }
+                                }
+                            )?
+                        )
+                        "when"
+                        step=expr [endWhenExpr]
+                        {
+                        	WindowCondition endWindowCondition = new WindowCondition(
+                            	context, only, endCurrentItemName, windowEndPosVar, endPreviousItemName, endNextItemName, endWhenExpr
+                        	);
+                            clause.windowConditions.add(endWindowCondition);
+                        }
+                    )
+                )?
+            )
+			|
+      // XQuery 3.0 group by clause
+      #(
+          gb:GROUP_BY
+          {
+              ForLetClause clause = new ForLetClause();
+              clause.ast = gb;
+              clause.type = FLWORClause.ClauseType.GROUPBY;
+              clause.groupSpecs = new ArrayList<GroupSpec>(4);
+              clauses.add(clause);
+          }
+          (
+              #(
+                  groupVarName:VARIABLE_BINDING
+                  { PathExpr groupSpecExpr = null; }
+                  (
+                    (
+                      #(
+                        "as"
+                        { clause.sequenceType = new SequenceType(); }
+                        sequenceType [clause.sequenceType]
+                      )
+                    )?
+                    // optional := exprSingle
+                    (
+                      {
+                          groupSpecExpr = new PathExpr(context);
+                          groupSpecExpr.setASTNode(exprFlowControl_AST_in);
+                      }
+                        step=expr [groupSpecExpr]
+                    )
+                  )?
+                  {
+                      final QName groupKeyVar;
+                      try {
+                        groupKeyVar = QName.parse(staticContext, groupVarName.getText(), null);
+                      } catch (final IllegalQNameException iqe) {
+                          throw new XPathException(groupVarName.getLine(), groupVarName.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + groupVarName.getText());
+                      }
+
+                      GroupSpec groupSpec = new GroupSpec(context, groupSpecExpr, groupKeyVar, clause.sequenceType);
+                      clause.groupSpecs.add(groupSpec);
+                  }
+                  (
+                      "collation" groupCollURI:STRING_LITERAL
+                      {
+                          groupSpec.setCollator(groupCollURI.getText());
+                      }
+                  )?
+              )
+          )+
+      )
+      |
+      #(
+          ob:ORDER_BY { orderBy = new ArrayList(3); }
+          (
+              {
+                  PathExpr orderSpecExpr= new PathExpr(context);
+                  orderSpecExpr.setASTNode(exprFlowControl_AST_in);
+              }
+              step=expr [orderSpecExpr]
+              {
+                  OrderSpec orderSpec= new OrderSpec(context, orderSpecExpr);
+                  int modifiers= 0;
+                  boolean orderDescending = false;
+                  orderBy.add(orderSpec);
+
+                  if (!context.orderEmptyGreatest()) {
+                      modifiers |= OrderSpec.EMPTY_LEAST;
+                      orderSpec.setModifiers(modifiers);
+                  }
+              }
+              (
+                  (
+
+                      "ascending"
+                      |
+                      "descending"
+                      {
+                          modifiers |= OrderSpec.DESCENDING_ORDER;
+                          orderSpec.setModifiers(modifiers);
+                          orderDescending = true;
+                      }
+                  )
+              )?
+              (
+                  "empty"
+                  (
+                      "greatest"
+                      {
+                          if (!context.orderEmptyGreatest())
+                              modifiers &= OrderSpec.EMPTY_GREATEST;
+                          if (orderDescending)
+                              modifiers |= OrderSpec.DESCENDING_ORDER;
+                          orderSpec.setModifiers(modifiers);
+                      }
+                      |
+                      "least"
+                      {
+                          modifiers |= OrderSpec.EMPTY_LEAST;
+                          orderSpec.setModifiers(modifiers);
+                      }
+                  )
+              )?
+              (
+                  "collation" collURI:STRING_LITERAL
+                  {
+                      orderSpec.setCollation(collURI.getText());
+                  }
+              )?
+          )+
+          {
+              ForLetClause clause= new ForLetClause();
+              clause.ast = ob;
+              clause.type = FLWORClause.ClauseType.ORDERBY;
+                            clause.orderSpecs = orderBy;
+              clauses.add(clause);
+          }
+      )
+            |
+            #(
+                w:"where"
+                {
+                    whereExpr= new PathExpr(context);
+                    whereExpr.setASTNode(exprFlowControl_AST_in);
+                }
+                step=expr [whereExpr]
+                {
+                    ForLetClause clause = new ForLetClause();
+                    clause.ast = w;
+                    clause.type = FLWORClause.ClauseType.WHERE;
+                    clause.inputSequence = whereExpr;
+                    clauses.add(clause);
+                }
+            )
+            |
+            #(
+                wh:"while"
+                {
+                    PathExpr whileExpr = new PathExpr(context);
+                    whileExpr.setASTNode(exprFlowControl_AST_in);
+                }
+                step=expr [whileExpr]
+                {
+                    ForLetClause clause = new ForLetClause();
+                    clause.ast = wh;
+                    clause.type = FLWORClause.ClauseType.WHILE;
+                    clause.inputSequence = whileExpr;
+                    clauses.add(clause);
+                }
+            )
+            |
+            #(
+            	co:"count"
+            	countVarName:VARIABLE_BINDING
+                {
+                    ForLetClause clause = new ForLetClause();
+                    clause.ast = co;
+                    try {
+                        clause.varName = QName.parse(staticContext, countVarName.getText(), null);
+                    } catch (final IllegalQNameException iqe) {
+                        throw new XPathException(countVarName.getLine(), countVarName.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + countVarName.getText());
+                    }
+                    clause.type = FLWORClause.ClauseType.COUNT;
+                    clause.inputSequence = null;
+                    clauses.add(clause);
+                }
+            )
+		)+
+		step=expr [(PathExpr) action]
+		{
+            for (int i= clauses.size() - 1; i >= 0; i--) {
+                ForLetClause clause= (ForLetClause) clauses.get(i);
+                FLWORClause expr;
+                switch (clause.type) {
+                    case LET:
+                        expr = new LetExpr(context);
+                        expr.setASTNode(exprFlowControl_AST_in);
+                        break;
+                    case GROUPBY:
+                        expr = new GroupByClause(context);
+                        break;
+                    case ORDERBY:
+                        expr = new OrderByClause(context, clause.orderSpecs);
+                        break;
+                    case WHERE:
+                        expr = new WhereClause(context, new DebuggableExpression(clause.inputSequence));
+                        break;
+                    case WHILE:
+                        expr = new WhileClause(context, new DebuggableExpression(clause.inputSequence));
+                        break;
+                    case COUNT:
+                        expr = new CountClause(context, clause.varName);
+                        break;
+                    case WINDOW:
+                        expr = new WindowExpr(context, clause.windowType, clause.windowConditions.get(0), clause.windowConditions.size() > 1 ? clause.windowConditions.get(1) : null);
+                        break;
+                    case FOR_MEMBER:
+                        expr = new ForMemberExpr(context);
+                        break;
+                    case FOR_KEY:
+                        expr = new ForKeyValueExpr(context, FLWORClause.ClauseType.FOR_KEY);
+                        break;
+                    case FOR_VALUE:
+                        expr = new ForKeyValueExpr(context, FLWORClause.ClauseType.FOR_VALUE);
+                        break;
+                    case FOR_KEY_VALUE:
+                        expr = new ForKeyValueExpr(context, FLWORClause.ClauseType.FOR_KEY_VALUE);
+                        break;
+                    case LET_SEQ_DESTRUCTURE:
+                    case LET_ARRAY_DESTRUCTURE:
+                    case LET_MAP_DESTRUCTURE:
+                    {
+                        LetDestructureExpr.DestructureMode dmode;
+                        if (clause.type == FLWORClause.ClauseType.LET_SEQ_DESTRUCTURE) {
+                            dmode = LetDestructureExpr.DestructureMode.SEQUENCE;
+                        } else if (clause.type == FLWORClause.ClauseType.LET_ARRAY_DESTRUCTURE) {
+                            dmode = LetDestructureExpr.DestructureMode.ARRAY;
+                        } else {
+                            dmode = LetDestructureExpr.DestructureMode.MAP;
+                        }
+                        LetDestructureExpr dexpr = new LetDestructureExpr(context, dmode);
+                        dexpr.setASTNode(clause.ast);
+                        for (int j = 0; j < clause.destructureVarNames.size(); j++) {
+                            dexpr.addVariable(
+                                (QName) clause.destructureVarNames.get(j),
+                                clause.destructureVarTypes.size() > j ?
+                                    (SequenceType) clause.destructureVarTypes.get(j) : null);
+                        }
+                        dexpr.setInputSequence(clause.inputSequence);
+                        if (clause.sequenceType != null) {
+                            dexpr.setOverallType(clause.sequenceType);
+                        }
+                        expr = dexpr;
+                        break;
+                    }
+                    default:
+                        expr = new ForExpr(context, clause.allowEmpty);
+                        break;
+                }
+                expr.setASTNode(clause.ast);
+                if (clause.type == FLWORClause.ClauseType.FOR || clause.type == FLWORClause.ClauseType.LET
+                		|| clause.type == FLWORClause.ClauseType.WINDOW
+                		|| clause.type == FLWORClause.ClauseType.FOR_MEMBER
+                		|| clause.type == FLWORClause.ClauseType.FOR_KEY
+                		|| clause.type == FLWORClause.ClauseType.FOR_VALUE
+                		|| clause.type == FLWORClause.ClauseType.FOR_KEY_VALUE) {
+                    final BindingExpression bind = (BindingExpression)expr;
+            bind.setVariable(clause.varName);
+            bind.setSequenceType(clause.sequenceType);
+            bind.setInputSequence(clause.inputSequence);
+            if (clause.type == FLWORClause.ClauseType.FOR) {
+                 ((ForExpr) bind).setPositionalVariable(clause.posVar);
+            } else if (clause.type == FLWORClause.ClauseType.FOR_MEMBER) {
+                 ((ForMemberExpr) bind).setPositionalVariable(clause.posVar);
+            } else if (clause.type == FLWORClause.ClauseType.FOR_KEY
+                 || clause.type == FLWORClause.ClauseType.FOR_VALUE
+                 || clause.type == FLWORClause.ClauseType.FOR_KEY_VALUE) {
+                 ((ForKeyValueExpr) bind).setPositionalVariable(clause.posVar);
+                 if (clause.valueVarName != null) {
+                     ((ForKeyValueExpr) bind).setValueVariable(clause.valueVarName);
+                     if (clause.valueSequenceType != null) {
+                         ((ForKeyValueExpr) bind).setValueSequenceType(clause.valueSequenceType);
+                     }
+                 }
+						 }
+				} else if (clause.type == FLWORClause.ClauseType.GROUPBY) {
+				    if (clause.groupSpecs != null) {
+                GroupSpec specs[] = new GroupSpec[clause.groupSpecs.size()];
+                int k = 0;
+                for (GroupSpec groupSpec : clause.groupSpecs) {
+                    specs[k++]= groupSpec;
+                }
+                ((GroupByClause)expr).setGroupSpecs(specs);
+            }
+            }
+        if (!(action instanceof FLWORClause))
+            expr.setReturnExpression(new DebuggableExpression(action));
+        else {
+            expr.setReturnExpression(action);
+            ((FLWORClause)action).setPreviousClause(expr);
+        }
+
+                action= expr;
+            }
+
+            path.add(action);
+            step = action;
+        }
+    )
+    |
+    // instance of:
+    #(
+        "instance"
+        {
+            PathExpr expr = new PathExpr(context);
+            expr.setASTNode(exprFlowControl_AST_in);
+            SequenceType type= new SequenceType();
+        }
+        step=expr [expr]
+        sequenceType [type]
+        {
+            step = new InstanceOfExpression(context, expr, type);
+            step.setASTNode(exprFlowControl_AST_in);
+            path.add(step);
+        }
+    )
+    ;
+
+/**
  * Process a primary expression like function calls,
  * variable references, value constructors etc.
  */
@@ -2495,13 +3126,62 @@ throws PermissionDeniedException, EXistException, XPathException
     step=postfixExpr [step]
     { path.add(step); }
     |
+    ql:QNAME_LITERAL
+    {
+        final String qlText = ql.getText();
+        final QName qlQName;
+        try {
+            qlQName = QName.parse(staticContext, qlText);
+        } catch (final IllegalQNameException iqe) {
+            throw new XPathException(ql.getLine(), ql.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + qlText);
+        }
+        step = new LiteralValue(context, new QNameValue(context, qlQName));
+        step.setASTNode(ql);
+    }
+    step=postfixExpr [step]
+    { path.add(step); }
+    |
     step=inlineFunctionDecl [path]
+    step=postfixExpr [step]
+    { path.add(step); }
+    |
+    step=focusFunctionDecl [path]
     step=postfixExpr [step]
     { path.add(step); }
     |
     step = lookup [null]
     step=postfixExpr [step]
     { path.add(step); }
+    |
+    #(
+        stAST:STRING_TEMPLATE
+        {
+            StringConstructor st = new StringConstructor(context);
+            st.setASTNode(stAST);
+        }
+        (
+            stContent:STRING_TEMPLATE_CONTENT
+            {
+                // Unescape {{ -> {, }} -> }, `` -> `
+                String raw = stContent.getText();
+                raw = raw.replace("{{", "{").replace("}}", "}").replace("``", "`");
+                st.addContent(raw);
+            }
+            |
+            {
+                PathExpr stInterpolation = new PathExpr(context);
+                stInterpolation.setASTNode(primaryExpr_AST_in);
+            }
+            expr[stInterpolation]
+            {
+                st.addInterpolation(stInterpolation.simplify());
+            }
+        )*
+        {
+            path.add(st);
+            step = st;
+        }
+    )
     |
     #(
         scAST:STRING_CONSTRUCTOR_START
@@ -3024,21 +3704,30 @@ throws XPathException
     |
     i:INTEGER_LITERAL
     {
-        step= new LiteralValue(context, new IntegerValue(i.getText()));
+        String itext = i.getText().replace("_", "");
+        java.math.BigInteger intVal;
+        if (itext.startsWith("0x") || itext.startsWith("0X")) {
+            intVal = new java.math.BigInteger(itext.substring(2), 16);
+        } else if (itext.startsWith("0b") || itext.startsWith("0B")) {
+            intVal = new java.math.BigInteger(itext.substring(2), 2);
+        } else {
+            intVal = new java.math.BigInteger(itext);
+        }
+        step= new LiteralValue(context, new IntegerValue(intVal));
         step.setASTNode(i);
     }
     |
     (
         dec:DECIMAL_LITERAL
         {
-            step= new LiteralValue(context, new DecimalValue(dec.getText()));
+            step= new LiteralValue(context, new DecimalValue(dec.getText().replace("_", "")));
             step.setASTNode(dec);
         }
         |
         dbl:DOUBLE_LITERAL
         {
             step= new LiteralValue(context,
-                new DoubleValue(Double.parseDouble(dbl.getText())));
+                new DoubleValue(Double.parseDouble(dbl.getText().replace("_", ""))));
             step.setASTNode(dbl);
         }
     )
@@ -3138,6 +3827,19 @@ throws PermissionDeniedException, EXistException, XPathException
         step = lookup [step]
         |
         #(
+            fam:FILTER_AM
+            {
+                PathExpr filterPred = new PathExpr(context);
+                filterPred.setASTNode(postfixExpr_AST_in);
+            }
+            expr [filterPred]
+            {
+                step = new FilterExprAM(context, step, filterPred.simplify());
+                step.setASTNode(fam);
+            }
+        )
+        |
+        #(
             PREDICATE
             {
                 FilteredExpression filter = new FilteredExpression(context, step);
@@ -3212,6 +3914,55 @@ throws PermissionDeniedException, EXistException, XPathException
         (
             pos:INTEGER_VALUE { position = Integer.parseInt(pos.getText()); }
             |
+            // XQ4: string literal as key selector (?"first value")
+            strKey:STRING_LITERAL
+            {
+                lookupExpr.add(new LiteralValue(context, new StringValue(strKey.getText())));
+            }
+            |
+            // XQ4: decimal literal as key selector (?1.2)
+            decKey:DECIMAL_LITERAL
+            {
+                lookupExpr.add(new LiteralValue(context, new DecimalValue(decKey.getText().replace("_", ""))));
+            }
+            |
+            // XQ4: double literal as key selector (?1.2e0)
+            dblKey:DOUBLE_LITERAL
+            {
+                lookupExpr.add(new LiteralValue(context, new DoubleValue(Double.parseDouble(dblKey.getText().replace("_", "")))));
+            }
+            |
+            // XQ4: variable reference as key selector (?$var)
+            varKey:VARIABLE_REF
+            {
+                final QName varQn;
+                try {
+                    varQn = QName.parse(staticContext, varKey.getText(), null);
+                } catch (final IllegalQNameException iqe) {
+                    throw new XPathException(varKey.getLine(), varKey.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + varKey.getText());
+                }
+                lookupExpr.add(new VariableReference(context, varQn));
+            }
+            |
+            // XQ4: context item as key selector (?.)
+            ctxKey:SELF
+            {
+                lookupExpr.add(new ContextItemExpression(context));
+            }
+            |
+            // XQ4: QName literal as key selector (?#name)
+            qnKey:QNAME_LITERAL
+            {
+                final String qnText = qnKey.getText();
+                final QName qnQName;
+                try {
+                    qnQName = QName.parse(staticContext, qnText);
+                } catch (final IllegalQNameException iqe) {
+                    throw new XPathException(qnKey.getLine(), qnKey.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + qnText);
+                }
+                lookupExpr.add(new LiteralValue(context, new QNameValue(context, qnQName)));
+            }
+            |
             ( expr [lookupExpr] )+
         )?
         {
@@ -3254,6 +4005,27 @@ throws PermissionDeniedException, EXistException, XPathException
                     isPartial = true;
                 }
                 |
+                #(
+                    kw:KEYWORD_ARG
+                    (
+                        QUESTION {
+                            // Keyword argument with placeholder value: name := ?
+                            params.add(new KeywordArgumentExpression(context, kw.getText(),
+                                new Function.Placeholder(context)));
+                            isPartial = true;
+                        }
+                        |
+                        {
+                            PathExpr kwExpr = new PathExpr(context);
+                            kwExpr.setASTNode(functionCall_AST_in);
+                        }
+                        expr [kwExpr]
+                        {
+                            params.add(new KeywordArgumentExpression(context, kw.getText(), kwExpr));
+                        }
+                    )
+                )
+                |
                 expr [pathExpr] { params.add(pathExpr); }
             )
         )*
@@ -3288,7 +4060,7 @@ throws PermissionDeniedException, EXistException, XPathException
             } catch (final IllegalQNameException iqe) {
                 throw new XPathException(name.getLine(), name.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + name.getText());
             }
-            NamedFunctionReference ref = new NamedFunctionReference(context, qname, Integer.parseInt(arity.getText()));
+            NamedFunctionReference ref = new NamedFunctionReference(context, qname, Integer.parseInt(arity.getText().replace("_", "")));
             step = ref;
         }
     )
@@ -3321,6 +4093,14 @@ throws PermissionDeniedException, EXistException
     "ancestor" { axis= Constants.ANCESTOR_AXIS; }
     |
     "ancestor-or-self" { axis= Constants.ANCESTOR_SELF_AXIS; }
+    |
+    "following-or-self" { axis= Constants.FOLLOWING_OR_SELF_AXIS; }
+    |
+    "preceding-or-self" { axis= Constants.PRECEDING_OR_SELF_AXIS; }
+    |
+    "following-sibling-or-self" { axis= Constants.FOLLOWING_SIBLING_OR_SELF_AXIS; }
+    |
+    "preceding-sibling-or-self" { axis= Constants.PRECEDING_SIBLING_OR_SELF_AXIS; }
     ;
 
 valueComp [PathExpr path]
@@ -3818,6 +4598,140 @@ throws PermissionDeniedException, EXistException, XPathException
     )
     ;
 
+mappingArrowOp [PathExpr path]
+returns [Expression step]
+throws PermissionDeniedException, EXistException, XPathException
+{
+    step= null;
+}:
+    #(
+        mapArrowAST:MAPPING_ARROW_OP
+        {
+            PathExpr leftExpr = new PathExpr(context);
+            leftExpr.setASTNode(mappingArrowOp_AST_in);
+        }
+        expr [leftExpr]
+        {
+            MappingArrowOperator op = new MappingArrowOperator(context, leftExpr.simplify());
+            op.setASTNode(mapArrowAST);
+            path.add(op);
+            step = op;
+
+            PathExpr nameExpr = new PathExpr(context);
+            nameExpr.setASTNode(mappingArrowOp_AST_in);
+            String name = null;
+        }
+        (
+            eq:EQNAME
+            { name = eq.toString(); }
+            |
+            expr [nameExpr]
+        )
+        { List<Expression> params = new ArrayList<Expression>(5); }
+        (
+            {
+                PathExpr pathExpr = new PathExpr(context);
+                pathExpr.setASTNode(mappingArrowOp_AST_in);
+            }
+            expr [pathExpr] { params.add(pathExpr.simplify()); }
+        )*
+        {
+            if (name == null) {
+                op.setArrowFunction(nameExpr, params);
+            } else {
+                op.setArrowFunction(name, params);
+            }
+        }
+    )
+    ;
+
+pipelineOp [PathExpr path]
+returns [Expression step]
+throws PermissionDeniedException, EXistException, XPathException
+{
+    step = null;
+}:
+    #(
+        pipeAST:PIPELINE_OP
+        {
+            PathExpr leftExpr = new PathExpr(context);
+            leftExpr.setASTNode(pipelineOp_AST_in);
+        }
+        expr [leftExpr]
+        {
+            PathExpr rightExpr = new PathExpr(context);
+            rightExpr.setASTNode(pipelineOp_AST_in);
+        }
+        expr [rightExpr]
+        {
+            step = new PipelineExpression(context, leftExpr.simplify(), rightExpr.simplify());
+            step.setASTNode(pipeAST);
+            path.add(step);
+        }
+    )
+    ;
+
+methodCallOp [PathExpr path]
+returns [Expression step]
+throws PermissionDeniedException, EXistException, XPathException
+{
+    step = null;
+}:
+    #(
+        mcAST:METHOD_CALL_OP
+        {
+            PathExpr leftExpr = new PathExpr(context);
+            leftExpr.setASTNode(methodCallOp_AST_in);
+        }
+        expr [leftExpr]
+        mn:NCNAME
+        {
+            MethodCallOperator op = new MethodCallOperator(context, leftExpr.simplify());
+            op.setASTNode(mcAST);
+            path.add(op);
+            step = op;
+
+            List<Expression> params = new ArrayList<Expression>(5);
+        }
+        (
+            {
+                PathExpr pathExpr = new PathExpr(context);
+                pathExpr.setASTNode(methodCallOp_AST_in);
+            }
+            expr [pathExpr] { params.add(pathExpr.simplify()); }
+        )*
+        {
+            op.setMethod(mn.getText(), params);
+        }
+    )
+    ;
+
+otherwiseExpr [PathExpr path]
+returns [Expression step]
+throws PermissionDeniedException, EXistException, XPathException
+{
+    step = null;
+}:
+    #(
+        owAST:LITERAL_otherwise
+        {
+            PathExpr leftExpr = new PathExpr(context);
+            leftExpr.setASTNode(otherwiseExpr_AST_in);
+        }
+        expr [leftExpr]
+        {
+            PathExpr rightExpr = new PathExpr(context);
+            rightExpr.setASTNode(otherwiseExpr_AST_in);
+        }
+        expr [rightExpr]
+        {
+            step = new OtherwiseExpression(context, leftExpr.simplify(), rightExpr.simplify());
+            step.setASTNode(owAST);
+            path.add(step);
+        }
+    )
+    ;
+
 typeCastExpr [PathExpr path]
 returns [Expression step]
 throws PermissionDeniedException, EXistException, XPathException
@@ -3832,25 +4746,72 @@ throws PermissionDeniedException, EXistException, XPathException
             Cardinality cardinality= Cardinality.EXACTLY_ONE;
         }
         step=expr [expr]
-        t:ATOMIC_TYPE
         (
-            QUESTION
-            { cardinality= Cardinality.ZERO_OR_ONE; }
-        )?
-        {
-            try {
-                QName qn= QName.parse(staticContext, t.getText());
-                int code= Type.getType(qn);
-                CastExpression castExpr= new CastExpression(context, expr, code, cardinality);
+            #(
+                CHOICE_TYPE
+                {
+                    List<Integer> choiceTypes = new ArrayList<Integer>();
+                }
+                (
+                    ct:ATOMIC_TYPE
+                    {
+                        try {
+                            QName qn = QName.parse(staticContext, ct.getText());
+                            choiceTypes.add(Type.getType(qn));
+                        } catch (final XPathException e) {
+                            throw new XPathException(ct.getLine(), ct.getColumn(), ErrorCodes.XPST0051, "Unknown simple type " + ct.getText());
+                        } catch (final IllegalQNameException e) {
+                            throw new XPathException(ct.getLine(), ct.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + ct.getText());
+                        }
+                    }
+                )+
+            )
+            (
+                QUESTION
+                { cardinality= Cardinality.ZERO_OR_ONE; }
+            )?
+            {
+                int[] types = new int[choiceTypes.size()];
+                for (int ci = 0; ci < choiceTypes.size(); ci++) { types[ci] = choiceTypes.get(ci); }
+                ChoiceCastExpression castExpr = new ChoiceCastExpression(context, expr, types, cardinality);
                 castExpr.setASTNode(castAST);
                 path.add(castExpr);
                 step = castExpr;
-            } catch (final XPathException e) {
-                throw new XPathException(t.getLine(), t.getColumn(), ErrorCodes.XPST0051, "Unknown simple type " + t.getText());
-            } catch (final IllegalQNameException e) {
-                throw new XPathException(t.getLine(), t.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + t.getText());
             }
-        }
+            |
+            t:ATOMIC_TYPE
+            (
+                QUESTION
+                { cardinality= Cardinality.ZERO_OR_ONE; }
+            )?
+            {
+                try {
+                    QName qn= QName.parse(staticContext, t.getText());
+                    int code= Type.getType(qn);
+                    CastExpression castExpr= new CastExpression(context, expr, code, cardinality);
+                    castExpr.setASTNode(castAST);
+                    path.add(castExpr);
+                    step = castExpr;
+                } catch (final XPathException e) {
+                    throw new XPathException(t.getLine(), t.getColumn(), ErrorCodes.XPST0051, "Unknown simple type " + t.getText());
+                } catch (final IllegalQNameException e) {
+                    throw new XPathException(t.getLine(), t.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + t.getText());
+                }
+            }
+            |
+            enumCast:ENUM_TYPE
+            (
+                QUESTION
+                { cardinality= Cardinality.ZERO_OR_ONE; }
+            )?
+            {
+                String[] enumVals = enumCast.getText().split(",", -1);
+                EnumCastExpression enumCastExpr = new EnumCastExpression(context, expr, enumVals, cardinality, false);
+                enumCastExpr.setASTNode(castAST);
+                path.add(enumCastExpr);
+                step = enumCastExpr;
+            }
+        )
     )
     |
     #(
@@ -3861,25 +4822,72 @@ throws PermissionDeniedException, EXistException, XPathException
             Cardinality cardinality= Cardinality.EXACTLY_ONE;
         }
         step=expr [expr]
-        t2:ATOMIC_TYPE
         (
-            QUESTION
-            { cardinality= Cardinality.ZERO_OR_ONE; }
-        )?
-        {
-            try {
-                QName qn= QName.parse(staticContext, t2.getText());
-                int code= Type.getType(qn);
-                CastableExpression castExpr= new CastableExpression(context, expr, code, cardinality);
-                castExpr.setASTNode(castAST);
+            #(
+                CHOICE_TYPE
+                {
+                    List<Integer> choiceTypes2 = new ArrayList<Integer>();
+                }
+                (
+                    ct2:ATOMIC_TYPE
+                    {
+                        try {
+                            QName qn = QName.parse(staticContext, ct2.getText());
+                            choiceTypes2.add(Type.getType(qn));
+                        } catch (final XPathException e) {
+                            throw new XPathException(ct2.getLine(), ct2.getColumn(), ErrorCodes.XPST0051, "Unknown simple type " + ct2.getText());
+                        } catch (final IllegalQNameException e) {
+                            throw new XPathException(ct2.getLine(), ct2.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + ct2.getText());
+                        }
+                    }
+                )+
+            )
+            (
+                QUESTION
+                { cardinality= Cardinality.ZERO_OR_ONE; }
+            )?
+            {
+                int[] types2 = new int[choiceTypes2.size()];
+                for (int ci = 0; ci < choiceTypes2.size(); ci++) { types2[ci] = choiceTypes2.get(ci); }
+                ChoiceCastableExpression castExpr = new ChoiceCastableExpression(context, expr, types2, cardinality);
+                castExpr.setASTNode(castableAST);
                 path.add(castExpr);
                 step = castExpr;
-            } catch (final XPathException e) {
-                throw new XPathException(t2.getLine(), t2.getColumn(), ErrorCodes.XPST0051, "Unknown simple type " + t2.getText());
-            } catch (final IllegalQNameException e) {
-                throw new XPathException(t2.getLine(), t2.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + t2.getText());
             }
-        }
+            |
+            t2:ATOMIC_TYPE
+            (
+                QUESTION
+                { cardinality= Cardinality.ZERO_OR_ONE; }
+            )?
+            {
+                try {
+                    QName qn= QName.parse(staticContext, t2.getText());
+                    int code= Type.getType(qn);
+                    CastableExpression castExpr= new CastableExpression(context, expr, code, cardinality);
+                    castExpr.setASTNode(castableAST);
+                    path.add(castExpr);
+                    step = castExpr;
+                } catch (final XPathException e) {
+                    throw new XPathException(t2.getLine(), t2.getColumn(), ErrorCodes.XPST0051, "Unknown simple type " + t2.getText());
+                } catch (final IllegalQNameException e) {
+                    throw new XPathException(t2.getLine(), t2.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + t2.getText());
+                }
+            }
+            |
+            enumCastable:ENUM_TYPE
+            (
+                QUESTION
+                { cardinality= Cardinality.ZERO_OR_ONE; }
+            )?
+            {
+                String[] enumVals2 = enumCastable.getText().split(",", -1);
+                EnumCastExpression enumCastExpr2 = new EnumCastExpression(context, expr, enumVals2, cardinality, true);
+                enumCastExpr2.setASTNode(castableAST);
+                path.add(enumCastExpr2);
+                step = enumCastExpr2;
+            }
+        )
     )
     ;
 
