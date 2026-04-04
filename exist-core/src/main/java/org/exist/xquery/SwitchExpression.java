@@ -56,10 +56,19 @@ public class SwitchExpression extends AbstractExpression {
     private Expression operand;
     private Case defaultClause = null;
     private List<Case> cases = new ArrayList<>(5);
-    
+    private boolean booleanMode = false;
+
     public SwitchExpression(XQueryContext context, Expression operand) {
         super(context);
         this.operand = operand;
+    }
+
+    /**
+     * Set boolean mode for XQ4 omitted comparand: switch () { case boolExpr return ... }
+     * In boolean mode, each case operand is evaluated and its effective boolean value determines the match.
+     */
+    public void setBooleanMode(boolean booleanMode) {
+        this.booleanMode = booleanMode;
     }
     
     /**
@@ -88,34 +97,58 @@ public class SwitchExpression extends AbstractExpression {
 
         if (contextItem != null)
             {contextSequence = contextItem.toSequence();}
+
+        if (booleanMode) {
+            // XQ4 omitted comparand: evaluate each case operand as boolean
+            return evalBooleanMode(contextSequence, contextItem);
+        }
+
         final Sequence opSeq = operand.eval(contextSequence, null);
-        Sequence result = null;
+        if (opSeq.hasMany()) {
+            throw new XPathException(this, ErrorCodes.XPTY0004, "Cardinality error in switch operand ", opSeq);
+        }
+        final Collator defaultCollator = context.getDefaultCollator();
         if (opSeq.isEmpty()) {
-        	result = defaultClause.returnClause.eval(contextSequence, null);
-        } else {
-            if (opSeq.hasMany()) {
-                throw new XPathException(this, ErrorCodes.XPTY0004, "Cardinality error in switch operand ", opSeq);
+            // XQ4: empty comparand can match case () (empty case operand)
+            for (final Case next : cases) {
+                for (final Expression caseOperand : next.operands) {
+                    final Sequence caseSeq = caseOperand.eval(contextSequence, contextItem);
+                    if (caseSeq.isEmpty()) {
+                        return next.returnClause.eval(contextSequence, null);
+                    }
+                }
             }
-	        final AtomicValue opVal = opSeq.itemAt(0).atomize();
-	        final Collator defaultCollator = context.getDefaultCollator();
-	        for (final Case next : cases) {
-	            for (final Expression caseOperand : next.operands) {
-	                final Sequence caseSeq = caseOperand.eval(contextSequence, contextItem);
-	                if (caseSeq.hasMany()) {
-	                    throw new XPathException(this, ErrorCodes.XPTY0004, "Cardinality error in switch case operand ", caseSeq);
-	                }
-                    final AtomicValue caseVal = caseSeq.isEmpty() ? AtomicValue.EMPTY_VALUE : caseSeq.itemAt(0).atomize();
-	                if (FunDeepEqual.deepEquals(caseVal, opVal, defaultCollator)) {
-	                    return next.returnClause.eval(contextSequence, null);
-	                }
-	            }
-	        }
+        } else {
+            final AtomicValue opVal = opSeq.itemAt(0).atomize();
+            for (final Case next : cases) {
+                for (final Expression caseOperand : next.operands) {
+                    final Sequence caseSeq = caseOperand.eval(contextSequence, contextItem);
+                    if (context.getXQueryVersion() <= 30 && caseSeq.hasMany()) {
+                        throw new XPathException(this, ErrorCodes.XPTY0004, "Cardinality error in switch case operand ", caseSeq);
+                    }
+                    // XQ4: case operand may be a sequence; match if any item equals the comparand
+                    for (int i = 0; i < caseSeq.getItemCount(); i++) {
+                        final AtomicValue caseVal = caseSeq.itemAt(i).atomize();
+                        if (FunDeepEqual.deepEquals(caseVal, opVal, defaultCollator)) {
+                            return next.returnClause.eval(contextSequence, null);
+                        }
+                    }
+                }
+            }
         }
-        if (result == null) {
-            result = defaultClause.returnClause.eval(contextSequence, null);
+        return defaultClause.returnClause.eval(contextSequence, null);
+    }
+
+    private Sequence evalBooleanMode(Sequence contextSequence, Item contextItem) throws XPathException {
+        for (final Case next : cases) {
+            for (final Expression caseOperand : next.operands) {
+                final Sequence caseSeq = caseOperand.eval(contextSequence, contextItem);
+                if (caseSeq.effectiveBooleanValue()) {
+                    return next.returnClause.eval(contextSequence, null);
+                }
+            }
         }
-        
-        return result;
+        return defaultClause.returnClause.eval(contextSequence, null);
     }
 
     public int returnsType() {

@@ -443,6 +443,16 @@ public class LocationStep extends Step {
                         result = getSiblings(context, contextSequence);
                         break;
 
+                    case Constants.FOLLOWING_OR_SELF_AXIS:
+                    case Constants.PRECEDING_OR_SELF_AXIS:
+                        result = getOrSelfAxis(context, contextSequence);
+                        break;
+
+                    case Constants.FOLLOWING_SIBLING_OR_SELF_AXIS:
+                    case Constants.PRECEDING_SIBLING_OR_SELF_AXIS:
+                        result = getSiblingOrSelfAxis(context, contextSequence);
+                        break;
+
                     default:
                         throw new IllegalArgumentException("Unsupported axis specified");
                 }
@@ -1001,6 +1011,93 @@ public class LocationStep extends Step {
                 }
             }
         }
+    }
+
+    /**
+     * XQ4: Evaluate following-or-self or preceding-or-self axis.
+     * Combines self:: with following:: or preceding:: and returns
+     * results in document order.
+     */
+    private Sequence getOrSelfAxis(final XQueryContext context, final Sequence contextSequence)
+            throws XPathException {
+        // Evaluate self:: axis
+        final int savedAxis = axis;
+        axis = Constants.SELF_AXIS;
+        final Sequence selfResult = getSelf(context, contextSequence);
+
+        // Evaluate the base axis (following or preceding)
+        axis = (savedAxis == Constants.FOLLOWING_OR_SELF_AXIS)
+                ? Constants.FOLLOWING_AXIS : Constants.PRECEDING_AXIS;
+        final Sequence baseResult = getPrecedingOrFollowing(context, contextSequence);
+
+        axis = savedAxis;
+
+        // Merge results
+        if (selfResult.isEmpty()) {
+            return baseResult;
+        }
+        if (baseResult.isEmpty()) {
+            return selfResult;
+        }
+        final ValueSequence combined = new ValueSequence();
+        if (savedAxis == Constants.PRECEDING_OR_SELF_AXIS) {
+            // preceding comes first in document order, then self
+            combined.addAll(baseResult);
+            combined.addAll(selfResult);
+        } else {
+            // self comes first, then following
+            combined.addAll(selfResult);
+            combined.addAll(baseResult);
+        }
+        combined.sortInDocumentOrder();
+        combined.removeDuplicates();
+        return combined;
+    }
+
+    /**
+     * XQ4: Evaluate following-sibling-or-self or preceding-sibling-or-self axis.
+     * Combines self:: with following-sibling:: or preceding-sibling:: and returns
+     * results in document order.
+     */
+    private Sequence getSiblingOrSelfAxis(final XQueryContext context, final Sequence contextSequence)
+            throws XPathException {
+        // Evaluate self:: axis
+        final int savedAxis = axis;
+        axis = Constants.SELF_AXIS;
+        final Sequence selfResult = getSelf(context, contextSequence);
+
+        // Evaluate the base sibling axis — guard against document nodes
+        // which don't have siblings and cause ArrayIndexOutOfBounds
+        axis = (savedAxis == Constants.FOLLOWING_SIBLING_OR_SELF_AXIS)
+                ? Constants.FOLLOWING_SIBLING_AXIS : Constants.PRECEDING_SIBLING_AXIS;
+        Sequence baseResult;
+        try {
+            baseResult = getSiblings(context, contextSequence);
+        } catch (final ArrayIndexOutOfBoundsException e) {
+            // Document nodes don't have siblings
+            baseResult = Sequence.EMPTY_SEQUENCE;
+        }
+
+        axis = savedAxis;
+
+        // Merge results
+        if (selfResult.isEmpty()) {
+            return baseResult;
+        }
+        if (baseResult.isEmpty()) {
+            return selfResult;
+        }
+        final ValueSequence combined = new ValueSequence();
+        if (savedAxis == Constants.PRECEDING_SIBLING_OR_SELF_AXIS) {
+            combined.addAll(baseResult);
+            combined.addAll(selfResult);
+        } else {
+            combined.addAll(selfResult);
+            combined.addAll(baseResult);
+        }
+        combined.sortInDocumentOrder();
+        combined.removeDuplicates();
+        return combined;
     }
 
     /**
