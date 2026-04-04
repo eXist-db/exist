@@ -214,7 +214,7 @@ public class DurationValue extends ComputableValue {
                 ).add(zeroIfNull((BigDecimal) duration.getField(DatatypeConstants.SECONDS)));
     }
 
-    protected BigDecimal secondsValueSigned() {
+    public BigDecimal secondsValueSigned() {
         BigDecimal x = secondsValue();
         if (duration.getSign() < 0) {
             x = x.negate();
@@ -229,7 +229,7 @@ public class DurationValue extends ComputableValue {
                         .add(zeroIfNull((BigInteger) duration.getField(DatatypeConstants.MONTHS)));
     }
 
-    protected BigInteger monthsValueSigned() {
+    public BigInteger monthsValueSigned() {
         BigInteger x = monthsValue();
         if (duration.getSign() < 0) {
             x = x.negate();

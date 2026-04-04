@@ -49,6 +49,9 @@ public class ParsingFunctions extends BasicFunction {
 
 	protected static final Logger logger = LogManager.getLogger(ParsingFunctions.class);
 
+	protected static final FunctionParameterSequenceType OPTIONS_PARAMETER = new FunctionParameterSequenceType(
+			"options", Type.MAP_ITEM, Cardinality.EXACTLY_ONE, "Options map");
+
 	public final static FunctionSignature[] signatures = {
 			new FunctionSignature(
 					new QName("parse-xml", Function.BUILTIN_FUNCTION_NS),
@@ -63,6 +66,22 @@ public class ParsingFunctions extends BasicFunction {
                             + "External entities must have been parsed before. "
 					        + "Returns the document node with the parsed document fragment.",
 					new SequenceType[] { TO_BE_PARSED_PARAMETER },
+                    PARSE_RESULT_TYPE
+            ),
+			// XQuery 4.0: fn:parse-xml with options map
+			new FunctionSignature(
+					new QName("parse-xml", Function.BUILTIN_FUNCTION_NS),
+					"Parse an XML document with options. "
+							+ "Returns the document node with the parsed document.",
+					new SequenceType[] { TO_BE_PARSED_PARAMETER, OPTIONS_PARAMETER },
+                    PARSE_RESULT_TYPE
+            ),
+			// XQuery 4.0: fn:parse-xml-fragment with options map
+			new FunctionSignature(
+					new QName("parse-xml-fragment", Function.BUILTIN_FUNCTION_NS),
+					"Parse an XML fragment with options. "
+					        + "Returns the document node with the parsed document fragment.",
+					new SequenceType[] { TO_BE_PARSED_PARAMETER, OPTIONS_PARAMETER },
                     PARSE_RESULT_TYPE
             )
     };

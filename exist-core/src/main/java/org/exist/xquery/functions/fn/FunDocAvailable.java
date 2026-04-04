@@ -62,8 +62,23 @@ public class FunDocAvailable extends Function {
                     new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE,
                             "true() if the document is available, false() otherwise"));
 
-    public FunDocAvailable(final XQueryContext context) {
-        super(context, signature);
+    // XQuery 4.0: fn:doc-available with options map
+    public static final FunctionSignature signatureWithOptions =
+            new FunctionSignature(
+                    new QName("doc-available", Function.BUILTIN_FUNCTION_NS),
+                    "Returns whether or not the document is available, with options. " +
+                            XMLDBModule.ANY_URI,
+                    new SequenceType[]{
+                            new FunctionParameterSequenceType("document-uri", Type.STRING,
+                                    Cardinality.ZERO_OR_ONE, "The document URI"),
+                            new FunctionParameterSequenceType("options", Type.MAP_ITEM,
+                                    Cardinality.EXACTLY_ONE, "Options map")
+                    },
+                    new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE,
+                            "true() if the document is available, false() otherwise"));
+
+    public FunDocAvailable(final XQueryContext context, final FunctionSignature sig) {
+        super(context, sig);
     }
 
     @Override

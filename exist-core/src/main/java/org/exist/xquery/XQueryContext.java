@@ -2730,6 +2730,13 @@ public class XQueryContext implements BinaryValueManager, Context {
      * @return The compiled module, or null if the source is not a module
      * @throws XPathException if the module could not be loaded (XQST0059) or compiled (XPST0003)
      */
+    /**
+     * Compile a module from a Source. Public wrapper for fn:load-xquery-module content option.
+     */
+    public @Nullable ExternalModule compileModuleFromSource(final String namespaceURI, final Source source) throws XPathException {
+        return compileModule(namespaceURI, null, "content", source);
+    }
+
     private @Nullable ExternalModule compileModule(String namespaceURI, final String prefix, final String location,
                                                    final Source source) throws XPathException {
         if (LOG.isDebugEnabled()) {

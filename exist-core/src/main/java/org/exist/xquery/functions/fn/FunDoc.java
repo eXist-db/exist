@@ -64,11 +64,27 @@ public class FunDoc extends Function {
                 "the document node of $document-uri")
         );
 
+    // XQuery 4.0: fn:doc with options map
+    public final static FunctionSignature signatureWithOptions =
+        new FunctionSignature(
+            new QName("doc", Function.BUILTIN_FUNCTION_NS),
+            "Returns the document node of $document-uri with options. " +
+            XMLDBModule.ANY_URI,
+            new SequenceType[] {
+                new FunctionParameterSequenceType("document-uri", Type.STRING,
+                    Cardinality.ZERO_OR_ONE, "The document URI"),
+                new FunctionParameterSequenceType("options", Type.MAP_ITEM,
+                    Cardinality.EXACTLY_ONE, "Options map")
+            },
+            new FunctionReturnSequenceType(Type.DOCUMENT, Cardinality.ZERO_OR_ONE,
+                "the document node of $document-uri")
+        );
+
     // fixit! - security warning
     private UpdateListener listener = null;
 
-    public FunDoc(XQueryContext context) {
-        super(context, signature);
+    public FunDoc(XQueryContext context, FunctionSignature sig) {
+        super(context, sig);
     }
 
     public Sequence eval(Sequence contextSequence, Item contextItem)

@@ -35,6 +35,7 @@ import org.exist.xquery.Constants;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.InlineFunction;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.ValueComparison;
 import org.exist.xquery.XPathException;
@@ -43,6 +44,7 @@ import org.exist.xquery.functions.array.ArrayType;
 import org.exist.xquery.functions.map.AbstractMapType;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.BooleanValue;
+import org.exist.xquery.value.FunctionReference;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Item;
@@ -55,6 +57,8 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Implements the fn:deep-equal library function.
@@ -225,6 +229,29 @@ public class FunDeepEqual extends CollatingFunction {
                 }
             }
 
+            // XQ4: Function items compared by function-identity semantics
+            if (Type.subTypeOf(item1.getType(), Type.FUNCTION) || Type.subTypeOf(item2.getType(), Type.FUNCTION)) {
+                if (!Type.subTypeOf(item1.getType(), Type.FUNCTION) || !Type.subTypeOf(item2.getType(), Type.FUNCTION)) {
+                    return Constants.INFERIOR;
+                }
+                if (item1 == item2) {
+                    return Constants.EQUAL;
+                }
+                // Named functions with same name and arity are equal
+                if (item1 instanceof FunctionReference ref1 && item2 instanceof FunctionReference ref2) {
+                    final org.exist.dom.QName name1 = ref1.getSignature().getName();
+                    final org.exist.dom.QName name2 = ref2.getSignature().getName();
+                    if (name1 != null && name2 != null
+                            && name1 != InlineFunction.INLINE_FUNCTION_QNAME
+                            && name2 != InlineFunction.INLINE_FUNCTION_QNAME
+                            && name1.equals(name2)
+                            && ref1.getSignature().getArgumentCount() == ref2.getSignature().getArgumentCount()) {
+                        return Constants.EQUAL;
+                    }
+                }
+                return Constants.INFERIOR;
+            }
+
             final boolean item1IsAtomic = Type.subTypeOf(item1.getType(), Type.ANY_ATOMIC_TYPE);
             final boolean item2IsAtomic = Type.subTypeOf(item2.getType(), Type.ANY_ATOMIC_TYPE);
             if (item1IsAtomic || item2IsAtomic) {
@@ -370,44 +397,75 @@ public class FunDeepEqual extends CollatingFunction {
     }
 
     private static int compareContents(Node a, Node b, @Nullable final Collator collator) {
-        a = findNextTextOrElementNode(a.getFirstChild());
-        b = findNextTextOrElementNode(b.getFirstChild());
-        while (!(a == null || b == null)) {
-            final int nodeTypeA = getEffectiveNodeType(a);
-            final int nodeTypeB = getEffectiveNodeType(b);
-            if (nodeTypeA != nodeTypeB) {
-                return Constants.INFERIOR;
-            }
-            switch (nodeTypeA) {
-            case Node.TEXT_NODE:
-                final String nodeValueA = getNodeValue(a);
-                final String nodeValueB = getNodeValue(b);
-                final int textComparison = safeCompare(nodeValueA, nodeValueB, collator);
+        // XQ4: merge adjacent text nodes (split by ignored comments/PIs)
+        final List<Object> childrenA = mergeTextNodes(a);
+        final List<Object> childrenB = mergeTextNodes(b);
+
+        if (childrenA.size() != childrenB.size()) {
+            return childrenA.size() < childrenB.size() ? Constants.INFERIOR : Constants.SUPERIOR;
+        }
+
+        for (int i = 0; i < childrenA.size(); i++) {
+            final Object ca = childrenA.get(i);
+            final Object cb = childrenB.get(i);
+
+            if (ca instanceof String sa && cb instanceof String sb) {
+                final int textComparison = safeCompare(sa, sb, collator);
                 if (textComparison != Constants.EQUAL) {
                     return textComparison;
                 }
-                break;
-            case Node.ELEMENT_NODE:
-                final int elementComparison = compareElements(a, b, collator);
-                if (elementComparison != Constants.EQUAL) {
-                    return elementComparison;
+            } else if (ca instanceof Node na && cb instanceof Node nb) {
+                if (getEffectiveNodeType(na) != getEffectiveNodeType(nb)) {
+                    return Constants.INFERIOR;
                 }
-                break;
-            default:
-                throw new RuntimeException("unexpected node type " + nodeTypeA);
+                if (getEffectiveNodeType(na) != getEffectiveNodeType(nb)) {
+                    return Constants.INFERIOR;
+                }
+                if (getEffectiveNodeType(na) == Node.ELEMENT_NODE) {
+                    final int cmp = compareElements(na, nb, collator);
+                    if (cmp != Constants.EQUAL) {
+                        return cmp;
+                    }
+                }
+            } else {
+                return Constants.INFERIOR;
             }
-            a = findNextTextOrElementNode(a.getNextSibling());
-            b = findNextTextOrElementNode(b.getNextSibling());
         }
+        return Constants.EQUAL;
+    }
 
-        // NOTE(AR): intentional reference equality check
-        if (a == b) {
-            return Constants.EQUAL; // both null
-        } else if (a == null) {
-            return Constants.INFERIOR;
-        } else {
-            return Constants.SUPERIOR;
+    /**
+     * Collect significant children for deep-equal comparison.
+     * Per XQ3.1 spec §15.3.1: "children are compared after removing all
+     * comment and processing-instruction nodes" — but text nodes are
+     * NOT merged (elements with split text nodes differ from single text).
+     */
+    static List<Object> mergeTextNodes(final Node parent) {
+        final List<Object> result = new ArrayList<>();
+        StringBuilder textAccum = null;
+        Node child = parent.getFirstChild();
+        while (child != null) {
+            final int nodeType = getEffectiveNodeType(child);
+            if (nodeType == Node.TEXT_NODE) {
+                // XQ4: merge adjacent text nodes (split by ignored comments/PIs)
+                if (textAccum == null) {
+                    textAccum = new StringBuilder();
+                }
+                textAccum.append(getNodeValue(child));
+            } else if (nodeType == Node.ELEMENT_NODE) {
+                if (textAccum != null) {
+                    result.add(textAccum.toString());
+                    textAccum = null;
+                }
+                result.add(child);
+            }
+            // Skip comments and PIs per spec — text continues to merge
+            child = child.getNextSibling();
         }
+        if (textAccum != null) {
+            result.add(textAccum.toString());
+        }
+        return result;
     }
 
     private static String getNodeValue(final Node n) {

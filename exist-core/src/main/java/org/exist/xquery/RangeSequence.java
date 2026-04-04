@@ -21,8 +21,6 @@
  */
 package org.exist.xquery;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.xquery.value.AbstractSequence;
 import org.exist.xquery.value.IntegerValue;
@@ -32,18 +30,40 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
 
-import java.math.BigInteger;
-
+/**
+ * An immutable, lazy sequence representing an integer range (start to end).
+ * Stores only the start and end values as primitive longs — no intermediate
+ * IntegerValue objects are created until accessed. Operations like count(),
+ * isEmpty(), itemAt(), and subsequence() are O(1).
+ */
 public class RangeSequence extends AbstractSequence {
 
-    private final static Logger LOG = LogManager.getLogger(AbstractSequence.class);
-
-    private final IntegerValue start;
-    private final IntegerValue end;
+    private final long start;
+    private final long end;
+    private final long size;
 
     public RangeSequence(final IntegerValue start, final IntegerValue end) {
+        this(start.getLong(), end.getLong());
+    }
+
+    public RangeSequence(final long start, final long end) {
         this.start = start;
         this.end = end;
+        if (start <= end) {
+            final long diff = end - start;
+            // Overflow protection: if diff < 0, the range is too large
+            this.size = (diff >= 0) ? diff + 1 : Long.MAX_VALUE;
+        } else {
+            this.size = 0;
+        }
+    }
+
+    public long getStart() {
+        return start;
+    }
+
+    public long getEnd() {
+        return end;
     }
 
     @Override
@@ -62,16 +82,16 @@ public class RangeSequence extends AbstractSequence {
 
     @Override
     public SequenceIterator iterate() {
-        return new RangeSequenceIterator(start.getLong(), end.getLong());
+        return new RangeSequenceIterator(start, end);
     }
 
     @Override
     public SequenceIterator unorderedIterator() {
-        return new RangeSequenceIterator(start.getLong(), end.getLong());
+        return new RangeSequenceIterator(start, end);
     }
 
     public SequenceIterator iterateInReverse() {
-        return new ReverseRangeSequenceIterator(start.getLong(), end.getLong());
+        return new ReverseRangeSequenceIterator(start, end);
     }
 
     private static class RangeSequenceIterator implements SequenceIterator {
@@ -148,39 +168,30 @@ public class RangeSequence extends AbstractSequence {
 
     @Override
     public long getItemCountLong() {
-        if (start.compareTo(end) > 0) {
-            return 0;
-        }
-        try {
-            return ((IntegerValue) end.minus(start)).getLong() + 1;
-        } catch (final XPathException e) {
-            LOG.warn("Unexpected exception when processing result of range expression: {}", e.getMessage(), e);
-            return 0;
-        }
+        return size;
     }
 
     @Override
     public boolean isEmpty() {
-        return getItemCountLong() == 0;
+        return size == 0;
     }
 
     @Override
     public boolean hasOne() {
-        return getItemCountLong() == 1;
+        return size == 1;
     }
 
     @Override
     public boolean hasMany() {
-        return getItemCountLong() > 1;
+        return size > 1;
     }
 
     @Override
     public Cardinality getCardinality() {
-        final long itemCount = getItemCountLong();
-        if (itemCount <= 0) {
+        if (size == 0) {
             return Cardinality.EMPTY_SEQUENCE;
         }
-        if (itemCount == 1) {
+        if (size == 1) {
             return Cardinality.EXACTLY_ONE;
         }
         return Cardinality._MANY;
@@ -188,10 +199,24 @@ public class RangeSequence extends AbstractSequence {
 
     @Override
     public Item itemAt(final int pos) {
-        if (pos < getItemCountLong()) {
-            return new IntegerValue(start.getLong() + pos);
+        if (pos >= 0 && pos < size) {
+            return new IntegerValue(start + pos);
         }
         return null;
+    }
+
+    @Override
+    public boolean contains(final Item item) {
+        if (item instanceof IntegerValue) {
+            final long val = ((IntegerValue) item).getLong();
+            return val >= start && val <= end;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean containsReference(final Item item) {
+        return false; // primitives don't have reference identity
     }
 
     @Override
@@ -211,37 +236,7 @@ public class RangeSequence extends AbstractSequence {
     }
 
     @Override
-    public boolean containsReference(final Item item) {
-        return start == item || end == item;
+    public String toString() {
+        return "Range(" + start + " to " + end + ")";
     }
-
-    @Override
-    public boolean contains(final Item item) {
-        if (item instanceof IntegerValue) {
-            try {
-                final BigInteger other = item.toJavaObject(BigInteger.class);
-                return other.compareTo(start.toJavaObject(BigInteger.class)) >= 0
-                        && other.compareTo(end.toJavaObject(BigInteger.class)) <= 0;
-            } catch (final XPathException e) {
-                LOG.warn(e.getMessage(), e);
-                return false;
-            }
-        }
-        return false;
-    }
-
-	/**
-	 * Generates a string representation of the Range Sequence.
-	 *
-	 * Range sequences can potentially be
-	 * very large, so we generate a summary here
-	 * rather than evaluating to generate a (possibly)
-	 * huge sequence of objects.
-	 *
-	 * @return a string representation of the range sequence.
-	 */
-	@Override
-	public String toString() {
-		return "Range(" + start + " to " + end + ")";
-	}
 }
