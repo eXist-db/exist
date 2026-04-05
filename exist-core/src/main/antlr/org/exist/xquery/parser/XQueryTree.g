@@ -273,6 +273,10 @@ throws PermissionDeniedException, EXistException, XPathException
             {
                 final String version = v.getText();
                 if (version.equals("4.0")) {
+                    if (!"true".equals(System.getProperty("exist.xquery4.enabled", "true"))) {
+                        throw new XPathException(v, ErrorCodes.XPST0003,
+                            "XQuery 4.0 is not enabled. Set system property exist.xquery4.enabled=true to enable.");
+                    }
                     context.setXQueryVersion(40);
                     staticContext.setXQueryVersion(40);
                 } else if (version.equals("3.1")) {
@@ -954,6 +958,10 @@ throws PermissionDeniedException, EXistException, XPathException
     #(
         ff:FOCUS_FUNCTION
         {
+            if (staticContext.getXQueryVersion() < 40) {
+                throw new XPathException(ff, ErrorCodes.XPST0003,
+                    "Focus functions require xquery version \"4.0\"");
+            }
             PathExpr body = new PathExpr(context);
             body.setASTNode(focusFunctionDecl_AST_in);
 
@@ -1009,8 +1017,12 @@ throws PermissionDeniedException, EXistException, XPathException
         )?
         (
             #(
-                PARAM_DEFAULT
+                pd:PARAM_DEFAULT
                 {
+                    if (staticContext.getXQueryVersion() < 40) {
+                        throw new XPathException(pd, ErrorCodes.XPST0003,
+                            "Default parameter values require xquery version \"4.0\"");
+                    }
                     PathExpr defaultExpr = new PathExpr(context);
                 }
                 expr [defaultExpr]
@@ -1862,6 +1874,10 @@ throws PermissionDeniedException, EXistException, XPathException
     #(
         astTernary:TERNARY
         {
+            if (staticContext.getXQueryVersion() < 40) {
+                throw new XPathException(astTernary, ErrorCodes.XPST0003,
+                    "The ternary conditional operator (?? !!) requires xquery version \"4.0\"");
+            }
             PathExpr ternTestExpr = new PathExpr(context);
             PathExpr ternThenExpr = new PathExpr(context);
             PathExpr ternElseExpr = new PathExpr(context);
@@ -2136,7 +2152,13 @@ throws PermissionDeniedException, EXistException, XPathException
                     )
                     |
                     #(
-                        FOR_MEMBER
+                        fmAST:FOR_MEMBER
+                        {
+                            if (staticContext.getXQueryVersion() < 40) {
+                                throw new XPathException(fmAST, ErrorCodes.XPST0003,
+                                    "The 'for member' clause requires xquery version \"4.0\"");
+                            }
+                        }
                         #(
                             memberVarName:VARIABLE_BINDING
                             {
@@ -2873,6 +2895,10 @@ throws PermissionDeniedException, EXistException, XPathException
             #(
                 wh:"while"
                 {
+                    if (staticContext.getXQueryVersion() < 40) {
+                        throw new XPathException(wh, ErrorCodes.XPST0003,
+                            "The 'while' clause requires xquery version \"4.0\"");
+                    }
                     PathExpr whileExpr = new PathExpr(context);
                     whileExpr.setASTNode(exprFlowControl_AST_in);
                 }
@@ -3156,6 +3182,10 @@ throws PermissionDeniedException, EXistException, XPathException
     #(
         stAST:STRING_TEMPLATE
         {
+            if (staticContext.getXQueryVersion() < 40) {
+                throw new XPathException(stAST, ErrorCodes.XPST0003,
+                    "String templates require xquery version \"4.0\"");
+            }
             StringConstructor st = new StringConstructor(context);
             st.setASTNode(stAST);
         }
@@ -4007,6 +4037,12 @@ throws PermissionDeniedException, EXistException, XPathException
                 |
                 #(
                     kw:KEYWORD_ARG
+                    {
+                        if (staticContext.getXQueryVersion() < 40) {
+                            throw new XPathException(kw, ErrorCodes.XPST0003,
+                                "Keyword arguments require xquery version \"4.0\"");
+                        }
+                    }
                     (
                         QUESTION {
                             // Keyword argument with placeholder value: name := ?
@@ -4607,6 +4643,10 @@ throws PermissionDeniedException, EXistException, XPathException
     #(
         mapArrowAST:MAPPING_ARROW_OP
         {
+            if (staticContext.getXQueryVersion() < 40) {
+                throw new XPathException(mapArrowAST, ErrorCodes.XPST0003,
+                    "The mapping arrow operator (=>!) requires xquery version \"4.0\"");
+            }
             PathExpr leftExpr = new PathExpr(context);
             leftExpr.setASTNode(mappingArrowOp_AST_in);
         }
@@ -4654,6 +4694,10 @@ throws PermissionDeniedException, EXistException, XPathException
     #(
         pipeAST:PIPELINE_OP
         {
+            if (staticContext.getXQueryVersion() < 40) {
+                throw new XPathException(pipeAST, ErrorCodes.XPST0003,
+                    "The pipeline operator (->) requires xquery version \"4.0\"");
+            }
             PathExpr leftExpr = new PathExpr(context);
             leftExpr.setASTNode(pipelineOp_AST_in);
         }
@@ -4680,6 +4724,10 @@ throws PermissionDeniedException, EXistException, XPathException
     #(
         mcAST:METHOD_CALL_OP
         {
+            if (staticContext.getXQueryVersion() < 40) {
+                throw new XPathException(mcAST, ErrorCodes.XPST0003,
+                    "The method call operator (=?>) requires xquery version \"4.0\"");
+            }
             PathExpr leftExpr = new PathExpr(context);
             leftExpr.setASTNode(methodCallOp_AST_in);
         }
@@ -4715,6 +4763,10 @@ throws PermissionDeniedException, EXistException, XPathException
     #(
         owAST:LITERAL_otherwise
         {
+            if (staticContext.getXQueryVersion() < 40) {
+                throw new XPathException(owAST, ErrorCodes.XPST0003,
+                    "The 'otherwise' operator requires xquery version \"4.0\"");
+            }
             PathExpr leftExpr = new PathExpr(context);
             leftExpr.setASTNode(otherwiseExpr_AST_in);
         }
