@@ -185,26 +185,67 @@ public abstract class ExistDavResource implements DavResource {
         final ActiveLock[] activeLocks = getLocks();
         properties.add(new LockDiscovery(activeLocks));
 
+        // Dead properties (custom user-defined properties)
+        final DeadPropertyStore deadProps = getDeadPropertyStore();
+        if (deadProps != null) {
+            final DavPropertySet dead = deadProps.getProperties(xmldbUri.toString());
+            for (final DavPropertyName name : dead.getPropertyNames()) {
+                properties.add(dead.get(name));
+            }
+        }
+
         return properties;
     }
 
     @Override
     public void setProperty(final DavProperty<?> property) throws DavException {
-        throw new DavException(DavServletResponse.SC_FORBIDDEN,
-                "Property modification is not supported");
+        final DeadPropertyStore deadProps = getDeadPropertyStore();
+        if (deadProps != null) {
+            deadProps.setProperty(xmldbUri.toString(), property);
+        } else {
+            throw new DavException(DavServletResponse.SC_FORBIDDEN,
+                    "Property modification is not supported");
+        }
     }
 
     @Override
     public void removeProperty(final DavPropertyName propertyName) throws DavException {
-        throw new DavException(DavServletResponse.SC_FORBIDDEN,
-                "Property removal is not supported");
+        final DeadPropertyStore deadProps = getDeadPropertyStore();
+        if (deadProps != null) {
+            deadProps.removeProperty(xmldbUri.toString(), propertyName);
+        } else {
+            throw new DavException(DavServletResponse.SC_FORBIDDEN,
+                    "Property removal is not supported");
+        }
     }
 
     @Override
     public MultiStatusResponse alterProperties(final List<? extends PropEntry> changeList)
             throws DavException {
-        throw new DavException(DavServletResponse.SC_FORBIDDEN,
-                "Property modification is not supported");
+        final DeadPropertyStore deadProps = getDeadPropertyStore();
+        if (deadProps == null) {
+            throw new DavException(DavServletResponse.SC_FORBIDDEN,
+                    "Property modification is not supported");
+        }
+
+        final MultiStatusResponse msr = new MultiStatusResponse(getHref(), null);
+        for (final PropEntry entry : changeList) {
+            if (entry instanceof DavProperty<?> prop) {
+                deadProps.setProperty(xmldbUri.toString(), prop);
+                msr.add(prop.getName(), DavServletResponse.SC_OK);
+            } else if (entry instanceof DavPropertyName name) {
+                deadProps.removeProperty(xmldbUri.toString(), name);
+                msr.add(name, DavServletResponse.SC_OK);
+            }
+        }
+        return msr;
+    }
+
+    private DeadPropertyStore getDeadPropertyStore() {
+        if (factory instanceof ExistDavResourceFactory existFactory) {
+            return existFactory.getDeadPropertyStore();
+        }
+        return null;
     }
 
     @Override
@@ -312,5 +353,28 @@ public abstract class ExistDavResource implements DavResource {
      */
     public BrokerPool getBrokerPool() {
         return brokerPool;
+    }
+
+    /**
+     * Copy dead properties from this resource to a destination.
+     * Call after a successful COPY or MOVE operation.
+     */
+    protected void copyDeadProperties(final DavResource destination) {
+        final DeadPropertyStore store = getDeadPropertyStore();
+        if (store != null && destination instanceof ExistDavResource existDest) {
+            store.copyProperties(xmldbUri.toString(), existDest.getXmldbUri().toString());
+        }
+    }
+
+    /**
+     * Move dead properties from this resource to a destination (copy + delete source).
+     * Call after a successful MOVE operation.
+     */
+    protected void moveDeadProperties(final DavResource destination) {
+        final DeadPropertyStore store = getDeadPropertyStore();
+        if (store != null && destination instanceof ExistDavResource existDest) {
+            store.copyProperties(xmldbUri.toString(), existDest.getXmldbUri().toString());
+            store.removeAll(xmldbUri.toString());
+        }
     }
 }

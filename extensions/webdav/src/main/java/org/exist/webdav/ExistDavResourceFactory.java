@@ -55,6 +55,7 @@ public class ExistDavResourceFactory implements DavResourceFactory {
     private final BrokerPool brokerPool;
     private final ExistLockManager lockManager;
     private final Properties webDavOptions = new Properties();
+    private final DeadPropertyStore deadPropertyStore = new DeadPropertyStore();
 
     /**
      * Constructor.
@@ -63,7 +64,7 @@ public class ExistDavResourceFactory implements DavResourceFactory {
      */
     public ExistDavResourceFactory(final BrokerPool pool) {
         this.brokerPool = pool;
-        this.lockManager = new ExistLockManager();
+        this.lockManager = new ExistLockManager(pool);
 
         // Load WebDAV serialization options
         loadConfiguration();
@@ -199,6 +200,15 @@ public class ExistDavResourceFactory implements DavResourceFactory {
      */
     public ExistLockManager getLockManager() {
         return lockManager;
+    }
+
+    /**
+     * Get the dead property store shared across all resources.
+     *
+     * @return the dead property store
+     */
+    public DeadPropertyStore getDeadPropertyStore() {
+        return deadPropertyStore;
     }
 
     private enum ResourceType {

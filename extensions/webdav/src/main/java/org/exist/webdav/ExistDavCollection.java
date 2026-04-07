@@ -293,6 +293,7 @@ public class ExistDavCollection extends ExistDavResource {
 
         try {
             existCollection.resourceCopyMove(destCollectionUri, destName, ExistResource.Mode.MOVE);
+            moveDeadProperties(destination);
         } catch (final EXistException e) {
             throw new DavException(DavServletResponse.SC_INTERNAL_SERVER_ERROR,
                     "Failed to move collection: " + e.getMessage());
@@ -311,11 +312,44 @@ public class ExistDavCollection extends ExistDavResource {
         final XmldbURI destCollectionUri = getDestinationCollectionUri(destination);
         final String destName = getDestinationName(destination);
 
-        try {
-            existCollection.resourceCopyMove(destCollectionUri, destName, ExistResource.Mode.COPY);
-        } catch (final EXistException e) {
-            throw new DavException(DavServletResponse.SC_INTERNAL_SERVER_ERROR,
-                    "Failed to copy collection: " + e.getMessage());
+        if (shallow) {
+            // Depth: 0 — create the destination collection but don't copy children
+            try {
+                final ExistCollection destParent = new ExistCollection(
+                        configuration, destCollectionUri, brokerPool);
+                destParent.setUser(subject);
+                destParent.createCollection(destName);
+            } catch (final PermissionDeniedException e) {
+                throw new DavException(DavServletResponse.SC_FORBIDDEN,
+                        "Permission denied: " + e.getMessage());
+            } catch (final CollectionExistsException e) {
+                // Overwrite: delete and recreate
+                try {
+                    final XmldbURI destUri = destCollectionUri.append(destName);
+                    final ExistCollection existing = new ExistCollection(
+                            configuration, destUri, brokerPool);
+                    existing.setUser(subject);
+                    existing.delete();
+
+                    final ExistCollection destParent = new ExistCollection(
+                            configuration, destCollectionUri, brokerPool);
+                    destParent.setUser(subject);
+                    destParent.createCollection(destName);
+                } catch (final Exception ex) {
+                    throw new DavException(DavServletResponse.SC_INTERNAL_SERVER_ERROR,
+                            "Failed shallow copy: " + ex.getMessage());
+                }
+            } catch (final EXistException e) {
+                throw new DavException(DavServletResponse.SC_INTERNAL_SERVER_ERROR,
+                        "Failed to create collection: " + e.getMessage());
+            }
+        } else {
+            try {
+                existCollection.resourceCopyMove(destCollectionUri, destName, ExistResource.Mode.COPY);
+            } catch (final EXistException e) {
+                throw new DavException(DavServletResponse.SC_INTERNAL_SERVER_ERROR,
+                        "Failed to copy collection: " + e.getMessage());
+            }
         }
     }
 

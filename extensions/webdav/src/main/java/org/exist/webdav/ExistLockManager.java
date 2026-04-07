@@ -28,18 +28,19 @@ import org.apache.jackrabbit.webdav.lock.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
-import org.exist.dom.persistent.LockToken;
-import org.exist.security.PermissionDeniedException;
-import org.exist.webdav.exceptions.DocumentAlreadyLockedException;
-import org.exist.webdav.exceptions.DocumentNotLockedException;
+import org.exist.storage.BrokerPool;
 
 /**
- * Lock manager implementation that delegates to eXist-db's persistent
- * document locking mechanism. Locks are stored in the database metadata,
- * so they survive server restarts.
+ * Lock manager using /db/system/webdav-locks/ for persistent lock storage.
  *
- * <p>Only document locking is supported (WebDAV Level 2, write/exclusive).
- * Collection locking is not supported by eXist-db's storage layer.</p>
+ * <p>Locks are stored as XML documents in a system collection, keyed by the
+ * resource URI path. This approach decouples locks from document instances,
+ * so locks survive document replacement (PUT), server restarts, and
+ * collection moves.</p>
+ *
+ * <p>The previous implementation stored locks as document metadata via
+ * {@code DocumentImpl.setLockToken()}, which was lost when PUT replaced
+ * the document.</p>
  *
  * @author Joe Wicentowski
  */
@@ -47,13 +48,19 @@ public class ExistLockManager implements LockManager {
 
     private static final Logger LOG = LogManager.getLogger(ExistLockManager.class);
 
+    private final WebDavLockStore lockStore;
+
+    public ExistLockManager(final BrokerPool brokerPool) {
+        this.lockStore = new WebDavLockStore(brokerPool);
+    }
+
     @Override
     public ActiveLock createLock(final LockInfo reqLockInfo, final DavResource resource)
             throws DavException {
 
-        if (!(resource instanceof ExistDavDocument davDoc)) {
+        if (!(resource instanceof ExistDavResource davResource)) {
             throw new DavException(DavServletResponse.SC_PRECONDITION_FAILED,
-                    "Locking is only supported for document resources");
+                    "Locking is only supported for eXist resources");
         }
 
         // Only exclusive write locks are supported
@@ -67,38 +74,29 @@ public class ExistLockManager implements LockManager {
                     "Only exclusive locks are supported");
         }
 
-        // Create the eXist-db lock token
-        final LockToken inputToken = new LockToken(
-                LockToken.LockType.WRITE,
-                reqLockInfo.isDeep() ? LockToken.LockDepth.INFINITY : LockToken.LockDepth.ZERO,
-                LockToken.LockScope.EXCLUSIVE,
-                reqLockInfo.getOwner(),
-                reqLockInfo.getTimeout(),
-                null,
-                LockToken.ResourceType.NOT_SPECIFIED
-        );
+        final String resourceUri = davResource.getXmldbUri().toString();
 
-        // Initialize the document backend
-        final ExistDocument existDoc = new ExistDocument(
-                davDoc.configuration, davDoc.getXmldbUri(), davDoc.getBrokerPool());
-        existDoc.setUser(davDoc.getSubject());
-
-        // Check if already locked — eXist's lock() silently replaces existing locks
-        final LockToken currentLock = existDoc.getCurrentLock();
-        if (currentLock != null && currentLock.getOpaqueLockToken() != null) {
+        // Check if already locked
+        final WebDavLockStore.LockInfo existingLock = lockStore.getLock(resourceUri);
+        if (existingLock != null) {
             throw new DavException(DavServletResponse.SC_LOCKED,
                     "Resource is already locked");
         }
 
         try {
-            final LockToken resultToken = existDoc.lock(inputToken);
-            return toActiveLock(resultToken, resource);
-        } catch (final PermissionDeniedException e) {
-            throw new DavException(DavServletResponse.SC_FORBIDDEN,
-                    "Permission denied: " + e.getMessage());
-        } catch (final DocumentAlreadyLockedException e) {
-            throw new DavException(DavServletResponse.SC_LOCKED,
-                    "Document is already locked: " + e.getMessage());
+            final String owner = reqLockInfo.getOwner();
+            final long timeout = reqLockInfo.getTimeout();
+            final String token = lockStore.storeLock(
+                    resourceUri,
+                    owner != null ? owner : "unknown",
+                    "exclusive",
+                    "write",
+                    reqLockInfo.isDeep(),
+                    timeout > 0 ? timeout : 3600
+            );
+
+            return buildActiveLock(token, owner, reqLockInfo.isDeep(), timeout, resource);
+
         } catch (final EXistException e) {
             throw new DavException(DavServletResponse.SC_INTERNAL_SERVER_ERROR,
                     "Failed to create lock: " + e.getMessage());
@@ -109,30 +107,38 @@ public class ExistLockManager implements LockManager {
     public ActiveLock refreshLock(final LockInfo reqLockInfo, final String lockToken,
             final DavResource resource) throws DavException {
 
-        if (!(resource instanceof ExistDavDocument davDoc)) {
+        if (!(resource instanceof ExistDavResource davResource)) {
             throw new DavException(DavServletResponse.SC_PRECONDITION_FAILED,
-                    "Locking is only supported for document resources");
+                    "Locking is only supported for eXist resources");
         }
 
-        // Strip opaquelocktoken: prefix if present
-        final String token = stripTokenPrefix(lockToken);
+        final String resourceUri = davResource.getXmldbUri().toString();
+        final String cleanToken = stripTokenPrefix(lockToken);
 
-        final ExistDocument existDoc = new ExistDocument(
-                davDoc.configuration, davDoc.getXmldbUri(), davDoc.getBrokerPool());
-        existDoc.setUser(davDoc.getSubject());
-
-        try {
-            final LockToken resultToken = existDoc.refreshLock(token);
-            return toActiveLock(resultToken, resource);
-        } catch (final PermissionDeniedException e) {
-            throw new DavException(DavServletResponse.SC_FORBIDDEN,
-                    "Permission denied: " + e.getMessage());
-        } catch (final DocumentAlreadyLockedException e) {
-            throw new DavException(DavServletResponse.SC_LOCKED,
-                    "Document is locked by another user: " + e.getMessage());
-        } catch (final DocumentNotLockedException e) {
+        final WebDavLockStore.LockInfo lock = lockStore.getLock(resourceUri);
+        if (lock == null) {
             throw new DavException(DavServletResponse.SC_PRECONDITION_FAILED,
-                    "Document is not locked: " + e.getMessage());
+                    "Resource is not locked");
+        }
+
+        if (!lock.token.equals(cleanToken)) {
+            throw new DavException(DavServletResponse.SC_LOCKED,
+                    "Lock token does not match");
+        }
+
+        // Refresh: remove and re-create with new timeout
+        try {
+            lockStore.removeLock(resourceUri);
+            final long timeout = reqLockInfo.getTimeout();
+            final String newToken = lockStore.storeLock(
+                    resourceUri,
+                    lock.owner,
+                    lock.scope,
+                    lock.type,
+                    lock.deep,
+                    timeout > 0 ? timeout : 3600
+            );
+            return buildActiveLock(newToken, lock.owner, lock.deep, timeout, resource);
         } catch (final EXistException e) {
             throw new DavException(DavServletResponse.SC_INTERNAL_SERVER_ERROR,
                     "Failed to refresh lock: " + e.getMessage());
@@ -143,37 +149,27 @@ public class ExistLockManager implements LockManager {
     public void releaseLock(final String lockToken, final DavResource resource)
             throws DavException {
 
-        if (!(resource instanceof ExistDavDocument davDoc)) {
+        if (!(resource instanceof ExistDavResource davResource)) {
             throw new DavException(DavServletResponse.SC_PRECONDITION_FAILED,
-                    "Locking is only supported for document resources");
+                    "Locking is only supported for eXist resources");
         }
 
-        // Verify the provided token matches the current lock
+        final String resourceUri = davResource.getXmldbUri().toString();
         final String cleanToken = stripTokenPrefix(lockToken);
 
-        final ExistDocument existDoc = new ExistDocument(
-                davDoc.configuration, davDoc.getXmldbUri(), davDoc.getBrokerPool());
-        existDoc.setUser(davDoc.getSubject());
-
-        final LockToken currentLock = existDoc.getCurrentLock();
-        if (currentLock == null || currentLock.getOpaqueLockToken() == null) {
+        final WebDavLockStore.LockInfo lock = lockStore.getLock(resourceUri);
+        if (lock == null) {
             throw new DavException(DavServletResponse.SC_PRECONDITION_FAILED,
-                    "Document is not locked");
+                    "Resource is not locked");
         }
 
-        if (!currentLock.getOpaqueLockToken().equals(cleanToken)) {
+        if (!lock.token.equals(cleanToken)) {
             throw new DavException(DavServletResponse.SC_LOCKED,
                     "Lock token does not match");
         }
 
         try {
-            existDoc.unlock();
-        } catch (final PermissionDeniedException e) {
-            throw new DavException(DavServletResponse.SC_FORBIDDEN,
-                    "Permission denied: " + e.getMessage());
-        } catch (final DocumentNotLockedException e) {
-            throw new DavException(DavServletResponse.SC_PRECONDITION_FAILED,
-                    "Document is not locked: " + e.getMessage());
+            lockStore.removeLock(resourceUri);
         } catch (final EXistException e) {
             throw new DavException(DavServletResponse.SC_INTERNAL_SERVER_ERROR,
                     "Failed to release lock: " + e.getMessage());
@@ -186,72 +182,52 @@ public class ExistLockManager implements LockManager {
             return null;
         }
 
-        if (!(resource instanceof ExistDavDocument davDoc)) {
+        if (!(resource instanceof ExistDavResource davResource)) {
             return null;
         }
 
-        final ExistDocument existDoc = new ExistDocument(
-                davDoc.configuration, davDoc.getXmldbUri(), davDoc.getBrokerPool());
-        existDoc.setUser(davDoc.getSubject());
-
-        final LockToken token = existDoc.getCurrentLock();
-        if (token == null) {
+        final String resourceUri = davResource.getXmldbUri().toString();
+        final WebDavLockStore.LockInfo lock = lockStore.getLock(resourceUri);
+        if (lock == null) {
             return null;
         }
 
-        return toActiveLock(token, resource);
+        return buildActiveLock(lock.token, lock.owner, lock.deep, 0, resource);
     }
 
     @Override
     public boolean hasLock(final String lockToken, final DavResource resource) {
-        if (!(resource instanceof ExistDavDocument davDoc)) {
+        if (!(resource instanceof ExistDavResource davResource)) {
             return false;
         }
 
-        final ExistDocument existDoc = new ExistDocument(
-                davDoc.configuration, davDoc.getXmldbUri(), davDoc.getBrokerPool());
-        existDoc.setUser(davDoc.getSubject());
-
-        final LockToken token = existDoc.getCurrentLock();
-        if (token == null || token.getOpaqueLockToken() == null) {
-            return false;
-        }
-
+        final String resourceUri = davResource.getXmldbUri().toString();
         final String cleanToken = stripTokenPrefix(lockToken);
-        return token.getOpaqueLockToken().equals(cleanToken);
+        return lockStore.hasLock(resourceUri, cleanToken);
     }
 
     // -----------------------------------------------------------------------
     // Utility methods
     // -----------------------------------------------------------------------
 
-    /**
-     * Convert an eXist-db LockToken to a Jackrabbit ActiveLock.
-     */
-    private ActiveLock toActiveLock(final LockToken token, final DavResource resource) {
+    private ActiveLock buildActiveLock(final String token, final String owner,
+                                       final boolean deep, final long timeout,
+                                       final DavResource resource) {
         final ExistActiveLock activeLock = new ExistActiveLock();
-        activeLock.setOwner(token.getOwner());
-        activeLock.setIsDeep(token.getDepth() == LockToken.LockDepth.INFINITY);
+        activeLock.setOwner(owner);
+        activeLock.setIsDeep(deep);
         activeLock.setLockroot(resource.getHref());
+        activeLock.setToken("opaquelocktoken:" + token);
 
-        // Set the lock token — critical for If-header matching and UNLOCK
-        if (token.getOpaqueLockToken() != null) {
-            activeLock.setToken("opaquelocktoken:" + token.getOpaqueLockToken());
-        }
-
-        if (token.getTimeOut() == LockToken.LOCK_TIMEOUT_INFINITE) {
+        if (timeout > 0) {
+            activeLock.setTimeout(timeout);
+        } else {
             activeLock.setTimeout(Long.MAX_VALUE / 2);
-        } else if (token.getTimeOut() > 0) {
-            activeLock.setTimeout(token.getTimeOut());
         }
 
         return activeLock;
     }
 
-    /**
-     * Strip the "opaquelocktoken:" prefix from a lock token string
-     * if present.
-     */
     private String stripTokenPrefix(final String token) {
         if (token != null && token.startsWith("opaquelocktoken:")) {
             return token.substring("opaquelocktoken:".length());

@@ -191,6 +191,7 @@ public class ExistDavDocument extends ExistDavResource {
 
         try {
             existDocument.resourceCopyMove(destCollectionUri, destName, ExistResource.Mode.MOVE);
+            moveDeadProperties(destination);
         } catch (final EXistException e) {
             throw new DavException(DavServletResponse.SC_INTERNAL_SERVER_ERROR,
                     "Failed to move document: " + e.getMessage());
@@ -217,6 +218,7 @@ public class ExistDavDocument extends ExistDavResource {
 
         try {
             existDocument.resourceCopyMove(destCollectionUri, destName, ExistResource.Mode.COPY);
+            copyDeadProperties(destination);
         } catch (final EXistException e) {
             throw new DavException(DavServletResponse.SC_INTERNAL_SERVER_ERROR,
                     "Failed to copy document: " + e.getMessage());
