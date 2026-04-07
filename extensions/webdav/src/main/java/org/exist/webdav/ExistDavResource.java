@@ -179,6 +179,7 @@ public abstract class ExistDavResource implements DavResource {
         // Supported lock types (RFC 4918 §15.10)
         final SupportedLock supportedLock = new SupportedLock();
         supportedLock.addEntry(Type.WRITE, Scope.EXCLUSIVE);
+        supportedLock.addEntry(Type.WRITE, Scope.SHARED);
         properties.add(supportedLock);
 
         // Lock discovery (RFC 4918 §15.8)
@@ -264,7 +265,8 @@ public abstract class ExistDavResource implements DavResource {
 
     @Override
     public boolean isLockable(final Type type, final Scope scope) {
-        return Type.WRITE.equals(type) && Scope.EXCLUSIVE.equals(scope);
+        return Type.WRITE.equals(type)
+                && (Scope.EXCLUSIVE.equals(scope) || Scope.SHARED.equals(scope));
     }
 
     @Override
@@ -283,9 +285,32 @@ public abstract class ExistDavResource implements DavResource {
     @Override
     public ActiveLock[] getLocks() {
         final List<ActiveLock> locks = new ArrayList<>();
-        final ActiveLock writeLock = getLock(Type.WRITE, Scope.EXCLUSIVE);
-        if (writeLock != null) {
-            locks.add(writeLock);
+        if (lockManager instanceof ExistLockManager existLockManager) {
+            locks.addAll(existLockManager.getAllLocks(this));
+        } else {
+            final ActiveLock writeLock = getLock(Type.WRITE, Scope.EXCLUSIVE);
+            if (writeLock != null) {
+                locks.add(writeLock);
+            }
+        }
+        // Include deep locks from ancestor collections — needed for indirect
+        // lock refresh (litmus test 35) and If-header matching on child resources
+        if (locks.isEmpty()) {
+            DavResource parent = getCollection();
+            while (parent != null) {
+                final ActiveLock parentLock = parent.getLock(Type.WRITE, Scope.EXCLUSIVE);
+                if (parentLock != null && parentLock.isDeep()) {
+                    locks.add(parentLock);
+                    break;
+                }
+                // Also check shared locks on parent
+                final ActiveLock sharedLock = parent.getLock(Type.WRITE, Scope.SHARED);
+                if (sharedLock != null && sharedLock.isDeep()) {
+                    locks.add(sharedLock);
+                    break;
+                }
+                parent = parent.getCollection();
+            }
         }
         return locks.toArray(new ActiveLock[0]);
     }

@@ -25,7 +25,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.collections.Collection;
-import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.BrokerPool;
@@ -42,6 +41,8 @@ import org.w3c.dom.NodeList;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -49,21 +50,20 @@ import java.util.UUID;
  * Persistent lock storage using /db/system/webdav-locks/.
  *
  * <p>Locks are stored as XML documents keyed by the URI path of the locked
- * resource. This decouples lock state from document instances, so locks
- * survive document replacement (PUT), server restarts, and collection moves.</p>
- *
- * <p>Lock document format:</p>
+ * resource. Each document can contain multiple lock entries to support
+ * shared locks. Format:</p>
  * <pre>
- * &lt;lock xmlns="http://exist-db.org/webdav/locks"&gt;
- *     &lt;token&gt;opaquelocktoken:uuid&lt;/token&gt;
- *     &lt;scope&gt;exclusive&lt;/scope&gt;
- *     &lt;type&gt;write&lt;/type&gt;
- *     &lt;owner&gt;admin&lt;/owner&gt;
- *     &lt;depth&gt;0&lt;/depth&gt;
- *     &lt;timeout&gt;Second-3600&lt;/timeout&gt;
- *     &lt;created&gt;2026-03-29T12:00:00Z&lt;/created&gt;
- *     &lt;resource&gt;/db/test/document.xml&lt;/resource&gt;
- * &lt;/lock&gt;
+ * &lt;locks xmlns="http://exist-db.org/webdav/locks"&gt;
+ *     &lt;lock&gt;
+ *         &lt;token&gt;uuid&lt;/token&gt;
+ *         &lt;scope&gt;shared&lt;/scope&gt;
+ *         &lt;type&gt;write&lt;/type&gt;
+ *         &lt;owner&gt;alice&lt;/owner&gt;
+ *         &lt;depth&gt;0&lt;/depth&gt;
+ *         &lt;timeout&gt;Second-3600&lt;/timeout&gt;
+ *         &lt;created&gt;2026-03-29T12:00:00Z&lt;/created&gt;
+ *     &lt;/lock&gt;
+ * &lt;/locks&gt;
  * </pre>
  */
 public class WebDavLockStore {
@@ -80,16 +80,137 @@ public class WebDavLockStore {
     }
 
     /**
-     * Store a lock for a resource URI.
+     * Add a lock with a specific token (used for refresh).
+     */
+    public void storeLockWithToken(final String token, final String resourceUri,
+                                    final String owner, final String scope,
+                                    final String type, final boolean deep,
+                                    final long timeout) throws EXistException {
+        addLockEntry(token, resourceUri, owner, scope, type, deep, timeout);
+    }
+
+    /**
+     * Add a lock for a resource URI.
      *
      * @return the generated opaque lock token
      */
     public String storeLock(final String resourceUri, final String owner,
                             final String scope, final String type,
                             final boolean deep, final long timeout) throws EXistException {
-
         final String token = UUID.randomUUID().toString();
-        final String lockXml = buildLockXml(token, resourceUri, owner, scope, type, deep, timeout);
+        addLockEntry(token, resourceUri, owner, scope, type, deep, timeout);
+        return token;
+    }
+
+    /**
+     * Get the first lock for a resource URI, or null if not locked.
+     * For backward compatibility with code that expects a single lock.
+     */
+    public LockInfo getLock(final String resourceUri) {
+        final List<LockInfo> locks = getLocks(resourceUri);
+        return locks.isEmpty() ? null : locks.get(0);
+    }
+
+    /**
+     * Get all locks for a resource URI.
+     */
+    public List<LockInfo> getLocks(final String resourceUri) {
+        final String lockDocName = uriToLockDocName(resourceUri);
+        final XmldbURI lockDocUri = XmldbURI.create(LOCKS_COLLECTION + "/" + lockDocName);
+
+        try (final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));
+             final LockedDocument lockedDoc = broker.getXMLResource(lockDocUri, LockMode.READ_LOCK)) {
+
+            if (lockedDoc == null || lockedDoc.getDocument() == null) {
+                return List.of();
+            }
+
+            return parseLockDocument(lockedDoc.getDocument());
+
+        } catch (final EXistException | PermissionDeniedException e) {
+            LOG.error("Error reading locks for {}: {}", resourceUri, e.getMessage());
+            return List.of();
+        }
+    }
+
+    /**
+     * Remove all locks for a resource URI.
+     */
+    public void removeLock(final String resourceUri) throws EXistException {
+        removeLockDocument(resourceUri);
+    }
+
+    /**
+     * Remove a specific lock by token. If no locks remain, the document is deleted.
+     */
+    public void removeLockByToken(final String resourceUri, final String token) throws EXistException {
+        final List<LockInfo> locks = getLocks(resourceUri);
+        final List<LockInfo> remaining = new ArrayList<>();
+        for (final LockInfo lock : locks) {
+            if (!token.equals(lock.token)) {
+                remaining.add(lock);
+            }
+        }
+
+        if (remaining.isEmpty()) {
+            removeLockDocument(resourceUri);
+        } else {
+            // Rewrite the document with remaining locks
+            storeLocksDocument(resourceUri, remaining);
+        }
+    }
+
+    /**
+     * Check if a resource has an active lock with the given token.
+     */
+    public boolean hasLock(final String resourceUri, final String token) {
+        for (final LockInfo lock : getLocks(resourceUri)) {
+            if (token.equals(lock.token)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Find a specific lock by token across all locks on a resource.
+     */
+    public LockInfo getLockByToken(final String resourceUri, final String token) {
+        for (final LockInfo lock : getLocks(resourceUri)) {
+            if (token.equals(lock.token)) {
+                return lock;
+            }
+        }
+        return null;
+    }
+
+    // -----------------------------------------------------------------------
+    // Internal helpers
+    // -----------------------------------------------------------------------
+
+    private void addLockEntry(final String token, final String resourceUri,
+                               final String owner, final String scope,
+                               final String type, final boolean deep,
+                               final long timeout) throws EXistException {
+        final List<LockInfo> existing = getLocks(resourceUri);
+        final List<LockInfo> all = new ArrayList<>(existing);
+
+        final LockInfo newLock = new LockInfo();
+        newLock.token = token;
+        newLock.scope = scope;
+        newLock.type = type;
+        newLock.owner = owner != null ? owner : "unknown";
+        newLock.deep = deep;
+        newLock.timeout = timeout;
+        all.add(newLock);
+
+        storeLocksDocument(resourceUri, all);
+        LOG.debug("Stored lock for {} with token {} (total: {})", resourceUri, token, all.size());
+    }
+
+    private void storeLocksDocument(final String resourceUri, final List<LockInfo> locks)
+            throws EXistException {
+        final String lockXml = buildLocksXml(locks);
         final String lockDocName = uriToLockDocName(resourceUri);
 
         try (final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()))) {
@@ -105,37 +226,9 @@ public class WebDavLockStore {
         } catch (final Exception e) {
             throw new EXistException("Failed to store WebDAV lock: " + e.getMessage(), e);
         }
-
-        LOG.debug("Stored lock for {} with token {}", resourceUri, token);
-        return token;
     }
 
-    /**
-     * Get the lock for a resource URI, or null if not locked.
-     */
-    public LockInfo getLock(final String resourceUri) {
-        final String lockDocName = uriToLockDocName(resourceUri);
-        final XmldbURI lockDocUri = XmldbURI.create(LOCKS_COLLECTION + "/" + lockDocName);
-
-        try (final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));
-             final LockedDocument lockedDoc = broker.getXMLResource(lockDocUri, LockMode.READ_LOCK)) {
-
-            if (lockedDoc == null || lockedDoc.getDocument() == null) {
-                return null;
-            }
-
-            return parseLockDocument(lockedDoc.getDocument());
-
-        } catch (final EXistException | PermissionDeniedException e) {
-            LOG.error("Error reading lock for {}: {}", resourceUri, e.getMessage());
-            return null;
-        }
-    }
-
-    /**
-     * Remove the lock for a resource URI.
-     */
-    public void removeLock(final String resourceUri) throws EXistException {
+    private void removeLockDocument(final String resourceUri) throws EXistException {
         final String lockDocName = uriToLockDocName(resourceUri);
         final XmldbURI lockDocUri = XmldbURI.create(lockDocName);
 
@@ -152,23 +245,8 @@ public class WebDavLockStore {
             throw new EXistException("Failed to remove WebDAV lock: " + e.getMessage(), e);
         }
 
-        LOG.debug("Removed lock for {}", resourceUri);
+        LOG.debug("Removed lock document for {}", resourceUri);
     }
-
-    /**
-     * Check if a resource has an active lock with the given token.
-     */
-    public boolean hasLock(final String resourceUri, final String token) {
-        final LockInfo lock = getLock(resourceUri);
-        if (lock == null) {
-            return false;
-        }
-        return lock.token.equals(token);
-    }
-
-    // -----------------------------------------------------------------------
-    // Internal helpers
-    // -----------------------------------------------------------------------
 
     private Collection getOrCreateLocksCollection(final DBBroker broker, final Txn txn)
             throws PermissionDeniedException, EXistException, IOException,
@@ -184,7 +262,7 @@ public class WebDavLockStore {
 
     /**
      * Convert a resource URI to a lock document name.
-     * /db/test/doc.xml → db-test-doc.xml.lock.xml
+     * /db/test/doc.xml -> db-test-doc.xml.lock.xml
      */
     static String uriToLockDocName(final String resourceUri) {
         String name = resourceUri;
@@ -194,42 +272,68 @@ public class WebDavLockStore {
         return name.replace('/', '-') + ".lock.xml";
     }
 
-    private String buildLockXml(final String token, final String resourceUri,
-                                 final String owner, final String scope,
-                                 final String type, final boolean deep,
-                                 final long timeout) {
-        return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                "<lock xmlns=\"" + LOCK_NS + "\">\n" +
-                "    <token>" + esc(token) + "</token>\n" +
-                "    <scope>" + esc(scope) + "</scope>\n" +
-                "    <type>" + esc(type) + "</type>\n" +
-                "    <owner>" + esc(owner) + "</owner>\n" +
-                "    <depth>" + (deep ? "infinity" : "0") + "</depth>\n" +
-                "    <timeout>" + (timeout > 0 ? "Second-" + timeout : "Infinite") + "</timeout>\n" +
-                "    <created>" + Instant.now().toString() + "</created>\n" +
-                "    <resource>" + esc(resourceUri) + "</resource>\n" +
-                "</lock>\n";
+    private String buildLocksXml(final List<LockInfo> locks) {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+        sb.append("<locks xmlns=\"").append(LOCK_NS).append("\">\n");
+        for (final LockInfo lock : locks) {
+            sb.append("    <lock>\n");
+            sb.append("        <token>").append(esc(lock.token)).append("</token>\n");
+            sb.append("        <scope>").append(esc(lock.scope)).append("</scope>\n");
+            sb.append("        <type>").append(esc(lock.type)).append("</type>\n");
+            sb.append("        <owner>").append(esc(lock.owner)).append("</owner>\n");
+            sb.append("        <depth>").append(lock.deep ? "infinity" : "0").append("</depth>\n");
+            sb.append("        <timeout>").append(lock.timeout > 0 ? "Second-" + lock.timeout : "Infinite").append("</timeout>\n");
+            sb.append("        <created>").append(Instant.now().toString()).append("</created>\n");
+            sb.append("    </lock>\n");
+        }
+        sb.append("</locks>\n");
+        return sb.toString();
     }
 
-    private LockInfo parseLockDocument(final Document doc) {
+    private List<LockInfo> parseLockDocument(final Document doc) {
         final Element root = doc.getDocumentElement();
         if (root == null) {
-            return null;
+            return List.of();
         }
 
+        final List<LockInfo> locks = new ArrayList<>();
+
+        // New multi-lock format: <locks><lock>...</lock>...</locks>
+        if ("locks".equals(root.getLocalName())) {
+            final NodeList lockElements = root.getElementsByTagNameNS(LOCK_NS, "lock");
+            if (lockElements.getLength() == 0) {
+                // Try without namespace
+                final NodeList lockElementsNoNs = root.getElementsByTagName("lock");
+                for (int i = 0; i < lockElementsNoNs.getLength(); i++) {
+                    locks.add(parseLockElement((Element) lockElementsNoNs.item(i)));
+                }
+            } else {
+                for (int i = 0; i < lockElements.getLength(); i++) {
+                    locks.add(parseLockElement((Element) lockElements.item(i)));
+                }
+            }
+        } else if ("lock".equals(root.getLocalName())) {
+            // Old single-lock format: <lock>...</lock>
+            locks.add(parseLockElement(root));
+        }
+
+        return locks;
+    }
+
+    private LockInfo parseLockElement(final Element lockEl) {
         final LockInfo info = new LockInfo();
-        info.token = getElementText(root, "token");
-        info.scope = getElementText(root, "scope");
-        info.type = getElementText(root, "type");
-        info.owner = getElementText(root, "owner");
-        info.resource = getElementText(root, "resource");
-        final String depth = getElementText(root, "depth");
+        info.token = getElementText(lockEl, "token");
+        info.scope = getElementText(lockEl, "scope");
+        info.type = getElementText(lockEl, "type");
+        info.owner = getElementText(lockEl, "owner");
+        info.resource = getElementText(lockEl, "resource");
+        final String depth = getElementText(lockEl, "depth");
         info.deep = "infinity".equals(depth);
         return info;
     }
 
     private static String getElementText(final Element parent, final String localName) {
-        // Try with namespace first, then without (for robustness)
         NodeList nodes = parent.getElementsByTagNameNS(LOCK_NS, localName);
         if (nodes.getLength() == 0) {
             nodes = parent.getElementsByTagName(localName);
@@ -255,5 +359,6 @@ public class WebDavLockStore {
         public String owner;
         public String resource;
         public boolean deep;
+        public long timeout;
     }
 }

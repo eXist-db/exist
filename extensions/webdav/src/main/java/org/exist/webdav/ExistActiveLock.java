@@ -37,6 +37,7 @@ class ExistActiveLock extends AbstractActiveLock {
     private String owner;
     private boolean deep;
     private long timeout;
+    private Scope scope = Scope.EXCLUSIVE;
 
     @Override
     public String getToken() {
@@ -84,7 +85,11 @@ class ExistActiveLock extends AbstractActiveLock {
 
     @Override
     public Scope getScope() {
-        return Scope.EXCLUSIVE;
+        return scope;
+    }
+
+    void setScope(final Scope scope) {
+        this.scope = scope;
     }
 
     @Override

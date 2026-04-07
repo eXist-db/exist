@@ -24,6 +24,7 @@ package org.exist.webdav;
 import jakarta.servlet.ServletException;
 import org.apache.jackrabbit.webdav.*;
 import org.apache.jackrabbit.webdav.lock.ActiveLock;
+import org.apache.jackrabbit.webdav.lock.LockInfo;
 import org.apache.jackrabbit.webdav.server.AbstractWebdavServlet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -96,7 +97,31 @@ public class ExistWebdavServlet extends AbstractWebdavServlet {
 
     @Override
     protected boolean isPreconditionValid(final WebdavRequest request, final DavResource resource) {
-        return !resource.exists() || request.matchesIfHeader(resource);
+        if (!resource.exists()) {
+            return true;
+        }
+        // Check the resource itself first
+        if (request.matchesIfHeader(resource)) {
+            return true;
+        }
+        // If the resource match failed, check if a parent collection has a
+        // deep lock whose token appears in the If header.
+        DavResource parent = resource.getCollection();
+        while (parent != null) {
+            final ActiveLock parentLock = parent.getLock(
+                    org.apache.jackrabbit.webdav.lock.Type.WRITE,
+                    org.apache.jackrabbit.webdav.lock.Scope.EXCLUSIVE);
+            if (parentLock != null && parentLock.isDeep()) {
+                return request.matchesIfHeader(parent);
+            }
+            parent = parent.getCollection();
+        }
+        // No matching lock found — if no If header was sent, this is OK
+        final String ifHeader = request.getHeader("If");
+        if (ifHeader == null || ifHeader.isEmpty()) {
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -113,9 +138,15 @@ public class ExistWebdavServlet extends AbstractWebdavServlet {
         if (!resource.exists()) {
             return;
         }
-        final ActiveLock lock = resource.getLock(
+        // Check both exclusive and shared locks
+        ActiveLock lock = resource.getLock(
                 org.apache.jackrabbit.webdav.lock.Type.WRITE,
                 org.apache.jackrabbit.webdav.lock.Scope.EXCLUSIVE);
+        if (lock == null) {
+            lock = resource.getLock(
+                    org.apache.jackrabbit.webdav.lock.Type.WRITE,
+                    org.apache.jackrabbit.webdav.lock.Scope.SHARED);
+        }
         if (lock == null || lock.getToken() == null) {
             return;
         }
@@ -129,10 +160,47 @@ public class ExistWebdavServlet extends AbstractWebdavServlet {
         }
     }
 
+    /**
+     * Check if any ancestor collection is locked (deep lock).
+     * If so, the If header must contain the ancestor's lock token.
+     */
+    private void requireParentLockToken(final WebdavRequest request, final DavResource resource)
+            throws DavException {
+        DavResource parent = resource.getCollection();
+        while (parent != null) {
+            ActiveLock parentLock = parent.getLock(
+                    org.apache.jackrabbit.webdav.lock.Type.WRITE,
+                    org.apache.jackrabbit.webdav.lock.Scope.EXCLUSIVE);
+            if (parentLock == null) {
+                parentLock = parent.getLock(
+                        org.apache.jackrabbit.webdav.lock.Type.WRITE,
+                        org.apache.jackrabbit.webdav.lock.Scope.SHARED);
+            }
+            if (parentLock != null && parentLock.getToken() != null && parentLock.isDeep()) {
+                final String ifHeader = request.getHeader("If");
+                if (ifHeader == null || !ifHeader.contains(parentLock.getToken())) {
+                    throw new DavException(DavServletResponse.SC_LOCKED,
+                            "Parent collection is locked; provide lock token in If header");
+                }
+                return;
+            }
+            parent = parent.getCollection();
+        }
+    }
+
+    @Override
+    protected void doPropPatch(final WebdavRequest request, final WebdavResponse response,
+            final DavResource resource) throws java.io.IOException, DavException {
+        requireLockTokenForWrite(request, resource);
+        requireParentLockToken(request, resource);
+        super.doPropPatch(request, response, resource);
+    }
+
     @Override
     protected void doPut(final WebdavRequest request, final WebdavResponse response,
             final DavResource resource) throws java.io.IOException, DavException {
         requireLockTokenForWrite(request, resource);
+        requireParentLockToken(request, resource);
         super.doPut(request, response, resource);
     }
 
@@ -140,6 +208,7 @@ public class ExistWebdavServlet extends AbstractWebdavServlet {
     protected void doDelete(final WebdavRequest request, final WebdavResponse response,
             final DavResource resource) throws java.io.IOException, DavException {
         requireLockTokenForWrite(request, resource);
+        requireParentLockToken(request, resource);
         super.doDelete(request, response, resource);
     }
 
@@ -150,6 +219,7 @@ public class ExistWebdavServlet extends AbstractWebdavServlet {
         final DavResource dest = getResourceFactory().createResource(
                 request.getDestinationLocator(), request, response);
         requireLockTokenForWrite(request, dest);
+        requireParentLockToken(request, dest);
         super.doCopy(request, response, resource);
     }
 
@@ -157,6 +227,7 @@ public class ExistWebdavServlet extends AbstractWebdavServlet {
     protected void doMove(final WebdavRequest request, final WebdavResponse response,
             final DavResource resource) throws java.io.IOException, DavException {
         requireLockTokenForWrite(request, resource);
+        requireParentLockToken(request, resource);
         super.doMove(request, response, resource);
     }
 
@@ -315,7 +386,12 @@ public class ExistWebdavServlet extends AbstractWebdavServlet {
             // Jackrabbit uses getHref() directly for <D:href> in responses.
             // Must return the full path relative to the server root,
             // including the context path (e.g., /exist/webdav/db/).
-            final String href = hrefPrefix + webdavPath + resourcePath;
+            final String href;
+            if (hrefPrefix.endsWith(webdavPath)) {
+                href = hrefPrefix + resourcePath;
+            } else {
+                href = hrefPrefix + webdavPath + resourcePath;
+            }
             if (isCollection && !href.endsWith("/")) {
                 return href + "/";
             }
