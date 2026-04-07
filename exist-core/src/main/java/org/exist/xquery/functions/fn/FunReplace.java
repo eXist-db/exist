@@ -152,18 +152,19 @@ public class FunReplace extends BasicFunction {
 			try {
 				final RegularExpression regularExpression = config.compileRegularExpression(pattern, flags, "XP30", warnings);
 				final boolean canMatchEmpty = regularExpression.matches("");
+				final boolean allowEmptyMatch = flags.contains("!");
 
 				// XQ 3.1: FORX0003 if regex can match empty string
-				// XQ 4.0: empty-matching regex is allowed
-				if (canMatchEmpty && context.getXQueryVersion() < 40 && !isFunctionReplacement) {
+				// XQ 4.0: empty-matching regex allowed only with the ! flag
+				if (canMatchEmpty && (context.getXQueryVersion() < 40 || !allowEmptyMatch) && !isFunctionReplacement) {
 					throw new XPathException(this, ErrorCodes.FORX0003, "regular expression could match empty string");
 				}
 
 				if (isFunctionReplacement) {
 					result = evalFunctionReplacement(string, pattern, flags,
 							(FunctionReference) replacementArg.itemAt(0));
-				} else if (canMatchEmpty) {
-					// XQ4: empty-matching regex allowed — use Java regex fallback
+				} else if (canMatchEmpty && allowEmptyMatch) {
+					// XQ4: empty-matching regex allowed with ! flag — use Java regex fallback
 					// since Saxon's replace() doesn't handle empty matches well
 					result = evalEmptyMatchReplace(string, pattern, replace, flags);
 				} else {

@@ -128,13 +128,13 @@ public class FunTokenize extends BasicFunction {
                         final Pattern pat = PatternFactory.getInstance().getPattern(pattern, flags);
 
                         if (pat.matcher("").matches()) {
-                            // XQ 3.1: FORX0003 if regex can match empty string
-                            // XQ 4.0: empty-matching regex is allowed
-                            if (context.getXQueryVersion() < 40) {
+                            // XQ4 with ! flag: empty-matching allowed — tokenize between each character
+                            // XQ 3.1 or XQ4 without ! flag: FORX0003
+                            if (context.getXQueryVersion() >= 40 && flagsStr.contains("!")) {
+                                result = tokenizeEmptyMatch(string, pat);
+                            } else {
                                 throw new XPathException(this, ErrorCodes.FORX0003, "regular expression could match empty string");
                             }
-                            // XQ4: empty-matching regex allowed — tokenize between each character
-                            result = tokenizeEmptyMatch(string, pat);
                         } else {
                             final String[] tokens = pat.split(string, -1);
                             result = new ValueSequence();
