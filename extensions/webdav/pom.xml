@@ -61,50 +61,14 @@
             <version>1.11.0</version>
         </dependency>
 
+        <!-- Jackrabbit WebDAV (Jakarta EE 10 transformed) -->
         <dependency>
-            <groupId>org.exist-db.thirdparty.com.ettrema</groupId>
-            <artifactId>milton-api</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>jdom</groupId>
-                    <artifactId>jdom</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>commons-beanutils</groupId>
-                    <artifactId>commons-beanutils</artifactId>
-                </exclusion>
-            </exclusions>
+            <groupId>org.exist-db.thirdparty.org.apache.jackrabbit</groupId>
+            <artifactId>jackrabbit-webdav</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>org.jdom</groupId>
-            <artifactId>jdom</artifactId>
-            <version>1.1.3</version>
-            <scope>runtime</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>com.evolvedbinary.thirdparty.com.ettrema</groupId>
-            <artifactId>milton-servlet</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>log4j</groupId>
-                    <artifactId>log4j</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-log4j12</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>jcl-over-slf4j</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.springframework</groupId>
-                    <artifactId>spring-webmvc</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
+        <!-- Milton server dependencies removed — replaced by Jackrabbit WebDAV -->
+        <!-- Milton client kept for test suite -->
 
         <dependency>
             <groupId>jakarta.servlet</groupId>
@@ -128,9 +92,15 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- Milton client + API kept for WebDAV test suite -->
         <dependency>
             <groupId>org.exist-db.thirdparty.com.ettrema</groupId>
             <artifactId>milton-client</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.exist-db.thirdparty.com.ettrema</groupId>
+            <artifactId>milton-api</artifactId>
             <scope>test</scope>
         </dependency>
 

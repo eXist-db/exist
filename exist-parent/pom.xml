@@ -520,6 +520,13 @@
                 <version>${milton.servlet.version}</version>
             </dependency>
 
+            <!-- Jackrabbit WebDAV (Jakarta EE 10 transformed) -->
+            <dependency>
+                <groupId>org.exist-db.thirdparty.org.apache.jackrabbit</groupId>
+                <artifactId>jackrabbit-webdav</artifactId>
+                <version>2.22.3-jakarta-ee10</version>
+            </dependency>
+
             <dependency>
                 <groupId>it.unimi.dsi</groupId>
                 <artifactId>fastutil</artifactId>

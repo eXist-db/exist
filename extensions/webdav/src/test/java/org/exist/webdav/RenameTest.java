@@ -57,15 +57,15 @@ public class RenameTest {
 
     @BeforeClass
     public static void setup() {
-        PREV_PROPFIND_METHOD_XML_SIZE = System.setProperty(MiltonDocument.PROPFIND_METHOD_XML_SIZE, "exact");
+        PREV_PROPFIND_METHOD_XML_SIZE = System.setProperty("org.exist.webdav.PROPFIND_METHOD_XML_SIZE", "exact");
     }
 
     @AfterClass
     public static void cleanup() {
         if (PREV_PROPFIND_METHOD_XML_SIZE == null) {
-            System.clearProperty(MiltonDocument.PROPFIND_METHOD_XML_SIZE);
+            System.clearProperty("org.exist.webdav.PROPFIND_METHOD_XML_SIZE");
         } else {
-            System.setProperty(MiltonDocument.PROPFIND_METHOD_XML_SIZE, PREV_PROPFIND_METHOD_XML_SIZE);
+            System.setProperty("org.exist.webdav.PROPFIND_METHOD_XML_SIZE", PREV_PROPFIND_METHOD_XML_SIZE);
         }
     }
 
