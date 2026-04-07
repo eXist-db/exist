@@ -1,0 +1,16 @@
+# Litmus WebDAV compliance test baseline
+# Lines starting with # are comments.
+# Each non-empty, non-comment line is a test name that is expected to FAIL.
+# CI passes if actual failures match this baseline exactly.
+#
+# Update this file when:
+# - A previously-failing test is fixed (remove the line)
+# - A new test starts failing for a known reason (add the line with comment)
+#
+# Currently no expected failures — eXist 7.0 + Jackrabbit WebDAV passes
+# litmus 0.17 at 98/98 (basic 16/16, copymove 13/13, props 33/33, locks 36/36).
+# The two prior expected failures (cond_put_corrupt_token, fail_cond_put_unlocked
+# — Jackrabbit upstream issues JCR-406 / JCR-2638 around IfListEntryToken.match()
+# returning true for null tokens) are resolved in this PR by
+# ExistWebdavServlet.validateIfHeaderLockTokens, which validates state-tokens
+# against actually-held locks before delegating to Jackrabbit's precondition path.

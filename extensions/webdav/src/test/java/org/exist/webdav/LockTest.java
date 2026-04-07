@@ -104,34 +104,10 @@ public class LockTest {
                 unlockStatus >= 200 && unlockStatus < 300);
     }
 
-    @Test
-    public void relockReturnsFreshToken() throws IOException, NotAuthorizedException, BadRequestException,
-            HttpException, ConflictException, NotFoundException, URISyntaxException {
-        final String docName = "webdav-relock-test.xml";
-        final String docContent = "<root>relock test</root>";
-
-        final Host host = buildHost();
-        final Folder folder = host.getFolder("/");
-        assertNotNull(folder);
-
-        // store document
-        final java.io.File tmpFile = tempFolder.newFile();
-        Files.writeString(tmpFile.toPath(), docContent);
-        assertNotNull(folder.uploadFile(docName, tmpFile, null));
-
-        final String docUri = docUri(docName);
-
-        // first lock
-        final String lockToken1 = host.doLock(docUri);
-        assertNotNull("First LOCK should succeed", lockToken1);
-
-        // second lock by same user replaces the lock
-        final String lockToken2 = host.doLock(docUri);
-        assertNotNull("Second LOCK by same user should succeed", lockToken2);
-
-        // cleanup: unlock with latest token
-        host.doUnLock(docUri, lockToken2);
-    }
+    // Note: RFC 4918 §9.10 requires a second LOCK (without the If header containing the current
+    // lock token) to return 423 Locked. The ettrema httpclient used in these tests leaves the
+    // HTTP connection allocated after catching a 4xx response, making it unsuitable for testing
+    // error-path locking scenarios. That behavior is covered by the litmus compliance suite.
 
     private String docUri(final String docName) {
         return "http://localhost:" + existWebServer.getPort() + "/webdav/db/" + docName;
