@@ -121,7 +121,11 @@ public class FunReplace extends BasicFunction {
 
 			try {
 				final RegularExpression regularExpression = config.compileRegularExpression(StringView.of(pattern), flags, "XP30", warnings);
-				if (regularExpression.matches(StringView.of(""))) {
+				final boolean canMatchEmpty = regularExpression.matches(StringView.of(""));
+
+				// XQ 3.1: FORX0003 if regex can match empty string
+				// XQ 4.0: empty-matching regex is allowed
+				if (canMatchEmpty && context.getXQueryVersion() < 40) {
 					throw new XPathException(this, ErrorCodes.FORX0003, "regular expression could match empty string");
 				}
 
