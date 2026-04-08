@@ -78,6 +78,11 @@ public class XMLWriter implements SerializerWriter {
 
     private String defaultNamespace = "";
 
+    // Namespace stack (BaseX-style): flat list of (prefix, uri) pairs for all in-scope bindings.
+    // nstack records the list size at each startElement so endElement can roll back declarations.
+    private final List<String> nspaces = new ArrayList<>();
+    private final Deque<Integer> nstack = new ArrayDeque<>();
+
     /**
      * When serializing an XDM this should be true,
      * otherwise false.
@@ -197,6 +202,8 @@ public class XMLWriter implements SerializerWriter {
         originalXmlDecl = null;
         doctypeWritten = false;
         defaultNamespace = "";
+        nspaces.clear();
+        nstack.clear();
         cdataSectionElements = new LazyVal<>(this::parseCdataSectionElementNames);
     }
 
@@ -215,11 +222,34 @@ public class XMLWriter implements SerializerWriter {
     }
 
     public String getDefaultNamespace() {
-        return defaultNamespace.isEmpty() ? null : defaultNamespace;
+        final String fromStack = nsLookup("");
+        return (fromStack == null || fromStack.isEmpty()) ? null : fromStack;
     }
 
     public void setDefaultNamespace(final String namespace) {
+        // Keep the baseline field in sync; nsLookup() falls back to it when the
+        // namespace stack has no in-scope binding for the default prefix.
         defaultNamespace = namespace == null ? "" : namespace;
+    }
+
+    /**
+     * Looks up the currently in-scope URI for {@code prefix} by scanning the flat
+     * namespace list from innermost to outermost scope.
+     * For the default-namespace prefix ({@code ""}), falls back to the
+     * {@link #defaultNamespace} baseline field when the stack has no binding.
+     *
+     * @return the in-scope URI, or {@code null} if {@code prefix} is unbound
+     */
+    private String nsLookup(final String prefix) {
+        for (int i = nspaces.size() - 2; i >= 0; i -= 2) {
+            if (nspaces.get(i).equals(prefix)) {
+                return nspaces.get(i + 1);
+            }
+        }
+        if (prefix.isEmpty()) {
+            return defaultNamespace.isEmpty() ? null : defaultNamespace;
+        }
+        return null;
     }
 	
     public void startDocument() throws TransformerException {
@@ -238,15 +268,16 @@ public class XMLWriter implements SerializerWriter {
         if(!declarationWritten) {
             writeDeclaration();
         }
-        
+
         if(!doctypeWritten) {
             writeDoctype(qname);
         }
-        
+
         try {
             if(tagIsOpen) {
                 closeStartTag(false);
             }
+            nstack.push(nspaces.size());
             writer.write('<');
             writer.write(qname);
             tagIsOpen = true;
@@ -264,21 +295,22 @@ public class XMLWriter implements SerializerWriter {
         if(!declarationWritten) {
             writeDeclaration();
         }
-        
+
         if(!doctypeWritten) {
             writeDoctype(qname.getStringValue());
         }
-        
+
         try {
             if(tagIsOpen) {
                 closeStartTag(false);
             }
+            nstack.push(nspaces.size());
             writer.write('<');
             if(qname.getPrefix() != null && !qname.getPrefix().isEmpty()) {
                 writer.write(qname.getPrefix());
                 writer.write(':');
             }
-            
+
             writer.write(qname.getLocalPart());
             tagIsOpen = true;
             elementName.push(qname);
@@ -297,6 +329,9 @@ public class XMLWriter implements SerializerWriter {
                 writer.write('>');
             }
             elementName.pop();
+            if (!nstack.isEmpty()) {
+                nspaces.subList(nstack.pop(), nspaces.size()).clear();
+            }
         } catch(final IOException ioe) {
             throw new TransformerException(ioe.getMessage(), ioe);
         }
@@ -316,30 +351,27 @@ public class XMLWriter implements SerializerWriter {
                 writer.write('>');
             }
             elementName.pop();
+            if (!nstack.isEmpty()) {
+                nspaces.subList(nstack.pop(), nspaces.size()).clear();
+            }
         } catch(final IOException ioe) {
             throw new TransformerException(ioe.getMessage(), ioe);
         }
     }
 
     public void namespace(final String prefix, final String nsURI) throws TransformerException {
-        if((nsURI == null || nsURI.isEmpty()) && (prefix == null || prefix.isEmpty())) {
-            return;
-        }
+        final String normPrefix = prefix != null ? prefix : "";
+        final String normUri = nsURI != null ? nsURI : "";
 
         // The xml namespace is implicitly declared and never needs explicit serialization
-        if ("xml".equals(prefix)) {
-            return;
-        }
-
-        // The xml namespace is implicitly declared and never needs explicit serialization
-        if ("xml".equals(prefix)) {
+        if ("xml".equals(normPrefix)) {
             return;
         }
 
         try {
-            if(!tagIsOpen) {
-                // Empty default namespace outside a start tag is harmless — just skip it
-                if ((nsURI == null || nsURI.isEmpty()) && (prefix == null || prefix.isEmpty())) {
+            if (!tagIsOpen) {
+                // An xmlns="" outside a start tag is harmless — just skip it
+                if (normUri.isEmpty() && normPrefix.isEmpty()) {
                     return;
                 }
                 throw new TransformerException("Found a namespace declaration outside an element");
@@ -347,43 +379,46 @@ public class XMLWriter implements SerializerWriter {
 
             if (canonical) {
                 // Buffer for sorting — emitted in closeStartTag
-                final String pfx = prefix != null ? prefix : "";
-                final String uri = nsURI != null ? nsURI : "";
                 // Validate: reject relative namespace URIs (SERE0024)
-                if (!uri.isEmpty() && isRelativeUri(uri)) {
-                    throw new TransformerException("err:SERE0024 Canonical serialization does not allow relative namespace URIs: " + uri);
+                if (!normUri.isEmpty() && isRelativeUri(normUri)) {
+                    throw new TransformerException("err:SERE0024 Canonical serialization does not allow relative namespace URIs: " + normUri);
                 }
-                if (pfx.isEmpty() && uri.isEmpty()) {
+                if (normPrefix.isEmpty() && normUri.isEmpty()) {
                     return;  // Skip xmlns="" in canonical (not meaningful for no-namespace elements)
                 }
                 // Deduplicate: replace existing binding for same prefix
-                canonicalNamespaces.removeIf(ns -> ns[0].equals(pfx));
-                canonicalNamespaces.add(new String[]{pfx, uri});
-                if (pfx.isEmpty()) {
-                    defaultNamespace = uri;
-                }
+                canonicalNamespaces.removeIf(ns -> ns[0].equals(normPrefix));
+                canonicalNamespaces.add(new String[]{normPrefix, normUri});
+                // Track in namespace stack so getDefaultNamespace() stays accurate
+                nspaces.add(normPrefix);
+                nspaces.add(normUri);
                 return;
             }
 
-            if(prefix != null && !prefix.isEmpty()) {
-                writer.write(' ');
-                writer.write("xmlns");
-                writer.write(':');
-                writer.write(prefix);
-                writer.write("=\"");
-                writeChars(nsURI, true);
-                writer.write('"');
-            } else {
-                if(defaultNamespace.equals(nsURI)) {
-                    return;
-                }
-                writer.write(' ');
-                writer.write("xmlns");
-                writer.write("=\"");
-                writeChars(nsURI, true);
-                writer.write('"');
-                defaultNamespace= nsURI;				
+            // Look up what is currently in scope for this prefix.
+            // nsLookup scans nspaces from innermost to outermost and falls back to the
+            // defaultNamespace baseline field for the default-namespace prefix.
+            final String inScope = nsLookup(normPrefix);
+            final String effective = inScope != null ? inScope : "";
+            if (normUri.equals(effective)) {
+                return;  // Binding unchanged — no declaration needed
             }
+
+            // Record the new binding so descendants can see it via nsLookup
+            nspaces.add(normPrefix);
+            nspaces.add(normUri);
+
+            // Write the namespace declaration
+            writer.write(' ');
+            if (normPrefix.isEmpty()) {
+                writer.write("xmlns=\"");
+            } else {
+                writer.write("xmlns:");
+                writer.write(normPrefix);
+                writer.write("=\"");
+            }
+            writeChars(normUri, true);
+            writer.write('"');
         } catch(final IOException ioe) {
             throw new TransformerException(ioe.getMessage(), ioe);
         }
