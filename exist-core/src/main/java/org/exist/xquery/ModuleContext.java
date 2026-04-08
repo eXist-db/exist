@@ -358,6 +358,11 @@ public class ModuleContext extends XQueryContext {
     }
 
     @Override
+    public MemTreeBuilder peekDocumentBuilder() {
+        return parentContext.peekDocumentBuilder();
+    }
+
+    @Override
     public void pushDocumentContext() {
         parentContext.pushDocumentContext();
     }
@@ -521,6 +526,11 @@ public class ModuleContext extends XQueryContext {
     @Override
     public String getInheritedNamespace(final String prefix) {
         return parentContext.getInheritedNamespace(prefix);
+    }
+
+    @Override
+    public Map<String, String> getAllInheritedNamespaces() {
+        return parentContext.getAllInheritedNamespaces();
     }
 
     @Override
