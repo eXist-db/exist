@@ -17,7 +17,7 @@ jobs:
           distribution: liberica
           java-version: ${{ env.DEV_JDK }}
       - uses: ./.github/actions/maven-cache
-      - run: mvn -V -B --no-transfer-progress license:check
+      - run: mvn -V -B --no-transfer-progress --offline license:check
         timeout-minutes: 10
   dependencies:
     name: Dependency checks
@@ -88,6 +88,11 @@ jobs:
         timeout-minutes: 30
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MAVEN_OPTS: >-
+            -DtrimStackTrace=false
+            -D'maven.resolver.transport=wagon'
+            -D'maven.wagon.http.connectionTimeout=10000'
+            -D'maven.wagon.http.readTimeout=30000'
         run: ${{ steps.install-mvnd.outputs.mvnd-dir }}/mvnd -V -B --no-transfer-progress -T 1C compile test-compile -DtrimStackTrace=false -D'dependency-check.skip' -D'license.skip' --projects '!exist-installer'
       - name: Maven Unit Tests
         if: matrix.test-type == 'unit'
