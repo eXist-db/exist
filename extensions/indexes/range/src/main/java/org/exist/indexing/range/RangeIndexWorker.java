@@ -1241,12 +1241,10 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                             continue;
                         }
                         NodeId nodeId = null;
-                        if (nodes != null) {
-                            if (nodeIdValues != null && nodeIdValues.advanceExact(postings.docID())) {
-                                final BytesRef nodeIdRef = nodeIdValues.binaryValue();
-                                final int units = ByteConversion.byteToShortH(nodeIdRef.bytes, nodeIdRef.offset);
-                                nodeId = index.getBrokerPool().getNodeFactory().createFromData(units, nodeIdRef.bytes, nodeIdRef.offset + 2);
-                            }
+                        if (nodes != null && nodeIdValues != null && nodeIdValues.advanceExact(postings.docID())) {
+                            final BytesRef nodeIdRef = nodeIdValues.binaryValue();
+                            final int units = ByteConversion.byteToShortH(nodeIdRef.bytes, nodeIdRef.offset);
+                            nodeId = index.getBrokerPool().getNodeFactory().createFromData(units, nodeIdRef.bytes, nodeIdRef.offset + 2);
                         }
                         if (nodeId == null || nodes.get(storedDocument, nodeId) != null) {
                             Occurrences oc = map.get(term);

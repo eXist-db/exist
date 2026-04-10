@@ -45,12 +45,6 @@ public class VectorModule extends AbstractInternalModule {
   public static final String INCLUSION_DATE = "2025-01-01";
   public static final String RELEASED_IN_VERSION = "eXist-7.0";
 
-  protected static final class VectorErrorCode extends ErrorCodes.ErrorCode {
-    private VectorErrorCode(final String code, final String description) {
-      super(new QName(code, NAMESPACE_URI, PREFIX), description);
-    }
-  }
-
   public static final ErrorCodes.ErrorCode EXVECTOR0001 = new VectorErrorCode("EXVECTOR0001",
       "Embedding model could not be loaded.");
   public static final ErrorCodes.ErrorCode EXVECTOR0002 = new VectorErrorCode("EXVECTOR0002",
@@ -70,6 +64,12 @@ public class VectorModule extends AbstractInternalModule {
       new FunctionDef(Models.signatures[0], Models.class),
       new FunctionDef(Diagnostics.signatures[0], Diagnostics.class)
   };
+
+  protected static final class VectorErrorCode extends ErrorCodes.ErrorCode {
+    private VectorErrorCode(final String code, final String description) {
+      super(new QName(code, NAMESPACE_URI, PREFIX), description);
+    }
+  }
 
   public VectorModule(final Map<String, List<? extends Object>> parameters) {
     super(functions, parameters, false);

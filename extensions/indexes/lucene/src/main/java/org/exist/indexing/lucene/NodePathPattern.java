@@ -48,7 +48,7 @@ public class NodePathPattern {
 
     private final NodePath qnPath;
     private final ArrayList<Predicate> predicates = new ArrayList<>();
-
+    private static final Predicate CONST_TRUE_PREDICATE = new ConstTruePredicate();
 
     interface Predicate {
         boolean evaluate(NodePath2 nodePath, int elementIdx);
@@ -60,7 +60,6 @@ public class NodePathPattern {
             return true;
         }
     }
-    private static final Predicate CONST_TRUE_PREDICATE = new ConstTruePredicate();
 
     enum PredicateCode {
         EQUALS,      // =
