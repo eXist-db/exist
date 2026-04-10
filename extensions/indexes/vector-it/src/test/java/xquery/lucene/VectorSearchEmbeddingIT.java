@@ -173,7 +173,7 @@ public class VectorSearchEmbeddingIT {
                 + "vector:embed(\"\", \"" + MODEL + "\", \"" + MODEL_PATH + "\")");
             fail("Expected XPathException for empty text");
         } catch (XPathException e) {
-            assertTrue(e.getMessage().contains("empty result") || e.getMessage().contains("Embedding"));
+            assertEquals("vector:EXVECTOR0002", e.getErrorCode().getErrorQName().getStringValue());
         }
     }
 
@@ -186,7 +186,7 @@ public class VectorSearchEmbeddingIT {
                 + "vector:embed(\"   \", \"" + MODEL + "\", \"" + MODEL_PATH + "\")");
             fail("Expected XPathException for blank text");
         } catch (XPathException e) {
-            assertTrue(e.getMessage().contains("empty result") || e.getMessage().contains("Embedding"));
+            assertEquals("vector:EXVECTOR0002", e.getErrorCode().getErrorQName().getStringValue());
         }
     }
 

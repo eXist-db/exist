@@ -170,7 +170,7 @@ function idxk:tearDown() {
 declare
     %test:assertTrue
 function idxk:index-scan-path-lucene-has-terms() {
-    let $callback := util:function(xs:QName("idxk:term-callback"), 2),
+    let $callback := idxk:term-callback#2,
         $hits := collection($idxk:COLLECTION)//pPath,
         $result := util:index-keys($hits, '', $callback, 1000, 'lucene-index')
     return count($result) eq count($idxk:EXPECTED_PATH_LUCENE)
@@ -182,7 +182,7 @@ function idxk:index-scan-path-lucene-has-terms() {
 declare
     %test:assertTrue
 function idxk:index-scan-path-lucene() {
-    let $callback := util:function(xs:QName("idxk:term-callback"), 2),
+    let $callback := idxk:term-callback#2,
         $hits := collection($idxk:COLLECTION)//pPath,
         $result := util:index-keys($hits, '', $callback, 1000, 'lucene-index')
     return deep-equal($result, $idxk:EXPECTED_PATH_LUCENE)
@@ -196,7 +196,7 @@ function idxk:index-scan-path-lucene() {
 declare
     %test:assertTrue
 function idxk:index-scan-qname-lucene-has-terms() {
-    let $callback := util:function(xs:QName("idxk:term-callback"), 2),
+    let $callback := idxk:term-callback#2,
         $hits := collection($idxk:COLLECTION)//pQname,
         $result := util:index-keys($hits, '', $callback, 1000, 'lucene-index')
     return count($result) eq count($idxk:EXPECTED_PATH_LUCENE)
@@ -208,7 +208,7 @@ function idxk:index-scan-qname-lucene-has-terms() {
 declare
     %test:assertTrue
 function idxk:index-scan-qname-lucene() {
-    let $callback := util:function(xs:QName("idxk:term-callback"), 2),
+    let $callback := idxk:term-callback#2,
         $hits := collection($idxk:COLLECTION)//pQname,
         $result := util:index-keys($hits, '', $callback, 1000, 'lucene-index')
     return deep-equal($result, $idxk:EXPECTED_PATH_LUCENE)
@@ -221,7 +221,7 @@ function idxk:index-scan-qname-lucene() {
 declare
     %test:assertTrue
 function idxk:index-scan-path-range() {
-    let $callback := util:function(xs:QName("idxk:term-callback"), 2),
+    let $callback := idxk:term-callback#2,
         $hits := collection($idxk:COLLECTION)//pPath,
         $result := util:index-keys($hits, '', $callback, 1000)
     return deep-equal(
@@ -237,7 +237,7 @@ function idxk:index-scan-path-range() {
 declare
     %test:assertTrue
 function idxk:index-scan-qname-range() {
-    let $callback := util:function(xs:QName("idxk:term-callback"), 2),
+    let $callback := idxk:term-callback#2,
         $hits := collection($idxk:COLLECTION)//pQname,
         $result := util:index-keys($hits, '', $callback, 1000)
     return deep-equal(

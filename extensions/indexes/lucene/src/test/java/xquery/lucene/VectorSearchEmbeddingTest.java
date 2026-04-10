@@ -54,17 +54,10 @@ public class VectorSearchEmbeddingTest {
 
     private static final String COLLECTION = "/db/lucene-test-vector-embedding-local";
     private static final String COLLECTION_NAME = "lucene-test-vector-embedding-local";
-    private static final String XCONF =
-        "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">"
-        + "<index xmlns:xs=\"http://www.w3.org/2001/XMLSchema\">"
-        + "<lucene><text qname=\"article\">"
-        + "<field name=\"title\" expression=\"title\"/>"
-        + "<vector-field name=\"embedding\" expression=\"title\" dimension=\"384\" similarity=\"cosine\""
-        + " embedding=\"local\" model=\"all-MiniLM-L6-v2\" model-path=\"target/onnx-models/all-MiniLM-L6-v2\"/>"
-        + "</text></lucene></index></collection>";
-    private static final String DATA =
-        "<articles><article><title>Hello world</title></article>"
-        + "<article><title>Machine learning</title></article></articles>";
+    private static final String XCONF = """
+        <collection xmlns="http://exist-db.org/collection-config/1.0"><index xmlns:xs="http://www.w3.org/2001/XMLSchema"><lucene><text qname="article"><field name="title" expression="title"/><vector-field name="embedding" expression="title" dimension="384" similarity="cosine" embedding="local" model="all-MiniLM-L6-v2" model-path="target/onnx-models/all-MiniLM-L6-v2"/></text></lucene></index></collection>""";
+    private static final String DATA = """
+        <articles><article><title>Hello world</title></article><article><title>Machine learning</title></article></articles>""";
 
     @Test
     public void embeddingLocalIndexedAndQueried() throws XPathException, PermissionDeniedException, EXistException {
@@ -73,19 +66,20 @@ public class VectorSearchEmbeddingTest {
 
         final String dataEsc = DATA.replace("'", "''");
         final String xconfEsc = XCONF.replace("'", "''");
-        final String query =
-            "xquery version \"3.1\";\n"
-            + "import module namespace ft=\"http://exist-db.org/xquery/lucene\";\n"
-            + "import module namespace vector=\"http://exist-db.org/xquery/vector\";\n"
-            + "let $_ := (xmldb:create-collection(\"/db/system\", \"config\"),\n"
-            + "           xmldb:create-collection(\"/db/system/config\", \"db\"),\n"
-            + "           xmldb:create-collection(\"/db/system/config/db\", \"" + COLLECTION_NAME + "\"),\n"
-            + "           xmldb:create-collection(\"/db\", \"" + COLLECTION_NAME + "\"),\n"
-            + "           xmldb:store(\"" + COLLECTION + "\", \"test.xml\", parse-xml('" + dataEsc + "')),\n"
-            + "           xmldb:store(\"/db/system/config/db/" + COLLECTION_NAME + "\", \"collection.xconf\", parse-xml('" + xconfEsc + "')),\n"
-            + "           xmldb:reindex(\"" + COLLECTION + "\"))\n"
-            + "let $query-vec := vector:embed(\"Hello world\", \"all-MiniLM-L6-v2\", \"target/onnx-models/all-MiniLM-L6-v2\")\n"
-            + "return count(collection(\"" + COLLECTION + "\")//article[ft:query-vector(., $query-vec, 2)])";
+        final String query = """
+            xquery version "3.1";
+            import module namespace ft="http://exist-db.org/xquery/lucene";
+            import module namespace vector="http://exist-db.org/xquery/vector";
+            let $_ := (xmldb:create-collection("/db/system", "config"),
+                       xmldb:create-collection("/db/system/config", "db"),
+                       xmldb:create-collection("/db/system/config/db", "%s"),
+                       xmldb:create-collection("/db", "%s"),
+                       xmldb:store("%s", "test.xml", parse-xml('%s')),
+                       xmldb:store("/db/system/config/db/%s", "collection.xconf", parse-xml('%s')),
+                       xmldb:reindex("%s"))
+            let $query-vec := vector:embed("Hello world", "all-MiniLM-L6-v2", "target/onnx-models/all-MiniLM-L6-v2")
+            return count(collection("%s")//article[ft:query-vector(., $query-vec, 2)])
+            """.formatted(COLLECTION_NAME, COLLECTION_NAME, COLLECTION, dataEsc, COLLECTION_NAME, xconfEsc, COLLECTION, COLLECTION);
 
         final Sequence result = executeQuery(query);
         assertEquals(1, result.getItemCount());

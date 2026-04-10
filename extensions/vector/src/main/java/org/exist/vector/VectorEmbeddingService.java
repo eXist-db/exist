@@ -97,7 +97,7 @@ public final class VectorEmbeddingService {
     if (HttpVectorProvider.isHttpApiUrl(path)) {
       final boolean useCache = apiKey == null || apiKey.isEmpty();
       if (useCache) {
-        final String cacheKey = "http:" + modelId + ":" + path;
+        final String cacheKey = httpCacheKey(modelId, path);
         final VectorEmbeddingProvider cached = cache.get(cacheKey);
           if (cached != null) {
               return cached;
@@ -106,7 +106,7 @@ public final class VectorEmbeddingService {
       final VectorEmbeddingProvider p = HttpVectorProvider.create(modelId, path, apiKey, dim);
       if (p != null) {
         if (useCache) {
-          final String cacheKey = "http:" + modelId + ":" + path;
+          final String cacheKey = httpCacheKey(modelId, path);
           cache.put(cacheKey, p);
           LOG.info("Loaded HTTP embedding provider: {} from {}", modelId, path);
         }
@@ -148,6 +148,11 @@ public final class VectorEmbeddingService {
       }
       return null;
     });
+  }
+
+  @Nonnull
+  private static String httpCacheKey(@Nonnull final String modelId, @Nonnull final String path) {
+    return "http:" + modelId + ":" + path;
   }
 
   /**

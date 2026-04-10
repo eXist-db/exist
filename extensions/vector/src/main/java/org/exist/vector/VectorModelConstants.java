@@ -21,9 +21,8 @@
  */
 package org.exist.vector;
 
-import java.util.Collections;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Centralized model IDs and dimensions for built-in embedding models (ONNX and HTTP API).
@@ -61,7 +60,7 @@ public final class VectorModelConstants {
   );
 
   /** Built-in model IDs (for vector:models when not in registry). */
-  public static final String[] KNOWN_MODEL_IDS = {
+  public static final List<String> KNOWN_MODEL_IDS = List.of(
       "all-MiniLM-L6-v2",
       "all-MiniLM-L12-v2",
       "paraphrase-MiniLM-L3-v2",
@@ -72,7 +71,7 @@ public final class VectorModelConstants {
       "embed-multilingual-v3.0",
       "embed-english-light-v3.0",
       "embed-multilingual-light-v3.0"
-  };
+  );
 
   private VectorModelConstants() {
   }
@@ -99,9 +98,9 @@ public final class VectorModelConstants {
   }
 
   /**
-   * Returns an unmodifiable view of all known model IDs.
+   * Returns the immutable, ordered list of built-in model IDs.
    */
-  public static Set<String> getKnownModelIds() {
-    return Collections.unmodifiableSet(KNOWN_DIMENSIONS.keySet());
+  public static List<String> getKnownModelIds() {
+    return KNOWN_MODEL_IDS;
   }
 }
