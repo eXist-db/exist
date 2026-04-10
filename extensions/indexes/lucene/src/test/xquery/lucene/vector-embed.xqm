@@ -42,7 +42,7 @@ import module namespace vector="http://exist-db.org/xquery/vector";
  : vector:embed with empty model raises error.
  :)
 declare
-    %test:assertError
+    %test:assertError("vector:EXVECTOR0004")
 function ve:vector-embed-empty-model-errors() {
     vector:embed("hello", "")
 };
@@ -51,7 +51,7 @@ function ve:vector-embed-empty-model-errors() {
  : vector:embed with invalid model-path raises error.
  :)
 declare
-    %test:assertError
+    %test:assertError("vector:EXVECTOR0001")
 function ve:vector-embed-invalid-path-errors() {
     vector:embed("hello", "all-MiniLM-L6-v2", "target/onnx-models/nonexistent-12345")
 };
@@ -71,7 +71,7 @@ function ve:vector-embed-returns-array() {
  : vector:embed-batch with empty model raises error.
  :)
 declare
-    %test:assertError
+    %test:assertError("vector:EXVECTOR0004")
 function ve:vector-embed-batch-empty-model-errors() {
     vector:embed-batch(("hello", "world"), "")
 };
@@ -80,7 +80,7 @@ function ve:vector-embed-batch-empty-model-errors() {
  : vector:embed-batch with invalid model-path raises error.
  :)
 declare
-    %test:assertError
+    %test:assertError("vector:EXVECTOR0001")
 function ve:vector-embed-batch-invalid-path-errors() {
     vector:embed-batch(("hello", "world"), "all-MiniLM-L6-v2", "target/onnx-models/nonexistent-12345")
 };
@@ -120,7 +120,7 @@ function ve:vector-embed-http-api-with-api-key-param-errors() {
  : vector:embed with whitespace-only model raises error.
  :)
 declare
-    %test:assertError
+    %test:assertError("vector:EXVECTOR0004")
 function ve:vector-embed-whitespace-model-errors() {
     vector:embed("hello", "   ")
 };
@@ -129,7 +129,7 @@ function ve:vector-embed-whitespace-model-errors() {
  : vector:embed-batch with whitespace-only model raises error.
  :)
 declare
-    %test:assertError
+    %test:assertError("vector:EXVECTOR0004")
 function ve:vector-embed-batch-whitespace-model-errors() {
     vector:embed-batch(("hello", "world"), "   ")
 };

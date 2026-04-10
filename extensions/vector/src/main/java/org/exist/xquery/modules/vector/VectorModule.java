@@ -26,6 +26,7 @@ import java.util.Map;
 
 import org.exist.dom.QName;
 import org.exist.xquery.AbstractInternalModule;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.FunctionDSL;
 import org.exist.xquery.FunctionDef;
 import org.exist.xquery.FunctionSignature;
@@ -43,6 +44,21 @@ public class VectorModule extends AbstractInternalModule {
   public static final String PREFIX = "vector";
   public static final String INCLUSION_DATE = "2025-01-01";
   public static final String RELEASED_IN_VERSION = "eXist-7.0";
+
+  protected static final class VectorErrorCode extends ErrorCodes.ErrorCode {
+    private VectorErrorCode(final String code, final String description) {
+      super(new QName(code, NAMESPACE_URI, PREFIX), description);
+    }
+  }
+
+  public static final ErrorCodes.ErrorCode EXVECTOR0001 = new VectorErrorCode("EXVECTOR0001",
+      "Embedding model could not be loaded.");
+  public static final ErrorCodes.ErrorCode EXVECTOR0002 = new VectorErrorCode("EXVECTOR0002",
+      "Embedding provider returned an empty result.");
+  public static final ErrorCodes.ErrorCode EXVECTOR0003 = new VectorErrorCode("EXVECTOR0003",
+      "Vector embedding implementation is not available.");
+  public static final ErrorCodes.ErrorCode EXVECTOR0004 = new VectorErrorCode("EXVECTOR0004",
+      "Model parameter must not be empty.");
 
   public static final FunctionDef[] functions = {
       new FunctionDef(Embed.signatures[0], Embed.class),

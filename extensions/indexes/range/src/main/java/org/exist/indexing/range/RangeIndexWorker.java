@@ -143,63 +143,65 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             }
             WildcardQuery query;
             switch (operator) {
-                case EQ:
+                case EQ -> {
                     return new TermQuery(new Term(field, key));
-                case NE:
+                }
+                case NE -> {
                     final BooleanQuery.Builder builder = new BooleanQuery.Builder();
                     query = new WildcardQuery(new Term(field, new BytesRef("*")));
                     builder.add(query, BooleanClause.Occur.MUST);
                     builder.add(new TermQuery(new Term(field, key)), BooleanClause.Occur.MUST_NOT);
                     return builder.build();
-                case STARTS_WITH:
+                }
+                case STARTS_WITH -> {
                     return new PrefixQuery(new Term(field, key));
-                case ENDS_WITH:
+                }
+                case ENDS_WITH -> {
                     bytes = new BytesRefBuilder();
                     bytes.append((byte)'*');
                     bytes.append(key);
                     return new WildcardQuery(new Term(field, bytes.toBytesRef()));
-                case CONTAINS:
+                }
+                case CONTAINS -> {
                     bytes = new BytesRefBuilder();
                     bytes.append((byte)'*');
                     bytes.append(key);
                     bytes.append((byte)'*');
                     return new WildcardQuery(new Term(field, bytes.toBytesRef()));
-                case MATCH:
+                }
+                case MATCH -> {
                     String pattern = content.getStringValue();
                     pattern = XPathToLuceneRegexTranslator.translate(pattern);
                     if (matchFlags != 0) {
                         return new RegexpQuery(new Term(field, pattern), RegExp.NONE, matchFlags, Operations.DEFAULT_DETERMINIZE_WORK_LIMIT);
                     }
                     return new RegexpQuery(new Term(field, pattern));
+                }
+                default -> {
+                }
             }
         }
         // EQ/NE for numeric/date types: use Point queries (LongField.newExactQuery etc.), not TermQuery
         // (LongField/IntField index as Points; TermQuery searches terms and never matches)
         if (operator == RangeIndex.Operator.EQ) {
-            switch (type) {
-                case Type.INTEGER:
-                case Type.LONG:
-                case Type.UNSIGNED_LONG:
-                    return LongField.newExactQuery(field, ((NumericValue) content).getLong());
-                case Type.INT:
-                case Type.UNSIGNED_INT:
-                case Type.SHORT:
-                case Type.UNSIGNED_SHORT:
-                    return IntField.newExactQuery(field, ((NumericValue) content).getInt());
-                case Type.DECIMAL:
-                case Type.DOUBLE:
-                    return DoubleField.newExactQuery(field, ((NumericValue) content).getDouble());
-                case Type.FLOAT:
-                    return FloatField.newExactQuery(field, (float) ((NumericValue) content).getDouble());
-                case Type.DATE:
-                    return LongField.newExactQuery(field, RangeIndexConfigElement.dateToLong((DateValue) content));
-                case Type.TIME:
-                    return LongField.newExactQuery(field, RangeIndexConfigElement.timeToLong((TimeValue) content));
-                case Type.DATE_TIME:
-                    return new TermQuery(new Term(field, RangeIndexConfigElement.convertToBytes(content)));
-                default:
-                    return new TermQuery(new Term(field, RangeIndexConfigElement.convertToBytes(content)));
-            }
+            return switch (type) {
+                case Type.INTEGER, Type.LONG, Type.UNSIGNED_LONG ->
+                    LongField.newExactQuery(field, ((NumericValue) content).getLong());
+                case Type.INT, Type.UNSIGNED_INT, Type.SHORT, Type.UNSIGNED_SHORT ->
+                    IntField.newExactQuery(field, ((NumericValue) content).getInt());
+                case Type.DECIMAL, Type.DOUBLE ->
+                    DoubleField.newExactQuery(field, ((NumericValue) content).getDouble());
+                case Type.FLOAT ->
+                    FloatField.newExactQuery(field, (float) ((NumericValue) content).getDouble());
+                case Type.DATE ->
+                    LongField.newExactQuery(field, RangeIndexConfigElement.dateToLong((DateValue) content));
+                case Type.TIME ->
+                    LongField.newExactQuery(field, RangeIndexConfigElement.timeToLong((TimeValue) content));
+                case Type.DATE_TIME ->
+                    new TermQuery(new Term(field, RangeIndexConfigElement.convertToBytes(content)));
+                default ->
+                    new TermQuery(new Term(field, RangeIndexConfigElement.convertToBytes(content)));
+            };
         }
         if (operator == RangeIndex.Operator.NE) {
             Query eqQuery;
@@ -368,18 +370,18 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     public void setMode(ReindexMode mode) {
         this.mode = mode;
         switch (mode) {
-            case STORE:
-                if (nodesToWrite == null)
+            case STORE -> {
+                if (nodesToWrite == null) {
                     nodesToWrite = new ArrayList<>();
                 else
                     nodesToWrite.clear();
                 cachedNodesSize = 0;
-                break;
-            case REMOVE_SOME_NODES:
+            }
+            case REMOVE_SOME_NODES -> {
                 nodesToRemove = new TreeSet<>();
-                break;
-            default:
-                break;
+            }
+            default -> {
+            }
         }
     }
 
@@ -447,17 +449,17 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     @Override
     public void flush() {
         switch (mode) {
-            case STORE:
+            case STORE -> {
                 write();
-                break;
-            case REMOVE_SOME_NODES:
+            }
+            case REMOVE_SOME_NODES -> {
                 removeNodes();
-                break;
-            case REMOVE_ALL_NODES:
+            }
+            case REMOVE_ALL_NODES -> {
                 removeDocument(currentDoc.getDocId());
-                break;
-            default:
-                break;
+            }
+            default -> {
+            }
         }
     }
 

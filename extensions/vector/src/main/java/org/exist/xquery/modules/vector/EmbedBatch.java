@@ -96,11 +96,11 @@ public class EmbedBatch extends BasicFunction {
     try {
       final VectorEmbeddingProvider provider = VectorEmbeddingService.getInstance().getProvider(model, pathOrUrl, dimension, apiKey);
       if (provider == null) {
-        throw new XPathException(this, "Failed to load embedding model: " + model);
+        throw new XPathException(this, VectorModule.EXVECTOR0001, "Failed to load embedding model: " + model);
       }
       return embedAll(provider, textsSeq);
     } catch (final NoClassDefFoundError e) {
-      throw new XPathException(this, "Vector embedding module not available: " + e.getMessage());
+      throw new XPathException(this, VectorModule.EXVECTOR0003, "Vector embedding module not available: " + e.getMessage());
     }
   }
 
@@ -110,7 +110,7 @@ public class EmbedBatch extends BasicFunction {
       final String text = it.nextItem().getStringValue();
       final float[] vec = provider.embed(text, true);
       if (vec == null || vec.length == 0) {
-        throw new XPathException(this, "Embedding returned empty result for text: "
+        throw new XPathException(this, VectorModule.EXVECTOR0002, "Embedding returned empty result for text: "
             + (text.length() > 50 ? text.substring(0, 50) + "..." : text));
       }
       resultArrays.add(floatsToArray(vec).toSequence());
@@ -121,7 +121,7 @@ public class EmbedBatch extends BasicFunction {
   private String requireModel(final Sequence arg) throws XPathException {
     final String model = arg.getStringValue().trim();
     if (model.isEmpty()) {
-      throw new XPathException(this, "Model parameter must not be empty");
+      throw new XPathException(this, VectorModule.EXVECTOR0004, "Model parameter must not be empty");
     }
     return model;
   }

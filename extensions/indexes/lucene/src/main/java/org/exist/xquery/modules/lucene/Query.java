@@ -261,7 +261,8 @@ public class Query extends Function implements Optimizable {
                             qnames = new ArrayList<>(seen);
                         }
                     }
-                } catch (final IOException ignored) {
+                } catch (final IOException e) {
+                    LOG.trace("Failed to derive context qnames from defined Lucene indexes; falling back to unscoped query", e);
                 }
             }
         }
@@ -337,7 +338,8 @@ public class Query extends Function implements Optimizable {
                                 qnames = new ArrayList<>(seen);
                             }
                         }
-                    } catch (final IOException ignored) {
+                    } catch (final IOException e) {
+                        LOG.trace("Failed to derive input qnames from defined Lucene indexes; falling back to unscoped query", e);
                     }
                 }
                 final QueryOptions options = parseOptions(this, contextSequence, contextItem, 3);

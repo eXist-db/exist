@@ -24,6 +24,7 @@ xquery version "3.1";
 (:~
  : XQSuite tests for ft:index and ft:search on binary/non-XML data.
  : Consolidates binary.xql, plain-store.xql, plain-ft-functions.xql.
+ : Note: this suite does not test Lucene binary fields.
  :)
 module namespace ftb="http://exist-db.org/xquery/lucene/ft-search-binary/test";
 

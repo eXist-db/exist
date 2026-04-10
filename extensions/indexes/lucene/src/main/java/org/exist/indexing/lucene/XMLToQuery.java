@@ -301,21 +301,11 @@ public class XMLToQuery {
         for (int i = 0; i < wildcardPattern.length(); i++) {
             char c = wildcardPattern.charAt(i);
             switch (c) {
-                case '*':
-                    sb.append(".*");
-                    break;
-                case '?':
-                    sb.append(".");
-                    break;
-                case '\\':
-                    sb.append("\\\\");
-                    break;
-                case '.': case '+': case '(': case ')': case '[': case ']':
-                case '{': case '}': case '^': case '$': case '|':
-                    sb.append('\\').append(c);
-                    break;
-                default:
-                    sb.append(c);
+                case '*' -> sb.append(".*");
+                case '?' -> sb.append(".");
+                case '\\' -> sb.append("\\\\");
+                case '.', '+', '(', ')', '[', ']', '{', '}', '^', '$', '|' -> sb.append('\\').append(c);
+                default -> sb.append(c);
             }
         }
         final String regex = sb.toString();

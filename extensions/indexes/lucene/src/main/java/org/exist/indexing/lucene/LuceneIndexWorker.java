@@ -158,19 +158,23 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     public void flush() {
         switch (mode) {
             case STORE:
-                write();
+                flushStoreMode();
                 break;
             case REMOVE_ALL_NODES:
-                removeDocument(currentDoc.getDocId());
+                flushRemoveAllNodesMode();
                 break;
             case REMOVE_SOME_NODES:
-                removeNodes();
+                flushRemoveSomeNodesMode();
                 break;
             case REMOVE_BINARY:
-            	removePlainTextIndexes();
-            	break;
-            default:
+                flushRemoveBinaryMode();
                 break;
+            case UNKNOWN:
+            case REPLACE_DOCUMENT:
+                // No-op here: these lifecycle modes are handled by subsequent explicit phases.
+                break;
+            default:
+                LOG.warn("Unhandled ReindexMode in LuceneIndexWorker.flush(): {}", mode);
         }
     }
 
@@ -202,18 +206,49 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         this.mode = mode;
         switch (mode) {
             case STORE:
-                if (nodesToWrite == null)
-                    nodesToWrite = new ArrayList<>();
-                else
-                    nodesToWrite.clear();
-                cachedNodesSize = 0;
+                prepareStoreMode();
                 break;
             case REMOVE_SOME_NODES:
-                nodesToRemove = new TreeSet<>();
+                prepareRemoveSomeNodesMode();
+                break;
+            case UNKNOWN:
+            case REPLACE_DOCUMENT:
+            case REMOVE_ALL_NODES:
+            case REMOVE_BINARY:
+                // No mode-local buffers to initialize.
                 break;
             default:
-                break;
+                LOG.warn("Unhandled ReindexMode in LuceneIndexWorker.setMode(): {}", mode);
         }
+    }
+
+    private void flushStoreMode() {
+        write();
+    }
+
+    private void flushRemoveAllNodesMode() {
+        removeDocument(currentDoc.getDocId());
+    }
+
+    private void flushRemoveSomeNodesMode() {
+        removeNodes();
+    }
+
+    private void flushRemoveBinaryMode() {
+        removePlainTextIndexes();
+    }
+
+    private void prepareStoreMode() {
+        if (nodesToWrite == null) {
+            nodesToWrite = new ArrayList<>();
+        } else {
+            nodesToWrite.clear();
+        }
+        cachedNodesSize = 0;
+    }
+
+    private void prepareRemoveSomeNodesMode() {
+        nodesToRemove = new TreeSet<>();
     }
 
     @Override
