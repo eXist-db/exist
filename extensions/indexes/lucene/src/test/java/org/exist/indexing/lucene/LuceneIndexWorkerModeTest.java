@@ -92,16 +92,20 @@ public class LuceneIndexWorkerModeTest {
         final LuceneIndexWorker worker = new LuceneIndexWorker(null, null);
         worker.setMode(ReindexMode.UNKNOWN);
         worker.flush();
+        assertEquals(ReindexMode.UNKNOWN, worker.getMode());
         worker.setMode(ReindexMode.REPLACE_DOCUMENT);
         worker.flush();
+        assertEquals(ReindexMode.REPLACE_DOCUMENT, worker.getMode());
     }
 
+    @SuppressWarnings("PMD.AvoidAccessibilityAlteration")
     private static Object getField(final Object target, final String fieldName) throws Exception {
         final Field field = LuceneIndexWorker.class.getDeclaredField(fieldName);
         field.setAccessible(true);
         return field.get(target);
     }
 
+    @SuppressWarnings("PMD.AvoidAccessibilityAlteration")
     private static void setField(final Object target, final String fieldName, final Object value) throws Exception {
         final Field field = LuceneIndexWorker.class.getDeclaredField(fieldName);
         field.setAccessible(true);

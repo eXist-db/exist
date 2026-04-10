@@ -209,7 +209,7 @@ public class XMLToQuery {
                             list.add(getSpanFirst(field, (Element) child, analyzer));
                             break;
                         case "regex":
-                            list.add(getSpanRegex(field, (Element) child, analyzer));
+                            list.add(getSpanRegex(field, (Element) child));
                             break;
                         default:
                             throw new XPathException((Expression) null, "Unknown query element: " + child.getNodeName());
@@ -227,7 +227,7 @@ public class XMLToQuery {
     		list.add(new SpanTermQuery(new Term(field, termStr)));
     }
 
-    private SpanQuery getSpanRegex(String field, Element node, Analyzer analyzer) {
+    private SpanQuery getSpanRegex(String field, Element node) {
     	String regex = getText(node);
     	return new SpanMultiTermQueryWrapper<>(new RegexpQuery(new Term(field, regex)));
     }

@@ -373,8 +373,9 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             case STORE -> {
                 if (nodesToWrite == null) {
                     nodesToWrite = new ArrayList<>();
-                else
+                } else {
                     nodesToWrite.clear();
+                }
                 cachedNodesSize = 0;
             }
             case REMOVE_SOME_NODES -> {
@@ -1239,12 +1240,10 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                         if (storedDocument == null)
                             continue;
                         NodeId nodeId = null;
-                        if (nodes != null) {
-                            if (nodeIdValues != null && nodeIdValues.advanceExact(postings.docID())) {
-                                final BytesRef nodeIdRef = nodeIdValues.binaryValue();
-                                final int units = ByteConversion.byteToShortH(nodeIdRef.bytes, nodeIdRef.offset);
-                                nodeId = index.getBrokerPool().getNodeFactory().createFromData(units, nodeIdRef.bytes, nodeIdRef.offset + 2);
-                            }
+                        if (nodes != null && nodeIdValues != null && nodeIdValues.advanceExact(postings.docID())) {
+                            final BytesRef nodeIdRef = nodeIdValues.binaryValue();
+                            final int units = ByteConversion.byteToShortH(nodeIdRef.bytes, nodeIdRef.offset);
+                            nodeId = index.getBrokerPool().getNodeFactory().createFromData(units, nodeIdRef.bytes, nodeIdRef.offset + 2);
                         }
                         if (nodeId == null || nodes.get(storedDocument, nodeId) != null) {
                             Occurrences oc = map.get(term);

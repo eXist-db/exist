@@ -136,7 +136,8 @@ public class PlainTextHighlighter {
 	
 	public static class Offset {
 		
-		protected int startOffset, endOffset;
+		protected int startOffset;
+		protected int endOffset;
 		
 		Offset(int start, int end) {
 			this.startOffset = start;
