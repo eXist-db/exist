@@ -92,7 +92,8 @@ public class WebDavRoundTripTest {
 
     @Test
     public void getXmlDeclDefault() throws Exception {
-        assertEquals(XML_WITH_XMLDECL, roundTrip("test-with-xmldecl.xml", XML_WITH_XMLDECL, "application/xml"));
+        // webdav.properties sets omit-xml-declaration=yes
+        assertEquals("<bookmap id=\"bookmap-2\"/>", roundTrip("test-with-xmldecl.xml", XML_WITH_XMLDECL, "application/xml"));
     }
 
     @Test

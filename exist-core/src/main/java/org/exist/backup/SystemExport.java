@@ -621,6 +621,11 @@ public class SystemExport {
             final NamespaceSupport nsSupport = new NamespaceSupport();
             final NodeList children = doc.getChildNodes();
 
+            final XMLDeclarationImpl xmlDecl = doc.getXmlDeclaration();
+            if (xmlDecl != null) {
+                receiver.declaration(xmlDecl.getVersion(), xmlDecl.getEncoding(), xmlDecl.getStandalone());
+            }
+
             final DocumentType docType = doc.getDoctype();
             if (docType != null) {
                 receiver.documentType(docType.getName(), docType.getPublicId(), docType.getSystemId());

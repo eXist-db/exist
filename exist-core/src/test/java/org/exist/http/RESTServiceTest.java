@@ -1593,8 +1593,7 @@ try {
 
             final String response = readResponse(connect.getInputStream());
 
-            assertEquals("<?xml version=\"1.1\" encoding=\"ISO-8859-1\" standalone=\"yes\"?>\r\n" +
-                    "<bookmap id=\"bookmap-2\"/>\r\n", response);
+            assertEquals("<bookmap id=\"bookmap-2\"/>\r\n", response);
 
         } finally {
             connect.disconnect();
@@ -1602,8 +1601,8 @@ try {
     }
 
     @Test
-    public void getXmlDeclNo() throws IOException {
-        final HttpURLConnection connect = getConnection(getResourceWithXmlDeclUri() + "?_omit-original-xml-declaration=no");
+    public void omitXmlDeclarationNo() throws IOException {
+        final HttpURLConnection connect = getConnection(getResourceWithXmlDeclUri() + "?_omit-xml-declaration=no");
         try {
             connect.setRequestMethod("GET");
             connect.connect();
@@ -1628,8 +1627,8 @@ try {
     }
 
     @Test
-    public void getXmlDeclYes() throws IOException {
-        final HttpURLConnection connect = getConnection(getResourceWithXmlDeclUri() + "?_omit-original-xml-declaration=yes");
+    public void omitXmlDeclarationYes() throws IOException {
+        final HttpURLConnection connect = getConnection(getResourceWithXmlDeclUri() + "?_omit-xml-declaration=yes");
         try {
             connect.setRequestMethod("GET");
             connect.connect();
