@@ -57,13 +57,6 @@
         </developer>
     </developers>
 
-    <scm>
-        <connection>scm:git:https://github.com/exist-db/exist.git</connection>
-        <developerConnection>scm:git:https://github.com/exist-db/exist.git</developerConnection>
-        <url>scm:git:https://github.com/exist-db/exist.git</url>
-      <tag>HEAD</tag>
-  </scm>
-
     <mailingLists>
         <mailingList>
             <name>exist-open</name>
@@ -90,6 +83,26 @@
             </otherArchives>
         </mailingList>
     </mailingLists>
+
+    <scm>
+        <connection>scm:git:https://github.com/exist-db/exist.git</connection>
+        <developerConnection>scm:git:https://github.com/exist-db/exist.git</developerConnection>
+        <url>scm:git:https://github.com/exist-db/exist.git</url>
+        <tag>HEAD</tag>
+    </scm>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>github</id>
+            <name>GitHub Registry for Snapshots</name>
+            <url>https://maven.pkg.github.com/eXist-db/exist</url>
+        </snapshotRepository>
+        <repository>
+            <id>sonatype-nexus-staging</id>
+            <name>Nexus Release Repository</name>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>
 
     <properties>
         <maven.compiler.release>21</maven.compiler.release>
@@ -293,7 +306,8 @@
                 <artifactId>xmlrpc-common</artifactId>
                 <version>${apache.xmlrpc.version}</version>
                 <exclusions>
-                    <exclusion> <!-- conflicts with xerces 2.12.0 dependency on xml-apis version 1.4.01 -->
+                    <exclusion>
+                        <!-- conflicts with xerces 2.12.0 dependency on xml-apis version 1.4.01 -->
                         <artifactId>xml-apis</artifactId>
                         <groupId>xml-apis</groupId>
                     </exclusion>
@@ -424,7 +438,8 @@
                 <artifactId>exificient</artifactId>
                 <version>1.0.7</version>
                 <exclusions>
-                    <exclusion>  <!-- conflicts with xerces 2.12.0 dependency -->
+                    <exclusion>
+                        <!-- conflicts with xerces 2.12.0 dependency -->
                         <groupId>xerces</groupId>
                         <artifactId>xercesImpl</artifactId>
                     </exclusion>
@@ -436,7 +451,8 @@
                 <artifactId>exificient-grammars</artifactId>
                 <version>1.0.7</version>
                 <exclusions>
-                    <exclusion> <!-- conflicts with xerces 2.12.2 -->
+                    <exclusion>
+                        <!-- conflicts with xerces 2.12.2 -->
                         <groupId>xerces</groupId>
                         <artifactId>xercesImpl</artifactId>
                     </exclusion>
@@ -448,7 +464,8 @@
                 <artifactId>exificient-core</artifactId>
                 <version>1.0.7</version>
                 <exclusions>
-                    <exclusion> <!-- conflicts with xerces 2.12.2 -->
+                    <exclusion>
+                        <!-- conflicts with xerces 2.12.2 -->
                         <groupId>xerces</groupId>
                         <artifactId>xercesImpl</artifactId>
                     </exclusion>
@@ -550,7 +567,8 @@
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
                 <version>${junit.version}</version>
-                <!-- scope>test</scope --> <!-- not just test scope, as needed for org.exist.test -->
+                <!-- scope>test</scope -->
+                <!-- not just test scope, as needed for org.exist.test -->
                 <exclusions>
                     <exclusion>
                         <!-- we ourselves have a test scoped dependency on a newer hamcrest... see below! -->
@@ -563,7 +581,8 @@
                 <groupId>org.hamcrest</groupId>
                 <artifactId>hamcrest</artifactId>
                 <version>${hamcrest.version}</version>
-                <!-- scope>test</scope --> <!-- not just test scope, as needed for org.exist.test -->
+                <!-- scope>test</scope -->
+                <!-- not just test scope, as needed for org.exist.test -->
             </dependency>
 
             <!-- test dependencies -->
@@ -599,6 +618,190 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <repositories>
+        <!-- Order: releases=central,proxy,exist-db,evolved-binary; snapshots=github,exist-db,evolved-binary. Central direct first to reduce Nexus traffic; proxy as fallback. -->
+        <repository>
+            <id>central</id>
+            <name>Maven Central</name>
+            <url>https://repo.maven.apache.org/maven2</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>exist-db-maven-central-proxy</id>
+            <name>exist-db maven central proxy (fallback)</name>
+            <url>https://repo.exist-db.org/repository/maven-central/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>github</id>
+            <name>GitHub Registry for Snapshots</name>
+            <url>https://maven.pkg.github.com/eXist-db/exist</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>github-xqts-runner</id>
+            <name>GitHub Registry - exist-xqts-runner</name>
+            <url>https://maven.pkg.github.com/eXist-db/exist-xqts-runner</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>exist-db-snapshots</id>
+            <name>eXist-db Snapshots</name>
+            <url>https://repo.exist-db.org/repository/exist-db-snapshots/</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>exist-db</id>
+            <name>eXist-db Releases</name>
+            <url>https://repo.exist-db.org/repository/exist-db/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>evolvedbinary-snapshots</id>
+            <name>Evolved Binary - eXist-db Snapshots</name>
+            <url>https://repo.evolvedbinary.com/repository/exist-db-snapshots/</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>evolved-binary</id>
+            <name>Evolved Binary - eXist-db Releases</name>
+            <url>https://repo.evolvedbinary.com/repository/exist-db/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+
+    <pluginRepositories>
+        <!-- Order: releases=central,proxy,exist-db,evolved-binary; snapshots=github,exist-db,evolved-binary. Central direct first; proxy as fallback. -->
+        <pluginRepository>
+            <id>central</id>
+            <name>Maven Central</name>
+            <url>https://repo.maven.apache.org/maven2</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </pluginRepository>
+        <pluginRepository>
+            <id>exist-db-maven-central-proxy</id>
+            <name>exist-db maven central proxy (fallback)</name>
+            <url>https://repo.exist-db.org/repository/maven-central/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </pluginRepository>
+        <pluginRepository>
+            <id>github</id>
+            <name>GitHub Registry for Snapshots</name>
+            <url>https://maven.pkg.github.com/eXist-db/exist</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </pluginRepository>
+        <pluginRepository>
+            <id>github-xqts-runner</id>
+            <name>GitHub Registry - exist-xqts-runner</name>
+            <url>https://maven.pkg.github.com/eXist-db/exist-xqts-runner</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </pluginRepository>
+        <pluginRepository>
+            <id>exist-db-snapshots</id>
+            <name>eXist-db Snapshots</name>
+            <url>https://repo.exist-db.org/repository/exist-db-snapshots/</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </pluginRepository>
+        <pluginRepository>
+            <id>exist-db</id>
+            <name>eXist-db Releases</name>
+            <url>https://repo.exist-db.org/repository/exist-db/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </pluginRepository>
+        <pluginRepository>
+            <id>evolved-binary-snapshots</id>
+            <name>Evolved Binary - eXist-db Snapshots</name>
+            <url>https://repo.evolvedbinary.com/repository/exist-db-snapshots/</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </pluginRepository>
+        <pluginRepository>
+            <id>evolved-binary</id>
+            <name>Evolved Binary - eXist-db Releases</name>
+            <url>https://repo.evolvedbinary.com/repository/exist-db/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </pluginRepository>
+    </pluginRepositories>
 
     <build>
 
@@ -869,7 +1072,8 @@
                     <artifactId>maven-project-info-reports-plugin</artifactId>
                     <version>3.9.0</version>
                     <configuration>
-                        <dependencyDetailsEnabled>false</dependencyDetailsEnabled>  <!-- TODO(AR) disabled due to slow `mvn site` build times -->
+                        <dependencyDetailsEnabled>false</dependencyDetailsEnabled>
+                        <!-- TODO(AR) disabled due to slow `mvn site` build times -->
                     </configuration>
                 </plugin>
                 <plugin>
@@ -1211,203 +1415,6 @@
         </plugins>
     </reporting>
 
-    <repositories>
-        <!-- Order: releases=central,proxy,exist-db,evolved-binary; snapshots=github,exist-db,evolved-binary. Central direct first to reduce Nexus traffic; proxy as fallback. -->
-        <repository>
-            <id>central</id>
-            <name>Maven Central</name>
-            <url>https://repo.maven.apache.org/maven2</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>exist-db-maven-central-proxy</id>
-            <name>exist-db maven central proxy (fallback)</name>
-            <url>https://repo.exist-db.org/repository/maven-central/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>github</id>
-            <name>GitHub Registry for Snapshots</name>
-            <url>https://maven.pkg.github.com/eXist-db/exist</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>github-xqts-runner</id>
-            <name>GitHub Registry - exist-xqts-runner</name>
-            <url>https://maven.pkg.github.com/eXist-db/exist-xqts-runner</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>exist-db-snapshots</id>
-            <name>eXist-db Snapshots</name>
-            <url>https://repo.exist-db.org/repository/exist-db-snapshots/</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>exist-db</id>
-            <name>eXist-db Releases</name>
-            <url>https://repo.exist-db.org/repository/exist-db/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>evolvedbinary-snapshots</id>
-            <name>Evolved Binary - eXist-db Snapshots</name>
-            <url>https://repo.evolvedbinary.com/repository/exist-db-snapshots/</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>evolved-binary</id>
-            <name>Evolved Binary - eXist-db Releases</name>
-            <url>https://repo.evolvedbinary.com/repository/exist-db/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
-
-    <pluginRepositories>
-        <!-- Order: releases=central,proxy,exist-db,evolved-binary; snapshots=github,exist-db,evolved-binary. Central direct first; proxy as fallback. -->
-        <pluginRepository>
-            <id>central</id>
-            <name>Maven Central</name>
-            <url>https://repo.maven.apache.org/maven2</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </pluginRepository>
-        <pluginRepository>
-            <id>exist-db-maven-central-proxy</id>
-            <name>exist-db maven central proxy (fallback)</name>
-            <url>https://repo.exist-db.org/repository/maven-central/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </pluginRepository>
-        <pluginRepository>
-            <id>github</id>
-            <name>GitHub Registry for Snapshots</name>
-            <url>https://maven.pkg.github.com/eXist-db/exist</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </pluginRepository>
-        <pluginRepository>
-            <id>github-xqts-runner</id>
-            <name>GitHub Registry - exist-xqts-runner</name>
-            <url>https://maven.pkg.github.com/eXist-db/exist-xqts-runner</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </pluginRepository>
-        <pluginRepository>
-            <id>exist-db-snapshots</id>
-            <name>eXist-db Snapshots</name>
-            <url>https://repo.exist-db.org/repository/exist-db-snapshots/</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </pluginRepository>
-        <pluginRepository>
-            <id>exist-db</id>
-            <name>eXist-db Releases</name>
-            <url>https://repo.exist-db.org/repository/exist-db/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </pluginRepository>
-        <pluginRepository>
-            <id>evolved-binary-snapshots</id>
-            <name>Evolved Binary - eXist-db Snapshots</name>
-            <url>https://repo.evolvedbinary.com/repository/exist-db-snapshots/</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </pluginRepository>
-        <pluginRepository>
-            <id>evolved-binary</id>
-            <name>Evolved Binary - eXist-db Releases</name>
-            <url>https://repo.evolvedbinary.com/repository/exist-db/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </pluginRepository>
-    </pluginRepositories>
-
-    <distributionManagement>
-        <snapshotRepository>
-            <id>github</id>
-            <name>GitHub Registry for Snapshots</name>
-            <url>https://maven.pkg.github.com/eXist-db/exist</url>
-        </snapshotRepository>
-        <repository>
-            <id>sonatype-nexus-staging</id>
-            <name>Nexus Release Repository</name>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
-    </distributionManagement>
-
     <profiles>
 
         <profile>
@@ -1459,11 +1466,11 @@
                                         <property name="onnx.target.dir" value="${project.basedir}/target/onnx-models/all-MiniLM-L6-v2"/>
                                         <mkdir dir="${onnx.model.dir}"/>
                                         <get src="https://huggingface.co/onnx-models/all-MiniLM-L6-v2-onnx/resolve/main/model.onnx"
-                                             dest="${onnx.model.dir}/model.onnx"
-                                             skipexisting="true"/>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               dest="${onnx.model.dir}/model.onnx"
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               skipexisting="true"/>
                                         <get src="https://huggingface.co/onnx-models/all-MiniLM-L6-v2-onnx/resolve/main/tokenizer.json"
-                                             dest="${onnx.model.dir}/tokenizer.json"
-                                             skipexisting="true"/>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               dest="${onnx.model.dir}/tokenizer.json"
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               skipexisting="true"/>
                                         <mkdir dir="${project.basedir}/target/onnx-models"/>
                                         <copy todir="${onnx.target.dir}" overwrite="false">
                                             <fileset dir="${onnx.model.dir}"/>
@@ -1472,6 +1479,7 @@
                                 </configuration>
                             </execution>
                         </executions>
+                        <version>3.2.0</version>
                     </plugin>
                 </plugins>
             </build>

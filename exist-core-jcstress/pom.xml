@@ -38,6 +38,10 @@
 
     <name>eXist-db Core JCStress Tests</name>
 
+    <properties>
+        <uberjar.name>jcstress</uberjar.name>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.openjdk.jcstress</groupId>
@@ -50,10 +54,6 @@
             <version>${project.version}</version>
         </dependency>
     </dependencies>
-
-    <properties>
-        <uberjar.name>jcstress</uberjar.name>
-    </properties>
 
     <build>
         <plugins>
