@@ -14,7 +14,7 @@ jobs:
       - uses: actions/checkout@v6
       - uses: actions/setup-java@v5
         with:
-          distribution: liberica
+          distribution: temurin
           java-version: ${{ env.DEV_JDK }}
       - uses: ./.github/actions/maven-cache
       - run: mvn -V -B --no-transfer-progress --offline license:check
@@ -28,7 +28,7 @@ jobs:
       - uses: actions/checkout@v6
       - uses: actions/setup-java@v5
         with:
-          distribution: liberica
+          distribution: temurin
           java-version: ${{ env.DEV_JDK }}
       - uses: ./.github/actions/maven-cache
       - uses: ./.github/actions/maven-github-settings
@@ -74,7 +74,7 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v5
         with:
-          distribution: liberica
+          distribution: temurin
           java-version: ${{ matrix.java-version }}
       - uses: ./.github/actions/maven-cache
         with:
@@ -91,15 +91,22 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           MAVEN_OPTS: ${{ env.MAVEN_OPTS }} -D'aether.connector.basic.connectTimeout=10000' -D'aether.connector.basic.requestTimeout=30000'
-        run: ${{ steps.install-mvnd.outputs.mvnd-dir }}/mvnd -V -B --no-transfer-progress -T 1C compile test-compile -D'dependency-check.skip' -D'license.skip' --projects '!exist-installer'
+        run: ${{ steps.install-mvnd.outputs.mvnd-dir }}/mvnd -V -B --no-transfer-progress -T 1C compile test-compile -Ponnx-model -D'dependency-check.skip' -D'license.skip' --projects '!exist-installer'
       - name: Maven Unit Tests
+        id: unit-tests
         if: matrix.test-type == 'unit'
         timeout-minutes: 45
         run: ${{ steps.install-mvnd.outputs.mvnd-dir }}/mvnd -V -B --no-transfer-progress test -D'dependency-check.skip' -D'license.skip' -D'mvnd.maxLostKeepAlive=6000'
+      - name: Dependency tree on unit test failure
+        if: always() && matrix.test-type == 'unit' && steps.unit-tests.outcome == 'failure'
+        run: |
+          ${{ steps.install-mvnd.outputs.mvnd-dir }}/mvnd -V -B --no-transfer-progress dependency:tree -pl extensions/indexes/lucene -DtrimStackTrace=false -D'dependency-check.skip' -D'license.skip' | tee dependency-tree-lucene.txt
+          echo "--- Lucene-related dependencies ---"
+          grep -i lucene dependency-tree-lucene.txt || true
       - name: Maven Integration Tests
         if: matrix.test-type == 'integration'
         timeout-minutes: 45
-        run: ${{ steps.install-mvnd.outputs.mvnd-dir }}/mvnd -V -B --no-transfer-progress verify -DskipUnitTests=true -D'dependency-check.skip' -D'license.skip' -D'mvnd.maxLostKeepAlive=6000'
+        run: ${{ steps.install-mvnd.outputs.mvnd-dir }}/mvnd -V -B --no-transfer-progress verify -Ponnx-model -DskipUnitTests=true -D'dependency-check.skip' -D'license.skip' -D'mvnd.maxLostKeepAlive=6000'
       - name: Javadoc (ubuntu unit only)
         if: matrix.os == 'ubuntu-latest' && matrix.test-type == 'unit'
         run: ${{ steps.install-mvnd.outputs.mvnd-dir }}/mvnd -V -B --no-transfer-progress -q -T 1C install javadoc:javadoc -DskipTests -D'dependency-check.skip' -D'license.skip' --projects '!exist-distribution,!exist-installer' --also-make
@@ -129,3 +136,4 @@ jobs:
             **/hs_err_pid*.log
             **/target/surefire-reports/*
             **/target/failsafe-reports/*
+            dependency-tree-lucene.txt

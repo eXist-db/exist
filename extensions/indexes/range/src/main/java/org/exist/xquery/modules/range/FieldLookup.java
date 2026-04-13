@@ -39,10 +39,10 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-public class FieldLookup extends Function implements Optimizable {
+public class FieldLookup extends Function implements Optimizable, IndexUseReporter {
 
     private final static SequenceType[] PARAMETER_TYPE = new SequenceType[] {
-        new FunctionParameterSequenceType("fields", Type.STRING, Cardinality.ONE_OR_MORE,
+        new FunctionParameterSequenceType("fields", Type.STRING, Cardinality.ZERO_OR_MORE,
                 "The name of the field(s) to search"),
         new FunctionParameterSequenceType("keys", Type.ANY_ATOMIC_TYPE, Cardinality.ZERO_OR_MORE,
                 "The keys to look up for each field.")
@@ -53,9 +53,9 @@ public class FieldLookup extends Function implements Optimizable {
             new QName("field", RangeIndexModule.NAMESPACE_URI, RangeIndexModule.PREFIX),
             "General field lookup function. Normally this will be used by the query optimizer.",
             new SequenceType[] {
-                    new FunctionParameterSequenceType("fields", Type.STRING, Cardinality.ONE_OR_MORE,
+                    new FunctionParameterSequenceType("fields", Type.STRING, Cardinality.ZERO_OR_MORE,
                             "The name of the field(s) to search"),
-                    new FunctionParameterSequenceType("operators", Type.STRING, Cardinality.ONE_OR_MORE,
+                    new FunctionParameterSequenceType("operators", Type.STRING, Cardinality.ZERO_OR_MORE,
                             "The operators to use as strings: eq, lt, gt, contains ..."),
                     new FunctionParameterSequenceType("keys", Type.ANY_ATOMIC_TYPE, Cardinality.ZERO_OR_MORE,
                             "The keys to look up for each field.")
@@ -160,22 +160,22 @@ public class FieldLookup extends Function implements Optimizable {
     public void setArguments(List<Expression> arguments) throws XPathException {
         steps.clear();
         Expression path = arguments.getFirst();
-        path = new DynamicCardinalityCheck(context, Cardinality.ONE_OR_MORE, path,
+        path = new DynamicCardinalityCheck(context, Cardinality.ZERO_OR_MORE, path,
                 new Error(Error.FUNC_PARAM_CARDINALITY, "1", getSignature()));
         steps.add(path);
 
         int j = 1;
         if (isCalledAs("field")) {
             Expression fields = arguments.get(1);
-            fields = new DynamicCardinalityCheck(context, Cardinality.ONE_OR_MORE, fields,
+            fields = new DynamicCardinalityCheck(context, Cardinality.ZERO_OR_MORE, fields,
                     new Error(Error.FUNC_PARAM_CARDINALITY, "2", getSignature()));
             steps.add(fields);
             j++;
         }
         for (int i = j; i < arguments.size(); i++) {
             Expression arg = arguments.get(i).simplify();
-            arg = new DynamicCardinalityCheck(context, Cardinality.ONE_OR_MORE, arg,
-                    new org.exist.xquery.util.Error(org.exist.xquery.util.Error.FUNC_PARAM_CARDINALITY, "1", getSignature()));
+            arg = new DynamicCardinalityCheck(context, Cardinality.ZERO_OR_MORE, arg,
+                    new Error(Error.FUNC_PARAM_CARDINALITY, String.valueOf(i + 1), getSignature()));
             steps.add(arg);
         }
     }
@@ -198,6 +198,9 @@ public class FieldLookup extends Function implements Optimizable {
         // the expression can be called multiple times, so we need to clear the previous preselectResult
         preselectResult = null;
 
+        if (hasEmptyArgs(contextSequence)) {
+            return NodeSet.EMPTY_SET;
+        }
         Sequence fieldSeq = getArgument(0).eval(contextSequence, null);
         RangeIndex.Operator[] operators = null;
         int j = 1;
@@ -227,7 +230,7 @@ public class FieldLookup extends Function implements Optimizable {
         } catch (IOException e) {
             throw new XPathException(this, "Error while querying full text index: " + e.getMessage(), e);
         }
-        LOG.info("preselect for {} on {}returned {} and took {}", Arrays.toString(keys), contextSequence.getItemCount(), preselectResult.getItemCount(), System.currentTimeMillis() - start);
+        LOG.info("preselect for {} on {} returned {} and took {}", Arrays.toString(keys), contextSequence.getItemCount(), preselectResult.getItemCount(), System.currentTimeMillis() - start);
         if( context.getProfiler().traceFunctions() ) {
             context.getProfiler().traceIndexUsage( context, "new-range", this, PerformanceStats.IndexOptimizationLevel.OPTIMIZED, System.currentTimeMillis() - start );
         }
@@ -237,15 +240,14 @@ public class FieldLookup extends Function implements Optimizable {
 
     @Override
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
-        if (contextItem != null)
-            contextSequence = contextItem.toSequence();
+        final Sequence effectiveContextSequence = contextItem != null ? contextItem.toSequence() : contextSequence;
 
-        if (contextSequence != null && !contextSequence.isPersistentSet())
+        if (effectiveContextSequence != null && !effectiveContextSequence.isPersistentSet())
             // in-memory docs won't have an index
             if (fallback == null) {
                 return Sequence.EMPTY_SEQUENCE;
             } else {
-                return fallback.eval(contextSequence, contextItem);
+                return fallback.eval(effectiveContextSequence, contextItem);
             }
 
         NodeSet result;
@@ -253,15 +255,19 @@ public class FieldLookup extends Function implements Optimizable {
             long start = System.currentTimeMillis();
 
             DocumentSet docs;
-            if (contextSequence == null)
+            if (effectiveContextSequence == null)
                 docs = context.getStaticallyKnownDocuments();
             else
-                docs = contextSequence.getDocumentSet();
+                docs = effectiveContextSequence.getDocumentSet();
             NodeSet contextSet = null;
-            if (contextSequence != null)
-                contextSet = contextSequence.toNodeSet();
+            if (effectiveContextSequence != null)
+                contextSet = effectiveContextSequence.toNodeSet();
 
-            Sequence fields = getArgument(0).eval(contextSequence, null);
+            // If any of the lookup arguments is the empty sequence, the overall result is empty.
+            if (hasEmptyArgs(effectiveContextSequence)) {
+                return Sequence.EMPTY_SEQUENCE;
+            }
+            Sequence fields = getArgument(0).eval(effectiveContextSequence, null);
             RangeIndex.Operator[] operators = null;
             int j = 1;
             if (isCalledAs("field")) {
@@ -328,6 +334,26 @@ public class FieldLookup extends Function implements Optimizable {
             result = preselectResult.selectAncestorDescendant(contextSequence.toNodeSet(), NodeSet.DESCENDANT, true, getContextId(), true);
         }
         return result;
+    }
+
+    /**
+     * Returns true if any of fields, operators (for range:field), or keys is empty.
+     * When true, the function should return empty instead of querying the index.
+     */
+    private boolean hasEmptyArgs(final Sequence contextSequence) throws XPathException {
+        if (getArgument(0).eval(contextSequence, null).isEmpty()) {
+            return true;
+        }
+        if (isCalledAs("field") && getArgument(1).eval(contextSequence, null).isEmpty()) {
+            return true;
+        }
+        final int keyStart = isCalledAs("field") ? 2 : 1;
+        for (int i = keyStart; i < getArgumentCount(); i++) {
+            if (getArgument(i).eval(contextSequence, null).isEmpty()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private RangeIndex.Operator getOperator() {
@@ -401,5 +427,10 @@ public class FieldLookup extends Function implements Optimizable {
         if (!postOptimization) {
             preselectResult = null;
         }
+    }
+
+    @Override
+    public boolean hasUsedIndex() {
+        return true; // FieldLookup is only used when range field optimization was applied
     }
 }

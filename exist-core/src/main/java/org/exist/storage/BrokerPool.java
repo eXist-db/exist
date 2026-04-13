@@ -56,6 +56,7 @@ import org.exist.security.internal.SecurityManagerImpl;
 import org.exist.storage.blob.BlobStore;
 import org.exist.storage.blob.BlobStoreImplService;
 import org.exist.storage.blob.BlobStoreService;
+import org.exist.storage.vector.VectorStoreService;
 import org.exist.storage.journal.JournalManager;
 import org.exist.storage.lock.FileLockService;
 import org.exist.storage.lock.LockManager;
@@ -272,6 +273,11 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
      * The Blob Store of the database instance.
      */
     private BlobStoreService blobStoreService;
+
+    /**
+     * The Vector Store of the database instance.
+     */
+    private VectorStoreService vectorStoreService;
 
     /**
      * Delay (in ms) for running jobs to return when the database instance shuts down.
@@ -492,6 +498,7 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
         this.transactionManager = servicesManager.register(new TransactionManager(this, journalManager, systemTaskManager));
 
         this.blobStoreService = servicesManager.register(new BlobStoreImplService());
+        this.vectorStoreService = servicesManager.register(new org.exist.storage.vector.VectorStoreServiceImpl());
 
         this.symbols = servicesManager.register(new SymbolTable());
 
@@ -945,6 +952,15 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
     @Override
     public BlobStore getBlobStore() {
         return blobStoreService.getBlobStore();
+    }
+
+    /**
+     * Returns the Vector Store for persistent vector storage.
+     *
+     * @return the Vector Store, or null if not available
+     */
+    public org.exist.storage.vector.VectorStore getVectorStore() {
+        return vectorStoreService != null ? vectorStoreService.getVectorStore() : null;
     }
 
     public SymbolTable getSymbols() {

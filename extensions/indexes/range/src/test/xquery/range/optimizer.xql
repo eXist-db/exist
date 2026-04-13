@@ -63,6 +63,10 @@ declare variable $ot:COLLECTION_CONFIG :=
                 </create>
                 <create match="/test/address/city/@code" type="xs:integer"/>
                 <create qname="@id" type="xs:string"/>
+                <!-- Extra indices for remaining range optimizer issues -->
+                <create qname="@bar" type="xs:string"/>
+                <create qname="@lemma" type="xs:string"/>
+                <create qname="@ID" type="xs:string"/>
             </range>
         </index>
     </collection>;
@@ -129,6 +133,13 @@ declare variable $ot:DATA :=
                 <email>pü@wildsau.net</email>
             </contact>
         </address>
+        <!-- GitHub #4881: fn:matches on simple range index qname(@bar) -->
+        <foo bar="baz"/>
+        <foo bar="bat"/>
+        <foo bar="Baz"/>
+        <foo bar="qux"/>
+        <!-- GitHub #4942: exists:force-index-use on range-indexed attribute qname(@ID) -->
+        <root><a ID="123"/></root>
     </test>;
 
 declare variable $ot:DATA_SR_WITH_DIACRITICS :=
@@ -152,6 +163,15 @@ declare variable $ot:DATA_SR_WITH_DIACRITICS :=
                         </form>
                     </entryFree>
                 </div>
+                <corpus>
+                    <div>
+                        <w lemma="test">test</w>
+                        <w lemma="word">word</w>
+                    </div>
+                    <section>
+                        <w lemma="test">test</w>
+                    </section>
+                </corpus>
             </body>
         </text>
     </TEI>;
@@ -159,23 +179,48 @@ declare variable $ot:DATA_SR_WITH_DIACRITICS :=
 declare variable $ot:COLLECTION_NAME := "optimizertest";
 declare variable $ot:COLLECTION := "/db/" || $ot:COLLECTION_NAME;
 
+(: Minimal config for range-test-range (placeName only) – ot:equality-field-nested-explicit uses this; rt:equality-field-nested passes here. :)
+declare variable $ot:RANGE_TEST_CONFIG :=
+    <collection xmlns="http://exist-db.org/collection-config/1.0">
+        <index xmlns:xs="http://www.w3.org/2001/XMLSchema"
+            xmlns:tei="http://www.tei-c.org/ns/1.0">
+            <range>
+                <create match="//tei:placeName">
+                    <field name="name" type="xs:string" nested="no"/>
+                    <field name="type" match="@type" type="xs:string"/>
+                    <field name="subtype" match="@subtype" type="xs:string"/>
+                </create>
+            </range>
+        </index>
+    </collection>;
+
 declare
     %test:setUp
 function ot:setup() {
-    (xmldb:create-collection("/db/system", "config"), xmldb:create-collection("/db/system/config", "db")),
-    xmldb:create-collection("/db/system/config/db", $ot:COLLECTION_NAME),
-    xmldb:store("/db/system/config/db/" || $ot:COLLECTION_NAME, "collection.xconf", $ot:COLLECTION_CONFIG),
-    xmldb:create-collection("/db", $ot:COLLECTION_NAME),
-    xmldb:store($ot:COLLECTION, "test.xml", $ot:DATA),
-    xmldb:store($ot:COLLECTION, "nested.xml", $ot:DATA_NESTED),
-    xmldb:store($ot:COLLECTION, "diacritics.xml", $ot:DATA_SR_WITH_DIACRITICS)
+    (xmldb:create-collection("/db/system", "config"),
+     xmldb:create-collection("/db/system/config", "db"),
+     xmldb:create-collection("/db/system/config/db", $ot:COLLECTION_NAME),
+     xmldb:create-collection("/db", $ot:COLLECTION_NAME),
+     xmldb:store("/db/system/config/db/" || $ot:COLLECTION_NAME, "collection.xconf", $ot:COLLECTION_CONFIG),
+     xmldb:store($ot:COLLECTION, "test.xml", $ot:DATA),
+     xmldb:store($ot:COLLECTION, "nested.xml", $ot:DATA_NESTED),
+     xmldb:store($ot:COLLECTION, "diacritics.xml", $ot:DATA_SR_WITH_DIACRITICS),
+     xmldb:reindex($ot:COLLECTION),
+     (: range-test-range for ot:equality-field-nested-explicit – rt:equality-field-nested passes here :)
+     xmldb:create-collection("/db/system/config/db", "range-test-range"),
+     xmldb:create-collection("/db", "range-test-range"),
+     xmldb:store("/db/system/config/db/range-test-range", "collection.xconf", $ot:RANGE_TEST_CONFIG),
+     xmldb:store("/db/range-test-range", "nested.xml", $ot:DATA_NESTED),
+     xmldb:reindex("/db/range-test-range"))
 };
 
 declare
     %test:tearDown
 function ot:cleanup() {
     xmldb:remove($ot:COLLECTION),
-    xmldb:remove("/db/system/config/db/" || $ot:COLLECTION_NAME)
+    xmldb:remove("/db/system/config/db/" || $ot:COLLECTION_NAME),
+    xmldb:remove("/db/range-test-range"),
+    xmldb:remove("/db/system/config/db/range-test-range")
 };
 
 declare
@@ -552,6 +597,7 @@ function ot:optimize-lt-field-nested($email as xs:string) {
     collection($ot:COLLECTION)//address[contact/email < $email]
 };
 
+(: Path form: @type, @subtype, [.=$name] should optimize to range:field-eq. Uses range-test-range (same config/data as explicit). :)
 declare
     %test:args("main", "official", "Hofthiergarten")
     %test:assertEquals("Hofthiergarten")
@@ -560,7 +606,42 @@ declare
     %test:args("main", "official", "Dorfprozelten")
     %test:assertEquals("Dorfprozelten")
 function ot:equality-field-nested($type as xs:string, $subtype as xs:string, $name as xs:string) {
-    collection($ot:COLLECTION)//tei:placeName[@type = $type][@subtype = $subtype][. = $name]/text()
+    collection("/db/range-test-range")//tei:placeName[@type = $type][@subtype = $subtype][. = $name]/text()
+};
+
+(:~
+ : Same intention as ot:equality-field-nested: nested field lookup on placeName (type, subtype, name).
+ : Uses explicit range:field-eq; path form in ot:equality-field-nested should optimize to this.
+ : @see ot:equality-field-nested (path form)
+ : @see rt:equality-field-nested in range.xql (explicit form on range-test-range)
+ : Uses range-test-range (same config/data) to verify the pattern; optimizertest may not have placeName indexed yet when this runs.
+ :)
+declare
+    %test:args("main", "official", "Hofthiergarten")
+    %test:assertEquals("Hofthiergarten")
+    %test:args("ref", "inofficial", "Hofthiergarten")
+    %test:assertEquals("Hofthiergarten")
+    %test:args("main", "official", "Dorfprozelten")
+    %test:assertEquals("Dorfprozelten")
+function ot:equality-field-nested-explicit($type as xs:string, $subtype as xs:string, $name as xs:string) {
+    (: Use range-test-range: same placeName config and DATA_NESTED as ot; rt:equality-field-nested passes there :)
+    collection("/db/range-test-range")//range:field-eq(("type", "subtype", "name"), $type, $subtype, $name)/text()
+};
+
+(:~
+ : TDD: path form should produce same result as explicit range:field-eq.
+ : @see ot:equality-field-nested (path form)
+ : @see ot:equality-field-nested-explicit (explicit form)
+ :)
+declare
+    %test:args("main", "official", "Hofthiergarten")
+    %test:assertEquals("Hofthiergarten", "Hofthiergarten")
+    %test:args("main", "official", "Dorfprozelten")
+    %test:assertEquals("Dorfprozelten", "Dorfprozelten")
+function ot:equality-field-nested-path-equals-explicit($type as xs:string, $subtype as xs:string, $name as xs:string) {
+    let $path-result := collection("/db/range-test-range")//tei:placeName[@type = $type][@subtype = $subtype][. = $name]/text()
+    let $explicit-result := collection("/db/range-test-range")//range:field-eq(("type", "subtype", "name"), $type, $subtype, $name)/text()
+    return ($path-result, $explicit-result)
 };
 
 declare
@@ -737,4 +818,131 @@ function ot:nested-element-rewrite-bug() {
         </dita>
     return
       count($dita/topic/prolog//data[@name eq 'topicType']/@value)
+};
+
+(: --- Remaining range optimizer issues --- :)
+
+(: GitHub #4881: fn:matches with simple range index on @bar :)
+declare
+    %test:assertEquals(2)
+function ot:issue4881-matches-result-correctness() {
+    count(collection($ot:COLLECTION)//foo[matches(@bar, "^b")])
+};
+
+declare
+    %test:assertEquals(3)
+function ot:issue4881-matches-result-correctness-case-insensitive() {
+    count(collection($ot:COLLECTION)//foo[matches(@bar, "^b", "i")])
+};
+
+declare
+    %test:assertEquals(2)
+function ot:issue4881-matches-result-correctness-unanchored() {
+    count(collection($ot:COLLECTION)//foo[matches(@bar, "b")])
+};
+
+declare
+    %test:assertEquals(2)
+function ot:issue4881-matches-result-correctness-suffix() {
+    count(collection($ot:COLLECTION)//foo[matches(@bar, "z$")])
+};
+
+declare
+    %test:assertEquals(1)
+function ot:issue4881-matches-result-correctness-exact() {
+    count(collection($ot:COLLECTION)//foo[matches(@bar, "^baz$")])
+};
+
+declare
+    %test:stats
+    %test:args("baz")
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
+function ot:issue4881-eq-uses-index($term as xs:string) {
+    collection($ot:COLLECTION)//foo[@bar eq $term]
+};
+
+declare
+    %test:stats
+    %test:args("^b")
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
+function ot:issue4881-matches-uses-index($pattern as xs:string) {
+    collection($ot:COLLECTION)//foo[matches(@bar, $pattern)]
+};
+
+declare
+    %test:stats
+    %test:args("z$")
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
+function ot:issue4881-matches-suffix-uses-index($pattern as xs:string) {
+    collection($ot:COLLECTION)//foo[matches(@bar, $pattern)]
+};
+
+declare
+    %test:stats
+    %test:args("^baz$")
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
+function ot:issue4881-matches-exact-uses-index($pattern as xs:string) {
+    collection($ot:COLLECTION)//foo[matches(@bar, $pattern)]
+};
+
+declare
+    %test:stats
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
+function ot:issue4881-matches-case-insensitive-uses-index() {
+    collection($ot:COLLECTION)//foo[matches(@bar, "^b", "i")]
+};
+
+declare
+    %test:stats
+    %test:assertXPath("not($result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED'])")
+function ot:issue4881-matches-unanchored-no-index() {
+    collection($ot:COLLECTION)//foo[matches(@bar, "b")]
+};
+
+(: GitHub #5043: wildcard path should use index :)
+declare
+    %test:stats
+    %test:args("test")
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
+function ot:issue5043-direct-path-uses-index($term as xs:string) {
+    collection($ot:COLLECTION)//tei:w[@lemma eq $term]
+};
+
+declare
+    %test:stats
+    %test:args("test")
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
+function ot:issue5043-wildcard-path-uses-index($term as xs:string) {
+    collection($ot:COLLECTION)//*/tei:w[@lemma eq $term]
+};
+
+(: GitHub #4942: exist:force-index-use on range-index expressions :)
+declare
+    %test:assertTrue
+function ot:issue4942-test-without-force-index-use() {
+    let $test-data := collection($ot:COLLECTION)
+    for $result in $test-data//root
+    return
+        count($result/a[@ID = "123"]) eq 1
+};
+
+declare
+    %test:assertTrue
+function ot:issue4942-test-with-pragma-variable() {
+    let $test-data := collection($ot:COLLECTION)
+    for $result in $test-data//root
+    return
+        (# exist:force-index-use #) { count($result/a[@ID = "123"]) } eq 1
+};
+
+declare
+    %test:assertTrue
+function ot:issue4942-test-with-pragma-direct() {
+    (# exist:force-index-use #) { count(collection($ot:COLLECTION)//root/a[@ID = "123"]) } eq 1
+};
+
+declare
+    %test:assertTrue
+function ot:issue4942-test-direct-without-pragma() {
+    count(collection($ot:COLLECTION)//root/a[@ID = "123"]) eq 1
 };

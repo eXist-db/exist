@@ -612,11 +612,31 @@ public interface DBBroker extends AutoCloseable {
     void reindexCollection(Txn transaction, @EnsureLocked(mode=LockMode.WRITE_LOCK, type=LockType.COLLECTION) XmldbURI collectionUri)
             throws PermissionDeniedException, IOException, LockException;
 
+    /**
+     * Reindex a Collection and its descendants with the given scope.
+     *
+     * @param transaction the transaction
+     * @param collectionUri The URI of the Collection to reindex
+     * @param scope reindex scope: {@link org.exist.indexing.ReindexScope#ALL},
+     *              {@link org.exist.indexing.ReindexScope#FULLTEXT}, or
+     *              {@link org.exist.indexing.ReindexScope#VECTOR}
+     */
+    void reindexCollection(Txn transaction, @EnsureLocked(mode=LockMode.WRITE_LOCK, type=LockType.COLLECTION) XmldbURI collectionUri,
+            org.exist.indexing.ReindexScope scope)
+            throws PermissionDeniedException, IOException, LockException;
+
     void reindexXMLResource(final Txn txn,
             @EnsureLocked(mode=LockMode.WRITE_LOCK) final DocumentImpl doc);
 
     void reindexXMLResource(final Txn transaction,
             @EnsureLocked(mode=LockMode.WRITE_LOCK) final DocumentImpl doc, final IndexMode mode);
+
+    /**
+     * Reindex a document with the given index mode and reindex scope.
+     */
+    void reindexXMLResource(final Txn transaction,
+            @EnsureLocked(mode=LockMode.WRITE_LOCK) final DocumentImpl doc, final IndexMode mode,
+            org.exist.indexing.ReindexScope scope);
 
     /**
      * Repair indexes. Should delete all secondary indexes and rebuild them.

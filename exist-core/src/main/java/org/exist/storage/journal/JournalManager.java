@@ -167,6 +167,12 @@ public class JournalManager implements BrokerPoolService {
      * See {@link Journal#flushToLog(boolean, boolean)}.
      */
     public synchronized void flush(final boolean fsync, final boolean forceSync) {
+        if (journal == null || journallingDisabled) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Flush no-op: journal={}, journallingDisabled={}", journal != null, journallingDisabled);
+            }
+            return;
+        }
         journal.flushToLog(fsync, forceSync);
     }
 

@@ -982,7 +982,12 @@ public interface RpcAPI {
     boolean reindexCollection(String name)
             throws EXistException, PermissionDeniedException, URISyntaxException;
 
+    boolean reindexCollection(String name, String mode)
+            throws EXistException, PermissionDeniedException, URISyntaxException;
+
     boolean reindexDocument(String docUri) throws EXistException, PermissionDeniedException;
+
+    boolean reindexDocument(String docUri, String mode) throws EXistException, PermissionDeniedException;
 
     boolean backup(String userbackup, String password, String destcollection, String collection)
             throws EXistException, PermissionDeniedException;

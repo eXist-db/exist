@@ -60,13 +60,15 @@ declare variable $rt:NON_INDEXED_COLLECTION := "/db/" || $rt:NON_INDEXED_COLLECT
 declare
     %test:setUp
 function rt:setup() {
-    (xmldb:create-collection("/db/system", "config"), xmldb:create-collection("/db/system/config", "db")),
-    xmldb:create-collection("/db/system/config/db", $rt:INDEXED_COLLECTION_NAME),
-    xmldb:store("/db/system/config/db/" || $rt:INDEXED_COLLECTION_NAME, "collection.xconf", $rt:COLLECTION_CONFIG),
-    xmldb:create-collection("/db", $rt:INDEXED_COLLECTION_NAME),
-    xmldb:store($rt:INDEXED_COLLECTION, "test.xml", $rt:DATA),
-    xmldb:create-collection("/db", $rt:NON_INDEXED_COLLECTION_NAME),
-    xmldb:store($rt:NON_INDEXED_COLLECTION, "test.xml", $rt:DATA)
+    (xmldb:create-collection("/db/system", "config"),
+     xmldb:create-collection("/db/system/config", "db"),
+     xmldb:create-collection("/db/system/config/db", $rt:INDEXED_COLLECTION_NAME),
+     xmldb:create-collection("/db", $rt:INDEXED_COLLECTION_NAME),
+     xmldb:store("/db/system/config/db/" || $rt:INDEXED_COLLECTION_NAME, "collection.xconf", $rt:COLLECTION_CONFIG),
+     xmldb:store($rt:INDEXED_COLLECTION, "test.xml", $rt:DATA),
+     xmldb:create-collection("/db", $rt:NON_INDEXED_COLLECTION_NAME),
+     xmldb:store($rt:NON_INDEXED_COLLECTION, "test.xml", $rt:DATA),
+     xmldb:reindex($rt:INDEXED_COLLECTION))
 };
 
 declare

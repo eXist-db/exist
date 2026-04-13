@@ -29,12 +29,17 @@ import org.apache.lucene.queryparser.flexible.standard.CommonQueryParserConfigur
 import org.apache.lucene.search.MultiTermQuery;
 import org.exist.numbering.NodeId;
 import org.exist.stax.ExtendedXMLStreamReader;
+import org.exist.util.Configuration;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.array.ArrayType;
 import org.exist.xquery.functions.map.AbstractMapType;
-import org.exist.xquery.value.*;
+import org.exist.xquery.value.AtomicValue;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
+import org.exist.xquery.value.Type;
+import org.exist.xquery.value.NodeValue;
 
 import javax.annotation.Nullable;
 import javax.xml.stream.XMLStreamException;
@@ -54,6 +59,8 @@ public class QueryOptions {
     public static final String OPTION_LOWERCASE_EXPANDED_TERMS = "lowercase-expanded-terms";
     public static final String OPTION_FACETS = "facets";
     public static final String OPTION_QUERY_ANALYZER_ID = "query-analyzer-id";
+    public static final String OPTION_FILTER_QUERY = "filter-query";
+    public static final String OPTION_FILTER = "filter";
 
     protected enum DefaultOperator {
         OR,
@@ -69,6 +76,9 @@ public class QueryOptions {
     protected boolean lowercaseExpandedTerms = false;
     protected Optional<Map<String, FacetQuery>> facets = Optional.empty();
     protected Set<String> fields = null;
+    protected String filterQuery = null;
+    protected String filterField = null;
+    protected Object filterValue = null;
 
     public QueryOptions() {
         // default options
@@ -120,10 +130,34 @@ public class QueryOptions {
                     tf.put(facet.key().getStringValue(), values);
                 }
                 facets = Optional.of(tf);
+            } else if (key.equals(OPTION_FILTER) && entry.value().hasOne() && entry.value().getItemType() == Type.MAP_ITEM) {
+                final AbstractMapType filterMap = (AbstractMapType) entry.value().itemAt(0);
+                filterField = getMapString(filterMap, "field");
+                filterValue = getMapValue(filterMap, "value");
             } else {
                 set(key, entry.value().getStringValue());
             }
         }
+    }
+
+    private static String getMapString(final AbstractMapType map, final String key) throws XPathException {
+        final Sequence seq = map.get(new org.exist.xquery.value.StringValue(key));
+        return seq != null && !seq.isEmpty() ? seq.getStringValue() : null;
+    }
+
+    private static Object getMapValue(final AbstractMapType map, final String key) throws XPathException {
+        final Sequence seq = map.get(new org.exist.xquery.value.StringValue(key));
+        if (seq == null || seq.isEmpty()) {
+            return null;
+        }
+        final org.exist.xquery.value.Item item = seq.itemAt(0);
+        if (item instanceof org.exist.xquery.value.IntegerValue iv) {
+            return iv.getLong();
+        }
+        if (item instanceof org.exist.xquery.value.DecimalValue dv) {
+            return dv.getDouble();
+        }
+        return item.getStringValue();
     }
 
     /**
@@ -199,6 +233,18 @@ public class QueryOptions {
         return facets;
     }
 
+    public @Nullable String getFilterQuery() {
+        return filterQuery;
+    }
+
+    public @Nullable String getFilterField() {
+        return filterField;
+    }
+
+    public @Nullable Object getFilterValue() {
+        return filterValue;
+    }
+
     public @Nullable Set<String> getFields() {
         return fields;
     }
@@ -215,7 +261,7 @@ public class QueryOptions {
                 }
                 break;
             case OPTION_LEADING_WILDCARD:
-                allowLeadingWildcard = "yes".equalsIgnoreCase(value);
+                allowLeadingWildcard = Configuration.parseBoolean(value, false);
                 break;
             case OPTION_PHRASE_SLOP:
                 try {
@@ -225,13 +271,17 @@ public class QueryOptions {
                 }
                 break;
             case OPTION_FILTER_REWRITE:
-                filterRewrite = "yes".equalsIgnoreCase(value);
+                filterRewrite = Configuration.parseBoolean(value, false);
                 break;
             case OPTION_LOWERCASE_EXPANDED_TERMS:
-                lowercaseExpandedTerms = "yes".equalsIgnoreCase(value);
+                lowercaseExpandedTerms = Configuration.parseBoolean(value, false);
                 break;
             case OPTION_QUERY_ANALYZER_ID:
                 queryAnalyzerId = value;
+                break;
+            case OPTION_FILTER_QUERY:
+                filterQuery = value;
+                break;
             default:
                 // unknown option, ignore
                 break;
@@ -253,11 +303,11 @@ public class QueryOptions {
             parser.setAllowLeadingWildcard(true);
         phraseSlop.ifPresent(parser::setPhraseSlop);
         if (filterRewrite)
-            parser.setMultiTermRewriteMethod(MultiTermQuery.CONSTANT_SCORE_FILTER_REWRITE);
+            parser.setMultiTermRewriteMethod(MultiTermQuery.CONSTANT_SCORE_REWRITE);
         else
-            parser.setMultiTermRewriteMethod(MultiTermQuery.CONSTANT_SCORE_BOOLEAN_QUERY_REWRITE);
+            parser.setMultiTermRewriteMethod(MultiTermQuery.SCORING_BOOLEAN_REWRITE);
         if (lowercaseExpandedTerms) {
-            parser.setLowercaseExpandedTerms(lowercaseExpandedTerms);
+            // parser.setLowercaseExpandedTerms(lowercaseExpandedTerms);
         }
     }
 

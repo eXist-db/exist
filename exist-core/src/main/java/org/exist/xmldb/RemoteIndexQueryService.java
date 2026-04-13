@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import org.exist.dom.QName;
+import org.exist.indexing.ReindexScope;
 import org.exist.util.Occurrences;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
@@ -53,6 +54,12 @@ public class RemoteIndexQueryService extends AbstractRemoteService implements In
         reindexCollection(collection.getPath());
     }
 
+    @Override
+    public void reindexCollection(final ReindexScope scope) throws XMLDBException {
+        // Remote API does not yet support scope; delegates to full reindex
+        reindexCollection(collection.getPath());
+    }
+
     /**
      * @deprecated {@link org.exist.xmldb.IndexQueryService#reindexCollection(org.exist.xmldb.XmldbURI)}
      */
@@ -75,11 +82,30 @@ public class RemoteIndexQueryService extends AbstractRemoteService implements In
     }
 
     @Override
+    public void reindexCollection(final XmldbURI collectionUri, final ReindexScope scope) throws XMLDBException {
+        final XmldbURI collectionPath = resolve(collectionUri);
+        final List<Object> params = new ArrayList<>();
+        params.add(collectionPath.toString());
+        params.add(scope.name().toLowerCase());
+        collection.execute("reindexCollection", params);
+    }
+
+    @Override
     public void reindexDocument(final String name) throws XMLDBException {
         final XmldbURI collectionPath = resolve(collection.getPathURI());
         final XmldbURI documentPath = collectionPath.append(name);
         final List<Object> params = new ArrayList<>();
         params.add(documentPath.toString());
+        collection.execute("reindexDocument", params);
+    }
+
+    @Override
+    public void reindexDocument(final String name, final ReindexScope scope) throws XMLDBException {
+        final XmldbURI collectionPath = resolve(collection.getPathURI());
+        final XmldbURI documentPath = collectionPath.append(name);
+        final List<Object> params = new ArrayList<>();
+        params.add(documentPath.toString());
+        params.add(scope.name().toLowerCase());
         collection.execute("reindexDocument", params);
     }
 

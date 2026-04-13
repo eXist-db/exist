@@ -945,6 +945,7 @@ public class MutableCollection implements Collection {
                 }
             });
 
+            LOG.debug("loadCollection {}: collectionId={} loaded {} documents into cache", path, collectionId, documents.size());
             return collection;
 //        }
     }
@@ -1962,7 +1963,9 @@ public class MutableCollection implements Collection {
             return broker.getIndexConfiguration();
         }
         //... otherwise return the general config (the broker's one)
-        return conf.getIndexConfiguration();
+        // Fall back to broker config when collection.xconf has no <index> element (fixes #2948)
+        final IndexSpec spec = conf.getIndexConfiguration();
+        return (spec != null) ? spec : broker.getIndexConfiguration();
     }
 
     @Override

@@ -176,7 +176,7 @@ public class ExtensionExpression extends AbstractExpression {
 
     @Override
     public void accept(final ExpressionVisitor visitor) {
-        visitor.visit(innerExpression);
+        innerExpression.accept(visitor);
     }
 
     @Override

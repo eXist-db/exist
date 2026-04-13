@@ -187,9 +187,10 @@
     </build>
 
     <repositories>
+        <!-- GeoTools: use repository/release (official per docs.geotools.org); geotools-releases can timeout on Windows CI -->
         <repository>
             <id>osgeo</id>
-            <url>https://repo.osgeo.org/repository/geotools-releases/</url>
+            <url>https://repo.osgeo.org/repository/release/</url>
             <releases><enabled>true</enabled></releases>
             <snapshots><enabled>false</enabled></snapshots>
         </repository>

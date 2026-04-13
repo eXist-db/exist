@@ -21,6 +21,7 @@
  */
 package org.exist.xmldb;
 
+import org.exist.indexing.ReindexScope;
 import org.exist.util.Occurrences;
 import org.xmldb.api.base.Service;
 import org.xmldb.api.base.XMLDBException;
@@ -41,6 +42,14 @@ public interface IndexQueryService extends Service {
      * @throws XMLDBException if the operation fails.
      */
     void reindexCollection() throws XMLDBException;
+
+    /**
+     * Reindex the current collection with the given scope.
+     *
+     * @param scope reindex scope: "all", "fulltext", or "vector".
+     * @throws XMLDBException if the operation fails.
+     */
+    void reindexCollection(ReindexScope scope) throws XMLDBException;
 
     /**
      * Reindex the documemy in the current collection, i.e. the collection from which
@@ -69,6 +78,24 @@ public interface IndexQueryService extends Service {
      * @throws XMLDBException if the operation fails.
      */
     void reindexCollection(XmldbURI collectionPath) throws XMLDBException;
+
+    /**
+     * Reindex the collection specified by its path with the given scope.
+     *
+     * @param collectionPath the collection path to reindex.
+     * @param scope reindex scope: "all", "fulltext", or "vector".
+     * @throws XMLDBException if the operation fails.
+     */
+    void reindexCollection(XmldbURI collectionPath, ReindexScope scope) throws XMLDBException;
+
+    /**
+     * Reindex the document in the current collection with the given scope.
+     *
+     * @param name The name of the document.
+     * @param scope reindex scope: "all", "fulltext", or "vector".
+     * @throws XMLDBException if the operation fails.
+     */
+    void reindexDocument(String name, ReindexScope scope) throws XMLDBException;
 
     /**
      * Returns frequency statistics on all elements and attributes contained in the

@@ -117,7 +117,7 @@ declare variable $ser:test-xml-collection-xconf := document {
         </index>
     </collection>
 };
-declare variable $ser:collection-name := "serialization-test";
+declare variable $ser:collection-name := "lucene-test-serialization";
 
 declare variable $ser:collection := "/db/" || $ser:collection-name;
 
@@ -128,7 +128,7 @@ function ser:setup() {
     xmldb:create-collection("/db/system", "config"),
     xmldb:create-collection("/db/system/config", "db"),
     xmldb:create-collection("/db/system/config/db", $ser:collection-name),
-    xmldb:store("/db/system/config/db/serialization-test", "collection.xconf", $ser:test-xml-collection-xconf),
+    xmldb:store("/db/system/config/db/" || $ser:collection-name, "collection.xconf", $ser:test-xml-collection-xconf),
     xmldb:create-collection("/db", $ser:collection-name),
     xmldb:store($ser:collection, "test.xml", $ser:test-xml)
 };
@@ -136,7 +136,8 @@ function ser:setup() {
 declare
     %test:tearDown
 function ser:teardown() {
-    xmldb:remove($ser:collection)
+    ( xmldb:remove($ser:collection),
+      xmldb:remove("/db/system/config/db/" || $ser:collection-name) )
 };
 
 declare

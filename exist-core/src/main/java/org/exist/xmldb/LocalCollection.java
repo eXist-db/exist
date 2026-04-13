@@ -386,7 +386,7 @@ public class LocalCollection extends AbstractLocal implements EXistCollection {
         return serviceProviderCache.getService(serviceType);
     }
 
-    final void registerProvders(ProviderRegistry registry) {
+    protected void registerProvders(ProviderRegistry registry) {
         final Supplier<LocalXPathQueryService> queryServiceSupplier =
                 () -> new LocalXPathQueryService(user, brokerPool, this);
         registry.add(XPathQueryService.class, queryServiceSupplier);

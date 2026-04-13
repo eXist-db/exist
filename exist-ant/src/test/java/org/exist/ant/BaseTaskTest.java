@@ -37,6 +37,11 @@ import static org.junit.Assert.assertTrue;
 @RunWith(Parameterized.class)
 public class BaseTaskTest extends AbstractTaskTest {
 
+    private static final String PROP_ANT_TEST_DATA_TASK_NAME  = "test.data.task.name";
+
+    @Parameter
+    public String taskName;
+
     @Parameters
     public static Iterable<? extends Object> data() {
         return Arrays.asList(
@@ -67,11 +72,6 @@ public class BaseTaskTest extends AbstractTaskTest {
                 XMLDBShutdownTask.class.getSimpleName()
         );
     }
-
-    @Parameter
-    public String taskName;
-
-    private static final String PROP_ANT_TEST_DATA_TASK_NAME  = "test.data.task.name";
 
     @Nullable
     @Override

@@ -34,8 +34,13 @@ declare variable $rtik:COLLECTION_CONFIG :=
         xmlns:tei="http://www.tei-c.org/ns/1.0">
             <range>
                 <create qname="tei:speaker" type="xs:string"/>
+                <!-- GitHub #4805: util:index-keys#5 uses range index on @s -->
+                <create qname="@s" type="xs:string"/>
                 <create match="//tei:div">
                     <field name="who" match="tei:sp/@who" type="xs:string"/>
+                </create>
+                <create qname="tei:test">
+                    <field name="elem-field" match="tei:elem" type="xs:string" case="no"/>
                 </create>
             </range>
         </index>
@@ -67,22 +72,40 @@ declare variable $rtik:DATA :=
                         </sp>
                     </div>
                 </div>
+                <test>
+                    <elem>a</elem>
+                    <elem>b</elem>
+                    <elem>c</elem>
+                </test>
+                <test>
+                    <elem>a</elem>
+                    <elem>b</elem>
+                    <elem>c</elem>
+                    <elem>b</elem>
+                    <elem>y</elem>
+                </test>
             </body>
         </text>
     </TEI>;
 
+(: GitHub #4805 fixture: only test.xml gets the @s attribute :)
 declare variable $rtik:COLLECTION_NAME := "indexkeystest";
 declare variable $rtik:COLLECTION := "/db/" || $rtik:COLLECTION_NAME;
+declare variable $rtik:EXPECTED_ELEM_KEYS := ("a", "b", "c", "y");
 
 declare
 %test:setUp
 function rtik:setup() {
-    (xmldb:create-collection("/db/system", "config"), xmldb:create-collection("/db/system/config", "db")),
-    xmldb:create-collection("/db/system/config/db", $rtik:COLLECTION_NAME),
-    xmldb:store("/db/system/config/db/" || $rtik:COLLECTION_NAME, "collection.xconf", $rtik:COLLECTION_CONFIG),
-    xmldb:create-collection("/db", $rtik:COLLECTION_NAME),
-    xmldb:store($rtik:COLLECTION, "test.xml", $rtik:DATA),
-    xmldb:store($rtik:COLLECTION, "test2.xml", $rtik:DATA)
+    (xmldb:create-collection("/db/system", "config"),
+     xmldb:create-collection("/db/system/config", "db"),
+     xmldb:create-collection("/db/system/config/db", $rtik:COLLECTION_NAME),
+     xmldb:create-collection("/db", $rtik:COLLECTION_NAME),
+     xmldb:store("/db/system/config/db/" || $rtik:COLLECTION_NAME, "collection.xconf", $rtik:COLLECTION_CONFIG),
+     xmldb:store($rtik:COLLECTION, "test.xml", $rtik:DATA),
+     (: Add the minimal #4805 fixture into test.xml before reindexing :)
+     update insert <root><child s="1"/></root> into doc($rtik:COLLECTION || "/test.xml")/tei:TEI,
+     xmldb:store($rtik:COLLECTION, "test2.xml", $rtik:DATA),
+     xmldb:reindex($rtik:COLLECTION))
 };
 
 declare
@@ -121,4 +144,98 @@ function rtik:index-keys-for-field-with-context-in-dynamic-function() {
   let $func := function-lookup(xs:QName("range:index-keys-for-field"), 3)
   let $keys := collection($rtik:COLLECTION)/$func("who", function($key, $nums) { $key }, 100)
   return count($keys)
+};
+
+(: --- GitHub #4074: range:index-keys-for-field called from servlet context --- :)
+
+declare
+    %test:assertTrue
+function rtik:issue4074-no-context-returns-keys() {
+    let $result := range:index-keys-for-field("elem-field", function($key, $nums) { $key }, 100)
+    return deep-equal(for $x in $result order by $x return $x, $rtik:EXPECTED_ELEM_KEYS)
+};
+
+declare
+    %test:assertTrue
+function rtik:issue4074-with-explicit-context() {
+    let $result := distinct-values(
+        collection($rtik:COLLECTION)/range:index-keys-for-field("elem-field", function($key, $nums) { $key }, 100)
+    )
+    return deep-equal(for $x in $result order by $x return $x, $rtik:EXPECTED_ELEM_KEYS)
+};
+
+declare function rtik:issue4074-wrap($a as xs:string, $b as function(*), $c as xs:integer) {
+    range:index-keys-for-field($a, $b, $c)
+};
+
+declare
+    %test:assertTrue
+function rtik:issue4074-with-named-function-context() {
+    let $result := distinct-values(
+        collection($rtik:COLLECTION)/rtik:issue4074-wrap("elem-field", function($key, $nums) { $key }, 100)
+    )
+    return deep-equal(for $x in $result order by $x return $x, $rtik:EXPECTED_ELEM_KEYS)
+};
+
+declare
+    %test:assertTrue
+function rtik:issue4074-with-inline-function-context() {
+    let $inlineFunc := function($a as xs:string, $b as function(*), $c as xs:integer) {
+        range:index-keys-for-field($a, $b, $c)
+    }
+    let $result := distinct-values(
+        collection($rtik:COLLECTION)/$inlineFunc("elem-field", function($key, $nums) { $key }, 100)
+    )
+    return deep-equal(for $x in $result order by $x return $x, $rtik:EXPECTED_ELEM_KEYS)
+};
+
+declare
+    %test:assertTrue
+function rtik:issue4074-with-dynamic-function-context() {
+    let $func := function-lookup(xs:QName("range:index-keys-for-field"), 3)
+    let $result := distinct-values(
+        collection($rtik:COLLECTION)/$func("elem-field", function($key, $nums) { $key }, 100)
+    )
+    return deep-equal(for $x in $result order by $x return $x, $rtik:EXPECTED_ELEM_KEYS)
+};
+
+(: GitHub #4805: util:index-keys#5 returns stale data after update insert :)
+
+declare function rtik:issue4805-term($term as xs:string, $data as xs:int+) as item()+ {
+    $term, $data
+};
+
+declare function rtik:issue4805-get-nodeset() {
+    collection($rtik:COLLECTION)//@s
+};
+
+declare function rtik:issue4805-list-terms($nodes as node()*, $number-of-results as xs:integer) as item()* {
+    util:index-keys($nodes, (), rtik:issue4805-term#2, $number-of-results, "range-index")
+};
+
+declare
+    %test:assertEquals('1', 1, 1, 1)
+function rtik:issue4805-test-initial() {
+    (: Stateful sequence: this establishes baseline frequency before the update test below. :)
+    rtik:issue4805-list-terms(rtik:issue4805-get-nodeset(), 1)
+};
+
+declare
+    %test:assertEquals('1', 2, 1, 1)
+function rtik:issue4805-test-list-after-update() {
+    update insert <child s="1"/> into doc($rtik:COLLECTION || "/test.xml")//root,
+    rtik:issue4805-list-terms(rtik:issue4805-get-nodeset(), 1)
+};
+
+declare
+    %test:assertEquals('1', 2, 1, 1)
+function rtik:issue4805-test-list-with-different-page-size() {
+    rtik:issue4805-list-terms(rtik:issue4805-get-nodeset(), 2)
+};
+
+declare
+    %test:assertEquals('1', 2, 1, 1)
+function rtik:issue4805-test-updated-after-reindex() {
+    let $_ := xmldb:reindex($rtik:COLLECTION)
+    return rtik:issue4805-list-terms(rtik:issue4805-get-nodeset(), 1)
 };

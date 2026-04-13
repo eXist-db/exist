@@ -44,7 +44,7 @@ declare variable $fti:DATA :=
         <p><a name="1"></a><em>trampel</em>tier</p>
     </root>;
 
-declare variable $fti:COLLECTION_NAME := "inlinetest";
+declare variable $fti:COLLECTION_NAME := "lucene-test-inline-elements";
 declare variable $fti:COLLECTION := "/db/" || $fti:COLLECTION_NAME;
 
 declare

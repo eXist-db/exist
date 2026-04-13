@@ -112,6 +112,7 @@ public class DataBackup implements SystemTask {
             // close the zip file
 		} catch (final IOException e) {
             LOG.error("An IO error occurred while backing up data files: {}", e.getMessage(), e);
+            throw new EXistException("Backup failed: " + e.getMessage(), e);
 		}
 	}
 

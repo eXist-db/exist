@@ -34,6 +34,9 @@ module namespace mhng="http://exist-db.org/xquery/ngram/match-highlighting/test"
 
 declare namespace test="http://exist-db.org/xquery/xqsuite";
 declare namespace exist="http://exist.sourceforge.net/NS/exist";
+declare namespace xmldb="http://exist-db.org/xquery/xmldb";
+declare namespace util="http://exist-db.org/xquery/util";
+declare namespace ngram="http://exist-db.org/xquery/ngram";
 
 (:~
  : Collection config: ngram on el, @att.
@@ -43,6 +46,7 @@ declare variable $mhng:XCONF as element(collection) :=
         <index xmlns:xs="http://www.w3.org/2001/XMLSchema">
             <ngram qname="el"/>
             <ngram qname="@att"/>
+            <ngram qname="p"/>
         </index>
     </collection>;
 
@@ -53,6 +57,9 @@ declare variable $mhng:XML as document-node() :=
     document {
         <test>
             <el att="val"><a><b>one</b></a><c>two tree</c></el>
+            <p n="1">無名<c n="、"></c>天地之始</p>
+            <p n="2">無名天地之始</p>
+            <p>Test p 3</p>
         </test>
     };
 
@@ -171,4 +178,21 @@ declare
 function mhng:attribute-match-highlight-both() {
     let $result := doc($mhng:COLLECTION || "/test.xml")//el[ngram:contains(@att, 'val')]/util:expand(., 'highlight-matches=both')
     return deep-equal($result, <el att="|||val|||"><a><b>one</b></a><c>two tree</c></el>)
+};
+
+(: --- GitHub #4222: non-continuous text across empty elements --- :)
+(: Hit count for query "名天" should match two p elements :)
+declare
+    %test:assertEquals(2)
+function mhng:issue4222-hit-count() {
+    count(doc($mhng:COLLECTION || "/test.xml")//p[ngram:contains(., '名天')])
+};
+
+(: Match count: util:expand on ngram hits returns exist:match elements :)
+declare
+    %test:assertEquals(2)
+function mhng:issue4222-match-count-non-continuous-text() {
+    let $result := doc($mhng:COLLECTION || "/test.xml")//p[ngram:contains(., '名天')]
+    let $hits := util:expand($result)
+    return count($hits//exist:match)
 };

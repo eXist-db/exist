@@ -84,11 +84,13 @@ declare variable $rt:COLLECTION := "/db/" || $rt:COLLECTION_NAME;
 declare
     %test:setUp
 function rt:setup() {
-    (xmldb:create-collection("/db/system", "config"), xmldb:create-collection("/db/system/config", "db")),
-    xmldb:create-collection("/db/system/config/db", $rt:COLLECTION_NAME),
-    xmldb:store("/db/system/config/db/" || $rt:COLLECTION_NAME, "collection.xconf", $rt:COLLECTION_CONFIG),
-    xmldb:create-collection("/db", $rt:COLLECTION_NAME),
-    xmldb:store($rt:COLLECTION, "test.xml", $rt:DATA)
+    (xmldb:create-collection("/db/system", "config"),
+     xmldb:create-collection("/db/system/config", "db"),
+     xmldb:create-collection("/db/system/config/db", $rt:COLLECTION_NAME),
+     xmldb:create-collection("/db", $rt:COLLECTION_NAME),
+     xmldb:store("/db/system/config/db/" || $rt:COLLECTION_NAME, "collection.xconf", $rt:COLLECTION_CONFIG),
+     xmldb:store($rt:COLLECTION, "test.xml", $rt:DATA),
+     xmldb:reindex($rt:COLLECTION))
 };
 
 declare

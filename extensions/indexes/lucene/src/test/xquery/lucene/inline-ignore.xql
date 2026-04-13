@@ -60,7 +60,7 @@ declare variable $inlg:XML as document-node() :=
         </root>
     };
 
-declare variable $inlg:COLLECTION_NAME := "inline-ignore";
+declare variable $inlg:COLLECTION_NAME := "lucene-test-inline-ignore";
 declare variable $inlg:COLLECTION := "/db/" || $inlg:COLLECTION_NAME;
 
 (:~

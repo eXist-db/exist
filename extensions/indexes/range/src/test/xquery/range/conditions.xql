@@ -101,6 +101,10 @@ declare variable $ct:COLLECTION_CONFIG :=
                     <condition attribute="n" operator="matches" value="some_\d+_thing" />
                     <field name="entryNMatches" type="xs:string" />
                 </create>
+                <create qname="tei:entry">
+                    <condition attribute="n" operator="matches" value="^bb.*" />
+                    <field name="entryNMatchesAnchored" type="xs:string" />
+                </create>
 
                 <create qname="tei:num">
                     <condition attribute="value" operator="lt" value="2" />
@@ -178,6 +182,7 @@ declare variable $ct:DATA :=
                     <term n="c">drei</term>
 
                     <entry n="some_1234_thing">something</entry>
+                    <entry n="bb_start">bb_value</entry>
 
                     <num value="1">one</num>
                     <num value="110">onehundredandten</num>
@@ -194,18 +199,19 @@ declare variable $ct:DATA :=
         </text>
     </TEI>;
 
-declare variable $ct:COLLECTION_NAME := "optimizertest";
+declare variable $ct:COLLECTION_NAME := "range-test-conditions";
 declare variable $ct:COLLECTION := "/db/" || $ct:COLLECTION_NAME;
 
 declare
 %test:setUp
 function ct:setup() {
-    (xmldb:create-collection("/db/system", "config"), xmldb:create-collection("/db/system/config", "db")),
-    xmldb:create-collection("/db/system/config/db", $ct:COLLECTION_NAME),
-    xmldb:store("/db/system/config/db/" || $ct:COLLECTION_NAME, "collection.xconf", $ct:COLLECTION_CONFIG),
-    xmldb:create-collection("/db", $ct:COLLECTION_NAME),
-    xmldb:store($ct:COLLECTION, "data2.xml", $ct:DATA)
-
+    (xmldb:create-collection("/db/system", "config"),
+     xmldb:create-collection("/db/system/config", "db"),
+     xmldb:create-collection("/db/system/config/db", $ct:COLLECTION_NAME),
+     xmldb:create-collection("/db", $ct:COLLECTION_NAME),
+     xmldb:store("/db/system/config/db/" || $ct:COLLECTION_NAME, "collection.xconf", $ct:COLLECTION_CONFIG),
+     xmldb:store($ct:COLLECTION, "data2.xml", $ct:DATA),
+     xmldb:reindex($ct:COLLECTION))
 };
 
 declare
@@ -532,5 +538,12 @@ declare
 %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED'] and not($result//stats:index[@type eq 'range'])")
 function ct:optimize-matches-no-case() {
 collection($ct:COLLECTION)//tei:p[matches(@type, "bb")][. = "something"]
+};
+
+(: Anchored pattern ^bb: result correctness. :)
+declare
+%test:assertEquals(1)
+function ct:optimize-matches-anchored-result() {
+count(collection($ct:COLLECTION)//tei:entry[matches(@n, "^bb")][. = "bb_value"])
 };
 

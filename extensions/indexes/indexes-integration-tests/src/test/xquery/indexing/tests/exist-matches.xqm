@@ -62,9 +62,8 @@ function em:tearDown() {
 
 declare
     %test:args("Hello")
-    (:we are only seeing one match for exist match in this state because :)
-    (:the matching is broken in both ft:query and ngram check  https://github.com/eXist-db/exist/issues/2102#issuecomment-1442410050 for more info:)
-    %test:assertEquals(1) (:this should be 2 instead of 1:)
+    (: Fixed #4835: util:expand now correctly highlights both x and y matches (was 1, expected 2). :)
+    %test:assertEquals(2)
 function em:expand-node-lucene-ngram-matches($query as xs:string) {
     let $doc := doc($em:testCol || "/test1.xml")
     let $x-hits := $doc/root[ft:query(x, $query)]

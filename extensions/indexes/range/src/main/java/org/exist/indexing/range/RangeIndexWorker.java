@@ -43,7 +43,8 @@ import org.apache.lucene.index.*;
 import org.apache.lucene.search.*;
 import org.apache.lucene.util.Bits;
 import org.apache.lucene.util.BytesRef;
-import org.apache.lucene.util.NumericUtils;
+import org.apache.lucene.util.automaton.Operations;
+import org.apache.lucene.util.automaton.RegExp;
 import org.exist.collections.Collection;
 import org.exist.indexing.*;
 import org.exist.indexing.StreamListener.ReindexMode;
@@ -93,9 +94,21 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         LOAD_FIELDS.add(FIELD_NODE_ID);
     }
 
+    /**
+     * Safely convert a BytesRef to a display string. ICU collation sort keys are binary, not UTF-8,
+     * so utf8ToString() throws AssertionError. Use this for logging/debug output.
+     */
+    private static String safeBytesRefToDisplay(BytesRef ref) {
+        if (ref == null) return "null";
+        try {
+            return ref.utf8ToString();
+        } catch (AssertionError e) {
+            return "[collation key, " + ref.length + " bytes]";
+        }
+    }
+
     private final RangeIndex index;
     private final DBBroker broker;
-    private IndexController controller;
     private DocumentImpl currentDoc;
     private ReindexMode mode = ReindexMode.STORE;
     private List<RangeIndexDoc> nodesToWrite;
@@ -113,6 +126,10 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     public Query toQuery(String field, QName qname, AtomicValue content, RangeIndex.Operator operator, DocumentSet docs) throws XPathException {
+        return toQuery(field, qname, content, operator, docs, 0);
+    }
+
+    public Query toQuery(String field, QName qname, AtomicValue content, RangeIndex.Operator operator, DocumentSet docs, int matchFlags) throws XPathException {
         final int type = content.getType();
         BytesRefBuilder bytes;
         BytesRef key = null;
@@ -120,95 +137,184 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             if (operator != RangeIndex.Operator.MATCH) {
                 key = analyzeContent(field, qname, content.getStringValue(), docs);
             }
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("QUERY field={} qname={} input={} key={} operator={}",
+                        field, qname, content.getStringValue(), safeBytesRefToDisplay(key), operator);
+            }
             WildcardQuery query;
             switch (operator) {
-                case EQ:
+                case EQ -> {
                     return new TermQuery(new Term(field, key));
-                case NE:
-                    final BooleanQuery qnot = new BooleanQuery();
+                }
+                case NE -> {
+                    final BooleanQuery.Builder builder = new BooleanQuery.Builder();
                     query = new WildcardQuery(new Term(field, new BytesRef("*")));
-                    query.setRewriteMethod(MultiTermQuery.CONSTANT_SCORE_FILTER_REWRITE);
-                    qnot.add(query, BooleanClause.Occur.MUST);
-                    qnot.add(new TermQuery(new Term(field, key)), BooleanClause.Occur.MUST_NOT);
-                    return qnot;
-                case STARTS_WITH:
+                    builder.add(query, BooleanClause.Occur.MUST);
+                    builder.add(new TermQuery(new Term(field, key)), BooleanClause.Occur.MUST_NOT);
+                    return builder.build();
+                }
+                case STARTS_WITH -> {
                     return new PrefixQuery(new Term(field, key));
-                case ENDS_WITH:
+                }
+                case ENDS_WITH -> {
                     bytes = new BytesRefBuilder();
                     bytes.append((byte)'*');
                     bytes.append(key);
-                    query = new WildcardQuery(new Term(field, bytes.toBytesRef()));
-                    query.setRewriteMethod(MultiTermQuery.CONSTANT_SCORE_FILTER_REWRITE);
-                    return query;
-                case CONTAINS:
+                    return new WildcardQuery(new Term(field, bytes.toBytesRef()));
+                }
+                case CONTAINS -> {
                     bytes = new BytesRefBuilder();
                     bytes.append((byte)'*');
                     bytes.append(key);
                     bytes.append((byte)'*');
-                    query = new WildcardQuery(new Term(field, bytes.toBytesRef()));
-                    query.setRewriteMethod(MultiTermQuery.CONSTANT_SCORE_FILTER_REWRITE);
-                    return query;
-                case MATCH:
-                    RegexpQuery regexQuery = new RegexpQuery(new Term(field, content.getStringValue()));
-                    regexQuery.setRewriteMethod(MultiTermQuery.CONSTANT_SCORE_FILTER_REWRITE);
-                    return regexQuery;
+                    return new WildcardQuery(new Term(field, bytes.toBytesRef()));
+                }
+                case MATCH -> {
+                    String pattern = content.getStringValue();
+                    pattern = XPathToLuceneRegexTranslator.translate(pattern);
+                    if (matchFlags != 0) {
+                        return new RegexpQuery(new Term(field, pattern), RegExp.NONE, matchFlags, Operations.DEFAULT_DETERMINIZE_WORK_LIMIT);
+                    }
+                    return new RegexpQuery(new Term(field, pattern));
+                }
+                default -> {
+                }
             }
         }
+        // EQ/NE for numeric/date types: use Point queries (LongField.newExactQuery etc.), not TermQuery
+        // (LongField/IntField index as Points; TermQuery searches terms and never matches)
         if (operator == RangeIndex.Operator.EQ) {
-            return new TermQuery(new Term(field, RangeIndexConfigElement.convertToBytes(content)));
+            return switch (type) {
+                case Type.INTEGER, Type.LONG, Type.UNSIGNED_LONG ->
+                    LongField.newExactQuery(field, ((NumericValue) content).getLong());
+                case Type.INT, Type.UNSIGNED_INT, Type.SHORT, Type.UNSIGNED_SHORT ->
+                    IntField.newExactQuery(field, ((NumericValue) content).getInt());
+                case Type.DECIMAL, Type.DOUBLE ->
+                    DoubleField.newExactQuery(field, ((NumericValue) content).getDouble());
+                case Type.FLOAT ->
+                    FloatField.newExactQuery(field, (float) ((NumericValue) content).getDouble());
+                case Type.DATE ->
+                    LongField.newExactQuery(field, RangeIndexConfigElement.dateToLong((DateValue) content));
+                case Type.TIME ->
+                    LongField.newExactQuery(field, RangeIndexConfigElement.timeToLong((TimeValue) content));
+                case Type.DATE_TIME ->
+                    new TermQuery(new Term(field, RangeIndexConfigElement.convertToBytes(content)));
+                default ->
+                    new TermQuery(new Term(field, RangeIndexConfigElement.convertToBytes(content)));
+            };
         }
         if (operator == RangeIndex.Operator.NE) {
-            final BooleanQuery nq = new BooleanQuery();
-            nq.add(new MatchAllDocsQuery(), BooleanClause.Occur.MUST);
-            nq.add(new TermQuery(new Term(field, RangeIndexConfigElement.convertToBytes(content))), BooleanClause.Occur.MUST_NOT);
-            return nq;
+            Query eqQuery;
+            switch (type) {
+                case Type.INTEGER:
+                case Type.LONG:
+                case Type.UNSIGNED_LONG:
+                    eqQuery = LongField.newExactQuery(field, ((NumericValue) content).getLong());
+                    break;
+                case Type.INT:
+                case Type.UNSIGNED_INT:
+                case Type.SHORT:
+                case Type.UNSIGNED_SHORT:
+                    eqQuery = IntField.newExactQuery(field, ((NumericValue) content).getInt());
+                    break;
+                case Type.DECIMAL:
+                case Type.DOUBLE:
+                    eqQuery = DoubleField.newExactQuery(field, ((NumericValue) content).getDouble());
+                    break;
+                case Type.FLOAT:
+                    eqQuery = FloatField.newExactQuery(field, (float) ((NumericValue) content).getDouble());
+                    break;
+                case Type.DATE:
+                    eqQuery = LongField.newExactQuery(field, RangeIndexConfigElement.dateToLong((DateValue) content));
+                    break;
+                case Type.TIME:
+                    eqQuery = LongField.newExactQuery(field, RangeIndexConfigElement.timeToLong((TimeValue) content));
+                    break;
+                case Type.DATE_TIME:
+                default:
+                    eqQuery = new TermQuery(new Term(field, RangeIndexConfigElement.convertToBytes(content)));
+                    break;
+            }
+            final BooleanQuery.Builder nqb = new BooleanQuery.Builder();
+            nqb.add(new MatchAllDocsQuery(), BooleanClause.Occur.MUST);
+            nqb.add(eqQuery, BooleanClause.Occur.MUST_NOT);
+            return nqb.build();
         }
         final boolean includeUpper = operator == RangeIndex.Operator.LE;
         final boolean includeLower = operator == RangeIndex.Operator.GE;
+        // LongField.newRangeQuery ranges are inclusive; for LT/GT use exclusive bounds per Lucene 10 docs
         switch (type) {
             case Type.INTEGER:
             case Type.LONG:
             case Type.UNSIGNED_LONG:
-                if (operator == RangeIndex.Operator.LT || operator == RangeIndex.Operator.LE) {
-                    return NumericRangeQuery.newLongRange(field, null, ((NumericValue)content).getLong(), includeLower, includeUpper);
+                long lval = ((NumericValue) content).getLong();
+                if (operator == RangeIndex.Operator.LT) {
+                    return LongField.newRangeQuery(field, Long.MIN_VALUE, Math.addExact(lval, -1));
+                } else if (operator == RangeIndex.Operator.LE) {
+                    return LongField.newRangeQuery(field, Long.MIN_VALUE, lval);
+                } else if (operator == RangeIndex.Operator.GT) {
+                    return LongField.newRangeQuery(field, Math.addExact(lval, 1), Long.MAX_VALUE);
                 } else {
-                    return NumericRangeQuery.newLongRange(field, ((NumericValue)content).getLong(), null, includeLower, includeUpper);
+                    return LongField.newRangeQuery(field, lval, Long.MAX_VALUE);
                 }
             case Type.INT:
             case Type.UNSIGNED_INT:
             case Type.SHORT:
             case Type.UNSIGNED_SHORT:
-                if (operator == RangeIndex.Operator.LT || operator == RangeIndex.Operator.LE) {
-                    return NumericRangeQuery.newIntRange(field, null, ((NumericValue) content).getInt(), includeLower, includeUpper);
+                int ival = ((NumericValue) content).getInt();
+                if (operator == RangeIndex.Operator.LT) {
+                    return IntField.newRangeQuery(field, Integer.MIN_VALUE, Math.addExact(ival, -1));
+                } else if (operator == RangeIndex.Operator.LE) {
+                    return IntField.newRangeQuery(field, Integer.MIN_VALUE, ival);
+                } else if (operator == RangeIndex.Operator.GT) {
+                    return IntField.newRangeQuery(field, Math.addExact(ival, 1), Integer.MAX_VALUE);
                 } else {
-                    return NumericRangeQuery.newIntRange(field, ((NumericValue) content).getInt(), null, includeLower, includeUpper);
+                    return IntField.newRangeQuery(field, ival, Integer.MAX_VALUE);
                 }
             case Type.DECIMAL:
             case Type.DOUBLE:
-                if (operator == RangeIndex.Operator.LT || operator == RangeIndex.Operator.LE) {
-                    return NumericRangeQuery.newDoubleRange(field, null, ((NumericValue) content).getDouble(), includeLower, includeUpper);
+                double dval = ((NumericValue) content).getDouble();
+                if (operator == RangeIndex.Operator.LT) {
+                    return DoubleField.newRangeQuery(field, Double.NEGATIVE_INFINITY, Math.nextDown(dval));
+                } else if (operator == RangeIndex.Operator.LE) {
+                    return DoubleField.newRangeQuery(field, Double.NEGATIVE_INFINITY, dval);
+                } else if (operator == RangeIndex.Operator.GT) {
+                    return DoubleField.newRangeQuery(field, Math.nextUp(dval), Double.POSITIVE_INFINITY);
                 } else {
-                    return NumericRangeQuery.newDoubleRange(field, ((NumericValue) content).getDouble(), null, includeLower, includeUpper);
+                    return DoubleField.newRangeQuery(field, dval, Double.POSITIVE_INFINITY);
                 }
             case Type.FLOAT:
-                if (operator == RangeIndex.Operator.LT || operator == RangeIndex.Operator.LE) {
-                    return NumericRangeQuery.newFloatRange(field, null, (float) ((NumericValue) content).getDouble(), includeLower, includeUpper);
+                float fval = (float) ((NumericValue) content).getDouble();
+                if (operator == RangeIndex.Operator.LT) {
+                    return FloatField.newRangeQuery(field, Float.NEGATIVE_INFINITY, Math.nextDown(fval));
+                } else if (operator == RangeIndex.Operator.LE) {
+                    return FloatField.newRangeQuery(field, Float.NEGATIVE_INFINITY, fval);
+                } else if (operator == RangeIndex.Operator.GT) {
+                    return FloatField.newRangeQuery(field, Math.nextUp(fval), Float.POSITIVE_INFINITY);
                 } else {
-                    return NumericRangeQuery.newFloatRange(field, (float) ((NumericValue) content).getDouble(), null, includeLower, includeUpper);
+                    return FloatField.newRangeQuery(field, fval, Float.POSITIVE_INFINITY);
                 }
             case Type.DATE:
                 long dl = RangeIndexConfigElement.dateToLong((DateValue) content);
-                if (operator == RangeIndex.Operator.LT || operator == RangeIndex.Operator.LE) {
-                    return NumericRangeQuery.newLongRange(field, null, dl, includeLower, includeUpper);
+                if (operator == RangeIndex.Operator.LT) {
+                    return LongField.newRangeQuery(field, Long.MIN_VALUE, Math.addExact(dl, -1));
+                } else if (operator == RangeIndex.Operator.LE) {
+                    return LongField.newRangeQuery(field, Long.MIN_VALUE, dl);
+                } else if (operator == RangeIndex.Operator.GT) {
+                    return LongField.newRangeQuery(field, Math.addExact(dl, 1), Long.MAX_VALUE);
                 } else {
-                    return NumericRangeQuery.newLongRange(field, dl, null, includeLower, includeUpper);
+                    return LongField.newRangeQuery(field, dl, Long.MAX_VALUE);
                 }
             case Type.TIME:
                 long tl = RangeIndexConfigElement.timeToLong((TimeValue) content);
-                if (operator == RangeIndex.Operator.LT || operator == RangeIndex.Operator.LE) {
-                    return NumericRangeQuery.newLongRange(field, null, tl, includeLower, includeUpper);
+                if (operator == RangeIndex.Operator.LT) {
+                    return LongField.newRangeQuery(field, Long.MIN_VALUE, Math.addExact(tl, -1));
+                } else if (operator == RangeIndex.Operator.LE) {
+                    return LongField.newRangeQuery(field, Long.MIN_VALUE, tl);
+                } else if (operator == RangeIndex.Operator.GT) {
+                    return LongField.newRangeQuery(field, Math.addExact(tl, 1), Long.MAX_VALUE);
                 } else {
-                    return NumericRangeQuery.newLongRange(field, tl, null, includeLower, includeUpper);
+                    return LongField.newRangeQuery(field, tl, Long.MAX_VALUE);
                 }
             case Type.DATE_TIME:
             default:
@@ -235,7 +341,6 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     @Override
     public Object configure(IndexController controller, NodeList configNodes, Map<String, String> namespaces) throws DatabaseConfigurationException {
-        this.controller = controller;
         LOG.debug("Configuring lucene index...");
         return new RangeIndexConfig(configNodes, namespaces);
     }
@@ -265,16 +370,19 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     public void setMode(ReindexMode mode) {
         this.mode = mode;
         switch (mode) {
-            case STORE:
-                if (nodesToWrite == null)
+            case STORE -> {
+                if (nodesToWrite == null) {
                     nodesToWrite = new ArrayList<>();
-                else
+                } else {
                     nodesToWrite.clear();
+                }
                 cachedNodesSize = 0;
-                break;
-            case REMOVE_SOME_NODES:
+            }
+            case REMOVE_SOME_NODES -> {
                 nodesToRemove = new TreeSet<>();
-                break;
+            }
+            default -> {
+            }
         }
     }
 
@@ -342,15 +450,17 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     @Override
     public void flush() {
         switch (mode) {
-            case STORE:
+            case STORE -> {
                 write();
-                break;
-            case REMOVE_SOME_NODES:
+            }
+            case REMOVE_SOME_NODES -> {
                 removeNodes();
-                break;
-            case REMOVE_ALL_NODES:
+            }
+            case REMOVE_ALL_NODES -> {
                 removeDocument(currentDoc.getDocId());
-                break;
+            }
+            default -> {
+            }
         }
     }
 
@@ -363,10 +473,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             writer = index.getWriter();
             for (Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
                 DocumentImpl doc = i.next();
-                final BytesRefBuilder bytes = new BytesRefBuilder();
-                NumericUtils.intToPrefixCoded(doc.getDocId(), 0, bytes);
-                Term dt = new Term(FIELD_DOC_ID, bytes.toBytesRef());
-                writer.deleteDocuments(dt);
+                writer.deleteDocuments(IntField.newExactQuery(FIELD_DOC_ID, doc.getDocId()));
             }
         } catch (IOException | PermissionDeniedException | LockException e) {
             LOG.error("Error while removing lucene index: {}", e.getMessage(), e);
@@ -389,10 +496,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         IndexWriter writer = null;
         try {
             writer = index.getWriter();
-            final BytesRefBuilder bytes = new BytesRefBuilder();
-            NumericUtils.intToPrefixCoded(docId, 0, bytes);
-            Term dt = new Term(FIELD_DOC_ID, bytes.toBytesRef());
-            writer.deleteDocuments(dt);
+            writer.deleteDocuments(IntField.newExactQuery(FIELD_DOC_ID, docId));
         } catch (IOException e) {
             LOG.warn("Error while removing lucene index: {}", e.getMessage(), e);
         } finally {
@@ -414,7 +518,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             writer = index.getWriter();
 
             for (NodeId nodeId : nodesToRemove) {
-                // build id from nodeId and docId
+                // build id from nodeId and docId (must match write() encoding: ByteConversion.intToByteH)
                 int nodeIdLen = nodeId.size();
                 byte[] data = new byte[nodeIdLen + 4];
                 ByteConversion.intToByteH(currentDoc.getDocId(), data, 0);
@@ -453,17 +557,13 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         try {
             writer = index.getWriter();
 
-            // docId and nodeId are stored as doc value
-            IntDocValuesField fDocId = new IntDocValuesField(FIELD_DOC_ID, 0);
+            // docId and nodeId are stored as doc value (match LuceneIndex pattern for docId retrieval)
             BinaryDocValuesField fNodeId = new BinaryDocValuesField(FIELD_NODE_ID, new BytesRef(8));
             BinaryDocValuesField fAddress = new BinaryDocValuesField(FIELD_ADDRESS, new BytesRef(8));
-            // docId also needs to be indexed
-            IntField fDocIdIdx = new IntField(FIELD_DOC_ID, 0, IntField.TYPE_NOT_STORED);
+            // docId: IntField for indexing, SortedNumericDocValuesField + StoredField for retrieval (LuceneIndexWorker pattern)
+            IntField fDocIdIdx = new IntField(FIELD_DOC_ID, 0, Field.Store.NO);
             for (RangeIndexDoc pending : nodesToWrite) {
                 Document doc = new Document();
-
-                fDocId.setIntValue(currentDoc.getDocId());
-                doc.add(fDocId);
 
                 // store the node id
                 int nodeIdLen = pending.getNodeId().size();
@@ -494,17 +594,28 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                         contentField = LuceneUtil.encodeQName(pending.getQName(), index.getBrokerPool().getSymbols());
                     Field fld = pending.getConfig().convertToField(contentField, field.getContent().toString());
                     if (fld != null) {
+                        // Register field analyzer so TextField tokenization at index time matches query-time analyzeContent.
+                        Analyzer fieldAnalyzer = pending.getConfig().getAnalyzer(contentField);
+                        if (fieldAnalyzer != null) {
+                            index.addFieldAnalyzer(contentField, fieldAnalyzer);
+                        }
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug("INDEX field={} content={} analyzer={}",
+                                    contentField, field.getContent().toString(), fieldAnalyzer != null ? fieldAnalyzer.getClass().getSimpleName() : "null");
+                        }
                         doc.add(fld);
                     }
                 }
                 fDocIdIdx.setIntValue(currentDoc.getDocId());
                 doc.add(fDocIdIdx);
+                doc.add(new SortedNumericDocValuesField(FIELD_DOC_ID, currentDoc.getDocId()));
+                doc.add(new StoredField(FIELD_DOC_ID, currentDoc.getDocId()));
 
                 Analyzer analyzer = pending.getConfig().getAnalyzer();
                 if (analyzer == null) {
                     analyzer = config.getDefaultAnalyzer();
                 }
-                writer.addDocument(doc, analyzer);
+                writer.addDocument(doc);
             }
         } catch (IOException e) {
             LOG.warn("An exception was caught while indexing document: {}", e.getMessage(), e);
@@ -516,6 +627,10 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     public NodeSet query(int contextId, DocumentSet docs, NodeSet contextSet, List<QName> qnames, AtomicValue[] keys, RangeIndex.Operator operator, int axis) throws IOException, XPathException {
+        return query(contextId, docs, contextSet, qnames, keys, operator, axis, 0);
+    }
+
+    public NodeSet query(int contextId, DocumentSet docs, NodeSet contextSet, List<QName> qnames, AtomicValue[] keys, RangeIndex.Operator operator, int axis, int matchFlags) throws IOException, XPathException {
         return index.withSearcher(searcher -> {
             List<QName> definedIndexes = getDefinedIndexes(qnames);
             NodeSet resultSet = new NewArrayNodeSet();
@@ -523,18 +638,18 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 Query query;
                 String field = LuceneUtil.encodeQName(qname, index.getBrokerPool().getSymbols());
                 if (keys.length > 1) {
-                    BooleanQuery bool = new BooleanQuery();
+                    BooleanQuery.Builder builder = new BooleanQuery.Builder();
                     for (AtomicValue key : keys) {
-                        bool.add(toQuery(field, qname, key, operator, docs), BooleanClause.Occur.SHOULD);
+                        builder.add(toQuery(field, qname, key, operator, docs, matchFlags), BooleanClause.Occur.SHOULD);
                     }
-                    query = bool;
+                    query = builder.build();
                 } else {
-                    query = toQuery(field, qname, keys[0], operator, docs);
+                    query = toQuery(field, qname, keys[0], operator, docs, matchFlags);
                 }
                 final short nodeType = qname.getNameType() == ElementValue.ATTRIBUTE ? Node.ATTRIBUTE_NODE : Node
                         .ELEMENT_NODE;
 
-                resultSet.addAll(doQuery(contextId, docs, contextSet, axis, searcher.searcher, nodeType, query, null));
+                resultSet.addAll(doQuery(contextId, docs, contextSet, axis, searcher.searcher(), nodeType, query));
             }
             return resultSet;
         });
@@ -542,31 +657,31 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     public NodeSet queryField(int contextId, DocumentSet docs, NodeSet contextSet, Sequence fields, Sequence[] keys, RangeIndex.Operator[] operators, int axis) throws IOException, XPathException {
         return index.withSearcher(searcher -> {
-            BooleanQuery query = new BooleanQuery();
+            BooleanQuery.Builder queryBuilder = new BooleanQuery.Builder();
             int j = 0;
             for (SequenceIterator i = fields.iterate(); i.hasNext(); j++) {
                 String field = i.nextItem().getStringValue();
                 if (keys[j].getItemCount() > 1) {
-                    BooleanQuery bool = new BooleanQuery();
-                    bool.setMinimumNumberShouldMatch(1);
+                    BooleanQuery.Builder boolBuilder = new BooleanQuery.Builder();
+                    boolBuilder.setMinimumNumberShouldMatch(1);
                     for (SequenceIterator ki = keys[j].iterate(); ki.hasNext(); ) {
                         Item key = ki.nextItem();
                         Query q = toQuery(field, null, key.atomize(), operators[j], docs);
-                        bool.add(q, BooleanClause.Occur.SHOULD);
+                        boolBuilder.add(q, BooleanClause.Occur.SHOULD);
                     }
-                    query.add(bool, BooleanClause.Occur.MUST);
+                    queryBuilder.add(boolBuilder.build(), BooleanClause.Occur.MUST);
                 } else {
                     Query q = toQuery(field, null, keys[j].itemAt(0).atomize(), operators[j], docs);
-                    query.add(q, BooleanClause.Occur.MUST);
+                    queryBuilder.add(q, BooleanClause.Occur.MUST);
                 }
             }
+            BooleanQuery query = queryBuilder.build();
             Query qu = query;
-            BooleanClause[] clauses = query.getClauses();
-            if (clauses.length == 1) {
-                qu = clauses[0].getQuery();
+            if (query.clauses().size() == 1) {
+                qu = query.clauses().get(0).query();
             }
             final NodeSet resultSet = new NewArrayNodeSet();
-            resultSet.addAll(doQuery(contextId, docs, contextSet, axis, searcher.searcher, Node.ELEMENT_NODE, qu, null));
+            resultSet.addAll(doQuery(contextId, docs, contextSet, axis, searcher.searcher(), Node.ELEMENT_NODE, qu));
             return resultSet;
         });
     }
@@ -586,25 +701,84 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 //    }
 
     private NodeSet doQuery(final int contextId, final DocumentSet docs, final NodeSet contextSet, final int axis,
-                            IndexSearcher searcher, final short nodeType, Query query, Filter filter) throws
-            IOException {
+                            IndexSearcher searcher, final short nodeType, Query query) throws IOException {
+        if (System.getProperty("exist.range.diagnose") != null) {
+            diagnoseQuery(searcher, query);
+        }
         SearchCollector collector = new SearchCollector(docs, contextSet, nodeType, axis, contextId);
-        searcher.search(query, filter, collector);
+        searcher.search(query, collector);
+        if (System.getProperty("exist.range.diagnose") != null) {
+            System.err.println("[RIW] SEARCH count=" + collector.getResultSet().getLength());
+        }
         return collector.getResultSet();
     }
 
-    private class SearchCollector extends Collector {
+    /**
+     * Diagnostic helper: dumps terms for the query's field and search term to stderr.
+     * Only runs when {@code -Dexist.range.diagnose} is enabled, to avoid overhead on normal queries.
+     */
+    private void diagnoseQuery(IndexSearcher searcher, Query query) {
+        String field = null;
+        String searchTerm = null;
+        if (query instanceof TermQuery tq) {
+            Term t = tq.getTerm();
+            field = t.field();
+            searchTerm = t.text();
+        } else if (query instanceof PrefixQuery pq) {
+            Term t = pq.getPrefix();
+            field = t.field();
+            searchTerm = t.text();
+        } else if (query instanceof WildcardQuery wq) {
+            Term t = wq.getTerm();
+            field = t.field();
+            searchTerm = t.text();
+        }
+        if (field == null || FIELD_DOC_ID.equals(field) || FIELD_NODE_ID.equals(field) || FIELD_ID.equals(field) || FIELD_ADDRESS.equals(field)) {
+            return;
+        }
+        try {
+            IndexReader reader = searcher.getIndexReader();
+            System.err.println("[RIW] DIAG field=" + field + " searchTerm=" + searchTerm + " reader.maxDoc=" + reader.maxDoc() + " numDocs=" + reader.numDocs());
+            int totalTerms = 0;
+            for (LeafReaderContext ctx : reader.leaves()) {
+                Terms terms = ctx.reader().terms(field);
+                if (terms == null) {
+                    System.err.println("[RIW] DIAG segment has null Terms for field=" + field);
+                    continue;
+                }
+                TermsEnum te = terms.iterator();
+                BytesRef ref;
+                int n = 0;
+                while ((ref = te.next()) != null && n < 15) {
+                    System.err.println("[RIW] TERM " + field + "=" + safeBytesRefToDisplay(ref));
+                    n++;
+                    totalTerms++;
+                }
+                if (n == 0) {
+                    System.err.println("[RIW] DIAG segment has 0 terms for field=" + field);
+                } else {
+                    totalTerms += countRemaining(te);
+                }
+            }
+            System.err.println("[RIW] DIAG total terms for " + field + " (approx)=" + totalTerms);
+        } catch (IOException e) {
+            System.err.println("[RIW] DIAG error: " + e.getMessage());
+        }
+    }
+
+    private int countRemaining(TermsEnum te) throws IOException {
+        int c = 0;
+        while (te.next() != null) c++;
+        return c;
+    }
+
+    private class SearchCollector implements Collector {
         private final NodeSet resultSet;
         private final NodeSet contextSet;
         private final short nodeType;
         private final int axis;
         private final int contextId;
         private final DocumentSet docs;
-        private AtomicReader reader;
-        private NumericDocValues docIdValues;
-        private BinaryDocValues nodeIdValues;
-        private BinaryDocValues addressValues;
-        private final byte[] buf = new byte[1024];
 
         public SearchCollector(DocumentSet docs, NodeSet contextSet, short nodeType, int axis, int contextId) {
             this.resultSet = new NewArrayNodeSet();
@@ -620,71 +794,95 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         }
 
         @Override
-        public void setScorer(Scorer scorer) throws IOException {
-            // ignore
+        public LeafCollector getLeafCollector(LeafReaderContext context) throws IOException {
+            return new SearchLeafCollector(context);
         }
 
         @Override
-        public void collect(int doc) throws IOException {
-            int docId = (int) this.docIdValues.get(doc);
-            DocumentImpl storedDocument = docs.getDoc(docId);
-            if (storedDocument == null) {
-                return;
+        public ScoreMode scoreMode() {
+            return ScoreMode.COMPLETE_NO_SCORES;
+        }
+
+        private class SearchLeafCollector implements LeafCollector {
+            private final LeafReader reader;
+            private final SortedNumericDocValues sortedDocIdValues;
+            private final NumericDocValues numericDocIdValues;
+            private final BinaryDocValues nodeIdValues;
+            private final BinaryDocValues addressValues;
+
+            public SearchLeafCollector(LeafReaderContext context) throws IOException {
+                this.reader = context.reader();
+                this.sortedDocIdValues = reader.getSortedNumericDocValues(FIELD_DOC_ID);
+                this.numericDocIdValues = reader.getNumericDocValues(FIELD_DOC_ID);
+                this.nodeIdValues = reader.getBinaryDocValues(FIELD_NODE_ID);
+                this.addressValues = reader.getBinaryDocValues(FIELD_ADDRESS);
             }
-            final BytesRef ref = this.nodeIdValues.get(doc);
 
-            final int units = ByteConversion.byteToShortH(ref.bytes, ref.offset);
-            final NodeId nodeId = index.getBrokerPool().getNodeFactory().createFromData(units, ref.bytes, ref.offset + 2);
+            @Override
+            public void setScorer(Scorable scorer) throws IOException {
+                // ignore
+            }
 
-            // if a context set is specified, we can directly check if the
-            // matching node is a descendant of one of the nodes
-            // in the context set.
-            if (contextSet != null) {
-                int sizeHint = contextSet.getSizeHint(storedDocument);
-                NodeProxy parentNode = contextSet.parentWithChild(storedDocument, nodeId, false, true);
-                if (parentNode != null) {
-                    NodeProxy storedNode = new NodeProxy(parentNode.getExpression(), storedDocument, nodeId);
+            @Override
+            public void collect(int doc) throws IOException {
+                int docId;
+                if (sortedDocIdValues != null && sortedDocIdValues.advanceExact(doc)) {
+                    docId = (int) sortedDocIdValues.nextValue();
+                } else if (numericDocIdValues != null && numericDocIdValues.advanceExact(doc)) {
+                    docId = (int) numericDocIdValues.longValue();
+                } else {
+                    docId = reader.storedFields().document(doc).getField(FIELD_DOC_ID).numericValue().intValue();
+                }
+                DocumentImpl storedDocument = docs.getDoc(docId);
+                if (storedDocument == null) {
+                    return;
+                }
+
+                if (nodeIdValues == null || !nodeIdValues.advanceExact(doc)) {
+                    return;
+                }
+                final BytesRef ref = nodeIdValues.binaryValue();
+
+                final int units = ByteConversion.byteToShortH(ref.bytes, ref.offset);
+                final NodeId nodeId = index.getBrokerPool().getNodeFactory().createFromData(units, ref.bytes, ref.offset + 2);
+
+                // if a context set is specified, we can directly check if the
+                // matching node is a descendant of one of the nodes
+                // in the context set.
+                if (contextSet != null) {
+                    int sizeHint = contextSet.getSizeHint(storedDocument);
+                    NodeProxy parentNode = contextSet.parentWithChild(storedDocument, nodeId, false, true);
+                    if (parentNode != null) {
+                        NodeProxy storedNode = new NodeProxy(parentNode.getExpression(), storedDocument, nodeId);
+                        storedNode.setNodeType(nodeType);
+                        getAddress(doc, storedNode);
+                        if (axis == NodeSet.ANCESTOR) {
+                            resultSet.add(parentNode, sizeHint);
+                            if (Expression.NO_CONTEXT_ID != contextId) {
+                                parentNode.deepCopyContext(storedNode, contextId);
+                            } else
+                                parentNode.copyContext(storedNode);
+                        } else {
+                            resultSet.add(storedNode, sizeHint);
+                        }
+                    }
+                } else {
+                    NodeProxy storedNode = new NodeProxy(null, storedDocument, nodeId);
                     storedNode.setNodeType(nodeType);
                     getAddress(doc, storedNode);
-                    if (axis == NodeSet.ANCESTOR) {
-                        resultSet.add(parentNode, sizeHint);
-                        if (Expression.NO_CONTEXT_ID != contextId) {
-                            parentNode.deepCopyContext(storedNode, contextId);
-                        } else
-                            parentNode.copyContext(storedNode);
-                    } else {
-                        resultSet.add(storedNode, sizeHint);
+                    resultSet.add(storedNode);
+                }
+            }
+
+            private void getAddress(int doc, NodeHandle storedNode) throws IOException {
+                if (addressValues != null && addressValues.advanceExact(doc)) {
+                    final BytesRef ref = addressValues.binaryValue();
+                    if (ref.offset < ref.bytes.length) {
+                        final long address = ByteConversion.byteToLong(ref.bytes, ref.offset);
+                        storedNode.setInternalAddress(address);
                     }
                 }
-            } else {
-                NodeProxy storedNode = new NodeProxy(null, storedDocument, nodeId);
-                storedNode.setNodeType(nodeType);
-                getAddress(doc, storedNode);
-                resultSet.add(storedNode);
             }
-        }
-
-        private void getAddress(int doc, NodeHandle storedNode) {
-            if (addressValues != null) {
-                final BytesRef ref = addressValues.get(doc);
-                if (ref.offset < ref.bytes.length) {
-                    final long address = ByteConversion.byteToLong(ref.bytes, ref.offset);
-                    storedNode.setInternalAddress(address);
-                }
-            }
-        }
-
-        @Override
-        public void setNextReader(AtomicReaderContext atomicReaderContext) throws IOException {
-            this.reader = atomicReaderContext.reader();
-            this.docIdValues = this.reader.getNumericDocValues(FIELD_DOC_ID);
-            this.nodeIdValues = this.reader.getBinaryDocValues(FIELD_NODE_ID);
-            this.addressValues = this.reader.getBinaryDocValues(FIELD_ADDRESS);
-        }
-
-        @Override
-        public boolean acceptsDocsOutOfOrder() {
-            return true;
         }
     }
 
@@ -710,11 +908,14 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     private List<QName> getDefinedIndexesFor(QName qname, final List<QName> indexes) throws IOException {
         return index.withReader(reader -> {
-            for (FieldInfo info: MultiFields.getMergedFieldInfos(reader)) {
-                if (!FIELD_DOC_ID.equals(info.name)) {
-                    QName name = LuceneUtil.decodeQName(info.name, index.getBrokerPool().getSymbols());
-                    if (name != null && (qname == null || matchQName(qname, name)))
-                        indexes.add(name);
+            for (LeafReaderContext context : reader.leaves()) {
+                for (FieldInfo info : context.reader().getFieldInfos()) {
+                    if (!FIELD_DOC_ID.equals(info.name) && !FIELD_NODE_ID.equals(info.name) && !FIELD_ADDRESS.equals(info.name) && !FIELD_ID.equals(info.name)) {
+                        QName name = LuceneUtil.decodeQName(info.name, index.getBrokerPool().getSymbols());
+                        if (name != null && (qname == null || matchQName(qname, name)) && !indexes.contains(name)) {
+                            indexes.add(name);
+                        }
+                    }
                 }
             }
             return indexes;
@@ -723,25 +924,29 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     protected BytesRef analyzeContent(String field, QName qname, String data, DocumentSet docs) throws XPathException {
         final Analyzer analyzer = getAnalyzer(qname, field, docs);
-        if (!isCaseSensitive(qname, field, docs)) {
-            data = data.toLowerCase();
+        final String content = !isCaseSensitive(qname, field, docs) ? data.toLowerCase() : data;
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("ANALYZE field={} qname={} input={} analyzer={} caseSensitive={}",
+                    field, qname, content, analyzer != null ? analyzer.getClass().getSimpleName() : "null", isCaseSensitive(qname, field, docs));
         }
         if (analyzer == null) {
-            return new BytesRef(data);
+            return new BytesRef(content);
         }
         try {
-            TokenStream stream = analyzer.tokenStream(field, new StringReader(data));
+            TokenStream stream = analyzer.tokenStream(field, new StringReader(content));
             TermToBytesRefAttribute termAttr = stream.addAttribute(TermToBytesRefAttribute.class);
             BytesRef token = null;
             try {
                 stream.reset();
                 if (stream.incrementToken()) {
-                    termAttr.fillBytesRef();
                     token = BytesRef.deepCopyOf(termAttr.getBytesRef());
                 }
                 stream.end();
             } finally {
                 stream.close();
+            }
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("ANALYZE result token={}", safeBytesRefToDisplay(token));
             }
             return token;
         } catch (IOException e) {
@@ -842,7 +1047,11 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     while (configIter.hasNext()) {
                         RangeIndexConfigElement configuration = configIter.next();
                         if (configuration.match(path)) {
-                            SimpleTextCollector collector = new SimpleTextCollector(attrib.getValue());
+                            // null fieldName: simple attribute index has no fields
+                            SimpleTextCollector collector = new SimpleTextCollector(
+                                attrib.getValue(),
+                                configuration.getWsTreatment(),
+                                configuration.isCaseSensitive(null));
                             indexText(attrib, attrib.getQName(), path, configuration, collector);
                         }
                     }
@@ -936,8 +1145,9 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         try {
             List<QName> qnames = hints == null ? null : (List<QName>)hints.get(QNAMES_KEY);
             qnames = getDefinedIndexes(qnames);
-            //Expects a StringValue
-            String start = null, end = null;
+            // Hints (if present) may restrict the scan by start/end value and maximum number of terms.
+            String start = null;
+            String end = null;
             long max = Long.MAX_VALUE;
             if (hints != null) {
                 Object vstart = hints.get(START_VALUE);
@@ -982,43 +1192,56 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     private void scan(DocumentSet docs, NodeSet nodes, String start, String end, long max, TreeMap<String, Occurrences> map, IndexReader reader, String field) throws IOException {
-        List<AtomicReaderContext> leaves = reader.leaves();
-        for (AtomicReaderContext context : leaves) {
-            NumericDocValues docIdValues = context.reader().getNumericDocValues(FIELD_DOC_ID);
-            BinaryDocValues nodeIdValues = context.reader().getBinaryDocValues(FIELD_NODE_ID);
-            Bits liveDocs = context.reader().getLiveDocs();
-            Terms terms = context.reader().terms(field);
+        List<LeafReaderContext> leaves = reader.leaves();
+        for (LeafReaderContext context : leaves) {
+            LeafReader leafReader = context.reader();
+            SortedNumericDocValues sortedDocIdValues = leafReader.getSortedNumericDocValues(FIELD_DOC_ID);
+            NumericDocValues numericDocIdValues = leafReader.getNumericDocValues(FIELD_DOC_ID);
+            BinaryDocValues nodeIdValues = leafReader.getBinaryDocValues(FIELD_NODE_ID);
+            Bits liveDocs = leafReader.getLiveDocs();
+            Terms terms = leafReader.terms(field);
             if (terms == null)
                 continue;
-            TermsEnum termsIter = terms.iterator(null);
+            TermsEnum termsIter = terms.iterator();
             if (termsIter.next() == null) {
                 continue;
             }
             do {
-                if (map.size() >= max) {
-                    break;
-                }
                 BytesRef ref = termsIter.term();
-                String term = ref.utf8ToString();
+                String term;
+                try {
+                    term = ref.utf8ToString();
+                } catch (AssertionError e) {
+                    continue;
+                }
                 boolean include = true;
                 if (end != null) {
                     if (term.compareTo(end) > 0)
                         include = false;
                 } else if (start != null && !term.startsWith(start))
                     include = false;
-                if (include) {
-                    DocsEnum docsEnum = termsIter.docs(null, null);
-                    while (docsEnum.nextDoc() != DocsEnum.NO_MORE_DOCS) {
-                        if (liveDocs != null && !liveDocs.get(docsEnum.docID())) {
+                if (include && (map.size() < max || map.containsKey(term))) {
+                    /* Only skip when we've hit max and this would be a new term (#4805:
+                       must aggregate existing terms across all segments before limiting). */
+                    PostingsEnum postings = termsIter.postings(null, PostingsEnum.NONE);
+                    while (postings.nextDoc() != PostingsEnum.NO_MORE_DOCS) {
+                        if (liveDocs != null && !liveDocs.get(postings.docID())) {
                             continue;
                         }
-                        int docId = (int) docIdValues.get(docsEnum.docID());
+                        int docId;
+                        if (sortedDocIdValues != null && sortedDocIdValues.advanceExact(postings.docID())) {
+                            docId = (int) sortedDocIdValues.nextValue();
+                        } else if (numericDocIdValues != null && numericDocIdValues.advanceExact(postings.docID())) {
+                            docId = (int) numericDocIdValues.longValue();
+                        } else {
+                            docId = leafReader.storedFields().document(postings.docID()).getField(FIELD_DOC_ID).numericValue().intValue();
+                        }
                         DocumentImpl storedDocument = docs.getDoc(docId);
                         if (storedDocument == null)
                             continue;
                         NodeId nodeId = null;
-                        if (nodes != null) {
-                            final BytesRef nodeIdRef = nodeIdValues.get(docsEnum.docID());
+                        if (nodes != null && nodeIdValues != null && nodeIdValues.advanceExact(postings.docID())) {
+                            final BytesRef nodeIdRef = nodeIdValues.binaryValue();
                             final int units = ByteConversion.byteToShortH(nodeIdRef.bytes, nodeIdRef.offset);
                             nodeId = index.getBrokerPool().getNodeFactory().createFromData(units, nodeIdRef.bytes, nodeIdRef.offset + 2);
                         }
@@ -1029,9 +1252,13 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                                 map.put(term, oc);
                             }
                             oc.addDocument(storedDocument);
-                            oc.addOccurrences(docsEnum.freq());
+                            oc.addOccurrences(postings.freq());
                         }
                     }
+                } else if (include && map.size() >= max && !map.containsKey(term) && !map.isEmpty()
+                        && term.compareTo(map.lastKey()) > 0) {
+                    /* No remaining term in this leaf can be in map; terms are sorted. */
+                    break;
                 }
             } while(termsIter.next() != null);
         }

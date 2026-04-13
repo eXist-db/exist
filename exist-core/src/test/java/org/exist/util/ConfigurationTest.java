@@ -23,7 +23,10 @@ package org.exist.util;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
+import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -32,6 +35,15 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.*;
 
 class ConfigurationTest {
+
+    private static Element elem(final String attrName, final String attrValue) throws Exception {
+        final Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+        final Element e = doc.createElement("config");
+        if (attrName != null) {
+            e.setAttribute(attrName, attrValue == null ? "" : attrValue);
+        }
+        return e;
+    }
     @Test
     void testConfigurationConstructors() throws Exception {
         assertThatNoException().isThrownBy(Configuration::new);
@@ -52,5 +64,50 @@ class ConfigurationTest {
             Files.copy(in, conf);
         }
         assertThatNoException().isThrownBy(() -> new Configuration(conf.toString(), Optional.of(existHomeDir)));
+    }
+
+    // parseBooleanAttribute — #6001: unified boolean config attribute parsing
+    @Test
+    void parseBooleanAttributeYes() throws Exception {
+        assertThat(Configuration.parseBooleanAttribute(elem("case", "yes"), "case", false)).isTrue();
+        assertThat(Configuration.parseBooleanAttribute(elem("case", "yes"), "case", true)).isTrue();
+    }
+
+    @Test
+    void parseBooleanAttributeTrue() throws Exception {
+        assertThat(Configuration.parseBooleanAttribute(elem("store", "true"), "store", false)).isTrue();
+        assertThat(Configuration.parseBooleanAttribute(elem("store", "TRUE"), "store", false)).isTrue();
+    }
+
+    @Test
+    void parseBooleanAttributeNo() throws Exception {
+        assertThat(Configuration.parseBooleanAttribute(elem("case", "no"), "case", true)).isFalse();
+        assertThat(Configuration.parseBooleanAttribute(elem("case", "no"), "case", false)).isFalse();
+    }
+
+    @Test
+    void parseBooleanAttributeFalse() throws Exception {
+        assertThat(Configuration.parseBooleanAttribute(elem("binary", "false"), "binary", true)).isFalse();
+    }
+
+    @Test
+    void parseBooleanAttributeEmptyUsesDefault() throws Exception {
+        assertThat(Configuration.parseBooleanAttribute(elem("case", ""), "case", true)).isTrue();
+        assertThat(Configuration.parseBooleanAttribute(elem("case", ""), "case", false)).isFalse();
+    }
+
+    @Test
+    void parseBooleanAttributeMissingUsesDefault() throws Exception {
+        final Element e = elem("other", "x");
+        assertThat(Configuration.parseBooleanAttribute(e, "case", true)).isTrue();
+        assertThat(Configuration.parseBooleanAttribute(e, "case", false)).isFalse();
+    }
+
+    @Test
+    void parseBooleanAttributeInvalidTreatsAsFalse() throws Exception {
+        assertThat(Configuration.parseBooleanAttribute(elem("case", "n"), "case", true)).isFalse();
+        assertThat(Configuration.parseBooleanAttribute(elem("case", "y"), "case", true)).isFalse();
+        assertThat(Configuration.parseBooleanAttribute(elem("case", "1"), "case", false)).isFalse();
+        assertThat(Configuration.parseBooleanAttribute(elem("case", "0"), "case", true)).isFalse();
     }
 }
