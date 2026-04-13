@@ -622,7 +622,7 @@
                 <plugin>
                     <groupId>org.owasp</groupId>
                     <artifactId>dependency-check-maven</artifactId>
-                    <version>12.2.0</version>
+                    <version>12.2.1</version>
                     <configuration>
                         <dataDirectory>${user.home}/.dependency-check-data</dataDirectory>
                         <nvdApiKey>${env.NVD_API_KEY}</nvdApiKey>
