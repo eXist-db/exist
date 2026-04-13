@@ -92,7 +92,6 @@ import se.softhouse.jargo.ArgumentException;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.time.ZoneOffset.UTC;
 import static javax.xml.transform.OutputKeys.OMIT_XML_DECLARATION;
-import static org.exist.storage.serializers.EXistOutputKeys.OMIT_ORIGINAL_XML_DECLARATION;
 import static org.exist.storage.serializers.EXistOutputKeys.OUTPUT_DOCTYPE;
 import static org.xmldb.api.base.ResourceType.XML_RESOURCE;
 
@@ -150,7 +149,6 @@ public class InteractiveClient {
         DEFAULT_PROPERTIES.setProperty(EDITOR, EDIT_CMD);
         DEFAULT_PROPERTIES.setProperty(INDENT, "true");
         DEFAULT_PROPERTIES.setProperty(OMIT_XML_DECLARATION, "no");
-        DEFAULT_PROPERTIES.setProperty(OMIT_ORIGINAL_XML_DECLARATION, "no");
         DEFAULT_PROPERTIES.setProperty(OUTPUT_DOCTYPE, "true");
         DEFAULT_PROPERTIES.setProperty(ENCODING, ENCODING_DEFAULT.name());
         DEFAULT_PROPERTIES.setProperty(COLORS, "false");

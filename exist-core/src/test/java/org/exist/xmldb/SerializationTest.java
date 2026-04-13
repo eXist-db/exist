@@ -47,6 +47,7 @@ import javax.xml.transform.Source;
 
 import java.util.Arrays;
 
+import static javax.xml.transform.OutputKeys.OMIT_XML_DECLARATION;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -211,33 +212,21 @@ public class SerializationTest {
 	@Test
 	public void getXmlDeclDefault() throws XMLDBException {
 		final Resource res = testCollection.getResource(TEST_XML_DOC_WITH_XMLDECL_URI.lastSegmentString());
-		assertEquals(XML_WITH_XMLDECL, res.getContent());
+		assertEquals("<bookmap id=\"bookmap-2\"/>", res.getContent());
 	}
 
 	@Test
-	public void getXmlDeclNo() throws XMLDBException {
-		final String prevOmitOriginalXmlDecl = testCollection.getProperty(EXistOutputKeys.OMIT_ORIGINAL_XML_DECLARATION);
+	public void getXmlDeclOmit() throws XMLDBException {
+		final String prevOmitXmlDecl = testCollection.getProperty(OMIT_XML_DECLARATION);
 		try {
 			final Resource res = testCollection.getResource(TEST_XML_DOC_WITH_XMLDECL_URI.lastSegmentString());
-			testCollection.setProperty(EXistOutputKeys.OMIT_ORIGINAL_XML_DECLARATION, "no");
-			assertEquals(XML_WITH_XMLDECL, res.getContent());
-		} finally {
-			if (prevOmitOriginalXmlDecl != null) {
-				testCollection.setProperty(EXistOutputKeys.OMIT_ORIGINAL_XML_DECLARATION, prevOmitOriginalXmlDecl);
-			}
-		}
-	}
-
-	@Test
-	public void getXmlDeclYes() throws XMLDBException {
-		final String prevOmitOriginalXmlDecl = testCollection.getProperty(EXistOutputKeys.OMIT_ORIGINAL_XML_DECLARATION);
-		try {
-			final Resource res = testCollection.getResource(TEST_XML_DOC_WITH_XMLDECL_URI.lastSegmentString());
-			testCollection.setProperty(EXistOutputKeys.OMIT_ORIGINAL_XML_DECLARATION, "yes");
+			testCollection.setProperty(OMIT_XML_DECLARATION, "yes");
 			assertEquals("<bookmap id=\"bookmap-2\"/>", res.getContent());
 		} finally {
-			if (prevOmitOriginalXmlDecl != null) {
-				testCollection.setProperty(EXistOutputKeys.OMIT_ORIGINAL_XML_DECLARATION, prevOmitOriginalXmlDecl);
+			if (prevOmitXmlDecl != null) {
+				testCollection.setProperty(OMIT_XML_DECLARATION, prevOmitXmlDecl);
+			} else {
+				testCollection.setProperty(OMIT_XML_DECLARATION, "no");
 			}
 		}
 	}

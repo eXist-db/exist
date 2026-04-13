@@ -122,8 +122,8 @@ public class XMLDBBackupTest {
 
         // NOTE(AR) that org.exist.backup.Backup calls defaultOutputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
         // NOTE(AR) that org.exist.backup.SystemExport also calls defaultOutputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
-        // TODO(AR) consider whether the backup/export should be injecting a XML Declaration that was not previously present, or should default to EXistOutputKeys.OMIT_ORIGINAL_XML_DECLARATION
-        final Source expected = Input.fromString("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + doc1Content).build();
+        // TODO(JL) export must output a stored (original) XML declaration
+        final Source expected = Input.fromString(doc1Content).build();
 
         final Source actual = Input.fromString(doc1.getContent().toString()).build();
         final Diff diff = DiffBuilder.compare(expected)
@@ -137,6 +137,41 @@ public class XMLDBBackupTest {
 
         final Resource binDoc2 = testCollection.getResource(BIN_DOC2_NAME);
         assertEquals(binDoc2Content, new String((byte[])binDoc2.getContent(), UTF_8));
+    }
+
+    @Test
+    public void backupRestoreWithXmlDecl() throws XMLDBException, SAXException, IOException, URISyntaxException, ParserConfigurationException {
+        final XmldbURI collectionUri = XmldbURI.create(getBaseUri()).append("/db").append(COLLECTION_NAME);
+        final String docWithDeclName = "docWithDecl.xml";
+        final String docWithDeclContent = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<root/>";
+
+        final Collection testCollectionInitial = DatabaseManager.getCollection(collectionUri.toString(), TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
+        final Resource docWithDecl = testCollectionInitial.createResource(docWithDeclName, XMLResource.class);
+        docWithDecl.setContent(docWithDeclContent);
+        testCollectionInitial.storeResource(docWithDecl);
+
+        final String backupFilename = "test-xmldb-backup-decl-" + System.currentTimeMillis() + ".zip";
+
+        // backup the collection
+        final Path backupFile = backup(backupFilename, collectionUri);
+
+        // delete the collection
+        deleteCollection(collectionUri);
+
+        // restore the collection
+        restore(backupFile, XmldbURI.create(getBaseUri()).append("/db"));
+
+        // check restore has restored the collection
+        final Collection testCollection = DatabaseManager.getCollection(collectionUri.toString(), TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
+        assertNotNull(testCollection);
+
+        final Resource restoredDoc = testCollection.getResource(docWithDeclName);
+        assertNotNull(restoredDoc);
+
+        // The backup/restore process should preserve the XML declaration because Backup sets OMIT_XML_DECLARATION=no
+        final String content = restoredDoc.getContent().toString();
+        assertTrue("Content should contain XML declaration", content.startsWith("<?xml"));
+        assertEquals(docWithDeclContent, content);
     }
 
     private Path backup(final String filename, final XmldbURI collectionUri) throws IOException, XMLDBException, SAXException {

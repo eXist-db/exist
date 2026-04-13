@@ -172,7 +172,6 @@ import static org.exist.storage.serializers.Serializer.COMPRESS_OUTPUT_ATTRIBUTE
 import static org.exist.storage.serializers.Serializer.ENABLE_XINCLUDE_ATTRIBUTE;
 import static org.exist.storage.serializers.Serializer.ENABLE_XSL_ATTRIBUTE;
 import static org.exist.storage.serializers.Serializer.INDENT_ATTRIBUTE;
-import static org.exist.storage.serializers.Serializer.OMIT_ORIGINAL_XML_DECLARATION_ATTRIBUTE;
 import static org.exist.storage.serializers.Serializer.OMIT_XML_DECLARATION_ATTRIBUTE;
 import static org.exist.storage.serializers.Serializer.OUTPUT_DOCTYPE_ATTRIBUTE;
 import static org.exist.storage.serializers.Serializer.PROPERTY_ADD_EXIST_ID;
@@ -180,7 +179,6 @@ import static org.exist.storage.serializers.Serializer.PROPERTY_COMPRESS_OUTPUT;
 import static org.exist.storage.serializers.Serializer.PROPERTY_ENABLE_XINCLUDE;
 import static org.exist.storage.serializers.Serializer.PROPERTY_ENABLE_XSL;
 import static org.exist.storage.serializers.Serializer.PROPERTY_INDENT;
-import static org.exist.storage.serializers.Serializer.PROPERTY_OMIT_ORIGINAL_XML_DECLARATION;
 import static org.exist.storage.serializers.Serializer.PROPERTY_OMIT_XML_DECLARATION;
 import static org.exist.storage.serializers.Serializer.PROPERTY_OUTPUT_DOCTYPE;
 import static org.exist.storage.serializers.Serializer.PROPERTY_TAG_MATCHING_ATTRIBUTES;
@@ -757,7 +755,6 @@ public class Configuration implements ErrorHandler {
      */
     private void configureSerializer(final Element serializer) {
         configureProperty(serializer, OMIT_XML_DECLARATION_ATTRIBUTE, PROPERTY_OMIT_XML_DECLARATION);
-        configureProperty(serializer, OMIT_ORIGINAL_XML_DECLARATION_ATTRIBUTE, PROPERTY_OMIT_ORIGINAL_XML_DECLARATION);
         configureProperty(serializer, OUTPUT_DOCTYPE_ATTRIBUTE, PROPERTY_OUTPUT_DOCTYPE);
         configureProperty(serializer, ENABLE_XINCLUDE_ATTRIBUTE, PROPERTY_ENABLE_XINCLUDE);
         configureProperty(serializer, ENABLE_XSL_ATTRIBUTE, PROPERTY_ENABLE_XSL);

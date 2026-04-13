@@ -169,7 +169,6 @@ public class MicroXmlWriter extends IndentingXMLWriter {
 
     @Override
     public void setOutputProperties(final Properties properties) {
-        properties.setProperty(EXistOutputKeys.OMIT_ORIGINAL_XML_DECLARATION, "yes");
         properties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
         super.setOutputProperties(properties);
     }

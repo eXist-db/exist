@@ -109,8 +109,6 @@ public abstract class Serializer implements XMLReader {
     public static final String CONFIGURATION_ELEMENT_NAME = "serializer";
     public static final String OMIT_XML_DECLARATION_ATTRIBUTE = "omit-xml-declaration";
     public static final String PROPERTY_OMIT_XML_DECLARATION = "serialization.omit-xml-declaration";
-    public static final String OMIT_ORIGINAL_XML_DECLARATION_ATTRIBUTE = "omit-original-xml-declaration";
-    public static final String PROPERTY_OMIT_ORIGINAL_XML_DECLARATION = "serialization.omit-original-xml-declaration";
     public static final String OUTPUT_DOCTYPE_ATTRIBUTE = "output-doctype";
     public static final String PROPERTY_OUTPUT_DOCTYPE = "serialization.output-doctype";
     public static final String ENABLE_XINCLUDE_ATTRIBUTE = "enable-xinclude";
@@ -209,9 +207,16 @@ public abstract class Serializer implements XMLReader {
         this.customMatchListeners = new CustomMatchListenerFactory(broker, config, chainOfReceivers);
         this.receiver = xinclude;
 
-        defaultOutputProperties.setProperty(EXistOutputKeys.PROCESS_XSL_PI, config.getProperty(PROPERTY_ENABLE_XSL, "no"));
-
         @Nullable String option = null;
+        if ((option = (String) config.getProperty(PROPERTY_ENABLE_XSL)) != null) {
+            defaultOutputProperties.setProperty(EXistOutputKeys.PROCESS_XSL_PI, option);
+        }
+
+        if ((option = (String) config.getProperty(PROPERTY_OMIT_XML_DECLARATION)) != null) {
+            defaultOutputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, option);
+        } else if ((option = (String) config.getProperty(OMIT_XML_DECLARATION_ATTRIBUTE)) != null) {
+            defaultOutputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, option);
+        }
 
         if ((option = (String) config.getProperty(PROPERTY_ENABLE_XINCLUDE)) != null) {
             defaultOutputProperties.setProperty(EXistOutputKeys.EXPAND_XINCLUDES, option);
