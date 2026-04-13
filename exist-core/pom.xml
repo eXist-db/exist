@@ -175,7 +175,7 @@
         <dependency>
             <groupId>at.yawk.lz4</groupId>
             <artifactId>lz4-java</artifactId>
-            <version>1.10.4</version>
+            <version>1.11.0</version>
         </dependency>
 
         <dependency>
@@ -531,13 +531,13 @@
         <dependency>
             <groupId>org.jgrapht</groupId>
             <artifactId>jgrapht-core</artifactId>
-            <version>1.5.2</version>
+            <version>1.5.3</version>
         </dependency>
 
 	<dependency>
             <groupId>org.jgrapht</groupId>
             <artifactId>jgrapht-opt</artifactId>
-            <version>1.5.2</version>
+            <version>1.5.3</version>
         </dependency>
 
         <dependency>

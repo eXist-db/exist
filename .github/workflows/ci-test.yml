@@ -3,7 +3,7 @@ on: [push, pull_request, workflow_dispatch]
 permissions:
   contents: read
 env:
-  MAVEN_OPTS: -DtrimStackTrace=false -D'maven.resolver.transport=wagon'
+  MAVEN_OPTS: -DtrimStackTrace=false
   DEV_JDK: '21'
 jobs:
   license:
@@ -17,7 +17,7 @@ jobs:
           distribution: temurin
           java-version: ${{ env.DEV_JDK }}
       - uses: ./.github/actions/maven-cache
-      - run: mvn -V -B --no-transfer-progress license:check
+      - run: mvn -V -B --no-transfer-progress --offline license:check
         timeout-minutes: 10
   dependencies:
     name: Dependency checks
@@ -90,12 +90,13 @@ jobs:
         timeout-minutes: 30
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ${{ steps.install-mvnd.outputs.mvnd-dir }}/mvnd -V -B --no-transfer-progress -T 1C compile test-compile -Ponnx-model -DtrimStackTrace=false -D'dependency-check.skip' -D'license.skip' --projects '!exist-installer' 
+          MAVEN_OPTS: ${{ env.MAVEN_OPTS }} -D'aether.connector.basic.connectTimeout=10000' -D'aether.connector.basic.requestTimeout=30000'
+        run: ${{ steps.install-mvnd.outputs.mvnd-dir }}/mvnd -V -B --no-transfer-progress -T 1C compile test-compile -Ponnx-model -D'dependency-check.skip' -D'license.skip' --projects '!exist-installer'
       - name: Maven Unit Tests
         id: unit-tests
         if: matrix.test-type == 'unit'
         timeout-minutes: 45
-        run: ${{ steps.install-mvnd.outputs.mvnd-dir }}/mvnd -V -B --no-transfer-progress test -DtrimStackTrace=false -D'dependency-check.skip' -D'license.skip' -D'mvnd.maxLostKeepAlive=6000'
+        run: ${{ steps.install-mvnd.outputs.mvnd-dir }}/mvnd -V -B --no-transfer-progress test -D'dependency-check.skip' -D'license.skip' -D'mvnd.maxLostKeepAlive=6000'
       - name: Dependency tree on unit test failure
         if: always() && matrix.test-type == 'unit' && steps.unit-tests.outcome == 'failure'
         run: |
@@ -105,7 +106,7 @@ jobs:
       - name: Maven Integration Tests
         if: matrix.test-type == 'integration'
         timeout-minutes: 45
-        run: ${{ steps.install-mvnd.outputs.mvnd-dir }}/mvnd -V -B --no-transfer-progress verify -Ponnx-model -D'skipUnitTests=true' -D'trimStackTrace=false' -D'dependency-check.skip' -D'license.skip' -D'mvnd.maxLostKeepAlive=6000'
+        run: ${{ steps.install-mvnd.outputs.mvnd-dir }}/mvnd -V -B --no-transfer-progress verify -Ponnx-model -DskipUnitTests=true -D'dependency-check.skip' -D'license.skip' -D'mvnd.maxLostKeepAlive=6000'
       - name: Javadoc (ubuntu unit only)
         if: matrix.os == 'ubuntu-latest' && matrix.test-type == 'unit'
         run: ${{ steps.install-mvnd.outputs.mvnd-dir }}/mvnd -V -B --no-transfer-progress -q -T 1C install javadoc:javadoc -DskipTests -D'dependency-check.skip' -D'license.skip' --projects '!exist-distribution,!exist-installer' --also-make

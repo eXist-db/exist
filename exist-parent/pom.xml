@@ -102,7 +102,7 @@
 
         <contact.email>info@exist-db.org</contact.email>
 
-        <ant.version>1.10.15</ant.version>
+        <ant.version>1.10.17</ant.version>
         <apache.httpcomponents.version>4.5.14</apache.httpcomponents.version>
         <apache.httpcomponents.core.version>4.4.16</apache.httpcomponents.core.version>
         <apache.xmlrpc.version>5.0.0</apache.xmlrpc.version>
@@ -464,7 +464,7 @@
             <dependency>
                 <groupId>net.bytebuddy</groupId>
                 <artifactId>byte-buddy</artifactId>
-                <version>1.18.7</version>
+                <version>1.18.8</version>
             </dependency>
 
             <dependency>
@@ -622,7 +622,7 @@
                 <plugin>
                     <groupId>org.owasp</groupId>
                     <artifactId>dependency-check-maven</artifactId>
-                    <version>12.2.0</version>
+                    <version>12.2.1</version>
                     <configuration>
                         <dataDirectory>${user.home}/.dependency-check-data</dataDirectory>
                         <nvdApiKey>${env.NVD_API_KEY}</nvdApiKey>
