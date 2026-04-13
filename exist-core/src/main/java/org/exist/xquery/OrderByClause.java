@@ -41,7 +41,10 @@ import java.util.stream.IntStream;
 public class OrderByClause extends AbstractFLWORClause {
 
     // Package-private instrumentation fields for memory benchmarking.
-    // Set in postEval() before sorting; zero-cost when not read.
+    // volatile is required: postEval() writes these in a query-executor worker thread,
+    // while OrderByClauseMemoryBenchmark reads them in the JUnit test thread immediately
+    // after executeQuery() returns. Without volatile there is no happens-before guarantee
+    // for the static field reads even though executeQuery() blocks until completion.
     static volatile int lastTupleCount;
     static volatile int lastVarCount;
 
@@ -55,7 +58,8 @@ public class OrderByClause extends AbstractFLWORClause {
     private FLWORClause rootClause = null;
 
     /*  OrderByClause needs to keep state between calls to eval and postEval. We thus need
-        to track state in a stack to avoid overwrites if we're called recursively. */
+        to track state in a stack to avoid overwrites if we're called recursively.
+        See {@link OrderByData} (inner class below) for what each frame holds. */
     private final Deque<OrderByData> stack = new ArrayDeque<>();
 
     public OrderByClause(final XQueryContext context, final List<OrderSpec> orderSpecs) {
@@ -258,7 +262,11 @@ public class OrderByClause extends AbstractFLWORClause {
             for (final OrderByTuple tuple : data.tuples) {
                 context.proceed(this);
 
-                // Restore variable bindings for this tuple (indexed parallel to variableNames)
+                // Restore variable bindings for this tuple (indexed parallel to variableNames).
+                // tuple.variableValues is always allocated as new Sequence[data.variableNames.length]
+                // (see eval()), so its length equals data.variableTemplates.length — no AOOB risk.
+                assert tuple.variableValues.length == data.variableTemplates.length
+                        : "variableValues length mismatch: " + tuple.variableValues.length + " vs " + data.variableTemplates.length;
                 for (int v = 0; v < data.variableTemplates.length; v++) {
                     data.variableTemplates[v].setValue(tuple.variableValues[v]);
                 }
@@ -288,6 +296,10 @@ public class OrderByClause extends AbstractFLWORClause {
      * </ul>
      */
     private void coerceSortKeys(final OrderByData data) throws XPathException {
+        // data.encounteredPrimitiveTypes is initialised with exactly orderSpecs.size() entries
+        // in OrderByData(numOrderSpecs), so get(t) is always in-bounds — no AOOB risk.
+        assert data.encounteredPrimitiveTypes.size() == orderSpecs.size()
+                : "encounteredPrimitiveTypes size mismatch: " + data.encounteredPrimitiveTypes.size() + " vs " + orderSpecs.size();
         for (int t = 0; t < orderSpecs.size(); t++) {
             final BitSet encounteredTypes = data.encounteredPrimitiveTypes.get(t);
             final int typeCardinality = encounteredTypes.cardinality();
