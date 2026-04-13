@@ -60,7 +60,6 @@
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpcore</artifactId>
-            <version>${apache.httpcomponents.core.version}</version>
         </dependency>
 
         <dependency>

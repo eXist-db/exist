@@ -38,18 +38,18 @@
     <name>eXist-db Vector Embedding Extension</name>
     <description>eXist-db Vector Embedding Extension (ONNX local models)</description>
 
-    <properties>
-        <onnxruntime.version>1.24.3</onnxruntime.version>
-        <onnxruntime.artifact>onnxruntime</onnxruntime.artifact>
-        <djl.tokenizers.version>0.33.0</djl.tokenizers.version>
-    </properties>
-
     <scm>
         <connection>scm:git:https://github.com/exist-db/exist.git</connection>
         <developerConnection>scm:git:https://github.com/exist-db/exist.git</developerConnection>
         <url>scm:git:https://github.com/exist-db/exist.git</url>
         <tag>HEAD</tag>
     </scm>
+
+    <properties>
+        <onnxruntime.version>1.24.3</onnxruntime.version>
+        <onnxruntime.artifact>onnxruntime</onnxruntime.artifact>
+        <djl.tokenizers.version>0.33.0</djl.tokenizers.version>
+    </properties>
 
     <dependencies>
         <dependency>
@@ -93,16 +93,6 @@
         </dependency>
     </dependencies>
 
-    <!-- Profile gpu: mvn -P gpu ... uses onnxruntime_gpu for CUDA (requires NVIDIA GPU + CUDA) -->
-    <profiles>
-        <profile>
-            <id>gpu</id>
-            <properties>
-                <onnxruntime.artifact>onnxruntime_gpu</onnxruntime.artifact>
-            </properties>
-        </profile>
-    </profiles>
-
     <build>
         <plugins>
             <plugin>
@@ -126,4 +116,14 @@
             </plugin>
         </plugins>
     </build>
+
+    <!-- Profile gpu: mvn -P gpu ... uses onnxruntime_gpu for CUDA (requires NVIDIA GPU + CUDA) -->
+    <profiles>
+        <profile>
+            <id>gpu</id>
+            <properties>
+                <onnxruntime.artifact>onnxruntime_gpu</onnxruntime.artifact>
+            </properties>
+        </profile>
+    </profiles>
 </project>
