@@ -93,15 +93,19 @@ public class ValueIndexFactory {
         }
         /* xs:double */
         else if (type == Type.DOUBLE) {
-            final long bits = ByteConversion.byteToLong(data, start +
-                    (ValueIndexFactory.LENGTH_VALUE_TYPE)) ^ 0x8000000000000000L;
+            long bits = ByteConversion.byteToLong(data, start +
+                    (ValueIndexFactory.LENGTH_VALUE_TYPE));
+            // Reverse the sortable encoding: if high bit is set, it was positive (flip sign bit);
+            // if high bit is clear, it was negative (flip all bits)
+            bits = bits < 0 ? bits ^ 0x8000000000000000L : ~bits;
             final double d = Double.longBitsToDouble(bits);
             return new DoubleValue(d);
         }
         /* xs:float */
         else if (type == Type.FLOAT) {
-            final int bits = ByteConversion.byteToInt(data, start +
-                    (ValueIndexFactory.LENGTH_VALUE_TYPE)) ^ 0x80000000;
+            int bits = ByteConversion.byteToInt(data, start +
+                    (ValueIndexFactory.LENGTH_VALUE_TYPE));
+            bits = bits < 0 ? bits ^ 0x80000000 : ~bits;
             final float f = Float.intBitsToFloat(bits);
             return new FloatValue(f);
         }
@@ -176,7 +180,11 @@ public class ValueIndexFactory {
         else if (value.getType() == Type.DOUBLE) {
             final byte[] data = new byte[offset + ValueIndexFactory.LENGTH_VALUE_TYPE + 8];
             data[offset] = (byte) Type.DOUBLE;
-            final long bits = Double.doubleToLongBits(((DoubleValue) value).getValue()) ^ 0x8000000000000000L;
+            long bits = Double.doubleToLongBits(((DoubleValue) value).getValue());
+            // Encode doubles for correct unsigned byte-order comparison:
+            // positive: flip sign bit so positives sort after negatives;
+            // negative: flip all bits to invert magnitude ordering
+            bits = bits >= 0 ? bits ^ 0x8000000000000000L : ~bits;
             ByteConversion.longToByte(bits, data, offset + ValueIndexFactory.LENGTH_VALUE_TYPE);
             return data;
         }
@@ -184,7 +192,8 @@ public class ValueIndexFactory {
         else if (value.getType() == Type.FLOAT) {
             final byte[] data = new byte[offset + ValueIndexFactory.LENGTH_VALUE_TYPE + 4];
             data[offset] = (byte) Type.FLOAT;
-            final int bits = Float.floatToIntBits(((FloatValue) value).getValue()) ^ 0x80000000;
+            int bits = Float.floatToIntBits(((FloatValue) value).getValue());
+            bits = bits >= 0 ? bits ^ 0x80000000 : ~bits;
             ByteConversion.intToByteH(bits, data, offset + ValueIndexFactory.LENGTH_VALUE_TYPE);
             return data;
         }
