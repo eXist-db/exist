@@ -117,7 +117,6 @@ public class OrderByClauseMemoryBenchmark {
         for (final Map.Entry<String, Object[]> entry : queryMatrix.entrySet()) {
             final String label = entry.getKey();
             final String queryTemplate = (String) entry.getValue()[0];
-            final int expectedV = (int) entry.getValue()[1];
             final int expectedK = (int) entry.getValue()[2];
 
             for (final int n : sizes) {

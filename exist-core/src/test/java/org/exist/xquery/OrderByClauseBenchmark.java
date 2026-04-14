@@ -109,7 +109,8 @@ public class OrderByClauseBenchmark {
                 times[i] = System.nanoTime() - t0;
             }
 
-            long sum = 0, min = Long.MAX_VALUE;
+            long sum = 0;
+            long min = Long.MAX_VALUE;
             for (final long t : times) {
                 sum += t;
                 if (t < min) min = t;
