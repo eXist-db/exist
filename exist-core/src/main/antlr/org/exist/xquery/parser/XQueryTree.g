@@ -2989,14 +2989,22 @@ throws PermissionDeniedException, EXistException, XPathException
                         rs.setAbbreviated(true);
                     }
 
-                } else {
+                } else if (rightStep instanceof VariableReference) {
                     rightStep.setPrimaryAxis(Constants.DESCENDANT_SELF_AXIS);
-                    if(rightStep instanceof VariableReference) {
-                        rightStep = new SimpleStep(context, Constants.DESCENDANT_SELF_AXIS, rightStep);
-                        path.replaceLastExpression(rightStep);
-                    } else if (rightStep instanceof FilteredExpression)
-                        ((FilteredExpression)rightStep).setAbbreviated(true);
-
+                    rightStep = new SimpleStep(context, Constants.DESCENDANT_SELF_AXIS, rightStep);
+                    path.replaceLastExpression(rightStep);
+                } else if (rightStep instanceof FilteredExpression) {
+                    rightStep.setPrimaryAxis(Constants.DESCENDANT_SELF_AXIS);
+                    ((FilteredExpression)rightStep).setAbbreviated(true);
+                } else {
+                    // For other non-LocationStep expressions (e.g., PathExpr wrapping
+                    // parenthesized expressions like //(@x) or //(a | b)), insert an
+                    // explicit descendant-or-self::node() step. We must NOT call
+                    // setPrimaryAxis here because it would corrupt inner axes (e.g.,
+                    // overwriting an attribute axis in //(@x)).
+                    LocationStep descStep = new LocationStep(context, Constants.DESCENDANT_SELF_AXIS, new TypeTest(Type.NODE));
+                    path.replaceLastExpression(descStep);
+                    path.add(rightStep);
                 }
             }
         )?
