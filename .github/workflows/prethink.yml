@@ -29,6 +29,10 @@ jobs:
           mod config moderne edit https://app.moderne.io --token ${{ secrets.MODERNE_TOKEN }}
           mod config recipes jar install io.moderne.recipe:rewrite-prethink:LATEST
 
+      - uses: ./.github/actions/maven-github-settings
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Build LSTs
         run: mod build .
 
