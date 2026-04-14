@@ -537,6 +537,40 @@ public class CustomIndexTest {
         }
     }
 
+    /**
+     * Regression test for <a href="https://github.com/eXist-db/exist/issues/2204">GH-2204</a>.
+     * ngram:contains() with a for-bound variable as the query string argument
+     * must not raise XPTY0004.
+     */
+    @Test
+    public void ngramContainsWithForVariable() throws PermissionDeniedException, XPathException, EXistException {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+            final XQuery xquery = pool.getXQueryService();
+            assertNotNull(xquery);
+
+            // Store a queries document so the for-expression iterates over
+            // persistent nodes — the bug only triggers with isPersistentSet().
+            // The collection must be accessed via a variable (not collection()
+            // directly) so the where expression lacks CONTEXT_ITEM dependency,
+            // allowing WhereClause.preEval() to fire.
+            final String storeQuery =
+                "xmldb:store('" + TestConstants.TEST_COLLECTION_URI + "', 'queries.xml', " +
+                "<queries><q>Chair</q><q>Table</q><q>NoMatch</q></queries>)";
+            xquery.execute(broker, storeQuery, null);
+
+            final String query =
+                "let $items := collection('" + TestConstants.TEST_COLLECTION_URI + "') " +
+                "return " +
+                "  for $q in doc('" + TestConstants.TEST_COLLECTION_URI + "/queries.xml')//q " +
+                "  where $items//item[ngram:contains(., $q)] " +
+                "  return string($q)";
+            final Sequence seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertEquals(2, seq.getItemCount());
+        }
+    }
+
     @Test
     public void indexKeys() throws SAXException, PermissionDeniedException, XPathException, EXistException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
