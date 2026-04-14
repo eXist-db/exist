@@ -107,6 +107,7 @@ public class JSON extends BasicFunction {
     public static final String OPTION_DUPLICATES_USE_FIRST = "use-first";
     public static final String OPTION_DUPLICATES_USE_LAST = "use-last";
     public static final String OPTION_LIBERAL = "liberal";
+    public static final String OPTION_ESCAPE = "escape";
     public static final String OPTION_UNESCAPE = "unescape";
     public static final QName KEY = new QName("key",null);
 
@@ -133,6 +134,15 @@ public class JSON extends BasicFunction {
             final Sequence duplicateOpt = options.get(new StringValue(OPTION_DUPLICATES));
             if (duplicateOpt.hasOne()) {
                 handleDuplicates = duplicateOpt.itemAt(0).getStringValue();
+            }
+            final Sequence escapeOpt = options.get(new StringValue(OPTION_ESCAPE));
+            if (escapeOpt.hasOne()) {
+                try {
+                    escapeOpt.itemAt(0).convertTo(Type.BOOLEAN);
+                } catch (final XPathException e) {
+                    throw new XPathException(this, ErrorCodes.FOJS0005,
+                            "Value of option 'escape' is not a valid xs:boolean: " + escapeOpt.itemAt(0).getStringValue());
+                }
             }
         }
 
