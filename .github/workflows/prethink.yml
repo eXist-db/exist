@@ -21,9 +21,8 @@ jobs:
 
       - name: Install Moderne CLI
         run: |
-          curl -sSL https://pkgs.moderne.io/moderne-cli/latest/linux/mod > mod
-          chmod +x mod
-          sudo mv mod /usr/local/bin/
+          curl -sSL https://app.moderne.io/cli | bash
+          echo "$HOME/.moderne/cli/bin" >> $GITHUB_PATH
 
       - name: Configure Moderne
         run: |
