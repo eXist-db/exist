@@ -569,7 +569,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
             try {
                 wait();
             } catch (final InterruptedException e) {
-                // ignore
+                Thread.currentThread().interrupt();
             }
         }
     }
@@ -644,7 +644,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
             try {
                 wait();
             } catch (final InterruptedException e) {
-                // nop
+                Thread.currentThread().interrupt();
             }
         }
         return false;
