@@ -294,12 +294,6 @@ public class ElementConstructor extends NodeConstructor {
                         throw e;
                     }
 
-                    //Use the default namespace if specified
-                    /*
-                     if (qn.getPrefix() == null && context.inScopeNamespaces.get("xmlns") != null) {
-                         qn.setNamespaceURI((String)context.inScopeNamespaces.get("xmlns"));
-                     }
-                     */
                     if (qn.getPrefix() == null && context.getInScopeNamespace(XMLConstants.DEFAULT_NS_PREFIX) != null) {
                         qn = new QName(qn.getLocalPart(), context.getInScopeNamespace(XMLConstants.DEFAULT_NS_PREFIX), qn.getPrefix());
                     }

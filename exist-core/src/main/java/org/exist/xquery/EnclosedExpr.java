@@ -84,15 +84,22 @@ public class EnclosedExpr extends PathExpr {
         Sequence result;
         context.enterEnclosedExpr();
         try {
+            // Check copy-namespaces mode before evaluation so we can lazily capture
+            // innerBuilder only when no-inherit is active. In the default (inherit) case
+            // this avoids the peekDocumentBuilder() call entirely.
+            final boolean noInherit = !context.inheritNamespaces();
+
             context.pushDocumentContext();
 
             MemTreeBuilder innerBuilder = null;
             try {
                 result = super.eval(contextSequence, null);
-                // Capture the builder that may have been created by direct constructors inside
-                // this enclosed expression. If null, no direct constructors ran — the result
-                // items are all pre-existing nodes (variable references / copies).
-                innerBuilder = context.peekDocumentBuilder();
+                // Only capture the inner builder when no-inherit is active — it is used
+                // solely to distinguish pre-existing nodes (variable references / copies)
+                // from nodes constructed inside this enclosed expression.
+                if (noInherit) {
+                    innerBuilder = context.getCurrentDocumentBuilder();
+                }
             } finally {
                 context.popDocumentContext();
             }
@@ -101,7 +108,6 @@ public class EnclosedExpr extends PathExpr {
             // This is the union of inherited namespaces (from outer constructors) and
             // in-scope namespaces (from the immediately enclosing constructor), i.e. all
             // namespace bindings that an ancestor traversal from this element would find.
-            final boolean noInherit = !context.inheritNamespaces();
             Map<String, String> ancestorNS = null;
             if (noInherit) {
                 final Map<String, String> inherited = context.getAllInheritedNamespaces();

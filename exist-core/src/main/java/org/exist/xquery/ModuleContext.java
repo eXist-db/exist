@@ -358,8 +358,8 @@ public class ModuleContext extends XQueryContext {
     }
 
     @Override
-    public MemTreeBuilder peekDocumentBuilder() {
-        return parentContext.peekDocumentBuilder();
+    public MemTreeBuilder getCurrentDocumentBuilder() {
+        return parentContext.getCurrentDocumentBuilder();
     }
 
     @Override

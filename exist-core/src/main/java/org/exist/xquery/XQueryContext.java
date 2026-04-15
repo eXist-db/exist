@@ -977,7 +977,7 @@ public class XQueryContext implements BinaryValueManager, Context {
         return inScopeNamespaces;
     }
 
-    public MemTreeBuilder peekDocumentBuilder() {
+    public MemTreeBuilder getCurrentDocumentBuilder() {
         return documentBuilder;
     }
 
