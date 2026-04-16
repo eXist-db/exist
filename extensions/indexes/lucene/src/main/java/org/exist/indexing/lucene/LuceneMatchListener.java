@@ -309,7 +309,7 @@ public class LuceneMatchListener extends AbstractMatchListener {
 
                             if (stateList.size() == terms.length) {
                                 // Phrase match: add one span from first to last term (may cross text nodes, #4584).
-                                stream.restoreState(stateList.get(0));
+                                stream.restoreState(stateList.getFirst());
                                 final int start = stream.getAttribute(OffsetAttribute.class).startOffset();
                                 stream.restoreState(stateList.get(terms.length - 1));
                                 final int end = stream.getAttribute(OffsetAttribute.class).endOffset();

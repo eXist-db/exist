@@ -65,8 +65,8 @@ public class NativeStructuralIndexWorkerTest {
 
         assertEquals(5, ranges.size());
 
-        assertEquals(1, ranges.get(0).start);
-        assertEquals(6, ranges.get(0).end);
+        assertEquals(1, ranges.getFirst().start);
+        assertEquals(6, ranges.getFirst().end);
 
         assertEquals(88, ranges.get(1).start);
         assertEquals(89, ranges.get(1).end);
@@ -105,8 +105,8 @@ public class NativeStructuralIndexWorkerTest {
 
         assertEquals(2, ranges.size());
 
-        assertEquals(6574, ranges.get(0).start);
-        assertEquals(6574, ranges.get(0).end);
+        assertEquals(6574, ranges.getFirst().start);
+        assertEquals(6574, ranges.getFirst().end);
 
         assertEquals(11, ranges.get(1).start);
         assertEquals(15, ranges.get(1).end);
@@ -122,8 +122,8 @@ public class NativeStructuralIndexWorkerTest {
 
         assertEquals(2, ranges.size());
 
-        assertEquals(11, ranges.get(0).start);
-        assertEquals(15, ranges.get(0).end);
+        assertEquals(11, ranges.getFirst().start);
+        assertEquals(15, ranges.getFirst().end);
 
         assertEquals(6574, ranges.get(1).start);
         assertEquals(6574, ranges.get(1).end);
@@ -139,8 +139,8 @@ public class NativeStructuralIndexWorkerTest {
 
         assertEquals(4, ranges.size());
 
-        assertEquals(6574, ranges.get(0).start);
-        assertEquals(6574, ranges.get(0).end);
+        assertEquals(6574, ranges.getFirst().start);
+        assertEquals(6574, ranges.getFirst().end);
 
         assertEquals(200, ranges.get(1).start);
         assertEquals(200, ranges.get(1).end);

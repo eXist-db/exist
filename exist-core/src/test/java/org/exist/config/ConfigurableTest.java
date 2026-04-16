@@ -97,7 +97,7 @@ public class ConfigurableTest {
         
         assertEquals(2, object.spices.size());
         
-        assertEquals("black pepper", object.spices.get(0).name);
+        assertEquals("black pepper", object.spices.getFirst().name);
         assertEquals("berbere", object.spices.get(1).name);
 	}
 
