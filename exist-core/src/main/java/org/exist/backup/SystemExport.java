@@ -76,7 +76,6 @@ import javax.xml.transform.OutputKeys;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -404,8 +403,8 @@ public class SystemExport {
 
             serializer.startElement(Namespaces.EXIST_NS, "collection", "collection", attr);
 
-            if (perm instanceof ACLPermission) {
-                Backup.writeACLPermission(serializer, (ACLPermission) perm);
+            if (perm instanceof ACLPermission permission) {
+                Backup.writeACLPermission(serializer, permission);
             }
 
             final int docsCount = current.getDocumentCountNoLock(broker);
@@ -565,8 +564,8 @@ public class SystemExport {
 //        }
 
         serializer.startElement(Namespaces.EXIST_NS, "resource", "resource", attr);
-        if (perms instanceof ACLPermission) {
-            Backup.writeACLPermission(serializer, (ACLPermission) perms);
+        if (perms instanceof ACLPermission permission) {
+            Backup.writeACLPermission(serializer, permission);
         }
 
         serializer.endElement(Namespaces.EXIST_NS, "resource", "resource");
@@ -671,11 +670,11 @@ public class SystemExport {
     public static Path getUniqueFile(final String base, final String extension, final String dir) {
         final SimpleDateFormat creationDateFormat = new SimpleDateFormat(DataBackup.DATE_FORMAT_PICTURE);
         final String filename = base + '-' + creationDateFormat.format(Calendar.getInstance().getTime());
-        Path file = Paths.get(dir, filename + extension);
+        Path file = Path.of(dir, filename + extension);
         int version = 0;
 
         while (Files.exists(file)) {
-            file = Paths.get(dir, filename + '_' + version++ + extension);
+            file = Path.of(dir, filename + '_' + version++ + extension);
         }
         return file;
     }

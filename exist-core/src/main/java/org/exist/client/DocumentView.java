@@ -33,7 +33,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Properties;
@@ -77,6 +77,7 @@ import static org.xmldb.api.base.ResourceType.XML_RESOURCE;
 
 class DocumentView extends JFrame {
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
     protected InteractiveClient client;
@@ -343,16 +344,16 @@ class DocumentView extends JFrame {
         final Runnable saveTask = () -> {
             try {
                 statusMessage.setText(Messages.getString("DocumentView.36") + URIUtils.urlDecodeUtf8(resource.getId())); //$NON-NLS-1$
-                if (collection instanceof Observable) {
-                    ((Observable) collection)
+                if (collection instanceof Observable observable) {
+                    observable
                             .addObserver(new ProgressObserver());
                 }
                 progress.setIndeterminate(true);
                 progress.setVisible(true);
                 resource.setContent(text.getText());
                 collection.storeResource(resource);
-                if (collection instanceof Observable) {
-                    ((Observable) collection).deleteObservers();
+                if (collection instanceof Observable observable) {
+                    observable.deleteObservers();
                 }
             } catch (final XMLDBException e) {
                 ClientFrame.showErrorMessage(Messages.getString("DocumentView.37") //$NON-NLS-1$
@@ -373,8 +374,8 @@ class DocumentView extends JFrame {
                 try {
                     //Change status message and display a progress dialog
                     statusMessage.setText(Messages.getString("DocumentView.39") + nameres); //$NON-NLS-1$
-                    if (collection instanceof Observable) {
-                        ((Observable) collection).addObserver(new ProgressObserver());
+                    if (collection instanceof Observable observable) {
+                        observable.addObserver(new ProgressObserver());
                     }
                     progress.setIndeterminate(true);
                     progress.setVisible(true);
@@ -385,8 +386,8 @@ class DocumentView extends JFrame {
                     result.setContent(text.getText());
                     collection.storeResource(result);
                     client.reloadCollection();    //reload the client collection
-                    if (collection instanceof Observable) {
-                        ((Observable) collection).deleteObservers();
+                    if (collection instanceof Observable observable) {
+                        observable.deleteObservers();
                     }
                 } catch (final XMLDBException e) {
                     ClientFrame.showErrorMessage(Messages.getString("DocumentView.40") + e.getMessage(), e); //$NON-NLS-1$
@@ -406,7 +407,7 @@ class DocumentView extends JFrame {
         final JFileChooser chooser = new JFileChooser(workDir);
         chooser.setMultiSelectionEnabled(false);
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        chooser.setSelectedFile(Paths.get(resource.getId()).toFile());
+        chooser.setSelectedFile(Path.of(resource.getId()).toFile());
 
         if (chooser.showDialog(this, Messages.getString("DocumentView.44")) == JFileChooser.APPROVE_OPTION) {
             final File file = chooser.getSelectedFile();

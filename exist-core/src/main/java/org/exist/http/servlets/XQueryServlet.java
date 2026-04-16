@@ -52,11 +52,11 @@ import javax.xml.transform.OutputKeys;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.Serial;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -91,7 +91,8 @@ import java.util.Properties;
  * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public class XQueryServlet extends AbstractExistHttpServlet {
-    
+
+    @Serial
     private static final long serialVersionUID = 5266794852401553015L;
 
     private static final Logger LOG = LogManager.getLogger(XQueryServlet.class);
@@ -180,8 +181,8 @@ public class XQueryServlet extends AbstractExistHttpServlet {
 
             process(request, response);
         } finally {
-            if (request != null && request instanceof HttpServletRequestWrapper) {
-                ((HttpServletRequestWrapper)request).close();
+            if (request != null && request instanceof HttpServletRequestWrapper wrapper) {
+                wrapper.close();
             }
         }
     }
@@ -215,8 +216,8 @@ public class XQueryServlet extends AbstractExistHttpServlet {
 
             process(request, response);
         } finally {
-            if (request != null && request instanceof HttpServletRequestWrapper) {
-                ((HttpServletRequestWrapper)request).close();
+            if (request != null && request instanceof HttpServletRequestWrapper wrapper) {
+                wrapper.close();
             }
         }
     }
@@ -327,9 +328,9 @@ public class XQueryServlet extends AbstractExistHttpServlet {
         final Object urlAttrib = request.getAttribute(ATTR_XQUERY_URL);
         if (sourceAttrib != null) {
             String s;
-            if (sourceAttrib instanceof Item)
+            if (sourceAttrib instanceof Item item)
                 try {
-                    s = ((Item) sourceAttrib).getStringValue();
+                    s = item.getStringValue();
                 } catch (final XPathException e) {
                     throw new ServletException("Failed to read XQuery source string from " +
                         "request attribute '" + ATTR_XQUERY_SOURCE + "': " + e.getMessage(), e);
@@ -354,7 +355,7 @@ public class XQueryServlet extends AbstractExistHttpServlet {
                 sendError(output, "Error", e.getMessage());
             }
         } else {
-            final Path f = Paths.get(path);
+            final Path f = Path.of(path);
             if(!Files.isReadable(f)) {
                 response.setStatus(HttpServletResponse.SC_NOT_FOUND);
                 sendError(output, "Cannot read source file", path);
@@ -388,9 +389,9 @@ public class XQueryServlet extends AbstractExistHttpServlet {
 //                System.out.println("path="+path);
                 if(descriptor.allowSource(path)) {
 
-                    if (source instanceof DBSource) {
+                    if (source instanceof DBSource bSource) {
                         try {
-                            ((DBSource) source).validate(user, Permission.READ);
+                            bSource.validate(user, Permission.READ);
                         } catch (final PermissionDeniedException e) {
                             if (getDefaultUser().equals(user)) {
                                 getAuthenticator().sendChallenge(request, response);
@@ -569,9 +570,9 @@ public class XQueryServlet extends AbstractExistHttpServlet {
         if(obj == null)
             {return null;}
         
-        if(obj instanceof Sequence)
+        if(obj instanceof Sequence sequence)
             try {
-                return ((Sequence)obj).getStringValue();
+                return sequence.getStringValue();
             } catch (final XPathException e) {
                 return null;
             }

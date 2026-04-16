@@ -43,9 +43,9 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.Serial;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.security.Principal;
 import java.util.Optional;
 
@@ -58,7 +58,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 @MultipartConfig
 public abstract class AbstractExistHttpServlet extends HttpServlet {
 
-	private static final long serialVersionUID = 804071766041263220L;
+    @Serial
+    private static final long serialVersionUID = 804071766041263220L;
 
 	public final static String DEFAULT_ENCODING = UTF_8.name();
     
@@ -107,17 +108,17 @@ public abstract class AbstractExistHttpServlet extends HttpServlet {
             final Optional<Path> dbHome = Optional.ofNullable(config.getInitParameter("basedir"))
                     .map(baseDir ->
                                     Optional.ofNullable(config.getServletContext().getRealPath(baseDir))
-                                            .map(rp -> Optional.of(Paths.get(rp)))
+                                            .map(rp -> Optional.of(Path.of(rp)))
                                             .orElse(
                                                     Optional.ofNullable(config.getServletContext().getRealPath("/"))
-                                                            .map(dir -> Paths.get(dir).resolve("WEB-INF").toAbsolutePath())
+                                                            .map(dir -> Path.of(dir).resolve("WEB-INF").toAbsolutePath())
                                             )
                     )
-                    .orElse(Optional.ofNullable(config.getServletContext().getRealPath("/")).map(Paths::get));
+                    .orElse(Optional.ofNullable(config.getServletContext().getRealPath("/")).map(Path::of));
 
             getLog().info("EXistServlet: exist.home={}", dbHome.map(Path::toString).orElse("null"));
 
-            final Path cf = dbHome.map(h -> h.resolve(confFile)).orElse(Paths.get(confFile));
+            final Path cf = dbHome.map(h -> h.resolve(confFile)).orElse(Path.of(confFile));
             getLog().info("Reading configuration from {}", cf.toAbsolutePath().toString());
             if (!Files.isReadable(cf)) {
                 throw new ServletException("Configuration file " + confFile + " not found or not readable");
@@ -243,8 +244,8 @@ public abstract class AbstractExistHttpServlet extends HttpServlet {
 	            }
 	        }
 	
-	        if (principal instanceof Subject) {
-	            return (Subject)principal;
+	        if (principal instanceof Subject subject) {
+	            return subject;
 	        }
         }
 

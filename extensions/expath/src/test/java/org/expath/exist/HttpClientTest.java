@@ -33,10 +33,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
+import java.net.*;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -52,15 +49,16 @@ public class HttpClientTest {
         assumeTrue("No Internet access: skipping 'readResponse' test", hasInternetAccess());
 
         final String query =
-                "xquery version \"3.1\";\n" +
-                "import module namespace http=\"http://expath.org/ns/http-client\";\n" +
-                "let $url := \"http://www.exist-db.org/exist/apps/homepage/resources/img/existdb.gif\"\n" +
-                "let $request :=\n" +
-                "    <http:request method=\"GET\" href=\"{$url}\"/>\n" +
-                "let $response := http:send-request($request)\n" +
-                "let $str := util:binary-to-string($response[2])\n" +
-                "return\n" +
-                "    $str";
+                """
+                xquery version "3.1";
+                import module namespace http="http://expath.org/ns/http-client";
+                let $url := "http://www.exist-db.org/exist/apps/homepage/resources/img/existdb.gif"
+                let $request :=
+                    <http:request method="GET" href="{$url}"/>
+                let $response := http:send-request($request)
+                let $str := util:binary-to-string($response[2])
+                return
+                    $str""";
 
         final Sequence result = executeQuery(query);
         assertEquals(1, result.getItemCount());
@@ -79,7 +77,7 @@ public class HttpClientTest {
 
         //Checking that we have an Internet Access
         try {
-            final URL url = new URL("http://www.exist-db.org");
+            final URL url = URI.create("http://www.exist-db.org").toURL();
             final URLConnection con = url.openConnection();
             if (con instanceof HttpURLConnection httpConnection) {
                 hasInternetAccess = (httpConnection.getResponseCode() == HttpURLConnection.HTTP_OK);

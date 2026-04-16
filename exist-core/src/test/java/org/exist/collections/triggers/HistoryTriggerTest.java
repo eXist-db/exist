@@ -60,11 +60,12 @@ public class HistoryTriggerTest {
     private static XmldbURI TEST_CONFIG_COLLECTION_URI = XmldbURI.CONFIG_COLLECTION_URI.append(TEST_COLLECTION_URI);
 
     private static String COLLECTION_CONFIG =
-            "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">\n" +
-            "    <triggers>\n" +
-            "        <trigger class=\"org.exist.collections.triggers.HistoryTrigger\"/>\n" +
-            "    </triggers>\n" +
-            "</collection>";
+            """
+            <collection xmlns="http://exist-db.org/collection-config/1.0">
+                <triggers>
+                    <trigger class="org.exist.collections.triggers.HistoryTrigger"/>
+                </triggers>
+            </collection>""";
 
     @Before
     public void setup() throws EXistException, PermissionDeniedException, IOException, SAXException, LockException {
@@ -192,7 +193,7 @@ public class HistoryTriggerTest {
         try(final DBBroker broker = brokerPool.get(Optional.of(brokerPool.getSecurityManager().getSystemSubject()));
                 final Txn transaction = brokerPool.getTransactionManager().beginTransaction()) {
 
-            try(final Collection historyCollection = broker.openCollection(HistoryTrigger.DEFAULT_ROOT_PATH.append(TEST_COLLECTION_URI).append(originalDocName), Lock.LockMode.READ_LOCK);) {
+            try(final Collection historyCollection = broker.openCollection(HistoryTrigger.DEFAULT_ROOT_PATH.append(TEST_COLLECTION_URI).append(originalDocName), Lock.LockMode.READ_LOCK)) {
                 assertNotNull(historyCollection);
 
                 final DocumentSet documentSet = historyCollection.getDocuments(broker, new DefaultDocumentSet());

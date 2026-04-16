@@ -59,7 +59,6 @@ import javax.xml.transform.sax.TransformerHandler;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Enumeration;
 import java.util.Optional;
 import java.util.Properties;
@@ -74,6 +73,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class XSLTServlet extends HttpServlet {
 
+    @Serial
     private static final long serialVersionUID = -7258405385386062151L;
 
     private final static String REQ_ATTRIBUTE_PREFIX = "xslt.";
@@ -135,8 +135,8 @@ public class XSLTServlet extends HttpServlet {
                     }
                 }
 
-                if (sourceObj instanceof Item) {
-                    inputNode = (Item) sourceObj;
+                if (sourceObj instanceof Item item) {
+                    inputNode = item;
                     if (!Type.subTypeOf(inputNode.getType(), Type.NODE)) {
                         throw new ServletException("Input for XSLT servlet is not a node. Read from attribute " +
                                 sourceAttrib);
@@ -299,7 +299,7 @@ public class XSLTServlet extends HttpServlet {
         if (stylesheet.indexOf(':') == Constants.STRING_NOT_FOUND) {
             // replace double slash
             stylesheet = stylesheet.replaceAll("//", "/");
-            Path f = Paths.get(stylesheet).normalize();
+            Path f = Path.of(stylesheet).normalize();
             if (Files.isReadable(f)) {
                 // Found file, get URI
                 stylesheet = f.toUri().toASCIIString();
@@ -316,7 +316,7 @@ public class XSLTServlet extends HttpServlet {
                         return null;
                     }
 
-                    f = Paths.get(url);
+                    f = Path.of(url);
                     stylesheet = f.toUri().toASCIIString();
 
                 } else {
@@ -350,7 +350,7 @@ public class XSLTServlet extends HttpServlet {
             path = getServletContext().getRealPath(path);
         }
 
-        final Path file = Paths.get(path).normalize();
+        final Path file = Path.of(path).normalize();
         if (Files.isDirectory(file)) {
             return file;
         } else {

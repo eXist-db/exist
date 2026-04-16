@@ -54,7 +54,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -141,9 +140,9 @@ public class RewriteConfig {
                  * on the server name.  If there is a condition on the server name and the names do not
                  * match, then ignore this ControllerForward.
                  */
-                if (action instanceof ControllerForward) {
+                if (action instanceof ControllerForward forward) {
                     if (serverName != null) {
-                        final String controllerServerName = ((ControllerForward) action).getServerName();
+                        final String controllerServerName = forward.getServerName();
                         if (controllerServerName != null) {
                             if (!serverName.equalsIgnoreCase(controllerServerName)) {
                                 continue;
@@ -185,7 +184,7 @@ public class RewriteConfig {
             }
         } else {
             try {
-                final Path d = Paths.get(urlRewrite.getConfig().getServletContext().getRealPath("/")).normalize();
+                final Path d = Path.of(urlRewrite.getConfig().getServletContext().getRealPath("/")).normalize();
                 final Path configFile = d.resolve(controllerConfig);
                 if (Files.isReadable(configFile)) {
                     final Document doc = parseConfig(configFile);
