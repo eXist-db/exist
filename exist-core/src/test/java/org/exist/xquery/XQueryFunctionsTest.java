@@ -23,7 +23,6 @@ package org.exist.xquery;
 
 import java.net.URISyntaxException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -347,10 +346,11 @@ public class XQueryFunctionsTest {
 
     @Test
     public void exclusiveLock() throws XMLDBException {
-        String query = "let $query1 := (<a/>)\n" +
-                "let $query2 := (2, 3)\n" +
-                "let $a := util:exclusive-lock(//*,($query1, $query2))\n" +
-                "return $a";
+        String query = """
+                let $query1 := (<a/>)
+                let $query2 := (2, 3)
+                let $a := util:exclusive-lock(//*,($query1, $query2))
+                return $a""";
         ResourceSet result = existEmbeddedServer.executeQuery(query);
         assertEquals(3, result.getSize());
         String r = (String) result.getResource(0).getContent();
@@ -360,10 +360,11 @@ public class XQueryFunctionsTest {
         r = (String) result.getResource(2).getContent();
         assertEquals("3", r);
 
-        query = "let $query1 := (<a/>)\n" +
-                "let $query2 := (2, 3)\n" +
-                "let $a := util:exclusive-lock((),($query1, $query2))\n" +
-                "return $a";
+        query = """
+                let $query1 := (<a/>)
+                let $query2 := (2, 3)
+                let $a := util:exclusive-lock((),($query1, $query2))
+                return $a""";
         result = existEmbeddedServer.executeQuery(query);
         assertEquals(3, result.getSize());
         r = (String) result.getResource(0).getContent();
@@ -373,10 +374,11 @@ public class XQueryFunctionsTest {
         r = (String) result.getResource(2).getContent();
         assertEquals("3", r);
 
-        query = "let $query1 := (<a/>)\n" +
-                "let $query2 := (2, 3)\n" +
-                "let $a := util:exclusive-lock((),($query1, $query2))\n" +
-                "return $a";
+        query = """
+                let $query1 := (<a/>)
+                let $query2 := (2, 3)
+                let $a := util:exclusive-lock((),($query1, $query2))
+                return $a""";
         result = existEmbeddedServer.executeQuery(query);
         assertEquals(3, result.getSize());
         r = (String) result.getResource(0).getContent();
@@ -386,8 +388,9 @@ public class XQueryFunctionsTest {
         r = (String) result.getResource(2).getContent();
         assertEquals("3", r);
 
-        query = "let $a := util:exclusive-lock(//*,<root/>)\n" +
-                "return $a";
+        query = """
+                let $a := util:exclusive-lock(//*,<root/>)
+                return $a""";
         result = existEmbeddedServer.executeQuery(query);
         r = (String) result.getResource(0).getContent();
         assertEquals("<root/>", r);
@@ -415,11 +418,13 @@ public class XQueryFunctionsTest {
     @Test
     public void utilEvalForFunction() throws XMLDBException {
 
-        String query = "declare function local:home()\n"
-                + "{\n"
-                + "<b>HOME</b>\n"
-                + "};\n"
-                + "util:eval(\"local:home()\")\n";
+        String query = """
+                declare function local:home()
+                {
+                <b>HOME</b>
+                };
+                util:eval("local:home()")
+                """;
 
         ResourceSet result = existEmbeddedServer.executeQuery(query);
         assertEquals(1, result.getSize());
@@ -427,10 +432,11 @@ public class XQueryFunctionsTest {
 
     @Test
     public void sharedLock() throws XMLDBException {
-        String query = "let $query1 := (<a/>)\n" +
-                "let $query2 := (2, 3)\n" +
-                "let $a := util:shared-lock(//*,($query1, $query2))\n" +
-                "return $a";
+        String query = """
+                let $query1 := (<a/>)
+                let $query2 := (2, 3)
+                let $a := util:shared-lock(//*,($query1, $query2))
+                return $a""";
         ResourceSet result = existEmbeddedServer.executeQuery(query);
         assertEquals(3, result.getSize());
         String r = (String) result.getResource(0).getContent();
@@ -440,10 +446,11 @@ public class XQueryFunctionsTest {
         r = (String) result.getResource(2).getContent();
         assertEquals("3", r);
 
-        query = "let $query1 := (<a/>)\n" +
-                "let $query2 := (2, 3)\n" +
-                "let $a := util:shared-lock((),($query1, $query2))\n" +
-                "return $a";
+        query = """
+                let $query1 := (<a/>)
+                let $query2 := (2, 3)
+                let $a := util:shared-lock((),($query1, $query2))
+                return $a""";
         result = existEmbeddedServer.executeQuery(query);
         assertEquals(3, result.getSize());
         r = (String) result.getResource(0).getContent();
@@ -453,10 +460,11 @@ public class XQueryFunctionsTest {
         r = (String) result.getResource(2).getContent();
         assertEquals("3", r);
 
-        query = "let $query1 := (<a/>)\n" +
-                "let $query2 := (2, 3)\n" +
-                "let $a := util:shared-lock((),($query1, $query2))\n" +
-                "return $a";
+        query = """
+                let $query1 := (<a/>)
+                let $query2 := (2, 3)
+                let $a := util:shared-lock((),($query1, $query2))
+                return $a""";
         result = existEmbeddedServer.executeQuery(query);
         assertEquals(3, result.getSize());
         r = (String) result.getResource(0).getContent();
@@ -466,8 +474,9 @@ public class XQueryFunctionsTest {
         r = (String) result.getResource(2).getContent();
         assertEquals("3", r);
 
-        query = "let $a := util:shared-lock(//*,<root/>)\n" +
-                "return $a";
+        query = """
+                let $a := util:shared-lock(//*,<root/>)
+                return $a""";
         result = existEmbeddedServer.executeQuery(query);
         r = (String) result.getResource(0).getContent();
         assertEquals("<root/>", r);
@@ -672,7 +681,7 @@ public class XQueryFunctionsTest {
                 "('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', " +
                         "'Oct', 'Nov', 'Dec')[month-from-dateTime(current-dateTime())]");
         String r = (String) result.getResource(0).getContent();
-        SimpleDateFormat df = new SimpleDateFormat("MMM", new Locale("en", "US"));
+        SimpleDateFormat df = new SimpleDateFormat("MMM", Locale.of("en", "US"));
         Date date = new Date();
         assertEquals(df.format(date), r);
 
@@ -993,7 +1002,7 @@ public class XQueryFunctionsTest {
         Collection testCollection = colService.createCollection(TEST_BINARY_COLLECTION);
         assertNotNull(testCollection);
 
-        final Path fLogo = Paths.get(getClass().getResource("value/logo.jpg").toURI());
+        final Path fLogo = Path.of(getClass().getResource("value/logo.jpg").toURI());
 
         //store the eXist logo in the test collection
         BinaryResource br = testCollection.createResource(BINARY_RESOURCE_FILENAME, BinaryResource.class);

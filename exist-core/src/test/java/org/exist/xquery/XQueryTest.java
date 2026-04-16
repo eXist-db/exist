@@ -58,6 +58,7 @@ import javax.xml.transform.Source;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Arrays;
@@ -100,29 +101,49 @@ public class XQueryTest {
     private final static String numbers =
             "<test>" + "<item id='1'><price>5.6</price><stock>22</stock></item>" + "<item id='2'><price>7.4</price><stock>43</stock></item>" + "<item id='3'><price>18.4</price><stock>5</stock></item>" + "<item id='4'><price>65.54</price><stock>16</stock></item>" + "</test>";
     private final static String module1 =
-            "module namespace blah=\"blah\";\n" + "declare variable $blah:param := \"value-1\";";
+            """
+            module namespace blah="blah";
+            declare variable $blah:param := "value-1";\
+            """;
     private final static String module2 =
-            "module namespace foo=\"\";\n" + "declare variable $foo:bar := \"bar\";";
+            """
+            module namespace foo="";
+            declare variable $foo:bar := "bar";\
+            """;
     private final static String module3 =
-            "module namespace foo=\"foo\";\n" + "declare variable $bar:bar := \"bar\";";
+            """
+            module namespace foo="foo";
+            declare variable $bar:bar := "bar";\
+            """;
     private final static String module4 =
             "module namespace foo=\"foo\";\n" //An external prefix in the statically known namespaces
             + "declare variable $exist:bar external;\n" + "declare function foo:bar() {\n" + "$exist:bar\n" + "};";
     private final static String module5 =
-            "module namespace foo=\"foo\";\n" + "declare variable $foo:bar := \"bar\";";
+            """
+            module namespace foo="foo";
+            declare variable $foo:bar := "bar";\
+            """;
     private final static String module6 =
-            "module namespace foo=\"foo\";\n" + "declare variable $foo:bar := \"bar\";" + "declare variable $foo:bar := \"bar\";";
+            """
+            module namespace foo="foo";
+            declare variable $foo:bar := "bar";\
+            declare variable $foo:bar := "bar";\
+            """;
     private final static String module7 =
-            "module namespace foo=\"foo\";\n" +
-            "declare namespace xhtml=\"http://www.w3.org/1999/xhtml\";\n" +
-            "declare function foo:link() { <a href='#'>Link</a> };" +
-            "declare function foo:copy($node) { element { node-name($node) } { $node/text() } };";
+            """
+            module namespace foo="foo";
+            declare namespace xhtml="http://www.w3.org/1999/xhtml";
+            declare function foo:link() { <a href='#'>Link</a> };\
+            declare function foo:copy($node) { element { node-name($node) } { $node/text() } };\
+            """;
     private final static String module8 =
-            "module namespace dr = \"double-root2\"; \n"
-            +"declare function dr:documentIn() as document-node() { \n"
-            +" let $doc :=  <root> <contents/> </root> \n"
-            +" return document { $doc } \n" 
-            +"};";
+            """
+            module namespace dr = "double-root2";\s
+            declare function dr:documentIn() as document-node() {\s
+             let $doc :=  <root> <contents/> </root>\s
+             return document { $doc }\s
+            };\
+            """;
     
     private final static String fatherModule =
             "module namespace foo=\"foo\";\n" + "import module namespace foo1=\"foo1\" at \"" + URI + "/test/" + CHILD1_MODULE_NAME + "\";\n" + "import module namespace foo2=\"foo2\" at \"" + URI + "/test/" + CHILD2_MODULE_NAME + "\";\n" + "declare variable $foo:bar := \"bar\";\n " + "declare variable $foo:bar1 := $foo1:bar;\n" + "declare variable $foo:bar2 := $foo2:bar;\n";
@@ -131,16 +152,17 @@ public class XQueryTest {
     private final static String child2Module =
             "module namespace foo=\"foo2\";\n" + "import module namespace blah=\"blah\" at \"" + URI + "/test/" + MODULE1_NAME + "\";\n" + "declare variable $foo:bar := \"bar2\";";
     private final static String namespacedDocument =
-            "<rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"\n" +
-            "xmlns:dc=\"http://purl.org/dc/elements/1.1/\"\n" +
-            "xmlns:x=\"http://exist.sourceforge.net/dc-ext\">\n" +
-            "    <rdf:Description id=\"3\">\n" +
-            "        <dc:title>title</dc:title>\n" +
-            "        <dc:creator>creator</dc:creator>\n" +
-            "        <x:place>place</x:place>\n" +
-            "        <x:edition>place</x:edition>\n" +
-            "    </rdf:Description>\n" +
-            "</rdf:RDF>";
+            """
+            <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+            xmlns:dc="http://purl.org/dc/elements/1.1/"
+            xmlns:x="http://exist.sourceforge.net/dc-ext">
+                <rdf:Description id="3">
+                    <dc:title>title</dc:title>
+                    <dc:creator>creator</dc:creator>
+                    <x:place>place</x:place>
+                    <x:edition>place</x:edition>
+                </rdf:Description>
+            </rdf:RDF>""";
     private final static String bowling =
             "<series>" +
             "<game>" +
@@ -277,13 +299,14 @@ public class XQueryTest {
     @Test
     public void recursion() throws XMLDBException {
         String q1 =
-                "declare function local:append($head, $i) {\n" +
-                "   if ($i < 5000) then\n" +
-                "       local:append(($head, $i), $i + 1)\n" +
-                "   else\n" +
-                "       $head\n" +
-                "};\n" +
-                "local:append((), 0)";
+                """
+                declare function local:append($head, $i) {
+                   if ($i < 5000) then
+                       local:append(($head, $i), $i + 1)
+                   else
+                       $head
+                };
+                local:append((), 0)""";
         XPathQueryService service =
                 getTestCollection().getService(XPathQueryService.class);
         ResourceSet result = service.query(q1);
@@ -307,24 +330,30 @@ public class XQueryTest {
 
         XPathQueryService service =
                 getTestCollection().getService(XPathQueryService.class);
-        query = "let $a := <a/> \n" +
-                "let $aa := ($a, $a) \n" +
-                "for $b in ($aa intersect $aa \n)" +
-                "return $b";
+        query = """
+                let $a := <a/>\s
+                let $aa := ($a, $a)\s
+                for $b in ($aa intersect $aa\s
+                )\
+                return $b""";
         result = service.query(query);
         assertEquals("XQuery: " + query, 1, result.getSize());
         assertEquals("XQuery: " + query, "<a/>", result.getResource(0).getContent());
-        query = "let $a := <a/> \n" +
-                "let $aa := ($a, $a) \n" +
-                "for $b in ($aa union $aa \n)" +
-                "return $b";
+        query = """
+                let $a := <a/>\s
+                let $aa := ($a, $a)\s
+                for $b in ($aa union $aa\s
+                )\
+                return $b""";
         result = service.query(query);
         assertEquals("XQuery: " + query, 1, result.getSize());
         assertEquals("XQuery: " + query, "<a/>", result.getResource(0).getContent());
-        query = "let $a := <a/> \n" +
-                "let $aa := ($a, $a) \n" +
-                "for $b in ($aa except $aa \n)" +
-                "return $b";
+        query = """
+                let $a := <a/>\s
+                let $aa := ($a, $a)\s
+                for $b in ($aa except $aa\s
+                )\
+                return $b""";
         result = service.query(query);
         assertEquals("XQuery: " + query, 0, result.getSize());
     }
@@ -883,26 +912,28 @@ public class XQueryTest {
         query = "<result xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#'>{//rdf:Description}</result>";
         result = service.query(query);
         assertEquals(query,
-                "<result xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">\n" +
-                "    <rdf:Description id=\"3\">\n" +
-                "        <dc:title xmlns:dc=\"http://purl.org/dc/elements/1.1/\">title</dc:title>\n" +
-                "        <dc:creator xmlns:dc=\"http://purl.org/dc/elements/1.1/\">creator</dc:creator>\n" +
-                "        <x:place xmlns:x=\"http://exist.sourceforge.net/dc-ext\">place</x:place>\n" +
-                "        <x:edition xmlns:x=\"http://exist.sourceforge.net/dc-ext\">place</x:edition>\n" +
-                "    </rdf:Description>\n" +
-                "</result>",
+                """
+                <result xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                    <rdf:Description id="3">
+                        <dc:title xmlns:dc="http://purl.org/dc/elements/1.1/">title</dc:title>
+                        <dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">creator</dc:creator>
+                        <x:place xmlns:x="http://exist.sourceforge.net/dc-ext">place</x:place>
+                        <x:edition xmlns:x="http://exist.sourceforge.net/dc-ext">place</x:edition>
+                    </rdf:Description>
+                </result>""",
                 result.getResource(0).getContent());
         query = "<result xmlns='http://www.w3.org/1999/02/22-rdf-syntax-ns#'>{//Description}</result>";
         result = service.query(query);
         assertEquals("XQuery: " + query,
-                "<result xmlns=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">\n" +
-                "    <rdf:Description xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\" id=\"3\">\n" +
-                "        <dc:title xmlns:dc=\"http://purl.org/dc/elements/1.1/\">title</dc:title>\n" +
-                "        <dc:creator xmlns:dc=\"http://purl.org/dc/elements/1.1/\">creator</dc:creator>\n" +
-                "        <x:place xmlns:x=\"http://exist.sourceforge.net/dc-ext\">place</x:place>\n" +
-                "        <x:edition xmlns:x=\"http://exist.sourceforge.net/dc-ext\">place</x:edition>\n" +
-                "    </rdf:Description>\n" +
-                "</result>",
+                """
+                <result xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+                    <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" id="3">
+                        <dc:title xmlns:dc="http://purl.org/dc/elements/1.1/">title</dc:title>
+                        <dc:creator xmlns:dc="http://purl.org/dc/elements/1.1/">creator</dc:creator>
+                        <x:place xmlns:x="http://exist.sourceforge.net/dc-ext">place</x:place>
+                        <x:edition xmlns:x="http://exist.sourceforge.net/dc-ext">place</x:edition>
+                    </rdf:Description>
+                </result>""",
                 result.getResource(0).getContent());
 
         //Interesting one : let's see with XQuery gurus :-)
@@ -927,23 +958,24 @@ public class XQueryTest {
         XPathQueryService service = getTestCollection().getService(XPathQueryService.class);
 
         String query =
-                "xquery version \"1.0\";\n" +
-                "declare namespace transform=\"http://exist-db.org/xquery/transform\";\n" +
-                "declare variable $xml := \n" +
-                "	<node>text</node>\n" +
-                ";\n" +
-                "declare variable $xslt := \n" +
-                "	<xsl:stylesheet xmlns=\"http://www.w3.org/1999/xhtml\" xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"2.0\">\n" +
-                "		<xsl:template match=\"node\">\n" +
-                "			<div><xsl:value-of select=\".\"/></div>\n" +
-                "		</xsl:template>\n" +
-                "	</xsl:stylesheet>\n" +
-                ";\n" +
-                "<html xmlns=\"http://www.w3.org/1999/xhtml\">\n" +
-                "	<body>\n" +
-                "		{transform:transform($xml, $xslt, ())}\n" +
-                "	</body>\n" +
-                "</html>";
+                """
+                xquery version "1.0";
+                declare namespace transform="http://exist-db.org/xquery/transform";
+                declare variable $xml :=\s
+                	<node>text</node>
+                ;
+                declare variable $xslt :=\s
+                	<xsl:stylesheet xmlns="http://www.w3.org/1999/xhtml" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0">
+                		<xsl:template match="node">
+                			<div><xsl:value-of select="."/></div>
+                		</xsl:template>
+                	</xsl:stylesheet>
+                ;
+                <html xmlns="http://www.w3.org/1999/xhtml">
+                	<body>
+                		{transform:transform($xml, $xslt, ())}
+                	</body>
+                </html>""";
 
         ResourceSet result = service.query(query);
 
@@ -1318,7 +1350,7 @@ public class XQueryTest {
 
         //Checking that we have an Internet Access
         try {
-            URL url = new URL("http://www.w3.org/");
+            URL url = URI.create("http://www.w3.org/").toURL();
             URLConnection con = url.openConnection();
             if (con instanceof HttpURLConnection httpConnection) {
                 hasInternetAccess = (httpConnection.getResponseCode() == HttpURLConnection.HTTP_OK);
@@ -1763,15 +1795,16 @@ public class XQueryTest {
                 "  tt:function($funcs)";
 
         String expectedresult =
-                "<Function>\n" +
-                "    <Name>Airmount 1</Name>\n" +
-                "    <Function>\n" +
-                "        <Name>Position</Name>\n" +
-                "    </Function>\n" +
-                "    <Function>\n" +
-                "        <Name>Velocity</Name>\n" +
-                "    </Function>\n" +
-                "</Function>";
+                """
+                <Function>
+                    <Name>Airmount 1</Name>
+                    <Function>
+                        <Name>Position</Name>
+                    </Function>
+                    <Function>
+                        <Name>Velocity</Name>
+                    </Function>
+                </Function>""";
 
         for (int i = 0; i < 25; i++) { // repeat a few times
 
@@ -2347,17 +2380,19 @@ public class XQueryTest {
 
     @Test
     public void currentDateTimeInModules_1894009() throws XMLDBException {
-        String module = "module namespace dt = \"dt\";\n" +
-                "\n" +
-                "declare function dt:fib($n) {\n" +
-                "  if ($n < 2) then $n else dt:fib($n - 1) + dt:fib($n - 2) \n" +
-                "};\n" +
-                "\n" +
-                "declare function dt:dateTime() {\n" +
-                "  (: Do something time consuming first. :)  \n" +
-                "  let $a := dt:fib(25)" +
-                "  return current-dateTime()\n" +
-                "};";
+        String module = """
+                module namespace dt = "dt";
+                
+                declare function dt:fib($n) {
+                  if ($n < 2) then $n else dt:fib($n - 1) + dt:fib($n - 2)\s
+                };
+                
+                declare function dt:dateTime() {
+                  (: Do something time consuming first. :) \s
+                  let $a := dt:fib(25)\
+                  return current-dateTime()
+                };\
+                """;
 
         String module_name = "dt.xqm";
         Resource doc;
@@ -2523,9 +2558,10 @@ public class XQueryTest {
             */
     @Test
     public void divErrorArgVariable2() throws XMLDBException {
-        String query = "let $x := 2 \n" +
-                "let $y := 1 div $x * 4\n" +
-                "return $y";
+        String query = """
+                let $x := 2\s
+                let $y := 1 div $x * 4
+                return $y""";
 
         XPathQueryService service = getTestCollection().getService(XPathQueryService.class);
         ResourceSet result = service.query(query);
@@ -2611,8 +2647,9 @@ public class XQueryTest {
      */
     @Test
     public void xpty0018_mixedsequences_2429093() throws XMLDBException {
-        String query = "declare variable $a := <A><B/></A>;\n" +
-                "($a/B, \"delete\") ";
+        String query = """
+                declare variable $a := <A><B/></A>;
+                ($a/B, "delete") """;
 
         XPathQueryService service = getTestCollection().getService(XPathQueryService.class);
         ResourceSet result = service.query(query);
@@ -2626,10 +2663,11 @@ public class XQueryTest {
 
     @Test
     public void messageDigester() throws XMLDBException {
-        String query = "let $value:=\"ABCDEF\"\n" +
-                "let $alg:=\"MD5\"\n" +
-                "return\n" +
-                "(util:hash($value, $alg), util:hash($value, $alg, xs:boolean('true')))";
+        String query = """
+                let $value:="ABCDEF"
+                let $alg:="MD5"
+                return
+                (util:hash($value, $alg), util:hash($value, $alg, xs:boolean('true')))""";
 
         XPathQueryService service = getTestCollection().getService(XPathQueryService.class);
         ResourceSet result = service.query(query);
@@ -2640,10 +2678,11 @@ public class XQueryTest {
         assertEquals(query, "iCekESKlAouYCMe/hLn89g==",
                 result.getResource(1).getContent().toString());
 
-        query = "let $value:=\"ABCDEF\"\n" +
-                "let $alg:=\"SHA-1\"\n" +
-                "return\n" +
-                "(util:hash($value, $alg), util:hash($value, $alg, xs:boolean('true')))";
+        query = """
+                let $value:="ABCDEF"
+                let $alg:="SHA-1"
+                return
+                (util:hash($value, $alg), util:hash($value, $alg, xs:boolean('true')))""";
 
         service = getTestCollection().getService(XPathQueryService.class);
         result = service.query(query);
@@ -2654,10 +2693,11 @@ public class XQueryTest {
         assertEquals(query, "lwCTZ4sYISf2C7UbivLJTVOeyjo=",
                 result.getResource(1).getContent().toString());
 
-        query = "let $value:=\"ABCDEF\"\n" +
-                "let $alg:=\"SHA-256\"\n" +
-                "return\n" +
-                "(util:hash($value, $alg), util:hash($value, $alg, xs:boolean('true')))";
+        query = """
+                let $value:="ABCDEF"
+                let $alg:="SHA-256"
+                return
+                (util:hash($value, $alg), util:hash($value, $alg, xs:boolean('true')))""";
 
         service = getTestCollection().getService(XPathQueryService.class);
         result = service.query(query);
@@ -2927,16 +2967,19 @@ public class XQueryTest {
         } catch (Exception e) {
             //SENR0001 : OK - this is expected
         }
-        query = "declare option exist:serialize 'method=text'; \n"
-            + "//@* \n";
+        query = """
+            declare option exist:serialize 'method=text';\s
+            //@*\s
+            """;
         result = service.query(query);
         assertEquals("XQuery: " + query, 3, result.getSize());
     }
 
     @Test(expected=XPathException.class)
     public void pathOperatorContainingNodesAndNonNodes() throws XMLDBException, XPathException {
-        final String query = "declare function local:test() { (1,<n/>) };\n" +
-                "<x/>/local:test()";
+        final String query = """
+                declare function local:test() { (1,<n/>) };
+                <x/>/local:test()""";
         try {
             existEmbeddedServer.executeQuery(query);
         } catch(final XMLDBException e) {
@@ -2951,8 +2994,9 @@ public class XQueryTest {
 
     @Test
     public void exprContainingNodesAndNonNodes() throws XMLDBException, XPathException {
-        final String query = "declare function local:test() { (1,<n/>) };\n" +
-                "local:test()";
+        final String query = """
+                declare function local:test() { (1,<n/>) };
+                local:test()""";
         final ResourceSet result = existEmbeddedServer.executeQuery(query);
 
         assertEquals(2, result.getSize());
@@ -2965,9 +3009,10 @@ public class XQueryTest {
      */
     @Test
     public void multipleExprsContainingNodesAndNonNodes() throws XMLDBException, XPathException {
-        final String query = "declare variable $a := 'a';\n" +
-                "declare function local:test() { (1,<n/>) };\n" +
-                "local:test()";
+        final String query = """
+                declare variable $a := 'a';
+                declare function local:test() { (1,<n/>) };
+                local:test()""";
         final ResourceSet result = existEmbeddedServer.executeQuery(query);
 
         assertEquals(2, result.getSize());

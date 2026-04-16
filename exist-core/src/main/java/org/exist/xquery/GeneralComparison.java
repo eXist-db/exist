@@ -128,14 +128,14 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
         this.relation   = relation;
         this.truncation = truncation;
 
-        if( ( left instanceof PathExpr ) && ( ( ( PathExpr )left ).getLength() == 1 ) ) {
-            left                  = ( ( PathExpr )left ).getExpression( 0 );
+        if( ( left instanceof PathExpr expr ) && ( expr.getLength() == 1 ) ) {
+            left                  = expr.getExpression( 0 );
             didLeftSimplification = true;
         }
         add( left );
 
-        if( ( right instanceof PathExpr ) && ( ( ( PathExpr )right ).getLength() == 1 ) ) {
-            right                  = ( ( PathExpr )right ).getExpression( 0 );
+        if( ( right instanceof PathExpr expr ) && ( expr.getLength() == 1 ) ) {
+            right                  = expr.getExpression( 0 );
             didRightSimplification = true;
         }
         add( right );
@@ -190,7 +190,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
         final List<LocationStep> steps = BasicExpressionVisitor.findLocationSteps( getLeft() );
 
         if( !steps.isEmpty() ) {
-            LocationStep firstStep = steps.get( 0 );
+            LocationStep firstStep = steps.getFirst();
             LocationStep lastStep  = steps.getLast();
 
             if( firstStep != null && steps.size() == 1 && firstStep.getAxis() == Constants.SELF_AXIS) {
@@ -364,7 +364,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
             }
 
             // If key implements org.exist.storage.Indexable, we can use the index
-            if( key instanceof Indexable ) {
+            if( key instanceof Indexable indexable ) {
 
                 if( LOG.isTraceEnabled() ) {
                     LOG.trace("Using QName range index for key: {}", key.getStringValue());
@@ -375,7 +375,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                 final Collator collator   = ( ( collationArg != null ) ? getCollator( contextSequence ) : null );
 
                 if( truncation == StringTruncationOperator.NONE ) {
-                    temp         = context.getBroker().getValueIndex().find(context.getWatchDog(), relation, contextSequence.getDocumentSet(), contextSet, NodeSet.DESCENDANT, contextQName, ( Indexable )key);
+                    temp         = context.getBroker().getValueIndex().find(context.getWatchDog(), relation, contextSequence.getDocumentSet(), contextSet, NodeSet.DESCENDANT, contextQName, indexable);
                     hasUsedIndex = true;
                 } else {
 
@@ -820,7 +820,7 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                 }
 
                 // If key implements org.exist.storage.Indexable, we can use the index
-                if( key instanceof Indexable ) {
+                if( key instanceof Indexable indexable ) {
 
                     if( LOG.isTraceEnabled() ) {
                         LOG.trace("Checking if range index can be used for key: {}", key.getStringValue());
@@ -842,10 +842,10 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
                             NodeSet ns;
 
                             if( indexScan ) {
-                                ns = context.getBroker().getValueIndex().findAll( context.getWatchDog(), relation, docs, nodes, NodeSet.ANCESTOR, ( Indexable )key);
+                                ns = context.getBroker().getValueIndex().findAll( context.getWatchDog(), relation, docs, nodes, NodeSet.ANCESTOR, indexable);
                             } else {
                                 ns = context.getBroker().getValueIndex().find( context.getWatchDog(), relation, docs, nodes, NodeSet.ANCESTOR, myContextQName,
-                                        ( Indexable )key, indexMixed );
+                                        indexable, indexMixed );
                             }
                             hasUsedIndex = true;
 
@@ -1263,10 +1263,10 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 
         String collationURI;
 
-        if( collationArg instanceof Expression ) {
-            collationURI = ( ( Expression )collationArg ).eval(contextSequence, null).getStringValue();
-        } else if( collationArg instanceof StringValue ) {
-            collationURI = ( ( StringValue )collationArg ).getStringValue();
+        if( collationArg instanceof Expression expression ) {
+            collationURI = expression.eval(contextSequence, null).getStringValue();
+        } else if( collationArg instanceof StringValue value ) {
+            collationURI = value.getStringValue();
         } else {
             return( context.getDefaultCollator() );
         }
