@@ -21,6 +21,7 @@
  */
 package org.exist.client.security;
 
+import java.io.Serial;
 import java.util.Iterator;
 import java.util.regex.Pattern;
 import javax.swing.InputVerifier;
@@ -41,6 +42,7 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class UserDialog extends javax.swing.JFrame {
 
+    @Serial
     private static final long serialVersionUID = -7544980948396443454L;
 
     private final Pattern PTN_USERNAME = Pattern.compile("[a-zA-Z0-9\\-\\._@]{3,}");
@@ -504,7 +506,7 @@ public class UserDialog extends javax.swing.JFrame {
     }
     
     private String getUmask() {
-        return String.format("%4s", Integer.toString(Permission.DEFAULT_UMASK, UmaskSpinnerModel.OCTAL_RADIX)).replace(' ', '0');
+        return "%4s".formatted(Integer.toString(Permission.DEFAULT_UMASK, UmaskSpinnerModel.OCTAL_RADIX)).replace(' ', '0');
     }
     
     protected SortedListModel getAvailableGroupsListModel() {

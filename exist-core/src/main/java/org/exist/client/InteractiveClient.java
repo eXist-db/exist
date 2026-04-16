@@ -30,7 +30,6 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -662,7 +661,7 @@ public class InteractiveClient {
                     messageln("please specify a query file.");
                     return true;
                 }
-                try (final BufferedReader reader = Files.newBufferedReader(Paths.get(args[1]))) {
+                try (final BufferedReader reader = Files.newBufferedReader(Path.of(args[1]))) {
                     final StringBuilder buf = new StringBuilder();
                     String nextLine;
                     while ((nextLine = reader.readLine()) != null) {
@@ -760,7 +759,7 @@ public class InteractiveClient {
                     messageln("missing argument.");
                     return true;
                 }
-                final boolean r = parse(Paths.get(args[1]));
+                final boolean r = parse(Path.of(args[1]));
                 getResources();
                 return r;
 
@@ -770,7 +769,7 @@ public class InteractiveClient {
                     messageln("missing argument.");
                     return true;
                 }
-                final boolean r = parseZip(Paths.get(args[1]));
+                final boolean r = parseZip(Path.of(args[1]));
                 getResources();
                 return r;
 
@@ -1133,7 +1132,7 @@ public class InteractiveClient {
         if (options.traceQueriesFile.isPresent()) {
 
             //lazy initialization
-            if (!lazyTraceWriter.isPresent()) {
+            if (lazyTraceWriter.isEmpty()) {
                 try (final Writer traceWriter = Files.newBufferedWriter(options.traceQueriesFile.get(), UTF_8)) {
                     traceWriter.write("<?xml version=\"1.0\"?>" + EOL);
                     traceWriter.write("<query-log>" + EOL);
@@ -1282,7 +1281,7 @@ public class InteractiveClient {
     }
 
     private void storeBinary(final String fileName) throws XMLDBException {
-        final Path file = Paths.get(fileName).normalize();
+        final Path file = Path.of(fileName).normalize();
         if (Files.isReadable(file)) {
             final MimeType mime = MimeTable.getInstance().getContentTypeFor(FileUtils.fileName(file));
             try (final BinaryResource resource = current.createResource(FileUtils.fileName(file), BinaryResource.class)) {
@@ -1314,9 +1313,9 @@ public class InteractiveClient {
                             c = mgtService.createCollection(XmldbURI.xmldbUriFor(FileUtils.fileName(file)));
                         }
 
-                        if (c instanceof Observable && options.verbose) {
+                        if (c instanceof Observable observable && options.verbose) {
                             final ProgressObserver observer = new ProgressObserver();
-                            ((Observable) c).addObserver(observer);
+                            observable.addObserver(observer);
                         }
                         findRecursive(c, file, next);
                     } else {
@@ -1357,9 +1356,9 @@ public class InteractiveClient {
         try {
             // String xml;
 
-            if (current instanceof Observable && options.verbose) {
+            if (current instanceof Observable observable && options.verbose) {
                 final ProgressObserver observer = new ProgressObserver();
-                ((Observable) current).addObserver(observer);
+                observable.addObserver(observer);
             }
 
             List<Path> files = new ArrayList<>();
@@ -1385,7 +1384,7 @@ public class InteractiveClient {
                 directoryScanner.scan();
                 for (final String includedFile : directoryScanner.getIncludedFiles()) {
 //                    files.add(baseDir.resolve(includedFile));
-                    files.add(Paths.get(includedFile));
+                    files.add(Path.of(includedFile));
                 }
             }
 
@@ -1439,9 +1438,9 @@ public class InteractiveClient {
                         mgtService = collection.getService(EXistCollectionManagementService.class);
                         c = mgtService.createCollection(XmldbURI.xmldbUriFor(FileUtils.fileName(file)));
                     }
-                    if (c instanceof Observable && options.verbose) {
+                    if (c instanceof Observable observable && options.verbose) {
                         final ProgressObserver observer = new ProgressObserver();
-                        ((Observable) c).addObserver(observer);
+                        observable.addObserver(observer);
                     }
                     findGZipRecursive(c, file, next);
                 } else {
@@ -1492,11 +1491,11 @@ public class InteractiveClient {
         //TODO : why is this test for ? Fileshould make it, shouldn't it ? -pb
         fileName = fileName.replace('/', java.io.File.separatorChar).replace('\\',
                 java.io.File.separatorChar);
-        final Path file = Paths.get(fileName);
+        final Path file = Path.of(fileName);
         // String xml;
-        if (current instanceof Observable && options.verbose) {
+        if (current instanceof Observable observable && options.verbose) {
             final ProgressObserver observer = new ProgressObserver();
-            ((Observable) current).addObserver(observer);
+            observable.addObserver(observer);
         }
         final List<Path> files;
         if (Files.isReadable(file)) {
@@ -1527,7 +1526,7 @@ public class InteractiveClient {
             files = new ArrayList<>(includedFiles.length);
             for (final String includedFile : includedFiles) {
 //                files.add(baseDir.resolve(includedFile));
-                files.add(Paths.get(includedFile));
+                files.add(Path.of(includedFile));
             }
         }
 
@@ -1583,9 +1582,9 @@ public class InteractiveClient {
      */
     protected synchronized boolean parseZip(final Path zipPath) throws XMLDBException {
         try (final ZipFile zfile = new ZipFile(zipPath.toFile())) {
-            if (current instanceof Observable && options.verbose) {
+            if (current instanceof Observable observable && options.verbose) {
                 final ProgressObserver observer = new ProgressObserver();
-                ((Observable) current).addObserver(observer);
+                observable.addObserver(observer);
             }
 
             final long start0 = System.currentTimeMillis();
@@ -1600,7 +1599,7 @@ public class InteractiveClient {
                 final ZipEntry ze = e.nextElement();
                 final String zeName = ze.getName().replace('\\', '/');
 
-                if (!Paths.get("/db").resolve(zeName).normalize().startsWith(Paths.get("/db"))) {
+                if (!Path.of("/db").resolve(zeName).normalize().startsWith(Path.of("/db"))) {
                     throw new IOException("Detected archive exit attack! zipFile=" + zipPath.toAbsolutePath() + ", entry=" + ze.getName());
                 }
 
@@ -1621,9 +1620,9 @@ public class InteractiveClient {
                         }
                         base = c;
                     }
-                    if (base instanceof Observable && options.verbose) {
+                    if (base instanceof Observable observable && options.verbose) {
                         final ProgressObserver observer = new ProgressObserver();
-                        ((Observable) base).addObserver(observer);
+                        observable.addObserver(observer);
                     }
                     baseStr = currStr.toString();
                     messageln("entering directory " + baseStr);
@@ -1672,8 +1671,8 @@ public class InteractiveClient {
             upload.setVisible(true);
         }
 
-        if (uploadRootCollection instanceof Observable) {
-            ((Observable) uploadRootCollection).addObserver(upload.getObserver());
+        if (uploadRootCollection instanceof Observable observable) {
+            observable.addObserver(upload.getObserver());
         }
         upload.setTotalSize(FileUtils.sizeQuietly(files));
         for (final Path file : files) {
@@ -1683,8 +1682,8 @@ public class InteractiveClient {
             // should replace the lines above
             store(uploadRootCollection, file, upload);
         }
-        if (uploadRootCollection instanceof Observable) {
-            ((Observable) uploadRootCollection).deleteObservers();
+        if (uploadRootCollection instanceof Observable observable) {
+            observable.deleteObservers();
         }
         upload.uploadCompleted();
         return true;
@@ -1734,8 +1733,8 @@ public class InteractiveClient {
 
             // change displayed collection if it's OK
             upload.setCurrentDir(file.toAbsolutePath().toString());
-            if (c instanceof Observable) {
-                ((Observable) c).addObserver(upload.getObserver());
+            if (c instanceof Observable observable) {
+                observable.addObserver(upload.getObserver());
             }
             // maybe a depth or recurs flag could be added here
             final Collection childCollection = c;
@@ -1829,7 +1828,7 @@ public class InteractiveClient {
 
         options.username.ifPresent(username -> props.setProperty(USER, username));
         options.password.ifPresent(password -> props.setProperty(PASSWORD, password));
-        boolean needPassword = options.username.isPresent() && !options.password.isPresent();
+        boolean needPassword = options.username.isPresent() && options.password.isEmpty();
         if (options.useSSL) {
             props.setProperty(SSL_ENABLE, "TRUE");
         }
@@ -1991,8 +1990,8 @@ public class InteractiveClient {
 
                             for (int i = 0; i < maxResults && i < result.getSize(); i++) {
                                 final Resource res = result.getResource(i);
-                                if (res instanceof ExtendedResource) {
-                                    ((ExtendedResource) res).getContentIntoAStream(ps);
+                                if (res instanceof ExtendedResource resource) {
+                                    resource.getContentIntoAStream(ps);
                                 } else {
                                     ps.print(res.getContent().toString());
                                 }
@@ -2001,8 +2000,8 @@ public class InteractiveClient {
                     } else {
                         for (int i = 0; i < maxResults && i < result.getSize(); i++) {
                             final Resource res = result.getResource(i);
-                            if (res instanceof ExtendedResource) {
-                                ((ExtendedResource) res).getContentIntoAStream(System.out);
+                            if (res instanceof ExtendedResource resource) {
+                                resource.getContentIntoAStream(System.out);
                             } else {
                                 consoleOut(String.valueOf(res.getContent()));
                             }
@@ -2099,8 +2098,8 @@ public class InteractiveClient {
             return false;
         }
 
-        historyFile = home.map(h -> h.resolve(".exist_history")).orElse(Paths.get(".exist_history"));
-        queryHistoryFile = home.map(h -> h.resolve(".exist_query_history")).orElse(Paths.get(".exist_query_history"));
+        historyFile = home.map(h -> h.resolve(".exist_history")).orElse(Path.of(".exist_history"));
+        queryHistoryFile = home.map(h -> h.resolve(".exist_query_history")).orElse(Path.of(".exist_query_history"));
         readQueryHistory();
 
         if (interactive) {
@@ -2153,7 +2152,7 @@ public class InteractiveClient {
                     return true;
                 }
 
-            } else if (options.username.isPresent() && !options.password.isPresent()) {
+            } else if (options.username.isPresent() && options.password.isEmpty()) {
                 try {
                     properties.setProperty(PASSWORD, console.readLine("password: ", '*'));
                 } catch (final Exception e) {
@@ -2166,7 +2165,7 @@ public class InteractiveClient {
 
     private void applyDefaultConfig(Optional<Path> home) throws ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
         Optional<Path> configFile = ConfigurationHelper.getFromSystemProperty();
-        if (!configFile.isPresent()) {
+        if (configFile.isEmpty()) {
             final Class<?> cl = Class.forName(properties.getProperty(DRIVER));
             final Field CONF_XML = cl.getDeclaredField("CONF_XML");
             if (CONF_XML != null && home.isPresent()) {
@@ -2593,8 +2592,8 @@ public class InteractiveClient {
 
     private void writeOutputFile(final Path file, final Object data) throws IOException {
         try (final OutputStream os = new BufferedOutputStream(Files.newOutputStream(file))) {
-            if (data instanceof byte[]) {
-                os.write((byte[]) data);
+            if (data instanceof byte[] bytes) {
+                os.write(bytes);
             } else {
                 try (final Writer writer = new OutputStreamWriter(os, Charset.forName(properties.getProperty(ENCODING)))) {
                     writer.write(data.toString());
