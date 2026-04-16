@@ -38,6 +38,7 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.Serial;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Dialog for viewing and editing Indexes in the Admin Client 
@@ -271,26 +272,33 @@ class IndexDialog extends JFrame {
 					if(result == JOptionPane.YES_OPTION)
 					{
 						//reindex collection
-						final Runnable reindexThread = () -> {
-                            try
-                            {
-                                IndexQueryService service = client.current.getService(IndexQueryService.class);
+                        final SwingWorker<Void, Void> reindexWorker = new SwingWorker<>() {
+                            @Override
+                            protected Void doInBackground() throws Exception {
+                                final IndexQueryService service = client.current.getService(IndexQueryService.class);
+                                final ArrayList subCollections = getCollections(client.getCollection((String) cmbCollections.getSelectedItem()), new ArrayList());
 
-                                ArrayList subCollections = getCollections(client.getCollection((String)cmbCollections.getSelectedItem()), new ArrayList());
-
-                                for (Object subCollection : subCollections) {
+                                for (final Object subCollection : subCollections) {
                                     service.reindexCollection(((ResourceDescriptor) subCollection).getName());
                                 }
 
-                                //reindex done
-                                JOptionPane.showMessageDialog(getContentPane(), "Reindex Complete");
+                                return null;
                             }
-                            catch(XMLDBException e)
-                            {
-                                //reindex failed
-                                JOptionPane.showMessageDialog(getContentPane(), "Reindex failed!");
+
+                            @Override
+                            protected void done() {
+                                try {
+                                    get();
+                                    JOptionPane.showMessageDialog(getContentPane(), "Reindex Complete");
+                                } catch (final InterruptedException e) {
+                                    Thread.currentThread().interrupt();
+                                    JOptionPane.showMessageDialog(getContentPane(), "Reindex failed!");
+                                } catch (final ExecutionException e) {
+                                    JOptionPane.showMessageDialog(getContentPane(), "Reindex failed!");
+                                }
                             }
                         };
+                        reindexWorker.execute();
 					}
 				}
 				else
