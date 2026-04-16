@@ -114,10 +114,11 @@ public class PermissionRequiredAspect {
         }
         
         //4) check for acl mode access
-        if(permission instanceof ACLPermission lPermission && permissionRequired.mode() != UNDEFINED) {
-            if((permissionRequired.mode() & ACL_WRITE) == ACL_WRITE && lPermission.isCurrentSubjectCanWriteACL()) {
-                return;
-            }
+        if(permission instanceof ACLPermission lPermission
+                && permissionRequired.mode() != UNDEFINED
+                && (permissionRequired.mode() & ACL_WRITE) == ACL_WRITE
+                && lPermission.isCurrentSubjectCanWriteACL()) {
+            return;
         }
 
         throw new PermissionDeniedException("You do not have appropriate access rights to modify permissions on this object");
