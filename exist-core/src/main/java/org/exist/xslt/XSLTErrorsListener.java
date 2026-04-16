@@ -35,7 +35,7 @@ public abstract class XSLTErrorsListener<E extends Exception> implements ErrorLi
   private static final Logger LOG = LogManager.getLogger(XSLTErrorsListener.class);
 
   private enum ErrorType {
-    WARNING, ERROR, FATAL;
+    WARNING, ERROR, FATAL
   }
 
   private final boolean stopOnError;
