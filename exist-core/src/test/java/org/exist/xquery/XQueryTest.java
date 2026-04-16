@@ -97,7 +97,7 @@ public class XQueryTest {
     private static final String CHILD1_MODULE_NAME = "child1.xqm";
     private static final String CHILD2_MODULE_NAME = "child2.xqm";
     private static final String NAMESPACED_NAME = "namespaced.xml";
-    private final static String URI = XmldbURI.LOCAL_DB;
+    private static final String LOCAL_DB_URI = XmldbURI.LOCAL_DB;
     private final static String numbers =
             "<test>" + "<item id='1'><price>5.6</price><stock>22</stock></item>" + "<item id='2'><price>7.4</price><stock>43</stock></item>" + "<item id='3'><price>18.4</price><stock>5</stock></item>" + "<item id='4'><price>65.54</price><stock>16</stock></item>" + "</test>";
     private final static String module1 =
@@ -115,9 +115,14 @@ public class XQueryTest {
             module namespace foo="foo";
             declare variable $bar:bar := "bar";\
             """;
-    private final static String module4 =
-            "module namespace foo=\"foo\";\n" //An external prefix in the statically known namespaces
-            + "declare variable $exist:bar external;\n" + "declare function foo:bar() {\n" + "$exist:bar\n" + "};";
+    private static final String module4 =
+            """
+            module namespace foo="foo";
+            declare variable $exist:bar external;
+            declare function foo:bar() {
+            $exist:bar
+            };
+            """;
     private final static String module5 =
             """
             module namespace foo="foo";
@@ -145,12 +150,27 @@ public class XQueryTest {
             };\
             """;
     
-    private final static String fatherModule =
-            "module namespace foo=\"foo\";\n" + "import module namespace foo1=\"foo1\" at \"" + URI + "/test/" + CHILD1_MODULE_NAME + "\";\n" + "import module namespace foo2=\"foo2\" at \"" + URI + "/test/" + CHILD2_MODULE_NAME + "\";\n" + "declare variable $foo:bar := \"bar\";\n " + "declare variable $foo:bar1 := $foo1:bar;\n" + "declare variable $foo:bar2 := $foo2:bar;\n";
-    private final static String child1Module =
-            "module namespace foo=\"foo1\";\n" + "import module namespace blah=\"blah\" at \"" + URI + "/test/" + MODULE1_NAME + "\";\n" + "declare variable $foo:bar := \"bar1\";";
-    private final static String child2Module =
-            "module namespace foo=\"foo2\";\n" + "import module namespace blah=\"blah\" at \"" + URI + "/test/" + MODULE1_NAME + "\";\n" + "declare variable $foo:bar := \"bar2\";";
+    private static final String fatherModule =
+            """
+            module namespace foo="foo";
+            import module namespace foo1="foo1" at "%s/test/%s";
+            import module namespace foo2="foo2" at "%s/test/%s";
+            declare variable $foo:bar := "bar";
+            declare variable $foo:bar1 := $foo1:bar;
+            declare variable $foo:bar2 := $foo2:bar;
+            """.formatted(LOCAL_DB_URI, CHILD1_MODULE_NAME, LOCAL_DB_URI, CHILD2_MODULE_NAME);
+    private static final String child1Module =
+            """
+            module namespace foo="foo1";
+            import module namespace blah="blah" at "%s/test/%s";
+            declare variable $foo:bar := "bar1";
+            """.formatted(LOCAL_DB_URI, MODULE1_NAME);
+    private static final String child2Module =
+            """
+            module namespace foo="foo2";
+            import module namespace blah="blah" at "%s/test/%s";
+            declare variable $foo:bar := "bar2";
+            """.formatted(LOCAL_DB_URI, MODULE1_NAME);
     private final static String namespacedDocument =
             """
             <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
@@ -421,30 +441,61 @@ public class XQueryTest {
 
         XPathQueryService service =
                 storeXMLStringAndGetQueryService(NUMBERS_XML, numbers);
-        query = "xquery version \"1.0\";\n" + "declare namespace param=\"param\";\n" + "declare variable $param:a := \"a\";\n" + "declare function param:a() {$param:a};\n" + "let $param:a := \"b\" \n" + "return ($param:a, $param:a)";
+        query = """
+                xquery version "1.0";
+                declare namespace param="param";
+                declare variable $param:a := "a";
+                declare function param:a() {$param:a};
+                let $param:a := "b"
+                return ($param:a, $param:a)
+                """;
         result = service.query(query);
         assertEquals("XQuery: " + query, 2, result.getSize());
         assertEquals("XQuery: " + query, "b", result.getResource(0).getContent());
         assertEquals("XQuery: " + query, "b", result.getResource(1).getContent());
-        query = "xquery version \"1.0\";\n" + "declare namespace param=\"param\";\n" + "declare variable $param:a := \"a\";\n" + "declare function param:a() {$param:a};\n" + "let $param:a := \"b\" \n" + "return param:a(), param:a()";
+        query = """
+                xquery version "1.0";
+                declare namespace param="param";
+                declare variable $param:a := "a";
+                declare function param:a() {$param:a};
+                let $param:a := "b"
+                return param:a(), param:a()
+                """;
         result = service.query(query);
         assertEquals("XQuery: " + query, 2, result.getSize());
         assertEquals("XQuery: " + query, "a", result.getResource(0).getContent());
         assertEquals("XQuery: " + query, "a", result.getResource(1).getContent());
-        query = "declare variable $foo := \"foo1\";\n" + "let $foo := \"foo2\" \n" + "for $bar in (1 to 1) \n" + "  let $foo := \"foo3\" \n" + "  return $foo";
+        query = """
+                declare variable $foo := "foo1";
+                let $foo := "foo2"
+                for $bar in (1 to 1)
+                  let $foo := "foo3"
+                  return $foo
+                """;
         result = service.query(query);
         assertEquals("XQuery: " + query, 1, result.getSize());
         assertEquals("XQuery: " + query, "foo3", result.getResource(0).getContent());
 
         try {
             message = "";
-            query = "xquery version \"1.0\";\n" + "declare variable $a := \"1st instance\";\n" + "declare variable $a := \"2nd instance\";\n" + "$a";
+            query = """
+                    xquery version "1.0";
+                    declare variable $a := "1st instance";
+                    declare variable $a := "2nd instance";
+                    $a
+                    """;
             result = service.query(query);
         } catch (XMLDBException e) {
             message = e.getMessage();
         }
         assertTrue(message.indexOf("XQST0049") > -1);
-        query = "xquery version \"1.0\";\n" + "declare namespace param=\"param\";\n" + "declare function param:f() { $param:a };\n" + "declare variable $param:a := \"a\";\n" + "param:f()";
+        query = """
+                xquery version "1.0";
+                declare namespace param="param";
+                declare function param:f() { $param:a };
+                declare variable $param:a := "a";
+                param:f()
+                """;
         result = service.query(query);
         assertEquals("XQuery: " + query, 1, result.getSize());
         assertEquals("XQuery: " + query, "a", result.getResource(0).getContent());
@@ -549,7 +600,12 @@ public class XQueryTest {
 
         XPathQueryService service =
                 storeXMLStringAndGetQueryService(NUMBERS_XML, numbers);
-        query = "let $v as element()* := ( <assign/> , <assign/> )\n" + "let $w := <r>{ $v }</r>\n" + "let $x as element()* := $w/assign\n" + "return $x";
+        query = """
+                let $v as element()* := ( <assign/> , <assign/> )
+                let $w := <r>{ $v }</r>
+                let $x as element()* := $w/assign
+                return $x
+                """;
         result = service.query(query);
         assertEquals("XQuery: " + query, 2, result.getSize());
         assertEquals("XQuery: " + query, Node.ELEMENT_NODE, ((XMLResource) result.getResource(0)).getContentAsDOM().getNodeType());
@@ -587,7 +643,11 @@ public class XQueryTest {
             message = e.getMessage();
         }
         assertTrue(exceptionThrown);
-        query = "let $v as item()* := ( <a/> , 1 )\n" + "let $w as element()* := $v\n" + "return $w";
+        query = """
+                let $v as item()* := ( <a/> , 1 )
+                let $w as element()* := $v
+                return $w
+                """;
         try {
             exceptionThrown = false;
             result = service.query(query);
@@ -597,7 +657,12 @@ public class XQueryTest {
             message = e.getMessage();
         }
         assertTrue(exceptionThrown);
-        query = "declare variable $v as element()* := ( <assign/> , <assign/> );\n" + "declare variable $w := <r>{ $v }</r>;\n" + "declare variable $x as element()* := $w/assign;\n" + "$x";
+        query = """
+                declare variable $v as element()* := ( <assign/> , <assign/> );
+                declare variable $w := <r>{ $v }</r>;
+                declare variable $x as element()* := $w/assign;
+                $x
+                """;
         result = service.query(query);
         assertEquals("XQuery: " + query, 2, result.getSize());
         assertEquals("XQuery: " + query, Node.ELEMENT_NODE, ((XMLResource) result.getResource(0)).getContentAsDOM().getNodeType());
@@ -635,7 +700,11 @@ public class XQueryTest {
             message = e.getMessage();
         }
         assertTrue(exceptionThrown);
-        query = "declare variable $v as item()* := ( <a/> , 1 );\n" + "declare variable $w as element()* := $v;\n" + "$w";
+        query = """
+                declare variable $v as item()* := ( <a/> , 1 );
+                declare variable $w as element()* := $v;
+                $w
+                """;
         try {
             exceptionThrown = false;
             result = service.query(query);
@@ -644,7 +713,10 @@ public class XQueryTest {
             message = e.getMessage();
         }
         assertTrue(exceptionThrown);
-        query = "let $v as document-node() :=  doc('" + XmldbURI.ROOT_COLLECTION + "/test/" + NUMBERS_XML + "') \n" + "return $v";
+        query = """
+                let $v as document-node() := doc('%s/test/%s')
+                return $v
+                """.formatted(XmldbURI.ROOT_COLLECTION, NUMBERS_XML);
         result = service.query(query);
         assertEquals("XQuery: " + query, 1, result.getSize());
         //TODO : no way to test the node type ?
@@ -663,7 +735,14 @@ public class XQueryTest {
 
         XPathQueryService service =
                 storeXMLStringAndGetQueryService(NUMBERS_XML, numbers);
-        query = "xquery version \"1.0\";\n" + "declare namespace blah=\"blah\";\n" + "declare variable $blah:param := \"value-1\";\n" + "let $blah:param := \"value-2\"\n" + "(:: FLWOR expressions have a higher precedence than the comma operator ::)\n" + "return $blah:param, $blah:param ";
+        query = """
+                xquery version "1.0";
+                declare namespace blah="blah";
+                declare variable $blah:param := "value-1";
+                let $blah:param := "value-2"
+                (:: FLWOR expressions have a higher precedence than the comma operator ::)
+                return $blah:param, $blah:param
+                """;
         result = service.query(query);
         assertEquals("XQuery: " + query, 2, result.getSize());
         assertEquals("XQuery: " + query, "value-2", result.getResource(0).getContent());
@@ -850,7 +929,13 @@ public class XQueryTest {
 
         XPathQueryService service =
                 testCollection.getService(XPathQueryService.class);
-        query = "xquery version \"1.0\";\n" + "import module namespace blah=\"blah\" at \"" + URI + "/test/" + MODULE1_NAME + "\";\n" + "(:: redefine existing prefix ::)\n" + "declare namespace blah=\"bla\";\n" + "$blah:param";
+        query = """
+                xquery version "1.0";
+                import module namespace blah="blah" at "%s/test/%s";
+                (:: redefine existing prefix ::)
+                declare namespace blah="bla";
+                $blah:param
+                """.formatted(LOCAL_DB_URI, MODULE1_NAME);
         try {
             message = "";
             result = service.query(query);
@@ -858,7 +943,14 @@ public class XQueryTest {
             message = e.getMessage();
         }
         assertTrue(message.indexOf("XQST0033") > -1);
-        query = "xquery version \"1.0\";\n" + "import module namespace blah=\"blah\" at \"" + URI + "/test/" + MODULE1_NAME + "\";\n" + "(:: redefine existing prefix with same getUri ::)\n" + "declare namespace blah=\"blah\";\n" + "declare variable $blah:param := \"value-2\";\n" + "$blah:param";
+        query = """
+                xquery version "1.0";
+                import module namespace blah="blah" at "%s/test/%s";
+                (:: redefine existing prefix with same getUri ::)
+                declare namespace blah="blah";
+                declare variable $blah:param := "value-2";
+                $blah:param
+                """.formatted(LOCAL_DB_URI, MODULE1_NAME);
         try {
             message = "";
             result = service.query(query);
@@ -866,7 +958,11 @@ public class XQueryTest {
             message = e.getMessage();
         }
         assertTrue(message.indexOf("XQST0033") > -1);
-        query = "xquery version \"1.0\";\n" + "import module namespace foo=\"ho\" at \"" + URI + "/test/" + MODULE1_NAME + "\";\n" + "$foo:bar";
+        query = """
+                xquery version "1.0";
+                import module namespace foo="ho" at "%s/test/%s";
+                $foo:bar
+                """.formatted(LOCAL_DB_URI, MODULE1_NAME);
         try {
             message = "";
             result = service.query(query);
@@ -878,7 +974,11 @@ public class XQueryTest {
         // XQuery 3.1 section 4.18 (XQST0088: zero-length target namespace literal).
         // The error originates while compiling the imported module, regardless of
         // the prefix or URI used in the importing module's `import module` clause.
-        query = "xquery version \"1.0\";\n" + "import module namespace foo=\"ho\" at \"" + URI + "/test/" + MODULE2_NAME + "\";\n" + "$bar";
+        query = """
+                xquery version "1.0";
+                import module namespace foo="ho" at "%s/test/%s";
+                $bar
+                """.formatted(LOCAL_DB_URI, MODULE2_NAME);
         try {
             message = "";
             result = service.query(query);
@@ -887,7 +987,11 @@ public class XQueryTest {
         }
         assertTrue("Expected XQST0088 for empty module namespace literal, got: " + message,
                 message.indexOf("XQST0088") > -1);
-        query = "xquery version \"1.0\";\n" + "import module namespace foo=\"blah\" at \"" + URI + "/test/" + MODULE2_NAME + "\";\n" + "$bar";
+        query = """
+                xquery version "1.0";
+                import module namespace foo="blah" at "%s/test/%s";
+                $bar
+                """.formatted(LOCAL_DB_URI, MODULE2_NAME);
         try {
             message = "";
             result = service.query(query);
@@ -1032,7 +1136,11 @@ public class XQueryTest {
         XPathQueryService service =
                 testCollection.getService(
                 XPathQueryService.class);
-        query = "xquery version \"1.0\";\n" + "import module namespace blah=\"blah\" at \"" + URI + "/test/" + MODULE1_NAME + "\";\n" + "$blah:param";
+        query = """
+                xquery version "1.0";
+                import module namespace blah="blah" at "%s/test/%s";
+                $blah:param
+                """.formatted(LOCAL_DB_URI, MODULE1_NAME);
         result = service.query(query);
         assertEquals("XQuery: " + query, 1, result.getSize());
         assertEquals("XQuery: " + query, "value-1", result.getResource(0).getContent());
@@ -1045,11 +1153,20 @@ public class XQueryTest {
 //                message = e.getMessage();
 //            }
 //            assertTrue(message.indexOf("XQST0049") > -1);
-        query = "xquery version \"1.0\";\n" + "import module namespace blah=\"blah\" at \"" + URI + "/test/" + MODULE1_NAME + "\";\n" + "declare namespace blah2=\"blah\";\n" + "$blah2:param";
+        query = """
+                xquery version "1.0";
+                import module namespace blah="blah" at "%s/test/%s";
+                declare namespace blah2="blah";
+                $blah2:param
+                """.formatted(LOCAL_DB_URI, MODULE1_NAME);
         result = service.query(query);
         assertEquals("XQuery: " + query, 1, result.getSize());
         assertEquals("XQuery: " + query, "value-1", result.getResource(0).getContent());
-        query = "xquery version \"1.0\";\n" + "import module namespace blah=\"bla\" at \"" + URI + "/test/" + MODULE1_NAME + "\";\n" + "$blah:param";
+        query = """
+                xquery version "1.0";
+                import module namespace blah="bla" at "%s/test/%s";
+                $blah:param
+                """.formatted(LOCAL_DB_URI, MODULE1_NAME);
         try {
             message = "";
             result = service.query(query);
@@ -1057,7 +1174,11 @@ public class XQueryTest {
             message = e.getMessage();
         }
         assertTrue(message.indexOf("does not match namespace URI") > -1);
-        query = "xquery version \"1.0\";\n" + "import module namespace foo=\"foo\" at \"" + URI + "/test/" + FATHER_MODULE_NAME + "\";\n" + "$foo:bar, $foo:bar1, $foo:bar2";
+        query = """
+                xquery version "1.0";
+                import module namespace foo="foo" at "%s/test/%s";
+                $foo:bar, $foo:bar1, $foo:bar2
+                """.formatted(LOCAL_DB_URI, FATHER_MODULE_NAME);
         result = service.query(query);
         assertEquals("XQuery: " + query, 3, result.getSize());
         assertEquals("XQuery: " + query, "bar", result.getResource(0).getContent());
@@ -1065,7 +1186,12 @@ public class XQueryTest {
         assertEquals("XQuery: " + query, "bar2", result.getResource(2).getContent());
 
 //			Non-transitive inheritance check
-        query = "xquery version \"1.0\";\n" + "import module namespace foo=\"foo\" at \"" + URI + "/test/" + FATHER_MODULE_NAME + "\";\n" + "declare namespace foo1=\"foo1\"; \n" + "$foo1:bar";
+        query = """
+                xquery version "1.0";
+                import module namespace foo="foo" at "%s/test/%s";
+                declare namespace foo1="foo1";
+                $foo1:bar
+                """.formatted(LOCAL_DB_URI, FATHER_MODULE_NAME);
         try {
             message = "";
             result = service.query(query);
@@ -1075,7 +1201,12 @@ public class XQueryTest {
         assertTrue(message.indexOf("XPST0008") > -1);
 
 //			Non-transitive inheritance check
-        query = "xquery version \"1.0\";\n" + "import module namespace foo=\"foo\" at \"" + URI + "/test/" + FATHER_MODULE_NAME + "\";\n" + "declare namespace foo2=\"foo2\"; \n" + "$foo2:bar";
+        query = """
+                xquery version "1.0";
+                import module namespace foo="foo" at "%s/test/%s";
+                declare namespace foo2="foo2";
+                $foo2:bar
+                """.formatted(LOCAL_DB_URI, FATHER_MODULE_NAME);
         try {
             message = "";
             result = service.query(query);
@@ -1083,7 +1214,12 @@ public class XQueryTest {
             message = e.getMessage();
         }
         assertTrue(message.indexOf("XPST0008") > -1);
-        query = "xquery version \"1.0\";\n" + "import module namespace foo1=\"foo\" at \"" + URI + "/test/" + CHILD1_MODULE_NAME + "\";\n" + "import module namespace foo2=\"foo\" at \"" + URI + "/test/" + CHILD1_MODULE_NAME + "\";\n" + "$foo1:bar";
+        query = """
+                xquery version "1.0";
+                import module namespace foo1="foo" at "%s/test/%s";
+                import module namespace foo2="foo" at "%s/test/%s";
+                $foo1:bar
+                """.formatted(LOCAL_DB_URI, CHILD1_MODULE_NAME, LOCAL_DB_URI, CHILD1_MODULE_NAME);
         try {
             message = "";
             result = service.query(query);
@@ -1092,7 +1228,11 @@ public class XQueryTest {
         }
 //			Should be a XQST0047 error
         assertTrue(message.indexOf("does not match namespace URI") > -1);
-        query = "xquery version \"1.0\";\n" + "import module namespace foo=\"foo\" at \"" + URI + "/test/" + MODULE3_NAME + "\";\n" + "$bar:bar";
+        query = """
+                xquery version "1.0";
+                import module namespace foo="foo" at "%s/test/%s";
+                $bar:bar
+                """.formatted(LOCAL_DB_URI, MODULE3_NAME);
         try {
             message = "";
             result = service.query(query);
@@ -1100,7 +1240,11 @@ public class XQueryTest {
             message = e.getMessage();
         }
         assertTrue(message.indexOf("No namespace defined for prefix") > -1);
-        query = "xquery version \"1.0\";\n" + "import module namespace foo=\"foo\" at \"" + URI + "/test/" + MODULE4_NAME + "\";\n" + "foo:bar()";
+        query = """
+                xquery version "1.0";
+                import module namespace foo="foo" at "%s/test/%s";
+                foo:bar()
+                """.formatted(LOCAL_DB_URI, MODULE4_NAME);
         try {
             message = "";
             result = service.query(query);
@@ -1125,22 +1269,22 @@ public class XQueryTest {
 
         XPathQueryService service = testCollection.getService(XPathQueryService.class);
         service.setProperty(OutputKeys.INDENT, "no");
-        String query = "xquery version \"1.0\";\n" +
-                "import module namespace foo=\"foo\" at \"" + URI + "/test/" + MODULE7_NAME + "\";\n" +
-                "<div xmlns='http://www.w3.org/1999/xhtml'>" +
-                "{ foo:link() }" +
-                "</div>";
+        String query = """
+                xquery version "1.0";
+                import module namespace foo="foo" at "%s/test/%s";
+                <div xmlns='http://www.w3.org/1999/xhtml'>{ foo:link() }</div>
+                """.formatted(LOCAL_DB_URI, MODULE7_NAME);
         ResourceSet result = service.query(query);
         assertEquals(1, result.getSize());
         result.getResource(0).getContent();
         assertXMLEqual("<div xmlns='http://www.w3.org/1999/xhtml'><a xmlns=\"\" href='#'>Link</a></div>",
                 result.getResource(0).getContent().toString());
 
-        query = "xquery version \"1.0\";\n" +
-                "import module namespace foo=\"foo\" at \"" + URI + "/test/" + MODULE7_NAME + "\";\n" +
-                "<div xmlns='http://www.w3.org/1999/xhtml'>" +
-                "{ foo:copy(<a>Link</a>) }" +
-                "</div>";
+        query = """
+                xquery version "1.0";
+                import module namespace foo="foo" at "%s/test/%s";
+                <div xmlns='http://www.w3.org/1999/xhtml'>{ foo:copy(<a>Link</a>) }</div>
+                """.formatted(LOCAL_DB_URI, MODULE7_NAME);
         result = service.query(query);
         assertEquals(1, result.getSize());
         result.getResource(0).getContent();
@@ -1239,12 +1383,14 @@ public class XQueryTest {
 
         XPathQueryService service = testCollection.getService(XPathQueryService.class);
         service.setProperty(OutputKeys.INDENT, "no");
-        String query = "import module namespace dr = \"double-root2\" at \"" + URI + "/test/" + MODULE8_NAME + "\";\n"
-                +"let $doc1 := dr:documentIn() \n"
-                +"let $count1 := count($doc1/element()) \n"
-                +"let $doc2 := dr:documentIn() \n"
-                +"let $count2 := count($doc2/element()) \n"
-                +"return ($count1, $count2) \n";
+        String query = """
+                import module namespace dr = "double-root2" at "%s/test/%s";
+                let $doc1 := dr:documentIn()
+                let $count1 := count($doc1/element())
+                let $doc2 := dr:documentIn()
+                let $count2 := count($doc2/element())
+                return ($count1, $count2)
+                """.formatted(LOCAL_DB_URI, MODULE8_NAME);
 
         ResourceSet result = service.query(query);
         assertEquals(2, result.getSize());
@@ -1265,7 +1411,11 @@ public class XQueryTest {
         ((EXistResource) doc).setMimeType("application/xquery");
         testCollection.storeResource(doc);
         XQueryService service = (XQueryService) testCollection.getService(XPathQueryService.class);
-        String query = "xquery version \"1.0\";\n" + "import module namespace foo=\"foo\" at \"" + URI + "/test/" + MODULE5_NAME + "\";\n" + "$foo:bar";
+        String query = """
+                xquery version "1.0";
+                import module namespace foo="foo" at "%s/test/%s";
+                $foo:bar
+                """.formatted(LOCAL_DB_URI, MODULE5_NAME);
         ResourceSet result = service.query(query);
         assertEquals(result.getSize(), 1);
         assertEquals(result.getResource(0).getContent(), "bar");
@@ -1275,7 +1425,11 @@ public class XQueryTest {
         assertEquals(result.getResource(0).getContent(), "abc");
         boolean gotException = false;
         try {
-            query = "xquery version \"1.0\";\n" + "import module namespace foo=\"foo\" at \"" + URI + "/test/" + MODULE6_NAME + "\";\n" + "$foo:bar";
+            query = """
+                    xquery version "1.0";
+                    import module namespace foo="foo" at "%s/test/%s";
+                    $foo:bar
+                    """.formatted(LOCAL_DB_URI, MODULE6_NAME);
             result = service.query(query);
         } catch (XMLDBException e) {
             assertTrue("Test should generate err:XQST0049, got: " + e.getMessage(), e.getMessage().indexOf("err:XQST0049") > -1);
