@@ -38,7 +38,6 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -84,80 +83,80 @@ public class JournalTest {
 
     @Test
     public void journalFileNum() {
-        assertEquals(0, Journal.journalFileNum(Paths.get("0000000000.log")));
-        assertEquals(1, Journal.journalFileNum(Paths.get("0000000001.log")));
-        assertEquals(2, Journal.journalFileNum(Paths.get("0000000002.log")));
-        assertEquals(10, Journal.journalFileNum(Paths.get("000000000a.log")));
-        assertEquals(11, Journal.journalFileNum(Paths.get("000000000b.log")));
-        assertEquals(20, Journal.journalFileNum(Paths.get("0000000014.log")));
-        assertEquals(21, Journal.journalFileNum(Paths.get("0000000015.log")));
-        assertEquals(30, Journal.journalFileNum(Paths.get("000000001e.log")));
-        assertEquals(31, Journal.journalFileNum(Paths.get("000000001f.log")));
+        assertEquals(0, Journal.journalFileNum(Path.of("0000000000.log")));
+        assertEquals(1, Journal.journalFileNum(Path.of("0000000001.log")));
+        assertEquals(2, Journal.journalFileNum(Path.of("0000000002.log")));
+        assertEquals(10, Journal.journalFileNum(Path.of("000000000a.log")));
+        assertEquals(11, Journal.journalFileNum(Path.of("000000000b.log")));
+        assertEquals(20, Journal.journalFileNum(Path.of("0000000014.log")));
+        assertEquals(21, Journal.journalFileNum(Path.of("0000000015.log")));
+        assertEquals(30, Journal.journalFileNum(Path.of("000000001e.log")));
+        assertEquals(31, Journal.journalFileNum(Path.of("000000001f.log")));
 
-        assertEquals(Short.MAX_VALUE - 1, Journal.journalFileNum(Paths.get("0000007ffe.log")));
-        assertEquals(Short.MAX_VALUE, Journal.journalFileNum(Paths.get("0000007fff.log")));
+        assertEquals(Short.MAX_VALUE - 1, Journal.journalFileNum(Path.of("0000007ffe.log")));
+        assertEquals(Short.MAX_VALUE, Journal.journalFileNum(Path.of("0000007fff.log")));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void journalFileNumWithPathShortMinValueRaisesException() {
-        final String fileName = String.format("%010x", Short.MIN_VALUE) + '.' + Journal.LOG_FILE_SUFFIX;
-        Journal.journalFileNum(Paths.get(fileName));
+        final String fileName = "%010x".formatted(Short.MIN_VALUE) + '.' + Journal.LOG_FILE_SUFFIX;
+        Journal.journalFileNum(Path.of(fileName));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void journalFileNumWithPathMinusOneRaisesException() {
-        final String fileName = String.format("%010x", -1) + '.' + Journal.LOG_FILE_SUFFIX;
-        Journal.journalFileNum(Paths.get(fileName));
+        final String fileName = "%010x".formatted(-1) + '.' + Journal.LOG_FILE_SUFFIX;
+        Journal.journalFileNum(Path.of(fileName));
     }
 
     @Test
     public void findLastFile() {
         try (final Stream<Path> paths = Stream.of(
-                Paths.get(Journal.getFileName((short)1)),
-                Paths.get(Journal.getFileName((short)31)),
-                Paths.get(Journal.getFileName((short)11)),
-                Paths.get(Journal.getFileName((short)10)),
-                Paths.get(Journal.getFileName((short)2)),
-                Paths.get(Journal.getFileName(Short.MAX_VALUE)),
-                Paths.get(Journal.getFileName((short)20)),
-                Paths.get(Journal.getFileName((short)(Short.MAX_VALUE - 1))),
-                Paths.get(Journal.getFileName((short)21)),
-                Paths.get(Journal.getFileName((short)30))
+                Path.of(Journal.getFileName((short)1)),
+                Path.of(Journal.getFileName((short)31)),
+                Path.of(Journal.getFileName((short)11)),
+                Path.of(Journal.getFileName((short)10)),
+                Path.of(Journal.getFileName((short)2)),
+                Path.of(Journal.getFileName(Short.MAX_VALUE)),
+                Path.of(Journal.getFileName((short)20)),
+                Path.of(Journal.getFileName((short)(Short.MAX_VALUE - 1))),
+                Path.of(Journal.getFileName((short)21)),
+                Path.of(Journal.getFileName((short)30))
         )) {
             assertEquals(Short.MAX_VALUE, Journal.findLastFile(paths));
         }
 
         try (final Stream<Path> paths = Stream.of(
-                Paths.get(Journal.getFileName((short)1)),
-                Paths.get(Journal.getFileName((short)31)),
-                Paths.get(Journal.getFileName((short)11)),
-                Paths.get(Journal.getFileName((short)10)),
-                Paths.get(Journal.getFileName((short)2)),
-                Paths.get(Journal.getFileName((short)20)),
-                Paths.get(Journal.getFileName((short)(Short.MAX_VALUE - 1))),
-                Paths.get(Journal.getFileName((short)21)),
-                Paths.get(Journal.getFileName((short)30))
+                Path.of(Journal.getFileName((short)1)),
+                Path.of(Journal.getFileName((short)31)),
+                Path.of(Journal.getFileName((short)11)),
+                Path.of(Journal.getFileName((short)10)),
+                Path.of(Journal.getFileName((short)2)),
+                Path.of(Journal.getFileName((short)20)),
+                Path.of(Journal.getFileName((short)(Short.MAX_VALUE - 1))),
+                Path.of(Journal.getFileName((short)21)),
+                Path.of(Journal.getFileName((short)30))
         )) {
             assertEquals(Short.MAX_VALUE - 1, Journal.findLastFile(paths));
         }
 
         try (final Stream<Path> paths = Stream.of(
-                Paths.get(Journal.getFileName((short)1)),
-                Paths.get(Journal.getFileName((short)11)),
-                Paths.get(Journal.getFileName((short)2))
+                Path.of(Journal.getFileName((short)1)),
+                Path.of(Journal.getFileName((short)11)),
+                Path.of(Journal.getFileName((short)2))
         )) {
             assertEquals(11, Journal.findLastFile(paths));
         }
 
         try (final Stream<Path> paths = Stream.of(
-                Paths.get(Journal.getFileName((short)1))
+                Path.of(Journal.getFileName((short)1))
         )) {
             assertEquals(1, Journal.findLastFile(paths));
         }
 
         try (final Stream<Path> paths = Stream.of(
-                Paths.get(Journal.getFileName((short)111)),
-                Paths.get(Journal.getFileName((short)1))
+                Path.of(Journal.getFileName((short)111)),
+                Path.of(Journal.getFileName((short)1))
         )) {
             assertEquals(111, Journal.findLastFile(paths));
         }
