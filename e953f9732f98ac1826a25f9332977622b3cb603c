@@ -1,0 +1,31 @@
+exist-core/src/main/java/org/exist/xquery/JavaCall.java
+  8be28f47155c9a3c 238-239,244,266-267,272,291-296
+exist-core/src/main/java/org/exist/xquery/functions/fn/FunOnFunctions.java
+  8be28f47155c9a3c 110-111,113
+exist-core/src/main/java/org/exist/storage/BrokerPools.java
+  8be28f47155c9a3c 181-184,188
+exist-core/src/main/java/org/exist/xquery/functions/transform/Transform.java
+  8be28f47155c9a3c 395-396
+exist-core/src/main/java/org/exist/xmlrpc/RpcServlet.java
+  8be28f47155c9a3c 106,118-127
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.0",
+  "base_commit_sha": "e953f9732f98ac1826a25f9332977622b3cb603c",
+  "prompts": {
+    "8be28f47155c9a3c": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "2d5cbdb8-0a14-45eb-8faf-1f5fd1a8cb1e",
+        "model": "default"
+      },
+      "human_author": "duncdrum",
+      "messages": [],
+      "total_additions": 220,
+      "total_deletions": 193,
+      "accepted_lines": 199,
+      "overriden_lines": 0
+    }
+  }
+}
