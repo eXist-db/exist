@@ -37,6 +37,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -663,7 +664,7 @@ public class Configurator {
      * @return The Configurable or null
      */
     private static Configurable create(final Configuration conf, final Configurable instance, final Class<?> clazz) {
-        boolean interrupted = false;
+        final AtomicBoolean interrupted = new AtomicBoolean(false);
         try {
             final MethodHandles.Lookup lookup = MethodHandles.lookup();
             Configurable obj = null;
@@ -676,31 +677,20 @@ public class Configurator {
                                         methodHandle.type().erase(), methodHandle, methodHandle.type()).getTarget().invokeExact();
 
                 obj = constructor.apply(instance, conf);
-            } catch (final Throwable e) {
-                if (e instanceof InterruptedException) {
-                    interrupted = true;
-                }
+            } catch (final InterruptedException e) {
+                interrupted.set(true);
 
                 if(LOG.isDebugEnabled()) {
                     LOG.debug("Unable to invoke Constructor on Configurable instance '{}', so creating new Constructor...", e.getMessage());
                 }
 
-                try {
-                    final MethodHandle methodHandle = lookup.findConstructor(clazz, methodType(void.class, Configuration.class));
-                    final Function<Configuration, Configurable> constructor =
-                            (Function<Configuration, Configurable>)
-                                    LambdaMetafactory.metafactory(
-                                            lookup, "apply", methodType(Function.class),
-                                            methodHandle.type().erase(), methodHandle, methodHandle.type()).getTarget().invokeExact();
-                    obj = constructor.apply(conf);
-                } catch (final Throwable ee) {
-                    if (ee instanceof InterruptedException) {
-                        interrupted = true;
-                    }
-
-                    LOG.warn("Instantiation exception on {} creation '{}', skipping instance creation.", clazz, ee.getMessage());
-                    LOG.debug(e.getMessage(), ee);
+                obj = tryConfigurationOnlyConstructor(lookup, clazz, conf, e, interrupted);
+            } catch (final Throwable e) {
+                if(LOG.isDebugEnabled()) {
+                    LOG.debug("Unable to invoke Constructor on Configurable instance '{}', so creating new Constructor...", e.getMessage());
                 }
+
+                obj = tryConfigurationOnlyConstructor(lookup, clazz, conf, e, interrupted);
             }
             
             if (obj == null) {
@@ -735,10 +725,37 @@ public class Configurator {
 
             return null;
         } finally {
-            if (interrupted) {
+            if (interrupted.get()) {
                 // NOTE: must set interrupted flag
                 Thread.currentThread().interrupt();
             }
+        }
+    }
+
+    private static Configurable tryConfigurationOnlyConstructor(
+            final MethodHandles.Lookup lookup,
+            final Class<?> clazz,
+            final Configuration conf,
+            final Throwable outerFailure,
+            final AtomicBoolean interrupted) {
+        try {
+            final MethodHandle methodHandle = lookup.findConstructor(clazz, methodType(void.class, Configuration.class));
+            final Function<Configuration, Configurable> constructor =
+                    (Function<Configuration, Configurable>)
+                            LambdaMetafactory.metafactory(
+                                    lookup, "apply", methodType(Function.class),
+                                    methodHandle.type().erase(), methodHandle, methodHandle.type()).getTarget().invokeExact();
+            return constructor.apply(conf);
+        } catch (final InterruptedException ee) {
+            interrupted.set(true);
+
+            LOG.warn("Instantiation exception on {} creation '{}', skipping instance creation.", clazz, ee.getMessage());
+            LOG.debug(outerFailure.getMessage(), ee);
+            return null;
+        } catch (final Throwable ee) {
+            LOG.warn("Instantiation exception on {} creation '{}', skipping instance creation.", clazz, ee.getMessage());
+            LOG.debug(outerFailure.getMessage(), ee);
+            return null;
         }
     }
 

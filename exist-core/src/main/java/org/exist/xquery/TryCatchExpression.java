@@ -146,99 +146,10 @@ public class TryCatchExpression extends AbstractExpression {
             final Sequence tryTargetSeq = tryTargetExpr.eval(contextSequence, contextItem);
             return tryTargetSeq;
 
-        } catch (final Throwable throwable) { 
-
-            final ErrorCode errorCode;
-
-            // fn:error throws an XPathException
-            if(throwable instanceof XPathException xpe){
-                // Get errorcode from nicely thrown xpathexception
-
-                if(xpe.getErrorCode() != null) {
-                    if(xpe.getErrorCode() == ErrorCodes.ERROR) {
-                        errorCode = extractErrorCode(xpe);
-                    } else {
-                        errorCode = xpe.getErrorCode();
-                    }
-                } else {
-                    // if no errorcode is found, reconstruct by parsing the error text.
-                    errorCode = extractErrorCode(xpe);
-                }
-            } else {
-                // Get errorcode from all other errors and exceptions
-                errorCode = new JavaErrorCode(throwable);
-            }
-
-            // We need the qname in the end
-            final QName errorCodeQname = errorCode.getErrorQName();
-
-            // Exception in thrown, catch expression will be evaluated.
-            // catchvars (CatchErrorCode (, CatchErrorDesc (, CatchErrorVal)?)? )
-            // need to be retrieved as variables
-            Sequence catchResultSeq = null;
-            final LocalVariable mark0 = context.markLocalVariables(false); // DWES: what does this do?
-
-            // DWES: should I use popLocalVariables
-            context.declareInScopeNamespace(Namespaces.W3C_XQUERY_XPATH_ERROR_PREFIX, Namespaces.W3C_XQUERY_XPATH_ERROR_NS);
-            context.declareInScopeNamespace(Namespaces.EXIST_XQUERY_XPATH_ERROR_PREFIX, Namespaces.EXIST_XQUERY_XPATH_ERROR_NS);
-            
-            //context.declareInScopeNamespace(null, null);
-
-            try {
-                // flag used to escape loop when errorcode has matched
-                boolean errorMatched = false;
-
-                // Iterate on all catch clauses
-                for (final CatchClause catchClause : catchClauses) {
-                    
-                    if (isErrorInList(errorCodeQname, catchClause.getCatchErrorList()) && !errorMatched) {
-
-                        errorMatched = true;
-
-                        // Get catch variables
-                        final LocalVariable mark1 = context.markLocalVariables(false); // DWES: what does this do?
-                        
-                        try {  
-                            // Add std errors
-                            addErrCode(errorCodeQname);                          
-                            addErrDescription(throwable, errorCode);
-                            addErrValue(throwable);
-                            addErrModule(throwable);
-                            addErrLineNumber(throwable);
-                            addErrColumnNumber(throwable);
-                            addErrAdditional(throwable);
-                            addFunctionTrace(throwable);
-                            addJavaTrace(throwable);
-
-                            // Evaluate catch expression
-                            catchResultSeq = ((Expression) catchClause.getCatchExpr()).eval(contextSequence, contextItem);
-                            
-                            
-                        } finally {
-                            context.popLocalVariables(mark1, catchResultSeq);
-                        }
-
-                    } else {
-                        // if in the end nothing is set, rethrow after loop
-                    }
-                } // for catch clauses
-
-                // If an error hasn't been caught, throw new one
-                if (!errorMatched) {
-                    if (throwable instanceof XPathException) {
-                        throw throwable;
-                    } else {
-                        LOG.error(throwable);
-                        throw new XPathException(this, throwable);
-                    }
-                }
-
-            } finally {
-                context.popLocalVariables(mark0, catchResultSeq);
-            }
-
-            return catchResultSeq;
-
+        } catch (final XPathException xpe) {
+            return evalCatchClauses(contextSequence, contextItem, xpe, errorCodeForCaughtXPathException(xpe));
+        } catch (final Throwable throwable) {
+            return evalCatchClauses(contextSequence, contextItem, throwable, new JavaErrorCode(throwable));
         } finally {
             context.expressionEnd(this);
         }
@@ -384,6 +295,96 @@ public class TryCatchExpression extends AbstractExpression {
             dumper.nl().display("}");
             dumper.endIndent();
         }
+    }
+
+    private ErrorCode errorCodeForCaughtXPathException(final XPathException xpe) throws XPathException {
+        // fn:error throws an XPathException — get error code from a well-formed XPathException
+        if (xpe.getErrorCode() != null) {
+            if (xpe.getErrorCode() == ErrorCodes.ERROR) {
+                return extractErrorCode(xpe);
+            }
+            return xpe.getErrorCode();
+        }
+
+        // if no errorcode is found, reconstruct by parsing the error text.
+        return extractErrorCode(xpe);
+    }
+
+    private Sequence evalCatchClauses(
+            final Sequence contextSequence,
+            final Item contextItem,
+            final Throwable throwable,
+            final ErrorCode errorCode) throws XPathException {
+
+        // We need the qname in the end
+        final QName errorCodeQname = errorCode.getErrorQName();
+
+        // Exception in thrown, catch expression will be evaluated.
+        // catchvars (CatchErrorCode (, CatchErrorDesc (, CatchErrorVal)?)? )
+        // need to be retrieved as variables
+        Sequence catchResultSeq = null;
+        final LocalVariable mark0 = context.markLocalVariables(false); // DWES: what does this do?
+
+        // DWES: should I use popLocalVariables
+        context.declareInScopeNamespace(Namespaces.W3C_XQUERY_XPATH_ERROR_PREFIX, Namespaces.W3C_XQUERY_XPATH_ERROR_NS);
+        context.declareInScopeNamespace(Namespaces.EXIST_XQUERY_XPATH_ERROR_PREFIX, Namespaces.EXIST_XQUERY_XPATH_ERROR_NS);
+
+        //context.declareInScopeNamespace(null, null);
+
+        try {
+            // flag used to escape loop when errorcode has matched
+            boolean errorMatched = false;
+
+            // Iterate on all catch clauses
+            for (final CatchClause catchClause : catchClauses) {
+
+                if (isErrorInList(errorCodeQname, catchClause.getCatchErrorList()) && !errorMatched) {
+
+                    errorMatched = true;
+
+                    // Get catch variables
+                    final LocalVariable mark1 = context.markLocalVariables(false); // DWES: what does this do?
+
+                    try {
+                        // Add std errors
+                        addErrCode(errorCodeQname);
+                        addErrDescription(throwable, errorCode);
+                        addErrValue(throwable);
+                        addErrModule(throwable);
+                        addErrLineNumber(throwable);
+                        addErrColumnNumber(throwable);
+                        addErrAdditional(throwable);
+                        addFunctionTrace(throwable);
+                        addJavaTrace(throwable);
+
+                        // Evaluate catch expression
+                        catchResultSeq = ((Expression) catchClause.getCatchExpr()).eval(contextSequence, contextItem);
+
+
+                    } finally {
+                        context.popLocalVariables(mark1, catchResultSeq);
+                    }
+
+                } else {
+                    // if in the end nothing is set, rethrow after loop
+                }
+            } // for catch clauses
+
+            // If an error hasn't been caught, throw new one
+            if (!errorMatched) {
+                if (throwable instanceof XPathException xpe) {
+                    throw xpe;
+                }
+
+                LOG.error(throwable);
+                throw new XPathException(this, throwable);
+            }
+
+        } finally {
+            context.popLocalVariables(mark0, catchResultSeq);
+        }
+
+        return catchResultSeq;
     }
 
     /**

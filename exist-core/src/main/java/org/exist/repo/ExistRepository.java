@@ -206,10 +206,7 @@ public class ExistRepository extends Observable implements BrokerPoolService {
                 return clazz.newInstance();
             }
         } catch (final Throwable e) {
-            if (e instanceof InterruptedException) {
-                // NOTE: must set interrupted flag
-                Thread.currentThread().interrupt();
-            }
+            restoreInterruptIfInterruptedException(e);
 
             final String msg = "Unable to instantiate module from EXPath" +
                     "repository: " + clazz.getName();
@@ -218,6 +215,13 @@ public class ExistRepository extends Observable implements BrokerPoolService {
             LOG.error(e.getMessage(), e);
 
             throw new XPathException((Expression) null, msg, e);
+        }
+    }
+
+    private static void restoreInterruptIfInterruptedException(final Throwable t) {
+        if (t instanceof InterruptedException) {
+            // NOTE: must set interrupted flag
+            Thread.currentThread().interrupt();
         }
     }
 

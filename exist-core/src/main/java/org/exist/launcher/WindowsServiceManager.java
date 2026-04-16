@@ -144,10 +144,11 @@ class WindowsServiceManager implements ServiceManager {
                 LOG.error("Could not install service, exitCode={}, output='{}'", exitCode, result);
                 throw new ServiceManagerException("Could not install service, exitCode=" + exitCode + ", output='" + result + "'");
             }
-        } catch (final IOException | InterruptedException e) {
-            if (e instanceof InterruptedException) {
-                Thread.currentThread().interrupt();
-            }
+        } catch (final InterruptedException e) {
+            Thread.currentThread().interrupt();
+            LOG.error("Could not install service: {}", e.getMessage(), e);
+            throw new ServiceManagerException("Could not install service: " + e.getMessage(), e);
+        } catch (final IOException e) {
             LOG.error("Could not install service: {}", e.getMessage(), e);
             throw new ServiceManagerException("Could not install service: " + e.getMessage(), e);
         }
@@ -187,10 +188,11 @@ class WindowsServiceManager implements ServiceManager {
                 LOG.error("Could not uninstall service, exitCode={}, output='{}'", exitCode, result);
                 throw new ServiceManagerException("Could not uninstall service, exitCode=" + exitCode + ", output='" + result + "'");
             }
-        } catch (final IOException | InterruptedException e) {
-            if (e instanceof InterruptedException) {
-                Thread.currentThread().interrupt();
-            }
+        } catch (final InterruptedException e) {
+            Thread.currentThread().interrupt();
+            LOG.error("Could not uninstall service: {}", e.getMessage(), e);
+            throw new ServiceManagerException("Could not uninstall service: " + e.getMessage(), e);
+        } catch (final IOException e) {
             LOG.error("Could not uninstall service: {}", e.getMessage(), e);
             throw new ServiceManagerException("Could not uninstall service: " + e.getMessage(), e);
         }
@@ -218,10 +220,11 @@ class WindowsServiceManager implements ServiceManager {
                 LOG.error("Could not start service, exitCode={}, output='{}'", exitCode, result);
                 throw new ServiceManagerException("Could not start service, exitCode=" + exitCode + ", output='" + result + "'");
             }
-        } catch (final IOException | InterruptedException e) {
-            if (e instanceof InterruptedException) {
-                Thread.currentThread().interrupt();
-            }
+        } catch (final InterruptedException e) {
+            Thread.currentThread().interrupt();
+            LOG.error("Could not start service: {}", e.getMessage(), e);
+            throw new ServiceManagerException("Could not start service: " + e.getMessage(), e);
+        } catch (final IOException e) {
             LOG.error("Could not start service: {}", e.getMessage(), e);
             throw new ServiceManagerException("Could not start service: " + e.getMessage(), e);
         }
@@ -259,10 +262,11 @@ class WindowsServiceManager implements ServiceManager {
                 LOG.error("Could not stop service, exitCode={}, output='{}'", exitCode, result);
                 throw new ServiceManagerException("Could not stop service, exitCode=" + exitCode + ", output='" + result + "'");
             }
-        } catch (final IOException | InterruptedException e) {
-            if (e instanceof InterruptedException) {
-                Thread.currentThread().interrupt();
-            }
+        } catch (final InterruptedException e) {
+            Thread.currentThread().interrupt();
+            LOG.error("Could not stop service: {}", e.getMessage(), e);
+            throw new ServiceManagerException("Could not stop service: " + e.getMessage(), e);
+        } catch (final IOException e) {
             LOG.error("Could not stop service: {}", e.getMessage(), e);
             throw new ServiceManagerException("Could not stop service: " + e.getMessage(), e);
         }
@@ -324,10 +328,10 @@ class WindowsServiceManager implements ServiceManager {
 
             throw new ServiceManagerException("Could not determine service status, exitCode=" + exitCode + ", output='" + result + "'");
 
-        } catch (final IOException | InterruptedException e) {
-            if (e instanceof InterruptedException) {
-                Thread.currentThread().interrupt();
-            }
+        } catch (final InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new ServiceManagerException(e);
+        } catch (final IOException e) {
             throw new ServiceManagerException(e);
         }
     }
