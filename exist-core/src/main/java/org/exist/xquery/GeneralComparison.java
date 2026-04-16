@@ -128,17 +128,19 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
         this.relation   = relation;
         this.truncation = truncation;
 
-        if( ( left instanceof PathExpr expr ) && ( expr.getLength() == 1 ) ) {
-            left                  = expr.getExpression( 0 );
+        Expression leftExpr = left;
+        if( ( leftExpr instanceof PathExpr expr ) && ( expr.getLength() == 1 ) ) {
+            leftExpr              = expr.getExpression( 0 );
             didLeftSimplification = true;
         }
-        add( left );
+        add( leftExpr );
 
-        if( ( right instanceof PathExpr expr ) && ( expr.getLength() == 1 ) ) {
-            right                  = expr.getExpression( 0 );
+        Expression rightExpr = right;
+        if( ( rightExpr instanceof PathExpr expr ) && ( expr.getLength() == 1 ) ) {
+            rightExpr              = expr.getExpression( 0 );
             didRightSimplification = true;
         }
-        add( right );
+        add( rightExpr );
 
         //TODO : should we also use simplify() here ? -pb
         if( didLeftSimplification ) {

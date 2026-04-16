@@ -94,11 +94,12 @@ public interface ResolverFactory {
      * @return The sanitized Catalog URI string
      */
     static String sanitizeCatalogUri(String strCatalogUri) {
-        if (strCatalogUri.indexOf('\\') > -1) {
+        String sanitizedCatalogUri = strCatalogUri;
+        if (sanitizedCatalogUri.indexOf('\\') > -1) {
             // convert from Windows file path
-            strCatalogUri = Path.of(strCatalogUri).toUri().toString();
+            sanitizedCatalogUri = Path.of(sanitizedCatalogUri).toUri().toString();
         }
-        return strCatalogUri;
+        return sanitizedCatalogUri;
     }
 
     /**

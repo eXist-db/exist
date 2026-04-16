@@ -47,11 +47,14 @@ public class HighlightedTableCellRenderer<T extends AbstractTableModel> extends 
      */
     @Override
     public Component getTableCellRendererComponent(final JTable table, Object value, final boolean isSelected, final boolean hasFocus, final int row, final int column) {
-        if(value instanceof XmldbURI rI) {
-            value = new PrettyXmldbURI(rI);
+        final Object renderValue;
+        if (value instanceof XmldbURI rI) {
+            renderValue = new PrettyXmldbURI(rI);
+        } else {
+            renderValue = value;
         }
-        
-        final Component renderer = super.getTableCellRendererComponent(table, value, isSelected,hasFocus, row, column);
+
+        final Component renderer = super.getTableCellRendererComponent(table, renderValue, isSelected,hasFocus, row, column);
         
         if(renderer instanceof JCheckBox box) {
             box.setOpaque(true);
