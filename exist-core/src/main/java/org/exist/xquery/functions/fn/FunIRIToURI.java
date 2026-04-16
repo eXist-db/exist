@@ -42,39 +42,44 @@ public class FunIRIToURI extends Function {
 
 	protected static final String FUNCTION_DESCRIPTION =
 
-		"This function converts an xs:string containing an " +
-		"IRI into a URI according to the rules spelled out " +
-		"in Section 3.1 of [RFC 3987]. It is idempotent but " + 
-		"not invertible.\n\n" +
-		"If $iri contains a character that is invalid in an " +
-		"IRI, such as the space character (see note below), " + 
-		"the invalid character is replaced by its percent-encoded " +
-		"form as described in [RFC 3986] before the conversion is performed.\n\n" +
-		"If $iri is the empty sequence, returns the zero-length string.\n\n" +
-		"Since [RFC 3986] recommends that, for consistency, " + 
-		"URI producers and normalizers should use uppercase " +
-		"hexadecimal digits for all percent-encodings, this " +
-		"function must always generate hexadecimal values " +
-		"using the upper-case letters A-F.\n\n" +
-		"Notes:\n\n" +
+		"""
+This function converts an xs:string containing an \
+IRI into a URI according to the rules spelled out \
+in Section 3.1 of [RFC 3987]. It is idempotent but \
+not invertible.
 
-		"This function does not check whether $iri is a legal " +
-		"IRI. It treats it as an xs:string and operates on " + 
-		"the characters in the xs:string.\n\n" +
+If $iri contains a character that is invalid in an \
+IRI, such as the space character (see note below), \
+the invalid character is replaced by its percent-encoded \
+form as described in [RFC 3986] before the conversion is performed.
 
-		"The following printable ASCII characters are invalid " +
-		"in an IRI: \"<\", \">\", \" \" \" (double quote), " +
-		"space, \"{\", \"}\", \"|\", \"\\\", \"^\", and \"`\". " +
-		"Since these characters should not appear in an IRI, " +
-		"if they do appear in $iri they will be percent-encoded. " +
-		"In addition, characters outside the range x20-x126 " +
-		"will be percent-encoded because they are invalid in a URI.\n\n" +
+If $iri is the empty sequence, returns the zero-length string.
 
-		"Since this function does not escape the PERCENT SIGN " +
-		"\"%\" and this character is not allowed in data within " +
-		"a URI, users wishing to convert character strings, " +
-		"such as file names, that include \"%\" to a URI " +
-		"should manually escape \"%\" by replacing it with \"%25\".";
+Since [RFC 3986] recommends that, for consistency, \
+URI producers and normalizers should use uppercase \
+hexadecimal digits for all percent-encodings, this \
+function must always generate hexadecimal values \
+using the upper-case letters A-F.
+
+Notes:
+
+This function does not check whether $iri is a legal \
+IRI. It treats it as an xs:string and operates on \
+the characters in the xs:string.
+
+The following printable ASCII characters are invalid \
+in an IRI: "<", ">", " " " (double quote), \
+space, "{", "}", "|", "\\", "^", and "`". \
+Since these characters should not appear in an IRI, \
+if they do appear in $iri they will be percent-encoded. \
+In addition, characters outside the range x20-x126 \
+will be percent-encoded because they are invalid in a URI.
+
+Since this function does not escape the PERCENT SIGN \
+"%" and this character is not allowed in data within \
+a URI, users wishing to convert character strings, \
+such as file names, that include "%" to a URI \
+should manually escape "%" by replacing it with "%25".""";
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(

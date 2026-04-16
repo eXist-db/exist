@@ -60,55 +60,61 @@ public class ForwardReferenceTest {
 
     private static final XmldbURI CONFIG_MODULE_NAME = XmldbURI.create("config.xqm");
     private static final InputSource CONFIG_MODULE = new StringInputSource(
-            ("xquery version \"3.1\";\n" +
-            "module namespace config = \"http://example.com/config\";\n" +
-            "\n" +
-            "import module namespace pages = \"http://example.com/pages\" at \"pages.xqm\";\n" +
-            "\n" +
-            "declare variable $config:PUBLICATIONS := map {\n" +
-            "    \"short-title\" : \"My Non-default Short Title\"\n" +
-            "};\n" +
-            "\n" +
-            "declare variable $config:OPEN_GRAPH as map(xs:string, function(*)) := map {\n" +
-            "    \"og:type\" : function($node, $model) {\n" +
-            "        <meta property=\"og:type\" content=\"website\"/>\n" +
-            "    },\n" +
-            "    \"og:title\": function($node, $model) {\n" +
-            "        <meta property=\"og:title\" content=\"{pages:generate-short-title($node, $model)}\"/>\n" +
-            "    }\n" +
-            "};").getBytes(UTF_8));
+            ("""
+            xquery version "3.1";
+            module namespace config = "http://example.com/config";
+            
+            import module namespace pages = "http://example.com/pages" at "pages.xqm";
+            
+            declare variable $config:PUBLICATIONS := map {
+                "short-title" : "My Non-default Short Title"
+            };
+            
+            declare variable $config:OPEN_GRAPH as map(xs:string, function(*)) := map {
+                "og:type" : function($node, $model) {
+                    <meta property="og:type" content="website"/>
+                },
+                "og:title": function($node, $model) {
+                    <meta property="og:title" content="{pages:generate-short-title($node, $model)}"/>
+                }
+            };\
+            """).getBytes(UTF_8));
     private static XmldbURI CONFIG_MODULE_URI = null;
 
     private static final XmldbURI PAGES_MODULE_NAME = XmldbURI.create("pages.xqm");
     private static final InputSource PAGES_MODULE = new StringInputSource(
-            ("xquery version \"3.1\";\n" +
-            "module namespace pages = \"http://example.com/pages\";\n" +
-            "\n" +
-            "import module namespace config = \"http://example.com/config\" at \"config.xqm\";\n" +
-            "\n" +
-            "declare function pages:generate-short-title($node, $model) as xs:string? {\n" +
-            "    (   \n" +
-            "         $config:PUBLICATIONS?short-title,\n" +
-            "        'My Default Short Title'\n" +
-            "    )[. ne ''][1]\n" +
-            "};").getBytes(UTF_8));
+            ("""
+            xquery version "3.1";
+            module namespace pages = "http://example.com/pages";
+            
+            import module namespace config = "http://example.com/config" at "config.xqm";
+            
+            declare function pages:generate-short-title($node, $model) as xs:string? {
+                (  \s
+                     $config:PUBLICATIONS?short-title,
+                    'My Default Short Title'
+                )[. ne ''][1]
+            };\
+            """).getBytes(UTF_8));
     private static XmldbURI PAGES_MODULE_URI = null;
 
     private static final XmldbURI TEST_PAGES_MODULE_NAME = XmldbURI.create("test-pages.xqm");
     private static final InputSource TEST_PAGES_MODULE = new StringInputSource(
-            ("xquery version \"3.1\";\n" +
-            "module namespace test-pages = \"http://example.com/test-pages\";\n" +
-            "\n" +
-            "import module namespace pages = \"http://example.com/pages\" at \"pages.xqm\";\n" +
-            "import module namespace config = \"http://example.com/config\" at \"config.xqm\";\n" +
-            "\n" +
-            "declare namespace test = \"http://exist-db.org/xquery/xqsuite\";\n" +
-            "\n" +
-            "declare\n" +
-            "    %test:assertEquals(\"My Non-default Short Title\")\n" +
-            "function test-pages:generate-short-title-default() {\n" +
-            "    pages:generate-short-title((),())\n" +
-            "};\n").getBytes(UTF_8));
+            ("""
+            xquery version "3.1";
+            module namespace test-pages = "http://example.com/test-pages";
+            
+            import module namespace pages = "http://example.com/pages" at "pages.xqm";
+            import module namespace config = "http://example.com/config" at "config.xqm";
+            
+            declare namespace test = "http://exist-db.org/xquery/xqsuite";
+            
+            declare
+                %test:assertEquals("My Non-default Short Title")
+            function test-pages:generate-short-title-default() {
+                pages:generate-short-title((),())
+            };
+            """).getBytes(UTF_8));
     private static XmldbURI TEST_PAGES_MODULE_URI = null;
 
     @BeforeClass

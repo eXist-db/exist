@@ -42,13 +42,15 @@ public class SelfImportCircularDependencyIntegrationTest extends AbstractClassIn
     private static String XQUERY_FILENAME = "mod1.xqm";
 
     private static String STAGE1_XQUERY =
-            "xquery version \"3.1\";\n" +
-            "\n" +
-            "module namespace test = \"test\";\n" +
-            "\n" +
-            "declare function test:f1() {\n" +
-            "    <f1/>\n" +
-            "};";
+            """
+            xquery version "3.1";
+            
+            module namespace test = "test";
+            
+            declare function test:f1() {
+                <f1/>
+            };\
+            """;
 
     private static String STAGE2_XQUERY =
             "xquery version \"3.1\";\n" +

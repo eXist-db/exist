@@ -88,9 +88,10 @@ public class Issue4074IndexKeysServletContextTest {
             + "</test>";
 
     private static final String INDEX_KEYS_QUERY =
-            "import module namespace range = \"http://exist-db.org/xquery/range\" "
-                    + "at \"java:org.exist.xquery.modules.range.RangeIndexModule\";\n"
-                    + "range:index-keys-for-field(\"elem-field\", function($key, $nums) { $key }, 100)";
+            """
+            import module namespace range = "http://exist-db.org/xquery/range" \
+            at "java:org.exist.xquery.modules.range.RangeIndexModule";
+            range:index-keys-for-field("elem-field", function($key, $nums) { $key }, 100)""";
 
     @ClassRule
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);

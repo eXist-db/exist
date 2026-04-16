@@ -58,10 +58,11 @@ public class ReindexTest {
     private static final XmldbURI DOCUMENT_WITH_CHILD_NODES_NAME = XmldbURI.create("doc-child-nodes.xml");
 
     private static final String DOCUMENT_WITH_CHILD_NODES_XML =
-            "<?some-pi?>\n" +
-                    "<!-- 1 --><!-- 2 -->\n" +
-                    "<n/>\n" +
-                    "<!-- 3 -->";
+            """
+            <?some-pi?>
+            <!-- 1 --><!-- 2 -->
+            <n/>
+            <!-- 3 -->""";
 
     private static final XmldbURI ELEMENT_WITH_CHILD_NODES_COLLECTION = XmldbURI.create("/db/reindex-element-child-nodes-test");
     private static final XmldbURI ELEMENT_WITH_CHILD_NODES_NAME = XmldbURI.create("elem-child-nodes.xml");

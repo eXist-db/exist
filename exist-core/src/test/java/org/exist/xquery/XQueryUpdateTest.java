@@ -66,14 +66,15 @@ public class XQueryUpdateTest {
 
             XQuery xquery = pool.getXQueryService();
             String query =
-            	"   declare variable $i external;\n" +
-            	"	update insert\n" +
-            	"		<product id='id{$i}' num='{$i}'>\n" +
-            	"			<description>Description {$i}</description>\n" +
-            	"			<price>{$i + 1.0}</price>\n" +
-            	"			<stock>{$i * 10}</stock>\n" +
-            	"		</product>\n" +
-            	"	into /products";
+            	"""
+                   declare variable $i external;
+                	update insert
+                		<product id='id{$i}' num='{$i}'>
+                			<description>Description {$i}</description>
+                			<price>{$i + 1.0}</price>
+                			<stock>{$i * 10}</stock>
+                		</product>
+                	into /products""";
             XQueryContext context = new XQueryContext(pool);
             CompiledXQuery compiled = xquery.compile(context, query);
             for (int i = 0; i < ITEMS_TO_APPEND; i++) {
@@ -109,10 +110,11 @@ public class XQueryUpdateTest {
 
             XQuery xquery = pool.getXQueryService();
             String query =
-            	"   declare variable $i external;\n" +
-            	"	update insert\n" +
-            	"		attribute name { concat('n', $i) }\n" +
-            	"	into //product[@num = $i]";
+            	"""
+                   declare variable $i external;
+                	update insert
+                		attribute name { concat('n', $i) }
+                	into //product[@num = $i]""";
             XQueryContext context = new XQueryContext(pool);
             CompiledXQuery compiled = xquery.compile(context, query);
             for (int i = 0; i < ITEMS_TO_APPEND; i++) {
@@ -155,13 +157,14 @@ public class XQueryUpdateTest {
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             String query =
-                    "   update insert\n" +
-                            "       <product id='original'>\n" +
-                            "           <description>Description</description>\n" +
-                            "           <price>0</price>\n" +
-                            "           <stock>10</stock>\n" +
-                            "       </product>\n" +
-                            "   into /products";
+                    """
+                       update insert
+                           <product id='original'>
+                               <description>Description</description>
+                               <price>0</price>
+                               <stock>10</stock>
+                           </product>
+                       into /products""";
 
             XQuery xquery = pool.getXQueryService();
             xquery.execute(broker, query, null);
@@ -170,14 +173,15 @@ public class XQueryUpdateTest {
             assertEquals(1, seq.getItemCount());
 
             query =
-                "   declare variable $i external;\n" +
-                "   update insert\n" +
-                "       <product id='id{$i}'>\n" +
-                "           <description>Description {$i}</description>\n" +
-                "           <price>{$i + 1.0}</price>\n" +
-                "           <stock>{$i * 10}</stock>\n" +
-                "       </product>\n" +
-                "   preceding /products/product[1]";
+                """
+                   declare variable $i external;
+                   update insert
+                       <product id='id{$i}'>
+                           <description>Description {$i}</description>
+                           <price>{$i + 1.0}</price>
+                           <stock>{$i * 10}</stock>
+                       </product>
+                   preceding /products/product[1]""";
             XQueryContext context = new XQueryContext(pool);
             CompiledXQuery compiled = xquery.compile(context, query);
             for (int i = 0; i < ITEMS_TO_APPEND; i++) {
@@ -209,13 +213,14 @@ public class XQueryUpdateTest {
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
             String query =
-                    "   update insert\n" +
-                            "       <product id='original'>\n" +
-                            "           <description>Description</description>\n" +
-                            "           <price>0</price>\n" +
-                            "           <stock>10</stock>\n" +
-                            "       </product>\n" +
-                            "   into /products";
+                    """
+                       update insert
+                           <product id='original'>
+                               <description>Description</description>
+                               <price>0</price>
+                               <stock>10</stock>
+                           </product>
+                       into /products""";
 
             XQuery xquery = pool.getXQueryService();
             xquery.execute(broker, query, null);
@@ -224,14 +229,15 @@ public class XQueryUpdateTest {
             assertEquals(1, seq.getItemCount());
 
             query =
-                "   declare variable $i external;\n" +
-                "   update insert\n" +
-                "       <product id='id{$i}'>\n" +
-                "           <description>Description {$i}</description>\n" +
-                "           <price>{$i + 1.0}</price>\n" +
-                "           <stock>{$i * 10}</stock>\n" +
-                "       </product>\n" +
-                "   following /products/product[1]";
+                """
+                   declare variable $i external;
+                   update insert
+                       <product id='id{$i}'>
+                           <description>Description {$i}</description>
+                           <price>{$i + 1.0}</price>
+                           <stock>{$i * 10}</stock>
+                       </product>
+                   following /products/product[1]""";
             XQueryContext context = new XQueryContext(pool);
             CompiledXQuery compiled = xquery.compile(context, query);
             for (int i = 0; i < ITEMS_TO_APPEND; i++) {
@@ -268,10 +274,11 @@ public class XQueryUpdateTest {
             XQuery xquery = pool.getXQueryService();
 
             String query =
-            	"declare option exist:output-size-limit '-1';\n" +
-            	"for $prod at $i in //product return\n" +
-                "	update value $prod/description\n" +
-                "	with 'Updated Description ' || $i";
+            	"""
+                declare option exist:output-size-limit '-1';
+                for $prod at $i in //product return
+                	update value $prod/description
+                	with 'Updated Description ' || $i""";
             Sequence seq = xquery.execute(broker, query, null);
 
             seq = xquery.execute(broker, "count(//product[starts-with(description, 'Updated')])", null);
@@ -298,10 +305,11 @@ public class XQueryUpdateTest {
             assertEquals(1, seq.getItemCount());
 
             query =
-                    "declare option exist:output-size-limit '-1';\n" +
-                            "for $prod in //product return\n" +
-                            "	update value $prod/stock\n" +
-                            "	with (<local>10</local>,<external>1</external>)";
+                    """
+                    declare option exist:output-size-limit '-1';
+                    for $prod in //product return
+                    	update value $prod/stock
+                    	with (<local>10</local>,<external>1</external>)""";
             seq = xquery.execute(broker, query, null);
 
             seq = xquery.execute(broker, "//product/stock/external[. cast as xs:integer eq 1]", null);
@@ -319,8 +327,10 @@ public class XQueryUpdateTest {
             XQuery xquery = pool.getXQueryService();
 
         	String query =
-        		"for $prod in //product return\n" +
-        		"	update delete $prod\n";
+        		"""
+                for $prod in //product return
+                	update delete $prod
+                """;
         	Sequence seq = xquery.execute(broker, query, null);
 
         	seq = xquery.execute(broker, "//product", null);
@@ -340,16 +350,20 @@ public class XQueryUpdateTest {
             XQuery xquery = pool.getXQueryService();
 
             String query =
-            	"for $prod in //product return\n" +
-            	"	update rename $prod/description as 'desc'\n";
+            	"""
+                for $prod in //product return
+                	update rename $prod/description as 'desc'
+                """;
             Sequence seq = xquery.execute(broker, query, null);
 
             seq = xquery.execute(broker, "//product/desc", null);
             assertEquals(seq.getItemCount(), ITEMS_TO_APPEND);
 
             query =
-            	"for $prod in //product return\n" +
-            	"	update rename $prod/@num as 'count'\n";
+            	"""
+                for $prod in //product return
+                	update rename $prod/@num as 'count'
+                """;
             seq = xquery.execute(broker, query, null);
 
             seq = xquery.execute(broker, "//product/@count", null);
@@ -369,24 +383,30 @@ public class XQueryUpdateTest {
             XQuery xquery = pool.getXQueryService();
 
             String query =
-            	"for $prod in //product return\n" +
-            	"	update replace $prod/description with <desc>An updated description.</desc>\n";
+            	"""
+                for $prod in //product return
+                	update replace $prod/description with <desc>An updated description.</desc>
+                """;
             Sequence seq = xquery.execute(broker, query, null);
 
             seq = xquery.execute(broker, "//product/desc", null);
             assertEquals(seq.getItemCount(), ITEMS_TO_APPEND);
 
             query =
-            	"for $prod in //product return\n" +
-            	"	update replace $prod/@num with '1'\n";
+            	"""
+                for $prod in //product return
+                	update replace $prod/@num with '1'
+                """;
             seq = xquery.execute(broker, query, null);
 
             seq = xquery.execute(broker, "//product/@num", null);
             assertEquals(seq.getItemCount(), ITEMS_TO_APPEND);
 
             query =
-            	"for $prod in //product return\n" +
-            	"	update replace $prod/desc/text() with 'A new update'\n";
+            	"""
+                for $prod in //product return
+                	update replace $prod/desc/text() with 'A new update'
+                """;
             seq = xquery.execute(broker, query, null);
 
             seq = xquery.execute(broker, "//product[starts-with(desc, 'A new')]", null);
@@ -401,13 +421,14 @@ public class XQueryUpdateTest {
             store(broker, "test.xml", UPDATE_XML);
 
             String query =
-                    "let $progress := /progress\n" +
-                    "for $i in 1 to 100\n" +
-                    "let $done := $progress/@done\n" +
-                    "return (\n" +
-                    "   update value $done with xs:int($done + 1),\n" +
-                    "   xs:int(/progress/@done)\n" +
-                    ")";
+                    """
+                    let $progress := /progress
+                    for $i in 1 to 100
+                    let $done := $progress/@done
+                    return (
+                       update value $done with xs:int($done + 1),
+                       xs:int(/progress/@done)
+                    )""";
             XQuery xquery = pool.getXQueryService();
             @SuppressWarnings("unused")
 			Sequence result = xquery.execute(broker, query, null);
@@ -421,11 +442,12 @@ public class XQueryUpdateTest {
 
             XQuery xquery = pool.getXQueryService();
             String query =
-            	"	update insert\n" +
-            	"		<product>\n" +
-            	"			<description><![CDATA[me & you <>]]></description>\n" +
-            	"		</product>\n" +
-            	"	into /products";
+            	"""
+                	update insert
+                		<product>
+                			<description><![CDATA[me & you <>]]></description>
+                		</product>
+                	into /products""";
             XQueryContext context = new XQueryContext(pool);
             CompiledXQuery compiled = xquery.compile(context, query);
             for (int i = 0; i < ITEMS_TO_APPEND; i++) {

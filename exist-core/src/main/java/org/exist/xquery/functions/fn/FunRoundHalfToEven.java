@@ -54,28 +54,35 @@ public class FunRoundHalfToEven extends FunRoundBase {
 		"value to $arg that is a multiple of ten to the power of minus " +
 		"$precision. ";
     protected static final String FUNCTION_DESCRIPTION_COMMON = 
-        "If two such values are equally near (e.g. if the " +
-		"fractional part in $arg is exactly .500...), the function returns " +
-		"the one whose least significant digit is even.\n\nIf the type of " +
-		"$arg is one of the four numeric types xs:float, xs:double, " +
-		"xs:decimal or xs:integer the type of the result is the same as " +
-		"the type of $arg. If the type of $arg is a type derived from one " +
-		"of the numeric types, the result is an instance of the " +
-		"base numeric type.\n\n" +
-		"The three argument version of the function with $precision = 0 " +
-        "produces the same result as the two argument version.\n\n" +
-		"For arguments of type xs:float and xs:double, if the argument is " +
-		"NaN, positive or negative zero, or positive or negative infinity, " +
-		"then the result is the same as the argument. In all other cases, " +
-		"the argument is cast to xs:decimal, the function is applied to this " +
-		"xs:decimal value, and the resulting xs:decimal is cast back to " +
-		"xs:float or xs:double as appropriate to form the function result. " +
-		"If the resulting xs:decimal value is zero, then positive or negative " +
-		"zero is returned according to the sign of the original argument.\n\n" +
-		"Note that the process of casting to xs:decimal " +
-		"may result in an error [err:FOCA0001].\n\n" +
-		"If $arg is of type xs:float or xs:double, rounding occurs on the " +
-		"value of the mantissa computed with exponent = 0.";
+        """
+        If two such values are equally near (e.g. if the \
+        fractional part in $arg is exactly .500...), the function returns \
+        the one whose least significant digit is even.
+        
+        If the type of \
+        $arg is one of the four numeric types xs:float, xs:double, \
+        xs:decimal or xs:integer the type of the result is the same as \
+        the type of $arg. If the type of $arg is a type derived from one \
+        of the numeric types, the result is an instance of the \
+        base numeric type.
+        
+        The three argument version of the function with $precision = 0 \
+        produces the same result as the two argument version.
+        
+        For arguments of type xs:float and xs:double, if the argument is \
+        NaN, positive or negative zero, or positive or negative infinity, \
+        then the result is the same as the argument. In all other cases, \
+        the argument is cast to xs:decimal, the function is applied to this \
+        xs:decimal value, and the resulting xs:decimal is cast back to \
+        xs:float or xs:double as appropriate to form the function result. \
+        If the resulting xs:decimal value is zero, then positive or negative \
+        zero is returned according to the sign of the original argument.
+        
+        Note that the process of casting to xs:decimal \
+        may result in an error [err:FOCA0001].
+        
+        If $arg is of type xs:float or xs:double, rounding occurs on the \
+        value of the mantissa computed with exponent = 0.""";
 	
 	protected static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.NUMERIC, Cardinality.ZERO_OR_ONE, "the rounded value");
 

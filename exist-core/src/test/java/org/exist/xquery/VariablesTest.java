@@ -45,24 +45,26 @@ public class VariablesTest {
     public static final ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
     private final static String MODULE =
-            "module namespace mod1 = \"http://mod1\";\n" +
-            "\n" +
-            "declare variable $mod1:OPEN_GRAPH as map(xs:string, function(*)) := map {\n" +
-            "    \"og:title\" : function($node, $model) {\n" +
-            "    <meta property=\"og:title\" content=\"{map:get($mod1:PUBLICATIONS, 'some-id')}\"/>\n" +
-            "    }\n" +
-            "};\n" +
-            "\n" +
-            "declare variable $mod1:PUBLICATIONS := map {\n" +
-            "  \"open-graph\" : map:merge((\n" +
-            "    $mod1:OPEN_GRAPH,\n" +
-            "    map {\n" +
-            "      \"og:image\" : function($node, $model) {\n" +
-            "        <meta property=\"og:image\" content=\"https://some/uri/some/image.png\"/>\n" +
-            "      }\n" +
-            "    }\n" +
-            "  ))\n" +
-            "};";
+            """
+            module namespace mod1 = "http://mod1";
+            
+            declare variable $mod1:OPEN_GRAPH as map(xs:string, function(*)) := map {
+                "og:title" : function($node, $model) {
+                <meta property="og:title" content="{map:get($mod1:PUBLICATIONS, 'some-id')}"/>
+                }
+            };
+            
+            declare variable $mod1:PUBLICATIONS := map {
+              "open-graph" : map:merge((
+                $mod1:OPEN_GRAPH,
+                map {
+                  "og:image" : function($node, $model) {
+                    <meta property="og:image" content="https://some/uri/some/image.png"/>
+                  }
+                }
+              ))
+            };\
+            """;
 
     @BeforeClass
     public static void setup() throws XMLDBException {
@@ -73,8 +75,9 @@ public class VariablesTest {
     @Test
     public void callModule() throws XMLDBException {
         final String query =
-                "import module namespace mod1 = \"http://mod1\" at \"xmldb:exist:///db/variables-test/mod1.xqm\";\n" +
-                "$mod1:PUBLICATIONS(\"open-graph\")";
+                """
+                import module namespace mod1 = "http://mod1" at "xmldb:exist:///db/variables-test/mod1.xqm";
+                $mod1:PUBLICATIONS("open-graph")""";
 
         final ResourceSet rs = existEmbeddedServer.executeQuery(query);
         assertEquals(1, rs.getSize());

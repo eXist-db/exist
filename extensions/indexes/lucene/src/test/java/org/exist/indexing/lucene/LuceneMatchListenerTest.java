@@ -89,29 +89,30 @@ public class LuceneMatchListenerTest {
             "</article>";
 
     private static String XML2 =
-            "<p xmlns=\"http://www.tei-c.org/ns/1.0\">\n" +
-            "    <s type=\"combo\"><w lemma=\"из\">из</w>\n" +
-            "        <w>новина</w>\n" +
-            "        <w lemma=\"и\">и</w>\n" +
-            "        <w lemma=\"од\">од</w>\n" +
-            "        <lb/>\n" +
-            "        <pb n=\"32\"/>\n" +
-            "        <w>других</w>\n" +
-            "        <w lemma=\"човек\">људи</w>\n" +
-            "        <w>дознајем</w>, <w xml:id=\"VSK.P13.t1.p4.w205\" lemma=\"ма\">ма</w>\n" +
-            "        <w>се</w>\n" +
-            "        <w lemma=\"не\">не</w>\n" +
-            "        <w>прорезује</w>\n" +
-            "        <w>право</w>\n" +
-            "        <w lemma=\"по\">по</w>\n" +
-            "        <w>имућству</w>, <w xml:id=\"VSK.P13.t1.p4.w219\" lemma=\"те\">те</w>\n" +
-            "        <w>се</w>\n" +
-            "        <w>на</w>\n" +
-            "        <w lemma=\"то\">то</w>\n" +
-            "        <w>видим</w>\n" +
-            "        <w>многи</w>\n" +
-            "        <w>љуте</w>.</s>\n" +
-            "</p>";
+            """
+            <p xmlns="http://www.tei-c.org/ns/1.0">
+                <s type="combo"><w lemma="из">из</w>
+                    <w>новина</w>
+                    <w lemma="и">и</w>
+                    <w lemma="од">од</w>
+                    <lb/>
+                    <pb n="32"/>
+                    <w>других</w>
+                    <w lemma="човек">људи</w>
+                    <w>дознајем</w>, <w xml:id="VSK.P13.t1.p4.w205" lemma="ма">ма</w>
+                    <w>се</w>
+                    <w lemma="не">не</w>
+                    <w>прорезује</w>
+                    <w>право</w>
+                    <w lemma="по">по</w>
+                    <w>имућству</w>, <w xml:id="VSK.P13.t1.p4.w219" lemma="те">те</w>
+                    <w>се</w>
+                    <w>на</w>
+                    <w lemma="то">то</w>
+                    <w>видим</w>
+                    <w>многи</w>
+                    <w>љуте</w>.</s>
+            </p>""";
 
     private static String CONF1 =
         "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
@@ -150,15 +151,16 @@ public class LuceneMatchListenerTest {
 
 
     private static String CONF5 =
-            "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">\n" +
-            "    <index xmlns:tei=\"http://www.tei-c.org/ns/1.0\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\">" +
-            "        <lucene>" +
-            "            <text qname=\"tei:p\"/>" +
-            "            <text qname=\"tei:w\"/>" +
-            "            <text qname=\"@lemma\"/>" +
-            "        </lucene>" +
-            "    </index>" +
-            "</collection>";
+            """
+            <collection xmlns="http://exist-db.org/collection-config/1.0">
+                <index xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema">\
+                    <lucene>\
+                        <text qname="tei:p"/>\
+                        <text qname="tei:w"/>\
+                        <text qname="@lemma"/>\
+                    </lucene>\
+                </index>\
+            </collection>""";
 
     private static String MATCH_START = "<exist:match xmlns:exist=\"http://exist.sourceforge.net/NS/exist\">";
     private static String MATCH_END = "</exist:match>";
@@ -208,8 +210,9 @@ public class LuceneMatchListenerTest {
                     MATCH_START + "match" + MATCH_END + "</para>", result);
 
             seq = xquery.execute(broker,
-                    "for $para in //para[ft:query(., '+double +match')] return\n" +
-                            "   <hit>{$para}</hit>", null);
+                    """
+                    for $para in //para[ft:query(., '+double +match')] return
+                       <hit>{$para}</hit>""", null);
             assertNotNull(seq);
             assertEquals(1, seq.getItemCount());
             result = queryResult2String(broker, seq);

@@ -42,10 +42,11 @@ public class ReservedNamesConflictTest {
 
     @Test
     public void reservedNamesIssueTest() throws RecognitionException, XPathException, TokenStreamException {
-        final String query = "xquery version \"3.1\";\n" +
-                "<foo copy-namespaces=\"bar\"/>,\n" +
-                "<foo empty-sequence=\"bar\"/>,\n" +
-                "<foo schema-element=\"bar\"/>";
+        final String query = """
+                xquery version "3.1";
+                <foo copy-namespaces="bar"/>,
+                <foo empty-sequence="bar"/>,
+                <foo schema-element="bar"/>""";
 
         // parse the query into the internal syntax tree
         final XQueryContext context = new XQueryContext();

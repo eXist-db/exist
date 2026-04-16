@@ -67,22 +67,24 @@ import static org.junit.Assert.assertNotNull;
 public class ConstructedNodesRecoveryTest {
 
 	private final static String xquery =
-		"declare variable $categories := \n" +
-		"	<categories>\n" +
-		"		<category uid=\"1\">Fruit</category>\n" +
-		"		<category uid=\"2\">Vegetable</category>\n" +
-		"		<category uid=\"3\">Meat</category>\n" +
-		"		<category uid=\"4\">Dairy</category>\n" +
-		"	</categories>\n" +
-		";\n\n" + 
-		
-		"for $category in $categories/category return\n" +
-		"	element option {\n" +
-		"		attribute value {\n" +
-		"			$category/@uid\n" +
-		"		},\n" +
-		"		text { $category }\n" +
-		"	}";
+		"""
+        declare variable $categories :=\s
+        	<categories>
+        		<category uid="1">Fruit</category>
+        		<category uid="2">Vegetable</category>
+        		<category uid="3">Meat</category>
+        		<category uid="4">Dairy</category>
+        	</categories>
+        ;
+        
+        for $category in $categories/category return
+        	element option {
+        		attribute value {
+        			$category/@uid
+        		},
+        		text { $category }
+        	}\
+        """;
 
 	private final static String expectedResults [] = { 
 		"Fruit",

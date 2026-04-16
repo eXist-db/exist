@@ -47,20 +47,26 @@ import org.w3c.dom.ProcessingInstruction;
 public class FunLocalName extends Function {
 
     private static final String FUNCTION_DESCRIPTION =
-            "Returns the local part of the name of $arg as an xs:string that " +
-                    "will either be the zero-length string or will have the lexical form of an xs:NCName.\n\n" +
-                    "If the argument is omitted, it defaults to the context item (.). " +
-                    "The behavior of the function if the argument is omitted is exactly " +
-                    "the same as if the context item had been passed as the argument.\n\n" +
-                    "The following errors may be raised: if the context item is undefined " +
-                    "[err:XPDY0002]XP; if the context item is not a node [err:XPTY0004]XP.\n\n" +
-                    "If the argument is supplied and is the empty sequence, the function " +
-                    "returns the zero-length string.\n\n" +
-                    "If the target node has no name (that is, if it is a document node, a " +
-                    "comment, or a text node), the function returns the zero-length string.\n\n" +
-                    "Otherwise, the value returned will be the local part of the expanded-QName " +
-                    "of the target node (as determined by the dm:node-name accessor in Section " +
-                    "5.11 node-name AccessorDM. This will be an xs:string whose lexical form is an xs:NCName.";
+            """
+            Returns the local part of the name of $arg as an xs:string that \
+            will either be the zero-length string or will have the lexical form of an xs:NCName.
+            
+            If the argument is omitted, it defaults to the context item (.). \
+            The behavior of the function if the argument is omitted is exactly \
+            the same as if the context item had been passed as the argument.
+            
+            The following errors may be raised: if the context item is undefined \
+            [err:XPDY0002]XP; if the context item is not a node [err:XPTY0004]XP.
+            
+            If the argument is supplied and is the empty sequence, the function \
+            returns the zero-length string.
+            
+            If the target node has no name (that is, if it is a document node, a \
+            comment, or a text node), the function returns the zero-length string.
+            
+            Otherwise, the value returned will be the local part of the expanded-QName \
+            of the target node (as determined by the dm:node-name accessor in Section \
+            5.11 node-name AccessorDM. This will be an xs:string whose lexical form is an xs:NCName.""";
 
 
     public static final FunctionSignature[] signatures = {

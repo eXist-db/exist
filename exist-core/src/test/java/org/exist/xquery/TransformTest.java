@@ -113,35 +113,38 @@ public class TransformTest {
         assertNotNull(xsl2);
 
 
-        String	doc1 = "<?xml version='1.0' encoding='UTF-8'?>\n" +
-        "<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform' version='1.0'>\n"+
-        "<xsl:import href='xsl2/2.xsl' />\n" +
-        "<xsl:template match='/'>\n" +
-        "<doc>" +
-        "<p>Start Template 1</p>" +
-        "<xsl:call-template name='template-2' />" +
-        "<xsl:call-template name='template-3' />" +
-        "<p>End Template 1</p>" +
-        "</doc>" +
-        "</xsl:template>" +
-        "</xsl:stylesheet>";
+        String	doc1 = """
+        <?xml version='1.0' encoding='UTF-8'?>
+        <xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform' version='1.0'>
+        <xsl:import href='xsl2/2.xsl' />
+        <xsl:template match='/'>
+        <doc>\
+        <p>Start Template 1</p>\
+        <xsl:call-template name='template-2' />\
+        <xsl:call-template name='template-3' />\
+        <p>End Template 1</p>\
+        </doc>\
+        </xsl:template>\
+        </xsl:stylesheet>""";
 
-        String doc2 = "<?xml version='1.0' encoding='UTF-8'?>\n" +
-        "<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform' version='1.0'>\n"+
-        "<xsl:import href='../../xsl3/3.xsl' />\n" +
-        "<xsl:template name='template-2'>\n" +
-        "<p>Start Template 2</p>" +
-        "<xsl:call-template name='template-3' />" +
-        "<p>End Template 2</p>" +
-        "</xsl:template>" +
-        "</xsl:stylesheet>";
+        String doc2 = """
+        <?xml version='1.0' encoding='UTF-8'?>
+        <xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform' version='1.0'>
+        <xsl:import href='../../xsl3/3.xsl' />
+        <xsl:template name='template-2'>
+        <p>Start Template 2</p>\
+        <xsl:call-template name='template-3' />\
+        <p>End Template 2</p>\
+        </xsl:template>\
+        </xsl:stylesheet>""";
 
-        String	doc3 = "<?xml version='1.0' encoding='UTF-8'?>\n" +
-        "<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform' version='1.0'>\n"+
-        "<xsl:template name='template-3'>\n" +
-        "<p>Template 3</p>" +
-        "</xsl:template>" +
-        "</xsl:stylesheet>";
+        String	doc3 = """
+        <?xml version='1.0' encoding='UTF-8'?>
+        <xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform' version='1.0'>
+        <xsl:template name='template-3'>
+        <p>Template 3</p>\
+        </xsl:template>\
+        </xsl:stylesheet>""";
 
         addXMLDocument(xsl1, doc1, "1.xsl");
         addXMLDocument(xsl2, doc2, "2.xsl");

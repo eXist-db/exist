@@ -71,9 +71,10 @@ public class EvalTest {
 
     @Test
     public void eval() throws XPathException, XMLDBException {
-        final String query = "let $query := 'let $a := 1 return $a'\n" +
-                "return\n" +
-                "util:eval($query)";
+        final String query = """
+                let $query := 'let $a := 1 return $a'
+                return
+                util:eval($query)""";
         final ResourceSet result = existEmbeddedServer.executeQuery(query);
         final String r = (String) result.getResource(0).getContent();
         assertEquals("1", r);
@@ -93,9 +94,10 @@ public class EvalTest {
 
     @Test
     public void evalwithPI() throws XPathException, XMLDBException {
-        final String query = "let $query := 'let $a := <test><?pi test?></test> return count($a//processing-instruction())'\n" +
-                "return\n" +
-                "util:eval($query)";
+        final String query = """
+                let $query := 'let $a := <test><?pi test?></test> return count($a//processing-instruction())'
+                return
+                util:eval($query)""";
         final ResourceSet result = existEmbeddedServer.executeQuery(query);
         final String r = (String) result.getResource(0).getContent();
         assertEquals("1", r);
@@ -103,10 +105,11 @@ public class EvalTest {
 
     @Test
     public void evalInline() throws XPathException, XMLDBException {
-        final String query = "let $xml := document{<test><a><b/></a></test>}\n" +
-                "let $query := 'count(.//*)'\n" +
-                "return\n" +
-                "util:eval-inline($xml,$query)";
+        final String query = """
+                let $xml := document{<test><a><b/></a></test>}
+                let $query := 'count(.//*)'
+                return
+                util:eval-inline($xml,$query)""";
         final ResourceSet result = existEmbeddedServer.executeQuery(query);
         final String r = (String) result.getResource(0).getContent();
         assertEquals("3", r);
@@ -114,13 +117,14 @@ public class EvalTest {
 
     @Test
     public void testEvalWithContextVariable() throws XPathException, XMLDBException {
-        final String query = "let $xml := <test><a/><b/></test>\n" +
-                "let $context := <static-context>\n" +
-                "<variable name='xml'>{$xml}</variable>\n" +
-                "</static-context>\n" +
-                "let $query := 'count($xml//*) mod 2 = 0'\n" +
-                "return\n" +
-                "util:eval-with-context($query, $context, false())";
+        final String query = """
+                let $xml := <test><a/><b/></test>
+                let $context := <static-context>
+                <variable name='xml'>{$xml}</variable>
+                </static-context>
+                let $query := 'count($xml//*) mod 2 = 0'
+                return
+                util:eval-with-context($query, $context, false())""";
         final ResourceSet result = existEmbeddedServer.executeQuery(query);
         final String r = (String) result.getResource(0).getContent();
         assertEquals("true", r);
@@ -128,13 +132,14 @@ public class EvalTest {
 
     @Test
     public void testEvalSupplyingContext() throws XPathException, XMLDBException {
-        final String query = "let $xml := <test><a/></test>\n" +
-                "let $context := <static-context>\n" +
-                "<default-context>{$xml}</default-context>\n" +
-                "</static-context>\n" +
-                "let $query := 'count(.//*) mod 2 = 0'\n" +
-                "return\n" +
-                "util:eval-with-context($query, $context, false())";
+        final String query = """
+                let $xml := <test><a/></test>
+                let $context := <static-context>
+                <default-context>{$xml}</default-context>
+                </static-context>
+                let $query := 'count(.//*) mod 2 = 0'
+                return
+                util:eval-with-context($query, $context, false())""";
         final ResourceSet result = existEmbeddedServer.executeQuery(query);
         final String r = (String) result.getResource(0).getContent();
         assertEquals("true", r);
@@ -142,14 +147,15 @@ public class EvalTest {
 
     @Test
     public void testEvalSupplyingContextAndVariable() throws XPathException, XMLDBException {
-        final String query = "let $xml := <test><a/></test>\n" +
-                "let $context := <static-context>\n" +
-                "<variable name='xml'>{$xml}</variable>\n" +
-                "<default-context>{$xml}</default-context>\n" +
-                "</static-context>\n" +
-                "let $query := 'count($xml//*) + count(.//*)'\n" +
-                "return\n" +
-                "util:eval-with-context($query, $context, false())";
+        final String query = """
+                let $xml := <test><a/></test>
+                let $context := <static-context>
+                <variable name='xml'>{$xml}</variable>
+                <default-context>{$xml}</default-context>
+                </static-context>
+                let $query := 'count($xml//*) + count(.//*)'
+                return
+                util:eval-with-context($query, $context, false())""";
         final ResourceSet result = existEmbeddedServer.executeQuery(query);
         final String r = (String) result.getResource(0).getContent();
         assertEquals("3", r);
@@ -157,10 +163,11 @@ public class EvalTest {
     
     @Test
     public void testEvalSupplyingContextItem() throws XPathException, XMLDBException {
-        final String query = "let $context := 'London'\n" +
-                "let $query := '.'\n" +
-                "return\n" +
-                "util:eval-with-context($query, (), false(), $context)";
+        final String query = """
+                let $context := 'London'
+                let $query := '.'
+                return
+                util:eval-with-context($query, (), false(), $context)""";
         final ResourceSet result = existEmbeddedServer.executeQuery(query);
         final String r = (String) result.getResource(0).getContent();
         assertEquals("London", r);
@@ -282,9 +289,10 @@ public class EvalTest {
 
     @Test
     public void evalAndSerialize() throws XMLDBException {
-        final String query = "let $query := \"<elem1>hello</elem1>\"\n" +
-                "return\n" +
-                "util:eval-and-serialize($query, ())";
+        final String query = """
+                let $query := "<elem1>hello</elem1>"
+                return
+                util:eval-and-serialize($query, ())""";
         final ResourceSet result = existEmbeddedServer.executeQuery(query);
         final Resource r = result.getResource(0);
         assertEquals("<elem1>hello</elem1>", r.getContent());
@@ -292,20 +300,22 @@ public class EvalTest {
 
     @Test
     public void evalAndSerializeDefaultOptions() throws XMLDBException {
-        String query = "let $query := \"<elem1>hello</elem1>\"\n" +
-                "return\n" +
-                "util:eval-and-serialize($query, map { \"method\": \"adaptive\" })";
+        String query = """
+                let $query := "<elem1>hello</elem1>"
+                return
+                util:eval-and-serialize($query, map { "method": "adaptive" })""";
         ResourceSet result = existEmbeddedServer.executeQuery(query);
         Resource r = result.getResource(0);
         assertEquals("<elem1>hello</elem1>", r.getContent());
 
         // test that XQuery Prolog output options override the default provided options
-        query = "xquery version \"3.1\";\n" +
-                "declare namespace output = \"http://www.w3.org/2010/xslt-xquery-serialization\";\n" +
-                "declare option output:method \"text\";\n" +
-                "let $query := \"<elem1>hello</elem1>\"\n" +
-                "return\n" +
-                "util:eval-and-serialize($query, map { \"method\": \"adaptive\" })";
+        query = """
+                xquery version "3.1";
+                declare namespace output = "http://www.w3.org/2010/xslt-xquery-serialization";
+                declare option output:method "text";
+                let $query := "<elem1>hello</elem1>"
+                return
+                util:eval-and-serialize($query, map { "method": "adaptive" })""";
         result = existEmbeddedServer.executeQuery(query);
         r = result.getResource(0);
         assertEquals("hello", r.getContent());
@@ -313,9 +323,10 @@ public class EvalTest {
 
     @Test
     public void evalAndSerializeJson() throws XMLDBException {
-        String query = "let $query := \"<outer><elem1>hello</elem1></outer>\"\n" +
-                "return\n" +
-                "util:eval-and-serialize($query, map { \"method\": \"json\" })";
+        String query = """
+                let $query := "<outer><elem1>hello</elem1></outer>"
+                return
+                util:eval-and-serialize($query, map { "method": "json" })""";
         ResourceSet result = existEmbeddedServer.executeQuery(query);
         Resource r = result.getResource(0);
         assertEquals("{\"elem1\":\"hello\"}", r.getContent());
@@ -323,9 +334,10 @@ public class EvalTest {
 
     @Test
     public void evalAndSerializeAdaptive() throws XMLDBException {
-        String query = "let $query := 'map { \"key\": \"value\"}'\n" +
-                "return\n" +
-                "util:eval-and-serialize($query, map { \"method\": \"adaptive\" })";
+        String query = """
+                let $query := 'map { "key": "value"}'
+                return
+                util:eval-and-serialize($query, map { "method": "adaptive" })""";
         ResourceSet result = existEmbeddedServer.executeQuery(query);
         Resource r = result.getResource(0);
         assertEquals("map{\"key\":\"value\"}", r.getContent());
@@ -333,9 +345,10 @@ public class EvalTest {
 
     @Test
     public void evalAndSerializeSubsequence() throws XMLDBException {
-        final String query = "let $query := \"for $i in (1 to 10) return <i>{$i}</i>\"\n" +
-                "return\n" +
-                "util:eval-and-serialize($query, (), 1, 4)";
+        final String query = """
+                let $query := "for $i in (1 to 10) return <i>{$i}</i>"
+                return
+                util:eval-and-serialize($query, (), 1, 4)""";
         final ResourceSet result = existEmbeddedServer.executeQuery(query);
         final Resource r = result.getResource(0);
         assertEquals("<i>1</i><i>2</i><i>3</i><i>4</i>", r.getContent());
@@ -343,12 +356,13 @@ public class EvalTest {
 
     @Test
     public void evalErrorInfo() {
-        final String query = "let $query := \"let $msg := 'some error message'\n" +
-                "let $code := xs:QName('some-error')\n" +
-                "return\n" +
-                "    fn:error($code, $msg)\"\n" +
-                "return\n" +
-                "    util:eval($query, false(), (), false())";
+        final String query = """
+                let $query := "let $msg := 'some error message'
+                let $code := xs:QName('some-error')
+                return
+                    fn:error($code, $msg)"
+                return
+                    util:eval($query, false(), (), false())""";
         try {
             existEmbeddedServer.executeQuery(query);
 
@@ -362,12 +376,13 @@ public class EvalTest {
 
     @Test
     public void evalPassErrorInfo() {
-        final String query = "let $query := \"let $msg := 'some error message'\n" +
-                "let $code := xs:QName('some-error')\n" +
-                "return\n" +
-                "    fn:error($code, $msg)\"\n" +
-                "return\n" +
-                "    util:eval($query, false(), (), true())";
+        final String query = """
+                let $query := "let $msg := 'some error message'
+                let $code := xs:QName('some-error')
+                return
+                    fn:error($code, $msg)"
+                return
+                    util:eval($query, false(), (), true())""";
         try {
             existEmbeddedServer.executeQuery(query);
 

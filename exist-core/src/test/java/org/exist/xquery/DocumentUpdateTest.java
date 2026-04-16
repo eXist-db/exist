@@ -51,8 +51,10 @@ public class DocumentUpdateTest {
 	@Test
     public void update() throws XMLDBException {
     	String imports = 
-    		"import module namespace xdb='http://exist-db.org/xquery/xmldb';\n" + 
-    		"import module namespace util='http://exist-db.org/xquery/util';\n";
+    		"""
+            import module namespace xdb='http://exist-db.org/xquery/xmldb';
+            import module namespace util='http://exist-db.org/xquery/util';
+            """;
 
         //TEST 1: doc() function
         String query = imports +

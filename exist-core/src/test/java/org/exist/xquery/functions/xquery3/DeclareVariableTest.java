@@ -36,14 +36,15 @@ public class DeclareVariableTest {
 
     @Test
     public void defaultNamespaceTest() throws XMLDBException {
-        final String query = "xquery version \"3.1\";\n"
-            + "\n"
-            + "    declare default element namespace \"http://www.w3.org/1999/xhtml\";\n"
-            + "\n"
-            + "    declare variable $docName := 'test.xml';\n"
-            + "    declare variable $docPath := concat('/db/', $docName);\n"
-            + "\n"
-            + "    $docPath";
+        final String query = """
+            xquery version "3.1";
+            
+                declare default element namespace "http://www.w3.org/1999/xhtml";
+            
+                declare variable $docName := 'test.xml';
+                declare variable $docPath := concat('/db/', $docName);
+            
+                $docPath""";
 
         final ResourceSet results = existEmbeddedServer.executeQuery(query);
         final String r = (String) results.getResource(0).getContent();

@@ -48,9 +48,10 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class DocumentImplTest {
 
     private static final String DOC_WITH_NAMESPACES =
-            "<repo:meta xmlns=\"http://exist-db.org/xquery/repo\" xmlns:repo=\"http://exist-db.org/xquery/repo\">\n" +
-            "    <repo:description>some description or other</repo:description>\n" +
-            "</repo:meta>";
+            """
+            <repo:meta xmlns="http://exist-db.org/xquery/repo" xmlns:repo="http://exist-db.org/xquery/repo">
+                <repo:description>some description or other</repo:description>
+            </repo:meta>""";
 
     @Test
     public void checkNamespaces_xerces() throws IOException, ParserConfigurationException, SAXException {

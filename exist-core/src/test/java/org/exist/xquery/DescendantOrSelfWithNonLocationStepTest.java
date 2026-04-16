@@ -54,8 +54,9 @@ public class DescendantOrSelfWithNonLocationStepTest {
     public void parenthesizedAttribute() throws XMLDBException {
         // //(@x) should find all @x attributes at any depth
         final ResourceSet result = execute(
-                "let $doc := <root x='1'><a x='2'><b x='3'/></a></root>\n" +
-                "return count($doc//(@x))");
+                """
+                let $doc := <root x='1'><a x='2'><b x='3'/></a></root>
+                return count($doc//(@x))""");
         assertEquals("3", result.getResource(0).getContent().toString());
     }
 
@@ -63,8 +64,9 @@ public class DescendantOrSelfWithNonLocationStepTest {
     public void parenthesizedAttributeUnion() throws XMLDBException {
         // //(@x | @y) should find all @x and @y attributes at any depth
         final ResourceSet result = execute(
-                "let $doc := <root x='1' y='a'><a x='2'><b y='b'/></a></root>\n" +
-                "return count($doc//(@x | @y))");
+                """
+                let $doc := <root x='1' y='a'><a x='2'><b y='b'/></a></root>
+                return count($doc//(@x | @y))""");
         assertEquals("4", result.getResource(0).getContent().toString());
     }
 
@@ -72,8 +74,9 @@ public class DescendantOrSelfWithNonLocationStepTest {
     public void parenthesizedElementUnion() throws XMLDBException {
         // //(b | c) should find elements at any depth, including direct children
         final ResourceSet result = execute(
-                "let $doc := <root><b/><a><c/><b/></a></root>\n" +
-                "return count($doc//(b | c))");
+                """
+                let $doc := <root><b/><a><c/><b/></a></root>
+                return count($doc//(b | c))""");
         assertEquals("3", result.getResource(0).getContent().toString());
     }
 
@@ -81,20 +84,21 @@ public class DescendantOrSelfWithNonLocationStepTest {
     public void parenthesizedUnionWithFollowingAxis() throws XMLDBException {
         // //(north | near-south)/preceding-sibling::comment() should work
         final ResourceSet result = execute(
-                "let $doc :=\n" +
-                "  <far-north>\n" +
-                "    <!-- 1 -->\n" +
-                "    <north mark='1'>\n" +
-                "      <!-- 2 -->\n" +
-                "      <near-north>\n" +
-                "        <!-- 3 -->\n" +
-                "        <center mark='0'/>\n" +
-                "        <!-- 4 -->\n" +
-                "        <near-south/>\n" +
-                "      </near-north>\n" +
-                "    </north>\n" +
-                "  </far-north>\n" +
-                "return count($doc//(north | near-south)/preceding-sibling::comment())");
+                """
+                let $doc :=
+                  <far-north>
+                    <!-- 1 -->
+                    <north mark='1'>
+                      <!-- 2 -->
+                      <near-north>
+                        <!-- 3 -->
+                        <center mark='0'/>
+                        <!-- 4 -->
+                        <near-south/>
+                      </near-north>
+                    </north>
+                  </far-north>
+                return count($doc//(north | near-south)/preceding-sibling::comment())""");
         assertEquals("3", result.getResource(0).getContent().toString());
     }
 }

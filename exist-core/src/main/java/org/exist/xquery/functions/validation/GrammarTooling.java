@@ -71,16 +71,18 @@ public class GrammarTooling extends BasicFunction  {
     private final Configuration config;
 
 
-    public final static String cacheReport="<report>\n"+
-            "\t<grammar type=\"...\"\n" +
-            "\t\t<Namespace>....\n" +
-            "\t\t<BaseSystemId>...\n" +
-            "\t\t<LiteralSystemId>...\n" +
-            "\t\t<ExpandedSystemId>....\n" +
-            "\t</grammar>\n" +
-            "\t...\n" +
-            "\t...\n" +
-            "</report>\n";
+    public final static String cacheReport="""
+            <report>
+            	<grammar type="..."
+            		<Namespace>....
+            		<BaseSystemId>...
+            		<LiteralSystemId>...
+            		<ExpandedSystemId>....
+            	</grammar>
+            	...
+            	...
+            </report>
+            """;
     
     // Setup function signature
     public final static FunctionSignature[] signatures = {

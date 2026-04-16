@@ -67,8 +67,9 @@ public class ConnectionPoolIT {
     public void getConnectionFromPoolIsAutomaticallyClosed() throws EXistException, XPathException, PermissionDeniedException, IOException {
         // NOTE: pool-1 is configured in src/test/resources-filtered/conf.xml
         final String mainQuery =
-                "import module namespace sql = \"http://exist-db.org/xquery/sql\";\n" +
-                        "sql:get-connection-from-pool(\"pool-1\")";
+                """
+                import module namespace sql = "http://exist-db.org/xquery/sql";
+                sql:get-connection-from-pool("pool-1")""";
         final Source mainQuerySource = new StringSource(mainQuery);
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();

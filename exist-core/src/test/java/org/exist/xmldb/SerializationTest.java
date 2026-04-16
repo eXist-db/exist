@@ -93,14 +93,16 @@ public class SerializationTest {
 	private static final XmldbURI TEST_XML_DOC_WITH_DOCTYPE_URI = XmldbURI.create("test-with-doctype.xml");
 
 	private static final String XML_WITH_DOCTYPE =
-			"<!DOCTYPE bookmap PUBLIC \"-//OASIS//DTD DITA BookMap//EN\" \"bookmap.dtd\">\n" +
-			"<bookmap id=\"bookmap-1\"/>";
+			"""
+            <!DOCTYPE bookmap PUBLIC "-//OASIS//DTD DITA BookMap//EN" "bookmap.dtd">
+            <bookmap id="bookmap-1"/>""";
 
 	private static final XmldbURI TEST_XML_DOC_WITH_XMLDECL_URI = XmldbURI.create("test-with-xmldecl.xml");
 
 	private static final String XML_WITH_XMLDECL =
-			"<?xml version=\"1.1\" encoding=\"ISO-8859-1\" standalone=\"yes\"?>\n" +
-			"<bookmap id=\"bookmap-2\"/>";
+			"""
+            <?xml version="1.1" encoding="ISO-8859-1" standalone="yes"?>
+            <bookmap id="bookmap-2"/>""";
 
 	@Parameterized.Parameters(name = "{0}")
 	public static java.util.Collection<Object[]> data() {

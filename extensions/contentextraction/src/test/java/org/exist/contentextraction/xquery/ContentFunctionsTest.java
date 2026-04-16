@@ -96,12 +96,13 @@ public class ContentFunctionsTest {
     @Test
     public void getMetadataFromPdf() throws EXistException, XPathException, PermissionDeniedException, IOException {
         final String mainQuery =
-                "declare namespace html = \"http://www.w3.org/1999/xhtml\";\n" +
-                "declare namespace contentextraction = \"http://exist-db.org/xquery/contentextraction\";\n" +
-                "declare namespace util = \"http://exist-db.org/xquery/util\";\n" +
-                "let $bin := util:binary-doc(\"/db/content-functions-test/minimal.pdf\")\n" +
-                "  return\n" +
-                "    contentextraction:get-metadata($bin)//html:meta[@name = (\"xmpTPg:NPages\", \"Content-Type\")]/@content";
+                """
+                declare namespace html = "http://www.w3.org/1999/xhtml";
+                declare namespace contentextraction = "http://exist-db.org/xquery/contentextraction";
+                declare namespace util = "http://exist-db.org/xquery/util";
+                let $bin := util:binary-doc("/db/content-functions-test/minimal.pdf")
+                  return
+                    contentextraction:get-metadata($bin)//html:meta[@name = ("xmpTPg:NPages", "Content-Type")]/@content""";
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final Source mainQuerySource = new StringSource(mainQuery);
@@ -125,12 +126,13 @@ public class ContentFunctionsTest {
     @Test
     public void getMetadataAndContentFromPdf() throws EXistException, XPathException, PermissionDeniedException, IOException {
         final String mainQuery =
-                "declare namespace html = \"http://www.w3.org/1999/xhtml\";\n" +
-                "declare namespace contentextraction = \"http://exist-db.org/xquery/contentextraction\";\n" +
-                "declare namespace util = \"http://exist-db.org/xquery/util\";\n" +
-                "let $bin := util:binary-doc(\"/db/content-functions-test/minimal.pdf\")\n" +
-                "  return\n" +
-                "    contentextraction:get-metadata-and-content($bin)//html:p[2]/string()";
+                """
+                declare namespace html = "http://www.w3.org/1999/xhtml";
+                declare namespace contentextraction = "http://exist-db.org/xquery/contentextraction";
+                declare namespace util = "http://exist-db.org/xquery/util";
+                let $bin := util:binary-doc("/db/content-functions-test/minimal.pdf")
+                  return
+                    contentextraction:get-metadata-and-content($bin)//html:p[2]/string()""";
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final Source mainQuerySource = new StringSource(mainQuery);
@@ -154,12 +156,13 @@ public class ContentFunctionsTest {
     @Test
     public void getMetadataFromXlsx() throws EXistException, XPathException, PermissionDeniedException, IOException {
         final String mainQuery =
-                "declare namespace html = \"http://www.w3.org/1999/xhtml\";\n" +
-                        "declare namespace contentextraction = \"http://exist-db.org/xquery/contentextraction\";\n" +
-                        "declare namespace util = \"http://exist-db.org/xquery/util\";\n" +
-                        "let $bin := util:binary-doc(\"/db/content-functions-test/test.xlsx\")\n" +
-                        "  return\n" +
-                        "    contentextraction:get-metadata($bin)//html:meta[@name = (\"xmpTPg:NPages\", \"Content-Type\")]/@content";
+                """
+                declare namespace html = "http://www.w3.org/1999/xhtml";
+                declare namespace contentextraction = "http://exist-db.org/xquery/contentextraction";
+                declare namespace util = "http://exist-db.org/xquery/util";
+                let $bin := util:binary-doc("/db/content-functions-test/test.xlsx")
+                  return
+                    contentextraction:get-metadata($bin)//html:meta[@name = ("xmpTPg:NPages", "Content-Type")]/@content""";
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final Source mainQuerySource = new StringSource(mainQuery);
