@@ -1,0 +1,27 @@
+exist-core/src/main/java/org/exist/resolver/ResolverFactory.java
+  8be28f47155c9a3c 97-98,100,102
+exist-core/src/main/java/org/exist/xquery/GeneralComparison.java
+  8be28f47155c9a3c 131-133,136,138-140,143
+exist-core/src/main/java/org/exist/client/HighlightedTableCellRenderer.java
+  8be28f47155c9a3c 50-54,56-57
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.0",
+  "base_commit_sha": "77bac44553256b060278ae9aab6fb44dd0d8463f",
+  "prompts": {
+    "8be28f47155c9a3c": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "2d5cbdb8-0a14-45eb-8faf-1f5fd1a8cb1e",
+        "model": "default"
+      },
+      "human_author": "duncdrum",
+      "messages": [],
+      "total_additions": 21,
+      "total_deletions": 16,
+      "accepted_lines": 21,
+      "overriden_lines": 0
+    }
+  }
+}
