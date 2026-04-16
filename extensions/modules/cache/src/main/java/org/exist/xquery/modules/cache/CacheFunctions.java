@@ -305,7 +305,7 @@ public class CacheFunctions extends BasicFunction {
         final CacheModule cacheModule = (CacheModule) getParentModule();
         final Optional<CacheConfig> maybeLazyCacheConfig = cacheModule.getLazyCacheConfig();
 
-        if (!maybeLazyCacheConfig.isPresent()) {
+        if (maybeLazyCacheConfig.isEmpty()) {
             throw new XPathException(this, LAZY_CREATION_DISABLED, "There is no such named cache: " + cacheName + ", and lazy creation of the cache has been disabled.");
         }
 

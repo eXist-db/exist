@@ -57,7 +57,7 @@ public class GetAttributeNames extends StrictSessionFunction {
     public Sequence eval(final Sequence[] args, @Nonnull final SessionWrapper session) throws XPathException {
 
         final Optional<Enumeration<String>> maybeAttributeNames = withValidSession(session, SessionWrapper::getAttributeNames);
-        if (!maybeAttributeNames.isPresent()) {
+        if (maybeAttributeNames.isEmpty()) {
             return Sequence.EMPTY_SEQUENCE;
         }
 
