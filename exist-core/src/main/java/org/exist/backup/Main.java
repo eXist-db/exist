@@ -40,7 +40,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
@@ -204,7 +203,7 @@ public class Main {
             String collection = backupCollection.get();
             if (collection.isEmpty()) {
                 if (guiMode) {
-                    final CreateBackupDialog dialog = new CreateBackupDialog(properties.getProperty(URI_PROP, DEFAULT_URI), properties.getProperty(USER_PROP, DEFAULT_USER), properties.getProperty(PASSWORD_PROP, DEFAULT_PASSWORD), Paths.get(preferences.get("directory.backup", System.getProperty("user.dir"))));
+                    final CreateBackupDialog dialog = new CreateBackupDialog(properties.getProperty(URI_PROP, DEFAULT_URI), properties.getProperty(USER_PROP, DEFAULT_USER), properties.getProperty(PASSWORD_PROP, DEFAULT_PASSWORD), Path.of(preferences.get("directory.backup", System.getProperty("user.dir"))));
 
                     if (JOptionPane.showOptionDialog(null, dialog, "Create Backup", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, null, null) == JOptionPane.YES_OPTION) {
                         collection = dialog.getCollection();
@@ -221,7 +220,7 @@ public class Main {
                     final Backup backup = new Backup(
                             properties.getProperty(USER_PROP, DEFAULT_USER),
                             properties.getProperty(PASSWORD_PROP, DEFAULT_PASSWORD),
-                            Paths.get(properties.getProperty(BACKUP_DIR_PROP, DEFAULT_BACKUP_DIR)),
+                            Path.of(properties.getProperty(BACKUP_DIR_PROP, DEFAULT_BACKUP_DIR)),
                             XmldbURI.xmldbUriFor(properties.getProperty(URI_PROP, DEFAULT_URI) + collection),
                             properties,
                             deduplicateBlobs
@@ -316,13 +315,17 @@ public class Main {
                 System.err.println("Rebuilding application repository failed!");
             }
         } else {
-            System.out.println("\nIf you restored collections inside /db/apps, you may want\n" +
-                    "to rebuild the application repository. To do so, run the following query\n" +
-                    "as admin:\n\n" +
-                    "import module namespace repair=\"http://exist-db.org/xquery/repo/repair\"\n" +
-                    "at \"resource:org/exist/xquery/modules/expathrepo/repair.xql\";\n" +
-                    "repair:clean-all(),\n" +
-                    "repair:repair()\n");
+            System.out.println("""
+                    
+                    If you restored collections inside /db/apps, you may want
+                    to rebuild the application repository. To do so, run the following query
+                    as admin:
+                    
+                    import module namespace repair="http://exist-db.org/xquery/repo/repair"
+                    at "resource:org/exist/xquery/modules/expathrepo/repair.xql";
+                    repair:clean-all(),
+                    repair:repair()
+                    """);
         }
     }
 
