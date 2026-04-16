@@ -93,7 +93,7 @@ public class FunPath extends BasicFunction {
                     // This string is prefixed by "Q{http://www.w3.org/2005/xpath-functions}root()"
                     // if the root node is not a document node.
                     pathValues.removeFirst();
-                    result = new StringValue(this, String.format("Q{%s}root()", Namespaces.XPATH_FUNCTIONS_NS) + String.join("", pathValues));
+                    result = new StringValue(this, "Q{%s}root()".formatted(Namespaces.XPATH_FUNCTIONS_NS) + String.join("", pathValues));
                 } else {
                     result = new StringValue(this, String.join("", pathValues));
                 }
@@ -143,7 +143,7 @@ public class FunPath extends BasicFunction {
                 // the node name, and local is the local part of the node name.
                 value.append('/');
                 if (node.getNamespaceURI() != null) {
-                    value.append(String.format("@Q{%s}", node.getNamespaceURI()));
+                    value.append("@Q{%s}".formatted(node.getNamespaceURI()));
                 } else {
                     value.append('@');
                 }
@@ -159,7 +159,7 @@ public class FunPath extends BasicFunction {
                 // node siblings
                 final int textNodePosition = getNodePosition(node);
                 if (textNodePosition > 0) {
-                    value.append(String.format("/text()[%d]", textNodePosition));
+                    value.append("/text()[%d]".formatted(textNodePosition));
                 }
                 break;
 
@@ -169,7 +169,7 @@ public class FunPath extends BasicFunction {
                 // its comment node siblings.
                 final int commentNodePosition = getNodePosition(node);
                 if (commentNodePosition > 0) {
-                    value.append(String.format("/comment()[%d]", commentNodePosition));
+                    value.append("/comment()[%d]".formatted(commentNodePosition));
                 }
                 break;
 
@@ -180,7 +180,7 @@ public class FunPath extends BasicFunction {
                 // like-named processing-instruction node siblings.
                 int processingInstructionNodePosition = getNodePosition(node);
                 if (processingInstructionNodePosition > 0) {
-                    value.append(String.format("/processing-instruction(%s)[%d]", node.getNodeName(), processingInstructionNodePosition));
+                    value.append("/processing-instruction(%s)[%d]".formatted(node.getNodeName(), processingInstructionNodePosition));
                 }
                 break;
 
@@ -191,7 +191,7 @@ public class FunPath extends BasicFunction {
                 // has no name (that is, it represents the default namespace):
                 // namespace::*[Q{http://www.w3.org/2005/xpath-functions}local-name()=""]
                 if (node.getNamespaceURI() != null) {
-                    value.append(String.format("namespace::{%s}", node.getLocalName()));
+                    value.append("namespace::{%s}".formatted(node.getLocalName()));
                 } else {
                     value.append("namespace::*[Q{http://www.w3.org/2005/xpath-functions}local-name()=\"\"]");
                 }
@@ -208,7 +208,7 @@ public class FunPath extends BasicFunction {
                     value.append((node.getOwnerDocument() != null && node.getOwnerDocument().getDocumentElement() != null) ? "/Q" : "Q");
                     value.append(((INode) node).getQName().toURIQualifiedName());
                     if (nodePosition > 0) {
-                        value.append(String.format("[%d]", nodePosition));
+                        value.append("[%d]".formatted(nodePosition));
                     }
                 }
                 break;

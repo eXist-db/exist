@@ -150,10 +150,10 @@ public class XQDocHelper {
         final StringBuilder out = new StringBuilder();
         out.append(description.toString().trim()).append("\n\n");
         for (final Map.Entry<String, String> entry : meta.entrySet()) {
-            out.append(String.format("%20s\t%s\n", entry.getKey(), entry.getValue()));
+            out.append("%20s\t%s\n".formatted(entry.getKey(), entry.getValue()));
         }
         for (final Map.Entry<String, String> entry : parameters.entrySet()) {
-            out.append(String.format("%20s\t%s\n", entry.getKey(), entry.getValue()));
+            out.append("%20s\t%s\n".formatted(entry.getKey(), entry.getValue()));
         }
         return out.toString();
     }

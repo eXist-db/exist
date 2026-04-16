@@ -113,7 +113,7 @@ public class CompatibleJavaVersionCheck {
 
                 // version is NOT compatible!
                 throw new StartException(ERROR_CODE_INCOMPATIBLE_JAVA_DETECTED,
-                        String.format(INCOMPATIBLE_JAVA_VERSION_NOTICE, RUNTIME_JAVA_VERSION.orElse("UKNOWN")));
+                        INCOMPATIBLE_JAVA_VERSION_NOTICE.formatted(RUNTIME_JAVA_VERSION.orElse("UKNOWN")));
             }
 
             // version is compatible

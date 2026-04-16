@@ -139,7 +139,7 @@ public class TimePragma extends AbstractPragma {
      */
     private static String nsOrMsStr(final long nanoseconds)  {
         final Tuple2<Long, String> time = nsOrMs(nanoseconds);
-        return String.format("%d %s", time._1, time._2);
+        return "%d %s".formatted(time._1, time._2);
     }
 
     /**
@@ -173,7 +173,7 @@ public class TimePragma extends AbstractPragma {
      */
     private static String nsOrMsStrDbl(final double nanoseconds)  {
         final Tuple2<Double, String> time = nsOrMsDbl(nanoseconds);
-        return String.format("%.2f %s", time._1, time._2);
+        return "%.2f %s".formatted(time._1, time._2);
     }
 
     private void logSingleMeasurement(final Expression expression) {

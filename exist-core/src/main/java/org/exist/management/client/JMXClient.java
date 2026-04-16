@@ -79,9 +79,9 @@ public class JMXClient {
             final CompositeData composite = (CompositeData) connection.getAttribute(name, "HeapMemoryUsage");
             if (composite != null) {
                 echo("\nMEMORY:");
-                echo(String.format("Current heap: %,12d k        Committed memory:  %,12d k",
+                echo("Current heap: %,12d k        Committed memory:  %,12d k".formatted(
                         ((Long)composite.get("used")) / 1024, ((Long)composite.get("committed")) / 1024));
-                echo(String.format("Max memory:   %,12d k", ((Long)composite.get("max")) / 1024));
+                echo("Max memory:   %,12d k".formatted(((Long)composite.get("max")) / 1024));
             }
         } catch (final Exception e) {
             error(e);
@@ -93,17 +93,17 @@ public class JMXClient {
             echo("\nINSTANCE:");
             final ObjectName name = new ObjectName("org.exist.management." + instance + ":type=Database");
             final Long memReserved = (Long) connection.getAttribute(name, "ReservedMem");
-            echo(String.format("%25s: %10d k", "Reserved memory", memReserved / 1024));
+            echo("%25s: %10d k".formatted("Reserved memory", memReserved / 1024));
             final Long memCache = (Long) connection.getAttribute(name, "CacheMem");
-            echo(String.format("%25s: %10d k", "Cache memory", memCache / 1024));
+            echo("%25s: %10d k".formatted("Cache memory", memCache / 1024));
             final Long memCollCache = (Long) connection.getAttribute(name, "CollectionCacheMem");
-            echo(String.format("%25s: %10d k", "Collection cache memory", memCollCache / 1024));
+            echo("%25s: %10d k".formatted("Collection cache memory", memCollCache / 1024));
 
             final String cols[] = { "MaxBrokers", "AvailableBrokers", "ActiveBrokers" };
-            echo(String.format("\n%17s %17s %17s", cols[0], cols[1], cols[2]));
+            echo("\n%17s %17s %17s".formatted(cols[0], cols[1], cols[2]));
             final AttributeList attrs = connection.getAttributes(name, cols);
             final Object values[] = getValues(attrs);
-            echo(String.format("%17d %17d %17d", values[0], values[1], values[2]));
+            echo("%17d %17d %17d".formatted(values[0], values[1], values[2]));
 
             final TabularData table = (TabularData) connection.getAttribute(name, "ActiveBrokersMap");
             if (!table.isEmpty()) {
@@ -112,7 +112,7 @@ public class JMXClient {
 
             for (Object o : table.values()) {
                 final CompositeData data = (CompositeData) o;
-                echo(String.format("\t%20s: %3d", data.get("owner"), data.get("referenceCount")));
+                echo("\t%20s: %3d".formatted(data.get("owner"), data.get("referenceCount")));
             }
         } catch (final Exception e) {
             error(e);
@@ -125,16 +125,16 @@ public class JMXClient {
             String cols[] = { "MaxTotal", "CurrentSize" };
             AttributeList attrs = connection.getAttributes(name, cols);
             Object values[] = getValues(attrs);
-            echo(String.format("\nCACHE [%8d pages max. / %8d pages allocated]", values[0], values[1]));
+            echo("\nCACHE [%8d pages max. / %8d pages allocated]".formatted(values[0], values[1]));
 
             final Set<ObjectName> beans = connection.queryNames(new ObjectName("org.exist.management." + instance + ":type=CacheManager.Cache,*"), null);
             cols = new String[] {"Type", "FileName", "Size", "Used", "Hits", "Fails"};
-            echo(String.format("%10s %20s %10s %10s %10s %10s", cols[0], cols[1], cols[2], cols[3], cols[4], cols[5]));
+            echo("%10s %20s %10s %10s %10s %10s".formatted(cols[0], cols[1], cols[2], cols[3], cols[4], cols[5]));
             for (ObjectName bean : beans) {
                 name = bean;
                 attrs = connection.getAttributes(name, cols);
                 values = getValues(attrs);
-                echo(String.format("%10s %20s %,10d %,10d %,10d %,10d", values[0], values[1], values[2], values[3], values[4], values[5]));
+                echo("%10s %20s %,10d %,10d %,10d %,10d".formatted(values[0], values[1], values[2], values[3], values[4], values[5]));
             }
             
             echo("");
@@ -142,8 +142,8 @@ public class JMXClient {
             cols = new String[] { "MaxTotal", "CurrentSize" };
             attrs = connection.getAttributes(name, cols);
             values = getValues(attrs);
-           echo(String.format("Collection Cache: %10d k max / %10d k allocated",
-               ((Long)values[0] / 1024), ((Long)values[1] / 1024)));
+           echo("Collection Cache: %10d k max / %10d k allocated".formatted(
+                   ((Long)values[0] / 1024), ((Long)values[1] / 1024)));
         } catch (final Exception e) {
             error(e);
         }
@@ -157,17 +157,17 @@ public class JMXClient {
             for (Object o : table.values()) {
                 final CompositeData data = (CompositeData) o;
                 echo("Thread " + data.get("waitingThread"));
-                echo(String.format("%20s: %s", "Lock type", data.get("lockType")));
-                echo(String.format("%20s: %s", "Lock mode", data.get("lockMode")));
-                echo(String.format("%20s: %s", "Lock id", data.get("id")));
-                echo(String.format("%20s: %s", "Held by", Arrays.toString((String[]) data.get("owner"))));
+                echo("%20s: %s".formatted("Lock type", data.get("lockType")));
+                echo("%20s: %s".formatted("Lock mode", data.get("lockMode")));
+                echo("%20s: %s".formatted("Lock id", data.get("id")));
+                echo("%20s: %s".formatted("Held by", Arrays.toString((String[])data.get("owner"))));
                 final String[] readers = (String[]) data.get("waitingForRead");
                 if (readers.length > 0) {
-                    echo(String.format("%20s: %s", "Wait for read", Arrays.toString(readers)));
+                    echo("%20s: %s".formatted("Wait for read", Arrays.toString(readers)));
                 }
                 final String[] writers = (String[]) data.get("waitingForWrite");
                 if (writers.length > 0) {
-                    echo(String.format("%20s: %s", "Wait for write", Arrays.toString(writers)));
+                    echo("%20s: %s".formatted("Wait for write", Arrays.toString(writers)));
                 }
             }
         } catch (final MBeanException | AttributeNotFoundException | InstanceNotFoundException | ReflectionException | IOException | MalformedObjectNameException e) {
@@ -183,18 +183,18 @@ public class JMXClient {
             final String status = (String) connection.getAttribute(name, "Status");
             final Date lastCheckStart = (Date) connection.getAttribute(name, "LastCheckStart");
             final Date lastCheckEnd = (Date) connection.getAttribute(name, "LastCheckEnd");
-            echo(String.format("%22s: %s", "Status", status));
-            echo(String.format("%22s: %s", "Last check start", lastCheckStart));
-            echo(String.format("%22s: %s", "Last check end", lastCheckEnd));
+            echo("%22s: %s".formatted("Status", status));
+            echo("%22s: %s".formatted("Last check start", lastCheckStart));
+            echo("%22s: %s".formatted("Last check end", lastCheckEnd));
             if (lastCheckStart != null && lastCheckEnd != null)
-                {echo(String.format("%22s: %dms", "Check took", (lastCheckEnd.getTime() - lastCheckStart.getTime())));}
+                {echo("%22s: %dms".formatted("Check took", (lastCheckEnd.getTime() - lastCheckStart.getTime())));}
 
             final TabularData table = (TabularData)
                     connection.getAttribute(name, "Errors");
             for (Object o : table.values()) {
                 final CompositeData data = (CompositeData) o;
-                echo(String.format("%22s: %s", "Error code", data.get("errcode")));
-                echo(String.format("%22s: %s", "Description", data.get("description")));
+                echo("%22s: %s".formatted("Error code", data.get("errcode")));
+                echo("%22s: %s".formatted("Description", data.get("description")));
             }
         } catch (final MBeanException | AttributeNotFoundException | InstanceNotFoundException | ReflectionException | IOException | MalformedObjectNameException e) {
             error(e);
@@ -210,10 +210,10 @@ public class JMXClient {
             TabularData table = (TabularData)
                     connection.getAttribute(name, "RunningJobs");
             String[] cols = new String[] { "ID", "Action", "Info" };
-            echo(String.format("%15s %30s %30s", cols[0], cols[1], cols[2]));
+            echo("%15s %30s %30s".formatted(cols[0], cols[1], cols[2]));
             for (Object value : table.values()) {
                 final CompositeData data = (CompositeData) value;
-                echo(String.format("%15s %30s %30s", data.get("id"), data.get("action"), data.get("info")));
+                echo("%15s %30s %30s".formatted(data.get("id"), data.get("action"), data.get("info")));
             }
 
             echo("\nRunning queries");
@@ -221,10 +221,10 @@ public class JMXClient {
             table = (TabularData)
                     connection.getAttribute(name, "RunningQueries");
             cols = new String[] { "ID", "Type", "Key", "Terminating" };
-            echo(String.format("%10s %10s %30s %s", cols[0], cols[1], cols[2], cols[3]));
+            echo("%10s %10s %30s %s".formatted(cols[0], cols[1], cols[2], cols[3]));
             for (Object o : table.values()) {
                 final CompositeData data = (CompositeData) o;
-                echo(String.format("%15s %15s %30s %6s", data.get("id"), data.get("sourceType"), data.get("sourceKey"), data.get("terminating")));
+                echo("%15s %15s %30s %6s".formatted(data.get("id"), data.get("sourceType"), data.get("sourceKey"), data.get("terminating")));
             }
         } catch (final MBeanException | AttributeNotFoundException | InstanceNotFoundException | ReflectionException | IOException | MalformedObjectNameException e) {
             error(e);

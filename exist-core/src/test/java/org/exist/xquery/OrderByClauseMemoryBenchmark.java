@@ -128,7 +128,7 @@ public class OrderByClauseMemoryBenchmark {
                     effectiveN = n;
                 }
 
-                final String query = "count(" + String.format(queryTemplate, n) + ")";
+                final String query = "count(" + queryTemplate.formatted(n) + ")";
 
                 // Warm up (also initializes any lazy structures)
                 for (int w = 0; w < 3; w++) {
