@@ -100,12 +100,10 @@ public class CDataIntergationTest {
 
         // store document
         Collection root = DatabaseManager.getCollection(XmldbURI.LOCAL_DB, TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
-        try {
+        try (root) {
             final Resource resource = root.createResource(docName, XMLResource.class);
             resource.setContent(cdata_xml);
             root.storeResource(resource);
-        } finally {
-            root.close();
         }
 
         // retrieve document
