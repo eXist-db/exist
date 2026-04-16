@@ -107,11 +107,10 @@ public class FunOnFunctions extends BasicFunction {
 				final FunctionReference ref = (FunctionReference) args[0].itemAt(0);
 				return new IntegerValue(this, ref.getSignature().getArgumentCount());
 			}
+		} catch (final XPathException e) {
+			throw e;
 		} catch (final Exception e) {
-			if (e instanceof XPathException exception)
-				{throw exception;}
-			else
-				{throw new XPathException(this, ErrorCodes.XPST0017, e.getMessage());}
+			throw new XPathException(this, ErrorCodes.XPST0017, e.getMessage());
 		}
 	}
 

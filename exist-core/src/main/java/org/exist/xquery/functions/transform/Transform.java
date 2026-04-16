@@ -392,10 +392,9 @@ public class Transform extends BasicFunction {
                 setParameters(options, handler.getTransformer());
             }
 
+        } catch (final XPathException e) {
+            throw e;
         } catch (final Exception e) {
-            if (e instanceof XPathException exception) {
-                throw exception;
-            }
             throw new XPathException(this, "Unable to set up transformer: " + e.getMessage(), e);
         }
         return handler;

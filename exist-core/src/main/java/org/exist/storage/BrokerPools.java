@@ -204,16 +204,14 @@ abstract class BrokerPools {
 
                 //Add it to the list
                 instances.put(instanceName, instance);
+            } catch(final EXistException e) {
+                // Catch all possible issues and report.
+                LOG.error("Unable to initialize database instance '{}': {}", instanceName, e.getMessage(), e);
+                throw e;
             } catch(final Throwable e) {
                 // Catch all possible issues and report.
                 LOG.error("Unable to initialize database instance '{}': {}", instanceName, e.getMessage(), e);
-                final EXistException ee;
-                if(e instanceof EXistException exception) {
-                    ee = exception;
-                } else {
-                    ee = new EXistException(e);
-                }
-                throw ee;
+                throw new EXistException(e);
             }
         }
     }

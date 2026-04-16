@@ -235,15 +235,13 @@ public class JavaCall extends Function {
 						+ e.getMessage(),
 					e);
 			} catch (final Exception e) {
-				if (e instanceof XPathException exception)
-					{throw exception;}
-				else
-					{throw new XPathException(this,
+				throwIfXPathException(e);
+				throw new XPathException(this,
 						"exception while calling constructor "
 							+ bestMethod
 							+ ": "
 							+ e.getMessage(),
-						e);}
+						e);
 			}
 		} else {
 			try {
@@ -265,15 +263,13 @@ public class JavaCall extends Function {
 						+ e.getMessage(),
 					e);
 			} catch (final Exception e) {
-				if (e instanceof XPathException exception)
-					{throw exception;}
-				else
-					{throw new XPathException(this,
+				throwIfXPathException(e);
+				throw new XPathException(this,
 						"exception while calling method "
 							+ bestMethod
 							+ ": "
 							+ e.getMessage(),
-						e);}
+						e);
 			}
 		}
 
@@ -291,6 +287,12 @@ public class JavaCall extends Function {
 	 */
 	public int returnsType() {
 		return Type.ITEM;
+	}
+
+	private static void throwIfXPathException(final Exception e) throws XPathException {
+		if (e instanceof XPathException xpe) {
+			throw xpe;
+		}
 	}
 	
 	private int[] getConversionPreferences(AccessibleObject method, Sequence[] args) {

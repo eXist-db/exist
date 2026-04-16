@@ -103,14 +103,7 @@ public class RpcServlet extends XmlRpcServlet {
                 super.doPost(request, response);
             } catch (final Throwable e) {
                 LOG.error("Problem during XmlRpc execution", e);
-                final String exceptionMessage;
-                if (e instanceof XmlRpcException exception) {
-                    final Throwable linkedException = exception.linkedException;
-                    LOG.error(linkedException.getMessage(), linkedException);
-                    exceptionMessage = "An error occurred: " + e.getMessage() + ": " + linkedException.getMessage();
-                } else {
-                    exceptionMessage = "An unknown error occurred: " + e.getMessage();
-                }
+                final String exceptionMessage = describeXmlRpcExecutionFailure(e);
                 throw new ServletException(exceptionMessage, e);
             }
         } catch (final EXistException e) {
@@ -120,6 +113,16 @@ public class RpcServlet extends XmlRpcServlet {
                 wrapper.close();
             }
         }
+    }
+
+    private static String describeXmlRpcExecutionFailure(final Throwable e) {
+        if (e instanceof XmlRpcException exception) {
+            final Throwable linkedException = exception.linkedException;
+            LOG.error(linkedException.getMessage(), linkedException);
+            return "An error occurred: " + e.getMessage() + ": " + linkedException.getMessage();
+        }
+
+        return "An unknown error occurred: " + e.getMessage();
     }
 
     @Override
