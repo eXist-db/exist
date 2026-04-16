@@ -11,13 +11,13 @@ identifiers:
   - type: url
     value: >-
       https://github.com/eXist-db/exist/releases/tag/eXist-6.4.1
-    description: The GitHub release URL of latest stable release
+    description: The URL of the latest GitHub release
 repository-code: 'https://github.com/eXist-db/exist'
 url: 'https://exist-db.org/'
 repository-artifact: 'https://central.sonatype.com/artifact/org.exist-db/exist'
 abstract: >-
   eXist-db is a high-performance open source native XML
-  database—a NoSQL document database and application
+  database — a NoSQL document database and application
   platform built entirely around XML technologies. 
 keywords:
   - xquery
