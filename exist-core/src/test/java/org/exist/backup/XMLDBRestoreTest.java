@@ -343,7 +343,7 @@ public class XMLDBRestoreTest {
         col1Contents.append("</collection>");
 
         final Path dbContentsFile = Files.write(db.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), dbContents.getBytes(UTF_8));
-        final Path col1ContentsFile = Files.write(col1.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), col1Contents.toString().getBytes(UTF_8));
+        Files.write(col1.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), col1Contents.toString().getBytes(UTF_8));
         for (final DocInfo backupDocInfo : BACKUP_DOCS) {
             Files.write(col1.resolve(backupDocInfo.name), backupDocInfo.content.getBytes(UTF_8));
         }
@@ -565,12 +565,12 @@ public class XMLDBRestoreTest {
                         "<name>" + username + "</name>\n" +
                         "</account>\n");
 
-        final Path dbContentsFile = Files.write(dbCol.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), dbContents.getBytes(UTF_8));
-        final Path systemContentsFile = Files.write(systemCol.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), systemContents.getBytes(UTF_8));
-        final Path securityContentsFile = Files.write(securityCol.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), securityContents.getBytes(UTF_8));
-        final Path existRealmContentsFile = Files.write(existRealmCol.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), existRealmContents.getBytes(UTF_8));
-        final Path groupsContentsFile = Files.write(groupsCol.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), groupsContents.toString().getBytes(UTF_8));
-        final Path accountsContentsFile = Files.write(accountsCol.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), accountsContents.getBytes(UTF_8));
+        Files.write(dbCol.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), dbContents.getBytes(UTF_8));
+        Files.write(systemCol.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), systemContents.getBytes(UTF_8));
+        Files.write(securityCol.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), securityContents.getBytes(UTF_8));
+        Files.write(existRealmCol.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), existRealmContents.getBytes(UTF_8));
+        Files.write(groupsCol.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), groupsContents.toString().getBytes(UTF_8));
+        Files.write(accountsCol.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), accountsContents.getBytes(UTF_8));
 
         int groupId = 123;
         for (final String groupName : groupNames) {

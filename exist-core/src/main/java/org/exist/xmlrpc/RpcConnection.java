@@ -3420,7 +3420,7 @@ public class RpcConnection implements RpcAPI {
         }
 
         //Copy i file
-        int p, dsize = documents.length;
+        int p;
         for (Object document : documents) {
             final Map<String, Object> hash = (Map<String, Object>) document;
             String docName = (String) hash.get("name");

@@ -458,7 +458,6 @@ public final class Journal implements Closeable {
         try {
             if (currentBuffer.position() > 0) {
                 currentBuffer.flip();
-                final int size = currentBuffer.remaining();
                 while (currentBuffer.hasRemaining()) {
                     channel.write(currentBuffer);
                 }

@@ -34,7 +34,6 @@ import org.exist.collections.Collection;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.internal.aider.ACEAider;
-import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.txn.Txn;
@@ -137,7 +136,6 @@ public class PermissionFactory {
     }
 
     private static void updatePermissions(final DBBroker broker, final Txn transaction, final XmldbURI pathUri, final ConsumerE<Permission, PermissionDeniedException> permissionModifier) throws PermissionDeniedException {
-        final BrokerPool brokerPool = broker.getBrokerPool();
         try {
             try(final Collection collection = broker.openCollection(pathUri, LockMode.WRITE_LOCK)) {
                 if (collection == null) {

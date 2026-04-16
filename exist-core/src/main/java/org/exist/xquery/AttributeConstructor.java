@@ -22,7 +22,6 @@
 package org.exist.xquery;
 
 import org.exist.xquery.util.ExpressionDumper;
-import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
@@ -106,7 +105,6 @@ public class AttributeConstructor extends NodeConstructor {
 
 	private void evalEnclosedExpr(Sequence seq, StringBuilder buf) throws XPathException {
 		Item item;
-		AtomicValue atomic;
 		for(final SequenceIterator i = Atomize.atomize(seq).iterate(); i.hasNext();) {
 			item = i.nextItem();
 			buf.append(item.getStringValue());

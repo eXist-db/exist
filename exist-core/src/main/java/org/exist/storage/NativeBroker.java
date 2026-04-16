@@ -841,7 +841,7 @@ public class NativeBroker implements DBBroker {
             //TODO(AR) below, should we just fall back to recursive descent creating the collection hierarchy in the same manner that getOrCreateCollection used to do?
 
             // 3) No parent collection was previously found in cache so we need to call this function for the parent Collection and then ourselves
-            final Tuple2<Boolean, Collection> newOrExistingParentCollection = getOrCreateCollectionExplicit(transaction, parentCollectionUri, creationAttributes, fireTrigger);
+            getOrCreateCollectionExplicit(transaction, parentCollectionUri, creationAttributes, fireTrigger);
             return getOrCreateCollectionExplicit(transaction, collectionUri, creationAttributes, fireTrigger);
 
         } catch(final ReadOnlyException e) {
@@ -1429,7 +1429,6 @@ public class NativeBroker implements DBBroker {
             }
 
             final XmldbURI newDocName = sourceDocument.getFileURI();
-            final XmldbURI targetCollectionUri = targetCollection.getURI();
 
             try(final LockedDocument oldLockedDoc = targetCollection.getDocumentWithLock(this, newDocName, LockMode.WRITE_LOCK)) {
                 final DocumentImpl oldDoc = oldLockedDoc == null ? null : oldLockedDoc.getDocument();
@@ -2451,7 +2450,6 @@ public class NativeBroker implements DBBroker {
                 }
                 //if (!doc.getMode().validate(getUser(), Permission.READ))
                 //throw new PermissionDeniedException("not allowed to read document");
-                final DocumentImpl doc = lockedDocument.getDocument();
                 return lockedDocument;
             } catch (final LockException e) {
                 LOG.error("Could not acquire lock on document {}", fileName, e);
@@ -4369,7 +4367,6 @@ public class NativeBroker implements DBBroker {
         public boolean indexInfo(final Value key, final long pointer) throws TerminatedException {
 
             try {
-                final int docId = CollectionStore.DocumentKey.getDocumentId(key);
                 final byte type = key.data()[key.start() + Collection.LENGTH_COLLECTION_ID + DocumentImpl.LENGTH_DOCUMENT_TYPE];
                 final VariableByteInput is = collectionsDb.getAsStream(pointer);
 

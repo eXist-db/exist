@@ -94,7 +94,7 @@ public class ConcurrentStoreTest {
             test2 = broker.getCollection(TEST_COLLECTION_URI.append("test2"));
             assertNotNull(test2);
             for (Iterator<DocumentImpl> i = test.iterator(broker); i.hasNext(); ) {
-                DocumentImpl next = i.next();
+                i.next();
             }
         }
     }
