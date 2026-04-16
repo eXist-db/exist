@@ -24,6 +24,7 @@ package org.exist.client;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.io.Serial;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -41,7 +42,8 @@ import org.exist.util.ProgressIndicator;
 
 class UploadDialog extends JFrame {
 
-	private static final long serialVersionUID = 1L;
+    @Serial
+    private static final long serialVersionUID = 1L;
 
 	JTextField currentFile;
 	JTextField currentDir;

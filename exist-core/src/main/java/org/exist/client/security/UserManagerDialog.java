@@ -24,6 +24,7 @@ package org.exist.client.security;
 import org.exist.client.DialogCompleteWithResponse;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.Serial;
 import java.util.Arrays;
 import java.util.Properties;
 import javax.swing.JOptionPane;
@@ -47,6 +48,7 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class UserManagerDialog extends javax.swing.JFrame {
 
+    @Serial
     private static final long serialVersionUID = 2091215304766070041L;
 
     private UserManagementService userManagementService;

@@ -21,6 +21,7 @@
  */
 package org.exist.client.security;
 
+import java.io.Serial;
 import java.text.ParseException;
 import javax.swing.JFormattedTextField.AbstractFormatter;
 import javax.swing.text.DocumentFilter;
@@ -31,6 +32,7 @@ import javax.swing.text.DocumentFilter;
  */
 public class UmaskEditorFormatter extends AbstractFormatter {
 
+    @Serial
     private static final long serialVersionUID = -1209002227738149636L;
 
     @Override

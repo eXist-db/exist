@@ -21,12 +21,15 @@
  */
 package org.exist.util;
 
+import java.io.Serial;
+
 /**
  * @author wolf
  */
 public class LockException extends Exception {
 
-	private static final long serialVersionUID = -6273549212242606084L;
+    @Serial
+    private static final long serialVersionUID = -6273549212242606084L;
 
 	public LockException() {
 		super();

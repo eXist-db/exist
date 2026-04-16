@@ -27,12 +27,15 @@ import javax.swing.JSpinner.DefaultEditor;
 import javax.swing.JTextField;
 import javax.swing.text.DefaultFormatterFactory;
 
+import java.io.Serial;
+
 /**
  *
  * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 public class UmaskEditor extends DefaultEditor {
-    
+
+    @Serial
     private static final long serialVersionUID = 1531848918506511061L;
 
     public UmaskEditor(final JSpinner jSpinner) {

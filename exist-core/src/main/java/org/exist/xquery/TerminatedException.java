@@ -22,12 +22,15 @@
 
 package org.exist.xquery;
 
+import java.io.Serial;
+
 /**
  * @author wolf
  */
 public class TerminatedException extends XPathException {
 
-	private static final long serialVersionUID = 6055587317214098592L;
+    @Serial
+    private static final long serialVersionUID = 6055587317214098592L;
 
     public TerminatedException(String message) {
         this(null, message);
@@ -42,8 +45,9 @@ public class TerminatedException extends XPathException {
     }
 
     public final static class TimeoutException extends TerminatedException {
-        
-		private static final long serialVersionUID = 1193758368058763151L;
+
+        @Serial
+        private static final long serialVersionUID = 1193758368058763151L;
 
 		public TimeoutException(int line, int column, String message) {
             super(line, column, message);
@@ -51,8 +55,9 @@ public class TerminatedException extends XPathException {
     }
     
     public final static class SizeLimitException extends TerminatedException {
-        
-		private static final long serialVersionUID = -697205233217384556L;
+
+        @Serial
+        private static final long serialVersionUID = -697205233217384556L;
 
 		public SizeLimitException(int line, int column, String message) {
             super(line, column, message);

@@ -21,12 +21,15 @@
  */
 package org.exist.collections;
 
+import java.io.Serial;
+
 /**
  * @author wolf
  */
 public class CollectionConfigurationException extends Exception {
 
-	private static final long serialVersionUID = 2646147244407222955L;
+    @Serial
+    private static final long serialVersionUID = 2646147244407222955L;
 
 	/**
 	 * 

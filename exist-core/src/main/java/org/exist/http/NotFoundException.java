@@ -21,9 +21,12 @@
  */
 package org.exist.http;
 
+import java.io.Serial;
+
 public class NotFoundException extends Exception {
 
-	private static final long serialVersionUID = -8399138517913514619L;
+    @Serial
+    private static final long serialVersionUID = -8399138517913514619L;
 
 	public NotFoundException(String message) {
 		super(message);

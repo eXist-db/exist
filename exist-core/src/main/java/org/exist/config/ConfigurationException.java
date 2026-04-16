@@ -23,11 +23,14 @@ package org.exist.config;
 
 import org.exist.EXistException;
 
+import java.io.Serial;
+
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  */
 public class ConfigurationException extends EXistException {
 
+    @Serial
     private static final long serialVersionUID = 1441009248525222734L;
 
     public ConfigurationException() {

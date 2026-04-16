@@ -21,6 +21,8 @@
  */
 package org.exist.webdav.exceptions;
 
+import java.io.Serial;
+
 /**
  * Class that represents a situation that a file cannot be created  because the collection
  * does not exist.
@@ -29,6 +31,7 @@ package org.exist.webdav.exceptions;
  */
 public class EXistWebdavException extends Exception {
 
+    @Serial
     private static final long serialVersionUID = 6789177932722513095L;
 
     public EXistWebdavException() {

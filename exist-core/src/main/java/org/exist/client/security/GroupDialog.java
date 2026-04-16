@@ -21,6 +21,7 @@
  */
 package org.exist.client.security;
 
+import java.io.Serial;
 import java.util.regex.Pattern;
 import javax.swing.InputVerifier;
 import javax.swing.JOptionPane;
@@ -39,6 +40,7 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class GroupDialog extends javax.swing.JFrame {
 
+    @Serial
     private static final long serialVersionUID = 2291775874309563932L;
 
     private final Pattern PTN_GROUPNAME = Pattern.compile("[a-zA-Z0-9\\-\\._@]{3,}");
