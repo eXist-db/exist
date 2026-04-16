@@ -43,6 +43,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.Serial;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -55,7 +56,8 @@ import static java.nio.charset.StandardCharsets.ISO_8859_1;
 
 public class RpcServlet extends XmlRpcServlet {
 
-	private static final long serialVersionUID = -1003413291835771186L;
+    @Serial
+    private static final long serialVersionUID = -1003413291835771186L;
     private static final Logger LOG = LogManager.getLogger(RpcServlet.class);
     private static final boolean DEFAULT_USE_DEFAULT_USER = true;
 
@@ -102,8 +104,8 @@ public class RpcServlet extends XmlRpcServlet {
             } catch (final Throwable e) {
                 LOG.error("Problem during XmlRpc execution", e);
                 final String exceptionMessage;
-                if (e instanceof XmlRpcException) {
-                    final Throwable linkedException = ((XmlRpcException) e).linkedException;
+                if (e instanceof XmlRpcException exception) {
+                    final Throwable linkedException = exception.linkedException;
                     LOG.error(linkedException.getMessage(), linkedException);
                     exceptionMessage = "An error occurred: " + e.getMessage() + ": " + linkedException.getMessage();
                 } else {
@@ -114,8 +116,8 @@ public class RpcServlet extends XmlRpcServlet {
         } catch (final EXistException e) {
             throw new ServletException(e);
         } finally {
-            if (request != null && request instanceof HttpServletRequestWrapper) {
-                ((HttpServletRequestWrapper)request).close();
+            if (request != null && request instanceof HttpServletRequestWrapper wrapper) {
+                wrapper.close();
             }
         }
     }
