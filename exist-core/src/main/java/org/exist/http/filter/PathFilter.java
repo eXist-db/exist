@@ -81,8 +81,8 @@ public class PathFilter implements Filter {
         HttpServletRequest httpServletRequest;
         HttpServletResponse httpServletResponse;
 
-        if (servletRequest instanceof HttpServletRequest) {
-            httpServletRequest = (HttpServletRequest)servletRequest;
+        if (servletRequest instanceof HttpServletRequest request) {
+            httpServletRequest = request;
             httpServletResponse = (HttpServletResponse)servletResponse;
         }
         else {

@@ -598,8 +598,8 @@ public abstract class NodeImpl<T extends NodeImpl<T>> implements INode<DocumentI
                 serializer.setProperties(properties);
             }
 
-            if (handler instanceof LexicalHandler) {
-                serializer.setSAXHandlers(handler, (LexicalHandler) handler);
+            if (handler instanceof LexicalHandler lexicalHandler) {
+                serializer.setSAXHandlers(handler, lexicalHandler);
             } else {
                 serializer.setSAXHandlers(handler, null);
             }

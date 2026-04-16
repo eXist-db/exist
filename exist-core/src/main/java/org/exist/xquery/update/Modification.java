@@ -345,8 +345,8 @@ public abstract class Modification extends AbstractExpression
     protected @Nullable Node getParent(@Nullable final Node node) {
         if (node == null) {
             return null;
-        } else if (node instanceof Attr) {
-            return ((Attr) node).getOwnerElement();
+        } else if (node instanceof Attr attr) {
+            return attr.getOwnerElement();
         } else {
             return node.getParentNode();
         }

@@ -52,8 +52,8 @@ public class XQueryAST extends CommonAST {
 	 */
 	public void initialize(AST ast) {
 		super.initialize(ast);
-		if(ast instanceof XQueryAST) {
-			copyLexInfo((XQueryAST)ast);
+		if(ast instanceof XQueryAST sT) {
+			copyLexInfo(sT);
 		}
 	}
 	

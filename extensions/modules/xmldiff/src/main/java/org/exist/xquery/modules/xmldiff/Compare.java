@@ -165,12 +165,12 @@ public class Compare extends BasicFunction {
     }
 
     private static @Nullable Node toNode(final Item item) {
-        if (item instanceof Node) {
-            return (Node) item;
+        if (item instanceof Node node) {
+            return node;
         }
 
-        if (item instanceof NodeProxy) {
-            return ((NodeProxy) item).getNode();
+        if (item instanceof NodeProxy proxy) {
+            return proxy.getNode();
         }
 
         return null;

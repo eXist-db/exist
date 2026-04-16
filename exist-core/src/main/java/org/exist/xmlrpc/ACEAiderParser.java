@@ -135,9 +135,9 @@ class ACEAiderParser extends RecursiveTypeParserImpl {
 
         Object object = list.getFirst();
         final ACE_ACCESS_TYPE aceAccessType;
-        if (object instanceof String) {
+        if (object instanceof String string) {
             try {
-                aceAccessType = ACE_ACCESS_TYPE.valueOf((String) object);
+                aceAccessType = ACE_ACCESS_TYPE.valueOf(string);
             } catch (final IllegalArgumentException e) {
                 throw new SAXException(e);
             }
@@ -147,9 +147,9 @@ class ACEAiderParser extends RecursiveTypeParserImpl {
 
         object = list.get(1);
         final ACE_TARGET aceTarget;
-        if (object instanceof String) {
+        if (object instanceof String string) {
             try {
-                aceTarget = ACE_TARGET.valueOf((String) object);
+                aceTarget = ACE_TARGET.valueOf(string);
             } catch (final IllegalArgumentException e) {
                 throw new SAXException(e);
             }
@@ -159,16 +159,16 @@ class ACEAiderParser extends RecursiveTypeParserImpl {
 
         object = list.get(2);
         final String aceWho;
-        if (object instanceof String) {
-            aceWho = (String) object;
+        if (object instanceof String string) {
+            aceWho = string;
         } else {
             throw new SAXException("Expected String");
         }
 
         object = list.get(3);
         final int aceMode;
-        if (object instanceof Integer) {
-            aceMode = (Integer) object;
+        if (object instanceof Integer integer) {
+            aceMode = integer;
         } else {
             throw new SAXException("Expected Integer");
         }

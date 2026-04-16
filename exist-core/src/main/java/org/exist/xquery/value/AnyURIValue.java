@@ -434,8 +434,8 @@ public class    AnyURIValue extends AtomicValue {
         if (this == obj) {
             return true;
         }
-        if (obj instanceof AnyURIValue) {
-            return ((AnyURIValue) obj).uri.equals(uri);
+        if (obj instanceof AnyURIValue value) {
+            return value.uri.equals(uri);
         }
         return false;
     }

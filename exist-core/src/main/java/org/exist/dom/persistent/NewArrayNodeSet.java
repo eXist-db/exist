@@ -1110,8 +1110,8 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
         sort();
         if (item instanceof Node) {
             @Nullable final Document doc;
-            if (item instanceof Document) {
-                doc = (Document) item;
+            if (item instanceof Document document) {
+                doc = document;
             } else {
                 doc = ((Node) item).getOwnerDocument();
             }
@@ -1121,8 +1121,8 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
             }
 
             final int docId;
-            if (doc instanceof DocumentImpl) {
-                docId = ((DocumentImpl) doc).getDocId();
+            if (doc instanceof DocumentImpl impl) {
+                docId = impl.getDocId();
             } else {
                 docId = (int) ((org.exist.dom.memtree.DocumentImpl) doc).getDocId();
             }
@@ -1143,8 +1143,8 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
         sort();
         if (item instanceof Node) {
             @Nullable final Document doc;
-            if (item instanceof Document) {
-                doc = (Document) item;
+            if (item instanceof Document document) {
+                doc = document;
             } else {
                 doc = ((Node) item).getOwnerDocument();
             }
@@ -1154,8 +1154,8 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
             }
 
             final int docId;
-            if (doc instanceof DocumentImpl) {
-                docId = ((DocumentImpl) doc).getDocId();
+            if (doc instanceof DocumentImpl impl) {
+                docId = impl.getDocId();
             } else {
                 docId = (int) ((org.exist.dom.memtree.DocumentImpl) doc).getDocId();
             }

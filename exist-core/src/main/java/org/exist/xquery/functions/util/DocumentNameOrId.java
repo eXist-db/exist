@@ -113,8 +113,8 @@ public class DocumentNameOrId extends BasicFunction {
                 case FSN_DOCUMENT_NAME:
                     if (arg.getType() == Type.STRING || arg.getType() == Type.ANY_URI) {
                         return Sequence.of(getFromDocument(XmldbURI.create(arg.getStringValue()), DocumentImpl::getFileURI));
-                    } else if (arg instanceof NodeProxy) {
-                        return Sequence.of(getFromDocument(((NodeProxy) arg).getOwnerDocument().getURI(), DocumentImpl::getFileURI));
+                    } else if (arg instanceof NodeProxy proxy) {
+                        return Sequence.of(getFromDocument(proxy.getOwnerDocument().getURI(), DocumentImpl::getFileURI));
                     } else {
                         return Sequence.EMPTY_SEQUENCE;
                     }
@@ -122,8 +122,8 @@ public class DocumentNameOrId extends BasicFunction {
                 case FSN_DOCUMENT_ID:
                     if (arg.getType() == Type.STRING || arg.getType() == Type.ANY_URI) {
                         return Sequence.of(getFromDocument(XmldbURI.create(arg.getStringValue()), DocumentImpl::getDocId));
-                    } else if (arg instanceof NodeProxy) {
-                        return Sequence.of(getFromDocument(((NodeProxy) arg).getOwnerDocument().getURI(), DocumentImpl::getDocId));
+                    } else if (arg instanceof NodeProxy proxy) {
+                        return Sequence.of(getFromDocument(proxy.getOwnerDocument().getURI(), DocumentImpl::getDocId));
                     } else {
                         return Sequence.EMPTY_SEQUENCE;
                     }
@@ -131,8 +131,8 @@ public class DocumentNameOrId extends BasicFunction {
                 case FSN_ABSOLUTE_RESOURCE_ID:
                     if (arg.getType() == Type.STRING || arg.getType() == Type.ANY_URI) {
                         return Sequence.of(getFromDocument(XmldbURI.create(arg.getStringValue()), DocumentNameOrId::getAbsoluteResourceId));
-                    } else if (arg instanceof NodeProxy) {
-                        return Sequence.of(getFromDocument(((NodeProxy) arg).getOwnerDocument().getURI(), DocumentNameOrId::getAbsoluteResourceId));
+                    } else if (arg instanceof NodeProxy proxy) {
+                        return Sequence.of(getFromDocument(proxy.getOwnerDocument().getURI(), DocumentNameOrId::getAbsoluteResourceId));
                     } else {
                         return Sequence.EMPTY_SEQUENCE;
                     }

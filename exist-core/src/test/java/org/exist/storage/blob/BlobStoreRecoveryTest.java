@@ -154,8 +154,8 @@ public class BlobStoreRecoveryTest {
             assertNotNull(actual);
             assertEquals(tempBin1._2, tempBin1._2);
             assertArrayEquals(tempBin1._1, tempBin1._1);
-            if (blobDb.blobStore instanceof BlobStoreImpl) {
-                assertEquals(1, ((BlobStoreImpl)blobDb.blobStore).getReferenceCount(blobId).intValue());
+            if (blobDb.blobStore instanceof BlobStoreImpl impl) {
+                assertEquals(1, impl.getReferenceCount(blobId).intValue());
             }
         }
     }
@@ -188,8 +188,8 @@ public class BlobStoreRecoveryTest {
             final BlobId blobId = new BlobId(tempBin1._2.getValue());
             final Tuple2<byte[], MessageDigest> actual = getCommit(blobDb.transactionManager, blobDb.blobStore, blobId);
             assertNull(actual);
-            if (blobDb.blobStore instanceof BlobStoreImpl) {
-                assertNull(((BlobStoreImpl)blobDb.blobStore).getReferenceCount(blobId));
+            if (blobDb.blobStore instanceof BlobStoreImpl impl) {
+                assertNull(impl.getReferenceCount(blobId));
             }
         }
     }
@@ -223,8 +223,8 @@ public class BlobStoreRecoveryTest {
             final BlobId blobId = new BlobId(tempBin1._2.getValue());
             final Tuple2<byte[], MessageDigest> actual = getCommit(blobDb.transactionManager, blobDb.blobStore, blobId);
             assertNull(actual);
-            if (blobDb.blobStore instanceof BlobStoreImpl) {
-                assertNull(((BlobStoreImpl)blobDb.blobStore).getReferenceCount(blobId));
+            if (blobDb.blobStore instanceof BlobStoreImpl impl) {
+                assertNull(impl.getReferenceCount(blobId));
             }
         }
     }
@@ -260,8 +260,8 @@ public class BlobStoreRecoveryTest {
             assertNotNull(actual);
             assertEquals(tempBin1._2, tempBin1._2);
             assertArrayEquals(tempBin1._1, tempBin1._1);
-            if (blobDb.blobStore instanceof BlobStoreImpl) {
-                assertEquals(1, ((BlobStoreImpl)blobDb.blobStore).getReferenceCount(blobId).intValue());
+            if (blobDb.blobStore instanceof BlobStoreImpl impl) {
+                assertEquals(1, impl.getReferenceCount(blobId).intValue());
             }
         }
     }
@@ -297,8 +297,8 @@ public class BlobStoreRecoveryTest {
             assertNotNull(actual);
             assertEquals(tempBin1._2, tempBin1._2);
             assertArrayEquals(tempBin1._1, tempBin1._1);
-            if (blobDb.blobStore instanceof BlobStoreImpl) {
-                assertEquals(2, ((BlobStoreImpl)blobDb.blobStore).getReferenceCount(blobId).intValue());
+            if (blobDb.blobStore instanceof BlobStoreImpl impl) {
+                assertEquals(2, impl.getReferenceCount(blobId).intValue());
             }
         }
     }
@@ -334,8 +334,8 @@ public class BlobStoreRecoveryTest {
             assertNotNull(actual);
             assertEquals(tempBin1._2, tempBin1._2);
             assertArrayEquals(tempBin1._1, tempBin1._1);
-            if (blobDb.blobStore instanceof BlobStoreImpl) {
-                assertEquals(1, ((BlobStoreImpl)blobDb.blobStore).getReferenceCount(blobId).intValue());
+            if (blobDb.blobStore instanceof BlobStoreImpl impl) {
+                assertEquals(1, impl.getReferenceCount(blobId).intValue());
             }
         }
     }
@@ -372,8 +372,8 @@ public class BlobStoreRecoveryTest {
             assertNotNull(actual);
             assertEquals(tempBin1._2, tempBin1._2);
             assertArrayEquals(tempBin1._1, tempBin1._1);
-            if (blobDb.blobStore instanceof BlobStoreImpl) {
-                assertEquals(1, ((BlobStoreImpl)blobDb.blobStore).getReferenceCount(blobId).intValue());
+            if (blobDb.blobStore instanceof BlobStoreImpl impl) {
+                assertEquals(1, impl.getReferenceCount(blobId).intValue());
             }
         }
     }
@@ -410,8 +410,8 @@ public class BlobStoreRecoveryTest {
             assertNotNull(actual);
             assertEquals(tempBin1._2, tempBin1._2);
             assertArrayEquals(tempBin1._1, tempBin1._1);
-            if (blobDb.blobStore instanceof BlobStoreImpl) {
-                assertEquals(2, ((BlobStoreImpl)blobDb.blobStore).getReferenceCount(blobId).intValue());
+            if (blobDb.blobStore instanceof BlobStoreImpl impl) {
+                assertEquals(2, impl.getReferenceCount(blobId).intValue());
             }
         }
     }

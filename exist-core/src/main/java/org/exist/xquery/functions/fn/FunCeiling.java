@@ -80,8 +80,8 @@ public class FunCeiling extends Function {
         } else {
         	final Item item = seq.itemAt(0);
         	NumericValue value;
-        	if (item instanceof NumericValue) {
-				value = (NumericValue) item;
+        	if (item instanceof NumericValue numericValue) {
+				value = numericValue;
 			} else {
 				value = (NumericValue) item.convertTo(Type.NUMERIC);
 			}

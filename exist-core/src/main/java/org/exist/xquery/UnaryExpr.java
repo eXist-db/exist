@@ -71,8 +71,8 @@ public class UnaryExpr extends PathExpr {
         
 		final NumericValue value;
         if (Type.subTypeOfUnion(item.getItemType(), Type.NUMERIC)) {
-        	if (item instanceof NumericValue) {
-				value = (NumericValue) item;
+        	if (item instanceof NumericValue numericValue) {
+				value = numericValue;
 			} else {
         		value = (NumericValue) item.convertTo(item.getItemType());
 			}

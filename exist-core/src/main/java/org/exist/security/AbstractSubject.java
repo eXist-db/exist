@@ -181,7 +181,7 @@ public abstract class AbstractSubject implements Subject {
     public boolean equals(final Object obj) {
        return Optional
                .ofNullable(obj)
-               .flatMap(other -> other instanceof Account ? Optional.of((Account)other) : Optional.empty())
+               .flatMap(other -> other instanceof Account a ? Optional.of(a) : Optional.empty())
                .map(account::equals)
                .orElse(false);
     }

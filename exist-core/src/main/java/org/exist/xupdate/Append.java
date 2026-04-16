@@ -90,8 +90,8 @@ public class Append extends Modification {
 				}
 				node.appendChildren(transaction, children, child);
 				// Merge adjacent text nodes to maintain XDM compliance (issue #6160)
-				if (node instanceof ElementImpl) {
-					mergeAdjacentTextNodes(transaction, (ElementImpl) node);
+				if (node instanceof ElementImpl impl) {
+					mergeAdjacentTextNodes(transaction, impl);
 				}
 				doc.setLastModified(System.currentTimeMillis());
 				modifiedDocuments.add(doc);
@@ -118,7 +118,7 @@ public class Append extends Modification {
 		IStoredNode<?> prevTextNode = null;
 		for (int i = 0; i < length; i++) {
 			final Node child = childNodes.item(i);
-			if (child.getNodeType() == Node.TEXT_NODE && child instanceof IStoredNode) {
+			if (child.getNodeType() == Node.TEXT_NODE && child instanceof IStoredNode<?> node) {
 				if (prevTextNode != null) {
 					// Found adjacent text nodes: merge by updating prev and removing current
 					final String mergedValue = prevTextNode.getNodeValue() + child.getNodeValue();
@@ -130,7 +130,7 @@ public class Append extends Modification {
 					// but we need to re-read it since updateChild replaced it
 					return; // only one merge needed per append
 				}
-				prevTextNode = (IStoredNode<?>) child;
+				prevTextNode = node;
 			} else {
 				prevTextNode = null;
 			}

@@ -233,10 +233,10 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
      * @param n a <code>NodeHandle</code> value
      */
     public NodeProxy(final Expression expression, final NodeHandle n) {
-        this((expression == null && n instanceof NodeProxy) ? ((NodeProxy) n).getExpression() : expression, n.getOwnerDocument(), n.getNodeId(), n.getNodeType(), n.getInternalAddress());
-        if(n instanceof NodeProxy) {
-            this.match = ((NodeProxy) n).match;
-            this.context = ((NodeProxy) n).context;
+        this((expression == null && n instanceof NodeProxy np) ? np.getExpression() : expression, n.getOwnerDocument(), n.getNodeId(), n.getNodeType(), n.getInternalAddress());
+        if(n instanceof NodeProxy proxy) {
+            this.match = proxy.match;
+            this.context = proxy.context;
         }
     }
 
@@ -754,8 +754,8 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
                 serializer.setProperties(properties);
             }
 
-            if (handler instanceof LexicalHandler) {
-                serializer.setSAXHandlers(handler, (LexicalHandler) handler);
+            if (handler instanceof LexicalHandler lexicalHandler) {
+                serializer.setSAXHandlers(handler, lexicalHandler);
             } else {
                 serializer.setSAXHandlers(handler, null);
             }

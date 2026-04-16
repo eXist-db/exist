@@ -76,8 +76,8 @@ public class AttributeConstructor extends NodeConstructor {
         super.analyze(contextInfo);
         contextInfo.setParent(this);
         for(final Object next : contents) {
-			if(next instanceof Expression)
-				{((Expression)next).analyze(contextInfo);}
+			if(next instanceof Expression expression)
+				{expression.analyze(contextInfo);}
 		}
     }
     
@@ -91,8 +91,8 @@ public class AttributeConstructor extends NodeConstructor {
 		final StringBuilder buf = new StringBuilder();
 
 		for(final Object next : contents) {
-			if(next instanceof Expression)
-				{evalEnclosedExpr(((Expression)next).eval(contextSequence, contextItem), buf);}
+			if(next instanceof Expression expression)
+				{evalEnclosedExpr(expression.eval(contextSequence, contextItem), buf);}
 			else
 				{buf.append(next);}
 		}
@@ -140,8 +140,8 @@ public class AttributeConstructor extends NodeConstructor {
         dumper.startIndent();
 
 		for(final Object next : contents) {
-			if(next instanceof Expression)
-				{((Expression)next).dump(dumper);}
+			if(next instanceof Expression expression)
+				{expression.dump(dumper);}
 			else
 				{dumper.display(next);}
 		}
@@ -173,8 +173,8 @@ public class AttributeConstructor extends NodeConstructor {
 		super.resetState(postOptimization);
 
 		for(final Object object : contents) {
-			if(object instanceof Expression)
-				{((Expression)object).resetState(postOptimization);}
+			if(object instanceof Expression expression)
+				{expression.resetState(postOptimization);}
 		}
 	}
 

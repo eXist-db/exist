@@ -153,7 +153,7 @@ public class EnclosedExpr extends PathExpr {
                         //It is possible for a text node constructor to construct a text node containing a zero-length string.
                         //However, if used in the content of a constructed element or document node,
                         //such a text node will be deleted or merged with another text node.
-                        if (next instanceof TextImpl && ((TextImpl) next).getStringValue().isEmpty()) {
+                        if (next instanceof TextImpl impl && impl.getStringValue().isEmpty()) {
                             next = i.nextItem();
                             continue;
                         }

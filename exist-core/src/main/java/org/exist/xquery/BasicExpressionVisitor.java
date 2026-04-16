@@ -123,8 +123,8 @@ public class BasicExpressionVisitor implements ExpressionVisitor {
     }
 
     public static LocationStep findFirstStep(final Expression expr) {
-        if (expr instanceof LocationStep) {
-            return (LocationStep) expr;
+        if (expr instanceof LocationStep step) {
+            return step;
         }
         final FirstStepVisitor visitor = new FirstStepVisitor();
         expr.accept(visitor);
@@ -133,8 +133,8 @@ public class BasicExpressionVisitor implements ExpressionVisitor {
 
     public static List<LocationStep> findLocationSteps(final Expression expr) {
         final List<LocationStep> steps = new ArrayList<>(5);
-        if (expr instanceof LocationStep) {
-            steps.add((LocationStep) expr);
+        if (expr instanceof LocationStep step) {
+            steps.add(step);
             return steps;
         }
         expr.accept(

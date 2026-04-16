@@ -106,8 +106,8 @@ public class SequenceAdapter implements Sequence<Item> {
 
             @Override
             public Item getValue() {
-                if (item instanceof NodeProxy) {
-                    return DomEnhancingNodeProxyAdapter.create((NodeProxy) item); //RESTXQ expects to find DOM Nodes not NodeProxys
+                if (item instanceof NodeProxy proxy) {
+                    return DomEnhancingNodeProxyAdapter.create(proxy); //RESTXQ expects to find DOM Nodes not NodeProxys
                 } else {
                     return item;
                 }

@@ -196,8 +196,8 @@ public class UserXQueryJob extends UserJob {
                 context.prepareForReuse();
             }
 
-            if(source instanceof  DBSource) {
-                final XmldbURI collectionUri = ((DBSource)source).getDocumentPath().removeLastSegment();
+            if(source instanceof  DBSource bSource) {
+                final XmldbURI collectionUri = bSource.getDocumentPath().removeLastSegment();
                 context.setModuleLoadPath(XmldbURI.EMBEDDED_SERVER_URI.append(collectionUri.getCollectionPath()).toString());
                 context.setStaticallyKnownDocuments(new XmldbURI[] { collectionUri });
             }

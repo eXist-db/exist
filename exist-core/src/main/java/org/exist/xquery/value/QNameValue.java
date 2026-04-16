@@ -251,8 +251,8 @@ public class QNameValue extends AtomicValue {
         if (this == obj) {
             return true;
         }
-        if (obj instanceof QNameValue) {
-            return ((QNameValue) obj).qname.equals(qname);
+        if (obj instanceof QNameValue value) {
+            return value.qname.equals(qname);
         }
         return false;
     }

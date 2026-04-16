@@ -247,8 +247,8 @@ public class Optimizer extends DefaultExpressionVisitor {
 
             final PathExpr path;
             final Predicate predicate;
-            if (parent instanceof Predicate) {
-                predicate = (Predicate) parent;
+            if (parent instanceof Predicate predicate1) {
+                predicate = predicate1;
                 path = predicate;
             } else {
                 path = (PathExpr) parent;

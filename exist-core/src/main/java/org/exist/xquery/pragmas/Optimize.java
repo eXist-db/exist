@@ -223,8 +223,8 @@ public class Optimize extends AbstractPragma {
             @Override
             public void visitFilteredExpr(final FilteredExpression filtered) {
                 final Expression filteredExpr = filtered.getExpression();
-                if (filteredExpr instanceof VariableReference) {
-                    contextVar = (VariableReference) filteredExpr;
+                if (filteredExpr instanceof VariableReference reference) {
+                    contextVar = reference;
                 }
 
                 final List<Predicate> predicates = filtered.getPredicates();
@@ -253,11 +253,11 @@ public class Optimize extends AbstractPragma {
 
             @Override
             public void visitBuiltinFunction(final Function function) {
-                if (function instanceof Optimizable) {
+                if (function instanceof Optimizable optimizable) {
                     if (LOG.isTraceEnabled()) {
                         LOG.trace("exist:optimize: found optimizable function: {}", function.getClass().getName());
                     }
-                    addOptimizable((Optimizable) function);
+                    addOptimizable(optimizable);
                 }
             }
         });

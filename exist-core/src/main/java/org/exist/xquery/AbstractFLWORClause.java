@@ -48,8 +48,8 @@ public abstract class AbstractFLWORClause extends AbstractExpression implements 
 
     @Override
     public Sequence preEval(Sequence seq) throws XPathException {
-        if (returnExpr instanceof FLWORClause) {
-            return ((FLWORClause)returnExpr).preEval(seq);
+        if (returnExpr instanceof FLWORClause clause) {
+            return clause.preEval(seq);
         }
         // just return the input sequence by default
         return seq;

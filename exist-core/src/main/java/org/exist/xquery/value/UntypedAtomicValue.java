@@ -357,8 +357,8 @@ public class UntypedAtomicValue extends AtomicValue {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof UntypedAtomicValue) {
-            return value.equals(((UntypedAtomicValue) obj).value);
+        if (obj instanceof UntypedAtomicValue atomicValue) {
+            return value.equals(atomicValue.value);
         }
         return false;
     }

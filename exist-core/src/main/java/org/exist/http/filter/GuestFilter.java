@@ -55,8 +55,8 @@ public class GuestFilter implements Filter {
         HttpServletRequest httpServletRequest;
         HttpServletResponse httpServletResponse;
 
-        if (servletRequest instanceof HttpServletRequest) {
-            httpServletRequest = (HttpServletRequest)servletRequest;
+        if (servletRequest instanceof HttpServletRequest request) {
+            httpServletRequest = request;
             httpServletResponse = (HttpServletResponse)servletResponse;
             LOG.info("HTTP Servlet Request confirmed");
         }

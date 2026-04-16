@@ -424,7 +424,7 @@ public class TransactionManager implements BrokerPoolService {
 
             // TODO(AR) ultimately we should be doing away with DBBroker#addCurrentTransaction
             try(final DBBroker broker = pool.getBroker()) {
-                broker.removeCurrentTransaction(txn instanceof Txn.ReusableTxn ? ((Txn.ReusableTxn)txn).getUnderlyingTransaction() : txn);
+                broker.removeCurrentTransaction(txn instanceof Txn.ReusableTxn rt ? rt.getUnderlyingTransaction() : txn);
             } catch(final EXistException ee) {
                 LOG.fatal(ee.getMessage(), ee);
                 throw new RuntimeException(ee);

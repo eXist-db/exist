@@ -41,8 +41,8 @@ public class RegExpInputVerifier extends InputVerifier {
     
     @Override
     public boolean verify(final JComponent input) {
-        if(input instanceof JTextField) {
-            matcher.reset(((JTextField)input).getText());
+        if(input instanceof JTextField field) {
+            matcher.reset(field.getText());
             return matcher.matches();
         }
         

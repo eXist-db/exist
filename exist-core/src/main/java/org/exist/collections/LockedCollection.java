@@ -77,9 +77,9 @@ public class LockedCollection implements Collection {
      */
     public static Collection unwrapLocked(final Collection collection) {
         //TODO(AR) do we want to stay with LockedCollection implements Collection design {@link LockedCollection#getCollection()}
-        if(collection instanceof LockedCollection) {
+        if(collection instanceof LockedCollection lockedCollection) {
             // unwrap the locked collection
-            return ((LockedCollection)collection).collection;
+            return lockedCollection.collection;
         } else {
             return collection;
         }

@@ -293,8 +293,8 @@ public class ExecuteFunction extends BasicFunction {
 
                 final String value;
                 if (child != null) {
-                    if (child instanceof ReferenceNode) {
-                        child = ((ReferenceNode) child).getReference().getNode();
+                    if (child instanceof ReferenceNode node) {
+                        child = node.getReference().getNode();
                     }
 
                     if (child instanceof Element elem) {

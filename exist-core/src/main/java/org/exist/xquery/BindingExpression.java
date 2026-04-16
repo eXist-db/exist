@@ -101,14 +101,14 @@ public abstract class BindingExpression extends AbstractFLWORClause implements R
 	}
 	
 	public static void setContext(final int contextId, final Sequence seq) throws XPathException {
-		if (seq instanceof VirtualNodeSet) {
-			((VirtualNodeSet)seq).setInPredicate(true);
-            ((VirtualNodeSet)seq).setSelfIsContext();
+		if (seq instanceof VirtualNodeSet set) {
+			set.setInPredicate(true);
+            set.setSelfIsContext();
 		} else {
 			for (final SequenceIterator i = seq.unorderedIterator(); i.hasNext(); ) {
 				final Item next = i.nextItem();
-				if (next instanceof NodeProxy) {
-					((NodeProxy) next).addContextNode(contextId, (NodeProxy) next);
+				if (next instanceof NodeProxy proxy) {
+					proxy.addContextNode(contextId, proxy);
 				}
 			}
 		}

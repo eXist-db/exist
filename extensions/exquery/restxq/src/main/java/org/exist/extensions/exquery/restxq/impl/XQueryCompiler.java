@@ -64,12 +64,12 @@ class XQueryCompiler {
     public static CompiledXQuery compile(final DBBroker broker, final DocumentImpl document) throws RestXqServiceCompilationException {
         
         try {
-            if(document instanceof BinaryDocument) {
+            if(document instanceof BinaryDocument binaryDocument) {
                 if(document.getMimeType().equals(XQUERY_MIME_TYPE)){
             
                     //compile the query
                     final XQueryContext context = new XQueryContext(broker.getBrokerPool());
-                    final DBSource source = new DBSource(broker.getBrokerPool(), (BinaryDocument)document, true);
+                    final DBSource source = new DBSource(broker.getBrokerPool(), binaryDocument, true);
 
                     //set the module load path for any module imports that are relative
                     context.setModuleLoadPath(XmldbURI.EMBEDDED_SERVER_URI_PREFIX + source.getDocumentPath().removeLastSegment());

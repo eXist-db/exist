@@ -133,11 +133,11 @@ public class InspectFunctionHelper {
                 attribs.clear();
                 attribs.addAttribute("", "type", "type", "CDATA", Type.getTypeName(type.getPrimaryType()));
                 attribs.addAttribute("", "cardinality", "cardinality", "CDATA", type.getCardinality().getHumanDescription());
-                if (type instanceof FunctionParameterSequenceType)
-                {attribs.addAttribute("", "var", "var", "CDATA", ((FunctionParameterSequenceType)type).getAttributeName());}
+                if (type instanceof FunctionParameterSequenceType sequenceType)
+                {attribs.addAttribute("", "var", "var", "CDATA", sequenceType.getAttributeName());}
                 builder.startElement(ARGUMENT_QNAME, attribs);
-                if (type instanceof FunctionParameterSequenceType) {
-                    builder.characters(((FunctionParameterSequenceType)type).getDescription());
+                if (type instanceof FunctionParameterSequenceType sequenceType) {
+                    builder.characters(sequenceType.getDescription());
                 }
                 builder.endElement();
             }

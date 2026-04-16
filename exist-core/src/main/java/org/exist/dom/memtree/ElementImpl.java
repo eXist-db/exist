@@ -715,11 +715,11 @@ public class ElementImpl extends NodeImpl implements Element {
         final StringBuilder result = new StringBuilder();
         for(int i = 0; i < this.getChildCount(); i++) {
             final Node child = getChildNodes().item(i);
-            if(child instanceof Text) {
+            if(child instanceof Text text) {
                 if(i > 0) {
                     result.append(" ");
                 }
-                result.append(((Text) child).getData());
+                result.append(text.getData());
             }
         }
         return result.toString();
@@ -746,9 +746,9 @@ public class ElementImpl extends NodeImpl implements Element {
                     "A Document Type Node may not be appended to an element");
         }
 
-        if(newChild instanceof NodeImpl) {
+        if(newChild instanceof NodeImpl impl) {
             final int treeLevel = document.treeLevel[nodeNumber];
-            final int newChildTreeLevel = document.treeLevel[((NodeImpl)newChild).nodeNumber];
+            final int newChildTreeLevel = document.treeLevel[impl.nodeNumber];
             if(newChildTreeLevel < treeLevel) {
                 throw new DOMException(DOMException.HIERARCHY_REQUEST_ERR,
                         "The node to append is one of this node's ancestors");

@@ -100,8 +100,8 @@ public class RemoteBinaryResource
 
         if (file != null) {
             retval = file.toAbsolutePath().toString();
-        } else if (inputSource != null && inputSource instanceof EXistInputSource) {
-            retval = ((EXistInputSource) inputSource).getSymbolicPath();
+        } else if (inputSource != null && inputSource instanceof EXistInputSource source) {
+            retval = source.getSymbolicPath();
         }
 
         return retval;

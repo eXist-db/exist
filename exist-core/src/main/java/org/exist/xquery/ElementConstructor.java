@@ -274,8 +274,8 @@ public class ElementConstructor extends NodeConstructor {
             final Item qnitem = qnameSeq.itemAt(0);
 
             QName qn;
-            if (qnitem instanceof QNameValue) {
-                qn = ((QNameValue) qnitem).getQName();
+            if (qnitem instanceof QNameValue value) {
+                qn = value.getQName();
             } else {
                 // Element constructors must resolve namespace prefixes using the full
                 // inherited namespace context, regardless of declare copy-namespaces no-inherit.

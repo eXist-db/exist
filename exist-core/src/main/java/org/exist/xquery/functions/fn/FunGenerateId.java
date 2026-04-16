@@ -91,8 +91,8 @@ public class FunGenerateId extends BasicFunction {
         String docId = null;
         final Document document;
         if (Type.DOCUMENT == node.getType()) {
-            if (node instanceof NodeProxy) {
-                document = (Document) ((NodeProxy) node).getNode();
+            if (node instanceof NodeProxy proxy) {
+                document = (Document) proxy.getNode();
             } else {
                 document = (Document) node;
             }
@@ -100,10 +100,10 @@ public class FunGenerateId extends BasicFunction {
             document = node.getOwnerDocument();
         }
         if (document != null) {
-            if (document instanceof org.exist.dom.memtree.DocumentImpl) {
-                docId = Long.toString(((org.exist.dom.memtree.DocumentImpl) document).getDocId());
-            } else if (document instanceof org.exist.dom.persistent.DocumentImpl) {
-                docId = Integer.toString(((org.exist.dom.persistent.DocumentImpl) document).getDocId());
+            if (document instanceof org.exist.dom.memtree.DocumentImpl impl1) {
+                docId = Long.toString(impl1.getDocId());
+            } else if (document instanceof org.exist.dom.persistent.DocumentImpl impl) {
+                docId = Integer.toString(impl.getDocId());
             }
         }
         if (docId == null) {

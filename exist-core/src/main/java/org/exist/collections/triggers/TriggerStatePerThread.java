@@ -190,8 +190,8 @@ public class TriggerStatePerThread {
 			builder.append(')');
 			builder.append(": ");
 			builder.append(trigger.getClass().getSimpleName());
-			if (trigger instanceof XQueryTrigger) {
-				final String urlQuery = ((XQueryTrigger) trigger).getUrlQuery();
+			if (trigger instanceof XQueryTrigger queryTrigger) {
+				final String urlQuery = queryTrigger.getUrlQuery();
 				if (urlQuery != null && !urlQuery.isEmpty()) {
 					builder.append('(');
 					builder.append(urlQuery);

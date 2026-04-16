@@ -55,8 +55,8 @@ public class UntypedValueCheck extends AbstractExpression {
 	public UntypedValueCheck(XQueryContext context, int requiredType, final Expression expression, Error error) {
 		super(context);
 		this.requiredType = requiredType;
-        if (expression instanceof Atomize && !Type.subTypeOf(requiredType, Type.ANY_ATOMIC_TYPE)) {
-            this.expression = ((Atomize)expression).getExpression();
+        if (expression instanceof Atomize atomize1 && !Type.subTypeOf(requiredType, Type.ANY_ATOMIC_TYPE)) {
+            this.expression = atomize1.getExpression();
             this.atomize = true;
         } else {
             this.expression = expression;

@@ -439,9 +439,9 @@ public class SimpleACLPermission extends UnixStylePermission implements ACLPermi
             return false;
         }
 
-        if (other instanceof SimpleACLPermission) {
+        if (other instanceof SimpleACLPermission permission) {
             // optimisation for when both are the same type
-            return Arrays.equals(acl, ((SimpleACLPermission) other).acl);
+            return Arrays.equals(acl, permission.acl);
         } else {
             if (getACECount() != other.getACECount()) {
                 return false;

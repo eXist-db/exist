@@ -138,10 +138,10 @@ public class ScheduledJobInfo {
      * @return  The expression that was used to configure the Triggers firing pattern
      */
     public String getTriggerExpression(){
-        if(trigger instanceof CronTrigger) {
-            return ((CronTrigger)trigger).getCronExpression();
-        } else if(trigger instanceof SimpleTrigger) {
-            return String.valueOf(((SimpleTrigger)trigger).getRepeatInterval());
+        if(trigger instanceof CronTrigger cronTrigger) {
+            return cronTrigger.getCronExpression();
+        } else if(trigger instanceof SimpleTrigger simpleTrigger) {
+            return String.valueOf(simpleTrigger.getRepeatInterval());
         }
 
         return null;
