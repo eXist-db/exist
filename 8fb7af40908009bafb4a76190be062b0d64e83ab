@@ -1,0 +1,29 @@
+exist-core/src/main/java/org/exist/repo/ExistRepository.java
+  8be28f47155c9a3c 209,221-224
+exist-core/src/main/java/org/exist/xquery/TryCatchExpression.java
+  8be28f47155c9a3c 149-152,300-389
+exist-core/src/main/java/org/exist/launcher/WindowsServiceManager.java
+  8be28f47155c9a3c 147-151,191-195,223-227,265-269,331-334
+exist-core/src/main/java/org/exist/config/Configurator.java
+  8be28f47155c9a3c 40,667,680-681,687-690,692-693,728,735-758
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.0",
+  "base_commit_sha": "8fb7af40908009bafb4a76190be062b0d64e83ab",
+  "prompts": {
+    "8be28f47155c9a3c": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "2d5cbdb8-0a14-45eb-8faf-1f5fd1a8cb1e",
+        "model": "default"
+      },
+      "human_author": "duncdrum",
+      "messages": [],
+      "total_additions": 0,
+      "total_deletions": 0,
+      "accepted_lines": 166,
+      "overriden_lines": 0
+    }
+  }
+}
