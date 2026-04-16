@@ -1,0 +1,27 @@
+exist-core/src/main/java/org/exist/xmlrpc/ACEAiderParser.java
+  8be28f47155c9a3c 138,140,150,152,162-163
+exist-core/src/test/java/org/exist/dom/persistent/CDataIntergationTest.java
+  8be28f47155c9a3c 102,109
+exist-core/src/test/java/org/exist/xquery/XQueryTest.java
+  8be28f47155c9a3c 100,118-125,153-173,444-451,456-463,468-474,481-486,492-498,603-608,646-650,660-665,703-707,716-719,738-745,932-938,946-953,961-965,973-977,985-989,1133-1137,1150-1155,1159-1163,1171-1175,1183-1188,1198-1203,1211-1216,1225-1229,1237-1241,1266-1270,1277-1281,1380-1387,1408-1412,1422-1426
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.0",
+  "base_commit_sha": "abf90c91287ec498fc0f287ef05e35ec339ff5da",
+  "prompts": {
+    "8be28f47155c9a3c": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "2d5cbdb8-0a14-45eb-8faf-1f5fd1a8cb1e",
+        "model": "default"
+      },
+      "human_author": "duncdrum",
+      "messages": [],
+      "total_additions": 239,
+      "total_deletions": 89,
+      "accepted_lines": 215,
+      "overriden_lines": 0
+    }
+  }
+}
