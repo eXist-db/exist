@@ -1,0 +1,23 @@
+exist-core/src/main/java/org/exist/security/PermissionRequiredAspect.java
+  8be28f47155c9a3c 117-121
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.0",
+  "base_commit_sha": "e143d4664ccc57abf4eeeed7ad528bfa625ac861",
+  "prompts": {
+    "8be28f47155c9a3c": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "2d5cbdb8-0a14-45eb-8faf-1f5fd1a8cb1e",
+        "model": "premium"
+      },
+      "human_author": "duncdrum",
+      "messages": [],
+      "total_additions": 5,
+      "total_deletions": 4,
+      "accepted_lines": 5,
+      "overriden_lines": 0
+    }
+  }
+}
