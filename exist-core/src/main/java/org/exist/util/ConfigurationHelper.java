@@ -28,7 +28,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -105,7 +104,7 @@ public class ConfigurationHelper {
         }
         
         // try user.home
-        final Path userHome = Paths.get(System.getProperty("user.home"));
+        final Path userHome = Path.of(System.getProperty("user.home"));
         final Path userHomeRelativeConfig = userHome.resolve(config);
         if (Files.isDirectory(userHome) && Files.isRegularFile(userHomeRelativeConfig)) {
             final Path existHome = userHomeRelativeConfig.getParent().normalize();
@@ -115,7 +114,7 @@ public class ConfigurationHelper {
         
         
         // try user.dir
-        final Path userDir = Paths.get(System.getProperty("user.dir"));
+        final Path userDir = Path.of(System.getProperty("user.dir"));
         final Path userDirRelativeConfig = userDir.resolve(config);
         if (Files.isDirectory(userDir) && Files.isRegularFile(userDirRelativeConfig)) {
             final Path existHome = userDirRelativeConfig.getParent().normalize();
@@ -129,10 +128,10 @@ public class ConfigurationHelper {
             try {
                 Path existHome;
                 if ("jar".equals(configUrl.getProtocol())) {
-                    existHome = Paths.get(new URI(configUrl.getPath())).getParent().getParent().normalize();
+                    existHome = Path.of(new URI(configUrl.getPath())).getParent().getParent().normalize();
                     LOG.warn("{} file was found on the classpath, but inside a Jar file! Derived EXIST_HOME from Jar's parent folder: {}", config, existHome);
                 } else {
-                    existHome = Paths.get(configUrl.toURI()).getParent().normalize();
+                    existHome = Path.of(configUrl.toURI()).getParent().normalize();
                     if ("etc".equals(FileUtils.fileName(existHome))) {
                         existHome = existHome.getParent().normalize();
                     }
@@ -149,7 +148,7 @@ public class ConfigurationHelper {
     }
 
     public static Optional<Path> getFromSystemProperty() {
-        return Optional.ofNullable(System.getProperty(PROP_EXIST_CONFIGURATION_FILE)).map(Paths::get);
+        return Optional.ofNullable(System.getProperty(PROP_EXIST_CONFIGURATION_FILE)).map(Path::of);
     }
 
 	/**
@@ -183,7 +182,7 @@ public class ConfigurationHelper {
         Path p = decodeUserHome(path);
         if (!p.isAbsolute()) {
             p = parent
-                    .orElse(getExistHome().orElse(Paths.get(System.getProperty("user.dir"))))
+                    .orElse(getExistHome().orElse(Path.of(System.getProperty("user.dir"))))
                     .resolve(path);
         }
         return p.normalize().toAbsolutePath();
@@ -199,9 +198,9 @@ public class ConfigurationHelper {
      */
     public static Path decodeUserHome(final String path) {
         if (path != null && path.startsWith("~") && path.length() > 1) {
-            return Paths.get(System.getProperty("user.home")).resolve(path.substring(1));
+            return Path.of(System.getProperty("user.home")).resolve(path.substring(1));
         } else {
-            return Paths.get(path);
+            return Path.of(path);
         }
     }
 

@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Properties;
 
@@ -86,7 +85,7 @@ public class ConsistencyCheckTask implements SystemTask {
     @Override
     public void configure(final Configuration config, final Properties properties) throws EXistException {
         exportDir = properties.getProperty(OUTPUT_PROP_NAME, "export");
-        Path dir = Paths.get(exportDir);
+        Path dir = Path.of(exportDir);
         if (!dir.isAbsolute()) {
             dir = ((Path) config.getProperty(BrokerPool.PROPERTY_DATA_DIR)).resolve(exportDir);
         }

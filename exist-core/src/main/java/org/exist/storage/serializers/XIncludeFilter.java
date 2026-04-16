@@ -68,7 +68,6 @@ import java.net.URISyntaxException;
 import java.net.URLConnection;
 import java.net.URLDecoder;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -539,7 +538,7 @@ public class XIncludeFilter implements Receiver {
             // XQuery context.
             if (scheme == null && moduleLoadPath != null) {
                 final String path = externalUri.getSchemeSpecificPart();
-                Path f = Paths.get(path);
+                Path f = Path.of(path);
                 if (!f.isAbsolute()) {
                     if (moduleLoadPath.startsWith(XmldbURI.XMLDB_URI_PREFIX)) {
                         final String base = moduleLoadPath.endsWith("/") ? moduleLoadPath : moduleLoadPath + "/";
@@ -550,7 +549,7 @@ public class XIncludeFilter implements Receiver {
                             throw new PermissionDeniedException("Permission denied to read XInclude'd resource");
                         }
                     } else {
-                        f = Paths.get(moduleLoadPath, path).normalize();
+                        f = Path.of(moduleLoadPath, path).normalize();
                         externalUri = f.toUri();
                     }
                 }

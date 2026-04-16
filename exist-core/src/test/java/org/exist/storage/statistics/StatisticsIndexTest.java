@@ -24,7 +24,6 @@ package org.exist.storage.statistics;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import org.exist.storage.BrokerPool;
 import org.exist.test.ExistEmbeddedServer;
@@ -43,7 +42,7 @@ public class StatisticsIndexTest {
         final char separator = System.getProperty("file.separator").charAt(0);
         final String packagePath = StatisticsIndexTest.class.getPackage().getName().replace('.', separator);
 
-        configFile = Paths.get(loader.getResource(packagePath + separator + "conf.xml").toURI());
+        configFile = Path.of(loader.getResource(packagePath + separator + "conf.xml").toURI());
     }
 
     @Rule
@@ -51,7 +50,7 @@ public class StatisticsIndexTest {
 
     @Test
     public void statsFileExists() {
-        final Path dataDir = existEmbeddedServer.getBrokerPool().getConfiguration().getProperty(BrokerPool.PROPERTY_DATA_DIR, Paths.get(DEFAULT_DATA_DIR));
+        final Path dataDir = existEmbeddedServer.getBrokerPool().getConfiguration().getProperty(BrokerPool.PROPERTY_DATA_DIR, Path.of(DEFAULT_DATA_DIR));
         assertTrue(Files.exists(dataDir.resolve("stats.dbx")));
     }
 }

@@ -36,7 +36,6 @@ import org.junit.Test;
 
 import java.net.URISyntaxException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import static com.evolvedbinary.j8fu.Either.Left;
 import static com.evolvedbinary.j8fu.Either.Right;
@@ -85,7 +84,7 @@ public class ModuleImportTest {
         final String packagePath = ModuleImportTest.class.getPackage().getName().replace('.', separator);
 
         try {
-            return Paths.get(loader.getResource(packagePath + separator + "conf.xml").toURI());
+            return Path.of(loader.getResource(packagePath + separator + "conf.xml").toURI());
         } catch (final URISyntaxException e) {
             fail(e);
             return null;

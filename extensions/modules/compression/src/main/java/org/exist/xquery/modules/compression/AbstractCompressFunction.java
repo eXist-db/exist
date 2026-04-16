@@ -70,7 +70,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.charset.UnsupportedCharsetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.zip.CRC32;
 import java.util.zip.DeflaterOutputStream;
@@ -175,7 +174,7 @@ public abstract class AbstractCompressFunction extends BasicFunction {
                 }
 
                 // got a file
-                final Path file = Paths.get(uri.getPath());
+                final Path file = Path.of(uri.getPath());
                 compressFile(os, file, useHierarchy, stripOffset, method, resourceName);
 
             } else {

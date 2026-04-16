@@ -46,7 +46,6 @@ import org.junit.Test;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -82,7 +81,7 @@ public class FacetPollutionJavaReproducerTest {
             final String tempModulesName = "lucene-test-facet-pollution-java-modules-" + System.nanoTime();
             final XmldbURI tempModulesUri = XmldbURI.create("/db/" + tempModulesName);
 
-            final Path baseDir = Paths.get(System.getProperty("user.dir"));
+            final Path baseDir = Path.of(System.getProperty("user.dir"));
             final Path zAnalyzersPath = resolveModulePath(baseDir,
                 "src/test/xquery/lucene/analyzers-field.xqm",
                 "extensions/indexes/lucene/src/test/xquery/lucene/analyzers-field.xqm");
@@ -195,7 +194,7 @@ public class FacetPollutionJavaReproducerTest {
             final String tempModulesName = "lucene-test-facet-pollution-java-modules-" + System.nanoTime();
             final XmldbURI tempModulesUri = XmldbURI.create("/db/" + tempModulesName);
 
-            final Path baseDir = Paths.get(System.getProperty("user.dir"));
+            final Path baseDir = Path.of(System.getProperty("user.dir"));
             final Path ftFacetsPath = resolveModulePath(baseDir,
                 "src/test/xquery/lucene/ft-facets.xqm",
                 "extensions/indexes/lucene/src/test/xquery/lucene/ft-facets.xqm");

@@ -29,7 +29,6 @@ import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Optional;
 
 /**
@@ -118,7 +117,7 @@ public class Main {
     private static void setupLog4j2(final Optional<Path> existHomeDir) {
 
         // Get path from system property
-        Optional<Path> log4jConfigurationFile = Optional.ofNullable(System.getProperty(PROP_LOG4J_CONFIGURATION_FILE)).map(Paths::get);
+        Optional<Path> log4jConfigurationFile = Optional.ofNullable(System.getProperty(PROP_LOG4J_CONFIGURATION_FILE)).map(Path::of);
 
         // Try to find configuration file is not already found.
         if (log4jConfigurationFile.isEmpty()) {
@@ -188,7 +187,7 @@ public class Main {
         args = stripFirstElement(args);
 
         // try and figure out exist home dir
-        final Optional<Path> existHomeDir = getFromSysPropOrEnv(PROP_EXIST_HOME, ENV_EXIST_HOME).map(Paths::get);
+        final Optional<Path> existHomeDir = getFromSysPropOrEnv(PROP_EXIST_HOME, ENV_EXIST_HOME).map(Path::of);
 
         // try to find Jetty
         if (MODE_JETTY.equals(getMode()) || MODE_STANDALONE.equals(getMode())) {
@@ -322,7 +321,7 @@ public class Main {
      */
     private void tweakTempDirectory() {
         try {
-            final Path tmpdir = Paths.get(System.getProperty(PROP_JAVA_TEMP_DIR)).toAbsolutePath();
+            final Path tmpdir = Path.of(System.getProperty(PROP_JAVA_TEMP_DIR)).toAbsolutePath();
             if (Files.isDirectory(tmpdir)) {
                 System.setProperty(PROP_JAVA_TEMP_DIR, tmpdir.toString());
             }
@@ -353,7 +352,7 @@ public class Main {
     private Path configureForJetty(final Optional<Path> existHomeDir) throws StartException {
 
         // Get configured path for Jetty config file
-        Optional<Path> existJettyConfigFile = getFromSysPropOrEnv(PROP_EXIST_JETTY_CONFIG, ENV_EXIST_JETTY_CONFIG).map(Paths::get);
+        Optional<Path> existJettyConfigFile = getFromSysPropOrEnv(PROP_EXIST_JETTY_CONFIG, ENV_EXIST_JETTY_CONFIG).map(Path::of);
 
         // If configuration was not found
         if (existJettyConfigFile.isEmpty()) {
@@ -364,7 +363,7 @@ public class Main {
                     : STANDALONE_ENABLED_JETTY_CONFIGS;
 
             // Get path for jetty homedir
-            final Optional<Path> jettyHomeDir = getFromSysPropOrEnv(PROP_JETTY_HOME, ENV_JETTY_HOME).map(Paths::get);
+            final Optional<Path> jettyHomeDir = getFromSysPropOrEnv(PROP_JETTY_HOME, ENV_JETTY_HOME).map(Path::of);
 
             // Load configuration from Jetty directory
             if (jettyHomeDir.isPresent() && Files.exists(jettyHomeDir.get().resolve(CONFIG_DIR_NAME))) {

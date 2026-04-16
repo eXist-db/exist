@@ -58,7 +58,6 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Optional;
 
@@ -151,12 +150,12 @@ public class EntryFunctions extends BasicFunction {
     public static Path getFile(final String path, final Expression expression) throws XPathException {
         if (path.startsWith("file:")) {
             try {
-                return Paths.get(new URI(path));
+                return Path.of(new URI(path));
             } catch (final Exception ex) { // catch all (URISyntaxException)
                 throw new XPathException(expression, path + " is not a valid URI: '" + ex.getMessage() + "'");
             }
         } else {
-            return Paths.get(path);
+            return Path.of(path);
         }
     }
 

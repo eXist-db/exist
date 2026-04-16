@@ -30,7 +30,6 @@ import org.xmldb.api.base.Collection;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 
@@ -63,7 +62,7 @@ public class ConcurrentResourceTest2 extends ConcurrentTestBase {
     private String getModsPath() {
         try {
             final URI uri = ConcurrentResourceTest2.class.getResource("/samples/mods/mod1.xml").toURI();
-            final Path dir = Paths.get(uri).getParent();
+            final Path dir = Path.of(uri).getParent();
             return dir.toAbsolutePath().toString();
         } catch (final URISyntaxException e) {
             throw new RuntimeException("Cannot resolve samples/mods path", e);

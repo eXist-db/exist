@@ -25,7 +25,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import org.apache.tools.ant.DirectoryScanner;
 import org.exist.dom.QName;
@@ -110,7 +109,7 @@ public class XMLDBLoadFromPattern extends XMLDBAbstractCollectionManipulator {
     @Override
     protected Sequence evalWithCollection(Collection collection, Sequence[] args, Sequence contextSequence)
             throws XPathException {
-        final Path baseDir = Paths.get(args[1].getStringValue()).normalize();
+        final Path baseDir = Path.of(args[1].getStringValue()).normalize();
         logger.debug("Loading files from directory: {}", baseDir.toAbsolutePath().toString());
 
         final Sequence patternsSeq = args[2];

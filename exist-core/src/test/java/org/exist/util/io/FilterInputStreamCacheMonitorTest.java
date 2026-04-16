@@ -41,7 +41,6 @@ import org.xmldb.api.modules.CollectionManagementService;
 
 import java.net.URISyntaxException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.*;
@@ -64,7 +63,7 @@ public class FilterInputStreamCacheMonitorTest {
         }
         monitor.clear();
 
-        final Path icon = Paths.get(FilterInputStreamCacheMonitorTest.class.getResource("icon.png").toURI());
+        final Path icon = Path.of(FilterInputStreamCacheMonitorTest.class.getResource("icon.png").toURI());
 
         final Collection testCollection = existXmldbEmbeddedServer.createCollection(existXmldbEmbeddedServer.getRoot(), TEST_COLLECTION_NAME);
         try(final EXistResource resource = (EXistResource)testCollection.createResource("icon.png", BinaryResource.class)) {

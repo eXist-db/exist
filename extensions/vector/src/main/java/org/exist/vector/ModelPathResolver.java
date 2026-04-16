@@ -33,7 +33,6 @@ import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Optional;
 
@@ -61,7 +60,7 @@ public final class ModelPathResolver {
   @Nonnull
   static Path getVectorBase() {
     final Optional<Path> home = ConfigurationHelper.getExistHome();
-    return home.orElse(Paths.get(System.getProperty("user.dir", "."))).normalize().toAbsolutePath();
+    return home.orElse(Path.of(System.getProperty("user.dir", "."))).normalize().toAbsolutePath();
   }
 
   /**

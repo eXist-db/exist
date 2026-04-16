@@ -25,7 +25,6 @@ package org.exist.test.runner;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 
 /**
@@ -53,7 +52,7 @@ public final class XQueryFailureLog {
         }
         final String firstLine = message.contains("\n") ? message.substring(0, message.indexOf('\n')) : message;
         try {
-            final Path dir = Paths.get(System.getProperty("user.dir", "."), "target", "surefire-reports");
+            final Path dir = Path.of(System.getProperty("user.dir", "."), "target", "surefire-reports");
             if (!Files.isDirectory(dir)) {
                 Files.createDirectories(dir);
             }

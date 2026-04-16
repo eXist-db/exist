@@ -37,7 +37,6 @@ import org.xml.sax.helpers.AttributesImpl;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Properties;
 import java.util.regex.Matcher;
@@ -67,7 +66,7 @@ public class ListBackups extends BasicFunction
         }
 
         final String exportDir = args[0].getStringValue();
-        Path dir = Paths.get(exportDir);
+        Path dir = Path.of(exportDir);
 
         if(!dir.isAbsolute() ) {
             dir = ((Path)context.getBroker().getConfiguration().getProperty(BrokerPool.PROPERTY_DATA_DIR)).resolve(exportDir);

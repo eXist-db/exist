@@ -34,7 +34,6 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -70,11 +69,11 @@ public class AutoDeploymentTrigger implements StartupTrigger {
             }
         }
 
-        Path autodeployDir = Optional.ofNullable(System.getProperty(AUTODEPLOY_DIRECTORY_PROPERTY)).map(Paths::get).orElse(null);
+        Path autodeployDir = Optional.ofNullable(System.getProperty(AUTODEPLOY_DIRECTORY_PROPERTY)).map(Path::of).orElse(null);
         if (autodeployDir == null) {
             final String dir = getFirstParamValue(params, AUTODEPLOY_DIRECTORY_PARAM, Object::toString);
             if (dir != null) {
-                autodeployDir = Paths.get(dir);
+                autodeployDir = Path.of(dir);
             } else {
                 final Optional<Path> homeDir = sysBroker.getConfiguration().getExistHome();
                 autodeployDir = FileUtils.resolve(homeDir, AUTODEPLOY_DIRECTORY);

@@ -30,7 +30,6 @@ import org.junit.runner.Description;
 import org.junit.runners.model.InitializationError;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,7 +49,7 @@ public class XSuiteDiscoveryTest {
     @Test
     public void discoveryReturnsTestListForSingleTestFile() {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        final Path path = Paths.get("src/test/resources/org/exist/test/runner/single-test.xqm").toAbsolutePath();
+        final Path path = Path.of("src/test/resources/org/exist/test/runner/single-test.xqm").toAbsolutePath();
         final XQueryTestRunner.XQueryTestInfo info = XQueryTestRunner.runDiscovery(pool, path);
         assertNotNull("discovery XQuery should return test info", info);
         assertEquals("namespace", "http://exist-db.org/xquery/single-test-module", info.namespace());
@@ -65,7 +64,7 @@ public class XSuiteDiscoveryTest {
      */
     @Test
     public void runnerUsesDiscoveryWhenDbIsUp() throws InitializationError {
-        final Path path = Paths.get("src/test/resources/org/exist/test/runner/single-test.xqm").toAbsolutePath();
+        final Path path = Path.of("src/test/resources/org/exist/test/runner/single-test.xqm").toAbsolutePath();
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         final XQueryTestRunner.XQueryTestInfo discoveryInfo = XQueryTestRunner.runDiscovery(pool, path);
         assertNotNull("discovery must succeed in this test", discoveryInfo);

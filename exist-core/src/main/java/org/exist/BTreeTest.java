@@ -31,7 +31,6 @@ import org.exist.xquery.TerminatedException;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 public class BTreeTest {
 
@@ -43,7 +42,7 @@ public class BTreeTest {
     private BrokerPool pool = null;
 
     public BTreeTest() {
-        file = Paths.get(System.getProperty("exist.home", ".")).resolve("test/test.dbx");
+        file = Path.of(System.getProperty("exist.home", ".")).resolve("test/test.dbx");
         try {
             Configuration config = new Configuration();
 

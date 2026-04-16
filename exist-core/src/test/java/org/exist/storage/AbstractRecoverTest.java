@@ -60,7 +60,6 @@ import org.xml.sax.SAXException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Optional;
 
 import static org.junit.Assert.*;
@@ -789,7 +788,7 @@ public abstract class AbstractRecoverTest {
     }
 
     protected Path resolveTestFile(final String fileName) throws IOException {
-        final Path path = TestUtils.getEXistHome().orElseGet(() -> Paths.get(".")).resolve(fileName);
+        final Path path = TestUtils.getEXistHome().orElseGet(() -> Path.of(".")).resolve(fileName);
         if(!Files.exists(path)) {
             throw new IOException("No such test file: " + path.toAbsolutePath());
         }

@@ -44,7 +44,6 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
@@ -150,7 +149,7 @@ public class ConcurrentBrokerPoolTest {
     }
 
     private static Path getConfigFile(final Class instance) throws URISyntaxException {
-        return Paths.get(instance.getResource("ConcurrentBrokerPoolTest.conf.xml").toURI());
+        return Path.of(instance.getResource("ConcurrentBrokerPoolTest.conf.xml").toURI());
     }
 
     private static class StoreInstance implements Callable<Tuple2<Path, UUID>> {

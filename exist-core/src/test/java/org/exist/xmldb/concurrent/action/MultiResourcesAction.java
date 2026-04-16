@@ -24,7 +24,6 @@ package org.exist.xmldb.concurrent.action;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 
 import org.exist.util.FileUtils;
@@ -53,7 +52,7 @@ public class MultiResourcesAction extends Action {
     }
 
     private void addFiles(final Collection col) throws XMLDBException, IOException {
-        final Path d = Paths.get(dirPath);
+        final Path d = Path.of(dirPath);
         if(!(Files.isReadable(d) && Files.isDirectory(d))) {
             throw new RuntimeException("Cannot read directory: " + dirPath);
         }

@@ -36,7 +36,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -80,7 +79,7 @@ class WindowsServiceManager implements ServiceManager {
                 .flatMap(exe -> Files.isExecutable(exe) ? Right(exe) : Left(new ServiceManagerException("Procrun is not executable at: " + exe)))
         );
 
-        this.existHome = ConfigurationHelper.getExistHome().orElse(Paths.get("."));
+        this.existHome = ConfigurationHelper.getExistHome().orElse(Path.of("."));
     }
 
     @Override
@@ -287,7 +286,7 @@ class WindowsServiceManager implements ServiceManager {
      * @return Path to jvm.dll or empty Optional
      */
     private Optional<String> findJvm() {
-        final Path javaHome = Paths.get(System.getProperty("java.home")).toAbsolutePath();
+        final Path javaHome = Path.of(System.getProperty("java.home")).toAbsolutePath();
         Path jvm = javaHome.resolve("bin").resolve("client").resolve("jvm.dll");
         if (Files.exists(jvm)) {
             return Optional.of(jvm.toString());
