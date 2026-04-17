@@ -84,7 +84,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.exist-db.thirdparty.com.ettrema</groupId>
+            <groupId>com.evolvedbinary.thirdparty.com.ettrema</groupId>
             <artifactId>milton-servlet</artifactId>
             <exclusions>
                 <exclusion>

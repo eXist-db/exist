@@ -102,7 +102,7 @@ public class HttpServletRequestWrapper implements HttpServletRequest, Closeable 
         parseURLParameters(this.request.getQueryString());
 
         //If POST request, Parse out parameters from the Content Body
-        if ("POST".equals(request.getMethod().toUpperCase())) {
+        if ("POST".equalsIgnoreCase(request.getMethod())) {
             //If there is some Content
             final int contentLength = request.getContentLength();
             if (contentLength > 0 || contentLength == -1) {
@@ -281,7 +281,7 @@ public class HttpServletRequestWrapper implements HttpServletRequest, Closeable 
     @Override
     public String toString() {
         // If POST request AND there is some content AND its not a file upload
-        if ("POST".equals(request.getMethod().toUpperCase())
+        if ("POST".equalsIgnoreCase(request.getMethod())
                 && (request.getContentLength() > 0 || request.getContentLength() == -1)
                 && !request.getContentType().toUpperCase().startsWith("MULTIPART/")) {
 
@@ -442,12 +442,6 @@ public class HttpServletRequestWrapper implements HttpServletRequest, Closeable 
     }
 
     @Override
-    @Deprecated
-    public boolean isRequestedSessionIdFromUrl() {
-        return request.isRequestedSessionIdFromUrl();
-    }
-
-    @Override
     public boolean authenticate(final HttpServletResponse httpServletResponse) throws IOException, ServletException {
         return request.authenticate(httpServletResponse);
     }
@@ -573,12 +567,6 @@ public class HttpServletRequestWrapper implements HttpServletRequest, Closeable 
     }
 
     @Override
-    @Deprecated
-    public String getRealPath(final String path) {
-        return request.getSession().getServletContext().getRealPath(path);
-    }
-
-    @Override
     public int getRemotePort() {
         return request.getRemotePort();
     }
@@ -631,6 +619,21 @@ public class HttpServletRequestWrapper implements HttpServletRequest, Closeable 
     @Override
     public DispatcherType getDispatcherType() {
         return request.getDispatcherType();
+    }
+
+    @Override
+    public String getRequestId() {
+        return request.getRequestId();
+    }
+
+    @Override
+    public String getProtocolRequestId() {
+        return request.getProtocolRequestId();
+    }
+
+    @Override
+    public ServletConnection getServletConnection() {
+        return request.getServletConnection();
     }
 
     @Override

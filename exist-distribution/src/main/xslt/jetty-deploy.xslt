@@ -31,8 +31,11 @@
     <xsl:template match="Set[@name eq 'defaultsDescriptor']">
         <xsl:copy><xsl:copy-of select="@*"/><xsl:copy-of select="Property[@name eq 'jetty.home']"/>/etc/jetty/webdefault.xml</xsl:copy>
     </xsl:template>
-    <xsl:template match="Set[@name eq 'war' and SystemProperty/Default/Property[@name eq 'jetty.home']]">
+    <xsl:template match="Set[@name eq 'war' and SystemProperty[@name eq 'exist.jetty.webapp.dir']/Default/Property[@name eq 'jetty.home']]">
         <xsl:copy><xsl:copy-of select="@*"/><xsl:copy-of select="SystemProperty/Default/Property[@name eq 'jetty.home']"/>/etc/<xsl:value-of select="tokenize(SystemProperty/Default/text(),'/')[last() - 1]"/></xsl:copy>
+    </xsl:template>
+    <xsl:template match="Set[@name eq 'war' and SystemProperty[@name eq 'exist.jetty.portal.dir']/Default/Property[@name eq 'jetty.home']]">
+        <xsl:copy><xsl:copy-of select="@*"/><xsl:copy-of select="SystemProperty/Default/Property[@name eq 'jetty.home']"/>/etc/jetty/webapps/portal</xsl:copy>
     </xsl:template>
     <xsl:template match="Property[@name = ('jetty.sslContext.keyStorePath', 'jetty.sslContext.trustStorePath')]">
         <xsl:copy><xsl:copy-of select="@*[local-name(.) ne 'default']"/><xsl:attribute name="default" select="'etc/jetty/keystore.p12'"/></xsl:copy>

@@ -26,14 +26,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.server.*;
 import org.eclipse.jetty.server.handler.ContextHandler;
-import org.eclipse.jetty.server.handler.HandlerWrapper;
-import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
+import org.eclipse.jetty.ee10.servlet.ServletHolder;
 import org.eclipse.jetty.util.Jetty;
-import org.eclipse.jetty.util.MultiException;
 import org.eclipse.jetty.util.component.LifeCycle;
-import org.eclipse.jetty.util.resource.PathResource;
 import org.eclipse.jetty.util.resource.Resource;
+import org.eclipse.jetty.util.resource.ResourceFactory;
 import org.eclipse.jetty.xml.XmlConfiguration;
 import org.exist.SystemProperties;
 import org.exist.http.servlets.ExistExtensionServlet;
@@ -68,7 +66,7 @@ import static se.softhouse.jargo.Arguments.stringArgument;
 /**
  * This class provides a main method to start Jetty with eXist. It registers shutdown
  * handlers to cleanly shut down the database and the webserver.
- * 
+ *
  * @author wolf
  */
 public class JettyStart extends Observable implements LifeCycle.Listener {
@@ -149,8 +147,6 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
                     return jettyPath;
                 });
 
-        System.setProperty("org.eclipse.jetty.util.log.class", "org.eclipse.jetty.util.log.Slf4jLog");
-
         final Path jettyConfig;
         if (standalone) {
             jettyConfig = Paths.get(jettyProperty).normalize().resolve("etc").resolve(Main.STANDALONE_ENABLED_JETTY_CONFIGS);
@@ -159,7 +155,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
         }
         run(new String[] { jettyConfig.toAbsolutePath().toString() }, null);
     }
-    
+
     public synchronized void run(final String[] args, final Observer observer) {
         if (args.length == 0) {
             logger.error("No configuration file specified!");
@@ -261,7 +257,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
             XmlConfiguration last = null;
             for(final Path confFile : configFiles) {
                 logger.info("[loading jetty configuration : {}]", confFile.toString());
-                final Resource resource = new PathResource(confFile);
+                final Resource resource = ResourceFactory.root().newResource(confFile);
                 final XmlConfiguration configuration = new XmlConfiguration(resource);
                 if (last != null) {
                     configuration.getIdMap().putAll(last.getIdMap());
@@ -271,9 +267,12 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
                 last = configuration;
             }
 
+            // configure WebSocket on any ServletContextHandler
+            configureWebSocket(configuredObjects);
+
             // start Jetty
             final Optional<Server> maybeServer = startJetty(configuredObjects);
-            if(!maybeServer.isPresent()) {
+            if(maybeServer.isEmpty()) {
                 logger.error("Unable to find a server to start in jetty configurations");
                 throw new IllegalStateException();
             }
@@ -303,7 +302,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
                     allPorts.append(networkConnector.getLocalPort());
                 }
             }
-            
+
             //*************************************************************
             final List<URI> serverUris = getSeverURIs(server);
             if(!serverUris.isEmpty()) {
@@ -317,9 +316,9 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
             }
 
             logger.info("Configured contexts:");
-            final LinkedHashSet<Handler> handlers = getAllHandlers(server.getHandler());
+            final List<Handler> handlers = getAllHandlers(server.getHandler());
             for (final Handler handler: handlers) {
-                
+
                 if (handler instanceof ContextHandler contextHandler) {
                     logger.info("{} ({})", contextHandler.getContextPath(), contextHandler.getDisplayName());
                 }
@@ -348,29 +347,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
 
             setChanged();
             notifyObservers(SIGNAL_STARTED);
-            
-        } catch (final MultiException e) {
 
-            // Mute the BindExceptions
-
-            boolean hasBindException = false;
-            for (final Throwable t : e.getThrowables()) {
-                if (t instanceof java.net.BindException) {
-                    hasBindException = true;
-                    logger.error("----------------------------------------------------------");
-                    logger.error("ERROR: Could not bind to port because {}", t.getMessage());
-                    logger.error(t.toString());
-                    logger.error("----------------------------------------------------------");
-                }
-            }
-
-            // If it is another error, print stacktrace
-            if (!hasBindException) {
-                e.printStackTrace();
-            }
-            setChanged();
-            notifyObservers(SIGNAL_ERROR);
-            
         } catch (final SocketException e) {
             logger.error("----------------------------------------------------------");
             logger.error("ERROR: Could not bind to port because {}", e.getMessage());
@@ -378,44 +355,65 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
             logger.error("----------------------------------------------------------");
             setChanged();
             notifyObservers(SIGNAL_ERROR);
-            
+
         } catch (final Exception e) {
-            e.printStackTrace();
+            logger.fatal("An unexpected error occurred, web server can not be started: {}", e.getMessage(), e);
             setChanged();
             notifyObservers(SIGNAL_ERROR);
         }
     }
 
-    private LinkedHashSet<Handler> getAllHandlers(final Handler handler) {
-        if(handler instanceof HandlerWrapper handlerWrapper) {
-            final LinkedHashSet<Handler> handlers = new LinkedHashSet<>();
-            handlers.add(handlerWrapper);
-            if(handlerWrapper.getHandler() != null) {
-                handlers.addAll(getAllHandlers(handlerWrapper.getHandler()));
+    private void configureWebSocket(final List<Object> configuredObjects) {
+        for (final Object obj : configuredObjects) {
+            if (obj instanceof Server server) {
+                final List<Handler> handlers = getAllHandlers(server.getHandler());
+                for (final Handler handler : handlers) {
+                    if (handler instanceof ServletContextHandler sch) {
+                        try {
+                            org.eclipse.jetty.ee10.websocket.jakarta.server.config.JakartaWebSocketServletContainerInitializer
+                                    .configure(sch, (servletContext, serverContainer) -> {
+                                        serverContainer.addEndpoint(
+                                                org.exist.xquery.functions.websocket.WebSocketEndpoint.class);
+                                        logger.info("[WebSocket endpoint registered: /ws]");
+                                        serverContainer.addEndpoint(
+                                                org.exist.http.ws.EvalWebSocketEndpoint.class);
+                                        logger.info("[WebSocket endpoint registered: /ws/eval]");
+                                    });
+                            org.exist.xquery.functions.websocket.WebSocketEndpoint.initialize();
+                            return; // only need to configure once
+                        } catch (final Exception e) {
+                            logger.warn("Failed to configure WebSocket endpoint: {}", e.getMessage(), e);
+                        }
+                    }
+                }
             }
-            return handlers;
+        }
+    }
 
-        } else if(handler instanceof HandlerContainer handlerContainer) {
-            final LinkedHashSet<Handler> handlers = new LinkedHashSet<>();
-            handlers.add(handler);
-            for(final Handler childHandler : handlerContainer.getChildHandlers()) {
+    private List<Handler> getAllHandlers(final Handler handler) {
+        final List<Handler> handlers = new ArrayList<>();
+        handlers.add(handler);
+
+        if (handler instanceof Handler.Wrapper wrapper) {
+            if (wrapper.getHandler() != null) {
+                handlers.addAll(getAllHandlers(wrapper.getHandler()));
+            }
+        } else if (handler instanceof Handler.Container container) {
+            for (final Handler childHandler : container.getHandlers()) {
                 handlers.addAll(getAllHandlers(childHandler));
             }
-            return handlers;
-
-        } else {
-            //assuming just Handler
-            final LinkedHashSet<Handler> handlers = new LinkedHashSet<>();
-            handlers.add(handler);
-            return handlers;
         }
+
+        return handlers;
     }
 
     /**
      * See {@link Server#getURI()}
      */
     private List<URI> getSeverURIs(final Server server) {
-        final ContextHandler context = server.getChildHandlerByClass(ContextHandler.class);
+        final ContextHandler context = server.getHandler() instanceof Handler.Container container
+                ? container.getDescendant(ContextHandler.class)
+                : null;
         return Arrays.stream(server.getConnectors())
                 .filter(connector -> connector instanceof NetworkConnector)
                 .map(connector -> (NetworkConnector)connector)
@@ -438,9 +436,13 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
             }
 
             String host = null;
-            if (context != null && context.getVirtualHosts() != null && context.getVirtualHosts().length > 0) {
-                host = context.getVirtualHosts()[0];
-            } else {
+            if (context != null) {
+                final List<String> virtualHosts = context.getVirtualHosts();
+                if (virtualHosts != null && !virtualHosts.isEmpty()) {
+                    host = virtualHosts.getFirst();
+                }
+            }
+            if (host == null) {
                 host = networkConnector.getHost();
             }
 
@@ -492,11 +494,9 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
                 server = Optional.of(_server);
             }
 
-            if (configuredObject instanceof LifeCycle lc) {
-                if (!lc.isRunning()) {
-                    logger.info("[Starting jetty component : {}]", lc.getClass().getName());
-                    lc.start();
-                }
+            if (configuredObject instanceof LifeCycle lc && !lc.isRunning()) {
+                logger.info("[Starting jetty component : {}]", lc.getClass().getName());
+                lc.start();
             }
         }
 
@@ -562,14 +562,14 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
                 logger.warn("Unable to remove BrokerPoolsAndJetty.ShutdownHook hook: {}", e.getMessage());
             }
         });
-        
+
         BrokerPool.stopAll(false);
-        
+
         while (status != STATUS_STOPPED) {
             try {
                 wait();
             } catch (final InterruptedException e) {
-                // ignore
+                Thread.currentThread().interrupt();
             }
         }
     }
@@ -603,7 +603,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
                             // make sure to stop the timer thread!
                             timer.cancel();
                         } catch (final Exception e) {
-                            e.printStackTrace();
+                            logger.error("An error occurred in the shutdown scheduler: {}", e.getMessage(), e);
                         }
                     }
                 }, 1000); // timer.schedule
@@ -644,6 +644,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
             try {
                 wait();
             } catch (final InterruptedException e) {
+                Thread.currentThread().interrupt();
             }
         }
         return false;
@@ -669,6 +670,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
 
     @Override
     public void lifeCycleFailure(final LifeCycle lifeCycle, final Throwable throwable) {
+        // no-op
     }
 
     @Override

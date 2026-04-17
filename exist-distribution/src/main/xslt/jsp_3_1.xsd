@@ -5,11 +5,11 @@
             xmlns:xsd="http://www.w3.org/2001/XMLSchema"
             elementFormDefault="qualified"
             attributeFormDefault="unqualified"
-            version="3.0">
+            version="3.1">
   <xsd:annotation>
     <xsd:documentation>
 
-      Copyright (c) 2009, 2020 Oracle and/or its affiliates. All rights reserved.
+      Copyright (c) 2009, 2021 Oracle and/or its affiliates. All rights reserved.
       
       This program and the accompanying materials are made available under the
       terms of the Eclipse Public License v. 2.0, which is available at
@@ -29,12 +29,12 @@
   <xsd:annotation>
     <xsd:documentation>
 
-      This is the XML Schema for the JSP 3.0 deployment descriptor
-      types.  The JSP 3.0 schema contains all the special
+      This is the XML Schema for the JSP 3.1 deployment descriptor
+      types.  The JSP 3.1 schema contains all the special
       structures and datatypes that are necessary to use JSP files
       from a web application. 
       
-      The contents of this schema is used by the web-common_5_0.xsd 
+      The contents of this schema is used by the web-common_6_0.xsd 
       file to define JSP specific content. 
       
     </xsd:documentation>
@@ -58,7 +58,7 @@
     </xsd:documentation>
   </xsd:annotation>
 
-  <xsd:include schemaLocation="jakartaee_9.xsd"/>
+  <xsd:include schemaLocation="jakartaee_10.xsd"/>
 
 
 <!-- **************************************************** -->
@@ -148,6 +148,19 @@
             EL evaluation is enabled for Web Applications using
             a Servlet 2.4 or greater web.xml, and disabled
             otherwise.
+            
+          </xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="error-on-el-not-found"
+                   type="jakartaee:true-falseType"
+                   minOccurs="0">
+        <xsd:annotation>
+          <xsd:documentation>
+
+            Can be used to easily set the errorOnELNotFound
+            property of a group of JSP pages. By default, this
+            property is false.
             
           </xsd:documentation>
         </xsd:annotation>

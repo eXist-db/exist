@@ -19,26 +19,21 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-package org.exist.jetty;
-
-import org.exist.storage.BrokerPool;
+package org.exist.xquery.functions.websocket;
 
 /**
- * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
- *
+ * Adapter interface for sending console/log messages over WebSocket.
+ * Implementations bridge the XQuery module to the WebSocket endpoint.
  */
-public class WebAppContext extends org.eclipse.jetty.ee10.webapp.WebAppContext {
+public interface ConsoleAdapter {
 
-    @Override
-	public String toString() {
-		return "eXist-db Open Source Native XML Database";
-	}
+    void log(String channel, String message);
 
-    @Override
-	protected void doStop() throws Exception {
-		super.doStop();
+    void log(String channel, boolean json, String message);
 
-		BrokerPool.stopAll(true);
-	}
+    void log(String channel, String source, int line, int column, String message);
 
+    void log(String channel, String source, int line, int column, boolean json, String message);
+
+    void send(String channel, String message);
 }
