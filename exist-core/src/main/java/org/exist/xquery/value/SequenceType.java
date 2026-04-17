@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.value;
 
+import javax.annotation.Nullable;
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.ErrorCodes;
@@ -46,6 +47,9 @@ public class SequenceType {
     private QName nodeName = null;
     private List<SequenceType> choiceAlternatives = null;
     private String[] enumValues = null;
+
+    // XQuery 4.0 record type support
+    private RecordType recordType = null;
 
     public SequenceType() {
     }
@@ -113,6 +117,39 @@ public class SequenceType {
         this.nodeName = qname;
     }
 
+    // --- XQuery 4.0 Record Type Support ---
+
+    /**
+     * Check if this SequenceType is a record type.
+     */
+    public boolean isRecordType() {
+        return primaryType == Type.RECORD && (recordType != null || recordFields != null);
+    }
+
+    /**
+     * Get the record type's field declarations.
+     */
+    @Nullable
+    public java.util.List<RecordType.FieldDeclaration> getFieldDeclarations() {
+        return recordType != null ? recordType.getFieldDeclarations() : null;
+    }
+
+    /**
+     * Set the record type definition.
+     */
+    public void setRecordType(final RecordType recordType) {
+        this.primaryType = Type.RECORD;
+        this.recordType = recordType;
+    }
+
+    /**
+     * Get the record type, or null if this isn't a record type.
+     */
+    @Nullable
+    public RecordType getRecordType() {
+        return recordType;
+    }
+
     public void addChoiceAlternative(final SequenceType alt) {
         if (choiceAlternatives == null) {
             choiceAlternatives = new ArrayList<>();
@@ -141,7 +178,7 @@ public class SequenceType {
         return enumValues != null;
     }
 
-    // Record type support
+    // Record type support (parser-based)
 
     /**
      * Represents a field in a record type declaration.
@@ -181,11 +218,7 @@ public class SequenceType {
     }
 
     public boolean isRecordExtensible() {
-        return recordExtensible;
-    }
-
-    public boolean isRecordType() {
-        return primaryType == Type.RECORD;
+        return recordType != null ? recordType.isExtensible() : recordExtensible;
     }
 
     /**
@@ -226,7 +259,7 @@ public class SequenceType {
      * @param item the item to check
      * @return true, if item is a subtype of primaryType
      */
-    public boolean checkType(Item item) {
+    public boolean checkType(final Item item) {
         if (isChoiceType()) {
             for (final SequenceType alt : choiceAlternatives) {
                 if (alt.checkType(item)) {
@@ -251,7 +284,17 @@ public class SequenceType {
             }
             return false;
         }
+        // XQuery 4.0 record type checking
         if (isRecordType()) {
+            if (recordType != null) {
+                if (!Type.subTypeOf(item.getType(), Type.MAP_ITEM)) {
+                    return false;
+                }
+                if (item instanceof org.exist.xquery.functions.map.AbstractMapType) {
+                    return recordType.matches((org.exist.xquery.functions.map.AbstractMapType) item);
+                }
+                return false;
+            }
             return checkRecordType(item);
         }
         Node realNode = null;

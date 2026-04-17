@@ -44,7 +44,7 @@ public class FunTokenize extends BasicFunction {
 
     private static final QName FS_TOKENIZE_NAME = new QName("tokenize", Function.BUILTIN_FUNCTION_NS);
 
-    private final static FunctionParameterSequenceType FS_TOKENIZE_PARAM_INPUT = optParam("input", Type.STRING, "The input string");
+    private final static FunctionParameterSequenceType FS_TOKENIZE_PARAM_INPUT = optParam("value", Type.STRING, "The input string");
     private final static FunctionParameterSequenceType FS_TOKENIZE_PARAM_PATTERN =
             new FunctionParameterSequenceType("pattern", Type.STRING, Cardinality.ZERO_OR_ONE, "The tokenization pattern");
 
@@ -104,17 +104,19 @@ public class FunTokenize extends BasicFunction {
                         flagsStr = args[2].itemAt(0).getStringValue();
                     }
 
-                    // XQ4: 'c' flag — strip regex comments
-                    final boolean hasCommentFlag = flagsStr.indexOf('c') >= 0 && flagsStr.indexOf('q') < 0;
+                    // XQ4: '!' flag — XPath mode (allows empty matches, etc.)
+                    final boolean hasXPathFlag = flagsStr.contains("!");
+                    if (hasXPathFlag) {
+                        flagsStr = flagsStr.replace("!", "");
+                    }
+
+                    // XQ4: 'c' flag — strip regex comments (handled by Saxon's 'x' flag)
                     if (flagsStr.indexOf('c') >= 0) {
                         flagsStr = flagsStr.replace("c", "");
                     }
                     final int flags = parseFlags(this, flagsStr);
 
-                    String rawPattern = args[1].itemAt(0).getStringValue();
-                    if (hasCommentFlag) {
-                        rawPattern = FunReplace.stripRegexComments(rawPattern);
-                    }
+                    final String rawPattern = args[1].itemAt(0).getStringValue();
                     final String pattern;
                     if (hasLiteral(flags)) {
                         pattern = rawPattern;
@@ -126,15 +128,17 @@ public class FunTokenize extends BasicFunction {
 
                     try {
                         final Pattern pat = PatternFactory.getInstance().getPattern(pattern, flags);
+                        final boolean canMatchEmpty = pat.matcher("").matches();
+                        final boolean allowEmptyMatch = hasXPathFlag || context.getXQueryVersion() >= 40;
 
-                        if (pat.matcher("").matches()) {
-                            // XQ4 with ! flag: empty-matching allowed — tokenize between each character
-                            // XQ 3.1 or XQ4 without ! flag: FORX0003
-                            if (context.getXQueryVersion() >= 40 && flagsStr.contains("!")) {
-                                result = tokenizeEmptyMatch(string, pat);
-                            } else {
-                                throw new XPathException(this, ErrorCodes.FORX0003, "regular expression could match empty string");
-                            }
+                        if (canMatchEmpty && !allowEmptyMatch) {
+                            throw new XPathException(this, ErrorCodes.FORX0003,
+                                    "Regular expression matches zero-length string");
+                        }
+
+                        if (canMatchEmpty) {
+                            // XQ4: empty-matching regex allowed — tokenize between each character
+                            result = tokenizeEmptyMatch(string, pat);
                         } else {
                             final String[] tokens = pat.split(string, -1);
                             result = new ValueSequence();

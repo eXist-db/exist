@@ -305,11 +305,6 @@ public abstract class Function extends PathExpr {
                 return new FunctionTypeCheck(context, functionParameterType, argument);
             }
 
-            // XQuery 4.0: wrap with record type check if parameter declares a record type
-            if (argType.isRecordType() && argType.getRecordType() != null) {
-                return new RecordTypeCheck(context, argType.getRecordType(), argument);
-            }
-
             return argument;
         }
 
@@ -345,11 +340,6 @@ public abstract class Function extends PathExpr {
         }
         if (argType instanceof final FunctionParameterFunctionSequenceType functionParameterType) {
             return new FunctionTypeCheck(context, functionParameterType, argument);
-        }
-
-        // XQuery 4.0: wrap with record type check if parameter declares a record type
-        if (argType.isRecordType() && argType.getRecordType() != null) {
-            return new RecordTypeCheck(context, argType.getRecordType(), argument);
         }
 
         return new DynamicTypeCheck(context, argType.getPrimaryType(), argument);
