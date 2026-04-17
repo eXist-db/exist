@@ -388,10 +388,16 @@ public class Collations {
                 return true;
             } else if (s1.isEmpty()) {
                 return false;
-            } else {
+            } else if (collator instanceof RuleBasedCollator rbc) {
                 final SearchIterator searchIterator =
-                        new StringSearch(s2, new StringCharacterIterator(s1), (RuleBasedCollator) collator);
+                        new StringSearch(s2, new StringCharacterIterator(s1), rbc);
                 return searchIterator.first() == 0;
+            } else {
+                // Fallback for non-RuleBasedCollator (e.g., HtmlAsciiCaseInsensitiveCollator)
+                if (s1.length() >= s2.length()) {
+                    return collator.compare(s1.substring(0, s2.length()), s2) == 0;
+                }
+                return false;
             }
         }
     }
@@ -415,9 +421,9 @@ public class Collations {
                 return true;
             } else if (s1.isEmpty()) {
                 return false;
-            } else {
+            } else if (collator instanceof RuleBasedCollator rbc) {
                 final SearchIterator searchIterator =
-                        new StringSearch(s2, new StringCharacterIterator(s1), (RuleBasedCollator) collator);
+                        new StringSearch(s2, new StringCharacterIterator(s1), rbc);
                 int lastPos = SearchIterator.DONE;
                 int lastLen = 0;
                 for (int pos = searchIterator.first(); pos != SearchIterator.DONE;
@@ -427,6 +433,12 @@ public class Collations {
                 }
 
                 return lastPos > SearchIterator.DONE && lastPos + lastLen == s1.length();
+            } else {
+                // Fallback for non-RuleBasedCollator
+                if (s1.length() >= s2.length()) {
+                    return collator.compare(s1.substring(s1.length() - s2.length()), s2) == 0;
+                }
+                return false;
             }
         }
     }
@@ -450,10 +462,18 @@ public class Collations {
                 return true;
             } else if (s1.isEmpty()) {
                 return false;
-            } else {
+            } else if (collator instanceof RuleBasedCollator rbc) {
                 final SearchIterator searchIterator =
-                        new StringSearch(s2, new StringCharacterIterator(s1), (RuleBasedCollator) collator);
+                        new StringSearch(s2, new StringCharacterIterator(s1), rbc);
                 return searchIterator.first() >= 0;
+            } else {
+                // Fallback for non-RuleBasedCollator
+                for (int i = 0; i <= s1.length() - s2.length(); i++) {
+                    if (collator.compare(s1.substring(i, i + s2.length()), s2) == 0) {
+                        return true;
+                    }
+                }
+                return false;
             }
         }
     }
@@ -476,10 +496,18 @@ public class Collations {
                 return 0;
             } else if (s1.isEmpty()) {
                 return -1;
-            } else {
+            } else if (collator instanceof RuleBasedCollator rbc) {
                 final SearchIterator searchIterator =
-                        new StringSearch(s2, new StringCharacterIterator(s1), (RuleBasedCollator) collator);
+                        new StringSearch(s2, new StringCharacterIterator(s1), rbc);
                 return searchIterator.first();
+            } else {
+                // Fallback for non-RuleBasedCollator
+                for (int i = 0; i <= s1.length() - s2.length(); i++) {
+                    if (collator.compare(s1.substring(i, i + s2.length()), s2) == 0) {
+                        return i;
+                    }
+                }
+                return -1;
             }
         }
     }
@@ -826,19 +854,103 @@ public class Collations {
         return collator;
     }
 
-    private static Collator getHtmlAsciiCaseInsensitiveCollator() throws Exception {
+    private static Collator getHtmlAsciiCaseInsensitiveCollator() {
         Collator collator = htmlAsciiCaseInsensitiveCollator.get();
         if (collator == null) {
-            collator = new RuleBasedCollator("&a=A &b=B &c=C &d=D &e=E &f=F &g=G &h=H "
-                    + "&i=I &j=J &k=K &l=L &m=M &n=N &o=O &p=P &q=Q &r=R &s=S &t=T "
-                    + "&u=U &v=V &w=W &x=X &y=Y &z=Z");
-            collator.setStrength(Collator.PRIMARY);
+            // XQ4 html-ascii-case-insensitive: ASCII letters A-Z fold to a-z,
+            // all other characters compare by Unicode codepoint order.
+            // Cannot use RuleBasedCollator with PRIMARY strength because that
+            // makes ALL case/accent differences irrelevant, not just ASCII.
             htmlAsciiCaseInsensitiveCollator.compareAndSet(null,
-                    collator.freeze());
+                    new HtmlAsciiCaseInsensitiveCollator());
             collator = htmlAsciiCaseInsensitiveCollator.get();
         }
 
         return collator;
+    }
+
+    /**
+     * Custom Collator for HTML ASCII case-insensitive comparison.
+     * Folds only ASCII letters A-Z to a-z, then compares by Unicode codepoint.
+     * Non-ASCII characters are compared by their codepoint value without folding.
+     */
+    private static final class HtmlAsciiCaseInsensitiveCollator extends Collator {
+
+        @Override
+        public int compare(final String source, final String target) {
+            int i1 = 0, i2 = 0;
+            while (i1 < source.length() && i2 < target.length()) {
+                int cp1 = source.codePointAt(i1);
+                int cp2 = target.codePointAt(i2);
+                // Fold ASCII uppercase to lowercase only
+                if (cp1 >= 'A' && cp1 <= 'Z') {
+                    cp1 += 32;
+                }
+                if (cp2 >= 'A' && cp2 <= 'Z') {
+                    cp2 += 32;
+                }
+                if (cp1 != cp2) {
+                    return cp1 - cp2;
+                }
+                i1 += Character.charCount(cp1);
+                i2 += Character.charCount(cp2);
+            }
+            return (source.length() - i1) - (target.length() - i2);
+        }
+
+        @Override
+        public CollationKey getCollationKey(final String source) {
+            throw new UnsupportedOperationException("CollationKey not supported for HTML ASCII case-insensitive collation");
+        }
+
+        @Override
+        public RawCollationKey getRawCollationKey(final String source, final RawCollationKey key) {
+            throw new UnsupportedOperationException("RawCollationKey not supported for HTML ASCII case-insensitive collation");
+        }
+
+        @Override
+        public int setVariableTop(final String varTop) {
+            return 0;
+        }
+
+        @Override
+        public int getVariableTop() {
+            return 0;
+        }
+
+        @Override
+        public void setVariableTop(final int varTop) {
+        }
+
+        @Override
+        public VersionInfo getVersion() {
+            return VersionInfo.getInstance(1);
+        }
+
+        @Override
+        public VersionInfo getUCAVersion() {
+            return VersionInfo.getInstance(1);
+        }
+
+        @Override
+        public int hashCode() {
+            return HtmlAsciiCaseInsensitiveCollator.class.hashCode();
+        }
+
+        @Override
+        public Collator freeze() {
+            return this;
+        }
+
+        @Override
+        public boolean isFrozen() {
+            return true;
+        }
+
+        @Override
+        public Collator cloneAsThawed() {
+            return new HtmlAsciiCaseInsensitiveCollator();
+        }
     }
 
     private static Collator getXqtsAsciiCaseBlindCollator() throws Exception {

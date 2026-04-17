@@ -47,6 +47,9 @@ public class OneParamFunctions extends BasicFunction {
     public static final String SIN = "sin";
     public static final String SQRT = "sqrt";
     public static final String TAN = "tan";
+    public static final String COSH = "cosh";
+    public static final String SINH = "sinh";
+    public static final String TANH = "tanh";
 
     public final static FunctionSignature FNS_ACOS = new FunctionSignature(
             new QName(ACOS, MathModule.NAMESPACE_URI, MathModule.PREFIX),
@@ -125,6 +128,27 @@ public class OneParamFunctions extends BasicFunction {
             new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the tangent")
     );
 
+    public final static FunctionSignature FNS_COSH = new FunctionSignature(
+            new QName(COSH, MathModule.NAMESPACE_URI, MathModule.PREFIX),
+            "Returns the hyperbolic cosine of the argument.",
+            new SequenceType[]{new FunctionParameterSequenceType("arg", Type.DOUBLE, Cardinality.ZERO_OR_ONE, "The input value")},
+            new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the hyperbolic cosine")
+    );
+
+    public final static FunctionSignature FNS_SINH = new FunctionSignature(
+            new QName(SINH, MathModule.NAMESPACE_URI, MathModule.PREFIX),
+            "Returns the hyperbolic sine of the argument.",
+            new SequenceType[]{new FunctionParameterSequenceType("arg", Type.DOUBLE, Cardinality.ZERO_OR_ONE, "The input value")},
+            new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the hyperbolic sine")
+    );
+
+    public final static FunctionSignature FNS_TANH = new FunctionSignature(
+            new QName(TANH, MathModule.NAMESPACE_URI, MathModule.PREFIX),
+            "Returns the hyperbolic tangent of the argument.",
+            new SequenceType[]{new FunctionParameterSequenceType("arg", Type.DOUBLE, Cardinality.ZERO_OR_ONE, "The input value")},
+            new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the hyperbolic tangent")
+    );
+
     public OneParamFunctions(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
     }
@@ -156,6 +180,9 @@ public class OneParamFunctions extends BasicFunction {
                 case SIN -> Math.sin(value.getDouble());
                 case SQRT -> Math.sqrt(value.getDouble());
                 case TAN -> Math.tan(value.getDouble());
+                case COSH -> Math.cosh(value.getDouble());
+                case SINH -> Math.sinh(value.getDouble());
+                case TANH -> Math.tanh(value.getDouble());
                 case null -> throw new XPathException(this, ERROR, "Function " + functionName + " not found.");
                 default -> 0;
             };

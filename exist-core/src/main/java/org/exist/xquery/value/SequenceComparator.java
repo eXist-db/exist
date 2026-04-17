@@ -71,7 +71,7 @@ public class SequenceComparator implements Comparator<Sequence> {
         }
 
         final int o1Count = o1.getItemCount();
-        final int o2Count = o1.getItemCount();
+        final int o2Count = o2.getItemCount();
 
         if (o1Count < o2Count) {
             return -1;

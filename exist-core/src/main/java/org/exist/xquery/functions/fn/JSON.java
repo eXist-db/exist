@@ -122,18 +122,71 @@ public class JSON extends BasicFunction {
                     context.getXQueryVersion());
         }
         // process options if present
-        // TODO: jackson does not allow access to raw string, so option "unescape" is not supported
         boolean liberal = false;
         String handleDuplicates = OPTION_DUPLICATES_USE_LAST;
         if (getArgumentCount() == 2) {
             final MapType options = (MapType)args[1].itemAt(0);
-            final Sequence liberalOpt = options.get(new StringValue(OPTION_LIBERAL));
-            if (liberalOpt.hasOne()) {
-                liberal = liberalOpt.itemAt(0).convertTo(Type.BOOLEAN).effectiveBooleanValue();
+
+            // Validate deprecated options → XPTY0004
+            final Sequence validateOpt = options.get(new StringValue("validate"));
+            if (validateOpt != null && validateOpt.hasOne()) {
+                throw new XPathException(this, ErrorCodes.XPTY0004,
+                        "The 'validate' option is not supported");
             }
+            // XQuery 4.0: 'spec' option controls JSON spec version (RFC7159, ECMA-404, etc.)
+            // Accepted but not yet enforced — we always parse per RFC 7159
+            final Sequence specOpt = options.get(new StringValue("spec"));
+            // (no validation needed — all spec values are accepted)
+
+            // Validate liberal option — must be boolean
+            final Sequence liberalOpt = options.get(new StringValue(OPTION_LIBERAL));
+            if (liberalOpt != null && liberalOpt.hasOne()) {
+                final Item liberalItem = liberalOpt.itemAt(0);
+                if (liberalItem.getType() != Type.BOOLEAN) {
+                    // Try to convert; if the value is a non-boolean string, reject
+                    if (Type.subTypeOf(liberalItem.getType(), Type.STRING)) {
+                        final String val = liberalItem.getStringValue();
+                        if (!"true".equals(val) && !"false".equals(val) && !"1".equals(val) && !"0".equals(val)) {
+                            throw new XPathException(this, ErrorCodes.XPTY0004,
+                                    "Option 'liberal' must be a boolean, got: " + val);
+                        }
+                    }
+                    liberal = liberalItem.convertTo(Type.BOOLEAN).effectiveBooleanValue();
+                } else {
+                    liberal = liberalItem.convertTo(Type.BOOLEAN).effectiveBooleanValue();
+                }
+            }
+
+            // Validate duplicates option
             final Sequence duplicateOpt = options.get(new StringValue(OPTION_DUPLICATES));
-            if (duplicateOpt.hasOne()) {
+            if (duplicateOpt != null && duplicateOpt.hasOne()) {
                 handleDuplicates = duplicateOpt.itemAt(0).getStringValue();
+                if (!OPTION_DUPLICATES_USE_FIRST.equals(handleDuplicates)
+                        && !OPTION_DUPLICATES_USE_LAST.equals(handleDuplicates)
+                        && !OPTION_DUPLICATES_REJECT.equals(handleDuplicates)) {
+                    throw new XPathException(this, ErrorCodes.XPTY0004,
+                            "Invalid value for 'duplicates' option: " + handleDuplicates);
+                }
+            }
+
+            // Validate fallback option — must be a function with arity 1
+            final Sequence fallbackOpt = options.get(new StringValue("fallback"));
+            if (fallbackOpt != null && fallbackOpt.hasOne()) {
+                final Item fallbackItem = fallbackOpt.itemAt(0);
+                if (!(fallbackItem instanceof FunctionReference)) {
+                    throw new XPathException(this, ErrorCodes.XPTY0004,
+                            "Option 'fallback' must be a function, got: " + Type.getTypeName(fallbackItem.getType()));
+                }
+            }
+
+            // Validate number-parser option — must be a function
+            final Sequence numberParserOpt = options.get(new StringValue("number-parser"));
+            if (numberParserOpt != null && numberParserOpt.hasOne()) {
+                final Item npItem = numberParserOpt.itemAt(0);
+                if (!(npItem instanceof FunctionReference)) {
+                    throw new XPathException(this, ErrorCodes.XPTY0004,
+                            "Option 'number-parser' must be a function, got: " + Type.getTypeName(npItem.getType()));
+                }
             }
             final Sequence escapeOpt = options.get(new StringValue(OPTION_ESCAPE));
             if (escapeOpt.hasOne()) {
@@ -347,9 +400,17 @@ public class JSON extends BasicFunction {
                     next = BooleanValue.TRUE;
                     break;
                 case VALUE_NUMBER_FLOAT:
-                case VALUE_NUMBER_INT:
-                    // according to spec, all numbers are converted to double
+                    // JSON fractional numbers → xs:double
                     next = new StringValue(parser.getText()).convertTo(Type.DOUBLE);
+                    break;
+                case VALUE_NUMBER_INT:
+                    // XQuery 4.0: JSON integers → xs:integer (was xs:double in 3.1)
+                    try {
+                        next = new IntegerValue(parser.getLongValue());
+                    } catch (final Exception e) {
+                        // Fallback to double for very large integers
+                        next = new StringValue(parser.getText()).convertTo(Type.DOUBLE);
+                    }
                     break;
                 case VALUE_NULL:
                     next = null;

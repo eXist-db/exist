@@ -83,7 +83,21 @@ public class TwoParamFunctions extends BasicFunction {
             calcValue = Math.atan2(valueA.getDouble(), valueB.getDouble());
 
         } else if (POW.equals(functionName)) {
-            calcValue = Math.pow(valueA.getDouble(), valueB.getDouble());
+            final double a = valueA.getDouble();
+            final double b = valueB.getDouble();
+            // XPath spec §4.2.7 overrides IEEE 754 for these cases:
+            // pow(x, 0) = 1.0 for ANY x (including NaN, ±INF)
+            // pow(1, y) = 1.0 for ANY y (including NaN, ±INF)
+            // pow(-1, ±INF) = 1.0
+            if (b == 0.0) {
+                calcValue = 1.0;
+            } else if (a == 1.0) {
+                calcValue = 1.0;
+            } else if (a == -1.0 && Double.isInfinite(b)) {
+                calcValue = 1.0;
+            } else {
+                calcValue = Math.pow(a, b);
+            }
 
         } else {
             throw new XPathException(this, ERROR, "Function " + functionName + " not found.");

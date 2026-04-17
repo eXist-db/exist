@@ -83,6 +83,7 @@ import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.exist.dom.QName;
 import org.exist.util.CodePointString;
 import org.exist.xquery.*;
+import org.exist.xquery.functions.map.MapType;
 import org.exist.xquery.value.*;
 
 import javax.annotation.Nullable;
@@ -125,7 +126,7 @@ public class FnFormatNumbers extends BasicFunction {
                     arity(
                             FS_PARAM_VALUE,
                             FS_PARAM_PICTURE,
-                            optParam("decimal-format-name", Type.STRING, "The name (as an EQName) of a decimal format to use.")
+                            optParam("options", Type.ITEM, "The name (as an EQName) of a decimal format, or a map of formatting options (XQuery 4.0).")
                     )
             )
     );
@@ -138,22 +139,8 @@ public class FnFormatNumbers extends BasicFunction {
     public Sequence eval(final Sequence[] args, final Sequence contextSequence)
             throws XPathException {
 
-        // get the decimal format
-        final QName qnDecimalFormat;
-        if (args.length == 3 && !args[2].isEmpty()) {
-            final String decimalFormatName = args[2].itemAt(0).getStringValue().trim();
-            try {
-                qnDecimalFormat = QName.parse(context, decimalFormatName);
-            } catch (final QName.IllegalQNameException e) {
-                throw new XPathException(this, ErrorCodes.FODF1280, "Invalid decimal format QName.", args[2], e);
-            }
-        } else {
-            qnDecimalFormat = null;
-        }
-        final DecimalFormat decimalFormat = context.getStaticDecimalFormat(qnDecimalFormat);
-        if (decimalFormat == null) {
-            throw new XPathException(this, ErrorCodes.FODF1280, "No known decimal format of that name.", args[2]);
-        }
+        // Resolve decimal format from the options argument (XQ4: string or map)
+        final DecimalFormat decimalFormat = resolveDecimalFormat(args);
 
         final NumericValue number;
         if (args[0].isEmpty()) {
@@ -169,6 +156,145 @@ public class FnFormatNumbers extends BasicFunction {
         final Tuple2<SubPicture, Optional<SubPicture>> subPictures = analyzePictureString(decimalFormat, pictureString);
         final String value = format(number, decimalFormat, subPictures);
         return new StringValue(this, value);
+    }
+
+    /**
+     * Resolves the decimal format from the 3rd argument.
+     * XQ3.1: absent or xs:string (decimal format name).
+     * XQ4: map(*) with formatting properties and optional format-name.
+     */
+    private DecimalFormat resolveDecimalFormat(final Sequence[] args) throws XPathException {
+        if (args.length < 3 || args[2].isEmpty()) {
+            // No options — use unnamed default
+            final DecimalFormat df = context.getStaticDecimalFormat(null);
+            if (df == null) {
+                throw new XPathException(this, ErrorCodes.FODF1280, "No unnamed decimal format in static context.");
+            }
+            return df;
+        }
+
+        final Item optionsItem = args[2].itemAt(0);
+
+        if (optionsItem instanceof MapType) {
+            // XQ4 map overload
+            return resolveDecimalFormatFromMap((MapType) optionsItem);
+        }
+
+        // XQ3.1 string overload (decimal format name)
+        final String decimalFormatName = optionsItem.getStringValue().trim();
+        final QName qnDecimalFormat;
+        try {
+            qnDecimalFormat = QName.parse(context, decimalFormatName);
+        } catch (final QName.IllegalQNameException e) {
+            throw new XPathException(this, ErrorCodes.FODF1280, "Invalid decimal format QName.", args[2], e);
+        }
+        final DecimalFormat df = context.getStaticDecimalFormat(qnDecimalFormat);
+        if (df == null) {
+            throw new XPathException(this, ErrorCodes.FODF1280, "No known decimal format of that name.", args[2]);
+        }
+        return df;
+    }
+
+    /**
+     * Resolves a decimal format from an XQ4 options map.
+     * The map can contain format-name (to select a base format) and
+     * individual property overrides (decimal-separator, grouping-separator, etc.).
+     *
+     * Properties use the char:rendition pattern — a single character is both
+     * marker and rendition; "char:string" splits marker from rendition.
+     * For this implementation, only the marker (first character) is used for
+     * picture string analysis; the rendition is used for output formatting.
+     */
+    private DecimalFormat resolveDecimalFormatFromMap(final MapType map) throws XPathException {
+        // Start with the named or unnamed base format
+        final Sequence formatNameSeq = map.get(new StringValue(this, "format-name"));
+        DecimalFormat base;
+        if (formatNameSeq != null && !formatNameSeq.isEmpty()) {
+            final String formatName = formatNameSeq.itemAt(0).getStringValue().trim();
+            final QName qn;
+            try {
+                qn = QName.parse(context, formatName);
+            } catch (final QName.IllegalQNameException e) {
+                throw new XPathException(this, ErrorCodes.FODF1280, "Invalid format-name in options map.", formatNameSeq, e);
+            }
+            base = context.getStaticDecimalFormat(qn);
+            if (base == null) {
+                throw new XPathException(this, ErrorCodes.FODF1280, "No known decimal format: " + formatName);
+            }
+        } else {
+            base = context.getStaticDecimalFormat(null);
+            if (base == null) {
+                base = DecimalFormat.UNNAMED;
+            }
+        }
+
+        // Override individual properties from the map, extracting char:rendition
+        final CharRendition decSep = getCharRenditionProperty(map, "decimal-separator", base.decimalSeparator);
+        final CharRendition grpSep = getCharRenditionProperty(map, "grouping-separator", base.groupingSeparator);
+        final CharRendition expSep = getCharRenditionProperty(map, "exponent-separator", base.exponentSeparator);
+        final CharRendition pct = getCharRenditionProperty(map, "percent", base.percent);
+        final CharRendition pml = getCharRenditionProperty(map, "per-mille", base.perMille);
+        final int zeroDigit = getCharProperty(map, "zero-digit", base.zeroDigit);
+        final int digit = getCharProperty(map, "digit", base.digit);
+        final int patternSeparator = getCharProperty(map, "pattern-separator", base.patternSeparator);
+        final int minusSign = getCharProperty(map, "minus-sign", base.minusSign);
+        final String infinity = getStringProperty(map, "infinity", base.infinity);
+        final String nan = getStringProperty(map, "NaN", base.NaN);
+
+        return new DecimalFormat(decSep.marker(), expSep.marker(), grpSep.marker(),
+                pct.marker(), pml.marker(), zeroDigit, digit, patternSeparator, infinity, nan, minusSign,
+                decSep.rendition(), expSep.rendition(), grpSep.rendition(),
+                pct.rendition(), pml.rendition());
+    }
+
+    /**
+     * Result of parsing a char:rendition property value.
+     * Marker is used for picture string parsing; rendition for output.
+     */
+    private record CharRendition(int marker, String rendition) {}
+
+    /**
+     * Extracts a single-character property from the map, handling the
+     * char:rendition pattern. Returns marker (first char) and rendition.
+     * If the property is absent, returns the default marker with null rendition.
+     */
+    private CharRendition getCharRenditionProperty(final MapType map, final String key, final int defaultValue) throws XPathException {
+        final Sequence seq = map.get(new StringValue(this, key));
+        if (seq == null || seq.isEmpty()) {
+            return new CharRendition(defaultValue, null);
+        }
+        final String value = seq.itemAt(0).getStringValue();
+        if (value.isEmpty()) {
+            throw new XPathException(this, ErrorCodes.FODF1280,
+                    "Decimal format property '" + key + "' must not be empty.");
+        }
+        final int marker = value.codePointAt(0);
+        final int markerLen = Character.charCount(marker);
+        // char:rendition pattern: "X:rendition" where X is the marker
+        if (value.length() > markerLen && value.charAt(markerLen) == ':') {
+            final String rendition = value.substring(markerLen + 1);
+            return new CharRendition(marker, rendition);
+        }
+        return new CharRendition(marker, null);
+    }
+
+    /**
+     * Extracts a single-character property (no rendition support).
+     */
+    private int getCharProperty(final MapType map, final String key, final int defaultValue) throws XPathException {
+        return getCharRenditionProperty(map, key, defaultValue).marker();
+    }
+
+    /**
+     * Extracts a string property from the map.
+     * If absent, returns the default.
+     */
+    private String getStringProperty(final MapType map, final String key, final String defaultValue) throws XPathException {
+        final Sequence seq = map.get(new StringValue(this, key));
+        if (seq == null || seq.isEmpty()) {
+            return defaultValue;
+        }
+        return seq.itemAt(0).getStringValue();
     }
 
     enum AnalyzeState {
@@ -732,8 +858,41 @@ public class FnFormatNumbers extends BasicFunction {
         }
 
         // Rule 14 - concatenate prefix, formatted number, and suffix
-        final String result = subPicture.getPrefixString() + formatted + subPicture.getSuffixString();
+        String result = subPicture.getPrefixString() + formatted + subPicture.getSuffixString();
 
+        // XQ4: Apply char:rendition substitutions — replace marker characters with
+        // their rendition strings in the final output
+        result = applyRenditions(result, decimalFormat);
+
+        return result;
+    }
+
+    /**
+     * XQ4 char:rendition: replace marker characters with their rendition strings
+     * in the formatted output. Only applies when a rendition differs from the
+     * marker (i.e., the property was specified as "marker:rendition").
+     */
+    private static String applyRenditions(String result, final DecimalFormat df) {
+        final String decMarker = new String(Character.toChars(df.decimalSeparator));
+        if (!decMarker.equals(df.decimalSeparatorRendition)) {
+            result = result.replace(decMarker, df.decimalSeparatorRendition);
+        }
+        final String grpMarker = new String(Character.toChars(df.groupingSeparator));
+        if (!grpMarker.equals(df.groupingSeparatorRendition)) {
+            result = result.replace(grpMarker, df.groupingSeparatorRendition);
+        }
+        final String expMarker = new String(Character.toChars(df.exponentSeparator));
+        if (!expMarker.equals(df.exponentSeparatorRendition)) {
+            result = result.replace(expMarker, df.exponentSeparatorRendition);
+        }
+        final String pctMarker = new String(Character.toChars(df.percent));
+        if (!pctMarker.equals(df.percentRendition)) {
+            result = result.replace(pctMarker, df.percentRendition);
+        }
+        final String pmlMarker = new String(Character.toChars(df.perMille));
+        if (!pmlMarker.equals(df.perMilleRendition)) {
+            result = result.replace(pmlMarker, df.perMilleRendition);
+        }
         return result;
     }
 

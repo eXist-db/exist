@@ -53,8 +53,12 @@ public class MathModule extends AbstractInternalModule {
         new FunctionDef(OneParamFunctions.FNS_SIN, OneParamFunctions.class),
         new FunctionDef(OneParamFunctions.FNS_SQRT, OneParamFunctions.class),
         new FunctionDef(OneParamFunctions.FNS_TAN, OneParamFunctions.class),
-        
+        new FunctionDef(OneParamFunctions.FNS_COSH, OneParamFunctions.class),
+        new FunctionDef(OneParamFunctions.FNS_SINH, OneParamFunctions.class),
+        new FunctionDef(OneParamFunctions.FNS_TANH, OneParamFunctions.class),
+
         new FunctionDef(NoParamFunctions.FNS_PI, NoParamFunctions.class),
+        new FunctionDef(NoParamFunctions.FNS_E, NoParamFunctions.class),
         
         new FunctionDef(TwoParamFunctions.FNS_ATAN2, TwoParamFunctions.class),
         new FunctionDef(TwoParamFunctions.FNS_POW, TwoParamFunctions.class)

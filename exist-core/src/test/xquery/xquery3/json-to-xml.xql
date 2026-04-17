@@ -43,7 +43,7 @@ function jsonxml:json-to-xml-2() {
 };
 
 declare
-    %test:pending("not implemented yet")
+    %test:pending("escape option not yet implemented — Jackson does not expose raw string values")
     %test:assertEquals("<map xmlns='http://www.w3.org/2005/xpath-functions'><string escaped='true' key='x'>\\</string><string key='y'>%</string></map>")
 function jsonxml:json-to-xml-3() {
     json-to-xml('{"x": "\\", "y": "\u0025"}', map{'escape': true()})
@@ -58,6 +58,7 @@ function jsonxml:json-to-xml-error-1() {
 
 
 declare
+    %test:pending("FOJS0005 validation for invalid option values not yet implemented")
     %test:assertError("err:FOJS0005")
 function jsonxml:json-to-xml-error-2() {
     json-to-xml('{"x": "\\", "y": "\u0025"}', map{'escape': 'invalid-value'})

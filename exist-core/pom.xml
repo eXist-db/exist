@@ -169,7 +169,7 @@
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk18on</artifactId>
-            <version>1.84</version>
+            <version>1.83</version>
         </dependency>
 
         <dependency>
@@ -221,7 +221,7 @@
         <dependency>
             <groupId>org.jline</groupId>
             <artifactId>jline</artifactId>
-            <version>4.0.12</version>
+            <version>4.0.9</version>
         </dependency>
 
         <dependency>
@@ -324,6 +324,12 @@
         </dependency>
 
         <dependency>
+            <groupId>nu.validator</groupId>
+            <artifactId>htmlparser</artifactId>
+            <version>1.4.16</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.apache.ws.commons.util</groupId>
             <artifactId>ws-commons-util</artifactId>
             <version>1.0.2</version>
@@ -388,6 +394,24 @@
         <dependency>
             <groupId>net.sf.saxon</groupId>
             <artifactId>Saxon-HE</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>de.bottlecaps</groupId>
+            <artifactId>markup-blitz</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.exist-db</groupId>
+            <artifactId>exist-saxon-regex</artifactId>
+            <version>9.4.0-9.e1</version>
+            <exclusions>
+                <exclusion>
+                    <!-- we have our own dependency on Saxon -->
+                    <groupId>net.sf.saxon</groupId>
+                    <artifactId>Saxon-HE</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -1179,7 +1203,7 @@ The BaseX Team. The original license statement is also included below.]]></pream
                 </dependencies>
                 <configuration>
                     <skip>${skipUnitTests}</skip>
-                    <argLine>@{jacocoArgLine} --add-modules jdk.incubator.vector --enable-native-access=ALL-UNNAMED -Dfile.encoding=${project.build.sourceEncoding} -Dexist.recovery.progressbar.hide=true</argLine>
+                    <argLine>@{jacocoArgLine} -Dfile.encoding=${project.build.sourceEncoding} -Dexist.recovery.progressbar.hide=true</argLine>
                     <systemPropertyVariables>
                         <jetty.home>${project.basedir}/../exist-jetty-config/target/classes/org/exist/jetty</jetty.home>
                         <exist.configurationFile>${project.build.testOutputDirectory}/conf.xml</exist.configurationFile>
@@ -1205,7 +1229,7 @@ The BaseX Team. The original license statement is also included below.]]></pream
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <configuration>
-                    <argLine>@{jacocoArgLine} --add-modules jdk.incubator.vector --enable-native-access=ALL-UNNAMED -Dfile.encoding=${project.build.sourceEncoding} -Dexist.recovery.progressbar.hide=true</argLine>
+                    <argLine>@{jacocoArgLine} -Dfile.encoding=${project.build.sourceEncoding} -Dexist.recovery.progressbar.hide=true</argLine>
                     <systemPropertyVariables>
                         <jetty.home>${project.basedir}/../exist-jetty-config/target/classes/org/exist/jetty</jetty.home>
                         <exist.configurationFile>${project.build.testOutputDirectory}/conf.xml</exist.configurationFile>
