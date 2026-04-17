@@ -45,7 +45,6 @@ public class SplashScreen extends JFrame implements Observer, Comparable {
     private static final long serialVersionUID = -8449133653386075548L;
 
     private JLabel statusLabel;
-    private JLabel versionLabel;
     private Launcher launcher;
 
     public SplashScreen(Launcher launcher) {
@@ -79,7 +78,7 @@ public class SplashScreen extends JFrame implements Observer, Comparable {
             builder.append(gitCommit, 0, Math.min(7, gitCommit.length()));
             builder.append(")");
         }
-        versionLabel = new JLabel(builder.toString(), SwingConstants.CENTER);
+        final JLabel versionLabel = new JLabel(builder.toString(), SwingConstants.CENTER);
         versionLabel.setFont(new Font(versionLabel.getFont().getName(), Font.BOLD, 10));
         versionLabel.setForeground(Color.black);
         versionLabel.setBorder(new EmptyBorder(10, 10, 10, 10));
