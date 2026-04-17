@@ -152,7 +152,21 @@ public class UtilModule extends AbstractInternalModule {
             new FunctionDef(Base64Functions.signatures[3], Base64Functions.class),
             new FunctionDef(BaseConversionFunctions.FNS_INT_TO_OCTAL, BaseConversionFunctions.class),
             new FunctionDef(BaseConversionFunctions.FNS_OCTAL_TO_INT, BaseConversionFunctions.class),
-            new FunctionDef(LineNumber.signature, LineNumber.class)
+            new FunctionDef(LineNumber.signature, LineNumber.class),
+
+            // --- Query Profiling Functions ---
+            new FunctionDef(FunTime.signatures[0], FunTime.class),
+            new FunctionDef(FunTime.signatures[1], FunTime.class),
+            new FunctionDef(FunMemory.signatures[0], FunMemory.class),
+            new FunctionDef(FunMemory.signatures[1], FunMemory.class),
+            new FunctionDef(FunTrack.signatures[0], FunTrack.class),
+            new FunctionDef(FunTrack.signatures[1], FunTrack.class),
+            new FunctionDef(FunExplain.signatures[0], FunExplain.class),
+            new FunctionDef(FunExplain.signatures[1], FunExplain.class),
+            new FunctionDef(FunProfile.signatures[0], FunProfile.class),
+            new FunctionDef(FunProfile.signatures[1], FunProfile.class),
+            new FunctionDef(FunIndexReport.signatures[0], FunIndexReport.class)
+            // --- End Query Profiling Functions ---
     };
 
     static {
