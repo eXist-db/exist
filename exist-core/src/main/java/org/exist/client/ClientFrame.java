@@ -609,36 +609,34 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
 
     private synchronized void type(final KeyEvent e) {
         switch (e.getKeyCode()) {
-            case KeyEvent.VK_ENTER:
+            case KeyEvent.VK_ENTER -> {
                 if (e.getID() == KeyEvent.KEY_PRESSED && gotUp) {
                     enter();
                 }
                 e.consume();
-                break;
-            case KeyEvent.VK_HOME:
+            }
+            case KeyEvent.VK_HOME -> {
                 shell.setCaretPosition(commandStart);
                 e.consume();
-                break;
-            case KeyEvent.VK_LEFT:
-            case KeyEvent.VK_DELETE:
-            case KeyEvent.VK_BACK_SPACE:
+            }
+            case KeyEvent.VK_LEFT, KeyEvent.VK_DELETE, KeyEvent.VK_BACK_SPACE -> {
                 if (shell.getCaretPosition() <= commandStart) {
                     e.consume();
                 }
-                break;
-            case KeyEvent.VK_UP:
+            }
+            case KeyEvent.VK_UP -> {
                 if (e.getID() == KeyEvent.KEY_PRESSED) {
                     historyBack();
                 }
                 e.consume();
-                break;
-            case KeyEvent.VK_DOWN:
+            }
+            case KeyEvent.VK_DOWN -> {
                 if (e.getID() == KeyEvent.KEY_PRESSED) {
                     historyForward();
                 }
                 e.consume();
-                break;
-            default:
+            }
+            default -> {
                 if ((e.getModifiers() & (InputEvent.CTRL_MASK
                         | InputEvent.META_MASK | InputEvent.ALT_MASK)) == 0) {
                     if (shell.getCaretPosition() < commandStart) {
@@ -650,7 +648,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
                         e.consume();
                     }
                 }
-                break;
+            }
         }
     }
 

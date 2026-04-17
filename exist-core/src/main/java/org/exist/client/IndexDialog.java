@@ -415,17 +415,14 @@ class IndexDialog extends JFrame {
 		{
 			switch (columnIndex)
 			{
-                case 0:
+                case 0 -> 
                     cx.updateRangeIndex(rowIndex, aValue.toString(), null, null);
-                    break;
-                case 1:		/* XPath */
+                case 1 ->		/* XPath */
 					cx.updateRangeIndex(rowIndex, null, aValue.toString(), null);
-					break;
-				case 2 :	/* xsType */
+				case 2 ->	/* xsType */
 					cx.updateRangeIndex(rowIndex, null, null, aValue.toString());
-					break;
-				default :
-					break;
+				default -> {
+				}
 			}
 			
 			fireTableCellUpdated(rowIndex, columnIndex);

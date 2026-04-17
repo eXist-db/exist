@@ -427,16 +427,15 @@ public class UserManagerDialog extends javax.swing.JFrame {
     
     private void btnCreateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCreateActionPerformed
         switch(tpUserManager.getSelectedIndex()) {
-            case 0:
+            case 0 -> 
                 showUserDialog();
-                break;
             
-            case 1:
+            case 1 -> 
                 showGroupDialog();
-                break;
             
-            default:
+            default -> {
                 return;
+            }
         }
     }//GEN-LAST:event_btnCreateActionPerformed
 

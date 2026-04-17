@@ -78,16 +78,16 @@ public class AutoCompletion<E> extends PlainDocument {
                 hitBackspace = false;
                 switch (e.getKeyCode()) {
                     // determine if the pressed key is backspace (needed by the remove method)
-                    case KeyEvent.VK_BACK_SPACE:
+                    case KeyEvent.VK_BACK_SPACE -> {
                         hitBackspace = true;
                         hitBackspaceOnSelection = editor.getSelectionStart() != editor.getSelectionEnd();
-                        break;
+                    }
 
                     // ignore delete key
-                    case KeyEvent.VK_DELETE:
+                    case KeyEvent.VK_DELETE -> {
                         e.consume();
                         comboBox.getToolkit().beep();
-                        break;
+                    }
                 }
             }
         };
