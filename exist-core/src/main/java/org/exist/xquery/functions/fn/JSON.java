@@ -27,6 +27,7 @@ import com.fasterxml.jackson.core.JsonToken;
 import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
+import org.exist.xquery.value.BooleanValue;
 import org.exist.security.PermissionDeniedException;
 import org.exist.source.Source;
 import org.exist.source.SourceFactory;
@@ -64,7 +65,7 @@ public class JSON extends BasicFunction {
                 ),
                 arity(
                         FS_PARAM_JSON_TEXT,
-                        optParam("options", Type.MAP_ITEM, "Parsing options")
+                        param("options", Type.MAP_ITEM, "Parsing options")
                 )
             )
     );
@@ -122,71 +123,33 @@ public class JSON extends BasicFunction {
                     context.getXQueryVersion());
         }
         // process options if present
+        // TODO: jackson does not allow access to raw string, so option "unescape" is not supported
         boolean liberal = false;
         String handleDuplicates = OPTION_DUPLICATES_USE_LAST;
-        if (getArgumentCount() == 2) {
-            final MapType options = (MapType)args[1].itemAt(0);
-
-            // Validate deprecated options → XPTY0004
-            final Sequence validateOpt = options.get(new StringValue("validate"));
-            if (validateOpt != null && validateOpt.hasOne()) {
+        if (getArgumentCount() == 2 && !args[1].isEmpty()) {
+            final Item optItem = args[1].itemAt(0);
+            if (optItem.getType() != Type.MAP_ITEM) {
                 throw new XPathException(this, ErrorCodes.XPTY0004,
-                        "The 'validate' option is not supported");
+                        "Expected map for options parameter, got " + Type.getTypeName(optItem.getType()));
             }
-            // XQuery 4.0: 'spec' option controls JSON spec version (RFC7159, ECMA-404, etc.)
-            // Accepted but not yet enforced — we always parse per RFC 7159
-            final Sequence specOpt = options.get(new StringValue("spec"));
-            // (no validation needed — all spec values are accepted)
-
-            // Validate liberal option — must be boolean
+            final MapType options = (MapType) optItem;
             final Sequence liberalOpt = options.get(new StringValue(OPTION_LIBERAL));
-            if (liberalOpt != null && liberalOpt.hasOne()) {
+            if (liberalOpt.hasOne()) {
                 final Item liberalItem = liberalOpt.itemAt(0);
                 if (liberalItem.getType() != Type.BOOLEAN) {
-                    // Try to convert; if the value is a non-boolean string, reject
-                    if (Type.subTypeOf(liberalItem.getType(), Type.STRING)) {
-                        final String val = liberalItem.getStringValue();
-                        if (!"true".equals(val) && !"false".equals(val) && !"1".equals(val) && !"0".equals(val)) {
-                            throw new XPathException(this, ErrorCodes.XPTY0004,
-                                    "Option 'liberal' must be a boolean, got: " + val);
-                        }
-                    }
-                    liberal = liberalItem.convertTo(Type.BOOLEAN).effectiveBooleanValue();
-                } else {
-                    liberal = liberalItem.convertTo(Type.BOOLEAN).effectiveBooleanValue();
+                    throw new XPathException(this, ErrorCodes.XPTY0004,
+                            "Option 'liberal' must be a boolean, got " + Type.getTypeName(liberalItem.getType()));
                 }
+                liberal = ((BooleanValue) liberalItem).effectiveBooleanValue();
             }
-
-            // Validate duplicates option
             final Sequence duplicateOpt = options.get(new StringValue(OPTION_DUPLICATES));
-            if (duplicateOpt != null && duplicateOpt.hasOne()) {
-                handleDuplicates = duplicateOpt.itemAt(0).getStringValue();
-                if (!OPTION_DUPLICATES_USE_FIRST.equals(handleDuplicates)
-                        && !OPTION_DUPLICATES_USE_LAST.equals(handleDuplicates)
-                        && !OPTION_DUPLICATES_REJECT.equals(handleDuplicates)) {
+            if (duplicateOpt.hasOne()) {
+                final Item dupItem = duplicateOpt.itemAt(0);
+                if (!Type.subTypeOf(dupItem.getType(), Type.STRING)) {
                     throw new XPathException(this, ErrorCodes.XPTY0004,
-                            "Invalid value for 'duplicates' option: " + handleDuplicates);
+                            "Option 'duplicates' must be a string, got " + Type.getTypeName(dupItem.getType()));
                 }
-            }
-
-            // Validate fallback option — must be a function with arity 1
-            final Sequence fallbackOpt = options.get(new StringValue("fallback"));
-            if (fallbackOpt != null && fallbackOpt.hasOne()) {
-                final Item fallbackItem = fallbackOpt.itemAt(0);
-                if (!(fallbackItem instanceof FunctionReference)) {
-                    throw new XPathException(this, ErrorCodes.XPTY0004,
-                            "Option 'fallback' must be a function, got: " + Type.getTypeName(fallbackItem.getType()));
-                }
-            }
-
-            // Validate number-parser option — must be a function
-            final Sequence numberParserOpt = options.get(new StringValue("number-parser"));
-            if (numberParserOpt != null && numberParserOpt.hasOne()) {
-                final Item npItem = numberParserOpt.itemAt(0);
-                if (!(npItem instanceof FunctionReference)) {
-                    throw new XPathException(this, ErrorCodes.XPTY0004,
-                            "Option 'number-parser' must be a function, got: " + Type.getTypeName(npItem.getType()));
-                }
+                handleDuplicates = dupItem.getStringValue();
             }
             final Sequence escapeOpt = options.get(new StringValue(OPTION_ESCAPE));
             if (escapeOpt.hasOne()) {
@@ -275,92 +238,22 @@ public class JSON extends BasicFunction {
         }
         try {
             String url = href.getStringValue();
-
-            // Check dynamically available text resources first (XQTS runner registers these)
-            try (final java.io.Reader dynReader = context.getDynamicallyAvailableTextResource(
-                    url, java.nio.charset.StandardCharsets.UTF_8)) {
-                if (dynReader != null) {
-                    final StringBuilder sb = new StringBuilder();
-                    final char[] buf = new char[4096];
-                    int read;
-                    while ((read = dynReader.read(buf)) > 0) {
-                        sb.append(buf, 0, read);
-                    }
-                    try (final JsonParser parser = factory.createParser(sb.toString())) {
-                        final Item result = readValue(context, parser, handleDuplicates);
-                        return result == null ? Sequence.EMPTY_SEQUENCE : result.toSequence();
-                    } catch (final java.io.IOException jsonErr) {
-                        throw new XPathException(this, ErrorCodes.FOJS0001, jsonErr.getMessage());
-                    }
-                }
-            } catch (final java.io.IOException e) {
-                // Not a dynamic resource, fall through to URL resolution
-            }
-            boolean resolvedFromBaseUri = false;
             if (url.indexOf(':') == Constants.STRING_NOT_FOUND) {
-                // Relative URI: resolve against static base URI
-                final String resolved = resolveAgainstBaseUri(url);
-                if (resolved != null && resolved.startsWith("file:")) {
-                    url = resolved;
-                    resolvedFromBaseUri = true;
-                } else {
-                    url = XmldbURI.EMBEDDED_SERVER_URI_PREFIX + url;
-                }
+                url = XmldbURI.EMBEDDED_SERVER_URI_PREFIX + url;
             }
-            // Only use direct file: access for URIs resolved from a relative path.
-            // Absolute file: URIs go through SourceFactory for security.
-            if (resolvedFromBaseUri && url.startsWith("file:")) {
-                // Extract path from file: URI: file:/path, file://host/path, file:///path
-                final String filePath = url.replaceFirst("^file:(?://[^/]*)?", "");
-                final java.nio.file.Path path = java.nio.file.Paths.get(filePath);
-                if (java.nio.file.Files.isReadable(path)) {
-                    try (final InputStream is = java.nio.file.Files.newInputStream(path)) {
-                        try (final JsonParser parser = factory.createParser(is)) {
-                            final Item result = readValue(context, parser, handleDuplicates);
-                            return result == null ? Sequence.EMPTY_SEQUENCE : result.toSequence();
-                        } catch (final IOException jsonErr) {
-                            // JSON parsing error, not file I/O
-                            throw new XPathException(this, ErrorCodes.FOJS0001, jsonErr.getMessage());
-                        }
-                    }
-                }
-                throw new XPathException(this, ErrorCodes.FOUT1170, "failed to load json doc from file: " + filePath);
-            }
-
             final Source source = SourceFactory.getSource(context.getBroker(), "", url, false);
             if (source == null) {
                 throw new XPathException(this, ErrorCodes.FOUT1170, "failed to load json doc from URI " + url);
             }
-            try (final InputStream is = source.getInputStream()) {
-                try (final JsonParser parser = factory.createParser(is)) {
-                    final Item result = readValue(context, parser, handleDuplicates);
-                    return result == null ? Sequence.EMPTY_SEQUENCE : result.toSequence();
-                } catch (final IOException jsonErr) {
-                    throw new XPathException(this, ErrorCodes.FOJS0001, jsonErr.getMessage());
-                }
+            try (final InputStream is = source.getInputStream();
+                 final JsonParser parser = factory.createParser(is)) {
+
+                final Item result = readValue(context, parser, handleDuplicates);
+                return result == null ? Sequence.EMPTY_SEQUENCE : result.toSequence();
             }
         } catch (IOException | PermissionDeniedException e) {
             throw new XPathException(this, ErrorCodes.FOUT1170, e.getMessage());
         }
-    }
-
-    private String resolveAgainstBaseUri(final String relativePath) {
-        try {
-            final AnyURIValue baseXdmUri = context.getBaseURI();
-            if (baseXdmUri != null && !baseXdmUri.equals(AnyURIValue.EMPTY_URI)) {
-                String baseStr = baseXdmUri.toURI().toString();
-                // Strip filename to get directory URI
-                final int lastSlash = baseStr.lastIndexOf('/');
-                if (lastSlash >= 0) {
-                    baseStr = baseStr.substring(0, lastSlash + 1);
-                }
-                final java.net.URI baseUri = new java.net.URI(baseStr);
-                return baseUri.resolve(relativePath).toString();
-            }
-        } catch (final java.net.URISyntaxException | XPathException e) {
-            // fall through
-        }
-        return null;
     }
 
     /**
@@ -400,17 +293,9 @@ public class JSON extends BasicFunction {
                     next = BooleanValue.TRUE;
                     break;
                 case VALUE_NUMBER_FLOAT:
-                    // JSON fractional numbers → xs:double
-                    next = new StringValue(parser.getText()).convertTo(Type.DOUBLE);
-                    break;
                 case VALUE_NUMBER_INT:
-                    // XQuery 4.0: JSON integers → xs:integer (was xs:double in 3.1)
-                    try {
-                        next = new IntegerValue(parser.getLongValue());
-                    } catch (final Exception e) {
-                        // Fallback to double for very large integers
-                        next = new StringValue(parser.getText()).convertTo(Type.DOUBLE);
-                    }
+                    // according to spec, all numbers are converted to double
+                    next = new StringValue(parser.getText()).convertTo(Type.DOUBLE);
                     break;
                 case VALUE_NULL:
                     next = null;

@@ -169,7 +169,7 @@
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk18on</artifactId>
-            <version>1.83</version>
+            <version>1.84</version>
         </dependency>
 
         <dependency>
@@ -221,7 +221,7 @@
         <dependency>
             <groupId>org.jline</groupId>
             <artifactId>jline</artifactId>
-            <version>4.0.9</version>
+            <version>4.0.12</version>
         </dependency>
 
         <dependency>
@@ -324,12 +324,6 @@
         </dependency>
 
         <dependency>
-            <groupId>nu.validator</groupId>
-            <artifactId>htmlparser</artifactId>
-            <version>1.4.16</version>
-        </dependency>
-
-        <dependency>
             <groupId>org.apache.ws.commons.util</groupId>
             <artifactId>ws-commons-util</artifactId>
             <version>1.0.2</version>
@@ -394,11 +388,6 @@
         <dependency>
             <groupId>net.sf.saxon</groupId>
             <artifactId>Saxon-HE</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>de.bottlecaps</groupId>
-            <artifactId>markup-blitz</artifactId>
         </dependency>
 
         <dependency>
@@ -1203,7 +1192,7 @@ The BaseX Team. The original license statement is also included below.]]></pream
                 </dependencies>
                 <configuration>
                     <skip>${skipUnitTests}</skip>
-                    <argLine>@{jacocoArgLine} -Dfile.encoding=${project.build.sourceEncoding} -Dexist.recovery.progressbar.hide=true</argLine>
+                    <argLine>@{jacocoArgLine} --add-modules jdk.incubator.vector --enable-native-access=ALL-UNNAMED -Dfile.encoding=${project.build.sourceEncoding} -Dexist.recovery.progressbar.hide=true</argLine>
                     <systemPropertyVariables>
                         <jetty.home>${project.basedir}/../exist-jetty-config/target/classes/org/exist/jetty</jetty.home>
                         <exist.configurationFile>${project.build.testOutputDirectory}/conf.xml</exist.configurationFile>
@@ -1211,6 +1200,7 @@ The BaseX Team. The original license statement is also included below.]]></pream
                         <log4j.configurationFile>${project.build.testOutputDirectory}/log4j2.xml</log4j.configurationFile>
                     </systemPropertyVariables>
 
+                    <forkedProcessTimeoutInSeconds>180</forkedProcessTimeoutInSeconds>
                     <excludes>
 
                         <!-- NOTE: these can still exhibit deadlocks
@@ -1229,7 +1219,15 @@ The BaseX Team. The original license statement is also included below.]]></pream
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <configuration>
-                    <argLine>@{jacocoArgLine} -Dfile.encoding=${project.build.sourceEncoding} -Dexist.recovery.progressbar.hide=true</argLine>
+                    <forkedProcessTimeoutInSeconds>180</forkedProcessTimeoutInSeconds>
+                    <excludes>
+                        <!-- Pre-existing deadlocks during BrokerPool initialization -->
+                        <!-- see https://github.com/eXist-db/exist/issues/4140 -->
+                        <!-- see https://github.com/eXist-db/exist/issues/3685 -->
+                        <exclude>org.exist.storage.lock.DeadlockIT</exclude>
+                        <exclude>org.exist.xmldb.RemoveCollectionIT</exclude>
+                    </excludes>
+                    <argLine>@{jacocoArgLine} --add-modules jdk.incubator.vector --enable-native-access=ALL-UNNAMED -Dfile.encoding=${project.build.sourceEncoding} -Dexist.recovery.progressbar.hide=true</argLine>
                     <systemPropertyVariables>
                         <jetty.home>${project.basedir}/../exist-jetty-config/target/classes/org/exist/jetty</jetty.home>
                         <exist.configurationFile>${project.build.testOutputDirectory}/conf.xml</exist.configurationFile>

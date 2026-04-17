@@ -126,15 +126,18 @@ public class SerializerUtils {
     public enum W3CParameterConvention implements ParameterConvention<String> {
         ALLOW_DUPLICATE_NAMES("allow-duplicate-names", Type.BOOLEAN, Cardinality.ZERO_OR_ONE, BooleanValue.FALSE),
         BYTE_ORDER_MARK("byte-order-mark", Type.BOOLEAN, Cardinality.ZERO_OR_ONE, BooleanValue.FALSE),
+        CANONICAL(EXistOutputKeys.CANONICAL, Type.BOOLEAN, Cardinality.ZERO_OR_ONE, BooleanValue.FALSE),
         CDATA_SECTION_ELEMENTS(OutputKeys.CDATA_SECTION_ELEMENTS, Type.QNAME, Cardinality.ZERO_OR_MORE, Sequence.EMPTY_SEQUENCE),
         DOCTYPE_PUBLIC(OutputKeys.DOCTYPE_PUBLIC, Type.STRING, Cardinality.ZERO_OR_ONE, Sequence.EMPTY_SEQUENCE),   //default: () means "absent"
         DOCTYPE_SYSTEM(OutputKeys.DOCTYPE_SYSTEM, Type.STRING, Cardinality.ZERO_OR_ONE, Sequence.EMPTY_SEQUENCE),   //default: () means "absent"
         ENCODING(OutputKeys.ENCODING, Type.STRING, Cardinality.ZERO_OR_ONE, new StringValue(UTF_8.name())),
+        ESCAPE_SOLIDUS(EXistOutputKeys.ESCAPE_SOLIDUS, Type.BOOLEAN, Cardinality.ZERO_OR_ONE, BooleanValue.TRUE),
         ESCAPE_URI_ATTRIBUTES("escape-uri-attributes", Type.BOOLEAN, Cardinality.ZERO_OR_ONE, BooleanValue.TRUE),
         HTML_VERSION(EXistOutputKeys.HTML_VERSION, Type.DECIMAL, Cardinality.ZERO_OR_ONE, new DecimalValue(5)),
         INCLUDE_CONTENT_TYPE("include-content-type", Type.BOOLEAN, Cardinality.ZERO_OR_ONE, BooleanValue.TRUE),
         INDENT(OutputKeys.INDENT, Type.BOOLEAN, Cardinality.ZERO_OR_ONE, BooleanValue.FALSE),
         ITEM_SEPARATOR(EXistOutputKeys.ITEM_SEPARATOR, Type.STRING, Cardinality.ZERO_OR_ONE, Sequence.EMPTY_SEQUENCE),  //default: () means "absent"
+        JSON_LINES(EXistOutputKeys.JSON_LINES, Type.BOOLEAN, Cardinality.ZERO_OR_ONE, BooleanValue.FALSE),
         JSON_NODE_OUTPUT_METHOD(EXistOutputKeys.JSON_NODE_OUTPUT_METHOD, Type.STRING, Cardinality.ZERO_OR_ONE, new StringValue("xml")),
         MEDIA_TYPE(OutputKeys.MEDIA_TYPE, Type.STRING, Cardinality.ZERO_OR_ONE, Sequence.EMPTY_SEQUENCE),    // default: a media type suitable for the chosen method
         METHOD(OutputKeys.METHOD, Type.STRING, Cardinality.ZERO_OR_ONE, new StringValue("xml")),
@@ -261,6 +264,15 @@ public class SerializerUtils {
                 throw new XPathException(parent, FnModule.SENR0001, "serialization parameter elements should be in the output namespace");
             }
 
+            // SEPM0017: reject unrecognized attributes on the serialization-parameters root element
+            for (int i = 0; i < reader.getAttributeCount(); i++) {
+                final String attrNs = reader.getAttributeNamespace(i);
+                if (attrNs == null || attrNs.isEmpty() || Namespaces.XSLT_XQUERY_SERIALIZATION_NS.equals(attrNs)) {
+                    throw new XPathException(ErrorCodes.SEPM0017,
+                            "Unrecognized attribute on serialization-parameters: " + reader.getAttributeLocalName(i));
+                }
+            }
+
             final int thisLevel = ((NodeId) reader.getProperty(ExtendedXMLStreamReader.PROPERTY_NODE_ID)).getTreeLevel();
 
             while (reader.hasNext()) {
@@ -285,12 +297,25 @@ public class SerializerUtils {
 
         final javax.xml.namespace.QName key = reader.getName();
         final String local = key.getLocalPart();
-        final String prefix = key.getPrefix();
+        final String nsURI = key.getNamespaceURI();
         if (properties.containsKey(local)) {
             throw new XPathException(parent, FnModule.SEPM0019, "serialization parameter specified twice: " + key);
         }
-        if (prefix.equals(OUTPUT_NAMESPACE) && !W3CParameterConventionKeys.contains(local)) {
+        if (Namespaces.XSLT_XQUERY_SERIALIZATION_NS.equals(nsURI) && !W3CParameterConventionKeys.contains(local)) {
             throw new XPathException(ErrorCodes.SEPM0017, "serialization parameter not recognized: " + key);
+        }
+
+        // SEPM0017: reject elements with no namespace (must be in output: or exist: namespace)
+        if (nsURI == null || nsURI.isEmpty()) {
+            throw new XPathException(ErrorCodes.SEPM0017,
+                    "serialization parameter element must be in a namespace: " + local);
+        }
+
+        // Accept eXist-specific parameters from the exist: namespace (issue #3446)
+        // These include expand-xincludes, highlight-matches, process-xsl-pi, add-exist-id, jsonp, etc.
+        if (Namespaces.EXIST_NS.equals(nsURI)) {
+            readSerializationProperty(reader, local, properties);
+            return;
         }
 
         readSerializationProperty(reader, local, properties);
@@ -320,6 +345,10 @@ public class SerializerUtils {
             setCharacterMap(serializationProperties, characterMap);
         } else {
             String value = reader.getAttributeValue(XMLConstants.NULL_NS_URI, "value");
+            // Normalize whitespace in parameter values per W3C Serialization 3.1
+            if (value != null) {
+                value = value.trim();
+            }
             if (value == null) {
                 if (attributeCount > 0) {
                     throw new XPathException(ErrorCodes.SEPM0017, MSG_NON_VALUE_ATTRIBUTE + ": " + key);
@@ -413,13 +442,21 @@ public class SerializerUtils {
                     qnamesValue.append(' ');
                 }
 
-                final String[] prefixAndLocal = qnameStr.split(":");
-                if (prefixAndLocal.length == 1) {
-                    qnamesValue.append("{}").append(prefixAndLocal[0]);
-                } else if (prefixAndLocal.length == 2) {
-                    final String prefix = prefixAndLocal[0];
-                    final String ns = prefixToNs.apply(prefix);
-                    qnamesValue.append('{').append(ns).append('}').append(prefixAndLocal[1]);
+                // Handle Q{ns}local (URIQualifiedName) — pass through as {ns}local
+                if (qnameStr.startsWith("Q{") && qnameStr.contains("}")) {
+                    final int closeBrace = qnameStr.indexOf('}');
+                    final String ns = qnameStr.substring(2, closeBrace);
+                    final String local = qnameStr.substring(closeBrace + 1);
+                    qnamesValue.append('{').append(ns).append('}').append(local);
+                } else {
+                    final String[] prefixAndLocal = qnameStr.split(":");
+                    if (prefixAndLocal.length == 1) {
+                        qnamesValue.append("{}").append(prefixAndLocal[0]);
+                    } else if (prefixAndLocal.length == 2) {
+                        final String prefix = prefixAndLocal[0];
+                        final String ns = prefixToNs.apply(prefix);
+                        qnamesValue.append('{').append(ns).append('}').append(prefixAndLocal[1]);
+                    }
                 }
             }
 
@@ -430,7 +467,6 @@ public class SerializerUtils {
     public static Properties getSerializationOptions(final Expression parent, final AbstractMapType entries) throws XPathException {
         try {
             final Properties properties = new Properties();
-
             for (final W3CParameterConvention w3cParameterConvention : W3CParameterConvention.values()) {
                 final Sequence parameterValue = getParameterValue(parent, entries, w3cParameterConvention,
                         new StringValue(w3cParameterConvention.getParameterName()));
@@ -520,7 +556,11 @@ public class SerializerUtils {
             final SequenceIterator iterator = sequence.iterate();
             while (iterator.hasNext()) {
                 final Item item = iterator.nextItem();
-                if (parameterConvention.getType() != item.getType()) {
+                // Use subtype check: xs:integer is a valid xs:decimal, xs:string subtypes are valid xs:string, etc.
+                // Also accept xs:untypedAtomic — the W3C spec allows untypedAtomic values to be cast
+                // to the required type for serialization parameters
+                if (!Type.subTypeOf(item.getType(), parameterConvention.getType())
+                        && item.getType() != Type.UNTYPED_ATOMIC) {
                     return false;
                 }
             }
@@ -542,11 +582,18 @@ public class SerializerUtils {
 
         switch (parameterConvention.getType()) {
             case Type.BOOLEAN:
-                value = ((BooleanValue) parameterValue.itemAt(0)).getValue() ? "yes" : "no";
+                final Item boolItem = parameterValue.itemAt(0);
+                if (boolItem instanceof BooleanValue bv) {
+                    value = bv.getValue() ? "yes" : "no";
+                } else {
+                    // xs:untypedAtomic or other — coerce via string
+                    final String boolStr = boolItem.getStringValue().trim();
+                    value = ("true".equals(boolStr) || "1".equals(boolStr)) ? "yes" : "no";
+                }
                 properties.setProperty(localParameterName, value);
                 break;
             case Type.STRING:
-                value = ((StringValue)parameterValue.itemAt(0)).getStringValue();
+                value = parameterValue.itemAt(0).getStringValue();
                 properties.setProperty(localParameterName, value);
                 break;
             case Type.DECIMAL:
@@ -554,11 +601,11 @@ public class SerializerUtils {
                 properties.setProperty(localParameterName, value);
                 break;
             case Type.INTEGER:
-                value = ((IntegerValue) parameterValue.itemAt(0)).getStringValue();
+                value = parameterValue.itemAt(0).getStringValue();
                 properties.setProperty(localParameterName, value);
                 break;
             case Type.QNAME:
-                if (Cardinality._MANY.isSuperCardinalityOrEqualOf(parameterConvention.getCardinality())) {
+                if (parameterConvention.getCardinality().isSuperCardinalityOrEqualOf(Cardinality._MANY)) {
                     final SequenceIterator iterator = parameterValue.iterate();
                     while (iterator.hasNext()) {
                         final String existingValue = properties.getProperty(localParameterName);
@@ -632,7 +679,7 @@ public class SerializerUtils {
                                 " must have values of type " + Type.getTypeName(Type.STRING));
             }
             if (key.getStringValue().length() != 1) {
-                throw new XPathException(ErrorCodes.SEPM0017,
+                throw new XPathException(ErrorCodes.SEPM0016,
                         "Elements of the map for parameter value: " + localParameterName +
                                 " must have keys which are strings composed of a single character");
             }

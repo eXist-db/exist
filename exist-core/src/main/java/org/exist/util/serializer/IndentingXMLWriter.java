@@ -25,7 +25,9 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
 
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerException;
@@ -48,6 +50,8 @@ public class IndentingXMLWriter extends XMLWriter {
     private boolean sameline = false;
     private boolean whitespacePreserve = false;
     private final Deque<Integer> whitespacePreserveStack = new ArrayDeque<>();
+    private Set<String> suppressIndentation = null;
+    private int suppressIndentDepth = 0;
 
     public IndentingXMLWriter() {
         super();
@@ -75,6 +79,9 @@ public class IndentingXMLWriter extends XMLWriter {
             indent();
         }
         super.startElement(namespaceURI, localName, qname);
+        if (isSuppressIndentation(localName)) {
+            suppressIndentDepth++;
+        }
         addIndent();
         afterTag = true;
         sameline = true;
@@ -86,6 +93,9 @@ public class IndentingXMLWriter extends XMLWriter {
             indent();
         }
         super.startElement(qname);
+        if (isSuppressIndentation(qname.getLocalPart())) {
+            suppressIndentDepth++;
+        }
         addIndent();
         afterTag = true;
         sameline = true;
@@ -95,6 +105,9 @@ public class IndentingXMLWriter extends XMLWriter {
     public void endElement(final String namespaceURI, final String localName, final String qname) throws TransformerException {
         endIndent(namespaceURI, localName);
         super.endElement(namespaceURI, localName, qname);
+        if (isSuppressIndentation(localName) && suppressIndentDepth > 0) {
+            suppressIndentDepth--;
+        }
         popWhitespacePreserve(); // apply ancestor's xml:space value _after_ end element
         sameline = isInlineTag(namespaceURI, localName);
         afterTag = true;
@@ -104,6 +117,9 @@ public class IndentingXMLWriter extends XMLWriter {
     public void endElement(final QName qname) throws TransformerException {
         endIndent(qname.getNamespaceURI(), qname.getLocalPart());
         super.endElement(qname);
+        if (isSuppressIndentation(qname.getLocalPart()) && suppressIndentDepth > 0) {
+            suppressIndentDepth--;
+        }
         popWhitespacePreserve(); // apply ancestor's xml:space value _after_ end element
         sameline = isInlineTag(qname.getNamespaceURI(), qname.getLocalPart());
         afterTag = true;
@@ -164,7 +180,29 @@ public class IndentingXMLWriter extends XMLWriter {
         } catch (final NumberFormatException e) {
             LOG.warn("Invalid indentation value: '{}'", option);
         }
-        indent = "yes".equals(outputProperties.getProperty(OutputKeys.INDENT, "no"));
+        final String indentValue = outputProperties.getProperty(OutputKeys.INDENT, "no").trim();
+        indent = "yes".equals(indentValue) || "true".equals(indentValue) || "1".equals(indentValue);
+        final String suppressProp = outputProperties.getProperty("suppress-indentation");
+        if (suppressProp != null && !suppressProp.isEmpty()) {
+            suppressIndentation = new HashSet<>();
+            for (final String name : suppressProp.split("\\s+")) {
+                if (!name.isEmpty()) {
+                    // Handle URI-qualified names: Q{ns}local or {ns}local → extract local part
+                    if (name.startsWith("Q{") || name.startsWith("{")) {
+                        final int closeBrace = name.indexOf('}');
+                        if (closeBrace > 0 && closeBrace < name.length() - 1) {
+                            suppressIndentation.add(name.substring(closeBrace + 1));
+                        } else {
+                            suppressIndentation.add(name);
+                        }
+                    } else {
+                        suppressIndentation.add(name);
+                    }
+                }
+            }
+        } else {
+            suppressIndentation = null;
+        }
     }
 
     @Override
@@ -220,8 +258,12 @@ public class IndentingXMLWriter extends XMLWriter {
         writer.write(' ');
     }
 
+    private boolean isSuppressIndentation(final String localName) {
+        return suppressIndentation != null && suppressIndentation.contains(localName);
+    }
+
     protected void indent() throws TransformerException {
-        if (!indent || whitespacePreserve) {
+        if (!indent || whitespacePreserve || suppressIndentDepth > 0) {
             return;
         }
         final int spaces = indentAmount * level;

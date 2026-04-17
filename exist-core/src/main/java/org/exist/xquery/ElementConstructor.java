@@ -124,9 +124,9 @@ public class ElementConstructor extends NodeConstructor {
             throw new XPathException(this, ErrorCodes.XQST0070, "'" + Namespaces.XMLNS_NS + "' can bind only to '" + XMLConstants.XMLNS_ATTRIBUTE + "' prefix");
         }
         	
-        if (name != null && (!name.isEmpty()) && uri.trim().isEmpty()) {
-           throw new XPathException(this, ErrorCodes.XQST0085, "cannot undeclare a prefix " + name + ".");
-        }
+        // XQST0085: namespace undeclaration (xmlns:prefix="") is allowed when the
+        // implementation supports XML Names 1.1. Since eXist supports XML 1.1
+        // serialization (version="1.1"), this is no longer an error.
         addNamespaceDecl(qn);
 	}
 
