@@ -47,6 +47,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import net.sf.saxon.regex.RegularExpression;
+import net.sf.saxon.str.StringView;
 
 import static org.exist.xquery.FunctionDSL.*;
 import static org.exist.xquery.functions.fn.FnModule.functionSignatures;
@@ -517,16 +518,16 @@ public final class FunMatches extends Function implements Optimizable, IndexUseR
             List<String> warnings = new ArrayList<>(1);
             RegularExpression regex = context.getBroker().getBrokerPool()
                     .getSaxonConfiguration()
-                    .compileRegularExpression(pattern, flags, "XP30", warnings);
+                    .compileRegularExpression(StringView.of(pattern), flags, "XP30", warnings);
 
             for (final String warning : warnings) {
                 LOG.warn(warning);
             }
 
-            return regex.containsMatch(string);
+            return regex.containsMatch(StringView.of(string));
 
         } catch (final net.sf.saxon.trans.XPathException e) {
-            switch (e.getErrorCodeLocalPart()) {
+            switch (e.getErrorCodeQName().getLocalPart()) {
                 case "FORX0001" -> throw new XPathException(this, ErrorCodes.FORX0001, "Invalid regular expression: " + e.getMessage());
                 case "FORX0002" -> throw new XPathException(this, ErrorCodes.FORX0002, "Invalid regular expression: " + e.getMessage());
                 // no FORX0003 here since fn:matches is allowed to match an empty string
