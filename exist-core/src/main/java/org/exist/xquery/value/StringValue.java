@@ -477,7 +477,7 @@ public class StringValue extends AtomicValue {
             case Type.G_YEAR_MONTH -> new GYearMonthValue(getExpression(), value);
             case Type.G_MONTH_DAY -> new GMonthDayValue(getExpression(), value);
             case Type.UNTYPED_ATOMIC -> new UntypedAtomicValue(getExpression(), getStringValue());
-            default -> throw new XPathException(getExpression(), ErrorCodes.FORG0001, "cannot cast '" +
+            default -> throw new XPathException(getExpression(), ErrorCodes.XPTY0004, "cannot cast '" +
                         Type.getTypeName(this.getItemType()) + "(\"" + getStringValue() + "\")' to " +
                         Type.getTypeName(requiredType));
         };

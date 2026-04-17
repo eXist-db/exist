@@ -24,12 +24,10 @@ package org.exist.xquery;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.QName;
 import org.exist.xquery.util.ExpressionDumper;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
-import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.SequenceType;
-import org.exist.xquery.value.Type;
-import org.exist.xquery.functions.map.AbstractMapType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -105,22 +103,7 @@ public class UserDefinedFunction extends Function implements Cloneable {
                 newContextInfo.setParent(this);
                 if (!bodyAnalyzed) {
                     if (body != null) {
-                        if (!getSignature().isUpdating()) {
-                            // Non-updating function body: updating expressions not allowed
-                            newContextInfo.addFlag(NON_UPDATING_CONTEXT);
-                        } else {
-                            // Updating function body: updating expressions are allowed
-                            newContextInfo.removeFlag(NON_UPDATING_CONTEXT);
-                        }
                         body.analyze(newContextInfo);
-
-                        // XUST0002: updating function body must be updating (or vacuous)
-                        if (getSignature().isUpdating() && !body.isUpdating()
-                                && !body.isVacuous()) {
-                            throw new XPathException(this, ErrorCodes.XUST0002,
-                                    "body of updating function " + getName() +
-                                    " must be an updating expression or an empty sequence");
-                        }
                     }
                     bodyAnalyzed = true;
                 }
@@ -144,50 +127,51 @@ public class UserDefinedFunction extends Function implements Cloneable {
         }
         Sequence result = null;
         try {
-            QName varName;
-            LocalVariable var;
-            final SequenceType[] argumentTypes = getSignature().getArgumentTypes();
-            int j = 0;
-            for (int i = 0; i < parameters.size(); i++, j++) {
-                varName = parameters.get(i);
-                var = new LocalVariable(varName);
-                var.setValue(currentArguments[j]);
-                if (contextDocs != null) {
+            final SequenceType[] argTypes = getSignature().getArgumentTypes();
+
+            // Evaluate all argument values first, BEFORE declaring any parameters.
+            // Default value expressions must be evaluated in the prolog's variable scope,
+            // not the function body scope (XQ4 spec: default sees variables in scope at
+            // the function declaration, not other parameters). Context is passed so that
+            // default values like "." can access the context item at the call site.
+            final Sequence[] argValues = new Sequence[parameters.size()];
+            for (int i = 0; i < parameters.size(); i++) {
+                if (i < currentArguments.length) {
+                    argValues[i] = currentArguments[i];
+                } else if (argTypes[i] instanceof FunctionParameterSequenceType &&
+                           ((FunctionParameterSequenceType) argTypes[i]).hasDefaultValue()) {
+                    argValues[i] = ((FunctionParameterSequenceType) argTypes[i])
+                            .getDefaultValue().eval(contextSequence, contextItem);
+                } else {
+                    throw new XPathException(this, ErrorCodes.XPTY0004,
+                            "Missing required argument $" + parameters.get(i));
+                }
+            }
+
+            // Now declare all parameters with their resolved values
+            for (int i = 0; i < parameters.size(); i++) {
+                final QName varName = parameters.get(i);
+                final LocalVariable var = new LocalVariable(varName);
+
+                var.setValue(argValues[i]);
+                if (contextDocs != null && i < contextDocs.length) {
                     var.setContextDocs(contextDocs[i]);
                 }
                 context.declareVariableBinding(var);
 
                 Cardinality actualCardinality;
-                if (currentArguments[j].isEmpty()) {
+                if (argValues[i].isEmpty()) {
                     actualCardinality = Cardinality.EMPTY_SEQUENCE;
-                } else if (currentArguments[j].hasMany()) {
+                } else if (argValues[i].hasMany()) {
                     actualCardinality = Cardinality._MANY;
                 } else {
                     actualCardinality = Cardinality.EXACTLY_ONE;
                 }
 
-                if (!argumentTypes[j].getCardinality().isSuperCardinalityOrEqualOf(actualCardinality)) {
+                if (!argTypes[i].getCardinality().isSuperCardinalityOrEqualOf(actualCardinality)) {
                     throw new XPathException(this, ErrorCodes.XPTY0004, "Invalid cardinality for parameter $" + varName +
-                            ". Expected " + argumentTypes[j].getCardinality().getHumanDescription() +
-                            ", got " + currentArguments[j].getItemCount());
-                }
-
-                // XQuery 4.0: record type validation at runtime
-                final SequenceType argType = argumentTypes[j];
-                if (argType.isRecordType() && argType.getRecordType() != null && !currentArguments[j].isEmpty()) {
-                    for (final SequenceIterator iter = currentArguments[j].iterate(); iter.hasNext(); ) {
-                        final Item item = iter.nextItem();
-                        if (Type.subTypeOf(item.getType(), Type.MAP_ITEM)) {
-                            if (!argType.getRecordType().matches((AbstractMapType) item)) {
-                                throw new XPathException(this, ErrorCodes.XPTY0004,
-                                        "Argument $" + varName + " does not match " + argType.getRecordType());
-                            }
-                        } else {
-                            throw new XPathException(this, ErrorCodes.XPTY0004,
-                                    "Argument $" + varName + " expected " + argType.getRecordType() +
-                                            " but got " + Type.getTypeName(item.getType()));
-                        }
-                    }
+                            ". Expected " + argTypes[i].getCardinality().getHumanDescription() +
+                            ", got " + argValues[i].getItemCount());
                 }
             }
             result = body.eval(null, null);

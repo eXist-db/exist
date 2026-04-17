@@ -312,8 +312,8 @@ public class DurationValue extends ComputableValue {
                 canonicalize();
                 return new UntypedAtomicValue(getExpression(), getStringValue());
             default:
-                throw new XPathException(getExpression(), ErrorCodes.FORG0001,
-                        "Type error: cannot cast ' + Type.getTypeName(getType()) 'to "
+                throw new XPathException(getExpression(), ErrorCodes.XPTY0004,
+                        "Type error: cannot cast " + Type.getTypeName(getType()) + " to "
                                 + Type.getTypeName(requiredType));
         }
     }

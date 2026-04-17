@@ -88,8 +88,8 @@ public class GDayValue extends AbstractDateTimeValue {
             case Type.UNTYPED_ATOMIC:
                 return new UntypedAtomicValue(getExpression(), getStringValue());
             default:
-                throw new XPathException(getExpression(), ErrorCodes.FORG0001,
-                        "Type error: cannot cast xs:time to "
+                throw new XPathException(getExpression(), ErrorCodes.XPTY0004,
+                        "Type error: cannot cast xs:gDay to "
                                 + Type.getTypeName(requiredType));
         }
     }

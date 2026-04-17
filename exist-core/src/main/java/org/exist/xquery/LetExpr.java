@@ -126,7 +126,14 @@ public class LetExpr extends BindingExpression {
                 var.setContextDocs(inputSequence.getContextDocSet());
                 registerUpdateListener(in);
 
-                resultSequence = returnExpr.eval(contextSequence, null);
+                try {
+                    resultSequence = returnExpr.eval(contextSequence, null);
+                } catch (final WhileClause.WhileTerminationException e) {
+                    resultSequence = Sequence.EMPTY_SEQUENCE;
+                }
+                if (getPreviousClause() == null && WhileClause.isTerminated()) {
+                    WhileClause.clearTerminated();
+                }
 
                 if (sequenceType != null) {
                     Cardinality actualCardinality;

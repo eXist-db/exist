@@ -108,7 +108,7 @@ public class TimeValue extends AbstractDateTimeValue {
             case Type.UNTYPED_ATOMIC:
                 return new UntypedAtomicValue(getExpression(), getStringValue());
             default:
-                throw new XPathException(getExpression(), ErrorCodes.FORG0001,
+                throw new XPathException(getExpression(), ErrorCodes.XPTY0004,
                         "Type error: cannot cast xs:time to "
                                 + Type.getTypeName(requiredType));
         }

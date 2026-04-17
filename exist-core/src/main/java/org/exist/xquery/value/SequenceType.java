@@ -21,7 +21,6 @@
  */
 package org.exist.xquery.value;
 
-import javax.annotation.Nullable;
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.ErrorCodes;
@@ -30,6 +29,9 @@ import org.exist.xquery.XPathException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Represents an XQuery SequenceType and provides methods to check
@@ -42,9 +44,8 @@ public class SequenceType {
     private int primaryType = Type.ITEM;
     private Cardinality cardinality = Cardinality.EXACTLY_ONE;
     private QName nodeName = null;
-
-    // XQuery 4.0 record type support
-    private RecordType recordType = null;
+    private List<SequenceType> choiceAlternatives = null;
+    private String[] enumValues = null;
 
     public SequenceType() {
     }
@@ -112,44 +113,79 @@ public class SequenceType {
         this.nodeName = qname;
     }
 
-    // --- XQuery 4.0 Record Type Support ---
-
-    /**
-     * Check if this SequenceType is a record type.
-     */
-    public boolean isRecordType() {
-        return primaryType == Type.RECORD && recordType != null;
+    public void addChoiceAlternative(final SequenceType alt) {
+        if (choiceAlternatives == null) {
+            choiceAlternatives = new ArrayList<>();
+        }
+        choiceAlternatives.add(alt);
     }
 
-    /**
-     * Get the record type's field declarations.
-     */
-    @Nullable
-    public java.util.List<RecordType.FieldDeclaration> getFieldDeclarations() {
-        return recordType != null ? recordType.getFieldDeclarations() : null;
+    public List<SequenceType> getChoiceAlternatives() {
+        return choiceAlternatives;
     }
 
+    public boolean isChoiceType() {
+        return choiceAlternatives != null && !choiceAlternatives.isEmpty();
+    }
+
+    public void setEnumValues(final String[] values) {
+        this.enumValues = values;
+        this.primaryType = Type.STRING;
+    }
+
+    public String[] getEnumValues() {
+        return enumValues;
+    }
+
+    public boolean isEnumType() {
+        return enumValues != null;
+    }
+
+    // Record type support
+
     /**
-     * Check if the record type is extensible (allows extra keys).
+     * Represents a field in a record type declaration.
      */
+    public static class RecordField {
+        private final String name;
+        private final boolean optional;
+        private final SequenceType fieldType;
+
+        public RecordField(final String name, final boolean optional, final SequenceType fieldType) {
+            this.name = name;
+            this.optional = optional;
+            this.fieldType = fieldType;
+        }
+
+        public String getName() { return name; }
+        public boolean isOptional() { return optional; }
+        public SequenceType getFieldType() { return fieldType; }
+    }
+
+    private List<RecordField> recordFields = null;
+    private boolean recordExtensible = false;
+
+    public void addRecordField(final RecordField field) {
+        if (recordFields == null) {
+            recordFields = new ArrayList<>();
+        }
+        recordFields.add(field);
+    }
+
+    public List<RecordField> getRecordFields() {
+        return recordFields;
+    }
+
+    public void setRecordExtensible(final boolean extensible) {
+        this.recordExtensible = extensible;
+    }
+
     public boolean isRecordExtensible() {
-        return recordType != null && recordType.isExtensible();
+        return recordExtensible;
     }
 
-    /**
-     * Set the record type definition.
-     */
-    public void setRecordType(final RecordType recordType) {
-        this.primaryType = Type.RECORD;
-        this.recordType = recordType;
-    }
-
-    /**
-     * Get the record type, or null if this isn't a record type.
-     */
-    @Nullable
-    public RecordType getRecordType() {
-        return recordType;
+    public boolean isRecordType() {
+        return primaryType == Type.RECORD;
     }
 
     /**
@@ -159,17 +195,29 @@ public class SequenceType {
      * @throws XPathException if check fails for one item in the sequence
      * @return true, if all items of the sequence have the same type as or a subtype of primaryType
      */
-    public boolean checkType(final Sequence seq) throws XPathException {
-        if (nodeName == null) {
+    public boolean checkType(Sequence seq) throws XPathException {
+        if (isChoiceType()) {
+            Item next;
+            for (final SequenceIterator i = seq.iterate(); i.hasNext(); ) {
+                next = i.nextItem();
+                if (!checkType(next)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        if (nodeName != null) {
+            Item next;
+            for (final SequenceIterator i = seq.iterate(); i.hasNext(); ) {
+                next = i.nextItem();
+                if (!checkType(next)) {
+                    return false;
+                }
+            }
+            return true;
+        } else {
             return Type.subTypeOf(seq.getItemType(), primaryType);
         }
-
-        for (final SequenceIterator i = seq.iterate(); i.hasNext(); ) {
-            if (!checkType(i.nextItem())) {
-                return false;
-            }
-        }
-        return true;
     }
 
     /**
@@ -178,65 +226,172 @@ public class SequenceType {
      * @param item the item to check
      * @return true, if item is a subtype of primaryType
      */
-    public boolean checkType(final Item item) {
-        // XQuery 4.0 record type checking
-        if (isRecordType()) {
-            if (!Type.subTypeOf(item.getType(), Type.MAP_ITEM)) {
-                return false;
-            }
-            if (item instanceof org.exist.xquery.functions.map.AbstractMapType) {
-                return recordType.matches((org.exist.xquery.functions.map.AbstractMapType) item);
+    public boolean checkType(Item item) {
+        if (isChoiceType()) {
+            for (final SequenceType alt : choiceAlternatives) {
+                if (alt.checkType(item)) {
+                    return true;
+                }
             }
             return false;
         }
+        if (isEnumType()) {
+            if (!Type.subTypeOf(item.getType(), Type.STRING)) {
+                return false;
+            }
+            try {
+                final String val = item.getStringValue();
+                for (final String enumVal : enumValues) {
+                    if (enumVal.equals(val)) {
+                        return true;
+                    }
+                }
+            } catch (final XPathException e) {
+                // cannot get string value
+            }
+            return false;
+        }
+        if (isRecordType()) {
+            return checkRecordType(item);
+        }
+        Node realNode = null;
         int type = item.getType();
         if (type == Type.NODE) {
-            final Node realNode = ((NodeValue) item).getNode();
+            realNode = ((NodeValue) item).getNode();
             type = realNode.getNodeType();
         }
         if (!Type.subTypeOf(type, primaryType)) {
             return false;
         }
-        if (nodeName == null) {
-            return true;
-        }
-        //TODO : how to improve performance ?
-        final QName realName = getRealName(item);
+        if (nodeName != null) {
 
-        if (realName == null) {
-            return false;
-        }
-        if (nodeName.getNamespaceURI() != null &&
-                !nodeName.getNamespaceURI().equals(realName.getNamespaceURI())) {
-            return false;
-        }
-        if (nodeName.getLocalPart() != null) {
-            return nodeName.getLocalPart().equals(realName.getLocalPart());
+            //TODO : how to improve performance ?
+
+            final NodeValue nvItem = (NodeValue) item;
+            QName realName = null;
+            if (item.getType() == Type.DOCUMENT) {
+                // it's a document... we need to get the document element's name
+                final Document doc;
+                if (nvItem instanceof Document) {
+                    doc = (Document) nvItem;
+                } else {
+                    doc = nvItem.getOwnerDocument();
+                }
+                if (doc != null) {
+                    final Element elem = doc.getDocumentElement();
+                    if (elem != null) {
+                        realName = new QName(elem.getLocalName(), elem.getNamespaceURI());
+                    }
+                }
+            } else {
+                // get the name of the element/attribute
+                realName = nvItem.getQName();
+            }
+
+            if (realName == null) {
+                return false;
+            }
+
+            if (nodeName.getNamespaceURI() != null) {
+                if (!nodeName.getNamespaceURI().equals(realName.getNamespaceURI())) {
+                    return false;
+                }
+            }
+            if (nodeName.getLocalPart() != null) {
+                return nodeName.getLocalPart().equals(realName.getLocalPart());
+            }
         }
         return true;
     }
 
-    private static QName getRealName(final Item item) {
-        final NodeValue nvItem = (NodeValue) item;
-        if (item.getType() != Type.DOCUMENT) {
-            // get the name of the element/attribute
-            return nvItem.getQName();
+    /**
+     * Check if an item matches this record type declaration.
+     * A map matches a record type if:
+     * - All required fields are present
+     * - Each field value matches the declared type
+     * - If not extensible (no *), no extra keys are present
+     */
+    private boolean checkRecordType(final Item item) {
+        if (!Type.subTypeOf(item.getType(), Type.MAP_ITEM)) {
+            return false;
         }
-        // it's a document... we need to get the document element's name
-        final Document doc;
-        if (nvItem instanceof Document) {
-            doc = (Document) nvItem;
-        } else {
-            doc = nvItem.getOwnerDocument();
+        // record(*) matches any map
+        if (recordExtensible && (recordFields == null || recordFields.isEmpty())) {
+            return true;
         }
-        if (doc == null) {
-            return null;
+        final org.exist.xquery.functions.map.AbstractMapType map =
+                (org.exist.xquery.functions.map.AbstractMapType) item;
+
+        // record() with no fields and not extensible: only empty maps match
+        if ((recordFields == null || recordFields.isEmpty()) && !recordExtensible) {
+            return map.size() == 0;
         }
-        final Element elem = doc.getDocumentElement();
-        if (elem == null) {
-            return null;
+
+        // Check required fields are present and types match
+        for (final RecordField field : recordFields) {
+            final AtomicValue key = new StringValue(null, field.getName());
+            final boolean hasKey = map.contains(key);
+
+            if (!hasKey && !field.isOptional()) {
+                return false; // required field missing
+            }
+
+            if (hasKey && field.getFieldType() != null) {
+                try {
+                    final Sequence value = map.get(key);
+                    if (!field.getFieldType().matchesCardinality(value)) {
+                        return false;
+                    }
+                    if (!value.isEmpty() && !field.getFieldType().checkType(value)) {
+                        return false;
+                    }
+                } catch (final XPathException e) {
+                    return false;
+                }
+            }
         }
-        return new QName(elem.getLocalName(), elem.getNamespaceURI());
+
+        // If not extensible, check for extra keys
+        if (!recordExtensible) {
+            try {
+                final Sequence keys = map.keys();
+                for (final SequenceIterator it = keys.iterate(); it.hasNext(); ) {
+                    final String keyName = it.nextItem().getStringValue();
+                    boolean declared = false;
+                    for (final RecordField field : recordFields) {
+                        if (field.getName().equals(keyName)) {
+                            declared = true;
+                            break;
+                        }
+                    }
+                    if (!declared) {
+                        return false; // undeclared key in non-extensible record
+                    }
+                }
+            } catch (final XPathException e) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Check if a sequence's cardinality matches this type's cardinality declaration.
+     */
+    public boolean matchesCardinality(final Sequence seq) {
+        if (cardinality == Cardinality.ZERO_OR_MORE) {
+            return true;
+        }
+        final int count = seq.getItemCount();
+        if (count == 0) {
+            return cardinality.isSuperCardinalityOrEqualOf(Cardinality.EMPTY_SEQUENCE);
+        }
+        if (count == 1) {
+            return true; // EXACTLY_ONE, ZERO_OR_ONE, ONE_OR_MORE all accept 1
+        }
+        // count > 1
+        return cardinality == Cardinality.ONE_OR_MORE || cardinality == Cardinality.ZERO_OR_MORE;
     }
 
     /**
@@ -251,14 +406,17 @@ public class SequenceType {
             return;
         }
 
-        // Although xs:anyURI is not a subtype of xs:string, both types are compatible
+        //Although xs:anyURI is not a subtype of xs:string, both types are compatible
         if (type == Type.ANY_URI && primaryType == Type.STRING) {
             return;
         }
 
         if (!Type.subTypeOf(type, primaryType)) {
             throw new XPathException((Expression) null, ErrorCodes.XPTY0004,
-                    "Type error: expected type: " + Type.getTypeName(primaryType) + "; got: " + Type.getTypeName(type));
+                    "Type error: expected type: "
+                            + Type.getTypeName(primaryType)
+                            + "; got: "
+                            + Type.getTypeName(type));
         }
     }
 
@@ -280,15 +438,36 @@ public class SequenceType {
         }
     }
 
-    /**
-     * Used to serialize SequenceTypes, when building stack traces, for example.
-     *
-     * @return The serialized SequenceType
-     */
     @Override
     public String toString() {
         if (cardinality == Cardinality.EMPTY_SEQUENCE) {
             return cardinality.toXQueryCardinalityString();
+        }
+
+        if (isChoiceType()) {
+            final StringBuilder sb = new StringBuilder("(");
+            for (int i = 0; i < choiceAlternatives.size(); i++) {
+                if (i > 0) {
+                    sb.append(" | ");
+                }
+                sb.append(choiceAlternatives.get(i).toString());
+            }
+            sb.append(")");
+            sb.append(cardinality.toXQueryCardinalityString());
+            return sb.toString();
+        }
+
+        if (isEnumType()) {
+            final StringBuilder sb = new StringBuilder("enum(");
+            for (int i = 0; i < enumValues.length; i++) {
+                if (i > 0) {
+                    sb.append(", ");
+                }
+                sb.append("\"").append(enumValues[i]).append("\"");
+            }
+            sb.append(")");
+            sb.append(cardinality.toXQueryCardinalityString());
+            return sb.toString();
         }
 
         final String str;
@@ -296,12 +475,12 @@ public class SequenceType {
             str = "document-node(" + nodeName.getStringValue() + ")";
         } else if (primaryType == Type.ELEMENT && nodeName != null) {
             str = "element(" + nodeName.getStringValue() + ")";
-        } else if (primaryType == Type.MAP_ITEM) {
-            str = "map(*)";
-        } else if (primaryType == Type.ARRAY_ITEM) {
-            str = "array(*)";
-        } else if (primaryType == Type.FUNCTION) {
-            str = "function(*)";
+//        } else if (primaryType == Type.MAP) {
+//            str = "map(" + + ")";
+//        } else if (primaryType == Type.ARRAY) {
+//            str = "array(" + + ")";
+//        } else if (primaryType == Type.FUNCTION_REFERENCE) {
+//            str = "function(" + + ")";
         } else {
             str = Type.getTypeName(primaryType);
         }

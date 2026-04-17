@@ -153,10 +153,11 @@ public abstract class NumericValue extends ComputableValue {
 
         if (Type.subTypeOfUnion(other.getType(), Type.NUMERIC)) {
             if (isNaN()) {
-                //NaN does not equal itself.
-                if (((NumericValue) other).isNaN()) {
-                    return Constants.INFERIOR;
-                }
+                //NaN does not equal itself or any other value.
+                return Constants.INFERIOR;
+            }
+            if (((NumericValue) other).isNaN()) {
+                return Constants.SUPERIOR;
             }
 
             final IntSupplier comparison = createComparisonWith((NumericValue) other);

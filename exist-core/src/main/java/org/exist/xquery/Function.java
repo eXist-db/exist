@@ -212,10 +212,29 @@ public abstract class Function extends PathExpr {
      * @throws XPathException if an error occurs setting the arguments
      */
     public void setArguments(final List<Expression> arguments) throws XPathException {
-        if ((!mySignature.isVariadic()) && arguments.size() != mySignature.getArgumentCount()) {
-            throw new XPathException(this, ErrorCodes.XPST0017,
-                    "Number of arguments of function " + getName() + " doesn't match function signature (expected "
-                            + mySignature.getArgumentCount() + ", got " + arguments.size() + ')');
+        final int argCount = mySignature.getArgumentCount();
+        if ((!mySignature.isVariadic()) && arguments.size() != argCount) {
+            // XQ4: Allow fewer arguments if trailing params have default values
+            if (arguments.size() < argCount) {
+                boolean hasDefaults = true;
+                final SequenceType[] argTypes = mySignature.getArgumentTypes();
+                for (int i = arguments.size(); i < argCount; i++) {
+                    if (!(argTypes[i] instanceof FunctionParameterSequenceType) ||
+                        !((FunctionParameterSequenceType) argTypes[i]).hasDefaultValue()) {
+                        hasDefaults = false;
+                        break;
+                    }
+                }
+                if (!hasDefaults) {
+                    throw new XPathException(this, ErrorCodes.XPST0017,
+                            "Number of arguments of function " + getName() + " doesn't match function signature (expected " +
+                                    argCount + ", got " + arguments.size() + ')');
+                }
+            } else {
+                throw new XPathException(this, ErrorCodes.XPST0017,
+                        "Number of arguments of function " + getName() + " doesn't match function signature (expected " +
+                                argCount + ", got " + arguments.size() + ')');
+            }
         }
         steps.clear();
 
