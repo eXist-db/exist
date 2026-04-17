@@ -21,6 +21,12 @@
  */
 package org.exist.client.security;
 
+import static org.exist.security.SecurityManager.DBA_GROUP;
+import static org.exist.security.SecurityManager.DBA_USER;
+import static org.exist.security.SecurityManager.GUEST_GROUP;
+import static org.exist.security.SecurityManager.GUEST_USER;
+import static org.exist.security.SecurityManager.SYSTEM;
+
 import java.io.Serial;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -169,8 +175,8 @@ public class EditGroupDialog extends GroupDialog {
         
         return
             groupMemberSelected
-            && (!(group.getName().equals(org.exist.security.SecurityManager.DBA_GROUP) && (getSelectedMember().equals(org.exist.security.SecurityManager.DBA_USER) || getSelectedMember().equals(org.exist.security.SecurityManager.SYSTEM))))
-            && (!(group.getName().equals(org.exist.security.SecurityManager.GUEST_GROUP) && getSelectedMember().equals(org.exist.security.SecurityManager.GUEST_USER)));
+            && (!(group.getName().equals(DBA_GROUP) && (getSelectedMember().equals(DBA_USER) || getSelectedMember().equals(SYSTEM))))
+            && (!(group.getName().equals(GUEST_GROUP) && getSelectedMember().equals(GUEST_USER)));
     }
     
     

@@ -21,6 +21,14 @@
  */
 package org.exist.security.internal;
 
+import static org.exist.security.SecurityManager.DBA_GROUP;
+import static org.exist.security.SecurityManager.DBA_USER;
+import static org.exist.security.SecurityManager.GUEST_GROUP;
+import static org.exist.security.SecurityManager.GUEST_USER;
+import static org.exist.security.SecurityManager.SYSTEM;
+import static org.exist.security.SecurityManager.UNKNOWN_GROUP;
+import static org.exist.security.SecurityManager.UNKNOWN_USER;
+
 import java.security.Principal;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -39,7 +47,6 @@ import org.exist.security.AuthenticationException;
 import org.exist.security.EXistSchemaType;
 import org.exist.security.Group;
 import org.exist.security.PermissionDeniedException;
-import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
 import org.exist.util.UUIDGenerator;
 import org.exist.security.internal.aider.UserAider;
@@ -89,33 +96,33 @@ public class RealmImpl extends AbstractRealm {
     	super(sm, config);
 
         //DBA group
-        GROUP_DBA = new GroupImpl(broker, this, DBA_GROUP_ID, SecurityManager.DBA_GROUP);
-        GROUP_DBA.setManagers(new ArrayList<>(List.of(new ReferenceImpl<>(sm, "getAccount", SecurityManager.DBA_USER))));
+        GROUP_DBA = new GroupImpl(broker, this, DBA_GROUP_ID, DBA_GROUP);
+        GROUP_DBA.setManagers(new ArrayList<>(List.of(new ReferenceImpl<>(sm, "getAccount", DBA_USER))));
         GROUP_DBA.setMetadataValue(EXistSchemaType.DESCRIPTION, "Database Administrators");
         sm.registerGroup(GROUP_DBA);
         registerGroup(GROUP_DBA);
 
         //System account
-    	ACCOUNT_SYSTEM = new AccountImpl(broker, this, SYSTEM_ACCOUNT_ID, SecurityManager.SYSTEM, "", GROUP_DBA, true);
-        ACCOUNT_SYSTEM.setMetadataValue(AXSchemaType.FULLNAME, SecurityManager.SYSTEM);
+    	ACCOUNT_SYSTEM = new AccountImpl(broker, this, SYSTEM_ACCOUNT_ID, SYSTEM, "", GROUP_DBA, true);
+        ACCOUNT_SYSTEM.setMetadataValue(AXSchemaType.FULLNAME, SYSTEM);
         ACCOUNT_SYSTEM.setMetadataValue(EXistSchemaType.DESCRIPTION, "System Internals");
         sm.registerAccount(ACCOUNT_SYSTEM);
         registerAccount(ACCOUNT_SYSTEM);
 
         //guest group
-        GROUP_GUEST = new GroupImpl(broker, this, GUEST_GROUP_ID, SecurityManager.GUEST_GROUP);
+        GROUP_GUEST = new GroupImpl(broker, this, GUEST_GROUP_ID, GUEST_GROUP);
         GROUP_GUEST.setManagers(new ArrayList<>(
-                List.of(new ReferenceImpl<>(sm, "getAccount", SecurityManager.DBA_USER))
+                List.of(new ReferenceImpl<>(sm, "getAccount", DBA_USER))
             ));
         GROUP_GUEST.setMetadataValue(EXistSchemaType.DESCRIPTION, "Anonymous Users");
         sm.registerGroup(GROUP_GUEST);
         registerGroup(GROUP_GUEST);
 
         //unknown account and group
-        GROUP_UNKNOWN = new GroupImpl(broker, this, UNKNOWN_GROUP_ID, SecurityManager.UNKNOWN_GROUP);
+        GROUP_UNKNOWN = new GroupImpl(broker, this, UNKNOWN_GROUP_ID, UNKNOWN_GROUP);
         sm.registerGroup(GROUP_UNKNOWN);
         registerGroup(GROUP_UNKNOWN);
-    	ACCOUNT_UNKNOWN = new AccountImpl(broker, this, UNKNOWN_ACCOUNT_ID, SecurityManager.UNKNOWN_USER, null, GROUP_UNKNOWN);
+    	ACCOUNT_UNKNOWN = new AccountImpl(broker, this, UNKNOWN_ACCOUNT_ID, UNKNOWN_USER, null, GROUP_UNKNOWN);
         sm.registerAccount(ACCOUNT_UNKNOWN);
         registerAccount(ACCOUNT_UNKNOWN);
 
@@ -168,21 +175,21 @@ public class RealmImpl extends AbstractRealm {
     	
         //Admin account
         if(getSecurityManager().getAccount(ADMIN_ACCOUNT_ID) == null) {
-            final UserAider actAdmin = new UserAider(ADMIN_ACCOUNT_ID, getId(), SecurityManager.DBA_USER);
+            final UserAider actAdmin = new UserAider(ADMIN_ACCOUNT_ID, getId(), DBA_USER);
             actAdmin.setPassword(DEFAULT_ADMIN_PASSWORD);
-            actAdmin.setMetadataValue(AXSchemaType.FULLNAME, SecurityManager.DBA_USER);
+            actAdmin.setMetadataValue(AXSchemaType.FULLNAME, DBA_USER);
             actAdmin.setMetadataValue(EXistSchemaType.DESCRIPTION, "System Administrator");
-            actAdmin.addGroup(SecurityManager.DBA_GROUP);
+            actAdmin.addGroup(DBA_GROUP);
             getSecurityManager().addAccount(broker, actAdmin);
         }
 
         //Guest account
         if(getSecurityManager().getAccount(GUEST_ACCOUNT_ID) == null) {
-            final UserAider actGuest = new UserAider(GUEST_ACCOUNT_ID, getId(), SecurityManager.GUEST_USER);
-            actGuest.setMetadataValue(AXSchemaType.FULLNAME, SecurityManager.GUEST_USER);
+            final UserAider actGuest = new UserAider(GUEST_ACCOUNT_ID, getId(), GUEST_USER);
+            actGuest.setMetadataValue(AXSchemaType.FULLNAME, GUEST_USER);
             actGuest.setMetadataValue(EXistSchemaType.DESCRIPTION, "Anonymous User");
             actGuest.setPassword(DEFAULT_GUEST_PASSWORD);
-            actGuest.addGroup(SecurityManager.GUEST_GROUP);
+            actGuest.addGroup(GUEST_GROUP);
             getSecurityManager().addAccount(broker, actGuest);
         }
     }
@@ -204,10 +211,10 @@ public class RealmImpl extends AbstractRealm {
                 throw new IllegalArgumentException("No such account exists!");
             }
 
-            if (SecurityManager.SYSTEM.equals(account.getName())
-                || SecurityManager.DBA_USER.equals(account.getName())
-                || SecurityManager.GUEST_USER.equals(account.getName())
-                || SecurityManager.UNKNOWN_USER.equals(account.getName())) {
+            if (SYSTEM.equals(account.getName())
+                || DBA_USER.equals(account.getName())
+                || GUEST_USER.equals(account.getName())
+                || UNKNOWN_USER.equals(account.getName())) {
                 throw new PermissionDeniedException("The '" + account.getName() + "' account is required by the system for correct operation, and you cannot delete it! You may be able to disable it instead.");
             }
 
@@ -249,9 +256,9 @@ public class RealmImpl extends AbstractRealm {
                 throw new IllegalArgumentException("Group does '" + group.getName() + "' not exist!");
             }
 
-            if (SecurityManager.DBA_GROUP.equals(group.getName())
-                    || SecurityManager.GUEST_GROUP.equals(group.getName())
-                    || SecurityManager.UNKNOWN_GROUP.equals(group.getName())) {
+            if (DBA_GROUP.equals(group.getName())
+                    || GUEST_GROUP.equals(group.getName())
+                    || UNKNOWN_GROUP.equals(group.getName())) {
                 throw new PermissionDeniedException("The '" + group.getName() + "' group is required by the system for correct operation, you cannot delete it!");
             }
 

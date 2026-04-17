@@ -21,6 +21,8 @@
  */
 package org.exist.client;
 
+import static org.exist.security.SecurityManager.DBA_USER;
+
 import org.exist.SystemProperties;
 import org.exist.backup.Backup;
 import org.exist.backup.CreateBackupDialog;
@@ -29,7 +31,6 @@ import org.exist.client.security.EditPropertiesDialog;
 import org.exist.client.security.ModeDisplay;
 import org.exist.client.security.UserManagerDialog;
 import org.exist.security.*;
-import org.exist.security.SecurityManager;
 import org.exist.security.internal.aider.SimpleACLPermissionAider;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.util.FileUtils;
@@ -1014,7 +1015,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
 
         final CreateBackupDialog dialog = new CreateBackupDialog(
                 properties.getProperty(InteractiveClient.URI, "xmldb:exist://"),
-                properties.getProperty(InteractiveClient.USER, SecurityManager.DBA_USER),
+                properties.getProperty(InteractiveClient.USER, DBA_USER),
                 properties.getProperty(InteractiveClient.PASSWORD, null),
                 Path.of(preferences.get("directory.backup", System.getProperty("user.home"))),
                 defaultSelectedCollection
@@ -1043,7 +1044,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
 
             try {
                 final Backup backup = new Backup(
-                        properties.getProperty(InteractiveClient.USER, SecurityManager.DBA_USER),
+                        properties.getProperty(InteractiveClient.USER, DBA_USER),
                         properties.getProperty(InteractiveClient.PASSWORD, null), Path.of(backuptarget),
                         XmldbURI.xmldbUriFor(properties.getProperty(InteractiveClient.URI, "xmldb:exist://") + collection),
                         null,
@@ -1080,7 +1081,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
                 final String restoreFile = f.toAbsolutePath().toString();
                 final boolean overwriteApps = overwriteCb.isSelected();
                 final GuiRestoreServiceTaskListener listener = new GuiRestoreServiceTaskListener(this);
-                doRestore(listener, properties.getProperty(InteractiveClient.USER, SecurityManager.DBA_USER), properties.getProperty(InteractiveClient.PASSWORD, null), newDbaPass, Path.of(restoreFile), properties.getProperty(InteractiveClient.URI, "xmldb:exist://"), overwriteApps);
+                doRestore(listener, properties.getProperty(InteractiveClient.USER, DBA_USER), properties.getProperty(InteractiveClient.PASSWORD, null), newDbaPass, Path.of(restoreFile), properties.getProperty(InteractiveClient.URI, "xmldb:exist://"), overwriteApps);
             }
         }
     }
@@ -1111,7 +1112,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
 
                 listener.enableDismissDialogButton();
 
-                if (properties.getProperty(InteractiveClient.USER, SecurityManager.DBA_USER).equals(SecurityManager.DBA_USER) && dbaPassword != null) {
+                if (properties.getProperty(InteractiveClient.USER, DBA_USER).equals(DBA_USER) && dbaPassword != null) {
                     properties.setProperty(InteractiveClient.PASSWORD, dbaPassword);
                 }
 
