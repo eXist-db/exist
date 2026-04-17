@@ -26,6 +26,61 @@ module namespace xtj="http://exist-db.org/xquery/test/xml-to-json";
 declare default element namespace "http://www.w3.org/2005/xpath-functions";
 declare namespace test="http://exist-db.org/xquery/xqsuite";
 
+declare variable $xtj:collection-name := "xml-to-json-test";
+declare variable $xtj:collection := "/db/" || $xtj:collection-name;
+
+declare variable $xtj:simple-map :=
+    <map xmlns="http://www.w3.org/2005/xpath-functions">
+        <string key="hello">world</string>
+    </map>;
+
+declare variable $xtj:nested-structure :=
+    <map xmlns="http://www.w3.org/2005/xpath-functions">
+        <string key="name">test</string>
+        <number key="count">42</number>
+        <boolean key="active">true</boolean>
+        <null key="nothing"/>
+        <array key="items">
+            <string>a</string>
+            <number>1</number>
+            <boolean>false</boolean>
+        </array>
+    </map>;
+
+declare
+    %test:setUp
+function xtj:setup() {
+    xmldb:create-collection("/db", $xtj:collection-name),
+    xmldb:store($xtj:collection, "simple-map.xml", $xtj:simple-map),
+    xmldb:store($xtj:collection, "nested-structure.xml", $xtj:nested-structure)
+};
+
+declare
+    %test:tearDown
+function xtj:teardown() {
+    xmldb:remove($xtj:collection)
+};
+
+declare
+    %test:assertEquals('{"hello":"world"}')
+function xtj:xml-to-json-stored-simple-map() {
+    fn:xml-to-json(doc($xtj:collection || "/simple-map.xml")/*)
+};
+
+declare
+    %test:assertEquals('{"name":"test","count":42,"active":true,"nothing":null,"items":["a",1,false]}')
+function xtj:xml-to-json-stored-nested-structure() {
+    fn:xml-to-json(doc($xtj:collection || "/nested-structure.xml")/*)
+};
+
+declare
+    %test:assertTrue
+function xtj:xml-to-json-stored-matches-in-memory() {
+    let $stored := fn:xml-to-json(doc($xtj:collection || "/simple-map.xml")/*)
+    let $in-memory := fn:xml-to-json($xtj:simple-map)
+    return $stored eq $in-memory
+};
+
 declare
     %test:assertEmpty
 function xtj:xml-to-json-empty-sequence() {
