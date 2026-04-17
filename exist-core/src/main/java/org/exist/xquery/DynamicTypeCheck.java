@@ -126,8 +126,7 @@ public class DynamicTypeCheck extends AbstractExpression {
             //Then, if duration, try to refine the type
             //No test on the type hierarchy ; this has to pass :
             //fn:months-from-duration(xs:duration("P1Y2M3DT10H30M"))
-            //TODO : find a way to enforce the test (by making a difference between casting and treating as ?)
-            } else if (Type.subTypeOf(requiredType, Type.DURATION) /*&& Type.subTypeOf(type, requiredType)*/) {
+            } else if (Type.subTypeOf(requiredType, Type.DURATION) && Type.subTypeOf(type, requiredType)) {
                 try {
                     item = item.convertTo(requiredType);
                 //No way
@@ -137,9 +136,7 @@ public class DynamicTypeCheck extends AbstractExpression {
                             item.getStringValue() + ")'");
                 }
             //Then, if date, try to refine the type
-            //No test on the type hierarchy
-            //TODO : find a way to enforce the test (by making a difference between casting and treating as ?)
-            } else if (Type.subTypeOf(requiredType, Type.DATE) /*&& Type.subTypeOf(type, requiredType)*/) {
+            } else if (Type.subTypeOf(requiredType, Type.DATE) && Type.subTypeOf(type, requiredType)) {
                 try {
                     item = item.convertTo(requiredType);
                 //No way

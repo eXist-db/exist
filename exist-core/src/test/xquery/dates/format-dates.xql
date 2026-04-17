@@ -586,3 +586,9 @@ declare
 function fd:written-day-en($date-str as xs:string) {
     format-date(xs:date($date-str), "[FNn]", "en", (), ())
 };
+
+declare
+    %test:assertError("XPTY0004")
+function fd:string-instead-of-date() {
+    format-date('2022-05-30', '[MNn] [D], [Y]')
+};
