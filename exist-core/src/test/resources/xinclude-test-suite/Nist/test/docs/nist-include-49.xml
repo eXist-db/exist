@@ -1,0 +1,4 @@
+<x xmlns:xinclude="http://www.w3.org/2001/XInclude">
+   <!-- Including another XML document that contains an unexpanded entity reference. -->
+   <xinclude:include href="../ents/extref.xml" parse="xml"/>
+</x>

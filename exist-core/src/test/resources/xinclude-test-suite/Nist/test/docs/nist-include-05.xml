@@ -1,0 +1,7 @@
+<x xmlns:xinclude="http://www.w3.org/2001/XInclude">
+   <!-- Test a fallback element not appearing as a direct
+	child of an xinclude element. A fatal error should be generated. -->
+   <xinclude:include href="../ents/something.xml"/> 
+   <somelem>I am part of the source infoset</somelem>
+   <xinclude:fallback>some text in ascii.</xinclude:fallback>
+</x>

@@ -1,0 +1,13 @@
+<?xml version='1.0'?>
+<!-- Including an XML document using an XPointer element schema. -->
+<document>
+  <p>The relevant excerpt is:</p>
+  <quotation>
+    <include xmlns="http://www.w3.org/2001/XInclude"
+       href="../ents/ptrtst.xml" xpointer="element(/1/1/1)"/>
+  </quotation>
+</document>
+
+
+
+

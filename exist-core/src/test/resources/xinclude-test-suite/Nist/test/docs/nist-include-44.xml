@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<!-- Test a resource that contain not-well-formed XML. 
+This test should resultin a fatal error. -->
+<x xmlns:xi="http://www.w3.org/2001/XInclude">
+	<xi:include href="../ents/incl.xml">
+		<xi:fallback><xi:include href="../ents/nwf1.xml" parse="xml"/></xi:fallback>
+	</xi:include>
+</x>

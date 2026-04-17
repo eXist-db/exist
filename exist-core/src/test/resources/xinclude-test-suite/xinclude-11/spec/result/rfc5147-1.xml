@@ -1,0 +1,9 @@
+<document xmlns:xi="http://www.w3.org/2001/XInclude">
+<p>This example includes just the ‘use' lines from a Perl script.</p>
+<pre>use strict;
+use English;
+use Getopt::Std;
+use vars qw($opt_p $opt_q $opt_u $opt_m);
+</pre>
+<p>There are four of them.</p>
+</document>

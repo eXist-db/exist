@@ -1,0 +1,5 @@
+<x xmlns:xinclude="http://www.w3.org/2001/XInclude">
+   <!-- Test the exclusion of the document type declaration information item when performing
+	an inclusion.-->
+   <xinclude:include href="../ents/books.xml" parse="xml"/>
+</x>

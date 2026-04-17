@@ -1,0 +1,6 @@
+<!-- Testing when the document (top level) element in the source infoset is an
+include element.-->
+<xinclude:include  xmlns:xinclude="http://www.w3.org/2001/XInclude"
+href="../ents/books.xml" parse="xml"/>
+   
+   

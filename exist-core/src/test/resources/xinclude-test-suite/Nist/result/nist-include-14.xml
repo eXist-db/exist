@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<x xmlns:xinclude="http://www.w3.org/2001/XInclude">
+   <!-- Test a fallback element containing text even when xml is specified in the parse aurgument.-->
+   
+	 Add something else.
+        
+</x>

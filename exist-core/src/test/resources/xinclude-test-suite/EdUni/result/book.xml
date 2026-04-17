@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<book>
+<intro id="intro">
+You will enjoy this book.
+</intro>
+<chapter id="chap1" xml:base="chap1.xml">
+It was a dark and stormy night.
+</chapter>
+<chapter id="chap2" xml:base="chap2.xml">
+And the all lived happily ever after.
+</chapter>
+</book>

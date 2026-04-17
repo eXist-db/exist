@@ -1,0 +1,13 @@
+<x xmlns:xinclude="http://www.w3.org/2001/XInclude">
+   <!-- Test that is a fatal error for an include element to contain more than one fallback elements.-->
+   <xinclude:include href="../ents/something.xml">
+	<xinclude:fallback>
+	 <doc>
+	   <p>with</p>
+	   <p>something</p>
+           <p>else</p>
+         </doc>
+        </xinclude:fallback>
+	<xinclude:fallback>only one fallback is allowed</xinclude:fallback>
+   </xinclude:include>
+</x>

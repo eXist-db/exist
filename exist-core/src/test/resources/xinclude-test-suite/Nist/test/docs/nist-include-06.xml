@@ -1,0 +1,12 @@
+<x xmlns:xinclude="http://www.w3.org/2001/XInclude">
+   <!-- Test a fallback when a resource error occurs. -->
+   <xinclude:include href="../ents/some.xml">
+	<xinclude:fallback>
+	 <doc>
+	   <p>with</p>
+	   <p>something</p>
+           <p>else</p>
+         </doc>
+   </xinclude:fallback>
+   </xinclude:include>
+</x>

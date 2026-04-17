@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<x xmlns:xinclude="http://www.w3.org/2001/XInclude">
+   <!-- Test an include location identifying a document information item with
+	an xpointer  locating the document root. In this case
+	the set of top level include items is the children of acquired infoset's
+	document information item, except for the document type information
+	item. -->
+   <book xml:base="../ents/books.xml">
+<chapter>chapter 1.
+	<subtitle>first subtitle</subtitle>
+	<subtitle>Second subtitle</subtitle>
+</chapter>
+<chapter>chapter 2.
+	<subtitle>first subtitle</subtitle>
+	<subtitle>Second subtitle</subtitle>
+</chapter>
+<chapter>chapter 3.
+	<subtitle>first subtitle</subtitle>
+	<subtitle>Second subtitle</subtitle>
+</chapter>
+</book>
+</x>

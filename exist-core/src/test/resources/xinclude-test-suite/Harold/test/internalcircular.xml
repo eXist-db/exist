@@ -1,0 +1,6 @@
+<?xml version='1.0'?>
+<test>
+  This file is just for making sure my XIncluder can detect 
+  circular local links.
+  <xi:include xpointer="element(/1/1)" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+</test>

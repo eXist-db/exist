@@ -1,0 +1,4 @@
+<document>
+  <para>This is an english paragraph.</para>
+  <xi:include href="../ents/ab-xinclude-lang.xml" xpointer="deutsch" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+</document>

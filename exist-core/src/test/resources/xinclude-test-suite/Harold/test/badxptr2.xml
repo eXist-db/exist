@@ -1,0 +1,7 @@
+<?xml version='1.0'?>
+<root>
+   There should be a resource error resolving this due to
+  the illegal XPointer syntax. Specifically, the space in 
+  initial ID.
+  <xi:include href="docwithid.xml#element(rose red/1/1)" xpointer="element(rose red/1/1)" xmlns:xi="http://www.w3.org/2001/XInclude" />
+</root>

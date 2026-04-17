@@ -1,0 +1,7 @@
+<x xmlns:xinclude="http://www.w3.org/2001/XInclude">
+   <!-- Test the fallback as a child of an xinclude element.
+	Resource should be fetch. This test should pass. -->
+   <xinclude:include href="../ents/something.xml">
+	<xinclude:fallback>some text in ascii</xinclude:fallback>
+   </xinclude:include>
+</x>

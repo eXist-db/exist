@@ -1,0 +1,7 @@
+<x xmlns:xinclude="http://www.w3.org/2001/XInclude">
+   <!-- Test content other than the fallback, in the xinclude element. 
+			This content must be ignored. -->
+   <xinclude:include href="../ents/something.xml">
+	This content should be ignored
+   </xinclude:include>
+</x>

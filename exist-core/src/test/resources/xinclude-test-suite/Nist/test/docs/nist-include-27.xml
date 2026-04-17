@@ -1,0 +1,4 @@
+<x xmlns:xinclude="http://www.w3.org/2001/XInclude">
+   <!-- Test that the encoding attribute of the XInclude element has no efect when parse="xml"-->
+   <xinclude:include href="../ents/include1.xml" parse="xml" encoding="utf-16"/>
+</x>

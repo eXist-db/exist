@@ -1,0 +1,10 @@
+<?xml version='1.0'?>
+<root>
+   Test that a document can include a piece of itself using an xpointer attribute.
+  <data>
+     This will be copied
+  </data>
+  <data>
+     This will be copied
+  </data>
+</root>

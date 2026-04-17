@@ -1,0 +1,5 @@
+<x xmlns:xinclude="http://www.w3.org/2001/XInclude">
+   <!-- Test that an include location identifying an attribute node will result in a
+	fatal error.  -->
+   <xinclude:include href="../ents/idtst.xml" xpointer="xpointer(//@*)"/>
+</x>

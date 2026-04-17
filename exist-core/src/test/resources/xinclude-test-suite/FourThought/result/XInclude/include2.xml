@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<x xmlns:xi="http://www.w3.org/2001/XInclude">
+<foo xmlns:xi="http://www.w3.org/2001/XInclude" xml:base="include2.xml">
+  <foo xml:base="include1.xml"/>
+</foo>
+</x>

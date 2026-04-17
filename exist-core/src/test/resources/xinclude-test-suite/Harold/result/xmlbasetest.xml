@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<root xmlns:xi="http://www.w3.org/2001/XInclude" xml:base="basedata/">
+   Test that xml:base attribute is used to resolve href attributes
+  <red xml:base="red.xml">
+  test data
+</red>
+</root>

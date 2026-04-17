@@ -719,6 +719,8 @@
                                 <exclude>src/test/resources/**/*.bin</exclude>
                                 <exclude>src/test/resources/org/exist/validation/entities/**</exclude>
                                 <exclude>src/test/resources/org/exist/xmldb/allowAnyUri.xml</exclude>
+                                <!-- W3C XInclude test suite — third-party test content, not eXist-db code -->
+                                <exclude>src/test/resources/xinclude-test-suite/**</exclude>
 
                                 <!--
                                     Already under LGPL 2.1, but with a different Copyright

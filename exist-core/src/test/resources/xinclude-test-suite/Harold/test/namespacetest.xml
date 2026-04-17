@@ -1,0 +1,21 @@
+<simple>
+  <test2 xmlns:svg="http://www.w3.org/2000/svg">
+    <svg:svg>
+      The above tag should have a mapped prefix
+    </svg:svg>
+  </test2>
+  <test3 xmlns:xlink="http://www.w3.org/2000/xlink" xlink:type="simple">
+     Make sure the XLinks come across
+  </test3>
+<test xmlns:xinclude="http://www.w3.org/2001/XInclude">
+  <latin1>
+    <firstElement/>
+    <xinclude:include href="utf8.xml" parse="text"/>
+    <insideChildren/>
+    <another>
+      <deeper>text</deeper>
+    </another>
+  </latin1>
+  <xinclude:include href="namespaceinner.xml"/>
+</test>
+</simple>

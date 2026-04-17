@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<root>
+   You should see a q element:
+  <q xml:base="docwithidandtumbler.xml">If you only see the q element the test worked</q>
+</root>

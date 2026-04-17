@@ -1,0 +1,7 @@
+<x xmlns:xinclude="http://www.w3.org/2001/XInclude">
+   <!-- Test that when the fallback element is missing, from the include element, a resource error results in a fatal error.
+	Negative test. -->
+   <xinclude:include href="../ents/something.xml"/>
+   <xinclude:include href="../ents/some.txt" parse="text"/>
+	
+</x>

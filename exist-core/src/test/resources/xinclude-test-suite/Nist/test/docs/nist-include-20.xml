@@ -1,0 +1,8 @@
+<x xmlns:xinclude="http://www.w3.org/2001/XInclude">
+   <!-- Test an include location identifying a document information item with
+	an xpointer  locating the document root. In this case
+	the set of top level include items is the children of acquired infoset's
+	document information item, except for the document type information
+	item. -->
+   <xinclude:include href="../ents/books.xml" xpointer="xpointer(/book)"/>
+</x>
