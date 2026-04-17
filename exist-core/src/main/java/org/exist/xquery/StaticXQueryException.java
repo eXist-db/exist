@@ -21,6 +21,8 @@
  */
 package org.exist.xquery;
 
+import org.exist.xquery.ErrorCodes.ErrorCode;
+
 public class StaticXQueryException extends XPathException
 {
 	private static final long serialVersionUID = -8229758099980343418L;
@@ -53,7 +55,15 @@ public class StaticXQueryException extends XPathException
 		super(expression, message, cause);
 	}
 
-        //TODO add in ErrorCode and ErrorVal
+	public StaticXQueryException(int line, int column, ErrorCode errorCode, String message) {
+		super(line, column, errorCode, message);
+	}
+
+	public StaticXQueryException(int line, int column, ErrorCode errorCode, String message, Throwable cause) {
+		super(line, column, errorCode, message);
+		initCause(cause);
+	}
+
 	public StaticXQueryException(int line, int column, String message, Throwable cause) {
 		super(line, column, message, cause);
 	}

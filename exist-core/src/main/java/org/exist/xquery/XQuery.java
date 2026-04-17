@@ -288,7 +288,7 @@ public class XQuery {
             if (msg.endsWith(", found 'null'")) {
                 msg = msg.substring(0, msg.length() - ", found 'null'".length());
             }
-            throw new StaticXQueryException(e.getLine(), e.getColumn(), msg);
+            throw new StaticXQueryException(e.getLine(), e.getColumn(), ErrorCodes.XPST0003, msg);
         } catch(final TokenStreamException e) {
             final String es = e.toString();
             if(es.matches("^line \\d+:\\d+:.+")) {
@@ -298,7 +298,7 @@ public class XQuery {
                 final int line = Integer.parseInt(es.substring(5, es.indexOf(':')));
                 final String tmpColumn = es.substring(es.indexOf(':') + 1);
                 final int column = Integer.parseInt(tmpColumn.substring(0, tmpColumn.indexOf(':')));
-                throw new StaticXQueryException(line, column, e.getMessage(), e);
+                throw new StaticXQueryException(line, column, ErrorCodes.XPST0003, e.getMessage(), e);
             } else {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Error compiling query: {}", e.getMessage(), e);
