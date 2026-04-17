@@ -175,7 +175,7 @@
         <dependency>
             <groupId>at.yawk.lz4</groupId>
             <artifactId>lz4-java</artifactId>
-            <version>1.11.0</version>
+            <version>1.10.4</version>
         </dependency>
 
         <dependency>
@@ -324,6 +324,12 @@
         </dependency>
 
         <dependency>
+            <groupId>nu.validator</groupId>
+            <artifactId>htmlparser</artifactId>
+            <version>1.4.16</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.apache.ws.commons.util</groupId>
             <artifactId>ws-commons-util</artifactId>
             <version>1.0.2</version>
@@ -391,16 +397,8 @@
         </dependency>
 
         <dependency>
-            <groupId>org.exist-db</groupId>
-            <artifactId>exist-saxon-regex</artifactId>
-            <version>9.4.0-9.e1</version>
-            <exclusions>
-                <exclusion>
-                    <!-- we have our own dependency on Saxon -->
-                    <groupId>net.sf.saxon</groupId>
-                    <artifactId>Saxon-HE</artifactId>
-                </exclusion>
-            </exclusions>
+            <groupId>de.bottlecaps</groupId>
+            <artifactId>markup-blitz</artifactId>
         </dependency>
 
         <dependency>
@@ -430,37 +428,16 @@
             <version>${aspectj.version}</version>
         </dependency>
 
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-jaas</artifactId>
-            <version>${jetty.version}</version>
-            <scope>runtime</scope>
-            <exclusions>
-                <exclusion>
-                    <!-- conflicts with antlr 2.7.7 -->
-                    <groupId>org.apache.servicemix.bundles</groupId>
-                    <artifactId>org.apache.servicemix.bundles.antlr</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <!-- Force newer MINA version for jetty-jaas -->
-        <dependency>
-            <groupId>org.apache.mina</groupId>
-            <artifactId>mina-core</artifactId>
-            <version>2.2.5</version>
-        </dependency>
+        <!-- JAAS is now in jetty-security (core module) in Jetty 12 -->
 
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-http</artifactId>
-            <version>${jetty.version}</version>
             <!-- NOTE: needed for both scopes: <scope>runtime</scope><scope>test</scope> -->
         </dependency>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-security</artifactId>
-            <version>${jetty.version}</version>
             <scope>runtime</scope>
         </dependency>
         <dependency>
@@ -531,13 +508,13 @@
         <dependency>
             <groupId>org.jgrapht</groupId>
             <artifactId>jgrapht-core</artifactId>
-            <version>1.5.3</version>
+            <version>1.5.2</version>
         </dependency>
 
 	<dependency>
             <groupId>org.jgrapht</groupId>
             <artifactId>jgrapht-opt</artifactId>
-            <version>1.5.3</version>
+            <version>1.5.2</version>
         </dependency>
 
         <dependency>
@@ -636,20 +613,43 @@
                           removed. Unfortunately, at this time, it is required for
                           Monex's Remote Console to function.
             -->
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-annotations</artifactId>
+            <groupId>org.eclipse.jetty.ee10</groupId>
+            <artifactId>jetty-ee10-annotations</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-servlet</artifactId>
+            <groupId>org.eclipse.jetty.ee10</groupId>
+            <artifactId>jetty-ee10-servlet</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-webapp</artifactId>
+            <groupId>org.eclipse.jetty.ee10</groupId>
+            <artifactId>jetty-ee10-webapp</artifactId>
         </dependency>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-xml</artifactId>
+        </dependency>
+        <!-- Jakarta WebSocket API for @ServerEndpoint -->
+        <dependency>
+            <groupId>jakarta.websocket</groupId>
+            <artifactId>jakarta.websocket-client-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.websocket</groupId>
+            <artifactId>jakarta.websocket-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <!-- Jetty 12 EE10 WebSocket server for programmatic endpoint registration -->
+        <dependency>
+            <groupId>org.eclipse.jetty.ee10.websocket</groupId>
+            <artifactId>jetty-ee10-websocket-jakarta-server</artifactId>
+        </dependency>
+        <!-- Jakarta WebSocket client for tests -->
+        <dependency>
+            <groupId>org.eclipse.jetty.ee10.websocket</groupId>
+            <artifactId>jetty-ee10-websocket-jakarta-client</artifactId>
+            <version>${jetty.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
@@ -838,6 +838,12 @@
                                 <exclude>src/main/java/org/exist/util/io/TemporaryFileManager.java</exclude>
                                 <exclude>src/test/java/org/exist/util/io/CachingFilterInputStreamNonMarkableByteArrayInputStreamTest.java</exclude>
                                 <exclude>src/main/java/org/exist/xquery/functions/fn/FnFormatNumbers.java</exclude>
+
+                                <!--
+                                    XInclude test suite contains UTF-16 encoded XML files which cannot
+                                    be read by the license plugin's UTF-8 reader
+                                -->
+                                <exclude>src/test/resources/xinclude-test-suite/**</exclude>
                             </excludes>
                         </licenseSet>
 
@@ -1036,13 +1042,14 @@ The BaseX Team. The original license statement is also included below.]]></pream
                                 <ignoredUnusedDeclaredDependency>org.xmlresolver:xmlresolver:jar:${xmlresolver.version}</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>org.exist-db.thirdparty.org.eclipse.wst.xml:xpath2:jar:1.2.0</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>edu.princeton.cup:java-cup:jar:10k</ignoredUnusedDeclaredDependency>
-                                <ignoredUnusedDeclaredDependency>org.eclipse.jetty:jetty-jaas:jar:${jetty.version}</ignoredUnusedDeclaredDependency>
+                                <!-- JAAS is now in jetty-security in Jetty 12 -->
                                 <ignoredUnusedDeclaredDependency>org.eclipse.jetty:jetty-deploy:jar:${jetty.version}</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>org.eclipse.jetty:jetty-jmx:jar:${jetty.version}</ignoredUnusedDeclaredDependency>
-                                <ignoredUnusedDeclaredDependency>org.eclipse.jetty:jetty-annotations:jar:${jetty.version}</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>org.eclipse.jetty.ee10:jetty-ee10-annotations:jar:${jetty.version}</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>org.eclipse.jetty:jetty-security:jar:${jetty.version}</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>${project.groupId}:exist-jetty-config:jar:${project.version}</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>org.apache.mina:mina-core</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>org.eclipse.jetty.ee10.websocket:jetty-ee10-websocket-jakarta-client:jar:${jetty.version}</ignoredUnusedDeclaredDependency>
                             </ignoredUnusedDeclaredDependencies>
 
                             <ignoredNonTestScopedDependencies>
@@ -1192,7 +1199,7 @@ The BaseX Team. The original license statement is also included below.]]></pream
                 </dependencies>
                 <configuration>
                     <skip>${skipUnitTests}</skip>
-                    <argLine>@{jacocoArgLine} -Dfile.encoding=${project.build.sourceEncoding} -Dexist.recovery.progressbar.hide=true</argLine>
+                    <argLine>@{jacocoArgLine} --add-modules jdk.incubator.vector --enable-native-access=ALL-UNNAMED -Dfile.encoding=${project.build.sourceEncoding} -Dexist.recovery.progressbar.hide=true</argLine>
                     <systemPropertyVariables>
                         <jetty.home>${project.basedir}/../exist-jetty-config/target/classes/org/exist/jetty</jetty.home>
                         <exist.configurationFile>${project.build.testOutputDirectory}/conf.xml</exist.configurationFile>
@@ -1200,8 +1207,7 @@ The BaseX Team. The original license statement is also included below.]]></pream
                         <log4j.configurationFile>${project.build.testOutputDirectory}/log4j2.xml</log4j.configurationFile>
                     </systemPropertyVariables>
 
-                    <forkedProcessTimeoutInSeconds>600</forkedProcessTimeoutInSeconds>
-
+                    <forkedProcessTimeoutInSeconds>180</forkedProcessTimeoutInSeconds>
                     <excludes>
 
                         <!-- NOTE: these can still exhibit deadlocks
@@ -1220,16 +1226,15 @@ The BaseX Team. The original license statement is also included below.]]></pream
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <configuration>
-                    <forkedProcessTimeoutInSeconds>600</forkedProcessTimeoutInSeconds>
-                    <argLine>@{jacocoArgLine} -Dfile.encoding=${project.build.sourceEncoding} -Dexist.recovery.progressbar.hide=true</argLine>
+                    <forkedProcessTimeoutInSeconds>180</forkedProcessTimeoutInSeconds>
                     <excludes>
-
-                        <!-- NOTE: these can still exhibit deadlocks during BrokerPool initialization
-                                 see https://github.com/eXist-db/exist/issues/4140
-                                 see https://github.com/eXist-db/exist/issues/3685 -->
+                        <!-- Pre-existing deadlocks during BrokerPool initialization -->
+                        <!-- see https://github.com/eXist-db/exist/issues/4140 -->
+                        <!-- see https://github.com/eXist-db/exist/issues/3685 -->
                         <exclude>org.exist.storage.lock.DeadlockIT</exclude>
-                        <exclude>org.exist.storage.RemoveCollectionIT</exclude>
+                        <exclude>org.exist.xmldb.RemoveCollectionIT</exclude>
                     </excludes>
+                    <argLine>@{jacocoArgLine} --add-modules jdk.incubator.vector --enable-native-access=ALL-UNNAMED -Dfile.encoding=${project.build.sourceEncoding} -Dexist.recovery.progressbar.hide=true</argLine>
                     <systemPropertyVariables>
                         <jetty.home>${project.basedir}/../exist-jetty-config/target/classes/org/exist/jetty</jetty.home>
                         <exist.configurationFile>${project.build.testOutputDirectory}/conf.xml</exist.configurationFile>
