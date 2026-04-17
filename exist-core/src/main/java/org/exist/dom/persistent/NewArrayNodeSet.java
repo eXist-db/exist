@@ -792,6 +792,7 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
                 if(!reference.getNodeId().isDescendantOf(nodes[j].getNodeId())) {
                     if(position < 0 || ++n == position) {
                         if (contextId != Expression.IGNORE_CONTEXT
+                                && contextId != Expression.NO_CONTEXT_ID
                                 && nodes[j].getContext() != null
                                 && reference.getContext() != null
                                 && nodes[j].getContext().getContextId() == reference.getContext().getContextId()) {
@@ -846,6 +847,7 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
                 if(!reference.getNodeId().isDescendantOf(nodes[j].getNodeId())) {
                     if(position < 0 || ++n == position) {
                         if (contextId != Expression.IGNORE_CONTEXT
+                                && contextId != Expression.NO_CONTEXT_ID
                                 && nodes[j].getContext() != null
                                 && reference.getContext() != null
                                 && nodes[j].getContext().getContextId() == reference.getContext().getContextId()) {
