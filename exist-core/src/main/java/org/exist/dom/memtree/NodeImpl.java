@@ -311,10 +311,16 @@ public abstract class NodeImpl<T extends NodeImpl<T>> implements INode<DocumentI
             } else {
                 return Constants.SUPERIOR;
             }
-        } else if(document.docId < other.document.docId) {
-            return Constants.INFERIOR;
         } else {
-            return Constants.SUPERIOR;
+            final long thisDocId = document != null ? document.docId : 0;
+            final long otherDocId = other.document != null ? other.document.docId : 0;
+            if (thisDocId < otherDocId) {
+                return Constants.INFERIOR;
+            } else if (thisDocId > otherDocId) {
+                return Constants.SUPERIOR;
+            } else {
+                return Constants.EQUAL;
+            }
         }
     }
 
