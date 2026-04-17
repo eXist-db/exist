@@ -195,11 +195,27 @@ public class XQuery {
      * @throws XPathException if an error occurs during compilation
      * @throws PermissionDeniedException if the caller is not permitted to compile the XQuery
      */
+    /**
+     * System property to select the XQuery parser implementation.
+     * Set to "rd" to use the hand-written recursive descent parser.
+     * Default is "antlr2" (the ANTLR 2 generated parser).
+     */
+    public static final String PROPERTY_PARSER = "exist.parser";
+
+    public static boolean useRdParser() {
+        return "rd".equalsIgnoreCase(System.getProperty(PROPERTY_PARSER, "antlr2"));
+    }
+
     private CompiledXQuery compile(final XQueryContext context, final Reader reader, final boolean xpointer) throws XPathException, PermissionDeniedException {
 
         //check read permission
         if (context.getSource() instanceof DBSource) {
             ((DBSource) context.getSource()).validate(Permission.READ);
+        }
+
+        // Feature flag: use hand-written recursive descent parser if enabled
+        if (useRdParser() && !xpointer) {
+            return compileWithRdParser(context, reader);
         }
         
         
@@ -316,6 +332,60 @@ public class XQuery {
      *
      * @return true if this is a library module, false otherwise
      */
+    private CompiledXQuery compileWithRdParser(final XQueryContext context, final Reader reader)
+            throws XPathException {
+        final long start = System.currentTimeMillis();
+        try {
+            final String source = readFully(reader);
+            final org.exist.xquery.parser.next.XQueryParser rdParser =
+                    new org.exist.xquery.parser.next.XQueryParser(context, source);
+
+            final Expression rootExpr = rdParser.parse();
+
+            // Set root expression on context — required for resetState() during concurrent execution
+            context.setRootExpression(rootExpr);
+            context.getRootContext().resolveForwardReferences();
+
+            // For library modules, return LibraryModuleRoot so execute() can
+            // dispatch function calls by name (triggers, fn:load-xquery-module)
+            final PathExpr result;
+            if (rdParser.isLibraryModule()) {
+                result = new LibraryModuleRoot(context);
+                if (rootExpr instanceof PathExpr) {
+                    for (int i = 0; i < ((PathExpr) rootExpr).getLength(); i++) {
+                        result.add(((PathExpr) rootExpr).getExpression(i));
+                    }
+                }
+            } else if (rootExpr instanceof PathExpr) {
+                result = (PathExpr) rootExpr;
+            } else {
+                result = new PathExpr(context);
+                result.add(rootExpr);
+            }
+
+            context.analyzeAndOptimizeIfModulesChanged(result);
+
+            if (LOG.isDebugEnabled()) {
+                final NumberFormat nf = NumberFormat.getNumberInstance();
+                LOG.debug("Recursive descent parser compilation took {} ms", nf.format(System.currentTimeMillis() - start));
+            }
+
+            return result;
+        } catch (final IOException e) {
+            throw new XPathException(context.getRootExpression(), "Error reading query source: " + e.getMessage(), e);
+        }
+    }
+
+    private static String readFully(final Reader reader) throws IOException {
+        final StringBuilder sb = new StringBuilder(4096);
+        final char[] buf = new char[4096];
+        int n;
+        while ((n = reader.read(buf)) != -1) {
+            sb.append(buf, 0, n);
+        }
+        return sb.toString();
+    }
+
     static boolean isLibraryModule(AST ast) {
         while (ast != null) {
             if (ast.getType() == XQueryTreeParser.MODULE_DECL) {

@@ -128,17 +128,17 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
         this.relation   = relation;
         this.truncation = truncation;
 
-        if( ( left instanceof PathExpr ) && ( ( ( PathExpr )left ).getLength() == 1 ) ) {
+        if( isSimplifiablePathExpr( left ) ) {
             left                  = ( ( PathExpr )left ).getExpression( 0 );
             didLeftSimplification = true;
         }
-        add( left );
+        addOperand( left );
 
-        if( ( right instanceof PathExpr ) && ( ( ( PathExpr )right ).getLength() == 1 ) ) {
+        if( isSimplifiablePathExpr( right ) ) {
             right                  = ( ( PathExpr )right ).getExpression( 0 );
             didRightSimplification = true;
         }
-        add( right );
+        addOperand( right );
 
         //TODO : should we also use simplify() here ? -pb
         if( didLeftSimplification ) {
@@ -148,6 +148,26 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
         if( didRightSimplification ) {
             context.getProfiler().message( this, Profiler.OPTIMIZATIONS, "OPTIMIZATION", "Marked right argument as a child expression" );
         }
+    }
+
+    /**
+     * Check if an expression is a plain PathExpr container that can be safely unwrapped.
+     * Function, BinaryOp, and other PathExpr subclasses that use steps for their own
+     * purposes must NOT be unwrapped — doing so would replace the expression with its
+     * operands/arguments.
+     */
+    private static boolean isSimplifiablePathExpr( final Expression expr ) {
+        return expr instanceof PathExpr
+                && expr.getClass() == PathExpr.class
+                && ( ( PathExpr )expr ).getLength() == 1;
+    }
+
+    /**
+     * Add an operand expression using the Expression overload (not PathExpr)
+     * to prevent flattening of Function/BinaryOp subclasses of PathExpr.
+     */
+    private void addOperand( final Expression expr ) {
+        steps.add( expr );
     }
 
     /* (non-Javadoc)
@@ -1076,7 +1096,8 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
             /*
              *  d. Otherwise, a type error is raised [err:XPTY0004].
              */
-            throw new XPathException(this, ErrorCodes.XPTY0004, "Incompatible primitive types");
+            throw new XPathException(this, ErrorCodes.XPTY0004,
+                    "Incompatible primitive types: " + Type.getTypeName(thisType) + " vs " + Type.getTypeName(otherType));
         }
 
         return value;

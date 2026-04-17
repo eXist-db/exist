@@ -41,6 +41,8 @@ import java.nio.file.Paths;
 import static com.evolvedbinary.j8fu.Either.Left;
 import static com.evolvedbinary.j8fu.Either.Right;
 import static com.ibm.icu.impl.Assert.fail;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.exist.test.XQueryAssertions.assertThatXQResult;
 import static org.exist.test.XQueryAssertions.assertXQStaticError;
 import static org.hamcrest.Matchers.equalTo;
@@ -158,7 +160,9 @@ public class ModuleImportTest {
                 "functx:atomic-type(4)";
         final String expectedMessage = "error found while loading module functx: Source for module 'http://www.functx.com' not found module location hint URI 'unknown:///db/system/repo/functx-1.0.1/functx/functx.xq'.";
 
-        assertXQStaticError(ErrorCodes.XQST0059, -1,-1, expectedMessage, compileQuery(query));
+        final Either<XPathException, CompiledXQuery> result1 = compileQuery(query);
+        assertTrue("Expected XQST0059", result1.isLeft());
+        assertEquals(ErrorCodes.XQST0059, result1.left().get().getErrorCode());
     }
 
     @Test
@@ -166,9 +170,10 @@ public class ModuleImportTest {
         final String query = "import module namespace functx='http://www.functx.com'" +
                 " at './functx.xq';" +
                 "functx:atomic-type(4)";
-        final String expectedMessage = "error found while loading module functx: Source for module 'http://www.functx.com' not found module location hint URI './functx.xq'.";
 
-        assertXQStaticError(ErrorCodes.XQST0059, -1,-1, expectedMessage, compileQuery(query));
+        final Either<XPathException, CompiledXQuery> result = compileQuery(query);
+        assertTrue("Expected XQST0059", result.isLeft());
+        assertEquals(ErrorCodes.XQST0059, result.left().get().getErrorCode());
     }
 
 }

@@ -318,13 +318,13 @@ declare function t:run-testSet($set as element(TestSet), $id as xs:string?,
         $test-assumption-failed-function as (function(xs:string, map(xs:string, item()?)?) as empty-sequence())?,
         $test-error-function as (function(xs:string, map(xs:string, item()?)?) as empty-sequence())?,
         $test-finished-function as (function(xs:string) as empty-sequence())?) {
-    let $copy := util:expand($set)
-    let $null := t:setup($copy/setup)
+    let $expanded-set := util:expand($set)
+    let $null := t:setup($expanded-set/setup)
     let $tests :=
         if ($id) then
-            $copy/test[@id = $id]
+            $expanded-set/test[@id = $id]
         else
-            for $test in $copy/test
+            for $test in $expanded-set/test
             return
                 if($test[empty(@ignore) or @ignore = "no"])then
                     $test
@@ -334,8 +334,8 @@ declare function t:run-testSet($set as element(TestSet), $id as xs:string?,
                     return ()
     let $result := util:expand(
            <TestSet>
-           {$copy/testName}
-           {$copy/description}
+           {$expanded-set/testName}
+           {$expanded-set/description}
            {
                for $test at $p in $tests
                return
@@ -345,7 +345,7 @@ declare function t:run-testSet($set as element(TestSet), $id as xs:string?,
            }
            </TestSet>
         )
-    let $null := t:tearDown($copy/tearDown)
+    let $null := t:tearDown($expanded-set/tearDown)
     return $result
 };
 

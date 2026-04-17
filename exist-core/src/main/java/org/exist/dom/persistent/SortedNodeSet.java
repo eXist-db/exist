@@ -86,20 +86,28 @@ public class SortedNodeSet extends AbstractNodeSet {
         try(final DBBroker broker = pool.get(Optional.ofNullable(user))) {
 
             final XQueryContext context = new XQueryContext(pool);
-            final XQueryLexer lexer = new XQueryLexer(context, new StringReader(sortExpr));
-            final XQueryParser parser = new XQueryParser(lexer);
-            final XQueryTreeParser treeParser = new XQueryTreeParser(context);
-            parser.xpath();
-            if(parser.foundErrors()) {
-                //TODO : error ?
-                LOG.debug(parser.getErrorMessage());
-            }
-            final AST ast = parser.getAST();
-            LOG.debug("generated AST: {}", ast.toStringTree());
-            final PathExpr expr = new PathExpr(context);
-            treeParser.xpath(ast, expr);
-            if(treeParser.foundErrors()) {
-                LOG.debug(treeParser.getErrorMessage());
+            final PathExpr expr;
+            if (org.exist.xquery.XQuery.useRdParser()) {
+                final org.exist.xquery.parser.next.XQueryParser rdParser =
+                        new org.exist.xquery.parser.next.XQueryParser(context, sortExpr);
+                final Expression rootExpr = rdParser.parse();
+                expr = rootExpr instanceof PathExpr ? (PathExpr) rootExpr : new PathExpr(context);
+                if (!(rootExpr instanceof PathExpr)) { expr.add(rootExpr); }
+            } else {
+                expr = new PathExpr(context);
+                final XQueryLexer lexer = new XQueryLexer(context, new StringReader(sortExpr));
+                final XQueryParser parser = new XQueryParser(lexer);
+                final XQueryTreeParser treeParser = new XQueryTreeParser(context);
+                parser.xpath();
+                if (parser.foundErrors()) {
+                    LOG.debug(parser.getErrorMessage());
+                }
+                final AST ast = parser.getAST();
+                LOG.debug("generated AST: {}", ast.toStringTree());
+                treeParser.xpath(ast, expr);
+                if (treeParser.foundErrors()) {
+                    LOG.debug(treeParser.getErrorMessage());
+                }
             }
             expr.analyze(new AnalyzeContextInfo());
             for(final SequenceIterator i = other.iterate(); i.hasNext(); ) {
