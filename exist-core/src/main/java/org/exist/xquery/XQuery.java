@@ -45,6 +45,7 @@ import org.exist.source.FileSource;
 import org.exist.source.Source;
 import org.exist.source.StringSource;
 import org.exist.storage.DBBroker;
+import org.exist.util.LockException;
 import org.exist.xquery.parser.XQueryLexer;
 import org.exist.xquery.parser.XQueryParser;
 import org.exist.xquery.parser.XQueryTreeParser;
@@ -451,7 +452,10 @@ public class XQuery {
         
         //do any preparation before execution
         context.prepareForExecution();
-        
+
+        // BaseX-style preclaiming: collect lock targets from compiled expression tree
+        context.collectLockTargets(context.getRootExpression());
+
         final Subject callingUser = broker.getCurrentSubject();
 
         //if setUid or setGid, become Effective User
@@ -481,6 +485,15 @@ public class XQuery {
             
             context.getProfiler().traceQueryStart();
             broker.getBrokerPool().getProcessMonitor().queryStarted(context.getWatchDog());
+
+            // Preclaim locks before evaluation if lock targets were collected
+            if (context.hasPreclaimTargets()) {
+                try {
+                    context.preclaimLocks();
+                } catch (final LockException e) {
+                    throw new XPathException((Expression) null, ErrorCodes.ERROR, "Failed to preclaim locks: " + e.getMessage(), e);
+                }
+            }
 
             FunctionCall call = null;
             try {
@@ -539,6 +552,11 @@ public class XQuery {
 
                 return result;
             } finally {
+                // Release preclaimed locks after PUL has been applied
+                if (context.hasPreclaimedLocks()) {
+                    context.releasePreclaimedLocks();
+                }
+
                 context.getProfiler().traceQueryEnd(context);
                 // track query stats before context is reset
                 broker.getBrokerPool().getProcessMonitor().queryCompleted(context.getWatchDog());

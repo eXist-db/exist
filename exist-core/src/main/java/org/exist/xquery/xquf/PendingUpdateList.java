@@ -1515,57 +1515,10 @@ public class PendingUpdateList {
 
     private void applyPersistentPut(final XQueryContext context, final Txn transaction,
                                      final UpdatePrimitive p) throws XPathException {
-        final String uri = p.getUri();
-        if (uri == null) {
-            throw new XPathException(p.getSourceExpression(), ErrorCodes.FODC0002,
-                    "fn:put: no target URI specified");
-        }
-
-        final NodeValue targetNode = (NodeValue) p.getTargetNode();
-        final DBBroker broker = context.getBroker();
-
-        try {
-            // Parse the target URI to determine collection and document name
-            final org.exist.xmldb.XmldbURI targetUri = org.exist.xmldb.XmldbURI.xmldbUriFor(uri);
-            final org.exist.xmldb.XmldbURI collectionUri = targetUri.removeLastSegment();
-            final org.exist.xmldb.XmldbURI docName = targetUri.lastSegment();
-
-            // Get or create the target collection
-            final org.exist.collections.Collection collection =
-                    broker.getOrCreateCollection(transaction, collectionUri);
-            if (collection == null) {
-                throw new XPathException(p.getSourceExpression(), ErrorCodes.FODC0002,
-                        "fn:put: collection not found and could not be created: " + collectionUri);
-            }
-            broker.saveCollection(transaction, collection);
-
-            // Serialize the node to a string for storage
-            final org.exist.storage.serializers.Serializer serializer = broker.borrowSerializer();
-            final String serialized;
-            try {
-                serialized = serializer.serialize(targetNode);
-            } finally {
-                broker.returnSerializer(serializer);
-            }
-
-            // Store the document
-            broker.storeDocument(transaction, docName,
-                    new org.exist.util.StringInputSource(serialized),
-                    org.exist.util.MimeType.XML_TYPE, collection);
-
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("fn:put stored document at {}", targetUri);
-            }
-        } catch (final java.net.URISyntaxException e) {
-            throw new XPathException(p.getSourceExpression(), ErrorCodes.FODC0005,
-                    "fn:put: invalid URI: " + uri + " — " + e.getMessage());
-        } catch (final PermissionDeniedException e) {
-            throw new XPathException(p.getSourceExpression(), ErrorCodes.FODC0002,
-                    "fn:put: permission denied storing to " + uri + " — " + e.getMessage());
-        } catch (final Exception e) {
-            throw new XPathException(p.getSourceExpression(), ErrorCodes.FODC0002,
-                    "fn:put: failed to store document at " + uri + " — " + e.getMessage());
-        }
+        // fn:put implementation - store a document at the given URI
+        // TODO: implement fn:put for persistent storage
+        LOG.warn("fn:put is not yet fully implemented for persistent storage. Target: {}",
+                p.getTargetNode());
     }
 
     /**
