@@ -338,7 +338,7 @@
         <xs:attribute name="at" type="xs:anyURI" use="required" form="unqualified"/>
     </xs:attributeGroup>
     <xs:attributeGroup name="attributeReq">
-        <xs:attribute name="attribute" type="xs:NCName" use="required"/>
+        <xs:attribute name="attribute" type="xs:string" use="required"/>
     </xs:attributeGroup>
     <xs:attributeGroup name="binaryOpt">
         <xs:attribute name="binary" use="optional">

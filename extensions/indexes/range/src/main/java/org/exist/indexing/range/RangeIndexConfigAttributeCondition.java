@@ -37,6 +37,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 import javax.xml.XMLConstants;
+import java.util.Map;
 import java.util.function.BiPredicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -63,7 +64,7 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
     private String lowercaseValue = null;
     private Pattern pattern = null;
 
-    public RangeIndexConfigAttributeCondition(final Element elem, final NodePath parentPath) throws DatabaseConfigurationException {
+    public RangeIndexConfigAttributeCondition(final Element elem, final NodePath parentPath, final Map<String, String> namespaces) throws DatabaseConfigurationException {
 
         if (parentPath.getLastComponent().getNameType() == ElementValue.ATTRIBUTE) {
             throw new DatabaseConfigurationException(
@@ -76,10 +77,20 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
         }
 
         try {
-            attribute = new QName(QName.extractLocalName(attributeName), XMLConstants.NULL_NS_URI,
-                    QName.extractPrefix(attributeName), ElementValue.ATTRIBUTE);
+            final String prefix = QName.extractPrefix(attributeName);
+            final String localName = QName.extractLocalName(attributeName);
+            String namespaceURI = XMLConstants.NULL_NS_URI;
+            if (prefix != null) {
+                namespaceURI = namespaces.get(prefix);
+                if (namespaceURI == null) {
+                    throw new DatabaseConfigurationException(
+                            "Range index module: No namespace defined for prefix: " + prefix +
+                                    " in condition attribute '" + attributeName + "'");
+                }
+            }
+            attribute = new QName(localName, namespaceURI, prefix, ElementValue.ATTRIBUTE);
         } catch (final QName.IllegalQNameException e) {
-            throw new DatabaseConfigurationException("Rand index module error: " + e.getMessage(), e);
+            throw new DatabaseConfigurationException("Range index module error: " + e.getMessage(), e);
         }
         value = elem.getAttribute("value");
 
@@ -139,8 +150,18 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
 
     @Override
     public boolean matches(final Node node) {
-        return node.getNodeType() == Node.ELEMENT_NODE
-                && matchValue(((Element) node).getAttribute(attributeName));
+        if (node.getNodeType() != Node.ELEMENT_NODE) {
+            return false;
+        }
+        final Element element = (Element) node;
+        final String ns = attribute.getNamespaceURI();
+        final String testValue;
+        if (XMLConstants.NULL_NS_URI.equals(ns)) {
+            testValue = element.getAttribute(attribute.getLocalPart());
+        } else {
+            testValue = element.getAttributeNS(ns, attribute.getLocalPart());
+        }
+        return matchValue(testValue);
     }
 
     private boolean matchValue(final String testValue) {
