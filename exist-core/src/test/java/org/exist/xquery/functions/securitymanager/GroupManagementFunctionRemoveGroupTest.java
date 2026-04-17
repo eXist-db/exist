@@ -315,8 +315,8 @@ public class GroupManagementFunctionRemoveGroupTest {
         try {
             runnable.run();
         } catch (final XPathException e) {
-            if (e.getCause() instanceof PermissionDeniedException) {
-                throw (PermissionDeniedException)e.getCause();
+            if (e.getCause() instanceof PermissionDeniedException permissionDeniedException) {
+throw permissionDeniedException.getCause();
             } else {
                 throw e;
             }

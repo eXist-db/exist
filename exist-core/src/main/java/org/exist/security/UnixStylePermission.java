@@ -433,6 +433,7 @@ public class UnixStylePermission extends AbstractUnixStylePermission implements 
                 return (mode & ((vector >>> 4) & 7)) == mode;
             }
         }
+        //check other
         return (mode & (vector & 7)) == mode;
     }
 
