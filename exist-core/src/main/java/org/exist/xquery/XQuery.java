@@ -451,6 +451,13 @@ public class XQuery {
                     result = expression.eval(contextSequence, null);
                 }
 
+                // W3C XQuery Update Facility 3.0: apply Pending Update List at snapshot boundary
+                final org.exist.xquery.xquf.PendingUpdateList pul = context.getPendingUpdateList();
+                if (!pul.isEmpty()) {
+                    pul.apply(context);
+                    pul.clear();
+                }
+
                 if(LOG.isDebugEnabled()) {
                     final NumberFormat nf = NumberFormat.getNumberInstance();
                     LOG.debug("Execution took {} ms", nf.format(System.currentTimeMillis() - start));
