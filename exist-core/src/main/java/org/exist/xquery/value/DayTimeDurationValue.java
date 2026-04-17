@@ -186,7 +186,7 @@ public class DayTimeDurationValue extends OrderedDurationValue {
 		try {
 			return super.plus(other);
 		} catch (IllegalArgumentException e) {
-				throw new XPathException(getExpression(), "Operand to plus should be of type xdt:dayTimeDuration, xs:time, " +
+				throw new XPathException(getExpression(), ErrorCodes.XPTY0004, "Operand to plus should be of type xdt:dayTimeDuration, xs:time, " +
 					"xs:date or xs:dateTime; got: " +
 					Type.getTypeName(other.getType()));
 		}

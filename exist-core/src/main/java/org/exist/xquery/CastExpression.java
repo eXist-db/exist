@@ -84,12 +84,13 @@ public class CastExpression extends AbstractExpression {
             }
         }
 
-        // Should be handled by the parser
-        if (requiredType == Type.ANY_ATOMIC_TYPE || (requiredType == Type.NOTATION && expression.returnsType() != Type.NOTATION)) {
+        // XPST0080: cannot cast to abstract or special types
+        if (requiredType == Type.ANY_ATOMIC_TYPE || requiredType == Type.ANY_SIMPLE_TYPE
+                || (requiredType == Type.NOTATION && expression.returnsType() != Type.NOTATION)) {
             throw new XPathException(this, ErrorCodes.XPST0080, "cannot cast to " + Type.getTypeName(requiredType));
         }
 
-        if (requiredType == Type.ANY_SIMPLE_TYPE || expression.returnsType() == Type.ANY_SIMPLE_TYPE || requiredType == Type.UNTYPED || expression.returnsType() == Type.UNTYPED) {
+        if (expression.returnsType() == Type.ANY_SIMPLE_TYPE || requiredType == Type.UNTYPED || expression.returnsType() == Type.UNTYPED) {
             throw new XPathException(this, ErrorCodes.XPST0051, "cannot cast to " + Type.getTypeName(requiredType));
         }
 
@@ -117,6 +118,13 @@ public class CastExpression extends AbstractExpression {
                     throw new XPathException(this, ErrorCodes.XPTY0004, "Cannot cast " + Type.getTypeName(item.getType()) + " to xs:QName");
                 }
             } else {
+                // Per XPath F&O 3.1, Section 19: if the source and target types
+                // have no valid casting relationship, raise XPTY0004 (not FORG0001).
+                if (!Type.isCastable(item.getType(), requiredType)) {
+                    throw new XPathException(this, ErrorCodes.XPTY0004,
+                            "Cannot cast " + Type.getTypeName(item.getType()) +
+                            " to " + Type.getTypeName(requiredType));
+                }
                 result = item.convertTo(requiredType);
             }
         }

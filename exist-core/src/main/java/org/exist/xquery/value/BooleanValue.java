@@ -89,7 +89,11 @@ public class BooleanValue extends AtomicValue {
             case Type.UNTYPED_ATOMIC:
                 return new UntypedAtomicValue(getExpression(), getStringValue());
             default:
-                throw new XPathException(getExpression(), ErrorCodes.XPTY0004,
+                // Handle integer subtypes (nonPositiveInteger, negativeInteger, etc.)
+                if (Type.subTypeOf(requiredType, Type.INTEGER)) {
+                    return new IntegerValue(getExpression(), value ? 1 : 0).convertTo(requiredType);
+                }
+                throw new XPathException(getExpression(), ErrorCodes.FORG0001,
                         "cannot convert 'xs:boolean(" + value + ")' to " + Type.getTypeName(requiredType));
         }
     }

@@ -64,7 +64,7 @@ public class JSON extends BasicFunction {
                 ),
                 arity(
                         FS_PARAM_JSON_TEXT,
-                        param("options", Type.MAP_ITEM, "Parsing options")
+                        optParam("options", Type.MAP_ITEM, "Parsing options")
                 )
             )
     );
@@ -222,22 +222,92 @@ public class JSON extends BasicFunction {
         }
         try {
             String url = href.getStringValue();
-            if (url.indexOf(':') == Constants.STRING_NOT_FOUND) {
-                url = XmldbURI.EMBEDDED_SERVER_URI_PREFIX + url;
+
+            // Check dynamically available text resources first (XQTS runner registers these)
+            try (final java.io.Reader dynReader = context.getDynamicallyAvailableTextResource(
+                    url, java.nio.charset.StandardCharsets.UTF_8)) {
+                if (dynReader != null) {
+                    final StringBuilder sb = new StringBuilder();
+                    final char[] buf = new char[4096];
+                    int read;
+                    while ((read = dynReader.read(buf)) > 0) {
+                        sb.append(buf, 0, read);
+                    }
+                    try (final JsonParser parser = factory.createParser(sb.toString())) {
+                        final Item result = readValue(context, parser, handleDuplicates);
+                        return result == null ? Sequence.EMPTY_SEQUENCE : result.toSequence();
+                    } catch (final java.io.IOException jsonErr) {
+                        throw new XPathException(this, ErrorCodes.FOJS0001, jsonErr.getMessage());
+                    }
+                }
+            } catch (final java.io.IOException e) {
+                // Not a dynamic resource, fall through to URL resolution
             }
+            boolean resolvedFromBaseUri = false;
+            if (url.indexOf(':') == Constants.STRING_NOT_FOUND) {
+                // Relative URI: resolve against static base URI
+                final String resolved = resolveAgainstBaseUri(url);
+                if (resolved != null && resolved.startsWith("file:")) {
+                    url = resolved;
+                    resolvedFromBaseUri = true;
+                } else {
+                    url = XmldbURI.EMBEDDED_SERVER_URI_PREFIX + url;
+                }
+            }
+            // Only use direct file: access for URIs resolved from a relative path.
+            // Absolute file: URIs go through SourceFactory for security.
+            if (resolvedFromBaseUri && url.startsWith("file:")) {
+                // Extract path from file: URI: file:/path, file://host/path, file:///path
+                final String filePath = url.replaceFirst("^file:(?://[^/]*)?", "");
+                final java.nio.file.Path path = java.nio.file.Paths.get(filePath);
+                if (java.nio.file.Files.isReadable(path)) {
+                    try (final InputStream is = java.nio.file.Files.newInputStream(path)) {
+                        try (final JsonParser parser = factory.createParser(is)) {
+                            final Item result = readValue(context, parser, handleDuplicates);
+                            return result == null ? Sequence.EMPTY_SEQUENCE : result.toSequence();
+                        } catch (final IOException jsonErr) {
+                            // JSON parsing error, not file I/O
+                            throw new XPathException(this, ErrorCodes.FOJS0001, jsonErr.getMessage());
+                        }
+                    }
+                }
+                throw new XPathException(this, ErrorCodes.FOUT1170, "failed to load json doc from file: " + filePath);
+            }
+
             final Source source = SourceFactory.getSource(context.getBroker(), "", url, false);
             if (source == null) {
                 throw new XPathException(this, ErrorCodes.FOUT1170, "failed to load json doc from URI " + url);
             }
-            try (final InputStream is = source.getInputStream();
-                 final JsonParser parser = factory.createParser(is)) {
-
-                final Item result = readValue(context, parser, handleDuplicates);
-                return result == null ? Sequence.EMPTY_SEQUENCE : result.toSequence();
+            try (final InputStream is = source.getInputStream()) {
+                try (final JsonParser parser = factory.createParser(is)) {
+                    final Item result = readValue(context, parser, handleDuplicates);
+                    return result == null ? Sequence.EMPTY_SEQUENCE : result.toSequence();
+                } catch (final IOException jsonErr) {
+                    throw new XPathException(this, ErrorCodes.FOJS0001, jsonErr.getMessage());
+                }
             }
         } catch (IOException | PermissionDeniedException e) {
             throw new XPathException(this, ErrorCodes.FOUT1170, e.getMessage());
         }
+    }
+
+    private String resolveAgainstBaseUri(final String relativePath) {
+        try {
+            final AnyURIValue baseXdmUri = context.getBaseURI();
+            if (baseXdmUri != null && !baseXdmUri.equals(AnyURIValue.EMPTY_URI)) {
+                String baseStr = baseXdmUri.toURI().toString();
+                // Strip filename to get directory URI
+                final int lastSlash = baseStr.lastIndexOf('/');
+                if (lastSlash >= 0) {
+                    baseStr = baseStr.substring(0, lastSlash + 1);
+                }
+                final java.net.URI baseUri = new java.net.URI(baseStr);
+                return baseUri.resolve(relativePath).toString();
+            }
+        } catch (final java.net.URISyntaxException | XPathException e) {
+            // fall through
+        }
+        return null;
     }
 
     /**
