@@ -4098,7 +4098,6 @@ options {
 		$setType(XML_COMMENT);
 	}
 	|
-	{ !inStringConstructor }?
 	( XML_PI_START )
 	=> XML_PI { $setType(XML_PI); }
 	|
