@@ -31,6 +31,9 @@
   <!-- Package Management API (built-in, no XAR dependency) -->
   <forward pattern="/api/packages" servlet="PackageManagementServlet"/>
 
+  <!-- OpenAPI routing for apps using controller.json (PoC: /openapi/ prefix) -->
+  <forward pattern="/openapi/" servlet="OpenApiServlet"/>
+
   <!-- The JMX status servlet used to monitor the db -->
   <forward pattern="/status" servlet="JMXServlet"/>
   
