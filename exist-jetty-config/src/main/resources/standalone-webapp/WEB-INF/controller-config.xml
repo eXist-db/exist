@@ -19,6 +19,9 @@
     <!-- RESTXQ -->
     <forward pattern="/restxq/" servlet="RestXqServlet"/>
 
+    <!-- Package Management API (built-in, no XAR dependency) -->
+    <forward pattern="/api/packages" servlet="PackageManagementServlet"/>
+
     <!--
         ++ Main web application is served from the
         ++ database. URLs starting with /db are handled

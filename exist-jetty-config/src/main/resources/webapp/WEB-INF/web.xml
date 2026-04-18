@@ -180,6 +180,24 @@
     </servlet>
 
     <!--
+        PackageManagementServlet provides a built-in REST API for package
+        management that does not depend on any XAR package.
+    -->
+    <servlet>
+        <servlet-name>PackageManagementServlet</servlet-name>
+        <servlet-class>org.exist.http.servlets.PackageManagementServlet</servlet-class>
+        <init-param>
+            <param-name>use-default-user</param-name>
+            <param-value>false</param-value>
+        </init-param>
+        <multipart-config>
+            <max-file-size>268435456</max-file-size>
+            <max-request-size>268435456</max-request-size>
+        </multipart-config>
+        <load-on-startup>3</load-on-startup>
+    </servlet>
+
+    <!--
         XQueryServlet generates HTML from an XQuery file.
     -->
     <servlet>
