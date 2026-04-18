@@ -198,6 +198,20 @@
     </servlet>
 
     <!--
+        OpenApiServlet provides built-in OpenAPI routing for apps that
+        use controller.json instead of controller.xql.
+    -->
+    <servlet>
+        <servlet-name>OpenApiServlet</servlet-name>
+        <servlet-class>org.exist.http.openapi.OpenApiServlet</servlet-class>
+        <init-param>
+            <param-name>use-default-user</param-name>
+            <param-value>false</param-value>
+        </init-param>
+        <load-on-startup>3</load-on-startup>
+    </servlet>
+
+    <!--
         XQueryServlet generates HTML from an XQuery file.
     -->
     <servlet>
