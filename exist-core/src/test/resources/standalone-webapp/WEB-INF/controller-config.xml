@@ -26,6 +26,7 @@
     <forward pattern="/rest" servlet="EXistServlet"/>
 	<forward pattern="/xmlrpc" servlet="org.exist.xmlrpc.RpcServlet"/>
     <forward pattern=".*bfResources/" servlet="ResourceServlet"/>
+    <forward pattern="/api/packages" servlet="PackageManagementServlet"/>
 
     <root pattern="/db.*" path="xmldb:exist:///db"/>
     <root pattern=".*" path="xmldb:exist:///db/apps"/>
