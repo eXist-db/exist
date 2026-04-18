@@ -18,6 +18,9 @@
     
     <!-- RESTXQ -->
     <forward pattern="/restxq/" servlet="RestXqServlet"/>
+
+    <!-- Package Management API (built-in, no XAR dependency) -->
+    <forward pattern="/api/packages" servlet="PackageManagementServlet"/>
     
     <!-- betterFORM resource-servlet -->
     <forward pattern=".*bfResources/" servlet="ResourceServlet"/>
