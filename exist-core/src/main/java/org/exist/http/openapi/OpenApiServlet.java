@@ -269,30 +269,36 @@ public class OpenApiServlet extends AbstractExistHttpServlet {
             return;
         }
 
-        // Check if the result is a response map (with $code, $body, etc.)
+        // Check if the result is a Roaster-style response map (with "code" and/or "body" keys)
         if (result.getItemCount() == 1 && result.itemAt(0).getType() == Type.MAP_ITEM) {
             try {
                 final MapType responseMap = (MapType) result.itemAt(0);
-                serializeResponseMap(broker, response, responseMap, outputProperties);
-                return;
+                // Only treat as response map if it has "code" or "body" keys
+                final Sequence codeSeq = responseMap.get(new StringValue("code"));
+                final Sequence bodySeq = responseMap.get(new StringValue("body"));
+                if ((codeSeq != null && !codeSeq.isEmpty()) || (bodySeq != null && !bodySeq.isEmpty())) {
+                    serializeResponseMap(broker, response, responseMap, outputProperties);
+                    return;
+                }
             } catch (final XPathException e) {
                 LOG.debug("Failed to interpret result as response map, falling back to default serialization", e);
             }
         }
 
-        // Default: serialize as JSON
+        // Default: serialize as JSON using the adaptive/JSON serializer
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
         response.setStatus(HttpServletResponse.SC_OK);
+
+        outputProperties.setProperty("method", "json");
+        outputProperties.setProperty("media-type", "application/json");
 
         try (final OutputStream os = response.getOutputStream();
              final OutputStreamWriter writer = new OutputStreamWriter(os, StandardCharsets.UTF_8);
              final PrintWriter pw = new PrintWriter(writer)) {
             final XQuerySerializer serializer = new XQuerySerializer(broker, outputProperties, pw);
-            // Set JSON output method
-            outputProperties.setProperty("method", "json");
-            outputProperties.setProperty("media-type", "application/json");
             serializer.serialize(result);
+            pw.flush();
         } catch (final Exception e) {
             LOG.error("Failed to serialize result", e);
             writeJsonError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Serialization error: " + e.getMessage());
