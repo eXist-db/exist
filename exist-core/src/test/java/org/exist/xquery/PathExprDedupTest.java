@@ -59,10 +59,10 @@ public class PathExprDedupTest {
      */
     @Test
     public void functionCallInPathDedup() throws XMLDBException {
-        final String result = query(
-                "declare variable $root := <root><c/></root>;\n" +
-                "declare function local:function($arg) { $root[$arg] };\n" +
-                "count($root/descendant-or-self::node()/local:function(.))");
+        final String result = query("""
+                declare variable $root := <root><c/></root>;
+                declare function local:function($arg) { $root[$arg] };
+                count($root/descendant-or-self::node()/local:function(.))""");
         assertEquals("1", result);
     }
 
@@ -71,10 +71,10 @@ public class PathExprDedupTest {
      */
     @Test
     public void functionReturnsConstantNodeDedup() throws XMLDBException {
-        final String result = query(
-                "declare variable $root := <root><a/><b/></root>;\n" +
-                "declare function local:getroot($x) { $root };\n" +
-                "count($root/*/local:getroot(.))");
+        final String result = query("""
+                declare variable $root := <root><a/><b/></root>;
+                declare function local:getroot($x) { $root };
+                count($root/*/local:getroot(.))""");
         assertEquals("1", result);
     }
 
@@ -84,9 +84,9 @@ public class PathExprDedupTest {
      */
     @Test
     public void forLoopPreservesDuplicates() throws XMLDBException {
-        final String result = query(
-                "declare variable $root := <root/>;\n" +
-                "count(for $x in (1, 2, 3) return $root)");
+        final String result = query("""
+                declare variable $root := <root/>;
+                count(for $x in (1, 2, 3) return $root)""");
         assertEquals("3", result);
     }
 
@@ -95,9 +95,9 @@ public class PathExprDedupTest {
      */
     @Test
     public void globalVarForLoopPreservesDuplicates() throws XMLDBException {
-        final String result = query(
-                "declare variable $data := <item/>;\n" +
-                "count(for $i in 1 to 5 return $data)");
+        final String result = query("""
+                declare variable $data := <item/>;
+                count(for $i in 1 to 5 return $data)""");
         assertEquals("5", result);
     }
 
@@ -108,9 +108,9 @@ public class PathExprDedupTest {
     @Test
     public void pathEndingWithIntegerLiteral() throws XMLDBException {
         final XQueryService xqs = existEmbeddedServer.getRoot().getService(XQueryService.class);
-        final ResourceSet result = xqs.query(
-                "declare variable $myVar := <e/>;\n" +
-                "$myVar/(<a/>, <b/>, <?d ?>, <!-- e-->, attribute name {}, document {()})/3");
+        final ResourceSet result = xqs.query("""
+                declare variable $myVar := <e/>;
+                $myVar/(<a/>, <b/>, <?d ?>, <!-- e-->, attribute name {}, document {()})/3""");
         assertEquals(6, (int) result.getSize());
         for (int i = 0; i < 6; i++) {
             assertEquals("3", result.getResource(i).getContent().toString());
@@ -124,9 +124,9 @@ public class PathExprDedupTest {
     @Test
     public void pathEndingWithNumberFunction() throws XMLDBException {
         final XQueryService xqs = existEmbeddedServer.getRoot().getService(XQueryService.class);
-        final ResourceSet result = xqs.query(
-                "declare variable $myVar := <e/>;\n" +
-                "$myVar/(<a/>, <b/>, <?d ?>, <!-- e-->, attribute name {}, document {()})/number()");
+        final ResourceSet result = xqs.query("""
+                declare variable $myVar := <e/>;
+                $myVar/(<a/>, <b/>, <?d ?>, <!-- e-->, attribute name {}, document {()})/number()""");
         assertEquals(6, (int) result.getSize());
         for (int i = 0; i < 6; i++) {
             assertEquals("NaN", result.getResource(i).getContent().toString());
@@ -138,10 +138,10 @@ public class PathExprDedupTest {
      */
     @Test
     public void axisStepThenFunctionCallDedup() throws XMLDBException {
-        final String result = query(
-                "declare variable $doc := <doc><a/><b/><c/></doc>;\n" +
-                "declare function local:parent($n) { $n/.. };\n" +
-                "count($doc/*/local:parent(.))");
+        final String result = query("""
+                declare variable $doc := <doc><a/><b/><c/></doc>;
+                declare function local:parent($n) { $n/.. };
+                count($doc/*/local:parent(.))""");
         assertEquals("1", result);
     }
 }
