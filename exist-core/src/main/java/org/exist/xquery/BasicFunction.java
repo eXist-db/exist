@@ -97,8 +97,8 @@ public abstract class BasicFunction extends Function {
 
     /**
      * Validates that each argument is compatible with the declared parameter type
-     * of a function reference. Useful for any built-in function that accepts
-     * callback functions (higher-order functions).
+     * of a function reference. Useful for any function that accepts
+     * callback functions (higher-order functions), whether built-in or user-defined.
      *
      * @param caller the calling expression (for error reporting)
      * @param ref    the function reference whose parameter types to check against
@@ -112,13 +112,20 @@ public abstract class BasicFunction extends Function {
         }
         for (int i = 0; i < args.length && i < paramTypes.length; i++) {
             final SequenceType expected = paramTypes[i];
-            final int expectedType = expected.getPrimaryType();
-            // Skip check if the declared type is item() — accepts anything
-            if (expectedType == Type.ITEM) {
+            final Sequence arg = args[i];
+            // Check cardinality: reject empty sequence if at least one item is required
+            if (arg.isEmpty()) {
+                if (!Cardinality.allowsZero(expected.getCardinality())) {
+                    throw new XPathException(caller, ErrorCodes.XPTY0004,
+                            "Invalid cardinality for parameter " + (i + 1) + " of higher-order function call. " +
+                                    "Expected " + expected.toString() +
+                                    ", got empty sequence");
+                }
                 continue;
             }
-            final Sequence arg = args[i];
-            if (arg.isEmpty()) {
+            final int expectedType = expected.getPrimaryType();
+            // Skip type check if the declared type is item() — accepts anything
+            if (expectedType == Type.ITEM) {
                 continue;
             }
             if (!expected.checkType(arg)) {
