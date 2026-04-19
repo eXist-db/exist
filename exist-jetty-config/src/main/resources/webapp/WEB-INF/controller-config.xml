@@ -28,6 +28,9 @@
   <forward pattern="/images" servlet="ScaleImageJAI"/>
   -->
   
+  <!-- Package Management API (built-in, no XAR dependency) -->
+  <forward pattern="/api/packages" servlet="PackageManagementServlet"/>
+
   <!-- The JMX status servlet used to monitor the db -->
   <forward pattern="/status" servlet="JMXServlet"/>
   
