@@ -1004,9 +1004,7 @@
             <module uri="http://exist-db.org/xquery/ngram"  class="org.exist.xquery.modules.ngram.NGramModule"/>
             <module uri="http://exist-db.org/xquery/range"  class="org.exist.xquery.modules.range.RangeIndexModule"/>
             <module uri="http://exist-db.org/xquery/sort"   class="org.exist.xquery.modules.sort.SortModule"/>
-            <!--
             <module uri="http://exist-db.org/xquery/vector" class="org.exist.xquery.modules.vector.VectorModule"/>
-            -->
             <!--
             <module uri="http://exist-db.org/xquery/spatial" class="org.exist.xquery.modules.spatial.SpatialModule"/>
             -->
@@ -1173,9 +1171,7 @@
     omits model-path, the registry supplies path and dimension. Add models here
     to use custom or additional embedding models; they appear in vector:models().
     -->
-    <!--
     <vector-models>
         <model id="all-MiniLM-L6-v2" path="onnx-models/all-MiniLM-L6-v2" dimension="384"/>
     </vector-models>
-    -->
 </exist>
