@@ -75,22 +75,7 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
             throw new DatabaseConfigurationException("Range index module: Empty or no attribute qname in condition");
         }
 
-        try {
-            final String prefix = QName.extractPrefix(attributeName);
-            final String localName = QName.extractLocalName(attributeName);
-            String namespaceURI = XMLConstants.NULL_NS_URI;
-            if (prefix != null) {
-                namespaceURI = namespaces.get(prefix);
-                if (namespaceURI == null) {
-                    throw new DatabaseConfigurationException(
-                            "Range index module: No namespace defined for prefix: " + prefix +
-                                    " in condition attribute '" + attributeName + "'");
-                }
-            }
-            attribute = new QName(localName, namespaceURI, prefix, ElementValue.ATTRIBUTE);
-        } catch (final QName.IllegalQNameException e) {
-            throw new DatabaseConfigurationException("Range index module error: " + e.getMessage(), e);
-        }
+        attribute = resolveAttributeQName(attributeName, namespaces);
         value = elem.getAttribute("value");
 
         // parse operator (default to 'eq' if missing)
@@ -141,6 +126,25 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
             }
         }
 
+    }
+
+    private static QName resolveAttributeQName(final String attributeName, final Map<String, String> namespaces) throws DatabaseConfigurationException {
+        try {
+            final String prefix = QName.extractPrefix(attributeName);
+            final String localName = QName.extractLocalName(attributeName);
+            String namespaceURI = XMLConstants.NULL_NS_URI;
+            if (prefix != null) {
+                namespaceURI = namespaces.get(prefix);
+                if (namespaceURI == null) {
+                    throw new DatabaseConfigurationException(
+                            "Range index module: No namespace defined for prefix: " + prefix +
+                                    " in condition attribute '" + attributeName + "'");
+                }
+            }
+            return new QName(localName, namespaceURI, prefix, ElementValue.ATTRIBUTE);
+        } catch (final QName.IllegalQNameException e) {
+            throw new DatabaseConfigurationException("Range index module error: " + e.getMessage(), e);
+        }
     }
 
     // lazily evaluate lowercase value to convert once when needed
