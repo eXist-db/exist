@@ -1,0 +1,15 @@
+{
+  "version": "1.0",
+  "apis": [
+    {
+      "spec": "modules/api.json",
+      "priority": "1"
+    }
+  ],
+  "routes": {
+    "/": { "redirect": "index.html" }
+  },
+  "cors": {
+    "allow-origin": "*"
+  }
+}

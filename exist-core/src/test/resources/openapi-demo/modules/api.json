@@ -1,0 +1,58 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "OpenAPI Demo",
+    "version": "1.0.0",
+    "description": "Minimal demo of eXist-db's built-in OpenAPI routing — no Roaster, no controller.xql"
+  },
+  "paths": {
+    "/api/hello": {
+      "get": {
+        "summary": "Say hello",
+        "operationId": "hello:greet",
+        "responses": {
+          "200": {
+            "description": "Greeting message"
+          }
+        }
+      }
+    },
+    "/api/hello/{name}": {
+      "get": {
+        "summary": "Say hello to someone",
+        "operationId": "hello:greet-name",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Personalized greeting"
+          }
+        }
+      }
+    },
+    "/api/echo": {
+      "post": {
+        "summary": "Echo back the request body",
+        "operationId": "hello:echo",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "type": "object" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Echoed request"
+          }
+        }
+      }
+    }
+  }
+}
