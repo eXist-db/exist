@@ -53,6 +53,8 @@ public class ZipFileFunctions extends BasicFunction {
     private static final Logger logger = LogManager.getLogger(ZipFileFunctions.class);
 
     private final static FunctionParameterSequenceType HREF_PARAM =  new FunctionParameterSequenceType("href", Type.ANY_URI, Cardinality.EXACTLY_ONE, "The URI for locating the Zip file");
+    private final static FunctionParameterSequenceType ENTRY_PARAM = new FunctionParameterSequenceType("entry", Type.ELEMENT, Cardinality.EXACTLY_ONE, "A zip:entry element describing the contents of the file");
+
     private final static String FILE_ENTRIES = "entries";
     private final static String ZIP_FILE = "zip-file";
     private final static String UPDATE_ENTRIES = "update";

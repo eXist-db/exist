@@ -115,7 +115,7 @@ public class EXistElement implements Element {
             }
             return new EXistSequence(valueSequence, context);
         } catch(final XPathException xpe) {
-            throw new IllegalStateException("Failed to build content sequence", xpe);
+            throw new RuntimeException(xpe.getMessage(), xpe);
         }
     }
 
@@ -153,11 +153,13 @@ public class EXistElement implements Element {
     }
 
     @Override
-    public void noOtherNCNameAttribute(final String[] names, final String[] forbidden_ns) throws ToolsException {
-        final String[] effectiveForbiddenNs = forbidden_ns == null ? new String[]{} : forbidden_ns;
+    public void noOtherNCNameAttribute(final String[] names, String[] forbidden_ns) throws ToolsException {
+        if ( forbidden_ns == null ) {
+            forbidden_ns = new String[] { };
+        }
 
         final String[] sorted_names = sortCopy(names);
-        final String[] sorted_ns = sortCopy(effectiveForbiddenNs);
+        final String[] sorted_ns = sortCopy(forbidden_ns);
 
         final NamedNodeMap attributes = element.getNode().getAttributes();
         

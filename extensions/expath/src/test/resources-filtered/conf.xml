@@ -743,10 +743,8 @@
 
         <builtin-modules>
 
-            <!-- Modules under test -->
+            <!-- Module under test -->
             <module uri="http://expath.org/ns/http-client" class="org.expath.exist.HttpClientModule"/>
-            <module uri="http://exist-db.org/xquery/file" class="org.exist.xquery.modules.file.FileModule"/>
-            <module uri="http://expath.org/ns/file" class="org.expath.exist.file.ExpathFileModule"/>
 
 
             <!-- Needed for XQSuite! -->
