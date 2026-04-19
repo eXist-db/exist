@@ -27,7 +27,10 @@ import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.SequenceType;
+import org.exist.xquery.value.Type;
+import org.exist.xquery.functions.map.AbstractMapType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -187,6 +190,24 @@ public class UserDefinedFunction extends Function implements Cloneable {
                     throw new XPathException(this, ErrorCodes.XPTY0004, "Invalid cardinality for parameter $" + varName +
                             ". Expected " + argTypes[i].getCardinality().getHumanDescription() +
                             ", got " + argValues[i].getItemCount());
+                }
+
+                // XQuery 4.0: record type validation at runtime
+                final SequenceType argType = argTypes[i];
+                if (argType.isRecordType() && argType.getRecordType() != null && !argValues[i].isEmpty()) {
+                    for (final SequenceIterator iter = argValues[i].iterate(); iter.hasNext(); ) {
+                        final Item item = iter.nextItem();
+                        if (Type.subTypeOf(item.getType(), Type.MAP_ITEM)) {
+                            if (!argType.getRecordType().matches((AbstractMapType) item)) {
+                                throw new XPathException(this, ErrorCodes.XPTY0004,
+                                        "Argument $" + varName + " does not match " + argType.getRecordType());
+                            }
+                        } else {
+                            throw new XPathException(this, ErrorCodes.XPTY0004,
+                                    "Argument $" + varName + " expected " + argType.getRecordType() +
+                                            " but got " + Type.getTypeName(item.getType()));
+                        }
+                    }
                 }
             }
             result = body.eval(null, null);

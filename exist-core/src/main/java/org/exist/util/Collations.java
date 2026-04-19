@@ -76,6 +76,11 @@ public class Collations {
     public final static String HTML_ASCII_CASE_INSENSITIVE_COLLATION_URI = "http://www.w3.org/2005/xpath-functions/collation/html-ascii-case-insensitive";
 
     /**
+     * The Unicode Case-Insensitive Collation as defined by XPath F&amp;O 4.0.
+     */
+    public final static String UNICODE_CASE_INSENSITIVE_COLLATION_URI = "http://www.w3.org/2005/xpath-functions/collation/unicode-case-insensitive";
+
+    /**
      * The XQTS ASCII Case-blind Collation as defined by the XQTS 3.1.
      */
     public final static String XQTS_ASCII_CASE_BLIND_COLLATION_URI = "http://www.w3.org/2010/09/qt-fots-catalog/collation/caseblind";
@@ -89,6 +94,11 @@ public class Collations {
      * Lazy-initialized singleton Html Ascii Case Insensitive Collator
      */
     private final static AtomicReference<Collator> htmlAsciiCaseInsensitiveCollator = new AtomicReference<>();
+
+    /**
+     * Lazy-initialized singleton Unicode Case Insensitive Collator
+     */
+    private final static AtomicReference<Collator> unicodeCaseInsensitiveCollator = new AtomicReference<>();
 
     /**
      * Lazy-initialized singleton XQTS Case Blind Collator
@@ -275,6 +285,12 @@ public class Collations {
                 collator = getHtmlAsciiCaseInsensitiveCollator();
             } catch (final Exception e) {
                 throw new XPathException(expression, "Unable to instantiate HTML ASCII Case Insensitive Collator: " + e.getMessage(), e);
+            }
+        } else if(UNICODE_CASE_INSENSITIVE_COLLATION_URI.equals(uri)) {
+            try {
+                collator = getUnicodeCaseInsensitiveCollator();
+            } catch (final Exception e) {
+                throw new XPathException(expression, "Unable to instantiate Unicode Case Insensitive Collator: " + e.getMessage(), e);
             }
         } else if(XQTS_ASCII_CASE_BLIND_COLLATION_URI.equals(uri)) {
             try {
@@ -864,6 +880,20 @@ public class Collations {
             htmlAsciiCaseInsensitiveCollator.compareAndSet(null,
                     new HtmlAsciiCaseInsensitiveCollator());
             collator = htmlAsciiCaseInsensitiveCollator.get();
+        }
+
+        return collator;
+    }
+
+    private static Collator getUnicodeCaseInsensitiveCollator() {
+        Collator collator = unicodeCaseInsensitiveCollator.get();
+        if (collator == null) {
+            // Unicode case-insensitive: UCA with SECONDARY strength
+            // ignores case differences but respects accents and other distinctions
+            final Collator uca = Collator.getInstance();
+            uca.setStrength(Collator.SECONDARY);
+            unicodeCaseInsensitiveCollator.compareAndSet(null, uca);
+            collator = unicodeCaseInsensitiveCollator.get();
         }
 
         return collator;

@@ -150,7 +150,36 @@ public class RegexUtil {
             final JavaRegularExpression regex = new JavaRegularExpression(StringView.of(pattern), flags.toString());
             return regex.getJavaRegularExpression();
         } catch (final net.sf.saxon.trans.XPathException e) {
+            // Fallback: if the pattern uses \p{Is<Block>} Unicode block names that
+            // Saxon doesn't recognize, convert them to Java's \p{In<Block>} syntax
+            // and try compiling directly.
+            if (pattern.contains("\\p{Is") || pattern.contains("\\P{Is")) {
+                final String javaPattern = convertUnicodeBlockNames(pattern);
+                try {
+                    int javaFlags = Pattern.UNICODE_CHARACTER_CLASS;
+                    if (ignoreWhitespace) {
+                        javaFlags |= Pattern.COMMENTS;
+                    }
+                    if (caseBlind) {
+                        javaFlags |= Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
+                    }
+                    Pattern.compile(javaPattern, javaFlags);
+                    return javaPattern;
+                } catch (final java.util.regex.PatternSyntaxException ignored) {
+                    // fallback failed, throw original error
+                }
+            }
             throw new XPathException(context, ErrorCodes.FORX0002, "Conversion from XPath F&O 3.0 regular expression syntax to Java regular expression syntax failed: " + e.getMessage(), new StringValue(pattern), e);
         }
+    }
+
+    /**
+     * Convert XML Schema/XPath \p{Is<Block>} and \P{Is<Block>} Unicode block
+     * property escapes to Java's \p{In<Block>} and \P{In<Block>} syntax.
+     */
+    private static String convertUnicodeBlockNames(final String pattern) {
+        return pattern
+                .replaceAll("\\\\p\\{Is([^}]+)}", "\\\\p{In$1}")
+                .replaceAll("\\\\P\\{Is([^}]+)}", "\\\\P{In$1}");
     }
 }

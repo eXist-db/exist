@@ -43,7 +43,6 @@ import org.w3c.dom.NodeList;
 public class FTThesaurus {
 
     private static final String THESAURUS_NS = "http://www.w3.org/2007/xqftts/thesaurus";
-    private final Map<String, List<Synonym>> entries = new HashMap<>();
 
     /**
      * A single thesaurus entry: a term with its synonyms at various levels.
@@ -59,6 +58,8 @@ public class FTThesaurus {
             this.children = children;
         }
     }
+
+    private final Map<String, List<Synonym>> entries = new HashMap<>();
 
     /**
      * Load thesaurus from an XML file.

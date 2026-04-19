@@ -32,19 +32,19 @@ public class StaticXQueryException extends XPathException
     }
 
 	public StaticXQueryException(final Expression expression, String message) {
-		super(expression, message);
+		super(expression, ErrorCodes.XPST0003, message);
 	}
 
 	public StaticXQueryException(int line, int column, String message) {
-		super(line, column, message);
+		super(line, column, ErrorCodes.XPST0003, message);
 	}
-	
+
 	public StaticXQueryException(Throwable cause) {
         this((Expression) null, cause);
     }
-	
+
 	public StaticXQueryException(final Expression expression, Throwable cause) {
-		super(expression, cause);
+		super(expression, ErrorCodes.XPST0003, cause.getMessage(), cause);
 	}
 
 	public StaticXQueryException(String message, Throwable cause) {
@@ -52,7 +52,7 @@ public class StaticXQueryException extends XPathException
 	}
 
 	public StaticXQueryException(final Expression expression, String message, Throwable cause) {
-		super(expression, message, cause);
+		super(expression, ErrorCodes.XPST0003, message, cause);
 	}
 
 	public StaticXQueryException(int line, int column, ErrorCode errorCode, String message) {
@@ -65,6 +65,7 @@ public class StaticXQueryException extends XPathException
 	}
 
 	public StaticXQueryException(int line, int column, String message, Throwable cause) {
-		super(line, column, message, cause);
+		super(line, column, ErrorCodes.XPST0003, message);
+		initCause(cause);
 	}
 }

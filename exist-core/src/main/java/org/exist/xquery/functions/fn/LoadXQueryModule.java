@@ -189,7 +189,8 @@ public class LoadXQueryModule extends BasicFunction {
                 throw new XPathException(this, ErrorCodes.FOQM0002, "Module with URI " + targetNamespace + " not found");
             }
 
-            if (!xqVersion.equals(getXQueryVersion(tempContext.getXQueryVersion()))) {
+            // Only enforce version check for URI-loaded modules, not content-loaded
+            if (contentSource == null && !xqVersion.equals(getXQueryVersion(tempContext.getXQueryVersion()))) {
                 throw new XPathException(this, ErrorCodes.FOQM0003, "Imported module has wrong XQuery version: " +
                         getXQueryVersion(tempContext.getXQueryVersion()));
             }

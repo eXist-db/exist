@@ -107,10 +107,15 @@ public class Optimize extends AbstractPragma {
             } else if (optimizables != null && contextSequence != null) {
                 for (final Optimizable optimizable : optimizables) {
                     final Sequence canBeOptimized = optimizable.canOptimizeSequence(contextSequence);
-                    if (
-                            canBeOptimized == null ||
-                            canBeOptimized.getItemCount() != contextSequence.getItemCount()
-                    ) {
+                    if (canBeOptimized == null || canBeOptimized.isEmpty()) {
+                        optimize = false;
+                        break;  // exit for-each loop
+                    }
+                    if (canBeOptimized.getItemCount() == contextSequence.getItemCount()) {
+                        // everything in sequence can be optimized
+                        optimize = true;  // so far so good, head to next for-loop of `optimizable`
+                    } else {
+                        // nothing or only some bits can be optimized
                         optimize = false;
                         break;  // exit for-each loop
                     }
