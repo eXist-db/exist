@@ -222,6 +222,7 @@
             <groupId>org.jline</groupId>
             <artifactId>jline</artifactId>
             <version>4.0.12</version>
+            <classifier>jdk11</classifier>
         </dependency>
 
         <dependency>
