@@ -225,7 +225,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.fusesource.jansi</groupId>
+            <groupId>org.jline</groupId>
             <artifactId>jansi</artifactId>
             <version>${jansi.version}</version>
             <!--
@@ -1030,7 +1030,7 @@ The BaseX Team. The original license statement is also included below.]]></pream
                                 <ignoredUnusedDeclaredDependency>org.apache.logging.log4j:log4j-jul:jar:${log4j.version}</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>org.eclipse.angus:angus-activation:jar:${eclipse.angus-activation.version}</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>org.glassfish.jaxb:jaxb-runtime:jar:${jaxb.impl.version}</ignoredUnusedDeclaredDependency>
-                                <ignoredUnusedDeclaredDependency>org.fusesource.jansi:jansi:jar:${jansi.version}</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>org.jline:jansi:jar:${jansi.version}</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>org.codelibs:nekohtml:jar:${nekohtml.version}</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>xml-resolver:xml-resolver:jar:1.2</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>org.xmlresolver:xmlresolver:jar:${xmlresolver.version}</ignoredUnusedDeclaredDependency>
