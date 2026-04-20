@@ -2,7 +2,7 @@
 
 ## Overview
 
-The `next-v3` integration branch merges 36 PRs (14 `v2/` + 22 additional) into a single testable branch based on a clean `v2/new-parser` foundation. It includes 223 commits ahead of `develop`, comprising 52 merged branches.
+The `next-v3` integration branch merges 37 PRs (14 `v2/` + 23 additional) into a single testable branch based on a clean `v2/new-parser` foundation. It includes 223 commits ahead of `develop`, comprising 52 merged branches.
 
 This branch powers the **Docker demo image** with a complete redesigned application suite.
 
@@ -24,7 +24,7 @@ Every branch was tested individually: build (`mvn install -pl exist-core -am`), 
 
 ## Review Waves
 
-PRs are organized into 7 waves by dependency and review complexity. **You can review in any order**, but merging should follow the wave order to avoid conflicts.
+PRs are organized into 7 waves by dependency and review complexity. **You can review in any order**, but merging should follow the wave order to minimize conflicts.
 
 ### Wave 1: Small, Independent Bugfixes (merge in any order)
 
@@ -45,6 +45,7 @@ These fix real bugs with tests. No shared infrastructure changes. Each can be re
 | [#6110](https://github.com/eXist-db/exist/pull/6110) | `fix/path-expr-dedup-function-calls` | Fix dedup for function calls in path exprs | Low | Low |
 | [#6081](https://github.com/eXist-db/exist/pull/6081) | `fix/issue-2529-timeout-option` | Restore `declare option exist:timeout "-1"` | Low | Low |
 | [#4641](https://github.com/eXist-db/exist/pull/4641) | `relax-anyuri-params-allow-string-2` | Relax xs:anyURI parameters to accept xs:string | Low | Low |
+| [#6206](https://github.com/eXist-db/exist/pull/6206) | `feature/xinclude-test-suite` | W3C XInclude test suite + conformance improvements | Low | Low |
 
 ### Wave 2: Small Features (merge in any order, before Wave 3)
 
@@ -107,7 +108,6 @@ Largest PR by file count (130 files). Includes fn:replace/fn:tokenize empty-matc
 | [#6219](https://github.com/eXist-db/exist/pull/6219) | `v2/serialization-compliance` | W3C serialization compliance (XML/HTML/JSON/CSV) | Medium | Low-medium |
 | [#6220](https://github.com/eXist-db/exist/pull/6220) | `v2/new-parser` | Recursive descent parser (opt-in via `-Dexist.parser=rd`) | Medium | Very low |
 | [#6087](https://github.com/eXist-db/exist/pull/6087) | `fix/issue-2291-xinclude-relative-paths` | Fix XInclude relative path resolution | Low | Low |
-| [#6206](https://github.com/eXist-db/exist/pull/6206) | `feature/xinclude-test-suite` | W3C XInclude test suite + conformance | Low | Low |
 | [#6154](https://github.com/eXist-db/exist/pull/6154) | `feature/native-restxq` | Native RESTXQ (replaces EXQuery library) | Medium | Medium |
 
 **Recursive descent parser**: 15-82x faster than ANTLR 2, opt-in only. Zero impact on existing behavior.
@@ -130,8 +130,8 @@ Largest PR by file count (130 files). Includes fn:replace/fn:tokenize empty-matc
 ## Merge Order Summary
 
 ```
-Wave 1 (any order):     13 bugfix PRs (#6207, #6222, #6191, #6180, #6181,
-                        #6088, #6089, #6090, #6094, #6095, #6110, #6081, #4641)
+Wave 1 (any order):     14 bugfix PRs (#6207, #6222, #6191, #6180, #6181,
+                        #6088, #6089, #6090, #6094, #6095, #6110, #6081, #4641, #6206)
 
 Wave 2 (any order):     9 small feature PRs (#6208, #6209, #6210, #6211,
                         #6092, #6182, #6184, #6192, #6112)
@@ -149,7 +149,6 @@ Wave 5:                 #6218 XQ4 Functions
 Wave 6 (any order):     #6219 Serialization
                         #6220 RD Parser
                         #6087 XInclude fix
-                        #6206 XInclude test suite
                         #6154 Native RESTXQ
 
 Wave 7 (any order):     #6247 Built-in Package API
@@ -211,7 +210,9 @@ Replaces sandbox. Tabs: Home / Search / Admin. Interactive XQuery notebooks with
 
 ### Other Bundled Apps
 
-eXide (CM6/REx/LSP), exist-api, EXPath File/Binary/HTTP Client/Crypto, FunctX, Public Repo.
+In particular, eXide received a significant overhaul in [#778](https://github.com/eXist-db/eXide/pull/778): the editor was migrated from CodeMirror 5 to CodeMirror 6 with a modern extension architecture, the XQuery parser was replaced with a REx-generated parser for accurate syntax highlighting and error recovery, and Language Server Protocol (LSP) support was added for hover documentation and go-to-definition. The PR also modernizes eXide's login flow to use the persistent login module (fixing the `login:set-user()` duration parameter bug).
+
+Also bundled: exist-api (unified REST API using Roaster), EXPath File/Binary/HTTP Client/Crypto modules, FunctX, and Public Repo.
 
 ---
 
@@ -282,7 +283,5 @@ Tests run on a fresh `joewiz/existdb:next-v3` container (2026-04-20):
 | Repo | PR | Title | Status |
 |------|----|-------|--------|
 | exist-xqts-runner | [#49](https://github.com/eXist-db/exist-xqts-runner/pull/49) | QT4/FTTS/XQUF suites + Saxon 12 | Needs review |
-| eXist-db/exist | [#6206](https://github.com/eXist-db/exist/pull/6206) | XInclude test suite + conformance | Needs review |
 | eXide | [#778](https://github.com/eXist-db/eXide/pull/778) | Modernize: CM6 editor, REx parser, LSP | Needs review |
 | exist-markdown | [#69](https://github.com/eXist-db/exist-markdown/pull/69) | CommonMark/GFM (flexmark-java) | Approved |
-| jinks | [#2](https://github.com/eeditiones/jinks/pull/2) | exist-site profile | Needs review |
