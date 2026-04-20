@@ -221,19 +221,12 @@
         <dependency>
             <groupId>org.jline</groupId>
             <artifactId>jline</artifactId>
-            <version>4.0.12</version>
-            <classifier>jdk11</classifier>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jline</groupId>
-            <artifactId>jansi</artifactId>
             <version>${jansi.version}</version>
+            <classifier>jdk11</classifier>
             <!--
                 Optionally used by jline at runtime on Linux and macOS,
                 and required by jline at runtime on Windows.
             -->
-            <scope>runtime</scope>
         </dependency>
 
         <dependency>
