@@ -172,8 +172,8 @@ Wave 7 (any order):     #6247 Built-in Package API
 
 | Suite | Score | Notes |
 |-------|-------|-------|
-| **QT4** (XQuery 4.0) | 31,674/36,965 (85.7%) | XQuery 4.0 + XQUF |
-| **XQ 3.1** | 24,025/26,773 (89.7%) | 72 tests from 90% |
+| **QT4** (XQuery 4.0) | 36,356/42,403 (85.7%) | XQuery 4.0 + XQUF |
+| **XQ 3.1** | 24,402/26,220 (93.1%) | Up from 89.7% with compliance fixes |
 | **FTTS** (Full Text) | 659/667 (98.8%) | 8 remaining are spec edge cases |
 | **XQUF** (Update) | 684/684 non-schema (100%) | Schema revalidation out of scope |
 
