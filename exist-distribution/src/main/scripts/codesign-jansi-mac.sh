@@ -53,19 +53,19 @@ archs=('arm64' 'x86' 'x86_64')
 for arch in ${archs[@]}
 do
   # create the temp output dirs
-  mkdir -p "${3}/org/fusesource/jansi/internal/native/Mac/${arch}"
+  mkdir -p "${3}/org/jline/nativ/Mac/${arch}"
 
   # switch to temp output dir
   pushd "${3}"
 
   # extract the native files
-  jar -xf "${1}/jansi-${2}.jar" "org/fusesource/jansi/internal/native/Mac/${arch}/libjansi.jnilib"
+  jar -xf "${1}/jansi-${2}.jar" "org/jline/nativ/Mac/${arch}/libjlinenative.jnilib"
 
   # test if the file is unsigned, and sign if needed
-  /usr/bin/codesign --verbose --test-requirement="=anchor trusted" --verify "org/fusesource/jansi/internal/native/Mac/${arch}/libjansi.jnilib" || /usr/bin/codesign --verbose --force --timestamp --sign "${4}" "org/fusesource/jansi/internal/native/Mac/${arch}/libjansi.jnilib"
+  /usr/bin/codesign --verbose --test-requirement="=anchor trusted" --verify "org/jline/nativ/Mac/${arch}/libjlinenative.jnilib" || /usr/bin/codesign --verbose --force --timestamp --sign "${4}" "org/jline/nativ/Mac/${arch}/libjlinenative.jnilib"
 
   # overwrite the file in the jar
-  jar -uf "${1}/jansi-${2}.jar" "org/fusesource/jansi/internal/native/Mac/${arch}/libjansi.jnilib"
+  jar -uf "${1}/jansi-${2}.jar" "org/jline/nativ/Mac/${arch}/libjlinenative.jnilib"
 
   # switch back from temp output dir
   popd
