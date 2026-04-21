@@ -401,8 +401,28 @@ public class FnModule extends AbstractInternalModule {
 
         // --- Invisible XML (feature/fn-invisible-xml) ---
         new FunctionDef(FnInvisibleXml.SIGNATURES[0], FnInvisibleXml.class),
-        new FunctionDef(FnInvisibleXml.SIGNATURES[1], FnInvisibleXml.class)
+        new FunctionDef(FnInvisibleXml.SIGNATURES[1], FnInvisibleXml.class),
         // --- End Invisible XML ---
+
+        // --- XQuery 4.0 JNode functions ---
+        new FunctionDef(FnJNode.FN_JTREE, FnJNode.class),
+        new FunctionDef(FnJNode.FN_JKEY, FnJNode.class),
+        new FunctionDef(FnJNode.FN_JVALUE, FnJNode.class),
+        new FunctionDef(FnJNode.FN_JPOSITION, FnJNode.class),
+        new FunctionDef(FnJNode.FN_JCHILDREN, FnJNode.class),
+        new FunctionDef(FnJNode.FN_JPARENT, FnJNode.class),
+        // --- End JNode functions ---
+
+        // --- XQuery 4.0 fn:dateTime-record ---
+        new FunctionDef(FnDateTimeRecord.SIGNATURES[0], FnDateTimeRecord.class),
+        new FunctionDef(FnDateTimeRecord.SIGNATURES[1], FnDateTimeRecord.class),
+        new FunctionDef(FnDateTimeRecord.SIGNATURES[2], FnDateTimeRecord.class),
+        new FunctionDef(FnDateTimeRecord.SIGNATURES[3], FnDateTimeRecord.class),
+        new FunctionDef(FnDateTimeRecord.SIGNATURES[4], FnDateTimeRecord.class),
+        new FunctionDef(FnDateTimeRecord.SIGNATURES[5], FnDateTimeRecord.class),
+        new FunctionDef(FnDateTimeRecord.SIGNATURES[6], FnDateTimeRecord.class),
+        new FunctionDef(FnDateTimeRecord.SIGNATURES[7], FnDateTimeRecord.class)
+        // --- End dateTime-record ---
     };
 
     static {

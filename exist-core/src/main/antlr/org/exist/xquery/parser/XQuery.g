@@ -256,6 +256,15 @@ imaginaryTokenDefinitions
 	// Decimal Format Declarations
 	DECIMAL_FORMAT_DECL
 	DEF_DECIMAL_FORMAT_DECL
+	// XQuery 4.0 JNode Kind Tests
+	JSON_NODE_TEST
+	JSON_OBJECT_TEST
+	JSON_ARRAY_TEST
+	JSON_STRING_TEST
+	JSON_NUMBER_TEST
+	JSON_BOOLEAN_TEST
+	JSON_NULL_TEST
+	JSON_MEMBER_TEST
 	;
 
 // === XPointer ===
@@ -1603,7 +1612,7 @@ comparisonExpr throws XPathException
 		| ( GT EQ ) => GT^ EQ^ r2:ftContainsExpr
 			{ #comparisonExpr = #(#[GTEQ, ">="], #r1, #r2); }
 		| ( ( EQ^ | NEQ^ | GT^ | LT^ | LTEQ^ ) ftContainsExpr )
-		| ( ( "is"^ | "isnot"^ ) ftContainsExpr )
+		| ( ( "is"^ | "isnot"^ | "is-not"^ | "follows-or-is"^ | "precedes-or-is"^ ) ftContainsExpr )
 	)?
 	;
 
@@ -2330,7 +2339,11 @@ contextItemExpr : SELF ;
 kindTest
 :
 	textTest | anyKindTest | gnodeTest | elementTest | attributeTest |
-	commentTest | namespaceNodeTest | piTest | documentTest
+	commentTest | namespaceNodeTest | piTest | documentTest |
+	// === XQuery 4.0 JNode Kind Tests ===
+	jsonNodeTest | jsonObjectTest | jsonArrayTest | jsonStringTest |
+	jsonNumberTest | jsonBooleanTest | jsonNullTest | jsonMemberTest |
+	jnodeTest
 	;
 
 textTest
@@ -2413,6 +2426,67 @@ documentTest
     ;
 
 schemaElementTest : "schema-element"^ LPAREN! eqName RPAREN! ;
+
+// === XQuery 4.0 JNode Kind Tests ===
+
+jsonNodeTest
+:
+    "json-node"! LPAREN! RPAREN!
+    { #jsonNodeTest = #[JSON_NODE_TEST, "json-node()"]; }
+    ;
+
+jsonObjectTest
+:
+    "object-node"! LPAREN! RPAREN!
+    { #jsonObjectTest = #[JSON_OBJECT_TEST, "object-node()"]; }
+    ;
+
+jsonArrayTest
+:
+    "array-node"! LPAREN! RPAREN!
+    { #jsonArrayTest = #[JSON_ARRAY_TEST, "array-node()"]; }
+    ;
+
+jsonStringTest
+:
+    "string-node"! LPAREN! RPAREN!
+    { #jsonStringTest = #[JSON_STRING_TEST, "string-node()"]; }
+    ;
+
+jsonNumberTest
+:
+    "number-node"! LPAREN! RPAREN!
+    { #jsonNumberTest = #[JSON_NUMBER_TEST, "number-node()"]; }
+    ;
+
+jsonBooleanTest
+:
+    "boolean-node"! LPAREN! RPAREN!
+    { #jsonBooleanTest = #[JSON_BOOLEAN_TEST, "boolean-node()"]; }
+    ;
+
+jsonNullTest
+:
+    "null-node"! LPAREN! RPAREN!
+    { #jsonNullTest = #[JSON_NULL_TEST, "null-node()"]; }
+    ;
+
+jsonMemberTest
+:
+    "member-node"! LPAREN! RPAREN!
+    { #jsonMemberTest = #[JSON_MEMBER_TEST, "member-node()"]; }
+    ;
+
+jnodeTest
+:
+    "jnode"! LPAREN!
+    // Skip any parameters (wildcard or type arguments) for now
+    ( options { greedy = true; } : ~(RPAREN) )*
+    RPAREN!
+    { #jnodeTest = #[JSON_NODE_TEST, "json-node()"]; }
+    ;
+
+// === End XQuery 4.0 JNode Kind Tests ===
 
 qName returns [String name]
 {

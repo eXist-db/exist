@@ -1552,6 +1552,80 @@ throws XPathException
                 #( "schema-element" EQNAME )
             )?
         )
+        // === XQuery 4.0 JNode Kind Tests (version-gated) ===
+        |
+        #( jnt1:JSON_NODE_TEST
+            {
+                if (staticContext.getXQueryVersion() < 40) {
+                    throw new XPathException(jnt1, ErrorCodes.XPST0003, "json-node() requires xquery version \"4.0\"");
+                }
+                type.setPrimaryType(Type.JSON_NODE);
+            }
+        )
+        |
+        #( jnt2:JSON_OBJECT_TEST
+            {
+                if (staticContext.getXQueryVersion() < 40) {
+                    throw new XPathException(jnt2, ErrorCodes.XPST0003, "object-node() requires xquery version \"4.0\"");
+                }
+                type.setPrimaryType(Type.JSON_OBJECT);
+            }
+        )
+        |
+        #( jnt3:JSON_ARRAY_TEST
+            {
+                if (staticContext.getXQueryVersion() < 40) {
+                    throw new XPathException(jnt3, ErrorCodes.XPST0003, "array-node() requires xquery version \"4.0\"");
+                }
+                type.setPrimaryType(Type.JSON_ARRAY);
+            }
+        )
+        |
+        #( jnt4:JSON_STRING_TEST
+            {
+                if (staticContext.getXQueryVersion() < 40) {
+                    throw new XPathException(jnt4, ErrorCodes.XPST0003, "string-node() requires xquery version \"4.0\"");
+                }
+                type.setPrimaryType(Type.JSON_STRING);
+            }
+        )
+        |
+        #( jnt5:JSON_NUMBER_TEST
+            {
+                if (staticContext.getXQueryVersion() < 40) {
+                    throw new XPathException(jnt5, ErrorCodes.XPST0003, "number-node() requires xquery version \"4.0\"");
+                }
+                type.setPrimaryType(Type.JSON_NUMBER);
+            }
+        )
+        |
+        #( jnt6:JSON_BOOLEAN_TEST
+            {
+                if (staticContext.getXQueryVersion() < 40) {
+                    throw new XPathException(jnt6, ErrorCodes.XPST0003, "boolean-node() requires xquery version \"4.0\"");
+                }
+                type.setPrimaryType(Type.JSON_BOOLEAN);
+            }
+        )
+        |
+        #( jnt7:JSON_NULL_TEST
+            {
+                if (staticContext.getXQueryVersion() < 40) {
+                    throw new XPathException(jnt7, ErrorCodes.XPST0003, "null-node() requires xquery version \"4.0\"");
+                }
+                type.setPrimaryType(Type.JSON_NULL);
+            }
+        )
+        |
+        #( jnt8:JSON_MEMBER_TEST
+            {
+                if (staticContext.getXQueryVersion() < 40) {
+                    throw new XPathException(jnt8, ErrorCodes.XPST0003, "member-node() requires xquery version \"4.0\"");
+                }
+                type.setPrimaryType(Type.JSON_MEMBER);
+            }
+        )
+        // === End XQuery 4.0 JNode Kind Tests ===
         |
         #(
             CHOICE_TYPE
@@ -3709,6 +3783,72 @@ throws PermissionDeniedException, EXistException, XPathException
                 |
                 #( "schema-element" EQNAME )
             )?
+    // === XQuery 4.0 JNode Kind Tests in path steps (version-gated) ===
+    |
+    jn1:JSON_NODE_TEST
+    {
+        if (staticContext.getXQueryVersion() < 40) {
+            throw new XPathException(jn1, ErrorCodes.XPST0003, "json-node() requires xquery version \"4.0\"");
+        }
+        test = new TypeTest(Type.JSON_NODE); ast = jn1;
+    }
+    |
+    jn2:JSON_OBJECT_TEST
+    {
+        if (staticContext.getXQueryVersion() < 40) {
+            throw new XPathException(jn2, ErrorCodes.XPST0003, "object-node() requires xquery version \"4.0\"");
+        }
+        test = new TypeTest(Type.JSON_OBJECT); ast = jn2;
+    }
+    |
+    jn3:JSON_ARRAY_TEST
+    {
+        if (staticContext.getXQueryVersion() < 40) {
+            throw new XPathException(jn3, ErrorCodes.XPST0003, "array-node() requires xquery version \"4.0\"");
+        }
+        test = new TypeTest(Type.JSON_ARRAY); ast = jn3;
+    }
+    |
+    jn4:JSON_STRING_TEST
+    {
+        if (staticContext.getXQueryVersion() < 40) {
+            throw new XPathException(jn4, ErrorCodes.XPST0003, "string-node() requires xquery version \"4.0\"");
+        }
+        test = new TypeTest(Type.JSON_STRING); ast = jn4;
+    }
+    |
+    jn5:JSON_NUMBER_TEST
+    {
+        if (staticContext.getXQueryVersion() < 40) {
+            throw new XPathException(jn5, ErrorCodes.XPST0003, "number-node() requires xquery version \"4.0\"");
+        }
+        test = new TypeTest(Type.JSON_NUMBER); ast = jn5;
+    }
+    |
+    jn6:JSON_BOOLEAN_TEST
+    {
+        if (staticContext.getXQueryVersion() < 40) {
+            throw new XPathException(jn6, ErrorCodes.XPST0003, "boolean-node() requires xquery version \"4.0\"");
+        }
+        test = new TypeTest(Type.JSON_BOOLEAN); ast = jn6;
+    }
+    |
+    jn7:JSON_NULL_TEST
+    {
+        if (staticContext.getXQueryVersion() < 40) {
+            throw new XPathException(jn7, ErrorCodes.XPST0003, "null-node() requires xquery version \"4.0\"");
+        }
+        test = new TypeTest(Type.JSON_NULL); ast = jn7;
+    }
+    |
+    jn8:JSON_MEMBER_TEST
+    {
+        if (staticContext.getXQueryVersion() < 40) {
+            throw new XPathException(jn8, ErrorCodes.XPST0003, "member-node() requires xquery version \"4.0\"");
+        }
+        test = new TypeTest(Type.JSON_MEMBER); ast = jn8;
+    }
+    // === End XQuery 4.0 JNode Kind Tests ===
     )
     {
         step= new LocationStep(context, axis, test);
@@ -4608,6 +4748,34 @@ throws PermissionDeniedException, EXistException, XPathException
         {
             step = new NodeComparison(context, left, right, NodeComparisonOperator.AFTER);
             step.setASTNode(after);
+            path.add(step);
+        }
+    )
+    |
+    // XQuery 4.0 node comparison operators
+    #(
+        isnot:"is-not" step=expr[left] step=expr[right]
+        {
+            step = new NodeComparison(context, left, right, NodeComparisonOperator.IS_NOT);
+            step.setASTNode(isnot);
+            path.add(step);
+        }
+    )
+    |
+    #(
+        foi:"follows-or-is" step=expr[left] step=expr[right]
+        {
+            step = new NodeComparison(context, left, right, NodeComparisonOperator.FOLLOWS_OR_IS);
+            step.setASTNode(foi);
+            path.add(step);
+        }
+    )
+    |
+    #(
+        poi:"precedes-or-is" step=expr[left] step=expr[right]
+        {
+            step = new NodeComparison(context, left, right, NodeComparisonOperator.PRECEDES_OR_IS);
+            step.setASTNode(poi);
             path.add(step);
         }
     )
