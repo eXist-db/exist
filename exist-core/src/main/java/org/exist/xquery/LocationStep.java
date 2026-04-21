@@ -383,18 +383,26 @@ public class LocationStep extends Step {
                         + this + "'");
             }
 
-            // === XQuery 4.0 JNode axis navigation ===
-            // If context contains JNodes, handle navigation directly
-            if (contextSequence.getItemCount() > 0 &&
-                    contextSequence.itemAt(0) instanceof org.exist.xquery.value.jnode.JNode) {
-                result = evalJNodeAxis(contextSequence);
-
-                if (context.getProfiler().isEnabled()) {
-                    context.getProfiler().end(this, "", result);
+            // === XQuery 4.0 JNode / Map / Array axis navigation ===
+            if (contextSequence.getItemCount() > 0) {
+                final Item firstItem = contextSequence.itemAt(0);
+                if (firstItem instanceof org.exist.xquery.value.jnode.JNode) {
+                    result = evalJNodeAxis(contextSequence);
+                    if (context.getProfiler().isEnabled()) {
+                        context.getProfiler().end(this, "", result);
+                    }
+                    return result;
                 }
-                return result;
+                if (firstItem instanceof org.exist.xquery.functions.map.MapType
+                        || firstItem instanceof org.exist.xquery.functions.array.ArrayType) {
+                    result = evalMapArrayAxis(contextSequence);
+                    if (context.getProfiler().isEnabled()) {
+                        context.getProfiler().end(this, "", result);
+                    }
+                    return result;
+                }
             }
-            // === End JNode axis navigation ===
+            // === End JNode / Map / Array axis navigation ===
 
             try {
                 switch (axis) {
@@ -514,8 +522,10 @@ public class LocationStep extends Step {
                 if (nodeTestType == null) {
                     nodeTestType = test.getType();
                 }
-                // JNode types always need computation
-                if (Type.subTypeOf(nodeTestType, Type.JSON_NODE)) {
+                // JNode, map, and array types always need computation
+                if (Type.subTypeOf(nodeTestType, Type.JSON_NODE)
+                        || Type.subTypeOf(nodeTestType, Type.MAP_ITEM)
+                        || Type.subTypeOf(nodeTestType, Type.ARRAY_ITEM)) {
                     return true;
                 }
                 if (nodeTestType != Type.DOCUMENT
@@ -1573,6 +1583,150 @@ public class LocationStep extends Step {
                 result.add(proxy);
             }
             return true;
+        }
+    }
+
+    // === XQuery 4.0 Map/Array path navigation ===
+
+    /**
+     * Evaluate axis navigation when the context contains maps or arrays.
+     * Implements XQuery 4.0 path navigation on maps/arrays:
+     *   $map/key     → map lookup by key name
+     *   $map/*       → all map values
+     *   $array/*     → all array members
+     *   $map//key    → recursive descent lookup
+     */
+    private Sequence evalMapArrayAxis(final Sequence contextSequence) throws XPathException {
+        final ValueSequence result = new ValueSequence();
+        final org.exist.dom.QName stepName = test != null ? test.getName() : null;
+        final boolean isWildcard = stepName == null; // TypeTest like node() or * → wildcard
+
+        for (final SequenceIterator it = contextSequence.iterate(); it.hasNext(); ) {
+            final Item item = it.nextItem();
+            switch (axis) {
+                case Constants.CHILD_AXIS:
+                    navigateChildren(item, stepName, isWildcard, result);
+                    break;
+                case Constants.DESCENDANT_AXIS:
+                    navigateDescendants(item, stepName, isWildcard, false, result);
+                    break;
+                case Constants.DESCENDANT_SELF_AXIS:
+                    navigateDescendants(item, stepName, isWildcard, true, result);
+                    break;
+                case Constants.SELF_AXIS:
+                    // Self on map/array returns the item itself
+                    result.add(item);
+                    break;
+                default:
+                    // Other axes (parent, ancestor, sibling) don't apply to raw maps/arrays
+                    break;
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Navigate children of a map or array item.
+     * For maps: lookup by name or return all values.
+     * For arrays: return all members.
+     */
+    private void navigateChildren(final Item item, @Nullable final org.exist.dom.QName stepName,
+                                   final boolean isWildcard,
+                                   final ValueSequence result) throws XPathException {
+        if (item instanceof org.exist.xquery.functions.map.MapType) {
+            final org.exist.xquery.functions.map.MapType map =
+                    (org.exist.xquery.functions.map.MapType) item;
+            if (isWildcard) {
+                // Return all map values
+                for (final io.lacuna.bifurcan.IEntry<AtomicValue, Sequence> entry : map) {
+                    addSequenceItems(entry.value(), result);
+                }
+            } else {
+                // Lookup by name
+                final String key = stepName.getLocalPart();
+                final Sequence value = map.get(new StringValue(this, key));
+                if (value != null && !value.isEmpty()) {
+                    addSequenceItems(value, result);
+                }
+            }
+        } else if (item instanceof org.exist.xquery.functions.array.ArrayType) {
+            final org.exist.xquery.functions.array.ArrayType array =
+                    (org.exist.xquery.functions.array.ArrayType) item;
+            // Arrays: wildcard returns all members, named step returns nothing
+            if (isWildcard) {
+                for (int i = 0; i < array.getSize(); i++) {
+                    addSequenceItems(array.get(i), result);
+                }
+            }
+            // Named steps on arrays: navigate into each member that is a map
+            if (!isWildcard) {
+                for (int i = 0; i < array.getSize(); i++) {
+                    final Sequence member = array.get(i);
+                    if (member.getItemCount() == 1 &&
+                            member.itemAt(0) instanceof org.exist.xquery.functions.map.MapType) {
+                        navigateChildren(member.itemAt(0), stepName, false, result);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Recursive descent into maps/arrays for descendant axis.
+     */
+    private void navigateDescendants(final Item item, @Nullable final org.exist.dom.QName stepName,
+                                      final boolean isWildcard, final boolean includeSelf,
+                                      final ValueSequence result) throws XPathException {
+        if (includeSelf) {
+            result.add(item);
+        }
+
+        if (item instanceof org.exist.xquery.functions.map.MapType) {
+            final org.exist.xquery.functions.map.MapType map =
+                    (org.exist.xquery.functions.map.MapType) item;
+            for (final io.lacuna.bifurcan.IEntry<AtomicValue, Sequence> entry : map) {
+                final String key = entry.key().getStringValue();
+                // If name matches, add the value
+                if (!isWildcard && stepName != null && key.equals(stepName.getLocalPart())) {
+                    addSequenceItems(entry.value(), result);
+                } else if (isWildcard) {
+                    addSequenceItems(entry.value(), result);
+                }
+                // Recurse into nested maps/arrays
+                final Sequence value = entry.value();
+                for (int i = 0; i < value.getItemCount(); i++) {
+                    final Item child = value.itemAt(i);
+                    if (child instanceof org.exist.xquery.functions.map.MapType
+                            || child instanceof org.exist.xquery.functions.array.ArrayType) {
+                        navigateDescendants(child, stepName, isWildcard, false, result);
+                    }
+                }
+            }
+        } else if (item instanceof org.exist.xquery.functions.array.ArrayType) {
+            final org.exist.xquery.functions.array.ArrayType array =
+                    (org.exist.xquery.functions.array.ArrayType) item;
+            for (int i = 0; i < array.getSize(); i++) {
+                final Sequence member = array.get(i);
+                for (int j = 0; j < member.getItemCount(); j++) {
+                    final Item child = member.itemAt(j);
+                    if (isWildcard) {
+                        result.add(child);
+                    }
+                    if (child instanceof org.exist.xquery.functions.map.MapType
+                            || child instanceof org.exist.xquery.functions.array.ArrayType) {
+                        navigateDescendants(child, stepName, isWildcard, false, result);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Add all items from a sequence to the result.
+     */
+    private void addSequenceItems(final Sequence seq, final ValueSequence result) throws XPathException {
+        for (int i = 0; i < seq.getItemCount(); i++) {
+            result.add(seq.itemAt(i));
         }
     }
 

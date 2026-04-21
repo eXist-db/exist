@@ -243,7 +243,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                 expr = step;
                 context.getWatchDog().proceed(expr);
                 //TODO : maybe this could be detected by the parser ? -pb
-                if (gotAtomicResult && !Type.isNodeType(expr.returnsType())
+                if (gotAtomicResult && !Type.isNavigable(expr.returnsType())
                         //Ugly workaround to allow preceding *text* nodes.
                         && !(expr instanceof EnclosedExpr)) {
                     throw new XPathException(this, ErrorCodes.XPTY0019,
@@ -255,7 +255,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                 expr.setContextDocSet(contextDocs);
                 // switch into single step mode if we are processing in-memory nodes only
                 final boolean inMemProcessing = currentContext != null &&
-                        Type.isNodeType(currentContext.getItemType()) &&
+                        Type.isNavigable(currentContext.getItemType()) &&
                         !currentContext.isPersistentSet();
                 //DESIGN : first test the dependency then the result
                 final int exprDeps = expr.getDependencies();
@@ -303,7 +303,7 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                 if (result != null) {
                     if (steps.size() > 1 && !(result instanceof VirtualNodeSet) &&
                             !(expr instanceof EnclosedExpr) && !result.isEmpty() &&
-                            !Type.isNodeType(result.getItemType())) {
+                            !Type.isNavigable(result.getItemType())) {
                         gotAtomicResult = true;
                     }
                     if (hasSlash && !result.isEmpty()

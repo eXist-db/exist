@@ -564,6 +564,16 @@ public class Type {
         return subTypeOf(type, NODE) || subTypeOf(type, JSON_NODE);
     }
 
+    /**
+     * Returns true if the given type can be navigated with the '/' operator.
+     * XQuery 4.0 extends path navigation to maps and arrays in addition to nodes.
+     */
+    public static boolean isNavigable(final int type) {
+        return isNodeType(type)
+                || subTypeOf(type, MAP_ITEM)
+                || subTypeOf(type, ARRAY_ITEM);
+    }
+
     public static boolean subTypeOf(int subtype, final int supertype) {
         if (subtype == supertype) {
             return true;
