@@ -66,14 +66,18 @@ public class FnGet extends BasicFunction {
         final AtomicValue key = (AtomicValue) args[0].itemAt(0);
 
         if (contextItem instanceof ArrayType) {
-            // Array lookup by position
+            // Array lookup by position — return empty for out-of-bounds (XQ4 fn:get semantics)
             final ArrayType array = (ArrayType) contextItem;
-            final int index = ((IntegerValue) key.convertTo(Type.INTEGER)).getInt();
-            if (index < 1 || index > array.getSize()) {
-                throw new XPathException(this, ErrorCodes.FOAY0001,
-                        "Array index " + index + " out of bounds (1.." + array.getSize() + ")");
+            try {
+                final int index = ((IntegerValue) key.convertTo(Type.INTEGER)).getInt();
+                if (index < 1 || index > array.getSize()) {
+                    return Sequence.EMPTY_SEQUENCE;
+                }
+                return array.get(index - 1);
+            } catch (final XPathException e) {
+                // Non-integer key on array: return empty
+                return Sequence.EMPTY_SEQUENCE;
             }
-            return array.get(index - 1);
         } else if (contextItem instanceof AbstractMapType) {
             // Map lookup by key
             final AbstractMapType map = (AbstractMapType) contextItem;
