@@ -54,7 +54,7 @@ public class FnJNode extends BasicFunction {
                     new FunctionParameterSequenceType("value", Type.ITEM, Cardinality.EXACTLY_ONE,
                             "A map or array to convert to a JNode tree")
             },
-            new FunctionReturnSequenceType(Type.ITEM, Cardinality.EXACTLY_ONE,
+            new FunctionReturnSequenceType(Type.JSON_NODE, Cardinality.EXACTLY_ONE,
                     "A JNode tree root")
     );
 
