@@ -136,9 +136,19 @@ public class Type {
     /* XQuery 4.0 types */
     public final static int RECORD = 70;
 
-    private final static int[] superTypes = new int[71];
-    private final static Int2ObjectOpenHashMap<String[]> typeNames = new Int2ObjectOpenHashMap<>(71, Hash.FAST_LOAD_FACTOR);
-    private final static Object2IntOpenHashMap<String> typeCodes = new Object2IntOpenHashMap<>(80, Hash.FAST_LOAD_FACTOR);
+    /* XQuery 4.0 JNode types — JSON nodes in the data model */
+    public static final int JSON_NODE = 80;
+    public static final int JSON_OBJECT = 81;
+    public static final int JSON_ARRAY = 82;
+    public static final int JSON_STRING = 83;
+    public static final int JSON_NUMBER = 84;
+    public static final int JSON_BOOLEAN = 85;
+    public static final int JSON_NULL = 86;
+    public static final int JSON_MEMBER = 87;
+
+    private final static int[] superTypes = new int[88];
+    private final static Int2ObjectOpenHashMap<String[]> typeNames = new Int2ObjectOpenHashMap<>(88, Hash.FAST_LOAD_FACTOR);
+    private final static Object2IntOpenHashMap<String> typeCodes = new Object2IntOpenHashMap<>(96, Hash.FAST_LOAD_FACTOR);
     static {
         typeCodes.defaultReturnValue(NO_SUCH_VALUE);
     }
@@ -266,6 +276,18 @@ public class Type {
         defineSubType(NODE, NAMESPACE);
         defineSubType(NODE, PROCESSING_INSTRUCTION);
         defineSubType(NODE, TEXT);
+
+        // XQuery 4.0 JNode types — JSON nodes are subtypes of item(), not node()
+        // (They have their own axis navigation; making them subtypes of node()
+        // would cause XML-specific codepaths to cast them to NodeProxy.)
+        defineSubType(ITEM, JSON_NODE);
+        defineSubType(JSON_NODE, JSON_OBJECT);
+        defineSubType(JSON_NODE, JSON_ARRAY);
+        defineSubType(JSON_NODE, JSON_STRING);
+        defineSubType(JSON_NODE, JSON_NUMBER);
+        defineSubType(JSON_NODE, JSON_BOOLEAN);
+        defineSubType(JSON_NODE, JSON_NULL);
+        defineSubType(JSON_NODE, JSON_MEMBER);
     }
 
     static {
@@ -339,6 +361,16 @@ public class Type {
         defineBuiltInType(CDATA_SECTION, "cdata-section()");
         defineBuiltInType(JAVA_OBJECT, "object");
         defineBuiltInType(EMPTY_SEQUENCE, "empty-sequence()", "empty()");                           // keep `empty()` for backward compatibility
+
+        // XQuery 4.0 JNode type names
+        defineBuiltInType(JSON_NODE, "json-node()");
+        defineBuiltInType(JSON_OBJECT, "object-node()");
+        defineBuiltInType(JSON_ARRAY, "array-node()");
+        defineBuiltInType(JSON_STRING, "string-node()");
+        defineBuiltInType(JSON_NUMBER, "number-node()");
+        defineBuiltInType(JSON_BOOLEAN, "boolean-node()");
+        defineBuiltInType(JSON_NULL, "null-node()");
+        defineBuiltInType(JSON_MEMBER, "member-node()");
 
         // reduce any unused space
         typeNames.trim();
@@ -524,6 +556,14 @@ public class Type {
      *
      * @throws IllegalArgumentException When the type is invalid
      */
+    /**
+     * Returns true if the given type is a node type — either an XML node (element, text, etc.)
+     * or an XQuery 4.0 JSON node (object-node, array-node, etc.).
+     */
+    public static boolean isNodeType(final int type) {
+        return subTypeOf(type, NODE) || subTypeOf(type, JSON_NODE);
+    }
+
     public static boolean subTypeOf(int subtype, final int supertype) {
         if (subtype == supertype) {
             return true;
