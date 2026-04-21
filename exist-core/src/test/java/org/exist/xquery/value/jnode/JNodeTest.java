@@ -294,6 +294,62 @@ public class JNodeTest {
     }
 
     @Test
+    public void xpathMultiStepNavigation() throws Exception {
+        final Sequence result = executeQuery(
+                "xquery version '4.0'; " +
+                "let $root := fn:jtree(map { 'a': map { 'x': 1, 'y': 2 }, 'b': 3 }) " +
+                "return count($root/a/child::*)");
+        assertEquals("2", result.getStringValue());
+    }
+
+    @Test
+    public void xpathHistogramSelfCount() throws Exception {
+        final Sequence result = executeQuery(
+                "xquery version '4.0'; " +
+                "let $root := fn:jtree(map { 'a': 1, 'b': 2 }) " +
+                "return count($root/self::*)");
+        assertEquals("1", result.getStringValue());
+    }
+
+    @Test
+    public void xpathHistogramChildCount() throws Exception {
+        final Sequence result = executeQuery(
+                "xquery version '4.0'; " +
+                "let $root := fn:jtree(map { 'a': 1, 'b': 2, 'c': 3 }) " +
+                "return count($root/child::*)");
+        assertEquals("3", result.getStringValue());
+    }
+
+    @Test
+    public void xpathHistogramDescendantCount() throws Exception {
+        final Sequence result = executeQuery(
+                "xquery version '4.0'; " +
+                "let $root := fn:jtree(map { 'a': map { 'x': 1 }, 'b': 2 }) " +
+                "return count($root/descendant::*)");
+        assertEquals("3", result.getStringValue());
+    }
+
+    @Test
+    public void xpathHistogramAncestorCount() throws Exception {
+        final Sequence result = executeQuery(
+                "xquery version '4.0'; " +
+                "let $root := fn:jtree(map { 'a': map { 'x': 1 }, 'b': 2 }) " +
+                "return count($root/a/x/ancestor::*)");
+        assertEquals("2", result.getStringValue());
+    }
+
+    @Test
+    public void xpathHistogramFollowingSiblingCount() throws Exception {
+        // Wildcard following-sibling
+        final Sequence result = executeQuery(
+                "xquery version '4.0'; " +
+                "let $root := fn:jtree(map { 'a': 1, 'b': 2, 'c': 3 }) " +
+                "let $first := ($root/child::json-node())[1] " +
+                "return count($first/following-sibling::*)");
+        assertEquals("2", result.getStringValue());
+    }
+
+    @Test
     public void xpathChildObjectNode() throws Exception {
         final Sequence result = executeQuery(
                 "xquery version '4.0'; " +
