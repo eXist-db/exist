@@ -152,6 +152,17 @@ public class AdaptiveWriter extends IndentingXMLWriter {
                     case Type.FUNCTION:
                         writeFunctionItem((FunctionReference) item);
                         break;
+                    // XQuery 4.0 JNode types — serialize as their underlying JSON structure
+                    case Type.JSON_NODE:
+                    case Type.JSON_OBJECT:
+                    case Type.JSON_ARRAY:
+                    case Type.JSON_STRING:
+                    case Type.JSON_NUMBER:
+                    case Type.JSON_BOOLEAN:
+                    case Type.JSON_NULL:
+                    case Type.JSON_MEMBER:
+                        writeJNode((org.exist.xquery.value.jnode.JNode) item);
+                        break;
                     default:
                         writeAtomic(item.atomize());
                         break;
@@ -298,6 +309,25 @@ public class AdaptiveWriter extends IndentingXMLWriter {
                 SerializerPool.getInstance().returnObject(sax);
             }
             broker.returnSerializer(serializer);
+        }
+    }
+
+    /**
+     * Serialize a JNode in adaptive mode.
+     * Maps/arrays are serialized as their adaptive representation,
+     * leaf values as their string representation.
+     */
+    private void writeJNode(final org.exist.xquery.value.jnode.JNode jnode) throws SAXException, XPathException, TransformerException {
+        final Sequence value = jnode.getValue();
+        if (value instanceof AbstractMapType) {
+            writeMap((AbstractMapType) value);
+        } else if (value instanceof ArrayType) {
+            writeArray((ArrayType) value);
+        } else if (value == Sequence.EMPTY_SEQUENCE || value.isEmpty()) {
+            writeText("null");
+        } else {
+            // Delegate to the normal write loop for the underlying value
+            write(value, ", ", false);
         }
     }
 }

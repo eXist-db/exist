@@ -383,6 +383,19 @@ public class LocationStep extends Step {
                         + this + "'");
             }
 
+            // === XQuery 4.0 JNode axis navigation ===
+            // If context contains JNodes, handle navigation directly
+            if (contextSequence.getItemCount() > 0 &&
+                    contextSequence.itemAt(0) instanceof org.exist.xquery.value.jnode.JNode) {
+                result = evalJNodeAxis(contextSequence);
+
+                if (context.getProfiler().isEnabled()) {
+                    context.getProfiler().end(this, "", result);
+                }
+                return result;
+            }
+            // === End JNode axis navigation ===
+
             try {
                 switch (axis) {
 
@@ -500,6 +513,10 @@ public class LocationStep extends Step {
                 // case Constants.SELF_AXIS:
                 if (nodeTestType == null) {
                     nodeTestType = test.getType();
+                }
+                // JNode types always need computation
+                if (Type.subTypeOf(nodeTestType, Type.JSON_NODE)) {
+                    return true;
                 }
                 if (nodeTestType != Type.DOCUMENT
                         && nodeTestType != Type.NODE
@@ -1556,6 +1573,144 @@ public class LocationStep extends Step {
                 result.add(proxy);
             }
             return true;
+        }
+    }
+
+    // === XQuery 4.0 JNode axis navigation ===
+
+    /**
+     * Evaluate axis navigation when the context contains JNodes.
+     * Handles child, parent, self, descendant, descendant-or-self,
+     * ancestor, ancestor-or-self, following-sibling, and preceding-sibling axes.
+     */
+    private Sequence evalJNodeAxis(final Sequence contextSequence) throws XPathException {
+        final ValueSequence result = new ValueSequence();
+        for (final SequenceIterator it = contextSequence.iterate(); it.hasNext(); ) {
+            final Item item = it.nextItem();
+            if (!(item instanceof org.exist.xquery.value.jnode.JNode)) {
+                continue;
+            }
+            final org.exist.xquery.value.jnode.JNode jnode = (org.exist.xquery.value.jnode.JNode) item;
+
+            switch (axis) {
+                case Constants.CHILD_AXIS:
+                    for (final org.exist.xquery.value.jnode.JNode child : jnode.getChildren()) {
+                        if (matchesJNode(child)) {
+                            result.add(child);
+                        }
+                    }
+                    break;
+
+                case Constants.PARENT_AXIS:
+                    if (jnode.getParent() != null && matchesJNode(jnode.getParent())) {
+                        result.add(jnode.getParent());
+                    }
+                    break;
+
+                case Constants.SELF_AXIS:
+                    if (matchesJNode(jnode)) {
+                        result.add(jnode);
+                    }
+                    break;
+
+                case Constants.DESCENDANT_AXIS:
+                    addDescendants(jnode, result, false);
+                    break;
+
+                case Constants.DESCENDANT_SELF_AXIS:
+                    addDescendants(jnode, result, true);
+                    break;
+
+                case Constants.ANCESTOR_AXIS:
+                    addAncestors(jnode, result, false);
+                    break;
+
+                case Constants.ANCESTOR_SELF_AXIS:
+                    addAncestors(jnode, result, true);
+                    break;
+
+                case Constants.FOLLOWING_SIBLING_AXIS:
+                    for (final org.exist.xquery.value.jnode.JNode sibling : jnode.getFollowingSiblings()) {
+                        if (matchesJNode(sibling)) {
+                            result.add(sibling);
+                        }
+                    }
+                    break;
+
+                case Constants.PRECEDING_SIBLING_AXIS:
+                    for (final org.exist.xquery.value.jnode.JNode sibling : jnode.getPrecedingSiblings()) {
+                        if (matchesJNode(sibling)) {
+                            result.add(sibling);
+                        }
+                    }
+                    break;
+
+                default:
+                    throw new XPathException(this, ErrorCodes.XPTY0019,
+                            "Axis " + axis + " is not supported for JNodes");
+            }
+        }
+
+        // Apply predicates
+        if (result.isEmpty()) {
+            return Sequence.EMPTY_SEQUENCE;
+        }
+        Sequence filtered = result;
+        final Predicate[] predicates = getPredicates();
+        if (predicates != null) {
+            for (final Predicate pred : predicates) {
+                filtered = pred.evalPredicate(contextSequence, filtered, axis);
+            }
+        }
+        return filtered;
+    }
+
+    /**
+     * Check if a JNode matches this step's node test.
+     */
+    private boolean matchesJNode(final org.exist.xquery.value.jnode.JNode jnode) {
+        if (test == null) {
+            return true;
+        }
+        if (test instanceof TypeTest) {
+            final int testType = ((TypeTest) test).getType();
+            // TypeTest with NODE means any node — wildcard
+            if (testType == Type.NODE || testType == Type.JSON_NODE) {
+                return true;
+            }
+            return Type.subTypeOf(jnode.getType(), testType);
+        }
+        // NameTest, AnyNodeTest — treat as wildcard for JNodes
+        if (test instanceof AnyNodeTest) {
+            return true;
+        }
+        return false;
+    }
+
+    private void addDescendants(final org.exist.xquery.value.jnode.JNode jnode,
+                                final ValueSequence result, final boolean includeSelf) throws XPathException {
+        if (includeSelf && matchesJNode(jnode)) {
+            result.add(jnode);
+        }
+        for (final org.exist.xquery.value.jnode.JNode child : jnode.getChildren()) {
+            if (matchesJNode(child)) {
+                result.add(child);
+            }
+            addDescendants(child, result, false);
+        }
+    }
+
+    private void addAncestors(final org.exist.xquery.value.jnode.JNode jnode,
+                              final ValueSequence result, final boolean includeSelf) {
+        if (includeSelf && matchesJNode(jnode)) {
+            result.add(jnode);
+        }
+        org.exist.xquery.value.jnode.JNode parent = jnode.getParent();
+        while (parent != null) {
+            if (matchesJNode(parent)) {
+                result.add(parent);
+            }
+            parent = parent.getParent();
         }
     }
 

@@ -32,6 +32,7 @@ import org.exist.storage.serializers.Serializer;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.functions.array.ArrayType;
+import org.exist.xquery.functions.map.AbstractMapType;
 import org.exist.xquery.functions.map.MapType;
 import org.exist.xquery.util.SerializerUtils;
 import org.exist.xquery.value.*;
@@ -177,7 +178,11 @@ public class JSONSerializer {
     }
 
     private void serializeItem(Item item, JsonGenerator generator) throws IOException, XPathException, SAXException {
-        if (item.getType() == Type.ARRAY_ITEM) {
+        // XQuery 4.0 JNode: unwrap to underlying value and serialize that
+        if (item instanceof org.exist.xquery.value.jnode.JNode) {
+            final org.exist.xquery.value.jnode.JNode jnode = (org.exist.xquery.value.jnode.JNode) item;
+            serializeJNode(jnode, generator);
+        } else if (item.getType() == Type.ARRAY_ITEM) {
             serializeArray((ArrayType) item, generator);
         } else if (item.getType() == Type.MAP_ITEM) {
             serializeMap((MapType) item, generator);
@@ -187,6 +192,36 @@ public class JSONSerializer {
             serializeNode(item, generator);
         } else if (Type.subTypeOf(item.getType(), Type.FUNCTION)) {
             throw new SAXException("err:SERE0021 Sequence contains a function item, which cannot be serialized as JSON");
+        }
+    }
+
+    /**
+     * Serialize a JNode as JSON. The JNode's underlying value determines the output:
+     * maps → objects, arrays → arrays, atomics → JSON literals, null → null.
+     */
+    private void serializeJNode(org.exist.xquery.value.jnode.JNode jnode, JsonGenerator generator) throws IOException, XPathException, SAXException {
+        final Sequence value = jnode.getValue();
+        if (value instanceof AbstractMapType) {
+            serializeMap((MapType) value, generator);
+        } else if (value instanceof ArrayType) {
+            serializeArray((ArrayType) value, generator);
+        } else if (value == Sequence.EMPTY_SEQUENCE || value.isEmpty()) {
+            generator.writeNull();
+        } else if (value instanceof Item) {
+            final Item inner = (Item) value;
+            if (Type.subTypeOf(inner.getType(), Type.ANY_ATOMIC_TYPE)) {
+                serializeAtomicValue(inner, generator);
+            } else {
+                // Fallback: serialize as string
+                writeStringWithCharMap(generator, inner.getStringValue());
+            }
+        } else {
+            // Sequence with multiple items — serialize as array
+            generator.writeStartArray();
+            for (final SequenceIterator it = value.iterate(); it.hasNext(); ) {
+                serializeItem(it.nextItem(), generator);
+            }
+            generator.writeEndArray();
         }
     }
 
