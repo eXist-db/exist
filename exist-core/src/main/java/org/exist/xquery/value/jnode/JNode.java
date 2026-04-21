@@ -264,6 +264,59 @@ public class JNode implements GNode, Sequence {
         return result;
     }
 
+    // ===================== Following / Preceding axis =====================
+
+    /**
+     * Returns all nodes following this node in document order (excluding descendants).
+     * following = following-siblings and their descendants, then following of parent (recursive).
+     */
+    public List<JNode> getFollowing() throws XPathException {
+        final List<JNode> result = new ArrayList<>();
+        collectFollowing(this, result);
+        return result;
+    }
+
+    private void collectFollowing(final JNode node, final List<JNode> result) throws XPathException {
+        // Add following siblings and all their descendants
+        for (final JNode sibling : node.getFollowingSiblings()) {
+            result.add(sibling);
+            collectDescendants(sibling, result);
+        }
+        // Recurse up to parent's following
+        if (node.parent != null) {
+            collectFollowing(node.parent, result);
+        }
+    }
+
+    /**
+     * Returns all nodes preceding this node in document order (excluding ancestors).
+     * preceding = preceding-siblings and their descendants, then preceding of parent (recursive).
+     */
+    public List<JNode> getPreceding() throws XPathException {
+        final List<JNode> result = new ArrayList<>();
+        collectPreceding(this, result);
+        return result;
+    }
+
+    private void collectPreceding(final JNode node, final List<JNode> result) throws XPathException {
+        // Add preceding siblings in reverse and all their descendants
+        final List<JNode> precSiblings = node.getPrecedingSiblings();
+        for (int i = precSiblings.size() - 1; i >= 0; i--) {
+            final JNode sibling = precSiblings.get(i);
+            // Add descendants first (reverse document order), then the sibling itself
+            final List<JNode> desc = new ArrayList<>();
+            collectDescendants(sibling, desc);
+            for (int j = desc.size() - 1; j >= 0; j--) {
+                result.add(desc.get(j));
+            }
+            result.add(sibling);
+        }
+        // Recurse up to parent's preceding
+        if (node.parent != null) {
+            collectPreceding(node.parent, result);
+        }
+    }
+
     // ===================== Descendant axis =====================
 
     /**

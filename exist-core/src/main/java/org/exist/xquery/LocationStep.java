@@ -1815,6 +1815,67 @@ public class LocationStep extends Step {
                     }
                     break;
 
+                case Constants.FOLLOWING_AXIS:
+                    for (final org.exist.xquery.value.jnode.JNode following : jnode.getFollowing()) {
+                        if (matchesJNode(following)) {
+                            result.add(following);
+                        }
+                    }
+                    break;
+
+                case Constants.PRECEDING_AXIS:
+                    for (final org.exist.xquery.value.jnode.JNode preceding : jnode.getPreceding()) {
+                        if (matchesJNode(preceding)) {
+                            result.add(preceding);
+                        }
+                    }
+                    break;
+
+                // XQuery 4.0 *-or-self axis variants
+                case Constants.FOLLOWING_OR_SELF_AXIS:
+                    if (matchesJNode(jnode)) {
+                        result.add(jnode);
+                    }
+                    for (final org.exist.xquery.value.jnode.JNode following : jnode.getFollowing()) {
+                        if (matchesJNode(following)) {
+                            result.add(following);
+                        }
+                    }
+                    break;
+
+                case Constants.PRECEDING_OR_SELF_AXIS:
+                    if (matchesJNode(jnode)) {
+                        result.add(jnode);
+                    }
+                    for (final org.exist.xquery.value.jnode.JNode preceding : jnode.getPreceding()) {
+                        if (matchesJNode(preceding)) {
+                            result.add(preceding);
+                        }
+                    }
+                    break;
+
+                case Constants.FOLLOWING_SIBLING_OR_SELF_AXIS:
+                    if (matchesJNode(jnode)) {
+                        result.add(jnode);
+                    }
+                    for (final org.exist.xquery.value.jnode.JNode sibling : jnode.getFollowingSiblings()) {
+                        if (matchesJNode(sibling)) {
+                            result.add(sibling);
+                        }
+                    }
+                    break;
+
+                case Constants.PRECEDING_SIBLING_OR_SELF_AXIS:
+                    if (matchesJNode(jnode)) {
+                        result.add(jnode);
+                    }
+                    for (final org.exist.xquery.value.jnode.JNode sibling : jnode.getPrecedingSiblings()) {
+                        if (matchesJNode(sibling)) {
+                            result.add(sibling);
+                        }
+                    }
+                    break;
+
                 default:
                     throw new XPathException(this, ErrorCodes.XPTY0019,
                             "Axis " + axis + " is not supported for JNodes");
@@ -1844,15 +1905,38 @@ public class LocationStep extends Step {
         }
         if (test instanceof TypeTest) {
             final int testType = ((TypeTest) test).getType();
-            // TypeTest with NODE means any node — wildcard
-            if (testType == Type.NODE || testType == Type.JSON_NODE) {
+            // TypeTest with NODE or ELEMENT means any node — wildcard for JNodes
+            // (child::* produces TypeTest(ELEMENT) which should match JNodes)
+            if (testType == Type.NODE || testType == Type.JSON_NODE
+                    || testType == Type.ELEMENT) {
                 return true;
             }
             return Type.subTypeOf(jnode.getType(), testType);
         }
-        // NameTest, AnyNodeTest — treat as wildcard for JNodes
+        // AnyNodeTest — matches any JNode
         if (test instanceof AnyNodeTest) {
             return true;
+        }
+        // NameTest — check if wildcard (*) or named key
+        if (test instanceof NameTest) {
+            final org.exist.dom.QName name = test.getName();
+            if (name != null) {
+                final String local = name.getLocalPart();
+                // Wildcard * matches any JNode
+                if ("*".equals(local) || local == null) {
+                    return true;
+                }
+                // Named test: match against JNode key
+                try {
+                    final AtomicValue jnodeKey = jnode.getKey();
+                    if (jnodeKey != null) {
+                        return local.equals(jnodeKey.getStringValue());
+                    }
+                } catch (final XPathException e) {
+                    return false;
+                }
+            }
+            return false;
         }
         return false;
     }

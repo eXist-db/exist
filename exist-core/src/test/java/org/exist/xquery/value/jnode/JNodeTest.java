@@ -276,6 +276,15 @@ public class JNodeTest {
     }
 
     @Test
+    public void xpathChildWildcard() throws Exception {
+        final Sequence result = executeQuery(
+                "xquery version '4.0'; " +
+                "let $root := fn:jtree(map { 'a': 1, 'b': 2, 'c': 3 }) " +
+                "return count($root/child::*)");
+        assertEquals("3", result.getStringValue());
+    }
+
+    @Test
     public void xpathChildObjectNode() throws Exception {
         final Sequence result = executeQuery(
                 "xquery version '4.0'; " +
