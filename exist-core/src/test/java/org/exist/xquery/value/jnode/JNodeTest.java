@@ -285,6 +285,15 @@ public class JNodeTest {
     }
 
     @Test
+    public void xpathChildNamedKey() throws Exception {
+        final Sequence result = executeQuery(
+                "xquery version '4.0'; " +
+                "let $root := fn:jtree(map { 'name': 'Joe', 'age': 42 }) " +
+                "return fn:jvalue($root/name)");
+        assertEquals("Joe", result.getStringValue());
+    }
+
+    @Test
     public void xpathChildObjectNode() throws Exception {
         final Sequence result = executeQuery(
                 "xquery version '4.0'; " +

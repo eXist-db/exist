@@ -1903,21 +1903,11 @@ public class LocationStep extends Step {
         if (test == null) {
             return true;
         }
-        if (test instanceof TypeTest) {
-            final int testType = ((TypeTest) test).getType();
-            // TypeTest with NODE or ELEMENT means any node — wildcard for JNodes
-            // (child::* produces TypeTest(ELEMENT) which should match JNodes)
-            if (testType == Type.NODE || testType == Type.JSON_NODE
-                    || testType == Type.ELEMENT) {
-                return true;
-            }
-            return Type.subTypeOf(jnode.getType(), testType);
-        }
         // AnyNodeTest — matches any JNode
         if (test instanceof AnyNodeTest) {
             return true;
         }
-        // NameTest — check if wildcard (*) or named key
+        // NameTest MUST be checked before TypeTest (NameTest extends TypeTest)
         if (test instanceof NameTest) {
             final org.exist.dom.QName name = test.getName();
             if (name != null) {
@@ -1937,6 +1927,16 @@ public class LocationStep extends Step {
                 }
             }
             return false;
+        }
+        if (test instanceof TypeTest) {
+            final int testType = ((TypeTest) test).getType();
+            // TypeTest with NODE or ELEMENT means any node — wildcard for JNodes
+            // (child::* produces TypeTest(ELEMENT) which should match JNodes)
+            if (testType == Type.NODE || testType == Type.JSON_NODE
+                    || testType == Type.ELEMENT) {
+                return true;
+            }
+            return Type.subTypeOf(jnode.getType(), testType);
         }
         return false;
     }
