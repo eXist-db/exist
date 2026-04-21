@@ -29,6 +29,8 @@ package org.exist.extensions.exquery.restxq.impl.adapters;
 import java.io.IOException;
 import java.io.OutputStream;
 import jakarta.servlet.http.HttpServletResponse;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exquery.http.HttpResponse;
 import org.exquery.http.HttpStatus;
 
@@ -37,7 +39,9 @@ import org.exquery.http.HttpStatus;
  * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 public class HttpServletResponseAdapter implements HttpResponse {
-    
+
+    private static final Logger LOG = LogManager.getLogger(HttpServletResponseAdapter.class);
+
     private final HttpServletResponse response;
 
     public HttpServletResponseAdapter(final HttpServletResponse response) {
@@ -53,6 +57,10 @@ public class HttpServletResponseAdapter implements HttpResponse {
     public void setStatus(final HttpStatus status, final String reason) {
         // Cannot use sendError(int, String) here: it commits the response and triggers
         // error page handling, which would prevent RESTXQ from writing its response body.
+        // Servlet 6.0 dropped the reason parameter; log it for diagnostics.
+        if (reason != null && !reason.isEmpty()) {
+            LOG.debug("HTTP {} — reason (not sent per Servlet 6.0): {}", status.getStatus(), reason);
+        }
         response.setStatus(status.getStatus());
     }
 
