@@ -110,26 +110,22 @@ public class EvalWebSocketEndpoint {
                 }
             }
 
-            // Fall back to guest if no credentials provided
-            if (subject == null) {
-                try {
-                    final BrokerPool pool = BrokerPool.getInstance();
-                    subject = pool.getSecurityManager().getGuestSubject();
-                } catch (final EXistException e) {
-                    LOG.error("Failed to get guest subject: {}", e.getMessage());
-                }
-            }
-
+            // No guest fallback — authentication is required for WebSocket eval.
+            // Unauthenticated connections will be rejected in onOpen().
             if (subject != null) {
                 sec.getUserProperties().put(USER_PROPERTY, subject);
+            } else {
+                LOG.debug("WebSocket eval connection without valid credentials — will be rejected in onOpen");
             }
         }
     }
 
+    private static final int MAX_TEXT_MESSAGE_SIZE = 10 * 1024 * 1024; // 10MB
+
     @OnOpen
     public void onOpen(final Session session, final EndpointConfig config) {
         session.setMaxIdleTimeout(0); // no idle timeout for eval sessions
-        session.setMaxTextMessageBufferSize(10 * 1024 * 1024); // 10MB for large queries
+        session.setMaxTextMessageBufferSize(MAX_TEXT_MESSAGE_SIZE);
 
         final Subject subject = (Subject) config.getUserProperties().get(USER_PROPERTY);
         if (subject == null) {
@@ -205,7 +201,11 @@ public class EvalWebSocketEndpoint {
 
     @OnError
     public void onError(final Session session, final Throwable error) {
-        LOG.warn("WebSocket eval error: {}", error.getMessage(), error);
+        if (error.getMessage() != null && error.getMessage().contains("Text message size")) {
+            LOG.warn("WebSocket message exceeds {}MB buffer limit: {}", MAX_TEXT_MESSAGE_SIZE / (1024 * 1024), error.getMessage());
+        } else {
+            LOG.warn("WebSocket eval error: {}", error.getMessage(), error);
+        }
         final EvalSession evalSession = sessions.remove(session);
         if (evalSession != null) {
             evalSession.cancelAll();
