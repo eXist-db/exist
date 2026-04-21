@@ -65,7 +65,7 @@ public class DeepEqualOptions {
 
     // Valid boolean-valued option keys (not in VALID_BOOLEAN_OPTIONS)
     private static final Set<String> VALID_ORDERED_OPTIONS = Set.of(
-            "ordered", "map-order"
+            "ordered", "unordered", "map-order"
     );
 
     // All valid string keys (no namespace)
@@ -210,6 +210,7 @@ public class DeepEqualOptions {
                 final boolean boolVal = parseBooleanOption(keyStr, value);
                 switch (keyStr) {
                     case "ordered" -> ordered = boolVal;
+                    case "unordered" -> ordered = !boolVal;
                     case "map-order" -> mapOrder = boolVal;
                 }
             } else if ("collation".equals(keyStr)) {

@@ -136,6 +136,11 @@ public class RegexUtil {
      *
      * @throws XPathException if the XQuery Regular Expression is invalid.
      */
+    // Private-use sentinels for \b and \B during Saxon translation.
+    // These are Unicode noncharacters that will never appear in real patterns.
+    private static final String WB_SENTINEL = "\uFDD0";
+    private static final String NWB_SENTINEL = "\uFDD1";
+
     public static String translateRegexp(final Expression context, final String pattern, final boolean ignoreWhitespace, final boolean caseBlind) throws XPathException {
         // convert pattern to Java regex syntax using Saxon's regex translator
         try {
@@ -147,8 +152,26 @@ public class RegexUtil {
                 flags.append('i');
             }
 
-            final JavaRegularExpression regex = new JavaRegularExpression(StringView.of(pattern), flags.toString());
-            return regex.getJavaRegularExpression();
+            // XQuery 4.0: \b and \B word boundaries are not recognized by Saxon's
+            // XPath 3.1 regex translator, but Java natively supports them.
+            // Replace with sentinels before Saxon translation, then restore after.
+            String preprocessed = pattern;
+            boolean hasWordBoundary = false;
+            if (pattern.contains("\\b") || pattern.contains("\\B")) {
+                preprocessed = replaceEscapes(pattern, 'b', WB_SENTINEL);
+                preprocessed = replaceEscapes(preprocessed, 'B', NWB_SENTINEL);
+                hasWordBoundary = true;
+            }
+
+            final JavaRegularExpression regex = new JavaRegularExpression(StringView.of(preprocessed), flags.toString());
+            String result = regex.getJavaRegularExpression();
+
+            // Restore word boundary escapes
+            if (hasWordBoundary) {
+                result = result.replace(WB_SENTINEL, "\\b").replace(NWB_SENTINEL, "\\B");
+            }
+
+            return result;
         } catch (final net.sf.saxon.trans.XPathException e) {
             // Fallback: if the pattern uses \p{Is<Block>} Unicode block names that
             // Saxon doesn't recognize, convert them to Java's \p{In<Block>} syntax
@@ -171,6 +194,30 @@ public class RegexUtil {
             }
             throw new XPathException(context, ErrorCodes.FORX0002, "Conversion from XPath F&O 3.0 regular expression syntax to Java regular expression syntax failed: " + e.getMessage(), new StringValue(pattern), e);
         }
+    }
+
+    /**
+     * Replace \X escape sequences (where X is the given char) with a sentinel,
+     * but only when the backslash is not itself escaped (\\X should remain).
+     */
+    private static String replaceEscapes(final String pattern, final char escChar, final String sentinel) {
+        final StringBuilder sb = new StringBuilder(pattern.length());
+        for (int i = 0; i < pattern.length(); i++) {
+            if (pattern.charAt(i) == '\\' && i + 1 < pattern.length()) {
+                if (pattern.charAt(i + 1) == escChar) {
+                    sb.append(sentinel);
+                    i++; // skip the escape char
+                } else if (pattern.charAt(i + 1) == '\\') {
+                    sb.append("\\\\");
+                    i++; // skip the second backslash
+                } else {
+                    sb.append('\\');
+                }
+            } else {
+                sb.append(pattern.charAt(i));
+            }
+        }
+        return sb.toString();
     }
 
     /**

@@ -181,7 +181,7 @@ public class FnElementToMap extends BasicFunction {
         final boolean hasElements = children.stream().anyMatch(n -> n.getNodeType() == Node.ELEMENT_NODE);
         final boolean hasTextContent = children.stream().anyMatch(n ->
                 (n.getNodeType() == Node.TEXT_NODE || n.getNodeType() == Node.CDATA_SECTION_NODE)
-                        && !n.getTextContent().trim().isEmpty());
+                        && !n.getTextContent().isEmpty());
         final boolean hasComments = children.stream().anyMatch(n -> n.getNodeType() == Node.COMMENT_NODE);
 
         // Empty element
@@ -239,14 +239,14 @@ public class FnElementToMap extends BasicFunction {
         final boolean allUnique = groupedByName.values().stream().allMatch(l -> l.size() == 1);
 
         if (allSameName) {
-            // List layout: array of child values
+            // List layout: single key → array of child values
             return buildListContent(childElements, attrs, opts);
         } else if (allUnique) {
             // Record layout: map of child name → value
             return buildRecordContent(childElements, attrs, children, opts);
         } else {
-            // Sequence layout: array of child maps
-            return buildSequenceContent(children, attrs, opts);
+            // Mixed layout: group same-named siblings under shared key as arrays
+            return buildGroupedContent(childElements, groupedByName, attrs, children, opts);
         }
     }
 
@@ -260,23 +260,20 @@ public class FnElementToMap extends BasicFunction {
     }
 
     private Sequence buildListContent(final List<Element> children, final Map<String, String> attrs, final Options opts) throws XPathException {
-        // Array of child content values
+        // All children share the same name — group under that name as an array
+        final String childName = formatName(children.get(0), opts);
         final List<Sequence> items = new ArrayList<>();
         for (final Element child : children) {
             items.add(convertContent(child, opts));
         }
         final ArrayType array = new ArrayType(this, context, items);
 
-        if (attrs.isEmpty()) {
-            return array;
-        } else {
-            MapType attrMap = new MapType(this, context);
-            for (final Map.Entry<String, String> a : attrs.entrySet()) {
-                attrMap = (MapType) attrMap.put(new StringValue(this, a.getKey()), new StringValue(this, a.getValue()));
-            }
-            attrMap = (MapType) attrMap.put(new StringValue(this, opts.contentKey), array);
-            return attrMap;
+        MapType result = new MapType(this, context);
+        for (final Map.Entry<String, String> a : attrs.entrySet()) {
+            result = (MapType) result.put(new StringValue(this, a.getKey()), new StringValue(this, a.getValue()));
         }
+        result = (MapType) result.put(new StringValue(this, childName), array);
+        return result;
     }
 
     private Sequence buildRecordContent(final List<Element> childElements, final Map<String, String> attrs,
@@ -305,6 +302,49 @@ public class FnElementToMap extends BasicFunction {
         }
 
         return recordMap;
+    }
+
+    private Sequence buildGroupedContent(final List<Element> childElements,
+                                          final Map<String, List<Element>> groupedByName,
+                                          final Map<String, String> attrs,
+                                          final List<Node> allChildren,
+                                          final Options opts) throws XPathException {
+        MapType result = new MapType(this, context);
+
+        // Add attributes first
+        for (final Map.Entry<String, String> a : attrs.entrySet()) {
+            result = (MapType) result.put(new StringValue(this, a.getKey()), new StringValue(this, a.getValue()));
+        }
+
+        // Add comments if present
+        for (final Node child : allChildren) {
+            if (child.getNodeType() == Node.COMMENT_NODE) {
+                result = (MapType) result.put(
+                        new StringValue(this, opts.commentKey),
+                        new StringValue(this, child.getTextContent()));
+            }
+        }
+
+        // Group children by name: single occurrence → direct value, multiple → array
+        for (final Map.Entry<String, List<Element>> group : groupedByName.entrySet()) {
+            final String name = group.getKey();
+            final List<Element> elems = group.getValue();
+            if (elems.size() == 1) {
+                result = (MapType) result.put(
+                        new StringValue(this, name),
+                        convertContent(elems.get(0), opts));
+            } else {
+                final List<Sequence> items = new ArrayList<>();
+                for (final Element e : elems) {
+                    items.add(convertContent(e, opts));
+                }
+                result = (MapType) result.put(
+                        new StringValue(this, name),
+                        new ArrayType(this, context, items));
+            }
+        }
+
+        return result;
     }
 
     private Sequence buildSequenceContent(final List<Node> children, final Map<String, String> attrs, final Options opts) throws XPathException {
@@ -398,7 +438,6 @@ public class FnElementToMap extends BasicFunction {
             case "local":
                 return local;
             default:
-                // Default to eqname
                 if (ns != null && !ns.isEmpty()) {
                     return "Q{" + ns + "}" + local;
                 }
@@ -409,6 +448,11 @@ public class FnElementToMap extends BasicFunction {
     private String formatAttrName(final Attr attr, final Options opts) {
         final String ns = attr.getNamespaceURI();
         final String local = attr.getLocalName() != null ? attr.getLocalName() : attr.getName();
+
+        // The xml: namespace always uses the lexical prefix form per spec
+        if (XMLConstants.XML_NS_URI.equals(ns)) {
+            return "xml:" + local;
+        }
 
         switch (opts.nameFormat) {
             case "eqname":

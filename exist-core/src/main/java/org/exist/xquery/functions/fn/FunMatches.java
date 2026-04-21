@@ -527,6 +527,19 @@ public final class FunMatches extends Function implements Optimizable, IndexUseR
             pattern = FunReplace.stripRegexComments(pattern);
         }
 
+        // XQuery 4.0: \b and \B word boundaries — Saxon's XP30 translator rejects them.
+        // Fall back to Java regex for patterns containing \b or \B.
+        if (pattern.contains("\\b") || pattern.contains("\\B")) {
+            try {
+                final String javaPattern = org.exist.xquery.regex.RegexUtil.translateRegexp(
+                        this, pattern, flags.contains("x"), flags.contains("i"));
+                int javaFlags = org.exist.xquery.regex.RegexUtil.parseFlags(this, flags);
+                return Pattern.compile(javaPattern, javaFlags).matcher(string).find();
+            } catch (final XPathException | PatternSyntaxException e) {
+                throw new XPathException(this, ErrorCodes.FORX0002, "Invalid regular expression: " + e.getMessage());
+            }
+        }
+
         try {
             List<String> warnings = new ArrayList<>(1);
             RegularExpression regex = context.getBroker().getBrokerPool()

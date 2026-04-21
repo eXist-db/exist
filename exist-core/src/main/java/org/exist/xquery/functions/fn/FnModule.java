@@ -304,6 +304,7 @@ public class FnModule extends AbstractInternalModule {
         new FunctionDef(FnFunctionAnnotations.FN_FUNCTION_ANNOTATIONS, FnFunctionAnnotations.class),
         new FunctionDef(FnFunctionIdentity.FN_FUNCTION_IDENTITY, FnFunctionIdentity.class),
         new FunctionDef(FnDateTimeParts.FN_BUILD_DATETIME, FnDateTimeParts.class),
+        new FunctionDef(FnDateTimeParts.FN_BUILD_DATETIME_RECORD, FnDateTimeParts.class),
         new FunctionDef(FnDateTimeParts.FN_PARTS_OF_DATETIME, FnDateTimeParts.class),
         new FunctionDef(FnReplicate.FN_REPLICATE, FnReplicate.class),
         new FunctionDef(FnInsertSeparator.FN_INSERT_SEPARATOR, FnInsertSeparator.class),
