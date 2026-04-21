@@ -401,6 +401,8 @@ public class LocationStep extends Step {
                 }
                 if (hasJNode) {
                     result = evalJNodeAxis(contextSequence);
+                    // Apply predicates and return
+                    result = applyPredicate(contextSequence, result);
                     if (context.getProfiler().isEnabled()) {
                         context.getProfiler().end(this, "", result);
                     }
@@ -408,6 +410,8 @@ public class LocationStep extends Step {
                 }
                 if (hasMapArray) {
                     result = evalMapArrayAxis(contextSequence);
+                    // Apply predicates and return
+                    result = applyPredicate(contextSequence, result);
                     if (context.getProfiler().isEnabled()) {
                         context.getProfiler().end(this, "", result);
                     }
