@@ -384,17 +384,29 @@ public class LocationStep extends Step {
             }
 
             // === XQuery 4.0 JNode / Map / Array axis navigation ===
+            // Check if any item in the context sequence is navigable (JNode, map, array)
             if (contextSequence.getItemCount() > 0) {
-                final Item firstItem = contextSequence.itemAt(0);
-                if (firstItem instanceof org.exist.xquery.value.jnode.JNode) {
+                boolean hasJNode = false;
+                boolean hasMapArray = false;
+                for (int ci = 0; ci < Math.min(contextSequence.getItemCount(), 10); ci++) {
+                    final Item item = contextSequence.itemAt(ci);
+                    if (item instanceof org.exist.xquery.value.jnode.JNode) {
+                        hasJNode = true;
+                        break;
+                    }
+                    if (item instanceof org.exist.xquery.functions.map.MapType
+                            || item instanceof org.exist.xquery.functions.array.ArrayType) {
+                        hasMapArray = true;
+                    }
+                }
+                if (hasJNode) {
                     result = evalJNodeAxis(contextSequence);
                     if (context.getProfiler().isEnabled()) {
                         context.getProfiler().end(this, "", result);
                     }
                     return result;
                 }
-                if (firstItem instanceof org.exist.xquery.functions.map.MapType
-                        || firstItem instanceof org.exist.xquery.functions.array.ArrayType) {
+                if (hasMapArray) {
                     result = evalMapArrayAxis(contextSequence);
                     if (context.getProfiler().isEnabled()) {
                         context.getProfiler().end(this, "", result);

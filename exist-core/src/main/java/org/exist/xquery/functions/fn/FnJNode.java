@@ -168,24 +168,30 @@ public class FnJNode extends BasicFunction {
     }
 
     private Sequence evalJkey(final Sequence arg) throws XPathException {
-        final Item item = arg.itemAt(0);
-        if (!(item instanceof JNode)) {
-            throw new XPathException(this, ErrorCodes.XPTY0004,
-                    "fn:jkey expects a JNode, got " + Type.getTypeName(item.getType()));
+        if (arg.isEmpty()) {
+            return Sequence.EMPTY_SEQUENCE;
         }
-        final JNode jnode = (JNode) item;
-        final AtomicValue key = jnode.getKey();
-        return key != null ? key : Sequence.EMPTY_SEQUENCE;
+        final Item item = arg.itemAt(0);
+        if (item instanceof JNode) {
+            final JNode jnode = (JNode) item;
+            final AtomicValue key = jnode.getKey();
+            return key != null ? key : Sequence.EMPTY_SEQUENCE;
+        }
+        // Non-JNode: no key available
+        return Sequence.EMPTY_SEQUENCE;
     }
 
     private Sequence evalJvalue(final Sequence arg) throws XPathException {
-        final Item item = arg.itemAt(0);
-        if (!(item instanceof JNode)) {
-            throw new XPathException(this, ErrorCodes.XPTY0004,
-                    "fn:jvalue expects a JNode, got " + Type.getTypeName(item.getType()));
+        if (arg.isEmpty()) {
+            return Sequence.EMPTY_SEQUENCE;
         }
-        final JNode jnode = (JNode) item;
-        return jnode.getValue();
+        final Item item = arg.itemAt(0);
+        if (item instanceof JNode) {
+            return ((JNode) item).getValue();
+        }
+        // XQ4: when applied to non-JNode values (e.g., from map/array path
+        // navigation), return the item as-is — acts as identity function.
+        return item.toSequence();
     }
 
     private Sequence evalJchildren(final Sequence arg) throws XPathException {

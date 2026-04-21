@@ -245,7 +245,9 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                 //TODO : maybe this could be detected by the parser ? -pb
                 if (gotAtomicResult && !Type.isNavigable(expr.returnsType())
                         //Ugly workaround to allow preceding *text* nodes.
-                        && !(expr instanceof EnclosedExpr)) {
+                        && !(expr instanceof EnclosedExpr)
+                        // XQ4: allow path navigation on results containing maps/arrays
+                        && (result == null || !containsNavigableItem(result))) {
                     throw new XPathException(this, ErrorCodes.XPTY0019,
                             "left operand of '/' must be a node. Got '" +
                                     Type.getTypeName(result.getItemType()) + " " +
@@ -303,7 +305,8 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                 if (result != null) {
                     if (steps.size() > 1 && !(result instanceof VirtualNodeSet) &&
                             !(expr instanceof EnclosedExpr) && !result.isEmpty() &&
-                            !Type.isNavigable(result.getItemType())) {
+                            !Type.isNavigable(result.getItemType()) &&
+                            !containsNavigableItem(result)) {
                         gotAtomicResult = true;
                     }
                     if (hasSlash && !result.isEmpty()
@@ -341,7 +344,8 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
             }
 
             if (gotAtomicResult && result != null && !allowMixedNodesInReturn &&
-                    !Type.subTypeOf(result.getItemType(), Type.ANY_ATOMIC_TYPE)) {
+                    !Type.subTypeOf(result.getItemType(), Type.ANY_ATOMIC_TYPE) &&
+                    !containsNavigableItem(result)) {
                 throw new XPathException(this, ErrorCodes.XPTY0018,
                         "Cannot mix nodes and atomic values in the result of a path expression.");
             }
@@ -350,6 +354,24 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
             context.getProfiler().end(this, "", result);
         }
         return result;
+    }
+
+    /**
+     * Check if the sequence contains any navigable items (nodes, maps, or arrays).
+     * Used for XQuery 4.0 path navigation on maps/arrays where the declared
+     * item type may be item() but actual items are navigable.
+     */
+    private static boolean containsNavigableItem(final Sequence seq) {
+        if (seq == null || seq.isEmpty()) {
+            return false;
+        }
+        for (int i = 0; i < Math.min(seq.getItemCount(), 5); i++) {
+            final Item item = seq.itemAt(i);
+            if (Type.isNavigable(item.getType())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
