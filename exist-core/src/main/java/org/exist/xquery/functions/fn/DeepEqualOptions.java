@@ -60,7 +60,7 @@ public class DeepEqualOptions {
 
     // Valid string-valued option keys
     private static final Set<String> VALID_STRING_OPTIONS = Set.of(
-            "collation", "whitespace"
+            "collation", "normalization-form", "whitespace"
     );
 
     // Valid boolean-valued option keys (not in VALID_BOOLEAN_OPTIONS)
