@@ -1942,6 +1942,31 @@ public class LocationStep extends Step {
             }
             return Type.subTypeOf(jnode.getType(), testType);
         }
+        // AnyNodeTest — matches any JNode
+        if (test instanceof AnyNodeTest) {
+            return true;
+        }
+        // NameTest — check if wildcard (*) or named key
+        if (test instanceof NameTest) {
+            final org.exist.dom.QName name = test.getName();
+            if (name != null) {
+                final String local = name.getLocalPart();
+                // Wildcard * matches any JNode
+                if ("*".equals(local) || local == null) {
+                    return true;
+                }
+                // Named test: match against JNode key
+                try {
+                    final AtomicValue jnodeKey = jnode.getKey();
+                    if (jnodeKey != null) {
+                        return local.equals(jnodeKey.getStringValue());
+                    }
+                } catch (final XPathException e) {
+                    return false;
+                }
+            }
+            return false;
+        }
         return false;
     }
 
