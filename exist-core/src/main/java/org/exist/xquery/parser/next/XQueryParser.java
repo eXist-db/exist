@@ -208,6 +208,13 @@ public final class XQueryParser {
             parseNamespaceDecl();
         } else if (checkKeyword(Keywords.DEFAULT)) {
             parseDefaultDecl();
+        } else if (checkKeyword("updating")) {
+            // XQUF: declare updating function — consume 'updating' and parse as normal function
+            advance(); // consume 'updating'
+            if (!checkKeyword(Keywords.FUNCTION)) {
+                throw error("Expected 'function' after 'updating'");
+            }
+            parseFunctionDecl(annotations);
         } else if (checkKeyword(Keywords.FUNCTION)) {
             parseFunctionDecl(annotations);
         } else if (checkKeyword(Keywords.VARIABLE)) {
@@ -867,6 +874,9 @@ public final class XQueryParser {
                 // XQ4 feature accepted in all versions (matching ANTLR 2 behavior)
                 advance();
                 first = parseForMemberBinding();
+            } else if (checkKeyword("key") || checkKeyword("value")) {
+                // XQ4: for key $k [value $v] in ... / for value $v in ...
+                first = parseForKeyValueBinding();
             } else if (checkKeyword(Keywords.TUMBLING) || checkKeyword(Keywords.SLIDING)) {
                 first = parseWindowClause();
             } else {
@@ -953,6 +963,78 @@ public final class XQueryParser {
                 next.setPreviousClause(forExpr);
                 return forExpr;
             }
+        }
+
+        return forExpr;
+    }
+
+    /**
+     * Parses XQ4 for-key, for-value, or for-key-value bindings:
+     *   for key $k [value $v] in expr
+     *   for value $v in expr
+     */
+    private FLWORClause parseForKeyValueBinding() throws XPathException {
+        final int startLine = previous.line;
+        final int startCol = previous.column;
+
+        final boolean isKey = matchKeyword("key");
+        final boolean isValue = !isKey && matchKeyword("value");
+
+        expect(Token.DOLLAR, "'$'");
+        final String varName = expectName("variable name");
+        final QName qname = resolveQName(varName, null);
+
+        // Optional type annotation
+        if (matchKeyword(Keywords.AS)) {
+            parseSequenceType();
+        }
+
+        // For key: optionally followed by "value $v"
+        QName valueVar = null;
+        if (isKey && checkKeyword("value")) {
+            advance(); // consume 'value'
+            expect(Token.DOLLAR, "'$'");
+            valueVar = resolveQName(expectName("value variable name"), null);
+            if (matchKeyword(Keywords.AS)) {
+                parseSequenceType();
+            }
+        }
+
+        // Optional positional variable
+        QName posVar = null;
+        if (matchKeyword(Keywords.AT)) {
+            expect(Token.DOLLAR, "'$'");
+            posVar = resolveQName(expectName("positional variable"), null);
+        }
+
+        expectKeyword(Keywords.IN);
+        final Expression inputSeq = parseExprSingle();
+
+        final FLWORClause.ClauseType clauseType;
+        if (isKey && valueVar != null) {
+            clauseType = FLWORClause.ClauseType.FOR_KEY_VALUE;
+        } else if (isKey) {
+            clauseType = FLWORClause.ClauseType.FOR_KEY;
+        } else {
+            clauseType = FLWORClause.ClauseType.FOR_VALUE;
+        }
+
+        final ForKeyValueExpr forExpr = new ForKeyValueExpr(context, clauseType);
+        forExpr.setLocation(startLine, startCol);
+        forExpr.setVariable(qname);
+        forExpr.setInputSequence(inputSeq);
+        if (valueVar != null) {
+            forExpr.setValueVariable(valueVar);
+        }
+        if (posVar != null) {
+            forExpr.setPositionalVariable(posVar);
+        }
+
+        final LocalVariable var = forExpr.createVariable(qname);
+        context.declareVariableBinding(var);
+        if (valueVar != null) {
+            final LocalVariable vVar = new LocalVariable(valueVar);
+            context.declareVariableBinding(vVar);
         }
 
         return forExpr;
@@ -1269,32 +1351,42 @@ public final class XQueryParser {
 
         final LocalVariable mark = context.markLocalVariables(false);
         try {
-            expect(Token.DOLLAR, "'$'");
-            final String varName = expectName("variable name");
-            final QName qname = resolveQName(varName, null);
+            // Collect all bindings (some $x in E1, $y in E2, ... satisfies ...)
+            final java.util.List<QName> varNames = new java.util.ArrayList<>();
+            final java.util.List<Expression> inputSeqs = new java.util.ArrayList<>();
 
-            // Optional type annotation: as SequenceType
-            if (matchKeyword(Keywords.AS)) {
-                parseSequenceType(); // consume type but not used
-            }
+            do {
+                expect(Token.DOLLAR, "'$'");
+                final String varName = expectName("variable name");
+                final QName qname = resolveQName(varName, null);
+                varNames.add(qname);
 
-            expectKeyword(Keywords.IN);
-            final Expression inputSeq = parseExprSingle();
+                // Optional type annotation: as SequenceType
+                if (matchKeyword(Keywords.AS)) {
+                    parseSequenceType(); // consume type but not used
+                }
+
+                expectKeyword(Keywords.IN);
+                inputSeqs.add(parseExprSingle());
+            } while (match(Token.COMMA));
 
             expectKeyword(Keywords.SATISFIES);
-
-            final QuantifiedExpression quant = new QuantifiedExpression(context, mode);
-            quant.setLocation(startLine, startCol);
-            quant.setVariable(qname);
-            quant.setInputSequence(inputSeq);
-
-            final LocalVariable var = quant.createVariable(qname);
-            context.declareVariableBinding(var);
-
             final Expression satisfiesExpr = parseExprSingle();
-            quant.setReturnExpression(satisfiesExpr);
 
-            return quant;
+            // Build nested QuantifiedExpressions from inside out
+            Expression inner = satisfiesExpr;
+            for (int i = varNames.size() - 1; i >= 0; i--) {
+                final QuantifiedExpression quant = new QuantifiedExpression(context, mode);
+                quant.setLocation(startLine, startCol);
+                quant.setVariable(varNames.get(i));
+                quant.setInputSequence(inputSeqs.get(i));
+                final LocalVariable var = quant.createVariable(varNames.get(i));
+                context.declareVariableBinding(var);
+                quant.setReturnExpression(inner);
+                inner = quant;
+            }
+
+            return inner;
         } finally {
             context.popLocalVariables(mark);
         }
@@ -2114,10 +2206,28 @@ public final class XQueryParser {
             return cmp;
         }
 
-        // Node comparison: is, << (node before), >> (node after)
+        // Node comparison: is, is-not, <<, >>, follows-or-is, precedes-or-is
+        if (matchKeyword("is-not") || matchKeyword(Keywords.ISNOT)) {
+            final Expression right = parseFTContainsOrInstanceOf();
+            final NodeComparison cmp = new NodeComparison(context, left, right, Constants.NodeComparisonOperator.IS_NOT);
+            cmp.setLocation(left.getLine(), left.getColumn());
+            return cmp;
+        }
         if (matchKeyword("is")) {
             final Expression right = parseFTContainsOrInstanceOf();
             final NodeComparison cmp = new NodeComparison(context, left, right, Constants.NodeComparisonOperator.IS);
+            cmp.setLocation(left.getLine(), left.getColumn());
+            return cmp;
+        }
+        if (matchKeyword("follows-or-is")) {
+            final Expression right = parseFTContainsOrInstanceOf();
+            final NodeComparison cmp = new NodeComparison(context, left, right, Constants.NodeComparisonOperator.FOLLOWS_OR_IS);
+            cmp.setLocation(left.getLine(), left.getColumn());
+            return cmp;
+        }
+        if (matchKeyword("precedes-or-is")) {
+            final Expression right = parseFTContainsOrInstanceOf();
+            final NodeComparison cmp = new NodeComparison(context, left, right, Constants.NodeComparisonOperator.PRECEDES_OR_IS);
             cmp.setLocation(left.getLine(), left.getColumn());
             return cmp;
         }
@@ -2425,7 +2535,7 @@ public final class XQueryParser {
         return parseAtomicType();
     }
 
-    private int kindNameToType(final String kind) {
+    private int kindNameToType(final String kind) throws XPathException {
         switch (kind) {
             case Keywords.NODE: return Type.NODE;
             case Keywords.ELEMENT: return Type.ELEMENT;
@@ -2437,6 +2547,28 @@ public final class XQueryParser {
             case "namespace-node": return Type.NAMESPACE;
             case "schema-element": return Type.ELEMENT;
             case "schema-attribute": return Type.ATTRIBUTE;
+            // XQuery 4.0 JNode kind tests
+            case "json-node": case "object-node": case "array-node":
+            case "string-node": case "number-node": case "boolean-node":
+            case "null-node": case "member-node": case "jnode":
+                return jnodeKindNameToType(kind);
+            default: return Type.ITEM;
+        }
+    }
+
+    private int jnodeKindNameToType(final String kind) throws XPathException {
+        if (!isXQ4()) {
+            throw xq4Required(kind + "()");
+        }
+        switch (kind) {
+            case "json-node": case "jnode": return Type.JSON_NODE;
+            case "object-node": return Type.JSON_OBJECT;
+            case "array-node": return Type.JSON_ARRAY;
+            case "string-node": return Type.JSON_STRING;
+            case "number-node": return Type.JSON_NUMBER;
+            case "boolean-node": return Type.JSON_BOOLEAN;
+            case "null-node": return Type.JSON_NULL;
+            case "member-node": return Type.JSON_MEMBER;
             default: return Type.ITEM;
         }
     }
@@ -4421,6 +4553,10 @@ public final class XQueryParser {
             case Keywords.ATTRIBUTE: case Keywords.COMMENT:
             case Keywords.DOCUMENT_NODE: case Keywords.PROCESSING_INSTRUCTION:
             case "namespace-node": case "schema-element": case "schema-attribute":
+            // XQuery 4.0 JNode kind tests
+            case "json-node": case "object-node": case "array-node":
+            case "string-node": case "number-node": case "boolean-node":
+            case "null-node": case "member-node": case "jnode":
                 return true;
             default: return false;
         }
@@ -4462,6 +4598,25 @@ public final class XQueryParser {
             case "schema-attribute":
                 if (check(Token.NCNAME) || check(Token.QNAME)) { advance(); }
                 test = new TypeTest(Type.ATTRIBUTE); break;
+            // XQuery 4.0 JNode kind tests (version-gated)
+            case "json-node":
+                if (!isXQ4()) throw xq4Required("json-node()"); test = new TypeTest(Type.JSON_NODE); break;
+            case "object-node":
+                if (!isXQ4()) throw xq4Required("object-node()"); test = new TypeTest(Type.JSON_OBJECT); break;
+            case "array-node":
+                if (!isXQ4()) throw xq4Required("array-node()"); test = new TypeTest(Type.JSON_ARRAY); break;
+            case "string-node":
+                if (!isXQ4()) throw xq4Required("string-node()"); test = new TypeTest(Type.JSON_STRING); break;
+            case "number-node":
+                if (!isXQ4()) throw xq4Required("number-node()"); test = new TypeTest(Type.JSON_NUMBER); break;
+            case "boolean-node":
+                if (!isXQ4()) throw xq4Required("boolean-node()"); test = new TypeTest(Type.JSON_BOOLEAN); break;
+            case "null-node":
+                if (!isXQ4()) throw xq4Required("null-node()"); test = new TypeTest(Type.JSON_NULL); break;
+            case "member-node":
+                if (!isXQ4()) throw xq4Required("member-node()"); test = new TypeTest(Type.JSON_MEMBER); break;
+            case "jnode":
+                if (!isXQ4()) throw xq4Required("jnode()"); test = new TypeTest(Type.JSON_NODE); break;
             default: throw error("Unknown kind test: " + kind);
         }
         expect(Token.RPAREN, "')'");
@@ -4521,6 +4676,10 @@ public final class XQueryParser {
             final String value = current.value;
             advance();
             return value;
+        }
+        // EQName: Q{uri}local
+        if (current.type == Token.BRACED_URI_LITERAL) {
+            return parseEQName();
         }
         throw new XPathException(current.line, current.column, ErrorCodes.XPST0003,
                 "Expected " + what + " but found " + describeToken(current));
