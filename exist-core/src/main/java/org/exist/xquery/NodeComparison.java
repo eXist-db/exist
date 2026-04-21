@@ -90,11 +90,11 @@ public class NodeComparison extends BinaryOp {
         final Sequence ls = getLeft().eval(contextSequence, contextItem);
         final Sequence rs = getRight().eval(contextSequence, contextItem);
         if (!ls.isEmpty() && !rs.isEmpty()) {
-            if (!Type.subTypeOf(ls.itemAt(0).getType(), Type.NODE))
+            if (!Type.isNodeType(ls.itemAt(0).getType()))
                 {throw new XPathException(this, ErrorCodes.XPTY0004,
                     "left item is not a node; got '" +
                     Type.getTypeName(ls.itemAt(0).getType()) + "'");}
-            if (!Type.subTypeOf(rs.itemAt(0).getType(), Type.NODE))
+            if (!Type.isNodeType(rs.itemAt(0).getType()))
                 {throw new XPathException(this, ErrorCodes.XPTY0004,
                     "right item is not a node; got '" +
                     Type.getTypeName(rs.itemAt(0).getType()) + "'");}
@@ -106,9 +106,11 @@ public class NodeComparison extends BinaryOp {
             } else {
                 result = switch (relation) {
                     case IS -> lv.equals(rv) ? BooleanValue.TRUE : BooleanValue.FALSE;
+                    case IS_NOT -> !lv.equals(rv) ? BooleanValue.TRUE : BooleanValue.FALSE;
                     case BEFORE -> lv.before(rv, false) ? BooleanValue.TRUE : BooleanValue.FALSE;
                     case AFTER -> lv.after(rv, false) ? BooleanValue.TRUE : BooleanValue.FALSE;
-                    default -> throw new XPathException(this, "Illegal argument: unknown relation");
+                    case FOLLOWS_OR_IS -> (lv.equals(rv) || lv.after(rv, false)) ? BooleanValue.TRUE : BooleanValue.FALSE;
+                    case PRECEDES_OR_IS -> (lv.equals(rv) || lv.before(rv, false)) ? BooleanValue.TRUE : BooleanValue.FALSE;
                 };
             }
         } else {

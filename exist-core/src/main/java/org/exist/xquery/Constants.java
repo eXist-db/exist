@@ -150,8 +150,11 @@ public interface Constants {
 	 */
     enum NodeComparisonOperator {
         IS("is"),
+        IS_NOT("is-not"),
         BEFORE("<<"),
-        AFTER(">>");
+        AFTER(">>"),
+        FOLLOWS_OR_IS("follows-or-is"),
+        PRECEDES_OR_IS("precedes-or-is");
 
         public final String symbol;
 
