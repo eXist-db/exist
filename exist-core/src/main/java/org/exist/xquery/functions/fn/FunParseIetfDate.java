@@ -298,7 +298,7 @@ public class FunParseIetfDate extends BasicFunction {
                 return;
             }
             skip(':');
-            second = parseInt(1, 2);
+            second = parseInt(2, 2);
             fractionalSecond = parseBigDecimal();
         }
 

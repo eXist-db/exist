@@ -33,6 +33,7 @@ import org.exist.source.Source;
 import org.exist.source.SourceFactory;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.*;
+import org.exist.xquery.util.DocUtils;
 import org.exist.xquery.functions.array.ArrayType;
 import org.exist.xquery.functions.map.MapType;
 import org.exist.xquery.value.*;
@@ -41,6 +42,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+
+import static java.nio.file.Files.isReadable;
+import static java.nio.file.Files.newInputStream;
 
 import static org.exist.xquery.FunctionDSL.*;
 import static org.exist.xquery.functions.fn.FnModule.functionSignatures;
@@ -233,7 +238,7 @@ public class JSON extends BasicFunction {
             boolean resolvedFromBaseUri = false;
             if (url.indexOf(':') == Constants.STRING_NOT_FOUND) {
                 // Relative URI: resolve against static base URI
-                final String resolved = resolveAgainstBaseUri(url);
+                final String resolved = DocUtils.resolveAgainstBaseUri(context, url);
                 if (resolved != null && resolved.startsWith("file:")) {
                     url = resolved;
                     resolvedFromBaseUri = true;
@@ -246,9 +251,9 @@ public class JSON extends BasicFunction {
             if (resolvedFromBaseUri && url.startsWith("file:")) {
                 // Extract path from file: URI: file:/path, file://host/path, file:///path
                 final String filePath = url.replaceFirst("^file:(?://[^/]*)?", "");
-                final java.nio.file.Path path = java.nio.file.Paths.get(filePath);
-                if (java.nio.file.Files.isReadable(path)) {
-                    try (final InputStream is = java.nio.file.Files.newInputStream(path)) {
+                final Path path = Path.of(filePath);
+                if (isReadable(path)) {
+                    try (final InputStream is = newInputStream(path)) {
                         try (final JsonParser parser = factory.createParser(is)) {
                             final Item result = readValue(context, parser, handleDuplicates);
                             return result == null ? Sequence.EMPTY_SEQUENCE : result.toSequence();
@@ -294,25 +299,6 @@ public class JSON extends BasicFunction {
         } catch (IOException | PermissionDeniedException e) {
             throw new XPathException(this, ErrorCodes.FOUT1170, e.getMessage());
         }
-    }
-
-    private String resolveAgainstBaseUri(final String relativePath) {
-        try {
-            final AnyURIValue baseXdmUri = context.getBaseURI();
-            if (baseXdmUri != null && !baseXdmUri.equals(AnyURIValue.EMPTY_URI)) {
-                String baseStr = baseXdmUri.toURI().toString();
-                // Strip filename to get directory URI
-                final int lastSlash = baseStr.lastIndexOf('/');
-                if (lastSlash >= 0) {
-                    baseStr = baseStr.substring(0, lastSlash + 1);
-                }
-                final java.net.URI baseUri = new java.net.URI(baseStr);
-                return baseUri.resolve(relativePath).toString();
-            }
-        } catch (final java.net.URISyntaxException | XPathException e) {
-            // fall through
-        }
-        return null;
     }
 
     /**

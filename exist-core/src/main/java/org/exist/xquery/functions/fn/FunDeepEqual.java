@@ -418,9 +418,6 @@ public class FunDeepEqual extends CollatingFunction {
                 if (getEffectiveNodeType(na) != getEffectiveNodeType(nb)) {
                     return Constants.INFERIOR;
                 }
-                if (getEffectiveNodeType(na) != getEffectiveNodeType(nb)) {
-                    return Constants.INFERIOR;
-                }
                 if (getEffectiveNodeType(na) == Node.ELEMENT_NODE) {
                     final int cmp = compareElements(na, nb, collator);
                     if (cmp != Constants.EQUAL) {

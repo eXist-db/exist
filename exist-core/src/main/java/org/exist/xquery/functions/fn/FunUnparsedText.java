@@ -232,7 +232,7 @@ public class FunUnparsedText extends BasicFunction {
             return Charset.forName(encoding);
         } catch (final UnsupportedCharsetException e) {
             if ("iso-8859".equalsIgnoreCase(encoding)) {
-                return Charset.forName("iso-8859-1");
+                return StandardCharsets.ISO_8859_1;
             }
             throw e;
         }
