@@ -148,19 +148,7 @@ public class FunMax extends CollatingFunction {
 
                 //Duration values must either all be xs:yearMonthDuration values or must all be xs:dayTimeDuration values.
         		if (Type.subTypeOf(value.getType(), Type.DURATION)) {
-        			value = ((DurationValue)value).wrap();
-        			if (value.getType() == Type.YEAR_MONTH_DURATION) {
-	                	if (max != null && max.getType() != Type.YEAR_MONTH_DURATION)
-	                		{throw new XPathException(this, ErrorCodes.FORG0006, "Cannot compare " + Type.getTypeName(max.getType()) +
-	                				" and " + Type.getTypeName(value.getType()), value);}
-            		
-        			} else if (value.getType() == Type.DAY_TIME_DURATION) {
-	                	if (max != null && max.getType() != Type.DAY_TIME_DURATION)
-	                		{throw new XPathException(this, ErrorCodes.FORG0006, "Cannot compare " + Type.getTypeName(max.getType()) +
-	                				" and " + Type.getTypeName(value.getType()), value);}
-        				
-        			} else
-        				{throw new XPathException(this, ErrorCodes.FORG0006, "Cannot compare " + Type.getTypeName(value.getType()), value);}
+        			value = FunMin.validateAndWrapDuration((DurationValue) value, max, this);
 
         		//Any value of type xdt:untypedAtomic is cast to xs:double
         		} else if (value.getType() == Type.UNTYPED_ATOMIC) 

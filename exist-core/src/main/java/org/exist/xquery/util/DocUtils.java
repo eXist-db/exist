@@ -24,8 +24,12 @@ package org.exist.xquery.util;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.*;
+import java.nio.file.Path;
 import java.util.Optional;
 import java.util.regex.Pattern;
+
+import static java.nio.file.Files.isReadable;
+import static java.nio.file.Files.newInputStream;
 
 import org.exist.Namespaces;
 import org.exist.dom.persistent.DocumentImpl;
@@ -124,7 +128,7 @@ public class DocUtils {
      *
      * @return the resolved URI string, or null if resolution is not possible
      */
-    private static @Nullable String resolveAgainstBaseUri(final XQueryContext context, final String relativePath) {
+    public static @Nullable String resolveAgainstBaseUri(final XQueryContext context, final String relativePath) {
         try {
             final AnyURIValue baseXdmUri = context.getBaseURI();
             if (baseXdmUri != null && !baseXdmUri.equals(AnyURIValue.EMPTY_URI)) {
@@ -176,9 +180,9 @@ public class DocUtils {
             // which enforces security checks (e.g., blocking file:///etc/passwd).
             if (resolvedFromBaseUri && path.startsWith("file:")) {
                 final String filePath = path.replaceFirst("^file:(?://[^/]*)?", "");
-                final java.nio.file.Path nioPath = java.nio.file.Paths.get(filePath);
-                if (java.nio.file.Files.isReadable(nioPath)) {
-                    try (final java.io.InputStream fis = java.nio.file.Files.newInputStream(nioPath)) {
+                final Path nioPath = Path.of(filePath);
+                if (isReadable(nioPath)) {
+                    try (final InputStream fis = newInputStream(nioPath)) {
                         final org.exist.dom.memtree.DocumentImpl memtreeDoc = parse(
                                 context.getBroker().getBrokerPool(), context, fis, expression);
                         memtreeDoc.setDocumentURI(path);

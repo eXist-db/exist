@@ -103,27 +103,21 @@ public class XQuerySerializer {
     }
 
     private void serializeJSON(final Sequence sequence, final long compilationTime, final long executionTime) throws SAXException, XPathException {
-        // XDM serialization: use JSONSerializer for maps and arrays (W3C JSON output method).
         // For element/document nodes, use the legacy XML-to-JSON conversion path for
         // backward compatibility with eXist's traditional JSON serialization.
         // TODO (eXist 8.0): Remove legacy XML-to-JSON conversion.
         // The legacy path is deprecated in 7.0 — use fn:serialize($map, map{"method":"json"}) instead.
-        final boolean isXdmMapOrArray = sequence.hasOne()
-                && (sequence.getItemType() == Type.MAP_ITEM || sequence.getItemType() == Type.ARRAY_ITEM);
+        final boolean useLegacySerializer = sequence.hasOne()
+                && (Type.subTypeOf(sequence.getItemType(), Type.DOCUMENT) || Type.subTypeOf(sequence.getItemType(), Type.ELEMENT));
 
-        if (isXdmMapOrArray || (!sequence.hasOne())
-                || Type.subTypeOfUnion(sequence.getItemType(), Type.ANY_ATOMIC_TYPE)) {
-            // Maps, arrays, sequences, and atomic values: use W3C JSONSerializer
-            final JSONSerializer serializer = new JSONSerializer(broker, outputProperties);
-            serializer.serialize(sequence, writer);
-        } else if (sequence.hasOne()
-                && (Type.subTypeOf(sequence.getItemType(), Type.DOCUMENT) || Type.subTypeOf(sequence.getItemType(), Type.ELEMENT))) {
-            // Legacy path: single element/document → XML-to-JSON conversion
+        if (useLegacySerializer) {
             serializeXML(sequence, 1, 1, false, false, compilationTime, executionTime);
-        } else {
-            final JSONSerializer serializer = new JSONSerializer(broker, outputProperties);
-            serializer.serialize(sequence, writer);
+            return;
         }
+
+        // Maps, arrays, sequences, atomic values, and function items: use W3C JSONSerializer
+        final JSONSerializer serializer = new JSONSerializer(broker, outputProperties);
+        serializer.serialize(sequence, writer);
     }
 
     private void serializeAdaptive(final Sequence sequence) throws SAXException, XPathException {

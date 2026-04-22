@@ -394,6 +394,8 @@ public class FunDeepEqual extends CollatingFunction {
                 }
                 break;
             default:
+                // Per XPath 3.1 §15.3.1, deep-equal compares only element and text
+                // children; other node types (comments, PIs) are skipped.
                 break;
             }
             a = findNextTextOrElementNode(a.getNextSibling());

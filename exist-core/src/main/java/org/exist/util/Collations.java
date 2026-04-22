@@ -344,29 +344,41 @@ public class Collations {
      *
      * @throws UnsupportedOperationException if ICU4J does not support collation
      */
-    public static int compare(@Nullable final Collator collator, final String s1,final  String s2) {
+    public static int compare(@Nullable final Collator collator, final String s1, final String s2) {
         if (collator == null) {
             if (s1 == null) {
                 return s2 == null ? 0 : -1;
             }
-            // Compare by Unicode codepoints, not UTF-16 code units.
-            // String.compareTo() compares char (UTF-16) values, which gives wrong
-            // ordering for supplementary characters (U+10000+) encoded as surrogate pairs.
-            int i1 = 0, i2 = 0;
-            while (i1 < s1.length() && i2 < s2.length()) {
-                final int cp1 = s1.codePointAt(i1);
-                final int cp2 = s2.codePointAt(i2);
-                if (cp1 != cp2) {
-                    return cp1 - cp2;
-                }
-                i1 += Character.charCount(cp1);
-                i2 += Character.charCount(cp2);
-            }
-            // Shorter string is less; equal length means equal
-            return (s1.length() - i1) - (s2.length() - i2);
+            return compareByCodepoint(s1, s2);
         } else {
             return collator.compare(s1, s2);
         }
+    }
+
+    /**
+     * Compares two strings by Unicode codepoints rather than UTF-16 code units.
+     * {@link String#compareTo(String)} compares {@code char} (UTF-16) values, which gives
+     * incorrect ordering for supplementary characters (U+10000 and above) that are encoded
+     * as surrogate pairs.
+     *
+     * @param a the first string to compare.
+     * @param b the second string to compare.
+     * @return a negative integer, zero, or a positive integer if {@code a} is less than,
+     *     equal to, or greater than {@code b} by codepoint order.
+     */
+    private static int compareByCodepoint(final String a, final String b) {
+        int i1 = 0, i2 = 0;
+        while (i1 < a.length() && i2 < b.length()) {
+            final int cp1 = a.codePointAt(i1);
+            final int cp2 = b.codePointAt(i2);
+            if (cp1 != cp2) {
+                return cp1 - cp2;
+            }
+            i1 += Character.charCount(cp1);
+            i2 += Character.charCount(cp2);
+        }
+        // Shorter string is less; equal length means equal
+        return (a.length() - i1) - (b.length() - i2);
     }
 
     /**
