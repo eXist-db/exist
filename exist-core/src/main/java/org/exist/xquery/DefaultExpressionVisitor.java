@@ -186,7 +186,9 @@ public class DefaultExpressionVisitor extends BasicExpressionVisitor {
 
     @Override
     public void visitFilteredExpr(FilteredExpression filtered) {
-        filtered.getExpression().accept(this);
+        if (filtered.getExpression() != null) {
+            filtered.getExpression().accept(this);
+        }
         for (final Predicate pred : filtered.getPredicates()) {
             pred.accept(this);
         }
