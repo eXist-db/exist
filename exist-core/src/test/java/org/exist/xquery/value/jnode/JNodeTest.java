@@ -451,6 +451,50 @@ public class JNodeTest {
         assertEquals("true", result.getStringValue());
     }
 
+    // --- Map/Array Predicate Tests (XPDY0002 regression) ---
+
+    @Test
+    public void mapNavigationWithPredicate() throws Exception {
+        final Sequence result = executeQuery(
+                "xquery version '4.0'; map{'asdf':1}/asdf[. <= 1]");
+        assertEquals("1", result.getStringValue());
+    }
+
+    @Test
+    public void mapWildcardWithPredicate() throws Exception {
+        final Sequence result = executeQuery(
+                "xquery version '4.0'; map{'a':1,'b':2}/*[. > 1]");
+        assertEquals("2", result.getStringValue());
+    }
+
+    @Test
+    public void arrayWildcardWithPredicate() throws Exception {
+        final Sequence result = executeQuery(
+                "xquery version '4.0'; [1,2,3]/*[. > 1]");
+        assertEquals(2, result.getItemCount());
+    }
+
+    @Test
+    public void parenthesizedMapWithPredicate() throws Exception {
+        final Sequence result = executeQuery(
+                "xquery version '4.0'; (map{'asdf':1}/asdf)[. <= 1]");
+        assertEquals("1", result.getStringValue());
+    }
+
+    @Test
+    public void nestedMapWithPredicate() throws Exception {
+        final Sequence result = executeQuery(
+                "xquery version '4.0'; map{'x': map{'y': 1}}/x/y[. = 1]");
+        assertEquals("1", result.getStringValue());
+    }
+
+    @Test
+    public void mapSequenceValueWithPredicate() throws Exception {
+        final Sequence result = executeQuery(
+                "xquery version '4.0'; map{'a': (1,2,3)}/a[. > 1]");
+        assertEquals(2, result.getItemCount());
+    }
+
     @Test
     public void xpathDescendantAxis() throws Exception {
         final Sequence result = executeQuery(

@@ -113,3 +113,41 @@ function jn-test:jtree-preserves-array() {
     let $val := fn:jvalue($jnode)
     return $val instance of array(*)
 };
+
+(: ==================== Map/Array Predicate Tests ==================== :)
+
+declare
+    %test:assertEquals(1)
+function jn-test:map-navigation-with-predicate() {
+    map{"asdf":1}/asdf[. <= 1]
+};
+
+declare
+    %test:assertEquals(2)
+function jn-test:map-wildcard-with-predicate() {
+    map{"a":1,"b":2}/*[. > 1]
+};
+
+declare
+    %test:assertEquals(2, 3)
+function jn-test:array-wildcard-with-predicate() {
+    [1,2,3]/*[. > 1]
+};
+
+declare
+    %test:assertEquals(1)
+function jn-test:parenthesized-map-with-predicate() {
+    (map{"asdf":1}/asdf)[. <= 1]
+};
+
+declare
+    %test:assertEquals(1)
+function jn-test:nested-map-with-predicate() {
+    map{"x": map{"y": 1}}/x/y[. = 1]
+};
+
+declare
+    %test:assertEquals(2, 3)
+function jn-test:map-sequence-value-with-predicate() {
+    map{"a": (1,2,3)}/a[. > 1]
+};

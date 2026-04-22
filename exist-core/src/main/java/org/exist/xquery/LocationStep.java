@@ -95,11 +95,15 @@ public class LocationStep extends Step {
     public int getDependencies() {
         int deps = Dependency.CONTEXT_SET;
 
-        // self axis has an obvious dependency on the context item
-        // likewise we depend on the context item if this is a single path step (outside a predicate)
-        if (!this.inPredicate &&
-                (this.axis == Constants.SELF_AXIS ||
-                        (parent != null && parent.getSubExpressionCount() > 0 && parent.getSubExpression(0) == this))) {
+        // self axis always has a dependency on the context item — that is its definition.
+        // Previously this was suppressed inside predicates as a node-set optimization,
+        // but that caused XPDY0002 when predicates operated on atomic values from
+        // map/array navigation (e.g., map{"a":1}/a[. <= 1]).
+        if (this.axis == Constants.SELF_AXIS) {
+            deps = deps | Dependency.CONTEXT_ITEM;
+        } else if (!this.inPredicate &&
+                (parent != null && parent.getSubExpressionCount() > 0 && parent.getSubExpression(0) == this)) {
+            // single path step (outside a predicate) also depends on context item
             deps = deps | Dependency.CONTEXT_ITEM;
         }
 
