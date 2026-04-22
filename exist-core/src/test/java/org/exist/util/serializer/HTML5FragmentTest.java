@@ -29,7 +29,6 @@ import org.exist.test.ExistEmbeddedServer;
 import org.exist.security.PermissionDeniedException;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
-import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Sequence;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -55,7 +54,6 @@ public class HTML5FragmentTest {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try (final DBBroker broker = pool.get(java.util.Optional.empty())) {
             final XQuery xqueryService = pool.getXQueryService();
-            final XQueryContext context = new XQueryContext(pool);
             final Sequence result = xqueryService.execute(broker, xquery, null);
 
             final Properties props = new Properties();

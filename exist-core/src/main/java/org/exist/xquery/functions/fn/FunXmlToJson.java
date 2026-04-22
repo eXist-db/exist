@@ -50,6 +50,7 @@ import static org.exist.xquery.FunctionDSL.*;
 public class FunXmlToJson extends BasicFunction {
 
     private static final Logger logger = LogManager.getLogger(FunXmlToJson.class);
+    private static final Set<String> JSON_ELEMENT_NAMES = Set.of("map", "array", "null", "boolean", "number", "string");
 
     private static final String FS_XML_TO_JSON_NAME = "xml-to-json";
     private static final FunctionParameterSequenceType FS_XML_TO_JSON_OPT_PARAM_NODE = optParam("node", Type.NODE, "The input node");
@@ -104,8 +105,6 @@ public class FunXmlToJson extends BasicFunction {
      * @param writer    the Writer to be used
      * @throws XPathException on error in XML JSON input according to specification
      */
-    private static final Set<String> JSON_ELEMENT_NAMES = Set.of("map", "array", "null", "boolean", "number", "string");
-
     private void nodeValueToJson(final NodeValue nodeValue, final Writer writer) throws XPathException {
         // If the input is an element node (not a document), use DOM-based conversion
         // to avoid XMLStreamReader traversing the entire owner document
@@ -142,6 +141,13 @@ public class FunXmlToJson extends BasicFunction {
 
     private void writeJsonElement(final org.w3c.dom.Element element, final JsonGenerator gen) throws XPathException, IOException {
         final String localName = element.getLocalName() != null ? element.getLocalName() : element.getTagName();
+        final String nsUri = element.getNamespaceURI();
+
+        if (!Namespaces.XPATH_FUNCTIONS_NS.equals(nsUri)) {
+            throw new XPathException(this, ErrorCodes.FOJS0006,
+                    "Invalid XML representation of JSON. Element '" + localName
+                    + "' is not in the required namespace '" + Namespaces.XPATH_FUNCTIONS_NS + "'.");
+        }
 
         if (!JSON_ELEMENT_NAMES.contains(localName)) {
             throw new XPathException(this, ErrorCodes.FOJS0006,
@@ -152,7 +158,7 @@ public class FunXmlToJson extends BasicFunction {
             case "map":
                 gen.writeStartObject();
                 final org.w3c.dom.NodeList mapChildren = element.getChildNodes();
-                final java.util.Set<String> seenKeys = new java.util.HashSet<>();
+                final Set<String> seenKeys = new java.util.HashSet<>();
                 for (int i = 0; i < mapChildren.getLength(); i++) {
                     final org.w3c.dom.Node child = mapChildren.item(i);
                     if (child.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
@@ -202,7 +208,7 @@ public class FunXmlToJson extends BasicFunction {
             case "number":
                 final String numStr = getTextContent(element);
                 try {
-                    gen.writeNumber(new java.math.BigDecimal(numStr));
+                    gen.writeNumber(new BigDecimal(numStr));
                 } catch (final NumberFormatException e) {
                     throw new XPathException(this, ErrorCodes.FOJS0006, "Cannot convert '" + numStr + "' to a number.");
                 }
@@ -222,6 +228,10 @@ public class FunXmlToJson extends BasicFunction {
                 }
                 gen.writeNull();
                 break;
+
+            default:
+                throw new XPathException(this, ErrorCodes.FOJS0006,
+                        "Invalid XML representation of JSON. Found XML element which is not one of [map, array, null, boolean, number, string].");
         }
     }
 
