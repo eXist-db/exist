@@ -162,6 +162,37 @@ public class DefaultExpressionVisitor extends BasicExpressionVisitor {
     }
 
     @Override
+    public void visitGeneralComparison(GeneralComparison comparison) {
+        comparison.getLeft().accept(this);
+        comparison.getRight().accept(this);
+    }
+
+    @Override
+    public void visitAndExpr(OpAnd and) {
+        and.getLeft().accept(this);
+        and.getRight().accept(this);
+    }
+
+    @Override
+    public void visitOrExpr(OpOr or) {
+        or.getLeft().accept(this);
+        or.getRight().accept(this);
+    }
+
+    @Override
+    public void visitCastExpr(CastExpression expression) {
+        expression.getInnerExpression().accept(this);
+    }
+
+    @Override
+    public void visitFilteredExpr(FilteredExpression filtered) {
+        filtered.getExpression().accept(this);
+        for (final Predicate pred : filtered.getPredicates()) {
+            pred.accept(this);
+        }
+    }
+
+    @Override
     public void visitUnionExpr(Union union) {
         union.left.accept(this);
         union.right.accept(this);
