@@ -51,8 +51,7 @@ import java.util.Optional;
  * package upgrades, solving the self-upgrade problem that affects XQuery-based
  * package management implementations.
  * </p>
- * <p>
- * Endpoints:
+ * <p>Endpoints:</p>
  * <ul>
  *   <li>GET /api/packages — list all installed packages</li>
  *   <li>GET /api/packages/{name} — get single package details</li>
@@ -61,7 +60,6 @@ import java.util.Optional;
  *   <li>POST /api/packages/update-check — check for available updates</li>
  *   <li>DELETE /api/packages/{name} — remove package</li>
  * </ul>
- * </p>
  */
 public class PackageManagementServlet extends AbstractExistHttpServlet {
 

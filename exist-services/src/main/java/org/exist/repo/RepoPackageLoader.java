@@ -42,6 +42,8 @@ import java.nio.file.StandardCopyOption;
  * Loads packages from a remote public repository (e.g. https://exist-db.org/exist/apps/public-repo).
  * Used by {@link Deployment} to resolve package dependencies during installation,
  * and by {@link PackageService} for direct package installation from a registry.
+ *
+ * @param repoURL the base URL of the public package repository
  */
 public record RepoPackageLoader(String repoURL) implements PackageLoader {
 

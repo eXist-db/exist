@@ -62,6 +62,10 @@ public class PackageService {
 
     /**
      * List all installed packages with metadata.
+     *
+     * @param pool the broker pool to retrieve the package repository from
+     * @return a list of maps containing package metadata
+     * @throws PackageException if the package repository cannot be read
      */
     public List<Map<String, Object>> listPackages(final BrokerPool pool) throws PackageException {
         final Optional<ExistRepository> maybeRepo = pool.getExpathRepo();
