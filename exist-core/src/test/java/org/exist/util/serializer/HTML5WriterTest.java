@@ -42,7 +42,7 @@ public class HTML5WriterTest {
 
     @Test
     public void testAttributeWithBooleanValue() throws Exception {
-        final String expected = "<!DOCTYPE html>\n<input checked>";
+        final String expected = "<!DOCTYPE html><input checked>";
         final QName elQName = new QName("input");
         writer.startElement(elQName);
         writer.attribute("checked", "checked");
@@ -54,7 +54,7 @@ public class HTML5WriterTest {
 
     @Test
     public void testAttributeWithNonBooleanValue() throws Exception {
-        final String expected = "<!DOCTYPE html>\n<input name=\"name\">";
+        final String expected = "<!DOCTYPE html><input name=\"name\">";
         final QName elQName = new QName("input");
         writer.startElement(elQName);
         writer.attribute("name", "name");
@@ -66,7 +66,7 @@ public class HTML5WriterTest {
 
     @Test
     public void testAttributeQNameWithBooleanValue() throws Exception {
-        final String expected = "<!DOCTYPE html>\n<input checked>";
+        final String expected = "<!DOCTYPE html><input checked>";
         final QName elQName = new QName("input");
         final QName attrQName = new QName("checked");
         writer.startElement(elQName);
@@ -79,7 +79,7 @@ public class HTML5WriterTest {
 
     @Test
     public void testAttributeQNameWithNonBooleanValue() throws Exception {
-        final String expected = "<!DOCTYPE html>\n<input name=\"name\">";
+        final String expected = "<!DOCTYPE html><input name=\"name\">";
         final QName elQName = new QName("input");
         final QName attrQName = new QName("name");
         writer.startElement(elQName);

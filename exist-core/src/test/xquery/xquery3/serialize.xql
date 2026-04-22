@@ -847,23 +847,27 @@ function ser:serialize-xml-134() {
 };
 
 declare
-    %test:assertEquals('<!DOCTYPE html> <option selected></option>')
+    %test:assertEquals('<!DOCTYPE html><option selected></option>')
 function ser:serialize-html-5-boolean-attribute-names() {
-    <option selected="selected"/>
-    => serialize($ser:opt-map-html5)
-    => normalize-space()
+    serialize(<option selected="selected"/>, $ser:opt-map-html5)
 };
 
 declare
-    %test:assertEquals('<!DOCTYPE html> <br>')
+    %test:assertEquals('<!DOCTYPE html><br>')
 function ser:serialize-html-5-empty-tags() {
-    <br/>
-    => serialize($ser:opt-map-html5)
-    => normalize-space()
+    serialize(<br/>, $ser:opt-map-html5)
+};
+
+(: test for https://github.com/eXist-db/exist/issues/4736 :)
+declare
+    %test:assertEquals('<!DOCTYPE html>&#10;<html>&#10;    <body>&#10;        <p>hi</p>&#10;    </body>&#10;</html>')
+function ser:serialize-html-5-with-indent() {
+    serialize(<html><body><p>hi</p></body></html>,
+        map{ "method": "html", "version": "5.0", "indent": true() })
 };
 
 declare
-    %test:assertEquals('<!DOCTYPE html> <html><body><style>ul > li { color:red; }</style><script>if (a < b) foo()</script></body></html>')
+    %test:assertEquals('<!DOCTYPE html><html><body><style>ul > li { color:red; }</style><script>if (a < b) foo()</script></body></html>')
 function ser:serialize-html-5-raw-text-elements-body() {
     <html>
         <body>
@@ -871,12 +875,11 @@ function ser:serialize-html-5-raw-text-elements-body() {
             <script><![CDATA[if (a < b) foo()]]></script>
         </body>
     </html>
-    => serialize($ser:opt-map-html5)
-    => normalize-space()
+   => serialize($ser:opt-map-html5)
 };
 
 declare
-    %test:assertEquals('<!DOCTYPE html> <html><head><style>ul > li { color:red; }</style><script>if (a < b) foo()</script></head><body></body></html>')
+    %test:assertEquals('<!DOCTYPE html><html><head><style>ul > li { color:red; }</style><script>if (a < b) foo()</script></head><body></body></html>')
 function ser:serialize-html-5-raw-text-elements-head() {
     <html>
         <head>
@@ -885,12 +888,11 @@ function ser:serialize-html-5-raw-text-elements-head() {
         </head>
         <body></body>
     </html>
-    => serialize($ser:opt-map-html5)
-    => normalize-space()
+   => serialize($ser:opt-map-html5)
 };
 
 declare
-    %test:assertEquals('<!DOCTYPE html> <html><head><title>XML &amp;gt; JSON</title></head><body><textarea>if (a &amp;lt; b) foo()</textarea></body></html>')
+    %test:assertEquals('<!DOCTYPE html><html><head><title>XML &amp;gt; JSON</title></head><body><textarea>if (a &amp;lt; b) foo()</textarea></body></html>')
 function ser:serialize-html-5-needs-escape-elements() {
     <html>
         <head>
@@ -901,7 +903,6 @@ function ser:serialize-html-5-needs-escape-elements() {
         </body>
     </html>
     => serialize($ser:opt-map-html5)
-    => normalize-space()
 };
 
 (: test for https://github.com/eXist-db/exist/issues/4702 :)

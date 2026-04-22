@@ -39,15 +39,14 @@ import org.junit.rules.TemporaryFolder;
 import java.io.IOException;
 import java.nio.file.Files;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
 
 public class SerializationTest {
 
     private static final String XML_WITH_DOCTYPE =
-            "<!DOCTYPE bookmap PUBLIC \"-//OASIS//DTD DITA BookMap//EN\" \"bookmap.dtd\">\n" +
-            "<bookmap id=\"bookmap-1\"/>";
+            "<!DOCTYPE bookmap PUBLIC \"-//OASIS//DTD DITA BookMap//EN\" \"bookmap.dtd\">" +
+            "<bookmap id=\"bookmap-1\"><title>The Title</title></bookmap>";
 
     private static final String XML_WITH_XMLDECL =
             "<?xml version=\"1.1\" encoding=\"ISO-8859-1\" standalone=\"yes\"?>\n" +
