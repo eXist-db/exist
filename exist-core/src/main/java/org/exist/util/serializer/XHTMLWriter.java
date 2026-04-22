@@ -118,8 +118,20 @@ public class XHTMLWriter extends IndentingXMLWriter {
     protected final ObjectSet<String> emptyTags;
     protected final ObjectSet<String> inlineTags;
 
+    private static final String SVG_NS = "http://www.w3.org/2000/svg";
+    private static final String MATHML_NS = "http://www.w3.org/1998/Math/MathML";
+
+    boolean haveCollapsedXhtmlPrefix = false;
+    private String collapsedForeignNs = null;  // SVG or MathML ns being normalized
+
+    private static final ObjectSet<String> RAW_TEXT_ELEMENTS_HTML = new ObjectOpenHashSet<>(4);
+    static {
+        RAW_TEXT_ELEMENTS_HTML.add("script");
+        RAW_TEXT_ELEMENTS_HTML.add("style");
+    }
+
     /**
-     * 
+     *
      */
     public XHTMLWriter() {
         this(EMPTY_TAGS, INLINE_TAGS);
@@ -156,12 +168,6 @@ public class XHTMLWriter extends IndentingXMLWriter {
     protected boolean isEmptyTag(final String tag) {
         return emptyTags.contains(tag);
     }
-
-    private static final String SVG_NS = "http://www.w3.org/2000/svg";
-    private static final String MATHML_NS = "http://www.w3.org/1998/Math/MathML";
-
-    boolean haveCollapsedXhtmlPrefix = false;
-    private String collapsedForeignNs = null;  // SVG or MathML ns being normalized
 
     @Override
     public void startElement(final QName qname) throws TransformerException {
@@ -310,7 +316,7 @@ public class XHTMLWriter extends IndentingXMLWriter {
      */
     private boolean isHtmlMethod() {
         if (outputProperties != null) {
-            final String method = outputProperties.getProperty(javax.xml.transform.OutputKeys.METHOD);
+            final String method = outputProperties.getProperty(OutputKeys.METHOD);
             return "html".equalsIgnoreCase(method);
         }
         return false;
@@ -377,12 +383,6 @@ public class XHTMLWriter extends IndentingXMLWriter {
     private boolean isBooleanAttribute(final String attrName, final CharSequence value) {
         return BOOLEAN_ATTRIBUTES.contains(attrName.toLowerCase(java.util.Locale.ROOT))
                 && attrName.equalsIgnoreCase(value.toString());
-    }
-
-    private static final ObjectSet<String> RAW_TEXT_ELEMENTS_HTML = new ObjectOpenHashSet<>(4);
-    static {
-        RAW_TEXT_ELEMENTS_HTML.add("script");
-        RAW_TEXT_ELEMENTS_HTML.add("style");
     }
 
     @Override

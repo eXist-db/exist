@@ -91,6 +91,7 @@ import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.parser.*;
 import org.exist.xquery.pragmas.*;
 import org.exist.xquery.update.Modification;
+import org.exist.xquery.util.DocUtils;
 import org.exist.xquery.util.SerializerUtils;
 import org.exist.xquery.value.*;
 import org.jgrapht.Graph;
@@ -3415,7 +3416,7 @@ public class XQueryContext implements BinaryValueManager, Context {
      * Process the parameter-document serialization option if present.
      * Loads the referenced XML file and extracts serialization parameters.
      */
-    private void processParameterDocument(final java.util.List<Option> options, final Properties properties) throws XPathException {
+    private void processParameterDocument(final List<Option> options, final Properties properties) throws XPathException {
         if (options == null) return;
         for (final Option option : options) {
             if (Namespaces.XSLT_XQUERY_SERIALIZATION_NS.equals(option.getQName().getNamespaceURI())
@@ -3424,12 +3425,12 @@ public class XQueryContext implements BinaryValueManager, Context {
                 if (docPath.isEmpty()) continue;
                 try {
                     // Resolve relative to static base URI
-                    java.net.URI resolvedUri;
+                    URI resolvedUri;
                     final AnyURIValue baseURI = getBaseURI();
                     if (baseURI != null && !baseURI.getStringValue().isEmpty()) {
-                        resolvedUri = new java.net.URI(baseURI.getStringValue()).resolve(docPath);
+                        resolvedUri = new URI(baseURI.getStringValue()).resolve(docPath);
                     } else {
-                        resolvedUri = new java.net.URI(docPath);
+                        resolvedUri = new URI(docPath);
                     }
 
                     // Load and parse the XML document
@@ -3444,7 +3445,7 @@ public class XQueryContext implements BinaryValueManager, Context {
                     }
 
                     try (is) {
-                        final org.exist.dom.memtree.DocumentImpl doc = org.exist.xquery.util.DocUtils.parse(this, is);
+                        final org.exist.dom.memtree.DocumentImpl doc = DocUtils.parse(this, is);
                         if (doc != null) {
                             SerializerUtils.getSerializationOptions(
                                     getRootExpression(), doc, properties);
