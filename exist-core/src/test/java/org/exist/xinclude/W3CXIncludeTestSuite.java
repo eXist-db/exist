@@ -299,8 +299,8 @@ public class W3CXIncludeTestSuite {
     private static String normalizeXml(final String xml) {
         // Strip XML declaration
         String result = xml.replaceAll("<\\?xml[^?]*\\?>", "").trim();
-        // Strip DOCTYPE declarations (eXist doesn't preserve them)
-        result = result.replaceAll("<!DOCTYPE[^>]*>", "").trim();
+        // Strip DOCTYPE declarations including internal subsets (eXist doesn't preserve them)
+        result = result.replaceAll("(?s)<!DOCTYPE[^\\[>]*(?:\\[.*?\\]\\s*)?>", "").trim();
         // Normalize line endings
         result = result.replace("\r\n", "\n").replace("\r", "\n");
         // Remove xml:base attributes (eXist doesn't emit them on included elements)

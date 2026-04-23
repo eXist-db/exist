@@ -90,6 +90,8 @@ public class XIncludeFilter implements Receiver {
     private static final QName XPOINTER_ATTRIB = new QName("xpointer", XMLConstants.NULL_NS_URI);
     private static final QName PARSE_ATTRIB = new QName("parse", XMLConstants.NULL_NS_URI);
     private static final QName ENCODING_ATTRIB = new QName("encoding", XMLConstants.NULL_NS_URI);
+    private static final QName ACCEPT_ATTRIB = new QName("accept", XMLConstants.NULL_NS_URI);
+    private static final QName ACCEPT_LANGUAGE_ATTRIB = new QName("accept-language", XMLConstants.NULL_NS_URI);
     private static final String XI_INCLUDE = "include";
     private static final String XI_FALLBACK = "fallback";
 
@@ -101,6 +103,7 @@ public class XIncludeFilter implements Receiver {
     private boolean inFallback = false;
     private int inIncludeDepth = 0; // depth of non-XInclude elements inside xi:include (for suppressing non-fallback children)
     private boolean suppressIncludeChildren = false; // true while processing xi:include's own children (not expanded content)
+    private boolean fallbackSeen = false; // tracks whether a fallback element has been seen in current xi:include
     private @Nullable ResourceError error = null;
 
     private static class ResourceError {
@@ -150,6 +153,7 @@ public class XIncludeFilter implements Receiver {
         this.inFallback = false;
         this.inIncludeDepth = 0;
         this.suppressIncludeChildren = false;
+        this.fallbackSeen = false;
         this.error = null;
     }
 
@@ -268,6 +272,7 @@ public class XIncludeFilter implements Receiver {
                     LOG.debug("processing include ...");
                 }
                 inIncludeDepth++;
+                fallbackSeen = false;
 
                 // Validate parse attribute (per spec 4.1: must be "xml" or "text")
                 final String parseMode = attribs.getValue(PARSE_ATTRIB);
@@ -275,6 +280,9 @@ public class XIncludeFilter implements Receiver {
                     throw new SAXException("Invalid value for parse attribute: '" + parseMode +
                             "'. Must be 'xml' or 'text'.");
                 }
+
+                // Validate accept/accept-language attributes (per spec 4.1)
+                validateAcceptAttributes(attribs);
 
                 // processXInclude will serialize included content through this filter;
                 // suppress only the xi:include's own children (not the expanded content)
@@ -297,13 +305,55 @@ public class XIncludeFilter implements Receiver {
                     error = resourceError;
                 }
             } else if (qname.getLocalPart().equals(XI_FALLBACK)) {
+                // Per spec: xi:fallback must be a child of xi:include
+                if (inIncludeDepth == 0 && !inFallback) {
+                    throw new SAXException("xi:fallback element must be a child of xi:include");
+                }
+                // Per spec: xi:include can have at most one xi:fallback child.
+                // Only check at direct-child level (not inside fallback content —
+                // unused fallback content is not validated per spec)
+                if (suppressIncludeChildren && !inFallback) {
+                    if (fallbackSeen) {
+                        throw new SAXException("xi:include element cannot have more than one xi:fallback child");
+                    }
+                    fallbackSeen = true;
+                }
                 inFallback = true;
+            } else {
+                // Per spec: elements from the XInclude namespace other than xi:include and
+                // xi:fallback are not allowed as children of xi:include
+                if (suppressIncludeChildren && !inFallback) {
+                    throw new SAXException("Element '" + qname.getLocalPart() +
+                            "' from the XInclude namespace is not allowed as a child of xi:include");
+                }
             }
         } else if (suppressIncludeChildren && !inFallback) {
             // Inside xi:include but not in fallback — suppress non-fallback children per spec
         } else if (!inFallback || error != null) {
             //LOG.debug("start: " + qName);
             receiver.startElement(qname, attribs);
+        }
+    }
+
+    /**
+     * Validate the accept and accept-language attributes per XInclude spec 4.1.
+     * Characters outside the range #x20 through #x7E are not allowed.
+     */
+    private static void validateAcceptAttributes(final AttrList attribs) throws SAXException {
+        validateAcceptAttribute(attribs.getValue(ACCEPT_ATTRIB), "accept");
+        validateAcceptAttribute(attribs.getValue(ACCEPT_LANGUAGE_ATTRIB), "accept-language");
+    }
+
+    private static void validateAcceptAttribute(@Nullable final String value, final String attrName) throws SAXException {
+        if (value == null) {
+            return;
+        }
+        for (int i = 0; i < value.length(); i++) {
+            final char ch = value.charAt(i);
+            if (ch < 0x20 || ch > 0x7E) {
+                throw new SAXException("Invalid character in " + attrName +
+                        " attribute: characters must be in the range #x20 through #x7E");
+            }
         }
     }
 
@@ -374,6 +424,12 @@ public class XIncludeFilter implements Receiver {
 
         if ("text".equals(parseMode)) {
             return processTextInclude(resolution, href, encoding);
+        }
+
+        // Non-well-formed resources stored as binary cannot be included as XML
+        if (resolution.doc != null && resolution.doc.getResourceType() == DocumentImpl.BINARY_FILE
+                && !resolution.xqueryDoc) {
+            return Optional.of(new ResourceError("Included resource is not well-formed XML: " + resolution.docUri));
         }
 
         if (xpointer == null && !resolution.xqueryDoc) {
@@ -533,6 +589,19 @@ public class XIncludeFilter implements Receiver {
     }
 
     /**
+     * Carrier for a prepared XPointer source and its compilation mode.
+     */
+    private static class PreparedSource {
+        final Source source;
+        final boolean wasElementScheme;
+
+        PreparedSource(final Source source, final boolean wasElementScheme) {
+            this.source = source;
+            this.wasElementScheme = wasElementScheme;
+        }
+    }
+
+    /**
      * Process an XPointer expression or stored XQuery against the resolved resource.
      */
     private Optional<ResourceError> processXPointerOrXQuery(@Nullable final String xpointer,
@@ -541,20 +610,24 @@ public class XIncludeFilter implements Receiver {
         final XQueryPool pool = serializer.broker.getBrokerPool().getXQueryPool();
         CompiledXQuery compiled = null;
         try {
-            final boolean wasElementScheme = xpointer != null && xpointer.trim().startsWith("element(");
-            source = prepareXPointerSource(xpointer, resolution);
+            final PreparedSource prepared = prepareXPointerSource(xpointer, resolution);
+            source = prepared.source;
 
             final XQuery xquery = serializer.broker.getBrokerPool().getXQueryService();
             compiled = pool.borrowCompiledXQuery(serializer.broker, source);
             final XQueryContext context = setupXPointerContext(compiled, xpointer, resolution);
 
-            compiled = compileXPointerQuery(compiled, context, source, xpointer, wasElementScheme, xquery);
+            compiled = compileXPointerQuery(compiled, context, source, xpointer, prepared.wasElementScheme, xquery);
 
             LOG.info("xpointer query: {}", ExpressionDumper.dump((Expression) compiled));
             final Sequence contextSeq = resolution.memtreeDoc;
 
             try {
                 final Sequence seq = xquery.execute(serializer.broker, compiled, contextSeq);
+                // Per XInclude spec 4.2: if xpointer doesn't select any subresource, it's a resource error
+                if (xpointer != null && seq.getItemCount() == 0) {
+                    return Optional.of(new ResourceError("XPointer did not select any subresource: " + xpointer));
+                }
                 serializeQueryResults(seq);
             } finally {
                 context.runCleanupTasks();
@@ -577,22 +650,31 @@ public class XIncludeFilter implements Receiver {
      * Prepare the XQuery source for an XPointer expression or stored XQuery.
      * For xpointer expressions, converts to XPath and wraps with doc() context as needed.
      * For stored XQuery documents, creates a DBSource.
+     *
+     * @throws XPathException if no recognized XPointer scheme is found (resource error)
      */
-    private Source prepareXPointerSource(@Nullable final String xpointer,
-                                          final IncludeResolution resolution) throws XPathException {
+    private PreparedSource prepareXPointerSource(@Nullable final String xpointer,
+                                                   final IncludeResolution resolution) throws XPathException {
         if (xpointer == null) {
-            return new DBSource(serializer.broker.getBrokerPool(), (BinaryDocument) resolution.doc, true);
+            return new PreparedSource(
+                    new DBSource(serializer.broker.getBrokerPool(), (BinaryDocument) resolution.doc, true), false);
         }
 
-        final boolean wasElementScheme = xpointer.trim().startsWith("element(");
-        String xp = convertXPointerToXPath(xpointer);
-        xp = checkNamespaces(xp);
-        // element() scheme produces XPath — needs doc() context
-        // and must be compiled as regular XQuery, not xpointer mode
-        if (wasElementScheme) {
-            xp = wrapWithDocContext(xp, resolution.doc != null ? resolution.doc.getURI() : resolution.docUri);
+        final String xp = convertXPointerToXPath(xpointer);
+        if (xp == null) {
+            // No recognized XPointer scheme — resource error per XPointer Framework spec
+            throw new XPathException((Expression) null, "No recognized XPointer scheme in: " + xpointer);
         }
-        return new StringSource(xp);
+        final String resolved = checkNamespaces(xp);
+
+        // Determine if element() or shorthand scheme was used (not xpointer() scheme)
+        final boolean elementScheme = !resolved.startsWith("xpointer(");
+        if (elementScheme) {
+            final String wrapped = wrapWithDocContext(resolved,
+                    resolution.doc != null ? resolution.doc.getURI() : resolution.docUri);
+            return new PreparedSource(new StringSource(wrapped), true);
+        }
+        return new PreparedSource(new StringSource(resolved), false);
     }
 
     /**
@@ -719,25 +801,34 @@ public class XIncludeFilter implements Receiver {
 
         // Convert element() scheme to XPath if needed
         String xp = convertXPointerToXPath(xpointer);
-
-        // For absolute XPath expressions (from element() scheme), wrap with doc()
-        // to ensure the document context is properly set
-        final String docUri = document.getURI().toString();
-        if (xp.startsWith("/")) {
-            xp = "doc('" + docUri + "')" + xp;
-        } else if (xp.startsWith("id(")) {
-            // id() needs the document context — wrap: doc('...')/id('...')
-            xp = "doc('" + docUri + "')/" + xp;
+        if (xp == null) {
+            return Optional.of(new ResourceError("No recognized XPointer scheme in: " + xpointer));
         }
 
-        evaluateIntraDocumentXQuery(xp);
-        return Optional.empty();
+        // Determine compilation mode: xpointer() scheme needs xpointer mode,
+        // element()/shorthand schemes are converted to regular XQuery
+        final boolean xpointerMode = xp.startsWith("xpointer(");
+
+        if (!xpointerMode) {
+            // For element()/shorthand schemes, wrap with doc() context
+            final String docUri = document.getURI().toString();
+            if (xp.startsWith("/")) {
+                xp = "doc('" + docUri + "')" + xp;
+            } else if (xp.startsWith("id(")) {
+                xp = "doc('" + docUri + "')/" + xp;
+            }
+        }
+
+        return evaluateIntraDocumentXQuery(xp, xpointerMode);
     }
 
     /**
      * Compile, execute, and serialize an XQuery expression for intra-document XPointer.
+     *
+     * @return resource error if the xpointer selects nothing, empty otherwise
      */
-    private void evaluateIntraDocumentXQuery(final String xp) throws SAXException {
+    private Optional<ResourceError> evaluateIntraDocumentXQuery(final String xp,
+                                                                  final boolean xpointerMode) throws SAXException {
         final XQueryPool pool = serializer.broker.getBrokerPool().getXQueryPool();
         CompiledXQuery compiled = null;
         Source source = null;
@@ -761,7 +852,7 @@ public class XIncludeFilter implements Receiver {
             context.setStaticallyKnownDocuments(new XmldbURI[]{document.getURI()});
 
             if (compiled == null) {
-                compiled = xquery.compile(context, source, true);
+                compiled = xquery.compile(context, source, xpointerMode);
             } else {
                 compiled.getContext().updateContext(context);
                 context.getWatchDog().reset();
@@ -769,13 +860,17 @@ public class XIncludeFilter implements Receiver {
 
             try {
                 final Sequence seq = xquery.execute(serializer.broker, compiled, null);
+                if (seq.getItemCount() == 0) {
+                    return Optional.of(new ResourceError("XPointer did not select any subresource"));
+                }
                 serializeQueryResults(seq);
             } finally {
                 context.runCleanupTasks();
             }
+            return Optional.empty();
         } catch (final XPathException | PermissionDeniedException e) {
             LOG.warn("intra-document xpointer error", e);
-            throw new SAXException("Error while processing intra-document XPointer: " + e.getMessage(), e);
+            return Optional.of(new ResourceError("Error while processing intra-document XPointer: " + e.getMessage(), e));
         } catch (final IOException e) {
             throw new SAXException("I/O error while reading intra-document XPointer query: " + e.getMessage(), e);
         } finally {
@@ -786,49 +881,90 @@ public class XIncludeFilter implements Receiver {
     }
 
     /**
-     * Convert XPointer element() scheme to XPath expressions.
-     * The xpointer() scheme is handled natively by the ANTLR parser's xpointer() rule,
-     * so we leave it as-is and only convert element() scheme pointers.
+     * Convert XPointer expressions to XPath.
      *
-     * Handles:
-     *   element(/1)          -> /node()[1]
-     *   element(/1/2/3)      -> /node()[1]/node()[2]/node()[3]
-     *   element(myid)        -> id('myid')
-     *   element(myid/2/3)    -> id('myid')/node()[2]/node()[3]
-     *   xpointer(expr)       -> xpointer(expr) (left for ANTLR parser)
-     *   xmlns(...)element()  -> strips xmlns(), converts element()
+     * Handles the XPointer Framework (multiple scheme(data) pairs):
+     * - xpointer(expr)       → xpointer(expr) (left for ANTLR parser)
+     * - element(/1/2)        → /*[1]/*[2]
+     * - element(myid)        → id('myid')
+     * - xmlns(...)element()  → strips xmlns(), converts element()
+     * - unknown(data)element(/1/2) → skips unknown, uses element()
+     * - bare-name            → id('bare-name') (shorthand pointer)
+     *
+     * @return the converted XPath expression, or null if no recognized scheme was found
      */
-    private static String convertXPointerToXPath(final String xpointer) {
+    private static @Nullable String convertXPointerToXPath(final String xpointer) {
         final String xp = xpointer.trim();
 
-        // xpointer() scheme — leave as-is; the ANTLR parser's xpointer() rule handles it
-        if (xp.startsWith("xpointer(")) {
-            return xp;
+        // Bare name (shorthand pointer) — no parentheses
+        if (!xp.contains("(")) {
+            return "id('" + xp + "')";
         }
 
-        // Handle element() scheme
-        if (xp.startsWith("element(") && xp.endsWith(")")) {
-            final String content = xp.substring(8, xp.length() - 1).trim();
-            return convertElementSchemeToXPath(content);
-        }
-
-        // Handle multiple schemes: xmlns(...)element(...)
-        // Strip xmlns() schemes first (handled by checkNamespaces), then look for element()
-        if (xp.contains("element(")) {
-            int idx = 0;
-            while (xp.startsWith("xmlns(", idx)) {
-                final int close = xp.indexOf(')', idx);
-                if (close <= 0) {
-                    break; // malformed xmlns() scheme, stop parsing
-                }
-                idx = close + 1;
+        // Parse scheme(data) pairs from left to right per XPointer Framework
+        int pos = 0;
+        while (pos < xp.length()) {
+            // Skip whitespace
+            while (pos < xp.length() && Character.isWhitespace(xp.charAt(pos))) {
+                pos++;
             }
-            if (idx > 0 && idx < xp.length()) {
-                return convertXPointerToXPath(xp.substring(idx));
+            if (pos >= xp.length()) {
+                break;
+            }
+
+            // Find scheme name (everything up to the opening paren)
+            final int parenStart = xp.indexOf('(', pos);
+            if (parenStart < 0) {
+                break;
+            }
+            final String scheme = xp.substring(pos, parenStart).trim();
+
+            // Find the matching closing paren (handling nested parens)
+            final int dataEnd = findMatchingParen(xp, parenStart);
+            if (dataEnd < 0) {
+                break; // unbalanced — stop parsing
+            }
+
+            final String data = xp.substring(parenStart + 1, dataEnd);
+            pos = dataEnd + 1;
+
+            // Process recognized schemes
+            if ("xpointer".equals(scheme)) {
+                return "xpointer(" + data + ")";
+            } else if ("element".equals(scheme)) {
+                return convertElementSchemeToXPath(data.trim());
+            } else if ("xmlns".equals(scheme)) {
+                // xmlns() is handled by checkNamespaces — skip and continue
+                continue;
+            } else {
+                // Unrecognized scheme — skip per XPointer framework spec
+                continue;
             }
         }
 
-        return xp;
+        // No recognized scheme found — return null to signal resource error
+        return null;
+    }
+
+    /**
+     * Find the position of the closing parenthesis that matches the opening paren at the given index.
+     * Handles nested parentheses.
+     *
+     * @return the index of the matching closing paren, or -1 if not found
+     */
+    private static int findMatchingParen(final String s, final int openParen) {
+        int depth = 1;
+        int i = openParen + 1;
+        while (i < s.length() && depth > 0) {
+            final char c = s.charAt(i);
+            if (c == '(') {
+                depth++;
+            } else if (c == ')') {
+                depth--;
+            }
+            i++;
+        }
+        return depth == 0 ? i - 1 : -1;
     }
 
     /**
@@ -880,23 +1016,26 @@ public class XIncludeFilter implements Receiver {
                                                  @Nullable final String encoding) {
         final java.nio.charset.Charset charset = resolveCharset(encoding);
 
+        String result;
         // Case 1: Binary document in database — read raw bytes
         if (doc != null && doc.getResourceType() == DocumentImpl.BINARY_FILE) {
-            return readBinaryAsText(doc, docUri, charset);
+            result = readBinaryAsText(doc, docUri, charset);
+        } else if (doc != null) {
+            // Case 2: XML document in database — serialize to string
+            result = serializeDocumentAsText(doc, docUri);
+        } else if (memtreeDoc != null) {
+            // Case 3: In-memory document
+            result = serializeMemtreeAsText(memtreeDoc, href);
+        } else {
+            // Case 4: External URI — read from URL
+            result = readExternalAsText(href, charset);
         }
 
-        // Case 2: XML document in database — serialize to string
-        if (doc != null) {
-            return serializeDocumentAsText(doc, docUri);
+        // Strip BOM (U+FEFF) — per XML spec 4.3.3, BOM is not part of character data
+        if (result != null && !result.isEmpty() && result.charAt(0) == '\uFEFF') {
+            result = result.substring(1);
         }
-
-        // Case 3: In-memory document
-        if (memtreeDoc != null) {
-            return serializeMemtreeAsText(memtreeDoc, href);
-        }
-
-        // Case 4: External URI — read from URL
-        return readExternalAsText(href, charset);
+        return result;
     }
 
     /**
