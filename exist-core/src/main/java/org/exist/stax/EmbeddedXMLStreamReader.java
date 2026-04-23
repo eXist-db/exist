@@ -355,7 +355,11 @@ public class EmbeddedXMLStreamReader implements IEmbeddedXMLStreamReader, Extend
         readAttributes();
         for(int i = 0; i < attributes.getLength(); i++) {
             final org.exist.dom.QName qn = attributes.getQName(i);
-            if(qn.getNamespaceURI().equals(namespaceURI) && qn.getLocalPart().equals(localName)) {
+            // Per XMLStreamReader contract, null namespaceURI means "no namespace" —
+            // match any attribute regardless of its namespace. This is consistent with
+            // the JDK's default XMLStreamReader implementations (e.g., Woodstox, Aalto)
+            // where getAttributeValue(null, localName) matches unqualified attributes.
+            if((namespaceURI == null || qn.getNamespaceURI().equals(namespaceURI)) && qn.getLocalPart().equals(localName)) {
                 return attributes.getValue(i);
             }
         }
