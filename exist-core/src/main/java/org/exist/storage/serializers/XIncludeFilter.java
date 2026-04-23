@@ -545,14 +545,15 @@ public class XIncludeFilter implements Receiver {
                 Path f = Paths.get(path);
                 if (!f.isAbsolute()) {
                     if (moduleLoadPath.startsWith(XmldbURI.XMLDB_URI_PREFIX)) {
-                        final XmldbURI parentUri = XmldbURI.create(moduleLoadPath);
-                        resolution.docUri = parentUri.append(path);
+                        final String base = moduleLoadPath.endsWith("/") ? moduleLoadPath : moduleLoadPath + "/";
+                        final URI resolved = URI.create(base).resolve(path);
+                        resolution.docUri = XmldbURI.create(resolved);
                         resolution.doc = (DocumentImpl) serializer.broker.getXMLResource(resolution.docUri);
                         if (resolution.doc != null && !resolution.doc.getPermissions().validate(serializer.broker.getCurrentSubject(), Permission.READ)) {
                             throw new PermissionDeniedException("Permission denied to read XInclude'd resource");
                         }
                     } else {
-                        f = Paths.get(moduleLoadPath, path);
+                        f = Paths.get(moduleLoadPath, path).normalize();
                         externalUri = f.toUri();
                     }
                 }
