@@ -358,10 +358,10 @@ public class ModuleInfo extends BasicFunction {
 	 * Create a map with keys "uri", "prefix", and "source".
 	 */
 	private MapType createModuleInfoMap(final String uri, final String prefix, final String source) throws XPathException {
-		MapType map = new MapType(this, context);
-		map = (MapType) map.put(new StringValue(this, "uri"), new StringValue(this, uri));
-		map = (MapType) map.put(new StringValue(this, "prefix"), new StringValue(this, prefix));
-		map = (MapType) map.put(new StringValue(this, "source"), new StringValue(this, source));
+		final MapType map = new MapType(this, context);
+		map.add(new StringValue(this, "uri"), new StringValue(this, uri));
+		map.add(new StringValue(this, "prefix"), new StringValue(this, prefix));
+		map.add(new StringValue(this, "source"), new StringValue(this, source));
 		return map;
 	}
 
