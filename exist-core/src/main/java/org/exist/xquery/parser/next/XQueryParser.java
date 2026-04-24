@@ -4237,6 +4237,11 @@ public final class XQueryParser {
             final String key = current.value;
             advance();
             result = new Lookup(context, leftExpr, key);
+        } else if (check(Token.STRING_LITERAL)) {
+            // String literal key lookup: expr?"key"
+            final String key = current.value;
+            advance();
+            result = new Lookup(context, leftExpr, key);
         } else if (match(Token.LPAREN)) {
             // Computed lookup: expr?(expr)
             final PathExpr keyExpr = new PathExpr(context);
