@@ -349,7 +349,7 @@ public class DurationValue extends ComputableValue {
             case LTEQ:
             case GT:
             case GTEQ: {
-                // XQ4 (PR2216): allow ordering of durations — only in xquery version "4.0"
+                // XQ4 (PR2216): allow ordering of durations
                 // In XQ 3.1, duration ordering must throw XPTY0004
                 final Expression expr = getExpression();
                 final boolean xq4 = expr != null && expr.getContext() != null
@@ -384,10 +384,24 @@ public class DurationValue extends ComputableValue {
     }
 
     public AtomicValue max(Collator collator, AtomicValue other) throws XPathException {
+        if (DurationValue.class.isAssignableFrom(other.getClass())) {
+            final Expression expr = getExpression();
+            if (expr != null && expr.getContext() != null
+                    && expr.getContext().getXQueryVersion() >= 40) {
+                return compareTo(collator, other) >= 0 ? this : other;
+            }
+        }
         throw new XPathException(getExpression(), ErrorCodes.XPTY0004, "invalid operation on " + Type.getTypeName(this.getType()));
     }
 
     public AtomicValue min(Collator collator, AtomicValue other) throws XPathException {
+        if (DurationValue.class.isAssignableFrom(other.getClass())) {
+            final Expression expr = getExpression();
+            if (expr != null && expr.getContext() != null
+                    && expr.getContext().getXQueryVersion() >= 40) {
+                return compareTo(collator, other) <= 0 ? this : other;
+            }
+        }
         throw new XPathException(getExpression(), ErrorCodes.XPTY0004, "invalid operation on " + Type.getTypeName(this.getType()));
     }
 
