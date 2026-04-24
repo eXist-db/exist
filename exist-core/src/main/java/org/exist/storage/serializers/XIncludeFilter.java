@@ -902,7 +902,10 @@ public class XIncludeFilter implements Receiver {
             return "id('" + xp + "')";
         }
 
-        // Parse scheme(data) pairs from left to right per XPointer Framework
+        // Parse scheme(data) pairs from left to right per XPointer Framework.
+        // Collect xmlns() declarations to prepend to the result so that
+        // checkNamespaces() can register them regardless of scheme order.
+        final StringBuilder xmlnsDecls = new StringBuilder();
         int pos = 0;
         while (pos < xp.length()) {
             // Skip whitespace
@@ -931,11 +934,12 @@ public class XIncludeFilter implements Receiver {
 
             // Process recognized schemes
             if ("xpointer".equals(scheme)) {
-                return "xpointer(" + data + ")";
+                return xmlnsDecls + "xpointer(" + data + ")";
             } else if ("element".equals(scheme)) {
-                return convertElementSchemeToXPath(data.trim());
+                return xmlnsDecls + convertElementSchemeToXPath(data.trim());
             } else if ("xmlns".equals(scheme)) {
-                // xmlns() is handled by checkNamespaces — skip and continue
+                // Collect xmlns() declarations — checkNamespaces() will process them
+                xmlnsDecls.append("xmlns(").append(data).append(')');
                 continue;
             } else {
                 // Unrecognized scheme — skip per XPointer framework spec
