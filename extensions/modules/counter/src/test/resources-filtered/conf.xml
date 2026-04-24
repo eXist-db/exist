@@ -746,6 +746,7 @@
             <!-- Module under test -->
             <module uri="http://exist-db.org/xquery/counter" class="org.exist.xquery.modules.file.CounterModule"/>
 
+            <module uri="http://expath.org/ns/binary" class="org.exist.xquery.modules.binary.BinaryModule"/>
         </builtin-modules>
     </xquery>
 
