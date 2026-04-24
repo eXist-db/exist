@@ -215,6 +215,12 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
+            <artifactId>exist-expath-file</artifactId>
+            <version>${project.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>exist-file</artifactId>
             <version>${project.version}</version>
             <scope>runtime</scope>
