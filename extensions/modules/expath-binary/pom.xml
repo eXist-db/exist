@@ -22,21 +22,21 @@
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <groupId>org.exist-db</groupId>
         <artifactId>exist-parent</artifactId>
         <version>7.0.0-SNAPSHOT</version>
-        <relativePath>../../exist-parent</relativePath>
+        <relativePath>../../../exist-parent</relativePath>
     </parent>
 
-    <artifactId>exist-modules</artifactId>
-    <packaging>pom</packaging>
+    <artifactId>exist-expath-binary</artifactId>
+    <packaging>jar</packaging>
 
-    <name>eXist-db Extension XQuery Modules</name>
-    <description>eXist-db Extension XQuery Modules</description>
+    <name>eXist-db EXPath Binary Module</name>
+    <description>EXPath Binary Module 4.0 for eXist-db (http://expath.org/ns/binary)</description>
 
     <scm>
         <connection>scm:git:https://github.com/exist-db/exist.git</connection>
@@ -45,29 +45,23 @@
       <tag>HEAD</tag>
   </scm>
 
-    <modules>
-        <module>cache</module>
-        <module>compression</module>
-        <module>counter</module>
-        <module>cqlparser</module>
-        <module>example</module>
-        <module>exi</module>
-        <module>expath-binary</module>
-        <module>expathrepo</module>
-        <module>expathrepo/expathrepo-trigger-test</module>
-        <module>expath-file</module>
-        <module>file</module>
-        <module>image</module>
-        <module>jndi</module>
-        <module>mail</module>
-        <module>persistentlogin</module>
-        <module>process</module>
-        <module>scheduler</module>
-        <module>simpleql</module>
-        <module>sql</module>
-        <module>sql-oracle</module>
-        <module>xmldiff</module>
-        <module>xslfo</module>
-    </modules>
+    <dependencies>
+        <dependency>
+            <groupId>org.exist-db</groupId>
+            <artifactId>exist-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>jsr305</artifactId>
+        </dependency>
+
+    </dependencies>
 
 </project>
