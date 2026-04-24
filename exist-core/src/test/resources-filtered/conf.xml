@@ -910,6 +910,7 @@
             <module uri="http://exist-db.org/xquery/validation" class="org.exist.xquery.functions.validation.ValidationModule" />
             <module uri="http://exist-db.org/xquery/xmldb"      class="org.exist.xquery.functions.xmldb.XMLDBModule" />
 
+            <module uri="http://expath.org/ns/file" class="org.exist.xquery.modules.file.expath.ExpathFileModule"/>
         </builtin-modules>
     </xquery>
 

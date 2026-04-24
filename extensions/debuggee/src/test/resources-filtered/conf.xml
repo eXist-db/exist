@@ -743,6 +743,7 @@
 
         <builtin-modules>
 
+            <module uri="http://expath.org/ns/file" class="org.exist.xquery.modules.file.expath.ExpathFileModule"/>
         </builtin-modules>
     </xquery>
 
