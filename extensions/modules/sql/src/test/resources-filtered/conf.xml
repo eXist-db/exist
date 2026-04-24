@@ -753,6 +753,7 @@
                 <parameter name="pool.1.properties.maximumPoolSize" value="10"/>
             </module>
 
+            <module uri="http://expath.org/ns/file" class="org.exist.xquery.modules.file.expath.ExpathFileModule"/>
         </builtin-modules>
     </xquery>
 
