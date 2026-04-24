@@ -87,8 +87,13 @@ public class FunCodepointsToString extends BasicFunction {
             final StringBuilder buf = new StringBuilder();
             for (final SequenceIterator i = args[0].iterate(); i.hasNext(); ) {
                 final long next = ((NumericValue)i.nextItem()).getLong();
-                if (next < 0 || next > Integer.MAX_VALUE ||
-                        !XMLChar.isValid((int)next)) {
+                if (next < 0 || next > 0x10FFFF || next == 0
+                        || (next >= 0xD800 && next <= 0xDFFF)
+                        || (next >= 0xFDD0 && next <= 0xFDEF)
+                        || (next & 0xFFFE) == 0xFFFE) {
+                    // Reject: null, surrogates, and Unicode noncharacters.
+                    // Accepts C0 controls (U+0001-U+001F) per XML 1.1 / XQ 4.0.
+                    // Noncharacters: U+FDD0-U+FDEF, U+xFFFE, U+xFFFF in all planes.
                     throw new XPathException(this,
                             ErrorCodes.FOCH0001, 
                             "Codepoint " + next + " is not a valid character.");

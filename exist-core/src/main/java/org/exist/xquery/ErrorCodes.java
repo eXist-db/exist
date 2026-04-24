@@ -161,6 +161,10 @@ public class ErrorCodes {
     public static final ErrorCode FODT0001 = new W3CErrorCode("FODT0001", "Overflow/underflow in date/time operation.");
     public static final ErrorCode FODT0002 = new W3CErrorCode("FODT0002", "Overflow/underflow in duration operation.");
     public static final ErrorCode FODT0003 = new W3CErrorCode("FODT0003", "Invalid timezone value.");
+    // --- XQuery 4.0 fn:build-dateTime error codes ---
+    public static final ErrorCode FODT0005 = new W3CErrorCode("FODT0005", "Missing required date/time component.");
+    public static final ErrorCode FODT0006 = new W3CErrorCode("FODT0006", "Invalid date/time component value.");
+    // --- End XQuery 4.0 fn:build-dateTime error codes ---
     public static final ErrorCode FONS0004 = new W3CErrorCode("FONS0004", "No namespace found for prefix.");
     public static final ErrorCode FONS0005 = new W3CErrorCode("FONS0005", "Base-uri not defined in the static context.");
     public static final ErrorCode FORG0001 = new W3CErrorCode("FORG0001", "Invalid value for cast/constructor.");
