@@ -4499,10 +4499,15 @@ public final class XQueryParser {
             ((AbstractExpression) fn).setLocation(nameToken.line, nameToken.column);
         }
 
-        // Check for partial application
+        // Check for partial application — also check inside keyword args
         boolean isPartial = false;
         for (final Expression arg : args) {
             if (arg instanceof Function.Placeholder) {
+                isPartial = true;
+                break;
+            }
+            if (arg instanceof KeywordArgumentExpression &&
+                    ((KeywordArgumentExpression) arg).getArgument() instanceof Function.Placeholder) {
                 isPartial = true;
                 break;
             }
@@ -4546,9 +4551,15 @@ public final class XQueryParser {
             ((AbstractExpression) fn).setLocation(nameToken.line, nameToken.column);
         }
         // Check for partial application — if any argument is a placeholder
+        // Must also check inside KeywordArgumentExpression which wraps placeholders
         boolean isPartial = false;
         for (final Expression arg : args) {
             if (arg instanceof Function.Placeholder) {
+                isPartial = true;
+                break;
+            }
+            if (arg instanceof KeywordArgumentExpression &&
+                    ((KeywordArgumentExpression) arg).getArgument() instanceof Function.Placeholder) {
                 isPartial = true;
                 break;
             }
@@ -4588,6 +4599,12 @@ public final class XQueryParser {
             final String keyName = current.value;
             advance(); // consume name
             advance(); // consume :=
+            // Check for ? placeholder as keyword argument value: name := ?
+            if (check(Token.QUESTION) && (peekIs(Token.COMMA) || peekIs(Token.RPAREN))) {
+                advance(); // consume ?
+                return new KeywordArgumentExpression(context, keyName,
+                        new Function.Placeholder(context));
+            }
             final Expression value = parseExprSingle();
             return new KeywordArgumentExpression(context, keyName, value);
         }
