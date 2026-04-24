@@ -70,29 +70,29 @@ public class ResourceAvailable extends BasicFunction {
         final String path = args[1].getStringValue();
 
         final Optional<ExistRepository> repo = context.getRepository();
-        if (repo.isPresent()) {
-            try {
-                for (final Packages pp : repo.get().getParentRepo().listPackages()) {
-                    final Package pkg = pp.latest();
-                    if (pkg.getName().equals(pkgName)) {
-                        try {
-                            // resolveResource opens a stream — close it immediately
-                            final StreamSource source = (StreamSource) pkg.getResolver().resolveResource(path);
-                            final InputStream is = source.getInputStream();
-                            if (is != null) {
-                                is.close();
-                            }
-                            return BooleanValue.TRUE;
-                        } catch (final Storage.NotExistException e) {
-                            return BooleanValue.FALSE;
-                        } catch (final IOException e) {
-                            return BooleanValue.FALSE;
+        if (!repo.isPresent()) {
+            return BooleanValue.FALSE;
+        }
+
+        try {
+            for (final Packages pp : repo.get().getParentRepo().listPackages()) {
+                final Package pkg = pp.latest();
+                if (pkg.getName().equals(pkgName)) {
+                    try {
+                        // resolveResource opens a stream — close it immediately
+                        final StreamSource source = (StreamSource) pkg.getResolver().resolveResource(path);
+                        final InputStream is = source.getInputStream();
+                        if (is != null) {
+                            is.close();
                         }
+                        return BooleanValue.TRUE;
+                    } catch (final Storage.NotExistException | IOException e) {
+                        return BooleanValue.FALSE;
                     }
                 }
-            } catch (final PackageException e) {
-                throw new XPathException(this, "Caught package error while checking resource availability", e);
             }
+        } catch (final PackageException e) {
+            throw new XPathException(this, "Caught package error while checking resource availability", e);
         }
         // Package not found
         return BooleanValue.FALSE;
