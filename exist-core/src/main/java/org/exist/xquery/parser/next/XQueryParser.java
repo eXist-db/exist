@@ -1431,11 +1431,25 @@ parseExprSingle(); // parse but discard
         matchKeyword(Keywords.SWITCH);
 
         expect(Token.LPAREN, "'('");
-        final Expression operand = parseExpr();
+
+        // XQ4: switch() with no operand — boolean mode
+        final boolean booleanMode = check(Token.RPAREN);
+        final Expression operand;
+        if (booleanMode) {
+            operand = new PathExpr(context); // empty operand
+        } else {
+            operand = parseExpr();
+        }
         expect(Token.RPAREN, "')'");
 
         final SwitchExpression switchExpr = new SwitchExpression(context, operand);
         switchExpr.setLocation(startLine, startCol);
+        if (booleanMode) {
+            switchExpr.setBooleanMode(true);
+        }
+
+        // XQ4: optional braces around case/default clauses
+        final boolean braced = match(Token.LBRACE);
 
         // case clauses
         while (checkKeyword(Keywords.CASE)) {
@@ -1460,6 +1474,10 @@ parseExprSingle(); // parse but discard
         final Expression defaultExpr = parseExprSingle();
         switchExpr.setDefault(defaultExpr);
 
+        if (braced) {
+            expect(Token.RBRACE, "'}'");
+        }
+
         return switchExpr;
     }
 
@@ -1478,6 +1496,9 @@ parseExprSingle(); // parse but discard
 
         final TypeswitchExpression tswitch = new TypeswitchExpression(context, operand);
         tswitch.setLocation(startLine, startCol);
+
+        // XQ4: optional braces around case/default clauses
+        final boolean braced = match(Token.LBRACE);
 
         // case clauses
         while (checkKeyword(Keywords.CASE)) {
@@ -1534,6 +1555,10 @@ parseExprSingle(); // parse but discard
         expectKeyword(Keywords.RETURN);
         final Expression defaultExpr = parseExprSingle();
         tswitch.setDefault(defaultVar, defaultExpr);
+
+        if (braced) {
+            expect(Token.RBRACE, "'}'");
+        }
 
         return tswitch;
     }
@@ -4786,6 +4811,7 @@ parseExprSingle(); // parse but discard
             case Keywords.ATTRIBUTE: case Keywords.COMMENT:
             case Keywords.DOCUMENT_NODE: case Keywords.PROCESSING_INSTRUCTION:
             case "namespace-node": case "schema-element": case "schema-attribute":
+            case "gnode":
                 return true;
             default: return false;
         }
@@ -4827,6 +4853,8 @@ parseExprSingle(); // parse but discard
             case "schema-attribute":
                 if (check(Token.NCNAME) || check(Token.QNAME)) { advance(); }
                 test = new TypeTest(Type.ATTRIBUTE); break;
+            case "gnode":
+                test = new AnyNodeTest(); break;
             default: throw error("Unknown kind test: " + kind);
         }
         expect(Token.RPAREN, "')'");
