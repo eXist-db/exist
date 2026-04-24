@@ -903,9 +903,12 @@ public class XIncludeFilter implements Receiver {
         }
 
         // Parse scheme(data) pairs from left to right per XPointer Framework.
-        // Collect xmlns() declarations to prepend to the result so that
-        // checkNamespaces() can register them regardless of scheme order.
+        // Collect xmlns() declarations and remember the first recognized action
+        // scheme (xpointer/element). We must scan the entire string before returning
+        // because xmlns() declarations may appear after the action scheme, e.g.:
+        //   xpointer(//comment:comment)xmlns(comment=http://test.org)
         final StringBuilder xmlnsDecls = new StringBuilder();
+        String actionResult = null;
         int pos = 0;
         while (pos < xp.length()) {
             // Skip whitespace
@@ -932,19 +935,20 @@ public class XIncludeFilter implements Receiver {
             final String data = xp.substring(parenStart + 1, dataEnd);
             pos = dataEnd + 1;
 
-            // Process recognized schemes
-            if ("xpointer".equals(scheme)) {
-                return xmlnsDecls + "xpointer(" + data + ")";
-            } else if ("element".equals(scheme)) {
-                return xmlnsDecls + convertElementSchemeToXPath(data.trim());
+            // Process recognized schemes — use first action scheme per XPointer Framework
+            if (actionResult == null && "xpointer".equals(scheme)) {
+                actionResult = "xpointer(" + data + ")";
+            } else if (actionResult == null && "element".equals(scheme)) {
+                actionResult = convertElementSchemeToXPath(data.trim());
             } else if ("xmlns".equals(scheme)) {
                 // Collect xmlns() declarations — checkNamespaces() will process them
                 xmlnsDecls.append("xmlns(").append(data).append(')');
-                continue;
-            } else {
-                // Unrecognized scheme — skip per XPointer framework spec
-                continue;
             }
+            // else: unrecognized scheme — skip per XPointer framework spec
+        }
+
+        if (actionResult != null) {
+            return xmlnsDecls + actionResult;
         }
 
         // No recognized scheme found — return null to signal resource error
