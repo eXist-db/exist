@@ -1520,11 +1520,25 @@ public final class XQueryParser {
         matchKeyword(Keywords.SWITCH);
 
         expect(Token.LPAREN, "'('");
-        final Expression operand = parseExpr();
+
+        // XQ4: switch() with no operand — boolean mode
+        final boolean booleanMode = check(Token.RPAREN);
+        final Expression operand;
+        if (booleanMode) {
+            operand = new PathExpr(context); // empty operand
+        } else {
+            operand = parseExpr();
+        }
         expect(Token.RPAREN, "')'");
 
         final SwitchExpression switchExpr = new SwitchExpression(context, operand);
         switchExpr.setLocation(startLine, startCol);
+        if (booleanMode) {
+            switchExpr.setBooleanMode(true);
+        }
+
+        // XQ4: optional braces around case/default clauses
+        final boolean braced = match(Token.LBRACE);
 
         // case clauses
         while (checkKeyword(Keywords.CASE)) {
@@ -1549,6 +1563,10 @@ public final class XQueryParser {
         final Expression defaultExpr = parseExprSingle();
         switchExpr.setDefault(defaultExpr);
 
+        if (braced) {
+            expect(Token.RBRACE, "'}'");
+        }
+
         return switchExpr;
     }
 
@@ -1567,6 +1585,9 @@ public final class XQueryParser {
 
         final TypeswitchExpression tswitch = new TypeswitchExpression(context, operand);
         tswitch.setLocation(startLine, startCol);
+
+        // XQ4: optional braces around case/default clauses
+        final boolean braced = match(Token.LBRACE);
 
         // case clauses
         while (checkKeyword(Keywords.CASE)) {
@@ -1623,6 +1644,10 @@ public final class XQueryParser {
         expectKeyword(Keywords.RETURN);
         final Expression defaultExpr = parseExprSingle();
         tswitch.setDefault(defaultVar, defaultExpr);
+
+        if (braced) {
+            expect(Token.RBRACE, "'}'");
+        }
 
         return tswitch;
     }
@@ -4910,6 +4935,7 @@ public final class XQueryParser {
             case "json-node": case "object-node": case "array-node":
             case "string-node": case "number-node": case "boolean-node":
             case "null-node": case "member-node": case "jnode":
+            case "gnode":
                 return true;
             default: return false;
         }
@@ -4970,6 +4996,8 @@ public final class XQueryParser {
                 if (!isXQ4()) throw xq4Required("member-node()"); test = new TypeTest(Type.JSON_MEMBER); break;
             case "jnode":
                 if (!isXQ4()) throw xq4Required("jnode()"); test = new TypeTest(Type.JSON_NODE); break;
+            case "gnode":
+                test = new AnyNodeTest(); break;
             default: throw error("Unknown kind test: " + kind);
         }
         expect(Token.RPAREN, "')'");
