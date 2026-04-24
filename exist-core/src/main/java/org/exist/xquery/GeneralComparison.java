@@ -1100,6 +1100,11 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
      * @throws XPathException if an error occurs during the comparison
      */
     private boolean compareAtomic(final Collator collator, AtomicValue lv, AtomicValue rv) throws XPathException {
+        // Propagate expression context to atomized values so version-gated
+        // comparisons (e.g., xs:duration ordering) can check the XQuery version
+        if (lv.getExpression() == null) { lv.setExpression(this); }
+        if (rv.getExpression() == null) { rv.setExpression(this); }
+
         // get types locally as convertForCompareAtomic may change the types of the AtomicValue itself
         int ltype = lv.getType();
         int rtype = rv.getType();

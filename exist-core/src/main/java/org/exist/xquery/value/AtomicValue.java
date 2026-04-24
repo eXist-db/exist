@@ -67,6 +67,17 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
     @Override
     public Expression getExpression() { return expression; }
 
+    /**
+     * Sets the expression from which this value derives.
+     * Used to propagate context information (e.g., XQuery version)
+     * to values created at runtime without an expression reference.
+     */
+    public void setExpression(final Expression expression) {
+        if (this.expression == null) {
+            this.expression = expression;
+        }
+    }
+
     protected AtomicValue() { this(null); }
 
     protected AtomicValue(final Expression expression) { this.expression = expression; }
