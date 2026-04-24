@@ -351,6 +351,26 @@ public final class XQueryParser {
             advance();
             return new LiteralValue(context, new StringValue(token.value));
         }
+        // Negated numeric literal: -42, -3.14, -1e5
+        if (check(Token.MINUS)) {
+            advance(); // consume -
+            if (check(Token.INTEGER_LITERAL)) {
+                final Token token = current;
+                advance();
+                return new LiteralValue(context, new IntegerValue("-" + token.value.replace("_", "")));
+            }
+            if (check(Token.DECIMAL_LITERAL)) {
+                final Token token = current;
+                advance();
+                return new LiteralValue(context, new DecimalValue("-" + token.value.replace("_", "")));
+            }
+            if (check(Token.DOUBLE_LITERAL)) {
+                final Token token = current;
+                advance();
+                return new LiteralValue(context, new DoubleValue("-" + token.value.replace("_", "")));
+            }
+            throw error("Expected numeric literal after '-' in annotation");
+        }
         if (check(Token.INTEGER_LITERAL)) {
             final Token token = current;
             advance();
@@ -365,6 +385,15 @@ public final class XQueryParser {
             final Token token = current;
             advance();
             return new LiteralValue(context, new DoubleValue(token.value.replace("_", "")));
+        }
+        // true() and false() as annotation values
+        if (check(Token.NCNAME) && ("true".equals(current.value) || "false".equals(current.value))) {
+            final String boolVal = current.value;
+            advance(); // consume true/false
+            if (match(Token.LPAREN)) {
+                expect(Token.RPAREN, "')'");
+            }
+            return new LiteralValue(context, new StringValue(boolVal));
         }
         throw error("Expected literal value in annotation");
     }
@@ -1137,6 +1166,17 @@ public final class XQueryParser {
         final String varName = expectName("variable name");
         final QName qname = resolveQName(varName, null);
 
+        // Optional type annotation: as SequenceType
+        if (matchKeyword(Keywords.AS)) {
+            parseSequenceType(); // consume type (ForMemberExpr doesn't store it yet)
+        }
+
+        // Optional positional variable: at $pos
+        if (matchKeyword(Keywords.AT)) {
+            expect(Token.DOLLAR, "'$'");
+            expectName("positional variable name"); // consume (ForMemberExpr doesn't store it yet)
+        }
+
         expectKeyword(Keywords.IN);
         final Expression inputSeq = parseExprSingle();
 
@@ -1159,6 +1199,12 @@ public final class XQueryParser {
         final boolean isScore = matchKeyword("score");
 
         expect(Token.DOLLAR, "'$'");
+
+        // XQ4: destructuring let — $( ), $[ ], ${ }
+        if (!isScore && (check(Token.LPAREN) || check(Token.LBRACKET) || check(Token.LBRACE))) {
+            return parseLetDestructure(startLine, startCol);
+        }
+
         final String varName = expectName("variable name");
         final QName qname = resolveQName(varName, null);
 
@@ -1194,6 +1240,78 @@ public final class XQueryParser {
         }
 
         return letExpr;
+    }
+
+    /**
+     * Parses XQ4 destructuring let bindings:
+     *   let $($x, $y) := (1, 2)       — sequence destructuring
+     *   let $[$x, $y] := [1, 2]       — array destructuring
+     *   let ${$x, $y} := map{...}     — map destructuring
+     * Current token is the opening delimiter after $.
+     */
+    private FLWORClause parseLetDestructure(final int startLine, final int startCol) throws XPathException {
+        final LetDestructureExpr.DestructureMode mode;
+        final int closeToken;
+
+        if (match(Token.LPAREN)) {
+            mode = LetDestructureExpr.DestructureMode.SEQUENCE;
+            closeToken = Token.RPAREN;
+        } else if (match(Token.LBRACKET)) {
+            mode = LetDestructureExpr.DestructureMode.ARRAY;
+            closeToken = Token.RBRACKET;
+        } else {
+            advance(); // consume {
+            mode = LetDestructureExpr.DestructureMode.MAP;
+            closeToken = Token.RBRACE;
+        }
+
+        final LetDestructureExpr destructure = new LetDestructureExpr(context, mode);
+        destructure.setLocation(startLine, startCol);
+
+        // Parse comma-separated variable list: $x [as Type], $y [as Type], ...
+        do {
+            expect(Token.DOLLAR, "'$'");
+            final String vn = expectName("variable name");
+            final QName qname = resolveQName(vn, null);
+            SequenceType varType = null;
+            if (matchKeyword(Keywords.AS)) {
+                varType = parseSequenceType();
+            }
+            destructure.addVariable(qname, varType);
+        } while (match(Token.COMMA));
+
+        if (current.type != closeToken) {
+            final String closeChar = closeToken == Token.RPAREN ? ")" :
+                    closeToken == Token.RBRACKET ? "]" : "}";
+            throw error("Expected '" + closeChar + "' to close destructuring pattern");
+        }
+        advance(); // consume closing delimiter
+
+        // Optional overall type annotation
+        if (matchKeyword(Keywords.AS)) {
+            destructure.setOverallType(parseSequenceType());
+        }
+
+        expect(Token.COLON_EQ, "':='");
+        destructure.setInputSequence(parseExprSingle());
+
+        // Declare all destructured variables
+        for (final QName qn : destructure.getTupleStreamVariables()) {
+            context.declareVariableBinding(new LocalVariable(qn));
+        }
+
+        // Handle comma-separated bindings after destructure
+        if (check(Token.COMMA) && !checkKeyword(Keywords.RETURN)) {
+            if (peekAfterCommaIsDollar()) {
+                match(Token.COMMA);
+                final FLWORClause next = parseLetBinding();
+                destructure.setReturnExpression(next);
+                next.setPreviousClause(destructure);
+                return destructure;
+            }
+        }
+
+        return destructure;
     }
 
     private WhereClause parseWhereClause() throws XPathException {
@@ -1527,41 +1645,47 @@ public final class XQueryParser {
         tryCatch.setLocation(line, col);
 
         // Catch clauses: catch errorCode { expr }
+        // or catch errorCode ($code, $desc, $val) { expr }
         while (checkKeyword(Keywords.CATCH)) {
             matchKeyword(Keywords.CATCH);
 
-            // Error code list: * or QName (| QName)*
+            // Error code list: *, *:local, prefix:*, or QName (| ...)*
             final List<QName> errorCodes = new ArrayList<>();
-            if (match(Token.STAR)) {
-                errorCodes.add(QName.WildcardQName.getInstance());
-            } else {
-                errorCodes.add(parseErrorCodeQName());
-                while (match(Token.PIPE)) {
-                    if (match(Token.STAR)) {
-                        errorCodes.add(QName.WildcardQName.getInstance());
-                    } else {
-                        errorCodes.add(parseErrorCodeQName());
+            errorCodes.add(parseCatchNameTest());
+            while (match(Token.PIPE)) {
+                errorCodes.add(parseCatchNameTest());
+            }
+
+            // Optional explicit catch variable bindings: ($code, $desc, $val)
+            final List<QName> catchVars = new ArrayList<>(3);
+            if (match(Token.LPAREN)) {
+                // Custom catch variable names
+                expect(Token.DOLLAR, "'$'");
+                catchVars.add(resolveQName(expectName("catch error code variable"), null));
+                if (match(Token.COMMA)) {
+                    expect(Token.DOLLAR, "'$'");
+                    catchVars.add(resolveQName(expectName("catch error description variable"), null));
+                    if (match(Token.COMMA)) {
+                        expect(Token.DOLLAR, "'$'");
+                        catchVars.add(resolveQName(expectName("catch error value variable"), null));
                     }
                 }
+                expect(Token.RPAREN, "')'");
+            } else {
+                // Default err:code, err:description, err:value
+                catchVars.add(new QName("code", Namespaces.W3C_XQUERY_XPATH_ERROR_NS, "err"));
+                catchVars.add(new QName("description", Namespaces.W3C_XQUERY_XPATH_ERROR_NS, "err"));
+                catchVars.add(new QName("value", Namespaces.W3C_XQUERY_XPATH_ERROR_NS, "err"));
             }
 
             // Catch body: { expr }
             expect(Token.LBRACE, "'{'");
 
-            // Register err:code, err:description, err:value variables
             final LocalVariable mark = context.markLocalVariables(false);
             try {
-                final List<QName> catchVars = new ArrayList<>(3);
-                final QName errCode = new QName("code", Namespaces.W3C_XQUERY_XPATH_ERROR_NS, "err");
-                final QName errDesc = new QName("description", Namespaces.W3C_XQUERY_XPATH_ERROR_NS, "err");
-                final QName errValue = new QName("value", Namespaces.W3C_XQUERY_XPATH_ERROR_NS, "err");
-                catchVars.add(errCode);
-                catchVars.add(errDesc);
-                catchVars.add(errValue);
-
-                context.declareVariableBinding(new LocalVariable(errCode));
-                context.declareVariableBinding(new LocalVariable(errDesc));
-                context.declareVariableBinding(new LocalVariable(errValue));
+                for (final QName cv : catchVars) {
+                    context.declareVariableBinding(new LocalVariable(cv));
+                }
 
                 final PathExpr catchExpr = new PathExpr(context);
                 catchExpr.add(parseExpr());
@@ -1574,6 +1698,7 @@ public final class XQueryParser {
         }
 
         // Optional finally clause (XQ4 only)
+        // Supports try { } finally { } without catch clauses
         if (checkKeyword(Keywords.FINALLY)) {
             // XQ4 feature accepted in all versions (matching ANTLR 2 behavior)
             advance();
@@ -1661,11 +1786,50 @@ public final class XQueryParser {
      * e.g., fn:count#1, local:greet#1
      */
     /** Parses an error code QName — handles NCName, QName, and EQName (Q{uri}local). */
+    /**
+     * Parses a name test in catch error list: *, *:local, prefix:*, or QName.
+     */
+    private QName parseCatchNameTest() throws XPathException {
+        if (match(Token.STAR)) {
+            if (match(Token.COLON)) {
+                // *:local — wildcard namespace
+                final String local = expectName("error code local part");
+                return new QName.WildcardNamespaceURIQName(local);
+            }
+            return QName.WildcardQName.getInstance();
+        }
+        return parseErrorCodeQName();
+    }
+
     private QName parseErrorCodeQName() throws XPathException {
         if (check(Token.BRACED_URI_LITERAL)) {
             final String eqname = parseEQName();
             final int braceEnd = eqname.indexOf('}');
             return new QName(eqname.substring(braceEnd + 1), eqname.substring(2, braceEnd));
+        }
+        // Handle wildcard name tests: prefix:*, *:local
+        if (check(Token.NCNAME) && peekIs(Token.COLON)) {
+            final String prefix = current.value;
+            advance(); // consume prefix
+            advance(); // consume :
+            if (match(Token.STAR)) {
+                // prefix:* — wildcard local part
+                final String nsURI = context.getURIForPrefix(prefix);
+                return new QName.WildcardLocalPartQName(nsURI != null ? nsURI : "", prefix);
+            }
+            // prefix:local — regular QName
+            final String local = expectName("error code local part");
+            return resolveQName(prefix + ":" + local, Namespaces.XPATH_FUNCTIONS_NS);
+        }
+        if (check(Token.STAR)) {
+            advance(); // consume *
+            if (match(Token.COLON)) {
+                // *:local — wildcard namespace
+                final String local = expectName("error code local part");
+                return new QName.WildcardNamespaceURIQName(local);
+            }
+            // Bare * — already handled by the caller, but just in case
+            return QName.WildcardQName.getInstance();
         }
         final String errorName = expectName("error code");
         return resolveQName(errorName, Namespaces.XPATH_FUNCTIONS_NS);
@@ -2145,6 +2309,67 @@ public final class XQueryParser {
         }
 
         throw new XPathException(xln, xcl, ErrorCodes.XPST0003, "Unterminated string constructor");
+    }
+
+    /**
+     * Parses an XQ4 string template: `text {expr} more text`
+     * Uses character-level scanning. Escapes: {{ → {, }} → }, `` → `
+     */
+    Expression parseStringTemplate() throws XPathException {
+        if (!isXQ4()) {
+            throw xq4Required("String templates");
+        }
+        final int line = current.line, col = current.column;
+        xp = current.endOffset; // right after opening `
+        xln = current.line;
+        xcl = current.column + 1;
+        bufferedNext = null;
+
+        final StringConstructor sc = new StringConstructor(context);
+        sc.setLocation(line, col);
+        final StringBuilder text = new StringBuilder();
+
+        while (xp < lexer.getLength()) {
+            final int ch = xchar();
+
+            // Closing backtick — end of string template
+            if (ch == '`') {
+                // Check for escaped backtick: `` → `
+                if (xpeek(1) == '`') {
+                    text.append('`'); xp += 2; xcl += 2;
+                    continue;
+                }
+                if (text.length() > 0) { sc.addContent(text.toString()); text.setLength(0); }
+                xp++; xcl++;
+                syncLexer(xp, xln, xcl);
+                return sc;
+            }
+
+            // { — start interpolation (unless escaped as {{)
+            if (ch == '{') {
+                if (xpeek(1) == '{') {
+                    text.append('{'); xp += 2; xcl += 2;
+                    continue;
+                }
+                if (text.length() > 0) { sc.addContent(text.toString()); text.setLength(0); }
+                xp++; xcl++; // skip {
+                final Expression expr = scanEnclosedExpr();
+                sc.addInterpolation(expr instanceof PathExpr ? ((PathExpr) expr).simplify() : expr);
+                continue;
+            }
+
+            // }} → }
+            if (ch == '}' && xpeek(1) == '}') {
+                text.append('}'); xp += 2; xcl += 2;
+                continue;
+            }
+
+            text.appendCodePoint(ch);
+            if (ch == '\n') { xln++; xcl = 1; } else { xcl++; }
+            xp++;
+        }
+
+        throw new XPathException(xln, xcl, ErrorCodes.XPST0003, "Unterminated string template");
     }
 
     Expression parseQNameLiteral() throws XPathException {
@@ -2723,7 +2948,50 @@ public final class XQueryParser {
         String funcName = null;
         PathExpr funcExpr = null;
 
-        if (check(Token.NCNAME) || check(Token.QNAME)) {
+        if (checkKeyword(Keywords.FN) && peekIs(Token.LBRACE)) {
+            // Focus function as arrow specifier: => fn { expr }(args)
+            funcExpr = new PathExpr(context);
+            funcExpr.add(parseFocusFunction());
+        } else if (checkKeyword(Keywords.FUNCTION) && (peekIs(Token.LPAREN) || peekIs(Token.LBRACE))) {
+            // Inline function: => function($x) { ... }(args)
+            // Or focus function via 'function': => function { expr }(args)
+            funcExpr = new PathExpr(context);
+            advance(); // consume 'function'
+            if (check(Token.LBRACE)) {
+                // function { } is a focus function form
+                funcExpr.add(parseFocusFunction());
+            } else {
+                funcExpr.add(parseInlineFunction());
+            }
+        } else if (check(Token.PERCENT)) {
+            // Annotated inline/focus function: => %ann function(...) { }(args)
+            funcExpr = new PathExpr(context);
+            parseAnnotations(); // consume annotations (applied at function decl level)
+            if (checkKeyword(Keywords.FN) && peekIs(Token.LBRACE)) {
+                funcExpr.add(parseFocusFunction());
+            } else if (checkKeyword(Keywords.FUNCTION)) {
+                advance();
+                if (check(Token.LBRACE)) {
+                    funcExpr.add(parseFocusFunction());
+                } else {
+                    funcExpr.add(parseInlineFunction());
+                }
+            } else {
+                throw error("Expected 'function' or 'fn' after annotation in arrow expression");
+            }
+        } else if (checkKeyword(Keywords.MAP) && peekIs(Token.LBRACE)) {
+            // Map constructor as arrow specifier: => map { }(args)
+            funcExpr = new PathExpr(context);
+            funcExpr.add(parseMapConstructor());
+        } else if (checkKeyword(Keywords.ARRAY) && peekIs(Token.LBRACE)) {
+            // Curly array constructor: => array { }(args)
+            funcExpr = new PathExpr(context);
+            funcExpr.add(parseCurlyArrayConstructor());
+        } else if (check(Token.LBRACKET)) {
+            // Square array constructor: => [](args)
+            funcExpr = new PathExpr(context);
+            funcExpr.add(parseSquareArrayConstructor());
+        } else if (check(Token.NCNAME) || check(Token.QNAME)) {
             funcName = current.value;
             advance();
         } else if (check(Token.BRACED_URI_LITERAL)) {
@@ -2738,11 +3006,6 @@ public final class XQueryParser {
             funcExpr.add(parsePrimaryExpr());
             // The parenthesized expr might be followed by () for invocation
             // which gets consumed below as the argument list
-        } else if (checkKeyword(Keywords.FUNCTION) && peekIs(Token.LPAREN)) {
-            // Inline function: => function($x) { ... }()
-            funcExpr = new PathExpr(context);
-            advance(); // consume 'function'
-            funcExpr.add(parseInlineFunction());
         } else {
             throw error("Expected function name after arrow operator");
         }
@@ -3135,8 +3398,8 @@ public final class XQueryParser {
                 return parsePrimaryExpr();
             }
 
-            // Inline function keyword
-            if (checkKeyword(Keywords.FUNCTION) && peekIs(Token.LPAREN)) {
+            // Inline function keyword or focus function (function { })
+            if (checkKeyword(Keywords.FUNCTION) && (peekIs(Token.LPAREN) || peekIs(Token.LBRACE))) {
                 return parsePrimaryExpr();
             }
 
@@ -3970,8 +4233,29 @@ public final class XQueryParser {
             return ctx;
         }
 
+        // Annotated inline/focus function: %ann function(...) { } or %ann fn { }
+        if (check(Token.PERCENT)) {
+            parseAnnotations(); // consume annotations
+            if (checkKeyword(Keywords.FN) && peekIs(Token.LBRACE)) {
+                return parseFocusFunction();
+            }
+            if (checkKeyword(Keywords.FUNCTION)) {
+                if (peekIs(Token.LBRACE)) {
+                    return parseFocusFunction();
+                }
+                advance(); // consume 'function'
+                return parseInlineFunction();
+            }
+            throw error("Expected 'function' or 'fn' after annotation");
+        }
+
         // Inline function: function($x) { ... }
-        if (checkKeyword(Keywords.FUNCTION) && peekIs(Token.LPAREN)) {
+        // or focus function: function { expr } (XQ4)
+        if (checkKeyword(Keywords.FUNCTION) && (peekIs(Token.LPAREN) || peekIs(Token.LBRACE))) {
+            if (peekIs(Token.LBRACE)) {
+                // function { expr } — XQ4 focus function form
+                return parseFocusFunction();
+            }
             advance(); // consume 'function'
             return parseInlineFunction();
         }
@@ -3996,6 +4280,11 @@ public final class XQueryParser {
         // String constructor: ``[content `{expr}` more]`` — XQuery 3.1 (W3C §3.11.4)
         if (check(Token.STRING_CONSTRUCTOR_START)) {
             return parseStringConstructor();
+        }
+
+        // String template: `text {expr} more` — XQ4 (W3C §3.11.5)
+        if (check(Token.STRING_TEMPLATE_START)) {
+            return parseStringTemplate();
         }
 
         // EQName: Q{uri}local — function call, function reference, or variable
@@ -4278,14 +4567,33 @@ public final class XQueryParser {
             if (current.type == Token.NCNAME) {
                 final String suffix = current.value;
                 if ("sibling".equals(suffix)) {
-                    // following-sibling or preceding-sibling
-                    final String compound = name + "-sibling";
+                    // following-sibling, preceding-sibling,
+                    // or XQ4: following-sibling-or-self, preceding-sibling-or-self
+                    advance(); // consume "sibling"
                     if (peekIs(Token.COLONCOLON)) {
-                        advance(); // consume "sibling"
-                        return axisFromName(compound);
+                        // following-sibling or preceding-sibling
+                        return axisFromName(name + "-sibling");
+                    }
+                    // Check for -or-self suffix (XQ4 combined axes)
+                    if (current.type == Token.MINUS) {
+                        advance(); // consume "-"
+                        if (current.type == Token.NCNAME && "or".equals(current.value)) {
+                            advance(); // consume "or"
+                            if (current.type == Token.MINUS) {
+                                advance(); // consume "-"
+                                if (current.type == Token.NCNAME && "self".equals(current.value)) {
+                                    final String compound = name + "-sibling-or-self";
+                                    if (peekIs(Token.COLONCOLON)) {
+                                        advance(); // consume "self"
+                                        return axisFromName(compound);
+                                    }
+                                }
+                            }
+                        }
                     }
                 } else if ("or".equals(suffix)) {
-                    // descendant-or-self or ancestor-or-self
+                    // descendant-or-self, ancestor-or-self,
+                    // or XQ4: following-or-self, preceding-or-self
                     advance(); // consume "or"
                     if (current.type == Token.MINUS) {
                         advance(); // consume "-"
@@ -4327,6 +4635,11 @@ public final class XQueryParser {
             case Keywords.PRECEDING: return Constants.PRECEDING_AXIS;
             case Keywords.PRECEDING_SIBLING: return Constants.PRECEDING_SIBLING_AXIS;
             case Keywords.ATTRIBUTE: return Constants.ATTRIBUTE_AXIS;
+            // XQ4 combined axes
+            case "following-or-self": return Constants.FOLLOWING_OR_SELF_AXIS;
+            case "preceding-or-self": return Constants.PRECEDING_OR_SELF_AXIS;
+            case "following-sibling-or-self": return Constants.FOLLOWING_SIBLING_OR_SELF_AXIS;
+            case "preceding-sibling-or-self": return Constants.PRECEDING_SIBLING_OR_SELF_AXIS;
             default: return -1;
         }
     }
