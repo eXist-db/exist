@@ -750,6 +750,7 @@
             <module uri="http://exist-db.org/xquery/mail" class="org.exist.xquery.modules.mail.MailModule"/>
 
             <module uri="http://expath.org/ns/file" class="org.exist.xquery.modules.file.expath.ExpathFileModule"/>
+            <module uri="http://expath.org/ns/binary" class="org.exist.xquery.modules.binary.BinaryModule"/>
         </builtin-modules>
     </xquery>
 

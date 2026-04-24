@@ -744,6 +744,7 @@
         <builtin-modules>
 
             <module uri="http://expath.org/ns/file" class="org.exist.xquery.modules.file.expath.ExpathFileModule"/>
+            <module uri="http://expath.org/ns/binary" class="org.exist.xquery.modules.binary.BinaryModule"/>
         </builtin-modules>
     </xquery>
 
