@@ -2396,6 +2396,25 @@ public final class XQueryParser {
             or.add(right);
             left = or;
         }
+
+        // XQ4 ternary conditional: condition ?? thenExpr !! elseExpr
+        if (check(Token.DOUBLE_QUESTION)) {
+            if (!isXQ4()) {
+                throw xq4Required("Ternary conditional operator (?? !!)");
+            }
+            advance(); // consume ??
+            final Expression thenExpr = parseExprSingle();
+            expect(Token.DOUBLE_BANG, "'!!'");
+            final Expression elseExpr = parseExprSingle();
+            final PathExpr testPath = wrapInPathExpr(left);
+            final PathExpr thenPath = wrapInPathExpr(thenExpr);
+            final PathExpr elsePath = wrapInPathExpr(elseExpr);
+            final ConditionalExpression cond = new ConditionalExpression(context,
+                    testPath, thenPath, elsePath);
+            cond.setLocation(left.getLine(), left.getColumn());
+            return cond;
+        }
+
         return left;
     }
 
@@ -2741,6 +2760,19 @@ public final class XQueryParser {
             return Type.ARRAY_ITEM;
         }
 
+        // RecordType: record(key as type, ...) or record(*)
+        if (checkKeyword(Keywords.RECORD) && peekIs(Token.LPAREN)) {
+            advance(); advance(); // consume 'record' '('
+            int depth = 1;
+            while (depth > 0 && !check(Token.EOF)) {
+                if (check(Token.LPAREN)) depth++;
+                if (check(Token.RPAREN)) { depth--; if (depth == 0) break; }
+                advance();
+            }
+            expect(Token.RPAREN, "')'");
+            return Type.MAP_ITEM; // record is a specialization of map
+        }
+
         // node(), element(), attribute(), text(), comment(), etc.
         if (check(Token.NCNAME) && isKindTest(current.value) && peekIs(Token.LPAREN)) {
             final String kind = current.value;
@@ -3072,6 +3104,14 @@ public final class XQueryParser {
         while (true) {
             if (check(Token.LBRACKET)) {
                 expr = parsePredicate(expr);
+            } else if (check(Token.QUESTION) && peekIs(Token.LBRACKET)) {
+                // XQ4 Filter alternation mode: expr?[predicate]
+                advance(); // consume ?
+                advance(); // consume [
+                final Expression predExpr = parseExprSingle();
+                expect(Token.RBRACKET, "']'");
+                expr = new FilterExprAM(context, expr, predExpr);
+                expr.setLocation(previous.line, previous.column);
             } else if (check(Token.QUESTION) && !peekIs(Token.QUESTION)) {
                 // Lookup: expr?key, expr?1, expr?(expr), expr?*
                 expr = parseLookup(expr);
