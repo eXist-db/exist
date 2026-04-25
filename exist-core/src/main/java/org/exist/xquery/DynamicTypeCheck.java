@@ -149,6 +149,9 @@ public class DynamicTypeCheck extends AbstractExpression {
             } else if (type == Type.ANY_URI && requiredType == Type.STRING) {
                     item = item.convertTo(Type.STRING);
                     type = Type.STRING;
+            // XQuery 4.0 implicit casting (spec §3.4.1 item 4)
+            } else if (context.getXQueryVersion() >= 40) {
+                item = xq4ImplicitCast(item, type, requiredType);
             } else {
                 if (!(Type.subTypeOf(type, requiredType))) {
                     throw new XPathException(expression, typeMismatchError,
@@ -163,6 +166,104 @@ public class DynamicTypeCheck extends AbstractExpression {
         }
         if (result != null)
             {result.add(item);}
+    }
+
+    /**
+     * XQuery 4.0 coercion rules per spec §3.4.1.
+     * Handles implicit casting (item 4) and relabeling (item 6).
+     */
+    private Item xq4ImplicitCast(Item item, final int type, final int requiredType) throws XPathException {
+        // Item 4: Implicit Casting table
+        if (isXQ4ImplicitCast(type, requiredType)) {
+            try {
+                return item.convertTo(requiredType);
+            } catch (final XPathException e) {
+                throw new XPathException(expression, ErrorCodes.XPTY0004,
+                        "Cannot coerce " + Type.getTypeName(type) + "(" +
+                        item.getStringValue() + ") to " + Type.getTypeName(requiredType));
+            }
+        }
+        // Item 6: Relabeling — if R is derived from primitive P, and J is an instance of P,
+        // relabel J as R if J's datum is within the value space of R.
+        if (isXQ4Relabeling(type, requiredType)) {
+            try {
+                return item.convertTo(requiredType);
+            } catch (final XPathException e) {
+                throw new XPathException(expression, ErrorCodes.XPTY0004,
+                        "Cannot relabel " + Type.getTypeName(type) + "(" +
+                        item.getStringValue() + ") as " + Type.getTypeName(requiredType) +
+                        ": value is not in the value space of the target type");
+            }
+        }
+        // Fall through to the standard type error
+        if (!(Type.subTypeOf(type, requiredType))) {
+            throw new XPathException(expression, ErrorCodes.XPTY0004,
+                    Type.getTypeName(item.getType()) + "(" + item.getStringValue() +
+                    ") is not a sub-type of " + Type.getTypeName(requiredType));
+        } else {
+            throw new XPathException(expression, ErrorCodes.FOCH0002, "Required type is " +
+                    Type.getTypeName(requiredType) + " but got '" + Type.getTypeName(item.getType()) + "(" +
+                    item.getStringValue() + ")'");
+        }
+    }
+
+    /**
+     * Check if an implicit cast is allowed from a source type to a target type
+     * under XQuery 4.0 coercion rules (spec §3.4.1 item 4, Implicit Casting table).
+     *
+     * The "from" column matches if J is an instance of "from" (including subtypes).
+     * The "to" column must match R exactly (the required type must be the primitive type).
+     */
+    static boolean isXQ4ImplicitCast(final int sourceType, final int requiredType) {
+        // xs:string → xs:anyURI
+        if (Type.subTypeOf(sourceType, Type.STRING) && requiredType == Type.ANY_URI) {
+            return true;
+        }
+        // xs:hexBinary ↔ xs:base64Binary
+        if (Type.subTypeOf(sourceType, Type.HEX_BINARY) && requiredType == Type.BASE64_BINARY) {
+            return true;
+        }
+        if (Type.subTypeOf(sourceType, Type.BASE64_BINARY) && requiredType == Type.HEX_BINARY) {
+            return true;
+        }
+        // Bidirectional numeric: xs:double → xs:decimal, xs:float → xs:decimal
+        // (Note: decimal→float, decimal→double, float→double already handled by XQ 3.1 rules)
+        if (Type.subTypeOf(sourceType, Type.DOUBLE) && requiredType == Type.DECIMAL) {
+            return true;
+        }
+        if (Type.subTypeOf(sourceType, Type.FLOAT) && requiredType == Type.DECIMAL) {
+            return true;
+        }
+        // XQ4 also allows any numeric → any other numeric
+        // "any numeric type to be implicitly converted to any other"
+        if (Type.subTypeOfUnion(sourceType, Type.NUMERIC) && Type.subTypeOfUnion(requiredType, Type.NUMERIC)) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Check if relabeling is allowed under XQuery 4.0 coercion rules (spec §3.4.1 item 6).
+     * Relabeling applies when R is derived from a primitive type P, and J is an instance of P
+     * (but not already an instance of R). The actual value check (whether the datum is in
+     * the value space of R) is deferred to convertTo().
+     */
+    static boolean isXQ4Relabeling(final int sourceType, final int requiredType) {
+        // Only applies to atomic types
+        if (!Type.subTypeOf(sourceType, Type.ANY_ATOMIC_TYPE) || !Type.subTypeOf(requiredType, Type.ANY_ATOMIC_TYPE)) {
+            return false;
+        }
+        try {
+            final int requiredPrimitive = Type.primitiveTypeOf(requiredType);
+            // Relabeling only applies when R is a derived type (not a primitive itself)
+            if (requiredPrimitive == requiredType) {
+                return false;
+            }
+            // J must be an instance of the same primitive type P
+            return Type.subTypeOf(sourceType, requiredPrimitive);
+        } catch (final IllegalArgumentException e) {
+            return false;
+        }
     }
 
     /* (non-Javadoc)

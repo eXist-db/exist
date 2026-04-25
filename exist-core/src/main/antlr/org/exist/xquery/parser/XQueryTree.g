@@ -451,14 +451,16 @@ throws PermissionDeniedException, EXistException, XPathException
             v:VERSION_DECL
             {
                 final String version = v.getText();
-                if (version.equals("3.1")) {
+                if (version.equals("4.0")) {
+                    context.setXQueryVersion(40);
+                } else if (version.equals("3.1")) {
                     context.setXQueryVersion(31);
                 } else if (version.equals("3.0")) {
                     context.setXQueryVersion(30);
                 } else if (version.equals("1.0")) {
                     context.setXQueryVersion(10);
                 } else {
-                    throw new XPathException(v, ErrorCodes.XQST0031, "Wrong XQuery version: require 1.0, 3.0 or 3.1");
+                    throw new XPathException(v, ErrorCodes.XQST0031, "Wrong XQuery version: require 1.0, 3.0, 3.1, or 4.0");
                 }
             }
             ( enc:STRING_LITERAL )?
