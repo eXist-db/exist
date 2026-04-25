@@ -28,7 +28,10 @@ import org.exist.EXistException;
 import org.exist.collections.Collection;
 import org.exist.collections.triggers.TriggerException;
 import org.exist.dom.persistent.BinaryDocument;
+import org.exist.security.Account;
 import org.exist.security.PermissionDeniedException;
+import org.exist.security.SecurityManager;
+import org.exist.security.internal.aider.UserAider;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.txn.Txn;
@@ -76,8 +79,16 @@ public class EvalWebSocketEndpointTest {
     @BeforeClass
     public static void storeTestModule() throws Exception {
         final BrokerPool pool = BrokerPool.getInstance();
-        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+        final SecurityManager securityManager = pool.getSecurityManager();
+        try (final DBBroker broker = pool.get(Optional.of(securityManager.getSystemSubject()));
              final Txn transaction = pool.getTransactionManager().beginTransaction()) {
+
+            if (!securityManager.hasAccount("test-user")) {
+                final Account user = new UserAider("test-user");
+                user.setPassword("test-pass");
+                securityManager.addAccount(user);
+            }
+
             final Collection col = broker.getOrCreateCollection(transaction,
                     XmldbURI.create(TEST_COLLECTION));
             broker.saveCollection(transaction, col);
@@ -93,12 +104,18 @@ public class EvalWebSocketEndpointTest {
     @AfterClass
     public static void cleanupTestModule() throws Exception {
         final BrokerPool pool = BrokerPool.getInstance();
-        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+        final SecurityManager securityManager = pool.getSecurityManager();
+        try (final DBBroker broker = pool.get(Optional.of(securityManager.getSystemSubject()));
              final Txn transaction = pool.getTransactionManager().beginTransaction()) {
             final Collection col = broker.getCollection(XmldbURI.create(TEST_COLLECTION));
             if (col != null) {
                 broker.removeCollection(transaction, col);
             }
+
+            if (securityManager.hasAccount("test-user")) {
+                securityManager.deleteAccount("test-user");
+            }
+
             transaction.commit();
         }
     }
@@ -1004,10 +1021,10 @@ public class EvalWebSocketEndpointTest {
                     }
                 });
             }
-        }, ClientEndpointConfig.Builder.create().build(), getWsUri());
+        }, createAuthConfig("test-user", "test-pass"), getWsUri());
 
         try {
-            // guest user tries admin-cancel
+            // non-DBA user tries admin-cancel
             session.getBasicRemote().sendText(
                     "{\"action\":\"admin-cancel\",\"id\":\"12345\"}");
 
