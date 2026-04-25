@@ -156,30 +156,20 @@ public class EvalWebSocketEndpointTest {
                 final String field = parser.currentName();
                 parser.nextToken();
                 switch (parser.currentToken()) {
-                    case VALUE_STRING:
-                        result.put(field, parser.getValueAsString());
-                        break;
-                    case VALUE_NUMBER_INT:
-                        result.put(field, parser.getValueAsLong());
-                        break;
-                    case VALUE_NUMBER_FLOAT:
-                        result.put(field, parser.getValueAsDouble());
-                        break;
-                    case VALUE_TRUE:
-                    case VALUE_FALSE:
-                        result.put(field, parser.getValueAsBoolean());
-                        break;
-                    case START_OBJECT:
+                    case VALUE_STRING -> result.put(field, parser.getValueAsString());
+                    case VALUE_NUMBER_INT -> result.put(field, parser.getValueAsLong());
+                    case VALUE_NUMBER_FLOAT -> result.put(field, parser.getValueAsDouble());
+                    case VALUE_TRUE, VALUE_FALSE -> result.put(field, parser.getValueAsBoolean());
+                    case START_OBJECT -> {
                         // nested object - skip for simplicity, just mark as present
                         result.put(field, "OBJECT");
                         parser.skipChildren();
-                        break;
-                    case START_ARRAY:
+                    }
+                    case START_ARRAY -> {
                         result.put(field, "ARRAY");
                         parser.skipChildren();
-                        break;
-                    default:
-                        break;
+                    }
+                    default -> { }
                 }
             }
         }

@@ -166,19 +166,11 @@ public class EvalWebSocketEndpoint {
         }
 
         switch (msg.action) {
-            case EvalProtocol.ACTION_EVAL:
-                handleEval(session, evalSession, msg);
-                break;
-            case EvalProtocol.ACTION_CANCEL:
-                handleCancel(evalSession, msg);
-                break;
-            case EvalProtocol.ACTION_COMPILE:
-                handleCompile(session, evalSession, msg);
-                break;
-            case EvalProtocol.ACTION_ADMIN_CANCEL:
-                handleAdminCancel(session, evalSession, msg);
-                break;
-            default:
+            case EvalProtocol.ACTION_EVAL -> handleEval(session, evalSession, msg);
+            case EvalProtocol.ACTION_CANCEL -> handleCancel(evalSession, msg);
+            case EvalProtocol.ACTION_COMPILE -> handleCompile(session, evalSession, msg);
+            case EvalProtocol.ACTION_ADMIN_CANCEL -> handleAdminCancel(session, evalSession, msg);
+            default -> {
                 try {
                     session.getBasicRemote().sendText(
                             EvalProtocol.errorMessage(msg.id, null,
@@ -186,7 +178,7 @@ public class EvalWebSocketEndpoint {
                 } catch (final IOException e) {
                     LOG.debug("Failed to send unknown action error: {}", e.getMessage());
                 }
-                break;
+            }
         }
     }
 
