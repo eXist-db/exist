@@ -28,6 +28,7 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.Constants.StringTruncationOperator;
 import org.exist.xquery.Dependency;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.Profiler;
@@ -129,7 +130,7 @@ public class FunIndexOf extends BasicFunction {
     		Collator collator;
     		if (getSignature().getArgumentCount() == 3) {
     			final String collation = args[2].getStringValue();
-    			collator = context.getCollator(collation);
+    			collator = context.getCollator(collation, ErrorCodes.FOCH0002);
     		} else
     			{collator = context.getDefaultCollator();}
     		result = new ValueSequence();

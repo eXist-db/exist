@@ -227,7 +227,7 @@ public class ElementConstructor extends NodeConstructor {
                     try {
                         attrQName = QName.parse(context, constructor.getQName(), XMLConstants.NULL_NS_URI);
                     } catch (final QName.IllegalQNameException e) {
-                        throw new XPathException(this, ErrorCodes.XPTY0004, "'" + constructor.getQName() + "' is not a valid attribute name");
+                        throw new XPathException(this, ErrorCodes.XQDY0074, "'" + constructor.getQName() + "' is not a valid attribute name");
                     }
 
                     final String namespaceURI = attrQName.getNamespaceURI();
@@ -289,7 +289,7 @@ public class ElementConstructor extends NodeConstructor {
                     try {
                         qn = QName.parse(context, qnitem.getStringValue());
                     } catch (final QName.IllegalQNameException e) {
-                        throw new XPathException(this, ErrorCodes.XPTY0004, "'" + qnitem.getStringValue() + "' is not a valid element name");
+                        throw new XPathException(this, ErrorCodes.XQDY0074, "'" + qnitem.getStringValue() + "' is not a valid element name");
                     } catch (final XPathException e) {
                         e.setLocation(getLine(), getColumn(), getSource());
                         throw e;
@@ -313,7 +313,7 @@ public class ElementConstructor extends NodeConstructor {
 
             //Not in the specs but... makes sense
             if (!XMLNames.isName(qn.getLocalPart())) {
-                throw new XPathException(this, ErrorCodes.XPTY0004, "'" + qnitem.getStringValue() + "' is not a valid element name");
+                throw new XPathException(this, ErrorCodes.XQDY0074, "'" + qnitem.getStringValue() + "' is not a valid element name");
             }
 
             // add namespace declaration nodes
