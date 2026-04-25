@@ -659,6 +659,14 @@ throws PermissionDeniedException, EXistException, XPathException
             }
         )
         |
+        // === W3C XQuery Update Facility 3.0 — Revalidation Declaration ===
+        #(
+            "revalidation" ( "strict" | "lax" | "skip" )
+            {
+                // eXist does not support schema revalidation; declaration is accepted and ignored
+            }
+        )
+        |
         #(
             DEF_NAMESPACE_DECL defu:STRING_LITERAL
             {

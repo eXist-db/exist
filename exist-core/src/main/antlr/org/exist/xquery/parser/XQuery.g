@@ -285,7 +285,7 @@ prolog throws XPathException
 		(
 			importDecl
 			|
-			( "declare" ( "default" | "boundary-space" | "ordering" | "construction" | "base-uri" | "copy-namespaces" | "namespace" | "decimal-format" ) ) =>
+			( "declare" ( "default" | "boundary-space" | "ordering" | "construction" | "base-uri" | "copy-namespaces" | "namespace" | "decimal-format" | "revalidation" ) ) =>
 			s:setter
 			{
 				if(!inSetters)
@@ -359,6 +359,10 @@ setter
 		|
 		( "declare" "construction" ) =>
 		"declare"! "construction"^ ( "preserve" | "strip" )
+		|
+		// === W3C XQuery Update Facility 3.0 — Revalidation Declaration ===
+		( "declare" "revalidation" ) =>
+		"declare"! "revalidation"^ ( "strict" | "lax" | "skip" )
 		|
 		( "declare" "copy-namespaces" ) =>
 		"declare"! "copy-namespaces"^ preserveMode COMMA! inheritMode
