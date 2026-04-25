@@ -23,6 +23,7 @@ package org.exist.xquery;
 
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.xquery.functions.array.ArrayType;
+import org.exist.xquery.functions.map.AbstractMapType;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
@@ -75,15 +76,25 @@ public class Atomize extends AbstractExpression {
         if (input.isEmpty())
             {return Sequence.EMPTY_SEQUENCE;}
         input = ArrayType.flatten(input);
-        if (input.hasOne()) {return
-            input.itemAt(0).atomize();
+        if (input.hasOne()) {
+            final Item single = input.itemAt(0);
+            // XQ4: maps are atomizable — expand to their values before atomizing
+            if (single instanceof AbstractMapType && ((AbstractMapType) single).isXq4Atomizable()) {
+                return ((AbstractMapType) single).atomizeValues();
+            }
+            return single.atomize();
         }
 
         Item next;
         final ValueSequence result = new ValueSequence();
         for(final SequenceIterator i = input.iterate(); i.hasNext(); ) {
             next = i.nextItem();
-            result.add(next.atomize());
+            // XQ4: maps are atomizable — expand to their values before atomizing
+            if (next instanceof AbstractMapType && ((AbstractMapType) next).isXq4Atomizable()) {
+                result.addAll(((AbstractMapType) next).atomizeValues());
+            } else {
+                result.add(next.atomize());
+            }
         }
         return result;
     }
