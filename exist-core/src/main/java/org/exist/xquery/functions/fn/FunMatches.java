@@ -527,19 +527,6 @@ public final class FunMatches extends Function implements Optimizable, IndexUseR
             pattern = FunReplace.stripRegexComments(pattern);
         }
 
-        // XQuery 4.0: \b and \B word boundaries — Saxon's XP30 translator rejects them.
-        // Fall back to Java regex for patterns containing \b or \B.
-        if (pattern.contains("\\b") || pattern.contains("\\B")) {
-            try {
-                final String javaPattern = org.exist.xquery.regex.RegexUtil.translateRegexp(
-                        this, pattern, flags.contains("x"), flags.contains("i"));
-                int javaFlags = org.exist.xquery.regex.RegexUtil.parseFlags(this, flags);
-                return Pattern.compile(javaPattern, javaFlags).matcher(string).find();
-            } catch (final XPathException | PatternSyntaxException e) {
-                throw new XPathException(this, ErrorCodes.FORX0002, "Invalid regular expression: " + e.getMessage());
-            }
-        }
-
         try {
             List<String> warnings = new ArrayList<>(1);
             RegularExpression regex = context.getBroker().getBrokerPool()
@@ -553,16 +540,17 @@ public final class FunMatches extends Function implements Optimizable, IndexUseR
             return regex.containsMatch(StringView.of(string));
 
         } catch (final net.sf.saxon.trans.XPathException e) {
-            // Fallback: if the pattern uses \p{Is<Block>} Unicode block names that
-            // Saxon doesn't recognize, convert to Java's \p{In<Block>} and use Java regex
-            if (pattern.contains("\\p{Is") || pattern.contains("\\P{Is")) {
+            // Saxon's XP30 regex translator rejects some valid XQuery 4.0 patterns:
+            // \b/\B word boundaries, certain quantifier sequences, \p{Is<Block>} names, etc.
+            // Fall back to Java regex before giving up.
+            if ("FORX0002".equals(e.getErrorCodeQName().getLocalPart())) {
                 try {
                     final String javaPattern = org.exist.xquery.regex.RegexUtil.translateRegexp(
                             this, pattern, flags.contains("x"), flags.contains("i"));
                     int javaFlags = org.exist.xquery.regex.RegexUtil.parseFlags(this, flags);
                     return Pattern.compile(javaPattern, javaFlags).matcher(string).find();
                 } catch (final XPathException | PatternSyntaxException ignored) {
-                    // fallback failed, throw original Saxon error
+                    // Java regex fallback also failed — throw original Saxon error below
                 }
             }
             switch (e.getErrorCodeQName().getLocalPart()) {

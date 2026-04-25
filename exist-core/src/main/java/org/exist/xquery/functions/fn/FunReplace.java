@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import net.sf.saxon.Configuration;
 import net.sf.saxon.functions.Replace;
@@ -178,6 +179,21 @@ public class FunReplace extends BasicFunction {
 				}
 
 			} catch (final net.sf.saxon.trans.XPathException e) {
+				// Saxon's XP30 regex translator rejects some valid XQuery 4.0 patterns:
+				// \b/\B word boundaries, certain quantifier sequences, \p{Is<Block>} names, etc.
+				// Fall back to Java regex before giving up.
+				if ("FORX0002".equals(e.getErrorCodeQName().getLocalPart())) {
+					try {
+						if (isFunctionReplacement) {
+							return evalFunctionReplacement(string, pattern, flags,
+									(FunctionReference) replacementArg.itemAt(0));
+						} else {
+							return evalEmptyMatchReplace(string, pattern, replace, flags);
+						}
+					} catch (final PatternSyntaxException ignored) {
+						// Java regex fallback also failed — throw original Saxon error below
+					}
+				}
 				switch (e.getErrorCodeQName().getLocalPart()) {
 					case "FORX0001" -> throw new XPathException(this, ErrorCodes.FORX0001, e.getMessage());
 					case "FORX0002" -> throw new XPathException(this, ErrorCodes.FORX0002, e.getMessage());
