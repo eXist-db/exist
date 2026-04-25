@@ -68,6 +68,21 @@ public class DeepEqualOptions {
             "ordered", "unordered", "map-order"
     );
 
+    // Valid function-valued option keys
+    private static final Set<String> VALID_FUNCTION_OPTIONS = Set.of(
+            "items-equal"
+    );
+
+    // Valid QName-sequence option keys
+    private static final Set<String> VALID_QNAME_SEQ_OPTIONS = Set.of(
+            "unordered-elements"
+    );
+
+    // Valid duration-valued option keys
+    private static final Set<String> VALID_DURATION_OPTIONS = Set.of(
+            "timezone"
+    );
+
     // All valid string keys (no namespace)
     private static final Set<String> ALL_VALID_KEYS;
     static {
@@ -75,6 +90,9 @@ public class DeepEqualOptions {
         keys.addAll(VALID_BOOLEAN_OPTIONS);
         keys.addAll(VALID_STRING_OPTIONS);
         keys.addAll(VALID_ORDERED_OPTIONS);
+        keys.addAll(VALID_FUNCTION_OPTIONS);
+        keys.addAll(VALID_QNAME_SEQ_OPTIONS);
+        keys.addAll(VALID_DURATION_OPTIONS);
         ALL_VALID_KEYS = Collections.unmodifiableSet(keys);
     }
 
@@ -102,11 +120,27 @@ public class DeepEqualOptions {
     @Nullable
     public final Collator collator;
 
+    @Nullable
+    public final FunctionReference itemsEqualFn;  // custom item equality callback
+
+    @Nullable
+    public final Set<org.exist.dom.QName> unorderedElementQNames;  // per-element unordered comparison
+
+    @Nullable
+    public final Normalizer.Form normalizationForm;  // Unicode normalization
+
+    @Nullable
+    public final DayTimeDurationValue timezoneOverride;  // implicit timezone override
+
+    @Nullable
+    private final XQueryContext context;  // needed for HOF invocation
+
     /** Default options (XQ3.1 compatible behavior). */
     public static final DeepEqualOptions DEFAULTS = new DeepEqualOptions(
             false, false, true, false, false, false,
             false, false, false, true, false, false, true,
-            false, false, WhitespaceMode.PRESERVE, null
+            false, false, WhitespaceMode.PRESERVE, null,
+            null, null, null, null, null
     );
 
     private DeepEqualOptions(
@@ -115,7 +149,12 @@ public class DeepEqualOptions {
             boolean idProperty, boolean idrefsProperty, boolean nilledProperty,
             boolean timezones, boolean typeAnnotations, boolean typeVariety,
             boolean typedValues, boolean debug, boolean mapOrder,
-            WhitespaceMode whitespace, @Nullable Collator collator) {
+            WhitespaceMode whitespace, @Nullable Collator collator,
+            @Nullable FunctionReference itemsEqualFn,
+            @Nullable Set<org.exist.dom.QName> unorderedElementQNames,
+            @Nullable Normalizer.Form normalizationForm,
+            @Nullable DayTimeDurationValue timezoneOverride,
+            @Nullable XQueryContext context) {
         this.comments = comments;
         this.processingInstructions = processingInstructions;
         this.ordered = ordered;
@@ -134,6 +173,11 @@ public class DeepEqualOptions {
         this.unorderedElements = !ordered;
         this.whitespace = whitespace;
         this.collator = collator;
+        this.itemsEqualFn = itemsEqualFn;
+        this.unorderedElementQNames = unorderedElementQNames;
+        this.normalizationForm = normalizationForm;
+        this.timezoneOverride = timezoneOverride;
+        this.context = context;
     }
 
     /**
@@ -163,6 +207,10 @@ public class DeepEqualOptions {
         boolean mapOrder = false;
         WhitespaceMode whitespace = WhitespaceMode.PRESERVE;
         Collator collator = context.getDefaultCollator();
+        FunctionReference itemsEqualFn = null;
+        Set<org.exist.dom.QName> unorderedElementQNames = null;
+        Normalizer.Form normalizationForm = null;
+        DayTimeDurationValue timezoneOverride = null;
 
         for (final IEntry<AtomicValue, Sequence> entry : options) {
             final AtomicValue key = entry.key();
@@ -228,6 +276,64 @@ public class DeepEqualOptions {
                                 "Invalid whitespace option value: '" + wsVal + "'");
                     };
                 }
+            } else if ("normalization-form".equals(keyStr)) {
+                if (!value.isEmpty()) {
+                    final String nfVal = value.getStringValue().toUpperCase();
+                    normalizationForm = switch (nfVal) {
+                        case "NFC" -> Normalizer.Form.NFC;
+                        case "NFD" -> Normalizer.Form.NFD;
+                        case "NFKC" -> Normalizer.Form.NFKC;
+                        case "NFKD" -> Normalizer.Form.NFKD;
+                        case "FULLY-NORMALIZED" -> Normalizer.Form.NFC; // best effort
+                        default -> throw new XPathException(ErrorCodes.XPTY0004,
+                                "Invalid normalization-form option value: '" + nfVal + "'");
+                    };
+                }
+            } else if ("items-equal".equals(keyStr)) {
+                if (!value.isEmpty()) {
+                    final Item fnItem = value.itemAt(0);
+                    if (!(fnItem instanceof FunctionReference)) {
+                        throw new XPathException(ErrorCodes.XPTY0004,
+                                "items-equal option must be a function reference, got: " +
+                                        Type.getTypeName(fnItem.getType()));
+                    }
+                    final FunctionReference ref = (FunctionReference) fnItem;
+                    if (ref.getSignature().getArgumentCount() != 2) {
+                        throw new XPathException(ErrorCodes.XPTY0004,
+                                "items-equal function must accept exactly 2 arguments, got: " +
+                                        ref.getSignature().getArgumentCount());
+                    }
+                    itemsEqualFn = ref;
+                }
+            } else if ("unordered-elements".equals(keyStr)) {
+                if (!value.isEmpty()) {
+                    unorderedElementQNames = new HashSet<>();
+                    for (int i = 0; i < value.getItemCount(); i++) {
+                        final Item qnItem = value.itemAt(i);
+                        if (qnItem.getType() == Type.QNAME) {
+                            unorderedElementQNames.add(((QNameValue) qnItem).getQName());
+                        } else {
+                            throw new XPathException(ErrorCodes.XPTY0004,
+                                    "unordered-elements values must be xs:QName, got: " +
+                                            Type.getTypeName(qnItem.getType()));
+                        }
+                    }
+                }
+            } else if ("timezone".equals(keyStr)) {
+                if (!value.isEmpty()) {
+                    final Item tzItem = value.itemAt(0);
+                    if (tzItem instanceof DayTimeDurationValue) {
+                        timezoneOverride = (DayTimeDurationValue) tzItem;
+                    } else {
+                        try {
+                            timezoneOverride = (DayTimeDurationValue) tzItem.convertTo(Type.DAY_TIME_DURATION);
+                        } catch (final XPathException e) {
+                            throw new XPathException(ErrorCodes.XPTY0004,
+                                    "timezone option must be xs:dayTimeDuration, got: " +
+                                            Type.getTypeName(tzItem.getType()));
+                        }
+                    }
+                }
             }
         }
 
@@ -236,7 +342,9 @@ public class DeepEqualOptions {
                 namespacePrefixes, inScopeNamespaces, baseUri,
                 idProperty, idrefsProperty, nilledProperty,
                 timezones, typeAnnotations, typeVariety, typedValues,
-                debug, mapOrder, whitespace, collator
+                debug, mapOrder, whitespace, collator,
+                itemsEqualFn, unorderedElementQNames, normalizationForm,
+                timezoneOverride, context
         );
     }
 
@@ -337,6 +445,16 @@ public class DeepEqualOptions {
         }
 
         try {
+            // items-equal callback: if provided, call it first
+            if (itemsEqualFn != null) {
+                final Sequence result = itemsEqualFn.evalFunction(null, null,
+                        new Sequence[]{item1.toSequence(), item2.toSequence()});
+                if (!result.isEmpty()) {
+                    return result.effectiveBooleanValue() ? Constants.EQUAL : Constants.INFERIOR;
+                }
+                // empty sequence → fall through to default comparison
+            }
+
             // Array comparison
             if (item1.getType() == Type.ARRAY_ITEM || item2.getType() == Type.ARRAY_ITEM) {
                 if (item1.getType() != item2.getType()) {
@@ -489,11 +607,19 @@ public class DeepEqualOptions {
 
     private int compareAtomics(final AtomicValue av, final AtomicValue bv) {
         try {
-            // Whitespace normalization for string-like atomics
-            if (whitespace != WhitespaceMode.PRESERVE) {
-                if (isStringLike(av) && isStringLike(bv)) {
-                    final String a = applyWhitespace(av.getStringValue());
-                    final String b = applyWhitespace(bv.getStringValue());
+            // Whitespace and/or Unicode normalization for string-like atomics
+            if (isStringLike(av) && isStringLike(bv)) {
+                if (whitespace != WhitespaceMode.PRESERVE || normalizationForm != null) {
+                    String a = av.getStringValue();
+                    String b = bv.getStringValue();
+                    if (whitespace != WhitespaceMode.PRESERVE) {
+                        a = applyWhitespace(a);
+                        b = applyWhitespace(b);
+                    }
+                    if (normalizationForm != null) {
+                        a = Normalizer.normalize(a, normalizationForm);
+                        b = Normalizer.normalize(b, normalizationForm);
+                    }
                     if (collator != null) {
                         return collator.compare(a, b);
                     }
@@ -538,7 +664,11 @@ public class DeepEqualOptions {
             return cmp;
         }
 
-        if (unorderedElements) {
+        // Determine if this element's children should be compared unordered:
+        // - global ordered=false makes ALL elements unordered
+        // - unordered-elements QName set makes specific elements unordered
+        final boolean useUnordered = unorderedElements || isUnorderedElement(a);
+        if (useUnordered) {
             return compareContentsUnordered(a, b);
         }
 
@@ -827,11 +957,17 @@ public class DeepEqualOptions {
     // ========================================================================
 
     private String maybeNormalizeWS(@Nullable final String s) {
-        if (s == null || whitespace == WhitespaceMode.PRESERVE) {
+        if (s == null) {
             return s;
         }
-        // Both NORMALIZE and STRIP normalize text content
-        return normalizeWhitespace(s);
+        String result = s;
+        if (whitespace != WhitespaceMode.PRESERVE) {
+            result = normalizeWhitespace(result);
+        }
+        if (normalizationForm != null) {
+            result = Normalizer.normalize(result, normalizationForm);
+        }
+        return result;
     }
 
     /**
@@ -955,9 +1091,55 @@ public class DeepEqualOptions {
     }
 
     /**
+     * Check if the given element's QName is in the unordered-elements set.
+     */
+    private boolean isUnorderedElement(final org.w3c.dom.Node element) {
+        if (unorderedElementQNames == null || unorderedElementQNames.isEmpty()) {
+            return false;
+        }
+        final String localName = element.getLocalName() != null ? element.getLocalName() : element.getNodeName();
+        final String ns = element.getNamespaceURI();
+        for (final org.exist.dom.QName qn : unorderedElementQNames) {
+            if (qn.getLocalPart().equals(localName)) {
+                final String qnNs = qn.getNamespaceURI();
+                if ((qnNs == null || qnNs.isEmpty()) && (ns == null || ns.isEmpty())) {
+                    return true;
+                }
+                if (qnNs != null && qnNs.equals(ns)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Apply Unicode normalization if normalization-form option is set.
+     */
+    private String maybeNormalizeUnicode(@Nullable final String s) {
+        if (s == null || normalizationForm == null) {
+            return s;
+        }
+        return Normalizer.normalize(s, normalizationForm);
+    }
+
+    /**
      * Deep equality using these options.
      */
     public boolean deepEqualsSeq(final Sequence sequence1, final Sequence sequence2) {
         return deepCompareSeq(sequence1, sequence2) == Constants.EQUAL;
+    }
+
+    /**
+     * Release any resources held by this options instance (e.g., function references).
+     */
+    public void close() {
+        if (itemsEqualFn != null) {
+            try {
+                itemsEqualFn.close();
+            } catch (final Exception e) {
+                // ignore cleanup errors
+            }
+        }
     }
 }
