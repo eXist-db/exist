@@ -68,8 +68,8 @@ public class ConcatExpr extends PathExpr {
                 final Item item = i.nextItem();
                 if (Type.subTypeOf(item.getType(), Type.FUNCTION)) {
                     // XQ4: maps are no longer function items for atomization purposes
-                    if (item instanceof AbstractMapType && ((AbstractMapType) item).isXq4Atomizable()) {
-                        final Sequence atomized = ((AbstractMapType) item).atomizeValues();
+                    if (item instanceof AbstractMapType mapType && mapType.isXq4Atomizable()) {
+                        final Sequence atomized = mapType.atomizeValues();
                         for (final SequenceIterator ai = atomized.iterate(); ai.hasNext(); ) {
                             concat.append(ai.nextItem().getStringValue());
                         }

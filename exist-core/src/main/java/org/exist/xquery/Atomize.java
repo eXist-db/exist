@@ -79,8 +79,8 @@ public class Atomize extends AbstractExpression {
         if (input.hasOne()) {
             final Item single = input.itemAt(0);
             // XQ4: maps are atomizable — expand to their values before atomizing
-            if (single instanceof AbstractMapType && ((AbstractMapType) single).isXq4Atomizable()) {
-                return ((AbstractMapType) single).atomizeValues();
+            if (single instanceof AbstractMapType mapType && mapType.isXq4Atomizable()) {
+                return mapType.atomizeValues();
             }
             return single.atomize();
         }
@@ -90,8 +90,8 @@ public class Atomize extends AbstractExpression {
         for(final SequenceIterator i = input.iterate(); i.hasNext(); ) {
             next = i.nextItem();
             // XQ4: maps are atomizable — expand to their values before atomizing
-            if (next instanceof AbstractMapType && ((AbstractMapType) next).isXq4Atomizable()) {
-                result.addAll(((AbstractMapType) next).atomizeValues());
+            if (next instanceof AbstractMapType mapType && mapType.isXq4Atomizable()) {
+                result.addAll(mapType.atomizeValues());
             } else {
                 result.add(next.atomize());
             }
