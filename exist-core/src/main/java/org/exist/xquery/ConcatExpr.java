@@ -21,6 +21,7 @@
  */
 package org.exist.xquery;
 
+import org.exist.xquery.functions.map.AbstractMapType;
 import org.exist.xquery.util.Error;
 import org.exist.xquery.value.*;
 
@@ -65,8 +66,17 @@ public class ConcatExpr extends PathExpr {
             final Sequence seq = step.eval(contextSequence, contextItem);
             for (final SequenceIterator i = seq.iterate(); i.hasNext(); ) {
                 final Item item = i.nextItem();
-                if (Type.subTypeOf(item.getType(), Type.FUNCTION))
-                    {throw new XPathException(this, ErrorCodes.FOTY0013, "Got a function item as operand in string concatenation");}
+                if (Type.subTypeOf(item.getType(), Type.FUNCTION)) {
+                    // XQ4: maps are no longer function items for atomization purposes
+                    if (item instanceof AbstractMapType && ((AbstractMapType) item).isXq4Atomizable()) {
+                        final Sequence atomized = ((AbstractMapType) item).atomizeValues();
+                        for (final SequenceIterator ai = atomized.iterate(); ai.hasNext(); ) {
+                            concat.append(ai.nextItem().getStringValue());
+                        }
+                        continue;
+                    }
+                    throw new XPathException(this, ErrorCodes.FOTY0013, "Got a function item as operand in string concatenation");
+                }
                 concat.append(item.getStringValue());
             }
 		}
