@@ -531,9 +531,9 @@ public final class FunMatches extends Function implements Optimizable, IndexUseR
             // Fall back to Java regex before giving up.
             if ("FORX0002".equals(e.getErrorCodeLocalPart())) {
                 try {
-                    final String javaPattern = org.exist.xquery.regex.RegexUtil.translateRegexp(
+                    final String javaPattern = translateRegexp(
                             this, pattern, flags.contains("x"), flags.contains("i"));
-                    int javaFlags = org.exist.xquery.regex.RegexUtil.parseFlags(this, flags);
+                    int javaFlags = parseFlags(this, flags);
                     return Pattern.compile(javaPattern, javaFlags).matcher(string).find();
                 } catch (final XPathException | PatternSyntaxException ignored) {
                     // Java regex fallback also failed — throw original Saxon error below
