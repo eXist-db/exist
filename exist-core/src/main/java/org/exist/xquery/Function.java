@@ -324,7 +324,9 @@ public abstract class Function extends PathExpr {
         if (returnType != Type.ITEM && !Type.subTypeOf(returnType, argType.getPrimaryType())) {
             if (!(Type.subTypeOf(argType.getPrimaryType(), returnType) ||
                     //Because () is seen as a node
-                    (argType.getCardinality().isSuperCardinalityOrEqualOf(Cardinality.EMPTY_SEQUENCE) && returnType == Type.NODE))) {
+                    (argType.getCardinality().isSuperCardinalityOrEqualOf(Cardinality.EMPTY_SEQUENCE) && returnType == Type.NODE) ||
+                    // XQuery 4.0: allow implicit casts and relabeling
+                    (context.getXQueryVersion() >= 40 && (DynamicTypeCheck.isXQ4ImplicitCast(returnType, argType.getPrimaryType()) || DynamicTypeCheck.isXQ4Relabeling(returnType, argType.getPrimaryType()))))) {
                 LOG.debug(ExpressionDumper.dump(argument));
                 throw new XPathException(this, ErrorCodes.XPTY0004, Messages.getMessage(Error.FUNC_PARAM_TYPE_STATIC,
                         String.valueOf(argPosition), mySignature, argType.toString(), Type.getTypeName(returnType)));

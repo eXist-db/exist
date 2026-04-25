@@ -418,7 +418,7 @@ throws PermissionDeniedException, EXistException, XPathException
                     context.setXQueryVersion(10);
                     staticContext.setXQueryVersion(10);
                 } else {
-                    throw new XPathException(v, ErrorCodes.XQST0031, "Wrong XQuery version: require 1.0, 3.0, 3.1 or 4.0");
+                    throw new XPathException(v, ErrorCodes.XQST0031, "Wrong XQuery version: require 1.0, 3.0, 3.1, or 4.0");
                 }
             }
             ( enc:STRING_LITERAL )?
