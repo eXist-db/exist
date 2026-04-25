@@ -201,16 +201,11 @@ public class ArrayFunction extends BasicFunction {
     );
     public static final FunctionSignature FILTER = functionSignature(
             Fn.FILTER.fname,
-            "Returns an array containing those members of the $array for which $function returns true.",
+            "Returns an array containing those members of the $array for which $function returns true. " +
+                "In XQuery 4.0, the callback may accept 0 to 2 arguments: (member, position).",
             RESULT_ARRAY,
             INPUT_ARRAY,
-            funParam("action",
-                    params(
-                            optManyParam("next", Type.ITEM, "the next member")
-                    ),
-                    returns(Type.BOOLEAN),
-                    "The filter function called on each member of the array"
-            )
+            param("action", Type.FUNCTION, "The filter function called on each member of the array")
     );
     public static final FunctionSignature FOLD_LEFT = functionSignature(
             Fn.FOLD_LEFT.fname,
@@ -231,18 +226,11 @@ public class ArrayFunction extends BasicFunction {
     public static final FunctionSignature FOR_EACH_PAIR = functionSignature(
             Fn.FOR_EACH_PAIR.fname,
             "Returns an array obtained by evaluating the supplied function once for each pair of members at the same position in the two " +
-                "supplied arrays.",
+                "supplied arrays. In XQuery 4.0, the callback may accept 0 to 3 arguments: (memberA, memberB, position).",
             RESULT_ARRAY,
             INPUT_ARRAY,
             param("array2", Type.ARRAY_ITEM, "The second array to process"),
-            funParam("action",
-                    params(
-                            optManyParam("a", Type.ITEM, "the current member of array 1"),
-                            optManyParam("b", Type.ITEM, "the current member of array 2")
-                    ),
-                    returnsOptMany(Type.ITEM),
-                    "The function to call for each pair"
-            )
+            param("action", Type.FUNCTION, "The function to call for each pair")
     );
     public static final FunctionSignature FLATTEN = functionSignature(
             Fn.FLATTEN.fname,
@@ -470,7 +458,25 @@ public class ArrayFunction extends BasicFunction {
 
     private Sequence filter(Sequence[] args) throws XPathException {
         final ArrayType array = (ArrayType) args[0].itemAt(0);
-        return getFunction(args[1], array::filter);
+        try (final FunctionReference ref = (FunctionReference) args[1].itemAt(0)) {
+            ref.analyze(cachedContextInfo);
+            final int arity = ref.getSignature().getArgumentCount();
+            if (arity == 1) {
+                // Standard XQ 3.1 behavior
+                return array.filter(ref);
+            }
+            // XQ4 arity coercion: 0 or 2 args (member, position)
+            final List<Sequence> ret = new ArrayList<>();
+            for (int i = 0; i < array.getSize(); i++) {
+                final Sequence member = array.get(i);
+                final Sequence[] callArgs = buildArrayCallbackArgs(arity, member, i + 1, 2);
+                final Sequence fret = ref.evalFunction(null, null, callArgs);
+                if (fret.effectiveBooleanValue()) {
+                    ret.add(member);
+                }
+            }
+            return new ArrayType(this, context, ret);
+        }
     }
 
     private Sequence foldLeft(Sequence[] args) throws XPathException {
@@ -484,8 +490,45 @@ public class ArrayFunction extends BasicFunction {
     }
 
     private Sequence forEachPair(Sequence[] args) throws XPathException {
-        final ArrayType array = (ArrayType) args[0].itemAt(0);
-        return getFunction(args[2], ref -> array.forEachPair((ArrayType) args[1].itemAt(0), ref));
+        final ArrayType array1 = (ArrayType) args[0].itemAt(0);
+        final ArrayType array2 = (ArrayType) args[1].itemAt(0);
+        try (final FunctionReference ref = (FunctionReference) args[2].itemAt(0)) {
+            ref.analyze(cachedContextInfo);
+            final int arity = ref.getSignature().getArgumentCount();
+            if (arity == 2) {
+                // Standard XQ 3.1 behavior
+                return array1.forEachPair(array2, ref);
+            }
+            // XQ4 arity coercion: 0, 1, or 3 args (memberA, memberB, position)
+            final int minSize = Math.min(array1.getSize(), array2.getSize());
+            final List<Sequence> ret = new ArrayList<>(minSize);
+            for (int i = 0; i < minSize; i++) {
+                final Sequence[] callArgs = switch (arity) {
+                    case 0 -> new Sequence[0];
+                    case 1 -> new Sequence[]{array1.get(i)};
+                    case 3 -> new Sequence[]{array1.get(i), array2.get(i),
+                            new IntegerValue(this, i + 1, Type.INTEGER)};
+                    default -> throw new XPathException(this, ErrorCodes.XPTY0004,
+                            "array:for-each-pair callback must accept 0 to 3 arguments, got " + arity);
+                };
+                ret.add(ref.evalFunction(null, null, callArgs));
+            }
+            return new ArrayType(this, context, ret);
+        }
+    }
+
+    /**
+     * Build an argument array for an array callback function, supporting XQ4 arity coercion.
+     */
+    private Sequence[] buildArrayCallbackArgs(final int arity, final Sequence member,
+            final int position, final int maxArity) throws XPathException {
+        return switch (arity) {
+            case 0 -> new Sequence[0];
+            case 1 -> new Sequence[]{member};
+            case 2 -> new Sequence[]{member, new IntegerValue(this, position, Type.INTEGER)};
+            default -> throw new XPathException(this, ErrorCodes.XPTY0004,
+                    "Array callback function must accept 0 to " + maxArity + " arguments, got " + arity);
+        };
     }
 
     private Sequence sort(Sequence[] args) throws XPathException {
