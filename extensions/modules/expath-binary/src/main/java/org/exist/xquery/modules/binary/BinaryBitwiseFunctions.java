@@ -132,17 +132,11 @@ public class BinaryBitwiseFunctions extends BasicFunction {
 
         final byte[] result = new byte[data1.length];
         for (int i = 0; i < data1.length; i++) {
-            switch (op) {
-                case OR:
-                    result[i] = (byte) (data1[i] | data2[i]);
-                    break;
-                case XOR:
-                    result[i] = (byte) (data1[i] ^ data2[i]);
-                    break;
-                case AND:
-                    result[i] = (byte) (data1[i] & data2[i]);
-                    break;
-            }
+            result[i] = switch (op) {
+                case OR -> (byte) (data1[i] | data2[i]);
+                case XOR -> (byte) (data1[i] ^ data2[i]);
+                case AND -> (byte) (data1[i] & data2[i]);
+            };
         }
         return BinaryModuleHelper.createBinaryResult(context, this, result);
     }

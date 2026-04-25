@@ -311,14 +311,17 @@ public class BinaryBasicFunctions extends BasicFunction {
         }
 
         // Naive byte subsequence search
-        outer:
         for (int i = offset; i <= data.length - search.length; i++) {
+            boolean match = true;
             for (int j = 0; j < search.length; j++) {
                 if (data[i + j] != search[j]) {
-                    continue outer;
+                    match = false;
+                    break;
                 }
             }
-            return new IntegerValue(this, i);
+            if (match) {
+                return new IntegerValue(this, i);
+            }
         }
 
         return Sequence.EMPTY_SEQUENCE;

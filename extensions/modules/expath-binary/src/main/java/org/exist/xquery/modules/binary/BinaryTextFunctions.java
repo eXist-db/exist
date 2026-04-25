@@ -117,35 +117,33 @@ public class BinaryTextFunctions extends BasicFunction {
             return Sequence.EMPTY_SEQUENCE;
         }
 
-        final String encoding = (args.length > 1 && !args[1].isEmpty())
-                ? args[1].getStringValue()
-                : "UTF-8";
+        final String encoding = getOptionalStringArg(args, 1, "UTF-8");
+        final int offset = getOptionalIntArg(args, 2, 0);
+        final int size = getOptionalIntArg(args, 3, data.length - offset);
 
-        final int offset = (args.length > 2 && !args[2].isEmpty())
-                ? ((IntegerValue) args[2].itemAt(0)).getInt()
-                : 0;
+        validateOffsetAndSize(data, offset, size);
 
-        final int size = (args.length > 3 && !args[3].isEmpty())
-                ? ((IntegerValue) args[3].itemAt(0)).getInt()
-                : data.length - offset;
+        final Charset charset = resolveCharset(encoding);
+        return decodeBytes(data, offset, size, charset, encoding);
+    }
 
+    private void validateOffsetAndSize(final byte[] data, final int offset, final int size) throws XPathException {
         if (offset < 0 || offset > data.length) {
             throw new XPathException(this, BinaryModuleErrorCode.INDEX_OUT_OF_RANGE,
                     "Offset " + offset + " is out of range for binary data of length " + data.length);
         }
-
         if (size < 0) {
             throw new XPathException(this, BinaryModuleErrorCode.NEGATIVE_SIZE,
                     "Size must not be negative: " + size);
         }
-
         if (offset + size > data.length) {
             throw new XPathException(this, BinaryModuleErrorCode.INDEX_OUT_OF_RANGE,
                     "Offset " + offset + " + size " + size + " exceeds binary data length " + data.length);
         }
+    }
 
-        final Charset charset = resolveCharset(encoding);
-
+    private Sequence decodeBytes(final byte[] data, final int offset, final int size,
+                                  final Charset charset, final String encoding) throws XPathException {
         try {
             final CharsetDecoder decoder = charset.newDecoder()
                     .onMalformedInput(CodingErrorAction.REPORT)
@@ -156,6 +154,14 @@ public class BinaryTextFunctions extends BasicFunction {
             throw new XPathException(this, BinaryModuleErrorCode.CONVERSION_ERROR,
                     "Failed to decode binary data using encoding '" + encoding + "': " + e.getMessage());
         }
+    }
+
+    private static String getOptionalStringArg(final Sequence[] args, final int index, final String defaultValue) throws XPathException {
+        return (args.length > index && !args[index].isEmpty()) ? args[index].getStringValue() : defaultValue;
+    }
+
+    private static int getOptionalIntArg(final Sequence[] args, final int index, final int defaultValue) throws XPathException {
+        return (args.length > index && !args[index].isEmpty()) ? ((IntegerValue) args[index].itemAt(0)).getInt() : defaultValue;
     }
 
     private Sequence encodeString(final Sequence[] args) throws XPathException {

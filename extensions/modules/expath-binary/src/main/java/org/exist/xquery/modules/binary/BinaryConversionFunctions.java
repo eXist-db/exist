@@ -181,14 +181,17 @@ public class BinaryConversionFunctions extends BasicFunction {
             return Sequence.EMPTY_SEQUENCE;
         }
 
-        String octal = args[0].getStringValue();
-        octal = octal.replaceAll("[\\s_]", "");
-
+        final String octal = stripAndValidateOctal(args[0].getStringValue());
         if (octal.isEmpty()) {
             return BinaryModuleHelper.createBinaryResult(context, this, new byte[0]);
         }
 
-        // Validate characters
+        final String binaryStr = octalToBinaryString(octal);
+        return BinaryModuleHelper.createBinaryResult(context, this, binaryStringToBytes(binaryStr));
+    }
+
+    private String stripAndValidateOctal(final String input) throws XPathException {
+        final String octal = input.replaceAll("[\\s_]", "");
         for (int i = 0; i < octal.length(); i++) {
             final char c = octal.charAt(i);
             if (c < '0' || c > '7') {
@@ -196,7 +199,10 @@ public class BinaryConversionFunctions extends BasicFunction {
                         "Invalid octal character: '" + c + "'");
             }
         }
+        return octal;
+    }
 
+    private static String octalToBinaryString(final String octal) {
         // Convert each octal digit to 3-bit binary
         final StringBuilder bits = new StringBuilder();
         for (int i = 0; i < octal.length(); i++) {
@@ -207,7 +213,7 @@ public class BinaryConversionFunctions extends BasicFunction {
         // Strip up to 2 leading zeros (octal digit = 3 bits, but only multiples of 8 matter)
         String binaryStr = bits.toString();
         int stripCount = 0;
-        while (stripCount < 2 && binaryStr.length() > 0 && binaryStr.charAt(0) == '0'
+        while (stripCount < 2 && !binaryStr.isEmpty() && binaryStr.charAt(0) == '0'
                 && (binaryStr.length() - 1) % 8 != 7) {
             binaryStr = binaryStr.substring(1);
             stripCount++;
@@ -218,16 +224,18 @@ public class BinaryConversionFunctions extends BasicFunction {
         if (remainder != 0) {
             binaryStr = "0".repeat(8 - remainder) + binaryStr;
         }
+        return binaryStr;
+    }
 
+    private static byte[] binaryStringToBytes(final String binaryStr) {
         if (binaryStr.isEmpty()) {
-            return BinaryModuleHelper.createBinaryResult(context, this, new byte[0]);
+            return new byte[0];
         }
-
         final byte[] data = new byte[binaryStr.length() / 8];
         for (int i = 0; i < data.length; i++) {
             data[i] = (byte) Integer.parseInt(binaryStr.substring(i * 8, i * 8 + 8), 2);
         }
-        return BinaryModuleHelper.createBinaryResult(context, this, data);
+        return data;
     }
 
     private Sequence toOctets(final Sequence[] args) throws XPathException {

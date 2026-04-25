@@ -87,20 +87,13 @@ class BinaryModuleHelper {
      * @throws XPathException if the value is not a valid octet order
      */
     static boolean isLittleEndian(final Expression expr, final String order) throws XPathException {
-        switch (order) {
-            case "most-significant-first":
-            case "big-endian":
-            case "BE":
-                return false;
-            case "least-significant-first":
-            case "little-endian":
-            case "LE":
-                return true;
-            default:
-                throw new XPathException(expr,
-                        org.exist.xquery.ErrorCodes.XPTY0004,
-                        "Invalid octet order: '" + order + "'. Expected one of: most-significant-first, big-endian, BE, least-significant-first, little-endian, LE");
-        }
+        return switch (order) {
+            case "most-significant-first", "big-endian", "BE" -> false;
+            case "least-significant-first", "little-endian", "LE" -> true;
+            default -> throw new XPathException(expr,
+                    org.exist.xquery.ErrorCodes.XPTY0004,
+                    "Invalid octet order: '" + order + "'. Expected one of: most-significant-first, big-endian, BE, least-significant-first, little-endian, LE");
+        };
     }
 
     /**
