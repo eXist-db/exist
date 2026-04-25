@@ -39,8 +39,7 @@ import org.exist.xquery.value.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
-import java.nio.charset.StandardCharsets;
-
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.xquery.FunctionDSL.*;
 import static org.exist.xquery.functions.fn.FnModule.functionSignatures;
 
@@ -228,7 +227,7 @@ public class JSON extends BasicFunction {
                 url = XmldbURI.EMBEDDED_SERVER_URI_PREFIX + url;
             }
             // Check dynamically available text resources first (e.g., XQTS test resources)
-            try (final Reader dynamicTextResource = context.getDynamicallyAvailableTextResource(url, StandardCharsets.UTF_8)) {
+            try (final Reader dynamicTextResource = context.getDynamicallyAvailableTextResource(url, UTF_8)) {
                 if (dynamicTextResource != null) {
                     final StringBuilder sb = new StringBuilder();
                     final char[] buf = new char[4096];
