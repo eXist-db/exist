@@ -83,6 +83,21 @@ public class DeepEqualOptions {
             "timezone"
     );
 
+    // Valid function-valued option keys
+    private static final Set<String> VALID_FUNCTION_OPTIONS = Set.of(
+            "items-equal"
+    );
+
+    // Valid QName-sequence option keys
+    private static final Set<String> VALID_QNAME_SEQ_OPTIONS = Set.of(
+            "unordered-elements"
+    );
+
+    // Valid duration-valued option keys
+    private static final Set<String> VALID_DURATION_OPTIONS = Set.of(
+            "timezone"
+    );
+
     // All valid string keys (no namespace)
     private static final Set<String> ALL_VALID_KEYS;
     static {
