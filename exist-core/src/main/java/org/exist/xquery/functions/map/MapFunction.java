@@ -53,6 +53,7 @@ import java.util.Objects;
 
 import static org.exist.xquery.FunctionDSL.funParam;
 import static org.exist.xquery.FunctionDSL.optManyParam;
+import static org.exist.xquery.FunctionDSL.optParam;
 import static org.exist.xquery.FunctionDSL.param;
 import static org.exist.xquery.FunctionDSL.params;
 import static org.exist.xquery.FunctionDSL.returns;
@@ -95,7 +96,7 @@ public class MapFunction extends BasicFunction {
             "Returns a map that combines the entries from a number of existing maps.",
             PARAM_MERGE_RETURN,
             PARAM_MERGE_MAPS,
-            param("options", Type.MAP_ITEM, "Can be used to control the way in which duplicate keys are handled.")
+            optParam("options", Type.MAP_ITEM, "Can be used to control the way in which duplicate keys are handled.")
     );
     public static final FunctionSignature SIZE = functionSignature(
             Fn.SIZE.fname,
@@ -155,21 +156,12 @@ public class MapFunction extends BasicFunction {
     );
     public static final FunctionSignature FOR_EACH = functionSignature(
             Fn.FOR_EACH.fname,
-            "takes any map as its $input argument and applies the supplied function to each entry in the map, in implementation-dependent order; " +
+            "takes any map as its $input argument and applies the supplied function to each entry in the map; " +
                     "the result is the sequence obtained by concatenating the results of these function calls. " +
-                    "The function supplied as $action takes two arguments. It is called supplying the key of the map entry as the first argument, " +
-                    "and the associated value as the second argument.",
+                    "In XQuery 4.0, the callback may accept 0 to 3 arguments: (key, value, position).",
             RETURN_OPT_MANY_ITEM,
             PARAM_INPUT_MAP,
-            funParam(
-                    "action",
-                    params(
-                            param("key", Type.ANY_ATOMIC_TYPE, "the next key"),
-                            optManyParam("value", Type.ITEM, "the next value")
-                    ),
-                    returns(Type.ITEM, Cardinality.ZERO_OR_MORE),
-                    "The function to be called for each entry"
-            )
+            param("action", Type.FUNCTION, "The function to be called for each entry")
     );
 
     // --- XQuery 4.0 map functions ---
@@ -232,24 +224,20 @@ public class MapFunction extends BasicFunction {
 
     public static final FunctionSignature FILTER_SIG = functionSignature(
             Fn.FILTER.fname,
-            "Returns a map containing only entries matching the predicate.",
+            "Returns a map containing only entries matching the predicate. " +
+                    "In XQuery 4.0, the callback may accept 0 to 3 arguments: (key, value, position).",
             RETURN_MAP,
             PARAM_INPUT_MAP,
-            funParam("predicate",
-                    params(param("key", Type.ANY_ATOMIC_TYPE, "the key"),
-                           optManyParam("value", Type.ITEM, "the value")),
-                    returns(Type.BOOLEAN, Cardinality.EXACTLY_ONE), "The filter predicate")
+            param("predicate", Type.FUNCTION, "The filter predicate")
     );
 
     public static final FunctionSignature KEYS_WHERE = functionSignature(
             Fn.KEYS_WHERE.fname,
-            "Returns keys whose entries match the predicate.",
+            "Returns keys whose entries match the predicate. " +
+                    "In XQuery 4.0, the callback may accept 0 to 3 arguments: (key, value, position).",
             returnsOptMany(Type.ANY_ATOMIC_TYPE, "The matching keys"),
             PARAM_INPUT_MAP,
-            funParam("predicate",
-                    params(param("key", Type.ANY_ATOMIC_TYPE, "the key"),
-                           optManyParam("value", Type.ITEM, "the value")),
-                    returns(Type.BOOLEAN, Cardinality.EXACTLY_ONE), "The filter predicate")
+            param("predicate", Type.FUNCTION, "The filter predicate")
     );
 
     private AnalyzeContextInfo cachedContextInfo;
@@ -338,7 +326,8 @@ public class MapFunction extends BasicFunction {
             }
             case GET_DEFAULT -> getDefault(args);
             case BUILD -> build(args);
-            case ITEMS, ENTRIES -> items(args);
+            case ITEMS -> mapItems(args);
+            case ENTRIES -> entries(args);
             case FILTER -> filter(args);
             case KEYS_WHERE -> keysWhere(args);
         };
@@ -436,13 +425,34 @@ public class MapFunction extends BasicFunction {
         return map.remove(keys);
     }
 
+    /**
+     * Build an argument array for a map callback function, supporting XQ4 arity coercion.
+     * The full argument list is (key, value, position). Functions with fewer parameters
+     * receive only the leading arguments they accept.
+     */
+    private Sequence[] buildMapCallbackArgs(final int arity, final AtomicValue key,
+            final Sequence value, final int position) throws XPathException {
+        return switch (arity) {
+            case 0 -> new Sequence[0];
+            case 1 -> new Sequence[]{key.toSequence()};
+            case 2 -> new Sequence[]{key.toSequence(), value};
+            case 3 -> new Sequence[]{key.toSequence(), value,
+                    new IntegerValue(this, position, Type.INTEGER)};
+            default -> throw new XPathException(this, ErrorCodes.XPTY0004,
+                    "Map callback function must accept 0 to 3 arguments, got " + arity);
+        };
+    }
+
     private Sequence forEach(final Sequence[] args) throws XPathException {
         final AbstractMapType map = (AbstractMapType) args[0].itemAt(0);
         try (final FunctionReference ref = (FunctionReference) args[1].itemAt(0)) {
             ref.analyze(cachedContextInfo);
+            final int arity = ref.getSignature().getArgumentCount();
             final ArrayListValueSequence result = new ArrayListValueSequence(map.size());
+            int position = 1;
             for (final IEntry<AtomicValue, Sequence> entry : map) {
-                final Sequence s = ref.evalFunction(null, null, new Sequence[]{entry.key(), entry.value()});
+                final Sequence[] callArgs = buildMapCallbackArgs(arity, entry.key(), entry.value(), position++);
+                final Sequence s = ref.evalFunction(null, null, callArgs);
                 result.addAll(s);
             }
             return result;
@@ -493,10 +503,10 @@ public class MapFunction extends BasicFunction {
     }
 
     private DuplicateMergeStrategy getMergeStrategy(Sequence[] args) throws XPathException {
-        if (args.length == 1) {
+        if (args.length == 1 || args[1].isEmpty()) {
             return DuplicateMergeStrategy.USE_FIRST;
         }
-        final MapType map = (MapType) args[1];
+        final MapType map = (MapType) args[1].itemAt(0);
         final StringValue key = new StringValue(this, "duplicates");
         final Sequence mapValue = map.get(key);
         if (mapValue.isEmpty()) {
@@ -557,16 +567,48 @@ public class MapFunction extends BasicFunction {
         for (final SequenceIterator i = input.iterate(); i.hasNext(); ) {
             final Item item = i.nextItem();
             final Sequence itemSeq = item.toSequence();
-            final AtomicValue key = (AtomicValue) keyFn.evalFunction(null, null,
-                    new Sequence[]{itemSeq}).itemAt(0);
+            final Sequence keyResult = keyFn.evalFunction(null, null,
+                    new Sequence[]{itemSeq});
+            // Per XQ4 spec: if key function returns empty sequence, skip this item
+            if (keyResult.isEmpty()) {
+                continue;
+            }
             final Sequence value = valueFn != null ?
                     valueFn.evalFunction(null, null, new Sequence[]{itemSeq}) : itemSeq;
-            result.add(key, value);
+            // XQ4 PR1041: key function may return multiple keys; each maps to the same value
+            for (final SequenceIterator ki = keyResult.iterate(); ki.hasNext(); ) {
+                final AtomicValue key = (AtomicValue) ki.nextItem();
+                // Duplicate keys: combine values into a sequence (XQ4 default behavior)
+                final Sequence existing = result.get(key);
+                if (existing != null && !existing.isEmpty()) {
+                    final ValueSequence combined = new ValueSequence(existing);
+                    combined.addAll(value);
+                    result.add(key, combined);
+                } else {
+                    result.add(key, value);
+                }
+            }
         }
         return result;
     }
 
-    private Sequence items(final Sequence[] args) throws XPathException {
+    /**
+     * map:items — returns a flat sequence of all values in the map.
+     */
+    private Sequence mapItems(final Sequence[] args) throws XPathException {
+        final AbstractMapType map = (AbstractMapType) args[0].itemAt(0);
+        final ValueSequence result = new ValueSequence();
+        for (final IEntry<AtomicValue, Sequence> entry : map) {
+            result.addAll(entry.value());
+        }
+        return result;
+    }
+
+    /**
+     * map:entries — returns a sequence of maps, each with 'key' and 'value' entries.
+     * (XQ4 spec says records, but without record support we return maps.)
+     */
+    private Sequence entries(final Sequence[] args) throws XPathException {
         final AbstractMapType map = (AbstractMapType) args[0].itemAt(0);
         final ValueSequence result = new ValueSequence();
         for (final IEntry<AtomicValue, Sequence> entry : map) {
@@ -582,10 +624,12 @@ public class MapFunction extends BasicFunction {
         final AbstractMapType map = (AbstractMapType) args[0].itemAt(0);
         final FunctionReference pred = (FunctionReference) args[1].itemAt(0);
         pred.analyze(cachedContextInfo);
+        final int arity = pred.getSignature().getArgumentCount();
         final MapType result = new MapType(this, context);
+        int position = 1;
         for (final IEntry<AtomicValue, Sequence> entry : map) {
-            final Sequence testResult = pred.evalFunction(null, null,
-                    new Sequence[]{entry.key().toSequence(), entry.value()});
+            final Sequence[] callArgs = buildMapCallbackArgs(arity, entry.key(), entry.value(), position++);
+            final Sequence testResult = pred.evalFunction(null, null, callArgs);
             if (testResult.effectiveBooleanValue()) {
                 result.add(entry.key(), entry.value());
             }
@@ -597,10 +641,12 @@ public class MapFunction extends BasicFunction {
         final AbstractMapType map = (AbstractMapType) args[0].itemAt(0);
         final FunctionReference pred = (FunctionReference) args[1].itemAt(0);
         pred.analyze(cachedContextInfo);
+        final int arity = pred.getSignature().getArgumentCount();
         final ValueSequence result = new ValueSequence();
+        int position = 1;
         for (final IEntry<AtomicValue, Sequence> entry : map) {
-            final Sequence testResult = pred.evalFunction(null, null,
-                    new Sequence[]{entry.key().toSequence(), entry.value()});
+            final Sequence[] callArgs = buildMapCallbackArgs(arity, entry.key(), entry.value(), position++);
+            final Sequence testResult = pred.evalFunction(null, null, callArgs);
             if (testResult.effectiveBooleanValue()) {
                 result.add(entry.key());
             }

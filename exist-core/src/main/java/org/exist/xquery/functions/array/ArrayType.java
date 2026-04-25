@@ -103,14 +103,14 @@ public class ArrayType extends FunctionReference implements Lookup.LookupSupport
 
     @Override
     public Sequence get(final AtomicValue key) throws XPathException {
-        final int pos;
+        final long posLong;
         if (Type.subTypeOf(key.getType(), Type.INTEGER)) {
-            pos = ((IntegerValue) key).getInt();
+            posLong = ((IntegerValue) key).getLong();
         } else if (Type.subTypeOf(key.getType(), Type.DECIMAL) || key.getType() == Type.DOUBLE || key.getType() == Type.FLOAT) {
             // XQ4: numeric types (decimal, double, float) are accepted if they are whole numbers
             final NumericValue numVal = (NumericValue) key;
             if (!numVal.hasFractionalPart()) {
-                pos = numVal.getInt();
+                posLong = numVal.getLong();
             } else {
                 throw new XPathException(getExpression(), ErrorCodes.XPTY0004,
                         "Position argument for array lookup must be a whole number, got: " + key.getStringValue());
@@ -119,13 +119,13 @@ public class ArrayType extends FunctionReference implements Lookup.LookupSupport
             throw new XPathException(getExpression(), ErrorCodes.XPTY0004,
                     "Position argument for array lookup must be a positive integer");
         }
-        if (pos <= 0 || pos > getSize()) {
+        if (posLong <= 0 || posLong > getSize()) {
             final String startIdx = vector.length() == 0 ? "0" : "1";
             final String endIdx = String.valueOf(vector.length());
             throw new XPathException(getExpression(), ErrorCodes.FOAY0001,
-                    "Array index " + pos + " out of bounds (" + startIdx + ".." + endIdx + ")");
+                    "Array index " + posLong + " out of bounds (" + startIdx + ".." + endIdx + ")");
         }
-        return get(pos - 1);
+        return get((int) posLong - 1);
     }
 
     @Override
