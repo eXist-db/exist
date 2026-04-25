@@ -45,11 +45,31 @@
     </description>
 
     <dependencies>
-        <!-- exist-core provides all needed APIs + transitive deps (jackson, pkg-repo, etc.) -->
         <dependency>
             <groupId>org.exist-db</groupId>
             <artifactId>exist-core</artifactId>
             <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>2.21.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.expath.packaging</groupId>
+            <artifactId>pkg-java</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>jsr305</artifactId>
         </dependency>
 
         <!-- Logging -->
