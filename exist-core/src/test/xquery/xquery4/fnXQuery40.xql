@@ -949,8 +949,9 @@ function t:string-constructor-array-interpolation() {
 };
 
 declare
-    %test:assertError("FOTY0013")
-function t:string-constructor-map-atomization-error() {
+    %test:assertEquals("There were 10 green bottles")
+function t:string-constructor-map-atomization() {
+    (: XQ4: maps are atomizable — atomizing map{"a":10} yields 10 :)
     let $n := map{"a":10}
     return ``[There were `{$n}` green bottles]``
 };
