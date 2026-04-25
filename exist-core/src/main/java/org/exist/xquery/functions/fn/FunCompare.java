@@ -65,9 +65,9 @@ public class FunCompare extends CollatingFunction {
             "or greater than $value-2. " +
             "If either comparand is the empty sequence, the empty sequence is returned.",
             new SequenceType[] {
-                new FunctionParameterSequenceType("value-1", Type.ANY_ATOMIC_TYPE,
+                new FunctionParameterSequenceType("value1", Type.ANY_ATOMIC_TYPE,
                     Cardinality.ZERO_OR_ONE, "The first value"),
-                new FunctionParameterSequenceType("value-2", Type.ANY_ATOMIC_TYPE,
+                new FunctionParameterSequenceType("value2", Type.ANY_ATOMIC_TYPE,
                     Cardinality.ZERO_OR_ONE, "The second value")
             },
             new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE,
@@ -79,11 +79,11 @@ public class FunCompare extends CollatingFunction {
             "If either comparand is the empty sequence, the empty sequence is returned. " +
             THIRD_REL_COLLATION_ARG_EXAMPLE,
             new SequenceType[] {
-                new FunctionParameterSequenceType("value-1", Type.ANY_ATOMIC_TYPE,
+                new FunctionParameterSequenceType("value1", Type.ANY_ATOMIC_TYPE,
                     Cardinality.ZERO_OR_ONE, "The first value"),
-                new FunctionParameterSequenceType("value-2", Type.ANY_ATOMIC_TYPE,
+                new FunctionParameterSequenceType("value2", Type.ANY_ATOMIC_TYPE,
                     Cardinality.ZERO_OR_ONE, "The second value"),
-                new FunctionParameterSequenceType("collation-uri", Type.STRING,
+                new FunctionParameterSequenceType("collation", Type.STRING,
                     Cardinality.EXACTLY_ONE, "The relative collation URI")
             },
             new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE,

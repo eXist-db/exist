@@ -52,7 +52,7 @@ public class FunEquals extends CollatingFunction {
             "This function is similar to the '=' expression, except that " +
             "it uses the default collation for comparisons.",
             new SequenceType[] {
-                new FunctionParameterSequenceType("source-string", Type.STRING,
+                new FunctionParameterSequenceType("value", Type.STRING,
                     Cardinality.ZERO_OR_ONE, "The source-string"),
                 new FunctionParameterSequenceType("substring", Type.STRING,
                     Cardinality.ZERO_OR_ONE, "The substring")
@@ -69,11 +69,11 @@ public class FunEquals extends CollatingFunction {
             "except that it uses the specified collation for comparisons." +
             THIRD_REL_COLLATION_ARG_EXAMPLE,
             new SequenceType[] {
-                new FunctionParameterSequenceType("source-string", Type.STRING,
+                new FunctionParameterSequenceType("value", Type.STRING,
                     Cardinality.ZERO_OR_ONE, "The source-string"),
                 new FunctionParameterSequenceType("substring", Type.STRING,
                     Cardinality.ZERO_OR_ONE, "The substring"),
-                new FunctionParameterSequenceType("collation-uri", Type.STRING,
+                new FunctionParameterSequenceType("collation", Type.STRING,
                     Cardinality.EXACTLY_ONE, "The collation URI")
             },
             new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE,

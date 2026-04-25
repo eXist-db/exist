@@ -57,7 +57,7 @@ public class FunDoc extends Function {
             "Returns the document node of $document-uri. " +
             XMLDBModule.ANY_URI,
             new SequenceType[] {
-                new FunctionParameterSequenceType("document-uri", Type.STRING,
+                new FunctionParameterSequenceType("source", Type.STRING,
                     Cardinality.ZERO_OR_ONE, "The document URI")
             },
             new FunctionReturnSequenceType(Type.DOCUMENT, Cardinality.ZERO_OR_ONE,

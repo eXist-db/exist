@@ -54,9 +54,9 @@ import javax.xml.datatype.DatatypeConstants;
  */
 public class FunGetDateComponent extends BasicFunction {
 	protected static final Logger logger = LogManager.getLogger(FunGetDateComponent.class);
-    public final static FunctionParameterSequenceType DATE_01_PARAM = new FunctionParameterSequenceType("date", Type.DATE, Cardinality.ZERO_OR_ONE, "The date as xs:date");
-    public final static FunctionParameterSequenceType TIME_01_PARAM = new FunctionParameterSequenceType("time", Type.TIME, Cardinality.ZERO_OR_ONE, "The time as xs:time");
-    public final static FunctionParameterSequenceType DATE_TIME_01_PARAM = new FunctionParameterSequenceType("date-time", Type.DATE_TIME, Cardinality.ZERO_OR_ONE, "The date-time as xs:dateTime");
+    public final static FunctionParameterSequenceType DATE_01_PARAM = new FunctionParameterSequenceType("value", Type.DATE, Cardinality.ZERO_OR_ONE, "The date as xs:date");
+    public final static FunctionParameterSequenceType TIME_01_PARAM = new FunctionParameterSequenceType("value", Type.TIME, Cardinality.ZERO_OR_ONE, "The time as xs:time");
+    public final static FunctionParameterSequenceType DATE_TIME_01_PARAM = new FunctionParameterSequenceType("value", Type.DATE_TIME, Cardinality.ZERO_OR_ONE, "The date-time as xs:dateTime");
 
     // XQ4: *-from-dateTime functions accept any Gregorian date/time type (QT4CG PR #1481).
     // Uses ANY_ATOMIC_TYPE since eXist has no union type; runtime validation in eval().

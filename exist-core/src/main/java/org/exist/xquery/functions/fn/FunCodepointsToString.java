@@ -61,7 +61,7 @@ public class FunCodepointsToString extends BasicFunction {
             "If any of the code points in $codepoints is not a " +
             "legal XML character, an error is raised",
             new SequenceType[] {
-                new FunctionParameterSequenceType("codepoints", Type.INTEGER,
+                new FunctionParameterSequenceType("values", Type.INTEGER,
                     Cardinality.ZERO_OR_MORE, "The codepoints as a sequence of xs:integer values"),
             },
             new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE,

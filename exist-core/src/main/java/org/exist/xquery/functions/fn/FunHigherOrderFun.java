@@ -70,8 +70,8 @@ public class FunHigherOrderFun extends BasicFunction {
             "Applies the function item $function to every item from the sequence " +
                     "$sequence in turn, returning the concatenation of the resulting sequences in order.",
             returnsOptMany(Type.ITEM, "result of applying the function to each item of the sequence"),
-            optManyParam("sequence", Type.ITEM, "the sequence on which to apply the function"),
-            funParam("function",
+            optManyParam("input", Type.ITEM, "the sequence on which to apply the function"),
+            funParam("action",
                     params(
                             param("item", Type.ITEM, "the next item in the sequence")
                     ),
@@ -84,8 +84,8 @@ public class FunHigherOrderFun extends BasicFunction {
             "Returns those items from the sequence $sequence for which the supplied function $function returns true.",
             returnsOptMany(Type.ITEM, "result of filtering the sequence"),
 
-            optManyParam("sequence", Type.ITEM, "the sequence to filter"),
-            funParam("function",
+            optManyParam("input", Type.ITEM, "the sequence to filter"),
+            funParam("predicate",
                     params(
                             param("next", Type.ITEM, "the next item to filter")
                     ),
@@ -94,9 +94,9 @@ public class FunHigherOrderFun extends BasicFunction {
             )
     );
     private static final FunctionParameterSequenceType[] FOLDING_PARAMS = params(
-            optManyParam("sequence", Type.ITEM, "the sequence to iterate over"),
-            optManyParam("zero", Type.ITEM, "initial value to start with"),
-            funParam("function",
+            optManyParam("input", Type.ITEM, "the sequence to iterate over"),
+            optManyParam("init", Type.ITEM, "initial value to start with"),
+            funParam("action",
                     params(
                             optManyParam("accumulator", Type.ITEM, "the current accumulated result"),
                             param("next", Type.ITEM, "the next item in the sequence")
@@ -124,9 +124,9 @@ public class FunHigherOrderFun extends BasicFunction {
             "Applies the function item $f to successive pairs of items taken one from $seq1 and one from $seq2, " +
                     "returning the concatenation of the resulting sequences in order.",
             returnsOptMany(Type.ITEM, "concatenation of resulting sequences"),
-            optManyParam("seq1", Type.ITEM, "first sequence to take items from"),
-            optManyParam("seq2", Type.ITEM, "second sequence to take items from"),
-            funParam("function",
+            optManyParam("input1", Type.ITEM, "first sequence to take items from"),
+            optManyParam("input2", Type.ITEM, "second sequence to take items from"),
+            funParam("action",
                     params(
                             param("a", Type.ITEM, "the next item from the first sequence"),
                             param("b", Type.ITEM, "the next item from the first sequence")
@@ -142,7 +142,7 @@ public class FunHigherOrderFun extends BasicFunction {
             returnsOptMany(Type.ITEM, "return value of the function call"),
 
             param("function", Type.FUNCTION, "the function to call"),
-            param("array", Type.ARRAY_ITEM, "an array containing the arguments to pass to the function")
+            param("arguments", Type.ARRAY_ITEM, "an array containing the arguments to pass to the function")
     );
 
     private AnalyzeContextInfo cachedContextInfo;

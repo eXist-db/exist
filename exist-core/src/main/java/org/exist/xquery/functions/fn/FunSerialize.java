@@ -53,7 +53,7 @@ public class FunSerialize extends BasicFunction {
                 "This function serializes the supplied input sequence $arg as described in XSLT and XQuery Serialization 3.0, returning the " +
                         "serialized representation of the sequence as a string.",
                 new SequenceType[] {
-                        new FunctionParameterSequenceType("args", Type.ITEM, Cardinality.ZERO_OR_MORE, "The node set to serialize")
+                        new FunctionParameterSequenceType("input", Type.ITEM, Cardinality.ZERO_OR_MORE, "The node set to serialize")
                 },
                 new FunctionParameterSequenceType("result", Type.STRING, Cardinality.EXACTLY_ONE, "the string containing the serialized node set.")
         ),
@@ -62,8 +62,8 @@ public class FunSerialize extends BasicFunction {
                 "This function serializes the supplied input sequence $arg as described in XSLT and XQuery Serialization 3.0, returning the " +
                         "serialized representation of the sequence as a string.",
                 new SequenceType[] {
-                        new FunctionParameterSequenceType("args", Type.ITEM, Cardinality.ZERO_OR_MORE, "The node set to serialize"),
-                        new FunctionParameterSequenceType("parameters", Type.ITEM, Cardinality.ZERO_OR_ONE, "The serialization parameters as either a output:serialization-parameters element or a map")
+                        new FunctionParameterSequenceType("input", Type.ITEM, Cardinality.ZERO_OR_MORE, "The node set to serialize"),
+                        new FunctionParameterSequenceType("options", Type.ITEM, Cardinality.ZERO_OR_ONE, "The serialization parameters as either a output:serialization-parameters element or a map")
                 },
                 new FunctionParameterSequenceType("result", Type.STRING, Cardinality.EXACTLY_ONE, "the string containing the serialized node set.")
         )

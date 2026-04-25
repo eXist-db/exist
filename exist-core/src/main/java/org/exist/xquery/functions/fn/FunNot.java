@@ -54,7 +54,7 @@ public class FunNot extends Function {
 			"value is false, and false if the effective boolean value is true. \n\n $arg is reduced to an effective boolean value by applying " +
 			"the fn:boolean() function.",
 			new SequenceType[] {
-				 new FunctionParameterSequenceType("arg", Type.ITEM, Cardinality.ZERO_OR_MORE, "The input items")},
+				 new FunctionParameterSequenceType("input", Type.ITEM, Cardinality.ZERO_OR_MORE, "The input items")},
 			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "the negated effective boolean value (ebv) of $arg"));
 
 	@SuppressWarnings("unused")

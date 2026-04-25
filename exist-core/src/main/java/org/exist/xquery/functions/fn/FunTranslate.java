@@ -58,9 +58,9 @@ public class FunTranslate extends Function {
 			"the replacement character. If $trans is longer than $map, the excess characters are ignored.\n\n" +
 			"i.e. fn:translate(\"bar\",\"abc\",\"ABC\") returns \"BAr\"",
 			new SequenceType[] { 
-				new FunctionParameterSequenceType("arg", Type.STRING, Cardinality.ZERO_OR_ONE, "The string to be translated"),
-				new FunctionParameterSequenceType("map", Type.STRING, Cardinality.EXACTLY_ONE, "The map string"),
-				new FunctionParameterSequenceType("trans", Type.STRING, Cardinality.EXACTLY_ONE, "The translation string")
+				new FunctionParameterSequenceType("value", Type.STRING, Cardinality.ZERO_OR_ONE, "The string to be translated"),
+				new FunctionParameterSequenceType("replace", Type.STRING, Cardinality.EXACTLY_ONE, "The map string"),
+				new FunctionParameterSequenceType("with", Type.STRING, Cardinality.EXACTLY_ONE, "The translation string")
 			},
 			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the translated string"));
 
