@@ -190,6 +190,8 @@ public class EnclosedExpr extends PathExpr {
                         } catch (DOMException e) {
                             if (e.code == DOMException.NAMESPACE_ERR) {
                                 throw new XPathException(this, ErrorCodes.XQDY0102, e.getMessage());
+                            } else if (e.code == DOMException.INUSE_ATTRIBUTE_ERR) {
+                                throw new XPathException(this, ErrorCodes.XQDY0025, e.getMessage());
                             } else {
                                 throw new XPathException(this, e.getMessage(), e);
                             }
