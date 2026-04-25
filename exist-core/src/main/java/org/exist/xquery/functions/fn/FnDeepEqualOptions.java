@@ -69,7 +69,11 @@ public class FnDeepEqualOptions extends BasicFunction {
                 // XQ4: options map — parse, validate, and use options-aware comparison
                 final DeepEqualOptions options = DeepEqualOptions.parse(
                         (AbstractMapType) optionsItem, context);
-                return BooleanValue.valueOf(options.deepEqualsSeq(items1, items2));
+                try {
+                    return BooleanValue.valueOf(options.deepEqualsSeq(items1, items2));
+                } finally {
+                    options.close();
+                }
             } else {
                 // XQ3.1 compat: string collation URI
                 final Collator collator = context.getCollator(optionsItem.getStringValue());
