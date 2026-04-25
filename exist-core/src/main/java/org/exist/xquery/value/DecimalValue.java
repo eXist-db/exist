@@ -90,11 +90,19 @@ public class DecimalValue extends NumericValue {
     }
 
     public DecimalValue(final double doubleValue) {
-        this(null, doubleValue);
+        super(null);
+        if (Double.isInfinite(doubleValue) || Double.isNaN(doubleValue)) {
+            throw new IllegalArgumentException("Cannot convert " + doubleValue + " to xs:decimal");
+        }
+        value = stripTrailingZeros(new BigDecimal(doubleValue));
     }
 
-    public DecimalValue(final Expression expression, double doubleValue) {
+    public DecimalValue(final Expression expression, double doubleValue) throws XPathException {
         super(expression);
+        if (Double.isInfinite(doubleValue) || Double.isNaN(doubleValue)) {
+            throw new XPathException(expression, ErrorCodes.FOCA0002,
+                    "Cannot convert " + (Double.isNaN(doubleValue) ? "NaN" : "Infinity") + " to xs:decimal");
+        }
         value = stripTrailingZeros(new BigDecimal(doubleValue));
     }
 
