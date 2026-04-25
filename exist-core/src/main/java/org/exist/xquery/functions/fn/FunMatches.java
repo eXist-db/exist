@@ -526,6 +526,19 @@ public final class FunMatches extends Function implements Optimizable, IndexUseR
             return regex.containsMatch(string);
 
         } catch (final net.sf.saxon.trans.XPathException e) {
+            // Saxon's XP30 regex translator rejects some valid patterns:
+            // \b/\B word boundaries, certain quantifier sequences, \p{Is<Block>} names, etc.
+            // Fall back to Java regex before giving up.
+            if ("FORX0002".equals(e.getErrorCodeLocalPart())) {
+                try {
+                    final String javaPattern = org.exist.xquery.regex.RegexUtil.translateRegexp(
+                            this, pattern, flags.contains("x"), flags.contains("i"));
+                    int javaFlags = org.exist.xquery.regex.RegexUtil.parseFlags(this, flags);
+                    return Pattern.compile(javaPattern, javaFlags).matcher(string).find();
+                } catch (final XPathException | PatternSyntaxException ignored) {
+                    // Java regex fallback also failed — throw original Saxon error below
+                }
+            }
             switch (e.getErrorCodeLocalPart()) {
                 case "FORX0001" -> throw new XPathException(this, ErrorCodes.FORX0001, "Invalid regular expression: " + e.getMessage());
                 case "FORX0002" -> throw new XPathException(this, ErrorCodes.FORX0002, "Invalid regular expression: " + e.getMessage());

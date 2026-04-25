@@ -74,11 +74,12 @@ public class DoubleValue extends NumericValue {
     public DoubleValue(final Expression expression, final String stringValue) throws XPathException {
         super(expression);
         try {
-            value = switch (stringValue) {
-                case "INF" -> Double.POSITIVE_INFINITY;
+            final String trimmed = stringValue.strip();
+            value = switch (trimmed) {
+                case "INF", "+INF" -> Double.POSITIVE_INFINITY;
                 case "-INF" -> Double.NEGATIVE_INFINITY;
                 case "NaN" -> Double.NaN;
-                default -> Double.parseDouble(stringValue);
+                default -> Double.parseDouble(trimmed);
             };
         } catch (final NumberFormatException e) {
             throw new XPathException(getExpression(), ErrorCodes.FORG0001,
