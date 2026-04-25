@@ -39,6 +39,8 @@ import org.exist.xquery.value.*;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 
 import static org.exist.xquery.FunctionDSL.*;
 import static org.exist.xquery.functions.fn.FnModule.functionSignatures;
@@ -257,6 +259,24 @@ public class JSON extends BasicFunction {
                     }
                 }
                 throw new XPathException(this, ErrorCodes.FOUT1170, "failed to load json doc from file: " + filePath);
+            }
+
+            // Check dynamically available text resources first (e.g., XQTS test resources)
+            try (final Reader dynamicTextResource = context.getDynamicallyAvailableTextResource(url, StandardCharsets.UTF_8)) {
+                if (dynamicTextResource != null) {
+                    final StringBuilder sb = new StringBuilder();
+                    final char[] buf = new char[4096];
+                    int read;
+                    while ((read = dynamicTextResource.read(buf)) != -1) {
+                        sb.append(buf, 0, read);
+                    }
+                    try (final JsonParser parser = factory.createParser(sb.toString())) {
+                        final Item result = readValue(context, parser, handleDuplicates);
+                        return result == null ? Sequence.EMPTY_SEQUENCE : result.toSequence();
+                    } catch (final IOException jsonErr) {
+                        throw new XPathException(this, ErrorCodes.FOJS0001, jsonErr.getMessage());
+                    }
+                }
             }
 
             final Source source = SourceFactory.getSource(context.getBroker(), "", url, false);
