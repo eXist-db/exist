@@ -58,8 +58,8 @@ public class FunSubstring extends Function {
 				"is zero or negative, only those characters in positions greater than zero are returned." +
 				"If the value of $source is the empty sequence, the zero-length string is returned.",
 				new SequenceType[] {
-					 new FunctionParameterSequenceType("source", Type.STRING, Cardinality.ZERO_OR_ONE, "The source string"),
-					 new FunctionParameterSequenceType("starting-at", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The starting position")
+					 new FunctionParameterSequenceType("value", Type.STRING, Cardinality.ZERO_OR_ONE, "The source string"),
+					 new FunctionParameterSequenceType("start", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The starting position")
 				},
 				new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the substring")
 			),
@@ -70,8 +70,8 @@ public class FunSubstring extends Function {
 				"beyond the end of $source. If $starting-at is zero or negative, only those characters in positions greater " +
 				"than zero are returned. If the value of $source is the empty sequence, the zero-length string is returned.",
 				new SequenceType[] {
-					 new FunctionParameterSequenceType("source", Type.STRING, Cardinality.ZERO_OR_ONE, "The source string"),
-					 new FunctionParameterSequenceType("starting-at", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The starting position"),
+					 new FunctionParameterSequenceType("value", Type.STRING, Cardinality.ZERO_OR_ONE, "The source string"),
+					 new FunctionParameterSequenceType("start", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The starting position"),
 					 new FunctionParameterSequenceType("length", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The number of characters in the substring")
 				},
 				new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the substring")

@@ -37,7 +37,7 @@ import static org.exist.xquery.functions.fn.FnModule.functionSignature;
  */
 public class FunDocumentURI extends Function {
 
-    private static final FunctionParameterSequenceType FS_PARAM_NODE = optParam("value", Type.NODE, "The document node.");
+    private static final FunctionParameterSequenceType FS_PARAM_NODE = optParam("node", Type.NODE, "The document node.");
 
     private static final String FS_DOCUMENT_URI = "document-uri";
     private static final String FS_DESCRIPTION = "Returns the URI of a resource where a document can be found, if available.";

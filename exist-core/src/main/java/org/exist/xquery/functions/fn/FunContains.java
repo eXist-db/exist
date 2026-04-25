@@ -50,7 +50,7 @@ public class FunContains extends CollatingFunction {
             "that provides a minimal match to the collation units in " +
             "the value of $substring, according to the default collation.",
             new SequenceType[] {
-                new FunctionParameterSequenceType("source-string", Type.STRING,
+                new FunctionParameterSequenceType("value", Type.STRING,
                     Cardinality.ZERO_OR_ONE, "The source-string"),
                 new FunctionParameterSequenceType("substring", Type.STRING,
                     Cardinality.ZERO_OR_ONE, "The substring")
@@ -66,11 +66,11 @@ public class FunContains extends CollatingFunction {
             "the value of $substring, according to the collation that is " +
             "specified in $collation-uri." + THIRD_REL_COLLATION_ARG_EXAMPLE,
             new SequenceType[] {
-                new FunctionParameterSequenceType("source-string", Type.STRING,
+                new FunctionParameterSequenceType("value", Type.STRING,
                     Cardinality.ZERO_OR_ONE, "The source-string"),
                 new FunctionParameterSequenceType("substring", Type.STRING,
                     Cardinality.ZERO_OR_ONE, "The substring"),
-                new FunctionParameterSequenceType("collation-uri", Type.STRING,
+                new FunctionParameterSequenceType("collation", Type.STRING,
                     Cardinality.EXACTLY_ONE, "The collation URI")
             },
             new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE,

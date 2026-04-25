@@ -70,7 +70,7 @@ public class FunReplace extends BasicFunction {
         "included \"as is\" in the replacement string, and the rules are reapplied using the number N " +
         "formed by stripping off this last digit.";
 
-	private static final FunctionParameterSequenceType FS_TOKENIZE_PARAM_INPUT = optParam("input", Type.STRING, "The input string");
+	private static final FunctionParameterSequenceType FS_TOKENIZE_PARAM_INPUT = optParam("value", Type.STRING, "The input string");
 	private static final FunctionParameterSequenceType FS_TOKENIZE_PARAM_PATTERN = param("pattern", Type.STRING, "The pattern to match");
 	private static final FunctionParameterSequenceType FS_TOKENIZE_PARAM_REPLACEMENT = param("replacement", Type.STRING, "The string to replace the pattern with");
 

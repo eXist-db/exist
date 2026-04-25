@@ -51,7 +51,7 @@ public class FunEncodeForURI extends Function {
                 "with its percent-encoded form as described in [RFC 3986]. " +
                 "If $uri-part is the empty sequence, returns the zero-length string.",
             new SequenceType[] {
-                new FunctionParameterSequenceType("uri-part", Type.STRING,
+                new FunctionParameterSequenceType("value", Type.STRING,
                     Cardinality.ZERO_OR_ONE, "The URI part to encode")
             },
             new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE,

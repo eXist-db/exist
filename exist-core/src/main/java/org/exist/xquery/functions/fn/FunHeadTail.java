@@ -44,7 +44,7 @@ public class FunHeadTail extends BasicFunction {
             "The function returns the value of the expression $arg[1], i.e. the first item in the " +
             "passed in sequence.",
             new SequenceType[] {
-                new FunctionParameterSequenceType("arg", Type.ITEM, Cardinality.ZERO_OR_MORE, "")
+                new FunctionParameterSequenceType("input", Type.ITEM, Cardinality.ZERO_OR_MORE, "")
             },
             new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE, "the first item or the empty sequence")),
         new FunctionSignature(

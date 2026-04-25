@@ -57,7 +57,7 @@ public class FunData extends Function {
             qnData,
             "Atomizes the sequence $items, replacing all nodes in the sequence by their typed values.",
             new SequenceType[] {
-                new FunctionParameterSequenceType("items", Type.ITEM,
+                new FunctionParameterSequenceType("input", Type.ITEM,
                     Cardinality.ZERO_OR_MORE, "The items")
             },
             new FunctionReturnSequenceType(Type.ANY_ATOMIC_TYPE,

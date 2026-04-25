@@ -60,9 +60,9 @@ public class FunCompare extends CollatingFunction {
             "Please remember to specify the collation in the context or use, " +
             "the three argument version if you don't want the system default.",
             new SequenceType[] {
-                new FunctionParameterSequenceType("string-1", Type.STRING,
+                new FunctionParameterSequenceType("value1", Type.STRING,
                     Cardinality.ZERO_OR_ONE, "The first string"),
-                new FunctionParameterSequenceType("string-2", Type.STRING,
+                new FunctionParameterSequenceType("value2", Type.STRING,
                     Cardinality.ZERO_OR_ONE, "The second string")
             },
             new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE,
@@ -78,11 +78,11 @@ public class FunCompare extends CollatingFunction {
             "If either comparand is the empty sequence, the empty sequence is returned. " +
             THIRD_REL_COLLATION_ARG_EXAMPLE,
             new SequenceType[] {
-                new FunctionParameterSequenceType("string-1", Type.STRING,
+                new FunctionParameterSequenceType("value1", Type.STRING,
                     Cardinality.ZERO_OR_ONE, "The first string"),
-                new FunctionParameterSequenceType("string-2", Type.STRING,
+                new FunctionParameterSequenceType("value2", Type.STRING,
                     Cardinality.ZERO_OR_ONE, "The second string"),
-                new FunctionParameterSequenceType("collation-uri", Type.STRING,
+                new FunctionParameterSequenceType("collation", Type.STRING,
                     Cardinality.EXACTLY_ONE, "The relative collation URI")
             },
             new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE,
