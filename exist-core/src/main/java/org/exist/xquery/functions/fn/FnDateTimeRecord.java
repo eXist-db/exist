@@ -21,47 +21,89 @@
  */
 package org.exist.xquery.functions.fn;
 
-import org.exist.dom.QName;
 import org.exist.xquery.*;
-import org.exist.xquery.functions.map.MapType;
+import org.exist.xquery.functions.map.RecordMapType;
 import org.exist.xquery.value.*;
 
+import java.util.List;
+
+import static org.exist.xquery.FunctionDSL.*;
+import static org.exist.xquery.functions.fn.FnModule.functionSignatures;
+
 /**
- * Implements fn:dateTime-record (XQuery 4.0).
+ * Implementation of the XQuery 4.0 fn:dateTime-record named record constructor.
  *
- * A named record type constructor that creates a map with keys:
- * year, month, day, hours, minutes, seconds, timezone.
- * Each field is optional (can be empty sequence).
+ * <p>The function accepts 0 to 7 optional parameters (year, month, day,
+ * hours, minutes, seconds, timezone) and returns a map of type
+ * {@code fn:dateTime-record}. Only fields with non-empty values are
+ * included in the result map.</p>
  *
- * Supports 0-7 positional arguments.
+ * @see <a href="https://qt4cg.org/specifications/xpath-functions-40/Overview.html#dateTime-record">
+ *     XPath and XQuery Functions and Operators 4.0: fn:dateTime-record</a>
  */
 public class FnDateTimeRecord extends BasicFunction {
 
-    private static final String[] FIELD_NAMES = {
-        "year", "month", "day", "hours", "minutes", "seconds", "timezone"
-    };
+    private static final String FS_NAME = "dateTime-record";
 
-    public static final FunctionSignature[] SIGNATURES;
+    /** The field names in declaration order. */
+    private static final List<String> FIELD_ORDER = List.of(
+            "year", "month", "day", "hours", "minutes", "seconds", "timezone"
+    );
 
-    static {
-        SIGNATURES = new FunctionSignature[8]; // 0..7 args
-        for (int arity = 0; arity <= 7; arity++) {
-            final SequenceType[] params = new SequenceType[arity];
-            for (int i = 0; i < arity; i++) {
-                params[i] = new FunctionParameterSequenceType(
-                    FIELD_NAMES[i], Type.ITEM, Cardinality.ZERO_OR_ONE,
-                    "The " + FIELD_NAMES[i] + " component"
-                );
-            }
-            SIGNATURES[arity] = new FunctionSignature(
-                new QName("dateTime-record", Function.BUILTIN_FUNCTION_NS),
-                "Creates a dateTime record (map) with the specified components.",
-                params,
-                new FunctionReturnSequenceType(Type.MAP_ITEM, Cardinality.EXACTLY_ONE,
-                    "A map with year, month, day, hours, minutes, seconds, timezone entries")
-            );
-        }
-    }
+    private static final FunctionReturnSequenceType FS_RETURN_TYPE = returns(
+            Type.DATETIME_RECORD,
+            "A record of type fn:dateTime-record containing the specified date/time components.");
+
+    static final FunctionSignature[] FS_DATETIME_RECORD = functionSignatures(
+            FS_NAME,
+            "Constructs a dateTime-record from optional date/time component values.",
+            FS_RETURN_TYPE,
+            arities(
+                    arity(),
+                    arity(
+                            optParam("year", Type.INTEGER, "The year component")
+                    ),
+                    arity(
+                            optParam("year", Type.INTEGER, "The year component"),
+                            optParam("month", Type.INTEGER, "The month component")
+                    ),
+                    arity(
+                            optParam("year", Type.INTEGER, "The year component"),
+                            optParam("month", Type.INTEGER, "The month component"),
+                            optParam("day", Type.INTEGER, "The day component")
+                    ),
+                    arity(
+                            optParam("year", Type.INTEGER, "The year component"),
+                            optParam("month", Type.INTEGER, "The month component"),
+                            optParam("day", Type.INTEGER, "The day component"),
+                            optParam("hours", Type.INTEGER, "The hours component")
+                    ),
+                    arity(
+                            optParam("year", Type.INTEGER, "The year component"),
+                            optParam("month", Type.INTEGER, "The month component"),
+                            optParam("day", Type.INTEGER, "The day component"),
+                            optParam("hours", Type.INTEGER, "The hours component"),
+                            optParam("minutes", Type.INTEGER, "The minutes component")
+                    ),
+                    arity(
+                            optParam("year", Type.INTEGER, "The year component"),
+                            optParam("month", Type.INTEGER, "The month component"),
+                            optParam("day", Type.INTEGER, "The day component"),
+                            optParam("hours", Type.INTEGER, "The hours component"),
+                            optParam("minutes", Type.INTEGER, "The minutes component"),
+                            optParam("seconds", Type.DECIMAL, "The seconds component")
+                    ),
+                    arity(
+                            optParam("year", Type.INTEGER, "The year component"),
+                            optParam("month", Type.INTEGER, "The month component"),
+                            optParam("day", Type.INTEGER, "The day component"),
+                            optParam("hours", Type.INTEGER, "The hours component"),
+                            optParam("minutes", Type.INTEGER, "The minutes component"),
+                            optParam("seconds", Type.DECIMAL, "The seconds component"),
+                            optParam("timezone", Type.DAY_TIME_DURATION, "The timezone as xs:dayTimeDuration")
+                    )
+            )
+    );
 
     public FnDateTimeRecord(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
@@ -69,14 +111,39 @@ public class FnDateTimeRecord extends BasicFunction {
 
     @Override
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
-        final MapType result = new MapType(context, null);
+        final RecordMapType result = new RecordMapType(this, context, FIELD_ORDER, Type.DATETIME_RECORD);
 
-        for (int i = 0; i < args.length; i++) {
-            if (!args[i].isEmpty()) {
-                result.add(new StringValue(this, FIELD_NAMES[i]), args[i]);
+        for (int i = 0; i < args.length && i < FIELD_ORDER.size(); i++) {
+            final Sequence arg = args[i];
+            if (arg != null && !arg.isEmpty()) {
+                final String fieldName = FIELD_ORDER.get(i);
+                if ("timezone".equals(fieldName)) {
+                    result.add(new StringValue(this, fieldName), coerceTimezone(arg));
+                } else {
+                    result.add(new StringValue(this, fieldName), arg);
+                }
             }
         }
 
         return result;
+    }
+
+    /**
+     * Coerce the timezone argument to xs:dayTimeDuration.
+     * Accepts xs:dayTimeDuration directly, or xs:duration (coerced).
+     * Rejects xs:string with XPTY0004.
+     */
+    private Sequence coerceTimezone(final Sequence value) throws XPathException {
+        final Item item = value.itemAt(0);
+        if (item instanceof DurationValue dv) {
+            if (dv.getType() == Type.DAY_TIME_DURATION) {
+                return value;
+            }
+            // Coerce xs:duration or xs:yearMonthDuration to xs:dayTimeDuration
+            return dv.convertTo(Type.DAY_TIME_DURATION);
+        }
+        throw new XPathException(this, ErrorCodes.XPTY0004,
+                "Expected xs:dayTimeDuration for timezone parameter, got " +
+                        Type.getTypeName(item.getType()));
     }
 }

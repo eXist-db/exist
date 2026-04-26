@@ -263,6 +263,7 @@ public class Type {
         defineSubType(FUNCTION, MAP_ITEM);
         // XQ4: RECORD is a subtype of MAP
         defineSubType(MAP_ITEM, RECORD);
+        defineSubType(RECORD, DATETIME_RECORD);
         defineSubType(FUNCTION, ARRAY_ITEM);
 
         // XQ4: fn:dateTime-record is a named record type (subtype of map)
@@ -359,6 +360,7 @@ public class Type {
         defineBuiltInType(ARRAY_ITEM, "array(*)", "array");
         defineBuiltInType(MAP_ITEM, "map(*)", "map");                                               // keep `map` for backward compatibility
         defineBuiltInType(RECORD, "record(*)", "record");
+        defineBuiltInType(DATETIME_RECORD, "fn:dateTime-record", "dateTime-record");
         defineBuiltInType(CDATA_SECTION, "cdata-section()");
         defineBuiltInType(JAVA_OBJECT, "object");
         defineBuiltInType(EMPTY_SEQUENCE, "empty-sequence()", "empty()");                           // keep `empty()` for backward compatibility
@@ -546,6 +548,7 @@ public class Type {
         return switch (uri) {
             case Namespaces.SCHEMA_NS -> getType("xs:" + qname.getLocalPart());
             case Namespaces.XPATH_DATATYPES_NS -> getType("xdt:" + qname.getLocalPart());
+            case Namespaces.XPATH_FUNCTIONS_NS -> getType("fn:" + qname.getLocalPart());
             default -> getType(qname.getLocalPart());
         };
     }

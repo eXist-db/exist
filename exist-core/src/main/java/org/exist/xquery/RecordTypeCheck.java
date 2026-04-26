@@ -24,6 +24,7 @@ package org.exist.xquery;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.xquery.functions.map.AbstractMapType;
 import org.exist.xquery.functions.map.MapType;
+import org.exist.xquery.functions.map.RecordMapType;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.*;
 
@@ -96,8 +97,14 @@ public class RecordTypeCheck extends AbstractExpression {
         final AbstractMapType sourceMap = (AbstractMapType) item;
         final java.util.List<RecordType.FieldDeclaration> fields = recordType.getFieldDeclarations();
 
-        // Build a new map with only declared fields, in declaration order
-        final MapType coercedMap = new MapType(expression, context);
+        // Build field order list for RecordMapType
+        final java.util.List<String> fieldOrder = new java.util.ArrayList<>(fields.size());
+        for (final RecordType.FieldDeclaration f : fields) {
+            fieldOrder.add(f.getName());
+        }
+
+        // Build a new record map with only declared fields, in declaration order
+        final RecordMapType coercedMap = new RecordMapType(expression, context, fieldOrder);
 
         for (final RecordType.FieldDeclaration field : fields) {
             final StringValue key = new StringValue(expression, field.getName());

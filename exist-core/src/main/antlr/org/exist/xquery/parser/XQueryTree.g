@@ -1381,7 +1381,7 @@ throws XPathException
                 try {
                     QName qn= QName.parse(staticContext, t.getText());
                     int code= Type.getType(qn);
-                    if (!Type.subTypeOf(code, Type.ANY_ATOMIC_TYPE))
+                    if (!Type.subTypeOf(code, Type.ANY_ATOMIC_TYPE) && !Type.subTypeOf(code, Type.RECORD))
                         throw new XPathException(t.getLine(), t.getColumn(), ErrorCodes.XPST0051, qn.toString() + " is not atomic");
                     type.setPrimaryType(code);
                 } catch (final XPathException e) {
@@ -1469,26 +1469,34 @@ throws XPathException
         )
         |
         #(
-            RECORD_TEST { type.setPrimaryType(Type.RECORD); }
+            RECORD_TEST
+            {
+                type.setPrimaryType(Type.RECORD);
+                List<RecordType.FieldDeclaration> recordFields = new ArrayList<RecordType.FieldDeclaration>();
+            }
             (
                 #(
                     rf:RECORD_FIELD
                     {
-                        final String fieldName = rf.getText();
-                        boolean optional = false;
-                        SequenceType fieldType = null;
+                        String rfName = rf.getText();
+                        boolean rfOptional = rfName.endsWith("?");
+                        if (rfOptional) {
+                            rfName = rfName.substring(0, rfName.length() - 1);
+                        }
+                        SequenceType rfType = null;
                     }
-                    ( QUESTION { optional = true; } )?
                     (
-                        { fieldType = new SequenceType(); }
-                        sequenceType [fieldType]
+                        { rfType = new SequenceType(); }
+                        sequenceType [rfType]
                     )?
                     {
-                        type.addRecordField(new SequenceType.RecordField(
-                            fieldName, optional, fieldType));
+                        recordFields.add(new RecordType.FieldDeclaration(rfName, rfType, rfOptional));
                     }
                 )
             )*
+            {
+                type.setRecordType(new RecordType(recordFields, false));
+            }
         )
         |
         #(
