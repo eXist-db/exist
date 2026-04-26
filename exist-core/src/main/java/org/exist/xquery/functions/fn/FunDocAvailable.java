@@ -56,7 +56,7 @@ public class FunDocAvailable extends Function {
                             "specified in the input sequence is available. " +
                             XMLDBModule.ANY_URI,
                     new SequenceType[]{
-                            new FunctionParameterSequenceType("document-uri", Type.STRING,
+                            new FunctionParameterSequenceType("source", Type.STRING,
                                     Cardinality.ZERO_OR_ONE, "The document URI")
                     },
                     new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE,
@@ -69,7 +69,7 @@ public class FunDocAvailable extends Function {
                     "Returns whether or not the document is available, with options. " +
                             XMLDBModule.ANY_URI,
                     new SequenceType[]{
-                            new FunctionParameterSequenceType("document-uri", Type.STRING,
+                            new FunctionParameterSequenceType("source", Type.STRING,
                                     Cardinality.ZERO_OR_ONE, "The document URI"),
                             new FunctionParameterSequenceType("options", Type.MAP_ITEM,
                                     Cardinality.EXACTLY_ONE, "Options map")

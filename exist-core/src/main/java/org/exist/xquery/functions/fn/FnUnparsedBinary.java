@@ -43,7 +43,7 @@ public class FnUnparsedBinary extends BasicFunction {
             new QName("unparsed-binary", Function.BUILTIN_FUNCTION_NS),
             "Loads binary content from a URI and returns it as xs:base64Binary.",
             new SequenceType[] {
-                    new FunctionParameterSequenceType("uri", Type.STRING,
+                    new FunctionParameterSequenceType("source", Type.STRING,
                             Cardinality.ZERO_OR_ONE, "The URI of the binary resource")
             },
             new FunctionReturnSequenceType(Type.BASE64_BINARY, Cardinality.ZERO_OR_ONE,

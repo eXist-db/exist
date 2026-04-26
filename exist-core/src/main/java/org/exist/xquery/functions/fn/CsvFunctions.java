@@ -59,14 +59,14 @@ public class CsvFunctions extends BasicFunction {
                     new QName("csv-to-arrays", Function.BUILTIN_FUNCTION_NS),
                     "Parses a string as CSV data and returns the result as a sequence of arrays.",
                     new SequenceType[]{
-                            new FunctionParameterSequenceType("csv", Type.STRING, Cardinality.ZERO_OR_ONE, "The CSV string to parse")
+                            new FunctionParameterSequenceType("value", Type.STRING, Cardinality.ZERO_OR_ONE, "The CSV string to parse")
                     },
                     new FunctionReturnSequenceType(Type.ARRAY_ITEM, Cardinality.ZERO_OR_MORE, "A sequence of arrays, one per row")),
             new FunctionSignature(
                     new QName("csv-to-arrays", Function.BUILTIN_FUNCTION_NS),
                     "Parses a string as CSV data and returns the result as a sequence of arrays, using the specified options.",
                     new SequenceType[]{
-                            new FunctionParameterSequenceType("csv", Type.STRING, Cardinality.ZERO_OR_ONE, "The CSV string to parse"),
+                            new FunctionParameterSequenceType("value", Type.STRING, Cardinality.ZERO_OR_ONE, "The CSV string to parse"),
                             new FunctionParameterSequenceType("options", Type.MAP_ITEM, Cardinality.EXACTLY_ONE, "Parsing options")
                     },
                     new FunctionReturnSequenceType(Type.ARRAY_ITEM, Cardinality.ZERO_OR_MORE, "A sequence of arrays, one per row"))
@@ -78,14 +78,14 @@ public class CsvFunctions extends BasicFunction {
                     new QName("parse-csv", Function.BUILTIN_FUNCTION_NS),
                     "Parses a string as CSV data and returns the result as a map.",
                     new SequenceType[]{
-                            new FunctionParameterSequenceType("csv", Type.STRING, Cardinality.ZERO_OR_ONE, "The CSV string to parse")
+                            new FunctionParameterSequenceType("value", Type.STRING, Cardinality.ZERO_OR_ONE, "The CSV string to parse")
                     },
                     new FunctionReturnSequenceType(Type.MAP_ITEM, Cardinality.ZERO_OR_ONE, "A map with columns, column-index, rows, and get")),
             new FunctionSignature(
                     new QName("parse-csv", Function.BUILTIN_FUNCTION_NS),
                     "Parses a string as CSV data and returns the result as a map, using the specified options.",
                     new SequenceType[]{
-                            new FunctionParameterSequenceType("csv", Type.STRING, Cardinality.ZERO_OR_ONE, "The CSV string to parse"),
+                            new FunctionParameterSequenceType("value", Type.STRING, Cardinality.ZERO_OR_ONE, "The CSV string to parse"),
                             new FunctionParameterSequenceType("options", Type.MAP_ITEM, Cardinality.EXACTLY_ONE, "Parsing options")
                     },
                     new FunctionReturnSequenceType(Type.MAP_ITEM, Cardinality.ZERO_OR_ONE, "A map with columns, column-index, rows, and get"))
@@ -97,14 +97,14 @@ public class CsvFunctions extends BasicFunction {
                     new QName("csv-to-xml", Function.BUILTIN_FUNCTION_NS),
                     "Parses a string as CSV data and returns the result as an XML document.",
                     new SequenceType[]{
-                            new FunctionParameterSequenceType("csv", Type.STRING, Cardinality.ZERO_OR_ONE, "The CSV string to parse")
+                            new FunctionParameterSequenceType("value", Type.STRING, Cardinality.ZERO_OR_ONE, "The CSV string to parse")
                     },
                     new FunctionReturnSequenceType(Type.DOCUMENT, Cardinality.ZERO_OR_ONE, "An XML document representing the CSV data")),
             new FunctionSignature(
                     new QName("csv-to-xml", Function.BUILTIN_FUNCTION_NS),
                     "Parses a string as CSV data and returns the result as an XML document, using the specified options.",
                     new SequenceType[]{
-                            new FunctionParameterSequenceType("csv", Type.STRING, Cardinality.ZERO_OR_ONE, "The CSV string to parse"),
+                            new FunctionParameterSequenceType("value", Type.STRING, Cardinality.ZERO_OR_ONE, "The CSV string to parse"),
                             new FunctionParameterSequenceType("options", Type.MAP_ITEM, Cardinality.EXACTLY_ONE, "Parsing options")
                     },
                     new FunctionReturnSequenceType(Type.DOCUMENT, Cardinality.ZERO_OR_ONE, "An XML document representing the CSV data"))
@@ -116,14 +116,14 @@ public class CsvFunctions extends BasicFunction {
                     new QName("csv-doc", Function.BUILTIN_FUNCTION_NS),
                     "Reads CSV data from the specified URI and returns the result as a map.",
                     new SequenceType[]{
-                            new FunctionParameterSequenceType("uri", Type.STRING, Cardinality.ZERO_OR_ONE, "The URI of the CSV resource")
+                            new FunctionParameterSequenceType("source", Type.STRING, Cardinality.ZERO_OR_ONE, "The URI of the CSV resource")
                     },
                     new FunctionReturnSequenceType(Type.MAP_ITEM, Cardinality.ZERO_OR_ONE, "A map with columns, column-index, rows, and get")),
             new FunctionSignature(
                     new QName("csv-doc", Function.BUILTIN_FUNCTION_NS),
                     "Reads CSV data from the specified URI and returns the result as a map, using the specified options.",
                     new SequenceType[]{
-                            new FunctionParameterSequenceType("uri", Type.STRING, Cardinality.ZERO_OR_ONE, "The URI of the CSV resource"),
+                            new FunctionParameterSequenceType("source", Type.STRING, Cardinality.ZERO_OR_ONE, "The URI of the CSV resource"),
                             new FunctionParameterSequenceType("options", Type.MAP_ITEM, Cardinality.EXACTLY_ONE, "Parsing options")
                     },
                     new FunctionReturnSequenceType(Type.MAP_ITEM, Cardinality.ZERO_OR_ONE, "A map with columns, column-index, rows, and get"))

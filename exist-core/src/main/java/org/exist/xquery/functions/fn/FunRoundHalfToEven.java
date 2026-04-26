@@ -81,9 +81,9 @@ public class FunRoundHalfToEven extends FunRoundBase {
 
 	public static final FunctionSignature[] FN_ROUND_HALF_TO_EVEN_SIGNATURES = {
 			functionSignature(FN_NAME, FunRoundHalfToEven.FUNCTION_DESCRIPTION_1_PARAM + FunRoundHalfToEven.FUNCTION_DESCRIPTION_COMMON, FunRoundHalfToEven.RETURN_TYPE,
-					optParam("arg", Type.NUMERIC, "The input number")),
+					optParam("value", Type.NUMERIC, "The input number")),
 			functionSignature(FN_NAME, FunRoundHalfToEven.FUNCTION_DESCRIPTION_2_PARAM + FunRoundHalfToEven.FUNCTION_DESCRIPTION_COMMON, RETURN_TYPE,
-					optParam("arg", Type.NUMERIC, "The input number"),
+					optParam("value", Type.NUMERIC, "The input number"),
 					optParam("precision", Type.INTEGER, "Precision to round to"))
 	};
 

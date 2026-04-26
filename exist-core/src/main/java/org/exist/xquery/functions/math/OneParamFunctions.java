@@ -54,49 +54,49 @@ public class OneParamFunctions extends BasicFunction {
     public final static FunctionSignature FNS_ACOS = new FunctionSignature(
             new QName(ACOS, MathModule.NAMESPACE_URI, MathModule.PREFIX),
             "Returns the arc cosine of the argument, the result being in the range zero to +π radians.",
-            new SequenceType[]{new FunctionParameterSequenceType("arg", Type.DOUBLE, Cardinality.ZERO_OR_ONE, "The input number")},
+            new SequenceType[]{new FunctionParameterSequenceType("value", Type.DOUBLE, Cardinality.ZERO_OR_ONE, "The input number")},
             new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the result")
     );
 
     public final static FunctionSignature FNS_ASIN = new FunctionSignature(
             new QName(ASIN, MathModule.NAMESPACE_URI, MathModule.PREFIX),
             "Returns the arc sine of the argument, the result being in the range -π/2 to +π/2 radians.",
-            new SequenceType[]{new FunctionParameterSequenceType("arg", Type.DOUBLE, Cardinality.ZERO_OR_ONE, "The input number")},
+            new SequenceType[]{new FunctionParameterSequenceType("value", Type.DOUBLE, Cardinality.ZERO_OR_ONE, "The input number")},
             new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "result")
     );
 
     public final static FunctionSignature FNS_ATAN = new FunctionSignature(
             new QName(ATAN, MathModule.NAMESPACE_URI, MathModule.PREFIX),
             "Returns the arc tangent of the argument, the result being in the range -π/2 to +π/2 radians.",
-            new SequenceType[]{new FunctionParameterSequenceType("arg", Type.DOUBLE, Cardinality.ZERO_OR_ONE, "The input number")},
+            new SequenceType[]{new FunctionParameterSequenceType("value", Type.DOUBLE, Cardinality.ZERO_OR_ONE, "The input number")},
             new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the result")
     );
 
     public final static FunctionSignature FNS_COS = new FunctionSignature(
             new QName(COS, MathModule.NAMESPACE_URI, MathModule.PREFIX),
             "Returns the cosine of the argument, expressed in radians.",
-            new SequenceType[]{new FunctionParameterSequenceType("arg", Type.DOUBLE, Cardinality.ZERO_OR_ONE, "The input number")},
+            new SequenceType[]{new FunctionParameterSequenceType("radians", Type.DOUBLE, Cardinality.ZERO_OR_ONE, "The input number")},
             new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the cosine")
     );
 
     public final static FunctionSignature FNS_EXP = new FunctionSignature(
             new QName(EXP, MathModule.NAMESPACE_URI, MathModule.PREFIX),
-            "Calculates e (the Euler Constant) raised to the power of $arg",
-            new SequenceType[]{new FunctionParameterSequenceType("arg", Type.DOUBLE, Cardinality.ZERO_OR_ONE, "The input number")},
+            "Calculates e (the Euler Constant) raised to the power of $value",
+            new SequenceType[]{new FunctionParameterSequenceType("value", Type.DOUBLE, Cardinality.ZERO_OR_ONE, "The input number")},
             new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "e (the Euler Constant) raised to the power of a value or expression")
     );
 
     public final static FunctionSignature FNS_EXP10 = new FunctionSignature( // NEW
             new QName(EXP10, MathModule.NAMESPACE_URI, MathModule.PREFIX),
-            "Calculates 10 raised to the power of $arg",
-            new SequenceType[]{new FunctionParameterSequenceType("arg", Type.DOUBLE, Cardinality.ZERO_OR_ONE, "The input number")},
+            "Calculates 10 raised to the power of $value",
+            new SequenceType[]{new FunctionParameterSequenceType("value", Type.DOUBLE, Cardinality.ZERO_OR_ONE, "The input number")},
             new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "e (the Euler Constant) raised to the power of a value or expression")
     );
 
     public final static FunctionSignature FNS_LOG = new FunctionSignature(
             new QName(LOG, MathModule.NAMESPACE_URI, MathModule.PREFIX),
             "Returns the natural logarithm of the argument.",
-            new SequenceType[]{new FunctionParameterSequenceType("arg", Type.DOUBLE, Cardinality.ZERO_OR_ONE, "The input number")},
+            new SequenceType[]{new FunctionParameterSequenceType("value", Type.DOUBLE, Cardinality.ZERO_OR_ONE, "The input number")},
             new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the log")
     );
 
@@ -110,42 +110,42 @@ public class OneParamFunctions extends BasicFunction {
     public final static FunctionSignature FNS_SIN = new FunctionSignature(
             new QName(SIN, MathModule.NAMESPACE_URI, MathModule.PREFIX),
             "Returns the sine of the argument, expressed in radians.",
-            new SequenceType[]{new FunctionParameterSequenceType("arg", Type.DOUBLE, Cardinality.ZERO_OR_ONE, "The input number")},
+            new SequenceType[]{new FunctionParameterSequenceType("radians", Type.DOUBLE, Cardinality.ZERO_OR_ONE, "The input number")},
             new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the sine")
     );
 
     public final static FunctionSignature FNS_SQRT = new FunctionSignature(
             new QName(SQRT, MathModule.NAMESPACE_URI, MathModule.PREFIX),
             "Returns the non-negative square root of the argument.",
-            new SequenceType[]{new FunctionParameterSequenceType("arg", Type.DOUBLE, Cardinality.ZERO_OR_ONE, "The input number")},
+            new SequenceType[]{new FunctionParameterSequenceType("value", Type.DOUBLE, Cardinality.ZERO_OR_ONE, "The input number")},
             new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the square root of $x")
     );
 
     public final static FunctionSignature FNS_TAN = new FunctionSignature(
             new QName(TAN, MathModule.NAMESPACE_URI, MathModule.PREFIX),
             "Returns the tangent of the argument, expressed in radians.",
-            new SequenceType[]{new FunctionParameterSequenceType("arg", Type.DOUBLE, Cardinality.ZERO_OR_ONE, "The radians")},
+            new SequenceType[]{new FunctionParameterSequenceType("radians", Type.DOUBLE, Cardinality.ZERO_OR_ONE, "The radians")},
             new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the tangent")
     );
 
     public final static FunctionSignature FNS_COSH = new FunctionSignature(
             new QName(COSH, MathModule.NAMESPACE_URI, MathModule.PREFIX),
             "Returns the hyperbolic cosine of the argument.",
-            new SequenceType[]{new FunctionParameterSequenceType("arg", Type.DOUBLE, Cardinality.ZERO_OR_ONE, "The input value")},
+            new SequenceType[]{new FunctionParameterSequenceType("value", Type.DOUBLE, Cardinality.ZERO_OR_ONE, "The input value")},
             new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the hyperbolic cosine")
     );
 
     public final static FunctionSignature FNS_SINH = new FunctionSignature(
             new QName(SINH, MathModule.NAMESPACE_URI, MathModule.PREFIX),
             "Returns the hyperbolic sine of the argument.",
-            new SequenceType[]{new FunctionParameterSequenceType("arg", Type.DOUBLE, Cardinality.ZERO_OR_ONE, "The input value")},
+            new SequenceType[]{new FunctionParameterSequenceType("value", Type.DOUBLE, Cardinality.ZERO_OR_ONE, "The input value")},
             new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the hyperbolic sine")
     );
 
     public final static FunctionSignature FNS_TANH = new FunctionSignature(
             new QName(TANH, MathModule.NAMESPACE_URI, MathModule.PREFIX),
             "Returns the hyperbolic tangent of the argument.",
-            new SequenceType[]{new FunctionParameterSequenceType("arg", Type.DOUBLE, Cardinality.ZERO_OR_ONE, "The input value")},
+            new SequenceType[]{new FunctionParameterSequenceType("value", Type.DOUBLE, Cardinality.ZERO_OR_ONE, "The input value")},
             new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the hyperbolic tangent")
     );
 
