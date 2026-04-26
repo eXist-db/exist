@@ -437,9 +437,10 @@ public class XMLWriter implements SerializerWriter {
                 canonicalAttributes.add(new String[]{nsUri, colon > 0 ? qname.substring(colon + 1) : qname, qname, value.toString()});
                 return;
             }
-            writer.write(' ');
-            writer.write(qname);
-            writer.write("=\"");
+            // Coalesce ' ' + qname + '="' into a single bulk write when the
+            // qname fits in the scratch buffer (typical case for short HTML
+            // attribute names like class, href, style).
+            writeAttributePrefix(qname);
             writeChars(value, true);
             writer.write('"');
         } catch(final IOException ioe) {
@@ -465,19 +466,68 @@ public class XMLWriter implements SerializerWriter {
                 canonicalAttributes.add(new String[]{nsUri, localName, fullName, value.toString()});
                 return;
             }
-            writer.write(' ');
-            if(qname.getPrefix() != null && !qname.getPrefix().isEmpty()) {
-                writer.write(qname.getPrefix());
-                writer.write(':');
+            final String prefix = qname.getPrefix();
+            final String localPart = qname.getLocalPart();
+            if (prefix != null && !prefix.isEmpty()) {
+                writePrefixedAttributePrefix(prefix, localPart);
+            } else {
+                writeAttributePrefix(localPart);
             }
-            writer.write(qname.getLocalPart());
-            writer.write("=\"");
             writeChars(value, true);
             writer.write('"');
         } catch(final IOException ioe) {
             throw new TransformerException(ioe.getMessage(), ioe);
         }
     }
+
+    /**
+     * Write {@code ' ' + qname + '="'} as a single {@code Writer.write(char[],
+     * int, int)} call when {@code qname} fits in the scratch buffer. Reduces
+     * 3 writer calls per attribute to 1.
+     */
+    private void writeAttributePrefix(final String qname) throws IOException {
+        final int qlen = qname.length();
+        final int needed = qlen + 3;  // ' ' + qname + '="'
+        if (needed <= ATTR_SCRATCH_LEN) {
+            attrScratch[0] = ' ';
+            qname.getChars(0, qlen, attrScratch, 1);
+            attrScratch[qlen + 1] = '=';
+            attrScratch[qlen + 2] = '"';
+            writer.write(attrScratch, 0, needed);
+        } else {
+            writer.write(' ');
+            writer.write(qname);
+            writer.write("=\"");
+        }
+    }
+
+    /**
+     * Write {@code ' ' + prefix + ':' + localPart + '="'} as a single bulk
+     * write when it fits the scratch buffer.
+     */
+    private void writePrefixedAttributePrefix(final String prefix, final String localPart) throws IOException {
+        final int plen = prefix.length();
+        final int llen = localPart.length();
+        final int needed = plen + llen + 4;  // ' ' + prefix + ':' + localPart + '="'
+        if (needed <= ATTR_SCRATCH_LEN) {
+            attrScratch[0] = ' ';
+            prefix.getChars(0, plen, attrScratch, 1);
+            attrScratch[plen + 1] = ':';
+            localPart.getChars(0, llen, attrScratch, plen + 2);
+            attrScratch[plen + llen + 2] = '=';
+            attrScratch[plen + llen + 3] = '"';
+            writer.write(attrScratch, 0, needed);
+        } else {
+            writer.write(' ');
+            writer.write(prefix);
+            writer.write(':');
+            writer.write(localPart);
+            writer.write("=\"");
+        }
+    }
+
+    private static final int ATTR_SCRATCH_LEN = 96;
+    private final char[] attrScratch = new char[ATTR_SCRATCH_LEN];
 
     public void characters(final CharSequence chars) throws TransformerException {
         if(!declarationWritten) {
