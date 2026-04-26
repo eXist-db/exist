@@ -57,9 +57,6 @@ public class LocationStep extends Step {
     protected UpdateListener listener = null;
     protected Expression parent = null;
 
-    // Fields for caching the last result
-    protected CachedResult cached = null;
-
     //private int parentDeps = Dependency.UNKNOWN_DEPENDENCY;
     private boolean preloadedData = false;
     protected boolean optimized = false;
@@ -350,30 +347,6 @@ public class LocationStep extends Step {
         if (contextItem != null) {
             contextSequence = contextItem.toSequence();
         }
-        /*
-         * if(contextSequence == null) //Commented because this the high level
-         * result nodeset is *really* null result = NodeSet.EMPTY_SET; //Try to
-         * return cached results else
-         */
-        // TODO: disabled cache for now as it may cause concurrency issues
-        // better use compile-time inspection and maybe a pragma to mark those
-        // sections in the query that can be safely cached
-        // if (cached != null && cached.isValid(contextSequence, contextItem)) {
-        //
-        // // WARNING : commented since predicates are *also* applied below !
-        // // -pb
-        // /*
-        // * if (predicates.size() > 0) { applyPredicate(contextSequence,
-        // * cached.getResult()); } else {
-        // */
-        // result = cached.getResult();
-        // if (context.getProfiler().isEnabled()) {
-        // LOG.debug("Using cached results");
-        // }
-        // context.getProfiler().message(this, Profiler.OPTIMIZATIONS,
-        // "Using cached results", result);
-        //
-        // // }
 
         Sequence result;
         if (needsComputation()) {
@@ -455,11 +428,8 @@ public class LocationStep extends Step {
         } else {
             result = NodeSet.EMPTY_SET;
         }
-        // Caches the result
         if (axis != Constants.SELF_AXIS && contextSequence != null
                 && contextSequence.isCacheable()) {
-            // TODO : cache *after* removing duplicates ? -pb
-            cached = new CachedResult(contextSequence, contextItem, result);
             registerUpdateListener();
         }
         // Remove duplicate nodes
@@ -1214,7 +1184,6 @@ public class LocationStep extends Step {
             listener = new UpdateListener() {
                 @Override
                 public void documentUpdated(final DocumentImpl document, final int event) {
-                    cached = null;
                     if (document == null || event == UpdateListener.ADD || event == UpdateListener.REMOVE) {
                         // clear all
                         currentDocs = null;
@@ -1272,7 +1241,6 @@ public class LocationStep extends Step {
             currentSet = null;
             currentDocs = null;
             optimized = false;
-            cached = null;
             listener = null;
         }
     }
