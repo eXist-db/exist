@@ -454,6 +454,7 @@ public class XQueryURLRewrite extends HttpServlet {
 
     private void flushError(final HttpServletResponse response, final HttpServletResponse wrappedResponse) throws IOException {
         if (!response.isCommitted()) {
+            response.setStatus(wrappedResponse.getStatus());
             final byte[] data = ((CachingResponseWrapper) wrappedResponse).getData();
             if (data != null) {
                 response.setContentType(wrappedResponse.getContentType());

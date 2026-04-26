@@ -107,16 +107,18 @@ public class HttpServletRequestWrapper implements HttpServletRequest, Closeable 
             final int contentLength = request.getContentLength();
             if (contentLength > 0 || contentLength == -1) {
                 // If a form POST , and not a document POST
-                String contentType = request.getContentType().toLowerCase();
-                final int semicolon = contentType.indexOf(';');
-                if (semicolon > 0) {
-                    contentType = contentType.substring(0, semicolon).trim();
-                }
-                if ("application/x-www-form-urlencoded".equals(contentType)
-                        && request.getHeader("ContentType") == null) {
-                    //Parse out parameters from the Content Body
-                    parseContentBodyParameters();
-
+                final String rawContentType = request.getContentType();
+                if (rawContentType != null) {
+                    String contentType = rawContentType.toLowerCase();
+                    final int semicolon = contentType.indexOf(';');
+                    if (semicolon > 0) {
+                        contentType = contentType.substring(0, semicolon).trim();
+                    }
+                    if ("application/x-www-form-urlencoded".equals(contentType)
+                            && request.getHeader("ContentType") == null) {
+                        //Parse out parameters from the Content Body
+                        parseContentBodyParameters();
+                    }
                 }
             }
         }
@@ -280,10 +282,11 @@ public class HttpServletRequestWrapper implements HttpServletRequest, Closeable 
      */
     @Override
     public String toString() {
+        final String contentType = request.getContentType();
         // If POST request AND there is some content AND its not a file upload
         if ("POST".equalsIgnoreCase(request.getMethod())
                 && (request.getContentLength() > 0 || request.getContentLength() == -1)
-                && !request.getContentType().toUpperCase().startsWith("MULTIPART/")) {
+                && (contentType == null || !contentType.toUpperCase().startsWith("MULTIPART/"))) {
 
             // Also return the content parameters, these are not part
             // of the standard HttpServletRequest.toString() output

@@ -686,6 +686,8 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
     @Override
     public synchronized void lifeCycleStopped(final LifeCycle lifeCycle) {
         logger.info("Jetty server stopped");
+        org.exist.xquery.functions.websocket.WebSocketEndpoint.shutdown();
+        org.exist.http.ws.EvalWebSocketEndpoint.shutdown();
         status = STATUS_STOPPED;
         notifyAll();
     }
