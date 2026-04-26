@@ -149,6 +149,15 @@ public class DynamicTypeCheck extends AbstractExpression {
             } else if (type == Type.ANY_URI && requiredType == Type.STRING) {
                     item = item.convertTo(Type.STRING);
                     type = Type.STRING;
+            //Binary type promotion (XQuery 4.0): xs:base64Binary ↔ xs:hexBinary
+            } else if ((type == Type.BASE64_BINARY && requiredType == Type.HEX_BINARY)
+                    || (type == Type.HEX_BINARY && requiredType == Type.BASE64_BINARY)) {
+                try {
+                    item = item.convertTo(requiredType);
+                } catch (final XPathException e) {
+                    throw new XPathException(expression, ErrorCodes.XPTY0004,
+                            "cannot convert " + Type.getTypeName(type) + " to " + Type.getTypeName(requiredType));
+                }
             } else {
                 if (!(Type.subTypeOf(type, requiredType))) {
                     throw new XPathException(expression, typeMismatchError,
