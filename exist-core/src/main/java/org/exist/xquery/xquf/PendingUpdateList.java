@@ -189,6 +189,7 @@ public class PendingUpdateList {
     }
 
     private static boolean nodesAreSame(final Node a, final Node b) {
+        // NOTE: intentional reference identity comparison
         if (a == b) {
             return true;
         }
