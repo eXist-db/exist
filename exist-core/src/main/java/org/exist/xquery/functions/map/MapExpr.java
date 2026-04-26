@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.functions.map;
 
+import io.lacuna.bifurcan.IEntry;
 import io.lacuna.bifurcan.IMap;
 import org.exist.xquery.*;
 import org.exist.xquery.util.ExpressionDumper;
@@ -36,18 +37,25 @@ import static org.exist.xquery.functions.map.MapType.newLinearMap;
 
 /**
  * Implements the literal syntax for creating maps.
+ *
+ * <p>In XQuery 4.0 (PR2094), map constructor entries can be either key:value pairs
+ * or merge entries. A merge entry is a single expression that must evaluate to a map,
+ * whose entries are merged into the result.</p>
  */
 public class MapExpr extends AbstractExpression {
 
-    private final List<Mapping> mappings = new ArrayList<>(13);
+    private final List<Entry> entries = new ArrayList<>(13);
 
     public MapExpr(final XQueryContext context) {
         super(context);
     }
 
     public void map(final PathExpr key, final PathExpr value) {
-        final Mapping mapping = new Mapping(key.simplify(), value.simplify());
-        this.mappings.add(mapping);
+        entries.add(new KeyValueEntry(key.simplify(), value.simplify()));
+    }
+
+    public void merge(final PathExpr expr) {
+        entries.add(new MergeEntry(expr.simplify()));
     }
 
     @Override
@@ -57,9 +65,8 @@ public class MapExpr extends AbstractExpression {
                     "Map is not available before XQuery 3.0");
         }
         contextInfo.setParent(this);
-        for (final Mapping mapping : this.mappings) {
-            mapping.key.analyze(contextInfo);
-            mapping.value.analyze(contextInfo);
+        for (final Entry entry : entries) {
+            entry.analyze(contextInfo);
         }
     }
 
@@ -73,25 +80,52 @@ public class MapExpr extends AbstractExpression {
         boolean firstType = true;
         int prevType = AbstractMapType.UNKNOWN_KEY_TYPE;
 
-        for (final Mapping mapping : this.mappings) {
-            final Sequence key = mapping.key.eval(contextSequence, null);
-            if (key.getItemCount() != 1) {
-                throw new XPathException(this, MapErrorCode.EXMPDY001, "Expected single value for key, got " + key.getItemCount());
-            }
-            final AtomicValue atomic = key.itemAt(0).atomize();
-            final Sequence value = mapping.value.eval(contextSequence, null);
-            if (map.contains(atomic)) {
-                throw new XPathException(this, ErrorCodes.XQDY0137, "Key \"" + atomic.getStringValue() + "\" already exists in map.");
-            }
-            map.put(atomic, value);
+        for (final Entry entry : entries) {
+            if (entry instanceof KeyValueEntry kv) {
+                final Sequence key = kv.key.eval(contextSequence, null);
+                if (key.getItemCount() != 1) {
+                    throw new XPathException(this, MapErrorCode.EXMPDY001, "Expected single value for key, got " + key.getItemCount());
+                }
+                final AtomicValue atomic = key.itemAt(0).atomize();
+                final Sequence value = kv.value.eval(contextSequence, null);
+                if (map.contains(atomic)) {
+                    throw new XPathException(this, ErrorCodes.XQDY0137, "Key \"" + atomic.getStringValue() + "\" already exists in map.");
+                }
+                map.put(atomic, value);
 
-            final int thisType = atomic.getType();
-            if (firstType) {
-                prevType = thisType;
-                firstType = false;
-            } else {
-                if (thisType != prevType) {
+                final int thisType = atomic.getType();
+                if (firstType) {
+                    prevType = thisType;
+                    firstType = false;
+                } else if (thisType != prevType) {
                     prevType = AbstractMapType.MIXED_KEY_TYPES;
+                }
+            } else if (entry instanceof MergeEntry me) {
+                final Sequence result = me.expr.eval(contextSequence, null);
+                // Each item in the result must be a map
+                for (int i = 0; i < result.getItemCount(); i++) {
+                    final Item item = result.itemAt(i);
+                    if (item.getType() != Type.MAP_ITEM && !Type.subTypeOf(item.getType(), Type.MAP_ITEM)) {
+                        throw new XPathException(this, ErrorCodes.XPTY0004,
+                                "Merge entry in map constructor must be a map, got " + Type.getTypeName(item.getType()));
+                    }
+                    final AbstractMapType mergeMap = (AbstractMapType) item;
+                    for (final IEntry<AtomicValue, Sequence> mergeEntry : mergeMap) {
+                        final AtomicValue mergeKey = mergeEntry.key();
+                        if (map.contains(mergeKey)) {
+                            throw new XPathException(this, ErrorCodes.XQDY0137,
+                                    "Key \"" + mergeKey.getStringValue() + "\" already exists in map.");
+                        }
+                        map.put(mergeKey, mergeEntry.value());
+
+                        final int thisType = mergeKey.getType();
+                        if (firstType) {
+                            prevType = thisType;
+                            firstType = false;
+                        } else if (thisType != prevType) {
+                            prevType = AbstractMapType.MIXED_KEY_TYPES;
+                        }
+                    }
                 }
             }
         }
@@ -107,23 +141,19 @@ public class MapExpr extends AbstractExpression {
     @Override
     public void accept(final ExpressionVisitor visitor) {
         super.accept(visitor);
-        for (final Mapping mapping : this.mappings) {
-            mapping.key.accept(visitor);
-            mapping.value.accept(visitor);
+        for (final Entry entry : entries) {
+            entry.accept(visitor);
         }
     }
 
     @Override
     public void dump(final ExpressionDumper dumper) {
         dumper.display("map {");
-        for (int i = 0; i < this.mappings.size(); i++) {
-            final Mapping mapping = this.mappings.get(i);
+        for (int i = 0; i < entries.size(); i++) {
             if (i > 0) {
                 dumper.display(", ");
             }
-            mapping.key.dump(dumper);
-            dumper.display(" : ");
-            mapping.value.dump(dumper);
+            entries.get(i).dump(dumper);
         }
         dumper.display("}");
     }
@@ -136,21 +166,62 @@ public class MapExpr extends AbstractExpression {
     @Override
     public void resetState(final boolean postOptimization) {
         super.resetState(postOptimization);
-        mappings.forEach(m -> m.resetState(postOptimization));
+        entries.forEach(e -> e.resetState(postOptimization));
     }
 
-    private static class Mapping {
-        final Expression key;
-        final Expression value;
+    private sealed interface Entry permits KeyValueEntry, MergeEntry {
+        void analyze(AnalyzeContextInfo contextInfo) throws XPathException;
+        void accept(ExpressionVisitor visitor);
+        void dump(ExpressionDumper dumper);
+        void resetState(boolean postOptimization);
+    }
 
-        public Mapping(final Expression key, final Expression value) {
-            this.key = key;
-            this.value = value;
+    private record KeyValueEntry(Expression key, Expression value) implements Entry {
+        @Override
+        public void analyze(final AnalyzeContextInfo contextInfo) throws XPathException {
+            key.analyze(contextInfo);
+            value.analyze(contextInfo);
         }
 
-        private void resetState(final boolean postOptimization) {
+        @Override
+        public void accept(final ExpressionVisitor visitor) {
+            key.accept(visitor);
+            value.accept(visitor);
+        }
+
+        @Override
+        public void dump(final ExpressionDumper dumper) {
+            key.dump(dumper);
+            dumper.display(" : ");
+            value.dump(dumper);
+        }
+
+        @Override
+        public void resetState(final boolean postOptimization) {
             key.resetState(postOptimization);
             value.resetState(postOptimization);
+        }
+    }
+
+    private record MergeEntry(Expression expr) implements Entry {
+        @Override
+        public void analyze(final AnalyzeContextInfo contextInfo) throws XPathException {
+            expr.analyze(contextInfo);
+        }
+
+        @Override
+        public void accept(final ExpressionVisitor visitor) {
+            expr.accept(visitor);
+        }
+
+        @Override
+        public void dump(final ExpressionDumper dumper) {
+            expr.dump(dumper);
+        }
+
+        @Override
+        public void resetState(final boolean postOptimization) {
+            expr.resetState(postOptimization);
         }
     }
 }

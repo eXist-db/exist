@@ -1019,3 +1019,49 @@ function mt:nested-map-for-each() {
     }</ul>
     => serialize(map{'indent':false()})
 };
+
+(: === XQuery 4.0 Map Comprehensions (PR2094) - merge entries === :)
+
+declare
+    %test:assertEquals(3)
+function mt:merge-entry-basic() {
+    map:size(map { "a": 1, map {"b": 2, "c": 3} })
+};
+
+declare
+    %test:assertEquals("a", "b", "c")
+function mt:merge-entry-keys() {
+    map { "a": 1, map {"b": 2}, map {"c": 3} } => map:keys() => sort()
+};
+
+declare
+    %test:assertEquals(0)
+function mt:merge-entry-empty-map() {
+    map:size(map { map {} })
+};
+
+declare
+    %test:assertEquals(2)
+function mt:merge-entry-conditional() {
+    let $include := true()
+    return map:size(map { "a": 1, if ($include) then map {"b": 2} else map {} })
+};
+
+declare
+    %test:assertEquals(1)
+function mt:merge-entry-conditional-false() {
+    let $include := false()
+    return map:size(map { "a": 1, if ($include) then map {"b": 2} else map {} })
+};
+
+declare
+    %test:assertError("XQDY0137")
+function mt:merge-entry-duplicate-key() {
+    map { "a": 1, map {"a": 2} }
+};
+
+declare
+    %test:assertError("XPTY0004")
+function mt:merge-entry-non-map() {
+    map { "a": 1, "not-a-map" }
+};

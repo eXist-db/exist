@@ -265,6 +265,8 @@ imaginaryTokenDefinitions
 	JSON_BOOLEAN_TEST
 	JSON_NULL_TEST
 	JSON_MEMBER_TEST
+	// === XQuery 4.0 Map Comprehensions (PR2094) ===
+	MAP_MERGE
 	;
 
 // === XPointer ===
@@ -2170,7 +2172,15 @@ mapAssignment throws XPathException
                "The ':=' notation is no longer accepted in map expressions: use ':' instead.");
     }
     |
-	exprSingle COLON^ exprSingle
+    // === XQuery 4.0 Map Comprehensions (PR2094) ===
+    // MapConstructorEntry ::= ExprSingle (":" ExprSingle)?
+    // When ":" is present, it's a key:value pair; otherwise a merge entry (must evaluate to a map)
+    (exprSingle COLON) => exprSingle COLON^ exprSingle
+    |
+    exprSingle
+    {
+        #mapAssignment = #(#[MAP_MERGE, "merge"], #mapAssignment);
+    }
 	;
 
 arrayConstructor throws XPathException
