@@ -41,11 +41,12 @@ import static org.apache.commons.lang3.ArrayUtils.isNotEmpty;
  * The pragma may also decide that the optimization is not applicable and just execute
  * the expression without any optimization.
  *
- * Currently, the optimizer is disabled by default. To enable it, set attribute enable-query-rewriting
- * to yes in conf.xml:
+ * The optimizer is enabled by default ({@link XQueryContext#enableOptimizer} defaults to {@code true}
+ * and the bundled conf.xml ships with {@code enable-query-rewriting="yes"}). To disable it globally,
+ * change the attribute in conf.xml:
  *
- *  &lt;xquery enable-java-binding="no" enable-query-rewriting="yes"&gt;...
- * 
+ *  &lt;xquery enable-java-binding="no" enable-query-rewriting="no"&gt;...
+ *
  * To enable/disable the optimizer for a single query, use an option:
  *
  * <pre>declare option exist:optimize "enable=yes|no";</pre>
