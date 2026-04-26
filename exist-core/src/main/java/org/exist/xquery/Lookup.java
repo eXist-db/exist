@@ -83,18 +83,11 @@ public class Lookup extends AbstractExpression {
         } else {
             leftSeq = contextExpression.eval(contextSequence, null);
         }
-        final int contextType = leftSeq.getItemType();
-
         // Make compatible with baseX and Saxon
         if (leftSeq.isEmpty()) {
             return Sequence.EMPTY_SEQUENCE;
         }
 
-
-        if (!(Type.subTypeOf(contextType, Type.MAP_ITEM) || Type.subTypeOf(contextType, Type.ARRAY_ITEM))) {
-            throw new XPathException(this, ErrorCodes.XPTY0004,
-                    "expression to the left of a lookup operator needs to be a sequence of maps or arrays");
-        }
         if (keyExpression != null) {
             keys = keyExpression.eval(contextSequence, null);
             if (keys.isEmpty()) {
@@ -104,7 +97,12 @@ public class Lookup extends AbstractExpression {
         try {
             final ValueSequence result = new ValueSequence();
             for (SequenceIterator i = leftSeq.iterate(); i.hasNext(); ) {
-                final LookupSupport item = (LookupSupport) i.nextItem();
+                final Item nextItem = i.nextItem();
+                if (!(nextItem instanceof LookupSupport)) {
+                    throw new XPathException(this, ErrorCodes.XPTY0004,
+                            "expression to the left of a lookup operator needs to be a sequence of maps or arrays");
+                }
+                final LookupSupport item = (LookupSupport) nextItem;
                 if (keys != null) {
                     for (SequenceIterator j = keys.iterate(); j.hasNext(); ) {
                         final AtomicValue key = j.nextItem().atomize();

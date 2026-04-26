@@ -106,6 +106,9 @@ public class ArrayType extends FunctionReference implements Lookup.LookupSupport
         final long posLong;
         if (Type.subTypeOf(key.getType(), Type.INTEGER)) {
             posLong = ((IntegerValue) key).getLong();
+        } else if (key.getType() == Type.UNTYPED_ATOMIC) {
+            // XQ 3.1 spec: untypedAtomic is cast to xs:integer for array lookup
+            posLong = ((IntegerValue) key.convertTo(Type.INTEGER)).getLong();
         } else if (Type.subTypeOf(key.getType(), Type.DECIMAL) || key.getType() == Type.DOUBLE || key.getType() == Type.FLOAT) {
             // XQ4: numeric types (decimal, double, float) are accepted if they are whole numbers
             final NumericValue numVal = (NumericValue) key;

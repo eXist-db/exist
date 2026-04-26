@@ -96,7 +96,8 @@ public class FunctionFactory {
         final String local = qname.getLocalPart();
         final String uri = qname.getNamespaceURI();
         Expression step = null;
-        if (optimizeStrFuncs && (Namespaces.XPATH_FUNCTIONS_NS.equals(uri) || Namespaces.XSL_NS.equals(uri))) {
+        final boolean allPathExprParams = params.stream().allMatch(p -> p instanceof PathExpr);
+        if (optimizeStrFuncs && allPathExprParams && (Namespaces.XPATH_FUNCTIONS_NS.equals(uri) || Namespaces.XSL_NS.equals(uri))) {
             if("starts-with".equals(local)) {
                 step = startsWith(context, ast, parent, params);
             } else if("ends-with".equals(local)) {
