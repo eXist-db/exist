@@ -235,7 +235,8 @@ public class RegexUtil {
 
     /**
      * Validates that a regex pattern only uses constructs allowed by the XPath
-     * regular expression specification (F&amp;O 3.1, Section 5.6.1).
+     * regular expression specification (F&amp;O 3.1, Section 5.6.1), with
+     * extensions for XPath 4.0 (Section 5.6.1.1).
      *
      * <p>Saxon's XP30 regex compiler accepts many Java/Perl regex constructs
      * that are not part of the XPath regex specification. This method rejects
@@ -243,9 +244,10 @@ public class RegexUtil {
      *
      * @param context the calling expression, for error reporting
      * @param pattern the regex pattern to validate
+     * @param isXQuery40 true if running in XQuery 4.0+ mode
      * @throws XPathException with FORX0002 if the pattern uses non-XPath constructs
      */
-    public static void validateXPathRegex(final Expression context, final String pattern) throws XPathException {
+    public static void validateXPathRegex(final Expression context, final String pattern, final boolean isXQuery40) throws XPathException {
         final int len = pattern.length();
         for (int i = 0; i < len; i++) {
             final char c = pattern.charAt(i);
@@ -271,13 +273,26 @@ public class RegexUtil {
                     case 'd': case 'D': case 's': case 'S':
                     case 'w': case 'W': case 'i': case 'I':
                     case 'c': case 'C':
-                    // Back-references (\1-\9) and octal escapes (\0nn) are not part of
-                    // XPath regex but are used internally by eXist-db (e.g., test.xq).
-                    // Allow them for compatibility.
-                    case '0': case '1': case '2': case '3': case '4':
-                    case '5': case '6': case '7': case '8': case '9':
                         i++; // skip the escaped character
                         break;
+                    case 'b': case 'B':
+                        // Word boundaries: valid in XPath 4.0, invalid in 3.1
+                        if (!isXQuery40) {
+                            throw new XPathException(context, ErrorCodes.FORX0002,
+                                    "Invalid regular expression: \\" + next
+                                            + " is not a recognized escape sequence in XPath 3.1 regular expressions",
+                                    new StringValue(pattern));
+                        }
+                        i++;
+                        break;
+                    case '0': case '1': case '2': case '3': case '4':
+                    case '5': case '6': case '7': case '8': case '9':
+                        // Back-references (\1-\9) and octal escapes (\0nn) are not
+                        // part of the XPath regex specification in any version
+                        throw new XPathException(context, ErrorCodes.FORX0002,
+                                "Invalid regular expression: \\" + next
+                                        + " (back-reference/octal escape) is not supported in XPath regular expressions",
+                                new StringValue(pattern));
                     case 'p': case 'P':
                         // \p{...} or \P{...} — must be followed by {Name}
                         if (i + 2 < len && pattern.charAt(i + 2) == '{') {
@@ -297,7 +312,7 @@ public class RegexUtil {
                     default:
                         // Any other backslash escape is invalid in XPath regex.
                         // This catches: \x (hex), \\u (Java unicode),
-                        // \A \Z \z (Java anchors), \b \B (word boundary),
+                        // \A \Z \z (Java anchors),
                         // \a \e \f \v (special chars), \Q \E (literal mode),
                         // \G \k \g (named backrefs)
                         throw new XPathException(context, ErrorCodes.FORX0002,
@@ -306,16 +321,37 @@ public class RegexUtil {
                                 new StringValue(pattern));
                 }
             } else if (c == '(' && i + 1 < len && pattern.charAt(i + 1) == '?') {
-                // Only (?:...) is valid in XPath regex.
-                // Reject: (?=...) (?!...) (?<...) (?>...) (?i...) (?m...) (?s...) (?-...) (?P...) (?c...)
-                if (i + 2 >= len || pattern.charAt(i + 2) != ':') {
+                // In XPath 3.1, only (?:...) is valid.
+                // In XPath 4.0, lookaround is also valid: (?=...) (?!...) (?<=...) (?<!...)
+                if (i + 2 >= len) {
+                    throw new XPathException(context, ErrorCodes.FORX0002,
+                            "Invalid regular expression: incomplete group syntax at position " + i,
+                            new StringValue(pattern));
+                }
+                final char groupType = pattern.charAt(i + 2);
+                if (groupType == ':') {
+                    // (?:...) — always valid
+                } else if (isXQuery40 && (groupType == '=' || groupType == '!')) {
+                    // (?=...) (?!...) — valid in XPath 4.0
+                } else if (isXQuery40 && groupType == '<' && i + 3 < len
+                        && (pattern.charAt(i + 3) == '=' || pattern.charAt(i + 3) == '!')) {
+                    // (?<=...) (?<!...) — valid in XPath 4.0
+                } else {
                     throw new XPathException(context, ErrorCodes.FORX0002,
                             "Invalid regular expression: non-capturing group (?:...) is the only "
                                     + "permitted group syntax in XPath regular expressions; "
-                                    + "found (?" + (i + 2 < len ? pattern.charAt(i + 2) : "")
-                                    + " at position " + i,
+                                    + "found (?" + groupType + " at position " + i,
                             new StringValue(pattern));
                 }
+            } else if (c == '(' && i + 1 < len && pattern.charAt(i + 1) == '*') {
+                // (*name:...) — XPath 4.0 named lookaround
+                if (!isXQuery40) {
+                    throw new XPathException(context, ErrorCodes.FORX0002,
+                            "Invalid regular expression: (*...) named groups are not supported "
+                                    + "in XPath 3.1 regular expressions",
+                            new StringValue(pattern));
+                }
+                // Skip to the closing ':' — let translateXPath4Lookaround handle the details
             } else if (c == '[') {
                 // Skip through character class — escape rules inside are the same,
                 // so we continue scanning (backslash escapes are checked above)
@@ -326,6 +362,15 @@ public class RegexUtil {
                 }
                 // In XPath regex, ']' as first char in a class is NOT a literal
                 // (unlike PCRE/Java). We don't need to skip it.
+            } else if ((c == '^' || c == '$') && i + 1 < len) {
+                // Reject quantified anchors: ^?, ^+, ^*, ^{n}, $?, $+, $*, ${n}
+                final char nextCh = pattern.charAt(i + 1);
+                if (nextCh == '?' || nextCh == '+' || nextCh == '*' || nextCh == '{') {
+                    throw new XPathException(context, ErrorCodes.FORX0002,
+                            "Invalid regular expression: quantifier after anchor "
+                                    + c + nextCh + " is not valid in XPath regular expressions",
+                            new StringValue(pattern));
+                }
             } else if ((c == '*' || c == '+' || c == '?') && i + 1 < len
                     && pattern.charAt(i + 1) == '+') {
                 // Possessive quantifiers (*+, ++, ?+) are not valid in XPath regex
@@ -392,5 +437,30 @@ public class RegexUtil {
      */
     public static boolean hasXPath4Lookaround(final String pattern) {
         return pattern.contains("(*") && XPATH4_LOOKAROUND.matcher(pattern).find();
+    }
+
+    /**
+     * Checks whether a pattern uses XPath 4.0 regex extensions that Saxon's
+     * XP30 mode cannot handle, requiring Java regex compilation instead.
+     *
+     * <p>This includes:</p>
+     * <ul>
+     *   <li>Word boundaries: {@code \b}, {@code \B}</li>
+     *   <li>Java-style lookaround: {@code (?=...)}, {@code (?!...)}, {@code (?<=...)}, {@code (?<!...)}</li>
+     *   <li>Named lookaround: {@code (*positive_lookahead:...)}, etc.</li>
+     * </ul>
+     *
+     * @param pattern the regex pattern
+     * @return true if the pattern needs Java regex handling for XQ4 extensions
+     */
+    public static boolean needsXQuery40JavaRegex(final String pattern) {
+        if (pattern.contains("\\b") || pattern.contains("\\B")) {
+            return true;
+        }
+        if (pattern.contains("(?=") || pattern.contains("(?!")
+                || pattern.contains("(?<=") || pattern.contains("(?<!")) {
+            return true;
+        }
+        return hasXPath4Lookaround(pattern);
     }
 }

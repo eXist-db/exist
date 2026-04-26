@@ -128,7 +128,18 @@ public class FunAnalyzeString extends BasicFunction {
     }
 
     private void analyzeString(final MemTreeBuilder builder, final String input, String pattern, final String flags) throws XPathException {
+        final boolean isXQuery40 = context.getXQueryVersion() >= 40;
         final Configuration config = context.getBroker().getBrokerPool().getSaxonConfiguration();
+
+        // XQ4: translate (*positive_lookahead:...) etc. to Java regex
+        if (isXQuery40 && org.exist.xquery.regex.RegexUtil.hasXPath4Lookaround(pattern)) {
+            pattern = org.exist.xquery.regex.RegexUtil.translateXPath4Lookaround(pattern);
+        }
+
+        // Pre-validate: reject constructs not valid in XPath regex
+        if (!org.exist.xquery.regex.RegexUtil.hasLiteral(flags)) {
+            org.exist.xquery.regex.RegexUtil.validateXPathRegex(this, pattern, isXQuery40);
+        }
 
         final List<String> warnings = new ArrayList<>(1);
 

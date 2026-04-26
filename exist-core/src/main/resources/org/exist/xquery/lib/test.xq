@@ -152,14 +152,14 @@ declare function t:run-test($test as element(test), $count as xs:integer,
 	       (system:clear-trace(), system:enable-tracing(true(), false()))
        else ()
     let $highlight-option := concat("highlight-matches=",
-          if ($test/expected//@*[matches(., '^(\|{3}).*\1$')] and $test/expected//exist:match) then "both"
-          else if ($test/expected//@*[matches(., '^(\|{3}).*\1$')]) then "attributes"
+          if ($test/expected//@*[matches(., '^\|{3}.*\|{3}$')] and $test/expected//exist:match) then "both"
+          else if ($test/expected//@*[matches(., '^\|{3}.*\|{3}$')]) then "attributes"
           else if ($test/expected//exist:match) then "elements"
-          else "none"        
+          else "none"
           )
-    let $serialize-options := 
-      let $decls := ($test/../*[name() ne 'test']|$test/code)[matches(., 'declare[\- ]option(\((&#34;|&#39;)|\s+)exist:serialize(\2,)?\s+(&#34;|&#39;).*?\4[;)]')]
-      let $ops1 := $decls/replace(., "declare[\- ]option(\((&#34;|&#39;)|\s+)exist:serialize(\2,)?\s+(&#34;|&#39;)(.*?)\4[;)]", "_|$5_")
+    let $serialize-options :=
+      let $decls := ($test/../*[name() ne 'test']|$test/code)[matches(., 'declare[\- ]option(\([&#34;&#39;]|\s+)exist:serialize([&#34;&#39;],)?\s+[&#34;&#39;].*?[&#34;&#39;][;)]')]
+      let $ops1 := $decls/replace(., "declare[\- ]option(\([&#34;&#39;]|\s+)exist:serialize([&#34;&#39;],)?\s+[&#34;&#39;](.*?)[&#34;&#39;][;)]", "_|$3_")
       let $ops2 :=
         for $a in $ops1
         for $b in tokenize($a, '_')[starts-with(., '|')]

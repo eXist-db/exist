@@ -111,12 +111,29 @@ public class FunTokenize extends BasicFunction {
                     }
 
                     // XQ4: 'c' flag — strip regex comments (handled by Saxon's 'x' flag)
-                    if (flagsStr.indexOf('c') >= 0) {
+                    final boolean hasCommentFlag = flagsStr.indexOf('c') >= 0;
+                    if (hasCommentFlag) {
                         flagsStr = flagsStr.replace("c", "");
                     }
                     final int flags = parseFlags(this, flagsStr);
 
-                    final String rawPattern = args[1].itemAt(0).getStringValue();
+                    final boolean isXQuery40 = context.getXQueryVersion() >= 40;
+
+                    String rawPattern = args[1].itemAt(0).getStringValue();
+                    if (hasCommentFlag) {
+                        rawPattern = FunReplace.stripRegexComments(rawPattern);
+                    }
+
+                    // XQ4: translate (*positive_lookahead:...) etc. to Java regex
+                    if (isXQuery40 && org.exist.xquery.regex.RegexUtil.hasXPath4Lookaround(rawPattern)) {
+                        rawPattern = org.exist.xquery.regex.RegexUtil.translateXPath4Lookaround(rawPattern);
+                    }
+
+                    // Pre-validate: reject constructs not valid in XPath regex
+                    if (!hasLiteral(flags)) {
+                        org.exist.xquery.regex.RegexUtil.validateXPathRegex(this, rawPattern, isXQuery40);
+                    }
+
                     final String pattern;
                     if (hasLiteral(flags)) {
                         pattern = rawPattern;
