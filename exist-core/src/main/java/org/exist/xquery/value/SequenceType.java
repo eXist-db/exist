@@ -118,7 +118,7 @@ public class SequenceType {
      * Check if this SequenceType is a record type.
      */
     public boolean isRecordType() {
-        return primaryType == Type.RECORD && recordType != null;
+        return primaryType == Type.RECORD;
     }
 
     /**
@@ -184,10 +184,16 @@ public class SequenceType {
             if (!Type.subTypeOf(item.getType(), Type.MAP_ITEM)) {
                 return false;
             }
-            if (item instanceof org.exist.xquery.functions.map.AbstractMapType) {
-                return recordType.matches((org.exist.xquery.functions.map.AbstractMapType) item);
+            if (!(item instanceof org.exist.xquery.functions.map.AbstractMapType)) {
+                return false;
             }
-            return false;
+            final org.exist.xquery.functions.map.AbstractMapType map =
+                    (org.exist.xquery.functions.map.AbstractMapType) item;
+            if (recordType != null) {
+                return recordType.matches(map);
+            }
+            // bare record() with no field declarations: only empty maps match
+            return map.size() == 0;
         }
         int type = item.getType();
         if (type == Type.NODE) {
@@ -253,6 +259,11 @@ public class SequenceType {
 
         // Although xs:anyURI is not a subtype of xs:string, both types are compatible
         if (type == Type.ANY_URI && primaryType == Type.STRING) {
+            return;
+        }
+
+        // XQ4: maps are the runtime representation of records — accept map where record expected
+        if (primaryType == Type.RECORD && Type.subTypeOf(type, Type.MAP_ITEM)) {
             return;
         }
 
