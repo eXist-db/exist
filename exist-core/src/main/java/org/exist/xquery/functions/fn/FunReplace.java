@@ -147,6 +147,11 @@ public class FunReplace extends BasicFunction {
 				replace = replacementArg.itemAt(0).getStringValue();
 			}
 
+			// Pre-validate: reject constructs not valid in XPath regex
+			if (!hasLiteral(flags)) {
+				org.exist.xquery.regex.RegexUtil.validateXPathRegex(this, pattern);
+			}
+
 			final Configuration config = context.getBroker().getBrokerPool().getSaxonConfiguration();
 			final List<String> warnings = new ArrayList<>(1);
 

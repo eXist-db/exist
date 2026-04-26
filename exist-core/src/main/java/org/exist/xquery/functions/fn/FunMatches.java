@@ -527,6 +527,29 @@ public final class FunMatches extends Function implements Optimizable, IndexUseR
             pattern = FunReplace.stripRegexComments(pattern);
         }
 
+        // XQ4: translate (*positive_lookahead:...) etc. to Java regex (?=...) syntax
+        final boolean hasLookaround = org.exist.xquery.regex.RegexUtil.hasXPath4Lookaround(pattern);
+        if (hasLookaround) {
+            pattern = org.exist.xquery.regex.RegexUtil.translateXPath4Lookaround(pattern);
+            // Use Java regex directly for patterns with XPath 4.0 lookaround
+            try {
+                final String javaPattern = org.exist.xquery.regex.RegexUtil.translateRegexp(
+                        this, pattern, flags.contains("x"), flags.contains("i"));
+                final int javaFlags = org.exist.xquery.regex.RegexUtil.parseFlags(this, flags);
+                return Pattern.compile(javaPattern, javaFlags).matcher(string).find();
+            } catch (final PatternSyntaxException e) {
+                throw new XPathException(this, ErrorCodes.FORX0002,
+                        "Invalid regular expression: " + e.getMessage(),
+                        new StringValue(this, pattern), e);
+            }
+        }
+
+        // Pre-validate: reject constructs that are not valid in XPath regex
+        // but that Saxon's XP30 mode accepts (Java/Perl extensions)
+        if (!hasLiteral(flags)) {
+            org.exist.xquery.regex.RegexUtil.validateXPathRegex(this, pattern);
+        }
+
         try {
             List<String> warnings = new ArrayList<>(1);
             RegularExpression regex = context.getBroker().getBrokerPool()
