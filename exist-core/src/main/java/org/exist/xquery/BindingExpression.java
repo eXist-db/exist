@@ -82,6 +82,14 @@ public abstract class BindingExpression extends AbstractFLWORClause implements R
     }
 
     @Override
+    public Expression optimize(final CompileContext cc) throws XPathException {
+        if (inputSequence != null) {
+            inputSequence = inputSequence.optimize(cc);
+        }
+        return super.optimize(cc);
+    }
+
+    @Override
     public Sequence postEval(Sequence seq) throws XPathException {
         if (returnExpr instanceof FLWORClause flworClause) {
             seq = flworClause.postEval(seq);

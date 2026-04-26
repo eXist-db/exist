@@ -115,6 +115,31 @@ public interface Expression extends Materializable {
      */
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException;
 
+    /**
+     * Optimize this expression and return the (possibly different) replacement.
+     *
+     * Called once after {@link #analyze(AnalyzeContextInfo)} for the whole
+     * tree. Implementations may return:
+     * <ul>
+     *   <li>{@code this} (no rewrite — the default),</li>
+     *   <li>one of this expression's children (e.g. constant-condition fold),</li>
+     *   <li>a freshly constructed expression replacing this one.</li>
+     * </ul>
+     *
+     * Implementations are responsible for recursing into their own
+     * sub-expressions: each child slot becomes
+     * {@code this.child = this.child.optimize(cc)}. The default returns
+     * {@code this} so existing classes that do not override this method
+     * continue to work unchanged.
+     *
+     * @param cc compilation context
+     * @return the optimized expression — the caller must capture and use it
+     * @throws XPathException if a static error is detected
+     */
+    default Expression optimize(CompileContext cc) throws XPathException {
+        return this;
+    }
+
     public void setPrimaryAxis(int axis);
 
     public int getPrimaryAxis();

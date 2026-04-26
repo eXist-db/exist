@@ -47,6 +47,14 @@ public abstract class AbstractFLWORClause extends AbstractExpression implements 
     }
 
     @Override
+    public Expression optimize(CompileContext cc) throws XPathException {
+        if (returnExpr != null) {
+            returnExpr = returnExpr.optimize(cc);
+        }
+        return this;
+    }
+
+    @Override
     public Sequence preEval(Sequence seq) throws XPathException {
         if (returnExpr instanceof FLWORClause) {
             return ((FLWORClause)returnExpr).preEval(seq);

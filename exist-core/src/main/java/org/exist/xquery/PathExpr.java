@@ -164,6 +164,14 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
     }
 
     @Override
+    public Expression optimize(final CompileContext cc) throws XPathException {
+        for (int i = 0; i < steps.size(); i++) {
+            steps.set(i, steps.get(i).optimize(cc));
+        }
+        return this;
+    }
+
+    @Override
     public void analyze(final AnalyzeContextInfo contextInfo) throws XPathException {
         this.parent = contextInfo.getParent();
         inPredicate = (contextInfo.getFlags() & IN_PREDICATE) > 0;
