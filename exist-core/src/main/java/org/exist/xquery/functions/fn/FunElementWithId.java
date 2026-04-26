@@ -45,13 +45,15 @@ public class FunElementWithId extends BasicFunction {
                     "If none is matching or $idrefs is the empty sequence, returns the empty sequence.";
     private static final FunctionReturnSequenceType FN_RETURN = returnsOptMany(Type.STRING, "the elements with IDs matching IDREFs from $idref-sequence");
     private static final FunctionParameterSequenceType PARAM_ID_REFS_STRING = optManyParam("idrefs", Type.STRING, "The IDREF sequence");
+    private static final FunctionParameterSequenceType PARAM_NODE = param("node", Type.NODE, "A node in the document to search");
     public static final FunctionSignature[] FS_ELEMENT_WITH_ID_SIGNATURES = functionSignatures(
             FN_NAME,
             FN_DESCRIPTION,
             FN_RETURN,
             arities(
                     arity(),
-                    arity(PARAM_ID_REFS_STRING)
+                    arity(PARAM_ID_REFS_STRING),
+                    arity(PARAM_ID_REFS_STRING, PARAM_NODE)
             )
     );
 

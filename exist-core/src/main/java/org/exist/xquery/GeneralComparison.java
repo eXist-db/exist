@@ -1111,7 +1111,17 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
             }
 
             /*
-             *  d. Otherwise, a type error is raised [err:XPTY0004].
+             *  d. (XQuery 4.0) If each operand is an instance of one of the types
+             *     xs:hexBinary or xs:base64Binary, then both operands are cast to
+             *     type xs:base64Binary.
+             */
+            if ((thisType == Type.HEX_BINARY || thisType == Type.BASE64_BINARY)
+                    && (otherType == Type.HEX_BINARY || otherType == Type.BASE64_BINARY)) {
+                return value.convertTo(Type.BASE64_BINARY);
+            }
+
+            /*
+             *  e. Otherwise, a type error is raised [err:XPTY0004].
              */
             throw new XPathException(this, ErrorCodes.XPTY0004,
                     "Incompatible primitive types: " + Type.getTypeName(thisType) + " vs " + Type.getTypeName(otherType));

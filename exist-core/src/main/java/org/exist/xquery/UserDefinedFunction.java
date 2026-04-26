@@ -49,6 +49,7 @@ public class UserDefinedFunction extends Function implements Cloneable {
     private FunctionCall call;
     private boolean hasBeenReset = false;
     private List<ClosureVariable> closureVariables = null;
+    private boolean passContextToBody = false;
 
     public UserDefinedFunction(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
@@ -60,6 +61,17 @@ public class UserDefinedFunction extends Function implements Cloneable {
 
     public void setFunctionBody(Expression body) {
         this.body = body.simplify();
+    }
+
+    /**
+     * Mark this UDF as a wrapper for an internal function (created by
+     * {@link FunctionFactory#wrap}). Wrapper functions pass the evaluation
+     * context through to their body so that context-dependent built-in
+     * functions (like fn:id, fn:idref, fn:string, etc.) can access the
+     * focus when called via function references.
+     */
+    public void setPassContextToBody(boolean passContext) {
+        this.passContextToBody = passContext;
     }
 
     public void addVariable(final String varName) throws XPathException {
@@ -210,7 +222,15 @@ public class UserDefinedFunction extends Function implements Cloneable {
                     }
                 }
             }
-            result = body.eval(null, null);
+            // For wrapper functions (created by FunctionFactory.wrap for internal
+            // function references), pass the context through so context-dependent
+            // built-in functions can access the focus. For regular user-declared
+            // functions, the focus is absent per the XQuery spec.
+            if (passContextToBody) {
+                result = body.eval(contextSequence, contextItem);
+            } else {
+                result = body.eval(null, null);
+            }
             return result;
         } finally {
             // restore the local variable stack
