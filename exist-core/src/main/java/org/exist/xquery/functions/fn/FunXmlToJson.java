@@ -68,7 +68,6 @@ public class FunXmlToJson extends BasicFunction {
         final Sequence result;
         final Sequence seq = (getArgumentCount() > 0) ? args[0] : Sequence.EMPTY_SEQUENCE;
         //TODO: implement handling of options
-        final MapType options = (getArgumentCount() == 2) ? (MapType) args[1].itemAt(0) : new MapType(this, context);
 
         if (seq.isEmpty()) {
             result = Sequence.EMPTY_SEQUENCE;

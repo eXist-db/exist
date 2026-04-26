@@ -25,7 +25,6 @@ import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 
 import java.math.RoundingMode;
-import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -46,17 +45,6 @@ abstract class FunRoundBase extends BasicFunction {
 
     abstract protected RoundingMode getFunctionRoundingMode(NumericValue value);
 
-    private static final Map<String, String> ROUNDING_MODE_MAP = Map.of(
-            "floor", "FLOOR",
-            "ceiling", "CEILING",
-            "toward-zero", "DOWN",
-            "away-from-zero", "UP",
-            "half-to-floor", "HALF_FLOOR",
-            "half-to-ceiling", "HALF_CEILING",
-            "half-toward-zero", "HALF_DOWN",
-            "half-away-from-zero", "HALF_UP",
-            "half-to-even", "HALF_EVEN"
-    );
 
     @Override
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {

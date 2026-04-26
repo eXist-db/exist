@@ -135,8 +135,6 @@ public class JSON extends BasicFunction {
             }
             // XQuery 4.0: 'spec' option controls JSON spec version (RFC7159, ECMA-404, etc.)
             // Accepted but not yet enforced — we always parse per RFC 7159
-            final Sequence specOpt = options.get(new StringValue("spec"));
-            // (no validation needed — all spec values are accepted)
 
             // Validate liberal option — must be boolean
             final Sequence liberalOpt = options.get(new StringValue(OPTION_LIBERAL));

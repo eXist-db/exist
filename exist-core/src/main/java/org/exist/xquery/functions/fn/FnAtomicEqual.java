@@ -189,18 +189,6 @@ public class FnAtomicEqual extends BasicFunction {
         return new java.math.BigDecimal(v.getStringValue());
     }
 
-    private static int primitiveNumericType(final int type) {
-        if (Type.subTypeOf(type, Type.INTEGER)) {
-            return Type.INTEGER;
-        }
-        if (Type.subTypeOf(type, Type.DECIMAL)) {
-            return Type.DECIMAL;
-        }
-        if (type == Type.FLOAT) {
-            return Type.FLOAT;
-        }
-        return Type.DOUBLE;
-    }
 
     private static boolean isStringLike(final int type) {
         return Type.subTypeOf(type, Type.STRING)

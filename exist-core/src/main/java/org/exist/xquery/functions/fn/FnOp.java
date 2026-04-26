@@ -70,9 +70,6 @@ public class FnOp extends BasicFunction {
         super(context, signature);
     }
 
-    private static final ErrorCodes.ErrorCode FOAP0001 = new ErrorCodes.ErrorCode(
-            "FOAP0001", "Invalid operator name");
-
     @Override
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
         final String operator = args[0].getStringValue();

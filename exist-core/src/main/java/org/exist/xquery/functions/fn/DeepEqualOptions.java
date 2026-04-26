@@ -1018,6 +1018,7 @@ public class DeepEqualOptions {
     }
 
     private static int safeCompare(@Nullable final String a, @Nullable final String b, @Nullable final Collator collator) {
+        // NOTE(AR): intentional reference equality check (covers both-null and same-instance)
         if (a == b) {
             return Constants.EQUAL;
         }

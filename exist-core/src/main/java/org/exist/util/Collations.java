@@ -542,53 +542,6 @@ public class Collations {
      *     scripts; for example the value digit,Grek,Latn indicates that
      *     digits precede Greek letters, which precede Latin letters.
      * @param decomposition The decomposition
-     *
-     * @return The collator of null if a Collator could not be retrieved
-     *
-     * @throws XPathException if an error occurs whilst getting the Collator
-     */
-    private static @Nullable Collator getCollationFromParams(
-            final boolean fallback, @Nullable final String lang,
-            @Nullable final String version, @Nullable final String strength,
-            final String maxVariable, final String alternate,
-            final boolean backwards, final boolean normalization,
-            final boolean caseLevel, @Nullable final String caseFirst,
-            final boolean numeric, @Nullable final String reorder,
-            @Nullable final String decomposition) throws XPathException {
-        return getCollationFromParams(fallback, lang, version, strength, maxVariable, alternate, backwards, normalization,
-                                      caseLevel, caseFirst, numeric, reorder, decomposition, null);
-    }
-
-    /**
-     * Get a Collator with the provided settings.
-     *
-     * @param fallback Determines whether the processor uses a fallback
-     *     collation if a conformant collation is not available.
-     * @param lang language code: a string in the lexical space of xs:language.
-     * @param strength The collation strength as defined in UCA.
-     * @param maxVariable Indicates that all characters in the specified group
-     *     and earlier groups are treated as "noise" characters to be handled
-     *     as defined by the alternate parameter. "space" | "punct" | "symbol".
-     *     | "currency".
-     * @param alternate Controls the handling of characters such as spaces and
-     *     hyphens; specifically, the "noise" characters in the groups selected
-     *     by the maxVariable parameter. "non-ignorable" | "shifted" |
-     *     "blanked".
-     * @param backwards indicates that the last accent in the string is the
-     *     most significant.
-     * @param normalization Indicates whether strings are converted to
-     *     normalization form D.
-     * @param caseLevel When used with primary strength, setting caseLevel has
-     *     the effect of ignoring accents while taking account of case.
-     * @param caseFirst Indicates whether upper-case precedes lower-case or
-     *     vice versa.
-     * @param numeric When numeric is specified, a sequence of consecutive
-     *     digits is interpreted as a number, for example chap2 sorts before
-     *     chap12.
-     * @param reorder Determines the relative ordering of text in different
-     *     scripts; for example the value digit,Grek,Latn indicates that
-     *     digits precede Greek letters, which precede Latin letters.
-     * @param decomposition The decomposition
      * @param expression the expression from which the collation derives
      *
      * @return The collator of null if a Collator could not be retrieved

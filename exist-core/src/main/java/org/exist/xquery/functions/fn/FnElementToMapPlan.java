@@ -148,7 +148,6 @@ public class FnElementToMapPlan extends BasicFunction {
         boolean anyHasMixedContent = false;
         boolean anyIsEmpty = false;
         String listChildName = null;
-        boolean allSameListChild = true;
         boolean anyHasNonUniqueChildren = false;
 
         // Track all child element names across instances for list detection
