@@ -45,7 +45,7 @@ public class ParsingFunctions extends BasicFunction {
 			Cardinality.ZERO_OR_ONE, "the document node with the parsed result");
 
 	protected static final FunctionParameterSequenceType TO_BE_PARSED_PARAMETER = new FunctionParameterSequenceType(
-			"arg", Type.STRING, Cardinality.ZERO_OR_ONE, "The string to be parsed");
+			"value", Type.STRING, Cardinality.ZERO_OR_ONE, "The string to be parsed");
 
 	protected static final Logger logger = LogManager.getLogger(ParsingFunctions.class);
 

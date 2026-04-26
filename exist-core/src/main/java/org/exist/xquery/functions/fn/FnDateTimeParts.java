@@ -68,7 +68,7 @@ public class FnDateTimeParts extends BasicFunction {
             new QName("parts-of-dateTime", Function.BUILTIN_FUNCTION_NS),
             "Decomposes an xs:dateTime into a map of its components.",
             new SequenceType[] {
-                    new FunctionParameterSequenceType("dateTime", Type.DATE_TIME,
+                    new FunctionParameterSequenceType("value", Type.DATE_TIME,
                             Cardinality.ZERO_OR_ONE, "The dateTime to decompose")
             },
             new FunctionReturnSequenceType(Type.MAP_ITEM, Cardinality.ZERO_OR_ONE,

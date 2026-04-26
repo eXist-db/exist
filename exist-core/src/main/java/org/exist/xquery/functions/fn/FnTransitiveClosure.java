@@ -44,7 +44,7 @@ public class FnTransitiveClosure extends BasicFunction {
             "Returns the transitive closure of applying $step to $input. " +
                     "The step function is applied repeatedly until no new items are produced.",
             new SequenceType[]{
-                    new FunctionParameterSequenceType("input", Type.ITEM, Cardinality.ZERO_OR_MORE, "The initial input sequence"),
+                    new FunctionParameterSequenceType("node", Type.ITEM, Cardinality.ZERO_OR_MORE, "The initial input sequence"),
                     new FunctionParameterSequenceType("step", Type.FUNCTION, Cardinality.EXACTLY_ONE, "The step function")
             },
             new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "The transitive closure"));

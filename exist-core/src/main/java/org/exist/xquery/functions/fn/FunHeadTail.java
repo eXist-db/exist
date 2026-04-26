@@ -53,7 +53,7 @@ public class FunHeadTail extends BasicFunction {
 		"The function returns the value of the expression subsequence($sequence, 2), i.e. a new sequence containing " +
 		"all items of the input sequence except the first.",
 		new SequenceType[] {
-			new FunctionParameterSequenceType("sequence", Type.ITEM, Cardinality.ZERO_OR_MORE, "The source sequence")
+			new FunctionParameterSequenceType("input", Type.ITEM, Cardinality.ZERO_OR_MORE, "The source sequence")
 		},
 		new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "the resulting sequence"));
 

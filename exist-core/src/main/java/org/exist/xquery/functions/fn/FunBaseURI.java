@@ -57,7 +57,7 @@ public class FunBaseURI extends BasicFunction {
     );
 
     private static final FunctionParameterSequenceType FS_PARAM_NODE
-            = optParam("arg", Type.NODE, "The node.");
+            = optParam("node", Type.NODE, "The node.");
 
     static final FunctionSignature FS_BASE_URI_1 = functionSignature(
             FS_BASE_URI,

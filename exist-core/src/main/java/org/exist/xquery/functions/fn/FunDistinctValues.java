@@ -66,7 +66,7 @@ public class FunDistinctValues extends CollatingFunction {
             "Returns a sequence where duplicate values of $atomic-values, " +
             "based on value equality, have been deleted.",
             new SequenceType[] {
-                new FunctionParameterSequenceType("atomic-values", Type.ANY_ATOMIC_TYPE,
+                new FunctionParameterSequenceType("values", Type.ANY_ATOMIC_TYPE,
                     Cardinality.ZERO_OR_MORE, "The atomic values")
             },
             new FunctionReturnSequenceType(Type.ANY_ATOMIC_TYPE, Cardinality.ZERO_OR_MORE,
@@ -78,7 +78,7 @@ public class FunDistinctValues extends CollatingFunction {
             "based on value equality specified by collation $collation-uri, " + 
             "have been deleted.",
             new SequenceType[] { 
-                new FunctionParameterSequenceType("atomic-values", Type.ANY_ATOMIC_TYPE,
+                new FunctionParameterSequenceType("values", Type.ANY_ATOMIC_TYPE,
                     Cardinality.ZERO_OR_MORE, "The atomic values"),
                 new FunctionParameterSequenceType("collation", Type.STRING,
                     Cardinality.EXACTLY_ONE, "The collation URI")

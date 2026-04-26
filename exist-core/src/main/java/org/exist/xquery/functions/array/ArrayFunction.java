@@ -86,7 +86,7 @@ public class ArrayFunction extends BasicFunction {
     private static final FunctionParameterSequenceType INPUT_ARRAY = param("array", Type.ARRAY_ITEM, "The input array");
     private static final FunctionParameterSequenceType START_INDEX = param("start", Type.INTEGER, "The start index");
 
-    private static final FunctionParameterSequenceType FOLDING_FUNCTION = funParam("function",
+    private static final FunctionParameterSequenceType FOLDING_FUNCTION = funParam("action",
             params(
                 optManyParam("acc", Type.ITEM, "the accumulated result"),
                 optManyParam("next", Type.ITEM, "the next item")
@@ -98,7 +98,7 @@ public class ArrayFunction extends BasicFunction {
     private static final FunctionReturnSequenceType RESULT_ARRAY = returns(Type.ARRAY_ITEM, "The resulting array");
     private static final FunctionReturnSequenceType SORTED_ARRAY = returns(Type.ARRAY_ITEM, "The sorted array");
 
-    private static final FunctionParameterSequenceType ZERO_ITEM = optManyParam("zero", Type.ITEM, "The initial value");
+    private static final FunctionParameterSequenceType ZERO_ITEM = optManyParam("init", Type.ITEM, "The initial value");
 
     public static final FunctionSignature SIZE = functionSignature(
             Fn.SIZE.fname,
@@ -112,7 +112,7 @@ public class ArrayFunction extends BasicFunction {
                 "as calling $array($index).",
             returnsOptMany(Type.ITEM, "The value at $index"),
             INPUT_ARRAY,
-            param("index", Type.INTEGER, "The index")
+            param("position", Type.INTEGER, "The index")
     );
     public static final FunctionSignature APPEND = functionSignature(
             Fn.APPEND.fname,
@@ -120,7 +120,7 @@ public class ArrayFunction extends BasicFunction {
                 "member at the end.",
             returns(Type.ARRAY_ITEM, "A copy of $array with the new members attached"),
             INPUT_ARRAY,
-            new FunctionParameterSequenceType("appendage", Type.ITEM, Cardinality.ZERO_OR_MORE, "The items to append")
+            new FunctionParameterSequenceType("member", Type.ITEM, Cardinality.ZERO_OR_MORE, "The items to append")
     );
     public static final FunctionSignature HEAD = functionSignature(
             Fn.HEAD.fname,
@@ -205,7 +205,7 @@ public class ArrayFunction extends BasicFunction {
                 "In XQuery 4.0, the callback may accept 0 to 2 arguments: (member, position).",
             RESULT_ARRAY,
             INPUT_ARRAY,
-            param("action", Type.FUNCTION, "The filter function called on each member of the array")
+            param("predicate", Type.FUNCTION, "The filter function called on each member of the array")
     );
     public static final FunctionSignature FOLD_LEFT = functionSignature(
             Fn.FOLD_LEFT.fname,
@@ -228,7 +228,7 @@ public class ArrayFunction extends BasicFunction {
             "Returns an array obtained by evaluating the supplied function once for each pair of members at the same position in the two " +
                 "supplied arrays. In XQuery 4.0, the callback may accept 0 to 3 arguments: (memberA, memberB, position).",
             RESULT_ARRAY,
-            INPUT_ARRAY,
+            param("array1", Type.ARRAY_ITEM, "The first array to process"),
             param("array2", Type.ARRAY_ITEM, "The second array to process"),
             param("action", Type.FUNCTION, "The function to call for each pair")
     );

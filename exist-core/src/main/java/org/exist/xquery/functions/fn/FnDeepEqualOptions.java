@@ -43,9 +43,9 @@ public class FnDeepEqualOptions extends BasicFunction {
                     "at the same position in $items-2, using the specified options or collation. " +
                     "If both $items-1 and $items-2 are the empty sequence, returns true().",
             new SequenceType[]{
-                    new FunctionParameterSequenceType("items-1", Type.ITEM,
+                    new FunctionParameterSequenceType("input1", Type.ITEM,
                             Cardinality.ZERO_OR_MORE, "The first item sequence"),
-                    new FunctionParameterSequenceType("items-2", Type.ITEM,
+                    new FunctionParameterSequenceType("input2", Type.ITEM,
                             Cardinality.ZERO_OR_MORE, "The second item sequence"),
                     new FunctionParameterSequenceType("options", Type.ITEM,
                             Cardinality.ZERO_OR_ONE, "Collation URI string or options map")

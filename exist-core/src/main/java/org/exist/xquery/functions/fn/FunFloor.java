@@ -45,7 +45,7 @@ public class FunFloor extends Function {
 			"Returns the largest number not greater than the value of $number. " + 
 			"If $number is the empty sequence, returns the empty sequence.",
 			new SequenceType[] {
-                new FunctionParameterSequenceType("number", Type.NUMERIC, Cardinality.ZERO_OR_ONE, "The number")
+                new FunctionParameterSequenceType("value", Type.NUMERIC, Cardinality.ZERO_OR_ONE, "The number")
             },
 			new FunctionReturnSequenceType(Type.NUMERIC, Cardinality.ZERO_OR_ONE, "the largest number without fraction part not greater than the value of $number"));
 
