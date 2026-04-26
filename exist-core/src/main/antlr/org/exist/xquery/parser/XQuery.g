@@ -1828,10 +1828,10 @@ elementWithoutAttributes throws XPathException
 			content:mixedElementContent END_TAG_START! cname=qn:qName! GT!
 			{
 				if (elementStack.isEmpty())
-					throw new XPathException(#qn, "found additional closing tag: " + cname);
+					throw new XPathException(#qn, ErrorCodes.XQST0118, "found additional closing tag: " + cname);
 				String prev= (String) elementStack.pop();
 				if (!prev.equals(cname))
-					throw new XPathException(#qn, "found closing tag: " + cname + "; expected: " + prev);
+					throw new XPathException(#qn, ErrorCodes.XQST0118, "found closing tag: " + cname + "; expected: " + prev);
 				#elementWithoutAttributes= #(#[ELEMENT, cname], #content);
 				if (!elementStack.isEmpty()) {
 					lexer.inElementContent= true;
@@ -1880,10 +1880,10 @@ elementWithAttributes throws XPathException
 			content:mixedElementContent END_TAG_START! cname=qn:qName! GT!
 			{
 				if (elementStack.isEmpty())
-					throw new XPathException(#qn, ErrorCodes.XPST0003, "Found closing tag without opening tag: " + cname);
+					throw new XPathException(#qn, ErrorCodes.XQST0118, "Found closing tag without opening tag: " + cname);
 				String prev= (String) elementStack.pop();
 				if (!prev.equals(cname))
-					throw new XPathException(#qn, ErrorCodes.XPST0003, "Found closing tag: " + cname + "; expected: " + prev);
+					throw new XPathException(#qn, ErrorCodes.XQST0118, "Found closing tag: " + cname + "; expected: " + prev);
 				#elementWithAttributes= #(#[ELEMENT, cname], #attrs);
 				if (!elementStack.isEmpty()) {
 					lexer.inElementContent= true;
