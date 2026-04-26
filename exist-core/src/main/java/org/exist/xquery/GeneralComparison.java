@@ -170,6 +170,29 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
         steps.add( expr );
     }
 
+    @Override
+    public Expression optimize( final CompileContext cc ) throws XPathException
+    {
+        // Recurse into left/right via PathExpr.optimize (sub-expressions live in steps[]).
+        super.optimize( cc );
+
+        // Both operands are literal atomic values with no dependencies — fold to the result.
+        // Skipped if either side has a function call, variable reference, or context dependency.
+        final Expression left  = getLeft();
+        final Expression right = getRight();
+        if ( left instanceof LiteralValue && right instanceof LiteralValue
+                && left.getDependencies()  == Dependency.NO_DEPENDENCY
+                && right.getDependencies() == Dependency.NO_DEPENDENCY ) {
+            try {
+                return cc.preEval( this );
+            } catch ( final XPathException e ) {
+                // Fall through if pre-evaluation raises an error (e.g. type mismatch
+                // that should be surfaced at runtime, not at compile time).
+            }
+        }
+        return this;
+    }
+
     /* (non-Javadoc)
      * @see org.exist.xquery.BinaryOp#analyze(org.exist.xquery.AnalyzeContextInfo)
      */
