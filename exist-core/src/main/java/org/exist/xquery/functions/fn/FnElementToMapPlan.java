@@ -27,6 +27,7 @@ import org.exist.xquery.functions.map.MapType;
 import org.exist.xquery.value.*;
 import org.w3c.dom.*;
 
+import javax.xml.XMLConstants;
 import java.util.*;
 
 /**
@@ -35,10 +36,12 @@ import java.util.*;
  * Analyzes the structure of input elements and returns a plan map
  * describing the layout of each element type encountered.
  *
- * Layout values: empty, empty-plus, simple, simple-plus, list, list-plus,
- * record, mixed.
+ * The plan analyzes all instances of each element name across the corpus,
+ * merging their layouts into a unified plan.
  */
 public class FnElementToMapPlan extends BasicFunction {
+
+    private static final String XSI_NS = XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI;
 
     public static final FunctionSignature FN_ELEMENT_TO_MAP_PLAN = new FunctionSignature(
             new QName("element-to-map-plan", Function.BUILTIN_FUNCTION_NS),
@@ -60,106 +63,223 @@ public class FnElementToMapPlan extends BasicFunction {
             return new MapType(this, context);
         }
 
-        final MapType plan = new MapType(this, context);
-        final Set<String> processed = new HashSet<>();
+        // Collect all instances of each element name
+        final Map<String, List<Element>> elementInstances = new LinkedHashMap<>();
+        final Map<String, Set<String>> attrValues = new LinkedHashMap<>();
 
-        // Analyze each input node
         for (final SequenceIterator iter = args[0].iterate(); iter.hasNext(); ) {
             final Item item = iter.nextItem();
             if (item.getType() == Type.DOCUMENT) {
-                // For document nodes, analyze the document element
                 final Node docNode = ((NodeValue) item).getNode();
-                analyzeNode(docNode, plan, processed);
+                collectElements(docNode, elementInstances, attrValues);
             } else if (Type.subTypeOf(item.getType(), Type.ELEMENT)) {
-                final Node elemNode = ((NodeValue) item).getNode();
-                analyzeElement(elemNode, plan, processed);
+                final Element elem = (Element) ((NodeValue) item).getNode();
+                collectElements(elem, elementInstances, attrValues);
             }
+        }
+
+        // Build plan from collected instances
+        MapType plan = new MapType(this, context);
+
+        for (final Map.Entry<String, List<Element>> entry : elementInstances.entrySet()) {
+            final String elemKey = entry.getKey();
+            final List<Element> instances = entry.getValue();
+            final MapType layoutMap = analyzeInstances(elemKey, instances);
+            plan = (MapType) plan.put(new StringValue(this, elemKey), layoutMap);
+        }
+
+        // Add attribute plans
+        for (final Map.Entry<String, Set<String>> entry : attrValues.entrySet()) {
+            final String attrKey = entry.getKey();
+            final Set<String> values = entry.getValue();
+            final MapType attrMap = new MapType(this, context);
+            final String type = detectAggregateType(values);
+            if (type != null) {
+                attrMap.add(new StringValue("type"), new StringValue(type));
+            }
+            plan = (MapType) plan.put(new StringValue(this, attrKey), attrMap);
         }
 
         return plan;
     }
 
-    private void analyzeNode(final Node node, final MapType plan, final Set<String> processed) throws XPathException {
+    private void collectElements(final Node node, final Map<String, List<Element>> elementInstances,
+                                  final Map<String, Set<String>> attrValues) {
+        if (node.getNodeType() == Node.ELEMENT_NODE) {
+            final Element elem = (Element) node;
+            final String key = getElementKey(elem);
+            elementInstances.computeIfAbsent(key, k -> new ArrayList<>()).add(elem);
+
+            // Collect attribute values
+            final NamedNodeMap attrs = elem.getAttributes();
+            if (attrs != null) {
+                for (int i = 0; i < attrs.getLength(); i++) {
+                    final Attr attr = (Attr) attrs.item(i);
+                    final String attrName = attr.getName();
+                    if (attrName.startsWith("xmlns") && (attrName.length() == 5 || attrName.charAt(5) == ':')) {
+                        continue;
+                    }
+                    final String attrNs = attr.getNamespaceURI();
+                    if (XSI_NS.equals(attrNs)) {
+                        continue;
+                    }
+                    final String local = attr.getLocalName() != null ? attr.getLocalName() : attr.getNodeName();
+                    final String ns = attr.getNamespaceURI();
+                    final String attrKey = "@" + (ns != null && !ns.isEmpty() ?
+                            "Q{" + ns + "}" + local : local);
+                    attrValues.computeIfAbsent(attrKey, k -> new HashSet<>()).add(attr.getValue());
+                }
+            }
+        }
+
         final NodeList children = node.getChildNodes();
         for (int i = 0; i < children.getLength(); i++) {
-            final Node child = children.item(i);
-            if (child.getNodeType() == Node.ELEMENT_NODE) {
-                analyzeElement(child, plan, processed);
-            }
+            collectElements(children.item(i), elementInstances, attrValues);
         }
     }
 
-    private void analyzeElement(final Node elem, final MapType plan, final Set<String> processed) throws XPathException {
-        final String elemKey = getElementKey(elem);
-        if (processed.contains(elemKey)) {
-            return; // Already analyzed this element type
-        }
-        processed.add(elemKey);
-
+    private MapType analyzeInstances(final String elemKey, final List<Element> instances) throws XPathException {
         final MapType layoutMap = new MapType(this, context);
 
-        // Determine layout
-        final boolean hasAttributes = hasSignificantAttributes(elem);
-        final List<Node> childElements = getChildElements(elem);
-        final boolean hasTextContent = hasSignificantTextContent(elem);
+        // Analyze each instance and merge
+        boolean anyHasAttrs = false;
+        boolean anyHasChildren = false;
+        boolean anyHasText = false;
+        boolean anyHasMixedContent = false;
+        boolean anyIsEmpty = false;
+        String listChildName = null;
+        boolean allSameListChild = true;
+        boolean anyHasNonUniqueChildren = false;
 
-        if (childElements.isEmpty() && !hasTextContent) {
-            // Empty element
-            layoutMap.add(new StringValue("layout"),
-                    new StringValue(hasAttributes ? "empty-plus" : "empty"));
-        } else if (childElements.isEmpty() && hasTextContent) {
-            // Simple content (text only)
-            final String type = detectContentType(elem);
-            layoutMap.add(new StringValue("layout"),
-                    new StringValue(hasAttributes ? "simple-plus" : "simple"));
+        // Track all child element names across instances for list detection
+        final Set<String> allChildNames = new LinkedHashSet<>();
+        boolean allInstancesHaveSameChildName = true;
+        String commonChildName = null;
+
+        for (final Element elem : instances) {
+            final boolean hasAttrs = hasSignificantAttributes(elem);
+            if (hasAttrs) anyHasAttrs = true;
+
+            final List<Element> childElements = getChildElements(elem);
+            final boolean hasText = hasSignificantTextContent(elem);
+
+            if (childElements.isEmpty() && !hasText) {
+                anyIsEmpty = true;
+            }
+            if (!childElements.isEmpty()) {
+                anyHasChildren = true;
+            }
+            if (hasText) {
+                anyHasText = true;
+            }
+            if (hasText && !childElements.isEmpty()) {
+                anyHasMixedContent = true;
+            }
+
+            // Check list pattern for this instance
+            if (!childElements.isEmpty() && !hasText) {
+                final Set<String> names = new LinkedHashSet<>();
+                for (final Element child : childElements) {
+                    names.add(getElementKey(child));
+                }
+                allChildNames.addAll(names);
+
+                if (names.size() == 1) {
+                    final String name = names.iterator().next();
+                    if (commonChildName == null) {
+                        commonChildName = name;
+                    } else if (!commonChildName.equals(name)) {
+                        allInstancesHaveSameChildName = false;
+                    }
+                } else {
+                    allInstancesHaveSameChildName = false;
+                    // Check for non-unique names
+                    final Map<String, Integer> counts = new LinkedHashMap<>();
+                    for (final Element child : childElements) {
+                        counts.merge(getElementKey(child), 1, Integer::sum);
+                    }
+                    if (counts.values().stream().anyMatch(c -> c > 1)) {
+                        anyHasNonUniqueChildren = true;
+                    }
+                }
+            }
+        }
+
+        // Determine layout
+        String layout;
+        if (anyHasMixedContent) {
+            layout = "mixed";
+        } else if (anyHasChildren && anyHasText) {
+            layout = "mixed";
+        } else if (anyHasChildren) {
+            if (allInstancesHaveSameChildName && commonChildName != null) {
+                // All instances have children all with the same name
+                layout = anyHasAttrs ? "list-plus" : "list";
+                listChildName = commonChildName;
+            } else if (anyHasNonUniqueChildren) {
+                layout = "sequence";
+            } else {
+                // Check if any instance has non-unique children
+                layout = "sequence";
+                // Actually, if all instances have unique children → record
+                boolean allInstancesUnique = true;
+                for (final Element elem : instances) {
+                    final List<Element> childElements = getChildElements(elem);
+                    if (!childElements.isEmpty()) {
+                        final Set<String> names = new HashSet<>();
+                        boolean unique = true;
+                        for (final Element child : childElements) {
+                            if (!names.add(getElementKey(child))) {
+                                unique = false;
+                                break;
+                            }
+                        }
+                        if (!unique) {
+                            allInstancesUnique = false;
+                            break;
+                        }
+                    }
+                }
+                if (allInstancesUnique && !anyIsEmpty) {
+                    layout = "record";
+                } else if (allInstancesUnique) {
+                    // Some empty, some with children — use sequence to be safe
+                    layout = "sequence";
+                }
+            }
+        } else if (anyHasText) {
+            layout = anyHasAttrs ? "simple-plus" : "simple";
+        } else {
+            layout = anyHasAttrs ? "empty-plus" : "empty";
+        }
+
+        // Handle mixed state: if some instances empty and some have children
+        if (anyIsEmpty && anyHasChildren && !layout.startsWith("list")) {
+            layout = "sequence";
+        }
+
+        layoutMap.add(new StringValue("layout"), new StringValue(layout));
+
+        if (listChildName != null && (layout.equals("list") || layout.equals("list-plus"))) {
+            layoutMap.add(new StringValue("child"), new StringValue(listChildName));
+        }
+
+        // Detect type for simple content
+        if (layout.equals("simple") || layout.equals("simple-plus")) {
+            final Set<String> textValues = new HashSet<>();
+            for (final Element elem : instances) {
+                final String text = elem.getTextContent();
+                if (text != null && !text.trim().isEmpty()) {
+                    textValues.add(text.trim());
+                }
+            }
+            final String type = detectAggregateType(textValues);
             if (type != null) {
                 layoutMap.add(new StringValue("type"), new StringValue(type));
             }
-        } else if (!hasTextContent && allChildrenSameName(childElements)) {
-            // List of same-named elements
-            final String childName = getElementKey(childElements.get(0));
-            layoutMap.add(new StringValue("layout"),
-                    new StringValue(hasAttributes ? "list-plus" : "list"));
-            layoutMap.add(new StringValue("child"), new StringValue(childName));
-        } else if (hasTextContent || hasMixedContent(elem)) {
-            // Mixed content
-            layoutMap.add(new StringValue("layout"), new StringValue("mixed"));
-        } else {
-            // Record (distinct child element names)
-            layoutMap.add(new StringValue("layout"), new StringValue("record"));
         }
 
-        plan.add(new StringValue(elemKey), layoutMap);
-
-        // Analyze attribute types
-        if (hasAttributes) {
-            final NamedNodeMap attrs = elem.getAttributes();
-            for (int i = 0; i < attrs.getLength(); i++) {
-                final Node attr = attrs.item(i);
-                final String attrName = attr.getLocalName() != null ? attr.getLocalName() : attr.getNodeName();
-                final String ns = attr.getNamespaceURI();
-                // Skip xmlns declarations
-                if ("http://www.w3.org/2000/xmlns/".equals(ns) || attrName.startsWith("xmlns")) {
-                    continue;
-                }
-                final String attrKey = "@" + (ns != null && !ns.isEmpty() ?
-                        "Q{" + ns + "}" + attrName : attrName);
-                if (!processed.contains(attrKey)) {
-                    processed.add(attrKey);
-                    final MapType attrMap = new MapType(this, context);
-                    final String type = detectValueType(attr.getNodeValue());
-                    if (type != null) {
-                        attrMap.add(new StringValue("type"), new StringValue(type));
-                    }
-                    plan.add(new StringValue(attrKey), attrMap);
-                }
-            }
-        }
-
-        // Recursively analyze child elements
-        for (final Node child : childElements) {
-            analyzeElement(child, plan, processed);
-        }
+        return layoutMap;
     }
 
     private String getElementKey(final Node elem) {
@@ -177,19 +297,24 @@ public class FnElementToMapPlan extends BasicFunction {
         for (int i = 0; i < attrs.getLength(); i++) {
             final Node attr = attrs.item(i);
             final String name = attr.getNodeName();
-            if (!name.startsWith("xmlns")) {
-                return true;
+            if (name.startsWith("xmlns") && (name.length() == 5 || name.charAt(5) == ':')) {
+                continue;
             }
+            final String ns = attr instanceof Attr ? ((Attr) attr).getNamespaceURI() : null;
+            if (XSI_NS.equals(ns)) {
+                continue;
+            }
+            return true;
         }
         return false;
     }
 
-    private List<Node> getChildElements(final Node elem) {
-        final List<Node> result = new ArrayList<>();
+    private List<Element> getChildElements(final Node elem) {
+        final List<Element> result = new ArrayList<>();
         final NodeList children = elem.getChildNodes();
         for (int i = 0; i < children.getLength(); i++) {
             if (children.item(i).getNodeType() == Node.ELEMENT_NODE) {
-                result.add(children.item(i));
+                result.add((Element) children.item(i));
             }
         }
         return result;
@@ -199,7 +324,7 @@ public class FnElementToMapPlan extends BasicFunction {
         final NodeList children = elem.getChildNodes();
         for (int i = 0; i < children.getLength(); i++) {
             final Node child = children.item(i);
-            if (child.getNodeType() == Node.TEXT_NODE) {
+            if (child.getNodeType() == Node.TEXT_NODE || child.getNodeType() == Node.CDATA_SECTION_NODE) {
                 final String text = child.getNodeValue();
                 if (text != null && !text.trim().isEmpty()) {
                     return true;
@@ -209,55 +334,31 @@ public class FnElementToMapPlan extends BasicFunction {
         return false;
     }
 
-    private boolean hasMixedContent(final Node elem) {
-        boolean hasElements = false;
-        boolean hasText = false;
-        final NodeList children = elem.getChildNodes();
-        for (int i = 0; i < children.getLength(); i++) {
-            final Node child = children.item(i);
-            if (child.getNodeType() == Node.ELEMENT_NODE) {
-                hasElements = true;
-            } else if (child.getNodeType() == Node.TEXT_NODE) {
-                if (child.getNodeValue() != null && !child.getNodeValue().trim().isEmpty()) {
-                    hasText = true;
+    private String detectAggregateType(final Set<String> values) {
+        if (values.isEmpty()) {
+            return null;
+        }
+        boolean allNumeric = true;
+        boolean allBoolean = true;
+        for (final String value : values) {
+            if (allNumeric) {
+                try {
+                    Double.parseDouble(value);
+                } catch (final NumberFormatException e) {
+                    if (!"NaN".equals(value) && !"INF".equals(value) && !"-INF".equals(value)) {
+                        allNumeric = false;
+                    }
+                }
+            }
+            if (allBoolean) {
+                if (!"true".equals(value) && !"false".equals(value) &&
+                        !"1".equals(value) && !"0".equals(value)) {
+                    allBoolean = false;
                 }
             }
         }
-        return hasElements && hasText;
-    }
-
-    private boolean allChildrenSameName(final List<Node> children) {
-        if (children.isEmpty()) return false;
-        final String firstName = getElementKey(children.get(0));
-        for (int i = 1; i < children.size(); i++) {
-            if (!firstName.equals(getElementKey(children.get(i)))) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private String detectContentType(final Node elem) {
-        final String text = elem.getTextContent();
-        if (text == null || text.trim().isEmpty()) {
-            return null;
-        }
-        return detectValueType(text.trim());
-    }
-
-    private String detectValueType(final String value) {
-        if (value == null || value.isEmpty()) {
-            return null;
-        }
-        try {
-            Double.parseDouble(value);
-            return "numeric";
-        } catch (final NumberFormatException e) {
-            // Not numeric
-        }
-        if ("true".equals(value) || "false".equals(value)) {
-            return "boolean";
-        }
-        return null; // default: string (not annotated)
+        if (allNumeric) return "numeric";
+        if (allBoolean) return "boolean";
+        return null;
     }
 }
