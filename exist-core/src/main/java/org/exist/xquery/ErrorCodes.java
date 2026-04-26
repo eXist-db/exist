@@ -272,6 +272,7 @@ public class ErrorCodes {
     public static final ErrorCode FOJS0005 = new W3CErrorCode("FOJS0005", "Invalid options.");
     public static final ErrorCode FOJS0006 = new W3CErrorCode("FOJS0006", "Invalid XML representation of JSON.");
     public static final ErrorCode FOJS0007 = new W3CErrorCode("FOJS0007", "Bad JSON escape sequence.");
+    public static final ErrorCode FOJS0008 = new W3CErrorCode("FOJS0008", "Element cannot be converted with the specified layout.");
 
     public static final ErrorCode FOUT1170 = new W3CErrorCode("FOUT1170", "Invalid $href argument to fn:unparsed-text() (etc.)");
     public static final ErrorCode FOUT1190 = new W3CErrorCode("FOUT1190", "Cannot decode resource retrieved by fn:unparsed-text() (etc.)");
