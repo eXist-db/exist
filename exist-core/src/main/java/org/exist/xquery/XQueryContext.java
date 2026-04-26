@@ -440,6 +440,11 @@ public class XQueryContext implements BinaryValueManager, Context {
 
     private boolean enableOptimizer = true;
 
+    /** CompileContext from the last optimize() pass. Exposed for diagnostics
+     * and tests. May be {@code null} if compilation has not yet happened or
+     * the optimizer was disabled. */
+    private CompileContext lastCompileContext = null;
+
     private boolean raiseErrorOnFailedRetrieval = XQUERY_RAISE_ERROR_ON_FAILED_RETRIEVAL_DEFAULT;
 
     private boolean isShared = false;
@@ -1981,10 +1986,18 @@ public class XQueryContext implements BinaryValueManager, Context {
         expr.analyze(new AnalyzeContextInfo());
 
         if (optimizationsEnabled()) {
+            // Per-expression optimize() pass: each Expression subclass may
+            // return a replacement (constant fold, branch select, etc.). Runs
+            // before the legacy visitor so replacements happen first; the
+            // visitor then operates on the reduced tree.
+            final CompileContext cc = new CompileContext(this);
+            expr.optimize(cc);
+            this.lastCompileContext = cc;
+
             final Optimizer optimizer = new Optimizer(this);
             expr.accept(optimizer);
 
-            if (optimizer.hasOptimized()) {
+            if (optimizer.hasOptimized() || cc.hasOptimized()) {
                 reset(true);
                 expr.resetState(true);
                 expr.analyze(new AnalyzeContextInfo());
@@ -3501,6 +3514,16 @@ public class XQueryContext implements BinaryValueManager, Context {
     @Override
     public boolean optimizationsEnabled() {
         return enableOptimizer;
+    }
+
+    /**
+     * Returns the {@link CompileContext} from the most recent optimize() pass,
+     * or {@code null} if the optimizer hasn't run yet or was disabled. Exposed
+     * for diagnostics and tests; will be replaced by a proper {@code util:explain}
+     * function in a follow-up.
+     */
+    public CompileContext getLastCompileContext() {
+        return lastCompileContext;
     }
 
     @Override
