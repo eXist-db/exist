@@ -48,6 +48,9 @@ public class ExternalModuleImpl implements ExternalModule {
     final private TreeMap<QName, VariableDeclaration> mGlobalVariables = new TreeMap<>();
     final private TreeMap<QName, Variable> mStaticVariables = new TreeMap<>();
 
+    /** Guards against recursive variable analysis/evaluation */
+    final private Set<QName> variablesBeingResolved = new java.util.HashSet<>();
+
     private Source mSource = null;
 
     private XQueryContext mContext = null;
@@ -223,17 +226,25 @@ public class ExternalModuleImpl implements ExternalModule {
         Variable var = mStaticVariables.get(qname);
         if (isReady && decl != null && (var == null || var.getValue() == null)) {
 
-            // Make sure Analyze has been called, see - https://github.com/eXist-db/exist/issues/4096
-            final AnalyzeContextInfo declContextInfo;
-            if (contextInfo != null) {
-                declContextInfo = new AnalyzeContextInfo(contextInfo);
-            } else {
-                declContextInfo = new AnalyzeContextInfo();
+            // Guard against recursive variable resolution (circular dependencies)
+            if (!variablesBeingResolved.add(qname)) {
+                return var;
             }
-            decl.analyze(declContextInfo);
+            try {
+                // Make sure Analyze has been called, see - https://github.com/eXist-db/exist/issues/4096
+                final AnalyzeContextInfo declContextInfo;
+                if (contextInfo != null) {
+                    declContextInfo = new AnalyzeContextInfo(contextInfo);
+                } else {
+                    declContextInfo = new AnalyzeContextInfo();
+                }
+                decl.analyze(declContextInfo);
 
-            decl.eval(getContext().getContextItem(), null);
-            var = mStaticVariables.get(qname);
+                decl.eval(getContext().getContextItem(), null);
+                var = mStaticVariables.get(qname);
+            } finally {
+                variablesBeingResolved.remove(qname);
+            }
         }
         if (var == null) {
             // external variable may be defined in root context importing this module
@@ -247,6 +258,17 @@ public class ExternalModuleImpl implements ExternalModule {
             var.setSequenceType(decl.getSequenceType());
         }
         return var;
+    }
+
+    /**
+     * Check if a variable declared in this module has a %private annotation.
+     *
+     * @param qname the variable name
+     * @return true if the variable is declared private
+     */
+    public boolean isVariablePrivate(final QName qname) {
+        final VariableDeclaration decl = mGlobalVariables.get(qname);
+        return decl != null && decl.isPrivate();
     }
 
     public void analyzeGlobalVars() throws XPathException {

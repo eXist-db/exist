@@ -44,6 +44,7 @@ public class VariableDeclaration extends AbstractExpression implements Rewritabl
     Optional<Expression> expression;
     SequenceType sequenceType = null;
     boolean analyzeDone = false;
+    private boolean isPrivate = false;
 
     public VariableDeclaration(final XQueryContext context, final QName qname, final Expression expr) {
         super(context);
@@ -66,6 +67,14 @@ public class VariableDeclaration extends AbstractExpression implements Rewritabl
 
     public SequenceType getSequenceType() {
         return sequenceType;
+    }
+
+    public void setPrivate(final boolean isPrivate) {
+        this.isPrivate = isPrivate;
+    }
+
+    public boolean isPrivate() {
+        return isPrivate;
     }
 
     @Override

@@ -167,6 +167,61 @@ options {
         }
     }
 
+    /**
+     * Check for duplicate or conflicting %public/%private annotations.
+     * @param annots the parsed annotation list
+     * @param errorCode XQST0106 for functions, XQST0116 for variables
+     * @param declType "function" or "variable" for error messages
+     * @param ast the AST node for error location reporting
+     */
+    /** The XQuery annotation namespace (http://www.w3.org/2012/xquery) */
+    private static final String XQUERY_ANNOTATION_NS = "http://www.w3.org/2012/xquery";
+
+    /** Check if a QName refers to a %public or %private visibility annotation */
+    private static boolean isVisibilityAnnotation(QName qn) {
+        String ns = qn.getNamespaceURI();
+        String ln = qn.getLocalPart();
+        return ("public".equals(ln) || "private".equals(ln))
+            && (Namespaces.XPATH_FUNCTIONS_NS.equals(ns) || XQUERY_ANNOTATION_NS.equals(ns));
+    }
+
+    private static void checkVisibilityAnnotations(List annots, ErrorCodes.ErrorCode errorCode, String declType, XQueryAST ast)
+    throws XPathException {
+        int publicCount = 0;
+        int privateCount = 0;
+        for (int i = 0; i < annots.size(); i++) {
+            List la = (List) annots.get(i);
+            QName qn = (QName) la.get(0);
+            if (isVisibilityAnnotation(qn)) {
+                if ("public".equals(qn.getLocalPart())) {
+                    publicCount++;
+                } else if ("private".equals(qn.getLocalPart())) {
+                    privateCount++;
+                }
+            }
+        }
+        if (publicCount + privateCount > 1) {
+            throw new XPathException(ast, errorCode,
+                "A " + declType + " declaration must not contain more than one " +
+                "%public or %private annotation, and must not contain both.");
+        }
+    }
+
+    /**
+     * Check if any annotation in the list is %private.
+     */
+    private static boolean hasPrivateAnnotation(List annots) {
+        for (int i = 0; i < annots.size(); i++) {
+            List la = (List) annots.get(i);
+            QName qn = (QName) la.get(0);
+            if (isVisibilityAnnotation(qn)
+                    && "private".equals(qn.getLocalPart())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private static void processAnnotations(List annots, FunctionSignature signature) {
         Annotation[] anns = new Annotation[annots.size()];
 
@@ -667,8 +722,12 @@ throws PermissionDeniedException, EXistException, XPathException
                 }
                 declaredGlobalVars.add(qn);
             }
-                        { List annots = new ArrayList(); }
+                        { List annots = new ArrayList(); boolean varIsPrivate = false; }
                         (annotations [annots]
+                        {
+                            checkVisibilityAnnotations(annots, ErrorCodes.XQST0116, "variable", qname);
+                            varIsPrivate = hasPrivateAnnotation(annots);
+                        }
                         )?
             (
                 #(
@@ -682,6 +741,7 @@ throws PermissionDeniedException, EXistException, XPathException
                 {
                     final VariableDeclaration decl= new VariableDeclaration(context, qn, enclosed);
                     decl.setSequenceType(type);
+                    decl.setPrivate(varIsPrivate);
                     decl.setASTNode(e);
                     path.add(decl);
                     if(myModule != null) {
@@ -711,6 +771,7 @@ throws PermissionDeniedException, EXistException, XPathException
 
                     final VariableDeclaration decl = new VariableDeclaration(context, qn, defaultValue);
                     decl.setSequenceType(type);
+                    decl.setPrivate(varIsPrivate);
                     decl.setASTNode(ext);
                     if (external == null) {
                         path.add(decl);
@@ -1052,6 +1113,7 @@ throws PermissionDeniedException, EXistException, XPathException
                 { List annots = new ArrayList(); }
                 (annotations [annots]
                  {
+                    checkVisibilityAnnotations(annots, ErrorCodes.XQST0106, "function", name);
                     processAnnotations(annots, signature);
                   }
                 )?
@@ -1121,6 +1183,7 @@ throws PermissionDeniedException, EXistException, XPathException
         (
             annotations [annots]
             {
+                checkVisibilityAnnotations(annots, ErrorCodes.XQST0106, "function", name);
                 processAnnotations(annots, signature);
             }
         )?

@@ -298,6 +298,17 @@ public class ModuleContext extends XQueryContext {
     }
 
     @Override
+    public String getModuleLocation(final String namespaceURI) {
+        // Check local dynamic locations first, then delegate to parent
+        final String local = super.getModuleLocation(namespaceURI);
+        if (local != null) {
+            return local;
+        }
+        // Check parent context's dynamic locations
+        return parentContext.getModuleLocation(namespaceURI);
+    }
+
+    @Override
     final protected XPathException moduleLoadException(final String message, final String moduleLocation) throws XPathException {
         return moduleLoadException(message, moduleLocation, null);
     }

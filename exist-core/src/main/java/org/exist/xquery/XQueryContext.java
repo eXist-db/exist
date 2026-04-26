@@ -242,6 +242,14 @@ public class XQueryContext implements BinaryValueManager, Context {
     private @Nullable ThreadPoolExecutor modulesDependencyGraphSPExecutor;
 
     /**
+     * Per-context module location hints, mapping namespace URIs to file locations.
+     * These are checked by {@link #getModuleLocation(String)} before the global
+     * static module map in the Configuration. This allows external tools (like the
+     * XQTS test runner) to register module locations without eagerly loading them.
+     */
+    private Map<String, String> dynamicModuleLocations = null;
+
+    /**
      * Used to save current state when modules are imported dynamically
      */
     private final SavedState savedState = new SavedState();
@@ -2247,6 +2255,14 @@ public class XQueryContext implements BinaryValueManager, Context {
 
             if (modules != null) {
                 for (final Module module : modules) {
+                    // Check %private visibility: if the variable is private and
+                    // we're resolving from outside the module, skip it
+                    if (module instanceof ExternalModuleImpl) {
+                        final ExternalModuleImpl extModule = (ExternalModuleImpl) module;
+                        if (extModule.isVariablePrivate(qname) && extModule.getContext() != this) {
+                            continue;
+                        }
+                    }
                     var = module.resolveVariable(contextInfo, qname);
                     if (var != null) {
                         break;
@@ -2788,6 +2804,11 @@ public class XQueryContext implements BinaryValueManager, Context {
     @Override
     public @Nullable Module[] importModule(@Nullable String namespaceURI, @Nullable String prefix, @Nullable AnyURIValue[] locationHints) throws XPathException {
 
+        // Normalize whitespace in namespace URI per XQuery spec section 4.12
+        if (namespaceURI != null) {
+            namespaceURI = namespaceURI.trim();
+        }
+
         if (XML_NS_PREFIX.equals(prefix) || XMLNS_ATTRIBUTE.equals(prefix)) {
             throw new XPathException(rootExpression, ErrorCodes.XQST0070,
                     "The prefix declared for a module import must not be 'xml' or 'xmlns'.");
@@ -2948,9 +2969,31 @@ public class XQueryContext implements BinaryValueManager, Context {
         return new XPathException(rootExpression, ErrorCodes.XQST0059, message, new ValueSequence(new StringValue(moduleLocation)), e);
     }
 
+    /**
+     * Registers a module location hint for the given namespace URI without
+     * eagerly loading the module. The location will be used when the query
+     * compiler encounters an {@code import module} statement for this namespace.
+     *
+     * @param namespaceURI the module namespace URI
+     * @param location the location (file URI or path) where the module can be found
+     */
+    public void addModuleLocationHint(final String namespaceURI, final String location) {
+        if (dynamicModuleLocations == null) {
+            dynamicModuleLocations = new HashMap<>();
+        }
+        dynamicModuleLocations.put(namespaceURI, location);
+    }
+
     @SuppressWarnings("unchecked")
     @Override
     public String getModuleLocation(final String namespaceURI) {
+        // Check per-context dynamic locations first
+        if (dynamicModuleLocations != null) {
+            final String location = dynamicModuleLocations.get(namespaceURI);
+            if (location != null) {
+                return location;
+            }
+        }
         final Map<String, String> moduleMap =
                 (Map<String, String>) getConfiguration().getProperty(PROPERTY_STATIC_MODULE_MAP);
         return moduleMap.get(namespaceURI);
