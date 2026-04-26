@@ -51,7 +51,19 @@ abstract class OrderedDurationValue extends DurationValue {
         if (other.isEmpty()) {
             return false;
         }
-        final int r = compareTo(collator, other);
+
+        // Mixed duration subtypes (e.g., xs:yearMonthDuration vs xs:dayTimeDuration) are
+        // not comparable for ANY operator per XPath spec — reject before comparing
+        if (Type.subTypeOf(other.getType(), Type.DURATION)
+                && getType() != other.getType()
+                && getType() != Type.DURATION
+                && other.getType() != Type.DURATION) {
+            throw new XPathException(getExpression(), ErrorCodes.XPTY0004,
+                    "cannot compare " + Type.getTypeName(getType()) + " to "
+                            + Type.getTypeName(other.getType()));
+        }
+
+        // Ordering operators (LT/GT/LTEQ/GTEQ) are not defined for unordered xs:duration
         if (operator != Comparison.EQ && operator != Comparison.NEQ) {
             if (getType() == Type.DURATION) {
                 throw new XPathException(getExpression(), ErrorCodes.XPTY0004,
@@ -63,12 +75,9 @@ abstract class OrderedDurationValue extends DurationValue {
                         "cannot compare " + Type.getTypeName(getType()) + " to unordered "
                                 + Type.getTypeName(other.getType()));
             }
-            if (Type.getCommonSuperType(getType(), other.getType()) == Type.DURATION) {
-                throw new XPathException(getExpression(), ErrorCodes.XPTY0004,
-                        "cannot compare " + Type.getTypeName(getType()) + " to "
-                                + Type.getTypeName(other.getType()));
-            }
         }
+
+        final int r = compareTo(collator, other);
         return switch (operator) {
             case EQ -> r == DatatypeConstants.EQUAL;
             case NEQ -> r != DatatypeConstants.EQUAL;

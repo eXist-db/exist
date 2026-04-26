@@ -100,10 +100,15 @@ public class FunSerialize extends BasicFunction {
 
             return new StringValue(this, writer.toString());
         } catch (final IOException | SAXException e) {
-            // Preserve specific serialization error codes from the message
+            // Preserve specific serialization error codes from the exception message
             final String msg = e.getMessage();
-            if (msg != null && msg.startsWith("err:SERE0024")) {
-                throw new XPathException(this, new ErrorCodes.ErrorCode("SERE0024", msg), msg);
+            if (msg != null) {
+                final java.util.regex.Matcher m = java.util.regex.Pattern
+                        .compile("err:(SER[EPM]\\d{4})").matcher(msg);
+                if (m.find()) {
+                    throw new XPathException(this,
+                            new ErrorCodes.ErrorCode(m.group(1), msg), msg);
+                }
             }
             throw new XPathException(this, FnModule.SENR0001, msg);
         }
@@ -271,7 +276,16 @@ public class FunSerialize extends BasicFunction {
             }
             return (DocumentImpl)receiver.getDocument();
         } catch (final SAXException e) {
-            throw new XPathException(callingExpr, FnModule.SENR0001, e.getMessage());
+            final String msg = e.getMessage();
+            if (msg != null) {
+                final java.util.regex.Matcher m = java.util.regex.Pattern
+                        .compile("err:(SER[EPM]\\d{4})").matcher(msg);
+                if (m.find()) {
+                    throw new XPathException(callingExpr,
+                            new ErrorCodes.ErrorCode(m.group(1), msg), msg);
+                }
+            }
+            throw new XPathException(callingExpr, FnModule.SENR0001, msg);
         } finally {
             context.popDocumentContext();
         }
