@@ -1404,33 +1404,24 @@ throws XPathException
         #(
             RECORD_TEST { type.setPrimaryType(Type.RECORD); }
             (
-                STAR
-                { type.setRecordExtensible(true); }
-                |
-                (
+                #(
+                    rf:RECORD_FIELD
+                    {
+                        final String fieldName = rf.getText();
+                        boolean optional = false;
+                        SequenceType fieldType = null;
+                    }
+                    ( QUESTION { optional = true; } )?
                     (
-                        #(
-                            rf:RECORD_FIELD
-                            {
-                                final String fieldName = rf.getText();
-                                boolean optional = false;
-                                SequenceType fieldType = null;
-                            }
-                            ( QUESTION { optional = true; } )?
-                            (
-                                { fieldType = new SequenceType(); }
-                                sequenceType [fieldType]
-                            )?
-                            {
-                                type.addRecordField(new SequenceType.RecordField(
-                                    fieldName, optional, fieldType));
-                            }
-                        )
-                        |
-                        STAR { type.setRecordExtensible(true); }
-                    )*
+                        { fieldType = new SequenceType(); }
+                        sequenceType [fieldType]
+                    )?
+                    {
+                        type.addRecordField(new SequenceType.RecordField(
+                            fieldName, optional, fieldType));
+                    }
                 )
-            )?
+            )*
         )
         |
         #(

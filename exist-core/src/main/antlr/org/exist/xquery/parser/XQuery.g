@@ -904,21 +904,13 @@ arrayTypeTest throws XPathException
 
 recordType throws XPathException
 :
-	( "record" LPAREN STAR ) => anyRecordTypeTest
-	|
 	( "record" LPAREN RPAREN ) => emptyRecordTypeTest
 	|
 	recordTypeTest
 	;
 
-anyRecordTypeTest throws XPathException
-:
-	m:"record"! LPAREN! s:STAR RPAREN!
-	{
-		#anyRecordTypeTest = #(#[RECORD_TEST, "record"], #s);
-		#anyRecordTypeTest.copyLexInfo(#m);
-	}
-	;
+// NOTE: anyRecordTypeTest removed - XQ4 PR2413 removed extensible records.
+// record(*) and record(field, *) must raise XPST0003.
 
 emptyRecordTypeTest throws XPathException
 :
@@ -931,7 +923,7 @@ emptyRecordTypeTest throws XPathException
 
 recordTypeTest throws XPathException
 :
-	m:"record"! LPAREN! recordFieldDecl ( COMMA! ( STAR | recordFieldDecl ) )* RPAREN!
+	m:"record"! LPAREN! recordFieldDecl ( COMMA! recordFieldDecl )* RPAREN!
 	{
 		#recordTypeTest = #(#[RECORD_TEST, "record"], #recordTypeTest);
 	}
@@ -1968,13 +1960,13 @@ lookup throws XPathException
 		}
         |
         // XQ4: decimal and double literals as key selectors (?1.2, ?1.2e0)
-        dbl:DOUBLE_LITERAL
+        { xq4Enabled }? dbl:DOUBLE_LITERAL
         {
         	#lookup = #(#[LOOKUP, "?"], #dbl);
         	#lookup.copyLexInfo(#q);
 		}
         |
-        dec:DECIMAL_LITERAL
+        { xq4Enabled }? dec:DECIMAL_LITERAL
         {
         	#lookup = #(#[LOOKUP, "?"], #dec);
         	#lookup.copyLexInfo(#q);
