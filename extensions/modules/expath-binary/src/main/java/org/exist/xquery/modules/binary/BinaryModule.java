@@ -90,7 +90,11 @@ public class BinaryModule extends AbstractInternalModule {
                     BinaryBitwiseFunctions.FS_XOR,
                     BinaryBitwiseFunctions.FS_AND,
                     BinaryBitwiseFunctions.FS_NOT,
-                    BinaryBitwiseFunctions.FS_SHIFT)
+                    BinaryBitwiseFunctions.FS_SHIFT),
+
+            functionDefs(BinaryInferEncodingFunction.class,
+                    BinaryInferEncodingFunction.FS_INFER_ENCODING[0],
+                    BinaryInferEncodingFunction.FS_INFER_ENCODING[1])
     );
 
     public BinaryModule(final Map<String, List<? extends Object>> parameters) {
