@@ -21,9 +21,6 @@
  */
 package org.exist.xquery;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -537,22 +534,6 @@ public class TryCatchExpression extends AbstractExpression {
         return new String[]{errorText.substring(0, p).trim(), errorText.substring(p + 1).trim()};
     }
 
-    /**
-     * Write stacktrace to String. 
-     */
-    private String getStackTrace(final Throwable t ) throws IOException {
-		if (t == null) {
-            return null;
-        }
-
-        try(final StringWriter sw = new StringWriter();
-            final PrintWriter pw = new PrintWriter(sw)) {
-
-            t.printStackTrace(pw);
-            pw.flush();
-            return sw.toString();
-        }
-    }
 
     private void addFunctionTrace(final Throwable t) throws XPathException {
         final LocalVariable localVar = new LocalVariable(QN_XQUERY_STACK_TRACE);
