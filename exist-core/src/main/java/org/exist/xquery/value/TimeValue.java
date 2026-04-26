@@ -67,7 +67,7 @@ public class TimeValue extends AbstractDateTimeValue {
                 throw new IllegalStateException();
             }
         } catch (final IllegalStateException e) {
-            throw new XPathException(expression, "xs:time instance must not have year, month or day fields set");
+            throw new XPathException(expression, ErrorCodes.FORG0001, "xs:time instance must not have year, month or day fields set");
         }
     }
 

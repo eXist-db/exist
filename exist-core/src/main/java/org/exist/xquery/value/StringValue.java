@@ -371,7 +371,7 @@ public class StringValue extends AtomicValue {
                 }
                 return;
             case Type.NAME:
-                if (QName.isQName(value) != VALID.val) {
+                if (!XMLNames.isName(value)) {
                     throw new XPathException(getExpression(), ErrorCodes.FORG0001,
                             "String '" + value + "' is not a valid xs:Name");
                 }

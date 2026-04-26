@@ -61,7 +61,7 @@ public class GDayValue extends AbstractDateTimeValue {
                 throw new IllegalStateException();
             }
         } catch (final IllegalStateException e) {
-            throw new XPathException(getExpression(), "xs:gDay instance must not have year, month or day fields set");
+            throw new XPathException(getExpression(), ErrorCodes.FORG0001, "xs:gDay instance must not have year, month, hour, minute or second fields set");
         }
     }
 

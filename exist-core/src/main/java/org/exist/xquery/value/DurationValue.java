@@ -73,10 +73,28 @@ public class DurationValue extends ComputableValue {
     public DurationValue(final Expression expression, String str) throws XPathException {
         super(expression);
         try {
-            this.duration = TimeUtils.getInstance().newDuration(StringValue.trimWhitespace(str));
+            final String trimmed = StringValue.trimWhitespace(str);
+            // XML Schema requires digits on both sides of a decimal point in durations.
+            // Java's DatatypeFactory is too lenient and accepts forms like "PT.5S" or "PT30.S".
+            validateDurationDecimal(trimmed);
+            this.duration = TimeUtils.getInstance().newDuration(trimmed);
         } catch (final IllegalArgumentException e) {
             throw new XPathException(getExpression(), ErrorCodes.FORG0001, "cannot construct " + Type.getTypeName(this.getItemType()) +
                     " from \"" + str + "\"");
+        }
+    }
+
+    static void validateDurationDecimal(final String str) {
+        final int dotIdx = str.indexOf('.');
+        if (dotIdx >= 0) {
+            // Must have at least one digit before the decimal point
+            if (dotIdx == 0 || !Character.isDigit(str.charAt(dotIdx - 1))) {
+                throw new IllegalArgumentException("Invalid duration: missing digit before decimal point in \"" + str + "\"");
+            }
+            // Must have at least one digit after the decimal point (before the letter suffix)
+            if (dotIdx + 1 >= str.length() || !Character.isDigit(str.charAt(dotIdx + 1))) {
+                throw new IllegalArgumentException("Invalid duration: missing digit after decimal point in \"" + str + "\"");
+            }
         }
     }
 

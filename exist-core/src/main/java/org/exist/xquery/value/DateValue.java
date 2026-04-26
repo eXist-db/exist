@@ -59,7 +59,7 @@ public class DateValue extends AbstractDateTimeValue {
                 throw new IllegalStateException();
             }
         } catch (final IllegalStateException e) {
-            throw new XPathException(getExpression(), "xs:date must not have hour, minute or second fields set");
+            throw new XPathException(getExpression(), ErrorCodes.FORG0001, "xs:date must not have hour, minute or second fields set");
         }
     }
 

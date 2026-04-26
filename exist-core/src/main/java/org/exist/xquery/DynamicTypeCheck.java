@@ -101,6 +101,12 @@ public class DynamicTypeCheck extends AbstractExpression {
         if(type != requiredType && !Type.subTypeOf(type, requiredType)) {
             //TODO : how to make this block more generic ? -pb
             if (type == Type.UNTYPED_ATOMIC) {
+                // XPTY0117: untypedAtomic cannot be coerced to namespace-sensitive types
+                if (requiredType == Type.QNAME || requiredType == Type.NOTATION) {
+                    throw new XPathException(expression, ErrorCodes.XPTY0117,
+                            "Cannot coerce xs:untypedAtomic to namespace-sensitive type " +
+                            Type.getTypeName(requiredType));
+                }
                 try {
                     item = item.convertTo(requiredType);
                 //No way

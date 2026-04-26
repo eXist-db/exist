@@ -93,13 +93,15 @@ public class CastableExpression extends AbstractExpression {
                 {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }
         
-        if (requiredType == Type.ANY_ATOMIC_TYPE || requiredType == Type.ANY_SIMPLE_TYPE
-                || requiredType == Type.ANY_TYPE || requiredType == Type.UNTYPED
+        if (requiredType == Type.ANY_ATOMIC_TYPE
                 || (requiredType == Type.NOTATION && expression.returnsType() != Type.NOTATION))
             {throw new XPathException(this, ErrorCodes.XPST0080, "cannot convert to " + Type.getTypeName(requiredType));}
 
-        if (expression.returnsType() == Type.ANY_SIMPLE_TYPE || expression.returnsType() == Type.UNTYPED)
-            {throw new XPathException(this, ErrorCodes.XPST0051, "cannot convert from " + Type.getTypeName(expression.returnsType()));}
+        if (requiredType == Type.ANY_SIMPLE_TYPE || requiredType == Type.UNTYPED
+                || requiredType == Type.ANY_TYPE
+                || expression.returnsType() == Type.ANY_SIMPLE_TYPE
+                || expression.returnsType() == Type.UNTYPED)
+            {throw new XPathException(this, ErrorCodes.XPST0051, "cannot convert to " + Type.getTypeName(requiredType));}
 
         Sequence result;
         //See : http://article.gmane.org/gmane.text.xml.xquery.general/1413

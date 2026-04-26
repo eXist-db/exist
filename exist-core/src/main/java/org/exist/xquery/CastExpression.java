@@ -84,15 +84,18 @@ public class CastExpression extends AbstractExpression {
             }
         }
 
-        // XPST0080: cannot cast to abstract or special types
-        if (requiredType == Type.ANY_ATOMIC_TYPE || requiredType == Type.ANY_SIMPLE_TYPE
-                || requiredType == Type.ANY_TYPE || requiredType == Type.UNTYPED
+        // XPST0080: cannot cast to xs:NOTATION or xs:anyAtomicType (per XPath 3.1 §3.12.3)
+        if (requiredType == Type.ANY_ATOMIC_TYPE
                 || (requiredType == Type.NOTATION && expression.returnsType() != Type.NOTATION)) {
             throw new XPathException(this, ErrorCodes.XPST0080, "cannot cast to " + Type.getTypeName(requiredType));
         }
 
-        if (expression.returnsType() == Type.ANY_SIMPLE_TYPE || expression.returnsType() == Type.UNTYPED) {
-            throw new XPathException(this, ErrorCodes.XPST0051, "cannot cast from " + Type.getTypeName(expression.returnsType()));
+        // XPST0051: cannot cast to non-atomic abstract types
+        if (requiredType == Type.ANY_SIMPLE_TYPE || requiredType == Type.UNTYPED
+                || requiredType == Type.ANY_TYPE
+                || expression.returnsType() == Type.ANY_SIMPLE_TYPE
+                || expression.returnsType() == Type.UNTYPED) {
+            throw new XPathException(this, ErrorCodes.XPST0051, "cannot cast to " + Type.getTypeName(requiredType));
         }
 
         final Sequence result;
@@ -112,14 +115,31 @@ public class CastExpression extends AbstractExpression {
             if (requiredType == Type.QNAME) {
                 if (item.getType() == Type.QNAME) {
                     result = item.toSequence();
-                } else if (item.getType() == Type.ANY_ATOMIC_TYPE || Type.subTypeOf(item.getType(), Type.STRING)) {
+                } else if (item.getType() == Type.ANY_ATOMIC_TYPE
+                        || item.getType() == Type.UNTYPED_ATOMIC
+                        || Type.subTypeOf(item.getType(), Type.STRING)) {
                     result = new QNameValue(this, context, item.getStringValue());
-
                 } else {
                     throw new XPathException(this, ErrorCodes.XPTY0004, "Cannot cast " + Type.getTypeName(item.getType()) + " to xs:QName");
                 }
             } else {
-                result = item.convertTo(requiredType);
+                // Per XPath F&O 3.1, Section 19: if the source and target types
+                // have no valid casting relationship, raise XPTY0004 (not FORG0001).
+                if (!Type.isCastable(item.getType(), requiredType)) {
+                    throw new XPathException(this, ErrorCodes.XPTY0004,
+                            "Cannot cast " + Type.getTypeName(item.getType()) +
+                            " to " + Type.getTypeName(requiredType));
+                }
+                // String-derived types (xs:language, xs:Name, xs:NMTOKEN, etc.):
+                // cast via xs:string intermediary per XPath F&O 3.1 casting table.
+                if (Type.subTypeOf(requiredType, Type.STRING) && requiredType != Type.STRING
+                        && !Type.subTypeOf(item.getType(), Type.STRING)
+                        && item.getType() != Type.UNTYPED_ATOMIC) {
+                    final AtomicValue asString = item.convertTo(Type.STRING);
+                    result = asString.convertTo(requiredType);
+                } else {
+                    result = item.convertTo(requiredType);
+                }
             }
         }
 

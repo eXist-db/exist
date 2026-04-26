@@ -707,6 +707,10 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
 
                     case 's': // parse seconds.
                         second = parseInt(2, 2);
+                        if (second >= 60) {
+                            throw new IllegalArgumentException(
+                                    DatatypeMessageFormatter.formatMessage(null, "InvalidFieldValue", new Object[]{second, "second"}));
+                        }
 
                         if (peek() == '.') {
                             fractionalSecond = parseBigDecimal();
@@ -768,7 +772,12 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
                 throw new IllegalArgumentException(value); //,vidx);
             }
 
-            if (hour == 24 && minute == 0 && second == 0) {
+            if (hour == 24) {
+                if (minute != 0 || second != 0
+                        || (fractionalSecond != null && fractionalSecond.compareTo(BigDecimal.ZERO) != 0)) {
+                    throw new IllegalArgumentException(
+                            DatatypeMessageFormatter.formatMessage(null, "InvalidFieldValue", new Object[]{hour, "hour"}));
+                }
                 if (getType() == Type.TIME) {
                     hour = 0;
                 }
@@ -814,15 +823,16 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
             final int digits = vidx - vstart - sign;
             if (digits < 4) {
                 // we are expecting more digits
-                throw new IllegalArgumentException(value); //,vidx);
+                throw new IllegalArgumentException(value);
+            }
+            // Per XML Schema Part 2 §3.2.7: year must have exactly 4 digits
+            // unless the value is >= 10000 (then more digits are needed).
+            // Leading zeros are not permitted (e.g., "02004" is invalid).
+            if (digits > 4 && value.charAt(vstart + sign) == '0') {
+                throw new IllegalArgumentException(value);
             }
             final String yearString = value.substring(vstart, vidx);
-//            if (digits < 10) {
-//            	year = Integer.parseInt(yearString);
-//            }
-//            else {
             year = new BigInteger(yearString);
-//            }
         }
 
         private int parseInt(int minDigits, int maxDigits)

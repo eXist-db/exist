@@ -59,7 +59,7 @@ public class GYearValue extends AbstractDateTimeValue {
                 throw new IllegalStateException();
             }
         } catch (final IllegalStateException e) {
-            throw new XPathException(getExpression(), "xs:time instance must not have year, month or day fields set");
+            throw new XPathException(getExpression(), ErrorCodes.FORG0001, "xs:gYear instance must not have month, day, hour, minute or second fields set");
         }
     }
 
