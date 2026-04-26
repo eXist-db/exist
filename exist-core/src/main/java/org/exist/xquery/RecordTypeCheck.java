@@ -23,6 +23,7 @@ package org.exist.xquery;
 
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.xquery.functions.map.AbstractMapType;
+import org.exist.xquery.functions.map.MapType;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.*;
 
@@ -61,53 +62,102 @@ public class RecordTypeCheck extends AbstractExpression {
             return seq;
         }
 
-        for (final SequenceIterator i = seq.iterate(); i.hasNext(); ) {
-            final Item item = i.nextItem();
-            check(item);
+        // Single item: coerce directly
+        if (seq.getItemCount() == 1) {
+            return coerce(seq.itemAt(0));
         }
 
-        return seq;
+        // Multiple items: coerce each
+        final ValueSequence result = new ValueSequence(seq.getItemCount());
+        for (final SequenceIterator i = seq.iterate(); i.hasNext(); ) {
+            final Sequence coerced = coerce(i.nextItem());
+            result.addAll(coerced);
+        }
+        return result;
     }
 
-    private void check(final Item item) throws XPathException {
+    /**
+     * Coerce a single item to this record type.
+     *
+     * <p>Per XQuery 4.0, record coercion:
+     * <ul>
+     *   <li>Validates that the item is a map with all required fields</li>
+     *   <li>Drops undeclared fields (non-extensible records)</li>
+     *   <li>Coerces field values to declared types</li>
+     *   <li>Builds the result map with fields in declaration order</li>
+     * </ul></p>
+     */
+    private Sequence coerce(final Item item) throws XPathException {
         if (!Type.subTypeOf(item.getType(), Type.MAP_ITEM)) {
             throw new XPathException(expression, ErrorCodes.XPTY0004,
                     "Expected " + recordType + " but got " + Type.getTypeName(item.getType()));
         }
 
-        final AbstractMapType map = (AbstractMapType) item;
-        if (!recordType.matches(map)) {
-            throw new XPathException(expression, ErrorCodes.XPTY0004,
-                    "Map does not match " + recordType + ": " + describeFailure(map));
-        }
-    }
+        final AbstractMapType sourceMap = (AbstractMapType) item;
+        final java.util.List<RecordType.FieldDeclaration> fields = recordType.getFieldDeclarations();
 
-    private String describeFailure(final AbstractMapType map) {
-        final StringBuilder sb = new StringBuilder();
-        for (final RecordType.FieldDeclaration field : recordType.getFieldDeclarations()) {
-            final Sequence value = map.get(new StringValue(field.getName()));
-            if ((value == null || value.isEmpty()) && !field.isOptional()) {
-                if (sb.length() > 0) sb.append("; ");
-                sb.append("missing required field '").append(field.getName()).append("'");
-            } else if (value != null && !value.isEmpty() && field.getType() != null) {
-                try {
-                    if (!field.getType().checkType(value)) {
-                        if (sb.length() > 0) sb.append("; ");
-                        sb.append("field '").append(field.getName()).append("' has type ")
-                                .append(Type.getTypeName(value.getItemType()))
-                                .append(", expected ").append(field.getType());
-                    }
-                } catch (final XPathException e) {
-                    if (sb.length() > 0) sb.append("; ");
-                    sb.append("field '").append(field.getName()).append("' type check error: ").append(e.getMessage());
+        // Build a new map with only declared fields, in declaration order
+        final MapType coercedMap = new MapType(expression, context);
+
+        for (final RecordType.FieldDeclaration field : fields) {
+            final StringValue key = new StringValue(expression, field.getName());
+            final Sequence value = sourceMap.get(key);
+
+            if (value == null || value.isEmpty()) {
+                if (!field.isOptional()) {
+                    throw new XPathException(expression, ErrorCodes.XPTY0004,
+                            "Missing required field '" + field.getName() + "' in " + recordType);
                 }
+                // Optional field not present — omit from result
+                continue;
+            }
+
+            // Coerce value to declared type if specified
+            if (field.getType() != null) {
+                final Sequence coerced = coerceFieldValue(field, value);
+                coercedMap.add(key, coerced);
+            } else {
+                coercedMap.add(key, value);
             }
         }
-        if (sb.length() == 0) {
-            // Extensibility check failure
-            sb.append("map contains unexpected keys not declared in ").append(recordType);
+
+        return coercedMap;
+    }
+
+    /**
+     * Coerce a field value to the declared type.
+     */
+    private Sequence coerceFieldValue(final RecordType.FieldDeclaration field,
+                                       final Sequence value) throws XPathException {
+        final SequenceType declaredType = field.getType();
+        final int targetType = declaredType.getPrimaryType();
+
+        // If already the right type, return as-is
+        if (Type.subTypeOf(value.getItemType(), targetType)) {
+            return value;
         }
-        return sb.toString();
+
+        // Attempt type promotion/casting for atomic types
+        if (Type.subTypeOf(targetType, Type.ANY_ATOMIC_TYPE) && value.getItemCount() > 0) {
+            final ValueSequence result = new ValueSequence(value.getItemCount());
+            for (final SequenceIterator it = value.iterate(); it.hasNext(); ) {
+                final Item item = it.nextItem();
+                if (item instanceof AtomicValue) {
+                    try {
+                        result.add(((AtomicValue) item).convertTo(targetType));
+                    } catch (final XPathException e) {
+                        throw new XPathException(expression, ErrorCodes.XPTY0004,
+                                "Cannot coerce field '" + field.getName() + "' value to " +
+                                        Type.getTypeName(targetType) + ": " + e.getMessage());
+                    }
+                } else {
+                    result.add(item);
+                }
+            }
+            return result;
+        }
+
+        return value;
     }
 
     @Override
