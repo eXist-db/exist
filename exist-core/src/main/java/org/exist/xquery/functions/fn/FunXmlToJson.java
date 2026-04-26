@@ -339,7 +339,7 @@ public class FunXmlToJson extends BasicFunction {
                                 jsonGenerator.writeBoolean(tempBoolean);
                                 break;
                             case "map":
-                                while (!mapkeyArrayList.isEmpty() && mapkeyArrayList.removeLast() != stackSeparator) {
+                                while (!mapkeyArrayList.isEmpty() && !stackSeparator.equals(mapkeyArrayList.removeLast())) {
                                 }
                                 jsonGenerator.writeEndObject();
                                 break;
