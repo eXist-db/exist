@@ -1811,11 +1811,28 @@ stepExpr throws XPathException
 	|
 	( "fn" LPAREN ) => postfixExpr
 	|
+	// XQ4: get(args) as a path step - selects map values, array items,
+	// or JSON-node children by key/index. Must precede the eqName-LPAREN
+	// alternative below, which would otherwise treat it as a function call.
+	( { xq4Enabled }? "get" LPAREN ) => getStep
+	|
 	( MOD | DOLLAR | ( eqName ( LPAREN | HASH ) ) | SELF | LPAREN | literal | XML_COMMENT | LT |
 	  XML_PI | QUESTION | LPPAREN | STRING_CONSTRUCTOR_START | STRING_TEMPLATE_START | LCURLY | HASH )
 	=> postfixExpr
 	|
 	axisStep
+	;
+
+// XQ4: get() as a path step. Produces a LOOKUP AST so the existing tree walker
+// builds a Lookup expression with null leftExpr - at runtime, the path context
+// flows in as the lookup target.
+getStep throws XPathException
+:
+	g:"get"! LPAREN! e:exprSingle RPAREN!
+	{
+		#getStep = #(#[LOOKUP, "?"], #e);
+		#getStep.copyLexInfo(#g);
+	}
 	;
 
 axisStep throws XPathException
@@ -3745,6 +3762,8 @@ xq4Keywords returns [String name]
 	"record" { name = "record"; }
 	|
 	"gnode" { name = "gnode"; }
+	|
+	"get" { name = "get"; }
 	;
 
 

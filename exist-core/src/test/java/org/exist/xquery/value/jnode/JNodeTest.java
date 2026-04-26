@@ -504,4 +504,202 @@ public class JNodeTest {
         // inner map child (1) + deep string child inside inner (1) = 2
         assertTrue(Integer.parseInt(result.getStringValue()) >= 2);
     }
+
+    /**
+     * Regression test for JNode flowing into a user-defined function whose parameter
+     * is declared as jnode(). Path expressions have static return type Type.NODE,
+     * so the function-dispatch static type check would otherwise reject
+     * the JNode flowing in. The check must defer to runtime DynamicTypeCheck.
+     */
+    @Test
+    public void udfWithJsonNodeParamAcceptsPathArg() throws Exception {
+        final Sequence result = executeQuery(
+                "xquery version '4.0'; " +
+                "declare function local:count-children($n as jnode()) as xs:integer { " +
+                "    count($n/child::*) " +
+                "}; " +
+                "let $root := fn:jtree(map { 'a': map { 'x': 1, 'y': 2 }, 'b': 3 }) " +
+                "return local:count-children($root/a)");
+        assertEquals("2", result.getStringValue());
+    }
+
+    @Test
+    public void udfWithJsonNodeParamAcceptsMultiStepPath() throws Exception {
+        final Sequence result = executeQuery(
+                "xquery version '4.0'; " +
+                "declare function local:depth($n as jnode()) as xs:integer { " +
+                "    count($n/ancestor::*) " +
+                "}; " +
+                "let $root := fn:jtree(map { 'a': map { 'b': map { 'c': 1 } } }) " +
+                "return local:depth($root/a/b/c)");
+        assertEquals("3", result.getStringValue());
+    }
+
+    /**
+     * Mirrors the XQTS JAxes-002 pattern: caller is in default (3.1) mode,
+     * UDF accepts jnode() parameter, path expression argument is the call site.
+     * Tests that the type-coercion fix doesn't require the caller to declare XQ4.
+     */
+    @Test
+    public void udfWithJsonNodeParamFromXq31Caller() throws Exception {
+        // Note: XQ4 mode required to declare 'as jnode()' parameter type.
+        // JAxes-002 module is presumably parsed in XQ4 mode somehow.
+        // Local function in same query body inherits caller's version.
+        final Sequence result = executeQuery(
+                "xquery version '4.0'; " +
+                "declare function local:depth($n as jnode()) as xs:integer { " +
+                "    count($n/ancestor::*) " +
+                "}; " +
+                "let $root := fn:jtree(map { 'a': map { 'b': 1 } }) " +
+                "return local:depth($root/a/b)");
+        assertEquals("2", result.getStringValue());
+    }
+
+    /**
+     * Diagnostic: does jnode() kind test parse in 3.1 mode at all?
+     */
+    @Test
+    public void jnodeKindTestRequiresXQ4() throws Exception {
+        try {
+            executeQuery(
+                    "declare function local:f($n as jnode()) { 1 }; " +
+                    "local:f(1)");
+            fail("Expected XPST0003 — jnode() requires XQ4");
+        } catch (final XPathException e) {
+            assertTrue(e.getMessage().contains("xquery version") ||
+                       e.getMessage().contains("4.0") ||
+                       e.getMessage().contains("XPST0003"));
+        }
+    }
+
+    /**
+     * Replicates the JAxes-002 setup as closely as possible:
+     * - Imported module declares xquery version 4.0 with as jnode() parameter
+     * - Test query is in default 3.1 mode
+     * - Path expression argument flows into JSON_NODE param
+     */
+    @Test
+    public void udfXQ4ModuleCalledFromXQ31Caller() throws Exception {
+        // Write a temporary module file declaring jnode() param
+        final java.nio.file.Path tmpDir = java.nio.file.Files.createTempDirectory("jnode-mod");
+        try {
+            final java.nio.file.Path modFile = tmpDir.resolve("histogram.xq");
+            java.nio.file.Files.writeString(modFile,
+                    "xquery version \"4.0\";\n" +
+                    "module namespace ax=\"http://test.com/ax\";\n" +
+                    "declare function ax:histogram($origin as jnode()) as map(*) {\n" +
+                    "  map { 'child': count($origin/child::*) }\n" +
+                    "};\n");
+            final String moduleUri = modFile.toUri().toString();
+            final Sequence result = executeQuery(
+                    "import module namespace ax=\"http://test.com/ax\" at \"" + moduleUri + "\"; " +
+                    "let $root := fn:jtree(map { 'a': map { 'x': 1, 'y': 2 } }) " +
+                    "return ax:histogram($root/a)?child");
+            assertEquals("2", result.getStringValue());
+        } finally {
+            java.nio.file.Files.walk(tmpDir)
+                    .sorted(java.util.Comparator.reverseOrder())
+                    .forEach(p -> { try { java.nio.file.Files.delete(p); } catch (Exception e) { } });
+        }
+    }
+
+    // --- get(args) as path step (XQuery 4.0) ---
+
+    @Test
+    public void getStepOnMapStringKey() throws Exception {
+        final Sequence result = executeQuery(
+                "xquery version '4.0'; " +
+                "let $m := map { 'x': 1, 'y': 2, 'z': 3 } " +
+                "return $m/get('z')");
+        assertEquals("3", result.getStringValue());
+    }
+
+    @Test
+    public void getStepOnMapMultipleKeys() throws Exception {
+        final Sequence result = executeQuery(
+                "xquery version '4.0'; " +
+                "let $m := map { 'x': 1, 'y': 2, 'z': 3 } " +
+                "return $m/get(('z', 'x'))");
+        // Lookup with multiple keys returns matching values in order
+        assertTrue(result.getItemCount() == 2);
+    }
+
+    @Test
+    public void getStepOnArrayInteger() throws Exception {
+        final Sequence result = executeQuery(
+                "xquery version '4.0'; " +
+                "let $a := array { 'a', 'b', 'c' } " +
+                "return $a/get(2)");
+        assertEquals("b", result.getStringValue());
+    }
+
+    @Test
+    public void getStepOnJNodeObjectReturnsChildNode() throws Exception {
+        final Sequence result = executeQuery(
+                "xquery version '4.0'; " +
+                "let $j := fn:jtree(map { 'name': 'Joe', 'age': 42 }) " +
+                "return fn:jvalue($j/get('name'))");
+        assertEquals("Joe", result.getStringValue());
+    }
+
+    @Test
+    public void getStepOnJNodeObjectExistsCheck() throws Exception {
+        final Sequence result = executeQuery(
+                "xquery version '4.0'; " +
+                "let $j := fn:jtree(map { 'name': 'Joe' }) " +
+                "return exists($j/get('name'))");
+        assertEquals("true", result.getStringValue());
+    }
+
+    @Test
+    public void getStepOnJNodeReturnsMemberNode() throws Exception {
+        // For an object-node child accessed via get(), the result is a member-node
+        // (key + container value). Use member-node() instead of object-node().
+        final Sequence result = executeQuery(
+                "xquery version '4.0'; " +
+                "let $j := fn:jtree(map { 'a': map { 'x': 1 } }) " +
+                "return $j/get('a') instance of member-node()");
+        assertEquals("true", result.getStringValue());
+    }
+
+    @Test
+    public void getStepReturnsSameAsNameStep() throws Exception {
+        // /name returns child JNode; /get('name') should return the same
+        final Sequence viaName = executeQuery(
+                "xquery version '4.0'; " +
+                "let $j := fn:jtree(map { 'name': 'Joe' }) " +
+                "return fn:jvalue($j/name)");
+        final Sequence viaGet = executeQuery(
+                "xquery version '4.0'; " +
+                "let $j := fn:jtree(map { 'name': 'Joe' }) " +
+                "return fn:jvalue($j/get('name'))");
+        assertEquals(viaName.getStringValue(), viaGet.getStringValue());
+    }
+
+    @Test
+    public void getStepOnJNodeArrayReturnsChildNode() throws Exception {
+        final Sequence result = executeQuery(
+                "xquery version '4.0'; " +
+                "let $j := fn:jtree(array { 'a', 'b', 'c' }) " +
+                "return fn:jvalue($j/get(2))");
+        assertEquals("b", result.getStringValue());
+    }
+
+    @Test
+    public void getStepAbsentKeyReturnsEmpty() throws Exception {
+        final Sequence result = executeQuery(
+                "xquery version '4.0'; " +
+                "let $m := map { 'x': 1, 'y': 2 } " +
+                "return empty($m/get('w'))");
+        assertEquals("true", result.getStringValue());
+    }
+
+    @Test
+    public void jnodeWildcardLookupReturnsAllChildren() throws Exception {
+        final Sequence result = executeQuery(
+                "xquery version '4.0'; " +
+                "let $j := fn:jtree(map { 'a': 1, 'b': 2, 'c': 3 }) " +
+                "return count($j?*)");
+        assertEquals("3", result.getStringValue());
+    }
 }

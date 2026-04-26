@@ -31,6 +31,7 @@ import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Expression;
+import org.exist.xquery.Lookup;
 import org.exist.xquery.XQueryContext;
 import org.xml.sax.SAXException;
 import org.exist.xquery.XPathException;
@@ -56,7 +57,7 @@ import java.util.List;
  * @see <a href="https://qt4cg.org/specifications/xquery-40/Overview.html#id-json-node-constructors">
  *      XQuery 4.0 §3.12 JSON Node Constructors</a>
  */
-public class JNode implements GNode, Sequence {
+public class JNode implements GNode, Sequence, Lookup.LookupSupport {
 
     /** The member key (null for root nodes and array items). */
     private final AtomicValue key;
@@ -345,6 +346,63 @@ public class JNode implements GNode, Sequence {
             result.add(child);
             collectDescendants(child, result);
         }
+    }
+
+    // ===================== Lookup support (XQuery 4.0 ?key and get() step) =====================
+
+    /**
+     * Lookup support: return the child JSON node(s) selected by the given key.
+     * For object nodes, returns the member node whose key equals the selector.
+     * For array nodes, treats the selector as a 1-based integer index.
+     * For leaf nodes, returns empty.
+     *
+     * Per XQuery 4.0 §4.10, the lookup operator on a JSON node returns child JSON
+     * nodes (not values), preserving navigation semantics.
+     */
+    @Override
+    public Sequence get(final AtomicValue key) throws XPathException {
+        if (key == null) {
+            return Sequence.EMPTY_SEQUENCE;
+        }
+        if (value instanceof AbstractMapType) {
+            final AbstractMapType map = (AbstractMapType) value;
+            if (!map.contains(key)) {
+                return Sequence.EMPTY_SEQUENCE;
+            }
+            final Sequence v = map.get(key);
+            return new JNode(key, v, this, 1);
+        }
+        if (value instanceof ArrayType) {
+            final ArrayType array = (ArrayType) value;
+            final int idx = ((IntegerValue) key.convertTo(Type.INTEGER)).getInt();
+            if (idx < 1 || idx > array.getSize()) {
+                return Sequence.EMPTY_SEQUENCE;
+            }
+            final Sequence v = array.get(idx - 1);
+            return new JNode(null, v, this, idx);
+        }
+        return Sequence.EMPTY_SEQUENCE;
+    }
+
+    /**
+     * Lookup support: return all child keys (for ?* on JSON nodes).
+     * For objects: the member keys. For arrays: 1..size.
+     * For leaves: empty.
+     */
+    @Override
+    public Sequence keys() throws XPathException {
+        if (value instanceof AbstractMapType) {
+            return ((AbstractMapType) value).keys();
+        }
+        if (value instanceof ArrayType) {
+            final ArrayType array = (ArrayType) value;
+            final ValueSequence ks = new ValueSequence();
+            for (int i = 1; i <= array.getSize(); i++) {
+                ks.add(new IntegerValue(i));
+            }
+            return ks;
+        }
+        return Sequence.EMPTY_SEQUENCE;
     }
 
     // ===================== Root =====================

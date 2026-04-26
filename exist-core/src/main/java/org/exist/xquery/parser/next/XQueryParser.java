@@ -3453,6 +3453,20 @@ public final class XQueryParser {
                 return step;
             }
 
+            // XQ4: get(args) as a path step — selects map values, array items,
+            // or JSON-node children by key/index. Must precede the function-call
+            // dispatch below, which would otherwise treat it as fn:get(...).
+            if (isXQ4() && checkKeyword("get") && peekIs(Token.LPAREN)) {
+                final int gline = current.line, gcol = current.column;
+                advance(); // consume 'get'
+                expect(Token.LPAREN, "'('");
+                final Expression keyExpr = parseExpr();
+                expect(Token.RPAREN, "')'");
+                final Lookup getStep = new Lookup(context, null, keyExpr);
+                getStep.setLocation(gline, gcol);
+                return getStep;
+            }
+
             // Function call: name(args) or function reference: name#arity
             if (isFunctionCallStart() || peekIs(Token.HASH)) {
                 return parsePrimaryExpr();

@@ -326,7 +326,11 @@ public abstract class Function extends PathExpr {
                     //Because () is seen as a node
                     (argType.getCardinality().isSuperCardinalityOrEqualOf(Cardinality.EMPTY_SEQUENCE) && returnType == Type.NODE) ||
                     // XQuery 4.0: allow implicit casts and relabeling
-                    (context.getXQueryVersion() >= 40 && (DynamicTypeCheck.isXQ4ImplicitCast(returnType, argType.getPrimaryType()) || DynamicTypeCheck.isXQ4Relabeling(returnType, argType.getPrimaryType()))))) {
+                    (context.getXQueryVersion() >= 40 && (DynamicTypeCheck.isXQ4ImplicitCast(returnType, argType.getPrimaryType()) || DynamicTypeCheck.isXQ4Relabeling(returnType, argType.getPrimaryType()))) ||
+                    // A path expression's static return type is Type.NODE, but at runtime JNodes
+                    // can flow through any path expression whose context is JSON. Defer to
+                    // DynamicTypeCheck for the actual runtime check whenever the param expects a JNode.
+                    (returnType == Type.NODE && Type.subTypeOf(argType.getPrimaryType(), Type.JSON_NODE)))) {
                 LOG.debug(ExpressionDumper.dump(argument));
                 throw new XPathException(this, ErrorCodes.XPTY0004, Messages.getMessage(Error.FUNC_PARAM_TYPE_STATIC,
                         String.valueOf(argPosition), mySignature, argType.toString(), Type.getTypeName(returnType)));

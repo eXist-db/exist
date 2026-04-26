@@ -111,6 +111,12 @@ public class Lookup extends AbstractExpression {
                             result.addAll(value);
                         }
                     }
+                } else if(nextItem instanceof org.exist.xquery.value.jnode.JNode) {
+                    // For JSON nodes, ?* returns all child JNodes (not values)
+                    final org.exist.xquery.value.jnode.JNode jn = (org.exist.xquery.value.jnode.JNode) nextItem;
+                    for (final org.exist.xquery.value.jnode.JNode child : jn.getChildren()) {
+                        result.add(child);
+                    }
                 } else if(item instanceof ArrayType) {
                     result.addAll(item.keys());
                 } else if(item instanceof AbstractMapType) {
