@@ -92,11 +92,34 @@ public class FnDivideDecimals extends BasicFunction {
             precision = (int) ((IntegerValue) args[2].itemAt(0)).getLong();
         }
 
-        // Quotient: truncate toward zero to given precision
-        final BigDecimal quotient = value.divide(divisor, precision, RoundingMode.DOWN);
-        final BigDecimal remainder = value.subtract(quotient.multiply(divisor));
+        final BigDecimal quotient;
+        final BigDecimal remainder;
 
-        // Build result record (map)
+        // Short-circuit for negative precision when |value| < |divisor| * 10^(-precision):
+        // the quotient must be zero and the remainder is value. Without this guard, Java's
+        // BigDecimal.divide constructs a divisor * 10^(-precision) intermediate that for
+        // precision = -100_000_000 is a ~100M-digit BigInteger (tens of seconds).
+        if (precision < 0 && (value.signum() == 0
+                || (long) value.precision() - value.scale()
+                        < (long) divisor.precision() - divisor.scale() - (long) precision)) {
+            quotient = BigDecimal.ZERO;
+            remainder = value;
+        } else {
+            BigDecimal q;
+            try {
+                // For terminating decimals (e.g., 20/10), this returns a compact result
+                // (scale ≈ 0) directly, avoiding a quotient padded to `precision` decimal
+                // places. A 100_000-scale quotient would later cost seconds in
+                // DecimalValue.stripTrailingZeros().
+                final BigDecimal exact = value.divide(divisor);
+                q = (exact.scale() <= precision) ? exact : exact.setScale(precision, RoundingMode.DOWN);
+            } catch (final ArithmeticException nonTerminating) {
+                q = value.divide(divisor, precision, RoundingMode.DOWN);
+            }
+            quotient = q;
+            remainder = value.subtract(quotient.multiply(divisor));
+        }
+
         final MapType result = new MapType(this, context);
         result.add(new StringValue(this, "quotient"), new DecimalValue(this, quotient));
         result.add(new StringValue(this, "remainder"), new DecimalValue(this, remainder));

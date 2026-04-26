@@ -35,6 +35,22 @@ public class LocalVariable extends VariableImpl {
 	protected LocalVariable before = null;
 	protected LocalVariable after = null;
 
+	/**
+	 * For O(1) variable resolution: the previous LocalVariable with the same
+	 * {@link #getQName()} that was the topmost binding before this one was
+	 * declared. Used by {@link XQueryContext#popLocalVariables} to restore the
+	 * shadowed binding when this variable goes out of scope.
+	 */
+	LocalVariable prevSameName = null;
+
+	/**
+	 * The {@link #contextStack} marker that was on top when this variable was
+	 * declared. A variable is visible in the current scope iff
+	 * {@code markedUnder == contextStack.peek()}; the previous linked-list
+	 * walk used to express this by stopping at {@code contextStack.peek()}.
+	 */
+	LocalVariable markedUnder = null;
+
     public LocalVariable(QName qname) {
         super(qname);
     }
