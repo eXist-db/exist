@@ -137,7 +137,7 @@ public class FnFormatDates extends BasicFunction {
         RETURN
     );
 
-    private static final Pattern componentPattern = Pattern.compile("([YMDdWwFHhmsfZzPCE])\\s*(.*)");
+    private static final Pattern componentPattern = Pattern.compile("\\s*([YMDdWwFHhmsfZzPCE])\\s*(.*)");
 
     public FnFormatDates(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
@@ -157,6 +157,14 @@ public class FnFormatDates extends BasicFunction {
                 language = args[2].getStringValue();
             } else {
                 language = context.getDefaultLanguage();
+            }
+
+            // Validate calendar argument — we only support Gregorian/ISO
+            if (args[3].hasOne()) {
+                final String calendar = args[3].getStringValue().trim();
+                if (!calendar.isEmpty()) {
+                    validateCalendar(calendar);
+                }
             }
 
             if(args[4].hasOne()) {
@@ -219,9 +227,10 @@ public class FnFormatDates extends BasicFunction {
             throw new XPathException(this, ErrorCodes.FOFD1340, "Unrecognized date/time component: " + component);
         }
 
-        final char specifier = component.charAt(0);
+        final char specifier = matcher.group(1).charAt(0);
         String width = null;
-        String picture = matcher.group(2);
+        // Strip whitespace from the picture/width part (spec: whitespace within a variable marker is ignored)
+        String picture = matcher.group(2).replaceAll("\\s+", "");
         // check if there's an optional width specifier
         final int widthSep = picture.indexOf(',');
         if (-1 < widthSep) {
@@ -350,7 +359,7 @@ public class FnFormatDates extends BasicFunction {
             case 'f':
                 if (allowTime) {
                     final int fraction = dt.getPart(AbstractDateTimeValue.MILLISECOND);
-                    formatNumber(specifier, picture, width, fraction, language, sb);
+                    formatFractionalSeconds(fraction, picture, width, sb);
                 } else {
                     throw new XPathException(this, ErrorCodes.FOFD1350,
                             "format-date does not support a fractional seconds component");
@@ -365,6 +374,25 @@ public class FnFormatDates extends BasicFunction {
                             "format-date does not support an am/pm component");
                 }
                 break;
+            case 'E':
+                if (allowDate) {
+                    final int year = dt.getPart(AbstractDateTimeValue.YEAR);
+                    String era = year > 0 ? "AD" : "BC";
+                    if ("n".equals(picture)) {
+                        era = era.toLowerCase();
+                    } else if ("Nn".equals(picture)) {
+                        era = era.charAt(0) + era.substring(1).toLowerCase();
+                    }
+                    sb.append(era);
+                } else {
+                    throw new XPathException(this, ErrorCodes.FOFD1350,
+                            "format-time does not support an era component");
+                }
+                break;
+            case 'C':
+                // Calendar name — we only support Gregorian
+                sb.append("ISO");
+                break;
             case 'z':
                 if(dt.getTimezone() != Sequence.EMPTY_SEQUENCE) {
                     sb.append("GMT");
@@ -376,14 +404,16 @@ public class FnFormatDates extends BasicFunction {
                 if(tz != Sequence.EMPTY_SEQUENCE) {
                     final DayTimeDurationValue dtv = ((DayTimeDurationValue)tz);
 
-                    //cope with eXist's duration class's weird #getPart method
-                    int minute = dtv.getPart(DurationValue.MINUTE);
-                    if(minute < 0) {
-                        minute = minute * -1;
-                    }
+                    // Determine timezone sign from the total offset,
+                    // since getPart(HOUR) loses the sign for -00:30 offsets
+                    final double totalSeconds = dtv.getValue();
+                    final boolean isNegative = totalSeconds < 0;
+                    final int totalMinutes = (int) Math.abs(totalSeconds / 60);
+                    final int absHour = totalMinutes / 60;
+                    final int absMinute = totalMinutes % 60;
 
                     sb.append(formatTimeZone(picture,
-                            dtv.getPart(DurationValue.HOUR), minute, cal.getTimeZone(), language, place));
+                            absHour, absMinute, isNegative, cal.getTimeZone(), language, place));
                 }
                 break;
 
@@ -392,49 +422,43 @@ public class FnFormatDates extends BasicFunction {
         }
     }
 
-    private String formatTimeZone(final String timezonePicture, final int hour, final int minute,
-            final TimeZone timeZone, final String language, final Optional<String> place) {
+    private String formatTimeZone(final String timezonePicture, final int absHour, final int absMinute,
+            final boolean isNegative, final TimeZone timeZone, final String language,
+            final Optional<String> place) {
         final Locale locale = new Locale(language);
+        final String sign = isNegative ? "-" : "+";
 
-        final String format;
         switch(timezonePicture) {
             case "0":
-                if(minute != 0) {
-                    format = "%+d:%02d";
+                if(absMinute != 0) {
+                    return String.format(locale, "%s%d:%02d", sign, absHour, absMinute);
                 } else {
-                    format = "%+d";
+                    return String.format(locale, "%s%d", sign, absHour);
                 }
-                break;
 
             case "0000":
-                format = "%+03d%02d";
-                break;
+                return String.format(locale, "%s%02d%02d", sign, absHour, absMinute);
 
             case "0:00":
-                format = "%+d:%02d";
-                break;
+                return String.format(locale, "%s%d:%02d", sign, absHour, absMinute);
 
             case "00:00t":
-                if(hour == 0 && minute == 0) {
-                    format = "Z";
-                } else {
-                    format = "%+03d:%02d";
+                if(absHour == 0 && absMinute == 0 && !isNegative) {
+                    return "Z";
                 }
-                break;
+                return String.format(locale, "%s%02d:%02d", sign, absHour, absMinute);
 
             case "N":
                 final TimeZone tz = place.map(TimeZone::getTimeZone).orElse(timeZone);
                 return tz.getDisplayName(timeZone.useDaylightTime(), TimeZone.SHORT, locale);
 
             case "Z":
-                return formatMilitaryTimeZone(hour, minute);
+                return formatMilitaryTimeZone(absHour, absMinute, isNegative);
 
             case "00:00":
             default:
-                format = "%+03d:%02d";
+                return String.format(locale, "%s%02d:%02d", sign, absHour, absMinute);
         }
-
-        return String.format(locale, format, hour, minute);
     }
 
     private final static char[] MILITARY_TZ_CHARS = {'Z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L',
@@ -451,17 +475,22 @@ public class FnFormatDates extends BasicFunction {
      * Timezone offsets that have no representation in this system (for example Indian Standard Time, +05:30)
      * are output as if the format 01:01 had been requested.
      */
-    private String formatMilitaryTimeZone(final int hour, final int minute) {
-        if(minute == 0 && hour > -12 && hour < 12) {
-            final int offset;
-            if(hour < 0) {
-                offset = 13 + (hour * -1);
+    private String formatMilitaryTimeZone(final int absHour, final int absMinute,
+            final boolean isNegative) {
+        if(absMinute == 0 && absHour >= 0 && absHour <= 12) {
+            if (!isNegative) {
+                // +00 = Z, +01 = A, +02 = B, ..., +12 = M
+                return String.valueOf(MILITARY_TZ_CHARS[absHour]);
+            } else if (absHour > 0) {
+                // -01 = N, -02 = O, ..., -12 = Y
+                return String.valueOf(MILITARY_TZ_CHARS[12 + absHour]);
             } else {
-                offset = hour;
+                // -00:00 should not normally occur, but treat as Z
+                return "Z";
             }
-            return String.valueOf(MILITARY_TZ_CHARS[offset]);
         } else {
-            return String.format("%+03d:%02d", hour, minute);
+            final String sign = isNegative ? "-" : "+";
+            return String.format("%s%02d:%02d", sign, absHour, absMinute);
         }
     }
 
@@ -478,6 +507,16 @@ public class FnFormatDates extends BasicFunction {
 
     private void formatNumber(char specifier, String picture, String width, int num, final String language,
                               StringBuilder sb) throws XPathException {
+        // Handle Roman numeral formatting
+        if ("I".equals(picture) || "i".equals(picture)) {
+            String roman = toRomanNumerals(num);
+            if ("i".equals(picture)) {
+                roman = roman.toLowerCase();
+            }
+            sb.append(roman);
+            return;
+        }
+
         final NumberFormatter formatter = NumberFormatter.getInstance(language);
         if ("N".equals(picture) || "n".equals(picture) || "Nn".equals(picture)) {
             String name = switch (specifier) {
@@ -531,6 +570,70 @@ public class FnFormatDates extends BasicFunction {
         }
     }
 
+    /**
+     * Format fractional seconds. Unlike regular numbers, fractional second digits
+     * are significant from left to right (most significant first).
+     *
+     * The picture determines precision (number of fraction digits):
+     *   [f1]         → max 1 digit: "4" for .456
+     *   [f01]        → exactly 2 digits: "45" for .456
+     *   [f001]       → exactly 3 digits: "456" for .456
+     *   [f111,2-2]   → picture takes precedence: 3 digits "123"
+     *
+     * Width modifier controls precision only when no picture digits are specified:
+     *   [f,2-2]      → exactly 2 digits: "45" for .456
+     *   [f,1-*]      → all significant digits: "456" for .456
+     */
+    private void formatFractionalSeconds(int millis, String picture, String width,
+                                          StringBuilder sb) throws XPathException {
+        // Build fraction digits string: at least 3 digits (millisecond precision)
+        final String fractionDigits = String.format("%03d", millis);
+
+        // Determine min and max from picture
+        int picMin = NumberFormatter.getMinDigits(picture);
+        int picMax = NumberFormatter.getMaxDigits(picture);
+
+        int min;
+        int max;
+
+        if (picMax > 0) {
+            // Picture specifies precision — use it
+            min = picMin;
+            max = picMax;
+        } else {
+            // No picture digits — use width modifier or defaults
+            min = 1;
+            max = Integer.MAX_VALUE;
+        }
+
+        // Width modifier overrides ONLY when picture doesn't specify digits
+        final int[] widths = getWidths(width);
+        if (widths != null) {
+            if (widths[0] > 0 && picMax == 0) { min = widths[0]; }
+            if (widths[1] > 0 && picMax == 0) { max = widths[1]; }
+            // When picture has digits, width min still applies for padding
+            if (widths[0] > 0 && picMax > 0 && widths[0] > min) { min = widths[0]; }
+        }
+
+        // Build result: start with full fraction digits, extend if needed
+        final StringBuilder result = new StringBuilder(fractionDigits);
+        while (result.length() < min) {
+            result.append('0');
+        }
+
+        // Apply max: truncate from right (preserving most significant digits)
+        if (max < Integer.MAX_VALUE && result.length() > max) {
+            result.setLength(max);
+        } else if (max == Integer.MAX_VALUE) {
+            // Trim trailing zeros but keep at least min digits
+            while (result.length() > min && result.charAt(result.length() - 1) == '0') {
+                result.setLength(result.length() - 1);
+            }
+        }
+
+        sb.append(result);
+    }
+
     private int[] getWidths(String width) throws XPathException {
         if (width == null || width.isEmpty())
             {return null;}
@@ -566,7 +669,63 @@ public class FnFormatDates extends BasicFunction {
             }
         }
         if (max != -1 && min > max)
-            {throw new XPathException(this, ErrorCodes.FOFD1350,"Minimum width > maximum width in component");}
+            {throw new XPathException(this, ErrorCodes.FOFD1340,"Minimum width > maximum width in component");}
         return new int[] { min, max };
+    }
+
+    private static final java.util.Set<String> KNOWN_CALENDARS = java.util.Set.of(
+            "AD", "ISO", "OS", "NS", "CE", "CB", "AH", "AM", "AP", "AE", "JE", "HE", "ME", "SE",
+            "SH", "SS", "BS", "BE", "KO", "TH", "JP");
+
+    private void validateCalendar(String calendar) throws XPathException {
+        // EQName form: Q{uri}local
+        if (calendar.startsWith("Q{")) {
+            final int closeBrace = calendar.indexOf('}');
+            if (closeBrace < 0) {
+                throw new XPathException(this, ErrorCodes.FOFD1340,
+                        "Badly-formed calendar name: " + calendar);
+            }
+            final String uri = calendar.substring(2, closeBrace);
+            final String local = calendar.substring(closeBrace + 1);
+            if (local.isEmpty() || !Character.isLetter(local.charAt(0))) {
+                throw new XPathException(this, ErrorCodes.FOFD1340,
+                        "Badly-formed calendar name: " + calendar);
+            }
+            if (uri.isEmpty()) {
+                // Q{}name — treated as no-namespace, must be a known calendar
+                if (!KNOWN_CALENDARS.contains(local.toUpperCase())) {
+                    throw new XPathException(this, ErrorCodes.FOFD1340,
+                            "Unknown calendar: " + calendar);
+                }
+            }
+            // Calendar in a non-empty namespace — accept and use Gregorian fallback
+            return;
+        }
+        // Bare name — must be a valid NCName and a known calendar code
+        if (calendar.isEmpty() || !Character.isLetter(calendar.charAt(0)) || calendar.contains(":")) {
+            throw new XPathException(this, ErrorCodes.FOFD1340,
+                    "Badly-formed calendar name: " + calendar);
+        }
+        if (!KNOWN_CALENDARS.contains(calendar.toUpperCase())) {
+            throw new XPathException(this, ErrorCodes.FOFD1340,
+                    "Unknown calendar: " + calendar);
+        }
+    }
+
+    private static final int[] ROMAN_VALUES = {1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1};
+    private static final String[] ROMAN_SYMBOLS = {"M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"};
+
+    private static String toRomanNumerals(int num) {
+        if (num <= 0) {
+            return String.valueOf(num);
+        }
+        final StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < ROMAN_VALUES.length; i++) {
+            while (num >= ROMAN_VALUES[i]) {
+                sb.append(ROMAN_SYMBOLS[i]);
+                num -= ROMAN_VALUES[i];
+            }
+        }
+        return sb.toString();
     }
 }
