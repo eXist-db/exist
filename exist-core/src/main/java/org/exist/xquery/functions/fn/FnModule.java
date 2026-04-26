@@ -418,10 +418,15 @@ public class FnModule extends AbstractInternalModule {
 
         // --- XQuery 4.0 JNode functions ---
         new FunctionDef(FnJNode.FN_JTREE, FnJNode.class),
+        new FunctionDef(FnJNode.FN_JKEY_0, FnJNode.class),
         new FunctionDef(FnJNode.FN_JKEY, FnJNode.class),
+        new FunctionDef(FnJNode.FN_JVALUE_0, FnJNode.class),
         new FunctionDef(FnJNode.FN_JVALUE, FnJNode.class),
+        new FunctionDef(FnJNode.FN_JPOSITION_0, FnJNode.class),
         new FunctionDef(FnJNode.FN_JPOSITION, FnJNode.class),
+        new FunctionDef(FnJNode.FN_JCHILDREN_0, FnJNode.class),
         new FunctionDef(FnJNode.FN_JCHILDREN, FnJNode.class),
+        new FunctionDef(FnJNode.FN_JPARENT_0, FnJNode.class),
         new FunctionDef(FnJNode.FN_JPARENT, FnJNode.class),
         // --- End JNode functions ---
     };

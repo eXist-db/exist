@@ -188,11 +188,12 @@ public class JNode implements GNode, Sequence {
         if (value instanceof AbstractMapType) {
             final AbstractMapType map = (AbstractMapType) value;
             final Sequence keys = map.keys();
-            int pos = 1;
             for (final SequenceIterator it = keys.iterate(); it.hasNext(); ) {
                 final AtomicValue k = (AtomicValue) it.nextItem();
                 final Sequence v = map.get(k);
-                children.add(new JNode(k, v, this, pos++));
+                // Map member positions are always 1 — JSON keys are unique within an object,
+                // so each member is the only node with its key (W3C XQ4 fn:jposition spec).
+                children.add(new JNode(k, v, this, 1));
             }
         } else if (value instanceof ArrayType) {
             final ArrayType array = (ArrayType) value;
@@ -239,7 +240,7 @@ public class JNode implements GNode, Sequence {
         for (final JNode sibling : siblings) {
             if (found) {
                 result.add(sibling);
-            } else if (sibling.position == this.position) {
+            } else if (isSameSibling(sibling)) {
                 found = true;
             }
         }
@@ -256,12 +257,23 @@ public class JNode implements GNode, Sequence {
         final List<JNode> siblings = parent.getChildren();
         final List<JNode> result = new ArrayList<>();
         for (final JNode sibling : siblings) {
-            if (sibling.position == this.position) {
+            if (isSameSibling(sibling)) {
                 break;
             }
             result.add(sibling);
         }
         return result;
+    }
+
+    /**
+     * Sibling identity check that handles map members (uniquely identified by key)
+     * and array items (uniquely identified by position).
+     */
+    private boolean isSameSibling(final JNode other) throws XPathException {
+        if (key != null && other.key != null) {
+            return key.compareTo(null, other.key) == 0;
+        }
+        return position == other.position;
     }
 
     // ===================== Following / Preceding axis =====================
@@ -361,11 +373,22 @@ public class JNode implements GNode, Sequence {
         if (other == null) {
             return false;
         }
-        // Same node identity: same position path from root
+        // Same node identity: same key/position path from root
         JNode n1 = this;
         JNode n2 = other;
         while (n1 != null && n2 != null) {
-            if (n1.position != n2.position) {
+            if (n1.key != null || n2.key != null) {
+                if (n1.key == null || n2.key == null) {
+                    return false;
+                }
+                try {
+                    if (n1.key.compareTo(null, n2.key) != 0) {
+                        return false;
+                    }
+                } catch (final XPathException e) {
+                    return false;
+                }
+            } else if (n1.position != n2.position) {
                 return false;
             }
             if (n1.parent == null && n2.parent == null) {
