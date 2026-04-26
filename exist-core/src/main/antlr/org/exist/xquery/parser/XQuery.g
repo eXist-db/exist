@@ -333,7 +333,7 @@ prolog throws XPathException
 			s:setter
 			{
 				if(!inSetters)
-					throw new XPathException(#s, "Default declarations have to come first");
+					throw new XPathException(#s, ErrorCodes.XPST0003, "Default declarations have to come first");
 			}
             |
 			( "declare" "ft-option" )
