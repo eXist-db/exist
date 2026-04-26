@@ -6352,16 +6352,14 @@ throws XPathException, PermissionDeniedException, EXistException
 				{ expr.map(key, value); }
 			)
 			|
-			// === XQuery 4.0 Map Comprehensions (PR2094) ===
-			// Merge entry: ExprSingle without ":" - must evaluate to a map at runtime
 			#(
-				MAP_MERGE
+				MAP_CONTENT
 				{
-					PathExpr mergeExpr = new PathExpr(context);
-					mergeExpr.setASTNode(mapConstr_AST_in);
+					PathExpr content = new PathExpr(context);
+					content.setASTNode(mapConstr_AST_in);
 				}
-				expr[mergeExpr]
-				{ expr.merge(mergeExpr); }
+				expr[content]
+				{ expr.content(content); }
 			)
 		)*
 	)

@@ -240,6 +240,39 @@ function t:bare-map-after-return() {
     return $m(1)
 };
 
+(: content expressions in map constructors :)
+
+declare
+    %test:assertEquals(0)
+function t:bare-map-empty-content() {
+    map:size({ {}, {}, {} })
+};
+
+declare
+    %test:assertEquals(2)
+function t:bare-map-content-merge() {
+    map:size({ {"a": 1}, {"b": 2} })
+};
+
+declare
+    %test:assertEquals(1)
+function t:bare-map-content-single() {
+    { {"a": 1} }("a")
+};
+
+declare
+    %test:assertError("XPTY0004")
+function t:bare-map-content-non-map-error() {
+    { "a": 1, "b" }
+};
+
+declare
+    %test:assertEquals(5)
+function t:bare-map-content-sequence() {
+    let $maps := ((1 to 5) ! {2*.: .*.})
+    return map:size({ $maps })
+};
+
 (: ========== Braced if ========== :)
 
 declare

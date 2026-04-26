@@ -265,8 +265,8 @@ imaginaryTokenDefinitions
 	JSON_BOOLEAN_TEST
 	JSON_NULL_TEST
 	JSON_MEMBER_TEST
-	// === XQuery 4.0 Map Comprehensions (PR2094) ===
-	MAP_MERGE
+	// === XQuery 4.0 Map Content Expressions ===
+	MAP_CONTENT
 	;
 
 // === XPointer ===
@@ -1955,7 +1955,7 @@ arrowFunctionSpecifier throws XPathException
     ( "map" LCURLY ) => mapConstructor
     |
     // XQ4: bare map constructor as function
-    ( LCURLY ) => bareMapConstructor
+    ( { xq4Enabled }? LCURLY ) => bareMapConstructor
     |
     // XQ4: array constructor as function
     ( LPPAREN | ("array" LCURLY) ) => arrayConstructor
@@ -2086,9 +2086,9 @@ primaryExpr throws XPathException
 	|
 	( "map" LCURLY ) => mapConstructor
 	|
-	( LCURLY RCURLY ) => bareMapConstructor
+	( { xq4Enabled }? LCURLY RCURLY ) => bareMapConstructor
 	|
-	( LCURLY exprSingle COLON ) => bareMapConstructor
+	( { xq4Enabled }? LCURLY exprSingle COLON ) => bareMapConstructor
 	|
 	directConstructor
 	|
@@ -2163,7 +2163,7 @@ stringTemplateInterpolation throws XPathException
 
 mapConstructor throws XPathException
 :
-    a:"map"! LCURLY! ( mapAssignment ( COMMA! mapAssignment )* )? RCURLY!
+    a:"map"! LCURLY! ( mapContentExpr ( COMMA! mapContentExpr )* )? RCURLY!
     {
         #mapConstructor = #(#[MAP, "map"], #mapConstructor);
         #mapConstructor.copyLexInfo(#a);
@@ -2172,14 +2172,15 @@ mapConstructor throws XPathException
 
 bareMapConstructor throws XPathException
 :
-    lc:LCURLY! ( mapAssignment ( COMMA! mapAssignment )* )? RCURLY!
+    lc:LCURLY! ( mapContentExpr ( COMMA! mapContentExpr )* )? RCURLY!
     {
         #bareMapConstructor = #(#[MAP, "map"], #bareMapConstructor);
         #bareMapConstructor.copyLexInfo(#lc);
     }
     ;
 
-mapAssignment throws XPathException
+// XQ4: map content expressions - either a key:value entry or a content expression (must evaluate to a map)
+mapContentExpr throws XPathException
 :
     (exprSingle COLON! EQ!) => exprSingle COLON^ eq:EQ^ exprSingle
     {
@@ -2187,16 +2188,14 @@ mapAssignment throws XPathException
                "The ':=' notation is no longer accepted in map expressions: use ':' instead.");
     }
     |
-    // === XQuery 4.0 Map Comprehensions (PR2094) ===
-    // MapConstructorEntry ::= ExprSingle (":" ExprSingle)?
-    // When ":" is present, it's a key:value pair; otherwise a merge entry (must evaluate to a map)
     (exprSingle COLON) => exprSingle COLON^ exprSingle
     |
-    exprSingle
+    mc:exprSingle
     {
-        #mapAssignment = #(#[MAP_MERGE, "merge"], #mapAssignment);
+        #mapContentExpr = #(#[MAP_CONTENT, null], #mapContentExpr);
+        #mapContentExpr.copyLexInfo(#mc);
     }
-	;
+    ;
 
 arrayConstructor throws XPathException
 :
