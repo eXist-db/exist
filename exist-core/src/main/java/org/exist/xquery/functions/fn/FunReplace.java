@@ -146,9 +146,16 @@ public class FunReplace extends BasicFunction {
 				replace = replacementArg.itemAt(0).getStringValue();
 			}
 
+			final boolean isXQuery40 = context.getXQueryVersion() >= 40;
+
+			// XQ4: translate (*positive_lookahead:...) etc. to Java regex (?=...) syntax
+			if (isXQuery40 && org.exist.xquery.regex.RegexUtil.hasXPath4Lookaround(pattern)) {
+				pattern = org.exist.xquery.regex.RegexUtil.translateXPath4Lookaround(pattern);
+			}
+
 			// Pre-validate: reject constructs not valid in XPath regex
 			if (!hasLiteral(flags)) {
-				org.exist.xquery.regex.RegexUtil.validateXPathRegex(this, pattern);
+				org.exist.xquery.regex.RegexUtil.validateXPathRegex(this, pattern, isXQuery40);
 			}
 
 			final Configuration config = context.getBroker().getBrokerPool().getSaxonConfiguration();

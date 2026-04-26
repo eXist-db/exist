@@ -111,10 +111,23 @@ public class FunTokenize extends BasicFunction {
                     }
                     final int flags = parseFlags(this, flagsStr);
 
+                    final boolean isXQuery40 = context.getXQueryVersion() >= 40;
+
                     String rawPattern = args[1].itemAt(0).getStringValue();
                     if (hasCommentFlag) {
                         rawPattern = FunReplace.stripRegexComments(rawPattern);
                     }
+
+                    // XQ4: translate (*positive_lookahead:...) etc. to Java regex
+                    if (isXQuery40 && org.exist.xquery.regex.RegexUtil.hasXPath4Lookaround(rawPattern)) {
+                        rawPattern = org.exist.xquery.regex.RegexUtil.translateXPath4Lookaround(rawPattern);
+                    }
+
+                    // Pre-validate: reject constructs not valid in XPath regex
+                    if (!hasLiteral(flags)) {
+                        org.exist.xquery.regex.RegexUtil.validateXPathRegex(this, rawPattern, isXQuery40);
+                    }
+
                     final String pattern;
                     if (hasLiteral(flags)) {
                         pattern = rawPattern;

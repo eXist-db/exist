@@ -517,6 +517,8 @@ public final class FunMatches extends Function implements Optimizable, IndexUseR
 
 
     private boolean matchXmlRegex(String string, String pattern, String flags) throws XPathException {
+        final boolean isXQuery40 = context.getXQueryVersion() >= 40;
+
         // XQ4: 'c' flag — strip regex comments before compilation
         final boolean hasCommentFlag = flags.indexOf('c') >= 0 && flags.indexOf('q') < 0;
         if (flags.indexOf('c') >= 0) {
@@ -527,10 +529,19 @@ public final class FunMatches extends Function implements Optimizable, IndexUseR
         }
 
         // XQ4: translate (*positive_lookahead:...) etc. to Java regex (?=...) syntax
-        final boolean hasLookaround = org.exist.xquery.regex.RegexUtil.hasXPath4Lookaround(pattern);
-        if (hasLookaround) {
+        if (isXQuery40 && org.exist.xquery.regex.RegexUtil.hasXPath4Lookaround(pattern)) {
             pattern = org.exist.xquery.regex.RegexUtil.translateXPath4Lookaround(pattern);
-            // Use Java regex directly for patterns with XPath 4.0 lookaround
+        }
+
+        // Pre-validate: reject constructs that are not valid in XPath regex
+        // but that Saxon's XP30 mode accepts (Java/Perl extensions)
+        if (!hasLiteral(flags)) {
+            org.exist.xquery.regex.RegexUtil.validateXPathRegex(this, pattern, isXQuery40);
+        }
+
+        // XQ4: patterns with \b, \B, or lookaround need Java regex since
+        // Saxon's XP30 mode doesn't support these XPath 4.0 extensions
+        if (isXQuery40 && org.exist.xquery.regex.RegexUtil.needsXQuery40JavaRegex(pattern)) {
             try {
                 final String javaPattern = org.exist.xquery.regex.RegexUtil.translateRegexp(
                         this, pattern, flags.contains("x"), flags.contains("i"));
@@ -541,12 +552,6 @@ public final class FunMatches extends Function implements Optimizable, IndexUseR
                         "Invalid regular expression: " + e.getMessage(),
                         new StringValue(this, pattern), e);
             }
-        }
-
-        // Pre-validate: reject constructs that are not valid in XPath regex
-        // but that Saxon's XP30 mode accepts (Java/Perl extensions)
-        if (!hasLiteral(flags)) {
-            org.exist.xquery.regex.RegexUtil.validateXPathRegex(this, pattern);
         }
 
         try {
