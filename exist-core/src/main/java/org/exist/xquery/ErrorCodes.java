@@ -90,6 +90,7 @@ public class ErrorCodes {
     public static final ErrorCode XQST0052 = new W3CErrorCode("XQST0052", "It is a static error if the type-name in a single-type or sequence-type for a cast or castable expression does not refer to a defined atomic type.");
     public static final ErrorCode XQST0053 = new W3CErrorCode("XQST0053", "(Not currently used.)");
     public static final ErrorCode XQST0054 = new W3CErrorCode("XQST0054", "It is a static error if a variable depends on itself.");
+    public static final ErrorCode XQDY0054 = new W3CErrorCode("XQDY0054", "It is a dynamic error if a variable depends on itself.");
     public static final ErrorCode XQST0055 = new W3CErrorCode("XQST0055", "It is a static error if a Prolog contains more than one copy-namespaces declaration.");
     public static final ErrorCode XQST0056 = new W3CErrorCode("XQST0056", "(Not currently used.)");
     public static final ErrorCode XQST0057 = new W3CErrorCode("XQST0057", "It is a static error if a schema import binds a namespace prefix but does not specify a target namespace other than a zero-length string.");
