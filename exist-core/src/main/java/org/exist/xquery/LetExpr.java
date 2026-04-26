@@ -58,6 +58,55 @@ public class LetExpr extends BindingExpression {
     }
 
     @Override
+    public Expression optimize(final CompileContext cc) throws XPathException {
+        super.optimize(cc); // recurses inputSequence + returnExpr
+
+        // Drop the let if its body is a literal — the variable is by definition
+        // unreferenced, and the input sequence is side-effect-free. Guards:
+        //   - score binding stays (XQFT 3.0 §2.3),
+        //   - no previous clause (avoid having to repair clause-chain
+        //     previousClause pointers),
+        //   - inputSequence is a LiteralValue (no side effects to preserve),
+        //   - the unwrapped returnExpr is a LiteralValue (so it cannot
+        //     reference any variable).
+        //
+        // This is intentionally narrow for v1: it captures `let $x := 1 return
+        // 42` but not `let $x := 1 return $y + 1`. We avoid a structural
+        // variable-reference scan because BasicExpressionVisitor does not
+        // traverse through FilteredExpression / GeneralComparison / OpNumeric,
+        // and the eXist Dependency flags are not reliable after the analyze()
+        // pass has popped the let's variable from scope. A precise unused-var
+        // check belongs in a follow-up.
+        if (scoreBinding
+                || varName == null
+                || returnExpr instanceof FLWORClause
+                || getPreviousClause() != null
+                || !(inputSequence instanceof LiteralValue)
+                || !(unwrap(returnExpr) instanceof LiteralValue)) {
+            return this;
+        }
+        return cc.replaceWith(this, returnExpr, "unused let-binding $" + varName);
+    }
+
+    /**
+     * Strips {@link DebuggableExpression} and single-step {@link PathExpr}
+     * wrappers to expose the underlying expression. Used to recognise a
+     * trivially literal return body even when the parser has wrapped it for
+     * debugger support.
+     */
+    private static Expression unwrap(Expression e) {
+        while (true) {
+            if (e instanceof DebuggableExpression d) {
+                e = d.getFirst();
+            } else if (e instanceof PathExpr p && p.getLength() == 1) {
+                e = p.getExpression(0);
+            } else {
+                return e;
+            }
+        }
+    }
+
+    @Override
     public void analyze(final AnalyzeContextInfo contextInfo) throws XPathException {
         super.analyze(contextInfo);
         //Save the local variable stack

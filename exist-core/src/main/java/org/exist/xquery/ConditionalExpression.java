@@ -75,6 +75,29 @@ public class ConditionalExpression extends AbstractExpression implements Rewrita
         return thenExpr.isUpdating() || elseExpr.isUpdating();
     }
 
+    @Override
+    public Expression optimize(final CompileContext cc) throws XPathException {
+        testExpr = testExpr.optimize(cc);
+        thenExpr = thenExpr.optimize(cc);
+        elseExpr = elseExpr.optimize(cc);
+
+        // Constant condition: replace with the chosen branch.
+        // Restricted to LiteralValue with NO_DEPENDENCY so we don't accidentally
+        // pre-evaluate something context-sensitive.
+        if (testExpr instanceof LiteralValue
+                && testExpr.getDependencies() == Dependency.NO_DEPENDENCY) {
+            try {
+                final boolean ebv = ((LiteralValue) testExpr).getValue().effectiveBooleanValue();
+                final Expression chosen = ebv ? thenExpr : elseExpr;
+                return cc.replaceWith(this, chosen,
+                        "constant " + (ebv ? "true" : "false") + " condition");
+            } catch (final XPathException e) {
+                // Fall through and keep the if-then-else unchanged.
+            }
+        }
+        return this;
+    }
+
     /* (non-Javadoc)
      * @see org.exist.xquery.Expression#analyze(org.exist.xquery.Expression)
      */
