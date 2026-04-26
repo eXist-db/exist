@@ -23,6 +23,7 @@ package org.exist.xquery;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.exist.Namespaces;
 import org.exist.dom.QName;
@@ -47,6 +48,17 @@ public class FunctionFactory {
     public static final String PROPERTY_DISABLE_DEPRECATED_FUNCTIONS = "xquery.disable-deprecated-functions";
     public static final boolean DISABLE_DEPRECATED_FUNCTIONS_BY_DEFAULT = false;
 
+    /**
+     * Reserved function names per XQuery 3.1/4.0 spec.
+     * These names must not be used as unprefixed function calls (XPST0003).
+     */
+    private static final Set<String> RESERVED_FUNCTION_NAMES = Set.of(
+        "array", "attribute", "comment", "document-node", "element",
+        "function", "if", "item", "map", "namespace-node", "node",
+        "processing-instruction", "schema-attribute", "schema-element",
+        "switch", "text", "typeswitch"
+    );
+
     public static Expression createFunction(XQueryContext context, XQueryAST ast, PathExpr parent, List<Expression> params) throws XPathException {
     	QName qname = null;
         try {
@@ -54,6 +66,19 @@ public class FunctionFactory {
         } catch(final QName.IllegalQNameException xpe) {
             throw new XPathException(ast, ErrorCodes.XPST0081, "Invalid qname " +  ast.getText() + ". " + xpe.getMessage());
         }
+
+        // Check for reserved function names — unprefixed reserved names cannot be
+        // used as function calls (XPST0003). Prefixed names like fn:item() are not
+        // subject to the reserved name restriction (they just won't be found → XPST0017).
+        final String rawName = ast.getText();
+        if (rawName != null && !rawName.contains(":") && !rawName.contains("{")) {
+            final String local = qname.getLocalPart();
+            if (RESERVED_FUNCTION_NAMES.contains(local)) {
+                throw new XPathException(ast.getLine(), ast.getColumn(), ErrorCodes.XPST0003,
+                    "'" + local + "' is a reserved function name and cannot be used as a function call");
+            }
+        }
+
         return createFunction(context, qname, ast, parent, params);
     }
 
@@ -477,12 +502,13 @@ public class FunctionFactory {
                 newSignature.setArgumentTypes(newParamArray);
 
 		final UserDefinedFunction func = new UserDefinedFunction(context, newSignature);
+		func.setPassContextToBody(true);
 		for (final QName varName: variables) {
 			func.addVariable(varName);
 		}
-		
+
 		call.setArguments(innerArgs);
-		
+
 		func.setFunctionBody(call);
 		
 		final FunctionCall wrappedCall = new FunctionCall(context, func);

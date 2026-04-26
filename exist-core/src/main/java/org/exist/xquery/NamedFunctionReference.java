@@ -24,6 +24,8 @@ package org.exist.xquery;
 import java.util.ArrayList;
 import java.util.List;
 
+import java.util.Set;
+
 import org.exist.dom.QName;
 import org.exist.xquery.parser.XQueryAST;
 import org.exist.xquery.util.ExpressionDumper;
@@ -52,7 +54,29 @@ public class NamedFunctionReference extends AbstractExpression {
     	resolvedFunction.analyze(contextInfo);
 	}
 
+	/**
+	 * Reserved function names per XQuery 3.1/4.0 spec.
+	 * These names must not be used as unprefixed named function references (XPST0003).
+	 */
+	private static final Set<String> RESERVED_FUNCTION_NAMES = Set.of(
+		"array", "attribute", "comment", "document-node", "element",
+		"function", "if", "item", "map", "namespace-node", "node",
+		"processing-instruction", "schema-attribute", "schema-element",
+		"switch", "text", "typeswitch"
+	);
+
 	public static FunctionCall lookupFunction(Expression self, XQueryContext context, QName funcName, int arity) throws XPathException {
+		// Check for reserved function names — these cannot be used as named function references
+		final String localPart = funcName.getLocalPart();
+		final String nsURI = funcName.getNamespaceURI();
+		if (RESERVED_FUNCTION_NAMES.contains(localPart) &&
+				(nsURI == null || nsURI.isEmpty() ||
+				 Function.BUILTIN_FUNCTION_NS.equals(nsURI) ||
+				 context.getDefaultFunctionNamespace().equals(nsURI))) {
+			throw new XPathException(self, ErrorCodes.XPST0003,
+				"'" + localPart + "' is a reserved function name and cannot be used as a named function reference");
+		}
+
 		if (Function.BUILTIN_FUNCTION_NS.equals(funcName.getNamespaceURI())
 				&& "concat".equals(funcName.getLocalPart())
 				&& arity < 2) {
