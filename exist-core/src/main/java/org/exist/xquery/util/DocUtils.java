@@ -95,10 +95,6 @@ public class DocUtils {
 
     }
 
-    private static Sequence getDocumentByPath(final XQueryContext context, final String path) throws XPathException, PermissionDeniedException {
-        return getDocumentByPath(context, path, null);
-    }
-
     private static Sequence getDocumentByPath(final XQueryContext context, final String path, final Expression expression) throws XPathException, PermissionDeniedException {
         Sequence doc = getFromDynamicallyAvailableDocuments(context, path, expression);
         if (doc == null) {
@@ -146,10 +142,6 @@ public class DocUtils {
         return null;
     }
 
-    private static @Nullable Sequence getFromDynamicallyAvailableDocuments(final XQueryContext context, final String path) throws XPathException {
-        return getFromDynamicallyAvailableDocuments(context, path, null);
-    }
-
     private static @Nullable Sequence getFromDynamicallyAvailableDocuments(final XQueryContext context, final String path, @Nullable final Expression expression) throws XPathException {
         try {
             URI uri = new URI(path);
@@ -167,10 +159,6 @@ public class DocUtils {
         } catch (final URISyntaxException e) {
             throw new XPathException(expression, ErrorCodes.FODC0005, e);
         }
-    }
-
-    private static Sequence getDocumentByPathFromURL(final XQueryContext context, final String path) throws XPathException, PermissionDeniedException {
-        return getDocumentByPathFromURL(context, path, null, false);
     }
 
     private static Sequence getDocumentByPathFromURL(final XQueryContext context, final String path, final Expression expression, final boolean resolvedFromBaseUri) throws XPathException, PermissionDeniedException {
@@ -224,10 +212,6 @@ public class DocUtils {
         } catch (final IOException e) {
             throw new XPathException(expression, "An error occurred while parsing " + path + ": " + e.getMessage(), e);
         }
-    }
-
-    private static Sequence getDocumentByPathFromDB(final XQueryContext context, final String path) throws XPathException, PermissionDeniedException {
-        return getDocumentByPathFromDB(context, path, null);
     }
 
     private static Sequence getDocumentByPathFromDB(final XQueryContext context, final String path, final Expression expression) throws XPathException, PermissionDeniedException {
