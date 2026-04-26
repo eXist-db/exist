@@ -482,7 +482,7 @@ public class FnFormatDates extends BasicFunction {
             case "N":
             case "n":
             case "Nn":
-                final String tzName = formatTimeZoneName(hour, minute, locale, place);
+                final String tzName = formatTimeZoneName(isNegative ? -absHour : absHour, absMinute, locale, place);
                 if ("n".equals(timezonePicture)) {
                     return tzName.toLowerCase(locale);
                 } else if ("Nn".equals(timezonePicture)) {

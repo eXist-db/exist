@@ -414,47 +414,7 @@ public class SequenceType {
     private boolean checkRecordType(final Item item) {
         if (!Type.subTypeOf(item.getType(), Type.MAP_ITEM)) {
             return false;
-
-     * Check if a function reference matches the required function type.
-     * Per the XQuery spec, function types are checked as follows:
-     * - The function's arity must match the number of parameter types
-     * - The function's return type must be a subtype of the required return type (covariant)
-     * - Each required parameter type must be a subtype of the function's parameter type (contravariant)
-     *
-     * @param funcRef the function reference to check
-     * @return true if the function matches the required function type
-     */
-    private boolean checkFunctionType(final FunctionReference funcRef) {
-        final FunctionSignature sig = funcRef.getSignature();
-
-        // Check arity: if we have typed parameter info, check against it
-        if (functionParamTypes != null) {
-            if (sig.getArgumentCount() != functionParamTypes.length) {
-                return false;
-            }
         }
-
-        // Check return type: function's return type must be a subtype of required return type (covariant)
-        if (functionReturnType != null && sig.getReturnType() != null) {
-            final int actualReturnType = sig.getReturnType().getPrimaryType();
-            final int requiredReturnType = functionReturnType.getPrimaryType();
-            if (!Type.subTypeOf(actualReturnType, requiredReturnType)) {
-                return false;
-            }
-        }
-
-        // Check parameter types: required param types must be subtypes of function's param types (contravariant)
-        // Note: for now we skip contravariant parameter checking as it requires more infrastructure
-        // The return type check alone fixes the majority of subtyping test failures
-
-        return true;
-    }
-
-    private static QName getRealName(final Item item) {
-        final NodeValue nvItem = (NodeValue) item;
-        if (item.getType() != Type.DOCUMENT) {
-            // get the name of the element/attribute
-            return nvItem.getQName();        }
         // record(*) matches any map
         if (recordExtensible && (recordFields == null || recordFields.isEmpty())) {
             return true;
@@ -512,6 +472,42 @@ public class SequenceType {
                 return false;
             }
         }
+
+        return true;
+    }
+
+    /**
+     * Check if a function reference matches the required function type.
+     * Per the XQuery spec, function types are checked as follows:
+     * - The function's arity must match the number of parameter types
+     * - The function's return type must be a subtype of the required return type (covariant)
+     * - Each required parameter type must be a subtype of the function's parameter type (contravariant)
+     *
+     * @param funcRef the function reference to check
+     * @return true if the function matches the required function type
+     */
+    private boolean checkFunctionType(final FunctionReference funcRef) {
+        final FunctionSignature sig = funcRef.getSignature();
+
+        // Check arity: if we have typed parameter info, check against it
+        if (functionParamTypes != null) {
+            if (sig.getArgumentCount() != functionParamTypes.length) {
+                return false;
+            }
+        }
+
+        // Check return type: function's return type must be a subtype of required return type (covariant)
+        if (functionReturnType != null && sig.getReturnType() != null) {
+            final int actualReturnType = sig.getReturnType().getPrimaryType();
+            final int requiredReturnType = functionReturnType.getPrimaryType();
+            if (!Type.subTypeOf(actualReturnType, requiredReturnType)) {
+                return false;
+            }
+        }
+
+        // Check parameter types: required param types must be subtypes of function's param types (contravariant)
+        // Note: for now we skip contravariant parameter checking as it requires more infrastructure
+        // The return type check alone fixes the majority of subtyping test failures
 
         return true;
     }

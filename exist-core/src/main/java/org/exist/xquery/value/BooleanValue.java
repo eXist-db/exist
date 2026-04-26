@@ -85,7 +85,7 @@ public class BooleanValue extends AtomicValue {
                 }
                 // Handle string subtypes (xs:language, xs:token, xs:normalizedString, etc.)
                 if (Type.subTypeOf(requiredType, Type.STRING)) {
-                    return new StringValue(getExpression(), getStringValue()).convertTo(requiredType);
+                    yield new StringValue(getExpression(), getStringValue()).convertTo(requiredType);
                 }
                 throw new XPathException(getExpression(), ErrorCodes.XPTY0004,
                         "cannot convert 'xs:boolean(" + value + ")' to " + Type.getTypeName(requiredType));
