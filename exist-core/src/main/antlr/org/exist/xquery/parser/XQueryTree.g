@@ -5062,6 +5062,16 @@ throws XPathException, PermissionDeniedException, EXistException
 				expr[value]
 				{ expr.map(key, value); }
 			)
+			|
+			#(
+				MAP_CONTENT
+				{
+					PathExpr content = new PathExpr(context);
+					content.setASTNode(mapConstr_AST_in);
+				}
+				expr[content]
+				{ expr.content(content); }
+			)
 		)*
 	)
 	;

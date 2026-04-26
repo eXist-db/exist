@@ -217,6 +217,7 @@ imaginaryTokenDefinitions
 	DESTRUCTURE_VAR_TYPE
 	RECORD_TEST
 	RECORD_FIELD
+	MAP_CONTENT
 	;
 
 // === XPointer ===
@@ -1730,7 +1731,7 @@ arrowFunctionSpecifier throws XPathException
     ( "map" LCURLY ) => mapConstructor
     |
     // XQ4: bare map constructor as function
-    ( LCURLY ) => bareMapConstructor
+    ( { xq4Enabled }? LCURLY ) => bareMapConstructor
     |
     // XQ4: array constructor as function
     ( LPPAREN | ("array" LCURLY) ) => arrayConstructor
@@ -1870,9 +1871,9 @@ primaryExpr throws XPathException
 	|
 	( "map" LCURLY ) => mapConstructor
 	|
-	( LCURLY RCURLY ) => bareMapConstructor
+	( { xq4Enabled }? LCURLY RCURLY ) => bareMapConstructor
 	|
-	( LCURLY exprSingle COLON ) => bareMapConstructor
+	( { xq4Enabled }? LCURLY exprSingle COLON ) => bareMapConstructor
 	|
 	directConstructor
 	|
@@ -1947,7 +1948,7 @@ stringTemplateInterpolation throws XPathException
 
 mapConstructor throws XPathException
 :
-    a:"map"! LCURLY! ( mapAssignment ( COMMA! mapAssignment )* )? RCURLY!
+    a:"map"! LCURLY! ( mapContentExpr ( COMMA! mapContentExpr )* )? RCURLY!
     {
         #mapConstructor = #(#[MAP, "map"], #mapConstructor);
         #mapConstructor.copyLexInfo(#a);
@@ -1956,14 +1957,15 @@ mapConstructor throws XPathException
 
 bareMapConstructor throws XPathException
 :
-    lc:LCURLY! ( mapAssignment ( COMMA! mapAssignment )* )? RCURLY!
+    lc:LCURLY! ( mapContentExpr ( COMMA! mapContentExpr )* )? RCURLY!
     {
         #bareMapConstructor = #(#[MAP, "map"], #bareMapConstructor);
         #bareMapConstructor.copyLexInfo(#lc);
     }
     ;
 
-mapAssignment throws XPathException
+// XQ4: map content expressions - either a key:value entry or a content expression (must evaluate to a map)
+mapContentExpr throws XPathException
 :
     (exprSingle COLON! EQ!) => exprSingle COLON^ eq:EQ^ exprSingle
     {
@@ -1971,8 +1973,14 @@ mapAssignment throws XPathException
                "The ':=' notation is no longer accepted in map expressions: use ':' instead.");
     }
     |
-	exprSingle COLON^ exprSingle
-	;
+    (exprSingle COLON) => exprSingle COLON^ exprSingle
+    |
+    mc:exprSingle
+    {
+        #mapContentExpr = #(#[MAP_CONTENT, null], #mapContentExpr);
+        #mapContentExpr.copyLexInfo(#mc);
+    }
+    ;
 
 arrayConstructor throws XPathException
 :
