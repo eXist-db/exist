@@ -227,17 +227,18 @@ public class HTML5Writer extends XHTML5Writer {
     protected void closeStartTag(boolean isEmpty) throws TransformerException {
         try {
             if (tagIsOpen) {
+                final Writer w = getWriter();
                 if (isEmpty) {
                     if (isEmptyTag(currentTag)) {
-                        getWriter().write(">");
+                        w.write('>');
                     } else {
-                        getWriter().write('>');
-                        getWriter().write("</");
-                        getWriter().write(currentTag);
-                        getWriter().write('>');
+                        // Coalesce ">", "</", tag, ">" into 2 writer calls instead of 4
+                        w.write("></");
+                        w.write(currentTag);
+                        w.write('>');
                     }
                 } else {
-                    getWriter().write('>');
+                    w.write('>');
                 }
                 tagIsOpen = false;
             }
@@ -284,6 +285,17 @@ public class HTML5Writer extends XHTML5Writer {
             return true;
         }
         return super.needsEscape(ch, inAttribute);
+    }
+
+    @Override
+    protected boolean needsEscaping(final boolean inAttribute) {
+        // Mirror the per-char rule above: TEXT content inside script/style is
+        // raw text and never needs escaping. Lets writeChars() bulk-stream
+        // the entire block in one Writer.write() call.
+        if (!inAttribute && RAW_TEXT_ELEMENTS.contains(currentTag)) {
+            return false;
+        }
+        return true;
     }
 
 }

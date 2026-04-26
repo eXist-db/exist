@@ -196,6 +196,19 @@ public final class CharSlice implements CharSequence, Serializable {
     public void write(final Writer writer) throws java.io.IOException {
         writer.write(array, offset, len);
     }
+
+    /**
+     * Write a sub-range of this slice to a writer using a single bulk
+     * {@link Writer#write(char[], int, int)} call.
+     *
+     * @param writer the writer
+     * @param start  the start index within this slice (inclusive)
+     * @param length the number of characters to write
+     * @throws java.io.IOException if an error occurs whilst writing
+     */
+    public void write(final Writer writer, final int start, final int length) throws java.io.IOException {
+        writer.write(array, offset + start, length);
+    }
 }
 
 //
