@@ -135,6 +135,7 @@ public class Type {
 
     /* XQuery 4.0 types */
     public final static int RECORD = 70;
+    public final static int DATETIME_RECORD = 71;  // XQ4: fn:dateTime-record named record type
 
     /* XQuery 4.0 JNode types — JSON nodes in the data model */
     public static final int JSON_NODE = 80;
@@ -264,8 +265,8 @@ public class Type {
         defineSubType(MAP_ITEM, RECORD);
         defineSubType(FUNCTION, ARRAY_ITEM);
 
-        // XQ4: RECORD is a subtype of MAP
-        defineSubType(MAP_ITEM, RECORD);
+        // XQ4: fn:dateTime-record is a named record type (subtype of map)
+        defineSubType(MAP_ITEM, DATETIME_RECORD);
 
         // NODE types
         defineSubType(NODE, ATTRIBUTE);
@@ -361,6 +362,9 @@ public class Type {
         defineBuiltInType(CDATA_SECTION, "cdata-section()");
         defineBuiltInType(JAVA_OBJECT, "object");
         defineBuiltInType(EMPTY_SEQUENCE, "empty-sequence()", "empty()");                           // keep `empty()` for backward compatibility
+
+        // XQuery 4.0 named record types
+        defineBuiltInType(DATETIME_RECORD, "fn:dateTime-record");
 
         // XQuery 4.0 JNode type names
         defineBuiltInType(JSON_NODE, "json-node()");
