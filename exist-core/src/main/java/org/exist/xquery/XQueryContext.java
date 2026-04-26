@@ -1315,6 +1315,31 @@ public class XQueryContext implements BinaryValueManager, Context {
     }
 
     /**
+     * Gets a text resource from the "Available text resources" of the
+     * dynamic context, matching by URI only. This is used when no encoding
+     * is specified, allowing the resource to be found regardless of what
+     * charset it was registered with.
+     *
+     * @param uri the URI of the resource to retrieve
+     * @return a reader to read the resource content from, or null if not found
+     * @throws XPathException in case of a dynamic error
+     */
+    public @Nullable Reader getDynamicallyAvailableTextResourceByUri(final String uri)
+            throws XPathException {
+        if (dynamicTextResources == null) {
+            return null;
+        }
+
+        for (final Map.Entry<Tuple2<String, Charset>, QuadFunctionE<DBBroker, Txn, String, Charset, Reader, XPathException>> entry : dynamicTextResources.entrySet()) {
+            if (entry.getKey()._1.equals(uri)) {
+                final Charset registeredCharset = entry.getKey()._2;
+                return entry.getValue().apply(getBroker(), getBroker().getCurrentTransaction(), uri, registeredCharset);
+            }
+        }
+        return null;
+    }
+
+    /**
      * Gets a collection from the "Available collections" of the
      * dynamic context.
      *
