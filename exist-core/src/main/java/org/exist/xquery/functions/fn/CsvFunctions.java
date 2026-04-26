@@ -366,11 +366,40 @@ public class CsvFunctions extends BasicFunction {
             return Sequence.EMPTY_SEQUENCE;
         }
         final String uri = args[0].getStringValue();
+        final byte[] bytes = readResourceBytes(uri);
+        final String csvContent = decodeWithBomDetection(bytes);
 
-        // Read the CSV content from the URI (same approach as fn:unparsed-text)
-        final String csvContent;
+        final CsvParser.CsvOptions options = parseOptions(args);
+        return evalParseCsv(csvContent, options);
+    }
+
+    /**
+     * Read the bytes of a CSV resource by URI. Resolves relative URIs against
+     * the static base URI (as fn:json-doc does), then falls back to SourceFactory.
+     */
+    private byte[] readResourceBytes(final String uri) throws XPathException {
         try {
-            final URI parsedUri = new URI(uri);
+            String url = uri;
+            boolean resolvedFromBaseUri = false;
+            if (url.indexOf(':') == Constants.STRING_NOT_FOUND) {
+                final String resolved = resolveAgainstBaseUri(url);
+                if (resolved != null && resolved.startsWith("file:")) {
+                    url = resolved;
+                    resolvedFromBaseUri = true;
+                }
+            }
+
+            if (resolvedFromBaseUri && url.startsWith("file:")) {
+                final String filePath = url.replaceFirst("^file:(?://[^/]*)?", "");
+                final java.nio.file.Path path = java.nio.file.Paths.get(filePath);
+                if (java.nio.file.Files.isReadable(path)) {
+                    return java.nio.file.Files.readAllBytes(path);
+                }
+                throw new XPathException(this, ErrorCodes.FODC0002,
+                        "Could not find CSV resource: " + uri);
+            }
+
+            final URI parsedUri = new URI(url);
             if (parsedUri.getFragment() != null) {
                 throw new XPathException(this, ErrorCodes.FODC0005,
                         "URI may not contain a fragment identifier: " + uri);
@@ -383,18 +412,79 @@ public class CsvFunctions extends BasicFunction {
             if (source instanceof FileSource && !context.getBroker().getCurrentSubject().hasDbaRole()) {
                 throw new PermissionDeniedException("non-dba user not allowed to read from file system");
             }
-            final StringWriter output = new StringWriter();
             try (final InputStream is = source.getInputStream()) {
-                IOUtils.copy(is, output, StandardCharsets.UTF_8);
+                return IOUtils.toByteArray(is);
             }
-            csvContent = output.toString();
         } catch (final IOException | PermissionDeniedException | URISyntaxException e) {
             throw new XPathException(this, ErrorCodes.FODC0002,
                     "Error reading CSV resource: " + uri + " - " + e.getMessage());
         }
+    }
 
-        final CsvParser.CsvOptions options = parseOptions(args);
-        return evalParseCsv(csvContent, options);
+    /**
+     * Detect a Unicode BOM and decode bytes accordingly. If no BOM is present,
+     * assumes UTF-8 and validates strict UTF-8. Throws FOUT1200 if the encoding
+     * cannot be inferred.
+     */
+    private String decodeWithBomDetection(final byte[] bytes) throws XPathException {
+        // UTF-32BE: 00 00 FE FF
+        if (bytes.length >= 4
+                && bytes[0] == 0 && bytes[1] == 0
+                && bytes[2] == (byte) 0xFE && bytes[3] == (byte) 0xFF) {
+            return new String(bytes, 4, bytes.length - 4, java.nio.charset.Charset.forName("UTF-32BE"));
+        }
+        // UTF-32LE: FF FE 00 00 (must check before UTF-16LE)
+        if (bytes.length >= 4
+                && bytes[0] == (byte) 0xFF && bytes[1] == (byte) 0xFE
+                && bytes[2] == 0 && bytes[3] == 0) {
+            return new String(bytes, 4, bytes.length - 4, java.nio.charset.Charset.forName("UTF-32LE"));
+        }
+        // UTF-8 BOM: EF BB BF
+        if (bytes.length >= 3
+                && bytes[0] == (byte) 0xEF && bytes[1] == (byte) 0xBB && bytes[2] == (byte) 0xBF) {
+            return new String(bytes, 3, bytes.length - 3, StandardCharsets.UTF_8);
+        }
+        // UTF-16BE BOM: FE FF
+        if (bytes.length >= 2 && bytes[0] == (byte) 0xFE && bytes[1] == (byte) 0xFF) {
+            return new String(bytes, 2, bytes.length - 2, StandardCharsets.UTF_16BE);
+        }
+        // UTF-16LE BOM: FF FE
+        if (bytes.length >= 2 && bytes[0] == (byte) 0xFF && bytes[1] == (byte) 0xFE) {
+            return new String(bytes, 2, bytes.length - 2, StandardCharsets.UTF_16LE);
+        }
+        // Invalid: FF FF or other 0xFF-prefixed sequences without recognized BOM
+        if (bytes.length >= 1 && bytes[0] == (byte) 0xFF) {
+            throw new XPathException(this, ErrorCodes.FOUT1200,
+                    "Cannot infer encoding of CSV resource (invalid byte order mark)");
+        }
+        // No BOM — assume UTF-8 and validate
+        try {
+            final java.nio.charset.CharsetDecoder decoder = StandardCharsets.UTF_8.newDecoder()
+                    .onMalformedInput(java.nio.charset.CodingErrorAction.REPORT)
+                    .onUnmappableCharacter(java.nio.charset.CodingErrorAction.REPORT);
+            return decoder.decode(java.nio.ByteBuffer.wrap(bytes)).toString();
+        } catch (final java.nio.charset.CharacterCodingException e) {
+            throw new XPathException(this, ErrorCodes.FOUT1200,
+                    "Cannot infer encoding of CSV resource: not valid UTF-8");
+        }
+    }
+
+    private String resolveAgainstBaseUri(final String relativePath) {
+        try {
+            final AnyURIValue baseXdmUri = context.getBaseURI();
+            if (baseXdmUri != null && !baseXdmUri.equals(AnyURIValue.EMPTY_URI)) {
+                String baseStr = baseXdmUri.toURI().toString();
+                final int lastSlash = baseStr.lastIndexOf('/');
+                if (lastSlash >= 0) {
+                    baseStr = baseStr.substring(0, lastSlash + 1);
+                }
+                final java.net.URI baseUri = new java.net.URI(baseStr);
+                return baseUri.resolve(relativePath).toString();
+            }
+        } catch (final URISyntaxException | XPathException e) {
+            // fall through
+        }
+        return null;
     }
 
     // ==================== Shared utilities ====================

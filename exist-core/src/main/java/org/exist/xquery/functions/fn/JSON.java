@@ -106,10 +106,17 @@ public class JSON extends BasicFunction {
     public static final String OPTION_DUPLICATES_REJECT = "reject";
     public static final String OPTION_DUPLICATES_USE_FIRST = "use-first";
     public static final String OPTION_DUPLICATES_USE_LAST = "use-last";
+    public static final String OPTION_DUPLICATES_RETAIN = "retain";
     public static final String OPTION_LIBERAL = "liberal";
     public static final String OPTION_ESCAPE = "escape";
     public static final String OPTION_UNESCAPE = "unescape";
     public static final QName KEY = new QName("key",null);
+
+    // Recognized option keys (XQuery 3.1 + 4.0)
+    private static final java.util.Set<String> KNOWN_OPTIONS = java.util.Set.of(
+            OPTION_LIBERAL, OPTION_DUPLICATES, "escape", "fallback", "number-parser",
+            "validate"  // accepted but unsupported in 3.1; rejected in 4.0
+    );
 
     public JSON(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
@@ -127,21 +134,40 @@ public class JSON extends BasicFunction {
         if (getArgumentCount() == 2) {
             final MapType options = (MapType)args[1].itemAt(0);
 
-            // Validate deprecated options → XPTY0004
-            final Sequence validateOpt = options.get(new StringValue("validate"));
-            if (validateOpt != null && validateOpt.hasOne()) {
+            final boolean strictOptions = context.getXQueryVersion() >= 40;
+
+            // Validate option keys (in XQuery 4.0, unknown options must be rejected)
+            if (strictOptions) {
+                for (final io.lacuna.bifurcan.IEntry<AtomicValue, Sequence> entry : options) {
+                    final AtomicValue key = entry.key();
+                    if (key.getType() == Type.QNAME) {
+                        // QName keys with namespace are vendor extensions — ignored
+                        continue;
+                    }
+                    if (!KNOWN_OPTIONS.contains(key.getStringValue())) {
+                        throw new XPathException(this, ErrorCodes.XPTY0004,
+                                "Unknown option for fn:" + getSignature().getName().getLocalPart()
+                                        + ": '" + key.getStringValue() + "'");
+                    }
+                }
+            }
+
+            // Validate 'validate' option → XPTY0004 (deprecated/unsupported);
+            // any presence of the key is an error, regardless of value.
+            if (options.contains(new StringValue("validate"))) {
                 throw new XPathException(this, ErrorCodes.XPTY0004,
                         "The 'validate' option is not supported");
             }
-            // XQuery 4.0: 'spec' option controls JSON spec version (RFC7159, ECMA-404, etc.)
-            // Accepted but not yet enforced — we always parse per RFC 7159
 
-            // Validate liberal option — must be boolean
-            final Sequence liberalOpt = options.get(new StringValue(OPTION_LIBERAL));
-            if (liberalOpt != null && liberalOpt.hasOne()) {
+            // Validate liberal option — must be a single boolean
+            if (options.contains(new StringValue(OPTION_LIBERAL))) {
+                final Sequence liberalOpt = options.get(new StringValue(OPTION_LIBERAL));
+                if (liberalOpt == null || liberalOpt.getItemCount() != 1) {
+                    throw new XPathException(this, ErrorCodes.XPTY0004,
+                            "Option 'liberal' must be a single boolean");
+                }
                 final Item liberalItem = liberalOpt.itemAt(0);
                 if (liberalItem.getType() != Type.BOOLEAN) {
-                    // Try to convert; if the value is a non-boolean string, reject
                     if (Type.subTypeOf(liberalItem.getType(), Type.STRING)) {
                         final String val = liberalItem.getStringValue();
                         if (!"true".equals(val) && !"false".equals(val) && !"1".equals(val) && !"0".equals(val)) {
@@ -155,35 +181,85 @@ public class JSON extends BasicFunction {
                 }
             }
 
-            // Validate duplicates option
-            final Sequence duplicateOpt = options.get(new StringValue(OPTION_DUPLICATES));
-            if (duplicateOpt != null && duplicateOpt.hasOne()) {
+            // Validate duplicates option — must be a single string.
+            // For json-to-xml, only "reject" and "use-first" are allowed (FOJS0005);
+            // for parse-json/json-doc, all four values are accepted.
+            if (options.contains(new StringValue(OPTION_DUPLICATES))) {
+                final Sequence duplicateOpt = options.get(new StringValue(OPTION_DUPLICATES));
+                if (duplicateOpt == null || duplicateOpt.getItemCount() != 1) {
+                    throw new XPathException(this, ErrorCodes.XPTY0004,
+                            "Option 'duplicates' must be a single string");
+                }
                 handleDuplicates = duplicateOpt.itemAt(0).getStringValue();
                 if (!OPTION_DUPLICATES_USE_FIRST.equals(handleDuplicates)
                         && !OPTION_DUPLICATES_USE_LAST.equals(handleDuplicates)
-                        && !OPTION_DUPLICATES_REJECT.equals(handleDuplicates)) {
+                        && !OPTION_DUPLICATES_REJECT.equals(handleDuplicates)
+                        && !OPTION_DUPLICATES_RETAIN.equals(handleDuplicates)) {
                     throw new XPathException(this, ErrorCodes.XPTY0004,
                             "Invalid value for 'duplicates' option: " + handleDuplicates);
                 }
+                if (isCalledAs(FS_JSON_TO_XML_NAME)
+                        && !OPTION_DUPLICATES_USE_FIRST.equals(handleDuplicates)
+                        && !OPTION_DUPLICATES_REJECT.equals(handleDuplicates)) {
+                    throw new XPathException(this, ErrorCodes.FOJS0005,
+                            "fn:json-to-xml: 'duplicates' option must be 'reject' or 'use-first', got: "
+                                    + handleDuplicates);
+                }
             }
 
-            // Validate fallback option — must be a function with arity 1
-            final Sequence fallbackOpt = options.get(new StringValue("fallback"));
-            if (fallbackOpt != null && fallbackOpt.hasOne()) {
+            // Validate escape option — must be a single boolean
+            if (options.contains(new StringValue("escape"))) {
+                final Sequence escapeOpt = options.get(new StringValue("escape"));
+                if (escapeOpt == null || escapeOpt.getItemCount() != 1) {
+                    throw new XPathException(this, ErrorCodes.XPTY0004,
+                            "Option 'escape' must be a single boolean");
+                }
+                final Item escItem = escapeOpt.itemAt(0);
+                if (escItem.getType() != Type.BOOLEAN) {
+                    try {
+                        escItem.atomize().convertTo(Type.BOOLEAN);
+                    } catch (final XPathException e) {
+                        throw new XPathException(this, ErrorCodes.XPTY0004,
+                                "Option 'escape' must be a boolean");
+                    }
+                }
+            }
+
+            // Validate fallback option — must be a single function with arity 1
+            if (options.contains(new StringValue("fallback"))) {
+                final Sequence fallbackOpt = options.get(new StringValue("fallback"));
+                if (fallbackOpt == null || fallbackOpt.getItemCount() != 1) {
+                    throw new XPathException(this, ErrorCodes.XPTY0004,
+                            "Option 'fallback' must be a single function");
+                }
                 final Item fallbackItem = fallbackOpt.itemAt(0);
                 if (!(fallbackItem instanceof FunctionReference)) {
                     throw new XPathException(this, ErrorCodes.XPTY0004,
                             "Option 'fallback' must be a function, got: " + Type.getTypeName(fallbackItem.getType()));
                 }
+                final int arity = ((FunctionReference) fallbackItem).getSignature().getArgumentCount();
+                if (arity != 1) {
+                    throw new XPathException(this, ErrorCodes.XPTY0004,
+                            "Option 'fallback' must be a function with arity 1, got arity " + arity);
+                }
             }
 
-            // Validate number-parser option — must be a function
-            final Sequence numberParserOpt = options.get(new StringValue("number-parser"));
-            if (numberParserOpt != null && numberParserOpt.hasOne()) {
+            // Validate number-parser option — must be a single function with arity 1
+            if (options.contains(new StringValue("number-parser"))) {
+                final Sequence numberParserOpt = options.get(new StringValue("number-parser"));
+                if (numberParserOpt == null || numberParserOpt.getItemCount() != 1) {
+                    throw new XPathException(this, ErrorCodes.XPTY0004,
+                            "Option 'number-parser' must be a single function");
+                }
                 final Item npItem = numberParserOpt.itemAt(0);
                 if (!(npItem instanceof FunctionReference)) {
                     throw new XPathException(this, ErrorCodes.XPTY0004,
                             "Option 'number-parser' must be a function, got: " + Type.getTypeName(npItem.getType()));
+                }
+                final int arity = ((FunctionReference) npItem).getSignature().getArgumentCount();
+                if (arity != 1) {
+                    throw new XPathException(this, ErrorCodes.XPTY0004,
+                            "Option 'number-parser' must be a function with arity 1, got arity " + arity);
                 }
             }
             final Sequence escapeOpt = options.get(new StringValue(OPTION_ESCAPE));
@@ -235,7 +311,12 @@ public class JSON extends BasicFunction {
         if (json.isEmpty()) {
             return Sequence.EMPTY_SEQUENCE;
         }
-        try (final JsonParser parser = factory.createParser(json.itemAt(0).getStringValue())) {
+        final String jsonText = json.itemAt(0).getStringValue();
+        if (jsonText.isEmpty() || jsonText.trim().isEmpty()) {
+            throw new XPathException(this, ErrorCodes.FOJS0001,
+                    "JSON text is empty");
+        }
+        try (final JsonParser parser = factory.createParser(jsonText)) {
             final Item result = readValue(context, parser, handleDuplicates);
             return result == null ? Sequence.EMPTY_SEQUENCE : result.toSequence();
         } catch (IOException e) {
@@ -249,18 +330,33 @@ public class JSON extends BasicFunction {
         if (json.isEmpty()) {
             return Sequence.EMPTY_SEQUENCE;
         }
-        try (final JsonParser parser = factory.createParser(json.itemAt(0).getStringValue())) {
+        final String jsonText = json.itemAt(0).getStringValue();
+        if (jsonText.isEmpty() || jsonText.trim().isEmpty()) {
+            throw new XPathException(this, ErrorCodes.FOJS0001,
+                    "JSON text is empty");
+        }
+        try (final JsonParser parser = factory.createParser(jsonText)) {
             context.pushDocumentContext();
             final MemTreeBuilder builder = context.getDocumentBuilder();
             builder.startDocument();
             factory.configure(JsonParser.Feature.ALLOW_BACKSLASH_ESCAPING_ANY_CHARACTER, false);
-            jsonToXml(builder, parser);
+            try {
+                jsonToXml(builder, parser, handleDuplicates);
+            } catch (final RuntimeException re) {
+                // memtree builder may reject XML-invalid characters with FOCH0001;
+                // surface this as FOJS0001 (parse error) per the spec
+                if (re.getMessage() != null && re.getMessage().contains("FOCH0001")) {
+                    throw new XPathException(this, ErrorCodes.FOJS0001, re.getMessage());
+                }
+                throw re;
+            }
             return builder.getDocument() == null ? Sequence.EMPTY_SEQUENCE : builder.getDocument();
-        }  catch (IOException e) {
+        } catch (IOException e) {
+            // Duplicate key detection in jsonToXml uses an IOException with a FOJS0003 prefix
+            if (e.getMessage() != null && e.getMessage().startsWith("FOJS0003:")) {
+                throw new XPathException(this, ErrorCodes.FOJS0003, e.getMessage().substring(9).trim());
+            }
             throw new XPathException(this, ErrorCodes.FOJS0001, e.getMessage());
-        } catch (XPathException e) {
-            e.setLocation(getLine(), getColumn(), getSource());
-            throw e;
         } finally {
             context.popDocumentContext();
         }
@@ -414,7 +510,7 @@ public class JSON extends BasicFunction {
                     next = null;
                     break;
                 default:
-                    next = new StringValue(parser.getText());
+                    next = new StringValue(replaceInvalidXmlChars(parser.getText()));
                     break;
             }
             if (parent != null) {
@@ -427,24 +523,72 @@ public class JSON extends BasicFunction {
                         if (currentName == null) {
                             throw new XPathException(next, ErrorCodes.FOJS0001, "Invalid JSON object");
                         }
-                        final StringValue name = new StringValue(currentName);
+                        final StringValue name = new StringValue(replaceInvalidXmlChars(currentName));
                         final MapType map = (MapType) parent;
+                        final Sequence newValue = next == null ? Sequence.EMPTY_SEQUENCE : next.toSequence();
                         if (map.contains(name)) {
                             // handle duplicate keys
                             if (handleDuplicates.equals(OPTION_DUPLICATES_REJECT)) {
                                 throw new XPathException(map.getExpression(), ErrorCodes.FOJS0003, "Duplicate key: " + currentName);
+                            } else if (handleDuplicates.equals(OPTION_DUPLICATES_USE_LAST)) {
+                                map.add(name, newValue);
+                            } else if (handleDuplicates.equals(OPTION_DUPLICATES_RETAIN)) {
+                                final Sequence existing = map.get(name);
+                                final ValueSequence combined = new ValueSequence(existing.getItemCount() + newValue.getItemCount());
+                                combined.addAll(existing);
+                                combined.addAll(newValue);
+                                map.add(name, combined);
                             }
-                            if (handleDuplicates.equals(OPTION_DUPLICATES_USE_LAST)) {
-                                map.add(name, next == null ? Sequence.EMPTY_SEQUENCE : next.toSequence());
-                            }
+                            // USE_FIRST: keep existing value
                         } else {
-                            map.add(name, next == null ? Sequence.EMPTY_SEQUENCE : next.toSequence());
+                            map.add(name, newValue);
                         }
                         break;
                 }
             }
         }
         return next;
+    }
+
+    /**
+     * Replace characters that are invalid in XML 1.0 content (codepoints
+     * outside the allowed XML character ranges, including unpaired surrogates)
+     * with U+FFFD. Used by parse-json/json-to-xml when no fallback option is
+     * supplied (per XPath 3.1 §17.5.1).
+     */
+    static String replaceInvalidXmlChars(final String s) {
+        if (s == null) return null;
+        StringBuilder sb = null;
+        for (int i = 0; i < s.length(); i++) {
+            final char c = s.charAt(i);
+            // Valid XML 1.0: #x9, #xA, #xD, #x20-#xD7FF, #xE000-#xFFFD,
+            // and supplementary chars via valid surrogate pairs
+            boolean valid = (c == 0x9 || c == 0xA || c == 0xD
+                    || (c >= 0x20 && c <= 0xD7FF)
+                    || (c >= 0xE000 && c <= 0xFFFD));
+            if (Character.isHighSurrogate(c)) {
+                if (i + 1 < s.length() && Character.isLowSurrogate(s.charAt(i + 1))) {
+                    if (sb != null) {
+                        sb.append(c).append(s.charAt(i + 1));
+                    }
+                    i++;
+                    continue;
+                }
+                valid = false;
+            } else if (Character.isLowSurrogate(c)) {
+                valid = false;
+            }
+            if (!valid) {
+                if (sb == null) {
+                    sb = new StringBuilder(s.length());
+                    sb.append(s, 0, i);
+                }
+                sb.append('\uFFFD');
+            } else if (sb != null) {
+                sb.append(c);
+            }
+        }
+        return sb == null ? s : sb.toString();
     }
 
     /**
@@ -456,67 +600,102 @@ public class JSON extends BasicFunction {
      * @throws IOException if an I/O error occurs
      */
     public static void jsonToXml(MemTreeBuilder builder, JsonParser parser) throws IOException {
-        JsonToken token;
+        jsonToXml(builder, parser, OPTION_DUPLICATES_USE_LAST);
+    }
 
+    /**
+     * Generate XML from JSON tokens, with duplicate-key handling per the
+     * `duplicates` option. When duplicates="reject" and a duplicate key is
+     * seen, FOJS0003 is raised. Other modes (use-first/use-last/retain) are
+     * not enforced on the XML output (the result simply contains all entries
+     * as the spec allows).
+     */
+    public static void jsonToXml(final MemTreeBuilder builder, final JsonParser parser,
+                                 final String handleDuplicates) throws IOException {
+        final java.util.Deque<java.util.Set<String>> keyStack = new java.util.ArrayDeque<>();
+        JsonToken token;
         while ((token = parser.nextValue()) != null) {
-            if (token == JsonToken.END_OBJECT || token == JsonToken.END_ARRAY) {
+            if (token == JsonToken.END_OBJECT) {
+                if (!keyStack.isEmpty()) keyStack.pop();
                 builder.endElement();
+                continue;
+            }
+            if (token == JsonToken.END_ARRAY) {
+                builder.endElement();
+                continue;
+            }
+            // Detect duplicate key in the enclosing object
+            final String currentName = parser.getCurrentName();
+            if (currentName != null && !keyStack.isEmpty()) {
+                final java.util.Set<String> seen = keyStack.peek();
+                if (!seen.add(currentName)) {
+                    if (OPTION_DUPLICATES_REJECT.equals(handleDuplicates)) {
+                        throw new IOException("FOJS0003: Duplicate key in object: " + currentName);
+                    } else if (OPTION_DUPLICATES_USE_FIRST.equals(handleDuplicates)) {
+                        // Skip this entry — including any subtree it introduces
+                        if (token == JsonToken.START_OBJECT || token == JsonToken.START_ARRAY) {
+                            parser.skipChildren();
+                        }
+                        continue;
+                    }
+                    // For use-last/retain, the simple emit-everything behavior
+                    // produces XML containing duplicates; that is acceptable per
+                    // the spec since the result is not schema-validated here.
+                }
             }
             switch (token) {
                 case START_OBJECT:
-                    builder.startElement(Namespaces.XPATH_FUNCTIONS_NS,"map","map",null );
-                    if(parser.getCurrentName() != null){
-                        builder.addAttribute(KEY, parser.getCurrentName());
+                    builder.startElement(Namespaces.XPATH_FUNCTIONS_NS, "map", "map", null);
+                    if (currentName != null) {
+                        builder.addAttribute(KEY, replaceInvalidXmlChars(currentName));
                     }
+                    keyStack.push(new java.util.HashSet<>());
                     break;
                 case START_ARRAY:
-                    builder.startElement(Namespaces.XPATH_FUNCTIONS_NS,"array","array",null );
-                    if(parser.getCurrentName() != null){
-                        builder.addAttribute(KEY, parser.getCurrentName());
+                    builder.startElement(Namespaces.XPATH_FUNCTIONS_NS, "array", "array", null);
+                    if (currentName != null) {
+                        builder.addAttribute(KEY, replaceInvalidXmlChars(currentName));
                     }
                     break;
                 case VALUE_FALSE:
-                    builder.startElement(Namespaces.XPATH_FUNCTIONS_NS,"boolean","boolean",null );
-                    if(parser.getCurrentName() != null){
-                        builder.addAttribute(KEY, parser.getCurrentName());
+                    builder.startElement(Namespaces.XPATH_FUNCTIONS_NS, "boolean", "boolean", null);
+                    if (currentName != null) {
+                        builder.addAttribute(KEY, replaceInvalidXmlChars(currentName));
                     }
                     builder.characters(Boolean.toString(false));
                     builder.endElement();
                     break;
                 case VALUE_TRUE:
-                    builder.startElement(Namespaces.XPATH_FUNCTIONS_NS,"boolean","boolean",null );
-                    if(parser.getCurrentName() != null){
-                        builder.addAttribute(KEY, parser.getCurrentName());
+                    builder.startElement(Namespaces.XPATH_FUNCTIONS_NS, "boolean", "boolean", null);
+                    if (currentName != null) {
+                        builder.addAttribute(KEY, replaceInvalidXmlChars(currentName));
                     }
                     builder.characters(Boolean.toString(true));
                     builder.endElement();
                     break;
                 case VALUE_NUMBER_FLOAT:
                 case VALUE_NUMBER_INT:
-                    builder.startElement(Namespaces.XPATH_FUNCTIONS_NS,"number","number",null );
-                    if(parser.getCurrentName() != null){
-                        builder.addAttribute(KEY, parser.getCurrentName());
+                    builder.startElement(Namespaces.XPATH_FUNCTIONS_NS, "number", "number", null);
+                    if (currentName != null) {
+                        builder.addAttribute(KEY, replaceInvalidXmlChars(currentName));
                     }
                     builder.characters(parser.getText());
                     builder.endElement();
-
                     break;
                 case VALUE_NULL:
-                    builder.startElement(Namespaces.XPATH_FUNCTIONS_NS,"null","null",null );
-                    if(parser.getCurrentName() != null){
-                        builder.addAttribute(KEY, parser.getCurrentName());
+                    builder.startElement(Namespaces.XPATH_FUNCTIONS_NS, "null", "null", null);
+                    if (currentName != null) {
+                        builder.addAttribute(KEY, replaceInvalidXmlChars(currentName));
                     }
                     builder.endElement();
-
                     break;
                 case VALUE_STRING:
-                    builder.startElement(Namespaces.XPATH_FUNCTIONS_NS,"string","string",null );
-                    if(parser.getCurrentName() != null){
-                        builder.addAttribute(KEY, parser.getCurrentName());
+                    builder.startElement(Namespaces.XPATH_FUNCTIONS_NS, "string", "string", null);
+                    if (currentName != null) {
+                        builder.addAttribute(KEY, replaceInvalidXmlChars(currentName));
                     }
-                    builder.characters(parser.getText());
+                    builder.characters(replaceInvalidXmlChars(parser.getText()));
                     builder.endElement();
-
                     break;
                 default:
                     break;
