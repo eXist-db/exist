@@ -37,6 +37,7 @@ import org.exist.xquery.value.*;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
 import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -367,7 +368,7 @@ public class CsvFunctions extends BasicFunction {
         }
         final String uri = args[0].getStringValue();
 
-        // Read the CSV content from the URI (same approach as fn:unparsed-text)
+        // Read the CSV content from the URI
         final String csvContent;
         try {
             final URI parsedUri = new URI(uri);
@@ -375,7 +376,25 @@ public class CsvFunctions extends BasicFunction {
                 throw new XPathException(this, ErrorCodes.FODC0005,
                         "URI may not contain a fragment identifier: " + uri);
             }
-            final Source source = SourceFactory.getSource(context.getBroker(), "", parsedUri.toASCIIString(), false);
+            final String url = parsedUri.toASCIIString();
+
+            // Check dynamically available text resources first (e.g., XQTS test resources)
+            try (final Reader dynamicTextResource = context.getDynamicallyAvailableTextResource(url, StandardCharsets.UTF_8)) {
+                if (dynamicTextResource != null) {
+                    final StringBuilder sb = new StringBuilder();
+                    final char[] buf = new char[4096];
+                    int read;
+                    while ((read = dynamicTextResource.read(buf)) != -1) {
+                        sb.append(buf, 0, read);
+                    }
+                    csvContent = sb.toString();
+                    final CsvParser.CsvOptions options = parseOptions(args);
+                    return evalParseCsv(csvContent, options);
+                }
+            }
+
+            // Fall through to SourceFactory for database/file resources
+            final Source source = SourceFactory.getSource(context.getBroker(), "", url, false);
             if (source == null) {
                 throw new XPathException(this, ErrorCodes.FODC0002,
                         "Could not find CSV resource: " + uri);
@@ -555,13 +574,15 @@ public class CsvFunctions extends BasicFunction {
             final Sequence colSeq = context.resolveVariable("column").getValue();
 
             if (rowIdxSeq.isEmpty() || colSeq.isEmpty()) {
-                return Sequence.EMPTY_SEQUENCE;
+                return new StringValue(this, "");
             }
 
             final int rowIdx = ((IntegerValue) rowIdxSeq.itemAt(0).convertTo(Type.INTEGER)).getInt();
 
-            if (rowIdx < 1 || rowIdx > rows.getItemCount()) {
-                return Sequence.EMPTY_SEQUENCE;
+            // Negative or zero row index is a type error (per XQ4 spec)
+            if (rowIdx < 1) {
+                throw new XPathException(this, ErrorCodes.XPTY0004,
+                        "Row index must be a positive integer, got: " + rowIdx);
             }
 
             // Resolve column: integer index or string name
@@ -569,11 +590,17 @@ public class CsvFunctions extends BasicFunction {
             final int colIdx;
             if (Type.subTypeOf(colItem.getType(), Type.INTEGER)) {
                 colIdx = ((IntegerValue) colItem.convertTo(Type.INTEGER)).getInt();
+                // Negative or zero column index is a type error
+                if (colIdx < 1) {
+                    throw new XPathException(this, ErrorCodes.XPTY0004,
+                            "Column index must be a positive integer, got: " + colIdx);
+                }
             } else {
                 // String column name — look up in header
                 final String colName = colItem.getStringValue();
                 if (header == null) {
-                    return Sequence.EMPTY_SEQUENCE;
+                    throw new XPathException(this, ErrorCodes.FOCV0004,
+                            "No column named '" + colName + "': CSV has no header");
                 }
                 int found = -1;
                 for (int i = 0; i < header.size(); i++) {
@@ -583,14 +610,20 @@ public class CsvFunctions extends BasicFunction {
                     }
                 }
                 if (found == -1) {
-                    return Sequence.EMPTY_SEQUENCE;
+                    throw new XPathException(this, ErrorCodes.FOCV0004,
+                            "No column named '" + colName + "' in CSV header");
                 }
                 colIdx = found;
             }
 
+            // Out-of-range positive indices return empty string (per XQ4 spec)
+            if (rowIdx > rows.getItemCount()) {
+                return new StringValue(this, "");
+            }
+
             final ArrayType row = (ArrayType) rows.itemAt(rowIdx - 1);
-            if (colIdx < 1 || colIdx > row.getSize()) {
-                return Sequence.EMPTY_SEQUENCE;
+            if (colIdx > row.getSize()) {
+                return new StringValue(this, "");
             }
 
             return row.get(colIdx - 1);

@@ -217,6 +217,7 @@ public class ErrorCodes {
     public static final ErrorCode FOCV0001 = new W3CErrorCode("FOCV0001", "CSV quote error.");
     public static final ErrorCode FOCV0002 = new W3CErrorCode("FOCV0002", "Invalid CSV delimiter.");
     public static final ErrorCode FOCV0003 = new W3CErrorCode("FOCV0003", "Conflicting CSV delimiters.");
+    public static final ErrorCode FOCV0004 = new W3CErrorCode("FOCV0004", "CSV field not found.");
     public static final ErrorCode FOTY0012 = new W3CErrorCode("FOTY0012", "Argument node does not have a typed value.");
     public static final ErrorCode FOTY0013 = new W3CErrorCode("FOTY0013", "The argument to fn:data() contains a function item.");
 
