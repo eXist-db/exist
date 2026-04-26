@@ -62,6 +62,9 @@ public final class XQueryParser {
     private final java.util.Set<String> declaredDecimalFormats = new java.util.HashSet<>();
     private boolean defaultDecimalFormatDeclared = false;
 
+    /** Temporary storage for RecordType parsed in parseItemType, consumed by parseSequenceType. */
+    private RecordType pendingRecordType = null;
+
     public boolean isLibraryModule() { return isLibraryModule; }
 
     /** Returns true if the query declares xquery version "4.0". */
@@ -2698,7 +2701,15 @@ public final class XQueryParser {
             card = Cardinality.ONE_OR_MORE;
         }
 
-        return new SequenceType(itemType, card);
+        final SequenceType seqType = new SequenceType(itemType, card);
+
+        // If parseItemType produced a RecordType, attach it to the SequenceType
+        if (pendingRecordType != null) {
+            seqType.setRecordType(pendingRecordType);
+            pendingRecordType = null;
+        }
+
+        return seqType;
     }
 
     /**
@@ -2787,15 +2798,37 @@ public final class XQueryParser {
 
         // RecordType: record(key as type, ...) or record(*)
         if (checkKeyword(Keywords.RECORD) && peekIs(Token.LPAREN)) {
+            final int recLine = current.line, recCol = current.column;
             advance(); advance(); // consume 'record' '('
-            int depth = 1;
-            while (depth > 0 && !check(Token.EOF)) {
-                if (check(Token.LPAREN)) depth++;
-                if (check(Token.RPAREN)) { depth--; if (depth == 0) break; }
-                advance();
+
+            // record() — empty record
+            if (match(Token.RPAREN)) {
+                pendingRecordType = new RecordType(new ArrayList<>(), false);
+                return Type.RECORD;
+            }
+
+            // record(*) — extensible record, rejected by XQ4
+            if (check(Token.STAR)) {
+                throw new XPathException(recLine, recCol, ErrorCodes.XPST0003,
+                        "Extensible record types record(*) are not supported in XQuery 4.0");
+            }
+
+            // record(field1 as type1, field2? as type2, ...)
+            final List<RecordType.FieldDeclaration> fields = new ArrayList<>();
+            fields.add(parseRecordFieldDecl());
+            while (match(Token.COMMA)) {
+                // record(..., *) — extensible record, rejected by XQ4
+                if (check(Token.STAR)) {
+                    advance(); // consume *
+                    throw new XPathException(recLine, recCol, ErrorCodes.XPST0003,
+                            "Extensible record types record(..., *) are not supported in XQuery 4.0");
+                }
+                fields.add(parseRecordFieldDecl());
             }
             expect(Token.RPAREN, "')'");
-            return Type.MAP_ITEM; // record is a specialization of map
+
+            pendingRecordType = new RecordType(fields, false);
+            return Type.RECORD;
         }
 
         // node(), element(), attribute(), text(), comment(), etc.
@@ -2853,6 +2886,28 @@ public final class XQueryParser {
             case "member-node": return Type.JSON_MEMBER;
             default: return Type.ITEM;
         }
+    }
+
+    /**
+     * Parses a single record field declaration: fieldName '?'? ('as' sequenceType)?
+     * Field names can be any NCName (including XQuery keywords).
+     */
+    private RecordType.FieldDeclaration parseRecordFieldDecl() throws XPathException {
+        if (!check(Token.NCNAME)) {
+            throw new XPathException(current.line, current.column, ErrorCodes.XPST0003,
+                    "Expected field name in record type, got " + current);
+        }
+        final String fieldName = current.value;
+        advance(); // consume field name
+
+        final boolean optional = match(Token.QUESTION);
+
+        SequenceType fieldType = null;
+        if (matchKeyword(Keywords.AS)) {
+            fieldType = parseSequenceType();
+        }
+
+        return new RecordType.FieldDeclaration(fieldName, fieldType, optional);
     }
 
     // ========================================================================
@@ -4109,6 +4164,7 @@ public final class XQueryParser {
      */
     private boolean isBareMapConstructorStart() {
         if (!check(Token.LBRACE)) return false;
+        if (!isXQ4()) return false; // bare map syntax is XQ4 only
 
         // { } is an empty map
         if (peekIs(Token.RBRACE)) return true;
@@ -4178,9 +4234,9 @@ public final class XQueryParser {
         mapExpr.setLocation(line, col);
 
         if (!check(Token.RBRACE)) {
-            parseMapEntry(mapExpr);
+            parseMapContentExpr(mapExpr);
             while (match(Token.COMMA)) {
-                parseMapEntry(mapExpr);
+                parseMapContentExpr(mapExpr);
             }
         }
         expect(Token.RBRACE, "'}'");
@@ -4196,23 +4252,33 @@ public final class XQueryParser {
         mapExpr.setLocation(line, col);
 
         if (!check(Token.RBRACE)) {
-            parseMapEntry(mapExpr);
+            parseMapContentExpr(mapExpr);
             while (match(Token.COMMA)) {
-                parseMapEntry(mapExpr);
+                parseMapContentExpr(mapExpr);
             }
         }
         expect(Token.RBRACE, "'}'");
         return mapExpr;
     }
 
-    private void parseMapEntry(final org.exist.xquery.functions.map.MapExpr mapExpr)
+    /**
+     * Parses a map content expression: either a key:value entry or a content expression (XQ4).
+     * Content expressions must evaluate to a map at runtime and are merged into the constructor.
+     */
+    private void parseMapContentExpr(final org.exist.xquery.functions.map.MapExpr mapExpr)
             throws XPathException {
-        final PathExpr key = new PathExpr(context);
-        key.add(parseExprSingle());
-        expect(Token.COLON, "':'");
-        final PathExpr value = new PathExpr(context);
-        value.add(parseExprSingle());
-        mapExpr.map(key, value);
+        final PathExpr expr = new PathExpr(context);
+        expr.add(parseExprSingle());
+
+        if (match(Token.COLON)) {
+            // key:value entry
+            final PathExpr value = new PathExpr(context);
+            value.add(parseExprSingle());
+            mapExpr.map(expr, value);
+        } else {
+            // Content expression (XQ4): must evaluate to a map at runtime
+            mapExpr.content(expr);
+        }
     }
 
     /**
