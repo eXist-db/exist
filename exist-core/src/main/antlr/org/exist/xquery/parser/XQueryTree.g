@@ -914,15 +914,17 @@ throws PermissionDeniedException, EXistException, XPathException
         moduleURI:STRING_LITERAL
         ( uriList [uriList] )?
         {
+            // Normalize whitespace in module namespace URI per XQuery spec section 4.12:
+            // xs:anyURI uses collapse (strip leading/trailing, replace internal whitespace sequences with single space)
+            final String moduleNamespaceUri = moduleURI.getText().strip().replaceAll("[\\x20\\x09\\x0A\\x0D]+", " ");
+
             if (modulePrefix != null) {
                 if (declaredNamespaces.get(modulePrefix) != null) {
                     throw new XPathException(i, ErrorCodes.XQST0033, "Prolog contains " +
                         "multiple declarations for namespace prefix: " + modulePrefix);
                 }
-                declaredNamespaces.put(modulePrefix, moduleURI.getText());
+                declaredNamespaces.put(modulePrefix, moduleNamespaceUri);
             }
-
-            final String moduleNamespaceUri = moduleURI.getText();
             if (importedModules.contains(moduleNamespaceUri)) {
                 throw new XPathException(i, ErrorCodes.XQST0047, "Prolog has " +
                     "more than one 'import module' statement for module(s) of namespace: " + moduleNamespaceUri);

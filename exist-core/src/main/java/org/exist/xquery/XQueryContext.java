@@ -627,13 +627,31 @@ public class XQueryContext implements BinaryValueManager, Context {
         }
 
         // try an internal module
-        final Module jMod = repo.get().resolveJavaModule(namespace, this);
+        final Module jMod;
+        try {
+            jMod = repo.get().resolveJavaModule(namespace, this);
+        } catch (final XPathException e) {
+            if (e.getErrorCode() == ErrorCodes.XQST0046) {
+                // URI is not valid per Java URI syntax but may still be a valid XQuery namespace URI
+                // (e.g., contains spaces, Unicode, or special characters). XQST0046 is optional per spec.
+                return null;
+            }
+            throw e;
+        }
         if (jMod != null) {
             return jMod;
         }
 
         // try an eXist-specific module
-        final Path resolved = repo.get().resolveXQueryModule(namespace);
+        final Path resolved;
+        try {
+            resolved = repo.get().resolveXQueryModule(namespace);
+        } catch (final XPathException e) {
+            if (e.getErrorCode() == ErrorCodes.XQST0046) {
+                return null;
+            }
+            throw e;
+        }
         if (resolved == null) {
             return null;
         }
@@ -1942,7 +1960,9 @@ public class XQueryContext implements BinaryValueManager, Context {
             for (final Module module : modules) {
                 if (!module.isInternalModule()) {
                     final Expression root = ((ExternalModule) module).getRootExpression();
-                    ((ExternalModule) module).getContext().analyzeAndOptimizeIfModulesChanged(root);
+                    if (root != null) {
+                        ((ExternalModule) module).getContext().analyzeAndOptimizeIfModulesChanged(root);
+                    }
                 }
             }
         }
@@ -2830,8 +2850,11 @@ public class XQueryContext implements BinaryValueManager, Context {
     public @Nullable Module[] importModule(@Nullable String namespaceURI, @Nullable String prefix, @Nullable AnyURIValue[] locationHints) throws XPathException {
 
         // Normalize whitespace in namespace URI per XQuery spec section 4.12
+        // xs:anyURI uses whitespace collapse: trim leading/trailing, then replace
+        // internal sequences of whitespace (#x20, #x9, #xA, #xD) with a single space
         if (namespaceURI != null) {
-            namespaceURI = namespaceURI.trim();
+            namespaceURI = namespaceURI.strip();
+            namespaceURI = namespaceURI.replaceAll("[\\x20\\x09\\x0A\\x0D]+", " ");
         }
 
         if (XML_NS_PREFIX.equals(prefix) || XMLNS_ATTRIBUTE.equals(prefix)) {
@@ -2848,6 +2871,16 @@ public class XQueryContext implements BinaryValueManager, Context {
 
         if (namespaceURI != null) {
             modules = getRootModules(namespaceURI);
+        }
+
+        // Filter out external modules that were registered but never fully compiled
+        // (e.g., due to namespace mismatch during eager loading).
+        // Only do this in the root context — in a ModuleContext the partially-registered
+        // module may be the one currently being compiled (cyclic import support).
+        if (isNotEmpty(modules) && !hasParent()) {
+            modules = java.util.Arrays.stream(modules)
+                    .filter(m -> m.isInternalModule() || ((ExternalModule) m).isReady())
+                    .toArray(Module[]::new);
         }
 
         if (isNotEmpty(modules)) {
