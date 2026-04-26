@@ -96,7 +96,7 @@ public class DateTimeValue extends AbstractDateTimeValue {
                 throw new IllegalStateException();
             }
         } catch (final IllegalStateException e) {
-            throw new XPathException(getExpression(), "xs:dateTime instance must have all fields set");
+            throw new XPathException(getExpression(), ErrorCodes.FORG0001, "xs:dateTime instance must have all fields set");
         }
         normalize();
     }

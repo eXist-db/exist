@@ -205,18 +205,17 @@ public class DoubleValue extends NumericValue {
         if (isNaN() || isInfinite()) {
             throw conversionError(ErrorCodes.FOCA0002, Type.INTEGER);
         }
-        return new IntegerValue(getExpression(), (long) value);
+        // Use BigDecimal to avoid silent long overflow for large doubles like 99e100
+        return new IntegerValue(getExpression(), BigDecimal.valueOf(value).toBigInteger());
     }
 
     public IntegerValue toIntegerSubType(final int subType) throws XPathException {
         if (isNaN() || isInfinite()) {
             throw conversionError(ErrorCodes.FOCA0002, subType);
         }
-        if (subType != Type.INTEGER && value > Integer.MAX_VALUE) {
-            throw new XPathException(getExpression(), ErrorCodes.FOCA0003, "Value is out of range for type "
-                    + Type.getTypeName(subType));
-        }
-        return new IntegerValue(getExpression(), (long) value, subType);
+        // Use BigDecimal to avoid silent long overflow for large doubles
+        final java.math.BigInteger bigVal = BigDecimal.valueOf(value).toBigInteger();
+        return new IntegerValue(getExpression(), bigVal, subType);
     }
 
     private XPathException conversionError(final int type) {

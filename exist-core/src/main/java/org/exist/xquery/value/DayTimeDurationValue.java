@@ -74,6 +74,7 @@ public class DayTimeDurationValue extends OrderedDurationValue {
 
     private static Duration createDurationDayTime(String str, final Expression expression) throws XPathException {
         try {
+            DurationValue.validateDurationDecimal(str);
             return TimeUtils.getInstance().newDurationDayTime(str);
         } catch (final IllegalArgumentException e) {
             throw new XPathException(expression, ErrorCodes.FORG0001, "cannot construct " + Type.getTypeName(Type.DAY_TIME_DURATION) +
