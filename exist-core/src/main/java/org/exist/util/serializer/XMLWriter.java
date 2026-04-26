@@ -866,11 +866,28 @@ public class XMLWriter implements SerializerWriter {
     protected boolean needsEscape(final char ch, final boolean inAttribute) {
         return needsEscape(ch);
     }
-    
+
+    /**
+     * Whether the current context requires character escaping at all.
+     * Subclasses (e.g., HTML5Writer for {@code <script>} / {@code <style>}
+     * raw-text content) override to return {@code false} when the entire
+     * text can be written verbatim, letting {@link #writeChars} skip the
+     * per-character specialChars check and emit one bulk write.
+     *
+     * @param inAttribute true if we're writing an attribute value
+     */
+    protected boolean needsEscaping(final boolean inAttribute) {
+        return true;
+    }
+
     protected void writeChars(final CharSequence s, final boolean inAttribute) throws IOException {
         // Apply Unicode normalization if configured
         final CharSequence text = normalize(s);
         final boolean[] specialChars = inAttribute ? attrSpecialChars : textSpecialChars;
+        // In raw-text contexts (HTML5 script/style) no escaping is needed, so
+        // skip the per-char specialChars check — only encoding-incompatible
+        // chars need to break the bulk run.
+        final boolean checkSpecials = needsEscaping(inAttribute);
         char ch = 0;
         final int len = text.length();
         int pos = 0, i;
@@ -879,7 +896,7 @@ public class XMLWriter implements SerializerWriter {
             while(i < len) {
                 ch = text.charAt(i);
                 if(ch < 128) {
-                    if(specialChars[ch]) {
+                    if(checkSpecials && specialChars[ch]) {
                         break;
                     } else if(xml11 && ch >= 0x01 && ch <= 0x1F
                             && ch != 0x09 && ch != 0x0A && ch != 0x0D) {
@@ -947,9 +964,42 @@ public class XMLWriter implements SerializerWriter {
     }
 
     private void writeCharSeq(final CharSequence ch, final int start, final int end) throws IOException {
-        for(int i = start; i < end; i++) {
-            writer.write(ch.charAt(i));
+        final int len = end - start;
+        if (len <= 0) {
+            return;
         }
+        if (ch instanceof String s) {
+            writer.write(s, start, len);
+        } else if (ch instanceof CharSlice cs) {
+            cs.write(writer, start, len);
+        } else if (ch instanceof StringBuilder sb) {
+            sb.getChars(start, end, ensureCharBuffer(len), 0);
+            writer.write(charBuffer, 0, len);
+        } else if (ch instanceof StringBuffer sb) {
+            sb.getChars(start, end, ensureCharBuffer(len), 0);
+            writer.write(charBuffer, 0, len);
+        } else {
+            // Generic CharSequence — copy then bulk-write
+            final char[] buf = ensureCharBuffer(len);
+            for (int i = 0; i < len; i++) {
+                buf[i] = ch.charAt(start + i);
+            }
+            writer.write(buf, 0, len);
+        }
+    }
+
+    private char[] charBuffer;
+
+    private char[] ensureCharBuffer(final int minLen) {
+        if (charBuffer == null || charBuffer.length < minLen) {
+            // Grow to a power-of-two-ish size to amortize re-allocation
+            int n = charBuffer == null ? 256 : charBuffer.length;
+            while (n < minLen) {
+                n <<= 1;
+            }
+            charBuffer = new char[n];
+        }
+        return charBuffer;
     }
 
     protected void writeCharacterReference(final char charval) throws IOException {
