@@ -310,7 +310,7 @@ public class OrderedValueSequence extends AbstractSequence {
             }
             return set;
         } else {
-            throw new XPathException((Expression) null, "Type error: the sequence cannot be converted into" +
+            throw new XPathException((Expression) null, ErrorCodes.XPTY0019, "Type error: the sequence cannot be converted into" +
                     " a node set. Item type is " + Type.getTypeName(itemType));
         }
     }
@@ -338,7 +338,7 @@ public class OrderedValueSequence extends AbstractSequence {
             return MemoryNodeSet.EMPTY;
         }
         if (itemType == Type.ANY_TYPE || !Type.subTypeOf(itemType, Type.NODE)) {
-            throw new XPathException((Expression) null, "Type error: the sequence cannot be converted into" +
+            throw new XPathException((Expression) null, ErrorCodes.XPTY0019, "Type error: the sequence cannot be converted into" +
                     " a node set. Item type is " + Type.getTypeName(itemType));
         }
         for (int i = 0; i < count; i++) {

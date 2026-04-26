@@ -196,13 +196,13 @@ public class RangeSequence extends AbstractSequence {
 
     @Override
     public NodeSet toNodeSet() throws XPathException {
-        throw new XPathException(this, "Type error: the sequence cannot be converted into" +
+        throw new XPathException(this, ErrorCodes.XPTY0019, "Type error: the sequence cannot be converted into" +
                 " a node set. Item type is xs:integer");
     }
 
     @Override
     public MemoryNodeSet toMemNodeSet() throws XPathException {
-        throw new XPathException(this, "Type error: the sequence cannot be converted into" +
+        throw new XPathException(this, ErrorCodes.XPTY0019, "Type error: the sequence cannot be converted into" +
                 " a memory node set. Item type is xs:integer");
     }
 

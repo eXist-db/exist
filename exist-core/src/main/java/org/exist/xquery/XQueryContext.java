@@ -875,7 +875,9 @@ public class XQueryContext implements BinaryValueManager, Context {
         }
         //Forbids rebinding the *same* prefix in a *different* namespace in this *same* context
         if (!nonNullUri.equals(prevURI)) {
-            throw new XPathException(rootExpression, ErrorCodes.XQST0033,
+            // XQST0066 for default element namespace redeclaration, XQST0033 for other prefixes
+            final ErrorCodes.ErrorCode errorCode = nonNullPrefix.isEmpty() ? ErrorCodes.XQST0066 : ErrorCodes.XQST0033;
+            throw new XPathException(rootExpression, errorCode,
                     "Cannot bind prefix '" + prefix + "' to '" + nonNullUri + "' it is already bound to '" + prevURI + "'");
         }
 

@@ -387,7 +387,7 @@ throws PermissionDeniedException, EXistException, XPathException
             )
             {
                 if (orderempty)
-                    throw new XPathException(prolog_AST_in, ErrorCodes.XQST0065, "Ordering mode already declared.");
+                    throw new XPathException(prolog_AST_in, ErrorCodes.XQST0069, "Empty order declaration already declared.");
                 orderempty = true;
             }
         )
@@ -454,7 +454,7 @@ throws PermissionDeniedException, EXistException, XPathException
             {
                 // ignored
                 if (construction)
-                    throw new XPathException(prolog_AST_in, ErrorCodes.XQST0069, "Construction already declared.");
+                    throw new XPathException(prolog_AST_in, ErrorCodes.XQST0067, "Construction already declared.");
                 construction = true;
             }
         )
@@ -734,25 +734,15 @@ throws PermissionDeniedException, EXistException, XPathException
         targetURI:STRING_LITERAL
         ( uriList [uriList] )?
         {
-            if ("".equals(targetURI.getText()) && nsPrefix != null) {
-                    throw new XPathException(s, ErrorCodes.XQST0057, "A schema without target namespace (zero-length string target namespace) may not bind a namespace prefix: " + nsPrefix);
-            }
             if (nsPrefix != null) {
                 if (declaredNamespaces.get(nsPrefix) != null)
                     throw new XPathException(s, ErrorCodes.XQST0033, "Prolog contains " +
                                              "multiple declarations for namespace prefix: " + nsPrefix);
                 declaredNamespaces.put(nsPrefix, targetURI.getText());
             }
-            try {
-                context.declareNamespace(nsPrefix, targetURI.getText());
-                staticContext.declareNamespace(nsPrefix, targetURI.getText());
-                // We currently do nothing with eventual location hints. /ljo
-            } catch(XPathException xpe) {
-                xpe.prependMessage("err:XQST0059: Error found while loading schema " + nsPrefix + ": ");
-                throw xpe;
+            if (s != null) {
+                throw new XPathException(s, ErrorCodes.XQST0009, "The eXist-db XQuery implementation does not support the Schema Import Feature.");
             }
-            // We ought to do this for now until Dannes can say it works. /ljo
-            //throw new XPathException(s, ErrorCodes.XQST0009, "The eXist-db XQuery implementation does not support the Schema Import Feature quite yet.");
         }
     )
     ;
