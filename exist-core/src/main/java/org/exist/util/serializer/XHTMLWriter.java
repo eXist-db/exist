@@ -279,29 +279,29 @@ public class XHTMLWriter extends IndentingXMLWriter {
                 if (isCanonical()) {
                     flushCanonicalBuffersXhtml();
                 }
+                final Writer w = getWriter();
                 if (isEmpty) {
                     if (isCanonical()) {
-                        // Canonical: always expand empty elements
-                        getWriter().write('>');
-                        getWriter().write("</");
-                        getWriter().write(currentTag);
-                        getWriter().write('>');
+                        // Canonical: always expand empty elements — coalesce 4 writes into 2
+                        w.write("></");
+                        w.write(currentTag);
+                        w.write('>');
                     } else if (isEmptyTag(currentTag)) {
                         // For method="html", use HTML-style void tags (<br>)
                         // For method="xhtml", use XHTML-style (<br />)
                         if (isHtmlMethod()) {
-                            getWriter().write(">");
+                            w.write('>');
                         } else {
-                            getWriter().write(" />");
+                            w.write(" />");
                         }
                     } else {
-                        getWriter().write('>');
-                        getWriter().write("</");
-                        getWriter().write(currentTag);
-                        getWriter().write('>');
+                        // Coalesce ">", "</", tag, ">" into 2 writer calls instead of 4
+                        w.write("></");
+                        w.write(currentTag);
+                        w.write('>');
                     }
                 } else {
-                    getWriter().write('>');
+                    w.write('>');
                 }
                 tagIsOpen = false;
             }
@@ -393,6 +393,15 @@ public class XHTMLWriter extends IndentingXMLWriter {
             return false;
         }
         return super.needsEscape(ch, inAttribute);
+    }
+
+    @Override
+    protected boolean needsEscaping(final boolean inAttribute) {
+        if (!inAttribute && isHtmlMethod()
+                && currentTag != null && RAW_TEXT_ELEMENTS_HTML.contains(currentTag.toLowerCase(java.util.Locale.ROOT))) {
+            return false;
+        }
+        return super.needsEscaping(inAttribute);
     }
 
     /**
