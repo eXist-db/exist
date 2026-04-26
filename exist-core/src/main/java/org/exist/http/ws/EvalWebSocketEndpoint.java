@@ -69,11 +69,35 @@ public class EvalWebSocketEndpoint {
     private static final String USER_PROPERTY = "exist.eval.subject";
 
     private static final Map<Session, EvalSession> sessions = new ConcurrentHashMap<>();
-    private static final ExecutorService queryExecutorService = Executors.newCachedThreadPool(r -> {
-        final Thread t = new Thread(r, "ws-eval-worker");
-        t.setDaemon(true);
-        return t;
-    });
+    private static ExecutorService queryExecutorService = createExecutorService();
+
+    private static ExecutorService createExecutorService() {
+        return Executors.newCachedThreadPool(r -> {
+            final Thread t = new Thread(r, "ws-eval-worker");
+            t.setDaemon(true);
+            return t;
+        });
+    }
+
+    /**
+     * Shutdown the WebSocket eval subsystem.
+     */
+    public static synchronized void shutdown() {
+        if (queryExecutorService != null) {
+            queryExecutorService.shutdown();
+            queryExecutorService = null;
+        }
+    }
+
+    /**
+     * Re-initialize the executor service if needed.
+     */
+    private static synchronized ExecutorService getExecutorService() {
+        if (queryExecutorService == null) {
+            queryExecutorService = createExecutorService();
+        }
+        return queryExecutorService;
+    }
 
     /**
      * Configurator that extracts Basic auth credentials during the WebSocket
@@ -226,7 +250,7 @@ public class EvalWebSocketEndpoint {
         }
 
         // Execute on a worker thread to avoid blocking the WebSocket message thread
-        queryExecutorService.submit(() -> {
+        getExecutorService().submit(() -> {
             try {
                 final BrokerPool pool = BrokerPool.getInstance();
                 final QueryExecutor executor = new QueryExecutor(pool);
@@ -303,7 +327,7 @@ public class EvalWebSocketEndpoint {
             return;
         }
 
-        queryExecutorService.submit(() -> {
+        getExecutorService().submit(() -> {
             try {
                 final BrokerPool pool = BrokerPool.getInstance();
                 final QueryExecutor executor = new QueryExecutor(pool);

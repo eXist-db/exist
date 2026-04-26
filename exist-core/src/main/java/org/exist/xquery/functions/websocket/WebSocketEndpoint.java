@@ -65,6 +65,8 @@ public class WebSocketEndpoint {
     private static final Map<Session, String> sessions = new ConcurrentHashMap<>();
 
     private static volatile boolean initialized = false;
+    private static ScheduledExecutorService heartbeatService = null;
+    private static ScheduledExecutorService monitorService = null;
 
     public WebSocketEndpoint() {
         // endpoint instances are created per-connection by the container
@@ -76,14 +78,14 @@ public class WebSocketEndpoint {
     public static synchronized void initialize() {
         if (!initialized) {
             WebSocketModule.setAdapter(new WebSocketAdapter(
-                    WebSocketEndpoint::sendAllMap, WebSocketEndpoint::sendAll));
+                    WebSocketEndpoint::sendAll, WebSocketEndpoint::sendAll));
 
-            final ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor(
+            heartbeatService = Executors.newSingleThreadScheduledExecutor(
                     runnable -> ThreadUtils.newGlobalThread("ws-heartbeat", runnable));
-            service.scheduleAtFixedRate(WebSocketEndpoint::pingAll, 500, 500, TimeUnit.MILLISECONDS);
+            heartbeatService.scheduleAtFixedRate(WebSocketEndpoint::pingAll, 500, 500, TimeUnit.MILLISECONDS);
 
             // Schedule periodic snapshot of all running queries for admin monitors
-            final ScheduledExecutorService monitorService = Executors.newSingleThreadScheduledExecutor(
+            monitorService = Executors.newSingleThreadScheduledExecutor(
                     runnable -> ThreadUtils.newGlobalThread("ws-monitor-snapshot", runnable));
             monitorService.scheduleAtFixedRate(() -> {
                 try {
@@ -99,10 +101,20 @@ public class WebSocketEndpoint {
     }
 
     /**
-     * Send a map as JSON to all clients subscribed to the channel.
+     * Shutdown the WebSocket subsystem. Called once during Jetty shutdown.
      */
-    static void sendAllMap(final String toChannel, final Map<String, Object> data) {
-        new WebSocketEndpoint().sendAll(toChannel, data);
+    public static synchronized void shutdown() {
+        if (initialized) {
+            if (heartbeatService != null) {
+                heartbeatService.shutdown();
+                heartbeatService = null;
+            }
+            if (monitorService != null) {
+                monitorService.shutdown();
+                monitorService = null;
+            }
+            initialized = false;
+        }
     }
 
     @OnOpen
@@ -143,7 +155,7 @@ public class WebSocketEndpoint {
      * @param toChannel the channel, or null to send to all clients
      * @param data map to serialize as JSON
      */
-    void sendAll(final String toChannel, final Map<String, Object> data) {
+    public static void sendAll(final String toChannel, final Map<String, Object> data) {
         try {
             final StringWriter writer = new StringWriter();
             try (final JsonGenerator gen = JSON_FACTORY.createGenerator(writer)) {
