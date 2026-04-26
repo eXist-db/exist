@@ -1063,6 +1063,13 @@ public class XQueryContext implements BinaryValueManager, Context {
 
     @Override
     public void setDefaultElementNamespace(final String uri, @Nullable final String schema) throws XPathException {
+        // XQST0070: It is a static error if a namespace URI is bound to the predefined
+        // prefix xmlns, or if a namespace URI other than http://www.w3.org/XML/1998/namespace
+        // is bound to the prefix xml.
+        if (Namespaces.XMLNS_NS.equals(uri)) {
+            throw new XPathException(rootExpression, ErrorCodes.XQST0070,
+                    "The namespace URI 'http://www.w3.org/2000/xmlns/' cannot be used as the default element namespace");
+        }
         // eXist forces the empty element NS as default.
         if (!defaultElementNamespace.equals(AnyURIValue.EMPTY_URI)) {
             throw new XPathException(rootExpression, ErrorCodes.XQST0066,

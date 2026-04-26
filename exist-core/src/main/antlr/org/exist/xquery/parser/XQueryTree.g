@@ -461,9 +461,12 @@ throws PermissionDeniedException, EXistException, XPathException
         |
         #(
             DEF_NAMESPACE_DECL defu:STRING_LITERAL
-            { // Use setDefaultElementNamespace()
+            {
+                // Check for duplicate default element namespace first (XQST0066)
+                context.setDefaultElementNamespace(defu.getText(), null);
+                staticContext.setDefaultElementNamespace(defu.getText(), null);
                 context.declareNamespace("", defu.getText());
-                staticContext.declareNamespace("",defu.getText());
+                staticContext.declareNamespace("", defu.getText());
             }
         )
         |
