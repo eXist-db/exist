@@ -575,7 +575,8 @@ public class Type {
     public static boolean isNavigable(final int type) {
         return isNodeType(type)
                 || subTypeOf(type, MAP_ITEM)
-                || subTypeOf(type, ARRAY_ITEM);
+                || subTypeOf(type, ARRAY_ITEM)
+                || subTypeOf(type, JSON_NODE);
     }
 
     public static boolean subTypeOf(int subtype, final int supertype) {

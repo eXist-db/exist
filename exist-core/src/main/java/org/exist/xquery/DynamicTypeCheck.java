@@ -98,6 +98,14 @@ public class DynamicTypeCheck extends AbstractExpression {
             if (result != null) { result.add(item); }
             return;
         }
+        // XQuery 4.0 JNode types: JNode items satisfy json-node() and its subtypes
+        if (Type.subTypeOf(requiredType, Type.JSON_NODE) && item instanceof org.exist.xquery.value.jnode.JNode) {
+            final int jnodeType = item.getType();
+            if (jnodeType == requiredType || Type.subTypeOf(jnodeType, requiredType)) {
+                if (result != null) { result.add(item); }
+                return;
+            }
+        }
         if(type != requiredType && !Type.subTypeOf(type, requiredType)) {
             //TODO : how to make this block more generic ? -pb
             if (type == Type.UNTYPED_ATOMIC) {

@@ -28,26 +28,27 @@ import org.exist.xquery.functions.map.AbstractMapType;
 import org.exist.xquery.value.*;
 
 /**
- * fn:get($key as xs:anyAtomicType) as item()*
+ * fn:get($key as xs:anyAtomicType*) as item()*
  *
- * XQuery 4.0 context-dependent lookup function. Looks up a value from
- * the context item:
- * - For arrays: returns the member at the given position
- * - For maps: returns the value for the given key
+ * XQuery 4.0 context-dependent lookup function. Looks up values from
+ * the context item by key or position. Accepts a sequence of keys and
+ * returns the union of all lookups.
+ * - For arrays: returns the members at the given positions
+ * - For maps: returns the values for the given keys
  * - For atomic values: returns the value itself (identity)
  */
 public class FnGet extends BasicFunction {
 
     public static final FunctionSignature FN_GET = new FunctionSignature(
             new QName("get", Function.BUILTIN_FUNCTION_NS),
-            "Looks up a value from the context item. For arrays, returns the member " +
-            "at the given position. For maps, returns the value for the given key.",
+            "Looks up values from the context item. For arrays, returns the members " +
+            "at the given positions. For maps, returns the values for the given keys.",
             new SequenceType[] {
                     new FunctionParameterSequenceType("key", Type.ANY_ATOMIC_TYPE,
-                            Cardinality.EXACTLY_ONE, "The lookup key or index")
+                            Cardinality.ZERO_OR_MORE, "The lookup key(s) or index(es)")
             },
             new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE,
-                    "The looked-up value"));
+                    "The looked-up value(s)"));
 
     public FnGet(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
@@ -56,15 +57,38 @@ public class FnGet extends BasicFunction {
     @Override
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
         // Get the context item
-        Sequence ctxSeq = contextSequence;
+        final Sequence ctxSeq = contextSequence;
         if (ctxSeq == null || ctxSeq.isEmpty()) {
             throw new XPathException(this, ErrorCodes.XPDY0002,
                     "fn:get requires a context item");
         }
 
         final Item contextItem = ctxSeq.itemAt(0);
-        final AtomicValue key = (AtomicValue) args[0].itemAt(0);
+        final Sequence keys = args[0];
 
+        // Empty key sequence returns empty
+        if (keys.isEmpty()) {
+            return Sequence.EMPTY_SEQUENCE;
+        }
+
+        // Single key: direct lookup (common case, avoids ValueSequence overhead)
+        if (keys.getItemCount() == 1) {
+            return lookupSingle(contextItem, (AtomicValue) keys.itemAt(0));
+        }
+
+        // Multiple keys: iterate and collect results
+        final ValueSequence result = new ValueSequence();
+        for (final SequenceIterator it = keys.iterate(); it.hasNext(); ) {
+            final AtomicValue key = (AtomicValue) it.nextItem();
+            final Sequence value = lookupSingle(contextItem, key);
+            if (!value.isEmpty()) {
+                result.addAll(value);
+            }
+        }
+        return result;
+    }
+
+    private Sequence lookupSingle(final Item contextItem, final AtomicValue key) throws XPathException {
         if (contextItem instanceof ArrayType) {
             // Array lookup by position — return empty for out-of-bounds (XQ4 fn:get semantics)
             final ArrayType array = (ArrayType) contextItem;
