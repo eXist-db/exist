@@ -136,9 +136,12 @@ public class Type {
     // XQuery 4.0 record type — a subtype of map(*)
     public final static int RECORD = 70;
 
-    private final static int[] superTypes = new int[71];
-    private final static Int2ObjectOpenHashMap<String[]> typeNames = new Int2ObjectOpenHashMap<>(69, Hash.FAST_LOAD_FACTOR);
-    private final static Object2IntOpenHashMap<String> typeCodes = new Object2IntOpenHashMap<>(78, Hash.FAST_LOAD_FACTOR);
+    // XQuery 4.0 named record types — subtypes of record
+    public final static int DATETIME_RECORD = 71;
+
+    private final static int[] superTypes = new int[72];
+    private final static Int2ObjectOpenHashMap<String[]> typeNames = new Int2ObjectOpenHashMap<>(70, Hash.FAST_LOAD_FACTOR);
+    private final static Object2IntOpenHashMap<String> typeCodes = new Object2IntOpenHashMap<>(80, Hash.FAST_LOAD_FACTOR);
     static {
         typeCodes.defaultReturnValue(NO_SUCH_VALUE);
     }
@@ -252,6 +255,7 @@ public class Type {
         defineSubType(FUNCTION, MAP_ITEM);
         // XQ4: RECORD is a subtype of MAP
         defineSubType(MAP_ITEM, RECORD);
+        defineSubType(RECORD, DATETIME_RECORD);
         defineSubType(FUNCTION, ARRAY_ITEM);
 
         // NODE types
@@ -333,6 +337,7 @@ public class Type {
         defineBuiltInType(ARRAY_ITEM, "array(*)", "array");
         defineBuiltInType(MAP_ITEM, "map(*)", "map");                                               // keep `map` for backward compatibility
         defineBuiltInType(RECORD, "record(*)", "record");
+        defineBuiltInType(DATETIME_RECORD, "fn:dateTime-record", "dateTime-record");
         defineBuiltInType(CDATA_SECTION, "cdata-section()");
         defineBuiltInType(JAVA_OBJECT, "object");
         defineBuiltInType(EMPTY_SEQUENCE, "empty-sequence()", "empty()");                           // keep `empty()` for backward compatibility
@@ -507,6 +512,7 @@ public class Type {
         return switch (uri) {
             case Namespaces.SCHEMA_NS -> getType("xs:" + qname.getLocalPart());
             case Namespaces.XPATH_DATATYPES_NS -> getType("xdt:" + qname.getLocalPart());
+            case Namespaces.XPATH_FUNCTIONS_NS -> getType("fn:" + qname.getLocalPart());
             default -> getType(qname.getLocalPart());
         };
     }

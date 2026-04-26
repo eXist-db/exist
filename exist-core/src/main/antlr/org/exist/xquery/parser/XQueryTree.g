@@ -1264,7 +1264,7 @@ throws XPathException
                 try {
                     QName qn= QName.parse(staticContext, t.getText());
                     int code= Type.getType(qn);
-                    if (!Type.subTypeOf(code, Type.ANY_ATOMIC_TYPE))
+                    if (!Type.subTypeOf(code, Type.ANY_ATOMIC_TYPE) && !Type.subTypeOf(code, Type.RECORD))
                         throw new XPathException(t.getLine(), t.getColumn(), ErrorCodes.XPST0051, qn.toString() + " is not atomic");
                     type.setPrimaryType(code);
                 } catch (final XPathException e) {
@@ -1345,6 +1345,37 @@ throws XPathException
                     )*
                 )
             )
+        )
+        |
+        #(
+            RECORD_TEST
+            {
+                type.setPrimaryType(Type.RECORD);
+                List<RecordType.FieldDeclaration> recordFields = new ArrayList<RecordType.FieldDeclaration>();
+            }
+            (
+                #(
+                    rf:RECORD_FIELD
+                    {
+                        String rfName = rf.getText();
+                        boolean rfOptional = rfName.endsWith("?");
+                        if (rfOptional) {
+                            rfName = rfName.substring(0, rfName.length() - 1);
+                        }
+                        SequenceType rfType = null;
+                    }
+                    (
+                        { rfType = new SequenceType(); }
+                        sequenceType [rfType]
+                    )?
+                    {
+                        recordFields.add(new RecordType.FieldDeclaration(rfName, rfType, rfOptional));
+                    }
+                )
+            )*
+            {
+                type.setRecordType(new RecordType(recordFields, false));
+            }
         )
         |
         #(

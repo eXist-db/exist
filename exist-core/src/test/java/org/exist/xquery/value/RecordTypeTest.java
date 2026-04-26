@@ -281,7 +281,7 @@ public class RecordTypeTest {
 
             final XPathException ex = assertThrows(XPathException.class, () ->
                     check.eval(Sequence.EMPTY_SEQUENCE, null));
-            assertTrue(ex.getMessage().contains("missing required field"));
+            assertTrue(ex.getMessage().contains("Missing required field"));
         }
     }
 
@@ -357,12 +357,13 @@ public class RecordTypeTest {
     }
 
     @Test
-    void testRecordTypeCheckNonExtensibleRejectsExtraKeys() throws EXistException, XPathException {
+    void testRecordTypeCheckNonExtensibleDropsExtraKeys() throws EXistException, XPathException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try (final DBBroker broker = pool.get(java.util.Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             final XQueryContext context = new XQueryContext(pool);
 
             // record(name as xs:string) — NOT extensible
+            // Per XQ4, coercion drops extra keys (not rejects them)
             final RecordType rt = new RecordType(List.of(
                     new RecordType.FieldDeclaration("name",
                             new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE), false)
@@ -376,8 +377,13 @@ public class RecordTypeTest {
             final RecordTypeCheck check = new RecordTypeCheck(context, rt, baseExpr);
             check.analyze(new AnalyzeContextInfo());
 
-            assertThrows(XPathException.class, () ->
-                    check.eval(Sequence.EMPTY_SEQUENCE, null));
+            final Sequence result = check.eval(Sequence.EMPTY_SEQUENCE, null);
+            assertFalse(result.isEmpty());
+            // Extra key "extra" should be dropped — only "name" remains
+            final org.exist.xquery.functions.map.AbstractMapType resultMap =
+                    (org.exist.xquery.functions.map.AbstractMapType) result.itemAt(0);
+            assertEquals(1, resultMap.size());
+            assertEquals("Alice", resultMap.get(new StringValue("name")).getStringValue());
         }
     }
 }
