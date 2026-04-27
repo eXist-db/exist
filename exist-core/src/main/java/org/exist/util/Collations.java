@@ -367,7 +367,8 @@ public class Collations {
      *     equal to, or greater than {@code b} by codepoint order.
      */
     private static int compareByCodepoint(final String a, final String b) {
-        int i1 = 0, i2 = 0;
+        int i1 = 0;
+        int i2 = 0;
         while (i1 < a.length() && i2 < b.length()) {
             final int cp1 = a.codePointAt(i1);
             final int cp2 = b.codePointAt(i2);
