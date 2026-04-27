@@ -2534,7 +2534,7 @@ parseExprSingle(); // parse but discard
 
         if (matchKeyword(Keywords.CASTABLE)) {
             expectKeyword(Keywords.AS);
-            final int targetType = parseAtomicType();
+            final int targetType = parseSingleType();
             Cardinality card = Cardinality.EXACTLY_ONE;
             if (match(Token.QUESTION)) {
                 card = Cardinality.ZERO_OR_ONE;
@@ -2546,12 +2546,41 @@ parseExprSingle(); // parse but discard
         return left;
     }
 
+    /**
+     * Parses a SingleType for use after CAST AS / CASTABLE AS:
+     *   SingleType ::= AtomicType | EnumerationType | '(' AtomicType ('|' AtomicType)* ')'
+     * Returns the primary item type code; XQ4 enumeration / union types are
+     * accepted syntactically and approximated as Type.STRING / first member,
+     * matching how ANTLR's tree walker treats them when the runtime does not
+     * enforce the constraint.
+     */
+    private int parseSingleType() throws XPathException {
+        if (checkKeyword("enum") && peekIs(Token.LPAREN)) {
+            advance(); advance(); // consume 'enum' '('
+            while (!check(Token.RPAREN) && !check(Token.EOF)) {
+                advance();
+            }
+            expect(Token.RPAREN, "')'");
+            return Type.STRING;
+        }
+        if (check(Token.LPAREN)) {
+            advance(); // consume '('
+            final int first = parseSingleType();
+            while (match(Token.PIPE)) {
+                parseSingleType();
+            }
+            expect(Token.RPAREN, "')'");
+            return first;
+        }
+        return parseAtomicType();
+    }
+
     Expression parseCastExpr() throws XPathException {
         Expression left = parseOtherwiseExpr();
 
         if (matchKeyword(Keywords.CAST)) {
             expectKeyword(Keywords.AS);
-            final int targetType = parseAtomicType();
+            final int targetType = parseSingleType();
             Cardinality card = Cardinality.EXACTLY_ONE;
             if (match(Token.QUESTION)) {
                 card = Cardinality.ZERO_OR_ONE;
@@ -2612,9 +2641,33 @@ parseExprSingle(); // parse but discard
             return new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE);
         }
 
-        final int itemType = parseItemType();
-        Cardinality card = Cardinality.EXACTLY_ONE;
+        // XQ4 enumeration type: enum("a", "b", ...) — capture values so
+        // the runtime can enforce the constraint (XPTY0004 on coercion).
+        String[] enumValues = null;
+        int itemType;
+        if (checkKeyword("enum") && peekIs(Token.LPAREN)) {
+            advance(); advance(); // consume 'enum' '('
+            final java.util.List<String> vals = new java.util.ArrayList<>();
+            if (check(Token.STRING_LITERAL)) {
+                vals.add(current.value);
+                advance();
+                while (match(Token.COMMA)) {
+                    if (check(Token.STRING_LITERAL)) {
+                        vals.add(current.value);
+                        advance();
+                    } else {
+                        throw error("Expected string literal in enum() type");
+                    }
+                }
+            }
+            expect(Token.RPAREN, "')'");
+            enumValues = vals.toArray(new String[0]);
+            itemType = Type.STRING;
+        } else {
+            itemType = parseItemType();
+        }
 
+        Cardinality card = Cardinality.EXACTLY_ONE;
         if (match(Token.QUESTION)) {
             card = Cardinality.ZERO_OR_ONE;
         } else if (match(Token.STAR)) {
@@ -2623,7 +2676,11 @@ parseExprSingle(); // parse but discard
             card = Cardinality.ONE_OR_MORE;
         }
 
-        return new SequenceType(itemType, card);
+        final SequenceType result = new SequenceType(itemType, card);
+        if (enumValues != null) {
+            result.setEnumValues(enumValues);
+        }
+        return result;
     }
 
     /**
