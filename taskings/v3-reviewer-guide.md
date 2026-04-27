@@ -2,7 +2,7 @@
 
 ## Overview
 
-The `next-v3` integration branch merges 37 PRs (14 `v2/` + 23 additional) into a single testable branch based on a clean `v2/new-parser` foundation. It includes 223 commits ahead of `develop`, comprising 52 merged branches.
+The `next-v3` integration branch merges 37 PRs (14 `v2/` + 23 additional) into a single testable branch based on a clean `v2/new-parser` foundation. It includes 293 commits ahead of `develop`, comprising 52 merged branches plus 103 post-merge conformance fixes plus 11 post-90 reconciliation cherry-picks.
 
 This branch powers the **Docker demo image** with a complete redesigned application suite.
 
@@ -153,7 +153,37 @@ Wave 6 (any order):     #6219 Serialization
 
 Wave 7 (any order):     #6247 Built-in Package API
                         #6248 OpenAPI routing (PoC)
+
+Standalone (any time):  #6264 [optimize] XQuery local-variable resolution
+                        (joewiz:feature/performance-optimizations, base develop)
+
+Deferred (after Waves):  optimizer/expression-optimize-method
+                         feature/optimizer-index-rewriter
+                         feature/jnode-paths-axes (post-90 JNode fixes)
 ```
+
+### Deferred PRs (depend on integration)
+
+Three branches hold post-90 work that cannot stand against `develop` until the v2/ wave merges:
+
+- **`optimizer/expression-optimize-method`** (`joewiz`, 268 commits ahead of develop):
+  `Expression.optimize()` framework + CompileContext, optimize() prototypes on
+  Conditional/GeneralComparison/LetExpr, FLWOR loop-invariant hoisting via
+  rewrite-into-let, FLWOR hash-join recognition. Open as PR after Waves 1–6 land
+  — the diff against `develop` shrinks to ~7 files at that point.
+
+- **`feature/optimizer-index-rewriter`** (`joewiz`, 284 commits ahead of develop):
+  Four new `QueryRewriter` hook methods, priority ordering, INFO/profiler
+  surfacing, FilteredExpr/comparison/function/where wiring, predicate
+  distribution over LocationStep unions (issue #2363). Open after the optimizer
+  framework PR above.
+
+- **`feature/jnode-paths-axes`** (`joewiz`): Two extra commits (`5845a45a10`
+  JNode XQ4 0-arg overloads/root behavior; `61e3e76a1a` get()-as-step / lookup /
+  type-check fix) require `feature/xq4-type-promotion` (DynamicTypeCheck.isXQ4*
+  helpers) and `feature/lookup-edge-cases` (`nextItem` field). They compile and
+  pass on `next-v3` but not on `feature/jnode-paths-axes` standalone — rebase
+  after Waves land.
 
 ---
 
@@ -169,10 +199,12 @@ Wave 7 (any order):     #6247 Built-in Package API
 
 ## XQTS Compliance Scores
 
+*Updated 2026-04-26 after post-90 cherry-picks.*
+
 | Suite | Score | Notes |
 |-------|-------|-------|
-| **QT4** (XQuery 4.0) | 36,356/42,403 (85.7%) | XQuery 4.0 + XQUF |
-| **XQ 3.1** | 24,402/26,220 (93.1%) | Up from 89.7% with compliance fixes |
+| **QT4** (XQuery 4.0, RD parser) | 35,460/41,859 (84.7%) | XQuery 4.0 + XQUF (Apr 22 run) |
+| **XQ 3.1** (ANTLR parser) | 24,422/26,274 (93.0%) | Up from 89.7% baseline (Apr 24 run) |
 | **FTTS** (Full Text) | 659/667 (98.8%) | 8 remaining are spec edge cases |
 | **XQUF** (Update) | 684/684 non-schema (100%) | Schema revalidation out of scope |
 
@@ -240,7 +272,7 @@ controller.xq → view.xq → content module → Jinks template
 
 ## App Test Results
 
-Tests run on a fresh `joewiz/existdb:next-v3` container (2026-04-20):
+Tests run on a fresh `joewiz/existdb:next-v3` container (2026-04-26):
 
 | App | Test Type | Pass/Total | Notes |
 |-----|-----------|------------|-------|
