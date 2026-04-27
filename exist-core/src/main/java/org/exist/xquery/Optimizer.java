@@ -259,6 +259,13 @@ public class Optimizer extends DefaultExpressionVisitor {
                 predicate = (Predicate) parent;
             }
 
+            // The predicate splitting optimization only applies when the
+            // predicate belongs to a LocationStep — not a FilteredExpression
+            // or other expression type that also carries predicates.
+            if (!(predicate.getParent() instanceof LocationStep)) {
+                return;
+            }
+
             if (LOG.isTraceEnabled()) {
                 LOG.trace("Rewriting boolean expression: {}", ExpressionDumper.dump(and));
             }
