@@ -424,6 +424,11 @@ public final class XQueryParser {
             advance();
             expect(Token.SEMICOLON, "';'");
             context.setDefaultElementNamespace(uri, null); // schema=null
+            // Also bind the empty prefix to the URI so that QName.parse — used
+            // by direct element/attribute constructors at eval time — picks up
+            // the default element namespace via getURIForPrefix(""). Matches
+            // the ANTLR tree walker (XQueryTree.g around line 677).
+            context.declareNamespace("", uri);
         } else if (matchKeyword(Keywords.FUNCTION)) {
             expectKeyword(Keywords.NAMESPACE);
             if (!check(Token.STRING_LITERAL)) throw error("Expected namespace URI");
