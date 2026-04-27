@@ -40,6 +40,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -514,6 +515,9 @@ public class IndexController {
                 rewriters.add(rewriter);
             }
         }
+        // Sort by priority so the optimizer dispatches to value-aware indexes
+        // before string-aware ones; map iteration order is otherwise nondeterministic.
+        rewriters.sort(Comparator.comparingInt(QueryRewriter::getPriority));
         return rewriters;
     }
 }

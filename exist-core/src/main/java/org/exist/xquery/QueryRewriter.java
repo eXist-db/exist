@@ -116,6 +116,19 @@ public class QueryRewriter {
         return null;
     }
 
+    /**
+     * Priority used to order rewriters when multiple could fire on the same
+     * expression node. Lower values run first; the optimizer accepts the
+     * first non-null result and skips remaining rewriters. Default is 100;
+     * value-aware indexes (range) should override with a lower number to
+     * outrank string-aware indexes (n-gram, Lucene).
+     *
+     * @return the priority for this rewriter
+     */
+    public int getPriority() {
+        return 100;
+    }
+
     protected XQueryContext getContext() {
         return context;
     }
