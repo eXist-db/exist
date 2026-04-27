@@ -59,7 +59,33 @@ public class LetExpr extends BindingExpression {
 
     @Override
     public Expression optimize(final CompileContext cc) throws XPathException {
-        super.optimize(cc); // recurses inputSequence + returnExpr
+        // Chain-head lets push a fresh FLWOR scope (continuing clauses share it).
+        // The scope tracks visible variables and accumulates hoist actions
+        // queued by inner FLWOR optimize() passes.
+        final boolean enteredScope = getPreviousClause() == null;
+        if (enteredScope) {
+            cc.enterFlworChain();
+        }
+
+        // Recurse the input first (the let-variable is NOT yet in scope for
+        // its own initializer, per XQuery semantics). This also gives any
+        // inner FLWORs in the input a chance to register hoists targeting
+        // outer scopes.
+        if (inputSequence != null) {
+            inputSequence = inputSequence.optimize(cc);
+        }
+
+        // Now make this let's variable visible to the rest of the chain.
+        // Score bindings (XQFT 3.0 §2.3) bind a synthesized double rather than
+        // the input value — exclude from FLWOR-scope tracking to keep the
+        // hoist invariance check honest.
+        if (varName != null && !scoreBinding) {
+            cc.addVisibleFlworVar(varName);
+        }
+
+        if (returnExpr != null) {
+            returnExpr = returnExpr.optimize(cc);
+        }
 
         // Drop the let if its body is a literal — the variable is by definition
         // unreferenced, and the input sequence is side-effect-free. Guards:
@@ -77,15 +103,20 @@ public class LetExpr extends BindingExpression {
         // and the eXist Dependency flags are not reliable after the analyze()
         // pass has popped the let's variable from scope. A precise unused-var
         // check belongs in a follow-up.
-        if (scoreBinding
-                || varName == null
-                || returnExpr instanceof FLWORClause
-                || getPreviousClause() != null
-                || !(inputSequence instanceof LiteralValue)
-                || !(unwrap(returnExpr) instanceof LiteralValue)) {
-            return this;
+        Expression result = this;
+        if (!scoreBinding
+                && varName != null
+                && !(returnExpr instanceof FLWORClause)
+                && getPreviousClause() == null
+                && (inputSequence instanceof LiteralValue)
+                && (unwrap(returnExpr) instanceof LiteralValue)) {
+            result = cc.replaceWith(this, returnExpr, "unused let-binding $" + varName);
         }
-        return cc.replaceWith(this, returnExpr, "unused let-binding $" + varName);
+
+        if (enteredScope) {
+            result = cc.applyHoistsAndExitChain(result);
+        }
+        return result;
     }
 
     /**

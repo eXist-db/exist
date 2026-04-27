@@ -52,6 +52,204 @@ public class ForExpr extends BindingExpression {
     }
 
     /**
+     * FLWOR loop-invariant input hoisting via rewrite-into-let.
+     *
+     * If this {@code for}'s {@code in} expression is loop-invariant relative
+     * to all enclosing FLWOR-bound variables, rewrite it as a reference to a
+     * new {@code let} binding inserted before the outermost enclosing FLWOR
+     * head. The hoisted expression is evaluated once instead of once per
+     * outer iteration, turning O(N×M) nested-loop joins into O(N+M) for the
+     * input materialization.
+     *
+     * Order matters: this clause's own variables are added to the current
+     * scope AFTER recursing into the input (the binding is not in scope for
+     * its own initializer) and BEFORE recursing into the return expression
+     * (the rest of the chain).
+     */
+    @Override
+    public Expression optimize(final CompileContext cc) throws XPathException {
+        final boolean enteredScope = getPreviousClause() == null;
+        if (enteredScope) {
+            cc.enterFlworChain();
+        }
+
+        // Recurse input first — gives any inner FLWORs a chance to hoist
+        // themselves out of US (their hoists target our scope's outermost).
+        if (inputSequence != null) {
+            inputSequence = inputSequence.optimize(cc);
+        }
+
+        // Hoist OUR input, if invariant against outer chain scopes.
+        tryHoistInputSequence(cc);
+
+        // Record THIS for-clause as a potential hoist insertion point on the
+        // current scope (the first such call wins). Must precede addVisibleVar
+        // so subsequent vars are tagged loop-body, not let-prefix.
+        cc.recordForClause(this);
+
+        // Now this clause's vars become visible to the rest of the chain.
+        cc.addVisibleFlworVar(varName);
+        if (positionalVariable != null) {
+            cc.addVisibleFlworVar(positionalVariable);
+        }
+        if (scoreVariable != null) {
+            cc.addVisibleFlworVar(scoreVariable);
+        }
+
+        if (returnExpr != null) {
+            returnExpr = returnExpr.optimize(cc);
+        }
+
+        Expression result = this;
+        if (enteredScope) {
+            result = cc.applyHoistsAndExitChain(result);
+        }
+        return result;
+    }
+
+    /**
+     * Decide whether this for-clause's input is loop-invariant relative to
+     * outer FLWOR scopes and, if so, queue a hoist on the outermost scope
+     * and replace the input with a reference to the synthesized variable.
+     *
+     * Conservative gates:
+     * <ul>
+     *   <li>requires at least one outer FLWOR scope (otherwise nothing to
+     *       hoist over);</li>
+     *   <li>skips trivial inputs (literals, bare variable references) where
+     *       hoisting yields no benefit;</li>
+     *   <li>skips updating expressions (W3C XQUF — must not move side
+     *       effects);</li>
+     *   <li>refuses to hoist when reference-collection encountered an
+     *       expression shape the walker cannot prove side-effect-free of
+     *       outer-var references.</li>
+     * </ul>
+     */
+    private void tryHoistInputSequence(final CompileContext cc) {
+        if (inputSequence == null
+                || inputSequence instanceof VariableReference
+                || inputSequence instanceof LiteralValue
+                || cc.flworChainDepth() < 2) {
+            return;
+        }
+        if (inputSequence.isUpdating()) {
+            return;
+        }
+
+        final Set<QName> outerVars = cc.getOuterLoopBodyVars();
+        if (outerVars.isEmpty()) {
+            return;
+        }
+
+        final RefCollector refs = new RefCollector();
+        refs.collect(inputSequence);
+        if (refs.aborted) {
+            return;
+        }
+        for (final QName name : refs.referenced) {
+            if (outerVars.contains(name)) {
+                return;
+            }
+        }
+
+        final QName hoistedName = cc.generateHoistedVarName();
+        cc.addPendingHoistToOutermost(hoistedName, inputSequence);
+
+        final VariableReference ref = new VariableReference(context, hoistedName);
+        ref.setLocation(line, column);
+        inputSequence = ref;
+    }
+
+    /**
+     * Walks an expression subtree to collect the QNames of in-scope variables
+     * it references. Sets {@link #aborted} to true if it encounters a class
+     * shape it cannot reliably traverse — callers must treat that as
+     * "may reference any var" and refuse to hoist.
+     *
+     * The subtree walk explicitly handles classes whose children are NOT
+     * exposed via {@code getSubExpression}: {@link BindingExpression}'s
+     * {@code inputSequence} / {@code returnExpr}, {@link FilteredExpression}'s
+     * expression and predicates, {@link LocationStep}'s predicates, and the
+     * {@link AbstractFLWORClause} chain. For everything else it falls back to
+     * {@code getSubExpression}; an unrecognized class with no advertised
+     * children aborts the walk.
+     */
+    private static final class RefCollector {
+        final Set<QName> referenced = new HashSet<>();
+        boolean aborted = false;
+
+        void collect(final Expression expr) {
+            if (expr == null || aborted) {
+                return;
+            }
+            if (expr instanceof VariableReference vr) {
+                final QName name = vr.getName();
+                if (name != null) {
+                    referenced.add(name);
+                }
+                return;
+            }
+            if (expr instanceof LiteralValue) {
+                return;
+            }
+            if (expr instanceof BindingExpression be) {
+                collect(be.getInputSequence());
+                if (be instanceof AbstractFLWORClause flwor) {
+                    collect(flwor.getReturnExpression());
+                }
+                return;
+            }
+            if (expr instanceof FilteredExpression fe) {
+                collect(fe.getExpression());
+                for (final Predicate p : fe.getPredicates()) {
+                    collect(p);
+                }
+                return;
+            }
+            if (expr instanceof LocationStep ls) {
+                final Predicate[] preds = ls.getPredicates();
+                if (preds != null) {
+                    for (final Predicate p : preds) {
+                        collect(p);
+                    }
+                }
+                return;
+            }
+            if (expr instanceof WhereClause wc) {
+                collect(wc.getWhereExpr());
+                collect(wc.getReturnExpression());
+                return;
+            }
+            if (expr instanceof AbstractFLWORClause flwor) {
+                // OrderByClause, GroupByClause, CountClause, ReturnClause-like.
+                // Their non-returnExpr children aren't uniformly accessible;
+                // bail conservatively.
+                aborted = true;
+                return;
+            }
+            final int count = expr.getSubExpressionCount();
+            if (count == 0) {
+                // Unknown leaf with no advertised children: cannot prove
+                // it has no var references. Conservative bail.
+                if (!isKnownSafeLeaf(expr)) {
+                    aborted = true;
+                }
+                return;
+            }
+            for (int i = 0; i < count; i++) {
+                collect(expr.getSubExpression(i));
+                if (aborted) {
+                    return;
+                }
+            }
+        }
+
+        private static boolean isKnownSafeLeaf(final Expression expr) {
+            return expr instanceof LiteralValue;
+        }
+    }
+
+    /**
      * A "for" expression may have an optional positional variable whose
      * QName can be set via this method.
      * 

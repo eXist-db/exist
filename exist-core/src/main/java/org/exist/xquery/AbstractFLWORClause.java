@@ -46,8 +46,29 @@ public abstract class AbstractFLWORClause extends AbstractExpression implements 
         return variable;
     }
 
+    /**
+     * Default chain-position behaviour: register this clause's tuple-stream
+     * variables on the active FLWOR scope so subsequent clauses' optimize()
+     * passes see them as in-scope, then recurse into the rest of the chain.
+     *
+     * Chain HEADS (where {@link #getPreviousClause()} is null) are limited to
+     * {@link ForExpr} and {@link LetExpr} per parser rules (see
+     * {@code parseFLWORInitialClause}), so push/pop of the scope happens in
+     * those subclasses' overrides — they bypass this base method to control
+     * the precise input-vs-return ordering loop-invariant hoisting requires.
+     *
+     * Bound-variable tracking matters because hoisting only fires when the
+     * candidate input does not reference an outer-scope variable. Without
+     * registering e.g. group-by keys here, an inner {@code for} whose input
+     * referenced a key would be falsely classified loop-invariant.
+     */
     @Override
     public Expression optimize(CompileContext cc) throws XPathException {
+        if (cc.inFlworChain()) {
+            for (final QName name : getTupleStreamVariables()) {
+                cc.addVisibleFlworVar(name);
+            }
+        }
         if (returnExpr != null) {
             returnExpr = returnExpr.optimize(cc);
         }
