@@ -2379,6 +2379,43 @@ parseExprSingle(); // parse but discard
     Expression parseComparisonExpr() throws XPathException {
         Expression left = parseFTContainsOrInstanceOf();
 
+        // Node comparisons must be checked BEFORE general / value comparisons:
+        //   `<<` and `>>` would otherwise be eaten as `<` / `>` (LT/GT) by
+        //   matchGeneralComp, leaving the second angle bracket dangling.
+        if (check(Token.LT) && peekIs(Token.LT)) {
+            advance(); advance(); // consume <<
+            final Expression right = parseFTContainsOrInstanceOf();
+            final NodeComparison cmp = new NodeComparison(context, left, right, Constants.NodeComparisonOperator.BEFORE);
+            cmp.setLocation(left.getLine(), left.getColumn());
+            return cmp;
+        }
+        if (check(Token.GT) && peekIs(Token.GT)) {
+            advance(); advance(); // consume >>
+            final Expression right = parseFTContainsOrInstanceOf();
+            final NodeComparison cmp = new NodeComparison(context, left, right, Constants.NodeComparisonOperator.AFTER);
+            cmp.setLocation(left.getLine(), left.getColumn());
+            return cmp;
+        }
+        if (matchKeyword("is")) {
+            final Expression right = parseFTContainsOrInstanceOf();
+            final NodeComparison cmp = new NodeComparison(context, left, right, Constants.NodeComparisonOperator.IS);
+            cmp.setLocation(left.getLine(), left.getColumn());
+            return cmp;
+        }
+        // XQ4 keyword forms: `follows` ≡ `>>`, `precedes` ≡ `<<`.
+        if (isXQ4() && matchKeyword("follows")) {
+            final Expression right = parseFTContainsOrInstanceOf();
+            final NodeComparison cmp = new NodeComparison(context, left, right, Constants.NodeComparisonOperator.AFTER);
+            cmp.setLocation(left.getLine(), left.getColumn());
+            return cmp;
+        }
+        if (isXQ4() && matchKeyword("precedes")) {
+            final Expression right = parseFTContainsOrInstanceOf();
+            final NodeComparison cmp = new NodeComparison(context, left, right, Constants.NodeComparisonOperator.BEFORE);
+            cmp.setLocation(left.getLine(), left.getColumn());
+            return cmp;
+        }
+
         final Comparison generalOp = matchGeneralComp();
         if (generalOp != null) {
             final Expression right = parseFTContainsOrInstanceOf();
@@ -2391,28 +2428,6 @@ parseExprSingle(); // parse but discard
         if (valueOp != null) {
             final Expression right = parseFTContainsOrInstanceOf();
             final ValueComparison cmp = new ValueComparison(context, left, right, valueOp);
-            cmp.setLocation(left.getLine(), left.getColumn());
-            return cmp;
-        }
-
-        // Node comparison: is, << (node before), >> (node after)
-        if (matchKeyword("is")) {
-            final Expression right = parseFTContainsOrInstanceOf();
-            final NodeComparison cmp = new NodeComparison(context, left, right, Constants.NodeComparisonOperator.IS);
-            cmp.setLocation(left.getLine(), left.getColumn());
-            return cmp;
-        }
-        if (check(Token.LT) && peekIs(Token.LT)) {
-            advance(); advance(); // consume <<
-            final Expression right = parseFTContainsOrInstanceOf();
-            final NodeComparison cmp = new NodeComparison(context, left, right, Constants.NodeComparisonOperator.BEFORE);
-            cmp.setLocation(left.getLine(), left.getColumn());
-            return cmp;
-        }
-        if (check(Token.GT) && peekIs(Token.GT)) {
-            advance(); advance(); // consume >>
-            final Expression right = parseFTContainsOrInstanceOf();
-            final NodeComparison cmp = new NodeComparison(context, left, right, Constants.NodeComparisonOperator.AFTER);
             cmp.setLocation(left.getLine(), left.getColumn());
             return cmp;
         }
