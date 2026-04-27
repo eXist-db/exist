@@ -118,293 +118,308 @@ public class FnParseUri extends BasicFunction {
         super(context, signature);
     }
 
+    /** Mutable holder for parsed URI parts; populated step-by-step by eval(). */
+    private static final class Parts {
+        String str;
+        String scheme;
+        String fragment;
+        String query;
+        String filepath;
+        String authority;
+        String userinfo;
+        String host;
+        Integer port;
+        Boolean absolute;
+        Boolean hierarchical;
+    }
+
+    private static final Pattern UNC_PATTERN = Pattern.compile("^/*(//[^/].*)$");
+    private static final Pattern MULTI_SLASH_DRIVE_PATTERN = Pattern.compile("^//*[A-Za-z]:/.*$");
+
     @Override
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
         if (args[0].isEmpty()) {
             return Sequence.EMPTY_SEQUENCE;
         }
-
         final String originalUri = args[0].getStringValue();
         if (originalUri.isEmpty()) {
             return Sequence.EMPTY_SEQUENCE;
         }
 
-        // Parse options
-        boolean allowDeprecated = false;
-        boolean omitDefaultPorts = false;
-        boolean uncPath = false;
-        if (args.length > 1 && !args[1].isEmpty()) {
-            final MapType options = (MapType) args[1].itemAt(0);
-            allowDeprecated = getBooleanOption(options, "allow-deprecated-features", false);
-            omitDefaultPorts = getBooleanOption(options, "omit-default-ports", false);
-            uncPath = getBooleanOption(options, "unc-path", false);
+        final boolean[] opts = parseOptions(args);
+        final boolean allowDeprecated = opts[0];
+        final boolean omitDefaultPorts = opts[1];
+        final boolean uncPath = opts[2];
+
+        final Parts p = new Parts();
+        p.str = originalUri.replace('\\', '/');
+
+        stripFragment(p);
+        stripQuery(p);
+        extractScheme(p);
+        p.absolute = (p.scheme != null && p.fragment == null) ? Boolean.TRUE : null;
+        handleDriveLetter(p, uncPath);
+        determineHierarchical(p);
+        if (p.hierarchical != null && !p.hierarchical) {
+            p.absolute = null;
+        }
+        handleFilePath(p, uncPath);
+        extractAuthority(p);
+        parseAuthority(p, allowDeprecated, omitDefaultPorts);
+
+        final String path = p.str.isEmpty() ? null : p.str;
+        if (p.scheme == null && p.filepath == null && path != null) {
+            p.filepath = path;
+        }
+        if (p.filepath != null) {
+            p.filepath = uriDecode(p.filepath);
         }
 
-        // Step 1: Replace backslashes with forward slashes
-        String str = originalUri.replace('\\', '/');
+        final List<String> pathSegments = buildPathSegments(p.str, path);
+        final MapType queryParams = parseQueryParams(p.query);
 
-        // Step 2: Strip fragment
-        String fragment = null;
-        Matcher m = FRAGMENT_PATTERN.matcher(str);
+        return buildResult(originalUri, p, path, pathSegments, queryParams);
+    }
+
+    private boolean[] parseOptions(final Sequence[] args) throws XPathException {
+        if (args.length <= 1 || args[1].isEmpty()) {
+            return new boolean[] { false, false, false };
+        }
+        final MapType options = (MapType) args[1].itemAt(0);
+        return new boolean[] {
+                getBooleanOption(options, "allow-deprecated-features", false),
+                getBooleanOption(options, "omit-default-ports", false),
+                getBooleanOption(options, "unc-path", false)
+        };
+    }
+
+    private static void stripFragment(final Parts p) {
+        final Matcher m = FRAGMENT_PATTERN.matcher(p.str);
+        if (!m.matches()) {
+            return;
+        }
+        p.str = m.group(1);
+        final String f = m.group(2);
+        p.fragment = f.isEmpty() ? null : uriDecode(f);
+    }
+
+    private static void stripQuery(final Parts p) {
+        final Matcher m = QUERY_PATTERN.matcher(p.str);
+        if (!m.matches()) {
+            return;
+        }
+        p.str = m.group(1);
+        final String q = m.group(2);
+        p.query = q.isEmpty() ? null : q;
+    }
+
+    private static void extractScheme(final Parts p) {
+        final Matcher m = SCHEME_PATTERN.matcher(p.str);
         if (m.matches()) {
-            str = m.group(1);
-            fragment = m.group(2);
-            if (fragment.isEmpty()) {
-                fragment = null;
-            } else {
-                fragment = uriDecode(fragment);
+            p.scheme = m.group(1);
+            p.str = m.group(2);
+        }
+    }
+
+    private static void handleDriveLetter(final Parts p, final boolean uncPath) {
+        if (p.scheme != null && !"file".equalsIgnoreCase(p.scheme)) {
+            return;
+        }
+        final Matcher m = DRIVE_LETTER_PATTERN.matcher(p.str);
+        if (m.matches()) {
+            p.scheme = "file";
+            String matched = m.group(1);
+            if (matched.length() > 1 && matched.charAt(1) == '|') {
+                matched = matched.charAt(0) + ":" + matched.substring(2);
             }
+            p.str = "/" + matched;
+        } else if (uncPath && p.scheme == null) {
+            p.scheme = "file";
         }
+    }
 
-        // Step 3: Strip query
-        String query = null;
-        m = QUERY_PATTERN.matcher(str);
-        if (m.matches()) {
-            str = m.group(1);
-            query = m.group(2);
-            if (query.isEmpty()) {
-                query = null;
+    private static void determineHierarchical(final Parts p) {
+        if (p.scheme == null) {
+            if (!p.str.isEmpty()) {
+                p.hierarchical = p.str.startsWith("/");
             }
+            return;
         }
-
-        // Step 4: Identify scheme
-        String scheme = null;
-        m = SCHEME_PATTERN.matcher(str);
-        if (m.matches()) {
-            scheme = m.group(1);
-            str = m.group(2);
+        final String schemeLower = p.scheme.toLowerCase();
+        if (HIERARCHICAL_SCHEMES.contains(schemeLower)) {
+            p.hierarchical = Boolean.TRUE;
+        } else if (NON_HIERARCHICAL_SCHEMES.contains(schemeLower)) {
+            p.hierarchical = Boolean.FALSE;
+        } else if (!p.str.isEmpty()) {
+            p.hierarchical = p.str.startsWith("/");
         }
+    }
 
-        // Step 5: absolute flag — scheme present and no fragment
-        Boolean absolute = (scheme != null && fragment == null) ? Boolean.TRUE : null;
-
-        // Step 6: Handle file: and drive letters
-        String filepath = null;
-        if (scheme == null || "file".equalsIgnoreCase(scheme)) {
-            m = DRIVE_LETTER_PATTERN.matcher(str);
+    private static void handleFilePath(final Parts p, final boolean uncPath) {
+        if (!"file".equalsIgnoreCase(p.scheme)) {
+            return;
+        }
+        if (uncPath) {
+            final Matcher m = UNC_PATTERN.matcher(p.str);
             if (m.matches()) {
-                scheme = "file";
-                String matched = m.group(1);
-                // Replace | with : if necessary
-                if (matched.length() > 1 && matched.charAt(1) == '|') {
-                    matched = matched.charAt(0) + ":" + matched.substring(2);
-                }
-                str = "/" + matched;
-            } else if (uncPath && scheme == null) {
-                scheme = "file";
+                p.filepath = m.group(1);
+                p.str = p.filepath;
             }
         }
-
-        // Step 7: Determine hierarchical
-        Boolean hierarchical = null;
-        if (scheme != null) {
-            final String schemeLower = scheme.toLowerCase();
-            if (HIERARCHICAL_SCHEMES.contains(schemeLower)) {
-                hierarchical = Boolean.TRUE;
-            } else if (NON_HIERARCHICAL_SCHEMES.contains(schemeLower)) {
-                hierarchical = Boolean.FALSE;
-            } else if (str.isEmpty()) {
-                hierarchical = null;
-            } else {
-                hierarchical = str.startsWith("/");
-            }
+        if (p.filepath != null) {
+            return;
+        }
+        if (MULTI_SLASH_DRIVE_PATTERN.matcher(p.str).matches()) {
+            p.str = p.str.replaceFirst("^/+", "/");
+            p.filepath = p.str.replaceFirst("^/", "");
         } else {
-            // No scheme — hierarchical if starts with /
-            if (!str.isEmpty()) {
-                hierarchical = str.startsWith("/");
-            }
+            p.str = p.str.replaceFirst("^/+", "/");
+            p.filepath = p.str;
         }
+    }
 
-        // Non-hierarchical → absolute is not applicable
-        if (hierarchical != null && !hierarchical) {
-            absolute = null;
+    private static void extractAuthority(final Parts p) {
+        if (p.hierarchical == null || !p.hierarchical
+                || "file".equalsIgnoreCase(p.scheme)) {
+            return;
         }
-
-        // Step 8: Handle file: scheme filepath
-        if ("file".equalsIgnoreCase(scheme)) {
-            if (uncPath) {
-                // UNC path handling
-                final Pattern uncPattern = Pattern.compile("^/*(//[^/].*)$");
-                m = uncPattern.matcher(str);
-                if (m.matches()) {
-                    filepath = m.group(1);
-                    str = filepath;
-                }
-            }
-            if (filepath == null) {
-                // Check for //X:/ pattern (multiple leading slashes before drive)
-                if (str.matches("^//*[A-Za-z]:/.*$")) {
-                    // Remove all but one leading slash
-                    str = str.replaceFirst("^/+", "/");
-                    filepath = str.replaceFirst("^/", "");
-                } else {
-                    // Replace multiple leading slashes with single slash
-                    str = str.replaceFirst("^/+", "/");
-                    filepath = str;
-                }
-            }
-        }
-
-        // Step 9: Extract authority (hierarchical URIs only, NOT file: scheme)
-        String authority = null;
-        if (hierarchical != null && hierarchical
-                && !"file".equalsIgnoreCase(scheme)) {
-            m = AUTHORITY_ONLY_PATTERN.matcher(str);
+        Matcher m = AUTHORITY_ONLY_PATTERN.matcher(p.str);
+        if (m.matches()) {
+            p.authority = m.group(1);
+            p.str = "";
+        } else {
+            m = AUTHORITY_PATH_PATTERN.matcher(p.str);
             if (m.matches()) {
-                authority = m.group(1);
-                str = "";
-            } else {
-                m = AUTHORITY_PATH_PATTERN.matcher(str);
-                if (m.matches()) {
-                    authority = m.group(1);
-                    str = m.group(2);
-                }
-            }
-            // Treat empty authority as absent
-            if (authority != null && authority.isEmpty()) {
-                authority = null;
+                p.authority = m.group(1);
+                p.str = m.group(2);
             }
         }
+        if (p.authority != null && p.authority.isEmpty()) {
+            p.authority = null;
+        }
+    }
 
-        // Step 10: Parse authority into userinfo, host, port
-        String userinfo = null;
-        String host = null;
-        Integer port = null;
-        if (authority != null && !authority.isEmpty()) {
-            // Parse userinfo
-            final int atIdx = authority.indexOf('@');
-            String authRemainder = authority;
-            if (atIdx >= 0) {
-                userinfo = authority.substring(0, atIdx);
-                authRemainder = authority.substring(atIdx + 1);
-                // Check for deprecated password
-                if (!allowDeprecated && userinfo.contains(":")) {
-                    final String password = userinfo.substring(userinfo.indexOf(':') + 1);
-                    if (!password.isEmpty()) {
-                        userinfo = null;
-                    }
-                }
-            }
+    private void parseAuthority(final Parts p, final boolean allowDeprecated,
+            final boolean omitDefaultPorts) throws XPathException {
+        if (p.authority == null || p.authority.isEmpty()) {
+            return;
+        }
+        extractUserinfo(p, allowDeprecated);
+        extractHostAndPort(p);
+        if (omitDefaultPorts && p.port != null && p.scheme != null
+                && isDefaultPort(p.scheme.toLowerCase(), p.port)) {
+            p.port = null;
+        }
+    }
 
-            // Parse host and port from authRemainder
-            m = AUTH_IPV6_PATTERN.matcher(authority);
-            if (m.matches()) {
-                host = m.group(3);
-                final String portStr = m.group(5);
-                if (portStr != null && !portStr.isEmpty()) {
-                    try {
-                        port = Integer.parseInt(portStr);
-                    } catch (final NumberFormatException ignored) {
-                    }
-                }
-            } else {
-                m = AUTH_IPV6_OPEN_PATTERN.matcher(authority);
-                if (m.matches()) {
-                    throw new XPathException(this, FOUR0001,
-                            "Unmatched '[' in URI authority: " + authority);
-                }
-                m = AUTH_NORMAL_PATTERN.matcher(authority);
-                if (m.matches()) {
-                    host = m.group(3);
-                    final String portStr = m.group(5);
-                    if (portStr != null && !portStr.isEmpty()) {
-                        try {
-                            port = Integer.parseInt(portStr);
-                        } catch (final NumberFormatException ignored) {
-                        }
-                    }
-                }
-            }
-
-            // Omit default ports
-            if (omitDefaultPorts && port != null && scheme != null) {
-                if (isDefaultPort(scheme.toLowerCase(), port)) {
-                    port = null;
-                }
+    private static void extractUserinfo(final Parts p, final boolean allowDeprecated) {
+        final int atIdx = p.authority.indexOf('@');
+        if (atIdx < 0) {
+            return;
+        }
+        p.userinfo = p.authority.substring(0, atIdx);
+        if (!allowDeprecated && p.userinfo.contains(":")) {
+            final String password = p.userinfo.substring(p.userinfo.indexOf(':') + 1);
+            if (!password.isEmpty()) {
+                p.userinfo = null;
             }
         }
+    }
 
-        // Step 11: Determine path and filepath
-        final String path = str.isEmpty() ? null : str;
-        if (scheme == null && filepath == null && path != null) {
-            filepath = path;
+    private void extractHostAndPort(final Parts p) throws XPathException {
+        Matcher m = AUTH_IPV6_PATTERN.matcher(p.authority);
+        if (m.matches()) {
+            p.host = m.group(3);
+            p.port = parsePort(m.group(5));
+            return;
         }
-        // URI-decode filepath
-        if (filepath != null) {
-            filepath = uriDecode(filepath);
+        if (AUTH_IPV6_OPEN_PATTERN.matcher(p.authority).matches()) {
+            throw new XPathException(this, FOUR0001,
+                    "Unmatched '[' in URI authority: " + p.authority);
         }
+        m = AUTH_NORMAL_PATTERN.matcher(p.authority);
+        if (m.matches()) {
+            p.host = m.group(3);
+            p.port = parsePort(m.group(5));
+        }
+    }
 
-        // Step 12: Build path-segments
-        List<String> pathSegments = null;
-        if (path != null) {
-            final String[] parts = str.split("/", -1);
-            pathSegments = new ArrayList<>(parts.length);
-            for (final String part : parts) {
-                pathSegments.add(uriDecode(part));
-            }
+    private static Integer parsePort(final String portStr) {
+        if (portStr == null || portStr.isEmpty()) {
+            return null;
         }
-
-        // Step 13: Parse query parameters
-        MapType queryParams = null;
-        if (query != null && !query.isEmpty()) {
-            queryParams = new MapType(this, context);
-            for (final String param : query.split("&")) {
-                final int eq = param.indexOf('=');
-                final String key;
-                final String value;
-                if (eq >= 0) {
-                    key = uriDecode(param.substring(0, eq));
-                    value = uriDecode(param.substring(eq + 1));
-                } else {
-                    key = "";
-                    value = uriDecode(param);
-                }
-                final AtomicValue keyVal = new StringValue(this, key);
-                final Sequence existing = queryParams.get(keyVal);
-                if (existing != null && !existing.isEmpty()) {
-                    final ValueSequence combined = new ValueSequence();
-                    combined.addAll(existing);
-                    combined.add(new StringValue(this, value));
-                    queryParams.add(keyVal, combined);
-                } else {
-                    queryParams.add(keyVal, new StringValue(this, value));
-                }
-            }
+        try {
+            return Integer.parseInt(portStr);
+        } catch (final NumberFormatException ignored) {
+            return null;
         }
+    }
 
-        // Build result map — omit keys with empty values per spec
+    private static List<String> buildPathSegments(final String str, final String path) {
+        if (path == null) {
+            return null;
+        }
+        final String[] parts = str.split("/", -1);
+        final List<String> segs = new ArrayList<>(parts.length);
+        for (final String part : parts) {
+            segs.add(uriDecode(part));
+        }
+        return segs;
+    }
+
+    private MapType parseQueryParams(final String query) throws XPathException {
+        if (query == null || query.isEmpty()) {
+            return null;
+        }
+        final MapType params = new MapType(this, context);
+        for (final String param : query.split("&")) {
+            addQueryParam(params, param);
+        }
+        return params;
+    }
+
+    private void addQueryParam(final MapType params, final String param) throws XPathException {
+        final int eq = param.indexOf('=');
+        final String key;
+        final String value;
+        if (eq >= 0) {
+            key = uriDecode(param.substring(0, eq));
+            value = uriDecode(param.substring(eq + 1));
+        } else {
+            key = "";
+            value = uriDecode(param);
+        }
+        final AtomicValue keyVal = new StringValue(this, key);
+        final Sequence existing = params.get(keyVal);
+        if (existing != null && !existing.isEmpty()) {
+            final ValueSequence combined = new ValueSequence();
+            combined.addAll(existing);
+            combined.add(new StringValue(this, value));
+            params.add(keyVal, combined);
+        } else {
+            params.add(keyVal, new StringValue(this, value));
+        }
+    }
+
+    private MapType buildResult(final String originalUri, final Parts p, final String path,
+            final List<String> pathSegments, final MapType queryParams) throws XPathException {
         final MapType result = new MapType(this, context);
-
-        // uri (the original input, always present)
         result.add(new StringValue(this, "uri"), new StringValue(this, originalUri));
-
-        if (scheme != null) {
-            result.add(new StringValue(this, "scheme"), new StringValue(this, scheme));
+        putIfNotNull(result, "scheme", p.scheme);
+        if (p.hierarchical != null) {
+            result.add(new StringValue(this, "hierarchical"), BooleanValue.valueOf(p.hierarchical));
         }
-        if (hierarchical != null) {
-            result.add(new StringValue(this, "hierarchical"), BooleanValue.valueOf(hierarchical));
+        if (p.absolute != null) {
+            result.add(new StringValue(this, "absolute"), BooleanValue.valueOf(p.absolute));
         }
-        if (absolute != null) {
-            result.add(new StringValue(this, "absolute"), BooleanValue.valueOf(absolute));
+        putIfNotNull(result, "authority", p.authority);
+        putIfNotNull(result, "userinfo", p.userinfo);
+        putIfNotNull(result, "host", p.host);
+        if (p.port != null) {
+            result.add(new StringValue(this, "port"), new IntegerValue(this, p.port));
         }
-        if (authority != null) {
-            result.add(new StringValue(this, "authority"), new StringValue(this, authority));
-        }
-        if (userinfo != null) {
-            result.add(new StringValue(this, "userinfo"), new StringValue(this, userinfo));
-        }
-        if (host != null) {
-            result.add(new StringValue(this, "host"), new StringValue(this, host));
-        }
-        if (port != null) {
-            result.add(new StringValue(this, "port"), new IntegerValue(this, port));
-        }
-        if (path != null) {
-            result.add(new StringValue(this, "path"), new StringValue(this, path));
-        }
-        if (filepath != null) {
-            result.add(new StringValue(this, "filepath"), new StringValue(this, filepath));
-        }
+        putIfNotNull(result, "path", path);
+        putIfNotNull(result, "filepath", p.filepath);
         if (pathSegments != null) {
             final ValueSequence segSeq = new ValueSequence(pathSegments.size());
             for (final String seg : pathSegments) {
@@ -412,19 +427,21 @@ public class FnParseUri extends BasicFunction {
             }
             result.add(new StringValue(this, "path-segments"), segSeq);
         }
-        if (query != null) {
-            result.add(new StringValue(this, "query"), new StringValue(this, query));
-        }
+        putIfNotNull(result, "query", p.query);
         if (queryParams != null) {
             result.add(new StringValue(this, "query-parameters"), queryParams);
-        } else if (query != null) {
+        } else if (p.query != null) {
             result.add(new StringValue(this, "query-parameters"), new MapType(this, context));
         }
-        if (fragment != null) {
-            result.add(new StringValue(this, "fragment"), new StringValue(this, fragment));
-        }
-
+        putIfNotNull(result, "fragment", p.fragment);
         return result;
+    }
+
+    private void putIfNotNull(final MapType result, final String key, final String value)
+            throws XPathException {
+        if (value != null) {
+            result.add(new StringValue(this, key), new StringValue(this, value));
+        }
     }
 
     private boolean getBooleanOption(final MapType options, final String key,
