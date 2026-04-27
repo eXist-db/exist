@@ -448,6 +448,11 @@ public abstract class Function extends PathExpr {
                 // call analyze for each argument
                 final AnalyzeContextInfo argContextInfo = new AnalyzeContextInfo(contextInfo);
                 argContextInfo.addFlag(NON_UPDATING_CONTEXT);
+                // The function call boundary breaks the predicate chain: a
+                // GeneralComparison nested inside a function argument is
+                // consumed by the function as a value and must not switch to
+                // node-set-filter semantics. See issue #4958.
+                argContextInfo.removeFlag(IN_PREDICATE);
                 arg.analyze(argContextInfo);
 
                 if (!argumentsChecked) {

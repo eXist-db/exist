@@ -143,6 +143,49 @@ public class OptimizerTest {
         execute("//SPEECH[true() and true()]", true, MSG_OPT_ERROR, 2628);
     }
 
+    /**
+     * Regression test for https://github.com/eXist-db/exist/issues/4958.
+     *
+     * A {@code GeneralComparison} nested inside a function-call argument is
+     * consumed as a value by the function, not as a node-set filter. With the
+     * predicate flag incorrectly leaking into the argument the comparison took
+     * a node-set shortcut and the predicate evaluated to false on persistent
+     * DOM. The query below must return {@code <F id="1"/>} on both persistent
+     * and in-memory DOM, with or without the optimizer.
+     */
+    @Test
+    public void nestedComparisonNotUsedAsFilter_issue4958() throws XMLDBException {
+        final XQueryService service = testCollection.getService(XQueryService.class);
+        service.query("xmldb:store('/db/test', 'issue-4958.xml', <root><F id=\"1\"/></root>)");
+        try {
+            // Direct comparison: filtered, must return nothing — sanity check
+            execute("doc('/db/test/issue-4958.xml')//F[@id >= 2]", false,
+                    "Direct comparison must filter (no opt)", 0);
+            execute("doc('/db/test/issue-4958.xml')//F[@id >= 2]", true,
+                    "Direct comparison must filter", 0);
+
+            // Nested comparison inside boolean(count(...)) — must NOT filter
+            execute("doc('/db/test/issue-4958.xml')//F[boolean(count(@id >= 2))]", false,
+                    "boolean(count(...)) without optimization", 1);
+            execute("doc('/db/test/issue-4958.xml')//F[boolean(count(@id >= 2))]", true,
+                    MSG_OPT_ERROR, 1);
+
+            // Nested comparison inside count(...) > 0
+            execute("doc('/db/test/issue-4958.xml')//F[count(@id >= 2) > 0]", false,
+                    "count(...) > 0 without optimization", 1);
+            execute("doc('/db/test/issue-4958.xml')//F[count(@id >= 2) > 0]", true,
+                    MSG_OPT_ERROR, 1);
+
+            // Nested in not(): not(@a = "x") on a non-matching attribute is true
+            execute("doc('/db/test/issue-4958.xml')//F[not(@id = '2')]", false,
+                    "not(...) without optimization", 1);
+            execute("doc('/db/test/issue-4958.xml')//F[not(@id = '2')]", true,
+                    MSG_OPT_ERROR, 1);
+        } finally {
+            service.query("xmldb:remove('/db/test', 'issue-4958.xml')");
+        }
+    }
+
     private long execute(String query, boolean optimize) throws XMLDBException {
         XQueryService service = testCollection.getService(XQueryService.class);
         if (optimize) {
