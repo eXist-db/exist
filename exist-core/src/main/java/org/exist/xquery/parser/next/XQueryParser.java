@@ -2797,7 +2797,7 @@ parseExprSingle(); // parse but discard
     }
 
     Expression parseMultiplicativeExpr() throws XPathException {
-        Expression left = parseUnaryExpr();
+        Expression left = parsePipelineExpr();
         while (true) {
             ArithmeticOperator op = null;
             if (match(Token.STAR)) op = ArithmeticOperator.MULTIPLICATION;
@@ -2805,7 +2805,7 @@ parseExprSingle(); // parse but discard
             else if (matchKeyword(Keywords.IDIV)) op = ArithmeticOperator.DIVISION_INTEGER;
             else if (matchKeyword(Keywords.MOD)) op = ArithmeticOperator.MODULUS;
             if (op == null) break;
-            final Expression right = parseUnaryExpr();
+            final Expression right = parsePipelineExpr();
             final OpNumeric numeric = new OpNumeric(context, left, right, op);
             numeric.setLocation(left.getLine(), left.getColumn());
             left = numeric;
@@ -2813,6 +2813,13 @@ parseExprSingle(); // parse but discard
         return left;
     }
 
+    /**
+     * Unary expression — handles leading {@code -} / {@code +} sign(s) then
+     * dispatches to {@link #parseSimpleMapExpr()}. Per the XQuery 4.0 grammar,
+     * {@code unaryExpr} sits inside {@code arrowExpr} and {@code unaryExpr}
+     * wraps the simple-map operator so that {@code -1!2} parses as
+     * {@code -(1!2)}, and so {@code 1 -> -2} parses with unary on the RHS.
+     */
     Expression parseUnaryExpr() throws XPathException {
         if (match(Token.MINUS)) {
             final int line = previous.line, col = previous.column;
@@ -2834,13 +2841,13 @@ parseExprSingle(); // parse but discard
     }
 
     Expression parseSimpleMapExpr() throws XPathException {
-        Expression left = parsePipelineExpr();
+        Expression left = parsePostfixExpr();
         while (match(Token.BANG)) {
             final PathExpr leftPath = wrapInPathExpr(left);
             // Simple map creates a new context — allow absolute paths on RHS
             final boolean savedInFunctionBody = inFunctionBody;
             inFunctionBody = false;
-            final PathExpr rightPath = wrapInPathExpr(parsePipelineExpr());
+            final PathExpr rightPath = wrapInPathExpr(parsePostfixExpr());
             inFunctionBody = savedInFunctionBody;
             left = new OpSimpleMap(context, leftPath, rightPath);
             ((AbstractExpression) left).setLocation(previous.line, previous.column);
@@ -2854,14 +2861,19 @@ parseExprSingle(); // parse but discard
             if (!isXQ4()) {
                 throw xq4Required("'->' pipeline operator");
             }
+            final int line = current.line, col = current.column;
             advance();
-            left = parseArrowCall(left, false);
+            final Expression right = parseArrowExpr();
+            final PipelineExpression pipe = new PipelineExpression(
+                    context, wrapInPathExpr(left).simplify(), wrapInPathExpr(right).simplify());
+            pipe.setLocation(line, col);
+            left = pipe;
         }
         return left;
     }
 
     Expression parseArrowExpr() throws XPathException {
-        Expression left = parsePostfixExpr();
+        Expression left = parseUnaryExpr();
 
         while (check(Token.ARROW) || check(Token.MAPPING_ARROW)) {
             if (match(Token.ARROW)) {
