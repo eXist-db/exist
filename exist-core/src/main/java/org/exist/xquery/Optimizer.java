@@ -86,6 +86,7 @@ public class Optimizer extends DefaultExpressionVisitor {
                 if (optimizePragma != null) {
                     // expression was rewritten: return
                     hasOptimized = true;
+                    recordRewrite(rewriter, locationStep);
                     break;
                 }
             }
@@ -348,6 +349,25 @@ public class Optimizer extends DefaultExpressionVisitor {
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * Record that a {@link QueryRewriter} fired on the given expression node.
+     * Logs at INFO so users can see which rewrites the optimizer applied
+     * without enabling TRACE-level logging, and reports the optimization
+     * to the profiler for stats collection.
+     */
+    private void recordRewrite(final QueryRewriter rewriter, final Expression node) {
+        if (LOG.isInfoEnabled()) {
+            LOG.info("Index rewrite: {} rewrote {} at {}:{}",
+                    rewriter.getClass().getSimpleName(),
+                    node.getClass().getSimpleName(),
+                    node.getLine(), node.getColumn());
+        }
+        if (context.getProfiler().traceFunctions()) {
+            context.getProfiler().traceOptimization(context,
+                    PerformanceStats.OptimizationType.INDEX_REWRITE, node);
         }
     }
 

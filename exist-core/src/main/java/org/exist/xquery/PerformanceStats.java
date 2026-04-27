@@ -37,7 +37,13 @@ public interface PerformanceStats {
     String RANGE_IDX_TYPE = "range";
 
     enum OptimizationType {
-        POSITIONAL_PREDICATE
+        POSITIONAL_PREDICATE,
+        /**
+         * Records that an index module's {@link QueryRewriter} fired on an
+         * expression node, replacing it with an index-backed equivalent. The
+         * detail string identifies the rewriter and the rewritten node.
+         */
+        INDEX_REWRITE
     }
 
     enum IndexOptimizationLevel {
