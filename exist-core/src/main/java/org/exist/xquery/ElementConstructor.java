@@ -275,24 +275,32 @@ public class ElementConstructor extends NodeConstructor {
             if (qnitem instanceof QNameValue) {
                 qn = ((QNameValue) qnitem).getQName();
             } else {
-                //Do we have the same result than Atomize there ? -pb
-                try {
-                    qn = QName.parse(context, qnitem.getStringValue());
-                } catch (final QName.IllegalQNameException e) {
-                    throw new XPathException(this, ErrorCodes.XPTY0004, "'" + qnitem.getStringValue() + "' is not a valid element name");
-                } catch (final XPathException e) {
-                    e.setLocation(getLine(), getColumn(), getSource());
-                    throw e;
+                // Element constructors must resolve namespace prefixes using the full
+                // inherited namespace context, regardless of declare copy-namespaces no-inherit.
+                // The no-inherit option governs how namespaces propagate from copied source
+                // nodes, not how constructor names are resolved (XQuery 3.1 §3.9.3.4).
+                final boolean savedInherit = context.inheritNamespaces();
+                if (!savedInherit) {
+                    context.setInheritNamespaces(true);
                 }
+                try {
+                    //Do we have the same result than Atomize there ? -pb
+                    try {
+                        qn = QName.parse(context, qnitem.getStringValue());
+                    } catch (final QName.IllegalQNameException e) {
+                        throw new XPathException(this, ErrorCodes.XPTY0004, "'" + qnitem.getStringValue() + "' is not a valid element name");
+                    } catch (final XPathException e) {
+                        e.setLocation(getLine(), getColumn(), getSource());
+                        throw e;
+                    }
 
-                //Use the default namespace if specified
-                /*
-                 if (qn.getPrefix() == null && context.inScopeNamespaces.get("xmlns") != null) {
-                     qn.setNamespaceURI((String)context.inScopeNamespaces.get("xmlns"));
-                 }
-                 */
-                if (qn.getPrefix() == null && context.getInScopeNamespace(XMLConstants.DEFAULT_NS_PREFIX) != null) {
-                    qn = new QName(qn.getLocalPart(), context.getInScopeNamespace(XMLConstants.DEFAULT_NS_PREFIX), qn.getPrefix());
+                    if (qn.getPrefix() == null && context.getInScopeNamespace(XMLConstants.DEFAULT_NS_PREFIX) != null) {
+                        qn = new QName(qn.getLocalPart(), context.getInScopeNamespace(XMLConstants.DEFAULT_NS_PREFIX), qn.getPrefix());
+                    }
+                } finally {
+                    if (!savedInherit) {
+                        context.setInheritNamespaces(false);
+                    }
                 }
             }
 

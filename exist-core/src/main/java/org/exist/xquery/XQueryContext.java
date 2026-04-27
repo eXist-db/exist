@@ -969,6 +969,18 @@ public class XQueryContext implements BinaryValueManager, Context {
         return inheritedInScopeNamespaces == null ? null : inheritedInScopeNamespaces.get(prefix);
     }
 
+    public Map<String, String> getAllInheritedNamespaces() {
+        return inheritedInScopeNamespaces;
+    }
+
+    public Map<String, String> getInScopeNamespaces() {
+        return inScopeNamespaces;
+    }
+
+    public MemTreeBuilder getCurrentDocumentBuilder() {
+        return documentBuilder;
+    }
+
     @Override
     public String getInheritedPrefix(final String uri) {
         return inheritedInScopePrefixes == null ? null : inheritedInScopePrefixes.get(uri);
