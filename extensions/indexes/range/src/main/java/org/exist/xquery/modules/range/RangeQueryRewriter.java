@@ -27,7 +27,9 @@ import org.exist.indexing.range.*;
 import org.exist.storage.NodePath;
 import org.exist.xquery.*;
 import org.exist.xquery.Constants.Comparison;
+import org.exist.xquery.pragmas.Optimize;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.Type;
 
 import javax.annotation.Nullable;
 
@@ -49,6 +51,266 @@ public class RangeQueryRewriter extends QueryRewriter {
 
     public RangeQueryRewriter(XQueryContext context) {
         super(context);
+    }
+
+    /**
+     * Distribute predicates over a Union of LocationSteps so the existing
+     * rewriteLocationStep pass can pick them up. Addresses issue #2363:
+     * {@code ($c//foo | $c//bar)[pred]} fails to use indexes that
+     * {@code $c//foo[pred] | $c//bar[pred]} would.
+     *
+     * <p>The rewrite is sound only when no predicate has positional
+     * dependency. Since {@link RangeQueryRewriter} only handles
+     * {@link GeneralComparison} and {@code fn:matches} predicates — neither
+     * of which is positional — the structural check that we recognise the
+     * predicate is also our positional-safety check.
+     *
+     * <p>If the rewrite applies, the FilteredExpression is replaced with
+     * the modified Union directly in the parent and we return null:
+     * the rewritten LocationSteps are then visited via this rewriter's
+     * {@link #rewriteLocationStep} from inside this method to apply the
+     * range Lookup substitution, since the surrounding optimizer's visitor
+     * has already walked them once before the predicates were attached.
+     */
+    @Override
+    public Pragma rewriteFilteredExpression(final FilteredExpression filtered) throws XPathException {
+        if (!(filtered.getExpression() instanceof final Union union)) {
+            return null;
+        }
+
+        final List<LocationStep> branches = new ArrayList<>();
+        if (!collectUnionLocationSteps(union, branches) || branches.size() < 2) {
+            return null;
+        }
+
+        final List<Predicate> preds = filtered.getPredicates();
+        if (preds == null || preds.isEmpty()) {
+            return null;
+        }
+        for (final Predicate pred : preds) {
+            if (pred.getLength() != 1) {
+                return null;
+            }
+            if (!isDistributablePredicate(pred.getExpression(0))) {
+                return null;
+            }
+        }
+
+        for (final LocationStep step : branches) {
+            final int axis = step.getAxis();
+            if (!(axis == Constants.CHILD_AXIS || axis == Constants.DESCENDANT_AXIS ||
+                    axis == Constants.DESCENDANT_SELF_AXIS || axis == Constants.ATTRIBUTE_AXIS ||
+                    axis == Constants.DESCENDANT_ATTRIBUTE_AXIS || axis == Constants.SELF_AXIS)) {
+                return null;
+            }
+        }
+
+        // Idempotency: visitFilteredExpr can fire more than once on the same
+        // node (e.g. via a re-analyze-after-optimize pass). If we already
+        // distributed these predicates, the first branch will hold a
+        // Lookup-shaped predicate from a previous run — bail rather than
+        // double-add.
+        if (alreadyDistributed(branches.get(0), preds.size())) {
+            return null;
+        }
+
+        // Distribute the predicates onto each branch's trailing LocationStep,
+        // cloning the Predicate wrapper so each branch gets its own Lookup
+        // with the correct context path; sharing a single Predicate object
+        // would let the first rewrite freeze the contextPath that the
+        // second branch sees.
+        //
+        // After attaching, re-analyze each clone with the branch as the
+        // contextStep so the inner GeneralComparison.axis is recomputed for
+        // the new predicate position. Without this re-analyze, the axis was
+        // computed against the FilteredExpression (not a LocationStep) and
+        // stayed UNKNOWN, causing rewriteLocationStep below to skip the
+        // predicate.
+        //
+        // We do NOT replace the FilteredExpression in its parent: doing so
+        // requires walking past type-check wrappers that aren't
+        // RewritableExpression (DynamicCardinalityCheck inside a function
+        // call argument, for one). Leaving the FilteredExpression in place
+        // means its own predicates re-evaluate at runtime, but on the
+        // already-pre-selected, much smaller node set the cost is
+        // negligible compared to the index speedup on each branch.
+        for (final LocationStep branch : branches) {
+            // Stage 1: attach cloned predicates and analyze them so the
+            // GeneralComparison.axis is recomputed for the new position.
+            for (final Predicate pred : preds) {
+                final Predicate clone = clonePredicate(pred);
+                branch.addPredicate(clone);
+                analyzeInBranchContext(branch, clone);
+            }
+            // Stage 2: let rewriteLocationStep substitute Lookup for the
+            // analyzed comparison.
+            final Pragma branchPragma = rewriteLocationStep(branch);
+            // Stage 3: re-analyze each predicate so the new Lookup picks up
+            // contextQName from its enclosing branch step. Without this,
+            // Lookup.canOptimizeSequence returns the empty sequence and the
+            // index is never consulted.
+            final Predicate[] now = branch.getPredicates();
+            if (now != null) {
+                for (final Predicate p : now) {
+                    analyzeInBranchContext(branch, p);
+                }
+            }
+            // Stage 4: wrap the branch in an exist:optimize ExtensionExpression
+            // so the runtime Optimize pragma calls canOptimizeSequence on the
+            // Lookup. Until that hook fires, Lookup.eval falls through to its
+            // non-indexed fallback.
+            wrapBranchInOptimize(branch, branchPragma);
+        }
+
+        return null;
+    }
+
+    private static void analyzeInBranchContext(final LocationStep branch, final Predicate pred)
+            throws XPathException {
+        final AnalyzeContextInfo info = new AnalyzeContextInfo();
+        info.setParent(branch);
+        info.setContextStep(branch);
+        info.setStaticType(branch.getAxis() == Constants.SELF_AXIS
+                ? Type.ITEM : Type.NODE);
+        pred.analyze(info);
+    }
+
+    /**
+     * Wrap a LocationStep in an exist:optimize ExtensionExpression so the
+     * runtime Optimize pragma calls {@link Optimizable#canOptimizeSequence}
+     * on the rewritten predicate's Lookup function. Without this, Lookup
+     * delegates to its non-indexed fallback.
+     */
+    private void wrapBranchInOptimize(final LocationStep branch, final Pragma additionalPragma)
+            throws XPathException {
+        final Expression branchParent = branch.getParentExpression();
+        if (!(branchParent instanceof final RewritableExpression branchPath)) {
+            return;
+        }
+        if (!hasOptimizableInPredicates(branch)) {
+            return;
+        }
+        final ExtensionExpression extension = new ExtensionExpression(getContext());
+        if (additionalPragma != null) {
+            extension.addPragma(additionalPragma);
+        }
+        extension.addPragma(new Optimize(extension, getContext(), Optimize.OPTIMIZE_PRAGMA, null, false));
+        extension.setExpression(branch);
+        branchPath.replace(branch, extension);
+    }
+
+    private static boolean hasOptimizableInPredicates(final LocationStep step) {
+        final Predicate[] preds = step.getPredicates();
+        if (preds == null) {
+            return false;
+        }
+        for (final Predicate pred : preds) {
+            if (pred.getLength() != 1) {
+                continue;
+            }
+            final Expression inner = pred.getExpression(0);
+            if (inner instanceof Optimizable) {
+                return true;
+            }
+            if (inner instanceof final InternalFunctionCall fcall
+                    && fcall.getFunction() instanceof Optimizable) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Heuristic: a branch is "already distributed" if it has at least
+     * {@code expectedPredCount} predicates whose inner expression is
+     * something this rewriter can recognise as already-rewritten or
+     * still-rewritable. Used solely to short-circuit a second visit of
+     * the same FilteredExpression.
+     */
+    private static boolean alreadyDistributed(final LocationStep step, final int expectedPredCount) {
+        final Predicate[] existing = step.getPredicates();
+        if (existing == null || existing.length < expectedPredCount) {
+            return false;
+        }
+        // If the trailing N predicates each carry a Lookup-wrapped or
+        // distributable comparison, treat it as already rewritten.
+        int matched = 0;
+        for (int i = existing.length - expectedPredCount; i < existing.length; i++) {
+            final Predicate p = existing[i];
+            if (p.getLength() != 1) {
+                return false;
+            }
+            final Expression inner = p.getExpression(0);
+            if (inner instanceof final InternalFunctionCall fcall
+                    && fcall.getFunction() instanceof Lookup) {
+                matched++;
+            } else if (isDistributablePredicate(inner)) {
+                matched++;
+            }
+        }
+        return matched == expectedPredCount;
+    }
+
+    private Predicate clonePredicate(final Predicate original) {
+        final Predicate clone = new Predicate(getContext());
+        clone.setLocation(original.getLine(), original.getColumn());
+        for (int i = 0; i < original.getLength(); i++) {
+            clone.add(original.getExpression(i));
+        }
+        return clone;
+    }
+
+    /**
+     * Collect the LocationStep that should receive a distributed predicate
+     * for each branch of a Union, descending recursively into nested unions.
+     * For multi-step paths like {@code //address/name}, the predicate applies
+     * to the trailing step (name), so we return that. Returns false if any
+     * branch is not a path ending in a LocationStep.
+     */
+    private static boolean collectUnionLocationSteps(final Expression expr, final List<LocationStep> out) {
+        Expression e = expr;
+        if (e instanceof final Union nested) {
+            return collectUnionLocationSteps(nested.getLeft(), out)
+                    && collectUnionLocationSteps(nested.getRight(), out);
+        }
+        if (e instanceof final PathExpr path) {
+            if (path.getLength() == 0) {
+                return false;
+            }
+            final Expression last = path.getExpression(path.getLength() - 1);
+            if (last instanceof final LocationStep step) {
+                out.add(step);
+                return true;
+            }
+            // Single-step path wrapping a Union (rare, but possible).
+            if (path.getLength() == 1 && path.getExpression(0) instanceof Union) {
+                return collectUnionLocationSteps(path.getExpression(0), out);
+            }
+            return false;
+        }
+        if (e instanceof final LocationStep step) {
+            out.add(step);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * True when an expression appearing as the inner of a single-element
+     * predicate is one this rewriter knows how to translate via
+     * {@link #rewriteLocationStep}: a {@link GeneralComparison} or an
+     * {@code fn:matches} call wrapped in {@link InternalFunctionCall}.
+     * Both are non-positional, so distributing a predicate containing one
+     * does not change the set of nodes selected.
+     */
+    private static boolean isDistributablePredicate(final Expression e) {
+        if (e instanceof GeneralComparison) {
+            return true;
+        }
+        if (e instanceof final InternalFunctionCall fcall) {
+            return fcall.getFunction() instanceof org.exist.xquery.functions.fn.FunMatches;
+        }
+        return false;
     }
 
     @Override

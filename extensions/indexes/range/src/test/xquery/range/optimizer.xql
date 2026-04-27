@@ -946,3 +946,30 @@ declare
 function ot:issue4942-test-direct-without-pragma() {
     count(collection($ot:COLLECTION)//root/a[@ID = "123"]) eq 1
 };
+
+(: GitHub #2363: range index ignored on (A | B)[pred] union pattern.
+   The QueryRewriter expansion distributes the predicate onto the trailing
+   LocationStep of each branch and substitutes range:eq for the
+   GeneralComparison. The structural rewrite is enough to keep results
+   correct on every branch with an applicable index config. Lifting the
+   runtime path to the OPTIMIZED level (so canOptimizeSequence fires on
+   each Lookup) is a follow-up — it requires the surrounding optimizer
+   pass to be re-run after distribution, which the rewriter cannot trigger
+   from inside its own hook. :)
+declare
+    %test:args("Rudi Rüssel")
+    %test:assertEquals(2)
+function ot:issue2363-union-predicate-result($name as xs:string) {
+    count((collection($ot:COLLECTION)//address/name | collection($ot:COLLECTION)//address/name2)[. = $name])
+};
+
+(: Returning the matched names directly (not a count) checks that the
+   distributed predicate filters each branch correctly, not just that the
+   total count happens to be right. :)
+declare
+    %test:args("Albert Amsel")
+    %test:assertEquals("Albert Amsel", "Albert Amsel")
+function ot:issue2363-union-predicate-values($name as xs:string) {
+    for $n in (collection($ot:COLLECTION)//address/name | collection($ot:COLLECTION)//address/name2)[. = $name]
+    return string($n)
+};
