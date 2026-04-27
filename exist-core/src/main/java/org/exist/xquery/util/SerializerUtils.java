@@ -578,39 +578,27 @@ public class SerializerUtils {
         }
 
         final String localParameterName = parameterConvention.getLocalParameterName();
-        final String value;
 
         switch (parameterConvention.getType()) {
-            case Type.BOOLEAN:
+            case Type.BOOLEAN -> {
                 final Item boolItem = parameterValue.itemAt(0);
+                final String value;
                 if (boolItem instanceof BooleanValue bv) {
                     value = bv.getValue() ? "yes" : "no";
                 } else {
-                    // xs:untypedAtomic or other — coerce via string
                     final String boolStr = boolItem.getStringValue().trim();
                     value = ("true".equals(boolStr) || "1".equals(boolStr)) ? "yes" : "no";
                 }
                 properties.setProperty(localParameterName, value);
-                break;
-            case Type.STRING:
-                value = parameterValue.itemAt(0).getStringValue();
-                properties.setProperty(localParameterName, value);
-                break;
-            case Type.DECIMAL:
-                value = parameterValue.itemAt(0).getStringValue();
-                properties.setProperty(localParameterName, value);
-                break;
-            case Type.INTEGER:
-                value = parameterValue.itemAt(0).getStringValue();
-                properties.setProperty(localParameterName, value);
-                break;
-            case Type.QNAME:
+            }
+            case Type.STRING, Type.DECIMAL, Type.INTEGER ->
+                properties.setProperty(localParameterName, parameterValue.itemAt(0).getStringValue());
+            case Type.QNAME -> {
                 if (parameterConvention.getCardinality().isSuperCardinalityOrEqualOf(Cardinality._MANY)) {
                     final SequenceIterator iterator = parameterValue.iterate();
                     while (iterator.hasNext()) {
                         final String existingValue = properties.getProperty(localParameterName);
                         final String nextValue = ((QNameValue) iterator.nextItem()).getQName().toURIQualifiedName();
-
                         if (existingValue == null || existingValue.isEmpty()) {
                             properties.setProperty(localParameterName, nextValue);
                         } else {
@@ -618,23 +606,21 @@ public class SerializerUtils {
                         }
                     }
                 } else {
-                    value = ((QNameValue) parameterValue.itemAt(0)).getQName().toURIQualifiedName();
-                    properties.setProperty(localParameterName, value);
+                    properties.setProperty(localParameterName,
+                            ((QNameValue) parameterValue.itemAt(0)).getQName().toURIQualifiedName());
                 }
-                break;
-            case Type.MAP_ITEM:
+            }
+            case Type.MAP_ITEM -> {
                 if (parameterConvention.getParameterName().equals(W3CParameterConvention.USE_CHARACTER_MAPS.parameterName)) {
                     final Int2ObjectMap<String> characterMap = createCharacterMap((MapType) parameterValue, parameterConvention);
                     setCharacterMap(properties, characterMap);
                 } else {
-                    // There should not be any such parameter, other than use-character-maps
                     throw new UnsupportedOperationException(
                             "Not yet implemented support for the map serialization parameter: " + localParameterName);
                 }
-                break;
-            default:
-                throw new UnsupportedOperationException(
-                        MSG_UNSUPPORTED_TYPE + Type.getTypeName(parameterConvention.getType()) + MSG_FOR_PARAMETER_VALUE + ": " + localParameterName);
+            }
+            default -> throw new UnsupportedOperationException(
+                    MSG_UNSUPPORTED_TYPE + Type.getTypeName(parameterConvention.getType()) + MSG_FOR_PARAMETER_VALUE + ": " + localParameterName);
         }
     }
 

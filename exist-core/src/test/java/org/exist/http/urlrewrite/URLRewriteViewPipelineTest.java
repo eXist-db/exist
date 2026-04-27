@@ -56,57 +56,57 @@ public class URLRewriteViewPipelineTest {
 
     private static final String TEST_COLLECTION = "/db/apps/test-url-rewrite";
 
-    private static final String CONTROLLER_XQ =
-            "xquery version \"3.1\";\n" +
-            "declare variable $exist:path external;\n" +
-            "declare variable $exist:resource external;\n" +
-            "declare variable $exist:controller external;\n" +
-            "declare variable $exist:prefix external;\n" +
-            "\n" +
-            "if (ends-with($exist:resource, '.html')) then\n" +
-            "    <dispatch xmlns=\"http://exist.sourceforge.net/NS/exist\">\n" +
-            "        <view>\n" +
-            "            <forward url=\"view.xq\"/>\n" +
-            "        </view>\n" +
-            "    </dispatch>\n" +
-            "else\n" +
-            "    <dispatch xmlns=\"http://exist.sourceforge.net/NS/exist\">\n" +
-            "        <cache-control cache=\"yes\"/>\n" +
-            "    </dispatch>";
+    private static final String CONTROLLER_XQ = """
+            xquery version "3.1";
+            declare variable $exist:path external;
+            declare variable $exist:resource external;
+            declare variable $exist:controller external;
+            declare variable $exist:prefix external;
 
-    private static final String VIEW_XQ =
-            "xquery version \"3.1\";\n" +
-            "declare namespace output=\"http://www.w3.org/2010/xslt-xquery-serialization\";\n" +
-            "declare option output:method \"html\";\n" +
-            "declare option output:media-type \"text/html\";\n" +
-            "\n" +
-            "let $html := request:get-data()\n" +
-            "return\n" +
-            "    <html>\n" +
-            "        <head>\n" +
-            "            <title>View Pipeline Test</title>\n" +
-            "            { $html/html/head/* }\n" +
-            "        </head>\n" +
-            "        { $html/html/body }\n" +
-            "    </html>";
+            if (ends-with($exist:resource, '.html')) then
+                <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+                    <view>
+                        <forward url="view.xq"/>
+                    </view>
+                </dispatch>
+            else
+                <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+                    <cache-control cache="yes"/>
+                </dispatch>""";
 
-    private static final String HTML_WITH_HEAD =
-            "<html>\n" +
-            "    <head>\n" +
-            "        <title>Test Page</title>\n" +
-            "        <meta charset=\"utf-8\"/>\n" +
-            "    </head>\n" +
-            "    <body>\n" +
-            "        <h1>Hello World</h1>\n" +
-            "    </body>\n" +
-            "</html>";
+    private static final String VIEW_XQ = """
+            xquery version "3.1";
+            declare namespace output="http://www.w3.org/2010/xslt-xquery-serialization";
+            declare option output:method "html";
+            declare option output:media-type "text/html";
 
-    private static final String HTML_WITHOUT_HEAD =
-            "<html>\n" +
-            "    <body>\n" +
-            "        <h1>Hello World</h1>\n" +
-            "    </body>\n" +
-            "</html>";
+            let $html := request:get-data()
+            return
+                <html>
+                    <head>
+                        <title>View Pipeline Test</title>
+                        { $html/html/head/* }
+                    </head>
+                    { $html/html/body }
+                </html>""";
+
+    private static final String HTML_WITH_HEAD = """
+            <html>
+                <head>
+                    <title>Test Page</title>
+                    <meta charset="utf-8"/>
+                </head>
+                <body>
+                    <h1>Hello World</h1>
+                </body>
+            </html>""";
+
+    private static final String HTML_WITHOUT_HEAD = """
+            <html>
+                <body>
+                    <h1>Hello World</h1>
+                </body>
+            </html>""";
 
     @BeforeClass
     public static void setup() throws Exception {
