@@ -63,6 +63,14 @@ public final class XQueryParser {
     private final java.util.Set<String> declaredDecimalFormats = new java.util.HashSet<>();
     private boolean defaultDecimalFormatDeclared = false;
 
+    /**
+     * True once we have parsed a Prolog Section 2 declaration (variable,
+     * function, option, context-item). Subsequent Section 1 declarations
+     * (namespace, import, default, decimal-format, base-uri, etc.) are
+     * static errors (XPST0003) per the XQuery 3.1 EBNF.
+     */
+    private boolean inPrologSection2 = false;
+
     public boolean isLibraryModule() { return isLibraryModule; }
 
     /** Returns true if the query declares xquery version "4.0". */
@@ -107,10 +115,13 @@ public final class XQueryParser {
         // Parse prolog declarations (if any)
         parseProlog();
 
-        // Parse body expression
+        // Parse body expression. K2-Literals-34: a main module without a
+        // query body is a static error (XPST0003).
         if (!check(Token.EOF)) {
             final Expression body = parseExpr();
             rootExpr.add(body);
+        } else {
+            throw error("Main module is missing a query body");
         }
 
         expect(Token.EOF, "end of input");
@@ -193,6 +204,9 @@ public final class XQueryParser {
             if (matchKeyword(Keywords.DECLARE)) {
                 parseDeclare();
             } else if (matchKeyword(Keywords.IMPORT)) {
+                if (inPrologSection2) {
+                    throw error("'import' must precede variable/function/option declarations");
+                }
                 parseImport();
             }
         }
@@ -205,9 +219,28 @@ public final class XQueryParser {
             annotations = parseAnnotations();
         }
 
+        // Detect prolog section transitions. Section 1 covers setters and
+        // imports; Section 2 covers variable/function/option/context-item
+        // declarations. A Section 1 declaration after a Section 2 one is a
+        // static error (XPST0003) per the XQuery 3.1 grammar.
+        final boolean isSection2 = checkKeyword(Keywords.VARIABLE)
+                || checkKeyword(Keywords.FUNCTION)
+                || checkKeyword(Keywords.OPTION)
+                || checkKeyword(Keywords.CONTEXT);
+
+        if (!isSection2 && inPrologSection2) {
+            throw error("Prolog setter/import declarations must precede variable/function/option declarations");
+        }
+        if (isSection2) {
+            inPrologSection2 = true;
+        }
+
         if (checkKeyword(Keywords.NAMESPACE)) {
             parseNamespaceDecl();
         } else if (checkKeyword(Keywords.DEFAULT)) {
+            parseDefaultDecl();
+        } else if (checkKeyword("fixed") && peekIsKeyword(Keywords.DEFAULT)) {
+            // XQ4: 'declare fixed default element namespace "uri";'
             parseDefaultDecl();
         } else if (checkKeyword(Keywords.FUNCTION)) {
             parseFunctionDecl(annotations);
@@ -442,6 +475,10 @@ public final class XQueryParser {
     }
 
     private void parseDefaultDecl() throws XPathException {
+        // XQuery 4.0: 'declare fixed default element namespace "uri"'.
+        // 'fixed' precedes 'default'. We accept it for parse compatibility;
+        // eXist doesn't enforce the 'fixed' constraint at runtime.
+        final boolean fixed = matchKeyword("fixed");
         matchKeyword(Keywords.DEFAULT);
 
         if (matchKeyword(Keywords.ELEMENT)) {
@@ -456,6 +493,8 @@ public final class XQueryParser {
             // the default element namespace via getURIForPrefix(""). Matches
             // the ANTLR tree walker (XQueryTree.g around line 677).
             context.declareNamespace("", uri);
+        } else if (fixed) {
+            throw error("'fixed' is only allowed before 'element' in default namespace declaration");
         } else if (matchKeyword(Keywords.FUNCTION)) {
             expectKeyword(Keywords.NAMESPACE);
             if (!check(Token.STRING_LITERAL)) throw error("Expected namespace URI");
@@ -1009,9 +1048,14 @@ parseExprSingle(); // parse but discard
             // // forExpr.setScoreVariable(scoreVar); // TODO: requires v2/xqft-phase2 // TODO: requires v2/xqft-phase2
         }
 
-        // Register the variable so it's visible in subsequent clauses/return
-        final LocalVariable var = forExpr.createVariable(qname);
-        context.declareVariableBinding(var);
+        // NOTE: do NOT declareVariableBinding here at parse time. Variable
+        // scope is established by ForExpr.analyze/eval, which marks the
+        // local-variable stack and declares the iteration variable AFTER
+        // analyzing/evaluating the input sequence (per the spec, $x is
+        // not in scope inside its own input expression). Pre-declaring
+        // at parse time leaks the variable into the analyze context and
+        // produces XPDY0002 at runtime instead of the static XPST0008.
+        forExpr.createVariable(qname); // primes firstVariable for downstream clauses
 
         // Handle comma-separated bindings: for $x in ..., $y in ...
         if (check(Token.COMMA) && !checkKeyword(Keywords.RETURN)) {
@@ -1070,8 +1114,9 @@ parseExprSingle(); // parse but discard
         window.setVariable(qname);
         window.setInputSequence(inputSeq);
 
-        final LocalVariable var = window.createVariable(qname);
-        context.declareVariableBinding(var);
+        // Variable scope is established by WindowExpr.analyze/eval —
+        // do not declareVariableBinding at parse time (see parseForBinding).
+        window.createVariable(qname);
 
         return window;
     }
@@ -1144,8 +1189,9 @@ parseExprSingle(); // parse but discard
         forMember.setVariable(qname);
         forMember.setInputSequence(inputSeq);
 
-        final LocalVariable var = forMember.createVariable(qname);
-        context.declareVariableBinding(var);
+        // Variable scope is established by ForMemberExpr.analyze/eval —
+        // do not declareVariableBinding at parse time (see parseForBinding).
+        forMember.createVariable(qname);
 
         return forMember;
     }
@@ -1184,8 +1230,9 @@ parseExprSingle(); // parse but discard
         letExpr.setInputSequence(inputSeq);
         // // if (isScore) letExpr.setScoreBinding(true); // TODO: requires v2/xqft-phase2 // TODO: requires v2/xqft-phase2
 
-        final LocalVariable var = letExpr.createVariable(qname);
-        context.declareVariableBinding(var);
+        // Variable scope is established by LetExpr.analyze/eval —
+        // do not declareVariableBinding at parse time (see parseForBinding).
+        letExpr.createVariable(qname);
 
         // Handle comma-separated bindings: let $x := ..., $y := ...
         if (check(Token.COMMA) && !checkKeyword(Keywords.RETURN)) {
@@ -1254,10 +1301,8 @@ parseExprSingle(); // parse but discard
         expect(Token.COLON_EQ, "':='");
         destructure.setInputSequence(parseExprSingle());
 
-        // Declare all destructured variables
-        for (final QName qn : destructure.getTupleStreamVariables()) {
-            context.declareVariableBinding(new LocalVariable(qn));
-        }
+        // Variable scope is established by LetDestructureExpr.analyze/eval —
+        // do not declareVariableBinding at parse time (see parseForBinding).
 
         // Handle comma-separated bindings after destructure
         if (check(Token.COMMA) && !checkKeyword(Keywords.RETURN)) {
@@ -1459,8 +1504,9 @@ parseExprSingle(); // parse but discard
             quant.setVariable(qname);
             quant.setInputSequence(inputSeq);
 
-            final LocalVariable var = quant.createVariable(qname);
-            context.declareVariableBinding(var);
+            // Variable scope is established by QuantifiedExpression.analyze/eval —
+            // do not declareVariableBinding at parse time (see parseForBinding).
+            quant.createVariable(qname);
 
             final Expression satisfiesExpr = parseExprSingle();
             quant.setReturnExpression(satisfiesExpr);
@@ -3427,6 +3473,13 @@ parseExprSingle(); // parse but discard
 
         // NCName or QName — could be name test, function call, keyword, or computed constructor
         if (check(Token.NCNAME) || check(Token.QNAME)) {
+            // True when this step appears immediately after '/' or '//'. In
+            // that context, XQuery keywords (for, let, if, validate, …) must
+            // be accepted as element name tests rather than diverted to
+            // their special parsers.
+            final boolean inStepCtx = previous != null
+                    && (previous.type == Token.SLASH || previous.type == Token.DSLASH);
+
             // Computed constructors
             // Map and array constructors
             if (checkKeyword(Keywords.MAP) && peekIs(Token.LBRACE)) {
@@ -3436,10 +3489,10 @@ parseExprSingle(); // parse but discard
                 return parsePrimaryExpr();
             }
 
-            if (checkKeyword(Keywords.ELEMENT) && peekIsConstructorStart()) {
+            if (checkKeyword(Keywords.ELEMENT) && peekIsComputedConstructorStart(inStepCtx)) {
                 return parseComputedElementConstructor();
             }
-            if (checkKeyword(Keywords.ATTRIBUTE) && peekIsConstructorStart()) {
+            if (checkKeyword(Keywords.ATTRIBUTE) && peekIsComputedConstructorStart(inStepCtx)) {
                 return parseComputedAttributeConstructor();
             }
             if (checkKeyword(Keywords.TEXT) && peekIs(Token.LBRACE)) {
@@ -3451,10 +3504,10 @@ parseExprSingle(); // parse but discard
             if (checkKeyword(Keywords.DOCUMENT) && peekIs(Token.LBRACE)) {
                 return parseComputedDocumentConstructor();
             }
-            if (checkKeyword(Keywords.PROCESSING_INSTRUCTION) && peekIsConstructorStart()) {
+            if (checkKeyword(Keywords.PROCESSING_INSTRUCTION) && peekIsComputedConstructorStart(inStepCtx)) {
                 return parseComputedPIConstructor();
             }
-            if (checkKeyword(Keywords.NAMESPACE) && peekIsConstructorStart()) {
+            if (checkKeyword(Keywords.NAMESPACE) && peekIsComputedConstructorStart(inStepCtx)) {
                 return parseComputedNamespaceConstructor();
             }
 
@@ -3477,7 +3530,9 @@ parseExprSingle(); // parse but discard
 
             // validate expression — eXist is not schema-aware, so parse and pass through
             // validate strict { expr }, validate lax { expr }, validate type QName { expr }
-            if (checkKeyword(Keywords.VALIDATE)) {
+            // In step context, only divert if the form is clearly a validate
+            // expression (peek is LBRACE or strict/lax/type keyword).
+            if (checkKeyword(Keywords.VALIDATE) && (!inStepCtx || peekIsValidateStart())) {
                 advance(); // consume 'validate'
                 matchKeyword("strict");
                 matchKeyword("lax");
@@ -3507,8 +3562,11 @@ parseExprSingle(); // parse but discard
                 return parsePrimaryExpr();
             }
 
-            // Check if it's a keyword that starts a sub-expression
-            if (isKeywordExprStart()) {
+            // Check if it's a keyword that starts a sub-expression — but not
+            // when we are in a path-step context, where keywords (for, let,
+            // if, some, every, switch, typeswitch, try) must be parsed as
+            // element name tests (e.g. $x/for, $x/if).
+            if (!inStepCtx && isKeywordExprStart()) {
                 return parsePrimaryExpr();
             }
 
@@ -3841,7 +3899,17 @@ parseExprSingle(); // parse but discard
         final AttributeConstructor attr = new AttributeConstructor(context, attrName);
         final StringBuilder avt = new StringBuilder();
 
-        while (xp < lexer.getLength() && xchar() != quote) {
+        while (xp < lexer.getLength()) {
+            // Doubled quote inside attribute value is a literal quote
+            // (EscapeQuot ::= '""' / EscapeApos ::= "''" per XQuery spec).
+            if (xchar() == quote) {
+                if (xpeek(1) == quote) {
+                    avt.appendCodePoint(quote);
+                    xp += 2; xcl += 2;
+                    continue;
+                }
+                break; // end of attribute value
+            }
             if (xchar() == '{') {
                 if (xpeek(1) == '{') {
                     avt.append('{'); xp += 2; xcl += 2;
@@ -3850,8 +3918,19 @@ parseExprSingle(); // parse but discard
                     xp++; xcl++;
                     attr.addEnclosedExpr(scanEnclosedExpr());
                 }
+            } else if (xchar() == '}') {
+                // Mirror the '{' escape handling: '}}' is a literal '}'.
+                if (xpeek(1) == '}') {
+                    avt.append('}'); xp += 2; xcl += 2;
+                } else {
+                    throw new XPathException(xln, xcl, ErrorCodes.XPST0003,
+                            "Unbalanced '}' in attribute value");
+                }
             } else if (xchar() == '&') {
                 avt.append(scanXMLReference());
+            } else if (xchar() == '<') {
+                throw new XPathException(xln, xcl, ErrorCodes.XPST0003,
+                        "Unescaped '<' in attribute value");
             } else {
                 if (xchar() == '\n') { xln++; xcl = 0; }
                 avt.appendCodePoint(xchar()); xp++; xcl++;
@@ -5267,6 +5346,37 @@ parseExprSingle(); // parse but discard
         return bufferedNext.type == Token.LBRACE
                 || bufferedNext.type == Token.NCNAME
                 || bufferedNext.type == Token.QNAME;
+    }
+
+    /**
+     * In path-step context, only treat element/attribute/PI/namespace as a
+     * computed constructor when the syntax is unambiguous: peek must be
+     * LBRACE (literal-named) or BRACED_URI_LITERAL (Q{uri}local). A bare
+     * NCName/QName peek is treated as the next path step's name test
+     * (e.g. {@code $x/element return $n} — "element" is the name test).
+     */
+    private boolean peekIsComputedConstructorStart(final boolean inStepCtx) {
+        if (bufferedNext == null) bufferedNext = lexer.nextToken();
+        if (inStepCtx) {
+            return bufferedNext.type == Token.LBRACE
+                    || bufferedNext.type == Token.BRACED_URI_LITERAL;
+        }
+        return bufferedNext.type == Token.LBRACE
+                || bufferedNext.type == Token.NCNAME
+                || bufferedNext.type == Token.QNAME
+                || bufferedNext.type == Token.BRACED_URI_LITERAL;
+    }
+
+    /**
+     * Returns true when the token after 'validate' could begin a validate
+     * expression: '{', or one of the keywords 'strict'/'lax'/'type'.
+     */
+    private boolean peekIsValidateStart() {
+        if (bufferedNext == null) bufferedNext = lexer.nextToken();
+        if (bufferedNext.type == Token.LBRACE) return true;
+        if (bufferedNext.type != Token.NCNAME) return false;
+        final String v = bufferedNext.value;
+        return "strict".equals(v) || "lax".equals(v) || "type".equals(v);
     }
 
     /**

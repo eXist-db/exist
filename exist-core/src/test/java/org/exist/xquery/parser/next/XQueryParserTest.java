@@ -1853,6 +1853,108 @@ public class XQueryParserTest {
             "}");
     }
 
+    @Test
+    public void prologSection2ThenSection1Errors() throws Exception {
+        // K2-DefaultNamespaceProlog-13/14/15/16: a setter/import declaration
+        // appearing after a variable/function/option must raise XPST0003.
+        try {
+            assertModuleEval("(any)",
+                "declare variable $variable := 1; declare default element namespace \"http://example.com\"; 1");
+            org.junit.Assert.fail("Expected XPST0003");
+        } catch (final XPathException xpe) {
+            org.junit.Assert.assertEquals("XPST0003",
+                    xpe.getErrorCode().getErrorQName().getLocalPart());
+        }
+        try {
+            assertModuleEval("(any)",
+                "declare function local:f() { 1 }; declare default element namespace \"http://example.com\"; 1");
+            org.junit.Assert.fail("Expected XPST0003");
+        } catch (final XPathException xpe) {
+            org.junit.Assert.assertEquals("XPST0003",
+                    xpe.getErrorCode().getErrorQName().getLocalPart());
+        }
+        try {
+            assertModuleEval("(any)",
+                "declare option local:opt \"foo\"; declare default element namespace \"http://example.com\"; 1");
+            org.junit.Assert.fail("Expected XPST0003");
+        } catch (final XPathException xpe) {
+            org.junit.Assert.assertEquals("XPST0003",
+                    xpe.getErrorCode().getErrorQName().getLocalPart());
+        }
+    }
+
+    @Test
+    public void mainModuleWithoutBodyIsXpst0003() throws Exception {
+        // K2-Literals-34: a main module that has only a prolog and no query
+        // body must raise a static error.
+        try {
+            assertModuleEval("(any)",
+                "declare namespace prefix = \"http://example.com/\";");
+            org.junit.Assert.fail("Expected XPST0003");
+        } catch (final XPathException xpe) {
+            org.junit.Assert.assertEquals("XPST0003",
+                    xpe.getErrorCode().getErrorQName().getLocalPart());
+        }
+    }
+
+    @Test
+    public void mixedQuotesInAttributeConstructor() throws Exception {
+        // Literals067: single-quoted attribute with escaped '' and embedded ".
+        assertEval("He said, \"I don't like it.\"",
+                "string(<test check='He said, \"I don''t like it.\"'/>/@check)");
+        // EscapeQuot inside double-quoted attribute.
+        assertEval("a \"b\" c",
+                "string(<t a=\"a \"\"b\"\" c\"/>/@a)");
+    }
+
+    @Test
+    public void declareFixedDefaultElementNamespace() throws Exception {
+        // XQ4 default-namespace-40-04 pattern.
+        assertModuleEval("hello",
+                "xquery version \"4.0\";\n" +
+                "declare fixed default element namespace \"http://www.example.com/test\";\n" +
+                "<a>hello</a>/string()");
+    }
+
+    @Test
+    public void chainedLetBindingsStillWork() throws Exception {
+        // Sanity check: removing parse-time declareVariableBinding must not
+        // break later bindings/return that legitimately reference earlier
+        // FLWOR-bound variables.
+        assertEval("6", "let $x := 1, $y := $x + 1, $z := $y + $x return $x + $y + $z");
+        assertEval("3", "for $x in (1, 2, 3) where $x = 3 return $x");
+        assertEval("1 2 3", "for $x in 1 to 3 return $x");
+    }
+
+    @Test
+    public void forSelfReferenceRaisesXpst0008() throws Exception {
+        // ForExpr002/009/K-ForExprWithout-36/37: variable referenced in its own
+        // 'in' expression must raise XPST0008 statically (the variable is not
+        // yet in scope), not XPDY0002 at runtime.
+        try {
+            assertEval("(any)", "for $a in (1, 2, $a) return $a");
+            org.junit.Assert.fail("Expected XPathException");
+        } catch (final XPathException xpe) {
+            org.junit.Assert.assertEquals("XPST0008",
+                    xpe.getErrorCode().getErrorQName().getLocalPart());
+        }
+    }
+
+    @Test
+    public void forKeywordAsNameTest() throws Exception {
+        // K2-ForExprWithout-25/15: keyword as element name in path step.
+        assertModuleEval("1",
+                "declare function local:func($arg as element()*) as element()* { for $n in $arg/for return $n }; 1");
+        assertModuleEval("1",
+                "declare function local:func($arg as element()*) as element()* { for $n in $arg/element return $n }; 1");
+        assertModuleEval("1",
+                "declare function local:func($arg as element()*) as element()* { for $n in $arg/if return $n }; 1");
+        assertModuleEval("1",
+                "declare function local:func($arg as element()*) as element()* { for $n in $arg/typeswitch return $n }; 1");
+        assertModuleEval("1",
+                "declare function local:func($arg as element()*) as element()* { for $n in $arg/validate return $n }; 1");
+    }
+
     /**
      * Parses a simple expression without evaluating it.
      */
