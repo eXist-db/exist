@@ -2501,22 +2501,24 @@ public class XQueryContext implements BinaryValueManager, Context {
      * @param resultSeq the result sequence
      */
     public void popLocalVariables(@Nullable final LocalVariable var, @Nullable final Sequence resultSeq) {
-        if (var != null) {
-            // Restore localVariableLookup bindings in REVERSE-of-declaration order
-            // so each var's prevSameName chain unwinds correctly. (Walking forward
-            // would leave the map pointing at a popped variable when multiple vars
-            // share a name within the popped scope.)
-            for (LocalVariable cursor = lastVar; cursor != null && cursor != var; cursor = cursor.before) {
-                if (localVariableLookup.get(cursor.getQName()) == cursor) {
-                    if (cursor.prevSameName != null) {
-                        localVariableLookup.put(cursor.getQName(), cursor.prevSameName);
-                    } else {
-                        localVariableLookup.remove(cursor.getQName());
-                    }
+        // Restore localVariableLookup bindings in REVERSE-of-declaration order
+        // so each var's prevSameName chain unwinds correctly. (Walking forward
+        // would leave the map pointing at a popped variable when multiple vars
+        // share a name within the popped scope.) Runs whether or not {@code var}
+        // is null: when {@code var == null}, every binding from {@code lastVar}
+        // back to the start is being popped, so the whole chain must unwind.
+        for (LocalVariable cursor = lastVar; cursor != null && cursor != var; cursor = cursor.before) {
+            if (localVariableLookup.get(cursor.getQName()) == cursor) {
+                if (cursor.prevSameName != null) {
+                    localVariableLookup.put(cursor.getQName(), cursor.prevSameName);
+                } else {
+                    localVariableLookup.remove(cursor.getQName());
                 }
-                cursor.prevSameName = null;
             }
+            cursor.prevSameName = null;
+        }
 
+        if (var != null) {
             // clear all variables registered after var. they should be out of scope.
             LocalVariable outOfScope = var.after;
             while (outOfScope != null) {
