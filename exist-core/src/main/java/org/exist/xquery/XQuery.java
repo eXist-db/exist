@@ -373,6 +373,14 @@ public class XQuery {
             return result;
         } catch (final IOException e) {
             throw new XPathException(context.getRootExpression(), "Error reading query source: " + e.getMessage(), e);
+        } catch (final org.exist.xquery.parser.next.ParseError e) {
+            // Convert RD-parser RuntimeException into a proper XPathException
+            // carrying XPST0003 so the XQTS runner can match against the
+            // expected error (RD lexer/parser uses XPST0003 for all syntax
+            // failures — see ParseError.java).
+            final XPathException xpe = new XPathException(e.getLine(), e.getColumn(), ErrorCodes.XPST0003, e.getMessage());
+            xpe.initCause(e);
+            throw xpe;
         }
     }
 
