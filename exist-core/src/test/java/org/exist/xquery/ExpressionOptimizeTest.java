@@ -28,11 +28,14 @@ import org.exist.xquery.parser.XQueryAST;
 import org.exist.xquery.parser.XQueryLexer;
 import org.exist.xquery.parser.XQueryParser;
 import org.exist.xquery.parser.XQueryTreeParser;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.StringReader;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -49,6 +52,22 @@ import static org.junit.jupiter.api.Assertions.fail;
  * directly from a {@link XQueryContext}.
  */
 public class ExpressionOptimizeTest {
+
+    /**
+     * Hash-join recognition defaults on. Pin the flag explicitly so the
+     * structural rewrite tests below are reproducible regardless of how the
+     * test JVM was started (and isolated from any other test that may have
+     * flipped the flag).
+     */
+    @BeforeEach
+    public void enableHashJoin() {
+        ForExpr.setHashJoinEnabledForTest(true);
+    }
+
+    @AfterEach
+    public void resetHashJoin() {
+        ForExpr.setHashJoinEnabledForTest(true);
+    }
 
     /**
      * {@code if (1 = 1) then "yes" else "no"} — the condition folds to a
@@ -301,6 +320,167 @@ public class ExpressionOptimizeTest {
                         + hoist.getReturnExpression().getClass());
         assertTrue(rewriteFired(ctx, "HOIST"),
                 "CompileContext log should record the hoist");
+    }
+
+    // -- Hash-join recognition -------------------------------------------
+
+    /**
+     * Classic hash-join shape: an inner {@code for} whose input is loop-invariant
+     * (after hoisting), with a {@code where $i = $outer} clause and a non-FLWOR
+     * body. The inner FOR should be rewritten to a {@link HashJoinForExpr}.
+     */
+    @Test
+    public void hashJoinFiresForEqualityPattern() throws Exception {
+        final String query = """
+                for $p in (1, 2, 3)
+                let $items := for $i in (1, 2, 3, 4, 5) where $i = $p return $i
+                return $items""";
+        final XQueryContext ctx = new XQueryContext();
+        final PathExpr root = parse(query, ctx);
+        ctx.analyzeAndOptimizeIfModulesChanged(root);
+
+        // After hoisting, the chain head is the synthesized let.
+        final LetExpr hoist = (LetExpr) root.getExpression(0);
+        assertTrue(hoist.getVariable().getLocalPart().startsWith("__hoisted_"),
+                "expected __hoisted_* head, got " + hoist.getVariable());
+
+        // Drill: hoist let → outer for $p → inner let $items → its inputSequence
+        final ForExpr outerFor = (ForExpr) hoist.getReturnExpression();
+        final LetExpr itemsLet = (LetExpr) outerFor.getReturnExpression();
+        final Expression inner = itemsLet.getInputSequence();
+        if (!(inner instanceof HashJoinForExpr)) {
+            // Diagnostic: dump the structure to see where the rewrite stalled.
+            final ForExpr innerFor = (ForExpr) inner;
+            final Expression body = innerFor.getReturnExpression();
+            final String detail = "innerFor.returnExpr=" + body.getClass().getName()
+                    + (body instanceof WhereClause wc ? " where=" + wc.getWhereExpr().getClass().getName()
+                            + " ret=" + (wc.getReturnExpression() == null ? "null"
+                                    : wc.getReturnExpression().getClass().getName())
+                            : "");
+            fail("expected HashJoinForExpr; got ForExpr; " + detail);
+        }
+        assertTrue(rewriteFired(ctx, "hash-join"),
+                "CompileContext log should record the hash-join rewrite");
+    }
+
+    /**
+     * {@code <} comparison — hash-join must NOT fire (only {@code =} maps to a
+     * hash structure; range comparisons need ordered structures).
+     */
+    @Test
+    public void hashJoinSkippedForRangeComparison() throws Exception {
+        final String query = """
+                for $p in (1, 2, 3)
+                let $items := for $i in (1, 2, 3, 4, 5) where $i < $p return $i
+                return $items""";
+        final XQueryContext ctx = new XQueryContext();
+        final PathExpr root = parse(query, ctx);
+        ctx.analyzeAndOptimizeIfModulesChanged(root);
+
+        // No HashJoinForExpr should appear anywhere in the rewritten tree.
+        assertFalse(containsHashJoin(root),
+                "hash-join must not fire for < comparison");
+    }
+
+    /**
+     * Where condition is independent of the loop variable
+     * ({@code where $p > 0}, no $i reference) — must NOT fire because there's
+     * no join key to hash.
+     */
+    @Test
+    public void hashJoinSkippedWhenNoInnerVarReferenced() throws Exception {
+        final String query = """
+                for $p in (1, 2, 3)
+                let $items := for $i in (1, 2, 3) where $p > 0 return $i
+                return $items""";
+        final XQueryContext ctx = new XQueryContext();
+        final PathExpr root = parse(query, ctx);
+        ctx.analyzeAndOptimizeIfModulesChanged(root);
+        assertFalse(containsHashJoin(root),
+                "hash-join requires the where comparison to bind the for var");
+    }
+
+    /**
+     * Both sides of the comparison reference the inner var
+     * ({@code where $i = $i + 0}) — NOT a join, just a self-comparison;
+     * hash-join must not fire.
+     */
+    @Test
+    public void hashJoinSkippedWhenBothSidesReferenceInnerVar() throws Exception {
+        final String query = """
+                for $p in (1, 2, 3)
+                let $items := for $i in (1, 2, 3) where $i = ($i + 0) return $i
+                return $items""";
+        final XQueryContext ctx = new XQueryContext();
+        final PathExpr root = parse(query, ctx);
+        ctx.analyzeAndOptimizeIfModulesChanged(root);
+        assertFalse(containsHashJoin(root),
+                "hash-join requires exactly one operand to reference the for var");
+    }
+
+    /**
+     * Top-level {@code for $i where $i = $extern return $i} — there's no
+     * outer loop, so hash-join is pointless (the input is iterated once
+     * regardless). The detection should still apply structurally, but the
+     * absence of an outer scope means no per-iteration savings — not a
+     * correctness issue, just a non-improvement. The implementation
+     * currently fires unconditionally; this test pins the current behavior.
+     */
+    @Test
+    public void hashJoinFiresAtTopLevelToo() throws Exception {
+        final String query = """
+                declare variable $extern external;
+                for $i in (1, 2, 3) where $i = $extern return $i""";
+        final XQueryContext ctx = new XQueryContext();
+        final PathExpr root = parse(query, ctx);
+        ctx.declareVariable("extern", 2);
+        ctx.analyzeAndOptimizeIfModulesChanged(root);
+        // Even at top level, the structural detection should trigger.
+        assertTrue(containsHashJoin(root),
+                "hash-join detection is purely structural and fires here");
+    }
+
+    /**
+     * Inner FOR's body is itself a FLWOR (e.g. an order-by) — must NOT fire,
+     * because hash-join's match-iteration model doesn't preserve FLWOR
+     * post-where semantics like ordering.
+     */
+    @Test
+    public void hashJoinSkippedWhenBodyIsFlwor() throws Exception {
+        final String query = """
+                for $p in (1, 2, 3)
+                let $items := for $i in (1, 2, 3) where $i = $p
+                              order by $i return $i
+                return $items""";
+        final XQueryContext ctx = new XQueryContext();
+        final PathExpr root = parse(query, ctx);
+        ctx.analyzeAndOptimizeIfModulesChanged(root);
+        assertFalse(containsHashJoin(root),
+                "hash-join must not fire when body is a FLWOR clause (order by)");
+    }
+
+    /** Walks the tree looking for any {@link HashJoinForExpr}. */
+    private static boolean containsHashJoin(final Expression expr) {
+        if (expr == null) return false;
+        if (expr instanceof HashJoinForExpr) return true;
+        if (expr instanceof BindingExpression be) {
+            if (containsHashJoin(be.getInputSequence())) return true;
+        }
+        if (expr instanceof AbstractFLWORClause flwor) {
+            if (containsHashJoin(flwor.getReturnExpression())) return true;
+        }
+        if (expr instanceof WhereClause wc) {
+            if (containsHashJoin(wc.getWhereExpr())) return true;
+        }
+        try {
+            final int n = expr.getSubExpressionCount();
+            for (int i = 0; i < n; i++) {
+                if (containsHashJoin(expr.getSubExpression(i))) return true;
+            }
+        } catch (final Throwable ignored) {
+            // some classes throw on getSubExpression — treat as no match.
+        }
+        return false;
     }
 
     // -- Helpers --------------------------------------------------------
