@@ -2669,6 +2669,14 @@ public final class XQueryParser {
             throw new XPathException(previous.line, previous.column, ErrorCodes.XPST0051,
                     "Unknown simple type " + typeName);
         }
+        // Per QT4: kind tests in cast position (item(), node(), ...) — when
+        // the parsed name resolves to Type.ITEM and is followed by `(`, this
+        // is a syntax error (kind tests are not atomic types). Raise
+        // XPST0003 to match ANTLR/XQTS expectations.
+        if (type == Type.ITEM && check(Token.LPAREN)) {
+            throw new XPathException(previous.line, previous.column, ErrorCodes.XPST0003,
+                    "Kind test '" + typeName + "()' is not valid in cast position");
+        }
         if (type == Type.ITEM || !Type.subTypeOf(type, Type.ANY_ATOMIC_TYPE)) {
             throw new XPathException(previous.line, previous.column, ErrorCodes.XPST0051,
                     "Unknown simple type " + typeName);
@@ -3017,10 +3025,16 @@ public final class XQueryParser {
         String funcName = null;
         PathExpr funcExpr = null;
 
-        if (checkKeyword(Keywords.FN) && peekIs(Token.LBRACE)) {
-            // Focus function as arrow specifier: => fn { expr }(args)
+        if (checkKeyword(Keywords.FN) && (peekIs(Token.LBRACE) || peekIs(Token.LPAREN))) {
+            // Focus function: => fn { expr }(args)
+            // Inline function shorthand: => fn($x){...}(args)
             funcExpr = new PathExpr(context);
-            funcExpr.add(parseFocusFunction());
+            if (peekIs(Token.LBRACE)) {
+                funcExpr.add(parseFocusFunction());
+            } else {
+                advance(); // consume 'fn'
+                funcExpr.add(parseInlineFunction());
+            }
         } else if (checkKeyword(Keywords.FUNCTION) && (peekIs(Token.LPAREN) || peekIs(Token.LBRACE))) {
             // Inline function: => function($x) { ... }(args)
             // Or focus function via 'function': => function { expr }(args)
@@ -4332,8 +4346,12 @@ public final class XQueryParser {
         // Annotated inline/focus function: %ann function(...) { } or %ann fn { }
         if (check(Token.PERCENT)) {
             parseAnnotations(); // consume annotations
-            if (checkKeyword(Keywords.FN) && peekIs(Token.LBRACE)) {
-                return parseFocusFunction();
+            if (checkKeyword(Keywords.FN) && (peekIs(Token.LBRACE) || peekIs(Token.LPAREN))) {
+                if (peekIs(Token.LBRACE)) {
+                    return parseFocusFunction();
+                }
+                advance(); // consume 'fn'
+                return parseInlineFunction();
             }
             if (checkKeyword(Keywords.FUNCTION)) {
                 if (peekIs(Token.LBRACE)) {
@@ -4356,10 +4374,15 @@ public final class XQueryParser {
             return parseInlineFunction();
         }
 
-        // Focus function: fn { expr } — XQ4 only
-        if (checkKeyword(Keywords.FN) && peekIs(Token.LBRACE)) {
+        // XQ4 inline function shorthand: fn ($x) { expr }, equivalent to
+        // function ($x) { expr }. Or focus function: fn { expr }.
+        if (checkKeyword(Keywords.FN) && (peekIs(Token.LBRACE) || peekIs(Token.LPAREN))) {
             // XQ4 feature accepted in all versions (matching ANTLR 2 behavior)
-            return parseFocusFunction();
+            if (peekIs(Token.LBRACE)) {
+                return parseFocusFunction();
+            }
+            advance(); // consume 'fn' — parseInlineFunction expects LPAREN next
+            return parseInlineFunction();
         }
 
         // QName literal: #prefix:local — XQ4 only
