@@ -432,11 +432,14 @@ public final class XQueryLexer {
         if (input[pos] == '#') {
             // Character reference
             advance();
-            int value;
+            final int value;
+            final int radix;
+            final int start;
             if (pos < length && input[pos] == 'x') {
                 // Hex character reference &#xHHHH;
                 advance();
-                final int start = pos;
+                radix = 16;
+                start = pos;
                 while (pos < length && isHexDigit(input[pos])) {
                     advance();
                 }
@@ -444,10 +447,10 @@ public final class XQueryLexer {
                     throw new ParseError(ParseError.XPST0003,
                             "Empty hex character reference", line, column);
                 }
-                value = Integer.parseInt(codepointsToString(start, pos), 16);
             } else {
                 // Decimal character reference &#DDDD;
-                final int start = pos;
+                radix = 10;
+                start = pos;
                 while (pos < length && isDigit(input[pos])) {
                     advance();
                 }
@@ -455,11 +458,29 @@ public final class XQueryLexer {
                     throw new ParseError(ParseError.XPST0003,
                             "Empty decimal character reference", line, column);
                 }
-                value = Integer.parseInt(codepointsToString(start, pos));
             }
             if (pos >= length || input[pos] != ';') {
                 throw new ParseError(ParseError.XPST0003,
                         "Character reference missing closing ';'", line, column);
+            }
+            final String digits = codepointsToString(start, pos);
+            try {
+                // Use BigInteger to detect overflow → XQST0090.
+                final java.math.BigInteger bi = new java.math.BigInteger(digits, radix);
+                if (bi.bitLength() > 31) {
+                    throw new ParseError(ParseError.XQST0090,
+                            "Character reference out of range: &#" + (radix == 16 ? "x" : "") + digits + ";",
+                            line, column);
+                }
+                value = bi.intValue();
+            } catch (final NumberFormatException nfe) {
+                throw new ParseError(ParseError.XPST0003,
+                        "Invalid character reference", line, column);
+            }
+            if (!isValidXmlChar(value)) {
+                throw new ParseError(ParseError.XQST0090,
+                        "Character reference is not a valid XML character: &#" + (radix == 16 ? "x" : "") + digits + ";",
+                        line, column);
             }
             advance(); // consume ';'
             return new String(Character.toChars(value));
@@ -641,9 +662,16 @@ public final class XQueryLexer {
     private Token scanBracedURI() {
         advance(); // consume 'Q'
         advance(); // consume '{'
-        final int start = pos;
+        final int uriStart = pos;
         while (pos < length && input[pos] != '}') {
-            if (input[pos] == '\n') {
+            final int ch = input[pos];
+            // Reject nested '{' per XPath/XQuery 3.0 spec (BracedURILiteral)
+            if (ch == '{') {
+                throw new ParseError(ParseError.XPST0003,
+                        "'{' is not allowed inside a braced URI literal",
+                        tokenLine, tokenColumn);
+            }
+            if (ch == '\n') {
                 newline();
             }
             advance();
@@ -653,9 +681,27 @@ public final class XQueryLexer {
                     "Unterminated braced URI literal",
                     tokenLine, tokenColumn);
         }
+        final int uriEnd = pos;
         advance(); // consume '}'
-        // Return the full Q{...} including delimiters
-        return token(Token.BRACED_URI_LITERAL);
+        // Per spec, leading and trailing whitespace inside Q{...} is insignificant.
+        int s = uriStart;
+        int e = uriEnd;
+        while (s < e && isWhitespace(input[s])) s++;
+        while (e > s && isWhitespace(input[e - 1])) e--;
+        final String uri = new String(input, s, e - s);
+        return token(Token.BRACED_URI_LITERAL, "Q{" + uri + "}");
+    }
+
+    private static boolean isWhitespace(final int ch) {
+        return ch == ' ' || ch == '\t' || ch == '\r' || ch == '\n';
+    }
+
+    /** XML 1.0 character range (ignoring restricted chars in XML 1.0 4th ed). */
+    private static boolean isValidXmlChar(final int cp) {
+        return cp == 0x09 || cp == 0x0A || cp == 0x0D
+                || (cp >= 0x20 && cp <= 0xD7FF)
+                || (cp >= 0xE000 && cp <= 0xFFFD)
+                || (cp >= 0x10000 && cp <= 0x10FFFF);
     }
 
     /**

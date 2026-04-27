@@ -318,8 +318,15 @@ public final class XQueryParser {
     private List<Annotation> parseAnnotations() throws XPathException {
         final List<Annotation> annotations = new ArrayList<>();
         while (match(Token.PERCENT)) {
+            final Token nameTok = current;
             final String annotName = expectName("annotation name");
             final QName qname = resolveQName(annotName, context.getDefaultFunctionNamespace());
+
+            // Reject annotations in reserved namespaces (XQST0045).
+            if (!isAnnotationNamespaceValid(qname)) {
+                throw new XPathException(nameTok.line, nameTok.column, ErrorCodes.XQST0045,
+                        "Annotation in a reserved namespace: " + qname.getNamespaceURI());
+            }
 
             // Optional parenthesized literal values
             final List<LiteralValue> values = new ArrayList<>();
@@ -337,6 +344,20 @@ public final class XQueryParser {
             annotations.add(new Annotation(qname, values.toArray(new LiteralValue[0]), null));
         }
         return annotations;
+    }
+
+    private static boolean isAnnotationNamespaceValid(final QName qname) {
+        final String ns = qname.getNamespaceURI();
+        if (ns == null || ns.isEmpty()) return true;
+        if (org.exist.Namespaces.XPATH_FUNCTIONS_NS.equals(ns)) {
+            final String ln = qname.getLocalPart();
+            return "public".equals(ln) || "private".equals(ln);
+        }
+        return !(org.exist.Namespaces.XML_NS.equals(ns)
+                || org.exist.Namespaces.SCHEMA_NS.equals(ns)
+                || org.exist.Namespaces.SCHEMA_INSTANCE_NS.equals(ns)
+                || org.exist.Namespaces.XPATH_FUNCTIONS_MATH_NS.equals(ns)
+                || org.exist.Namespaces.XQUERY_OPTIONS_NS.equals(ns));
     }
 
     private LiteralValue parseAnnotationValue() throws XPathException {
@@ -369,6 +390,18 @@ public final class XQueryParser {
             final Token token = current;
             advance();
             return new LiteralValue(context, new IntegerValue(token.value.replace("_", "")));
+        }
+        if (check(Token.HEX_INTEGER_LITERAL)) {
+            final Token token = current;
+            advance();
+            final String body = token.value.substring(2).replace("_", "");
+            return new LiteralValue(context, new IntegerValue(new java.math.BigInteger(body, 16)));
+        }
+        if (check(Token.BINARY_INTEGER_LITERAL)) {
+            final Token token = current;
+            advance();
+            final String body = token.value.substring(2).replace("_", "");
+            return new LiteralValue(context, new IntegerValue(new java.math.BigInteger(body, 2)));
         }
         if (check(Token.DECIMAL_LITERAL)) {
             final Token token = current;
@@ -1282,6 +1315,18 @@ parseExprSingle(); // parse but discard
             }
 
             spec.setModifiers(modifiers);
+
+            // Optional 'collation' URI-literal — resolved against static base URI;
+            // unknown collations raise XQST0076.
+            if (matchKeyword(Keywords.COLLATION)) {
+                if (!check(Token.STRING_LITERAL)) {
+                    throw error("Expected URI literal after 'collation'");
+                }
+                final String collationUri = current.value;
+                advance();
+                spec.setCollation(collationUri);
+            }
+
             specs.add(spec);
         } while (match(Token.COMMA));
 
@@ -4275,6 +4320,8 @@ parseExprSingle(); // parse but discard
     Expression parsePrimaryExpr() throws XPathException {
         if (check(Token.STRING_LITERAL)) return parseStringLiteral();
         if (check(Token.INTEGER_LITERAL)) return parseIntegerLiteral();
+        if (check(Token.HEX_INTEGER_LITERAL)) return parseHexIntegerLiteral();
+        if (check(Token.BINARY_INTEGER_LITERAL)) return parseBinaryIntegerLiteral();
         if (check(Token.DECIMAL_LITERAL)) return parseDecimalLiteral();
         if (check(Token.DOUBLE_LITERAL)) return parseDoubleLiteral();
 
@@ -4422,7 +4469,49 @@ parseExprSingle(); // parse but discard
     private Expression parseIntegerLiteral() throws XPathException {
         final Token token = current;
         advance();
+        validateNumericUnderscores(token.value, false);
         final LiteralValue lit = new LiteralValue(context, new IntegerValue(stripUnderscores(token.value)));
+        lit.setLocation(token.line, token.column);
+        return lit;
+    }
+
+    private Expression parseHexIntegerLiteral() throws XPathException {
+        final Token token = current;
+        advance();
+        // token.value is "0x..." or "0X..." possibly containing underscores
+        final String body = token.value.substring(2);
+        validateRadixUnderscores(body, token.value);
+        final String digits = stripUnderscores(body);
+        if (digits.isEmpty()) {
+            throw error("Invalid hex integer literal");
+        }
+        final IntegerValue iv;
+        try {
+            iv = new IntegerValue(new java.math.BigInteger(digits, 16));
+        } catch (final NumberFormatException nfe) {
+            throw error("Invalid hex integer literal: " + token.value);
+        }
+        final LiteralValue lit = new LiteralValue(context, iv);
+        lit.setLocation(token.line, token.column);
+        return lit;
+    }
+
+    private Expression parseBinaryIntegerLiteral() throws XPathException {
+        final Token token = current;
+        advance();
+        final String body = token.value.substring(2);
+        validateRadixUnderscores(body, token.value);
+        final String digits = stripUnderscores(body);
+        if (digits.isEmpty()) {
+            throw error("Invalid binary integer literal");
+        }
+        final IntegerValue iv;
+        try {
+            iv = new IntegerValue(new java.math.BigInteger(digits, 2));
+        } catch (final NumberFormatException nfe) {
+            throw error("Invalid binary integer literal: " + token.value);
+        }
+        final LiteralValue lit = new LiteralValue(context, iv);
         lit.setLocation(token.line, token.column);
         return lit;
     }
@@ -4430,6 +4519,7 @@ parseExprSingle(); // parse but discard
     private Expression parseDecimalLiteral() throws XPathException {
         final Token token = current;
         advance();
+        validateNumericUnderscores(token.value, false);
         final LiteralValue lit = new LiteralValue(context, new DecimalValue(stripUnderscores(token.value)));
         lit.setLocation(token.line, token.column);
         return lit;
@@ -4438,6 +4528,7 @@ parseExprSingle(); // parse but discard
     private Expression parseDoubleLiteral() throws XPathException {
         final Token token = current;
         advance();
+        validateNumericUnderscores(token.value, true);
         final LiteralValue lit = new LiteralValue(context, new DoubleValue(stripUnderscores(token.value)));
         lit.setLocation(token.line, token.column);
         return lit;
@@ -4450,6 +4541,44 @@ parseExprSingle(); // parse but discard
      */
     private static String stripUnderscores(final String value) {
         return value.indexOf('_') < 0 ? value : value.replace("_", "");
+    }
+
+    /**
+     * Validates that '_' separators in a numeric literal appear only between
+     * consecutive digits (XQuery 4.0). Splits on '.', 'e', 'E', '+', '-' and
+     * checks each digit segment.
+     */
+    private void validateNumericUnderscores(final String value, final boolean allowExponent) throws XPathException {
+        if (value.indexOf('_') < 0) return;
+        final int n = value.length();
+        int segStart = 0;
+        for (int i = 0; i <= n; i++) {
+            final char c = i < n ? value.charAt(i) : '\0';
+            final boolean atSeparator = i == n || c == '.' || c == 'e' || c == 'E' || c == '+' || c == '-';
+            if (atSeparator) {
+                if (segStart < i) {
+                    final String seg = value.substring(segStart, i);
+                    if (seg.charAt(0) == '_' || seg.charAt(seg.length() - 1) == '_'
+                            || seg.contains("__")) {
+                        throw error("Invalid numeric literal: misplaced '_' in '" + value + "'");
+                    }
+                }
+                segStart = i + 1;
+            }
+        }
+    }
+
+    /**
+     * Validates underscore separators inside the digit body of a hex or binary
+     * literal (i.e. the part following 0x/0X/0b/0B). The body must not start or
+     * end with '_' and must not contain consecutive underscores.
+     */
+    private void validateRadixUnderscores(final String body, final String original) throws XPathException {
+        if (body.isEmpty()) return;
+        if (body.charAt(0) == '_' || body.charAt(body.length() - 1) == '_'
+                || body.contains("__")) {
+            throw error("Invalid numeric literal: misplaced '_' in '" + original + "'");
+        }
     }
 
     private Expression parseVariableRef() throws XPathException {

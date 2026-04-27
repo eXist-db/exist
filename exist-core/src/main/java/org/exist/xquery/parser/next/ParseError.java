@@ -42,6 +42,9 @@ public final class ParseError extends RuntimeException {
     /** Error code for unexpected end of input. */
     public static final String XPST0003_EOF = "XPST0003";
 
+    /** Character reference outside the legal XML character range. */
+    public static final String XQST0090 = "XQST0090";
+
     private final String errorCode;
     private final int line;
     private final int column;
