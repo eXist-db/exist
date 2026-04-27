@@ -132,7 +132,8 @@ fi
 
 _EXIST_OPTS="-Dlog4j.configurationFile=$BASEDIR/etc/log4j2.xml -Dexist.home=$BASEDIR \
              -Dexist.configurationFile=$BASEDIR/etc/conf.xml   -Djetty.home=$BASEDIR \
-             -Dexist.jetty.config=$BASEDIR/etc/jetty/standard.enabled-jetty-configs"
+             -Dexist.jetty.config=$BASEDIR/etc/jetty/standard.enabled-jetty-configs \
+             -Dexist.autodeploy.dir=$BASEDIR/autodeploy"
 if [ -n "$EXIST_OPTS" ] ; then
   _EXIST_OPTS="$_EXIST_OPTS $EXIST_OPTS"
 fi
