@@ -28,6 +28,8 @@ import org.exist.xquery.value.*;
 
 import java.util.HashSet;
 import java.util.Set;
+import org.exist.xquery.Constants.Comparison;
+import org.exist.xquery.Constants.StringTruncationOperator;
 
 /**
  * Represents an XQuery "for" expression.
@@ -100,11 +102,215 @@ public class ForExpr extends BindingExpression {
             returnExpr = returnExpr.optimize(cc);
         }
 
-        Expression result = this;
+        // After hoisting+chain wiring, check if this for/where shape can be
+        // rewritten into a hash-join. Detection runs AFTER the inner returnExpr
+        // has been optimized so the WhereClause's whereExpr is in its final
+        // (post-fold, post-rewrite) form.
+        Expression result = tryHashJoinRewrite(cc);
         if (enteredScope) {
             result = cc.applyHoistsAndExitChain(result);
         }
         return result;
+    }
+
+    /**
+     * Gates hash-join recognition. Default is {@code true} — XMark
+     * factor-0.01 measurements (interleaved 4 runs each, ANTLR parser):
+     * heavy tier (Q8/Q9/Q11/Q12) median 4.47s vs 6.42s with hash-join off
+     * (~30% reduction); Q8 specifically goes 1.57s → 0.34s (~4.6x). Disable
+     * with {@code -Dexist.optimizer.hashjoin=false} as an emergency switch
+     * if a workload regresses; per-test override via
+     * {@link #setHashJoinEnabledForTest(boolean)}.
+     */
+    private static volatile boolean hashJoinEnabled =
+            Boolean.parseBoolean(System.getProperty("exist.optimizer.hashjoin", "true"));
+
+    /** Test hook — flip hash-join on/off without restarting the JVM. */
+    static void setHashJoinEnabledForTest(final boolean enabled) {
+        hashJoinEnabled = enabled;
+    }
+
+    /**
+     * Detect the hash-join eligible shape and rewrite if eligible.
+     * <p>
+     * Eligible shape: {@code for $i in <expr> where $i/key = <outer-expr>
+     * return <body>}, with no positional/score variables, no
+     * {@code allowing empty}, no truncation/collation on the comparison,
+     * and a non-FLWOR body.
+     * <p>
+     * Returns either a {@link HashJoinForExpr} replacement (and logs the
+     * rewrite) or {@code this} when the shape doesn't match.
+     */
+    private Expression tryHashJoinRewrite(final CompileContext cc) {
+        if (!hashJoinEnabled) {
+            return this;
+        }
+        if (positionalVariable != null || scoreVariable != null || allowEmpty) {
+            return this;
+        }
+        if (!(returnExpr instanceof WhereClause wc)) {
+            return this;
+        }
+        // Body of the where (after the predicate) must not be a FLWOR clause —
+        // ordering/grouping/chained for-let semantics are not preserved by the
+        // hash-join's match-iteration model. Unwrap the parser's debug
+        // wrapper before checking.
+        if (unwrapForDetection(wc.getReturnExpression()) instanceof FLWORClause) {
+            return this;
+        }
+        // The parser wraps the where expression in DebuggableExpression and may
+        // also nest it in a single-step PathExpr; peel both layers to see the
+        // underlying comparison.
+        final Expression rawWhere = unwrapForDetection(wc.getWhereExpr());
+        if (!(rawWhere instanceof GeneralComparison cmp)) {
+            return this;
+        }
+        if (cmp.getRelation() != Comparison.EQ) {
+            return this;
+        }
+        if (cmp.getTruncation() != StringTruncationOperator.NONE) {
+            return this;  // contains()/starts-with/ends-with
+        }
+        // Probe the operands: exactly one side must reference $i (and not
+        // through any sub-expression class the walker can't traverse).
+        final QName myVar = varName;
+        if (myVar == null) {
+            return this;
+        }
+        final boolean leftRefs = referencesVar(cmp.getLeft(), myVar);
+        final boolean rightRefs = referencesVar(cmp.getRight(), myVar);
+        if (leftRefs == rightRefs) {
+            // Both reference $i, or neither does — not a single-variable join.
+            return this;
+        }
+        final int innerSide = leftRefs ? 0 : 1;
+        final Expression probeExpr = leftRefs ? cmp.getRight() : cmp.getLeft();
+        // Probe must NOT reference $i (already implied by leftRefs/rightRefs
+        // exclusivity, but check the walk didn't abort).
+        final RefCheck probeCheck = new RefCheck(myVar);
+        probeCheck.check(probeExpr);
+        if (probeCheck.aborted) {
+            return this;  // can't prove probe is independent of $i — bail
+        }
+        // Build the replacement.
+        final HashJoinForExpr replacement = new HashJoinForExpr(context, this, innerSide);
+        replacement.setLocation(line, column);
+        // Repair clause-chain links: previousClause stays unchanged
+        // (HashJoinForExpr is_a ForExpr); the returnExpr (WhereClause) keeps
+        // pointing back to the new for via setPreviousClause.
+        replacement.setPreviousClause(getPreviousClause());
+        if (returnExpr instanceof FLWORClause innerClause) {
+            innerClause.setPreviousClause(replacement);
+        }
+        cc.replaceWith(this, replacement,
+                "hash-join for/where (innerSide=" + innerSide + ")");
+        return replacement;
+    }
+
+    /**
+     * Strips parser-inserted wrappers so structural pattern checks see the
+     * underlying expression. {@link DebuggableExpression} wraps return bodies
+     * and where conditions for debugger support, and a single-step
+     * {@link PathExpr} can wrap any operand.
+     */
+    private static Expression unwrapForDetection(Expression e) {
+        while (true) {
+            if (e instanceof DebuggableExpression d) {
+                e = d.getFirst();
+            } else if (e instanceof PathExpr p && p.getLength() == 1) {
+                e = p.getExpression(0);
+            } else {
+                return e;
+            }
+        }
+    }
+
+    /**
+     * True if {@code expr} contains a {@link VariableReference} to
+     * {@code target}. Returns false ONLY when the walker can prove no such
+     * reference exists; if it encounters an expression class it cannot
+     * reliably traverse, returns true to err on the side of refusing the
+     * rewrite.
+     */
+    private static boolean referencesVar(final Expression expr, final QName target) {
+        final RefCheck check = new RefCheck(target);
+        check.check(expr);
+        return check.aborted || check.found;
+    }
+
+    /**
+     * Walks an expression subtree to determine whether it references a
+     * specific variable QName. Sets {@link #aborted} on unrecognised classes
+     * the walker cannot prove safe — callers should treat that as "may
+     * reference any variable" and refuse to optimize.
+     */
+    private static final class RefCheck {
+        final QName target;
+        boolean found = false;
+        boolean aborted = false;
+
+        RefCheck(final QName target) { this.target = target; }
+
+        void check(final Expression expr) {
+            if (expr == null || aborted || found) {
+                return;
+            }
+            if (expr instanceof VariableReference vr) {
+                final QName name = vr.getName();
+                if (name != null && name.equals(target)) {
+                    found = true;
+                }
+                return;
+            }
+            if (expr instanceof LiteralValue) {
+                return;
+            }
+            if (expr instanceof BindingExpression be) {
+                check(be.getInputSequence());
+                if (be instanceof AbstractFLWORClause flwor) {
+                    check(flwor.getReturnExpression());
+                }
+                return;
+            }
+            if (expr instanceof FilteredExpression fe) {
+                check(fe.getExpression());
+                for (final Predicate p : fe.getPredicates()) {
+                    check(p);
+                }
+                return;
+            }
+            if (expr instanceof LocationStep ls) {
+                final Predicate[] preds = ls.getPredicates();
+                if (preds != null) {
+                    for (final Predicate p : preds) {
+                        check(p);
+                    }
+                }
+                return;
+            }
+            if (expr instanceof WhereClause wc) {
+                check(wc.getWhereExpr());
+                check(wc.getReturnExpression());
+                return;
+            }
+            if (expr instanceof AbstractFLWORClause) {
+                aborted = true;
+                return;
+            }
+            final int count = expr.getSubExpressionCount();
+            if (count == 0) {
+                if (!(expr instanceof LiteralValue)) {
+                    aborted = true;
+                }
+                return;
+            }
+            for (int i = 0; i < count; i++) {
+                check(expr.getSubExpression(i));
+                if (aborted || found) {
+                    return;
+                }
+            }
+        }
     }
 
     /**
