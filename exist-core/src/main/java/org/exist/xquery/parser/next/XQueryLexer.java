@@ -929,13 +929,13 @@ public final class XQueryLexer {
 
     /**
      * Converts a slice of the codepoint array to a String.
+     *
+     * <p>Uses {@link String#String(int[], int, int)}, which is significantly
+     * faster than a {@link StringBuilder#appendCodePoint} loop. Every token's
+     * source text passes through here, so this is on the hot path.</p>
      */
     private String codepointsToString(final int start, final int end) {
-        final StringBuilder sb = new StringBuilder(end - start);
-        for (int i = start; i < end; i++) {
-            sb.appendCodePoint(input[i]);
-        }
-        return sb.toString();
+        return new String(input, start, end - start);
     }
 
     /**

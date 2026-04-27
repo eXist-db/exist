@@ -4423,8 +4423,7 @@ public final class XQueryParser {
     private Expression parseIntegerLiteral() throws XPathException {
         final Token token = current;
         advance();
-        final String value = token.value.replace("_", "");
-        final LiteralValue lit = new LiteralValue(context, new IntegerValue(value));
+        final LiteralValue lit = new LiteralValue(context, new IntegerValue(stripUnderscores(token.value)));
         lit.setLocation(token.line, token.column);
         return lit;
     }
@@ -4432,8 +4431,7 @@ public final class XQueryParser {
     private Expression parseDecimalLiteral() throws XPathException {
         final Token token = current;
         advance();
-        final String value = token.value.replace("_", "");
-        final LiteralValue lit = new LiteralValue(context, new DecimalValue(value));
+        final LiteralValue lit = new LiteralValue(context, new DecimalValue(stripUnderscores(token.value)));
         lit.setLocation(token.line, token.column);
         return lit;
     }
@@ -4441,10 +4439,18 @@ public final class XQueryParser {
     private Expression parseDoubleLiteral() throws XPathException {
         final Token token = current;
         advance();
-        final String value = token.value.replace("_", "");
-        final LiteralValue lit = new LiteralValue(context, new DoubleValue(value));
+        final LiteralValue lit = new LiteralValue(context, new DoubleValue(stripUnderscores(token.value)));
         lit.setLocation(token.line, token.column);
         return lit;
+    }
+
+    /**
+     * Strips XQuery 4.0 numeric separators ('_'). Avoids the regex-backed
+     * String.replace(CharSequence,CharSequence) when no underscore is present —
+     * the common case.
+     */
+    private static String stripUnderscores(final String value) {
+        return value.indexOf('_') < 0 ? value : value.replace("_", "");
     }
 
     private Expression parseVariableRef() throws XPathException {
