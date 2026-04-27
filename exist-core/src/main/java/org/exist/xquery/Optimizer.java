@@ -161,6 +161,21 @@ public class Optimizer extends DefaultExpressionVisitor {
     public void visitFilteredExpr(final FilteredExpression filtered) {
         super.visitFilteredExpr(filtered);
 
+        // check query rewriters if they want to rewrite the filtered expression
+        Pragma rewriterPragma = null;
+        try {
+            for (final QueryRewriter rewriter : rewriters) {
+                rewriterPragma = rewriter.rewriteFilteredExpression(filtered);
+                if (rewriterPragma != null) {
+                    hasOptimized = true;
+                    recordRewrite(rewriter, filtered);
+                    break;
+                }
+            }
+        } catch (final XPathException e) {
+            LOG.warn("Exception called while rewriting filtered expression: {}", e.getMessage(), e);
+        }
+
         // check if filtered expression can be simplified:
         // handles expressions like //foo/(baz)[...]
         if (filtered.getExpression() instanceof final LocationStep step) {
@@ -204,12 +219,25 @@ public class Optimizer extends DefaultExpressionVisitor {
             try {
                 // Create the pragma
                 final ExtensionExpression extension = new ExtensionExpression(context);
+                if (rewriterPragma != null) {
+                    extension.addPragma(rewriterPragma);
+                }
                 extension.addPragma(new Optimize(extension, context, Optimize.OPTIMIZE_PRAGMA, null, false));
                 extension.setExpression(filtered);
                 // Replace the old expression with the pragma
                 path.replace(filtered, extension);
             } catch (final XPathException e) {
                 LOG.warn("Failed to optimize expression: {}: {}", filtered, e.getMessage(), e);
+            }
+        } else if (rewriterPragma != null) {
+            // No Optimizable predicates but the rewriter wants to wrap the
+            // expression — wrap with just the rewriter pragma.
+            final Expression parent = filtered.getParent();
+            if (parent instanceof final RewritableExpression path) {
+                final ExtensionExpression extension = new ExtensionExpression(context);
+                extension.addPragma(rewriterPragma);
+                extension.setExpression(filtered);
+                path.replace(filtered, extension);
             }
         }
     }
@@ -302,6 +330,68 @@ public class Optimizer extends DefaultExpressionVisitor {
 //        }
         comparison.getLeft().accept(this);
         comparison.getRight().accept(this);
+
+        tryRewrite(comparison, "comparison",
+                rewriter -> rewriter.rewriteGeneralComparison(comparison));
+    }
+
+    @Override
+    public void visitBuiltinFunction(final Function function) {
+        super.visitBuiltinFunction(function);
+
+        tryRewrite(function, "function call",
+                rewriter -> rewriter.rewriteFunctionCall(function));
+    }
+
+    @Override
+    public void visitWhereClause(final WhereClause where) {
+        super.visitWhereClause(where);
+
+        tryRewrite(where, "where clause",
+                rewriter -> rewriter.rewriteWhereClause(where));
+    }
+
+    /**
+     * Run the supplied rewrite step against each registered rewriter; if any
+     * returns a non-null pragma, record the rewrite and wrap {@code node} in
+     * an {@link ExtensionExpression} carrying that pragma.
+     */
+    private void tryRewrite(final Expression node, final String kind,
+            final RewriterStep step) {
+        Pragma pragma = null;
+        try {
+            for (final QueryRewriter rewriter : rewriters) {
+                pragma = step.apply(rewriter);
+                if (pragma != null) {
+                    hasOptimized = true;
+                    recordRewrite(rewriter, node);
+                    break;
+                }
+            }
+        } catch (final XPathException e) {
+            LOG.warn("Exception called while rewriting {}: {}", kind, e.getMessage(), e);
+            return;
+        }
+        if (pragma == null) {
+            return;
+        }
+        final Expression parent = node.getParent();
+        if (!(parent instanceof final RewritableExpression path)) {
+            if (LOG.isTraceEnabled()) {
+                LOG.trace("Cannot wrap {}: parent {} does not implement RewritableExpression",
+                        kind, parent == null ? "null" : parent.getClass().getName());
+            }
+            return;
+        }
+        final ExtensionExpression extension = new ExtensionExpression(context);
+        extension.addPragma(pragma);
+        extension.setExpression(node);
+        path.replace(node, extension);
+    }
+
+    @FunctionalInterface
+    private interface RewriterStep {
+        Pragma apply(QueryRewriter rewriter) throws XPathException;
     }
 
     @Override

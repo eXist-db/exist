@@ -88,9 +88,14 @@ public class QueryRewriter {
     }
 
     /**
-     * Rewrite a {@link FunctionCall} to an index-backed equivalent. For example,
-     * an n-gram rewriter could intercept {@code fn:contains(text, "x")} on an
-     * n-gram-indexed path and substitute {@code ngram:contains(., "x")}.
+     * Rewrite a {@link Function} call to an index-backed equivalent. The
+     * argument is typed as {@link Function} (the supertype of {@link FunctionCall}
+     * and {@link InternalFunctionCall}) so that built-in functions like
+     * {@code fn:contains} and {@code fn:matches} — which are direct
+     * {@link Function} instances visited by
+     * {@link DefaultExpressionVisitor#visitBuiltinFunction} — can be intercepted.
+     * For example, an n-gram rewriter could intercept {@code fn:contains(text, "x")}
+     * on an n-gram-indexed path and substitute {@code ngram:contains(., "x")}.
      * Rewriters must respect the call's semantics (collation, case sensitivity,
      * tokenization model) and decline when the rewrite would not be a true
      * equivalence.
@@ -99,7 +104,7 @@ public class QueryRewriter {
      * @return a pragma expression to wrap the call or null if not applicable
      * @throws XPathException in case of a static error
      */
-    public Pragma rewriteFunctionCall(FunctionCall call) throws XPathException {
+    public Pragma rewriteFunctionCall(Function call) throws XPathException {
         return null;
     }
 
