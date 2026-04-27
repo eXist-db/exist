@@ -46,15 +46,6 @@ public class ParserBenchmark {
     private static final int DEFAULT_ITERATIONS = 20_000;
     private static final int WARMUP_ITERATIONS = 2_000;
 
-    private static final class Sample {
-        final String name;
-        final String query;
-        Sample(final String name, final String query) {
-            this.name = name;
-            this.query = query;
-        }
-    }
-
     private static final Sample[] SAMPLES = {
         new Sample("simple-path",
             "//book[@id = '123']/title/text()"),
@@ -64,87 +55,99 @@ public class ParserBenchmark {
             "/book[author/last = 'Smith' and year >= 2000]" +
             "/title[1]/text()"),
 
-        new Sample("flwor-medium",
-            "xquery version \"3.1\";\n" +
-            "for $b in //book\n" +
-            "let $author := $b/author\n" +
-            "where $b/year >= 2000\n" +
-            "order by $b/title\n" +
-            "return <result>{ $author/text(), $b/title/text() }</result>"),
+        new Sample("flwor-medium", """
+            xquery version "3.1";
+            for $b in //book
+            let $author := $b/author
+            where $b/year >= 2000
+            order by $b/title
+            return <result>{ $author/text(), $b/title/text() }</result>"""),
 
-        new Sample("flwor-grouping",
-            "xquery version \"3.1\";\n" +
-            "for $b in //book\n" +
-            "let $cat := $b/@category\n" +
-            "group by $cat\n" +
-            "order by $cat\n" +
-            "return <group cat=\"{$cat}\">{ count($b) }</group>"),
+        new Sample("flwor-grouping", """
+            xquery version "3.1";
+            for $b in //book
+            let $cat := $b/@category
+            group by $cat
+            order by $cat
+            return <group cat="{$cat}">{ count($b) }</group>"""),
 
-        new Sample("user-function",
-            "xquery version \"3.1\";\n" +
-            "declare function local:fact($n as xs:integer) as xs:integer {\n" +
-            "  if ($n <= 1) then 1 else $n * local:fact($n - 1)\n" +
-            "};\n" +
-            "local:fact(20)"),
+        new Sample("user-function", """
+            xquery version "3.1";
+            declare function local:fact($n as xs:integer) as xs:integer {
+              if ($n <= 1) then 1 else $n * local:fact($n - 1)
+            };
+            local:fact(20)"""),
 
-        new Sample("typeswitch",
-            "xquery version \"3.1\";\n" +
-            "declare function local:fmt($v) {\n" +
-            "  typeswitch ($v)\n" +
-            "    case xs:integer return concat('int=', $v)\n" +
-            "    case xs:string return concat('str=', $v)\n" +
-            "    case element() return concat('elem=', local-name($v))\n" +
-            "    default return 'unknown'\n" +
-            "};\n" +
-            "for $x in (1, 'a', <p/>) return local:fmt($x)"),
+        new Sample("typeswitch", """
+            xquery version "3.1";
+            declare function local:fmt($v) {
+              typeswitch ($v)
+                case xs:integer return concat('int=', $v)
+                case xs:string return concat('str=', $v)
+                case element() return concat('elem=', local-name($v))
+                default return 'unknown'
+            };
+            for $x in (1, 'a', <p/>) return local:fmt($x)"""),
 
-        new Sample("module-import",
-            "xquery version \"3.1\";\n" +
-            "import module namespace fn = \"http://www.w3.org/2005/xpath-functions\";\n" +
-            "import module namespace map = \"http://www.w3.org/2005/xpath-functions/map\";\n" +
-            "import module namespace array = \"http://www.w3.org/2005/xpath-functions/array\";\n" +
-            "let $m := map { 'a': 1, 'b': 2, 'c': 3 }\n" +
-            "let $a := [ 1, 2, 3, 4, 5 ]\n" +
-            "for $k in map:keys($m)\n" +
-            "return map:get($m, $k)"),
+        new Sample("module-import", """
+            xquery version "3.1";
+            import module namespace fn = "http://www.w3.org/2005/xpath-functions";
+            import module namespace map = "http://www.w3.org/2005/xpath-functions/map";
+            import module namespace array = "http://www.w3.org/2005/xpath-functions/array";
+            let $m := map { 'a': 1, 'b': 2, 'c': 3 }
+            let $a := [ 1, 2, 3, 4, 5 ]
+            for $k in map:keys($m)
+            return map:get($m, $k)"""),
 
-        new Sample("element-constructor",
-            "xquery version \"3.1\";\n" +
-            "<html xmlns=\"http://www.w3.org/1999/xhtml\">\n" +
-            "  <head><title>{ /book/title/string() }</title></head>\n" +
-            "  <body>\n" +
-            "  { for $c in /book/chapter\n" +
-            "    return <section id=\"{ $c/@id }\">\n" +
-            "             <h2>{ $c/title/string() }</h2>\n" +
-            "             { for $p in $c//para return <p>{ $p/text() }</p> }\n" +
-            "           </section> }\n" +
-            "  </body>\n" +
-            "</html>"),
+        new Sample("element-constructor", """
+            xquery version "3.1";
+            <html xmlns="http://www.w3.org/1999/xhtml">
+              <head><title>{ /book/title/string() }</title></head>
+              <body>
+              { for $c in /book/chapter
+                return <section id="{ $c/@id }">
+                         <h2>{ $c/title/string() }</h2>
+                         { for $p in $c//para return <p>{ $p/text() }</p> }
+                       </section> }
+              </body>
+            </html>"""),
 
         // Realistic application code with camelCase identifiers, underscored
         // names, and digits -- the case where the shape filter short-circuits
         // the keyword-table lookup.
-        new Sample("app-camelcase",
-            "xquery version \"3.1\";\n" +
-            "declare function local:renderArticle($articleNode as element()) as element() {\n" +
-            "  let $articleId := $articleNode/@xmlId\n" +
-            "  let $authorList := $articleNode/teiHeader/fileDesc/titleStmt/author\n" +
-            "  let $publishDate := $articleNode/teiHeader/fileDesc/publicationStmt/date/@when\n" +
-            "  let $bodyChunks := $articleNode/text/body/div\n" +
-            "  return <htmlArticle data_id=\"{$articleId}\">\n" +
-            "    <htmlByline>{ string-join($authorList/persName/string(), ', ') }</htmlByline>\n" +
-            "    { for $bodyChunk at $chunkIndex in $bodyChunks\n" +
-            "      let $chunkId := concat('chunk_', $chunkIndex)\n" +
-            "      let $headingNode := $bodyChunk/head[1]\n" +
-            "      return <htmlSection data_chunk=\"{$chunkId}\" data_kind=\"{$bodyChunk/@type}\">\n" +
-            "        <htmlHeading>{ $headingNode/string() }</htmlHeading>\n" +
-            "        { for $paragraphNode in $bodyChunk/p return\n" +
-            "            <htmlParagraph data_n=\"{$paragraphNode/@n}\">{ $paragraphNode/string() }</htmlParagraph> }\n" +
-            "      </htmlSection> }\n" +
-            "  </htmlArticle>\n" +
-            "};\n" +
-            "local:renderArticle(<doc/>)\n")
+        new Sample("app-camelcase", """
+            xquery version "3.1";
+            declare function local:renderArticle($articleNode as element()) as element() {
+              let $articleId := $articleNode/@xmlId
+              let $authorList := $articleNode/teiHeader/fileDesc/titleStmt/author
+              let $publishDate := $articleNode/teiHeader/fileDesc/publicationStmt/date/@when
+              let $bodyChunks := $articleNode/text/body/div
+              return <htmlArticle data_id="{$articleId}">
+                <htmlByline>{ string-join($authorList/persName/string(), ', ') }</htmlByline>
+                { for $bodyChunk at $chunkIndex in $bodyChunks
+                  let $chunkId := concat('chunk_', $chunkIndex)
+                  let $headingNode := $bodyChunk/head[1]
+                  return <htmlSection data_chunk="{$chunkId}" data_kind="{$bodyChunk/@type}">
+                    <htmlHeading>{ $headingNode/string() }</htmlHeading>
+                    { for $paragraphNode in $bodyChunk/p return
+                        <htmlParagraph data_n="{$paragraphNode/@n}">{ $paragraphNode/string() }</htmlParagraph> }
+                  </htmlSection> }
+              </htmlArticle>
+            };
+            local:renderArticle(<doc/>)
+            """)
     };
+
+    private static volatile Configuration sharedConfig;
+
+    private static final class Sample {
+        final String name;
+        final String query;
+        Sample(final String name, final String query) {
+            this.name = name;
+            this.query = query;
+        }
+    }
 
     private static AST parseOnly(final String query) throws Exception {
         final XQueryLexer lexer = new XQueryLexer(null, new StringReader(query));
@@ -155,8 +158,6 @@ public class ParserBenchmark {
         }
         return parser.getAST();
     }
-
-    private static volatile Configuration sharedConfig;
 
     private static Configuration sharedConfig() {
         Configuration c = sharedConfig;
