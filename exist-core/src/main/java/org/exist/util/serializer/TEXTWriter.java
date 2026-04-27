@@ -215,24 +215,26 @@ public class TEXTWriter extends XMLWriter {
         if (len <= 0) {
             return;
         }
-        if (ch instanceof String s) {
-            writer.write(s, start, len);
-        } else if (ch instanceof CharSlice cs) {
-            cs.write(writer, start, len);
-        } else if (ch instanceof StringBuilder sb) {
-            final char[] buf = new char[len];
-            sb.getChars(start, end, buf, 0);
-            writer.write(buf, 0, len);
-        } else if (ch instanceof StringBuffer sb) {
-            final char[] buf = new char[len];
-            sb.getChars(start, end, buf, 0);
-            writer.write(buf, 0, len);
-        } else {
-            final char[] buf = new char[len];
-            for (int i = 0; i < len; i++) {
-                buf[i] = ch.charAt(start + i);
+        switch (ch) {
+            case String s -> writer.write(s, start, len);
+            case CharSlice cs -> cs.write(writer, start, len);
+            case StringBuilder sb -> {
+                final char[] buf = new char[len];
+                sb.getChars(start, end, buf, 0);
+                writer.write(buf, 0, len);
             }
-            writer.write(buf, 0, len);
+            case StringBuffer sb -> {
+                final char[] buf = new char[len];
+                sb.getChars(start, end, buf, 0);
+                writer.write(buf, 0, len);
+            }
+            default -> {
+                final char[] buf = new char[len];
+                for (int i = 0; i < len; i++) {
+                    buf[i] = ch.charAt(start + i);
+                }
+                writer.write(buf, 0, len);
+            }
         }
     }
     
