@@ -3474,9 +3474,30 @@ public final class XQueryParser {
             return parseDirectElementConstructor();
         }
 
-        // EQName: Q{uri}local — dispatch to parsePrimaryExpr for function call/reference
+        // EQName: Q{uri}local — used as a function call, function reference,
+        // or as a name test (element selector) in a path step.
         if (check(Token.BRACED_URI_LITERAL)) {
-            return parsePrimaryExpr();
+            final int eline = current.line, ecol = current.column;
+            final String eqname = parseEQName();
+            if (match(Token.HASH)) {
+                return parseNamedFunctionRef(eqname);
+            }
+            if (match(Token.LPAREN)) {
+                return parseEQNameFunctionCall(eqname);
+            }
+            // Name test (child axis): `Q{uri}local` selects elements
+            final QName qn;
+            try {
+                qn = QName.parse(context, eqname, "");
+            } catch (final QName.IllegalQNameException e) {
+                throw new XPathException(eline, ecol, ErrorCodes.XPST0003,
+                        "Invalid EQName '" + eqname + "': " + e.getMessage());
+            }
+            final NodeTest nameTest = new NameTest(Type.ELEMENT, qn);
+            final LocationStep step = new LocationStep(context, Constants.CHILD_AXIS, nameTest);
+            step.setLocation(eline, ecol);
+            while (check(Token.LBRACKET)) parsePredicate(step);
+            return step;
         }
 
         // NCName or QName — could be name test, function call, keyword, or computed constructor
@@ -4567,6 +4588,20 @@ public final class XQueryParser {
 
     private Expression parseVariableRef() throws XPathException {
         final int line = previous.line, col = previous.column;
+        // XQ4: variable name can be an EQName like $Q{uri}local
+        if (check(Token.BRACED_URI_LITERAL)) {
+            final String eqname = parseEQName();
+            final QName qn;
+            try {
+                qn = QName.parse(context, eqname, "");
+            } catch (final QName.IllegalQNameException e) {
+                throw new XPathException(line, col, ErrorCodes.XPST0003,
+                        "Invalid variable EQName '" + eqname + "': " + e.getMessage());
+            }
+            final VariableReference ref = new VariableReference(context, qn);
+            ref.setLocation(line, col);
+            return ref;
+        }
         final String varName = check(Token.NCNAME) || check(Token.QNAME) ? current.value : null;
         if (varName == null) throw error("Expected variable name after '$'");
         advance();
