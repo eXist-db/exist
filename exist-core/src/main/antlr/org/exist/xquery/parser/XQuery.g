@@ -2973,6 +2973,104 @@ options {
 	}
 
 	/**
+	 * Override the inherited keyword-table lookup with two fast paths:
+	 *
+	 *   (1) Shape filter. Every XQuery / XQUF / XQFT keyword is composed
+	 *       entirely of lowercase ASCII letters (optionally separated by
+	 *       ASCII hyphens) and is between 2 and 25 characters long. Any
+	 *       NCNAME containing an uppercase letter, digit, underscore, or
+	 *       any other character cannot possibly appear in the keyword
+	 *       table, so we skip the lookup outright.
+	 *
+	 *   (2) HashMap lookup. The default antlr.CharScanner implementation
+	 *       allocates an ANTLRHashString wrapper on every call and looks
+	 *       it up in a synchronized Hashtable. We mirror the keyword
+	 *       table into an unsynchronized HashMap{@code <String,Integer>}
+	 *       on first use, then resolve hits with one map.get(text) call.
+	 *
+	 * Both paths preserve the existing semantics: a successful match
+	 * returns the same token type the inherited code would have returned;
+	 * a miss returns the supplied default ttype unchanged. If, for any
+	 * reason, the cache cannot be built (e.g. reflection denied by the
+	 * security manager), the lexer transparently falls back to the
+	 * inherited Hashtable lookup.
+	 */
+	@Override
+	public int testLiteralsTable(final String text, final int ttype) {
+		if (LEGACY_LITERAL_LOOKUP) {
+			return super.testLiteralsTable(text, ttype);
+		}
+		final int len = text.length();
+		if (len < KW_MIN_LEN || len > KW_MAX_LEN) {
+			return ttype;
+		}
+		for (int i = 0; i < len; i++) {
+			final char c = text.charAt(i);
+			if ((c < 'a' || c > 'z') && c != '-') {
+				return ttype;
+			}
+		}
+		java.util.Map<String, Integer> cache = literalsCache;
+		if (cache == null) {
+			cache = ensureLiteralsCache();
+		}
+		if (cache == FAILED_CACHE) {
+			return super.testLiteralsTable(text, ttype);
+		}
+		final Integer t = cache.get(text);
+		return (t != null) ? t.intValue() : ttype;
+	}
+
+	// Escape hatch: -Dexist.xquery.lexer.legacyLiterals=true reverts the
+	// keyword-table lookup to the inherited synchronized Hashtable path.
+	// Useful for A/B comparisons and as a last-resort safety valve.
+	private static final boolean LEGACY_LITERAL_LOOKUP =
+		Boolean.getBoolean("exist.xquery.lexer.legacyLiterals");
+
+	private static volatile java.util.Map<String, Integer> literalsCache;
+	private static final java.util.Map<String, Integer> FAILED_CACHE =
+		java.util.Collections.<String, Integer>emptyMap();
+
+	private java.util.Map<String, Integer> ensureLiteralsCache() {
+		java.util.Map<String, Integer> cache = literalsCache;
+		if (cache != null) {
+			return cache;
+		}
+		synchronized (XQueryLexer.class) {
+			cache = literalsCache;
+			if (cache != null) {
+				return cache;
+			}
+			try {
+				final java.lang.reflect.Field f =
+					antlr.ANTLRHashString.class.getDeclaredField("s");
+				f.setAccessible(true);
+				final java.util.HashMap<String, Integer> built =
+					new java.util.HashMap<String, Integer>(literals.size() * 2);
+				final java.util.Enumeration<?> e = literals.keys();
+				while (e.hasMoreElements()) {
+					final Object key = e.nextElement();
+					final String s = (String) f.get(key);
+					if (s != null) {
+						built.put(s, (Integer) literals.get(key));
+					}
+				}
+				cache = built;
+			} catch (final Throwable any) {
+				cache = FAILED_CACHE;
+			}
+			literalsCache = cache;
+			return cache;
+		}
+	}
+
+	// Bounds derived from the generated keyword table: shortest keywords
+	// ("as", "at", "by", "do", "fn", "if", "in", "is", "lt", "ne", "of",
+	// "or", "to") are 2 chars; longest ("preceding-sibling-or-self") is 25.
+	private static final int KW_MIN_LEN = 2;
+	private static final int KW_MAX_LEN = 25;
+
+	/**
 	 * Disambiguate (# as pragma vs ( + #QName literal.
 	 * Scans past (# and the QName. Returns true (pragma) if the QName
 	 * is followed by whitespace or #). Returns false (QName literal)
