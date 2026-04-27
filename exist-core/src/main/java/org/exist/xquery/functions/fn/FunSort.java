@@ -237,7 +237,7 @@ public class FunSort extends BasicFunction {
         return context.getDefaultCollator();
       }
       final String collationURI = args[pos].getStringValue();
-      return context.getCollator(collationURI);
+      return context.getCollator(collationURI, ErrorCodes.FOCH0002);
     } else {
       return context.getDefaultCollator();
     }

@@ -40,6 +40,7 @@ import org.exist.dom.persistent.NewArrayNodeSet;
 import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.numbering.NodeId;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Expression;
 import org.exist.xquery.NodeTest;
 import org.exist.xquery.XPathException;
@@ -403,7 +404,7 @@ public class ArrayListValueSequence extends AbstractSequence implements MemoryNo
 //            }
             return set;
         } else {
-            throw new XPathException((Expression) null, "Type error: the sequence cannot be converted into" +
+            throw new XPathException((Expression) null, ErrorCodes.XPTY0019, "Type error: the sequence cannot be converted into" +
                     " a node set. Item type is " + Type.getTypeName(itemType));
         }
     }
@@ -415,7 +416,7 @@ public class ArrayListValueSequence extends AbstractSequence implements MemoryNo
         }
 
         if (itemType == Type.ANY_TYPE || !Type.subTypeOf(itemType, Type.NODE)) {
-            throw new XPathException((Expression) null, "Type error: the sequence cannot be converted into" +
+            throw new XPathException((Expression) null, ErrorCodes.XPTY0019, "Type error: the sequence cannot be converted into" +
                     " a node set. Item type is " + Type.getTypeName(itemType));
         }
         for (final Item value : values) {

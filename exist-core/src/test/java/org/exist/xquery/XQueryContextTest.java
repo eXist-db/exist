@@ -240,7 +240,7 @@ public class XQueryContextTest {
             context.declareNamespace("", "new-default");
             fail("empty prefix was rebound");
         } catch (XPathException e) {
-            assertEquals("err:XQST0033 Cannot bind prefix '' to 'new-default' it is already bound to 'default'",
+            assertEquals("err:XQST0066 Cannot bind prefix '' to 'new-default' it is already bound to 'default'",
                     e.getMessage());
             assertEquals("default",  context.staticNamespaces.get(""));
         }

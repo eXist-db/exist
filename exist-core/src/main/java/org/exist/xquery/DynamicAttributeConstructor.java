@@ -109,12 +109,12 @@ public class DynamicAttributeConstructor extends NodeConstructor {
             	try {
             		qn = QName.parse(context, nameSeq.getStringValue(), null);
 		    	} catch (final QName.IllegalQNameException e) {
-					throw new XPathException(this, ErrorCodes.XPTY0004, "'" + nameSeq.getStringValue() + "' is not a valid attribute name");
+					throw new XPathException(this, ErrorCodes.XQDY0074, "'" + nameSeq.getStringValue() + "' is not a valid attribute name");
 				}
 
             //Not in the specs but... makes sense
             if(!XMLNames.isName(qn.getLocalPart()))
-            	{throw new XPathException(this, ErrorCodes.XPTY0004, "'" + qn.getLocalPart() + "' is not a valid attribute name");}
+            	{throw new XPathException(this, ErrorCodes.XQDY0074, "'" + qn.getLocalPart() + "' is not a valid attribute name");}
             
             if ("xmlns".equals(qn.getLocalPart()) && qn.getNamespaceURI().isEmpty())
             	{throw new XPathException(this, ErrorCodes.XQDY0044, "'" + qn.getLocalPart() + "' is not a valid attribute name");}
