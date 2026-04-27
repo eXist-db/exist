@@ -52,6 +52,22 @@ public class DebuggableExpression implements Expression, RewritableExpression {
         expression.analyze(contextInfo);
     }
 
+    /**
+     * Recurse the per-expression optimize() pass into the wrapped expression
+     * and capture any replacement. Without this, the inherited default no-op
+     * blocks the optimize pass at every debugger wrapper — including the one
+     * the FLWOR parser inserts around every {@code return} body. That would
+     * silently disable hoisting, constant folding, and every other rewrite
+     * inside a FLWOR's return.
+     */
+    @Override
+    public Expression optimize(final CompileContext cc) throws XPathException {
+        if (expression != null) {
+            expression = expression.optimize(cc);
+        }
+        return this;
+    }
+
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         try {
             expression.getContext().expressionStart(expression);

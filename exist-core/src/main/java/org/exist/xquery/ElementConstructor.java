@@ -180,6 +180,27 @@ public class ElementConstructor extends NodeConstructor {
         }
         context.popInScopeNamespaces();
     }
+
+    /**
+     * Recurse the per-expression optimize() pass into our content (and the
+     * dynamic name expression and dynamic-attribute constructors). Without
+     * this, the default no-op inherited from {@link Expression} would skip
+     * any FLWOR or other rewriteable structure inside an element constructor
+     * — which is the entire body of a typical XQuery query that wraps
+     * results in a synthetic element (e.g. XMark queries).
+     */
+    @Override
+    public Expression optimize(final CompileContext cc) throws XPathException {
+        if (qnameExpr != null) {
+            qnameExpr = qnameExpr.optimize(cc);
+        }
+        // content is a PathExpr that mutates its own steps[] in place and
+        // returns this; safe to ignore the return.
+        if (content != null) {
+            content.optimize(cc);
+        }
+        return this;
+    }
     
 	@Override
 	public Sequence eval(final Sequence contextSequence, final Item contextItem) throws XPathException {

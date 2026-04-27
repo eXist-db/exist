@@ -199,6 +199,110 @@ public class ExpressionOptimizeTest {
                 "expected LetExpr to remain, got " + first.getClass());
     }
 
+    // -- FLWOR loop-invariant hoisting -----------------------------------
+
+    /**
+     * Classic XMark pattern: the inner {@code for}'s input is loop-invariant
+     * w.r.t. the outer {@code $p}, so it should be lifted into a synthesised
+     * let inserted before the outer {@code for}.
+     */
+    @Test
+    public void innerForInvariantInputIsHoistedAboveOuterFor() throws Exception {
+        final String query = """
+                for $p in (1, 2, 3)
+                let $items := for $i in (10, 20) return $i * $p
+                return $items""";
+        final XQueryContext ctx = new XQueryContext();
+        final PathExpr root = parse(query, ctx);
+        ctx.analyzeAndOptimizeIfModulesChanged(root);
+
+        final Expression first = root.getExpression(0);
+        assertTrue(first instanceof LetExpr,
+                "expected synthesised hoist let at root, got " + first.getClass());
+        final LetExpr hoist = (LetExpr) first;
+        assertTrue(hoist.getVariable().getLocalPart().startsWith("__hoisted_"),
+                "expected __hoisted_* local part, got " + hoist.getVariable());
+        assertTrue(hoist.getReturnExpression() instanceof ForExpr,
+                "expected outer for as the new let's body, got "
+                        + hoist.getReturnExpression().getClass());
+        assertTrue(rewriteFired(ctx, "HOIST"),
+                "CompileContext log should record the hoist");
+    }
+
+    /**
+     * Inner {@code for}'s input references the outer {@code $p}, so the
+     * hoist must NOT fire — moving the input outside the loop would break
+     * semantics.
+     */
+    @Test
+    public void innerForReferencingOuterVarIsNotHoisted() throws Exception {
+        final String query = """
+                for $p in (1, 2, 3)
+                let $items := for $i in ($p, $p + 1) return $i
+                return $items""";
+        final XQueryContext ctx = new XQueryContext();
+        final PathExpr root = parse(query, ctx);
+        ctx.analyzeAndOptimizeIfModulesChanged(root);
+
+        final Expression first = root.getExpression(0);
+        assertTrue(first instanceof ForExpr,
+                "expected outer ForExpr to remain unwrapped, got " + first.getClass());
+    }
+
+    /**
+     * No outer FLWOR scope to hoist over — a top-level {@code for} whose
+     * input is just a literal sequence should NOT be wrapped (no benefit,
+     * and {@link CompileContext#flworChainDepth()} is 1, gating us out).
+     */
+    @Test
+    public void topLevelForIsNotWrapped() throws Exception {
+        final XQueryContext ctx = new XQueryContext();
+        final PathExpr root = parse("for $i in (1, 2, 3) return $i", ctx);
+        ctx.analyzeAndOptimizeIfModulesChanged(root);
+        final Expression first = root.getExpression(0);
+        assertTrue(first instanceof ForExpr,
+                "no hoisting for a top-level for, got " + first.getClass());
+    }
+
+    /**
+     * Let-prefix scenario: outer chain is {@code let $a := … for $p := …} and
+     * the inner for's input references {@code $a} (let-prefix, once-bound).
+     * The hoist must fire and be SPLICED between {@code $a}'s let and
+     * {@code $p}'s for, not at the chain head — otherwise the hoisted
+     * expression would reference {@code $a} before its binding.
+     */
+    @Test
+    public void letPrefixReferenceIsHoistedMidChain() throws Exception {
+        final String query = """
+                let $a := (100, 200, 300)
+                for $p in (1, 2, 3)
+                let $items := for $i in ($a, $a) return $i + $p
+                return $items""";
+        final XQueryContext ctx = new XQueryContext();
+        final PathExpr root = parse(query, ctx);
+        ctx.analyzeAndOptimizeIfModulesChanged(root);
+
+        // The chain head is still LetExpr($a) — splice happens AFTER it.
+        final Expression first = root.getExpression(0);
+        assertTrue(first instanceof LetExpr,
+                "chain head should still be LetExpr($a), got " + first.getClass());
+        final LetExpr aLet = (LetExpr) first;
+        assertEquals("a", aLet.getVariable().getLocalPart());
+
+        // aLet.returnExpr should now be the synthesised hoist let.
+        final Expression spliced = aLet.getReturnExpression();
+        assertTrue(spliced instanceof LetExpr,
+                "expected hoist let spliced after $a, got " + spliced.getClass());
+        final LetExpr hoist = (LetExpr) spliced;
+        assertTrue(hoist.getVariable().getLocalPart().startsWith("__hoisted_"),
+                "expected __hoisted_* var, got " + hoist.getVariable());
+        assertTrue(hoist.getReturnExpression() instanceof ForExpr,
+                "expected ForExpr after the hoist let, got "
+                        + hoist.getReturnExpression().getClass());
+        assertTrue(rewriteFired(ctx, "HOIST"),
+                "CompileContext log should record the hoist");
+    }
+
     // -- Helpers --------------------------------------------------------
 
     private static PathExpr parse(final String query, final XQueryContext context)
