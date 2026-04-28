@@ -74,6 +74,12 @@ public class MethodCallOperator extends AbstractExpression {
         }
     }
 
+    // PMD.NPathComplexity: XQuery 4.0 `?>` method-call operator dispatches
+    // over input-sequence type (map/array/atomic/node) and resolves the named
+    // method against either the dynamic-context method-resolver or a built-in
+    // signature, propagating positional and keyword arguments. The branches
+    // mirror the spec's resolution rules (XQ40 §4.10.7).
+    @SuppressWarnings("PMD.NPathComplexity")
     @Override
     public Sequence eval(Sequence contextSequence, final Item contextItem) throws XPathException {
         if (contextItem != null) {
