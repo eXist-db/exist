@@ -42,6 +42,14 @@ import java.util.List;
  * full FLWOR, constructors, typeswitch, switch, quantified expressions,
  * type expressions, and all Phase 1-2 features.</p>
  */
+// PMD.NPathComplexity: this is a hand-written recursive-descent parser over
+// the full XQuery 4.0 + XQUF 3.0 + Full Text grammar. Methods like
+// parseExprSingle, parseStepExpr, parsePrimaryExpr, and parseItemType dispatch
+// over the entire grammar's rule set, with branches that map directly to
+// productions in the W3C spec. Reorganizing these methods to satisfy NPath
+// would obscure the grammar-to-code mapping and make divergence from the spec
+// harder to detect. Covered by 335+ parser unit tests and XQuery3Tests.
+@SuppressWarnings("PMD.NPathComplexity")
 public final class XQueryParser {
 
     private final XQueryContext context;

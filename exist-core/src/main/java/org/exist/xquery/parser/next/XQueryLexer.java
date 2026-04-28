@@ -43,6 +43,14 @@ import java.util.List;
  * <p>This approach eliminates the 191-keyword hash table lookup that causes the 2x
  * slowdown in ANTLR 2's generated lexer.
  */
+// PMD.NPathComplexity: this is a hand-written lexer over the XQuery 4.0 + XQUF
+// + Full Text token set. nextToken/scanReference/scanNumber dispatch over the
+// tokenizer's full character class space (whitespace, comments, string literals,
+// numeric literals, NCName/QName, operator punctuation, XML reference syntax)
+// per the XQuery lexical productions. The branches map to grammar rules and
+// reorganizing them obscures the spec mapping. Covered by ParserBenchmark and
+// XQuery3Tests.
+@SuppressWarnings("PMD.NPathComplexity")
 public final class XQueryLexer {
 
     /** Input as Unicode codepoints (supports supplementary planes). */
