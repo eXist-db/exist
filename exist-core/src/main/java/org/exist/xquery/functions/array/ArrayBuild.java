@@ -71,9 +71,19 @@ public class ArrayBuild extends BasicFunction {
         if (getArgumentCount() == 2) {
             try (final FunctionReference fn = (FunctionReference) args[1].itemAt(0)) {
                 fn.analyze(cachedContextInfo);
+                final int arity = fn.getSignature().getArgumentCount();
+                int position = 1;
                 for (final SequenceIterator i = input.iterate(); i.hasNext(); ) {
                     final Item item = i.nextItem();
-                    members.add(fn.evalFunction(null, null, new Sequence[]{item.toSequence()}));
+                    final Sequence[] callArgs = switch (arity) {
+                        case 0 -> new Sequence[0];
+                        case 1 -> new Sequence[]{item.toSequence()};
+                        case 2 -> new Sequence[]{item.toSequence(), new IntegerValue(this, position, Type.INTEGER)};
+                        default -> throw new XPathException(this, ErrorCodes.XPTY0004,
+                                "array:build callback must accept 0 to 2 arguments, got " + arity);
+                    };
+                    position++;
+                    members.add(fn.evalFunction(null, null, callArgs));
                 }
             }
         } else {

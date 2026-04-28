@@ -114,6 +114,15 @@ public class ArrayFunction extends BasicFunction {
             INPUT_ARRAY,
             param("position", Type.INTEGER, "The index")
     );
+    public static final FunctionSignature GET_DEFAULT = functionSignature(
+            Fn.GET.fname,
+            "Gets the value at the specified position in the supplied array (counting from 1), " +
+                "or the supplied default value if the position is out of range.",
+            returnsOptMany(Type.ITEM, "The value at $position, or $default"),
+            INPUT_ARRAY,
+            param("position", Type.INTEGER, "The index"),
+            optManyParam("default", Type.ITEM, "Value to return when the position is out of range")
+    );
     public static final FunctionSignature APPEND = functionSignature(
             Fn.APPEND.fname,
             "Returns an array containing all the members of the supplied array, plus one additional" +
@@ -188,16 +197,11 @@ public class ArrayFunction extends BasicFunction {
     public static final FunctionSignature FOR_EACH = functionSignature(
             Fn.FOR_EACH.fname,
             "Returns an array whose size is the same as array:size($array), in which each member is computed by applying " +
-                "$function to the corresponding member of $array.",
+                "$function to the corresponding member of $array. " +
+                "In XQuery 4.0, the callback may accept 0 to 2 arguments: (member, position).",
             RESULT_ARRAY,
             INPUT_ARRAY,
-            funParam("action",
-                    params(
-                            optManyParam("next", Type.ITEM, "the next member")
-                    ),
-                    returnsOptMany(Type.ITEM),
-                    "The action called on each member of the array"
-            )
+            param("action", Type.FUNCTION, "The action called on each member of the array")
     );
     public static final FunctionSignature FILTER = functionSignature(
             Fn.FILTER.fname,
@@ -347,6 +351,13 @@ public class ArrayFunction extends BasicFunction {
     private static Sequence get(Sequence[] args) throws XPathException {
         final ArrayType array = (ArrayType) args[0].itemAt(0);
         final IntegerValue index = (IntegerValue) args[1].itemAt(0);
+        // XQuery 4.0: 3-arg form returns $default if position is out of range.
+        if (args.length > 2) {
+            final int pos = index.getInt();
+            if (pos < 1 || pos > array.getSize()) {
+                return args[2];
+            }
+        }
         return array.get(index);
     }
 
@@ -453,7 +464,35 @@ public class ArrayFunction extends BasicFunction {
 
     private Sequence forEach(Sequence[] args) throws XPathException {
         final ArrayType array = (ArrayType) args[0].itemAt(0);
-        return getFunction(args[1], array::forEach);
+        try (final FunctionReference ref = (FunctionReference) args[1].itemAt(0)) {
+            ref.analyze(cachedContextInfo);
+            final int arity = referenceArity(ref);
+            if (arity == 1) {
+                // Standard XQ 3.1 fast path
+                return array.forEach(ref);
+            }
+            // XQ4 arity coercion: 0 or 2 args (member, position)
+            final List<Sequence> ret = new ArrayList<>(array.getSize());
+            for (int i = 0; i < array.getSize(); i++) {
+                final Sequence member = array.get(i);
+                final Sequence[] callArgs = buildArrayCallbackArgs(arity, member, i + 1, 2);
+                ret.add(ref.evalFunction(null, null, callArgs));
+            }
+            return new ArrayType(this, context, ret);
+        }
+    }
+
+    /**
+     * Get the effective arity of a function reference, accounting for variadic
+     * functions where {@code getArgumentCount()} returns {@code -1} but the
+     * reference itself was created with a specific arity (e.g. {@code concat#2}).
+     */
+    private static int referenceArity(final FunctionReference ref) {
+        final int arity = ref.getSignature().getArgumentCount();
+        if (arity < 0 && ref.getSignature().isVariadic()) {
+            return ref.getSignature().getArgumentTypes().length;
+        }
+        return arity;
     }
 
     private Sequence filter(Sequence[] args) throws XPathException {
@@ -494,7 +533,7 @@ public class ArrayFunction extends BasicFunction {
         final ArrayType array2 = (ArrayType) args[1].itemAt(0);
         try (final FunctionReference ref = (FunctionReference) args[2].itemAt(0)) {
             ref.analyze(cachedContextInfo);
-            final int arity = ref.getSignature().getArgumentCount();
+            final int arity = referenceArity(ref);
             if (arity == 2) {
                 // Standard XQ 3.1 behavior
                 return array1.forEachPair(array2, ref);

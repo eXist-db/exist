@@ -124,6 +124,15 @@ public class MapFunction extends BasicFunction {
             PARAM_INPUT_MAP,
             PARAM_KEY
     );
+    public static final FunctionSignature GET_3 = functionSignature(
+            Fn.GET.fname,
+            "Returns the value associated with a supplied key in a given map, " +
+                    "or the supplied default value if the key is not present.",
+            RETURN_OPT_MANY_ITEM,
+            PARAM_INPUT_MAP,
+            PARAM_KEY,
+            optManyParam("default", Type.ITEM, "The default value to return when the key is absent")
+    );
     public static final FunctionSignature FIND = functionSignature(
             Fn.FIND.fname,
             "Searches the supplied input sequence and any contained maps and arrays for a map entry with the supplied key, " +
@@ -190,22 +199,21 @@ public class MapFunction extends BasicFunction {
 
     public static final FunctionSignature BUILD_1 = functionSignature(
             Fn.BUILD.fname,
-            "Builds a map from a sequence of items, using a key function.",
+            "Builds a map from a sequence of items, using a key function. " +
+                    "In XQuery 4.0, the callback may accept 0 to 2 arguments: (item, position).",
             RETURN_MAP,
             optManyParam("input", Type.ITEM, "The input sequence"),
-            funParam("key", params(optManyParam("item", Type.ITEM, "the item")),
-                    returns(Type.ANY_ATOMIC_TYPE, Cardinality.EXACTLY_ONE), "The key function")
+            param("key", Type.FUNCTION, "The key function")
     );
 
     public static final FunctionSignature BUILD_2 = functionSignature(
             Fn.BUILD.fname,
-            "Builds a map from a sequence of items, using key and value functions.",
+            "Builds a map from a sequence of items, using key and value functions. " +
+                    "In XQuery 4.0, the callbacks may accept 0 to 2 arguments: (item, position).",
             RETURN_MAP,
             optManyParam("input", Type.ITEM, "The input sequence"),
-            funParam("key", params(optManyParam("item", Type.ITEM, "the item")),
-                    returns(Type.ANY_ATOMIC_TYPE, Cardinality.EXACTLY_ONE), "The key function"),
-            funParam("value", params(optManyParam("item", Type.ITEM, "the item")),
-                    returnsOptMany(Type.ITEM), "The value function")
+            param("key", Type.FUNCTION, "The key function"),
+            param("value", Type.FUNCTION, "The value function")
     );
 
     public static final FunctionSignature ITEMS = functionSignature(
@@ -393,6 +401,13 @@ public class MapFunction extends BasicFunction {
     private Sequence get(final Sequence[] args) {
         final AbstractMapType map = (AbstractMapType) args[0].itemAt(0);
         final Sequence value = map.get((AtomicValue) args[1].itemAt(0));
+        // XQuery 4.0: 3-arg form returns $default if the key is absent.
+        if (args.length > 2) {
+            if (value == null || value.isEmpty()) {
+                return args[2];
+            }
+            return value;
+        }
         return Objects.requireNonNullElse(value, Sequence.EMPTY_SEQUENCE);
     }
 
@@ -559,22 +574,32 @@ public class MapFunction extends BasicFunction {
         final Sequence input = args[0];
         final FunctionReference keyFn = (FunctionReference) args[1].itemAt(0);
         keyFn.analyze(cachedContextInfo);
+        final int keyArity = keyFn.getSignature().getArgumentCount();
         final FunctionReference valueFn = args.length > 2 ?
                 (FunctionReference) args[2].itemAt(0) : null;
-        if (valueFn != null) { valueFn.analyze(cachedContextInfo); }
+        final int valueArity;
+        if (valueFn != null) {
+            valueFn.analyze(cachedContextInfo);
+            valueArity = valueFn.getSignature().getArgumentCount();
+        } else {
+            valueArity = -1;
+        }
 
         final MapType result = new MapType(this, context);
+        int position = 1;
         for (final SequenceIterator i = input.iterate(); i.hasNext(); ) {
             final Item item = i.nextItem();
             final Sequence itemSeq = item.toSequence();
             final Sequence keyResult = keyFn.evalFunction(null, null,
-                    new Sequence[]{itemSeq});
+                    buildBuildCallbackArgs(keyArity, itemSeq, position));
             // Per XQ4 spec: if key function returns empty sequence, skip this item
             if (keyResult.isEmpty()) {
+                position++;
                 continue;
             }
             final Sequence value = valueFn != null ?
-                    valueFn.evalFunction(null, null, new Sequence[]{itemSeq}) : itemSeq;
+                    valueFn.evalFunction(null, null,
+                            buildBuildCallbackArgs(valueArity, itemSeq, position)) : itemSeq;
             // XQ4 PR1041: key function may return multiple keys; each maps to the same value
             for (final SequenceIterator ki = keyResult.iterate(); ki.hasNext(); ) {
                 final AtomicValue key = (AtomicValue) ki.nextItem();
@@ -588,8 +613,23 @@ public class MapFunction extends BasicFunction {
                     result.add(key, value);
                 }
             }
+            position++;
         }
         return result;
+    }
+
+    /**
+     * Build callback args for map:build's $key and $value functions, supporting
+     * XQ4 arity 0, 1 (item), or 2 (item, position).
+     */
+    private Sequence[] buildBuildCallbackArgs(final int arity, final Sequence item, final int position) throws XPathException {
+        return switch (arity) {
+            case 0 -> new Sequence[0];
+            case 1 -> new Sequence[]{item};
+            case 2 -> new Sequence[]{item, new IntegerValue(this, position, Type.INTEGER)};
+            default -> throw new XPathException(this, ErrorCodes.XPTY0004,
+                    "map:build callback must accept 0 to 2 arguments, got " + arity);
+        };
     }
 
     /**

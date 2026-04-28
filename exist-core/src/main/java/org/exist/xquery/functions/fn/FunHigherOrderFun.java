@@ -35,6 +35,7 @@ import org.exist.xquery.functions.array.ArrayType;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReference;
 import org.exist.xquery.value.FunctionReturnSequenceType;
+import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
@@ -68,30 +69,20 @@ public class FunHigherOrderFun extends BasicFunction {
     public static final FunctionSignature FN_FOR_EACH = functionSignature(
             Fn.FOR_EACH.fname,
             "Applies the function item $function to every item from the sequence " +
-                    "$sequence in turn, returning the concatenation of the resulting sequences in order.",
+                    "$sequence in turn, returning the concatenation of the resulting sequences in order. " +
+                    "In XQuery 4.0, the callback may accept 0 to 2 arguments: (item, position).",
             returnsOptMany(Type.ITEM, "result of applying the function to each item of the sequence"),
             optManyParam("input", Type.ITEM, "the sequence on which to apply the function"),
-            funParam("action",
-                    params(
-                            param("item", Type.ITEM, "the next item in the sequence")
-                    ),
-                    returnsOptMany(Type.ITEM),
-                    "The function called on each item in the sequence"
-            )
+            param("action", Type.FUNCTION, "The function called on each item in the sequence")
     );
     public static final FunctionSignature FN_FILTER = functionSignature(
             Fn.FILTER.fname,
-            "Returns those items from the sequence $sequence for which the supplied function $function returns true.",
+            "Returns those items from the sequence $sequence for which the supplied function $function returns true. " +
+                    "In XQuery 4.0, the callback may accept 0 to 2 arguments: (item, position).",
             returnsOptMany(Type.ITEM, "result of filtering the sequence"),
 
             optManyParam("input", Type.ITEM, "the sequence to filter"),
-            funParam("predicate",
-                    params(
-                            param("next", Type.ITEM, "the next item to filter")
-                    ),
-                    returns(Type.BOOLEAN, "include items for which the filter function evaluates to true()"),
-                    "The function called on each item, only items that yield true() will be returned"
-            )
+            param("predicate", Type.FUNCTION, "The function called on each item, only items that yield true() will be returned")
     );
     private static final FunctionParameterSequenceType[] FOLDING_PARAMS = params(
             optManyParam("input", Type.ITEM, "the sequence to iterate over"),
@@ -122,18 +113,12 @@ public class FunHigherOrderFun extends BasicFunction {
     public static final FunctionSignature FN_FOR_EACH_PAIR = functionSignature(
             Fn.FOR_EACH_PAIR.fname,
             "Applies the function item $f to successive pairs of items taken one from $seq1 and one from $seq2, " +
-                    "returning the concatenation of the resulting sequences in order.",
+                    "returning the concatenation of the resulting sequences in order. " +
+                    "In XQuery 4.0, the callback may accept 0 to 3 arguments: (a, b, position).",
             returnsOptMany(Type.ITEM, "concatenation of resulting sequences"),
             optManyParam("input1", Type.ITEM, "first sequence to take items from"),
             optManyParam("input2", Type.ITEM, "second sequence to take items from"),
-            funParam("action",
-                    params(
-                            param("a", Type.ITEM, "the next item from the first sequence"),
-                            param("b", Type.ITEM, "the next item from the first sequence")
-                    ),
-                    returnsOptMany(Type.ITEM),
-                    "The function called on each pair of items"
-            )
+            param("action", Type.FUNCTION, "The function called on each pair of items")
     );
     public static final FunctionSignature FN_APPLY = functionSignature(
             Fn.APPLY.fname,
@@ -178,9 +163,12 @@ public class FunHigherOrderFun extends BasicFunction {
         final Sequence result = new ValueSequence();
         try (final FunctionReference ref = (FunctionReference) args[1].itemAt(0)) {
             ref.analyze(cachedContextInfo);
+            final int arity = callbackArity(ref);
+            int position = 1;
             for (final SequenceIterator i = args[0].iterate(); i.hasNext(); ) {
                 final Item item = i.nextItem();
-                final Sequence r = ref.evalFunction(null, null, new Sequence[]{item.toSequence()});
+                final Sequence r = ref.evalFunction(null, null,
+                        buildCallbackArgs(arity, item.toSequence(), position++));
                 result.addAll(r);
             }
         }
@@ -191,22 +179,65 @@ public class FunHigherOrderFun extends BasicFunction {
         final Sequence result = new ValueSequence();
         try (final FunctionReference ref = (FunctionReference) args[1].itemAt(0)) {
             ref.analyze(cachedContextInfo);
+            final int arity = callbackArity(ref);
 
             final Sequence seq = args[0];
+            int position = 1;
             for (final SequenceIterator i = seq.iterate(); i.hasNext(); ) {
                 final Item item = i.nextItem();
-                final Sequence r = ref.evalFunction(null, null, new Sequence[]{item.toSequence()});
+                final Sequence r = ref.evalFunction(null, null,
+                        buildCallbackArgs(arity, item.toSequence(), position++));
 
-                if (r.getItemType() != Type.BOOLEAN) {
-                    throw new XPathException(this, ErrorCodes.XPTY0004,
-                            "The function returned " + r + "of type" + Type.getTypeName(r.getItemType()) + ", only xs:boolean is allowed");
-                }
+                // XQuery 4.0: predicate result is coerced via effectiveBooleanValue.
                 if (r.effectiveBooleanValue()) {
                     result.add(item);
                 }
             }
         }
         return result;
+    }
+
+    /**
+     * Determine the number of arguments the callback expects. For variadic
+     * function references (e.g. {@code concat#2}), the signature returns -1 for
+     * argument count; in that case fall back to the declared argumentTypes
+     * length, which reflects the partial-application arity.
+     */
+    private static int callbackArity(final FunctionReference ref) {
+        final int arity = ref.getSignature().getArgumentCount();
+        if (arity < 0 && ref.getSignature().isVariadic()) {
+            return ref.getSignature().getArgumentTypes().length;
+        }
+        return arity;
+    }
+
+    /**
+     * Build callback arguments for a 1- or 2-arity callback (item, position).
+     * XQuery 4.0 permits the position argument to be passed when the callback
+     * accepts it. A 0-arity callback receives no arguments.
+     */
+    private Sequence[] buildCallbackArgs(final int arity, final Sequence item, final int position) throws XPathException {
+        return switch (arity) {
+            case 0 -> new Sequence[0];
+            case 1 -> new Sequence[]{item};
+            case 2 -> new Sequence[]{item, new IntegerValue(this, position, Type.INTEGER)};
+            default -> throw new XPathException(this, ErrorCodes.XPTY0004,
+                    "Callback function must accept 0 to 2 arguments, got " + arity);
+        };
+    }
+
+    /**
+     * Build callback arguments for a 1- to 3-arity callback (a, b, position).
+     */
+    private Sequence[] buildPairCallbackArgs(final int arity, final Sequence a, final Sequence b, final int position) throws XPathException {
+        return switch (arity) {
+            case 0 -> new Sequence[0];
+            case 1 -> new Sequence[]{a};
+            case 2 -> new Sequence[]{a, b};
+            case 3 -> new Sequence[]{a, b, new IntegerValue(this, position, Type.INTEGER)};
+            default -> throw new XPathException(this, ErrorCodes.XPTY0004,
+                    "Pair callback function must accept 0 to 3 arguments, got " + arity);
+        };
     }
 
     private Sequence foldLeft(final Sequence[] args) throws XPathException {
@@ -276,11 +307,13 @@ public class FunHigherOrderFun extends BasicFunction {
         final Sequence result = new ValueSequence();
         try (final FunctionReference ref = (FunctionReference) args[2].itemAt(0)) {
             ref.analyze(cachedContextInfo);
+            final int arity = callbackArity(ref);
             final SequenceIterator i1 = args[0].iterate();
             final SequenceIterator i2 = args[1].iterate();
+            int position = 1;
             while (i1.hasNext() && i2.hasNext()) {
                 final Sequence r = ref.evalFunction(null, null,
-                        new Sequence[]{i1.nextItem().toSequence(), i2.nextItem().toSequence()});
+                        buildPairCallbackArgs(arity, i1.nextItem().toSequence(), i2.nextItem().toSequence(), position++));
                 result.addAll(r);
             }
         }
