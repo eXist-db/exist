@@ -327,6 +327,26 @@ public class IntegerValue extends NumericValue {
         return value.longValue();
     }
 
+    /**
+     * Returns this integer's value as a {@code long}, raising
+     * {@link ErrorCodes#FOAR0002} when the value does not fit in the
+     * 64-bit signed long range.
+     *
+     * Prefer this over {@link #getLong()} in numeric contexts where
+     * silent truncation could produce wrong results (e.g. range bounds,
+     * sequence sizes, indexes).
+     *
+     * @return the value as a {@code long}.
+     * @throws XPathException FOAR0002 if the value would overflow {@code long}.
+     */
+    public long getLongChecked() throws XPathException {
+        if (value.compareTo(SMALLEST_LONG) < 0 || value.compareTo(LARGEST_LONG) > 0) {
+            throw new XPathException(getExpression(), ErrorCodes.FOAR0002,
+                    "Numeric overflow: integer value '" + value + "' is out of range for xs:long.");
+        }
+        return value.longValue();
+    }
+
     @Override
     public double getDouble() {
         return value.doubleValue();
