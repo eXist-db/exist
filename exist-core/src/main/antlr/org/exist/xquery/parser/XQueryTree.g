@@ -159,7 +159,10 @@ options {
                      || ns.equals(Namespaces.SCHEMA_NS)
                      || ns.equals(Namespaces.SCHEMA_INSTANCE_NS)
                      || ns.equals(Namespaces.XPATH_FUNCTIONS_MATH_NS)
-                     || ns.equals(Namespaces.XQUERY_OPTIONS_NS));
+                     || ns.equals(Namespaces.XPATH_FUNCTIONS_MAP_NS)
+                     || ns.equals(Namespaces.XPATH_FUNCTIONS_ARRAY_NS)
+                     || ns.equals(Namespaces.XQUERY_OPTIONS_NS)
+                     || ns.equals(Namespaces.XQUERY_NS));
         }
     }
 
@@ -1164,6 +1167,33 @@ throws XPathException
                     )*
                     { SequenceType returnType = new SequenceType(); }
                     "as" sequenceType [returnType]
+                )
+            )
+        )
+        |
+        // XQ3.1+: AnnotatedFunctionTest. Annotations are validated for reserved
+        // namespaces (XQST0045), then the inner FunctionTest is processed identically
+        // to a non-annotated one. Annotations themselves are not currently used as
+        // type-system constraints (consistent with eXist's existing FUNCTION_TEST handling).
+        #(
+            ANNOTATED_FUNCTION_TEST { type.setPrimaryType(Type.FUNCTION); }
+            { List annots = new ArrayList(); }
+            ( annotation [annots] )+
+            #(
+                FUNCTION_TEST
+                (
+                    STAR
+                    |
+                    (
+                        { List<SequenceType> paramTypes2 = new ArrayList<SequenceType>(5); }
+                        (
+                            { SequenceType paramType2 = new SequenceType(); }
+                            sequenceType [paramType2]
+                            { paramTypes2.add(paramType2); }
+                        )*
+                        { SequenceType returnType2 = new SequenceType(); }
+                        "as" sequenceType [returnType2]
+                    )
                 )
             )
         )

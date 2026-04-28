@@ -218,6 +218,7 @@ imaginaryTokenDefinitions
 	RECORD_TEST
 	RECORD_FIELD
 	MAP_CONTENT
+	ANNOTATED_FUNCTION_TEST
 	;
 
 // === XPointer ===
@@ -632,6 +633,8 @@ itemType throws XPathException
 :
 	( "item" LPAREN ) => "item"^ LPAREN! RPAREN!
 	|
+	( MOD ) => annotatedFunctionTest
+	|
 	( "function" LPAREN ) => functionTest
 	|
 	( "fn" LPAREN ) => fnShorthandFunctionTest
@@ -746,6 +749,20 @@ fnShorthandTypedFunctionTest throws XPathException
 :
 	"fn"! LPAREN! (fnShorthandParam (COMMA! fnShorthandParam)*)? RPAREN! "as" sequenceType
 	{ #fnShorthandTypedFunctionTest = #(#[FUNCTION_TEST, "anyFunction"], #fnShorthandTypedFunctionTest); }
+	;
+
+// XQ3.1+: AnnotatedFunctionTest := Annotation+ FunctionTest
+// Allows annotations on function item types in sequence-type positions, e.g.:
+//   () instance of %eg:x function(*)
+annotatedFunctionTest throws XPathException
+:
+	(annotation)+
+	( ( "function" LPAREN ) => functionTest
+	| fnShorthandFunctionTest
+	)
+	{
+		#annotatedFunctionTest = #(#[ANNOTATED_FUNCTION_TEST, "annotated-function-test"], #annotatedFunctionTest);
+	}
 	;
 
 // XQ4: fn() type parameters can optionally have names: fn($name as type, ...)

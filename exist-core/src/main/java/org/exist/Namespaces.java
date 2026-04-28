@@ -46,7 +46,10 @@ public interface Namespaces {
 	String XPATH_DATATYPES_NS = "http://www.w3.org/2003/05/xpath-datatypes";
         
     String XPATH_FUNCTIONS_MATH_NS = "http://www.w3.org/2005/xpath-functions/math";
+    String XPATH_FUNCTIONS_MAP_NS = "http://www.w3.org/2005/xpath-functions/map";
+    String XPATH_FUNCTIONS_ARRAY_NS = "http://www.w3.org/2005/xpath-functions/array";
     String XQUERY_OPTIONS_NS = "http://www.w3.org/2011/xquery-options";
+    String XQUERY_NS = "http://www.w3.org/2012/xquery";
         
     String XSLT_XQUERY_SERIALIZATION_NS = "http://www.w3.org/2010/xslt-xquery-serialization";
 
