@@ -1115,6 +1115,16 @@ public class XQueryContext implements BinaryValueManager, Context {
 
     @Override
     public void setDefaultFunctionNamespace(final String uri) throws XPathException {
+        // XQST0070: A namespace URI bound to the predefined xmlns or to xml (with a
+        // non-xml binding) is reserved and cannot appear in a default namespace declaration.
+        if (Namespaces.XMLNS_NS.equals(uri)) {
+            throw new XPathException(rootExpression, ErrorCodes.XQST0070,
+                    "The namespace URI '" + Namespaces.XMLNS_NS + "' cannot be used as the default function namespace");
+        }
+        if (Namespaces.XML_NS.equals(uri)) {
+            throw new XPathException(rootExpression, ErrorCodes.XQST0070,
+                    "The namespace URI '" + Namespaces.XML_NS + "' cannot be bound to a prefix other than 'xml'");
+        }
         //Not sure for the 2nd clause : eXist-db forces the function NS as default.
         if (defaultFunctionNamespace != null
                 && !defaultFunctionNamespace.equals(Function.BUILTIN_FUNCTION_NS)
@@ -1146,12 +1156,15 @@ public class XQueryContext implements BinaryValueManager, Context {
 
     @Override
     public void setDefaultElementNamespace(final String uri, @Nullable final String schema) throws XPathException {
-        // XQST0070: It is a static error if a namespace URI is bound to the predefined
-        // prefix xmlns, or if a namespace URI other than http://www.w3.org/XML/1998/namespace
-        // is bound to the prefix xml.
+        // XQST0070: A namespace URI bound to the predefined xmlns or to xml (with a
+        // non-xml binding) is reserved and cannot appear in a default namespace declaration.
         if (Namespaces.XMLNS_NS.equals(uri)) {
             throw new XPathException(rootExpression, ErrorCodes.XQST0070,
-                    "The namespace URI 'http://www.w3.org/2000/xmlns/' cannot be used as the default element namespace");
+                    "The namespace URI '" + Namespaces.XMLNS_NS + "' cannot be used as the default element namespace");
+        }
+        if (Namespaces.XML_NS.equals(uri)) {
+            throw new XPathException(rootExpression, ErrorCodes.XQST0070,
+                    "The namespace URI '" + Namespaces.XML_NS + "' cannot be bound to a prefix other than 'xml'");
         }
         // eXist forces the empty element NS as default.
         if (!defaultElementNamespace.equals(AnyURIValue.EMPTY_URI)) {
