@@ -142,12 +142,11 @@ public class FunResolveURI extends Function {
 			}
 			if (relativeURI.isAbsolute()) {
 				result = relative;
-            } else {
-				if (!baseURI.isAbsolute()) {
-					throw new XPathException(this, ErrorCodes.FORG0002, "base URI argument to fn:resolve-uri() is not an absolute URI: " + base.getStringValue());
-				}
+			} else if (!baseURI.isAbsolute()) {
+				throw new XPathException(this, ErrorCodes.FORG0002, "base URI argument to fn:resolve-uri() is not an absolute URI: " + base.getStringValue());
+			} else {
 				result = new AnyURIValue(this, baseURI.resolve(relativeURI));
-            }
+			}
         }
         
         if (context.getProfiler().isEnabled()) 
