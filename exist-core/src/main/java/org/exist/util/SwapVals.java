@@ -24,15 +24,12 @@ package org.exist.util;
 import java.util.List;
 
 /**
-	This class only contains static
-	methods which help when the values
-	of two positions in a array or
-	list-like structure must be swapped.
-	
-	Based on previous implementations
-	found in eXist FastQSort original
-	code and internet
-*/
+ * This class only contains static methods which help when the values of two
+ * positions in an array or list-like structure must be swapped.
+ *
+ * Based on previous implementations found in eXist FastQSort original code and
+ * internet.
+ */
 public final class SwapVals {
 	public final static void swap(long[] a, int i, int j)
 	//-----------------------------------------------
