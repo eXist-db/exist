@@ -121,6 +121,36 @@ options {
 		foundError = true;
 		exceptions.add(e);
 	}
+
+	// Returns true if the supplied unprefixed name is a reserved function name
+	// per the XQuery 3.0+ FunctionDecl rule. empty-sequence, array, and map are
+	// intentionally excluded: XQTS function-decl-reserved-function-names-010a
+	// (XQ40+) treats empty-sequence as a valid function name in XQuery 4.0.
+	protected boolean isReservedFunctionName(final String name) {
+		if (name == null || name.indexOf(':') >= 0 || name.indexOf('{') >= 0) {
+			return false;
+		}
+		switch (name) {
+			case "attribute":
+			case "comment":
+			case "document-node":
+			case "element":
+			case "function":
+			case "if":
+			case "item":
+			case "namespace-node":
+			case "node":
+			case "processing-instruction":
+			case "schema-attribute":
+			case "schema-element":
+			case "switch":
+			case "text":
+			case "typeswitch":
+				return true;
+			default:
+				return false;
+		}
+	}
 }
 
 /* The following tokens are assigned by the parser (not the lexer)
@@ -641,7 +671,14 @@ updatingFunctionDeclUp! throws XPathException
 functionDecl [XQueryAST ann, boolean updating] throws XPathException
 { String name= null; }
 :
-	"function"! name=eqName! lp:LPAREN! ( paramList )?
+	"function"! name=eqName!
+	{
+		if (isReservedFunctionName(name)) {
+			throw new XPathException(ErrorCodes.XPST0003,
+				"A reserved function name '" + name + "' cannot be used as the name of a function declaration.");
+		}
+	}
+	lp:LPAREN! ( paramList )?
 	RPAREN! ( returnType )?
 	( functionBody | "external" )
 	{
