@@ -88,18 +88,24 @@ public class CastExpression extends AbstractExpression {
             }
         }
 
-        // XPST0080: cannot cast to xs:NOTATION or xs:anyAtomicType (per XPath 3.1 §3.12.3)
+        // XPST0080: cannot cast to xs:NOTATION, xs:anyAtomicType, or xs:anySimpleType
+        // (per QT4 §4.5.3 — three abstract atomic-related types)
         if (requiredType == Type.ANY_ATOMIC_TYPE
+                || requiredType == Type.ANY_SIMPLE_TYPE
                 || (requiredType == Type.NOTATION && expression.returnsType() != Type.NOTATION)) {
             throw new XPathException(this, ErrorCodes.XPST0080, "cannot cast to " + Type.getTypeName(requiredType));
         }
 
-        // XPST0051: cannot cast to non-atomic abstract types
-        if (requiredType == Type.ANY_SIMPLE_TYPE || requiredType == Type.UNTYPED
-                || requiredType == Type.ANY_TYPE
-                || expression.returnsType() == Type.ANY_SIMPLE_TYPE
+        // XQST0052: target type is not an atomic type (xs:anyType, xs:untyped are
+        // defined types but not simple atomic types per QT4 §4.5.3)
+        if (requiredType == Type.UNTYPED || requiredType == Type.ANY_TYPE) {
+            throw new XPathException(this, ErrorCodes.XQST0052, "cannot cast to " + Type.getTypeName(requiredType));
+        }
+
+        // XPST0051: source value's type is non-atomic
+        if (expression.returnsType() == Type.ANY_SIMPLE_TYPE
                 || expression.returnsType() == Type.UNTYPED) {
-            throw new XPathException(this, ErrorCodes.XPST0051, "cannot cast to " + Type.getTypeName(requiredType));
+            throw new XPathException(this, ErrorCodes.XPST0051, "cannot cast from " + Type.getTypeName(expression.returnsType()));
         }
 
         final Sequence result;
@@ -115,12 +121,13 @@ public class CastExpression extends AbstractExpression {
         } else {
             final Item item = seq.itemAt(0);
 
-            // Casting to QName needs special treatment
+            // Casting to QName needs special treatment.
+            // Per XPath F&O 3.1 §19.4.5: casting from xs:untypedAtomic to
+            // xs:QName or xs:NOTATION is not supported and always raises XPTY0004.
             if (requiredType == Type.QNAME) {
                 if (item.getType() == Type.QNAME) {
                     result = item.toSequence();
                 } else if (item.getType() == Type.ANY_ATOMIC_TYPE
-                        || item.getType() == Type.UNTYPED_ATOMIC
                         || Type.subTypeOf(item.getType(), Type.STRING)) {
                     result = new QNameValue(this, context, item.getStringValue());
                 } else {

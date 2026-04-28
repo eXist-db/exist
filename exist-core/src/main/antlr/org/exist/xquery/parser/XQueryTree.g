@@ -3874,7 +3874,7 @@ throws PermissionDeniedException, EXistException, XPathException
                 path.add(castExpr);
                 step = castExpr;
             } catch (final XPathException e) {
-                throw new XPathException(t.getLine(), t.getColumn(), ErrorCodes.XPST0051, "Unknown simple type " + t.getText());
+                throw new XPathException(t.getLine(), t.getColumn(), ErrorCodes.XQST0052, "Unknown simple type " + t.getText());
             } catch (final IllegalQNameException e) {
                 throw new XPathException(t.getLine(), t.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + t.getText());
             }
@@ -3903,7 +3903,7 @@ throws PermissionDeniedException, EXistException, XPathException
                 path.add(castExpr);
                 step = castExpr;
             } catch (final XPathException e) {
-                throw new XPathException(t2.getLine(), t2.getColumn(), ErrorCodes.XPST0051, "Unknown simple type " + t2.getText());
+                throw new XPathException(t2.getLine(), t2.getColumn(), ErrorCodes.XQST0052, "Unknown simple type " + t2.getText());
             } catch (final IllegalQNameException e) {
                 throw new XPathException(t2.getLine(), t2.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + t2.getText());
             }

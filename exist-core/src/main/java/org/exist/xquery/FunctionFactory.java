@@ -253,6 +253,12 @@ public class FunctionFactory {
             throw new XPathException(ast.getLine(), ast.getColumn(),
                 ErrorCodes.XPST0017, "Unknown constructor function: " + qname.getStringValue());
         }
+        // No constructor function exists for xs:NOTATION, xs:anyAtomicType, or xs:anySimpleType
+        // (per QT4 §4.6.3 — XPST0017 since no function with this name and arity exists)
+        if (code == Type.NOTATION || code == Type.ANY_ATOMIC_TYPE || code == Type.ANY_SIMPLE_TYPE) {
+            throw new XPathException(ast.getLine(), ast.getColumn(),
+                ErrorCodes.XPST0017, "No constructor function exists for " + qname.getStringValue());
+        }
         final CastExpression castExpr = new CastExpression(context, arg, code, Cardinality.ZERO_OR_ONE);
         castExpr.setLocation(ast.getLine(), ast.getColumn());
         return castExpr;
