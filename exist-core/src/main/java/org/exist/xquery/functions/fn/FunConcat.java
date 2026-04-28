@@ -32,7 +32,6 @@ import org.exist.xquery.Atomize;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.DynamicCardinalityCheck;
-import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Expression;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
@@ -59,15 +58,16 @@ public class FunConcat extends Function {
     public final static FunctionSignature signature =
         new FunctionSignature(
             new QName("concat", Function.BUILTIN_FUNCTION_NS),
-            "Accepts two or more xdt:anyAtomicType arguments, $atomizable-values, " +
-            "and converts them to xs:string. Returns the xs:string that is the " +
+            "Accepts zero or more xs:anyAtomicType sequences, $values, " +
+            "and converts each item to xs:string. Returns the xs:string that is the " +
             "concatenation of the values of its arguments after conversion. " +
             "If any of the arguments is the empty sequence, the argument " +
-            "is treated as the zero-length string.",
+            "is treated as the zero-length string. " +
+            "With no arguments, returns the zero-length string.",
             new SequenceType[] {
                 //More complicated : see below
                 new FunctionParameterSequenceType("values",
-                    Type.ANY_ATOMIC_TYPE, Cardinality.ZERO_OR_ONE, "The atomizable values")
+                    Type.ANY_ATOMIC_TYPE, Cardinality.ZERO_OR_MORE, "The atomizable values")
             },
             new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE,
                 "The concatenated values"),
@@ -92,7 +92,7 @@ public class FunConcat extends Function {
         for (Expression argument : arguments) {
         	if (!(argument instanceof Placeholder)) {
 	            argument = new DynamicCardinalityCheck(context,
-	                Cardinality.ZERO_OR_ONE, argument,
+	                Cardinality.ZERO_OR_MORE, argument,
 	                new Error(Error.FUNC_PARAM_CARDINALITY, "1", getSignature()));
 	            if (!Type.subTypeOf(argument.returnsType(), Type.ANY_ATOMIC_TYPE))
 	                {argument = new Atomize(context, argument);}
@@ -123,13 +123,14 @@ public class FunConcat extends Function {
                 {context.getProfiler().message(this, Profiler.START_SEQUENCES,
                     "CONTEXT ITEM", contextItem.toSequence());}
         }
-       if (getArgumentCount() < 2) {
-           throw new XPathException (this, ErrorCodes.XPST0017,
-               "concat() requires at least two arguments");
-       }
+       // XQuery 4.0: fn:concat accepts zero or more arguments, each of which
+       // may be a sequence of atomic values. Items are concatenated in order.
        final StringBuilder concat = new StringBuilder();
        for (int i = 0; i < getArgumentCount(); i++) {
-            concat.append(getArgument(i).eval(contextSequence, contextItem).getStringValue());
+            final Sequence argSeq = getArgument(i).eval(contextSequence, contextItem);
+            for (final org.exist.xquery.value.SequenceIterator it = argSeq.iterate(); it.hasNext(); ) {
+                concat.append(it.nextItem().getStringValue());
+            }
        }
        final Sequence result = new StringValue(this, concat.toString());
         if (context.getProfiler().isEnabled())

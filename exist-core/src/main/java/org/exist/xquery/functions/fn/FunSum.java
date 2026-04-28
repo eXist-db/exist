@@ -148,19 +148,27 @@ public class FunSum extends Function {
             	if (sum != null && sum.getType() != Type.YEAR_MONTH_DURATION)
             		{throw new XPathException(this, ErrorCodes.FORG0006, "Cannot compare " + Type.getTypeName(sum.getType()) +
             				" and " + Type.getTypeName(value.getType()), value);}
-    		
+
 			} else if (value.getType() == Type.DAY_TIME_DURATION) {
             	if (sum != null && sum.getType() != Type.DAY_TIME_DURATION)
             		{throw new XPathException(this, ErrorCodes.FORG0006, "Cannot compare " + Type.getTypeName(sum.getType()) +
             				" and " + Type.getTypeName(value.getType()), value);}
-				
+
 			} else
 				{throw new XPathException(this, ErrorCodes.FORG0006, "Cannot compare " + Type.getTypeName(value.getType()), value);}
 
 		//Any values of type xdt:untypedAtomic in the sequence $arg are cast to xs:double
-		} else if (value.getType() == Type.UNTYPED_ATOMIC) 
+		} else if (value.getType() == Type.UNTYPED_ATOMIC)
         	{value = value.convertTo(Type.DOUBLE);}
-		
+
+		// FORG0006: cannot mix duration and non-duration values in fn:sum
+		if (sum != null && Type.subTypeOf(sum.getType(), Type.DURATION)
+				&& !Type.subTypeOf(value.getType(), Type.DURATION)) {
+			throw new XPathException(this, ErrorCodes.FORG0006,
+					"Cannot mix " + Type.getTypeName(sum.getType()) +
+					" and " + Type.getTypeName(value.getType()) + " in fn:sum", value);
+		}
+
 		if (!(value instanceof ComputableValue))
 			{throw new XPathException(this, ErrorCodes.XPTY0004, "" + Type.getTypeName(value.getType()) + "(" + value + ")' can not be an operand in a sum");}
 

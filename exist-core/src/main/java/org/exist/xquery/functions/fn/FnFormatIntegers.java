@@ -84,6 +84,8 @@ public class FnFormatIntegers extends BasicFunction {
         // and a minus sign is prepended to the result.
         final IntegerValue integerValue = (IntegerValue) args[0].itemAt(0);
         final BigInteger bigInteger = integerValue.toJavaObject(BigInteger.class);
+        final boolean isNegative = bigInteger.signum() < 0;
+        final BigInteger absValue = isNegative ? bigInteger.negate() : bigInteger;
 
         final IntegerPicture picture = IntegerPicture.fromString(args[1].getStringValue());
 
@@ -95,6 +97,7 @@ public class FnFormatIntegers extends BasicFunction {
         }
         languages.add(context.getDefaultLanguage());
 
-        return new StringValue(this, picture.formatInteger(bigInteger, languages));
+        final String formatted = picture.formatInteger(absValue, languages);
+        return new StringValue(this, isNegative ? "-" + formatted : formatted);
     }
 }

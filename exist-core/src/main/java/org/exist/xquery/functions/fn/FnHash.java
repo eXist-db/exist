@@ -164,6 +164,10 @@ public class FnHash extends BasicFunction {
 
     private byte[] getInputBytes(final Sequence value) throws XPathException {
         final int type = value.itemAt(0).getType();
+        // Nodes are atomized to their string value before hashing.
+        if (Type.subTypeOf(type, Type.NODE)) {
+            return value.getStringValue().getBytes(StandardCharsets.UTF_8);
+        }
         if (Type.subTypeOf(type, Type.STRING) || Type.subTypeOf(type, Type.ANY_URI) || Type.subTypeOf(type, Type.UNTYPED_ATOMIC)) {
             return value.getStringValue().getBytes(StandardCharsets.UTF_8);
         } else if (Type.subTypeOf(type, Type.BASE64_BINARY) || Type.subTypeOf(type, Type.HEX_BINARY)) {

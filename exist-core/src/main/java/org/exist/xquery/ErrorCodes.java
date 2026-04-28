@@ -224,6 +224,7 @@ public class ErrorCodes {
     public static final ErrorCode FOCV0004 = new W3CErrorCode("FOCV0004", "CSV field not found.");
     public static final ErrorCode FOTY0012 = new W3CErrorCode("FOTY0012", "Argument node does not have a typed value.");
     public static final ErrorCode FOTY0013 = new W3CErrorCode("FOTY0013", "The argument to fn:data() contains a function item.");
+    public static final ErrorCode FOTY0014 = new W3CErrorCode("FOTY0014", "The argument to fn:string() is a function item.");
 
     /* XSLT 2.0 and XQuery 1.0 Serialization http://www.w3.org/TR/xslt-xquery-serialization/#serial-err */
     public static final ErrorCode SENR0001 = new W3CErrorCode("SENR0001", "It is an error if an item in S6 in sequence normalization is an attribute node or a namespace node.");

@@ -99,6 +99,13 @@ public class FunHeadTail extends BasicFunction {
 		if (isCalledAs("head")) {
 			return seq.itemAt(0).toSequence();
 		} else if (isCalledAs("tail")) {
+			// fn:tail operates on the SEQUENCE level, not the item level. For a
+			// single-item sequence (e.g. a sequence containing one array), return
+			// the empty sequence rather than calling Item-level tail() (which
+			// would invoke array:tail semantics on an array).
+			if (seq.getItemCount() <= 1) {
+				return Sequence.EMPTY_SEQUENCE;
+			}
 			return seq.tail();
 		} else if (isCalledAs("foot")) {
 			return seq.itemAt(seq.getItemCount() - 1).toSequence();

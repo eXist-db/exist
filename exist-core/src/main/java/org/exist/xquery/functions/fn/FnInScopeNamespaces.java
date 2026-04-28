@@ -126,8 +126,15 @@ public class FnInScopeNamespaces extends BasicFunction {
             final Map<String, String> elemNs = new LinkedHashMap<>();
             ((org.exist.dom.memtree.ElementImpl) element).getNamespaceMap(elemNs);
             for (final Map.Entry<String, String> entry : elemNs.entrySet()) {
-                if (seen.add(entry.getKey())) {
-                    nsMap.put(entry.getKey(), entry.getValue());
+                // memtree stores default-namespace declarations under the literal
+                // key "xmlns" (XMLConstants.XMLNS_ATTRIBUTE); normalize to "" so
+                // the result map matches the spec.
+                String key = entry.getKey();
+                if ("xmlns".equals(key)) {
+                    key = "";
+                }
+                if (seen.add(key)) {
+                    nsMap.put(key, entry.getValue());
                 }
             }
         } else if (element instanceof org.exist.dom.persistent.ElementImpl) {

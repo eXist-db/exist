@@ -99,6 +99,15 @@ public class FunString extends Function {
         	return Sequence.EMPTY_SEQUENCE;
         }
 
+        // FOTY0014 — fn:string applied to a function item (incl. arrays/maps) has no string value
+        final int itemType = contextSequence.getItemType();
+        if (Type.subTypeOf(itemType, Type.FUNCTION)
+                || Type.subTypeOf(itemType, Type.ARRAY_ITEM)
+                || Type.subTypeOf(itemType, Type.MAP_ITEM)) {
+            throw new XPathException(this, ErrorCodes.FOTY0014,
+                    "fn:string: argument is a function item (" + Type.getTypeName(itemType) + ") and has no string value");
+        }
+
         final Sequence result = contextSequence.convertTo(Type.STRING);
 
         if (context.getProfiler().isEnabled()) {

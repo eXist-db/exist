@@ -66,13 +66,17 @@ public class FnDateTimeParts extends BasicFunction {
 
     public static final FunctionSignature FN_PARTS_OF_DATETIME = new FunctionSignature(
             new QName("parts-of-dateTime", Function.BUILTIN_FUNCTION_NS),
-            "Decomposes an xs:dateTime into a map of its components.",
+            "Decomposes a date/time value into a map of its components. " +
+                    "Accepts xs:dateTime, xs:date, xs:time, xs:gYearMonth, xs:gYear, " +
+                    "xs:gMonth, xs:gMonthDay, or xs:gDay. " +
+                    "Returns a map with the keys appropriate for the input type: " +
+                    "year, month, day, hours, minutes, seconds, timezone.",
             new SequenceType[] {
-                    new FunctionParameterSequenceType("value", Type.DATE_TIME,
-                            Cardinality.ZERO_OR_ONE, "The dateTime to decompose")
+                    new FunctionParameterSequenceType("value", Type.ANY_ATOMIC_TYPE,
+                            Cardinality.ZERO_OR_ONE, "The date/time value to decompose")
             },
             new FunctionReturnSequenceType(Type.MAP_ITEM, Cardinality.ZERO_OR_ONE,
-                    "A map with keys: year, month, day, hour, minute, seconds, timezone"));
+                    "A map with keys appropriate for the input type"));
 
     public FnDateTimeParts(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
@@ -367,36 +371,45 @@ public class FnDateTimeParts extends BasicFunction {
             return Sequence.EMPTY_SEQUENCE;
         }
 
-        final DateTimeValue dt = (DateTimeValue) args[0].itemAt(0);
+        final org.exist.xquery.value.AtomicValue av = (org.exist.xquery.value.AtomicValue) args[0].itemAt(0);
+        if (!(av instanceof AbstractDateTimeValue)) {
+            throw new XPathException(this, ErrorCodes.XPTY0004,
+                    "fn:parts-of-dateTime expects a date/time value, got: " + Type.getTypeName(av.getType()));
+        }
+        final AbstractDateTimeValue dt = (AbstractDateTimeValue) av;
+        final int t = dt.getType();
+        final boolean hasYear = (t == Type.DATE_TIME || t == Type.DATE || t == Type.G_YEAR_MONTH || t == Type.G_YEAR);
+        final boolean hasMonth = (t == Type.DATE_TIME || t == Type.DATE || t == Type.G_YEAR_MONTH || t == Type.G_MONTH || t == Type.G_MONTH_DAY);
+        final boolean hasDay = (t == Type.DATE_TIME || t == Type.DATE || t == Type.G_DAY || t == Type.G_MONTH_DAY);
+        final boolean hasTime = (t == Type.DATE_TIME || t == Type.TIME);
+
         final MapType result = new MapType(this, context);
 
-        // year as xs:integer
-        result.add(new StringValue("year"),
-                new IntegerValue(this, dt.getPart(AbstractDateTimeValue.YEAR)));
-
-        // month as xs:integer
-        result.add(new StringValue("month"),
-                new IntegerValue(this, dt.getPart(AbstractDateTimeValue.MONTH)));
-
-        // day as xs:integer
-        result.add(new StringValue("day"),
-                new IntegerValue(this, dt.getPart(AbstractDateTimeValue.DAY)));
-
-        // hour as xs:integer
-        result.add(new StringValue("hour"),
-                new IntegerValue(this, dt.getPart(AbstractDateTimeValue.HOUR)));
-
-        // minute as xs:integer
-        result.add(new StringValue("minute"),
-                new IntegerValue(this, dt.getPart(AbstractDateTimeValue.MINUTE)));
-
-        // seconds as xs:decimal (including fractional part)
-        final int sec = dt.getPart(AbstractDateTimeValue.SECOND);
-        final int millis = dt.getPart(AbstractDateTimeValue.MILLISECOND);
-        final BigDecimal seconds = BigDecimal.valueOf(sec)
-                .add(BigDecimal.valueOf(millis, 3));
-        result.add(new StringValue("seconds"),
-                new DecimalValue(this, seconds));
+        if (hasYear) {
+            result.add(new StringValue("year"),
+                    new IntegerValue(this, dt.getPart(AbstractDateTimeValue.YEAR)));
+        }
+        if (hasMonth) {
+            result.add(new StringValue("month"),
+                    new IntegerValue(this, dt.getPart(AbstractDateTimeValue.MONTH)));
+        }
+        if (hasDay) {
+            result.add(new StringValue("day"),
+                    new IntegerValue(this, dt.getPart(AbstractDateTimeValue.DAY)));
+        }
+        if (hasTime) {
+            // XQ4 spec uses plural "hours"/"minutes"/"seconds"
+            result.add(new StringValue("hours"),
+                    new IntegerValue(this, dt.getPart(AbstractDateTimeValue.HOUR)));
+            result.add(new StringValue("minutes"),
+                    new IntegerValue(this, dt.getPart(AbstractDateTimeValue.MINUTE)));
+            final int sec = dt.getPart(AbstractDateTimeValue.SECOND);
+            final int millis = dt.getPart(AbstractDateTimeValue.MILLISECOND);
+            final BigDecimal seconds = BigDecimal.valueOf(sec)
+                    .add(BigDecimal.valueOf(millis, 3));
+            result.add(new StringValue("seconds"),
+                    new DecimalValue(this, seconds));
+        }
 
         // timezone as xs:dayTimeDuration (or absent)
         final Sequence tz = dt.getTimezone();
