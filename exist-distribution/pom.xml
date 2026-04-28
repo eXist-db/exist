@@ -486,6 +486,13 @@
                             <target>
                                 <delete dir="${assemble.dir}/etc/jetty" failonerror="false" quiet="true"/>
                                 <delete dir="${mac.bundle.resources.dir}/etc/jetty" failonerror="false" quiet="true"/>
+                                <!-- The Jetty config is unpacked from exist-jetty-config by maven-dependency-plugin.
+                                     We later *rename* ${...}/etc/org/exist/jetty/etc -> ${...}/etc/jetty, which removes
+                                     the source directory. If the dependency plugin skips unpack due to marker files
+                                     (incremental builds), the source directory won't exist and downstream steps fail.
+                                     Deleting markers forces the unpack step to re-run. -->
+                                <delete dir="${project.build.directory}/dependency-maven-plugin-markers/appassembler" failonerror="false" quiet="true"/>
+                                <delete dir="${project.build.directory}/dependency-maven-plugin-markers/macbundle" failonerror="false" quiet="true"/>
                             </target>
                         </configuration>
                     </execution>
@@ -891,7 +898,9 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <skipAssembly>false</skipAssembly>  <!-- Can be overridden by profile skip-build-dist-archives -->
+                    <!-- Default to skipping release archives for local/CI builds.
+                         Enable explicitly via profile `build-dist-archives` (or legacy `skip-build-dist-archives` inverse). -->
+                    <skipAssembly>true</skipAssembly>
                     <attach>false</attach>
                     <tarLongFileMode>gnu</tarLongFileMode>
                     <descriptors>
@@ -973,6 +982,21 @@
             </dependencies>
         </profile>
         <profile>
+            <id>build-dist-archives</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-assembly-plugin</artifactId>
+                        <configuration>
+                            <skipAssembly>false</skipAssembly>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
             <id>skip-build-dist-archives</id>
             <build>
                 <plugins>
@@ -980,7 +1004,7 @@
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-assembly-plugin</artifactId>
                         <configuration>
-                            <skipAssembly>true</skipAssembly>  <!-- Override setting in default profile build/plugins for this module -->
+                            <skipAssembly>true</skipAssembly>
                         </configuration>
                     </plugin>
                 </plugins>

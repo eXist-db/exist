@@ -72,9 +72,18 @@
 
     <profiles>
         <profile>
-            <id>installer</id>
+            <id>local-build</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
+            </activation>
+            <!-- Intentionally minimal: default contributor build should avoid release packaging.
+                 Additional capabilities are enabled explicitly via other profiles/properties. -->
+        </profile>
+
+        <profile>
+            <id>installer</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
             </activation>
             <modules>
                 <module>exist-installer</module>
@@ -97,7 +106,7 @@
         <profile>
             <id>concurrency-stress-tests</id>
             <activation>
-                <activeByDefault>true</activeByDefault>
+                <activeByDefault>false</activeByDefault>
             </activation>
             <modules>
                 <module>exist-core-jcstress</module>
@@ -107,7 +116,7 @@
         <profile>
             <id>micro-benchmarks</id>
             <activation>
-                <activeByDefault>true</activeByDefault>
+                <activeByDefault>false</activeByDefault>
             </activation>
             <modules>
                 <module>exist-core-jmh</module>
@@ -225,6 +234,13 @@
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+
+        <profile>
+            <id>release-build</id>
+            <modules>
+                <module>exist-installer</module>
+            </modules>
         </profile>
 
     </profiles>
