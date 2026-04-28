@@ -68,6 +68,20 @@ public class MapExpr extends AbstractExpression {
         if (contextItem != null) {
             contextSequence = contextItem.toSequence();
         }
+
+        // Fast path for a single-mapping literal — skip the linear/forked dance
+        // and the duplicate-key check (a single mapping cannot collide with itself).
+        if (this.mappings.size() == 1) {
+            final Mapping mapping = this.mappings.get(0);
+            final Sequence key = mapping.key.eval(contextSequence, null);
+            if (key.getItemCount() != 1) {
+                throw new XPathException(this, MapErrorCode.EXMPDY001, "Expected single value for key, got " + key.getItemCount());
+            }
+            final AtomicValue atomic = key.itemAt(0).atomize();
+            final Sequence value = mapping.value.eval(contextSequence, null);
+            return new MapType(this, context, null, atomic, value);
+        }
+
         final IMap<AtomicValue, Sequence> map = newLinearMap(null);
 
         boolean firstType = true;

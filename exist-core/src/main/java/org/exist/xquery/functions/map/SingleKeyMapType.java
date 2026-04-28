@@ -67,10 +67,10 @@ public class SingleKeyMapType extends AbstractMapType {
 
     @Override
     public Sequence get(final AtomicValue key) {
-        if (sameKey(collator, this.key, key)) {
+        if (this.key != null && sameKey(collator, this.key, key)) {
             return this.value;
         }
-        return null;
+        return Sequence.EMPTY_SEQUENCE;
     }
 
     @Override

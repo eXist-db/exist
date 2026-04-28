@@ -193,6 +193,15 @@ public class MapType extends AbstractMapType {
                 if (prevType != otherMap.keyType) {
                     prevType = MIXED_KEY_TYPES;
                 }
+            } else if (other instanceof SingleKeyMapType skm) {
+                // SingleKeyMapType - avoid iterator allocation
+                final AtomicValue key = skm.key();
+                if (key != null) {
+                    newMap = newMap.put(key, skm.value());
+                    if (prevType != key.getType()) {
+                        prevType = MIXED_KEY_TYPES;
+                    }
+                }
             } else {
                 // non MapType
                 for (final IEntry<AtomicValue, Sequence> entry : other) {
@@ -224,6 +233,21 @@ public class MapType extends AbstractMapType {
                 if (prevType != otherMap.keyType) {
                     prevType = MIXED_KEY_TYPES;
                 }
+            } else if (other instanceof SingleKeyMapType skm) {
+                // SingleKeyMapType - avoid iterator allocation
+                final AtomicValue key = skm.key();
+                if (key != null) {
+                    final Sequence value = skm.value();
+                    final Optional<Sequence> headEntry = newMap.get(key);
+                    if (headEntry.isPresent()) {
+                        newMap = newMap.put(key, mergeFn.apply(headEntry.get(), value));
+                    } else {
+                        newMap = newMap.put(key, value);
+                    }
+                    if (prevType != key.getType()) {
+                        prevType = MIXED_KEY_TYPES;
+                    }
+                }
             } else {
                 // non MapType
                 for (final IEntry<AtomicValue, Sequence> entry : other) {
@@ -252,9 +276,12 @@ public class MapType extends AbstractMapType {
 
     @Override
     public Sequence get(AtomicValue key) {
-        key = convert(key);
-        if (key == null) {
-            return Sequence.EMPTY_SEQUENCE;
+        if (keyType != UNKNOWN_KEY_TYPE && keyType != MIXED_KEY_TYPES && key.getType() != keyType) {
+            try {
+                key = key.convertTo(keyType);
+            } catch (final XPathException e) {
+                return Sequence.EMPTY_SEQUENCE;
+            }
         }
 
         return map.get(key, Sequence.EMPTY_SEQUENCE);
@@ -268,9 +295,12 @@ public class MapType extends AbstractMapType {
 
     @Override
     public boolean contains(AtomicValue key) {
-        key = convert(key);
-        if (key == null) {
-            return false;
+        if (keyType != UNKNOWN_KEY_TYPE && keyType != MIXED_KEY_TYPES && key.getType() != keyType) {
+            try {
+                key = key.convertTo(keyType);
+            } catch (final XPathException e) {
+                return false;
+            }
         }
 
         return map.contains(key);
@@ -306,6 +336,12 @@ public class MapType extends AbstractMapType {
     }
 
     public AbstractMapType remove(final AtomicValue[] keysAtomicValues) {
+        if (keysAtomicValues.length == 0) {
+            return this;
+        }
+        if (keysAtomicValues.length == 1) {
+            return new MapType(getExpression(), context, map.remove(keysAtomicValues[0]), keyType);
+        }
 
         // create a transient map
         IMap<AtomicValue, Sequence> newMap = map.linear();
@@ -373,17 +409,6 @@ public class MapType extends AbstractMapType {
                 break; // done, we only have to detect this once!
             }
         }
-    }
-
-    private AtomicValue convert(final AtomicValue key) {
-        if (keyType != UNKNOWN_KEY_TYPE && keyType != MIXED_KEY_TYPES) {
-            try {
-                return key.convertTo(keyType);
-            } catch (final XPathException e) {
-                return null;
-            }
-        }
-        return key;
     }
 
     @Override
