@@ -3,10 +3,14 @@
 
     <Properties>
         <Property name="logs">${log4j:configParentLocation}/../logs</Property>
+        <Property name="jetty.logs">${logs}/jetty</Property>
         <Property name="rollover.max.size">10MB</Property>
         <Property name="rollover.max">14</Property>
         <Property name="rollover.file.pattern">%d{yyyyMMddHHmmss}</Property>
         <Property name="exist.file.pattern">%d [%t] %-5p (%F [%M]:%L) - %m %n</Property>
+        <Property name="jetty.file.pattern">%d{ISO8601} [%t] %-5p %logger{36} - %m%n</Property>
+        <!-- GDPR: set EXIST_REQUEST_LOG_LEVEL=OFF to disable client IP logging -->
+        <Property name="exist.request.log.level">${env:EXIST_REQUEST_LOG_LEVEL:-info}</Property>
     </Properties>
 
     <Appenders>
@@ -119,12 +123,22 @@
             <PatternLayout pattern="${exist.file.pattern}"/>
         </RollingRandomAccessFile>
 
-        <RollingRandomAccessFile name="jetty.requestlog" filePattern="${logs}/jetty.${rollover.file.pattern}.log.gz" fileName="${logs}/jetty.log">
+        <!-- Jetty internal logs (org.eclipse.jetty.*) -->
+        <RollingRandomAccessFile name="jetty.internal" filePattern="${jetty.logs}/jetty.${rollover.file.pattern}.log.gz" fileName="${jetty.logs}/jetty.log">
             <Policies>
                 <SizeBasedTriggeringPolicy size="${rollover.max.size}"/>
             </Policies>
             <DefaultRolloverStrategy max="${rollover.max}"/>
-            <PatternLayout pattern="${exist.file.pattern}"/>
+            <PatternLayout pattern="${jetty.file.pattern}"/>
+        </RollingRandomAccessFile>
+
+        <!-- Jetty access/request log (NCSA format from CustomRequestLog) -->
+        <RollingRandomAccessFile name="jetty.requestlog" filePattern="${jetty.logs}/requests.${rollover.file.pattern}.log.gz" fileName="${jetty.logs}/requests.log">
+            <Policies>
+                <SizeBasedTriggeringPolicy size="${rollover.max.size}"/>
+            </Policies>
+            <DefaultRolloverStrategy max="${rollover.max}"/>
+            <PatternLayout pattern="%m%n"/>
         </RollingRandomAccessFile>
 
     </Appenders>
@@ -213,8 +227,15 @@
             <AppenderRef ref="expath.repo"/>
         </Logger>
 
-        <!-- Jetty -->
-        <Logger name="org.eclipse.jetty.server.RequestLog" additivity="false" level="info">
+        <!-- Jetty internal logging (SLF4J -> log4j2 bridge).
+             Level is intentionally WARN to avoid noise; raise to INFO/DEBUG for troubleshooting. -->
+        <Logger name="org.eclipse.jetty" additivity="false" level="warn">
+            <AppenderRef ref="jetty.internal"/>
+        </Logger>
+
+        <!-- Jetty access/request log. Set env var EXIST_REQUEST_LOG_LEVEL=OFF to suppress
+             (e.g., for GDPR compliance — disables client IP/User-Agent logging). -->
+        <Logger name="org.eclipse.jetty.server.RequestLog" additivity="false" level="${exist.request.log.level}">
             <AppenderRef ref="jetty.requestlog"/>
         </Logger>
 
