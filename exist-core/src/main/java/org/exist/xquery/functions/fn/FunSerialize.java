@@ -40,6 +40,8 @@ import javax.xml.transform.OutputKeys;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.exist.Namespaces.XSLT_XQUERY_SERIALIZATION_NS;
 
@@ -103,8 +105,7 @@ public class FunSerialize extends BasicFunction {
             // Preserve specific serialization error codes from the exception message
             final String msg = e.getMessage();
             if (msg != null) {
-                final java.util.regex.Matcher m = java.util.regex.Pattern
-                        .compile("err:(SER[EPM]\\d{4})").matcher(msg);
+                final Matcher m = Pattern.compile("err:(SER[EPM]\\d{4})").matcher(msg);
                 if (m.find()) {
                     throw new XPathException(this,
                             new ErrorCodes.ErrorCode(m.group(1), msg), msg);
