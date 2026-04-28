@@ -515,4 +515,46 @@ public class IntegerPictureTest {
     public void formatFix() throws XPathException {
         assertEquals("12345,67,89", fmt("000,00,00", 123456789L));
     }
+
+    // XQ4 §4.6.1: optional radix prefix BASE^pattern, BASE in [2..36]
+    @Test
+    public void formatRadixPrefix() throws XPathException {
+        // From the QT4 fo-spec-examples test catalog
+        assertEquals("04d2", fmt("16^xxxx", 1234L));
+        assertEquals("4D2", fmt("16^X", 1234L));
+        assertEquals("00bc_614e", fmt("16^xxxx_xxxx", 12345678L));
+        assertEquals("bc_614e", fmt("16^#_xxxx", 12345678L));
+        assertEquals("1111 1111", fmt("2^xxxx xxxx", 255L));
+        assertEquals("00VV", fmt("32^XXXX", 1023L));
+        assertEquals("1023", fmt("10^XXXX", 1023L));
+    }
+
+    // XQ4 §4.6.1: ^ is treated as a grouping separator when not preceded
+    // by a valid base or when not followed by X/x in the primary token.
+    @Test
+    public void radixCircumflexFallback() throws XPathException {
+        // From the spec example: input 2345, picture 9^XXX outputs "3185"
+        // (radix-mode: 2345 in base 9 is 3185)
+        assertEquals("3185", fmt("9^XXX", 2345L));
+        // Same input with picture 9^000: no X/x → fall through to decimal,
+        // ^ becomes a grouping separator → "2^345"
+        assertEquals("2^345", fmt("9^000", 2345L));
+        // 10^00 → no X/x → fall through to decimal mode
+        assertEquals("10^23", fmt("10^00", 1023L));
+    }
+
+    @Test
+    public void radixMixedCaseRejected() {
+        try {
+            fmt("16^Xx", 1L);
+            fail("Mixed-case mandatory-digit-signs should be rejected");
+        } catch (final XPathException xpe) {
+            assertTrue(xpe.getDetailMessage().contains("mixes upper-case 'X' and lower-case 'x'"));
+        }
+    }
+
+    @Test
+    public void radixNegative() throws XPathException {
+        assertEquals("-04d2", fmt("16^xxxx", -1234L));
+    }
 }

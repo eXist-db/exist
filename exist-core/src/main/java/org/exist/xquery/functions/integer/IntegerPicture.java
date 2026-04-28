@@ -46,6 +46,16 @@ public abstract class IntegerPicture {
     static final Pattern decimalDigitPattern = Pattern.compile("^((\\p{Nd}|#|[^\\p{N}\\p{L}\\v])+)$", Pattern.UNICODE_CHARACTER_CLASS);
     static final Pattern invalidDigitPattern = Pattern.compile("(\\p{Nd})");
 
+    // XQ4: Optional radix prefix BASE^pattern, where BASE is 2..36 written as ASCII
+    // digits with no leading zero. The circumflex is only recognized as a radix
+    // marker when (a) preceded by such a BASE and (b) followed somewhere in the
+    // primary token by an X or x; otherwise it is treated as a grouping separator
+    // for backwards compatibility with 3.1 (e.g. picture "9^000" formats 2345
+    // as "2^345"). See xpath-functions 4.0 §4.6.1.
+    static final Pattern radixPrefixPattern = Pattern.compile("^([2-9]|[12][0-9]|3[0-6])\\^(.+)$");
+    // Per XQ4 spec: the radix-mode primary token must match this regex.
+    static final Pattern radixDigitPattern = Pattern.compile("^(([Xx#]|[^\\p{N}\\p{L}\\v])+)$", Pattern.UNICODE_CHARACTER_CLASS);
+
     /**
      * The value of $picture consists of a primary format token,
      * optionally followed by a format modifier.
@@ -69,6 +79,29 @@ public abstract class IntegerPicture {
         }
         if (primaryFormatToken.isEmpty()) {
             throw new XPathException((Expression) null, ErrorCodes.FODF1310, "Invalid (empty) primary format token in integer format token: " + primaryFormatToken);
+        }
+
+        // XQ4: detect optional radix prefix. The circumflex is only the radix
+        // marker if the suffix actually contains an X or x; otherwise fall through
+        // and let the existing decimal logic treat ^ as a grouping separator.
+        final Matcher radixMatcher = IntegerPicture.radixPrefixPattern.matcher(primaryFormatToken);
+        if (radixMatcher.matches()) {
+            final String pattern = radixMatcher.group(2);
+            final boolean hasUpper = pattern.indexOf('X') >= 0;
+            final boolean hasLower = pattern.indexOf('x') >= 0;
+            if (hasUpper || hasLower) {
+                if (hasUpper && hasLower) {
+                    throw new XPathException((Expression) null, ErrorCodes.FODF1310,
+                            "Primary format token " + primaryFormatToken + " mixes upper-case 'X' and lower-case 'x' mandatory-digit-signs");
+                }
+                final Matcher radixContentMatcher = IntegerPicture.radixDigitPattern.matcher(pattern);
+                if (!radixContentMatcher.matches()) {
+                    throw new XPathException((Expression) null, ErrorCodes.FODF1310,
+                            "Primary format token " + primaryFormatToken + " is not a valid radix digit pattern");
+                }
+                final int radix = Integer.parseInt(radixMatcher.group(1));
+                return new DigitsIntegerPicture(pattern, formatModifier, radix, hasUpper);
+            }
         }
 
         // type 1 matcher (some digits)

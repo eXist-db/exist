@@ -52,9 +52,17 @@ class DigitsIntegerPicture extends IntegerPicture {
     static final UnicodeSet optionalPrefixDigitSet = new UnicodeSet("[#]").freeze();
     static final UnicodeSet decimalDigitSet = new UnicodeSet("[:Nd:]").freeze();
     static final UnicodeSet separatorDigitSet = new UnicodeSet("[:^Nd:]").add("[:^Lu:]").remove("#").freeze();
+    // XQ4 radix mode: x or X is the mandatory-digit-sign; separators are any
+    // non-Nd non-letter character; optional sign is still '#'.
+    static final UnicodeSet radixUpperDigitSet = new UnicodeSet("[X]").freeze();
+    static final UnicodeSet radixLowerDigitSet = new UnicodeSet("[x]").freeze();
+    static final UnicodeSet radixSeparatorSet = new UnicodeSet("[^[:N:][:L:]#]").freeze();
 
     private final String primaryFormatToken;
     private final FormatModifier formatModifier;
+    // -1 means decimal mode; otherwise 2..36
+    private final int radix;
+    private final boolean upperCase;
 
     // Fields determining the layout of decimal digits
     // These fields are generated when we parse the primaryFormatToken into groups
@@ -64,8 +72,15 @@ class DigitsIntegerPicture extends IntegerPicture {
     private int digitFamily = -1;
 
     DigitsIntegerPicture(final String primaryFormatToken, final FormatModifier formatModifier) throws XPathException {
+        this(primaryFormatToken, formatModifier, -1, false);
+    }
+
+    DigitsIntegerPicture(final String primaryFormatToken, final FormatModifier formatModifier,
+                         final int radix, final boolean upperCase) throws XPathException {
         this.primaryFormatToken = primaryFormatToken;
         this.formatModifier = formatModifier;
+        this.radix = radix;
+        this.upperCase = upperCase;
 
         parseFormatToken();
     }
@@ -104,6 +119,19 @@ class DigitsIntegerPicture extends IntegerPicture {
 
         boolean mandatoryDigitsObserved = false;
 
+        final boolean radixMode = radix > 0;
+        final UnicodeSet mandatoryDigitSet;
+        final UnicodeSet separatorSet;
+        if (radixMode) {
+            mandatoryDigitSet = upperCase
+                    ? DigitsIntegerPicture.radixUpperDigitSet
+                    : DigitsIntegerPicture.radixLowerDigitSet;
+            separatorSet = DigitsIntegerPicture.radixSeparatorSet;
+        } else {
+            mandatoryDigitSet = DigitsIntegerPicture.decimalDigitSet;
+            separatorSet = DigitsIntegerPicture.separatorDigitSet;
+        }
+
         final PrimaryFormatParser formatParser = new PrimaryFormatParser(primaryFormatToken);
         for (;;) {
             final Group group = new Group();
@@ -112,18 +140,20 @@ class DigitsIntegerPicture extends IntegerPicture {
                 throw new XPathException((Expression) null, ErrorCodes.FODF1310, "Primary format token " + primaryFormatToken + " has optional digit after mandatory digit at " + formatParser.match());
             }
 
-            group.mandatory = formatParser.matchSet(DigitsIntegerPicture.decimalDigitSet);
+            group.mandatory = formatParser.matchSet(mandatoryDigitSet);
             if (group.mandatory > 0) {
                 mandatoryDigitsObserved = true;
 
-                for (final int codePoint : formatParser.matchCodes()) {
-                    // All families begin at 0x____0
-                    // represent the family by the 0 character in the family
-                    final int codePointFamily = DigitsIntegerPicture.getCodePointFamily(codePoint);
-                    if (digitFamily != -1 && digitFamily != codePointFamily) {
-                        throw new XPathException((Expression) null, ErrorCodes.FODF1310, "Primary format token " + primaryFormatToken + " contains multiple digit families");
+                if (!radixMode) {
+                    for (final int codePoint : formatParser.matchCodes()) {
+                        // All families begin at 0x____0
+                        // represent the family by the 0 character in the family
+                        final int codePointFamily = DigitsIntegerPicture.getCodePointFamily(codePoint);
+                        if (digitFamily != -1 && digitFamily != codePointFamily) {
+                            throw new XPathException((Expression) null, ErrorCodes.FODF1310, "Primary format token " + primaryFormatToken + " contains multiple digit families");
+                        }
+                        digitFamily = codePointFamily;
                     }
-                    digitFamily = codePointFamily;
                 }
             }
 
@@ -136,7 +166,7 @@ class DigitsIntegerPicture extends IntegerPicture {
                 throw new XPathException((Expression) null, ErrorCodes.FODF1310, "Primary format token " + primaryFormatToken + " expected a digit grouping pattern at " + formatParser.pos());
             }
 
-            final int separator = formatParser.matchSetOnce(DigitsIntegerPicture.separatorDigitSet);
+            final int separator = formatParser.matchSetOnce(separatorSet);
             if (separator > 0) {
                 if (formatParser.end()) {
                     throw new XPathException((Expression) null, ErrorCodes.FODF1310, "Primary format token " + primaryFormatToken + " ends with a separator at " + formatParser.match());
@@ -279,6 +309,8 @@ class DigitsIntegerPicture extends IntegerPicture {
     private StringBuilder formatNonNegativeInteger(final BigInteger bigInteger) {
 
         final StringBuilder reversedBuilder = new StringBuilder();
+        final boolean radixMode = radix > 0;
+        final BigInteger divisor = radixMode ? BigInteger.valueOf(radix) : IntegerPicture.TEN;
         int remainingDigits = mandatoryDigits;
         int groupIndex = 0;
         Group group = getGroupFromEnd(groupIndex);
@@ -293,9 +325,18 @@ class DigitsIntegerPicture extends IntegerPicture {
                     reversedBuilder.append(group.separator.orElse(""));
                 }
             }
-            final BigInteger[] divideAndRemainder = acc.divideAndRemainder(IntegerPicture.TEN);
-            final BigInteger remainder = divideAndRemainder[1];
-            final int codePoint = digitFamily + remainder.intValue();
+            final BigInteger[] divideAndRemainder = acc.divideAndRemainder(divisor);
+            final int digitValue = divideAndRemainder[1].intValue();
+            final int codePoint;
+            if (radixMode) {
+                if (digitValue < 10) {
+                    codePoint = '0' + digitValue;
+                } else {
+                    codePoint = (upperCase ? 'A' : 'a') + (digitValue - 10);
+                }
+            } else {
+                codePoint = digitFamily + digitValue;
+            }
             reversedBuilder.append(Character.toChars(codePoint));
             remainingDigits--;
             groupUsed++;
