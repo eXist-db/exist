@@ -189,10 +189,22 @@ public class LoadXQueryModule extends BasicFunction {
                 throw new XPathException(this, ErrorCodes.FOQM0002, "Module with URI " + targetNamespace + " not found");
             }
 
-            // Only enforce version check for URI-loaded modules, not content-loaded
-            if (contentSource == null && !xqVersion.equals(getXQueryVersion(tempContext.getXQueryVersion()))) {
-                throw new XPathException(this, ErrorCodes.FOQM0003, "Imported module has wrong XQuery version: " +
-                        getXQueryVersion(tempContext.getXQueryVersion()));
+            // The version declared in the loaded module is recorded on the module's
+            // own context, not on tempContext (which only hosts the import).
+            // Only enforce version check for URI-loaded modules, not content-loaded.
+            if (contentSource == null) {
+                for (final Module loadedModule : loadedModules) {
+                    if (loadedModule instanceof ExternalModule extMod) {
+                        final XQueryContext modCtx = extMod.getContext();
+                        if (modCtx != null) {
+                            final String moduleVersion = getXQueryVersion(modCtx.getXQueryVersion());
+                            if (!xqVersion.equals(moduleVersion)) {
+                                throw new XPathException(this, ErrorCodes.FOQM0003,
+                                        "Imported module has wrong XQuery version: " + moduleVersion);
+                            }
+                        }
+                    }
+                }
             }
 
             final IMap<AtomicValue, Sequence> variables = newLinearMap(null);
