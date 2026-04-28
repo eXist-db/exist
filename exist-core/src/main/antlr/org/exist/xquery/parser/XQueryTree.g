@@ -1156,6 +1156,21 @@ throws PermissionDeniedException, EXistException, XPathException
         {
             processParams(varList, func, signature);
 
+            // XQ4 (PR197): a required parameter cannot follow one with a default value.
+            // Raise XQST0148 if any param without a default value appears after a param
+            // that has one.
+            boolean __sawDefault = false;
+            for (Object __pObj : varList) {
+                final FunctionParameterSequenceType __param = (FunctionParameterSequenceType) __pObj;
+                if (__param.hasDefaultValue()) {
+                    __sawDefault = true;
+                } else if (__sawDefault) {
+                    throw new XPathException(name.getLine(), name.getColumn(),
+                        ErrorCodes.XQST0148,
+                        "A required parameter must not follow a parameter with a default value");
+                }
+            }
+
             final String qualifiedNameArity = signature.getName().toURIQualifiedName() + '#' + signature.getArgumentCount();
             if (importedModuleFunctions != null && importedModuleFunctions.contains(qualifiedNameArity)) {
                 throw new XPathException(name.getLine(), name.getColumn(), ErrorCodes.XQST0034, "Prolog has " +
@@ -4652,6 +4667,17 @@ throws PermissionDeniedException, EXistException, XPathException
                 qname = QName.parse(staticContext, name.getText(), staticContext.getDefaultFunctionNamespace());
             } catch (final IllegalQNameException iqe) {
                 throw new XPathException(name.getLine(), name.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + name.getText());
+            }
+            // XQ4 (PR2200): unprefixed function references prefer a no-namespace
+            // user-declared function over the default function namespace (fn:).
+            if (staticContext.getXQueryVersion() >= 40
+                    && !name.getText().contains(":")
+                    && org.exist.Namespaces.XPATH_FUNCTIONS_NS.equals(qname.getNamespaceURI())) {
+                final QName noNsName = new QName(name.getText(), "");
+                final int aritynum = Integer.parseInt(arity.getText().replace("_", ""));
+                if (context.resolveFunction(noNsName, aritynum) != null) {
+                    qname = noNsName;
+                }
             }
             NamedFunctionReference ref = new NamedFunctionReference(context, qname, Integer.parseInt(arity.getText().replace("_", "")));
             step = ref;

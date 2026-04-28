@@ -2172,7 +2172,43 @@ public class XQueryContext implements BinaryValueManager, Context {
                             + " is already defined.");
         }
 
+        // XQ4 (PR197): a function declaration with default-valued parameters is
+        // callable at any arity from (count of required params) up to its
+        // declared arity. Two declarations with overlapping callable-arity ranges
+        // are ambiguous — raise XQST0034. The exact-arity collision check above
+        // already covers the no-defaults case, but ranges can overlap on a
+        // shared arity even when neither declaration is an exact duplicate.
+        final int declaredArity = signature.getArgumentCount();
+        final int requiredParams = countRequiredParams(signature.getArgumentTypes(), declaredArity);
+        for (final UserDefinedFunction existing : declaredFunctions.values()) {
+            if (!existing.getName().equals(name)) continue;
+            final int eDeclared = existing.getSignature().getArgumentCount();
+            final int eRequired = countRequiredParams(existing.getSignature().getArgumentTypes(), eDeclared);
+            // Skip if neither declaration has a default — exact-arity collision
+            // is already handled by the FunctionId map check above.
+            if (requiredParams == declaredArity && eRequired == eDeclared) continue;
+            final int lo = Math.max(requiredParams, eRequired);
+            final int hi = Math.min(declaredArity, eDeclared);
+            if (lo <= hi) {
+                throw new XPathException(function, ErrorCodes.XQST0034,
+                        "Function " + name.toURIQualifiedName()
+                                + " overlaps with a previously declared overload on arity "
+                                + lo + ".." + hi);
+            }
+        }
+
         declaredFunctions.put(functionKey, function);
+    }
+
+    private static int countRequiredParams(final SequenceType[] argTypes, final int fallback) {
+        if (argTypes == null) return fallback;
+        for (int i = 0; i < argTypes.length; i++) {
+            if (argTypes[i] instanceof FunctionParameterSequenceType
+                    && ((FunctionParameterSequenceType) argTypes[i]).hasDefaultValue()) {
+                return i;
+            }
+        }
+        return fallback;
     }
 
     @Override

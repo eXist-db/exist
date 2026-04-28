@@ -152,6 +152,10 @@ public class ErrorCodes {
     public static final ErrorCode XQDY0137 = new W3CErrorCode("XQDY0137", "No two keys in a map may have the same key value");
     public static final ErrorCode XQDY0138 = new W3CErrorCode("XQDY0138", "Position n does not exist in this array");
 
+    // --- XQuery 4.0 Parser Extensions error codes ---
+    public static final ErrorCode XQST0148 = new W3CErrorCode("XQST0148", "It is a static error if a parameter without a default value follows a parameter with a default value in a function declaration.");
+    // --- End XQuery 4.0 Parser Extensions error codes ---
+
     /* W3C XQuery Update Facility 3.0 error codes */
     public static final ErrorCode XUDY0009 = new W3CErrorCode("XUDY0009", "It is a dynamic error if the target node of a replace expression is a node without a parent.");
     public static final ErrorCode XUDY0014 = new W3CErrorCode("XUDY0014", "It is a dynamic error if the result of applying all update primitives on a single document node would result in that document having more than one element or text child.");
