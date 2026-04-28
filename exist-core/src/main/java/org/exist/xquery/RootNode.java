@@ -97,7 +97,17 @@ public class RootNode extends Step {
 
         // get statically known documents from the context
         DocumentSet ds = context.getStaticallyKnownDocuments();
-        if (ds == null || ds.getDocumentCount() == 0) {return Sequence.EMPTY_SEQUENCE;}
+        if (ds == null || ds.getDocumentCount() == 0) {
+            // XQuery 4.0: per spec, if no context item is defined and no documents
+            // are statically known, raise XPDY0002. Earlier versions silently returned
+            // the empty sequence for backwards compatibility with eXist's database
+            // navigation behaviour.
+            if (context.getXQueryVersion() >= 40) {
+                throw new XPathException(this, ErrorCodes.XPDY0002,
+                        "Context item is undefined for path expression");
+            }
+            return Sequence.EMPTY_SEQUENCE;
+        }
 
         // fix for util:eval-with-context
         if (contextSequence != null) {
