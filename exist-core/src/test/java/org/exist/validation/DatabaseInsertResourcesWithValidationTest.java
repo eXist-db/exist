@@ -113,9 +113,9 @@ public class DatabaseInsertResourcesWithValidationTest {
      * DTD set in system catalog.
      * <p>
      * First the string
-     * <!--!DOCTYPE PLAY PUBLIC "-//PLAY//EN" "play.dtd"-->
+     * {@code &lt;!--!DOCTYPE PLAY PUBLIC "-//PLAY//EN" "play.dtd"--&gt;}
      * needs to be modified into
-     * <!DOCTYPE PLAY PUBLIC "-//PLAY//EN" "play.dtd">
+     * {@code &lt;!DOCTYPE PLAY PUBLIC "-//PLAY//EN" "play.dtd"&gt;}
      */
     @Test
     public void validDocumentSystemCatalog() throws IOException {
@@ -144,9 +144,9 @@ public class DatabaseInsertResourcesWithValidationTest {
      * DTD set in system catalog.
      * <p>
      * First the string
-     * <!--!DOCTYPE PLAY PUBLIC "-//PLAY//EN" "play.dtd"-->
+     * {@code &lt;!--!DOCTYPE PLAY PUBLIC "-//PLAY//EN" "play.dtd"--&gt;}
      * needs to be modified into
-     * <!DOCTYPE PLAY PUBLIC "-//PLAY//EN" "play.dtd">
+     * {@code &lt;!DOCTYPE PLAY PUBLIC "-//PLAY//EN" "play.dtd"&gt;}
      * <p>
      * Additionally all "TITLE" elements are renamed to "INVALIDTITLE"
      */
