@@ -59,6 +59,10 @@ public class XQUFReplaceValueExpr extends AbstractExpression {
         value.analyze(subInfo);
     }
 
+    // PMD.NPathComplexity: XQUF replace value-of-node spec validation
+    // (XUTY0008/XUDY0023/XUTY0012) is encoded inline before emitting the
+    // primitive; branches mirror W3C error conditions. Covered by XQUFBasicTest.
+    @SuppressWarnings("PMD.NPathComplexity")
     @Override
     public Sequence eval(final Sequence contextSequence, final Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {

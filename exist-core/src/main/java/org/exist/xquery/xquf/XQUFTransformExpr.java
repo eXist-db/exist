@@ -193,6 +193,10 @@ public class XQUFTransformExpr extends AbstractExpression {
      * Deep copy a node sequence into an in-memory tree.
      * Reuses the serialization approach from Modification.deepCopy().
      */
+    // PMD.NPathComplexity: per-node-type dispatch (element/attribute/text/comment/PI/document)
+    // emits SAX events that the receiver applies; collapsing branches would obscure
+    // the node-type mapping. Covered by XQUFBasicTest copy-modify cases.
+    @SuppressWarnings("PMD.NPathComplexity")
     private Sequence deepCopyNode(final Sequence inSeq) throws XPathException {
         context.pushDocumentContext();
         final MemTreeBuilder builder = context.getDocumentBuilder();

@@ -277,6 +277,10 @@ public class PendingUpdateList {
      * - XUDY0023: new namespace binding conflicts with existing element namespace binding
      * - XUDY0024: new namespace bindings from different operations conflict with each other
      */
+    // PMD.NPathComplexity: each branch evaluates a distinct XUDY error condition
+    // mandated by the XQUF spec; merging or extracting them obscures the spec
+    // mapping. Covered by XQUFBasicTest attribute conflict cases.
+    @SuppressWarnings("PMD.NPathComplexity")
     private void checkAttributeAndNamespaceConflicts() throws XPathException {
         // Group attribute operations by target element.
         // We use a string key for node identity because persistent DOM proxies
@@ -720,6 +724,10 @@ public class PendingUpdateList {
     /**
      * Apply updates to in-memory nodes (used in copy-modify expressions).
      */
+    // PMD.NPathComplexity: dispatches over the W3C XQUF primitive-type set in two
+    // ordered phases (Section 3.3.3); each branch implements one primitive's
+    // application semantics. Covered by XQUFBasicTest copy-modify cases.
+    @SuppressWarnings("PMD.NPathComplexity")
     private void applyInMemory(final XQueryContext context, final List<UpdatePrimitive> prims) throws XPathException {
         // W3C XQuery Update Facility 3.0, Section 3.3.3 — Application order:
         // Phase 1: upd:insertInto, upd:insertAttributes, upd:replaceValue (non-element), upd:rename
@@ -1065,6 +1073,11 @@ public class PendingUpdateList {
      * Apply updates to persistent (stored) database nodes.
      * Follows locking and transaction patterns from existing Modification class.
      */
+    // PMD.NPathComplexity: dispatches over the W3C XQUF primitive-type set against
+    // the persistent store, with locking, transaction, and trigger plumbing. Each
+    // branch implements one primitive's storage semantics. Covered by XQUFBasicTest
+    // persistent update cases.
+    @SuppressWarnings("PMD.NPathComplexity")
     private void applyPersistent(final XQueryContext context, final List<UpdatePrimitive> prims) throws XPathException {
         final DBBroker broker = context.getBroker();
         final MutableDocumentSet modifiedDocuments = new DefaultDocumentSet();

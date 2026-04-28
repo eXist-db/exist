@@ -659,7 +659,7 @@ throws PermissionDeniedException, EXistException, XPathException
             }
         )
         |
-        // === W3C XQuery Update Facility 3.0 — Revalidation Declaration ===
+        // === W3C XQuery Update Facility 3.0 -- Revalidation Declaration ===
         #(
             "revalidation" ( "strict" | "lax" | "skip" )
             {

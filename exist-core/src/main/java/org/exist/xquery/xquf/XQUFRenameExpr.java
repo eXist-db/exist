@@ -60,6 +60,11 @@ public class XQUFRenameExpr extends AbstractExpression {
         newName.analyze(subInfo);
     }
 
+    // PMD.NPathComplexity: XQUF rename evaluates spec-mandated validation
+    // (XUDY0027/XUTY0008/XUDY0023/XUDY0024) inline before emitting the PUL
+    // primitive. The branches encode independent W3C error conditions and
+    // splitting them obscures spec-to-code mapping. Covered by XQUFBasicTest.
+    @SuppressWarnings("PMD.NPathComplexity")
     @Override
     public Sequence eval(final Sequence contextSequence, final Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {

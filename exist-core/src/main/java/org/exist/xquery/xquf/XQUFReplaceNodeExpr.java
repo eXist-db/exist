@@ -61,6 +61,11 @@ public class XQUFReplaceNodeExpr extends AbstractExpression {
         replacement.analyze(subInfo);
     }
 
+    // PMD.NPathComplexity: XQUF replace-node validates target/replacement against
+    // multiple W3C error conditions (XUTY0008/XUDY0023/XUDY0024/XUTY0010/XUTY0011)
+    // before emitting the PUL primitive. The branches map directly to the spec
+    // and reorganizing obscures that mapping. Covered by XQUFBasicTest.
+    @SuppressWarnings("PMD.NPathComplexity")
     @Override
     public Sequence eval(final Sequence contextSequence, final Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {
