@@ -180,8 +180,11 @@ public class DateTimeValue extends AbstractDateTimeValue {
 
     public ComputableValue minus(ComputableValue other) throws XPathException {
         return switch (other.getType()) {
-            case Type.DATE_TIME_STAMP, Type.DATE_TIME ->
-                    new DayTimeDurationValue(getExpression(), getTimeInMillis() - ((DateTimeValue) other).getTimeInMillis());
+            case Type.DATE_TIME_STAMP, Type.DATE_TIME -> {
+                checkYearOverflow(calendar);
+                checkYearOverflow(((DateTimeValue) other).calendar);
+                yield new DayTimeDurationValue(getExpression(), getTimeInMillis() - ((DateTimeValue) other).getTimeInMillis());
+            }
             case Type.YEAR_MONTH_DURATION -> ((YearMonthDurationValue) other).negate().plus(this);
             case Type.DAY_TIME_DURATION -> ((DayTimeDurationValue) other).negate().plus(this);
             default -> throw new XPathException(getExpression(),

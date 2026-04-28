@@ -118,6 +118,33 @@ options {
 		foundError = true;
 		exceptions.add(e);
 	}
+
+	/**
+	 * XQuery 3.1 section 3.1.7.1: an inline function expression must not be
+	 * annotated as %public or %private (XQST0125). The annotations subtree
+	 * is suppressed from the AST (see {@code ann:annotations!}), so we
+	 * inspect it here in the parser before it is dropped.
+	 */
+	protected static void rejectInlineFunctionPublicPrivate(antlr.collections.AST annotationsRoot) throws XPathException {
+		if (annotationsRoot == null) {
+			return;
+		}
+		for (antlr.collections.AST a = annotationsRoot; a != null; a = a.getNextSibling()) {
+			if (a.getType() != ANNOT_DECL) {
+				continue;
+			}
+			final String text = a.getText();
+			if (text == null) {
+				continue;
+			}
+			final int colon = text.lastIndexOf(':');
+			final String localName = colon >= 0 ? text.substring(colon + 1) : text;
+			if ("public".equals(localName) || "private".equals(localName)) {
+				throw new XPathException(a.getLine(), a.getColumn(), ErrorCodes.XQST0125,
+					"Inline function expressions must not be annotated as %" + localName + ".");
+			}
+		}
+	}
 }
 
 /* The following tokens are assigned by the parser (not the lexer)
@@ -1222,8 +1249,11 @@ stepExpr throws XPathException
 	|
 	( ( "element" | "attribute" | "text" | "document" | "comment" |
 	  "namespace-node" | "processing-instruction" | "namespace" | "ordered" |
-	  "unordered" | "map" | "array" ) LCURLY ) =>
+	  "unordered" | "map" | "array" | "validate" ) LCURLY ) =>
 	postfixExpr
+	|
+	// "validate lax {" / "validate strict {" -- ValidateExpr (XQuery 3.1 section 3.18.1)
+	( "validate" ( "lax" | "strict" ) LCURLY ) => postfixExpr
 	|
 	( ( "element" | "attribute" | "processing-instruction" | "namespace" ) eqName LCURLY ) => postfixExpr
 	|
@@ -1419,6 +1449,13 @@ primaryExpr throws XPathException
 	|
 	( "unordered" LCURLY ) => unorderedExpr
 	|
+	(
+	    "validate"
+	    ( "lax" | "strict" )?
+	    LCURLY
+	)
+	=> validateExpr
+	|
 	( LPPAREN | ( "array" LCURLY ) ) => arrayConstructor
 	|
 	( "map" LCURLY ) => mapConstructor
@@ -1510,6 +1547,20 @@ unorderedExpr throws XPathException
 	"unordered"! LCURLY! expr RCURLY!
 	;
 
+// XQuery 3.1 section 3.18.1 ValidateExpr - eXist does not implement the Schema
+// Validation Feature, so we accept the syntax (per W3C grammar) and raise
+// XQST0075 at parse time, matching what XQTS expects.
+validateExpr throws XPathException
+:
+	v:"validate"!
+	( "lax"! | "strict"! )?
+	LCURLY! expr RCURLY!
+	{
+	    throw new XPathException(v.getLine(), v.getColumn(), ErrorCodes.XQST0075,
+	        "The eXist-db XQuery implementation does not support the Schema Validation Feature.");
+	}
+	;
+
 varRef throws XPathException
 { String varName = null; }
 :
@@ -1555,7 +1606,15 @@ namedFunctionRef throws XPathException
 
 inlineFunctionExpr throws XPathException
 :
-	ann:annotations! "function"! lp:LPAREN! ( paramList )?
+	ann:annotations!
+	{
+	    // XQuery 3.1 section 3.1.7.1: an inline function expression must not be
+	    // annotated as %public or %private (XQST0125). The parser checks each
+	    // ANNOT_DECL child of the suppressed annotations subtree before the
+	    // root token is dropped.
+	    rejectInlineFunctionPublicPrivate(#ann);
+	}
+	"function"! lp:LPAREN! ( paramList )?
 	RPAREN! ( returnType )?
 	functionBody
 	{
@@ -2250,6 +2309,10 @@ reservedKeywords returns [String name]
 	"case" { name = "case"; }
 	|
 	"validate" { name = "validate"; }
+	|
+	"lax" { name = "lax"; }
+	|
+	"strict" { name = "strict"; }
 	|
 	"schema" { name = "schema"; }
 	|

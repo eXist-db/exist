@@ -238,18 +238,21 @@ public class DayTimeDurationValue extends OrderedDurationValue {
         final BigDecimal factor = numberToBigDecimal(other, "Operand to mult should be of numeric type; got: ");
         final boolean isFactorNegative = factor.signum() < 0;
         final DayTimeDurationValue product = new DayTimeDurationValue(getExpression(), duration.multiply(factor.abs()));
-        if (isFactorNegative) {
-            return new DayTimeDurationValue(getExpression(), product.negate().getCanonicalDuration());
-        }
-        return new DayTimeDurationValue(getExpression(), product.getCanonicalDuration());
-
+        final DayTimeDurationValue result = isFactorNegative
+                ? new DayTimeDurationValue(getExpression(), product.negate().getCanonicalDuration())
+                : new DayTimeDurationValue(getExpression(), product.getCanonicalDuration());
+        result.checkDayTimeOverflow(result.secondsValueSigned());
+        return result;
     }
 
     public ComputableValue div(ComputableValue other) throws XPathException {
         if (other.getType() == Type.DAY_TIME_DURATION) {
-            final DecimalValue a = new DecimalValue(getExpression(), secondsValueSigned());
-            final DecimalValue b = new DecimalValue(getExpression(), ((DayTimeDurationValue) other).secondsValueSigned());
-            return new DecimalValue(getExpression(), a.value.divide(b.value, 20, RoundingMode.HALF_UP));
+            final BigDecimal aSeconds = secondsValueSigned();
+            final BigDecimal bSeconds = ((DayTimeDurationValue) other).secondsValueSigned();
+            // Operand magnitudes outside the supported value space raise FODT0002 / FOAR0002.
+            checkDayTimeOverflow(aSeconds);
+            checkDayTimeOverflow(bSeconds);
+            return new DecimalValue(getExpression(), aSeconds.divide(bSeconds, 20, RoundingMode.HALF_UP));
         }
         if (other instanceof NumericValue) {
             if (((NumericValue) other).isNaN()) {
@@ -268,10 +271,11 @@ public class DayTimeDurationValue extends OrderedDurationValue {
         final boolean isDivisorNegative = divisor.signum() < 0;
         final BigDecimal secondsValueSigned = secondsValueSigned();
         final DayTimeDurationValue quotient = fromDecimalSeconds(secondsValueSigned.divide(divisor.abs(), Math.max(Math.max(3, secondsValueSigned.scale()), divisor.scale()), RoundingMode.HALF_UP));
-        if (isDivisorNegative) {
-            return new DayTimeDurationValue(getExpression(), quotient.negate().getCanonicalDuration());
-        }
-        return new DayTimeDurationValue(getExpression(), quotient.getCanonicalDuration());
+        final DayTimeDurationValue result = isDivisorNegative
+                ? new DayTimeDurationValue(getExpression(), quotient.negate().getCanonicalDuration())
+                : new DayTimeDurationValue(getExpression(), quotient.getCanonicalDuration());
+        result.checkDayTimeOverflow(result.secondsValueSigned());
+        return result;
     }
 
     private DayTimeDurationValue fromDecimalSeconds(BigDecimal x) throws XPathException {

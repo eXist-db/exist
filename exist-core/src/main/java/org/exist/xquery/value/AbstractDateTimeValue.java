@@ -326,6 +326,20 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
         return calendar.getTimezone() != DatatypeConstants.FIELD_UNDEFINED;
     }
 
+    /**
+     * XQuery 3.1 §10.1.1 leaves the date/time year value-space implementation-defined.
+     * eXist supports years that fit in {@code int} (the low 32 bits of XMLGregorianCalendar);
+     * year magnitudes that require a non-zero eon raise FODT0001.
+     */
+    protected void checkYearOverflow(final XMLGregorianCalendar gc) throws XPathException {
+        final BigInteger eon = gc.getEon();
+        if (eon != null && eon.signum() != 0) {
+            throw new XPathException(getExpression(), ErrorCodes.FODT0001,
+                    "Overflow/underflow in date/time operation: year value " + gc.getEonAndYear()
+                            + " is outside the supported range");
+        }
+    }
+
     protected void validateTimezone(DayTimeDurationValue offset) throws XPathException {
         final Duration tz = offset.duration;
         final Number secs = tz.getField(DatatypeConstants.SECONDS);
@@ -346,6 +360,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
             offset = new DayTimeDurationValue(getExpression(), TimeUtils.getInstance().getLocalTimezoneOffsetMillis());
         }
         validateTimezone(offset);
+        checkYearOverflow(calendar);
         XMLGregorianCalendar xgc = (XMLGregorianCalendar) calendar.clone();
         if (xgc.getTimezone() != DatatypeConstants.FIELD_UNDEFINED) {
             if (getType() == Type.DATE) {
@@ -359,6 +374,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
         } catch (final IllegalArgumentException e) {
             throw new XPathException(getExpression(), ErrorCodes.FORG0001, "illegal timezone offset " + offset, e);
         }
+        checkYearOverflow(xgc);
         return createSameKind(xgc);
     }
 

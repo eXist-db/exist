@@ -139,16 +139,18 @@ abstract class OrderedDurationValue extends DurationValue {
                 final Duration a = getCanonicalDuration();
                 final Duration b = ((OrderedDurationValue) other).getCanonicalDuration();
                 final Duration result = createSameKind(a.add(b)).getCanonicalDuration();
-                //TODO : move instantiation to the right place
-                return new DayTimeDurationValue(getExpression(), result);
+                final DayTimeDurationValue sum = new DayTimeDurationValue(getExpression(), result);
+                sum.checkDayTimeOverflow(sum.secondsValueSigned());
+                return sum;
             }
             case Type.YEAR_MONTH_DURATION: {
                 //if (getType() != other.getType()) throw new IllegalArgumentException();	// not a match after all
                 final Duration a = getCanonicalDuration();
                 final Duration b = ((OrderedDurationValue) other).getCanonicalDuration();
                 final Duration result = createSameKind(a.add(b)).getCanonicalDuration();
-                //TODO : move instantiation to the right place
-                return new YearMonthDurationValue(getExpression(), result);
+                final YearMonthDurationValue sum = new YearMonthDurationValue(getExpression(), result);
+                sum.checkYearMonthOverflow(sum.monthsValueSigned());
+                return sum;
             }
             case Type.DURATION: {
                 //if (getType() != other.getType()) throw new IllegalArgumentException();	// not a match after all
@@ -163,12 +165,14 @@ abstract class OrderedDurationValue extends DurationValue {
             case Type.DATE_TIME_STAMP:
             case Type.DATE:
                 final AbstractDateTimeValue date = (AbstractDateTimeValue) other;
+                date.checkYearOverflow(date.calendar);
                 final XMLGregorianCalendar gc = (XMLGregorianCalendar) date.calendar.clone();
                 gc.add(duration);
                 //Shift one year
                 if (gc.getYear() < 0) {
                     gc.setYear(gc.getYear() - 1);
                 }
+                date.checkYearOverflow(gc);
                 return date.createSameKind(gc);
             default:
                 throw new XPathException(getExpression(), ErrorCodes.XPTY0004, "cannot add " +
@@ -188,7 +192,9 @@ abstract class OrderedDurationValue extends DurationValue {
                 final Duration a = getCanonicalDuration();
                 final Duration b = ((OrderedDurationValue) other).getCanonicalDuration();
                 final Duration result = createSameKind(a.subtract(b)).getCanonicalDuration();
-                return new DayTimeDurationValue(getExpression(), result);
+                final DayTimeDurationValue diff = new DayTimeDurationValue(getExpression(), result);
+                diff.checkDayTimeOverflow(diff.secondsValueSigned());
+                return diff;
             }
             case Type.YEAR_MONTH_DURATION: {
                 if (getType() != other.getType()) {
@@ -199,7 +205,9 @@ abstract class OrderedDurationValue extends DurationValue {
                 final Duration a = getCanonicalDuration();
                 final Duration b = ((OrderedDurationValue) other).getCanonicalDuration();
                 final Duration result = createSameKind(a.subtract(b)).getCanonicalDuration();
-                return new YearMonthDurationValue(getExpression(), result);
+                final YearMonthDurationValue diff = new YearMonthDurationValue(getExpression(), result);
+                diff.checkYearMonthOverflow(diff.monthsValueSigned());
+                return diff;
             }
         /*
 		case Type.TIME:

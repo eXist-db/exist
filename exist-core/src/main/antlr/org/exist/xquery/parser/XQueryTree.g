@@ -158,6 +158,32 @@ options {
         }
     }
 
+    private static void checkInlineFunctionAnnotations(List annots, AST astNode) throws XPathException {
+        // XQuery 3.1 section 3.1.7.1: an inline function expression must not be
+        // annotated as %public or %private. The reserved annotation names live in
+        // the default function namespace; we also accept the bare local part to
+        // remain robust against differences in default function namespace
+        // resolution between top-level modules and util:eval scopes.
+        for (Object o : annots) {
+            List la = (List) o;
+            QName qn = (QName) la.get(0);
+            final String local = qn.getLocalPart();
+            if (("public".equals(local) || "private".equals(local))
+                    && annotationInDefaultFunctionNamespace(qn)) {
+                throw new XPathException(astNode.getLine(), astNode.getColumn(),
+                    ErrorCodes.XQST0125,
+                    "Inline function expressions must not be annotated as %" + local + ".");
+            }
+        }
+    }
+
+    private static boolean annotationInDefaultFunctionNamespace(QName qn) {
+        final String ns = qn.getNamespaceURI();
+        return ns == null
+            || ns.isEmpty()
+            || Namespaces.XPATH_FUNCTIONS_NS.equals(ns);
+    }
+
     private static void processAnnotations(List annots, FunctionSignature signature) {
         Annotation[] anns = new Annotation[annots.size()];
 
@@ -900,6 +926,9 @@ throws PermissionDeniedException, EXistException, XPathException
         (
             annotations [annots]
             {
+                // XQuery 3.1 section 4.18 / section 3.1.7.1: an inline function expression
+                // must not be annotated as %public or %private (XQST0125).
+                checkInlineFunctionAnnotations(annots, name);
                 processAnnotations(annots, signature);
             }
         )?

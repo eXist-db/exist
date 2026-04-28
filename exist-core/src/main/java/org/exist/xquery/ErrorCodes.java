@@ -130,6 +130,7 @@ public class ErrorCodes {
     public static final ErrorCode XQST0094 = new W3CErrorCode("XQST0094", "The name of each grouping variable must be equal (by the eq operator on expanded QNames) to the name of a variable in the input tuple stream.");
 
     public static final ErrorCode XQST0118 = new W3CErrorCode("XQST0118", "It is a static error if an element constructor uses a name in the end tag that does not match the name in the start tag.");
+    public static final ErrorCode XQST0125 = new W3CErrorCode("XQST0125", "It is a static error if an inline function expression is annotated as %public or %private.");
 
     public static final ErrorCode XQDY0101 = new W3CErrorCode("XQDY0101", "An error is raised if a computed namespace constructor attempts to do any of the following:\n" +
             "Bind the prefix xml to some namespace URI other than http://www.w3.org/XML/1998/namespace.\n" +

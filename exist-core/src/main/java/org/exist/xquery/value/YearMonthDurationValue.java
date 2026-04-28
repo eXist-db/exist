@@ -180,15 +180,16 @@ public class YearMonthDurationValue extends OrderedDurationValue {
                         .setScale(0, (isFactorNegative) ? BigDecimal.ROUND_HALF_DOWN : BigDecimal.ROUND_HALF_UP)
         );
 
-        if (isFactorNegative) {
-            return product.negate();
-        }
-
-        return product;
+        final YearMonthDurationValue result = isFactorNegative ? (YearMonthDurationValue) product.negate() : product;
+        result.checkYearMonthOverflow(result.monthsValueSigned());
+        return result;
     }
 
     public ComputableValue div(ComputableValue other) throws XPathException {
         if (other.getType() == Type.YEAR_MONTH_DURATION) {
+            // Operand magnitudes outside the supported value space raise FODT0002 / FOAR0002.
+            checkYearMonthOverflow(monthsValueSigned());
+            checkYearMonthOverflow(((YearMonthDurationValue) other).monthsValueSigned());
             return new IntegerValue(getExpression(), getValue()).div(new IntegerValue(getExpression(), ((YearMonthDurationValue) other).getValue()));
         }
         if (other instanceof NumericValue) {
@@ -211,11 +212,11 @@ public class YearMonthDurationValue extends OrderedDurationValue {
                 new BigDecimal(monthsValueSigned())
                         .divide(divisor.abs(), 0, (isDivisorNegative) ? BigDecimal.ROUND_HALF_DOWN : BigDecimal.ROUND_HALF_UP));
 
-        if (isDivisorNegative) {
-            return quotient.negate();
-        }
-
-        return new YearMonthDurationValue(getExpression(), quotient.getCanonicalDuration());
+        final YearMonthDurationValue result = isDivisorNegative
+                ? (YearMonthDurationValue) quotient.negate()
+                : new YearMonthDurationValue(getExpression(), quotient.getCanonicalDuration());
+        result.checkYearMonthOverflow(result.monthsValueSigned());
+        return result;
     }
 
     private YearMonthDurationValue fromDecimalMonths(BigDecimal x) throws XPathException {
