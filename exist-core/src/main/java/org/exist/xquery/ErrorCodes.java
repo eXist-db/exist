@@ -87,6 +87,7 @@ public class ErrorCodes {
     public static final ErrorCode XQST0048 = new W3CErrorCode("XQST0048", "It is a static error if a function or variable declared in a library module is not in the target namespace of the library module.");
     public static final ErrorCode XQST0049 = new W3CErrorCode("XQST0049", "It is a static error if two or more variables declared or imported by a module have equal expanded QNames (as defined by the eq operator.)");
     public static final ErrorCode XQDY0052 = new W3CErrorCode("XQDY0052", "(Not currently used.)");
+    public static final ErrorCode XQST0052 = new W3CErrorCode("XQST0052", "It is a static error if the type-name in a single-type or sequence-type for a cast or castable expression does not refer to a defined atomic type.");
     public static final ErrorCode XQST0053 = new W3CErrorCode("XQST0053", "(Not currently used.)");
     public static final ErrorCode XQST0054 = new W3CErrorCode("XQST0054", "It is a static error if a variable depends on itself.");
     public static final ErrorCode XQDY0054 = new W3CErrorCode("XQDY0054", "It is a dynamic error if a variable depends on itself.");
