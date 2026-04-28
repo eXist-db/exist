@@ -154,7 +154,7 @@ public class OptimizerTest {
      * and in-memory DOM, with or without the optimizer.
      */
     @Test
-    public void nestedComparisonNotUsedAsFilter_issue4958() throws XMLDBException {
+    public void nestedComparisonNotUsedAsFilterIssue4958() throws XMLDBException {
         final XQueryService service = testCollection.getService(XQueryService.class);
         service.query("xmldb:store('/db/test', 'issue-4958.xml', <root><F id=\"1\"/></root>)");
         try {

@@ -34,7 +34,6 @@ import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static org.exist.dom.QName.Validity.VALID;
@@ -360,36 +359,34 @@ public class StringValue extends AtomicValue {
 
     private void checkType() throws XPathException {
         switch (type) {
-            case Type.NORMALIZED_STRING:
-            case Type.TOKEN:
-                return;
-            case Type.LANGUAGE:
-                final Matcher matcher = langPattern.matcher(value);
-                if (!matcher.matches()) {
+            case Type.NORMALIZED_STRING, Type.TOKEN -> {
+            }
+            case Type.LANGUAGE -> {
+                if (!langPattern.matcher(value).matches()) {
                     throw new XPathException(getExpression(), ErrorCodes.FORG0001,
                             "String '" + value + "' is not valid for type xs:language");
                 }
-                return;
-            case Type.NAME:
+            }
+            case Type.NAME -> {
                 if (!XMLNames.isName(value)) {
                     throw new XPathException(getExpression(), ErrorCodes.FORG0001,
                             "String '" + value + "' is not a valid xs:Name");
                 }
-                return;
-            case Type.NCNAME:
-            case Type.ID:
-            case Type.IDREF:
-            case Type.ENTITY:
+            }
+            case Type.NCNAME, Type.ID, Type.IDREF, Type.ENTITY -> {
                 if (!XMLNames.isNCName(value)) {
                     throw new XPathException(getExpression(), ErrorCodes.FORG0001,
                             "String '" + value + "' is not a valid " + Type.getTypeName(type));
                 }
-                return;
-            case Type.NMTOKEN:
+            }
+            case Type.NMTOKEN -> {
                 if (!XMLNames.isNmToken(value)) {
                     throw new XPathException(getExpression(), ErrorCodes.FORG0001,
                             "String '" + value + "' is not a valid xs:NMTOKEN");
                 }
+            }
+            default -> {
+            }
         }
     }
 
