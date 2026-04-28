@@ -202,10 +202,10 @@ public class AnnotationsTest {
     
     @Test(expected = XMLDBException.class)
     public void annotationInXQueryOptionsNamespaceFails() throws XMLDBException {
-        
+
         final String TEST_VALUE_CONSTANT = "hello world";
-        
-        final String query = 
+
+        final String query =
                 "declare namespace hello = 'http://www.w3.org/2011/xquery-options';\n"
                 + "declare\n"
                 + "%hello:world\n"
@@ -213,11 +213,94 @@ public class AnnotationsTest {
                 +   "'" + TEST_VALUE_CONSTANT + "'\n"
                 + "};\n"
                 + "local:hello()";
-            
+
         final XPathQueryService service = getQueryService();
         service.query(query);
     }
-   
+
+    @Test(expected = XMLDBException.class)
+    public void annotationInXPathFunctionsMapNamespaceFails() throws XMLDBException {
+        final String query =
+                "declare namespace m = 'http://www.w3.org/2005/xpath-functions/map';\n"
+                + "declare %m:x function local:foo() { 'bar' };\n"
+                + "local:foo()";
+
+        getQueryService().query(query);
+    }
+
+    @Test(expected = XMLDBException.class)
+    public void annotationInXPathFunctionsArrayNamespaceFails() throws XMLDBException {
+        final String query =
+                "declare namespace a = 'http://www.w3.org/2005/xpath-functions/array';\n"
+                + "declare %a:x function local:foo() { 'bar' };\n"
+                + "local:foo()";
+
+        getQueryService().query(query);
+    }
+
+    @Test(expected = XMLDBException.class)
+    public void annotationInXQueryNamespaceFails() throws XMLDBException {
+        final String query =
+                "declare namespace xq = 'http://www.w3.org/2012/xquery';\n"
+                + "declare %xq:x function local:foo() { 'bar' };\n"
+                + "local:foo()";
+
+        getQueryService().query(query);
+    }
+
+    /** XQ3.1+ allows annotations on FunctionTest in sequence-type positions. */
+    @Test
+    public void annotationOnFunctionTestParses() throws XMLDBException {
+        final String query =
+                "declare namespace eg = 'http://example.com';\n"
+                + "() instance of %eg:x function(*)";
+
+        final ResourceSet result = getQueryService().query(query);
+        assertEquals(1, result.getSize());
+        assertEquals("false", result.getIterator().nextResource().getContent());
+    }
+
+    @Test
+    public void multipleAnnotationsOnFunctionTestParse() throws XMLDBException {
+        final String query =
+                "declare namespace eg = 'http://example.com';\n"
+                + "() instance of %eg:x %eg:y(1) %eg:z('foo') function(*)";
+
+        final ResourceSet result = getQueryService().query(query);
+        assertEquals(1, result.getSize());
+        assertEquals("false", result.getIterator().nextResource().getContent());
+    }
+
+    @Test
+    public void annotationOnTypedFunctionTestParses() throws XMLDBException {
+        final String query =
+                "declare namespace eg = 'http://example.com';\n"
+                + "() instance of %eg:x function(xs:integer) as xs:string";
+
+        final ResourceSet result = getQueryService().query(query);
+        assertEquals(1, result.getSize());
+        assertEquals("false", result.getIterator().nextResource().getContent());
+    }
+
+    @Test
+    public void annotationOnFunctionTestWithBracedURI() throws XMLDBException {
+        final String query =
+                "() instance of %Q{http://example.com}x function(*)";
+
+        final ResourceSet result = getQueryService().query(query);
+        assertEquals(1, result.getSize());
+        assertEquals("false", result.getIterator().nextResource().getContent());
+    }
+
+    /** Annotation on FunctionTest in a reserved namespace must raise XQST0045. */
+    @Test(expected = XMLDBException.class)
+    public void annotationOnFunctionTestInReservedNamespaceFails() throws XMLDBException {
+        final String query =
+                "() instance of %Q{http://www.w3.org/XML/1998/namespace}x function(*)";
+
+        getQueryService().query(query);
+    }
+
     private XPathQueryService getQueryService() throws XMLDBException {
         Collection testCollection = getTestCollection();       
         XPathQueryService service = testCollection.getService(XPathQueryService.class);
