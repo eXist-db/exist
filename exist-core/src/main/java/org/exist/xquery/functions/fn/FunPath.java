@@ -26,12 +26,15 @@ import org.exist.Namespaces;
 import org.exist.dom.INode;
 import org.exist.dom.QName;
 import org.exist.xquery.*;
+import org.exist.xquery.functions.map.AbstractMapType;
 import org.exist.xquery.value.*;
 import org.w3c.dom.*;
 
 import javax.annotation.Nullable;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import static org.exist.xquery.FunctionDSL.functionSignature;
@@ -70,8 +73,14 @@ public class FunPath extends BasicFunction {
             sequence = Objects.requireNonNullElse(contextSequence, Sequence.EMPTY_SEQUENCE);
         } else {
             sequence = args[0];
-            // XQuery 4.0: 2-arg fn:path($node, $options) — options map accepted
-            // but currently only the default EQName format is supported
+        }
+
+        // XQuery 4.0: 2-arg fn:path($node, $options) — extract options
+        final PathOptions opts;
+        if (getArgumentCount() == 2 && !args[1].isEmpty()) {
+            opts = parseOptions((AbstractMapType) args[1].itemAt(0));
+        } else {
+            opts = PathOptions.DEFAULT;
         }
 
         if (sequence.isEmpty()) {
@@ -83,23 +92,27 @@ public class FunPath extends BasicFunction {
                 // If $arg is a document node, the function returns the string "/".
                 result = new StringValue(this, "/");
             } else if (Type.subTypeOf(item.getType(), Type.NODE)) {
-                // For an element node, Q{uri}local[position], where uri is the
-                // namespace URI of the node name or the empty string if the
-                // node is in no namespace, local is the local part of the node
-                // name, and position is an integer representing the position
-                // of the selected node among its like-named siblings.
                 final NodeValue nodeValue = (NodeValue) item;
                 final Node node = nodeValue.getNode();
                 final LinkedList<String> pathValues = new LinkedList<>();
-                getPathValues(node, pathValues);
+                getPathValues(node, pathValues, opts);
                 if ((node.getOwnerDocument() == null ||
                      node.getOwnerDocument().getDocumentElement() == null ||
                      (node.getOwnerDocument() instanceof org.exist.dom.memtree.DocumentImpl &&
                       !((org.exist.dom.memtree.DocumentImpl) node.getOwnerDocument()).isExplicitlyCreated()))) {
-                    // This string is prefixed by "Q{http://www.w3.org/2005/xpath-functions}root()"
-                    // if the root node is not a document node.
                     pathValues.removeFirst();
-                    result = new StringValue(this, String.format("Q{%s}root()", Namespaces.XPATH_FUNCTIONS_NS) + String.join("", pathValues));
+                    // Use fn: prefix if either lexical mode is on or the namespaces
+                    // option binds the fn: namespace explicitly.
+                    final String fnPrefix = (opts.nsByUri != null) ? opts.nsByUri.get(Namespaces.XPATH_FUNCTIONS_NS) : null;
+                    final String prefix;
+                    if (fnPrefix != null && !fnPrefix.isEmpty()) {
+                        prefix = fnPrefix + ":root()";
+                    } else if (opts.lexical) {
+                        prefix = "fn:root()";
+                    } else {
+                        prefix = String.format("Q{%s}root()", Namespaces.XPATH_FUNCTIONS_NS);
+                    }
+                    result = new StringValue(this, prefix + String.join("", pathValues));
                 } else {
                     result = new StringValue(this, String.join("", pathValues));
                 }
@@ -109,6 +122,46 @@ public class FunPath extends BasicFunction {
             }
         }
         return result;
+    }
+
+    /**
+     * Holds options passed to fn:path's 2-arg form (XQuery 4.0):
+     * - lexical: when true, use fn:root()/prefix:local syntax
+     * - indexes: when false, omit positional [n] predicates
+     * - namespaces: map of prefix -> namespace; entries with binding-prefix bind names to that prefix.
+     *   The default-namespace binding (key "") allows omitting the EQName for elements in that namespace.
+     */
+    private record PathOptions(boolean lexical, boolean indexes, Map<String, String> nsByUri) {
+        static final PathOptions DEFAULT = new PathOptions(false, true, Map.of());
+    }
+
+    private PathOptions parseOptions(final AbstractMapType opts) throws XPathException {
+        boolean lexical = false;
+        boolean indexes = true;
+        Map<String, String> nsByUri = Map.of();
+
+        final Sequence lexVal = opts.get(new StringValue("lexical"));
+        if (lexVal != null && !lexVal.isEmpty()) {
+            lexical = lexVal.effectiveBooleanValue();
+        }
+        final Sequence idxVal = opts.get(new StringValue("indexes"));
+        if (idxVal != null && !idxVal.isEmpty()) {
+            indexes = idxVal.effectiveBooleanValue();
+        }
+        final Sequence nsVal = opts.get(new StringValue("namespaces"));
+        if (nsVal != null && !nsVal.isEmpty()) {
+            // Build a uri->prefix map. Take first prefix found per URI.
+            final HashMap<String, String> tmp = new HashMap<>();
+            final AbstractMapType nsMap = (AbstractMapType) nsVal.itemAt(0);
+            for (final io.lacuna.bifurcan.IEntry<AtomicValue, Sequence> e : nsMap) {
+                final String prefix = e.key().getStringValue();
+                if (e.value() == null || e.value().isEmpty()) { continue; }
+                final String uri = e.value().getStringValue();
+                tmp.putIfAbsent(uri, prefix);
+            }
+            nsByUri = tmp;
+        }
+        return new PathOptions(lexical, indexes, nsByUri);
     }
 
     /**
@@ -136,7 +189,7 @@ public class FunPath extends BasicFunction {
      * @param   node    the node whose path values to get
      * @param   values  the path values
      */
-    private static void getPathValues(final Node node, final List<String> values) {
+    private static void getPathValues(final Node node, final List<String> values, final PathOptions opts) {
         @Nullable Node parent = node.getParentNode();
 
         final StringBuilder value = new StringBuilder();
@@ -148,8 +201,22 @@ public class FunPath extends BasicFunction {
                 // Otherwise, @Q{uri}local, where uri is the namespace URI of
                 // the node name, and local is the local part of the node name.
                 value.append('/');
-                if (node.getNamespaceURI() != null) {
-                    value.append(String.format("@Q{%s}", node.getNamespaceURI()));
+                final String attrUri = node.getNamespaceURI();
+                if (attrUri != null) {
+                    final String attrPrefix = pickPrefix(attrUri, node, opts);
+                    if (attrPrefix != null) {
+                        value.append('@').append(attrPrefix).append(':');
+                    } else if (opts.lexical) {
+                        // lexical form falls back to the original prefix (e.g. xml:lang)
+                        final String origPrefix = node.getPrefix();
+                        if (origPrefix != null && !origPrefix.isEmpty()) {
+                            value.append('@').append(origPrefix).append(':');
+                        } else {
+                            value.append(String.format("@Q{%s}", attrUri));
+                        }
+                    } else {
+                        value.append(String.format("@Q{%s}", attrUri));
+                    }
                 } else {
                     value.append('@');
                 }
@@ -205,15 +272,34 @@ public class FunPath extends BasicFunction {
 
             default:
                 if (node.getLocalName() != null) {
-                    // For an element node, Q{uri}local[position], where uri is the
-                    // namespace URI of the node name or the empty string if the
-                    // node is in no namespace, local is the local part of the node
-                    // name, and position is an integer representing the position
-                    // of the selected node among its like-named siblings.
+                    // For an element node: Q{uri}local[position], or with options,
+                    // a prefix:local or default-namespace local form.
                     final int nodePosition = getNodePosition(node);
-                    value.append((node.getOwnerDocument() != null && node.getOwnerDocument().getDocumentElement() != null) ? "/Q" : "Q");
-                    value.append(((INode) node).getQName().toURIQualifiedName());
-                    if (nodePosition > 0) {
+                    final boolean rooted = node.getOwnerDocument() != null
+                            && node.getOwnerDocument().getDocumentElement() != null;
+                    value.append(rooted ? "/" : "");
+                    final String elemUri = node.getNamespaceURI();
+                    final String elemLocal = node.getLocalName();
+                    final String elemPrefix = pickPrefix((elemUri == null) ? "" : elemUri, node, opts);
+                    if (elemPrefix != null && elemPrefix.isEmpty()) {
+                        // default namespace binding (or no-namespace mapped to "")
+                        // — write bare local name
+                        value.append(elemLocal);
+                    } else if (elemPrefix != null) {
+                        value.append(elemPrefix).append(':').append(elemLocal);
+                    } else if (opts.lexical) {
+                        // lexical fallback: use original element prefix if any
+                        final String origPrefix = node.getPrefix();
+                        if (origPrefix != null && !origPrefix.isEmpty()) {
+                            value.append(origPrefix).append(':').append(elemLocal);
+                        } else {
+                            value.append("Q").append(((INode) node).getQName().toURIQualifiedName());
+                        }
+                    } else {
+                        // Default EQName form: Q{uri}local (uri can be empty)
+                        value.append("Q").append(((INode) node).getQName().toURIQualifiedName());
+                    }
+                    if (opts.indexes && nodePosition > 0) {
                         value.append(String.format("[%d]", nodePosition));
                     }
                 }
@@ -221,11 +307,38 @@ public class FunPath extends BasicFunction {
         }
 
         if (parent != null) {
-            getPathValues(parent, values);
+            getPathValues(parent, values, opts);
         }
 
         if (!value.toString().isEmpty()) {
             values.add(value.toString());
         }
+    }
+
+    /**
+     * Pick the prefix to use for the given URI. Looks first at the explicit
+     * namespaces option, then falls back to the node's in-scope bindings if
+     * lexical mode is requested. Returns {@code null} if no usable binding exists.
+     */
+    private static String pickPrefix(final String uri, final Node node, final PathOptions opts) {
+        if (opts.nsByUri != null) {
+            final String mapped = opts.nsByUri.get(uri);
+            if (mapped != null) {
+                return mapped;
+            }
+        }
+        if (opts.lexical) {
+            // Use the prefix that was declared on the node itself (or ancestors)
+            final String prefix = node.lookupPrefix(uri);
+            if (prefix != null) {
+                return prefix;
+            }
+            // Check if uri is the default namespace at the node
+            final String def = node.lookupNamespaceURI(null);
+            if (uri.equals(def)) {
+                return ""; // default namespace
+            }
+        }
+        return null;
     }
 }
