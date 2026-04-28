@@ -35,20 +35,31 @@ import org.exist.xquery.value.Type;
  * Stores only the start and end values as primitive longs — no intermediate
  * IntegerValue objects are created until accessed. Operations like count(),
  * isEmpty(), itemAt(), and subsequence() are O(1).
+ *
+ * The numeric range is always {@code [start, end]} with {@code start <= end}.
+ * The {@link #ascending} flag controls iteration direction so that
+ * {@code fn:reverse} can return a new RangeSequence in O(1) without
+ * materializing any items.
  */
 public class RangeSequence extends AbstractSequence {
 
     private final long start;
     private final long end;
     private final long size;
+    private final boolean ascending;
 
-    public RangeSequence(final IntegerValue start, final IntegerValue end) {
-        this(start.getLong(), end.getLong());
+    public RangeSequence(final IntegerValue start, final IntegerValue end) throws XPathException {
+        this(start.getLongChecked(), end.getLongChecked(), true);
     }
 
     public RangeSequence(final long start, final long end) {
+        this(start, end, true);
+    }
+
+    private RangeSequence(final long start, final long end, final boolean ascending) {
         this.start = start;
         this.end = end;
+        this.ascending = ascending;
         if (start <= end) {
             final long diff = end - start;
             // Overflow protection: if diff < 0, the range is too large
@@ -64,6 +75,24 @@ public class RangeSequence extends AbstractSequence {
 
     public long getEnd() {
         return end;
+    }
+
+    public boolean isAscending() {
+        return ascending;
+    }
+
+    /**
+     * Returns a new RangeSequence iterating in the opposite direction.
+     * O(1) — no items are materialized.
+     *
+     * @return a new RangeSequence with iteration direction flipped, or
+     *         this sequence unchanged if it has 0 or 1 items.
+     */
+    public RangeSequence reverse() {
+        if (size <= 1) {
+            return this;
+        }
+        return new RangeSequence(start, end, !ascending);
     }
 
     @Override
@@ -82,16 +111,20 @@ public class RangeSequence extends AbstractSequence {
 
     @Override
     public SequenceIterator iterate() {
-        return new RangeSequenceIterator(start, end);
+        return ascending
+                ? new RangeSequenceIterator(start, end)
+                : new ReverseRangeSequenceIterator(start, end);
     }
 
     @Override
     public SequenceIterator unorderedIterator() {
-        return new RangeSequenceIterator(start, end);
+        return iterate();
     }
 
     public SequenceIterator iterateInReverse() {
-        return new ReverseRangeSequenceIterator(start, end);
+        return ascending
+                ? new ReverseRangeSequenceIterator(start, end)
+                : new RangeSequenceIterator(start, end);
     }
 
     private static class RangeSequenceIterator implements SequenceIterator {
@@ -200,7 +233,7 @@ public class RangeSequence extends AbstractSequence {
     @Override
     public Item itemAt(final int pos) {
         if (pos >= 0 && pos < size) {
-            return new IntegerValue(start + pos);
+            return new IntegerValue(ascending ? start + pos : end - pos);
         }
         return null;
     }
@@ -237,6 +270,8 @@ public class RangeSequence extends AbstractSequence {
 
     @Override
     public String toString() {
-        return "Range(" + start + " to " + end + ")";
+        return ascending
+                ? "Range(" + start + " to " + end + ")"
+                : "Range(" + end + " to " + start + " reversed)";
     }
 }

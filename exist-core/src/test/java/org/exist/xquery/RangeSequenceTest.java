@@ -22,7 +22,6 @@
 
 package org.exist.xquery;
 
-import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.SequenceIterator;
 import org.junit.Test;
 
@@ -31,7 +30,7 @@ import static org.junit.Assert.assertNull;
 
 public class RangeSequenceTest {
 
-    private final RangeSequence rangeSequence = new RangeSequence(new IntegerValue(1), new IntegerValue(99));
+    private final RangeSequence rangeSequence = new RangeSequence(1L, 99L);
 
     @Test
     public void iterate_loop() {
@@ -157,5 +156,61 @@ public class RangeSequenceTest {
     @Test
     public void itemAt_afterEnd() {
         assertNull(rangeSequence.itemAt(99));
+    }
+
+    @Test
+    public void reverse_size_unchanged() {
+        final RangeSequence reversed = rangeSequence.reverse();
+        assertEquals(99L, reversed.getItemCountLong());
+    }
+
+    @Test
+    public void reverse_first_item_is_old_last() throws XPathException {
+        final RangeSequence reversed = rangeSequence.reverse();
+        assertEquals(99, reversed.itemAt(0).toJavaObject(Integer.class).intValue());
+    }
+
+    @Test
+    public void reverse_last_item_is_old_first() throws XPathException {
+        final RangeSequence reversed = rangeSequence.reverse();
+        assertEquals(1, reversed.itemAt(98).toJavaObject(Integer.class).intValue());
+    }
+
+    @Test
+    public void reverse_iterate_descends() throws XPathException {
+        final RangeSequence reversed = rangeSequence.reverse();
+        final SequenceIterator it = reversed.iterate();
+        assertEquals(99, it.nextItem().toJavaObject(Integer.class).intValue());
+        assertEquals(98, it.nextItem().toJavaObject(Integer.class).intValue());
+    }
+
+    @Test
+    public void reverse_reverse_returns_ascending() throws XPathException {
+        final RangeSequence reversed = rangeSequence.reverse().reverse();
+        assertEquals(1, reversed.itemAt(0).toJavaObject(Integer.class).intValue());
+        assertEquals(99, reversed.itemAt(98).toJavaObject(Integer.class).intValue());
+    }
+
+    @Test
+    public void reverse_huge_range_no_oom() throws XPathException {
+        final RangeSequence huge = new RangeSequence(1L, 10_000_000_000L);
+        final RangeSequence reversed = huge.reverse();
+        // Should be O(1) — itemAt(0) of the reversed view is the original end.
+        assertEquals(10_000_000_000L, ((org.exist.xquery.value.IntegerValue) reversed.itemAt(0)).getLong());
+        // Verify the reverse iterator is also lazy: skip almost the whole range.
+        final SequenceIterator it = reversed.iterate();
+        assertEquals(10_000_000_000L, it.skippable());
+    }
+
+    @Test
+    public void reverse_single_item_returns_self() {
+        final RangeSequence single = new RangeSequence(5L, 5L);
+        assertEquals(single, single.reverse());
+    }
+
+    @Test
+    public void reverse_empty_returns_self() {
+        final RangeSequence empty = new RangeSequence(10L, 1L);
+        assertEquals(empty, empty.reverse());
     }
 }

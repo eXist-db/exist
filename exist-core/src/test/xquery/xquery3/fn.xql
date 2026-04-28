@@ -177,3 +177,58 @@ declare
 function fnt:contains-token-tests-collation($input, $token, $collation) {
     contains-token($input, $token, $collation)
 };
+
+(: --- fn:reverse lazy view tests --- :)
+
+declare
+    %test:assertEquals("3 2 1")
+function fnt:reverse-range() {
+    string-join(for $i in reverse(1 to 3) return string($i), " ")
+};
+
+declare
+    %test:assertEquals("")
+function fnt:reverse-empty() {
+    string-join(reverse(()), " ")
+};
+
+declare
+    %test:assertEquals("42")
+function fnt:reverse-single() {
+    string(reverse(42))
+};
+
+(: reverse(reverse(E)) -> E :)
+declare
+    %test:assertEquals("1 2 3")
+function fnt:reverse-reverse-roundtrip() {
+    string-join(for $i in reverse(reverse(1 to 3)) return string($i), " ")
+};
+
+(: All-but-last idiom: reverse(tail(reverse($seq))) :)
+declare
+    %test:assertEquals("1 2")
+function fnt:reverse-all-but-last() {
+    string-join(for $i in reverse(tail(reverse(1 to 3))) return string($i), " ")
+};
+
+(: Large-range reverse should be lazy: only the first item is materialized. :)
+declare
+    %test:assertEquals(1000000000)
+function fnt:reverse-large-range-lazy() {
+    reverse(1 to 1000000000)[1]
+};
+
+(: General sequence reverse via wrapper. :)
+declare
+    %test:assertEquals("d c b a")
+function fnt:reverse-sequence() {
+    string-join(reverse(("a", "b", "c", "d")), " ")
+};
+
+(: count() should be O(1) over a reversed range. :)
+declare
+    %test:assertEquals(1000000)
+function fnt:reverse-range-count() {
+    count(reverse(1 to 1000000))
+};
