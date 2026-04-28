@@ -78,8 +78,7 @@ public class MapExpr extends AbstractExpression {
 
         // Fast path for a single-mapping literal — skip the linear/forked dance
         // and the duplicate-key check (a single mapping cannot collide with itself).
-        if (this.mappings.size() == 1) {
-            final Mapping mapping = this.mappings.get(0);
+        if (this.entries.size() == 1 && this.entries.get(0) instanceof Mapping mapping) {
             final Sequence key = mapping.key.eval(contextSequence, null);
             if (key.getItemCount() != 1) {
                 throw new XPathException(this, MapErrorCode.EXMPDY001, "Expected single value for key, got " + key.getItemCount());
