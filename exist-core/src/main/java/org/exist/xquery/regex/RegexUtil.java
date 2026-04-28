@@ -181,6 +181,15 @@ public class RegexUtil {
      */
     public static void validateXPathRegex(final Expression context, final String pattern, final boolean isXQuery40) throws XPathException {
         final int len = pattern.length();
+        // Total capturing groups in the pattern, used as a maximum-digits cap
+        // when greedily parsing back-references like \11 vs \1+'1'.
+        final int totalGroups = countCapturingGroups(pattern);
+        // Closed capturing groups encountered so far. Back-references must
+        // refer to a group that has already CLOSED at the reference position
+        // — forward references like \1(abc) are invalid.
+        int closedGroupCount = 0;
+        // Stack tracks whether each currently-open group is capturing.
+        final java.util.Deque<Boolean> groupStack = new java.util.ArrayDeque<>();
         for (int i = 0; i < len; i++) {
             final char c = pattern.charAt(i);
 
@@ -227,14 +236,39 @@ public class RegexUtil {
                         }
                         i++;
                         break;
-                    case '0': case '1': case '2': case '3': case '4':
-                    case '5': case '6': case '7': case '8': case '9':
-                        // Back-references (\1-\9) and octal escapes (\0nn) are not
-                        // part of the XPath regex specification in any version
+                    case '0':
+                        // Octal escapes (\0nn) are not part of the XPath regex spec
                         throw new XPathException(context, ErrorCodes.FORX0002,
-                                "Invalid regular expression: \\" + next
-                                        + " (back-reference/octal escape) is not supported in XPath regular expressions",
+                                "Invalid regular expression: \\0 (octal escape) is not supported in XPath regular expressions",
                                 new StringValue(pattern));
+                    case '1': case '2': case '3': case '4':
+                    case '5': case '6': case '7': case '8': case '9': {
+                        // Back-reference \N. N is parsed greedily but capped at
+                        // the total number of capturing groups in the pattern,
+                        // so '\19' in a 1-group pattern is '\1' + literal '9',
+                        // while '\11' in an 11-group pattern is back-ref 11.
+                        // The chosen N must also reference a group that has
+                        // already CLOSED at this position; forward references
+                        // (\1(abc)) and self-references ((.)\2) are invalid.
+                        int j = i + 2;
+                        int num = next - '0';
+                        while (j < len && pattern.charAt(j) >= '0' && pattern.charAt(j) <= '9') {
+                            final int candidate = num * 10 + (pattern.charAt(j) - '0');
+                            if (candidate > totalGroups) {
+                                break;
+                            }
+                            num = candidate;
+                            j++;
+                        }
+                        if (num < 1 || num > closedGroupCount) {
+                            throw new XPathException(context, ErrorCodes.FORX0002,
+                                    "Invalid regular expression: back-reference \\" + num
+                                            + " refers to a capturing group that does not exist or has not been closed at this position",
+                                    new StringValue(pattern));
+                        }
+                        i = j - 1;
+                        break;
+                    }
                     case 'p': case 'P':
                         // \p{...} or \P{...} — must be followed by {Name}
                         if (i + 2 < len && pattern.charAt(i + 2) == '{') {
@@ -285,6 +319,7 @@ public class RegexUtil {
                                     + "found (?" + groupType + " at position " + i,
                             new StringValue(pattern));
                 }
+                groupStack.push(Boolean.FALSE);
             } else if (c == '(' && i + 1 < len && pattern.charAt(i + 1) == '*') {
                 // (*name:...) — XPath 4.0 named lookaround
                 if (!isXQuery40) {
@@ -294,10 +329,30 @@ public class RegexUtil {
                             new StringValue(pattern));
                 }
                 // Skip to the closing ':' — let translateXPath4Lookaround handle the details
+                groupStack.push(Boolean.FALSE);
+            } else if (c == '(') {
+                // Plain capturing group
+                groupStack.push(Boolean.TRUE);
+            } else if (c == ')') {
+                if (!groupStack.isEmpty() && Boolean.TRUE.equals(groupStack.pop())) {
+                    closedGroupCount++;
+                }
             } else if (c == '[') {
                 // Scan character class content, rejecting POSIX [:name:] syntax
                 // and invalid escapes that aren't caught by the outer scanner.
                 i = scanCharClass(context, pattern, i, len);
+            } else if (isXQuery40 && (c == '^' || c == '$') && i + 1 < len) {
+                // XPath 4.0 tightened the regex grammar so that anchors '^' and '$'
+                // are zero-width assertions that cannot themselves be quantified.
+                // Saxon's XP30 mode accepts patterns like 'alp^?ha' or 'alpha$+';
+                // reject them in XQuery 4.0.
+                final char nextCh = pattern.charAt(i + 1);
+                if (nextCh == '?' || nextCh == '+' || nextCh == '*' || nextCh == '{') {
+                    throw new XPathException(context, ErrorCodes.FORX0002,
+                            "Invalid regular expression: anchor '" + c
+                                    + "' cannot be quantified by '" + nextCh + "' in XQuery 4.0",
+                            new StringValue(pattern));
+                }
             } else if ((c == '*' || c == '+' || c == '?') && i + 1 < len) {
                 // After a quantifier, allowed characters are '?' (lazy modifier)
                 // or anything that's not itself a quantifier metacharacter.
@@ -321,6 +376,58 @@ public class RegexUtil {
         if (isXQuery40) {
             validateLookaroundConstraints(context, pattern);
         }
+    }
+
+    /**
+     * Counts capturing groups in a regex pattern. A '(' opens a capturing
+     * group unless followed by '?' (e.g. {@code (?:...)}, {@code (?=...)})
+     * or '*' (e.g. {@code (*positive_lookahead:...)}). Escapes and character
+     * classes are skipped so '(' inside them is not counted.
+     */
+    private static int countCapturingGroups(final String pattern) {
+        final int len = pattern.length();
+        int count = 0;
+        int i = 0;
+        while (i < len) {
+            final char c = pattern.charAt(i);
+            if (c == '\\') {
+                if (i + 1 < len && (pattern.charAt(i + 1) == 'p' || pattern.charAt(i + 1) == 'P')
+                        && i + 2 < len && pattern.charAt(i + 2) == '{') {
+                    final int close = pattern.indexOf('}', i + 3);
+                    i = close < 0 ? len : close + 1;
+                } else {
+                    i += 2;
+                }
+                continue;
+            }
+            if (c == '[') {
+                // Skip the character class body. Track nested '[' for
+                // subtraction classes and ignore escapes within.
+                int j = i + 1;
+                int depth = 1;
+                while (j < len && depth > 0) {
+                    final char cj = pattern.charAt(j);
+                    if (cj == '\\') {
+                        j += 2;
+                        continue;
+                    }
+                    if (cj == '[') {
+                        depth++;
+                    } else if (cj == ']') {
+                        depth--;
+                    }
+                    j++;
+                }
+                i = j;
+                continue;
+            }
+            if (c == '(' && (i + 1 >= len
+                    || (pattern.charAt(i + 1) != '?' && pattern.charAt(i + 1) != '*'))) {
+                count++;
+            }
+            i++;
+        }
+        return count;
     }
 
     /**
@@ -452,9 +559,21 @@ public class RegexUtil {
         if (j < len && pattern.charAt(j) == '^') {
             j++;
         }
+        // Track unescaped '-' immediately preceding the current position to
+        // disambiguate subtraction (charClassSub) from a literal hyphen.
+        // The XPath/XSD grammar requires the left side of subtraction to be
+        // a non-empty (pos|neg)CharGroup, i.e. partsBeforeLastHyphen >= 1.
+        int partsCount = 0;
+        boolean lastWasUnescapedHyphen = false;
+        int partsBeforeLastHyphen = 0;
         while (j < len) {
             final char cc = pattern.charAt(j);
             if (cc == ']') {
+                if (partsCount == 0) {
+                    throw new XPathException(context, ErrorCodes.FORX0002,
+                            "Invalid regular expression: empty character class is not allowed",
+                            new StringValue(pattern));
+                }
                 return j;
             }
             if (cc == '\\') {
@@ -465,19 +584,18 @@ public class RegexUtil {
                 }
                 final char ec = pattern.charAt(j + 1);
                 switch (ec) {
-                    case 'n': case 'r': case 't':
-                    case '\\': case '|': case '.': case '-': case '^':
-                    case '?': case '*': case '+':
-                    case '{': case '}': case '(': case ')':
-                    case '[': case ']': case '$':
-                    case ' ':
-                    case 'd': case 'D': case 's': case 'S':
-                    case 'w': case 'W': case 'i': case 'I':
-                    case 'c': case 'C':
-                    case 'b': case 'B': // \b inside class is backspace, allowed
-                        j += 2;
-                        break;
-                    case 'p': case 'P':
+                    case 'n', 'r', 't',
+                         '\\', '|', '.', '-', '^',
+                         '?', '*', '+',
+                         '{', '}', '(', ')',
+                         '[', ']', '$',
+                         ' ',
+                         'd', 'D', 's', 'S',
+                         'w', 'W', 'i', 'I',
+                         'c', 'C',
+                         // \b inside class is backspace, allowed
+                         'b', 'B' -> j += 2;
+                    case 'p', 'P' -> {
                         if (j + 2 < len && pattern.charAt(j + 2) == '{') {
                             final int close = pattern.indexOf('}', j + 3);
                             if (close < 0) {
@@ -491,23 +609,53 @@ public class RegexUtil {
                                     "Invalid regular expression: \\p or \\P must be followed by {Name}",
                                     new StringValue(pattern));
                         }
-                        break;
-                    default:
-                        throw new XPathException(context, ErrorCodes.FORX0002,
-                                "Invalid regular expression: \\" + ec
-                                        + " is not a recognized escape sequence inside character class",
-                                new StringValue(pattern));
+                    }
+                    default -> throw new XPathException(context, ErrorCodes.FORX0002,
+                            "Invalid regular expression: \\" + ec
+                                    + " is not a recognized escape sequence inside character class",
+                            new StringValue(pattern));
                 }
-            } else if (cc == '[' && j + 1 < len && pattern.charAt(j + 1) == ':') {
-                throw new XPathException(context, ErrorCodes.FORX0002,
-                        "Invalid regular expression: POSIX character class [:...:] is not supported in XPath regular expressions",
-                        new StringValue(pattern));
-            } else if (cc == '[') {
-                // Nested class for character class subtraction [A-[B]]
-                j = scanCharClass(context, pattern, j, len) + 1;
-            } else {
-                j++;
+                partsCount++;
+                lastWasUnescapedHyphen = false;
+                continue;
             }
+            if (cc == '[') {
+                if (j + 1 < len && pattern.charAt(j + 1) == ':') {
+                    throw new XPathException(context, ErrorCodes.FORX0002,
+                            "Invalid regular expression: POSIX character class [:...:] is not supported in XPath regular expressions",
+                            new StringValue(pattern));
+                }
+                // Nested '[' is only valid as the start of a subtraction class,
+                // which requires a preceding unescaped '-' separator AND a
+                // non-empty (pos|neg)CharGroup before that '-'.
+                if (!lastWasUnescapedHyphen) {
+                    throw new XPathException(context, ErrorCodes.FORX0002,
+                            "Invalid regular expression: '[' inside character class is only allowed after a '-' subtraction separator",
+                            new StringValue(pattern));
+                }
+                if (partsBeforeLastHyphen < 1) {
+                    throw new XPathException(context, ErrorCodes.FORX0002,
+                            "Invalid regular expression: character class subtraction requires a non-empty character group before the '-' separator",
+                            new StringValue(pattern));
+                }
+                final int innerEnd = scanCharClass(context, pattern, j, len);
+                j = innerEnd + 1;
+                if (j >= len || pattern.charAt(j) != ']') {
+                    throw new XPathException(context, ErrorCodes.FORX0002,
+                            "Invalid regular expression: closing ']' expected after subtraction character class",
+                            new StringValue(pattern));
+                }
+                return j;
+            }
+            // Regular char (including literal '-')
+            if (cc == '-') {
+                partsBeforeLastHyphen = partsCount;
+                lastWasUnescapedHyphen = true;
+            } else {
+                lastWasUnescapedHyphen = false;
+            }
+            partsCount++;
+            j++;
         }
         throw new XPathException(context, ErrorCodes.FORX0002,
                 "Invalid regular expression: unclosed character class",
