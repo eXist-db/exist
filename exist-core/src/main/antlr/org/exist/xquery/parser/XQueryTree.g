@@ -302,6 +302,10 @@ throws PermissionDeniedException, EXistException, XPathException
    #(
             m:MODULE_DECL uri:STRING_LITERAL
             {
+                if (uri.getText() == null || uri.getText().isEmpty()) {
+                    throw new XPathException(uri.getLine(), uri.getColumn(), ErrorCodes.XQST0088,
+                        "The literal that specifies the target namespace in a module declaration must not be of zero length.");
+                }
                 if (myModule == null)
                     myModule = new ExternalModuleImpl(uri.getText(), m.getText());
                 else {
@@ -3613,7 +3617,9 @@ throws PermissionDeniedException, EXistException, XPathException
                     || ("".equals(qname.getNamespaceURI()) && qname.getLocalPart().equals(XMLConstants.XMLNS_ATTRIBUTE)))
                     throw new XPathException(constructor_AST_in, ErrorCodes.XQDY0044, "The node-name property of the node constructed by a computed attribute constructor is in the namespace http://www.w3.org/2000/xmlns/ (corresponding to namespace prefix xmlns), or is in no namespace and has local name xmlns.");
             } catch (final IllegalQNameException iqe) {
-                throw new XPathException(qna.getLine(), qna.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + qna.getText());
+                // Computed attribute constructors evaluate the name dynamically (XQuery 3.1 §3.9.3.1).
+                // An undeclared prefix is therefore a dynamic error XQDY0074, not the static XPST0081.
+                throw new XPathException(qna.getLine(), qna.getColumn(), ErrorCodes.XQDY0074, "'" + qna.getText() + "' is not a valid attribute name");
             }
         }
         #( LCURLY

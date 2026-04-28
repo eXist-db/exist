@@ -35,11 +35,18 @@ public class DynamicTypeCheck extends AbstractExpression {
 
 	final private Expression expression;
 	final private int requiredType;
-	
+	final private ErrorCodes.ErrorCode typeMismatchError;
+
 	public DynamicTypeCheck(XQueryContext context, int requiredType, Expression expr) {
+		this(context, requiredType, expr, ErrorCodes.XPTY0004);
+	}
+
+	public DynamicTypeCheck(XQueryContext context, int requiredType, Expression expr,
+			ErrorCodes.ErrorCode typeMismatchError) {
 		super(context);
 		this.requiredType = requiredType;
 		this.expression = expr;
+		this.typeMismatchError = typeMismatchError;
 	}
 	
     /* (non-Javadoc)
@@ -144,7 +151,7 @@ public class DynamicTypeCheck extends AbstractExpression {
                     type = Type.STRING;
             } else {
                 if (!(Type.subTypeOf(type, requiredType))) {
-                    throw new XPathException(expression, ErrorCodes.XPTY0004,
+                    throw new XPathException(expression, typeMismatchError,
                             Type.getTypeName(item.getType()) + "(" + item.getStringValue() +
                             ") is not a sub-type of " + Type.getTypeName(requiredType));
 
