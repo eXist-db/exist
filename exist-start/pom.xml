@@ -64,7 +64,7 @@
                             <!--
                                 eXist-db's License
                             -->
-                            <header>${project.parent.relativePath}/LGPL-21-license.template.txt</header>
+                            <header>${session.executionRootDirectory}/exist-parent/LGPL-21-license.template.txt</header>
 
                             <!--
                                 Derivative work licensed under Apache 2.0 and LGPL 2.1
@@ -83,7 +83,7 @@
                             <multi>
                                 <preamble><![CDATA[NOTE: This file is in part based on code from Mort Bay Consulting.
 The original license statement is also included below.]]></preamble>
-                                <header>${project.parent.relativePath}/LGPL-21-license.template.txt</header>
+                                <header>${session.executionRootDirectory}/exist-parent/LGPL-21-license.template.txt</header>
                                 <header>Mortbay-APACHE-2-license.template.txt</header>
                             </multi>
                             <excludes />

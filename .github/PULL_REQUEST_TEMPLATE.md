@@ -8,7 +8,7 @@ To help the community judge your pull request (PR), please include the following
 
 Your PR will be tested using [GitHub Actions](https://github.com/eXist-db/exist/actions) against a number of operating systems and environments. The build status is visible in the PR. 
 
-To detect errors in your PR before submitting it, please run eXist's full test suite on your own system via `mvn -V clean verify`.
+To detect errors in your PR before submitting it, please run eXist's full test suite on your own system via `./mvnw -V clean verify`.
 
 ------
 

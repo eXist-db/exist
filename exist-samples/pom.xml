@@ -60,7 +60,7 @@
                 <configuration>
                     <licenseSets>
                         <licenseSet>
-                            <header>${project.parent.relativePath}/LGPL-21-license.template.txt</header>
+                            <header>${session.executionRootDirectory}/exist-parent/LGPL-21-license.template.txt</header>
                             <excludes>
                                 <exclude>src/main/resources/org/exist/samples/biblio.rdf</exclude>
                                 <exclude>src/main/resources/org/exist/samples/shakespeare/hamlet.xml</exclude>

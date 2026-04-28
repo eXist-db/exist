@@ -73,7 +73,7 @@
                             <!--
                                 eXist-db's License
                             -->
-                            <header>${project.parent.relativePath}/LGPL-21-license.template.txt</header>
+                            <header>${session.executionRootDirectory}/exist-parent/LGPL-21-license.template.txt</header>
                         </licenseSet>
                     </licenseSets>
                 </configuration>

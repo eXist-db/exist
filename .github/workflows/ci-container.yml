@@ -95,5 +95,5 @@ jobs:
       #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       #     DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
       #     DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-      #   run: mvn -q -Ddocker.tag=experimental -Ddocker.username=$DOCKER_USERNAME -Ddocker.password=$DOCKER_PASSWORD docker:build docker:push
+      #   run: ./mvnw -q -Ddocker.tag=experimental -Ddocker.username=$DOCKER_USERNAME -Ddocker.password=$DOCKER_PASSWORD docker:build docker:push
       #   working-directory: ./exist-docker

@@ -705,7 +705,7 @@
                             <!--
                                 eXist-db's License
                             -->
-                            <header>${project.parent.relativePath}/LGPL-21-license.template.txt</header>
+                            <header>${session.executionRootDirectory}/exist-parent/LGPL-21-license.template.txt</header>
                             <excludes>
                                 <exclude>ARC-BSD-3-license.template.txt</exclude>
                                 <exclude>BX-BSD-3-license.template.txt</exclude>
@@ -851,7 +851,7 @@
                             <multi>
                                 <preamble><![CDATA[NOTE: This file is in part based on code from The dbXML Group.
 The original license statement is also included below.]]></preamble>
-                                <header>${project.parent.relativePath}/LGPL-21-license.template.txt</header>
+                                <header>${session.executionRootDirectory}/exist-parent/LGPL-21-license.template.txt</header>
                                 <header>DBXML-10-license.template.txt</header>
                             </multi>
                             <includes>
@@ -890,7 +890,7 @@ The original license statement is also included below.]]></preamble>
                             <!--
                                 FDB backport to LGPL 2.1-only licensed code
                             -->
-                            <header>${project.parent.relativePath}/FDB-backport-LGPL-21-ONLY-license.template.txt</header>
+                            <header>${session.executionRootDirectory}/exist-parent/FDB-backport-LGPL-21-ONLY-license.template.txt</header>
                             <includes>
                                 <include>src/main/java/org/exist/dom/persistent/XMLDeclarationImpl.java</include>
                                 <include>src/main/java/org/exist/resolver/ResolverFactory.java</include>

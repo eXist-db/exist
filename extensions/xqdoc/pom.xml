@@ -114,7 +114,7 @@
                             <!--
                                 eXist-db's License
                             -->
-                            <header>${project.parent.relativePath}/LGPL-21-license.template.txt</header>
+                            <header>${session.executionRootDirectory}/exist-parent/LGPL-21-license.template.txt</header>
                             <excludes>
                                 <exclude>xqdoc-1.0.xsd</exclude>
                             </excludes>

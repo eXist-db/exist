@@ -108,7 +108,7 @@
         <maven.compiler.release>21</maven.compiler.release>
         <maven.compiler.source>${maven.compiler.release}</maven.compiler.source>
         <maven.compiler.target>${maven.compiler.release}</maven.compiler.target>
-        <maven.minimum.version>4.0.0-rc-5</maven.minimum.version>
+        <maven.minimum.version>4.0.0-rc-3</maven.minimum.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <project.copyright.name>The eXist-db Authors</project.copyright.name>
@@ -149,9 +149,6 @@
         <!-- CI: skip unit tests when running integration-only (e.g. -DskipUnitTests=true) -->
         <skipUnitTests>false</skipUnitTests>
 
-        <!-- needed just for the license-maven-plugin in this module! -->
-        <project.parent.relativePath>.</project.parent.relativePath>
-        
         <!-- Sonar cloud-->
         <sonar.projectKey>eXist-db_exist</sonar.projectKey>
         <sonar.organization>exist-db</sonar.organization>
@@ -1214,7 +1211,7 @@
                 <configuration>
                     <licenseSets>
                         <licenseSet>
-                            <header>${project.parent.relativePath}/LGPL-21-license.template.txt</header>
+                            <header>${session.executionRootDirectory}/exist-parent/LGPL-21-license.template.txt</header>
                             <excludes>
                                 <exclude>FDB-backport-LGPL-21-ONLY-license.template.txt</exclude>
                                 <exclude>FDB-backport-LGPL-21-ONLY-license.xml.template.txt</exclude>
@@ -1229,7 +1226,7 @@
                         </licenseSet>
                     </licenseSets>
                     <headerDefinitions>
-                        <headerDefinition>${project.parent.relativePath}/xquery-license-style.xml</headerDefinition>
+                        <headerDefinition>${session.executionRootDirectory}/exist-parent/xquery-license-style.xml</headerDefinition>
                     </headerDefinitions>
                     <mapping>
                         <form>XML_STYLE</form>
