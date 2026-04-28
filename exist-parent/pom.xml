@@ -1423,6 +1423,21 @@
 
     <profiles>
 
+        <!-- Umbrella profiles for build ergonomics (see #3394) -->
+        <profile>
+            <id>local-build</id>
+            <!-- Intentionally empty: this exists so `-Plocal-build` always works,
+                 even when building a subset of modules (e.g. with `-pl`). -->
+        </profile>
+
+        <profile>
+            <id>release-build</id>
+            <properties>
+                <!-- Used to activate release-only profiles in submodules -->
+                <exist.release>true</exist.release>
+            </properties>
+        </profile>
+
         <profile>
             <!-- NOTE: this is used from the maven-release-plugin -->
             <id>exist-release</id>

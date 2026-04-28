@@ -983,6 +983,12 @@
         </profile>
         <profile>
             <id>build-dist-archives</id>
+            <activation>
+                <property>
+                    <name>exist.release</name>
+                    <value>true</value>
+                </property>
+            </activation>
             <build>
                 <plugins>
                     <plugin>

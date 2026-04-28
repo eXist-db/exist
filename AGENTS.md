@@ -17,7 +17,7 @@ eXist-db is an open-source native XML database with full XQuery support. The mai
 ```bash
 JAVA_HOME=$(/usr/libexec/java_home -v 21) \
   ./mvnw -T1.5C clean install -DskipTests -Ddependency-check.skip=true -Ddocker=false \
-  -P 'skip-build-dist-archives,!build-dist-archives,!mac-dmg-on-mac,!codesign-mac-dmg,!mac-dmg-on-unix,!installer,!concurrency-stress-tests,!micro-benchmarks,!appassembler-booter'
+  -Plocal-build
 ```
 
 ### Build a single module
@@ -46,7 +46,7 @@ JAVA_HOME=$(/usr/libexec/java_home -v 21) ./mvnw test -pl exist-core -Dtest="org
 ```bash
 # Build the Docker image
 JAVA_HOME=$(/usr/libexec/java_home -v 21) ./mvnw -T1.5C clean package -DskipTests -Ddependency-check.skip=true -Ddocker=true \
-  -P 'skip-build-dist-archives,!build-dist-archives,!mac-dmg-on-mac,!codesign-mac-dmg,!mac-dmg-on-unix,!installer,!concurrency-stress-tests,!micro-benchmarks,!appassembler-booter' \
+  -Plocal-build \
   -pl exist-docker -am
 
 cp exist-docker/target/classes/Dockerfile exist-docker/target/exist-docker-*-docker-dir/Dockerfile

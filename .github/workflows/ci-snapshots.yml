@@ -30,6 +30,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          ./mvnw -V -B --no-transfer-progress -q -DskipTests -Ddependency-check.skip=true \
-          -P !mac-dmg-on-unix,!installer,!concurrency-stress-tests,!micro-benchmarks,skip-build-dist-archives \
-          clean deploy
+          ./mvnw -V -B --no-transfer-progress -q -DskipTests -Ddependency-check.skip=true clean deploy

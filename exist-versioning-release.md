@@ -109,125 +109,55 @@ Version 3.0.0 was released before Semantic Versioning. The following steps will 
 
 ### Preparing a Product Release
 
-Once development on a new stable version is complete, the following steps will prepare the version for release. For purposes of illustration, we will assume we are preparing the stable release of version 5.3.0.
-You will require a system with:
-* macOS
-* JDK 8
-* Maven 3.6.0+
-* Docker
-* GnuPG
-* A GPG key (for signing release artifacts)
-* A Java KeyStore with key (for signing IzPack Installer)
-* A valid Apple Developer Certificate (for signing Mac DMG)
-* A Github account and username / password or Github Personal access tokens (https://github.com/settings/tokens) with permission to publish Github releases to the eXist-db .org
+The preferred release process is now CI-driven and profile-based. The legacy interactive `maven-release-plugin` flow is retained below only as fallback.
 
-1. You will need login credentials for the eXist-db organisation on:
-    1. Sonatype OSS staging for Maven Central - https://oss.sonatype.org/
-    2. DockerHub - https://cloud.docker.com/orgs/existdb/
-    
-    Your credentials for these should be stored securely in the `<servers`> section on your machine in your local `~/.m2/settings.xml` file, e.g.:
-    ```xml
-    <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
-          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
+#### Preferred: CI-Driven Release (`release-build`)
 
-        <servers>
-        
-            <!-- Sonatype OSS staging for Maven Central -->
-            <server>
-                <id>sonatype-nexus-staging</id>
-                <username>YOUR-USERNAME</username>
-                <password>YOUR-PASSWORD</password>
-            </server>
-            
-            <!-- eXist-db DockerHub -->
-            <server>
-                <id>docker.io</id>
-                <username>YOUR-USERNAME</username>
-                <password>YOUR-PASSWORD</password>
-            </server>
+Once development on a new stable version is complete, prepare a tag from `develop` and let CI perform the release.
 
-            <!-- eXist-db Github Release -->
-            <server>
-                <id>github</id>
-                <privateKey>[Github Personal access tokens]</privateKey>
-            </server>
-        </servers>
-    </settings>
-    ```
+1. Merge any outstanding PRs accepted for the target milestone.
+2. Ensure `develop` is in a releasable state and all required checks are green.
+3. Create and push a release tag (for example, `eXist-7.0.0`) from the intended commit.
+4. Trigger the release workflow (tag-triggered or manual dispatch) which should:
+   - run release preflight checks in `validate` (credentials, signing keys, push access, etc.)
+   - build with `./mvnw -Prelease-build`
+   - publish Maven artifacts via Sonatype Central Portal
+   - publish Docker images
+   - attach release distributions/installer assets to GitHub Releases
 
-2. You will need your GPG Key, Java KeyStore, and Apple Notarization API credentials for signing the release artifacts in the `<activeProfiles`> section on your machine in your local `~/.m2/settings.xml` file, e.g.:
-    ```xml
-    <profiles>
-   
-       <profile>
-           <id>existdb-release-signing</id>
-           <properties>
-               <existdb.release.key>ABC1234</existdb.release.key>
-               <existdb.release.public-keyfile>${user.home}/.gnupg/pubring.gpg</existdb.release.public-keyfile>
-               <existdb.release.private-keyfile>${user.home}/.gnupg/secring.gpg</existdb.release.private-keyfile>
-               <existdb.release.key.passphrase>your-password</existdb.release.key.passphrase>
-   
-               <existdb.release.keystore>${user.home}/your.store</existdb.release.keystore>
-               <existdb.release.keystore.pass>your-keystore-password</existdb.release.keystore.pass>
-               <existdb.release.keystore.key.alias>your-alias</existdb.release.keystore.key.alias>
-               <existdb.release.keystore.key.pass>your-key-password</existdb.release.keystore.key.pass>
-   
-                <existdb.release.notarize.username>your-apple-developer-email@your-dom.ain</existdb.release.notarize.username>
-                <existdb.release.notarize.password>your-apple-notarize-api-password</existdb.release.notarize.password>
-           </properties>
-       </profile>
-   
-    </profiles>
+For local release-like packaging verification before tagging, use:
 
+```
+./mvnw -Prelease-build -DskipTests -Ddependency-check.skip=true clean package
+```
 
-    <activeProfiles>
-   
-           <activeProfile>existdb-release-signing</activeProfile>
-   
-    </activeProfiles>
-    ```
+#### Credentials and signing material (CI source of truth)
 
-3.  Merge any outstanding PRs that have been reviewed and accepted for the milestone eXist-5.3.0.
+Store publication credentials and signing material in CI secrets, not in developer-local default configuration:
 
-4.  Make sure that you have the HEAD of `origin/develop` (or `upstream` if you are on a fork).
+- Sonatype Central Portal user token (`<server id="central">` when generating settings in CI)
+- DockerHub credentials
+- GPG key material and passphrase
+- IzPack signing keystore credentials (if enabled)
+- Apple signing/notarization credentials (if enabled)
 
-5.  Prepare the release, if you wish you can do a dry-run first by specifiying `-DdryRun=true`:
-    ```
-    $ mvn -Ddocker=true -Dmac-signing=true -P installer -Dizpack-signing=true -Darguments="-Ddocker=true -Dmac-signing=true -P installer -Dizpack-signing=true" release:prepare
-    ```
-    
-    Maven will start the release process and prompt you for any information that it requires, for example:
-    
-    ```
-    [INFO] --- maven-release-plugin:2.1:prepare (default-cli) @ exist ---
-    [INFO] Verifying that there are no local modifications...
-    [INFO]   ignoring changes on: pom.xml.next, pom.xml.releaseBackup, pom.xml.tag, pom.xml.backup, pom.xml.branch, release.properties
-    [INFO] Executing: /bin/sh -c cd /Users/aretter/code/exist.maven && git status
-    [INFO] Working directory: /Users/aretter/code/exist.maven
-    [INFO] Checking dependencies and plugins for snapshots ...
-    What is the release version for "eXist-db"? (org.exist-db:exist) 5.3.0: :
-    What is SCM release tag or label for "eXist-db"? (org.exist-db:exist) eXist-5.3.0: :
-    What is the new development version for "eXist-db"? (org.exist-db:exist) 5.4.0-SNAPSHOT: :
-    ```
+#### Legacy fallback: interactive `maven-release-plugin` flow
 
-6.  Once the prepare process completes you can perform the release. This will upload Maven Artifacts to Maven
-Central (staging), Docker images to Docker Hub, and eXist-db distributions and installer to Github releases:
-    ```
-    $ mvn -Ddocker=true -Dmac-signing=true -P installer -Dizpack-signing=true -Djarsigner.skip=false -Darguments="-Ddocker=true -Dmac-signing=true -P installer -Dizpack-signing=true -Djarsigner.skip=false" release:perform
-    ```
+If the CI release path is unavailable, the older process can still be used manually:
 
-7.  Update the stable branch (`master`) of eXist-db to reflect the latest release:
-    ```
-    $ git push origin eXist-5.3.0:master
-    ```
+```
+mvn -Ddocker=true -Dmac-signing=true -P installer -Dizpack-signing=true -Darguments="-Ddocker=true -Dmac-signing=true -P installer -Dizpack-signing=true" release:prepare
+mvn -Ddocker=true -Dmac-signing=true -P installer -Dizpack-signing=true -Djarsigner.skip=false -Darguments="-Ddocker=true -Dmac-signing=true -P installer -Dizpack-signing=true -Djarsigner.skip=false" release:perform
+```
+
+Use this path only when necessary; prefer the CI-driven process above.
 
 #### Publishing/Promoting the Product Release
 1.  Check that the new versions are visible on [Github](https://github.com/eXist-db/exist/releases).
 
 2.  Check that the new versions are visible on [DockerHub](https://hub.docker.com/r/existdb/existdb).
 
-3.  Login to https://oss.sonatype.org and release the Maven artifacts to Maven central as described [here](https://central.sonatype.org/pages/releasing-the-deployment.html).
+3.  Verify Maven artifacts are published via Sonatype Central Portal and visible in Central search (or complete any required portal-side publish step if auto-publish is disabled).
 
 4.  Update the Mac HomeBrew for eXist-db, see: [Releasing to Homebrew](https://github.com/eXist-db/exist/blob/develop/exist-versioning-release.md#releasing-to-homebrew).
 

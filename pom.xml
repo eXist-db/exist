@@ -238,6 +238,10 @@
 
         <profile>
             <id>release-build</id>
+            <properties>
+                <!-- Used to activate release-only profiles in submodules -->
+                <exist.release>true</exist.release>
+            </properties>
             <modules>
                 <module>exist-installer</module>
             </modules>
