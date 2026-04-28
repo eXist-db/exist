@@ -29,6 +29,7 @@ import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.dom.memtree.NodeImpl;
 import org.exist.util.XMLNames;
 import org.exist.xquery.util.ExpressionDumper;
+import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.QNameValue;
 import org.exist.xquery.value.Sequence;
@@ -277,6 +278,16 @@ public class ElementConstructor extends NodeConstructor {
             if (qnitem instanceof QNameValue value) {
                 qn = value.getQName();
             } else {
+                // Only xs:string and xs:untypedAtomic can be used as computed element names
+                // (XQuery 3.1 §3.9.3.1). Atomize first: the name expression may yield a node,
+                // whose atomized value is xs:untypedAtomic.
+                final AtomicValue atomicName = qnitem.atomize();
+                final int itemType = atomicName.getType();
+                if (!Type.subTypeOf(itemType, Type.STRING) && itemType != Type.UNTYPED_ATOMIC) {
+                    throw new XPathException(this, ErrorCodes.XPTY0004,
+                            "The name expression must be of type xs:QName, xs:string, or xs:untypedAtomic, got " + Type.getTypeName(itemType));
+                }
+
                 // Element constructors must resolve namespace prefixes using the full
                 // inherited namespace context, regardless of declare copy-namespaces no-inherit.
                 // The no-inherit option governs how namespaces propagate from copied source
@@ -286,11 +297,10 @@ public class ElementConstructor extends NodeConstructor {
                     context.setInheritNamespaces(true);
                 }
                 try {
-                    //Do we have the same result than Atomize there ? -pb
                     try {
-                        qn = QName.parse(context, qnitem.getStringValue());
+                        qn = QName.parse(context, atomicName.getStringValue());
                     } catch (final QName.IllegalQNameException e) {
-                        throw new XPathException(this, ErrorCodes.XQDY0074, "'" + qnitem.getStringValue() + "' is not a valid element name");
+                        throw new XPathException(this, ErrorCodes.XQDY0074, "'" + atomicName.getStringValue() + "' is not a valid element name");
                     } catch (final XPathException e) {
                         e.setLocation(getLine(), getColumn(), getSource());
                         throw e;
@@ -306,7 +316,7 @@ public class ElementConstructor extends NodeConstructor {
                 }
             }
 
-            //Not in the specs but... makes sense
+            // The name is of an acceptable type but is not a lexically valid QName
             if (!XMLNames.isName(qn.getLocalPart())) {
                 throw new XPathException(this, ErrorCodes.XQDY0074, "'" + qnitem.getStringValue() + "' is not a valid element name");
             }
