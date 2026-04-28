@@ -230,6 +230,9 @@ public class FunReplace extends BasicFunction {
 		final int javaFlags = parseFlags(this, flags);
 		final Pattern compiled = Pattern.compile(javaPattern, javaFlags);
 		final Matcher matcher = compiled.matcher(input);
+		// Transparent bounds let \b and lookarounds see characters outside the
+		// active region — required when we shift the region past empty matches.
+		matcher.useTransparentBounds(true);
 
 		final StringBuilder sb = new StringBuilder();
 		int lastEnd = 0;
@@ -303,6 +306,7 @@ public class FunReplace extends BasicFunction {
 		int javaFlags = parseFlags(this, flags);
 		final Pattern compiled = Pattern.compile(javaPattern, javaFlags);
 		final Matcher matcher = compiled.matcher(input);
+		matcher.useTransparentBounds(true);
 
 		final StringBuilder sb = new StringBuilder();
 		int lastEnd = 0;

@@ -159,8 +159,28 @@ public class FunTokenize extends BasicFunction {
                         } else {
                             final String[] tokens = pat.split(string, -1);
                             result = new ValueSequence();
-                            for (final String token : tokens) {
-                                result.add(new StringValue(this, token));
+                            // XQ4 spec: zero-width matches at the start/end of input do not
+                            // produce leading/trailing empty tokens (e.g. \b or lookarounds).
+                            int startIdx = 0;
+                            int endIdx = tokens.length;
+                            if (tokens.length > 0 && !string.isEmpty()) {
+                                if (tokens[0].isEmpty()) {
+                                    final java.util.regex.Matcher first = pat.matcher(string);
+                                    if (first.find() && first.start() == 0 && first.end() == 0) {
+                                        startIdx = 1;
+                                    }
+                                }
+                                if (endIdx > startIdx && tokens[endIdx - 1].isEmpty()) {
+                                    final java.util.regex.Matcher tail = pat.matcher(string);
+                                    int lastStart = -1, lastEnd = -1;
+                                    while (tail.find()) { lastStart = tail.start(); lastEnd = tail.end(); }
+                                    if (lastStart == lastEnd && lastEnd == string.length()) {
+                                        endIdx--;
+                                    }
+                                }
+                            }
+                            for (int i = startIdx; i < endIdx; i++) {
+                                result.add(new StringValue(this, tokens[i]));
                             }
                         }
 
@@ -176,24 +196,33 @@ public class FunTokenize extends BasicFunction {
 
     /**
      * XQ4: Handle tokenization when the regex matches the empty string.
-     * Per spec: zero-length matches at start/end of string do not produce
-     * leading/trailing empty tokens. Empty matches advance past one character.
+     * Per spec: zero-length matches at the start or end of the input string
+     * do not produce leading/trailing empty tokens.
      */
     private Sequence tokenizeEmptyMatch(final String input, final Pattern pat) throws XPathException {
         final ValueSequence result = new ValueSequence();
         final java.util.regex.Matcher matcher = pat.matcher(input);
+        matcher.useTransparentBounds(true);
         int lastEnd = 0;
+        // Tracks whether the most recent consuming (non-empty) match ended at
+        // input.length(); only such a match should produce a trailing empty token.
+        boolean lastConsumingEndedAtInput = false;
         while (matcher.find()) {
             final boolean isEmpty = matcher.start() == matcher.end();
 
-            // Skip zero-length match at end of string
+            // Skip zero-length match at end of string (do not produce trailing empty for it)
             if (isEmpty && matcher.start() >= input.length()) {
                 break;
             }
 
-            // Add token: text from end of last match to start of this match
-            result.add(new StringValue(this, input.substring(lastEnd, matcher.start())));
+            // XQ4 spec: skip leading empty token from a zero-length match at position 0
+            if (!(isEmpty && matcher.start() == 0)) {
+                result.add(new StringValue(this, input.substring(lastEnd, matcher.start())));
+            }
             lastEnd = matcher.end();
+            if (!isEmpty) {
+                lastConsumingEndedAtInput = (lastEnd == input.length());
+            }
 
             // For empty match, advance matcher past one character to prevent infinite loop.
             // The skipped character becomes part of the next token (not consumed).
@@ -206,9 +235,17 @@ public class FunTokenize extends BasicFunction {
                 }
             }
         }
-        // Add trailing token
-        if (lastEnd <= input.length()) {
+        // Trailing token rules:
+        //   - If unconsumed characters remain, emit them as the final token
+        //   - If pattern never matched anything, return the original input
+        //   - If the last consuming match ended right at input.length(),
+        //     emit a trailing empty
+        if (lastEnd < input.length()) {
             result.add(new StringValue(this, input.substring(lastEnd)));
+        } else if (lastEnd == 0 && result.isEmpty()) {
+            result.add(new StringValue(this, input));
+        } else if (lastConsumingEndedAtInput) {
+            result.add(StringValue.EMPTY_STRING);
         }
         return result;
     }
