@@ -138,11 +138,14 @@ public class FunResolveURI extends Function {
 				relativeURI = new URI(relative.getStringValue());
 				baseURI = new URI(base.getStringValue() );
 			} catch (final URISyntaxException e) {
-				throw new XPathException(this, ErrorCodes.FORG0009, "unable to resolve a relative URI against a base URI in fn:resolve-uri(): " + e.getMessage(), null, e);
+				throw new XPathException(this, ErrorCodes.FORG0002, "invalid argument to fn:resolve-uri(): " + e.getMessage(), null, e);
 			}
 			if (relativeURI.isAbsolute()) {
 				result = relative;
             } else {
+				if (!baseURI.isAbsolute()) {
+					throw new XPathException(this, ErrorCodes.FORG0002, "base URI argument to fn:resolve-uri() is not an absolute URI: " + base.getStringValue());
+				}
 				result = new AnyURIValue(this, baseURI.resolve(relativeURI));
             }
         }

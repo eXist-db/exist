@@ -62,7 +62,10 @@ public class QNameValue extends AtomicValue {
         try {
             qname = QName.parse(context, name, context.getURIForPrefix(""));
         } catch (final QName.IllegalQNameException iqe) {
-            throw new XPathException(getExpression(), ErrorCodes.XPST0081, "No namespace defined for prefix " + name);
+            // Constructing a QName from a string at runtime (e.g. xs:QName('prefix:local'))
+            // raises a dynamic error if the prefix is not bound in the static context.
+            // XPath/XQuery F&O specifies err:FONS0004 for this case, not the static err:XPST0081.
+            throw new XPathException(getExpression(), ErrorCodes.FONS0004, "No namespace defined for prefix " + name);
         }
         stringValue = computeStringValue();
     }

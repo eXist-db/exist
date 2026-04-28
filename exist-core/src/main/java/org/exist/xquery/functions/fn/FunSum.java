@@ -111,18 +111,26 @@ public class FunSum extends Function {
     			value = item.atomize();
 
             	value = check(value, sum);
-    			
+
         		if (Type.subTypeOfUnion(value.getType(), Type.NUMERIC)) {
     				if (((NumericValue)value).isInfinite())
-    					{gotInfinity = true;}    					
+    					{gotInfinity = true;}
     				if (((NumericValue)value).isNaN()) {
     					sum = DoubleValue.NaN;
     					break;
     				}
     			}
-    			sum = (ComputableValue)sum.promote(value);
-    			//Aggregate next values
-    			sum = sum.plus((ComputableValue) value);
+    			try {
+    				sum = (ComputableValue)sum.promote(value);
+    				//Aggregate next values
+    				sum = sum.plus((ComputableValue) value);
+    			} catch (final XPathException e) {
+    				// Per XPath/XQuery F&O, fn:sum reports incompatible operand types as FORG0006
+    				if (e.getErrorCode() == ErrorCodes.XPTY0004) {
+    					throw new XPathException(this, ErrorCodes.FORG0006, e.getMessage(), value, e);
+    				}
+    				throw e;
+    			}
     		}
     		result = sum;
         }

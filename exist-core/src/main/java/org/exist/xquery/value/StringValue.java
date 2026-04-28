@@ -345,7 +345,7 @@ public class StringValue extends AtomicValue {
             }
             return charNumber;
         } catch (final NumberFormatException e) {
-            throw new XPathException(expression, "Unknown character reference: " + buf);
+            throw new XPathException(expression, ErrorCodes.XQST0090, "Unknown character reference: " + buf);
         }
     }
 

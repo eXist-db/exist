@@ -258,7 +258,7 @@ public class VariableImpl implements Variable {
 				}
 			}
 
-        	throw new XPathException(getValue(),
+        	throw new XPathException(getValue(), ErrorCodes.XPTY0004,
 					Messages.getMessage(Error.VAR_TYPE_MISMATCH,
 							toString(),
 							type.toString(),
