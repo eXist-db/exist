@@ -16,14 +16,14 @@ eXist-db is an open-source native XML database with full XQuery support. The mai
 
 ```bash
 JAVA_HOME=$(/usr/libexec/java_home -v 21) \
-  mvn -T1.5C clean install -DskipTests -Ddependency-check.skip=true -Ddocker=false \
+  ./mvnw -T1.5C clean install -DskipTests -Ddependency-check.skip=true -Ddocker=false \
   -P 'skip-build-dist-archives,!build-dist-archives,!mac-dmg-on-mac,!codesign-mac-dmg,!mac-dmg-on-unix,!installer,!concurrency-stress-tests,!micro-benchmarks,!appassembler-booter'
 ```
 
 ### Build a single module
 
 ```bash
-mvn install -pl exist-core -am -DskipTests -Ddependency-check.skip=true -Ddocker=false
+JAVA_HOME=$(/usr/libexec/java_home -v 21) ./mvnw install -pl exist-core -am -DskipTests -Ddependency-check.skip=true -Ddocker=false
 ```
 
 The `-am` (also-make) flag is required — exist-core has cross-module dependencies (e.g., `EXistClassLoader` in exist-start).
@@ -32,20 +32,20 @@ The `-am` (also-make) flag is required — exist-core has cross-module dependenc
 
 ```bash
 # XQSuite tests (XQuery test framework)
-mvn test -pl exist-core -Dtest="xquery.xquery3.XQuery3Tests" -Ddependency-check.skip=true -Ddocker=false
+JAVA_HOME=$(/usr/libexec/java_home -v 21) ./mvnw test -pl exist-core -Dtest="xquery.xquery3.XQuery3Tests" -Ddependency-check.skip=true -Ddocker=false
 
 # Full unit test suite
-mvn test -pl exist-core -Ddependency-check.skip=true -Ddocker=false
+JAVA_HOME=$(/usr/libexec/java_home -v 21) ./mvnw test -pl exist-core -Ddependency-check.skip=true -Ddocker=false
 
 # Specific JUnit test class
-mvn test -pl exist-core -Dtest="org.exist.xquery.XPathQueryTest" -Ddependency-check.skip=true -Ddocker=false
+JAVA_HOME=$(/usr/libexec/java_home -v 21) ./mvnw test -pl exist-core -Dtest="org.exist.xquery.XPathQueryTest" -Ddependency-check.skip=true -Ddocker=false
 ```
 
 ### Docker image
 
 ```bash
 # Build the Docker image
-mvn -T1.5C clean package -DskipTests -Ddependency-check.skip=true -Ddocker=true \
+JAVA_HOME=$(/usr/libexec/java_home -v 21) ./mvnw -T1.5C clean package -DskipTests -Ddependency-check.skip=true -Ddocker=true \
   -P 'skip-build-dist-archives,!build-dist-archives,!mac-dmg-on-mac,!codesign-mac-dmg,!mac-dmg-on-unix,!installer,!concurrency-stress-tests,!micro-benchmarks,!appassembler-booter' \
   -pl exist-docker -am
 

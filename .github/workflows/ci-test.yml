@@ -17,7 +17,7 @@ jobs:
           distribution: temurin
           java-version: ${{ env.DEV_JDK }}
       - uses: ./.github/actions/maven-cache
-      - run: mvn -V -B --no-transfer-progress --offline license:check
+      - run: ./mvnw -V -B --no-transfer-progress --offline license:check
         timeout-minutes: 10
   dependencies:
     name: Dependency checks
@@ -46,7 +46,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
-        run: mvn -V -B --no-transfer-progress dependency-check:check
+        run: ./mvnw -V -B --no-transfer-progress dependency-check:check
         timeout-minutes: 90
       - name: Save OWASP dependency-check cache
         if: github.event_name == 'push'
