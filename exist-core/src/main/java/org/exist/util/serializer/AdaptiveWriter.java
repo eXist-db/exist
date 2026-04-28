@@ -77,6 +77,11 @@ public class AdaptiveWriter extends IndentingXMLWriter {
      * @throws XPathException if an XPath error occurs
      * @throws TransformerException if an error occurs whilst transforming
      */
+    // PMD.NPathComplexity: adaptive serialization (XSLT/XQuery Serialization 3.1
+    // § 11) dispatches over the XDM item kinds (atomic types, node kinds,
+    // function items, maps, arrays); each branch implements the spec's adaptive
+    // form for that kind. Reorganizing obscures the spec mapping.
+    @SuppressWarnings("PMD.NPathComplexity")
     public void write(final Sequence sequence, final String itemSep, final boolean enclose) throws SAXException, XPathException, TransformerException {
         try {
             if (enclose && sequence.getItemCount() != 1) {

@@ -359,6 +359,10 @@ public class XMLWriter implements SerializerWriter {
         }
     }
 
+    // PMD.NPathComplexity: applies XSLT/XQuery Serialization 3.1 namespace-fixup
+    // rules (§ 5.1) — distinct branches per default/prefixed/redundant binding,
+    // version 1.0 vs 1.1, and undeclare-prefixes-on-element-end policies.
+    @SuppressWarnings("PMD.NPathComplexity")
     public void namespace(final String prefix, final String nsURI) throws TransformerException {
         final String normPrefix = prefix != null ? prefix : "";
         final String normUri = nsURI != null ? nsURI : "";
@@ -804,6 +808,9 @@ public class XMLWriter implements SerializerWriter {
         canonicalAttributes.clear();
     }
 
+    // PMD.NPathComplexity: emits the XML declaration with permutations of
+    // version/encoding/standalone/omit-xml-declaration per Serialization 3.1.
+    @SuppressWarnings("PMD.NPathComplexity")
     protected void writeDeclaration() throws TransformerException {
         if(declarationWritten) {
             return;
@@ -930,6 +937,10 @@ public class XMLWriter implements SerializerWriter {
         return true;
     }
 
+    // PMD.NPathComplexity: writes character data with XSLT/XQuery Serialization
+    // 3.1 character-escaping rules; distinct branches per attribute/text and the
+    // §6 character-map table (<, >, &, ", ', NUL, control chars, surrogates).
+    @SuppressWarnings("PMD.NPathComplexity")
     protected void writeChars(final CharSequence s, final boolean inAttribute) throws IOException {
         // Apply Unicode normalization if configured
         final CharSequence text = normalize(s);
