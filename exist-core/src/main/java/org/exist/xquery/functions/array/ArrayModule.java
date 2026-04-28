@@ -46,6 +46,7 @@ public class ArrayModule extends AbstractInternalModule {
             functionDefs(ArrayFunction.class,
                     ArrayFunction.SIZE,
                     ArrayFunction.GET,
+                    ArrayFunction.GET_DEFAULT,
                     ArrayFunction.PUT,
                     ArrayFunction.APPEND,
                     ArrayFunction.SUBARRAY_1,

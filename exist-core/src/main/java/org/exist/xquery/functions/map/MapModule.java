@@ -51,6 +51,7 @@ public class MapModule extends AbstractInternalModule {
             MapFunction.KEYS,
             MapFunction.CONTAINS,
             MapFunction.GET,
+            MapFunction.GET_3,
             MapFunction.FIND,
             MapFunction.PUT,
             MapFunction.ENTRY,
