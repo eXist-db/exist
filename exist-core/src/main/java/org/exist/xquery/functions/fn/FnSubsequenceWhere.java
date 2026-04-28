@@ -37,6 +37,16 @@ import org.exist.xquery.value.*;
 public class FnSubsequenceWhere extends BasicFunction {
 
     public static final FunctionSignature[] FN_SUBSEQUENCE_WHERE = {
+            // Arity 1: input only — both predicates default; result equals the input.
+            // (Per XQ4, $from defaults to a constant true predicate and $to to
+            //  a constant false predicate, which selects the entire sequence.)
+            new FunctionSignature(
+                    new QName("subsequence-where", Function.BUILTIN_FUNCTION_NS),
+                    "Returns a contiguous subsequence defined by from/to predicates.",
+                    new SequenceType[]{
+                            new FunctionParameterSequenceType("input", Type.ITEM, Cardinality.ZERO_OR_MORE, "The input sequence"),
+                    },
+                    new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "The selected subsequence")),
             new FunctionSignature(
                     new QName("subsequence-where", Function.BUILTIN_FUNCTION_NS),
                     "Returns a contiguous subsequence defined by from/to predicates.",

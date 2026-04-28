@@ -940,6 +940,27 @@ public class XQueryParserTest {
         assertModuleEval("decimal", "xquery version '4.0';\nlocal-name-from-QName(#xs:decimal)");
     }
 
+    // Regression: the XQTS runner's deep-equals harness wraps the expected
+    // value in extra parentheses, producing input shaped like `((#xs:decimal), $r)`.
+    // The leading `((` previously confused the lexer into emitting PRAGMA_START.
+    @Test
+    public void qnameLiteralAfterDoubleParen() throws Exception {
+        assertModuleEval("true", "xquery version '4.0';\n" +
+                "declare variable $result := xs:QName('xs:decimal');\n" +
+                "deep-equal((#xs:decimal), $result)");
+    }
+
+    @Ignore("Q{ns}prefix:local is not a standard EQName; QT4 catalog uses it but parser rejects the QName-after-braced-URI form. Follow-up.")
+    @Test
+    public void qnameLiteralBracedURIWithPrefixedLocal() throws Exception {
+        // The QT4 catalog assert-deep-eq strings include forms like
+        // #Q{ns}prefix:local. The braced URI takes precedence; treating
+        // 'prefix:local' as a QName carries the prefix metadata.
+        assertModuleEval("ht:foo", "xquery version '4.0';\n" +
+                "let $q := #Q{http://example.com/ns}ht:foo\n" +
+                "return prefix-from-QName($q) || ':' || local-name-from-QName($q)");
+    }
+
     // XQ4: U+00F7 DIVISION SIGN is an alternative spelling of `div`.
     @Test
     public void divisionSignOperator() throws Exception {

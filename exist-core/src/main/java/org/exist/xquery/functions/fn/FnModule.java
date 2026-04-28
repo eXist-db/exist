@@ -404,6 +404,7 @@ public class FnModule extends AbstractInternalModule {
         // XQuery 4.0 functions — batch 6: subsequence-where, seconds, in-scope-namespaces
         new FunctionDef(FnSubsequenceWhere.FN_SUBSEQUENCE_WHERE[0], FnSubsequenceWhere.class),
         new FunctionDef(FnSubsequenceWhere.FN_SUBSEQUENCE_WHERE[1], FnSubsequenceWhere.class),
+        new FunctionDef(FnSubsequenceWhere.FN_SUBSEQUENCE_WHERE[2], FnSubsequenceWhere.class),
         new FunctionDef(FnSeconds.FN_SECONDS, FnSeconds.class),
         new FunctionDef(FnInScopeNamespaces.FN_IN_SCOPE_NAMESPACES, FnInScopeNamespaces.class),
         // XQuery 4.0 functions — batch 7: transitive-closure, element-to-map
