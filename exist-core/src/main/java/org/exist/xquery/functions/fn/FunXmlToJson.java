@@ -54,7 +54,7 @@ public class FunXmlToJson extends BasicFunction {
 
     private static final String FS_XML_TO_JSON_NAME = "xml-to-json";
     private static final FunctionParameterSequenceType FS_XML_TO_JSON_OPT_PARAM_NODE = optParam("node", Type.NODE, "The input node");
-    private static final FunctionParameterSequenceType FS_XML_TO_JSON_OPT_PARAM_OPTIONS = param("options", Type.MAP_ITEM, "The options map");
+    private static final FunctionParameterSequenceType FS_XML_TO_JSON_OPT_PARAM_OPTIONS = optParam("options", Type.MAP_ITEM, "The options map");
 
     static final FunctionSignature[] FS_XML_TO_JSON = functionSignatures(
             new QName(FS_XML_TO_JSON_NAME, Function.BUILTIN_FUNCTION_NS),
@@ -110,45 +110,53 @@ public class FunXmlToJson extends BasicFunction {
     private static final class Options {
         boolean indent = false;
         boolean escapeSolidus = true;
+        boolean xquery40 = false;
     }
 
     private Options parseOptions(final Sequence[] args) throws XPathException {
         final Options opts = new Options();
+        opts.xquery40 = context.getXQueryVersion() >= 40;
         if (getArgumentCount() < 2 || args[1].isEmpty()) {
             return opts;
         }
         final AbstractMapType map = (AbstractMapType) args[1].itemAt(0);
 
-        final Sequence indentSeq = map.get(new StringValue(this, "indent"));
-        if (indentSeq != null && !indentSeq.isEmpty()) {
-            if (indentSeq.getItemCount() != 1) {
+        final StringValue indentKey = new StringValue(this, "indent");
+        if (map.contains(indentKey)) {
+            final Sequence indentSeq = map.get(indentKey);
+            if (indentSeq.isEmpty() || indentSeq.getItemCount() != 1
+                    || indentSeq.itemAt(0).getType() != Type.BOOLEAN) {
                 throw new XPathException(this, ErrorCodes.XPTY0004,
                         "Option 'indent' must be a single boolean");
             }
-            final Item it = indentSeq.itemAt(0);
-            if (it.getType() != Type.BOOLEAN) {
-                throw new XPathException(this, ErrorCodes.XPTY0004,
-                        "Option 'indent' must be a boolean");
-            }
-            opts.indent = ((BooleanValue) it).getValue();
-        } else if (indentSeq != null) {
-            // Empty sequence is invalid per spec
-            throw new XPathException(this, ErrorCodes.XPTY0004,
-                    "Option 'indent' must be a boolean, not empty sequence");
+            opts.indent = ((BooleanValue) indentSeq.itemAt(0)).getValue();
         }
 
-        final Sequence escSeq = map.get(new StringValue(this, "escape-solidus"));
-        if (escSeq != null && !escSeq.isEmpty()) {
-            if (escSeq.getItemCount() != 1) {
+        final StringValue escapeKey = new StringValue(this, "escape-solidus");
+        if (map.contains(escapeKey)) {
+            final Sequence escSeq = map.get(escapeKey);
+            if (escSeq.isEmpty() || escSeq.getItemCount() != 1
+                    || escSeq.itemAt(0).getType() != Type.BOOLEAN) {
                 throw new XPathException(this, ErrorCodes.XPTY0004,
                         "Option 'escape-solidus' must be a single boolean");
             }
-            final Item it = escSeq.itemAt(0);
-            if (it.getType() != Type.BOOLEAN) {
-                throw new XPathException(this, ErrorCodes.XPTY0004,
-                        "Option 'escape-solidus' must be a boolean");
+            opts.escapeSolidus = ((BooleanValue) escSeq.itemAt(0)).getValue();
+        }
+
+        // XQ40 PR1059: reject unknown options
+        if (opts.xquery40) {
+            for (final IEntry<AtomicValue, Sequence> entry : map) {
+                final AtomicValue key = entry.key();
+                if (key.getType() != Type.STRING) {
+                    continue;
+                }
+                final String name = key.getStringValue();
+                if (!"indent".equals(name) && !"escape-solidus".equals(name)
+                        && !"fallback".equals(name) && !"number-parser".equals(name)) {
+                    throw new XPathException(this, ErrorCodes.FOJS0005,
+                            "Unknown option: '" + name + "'");
+                }
             }
-            opts.escapeSolidus = ((BooleanValue) it).getValue();
         }
 
         return opts;
@@ -174,7 +182,7 @@ public class FunXmlToJson extends BasicFunction {
                 emitBoolean(element, out);
                 break;
             case "number":
-                emitNumber(element, out);
+                emitNumber(element, out, opts);
                 break;
             case "string":
                 emitString(element, out, opts);
@@ -288,9 +296,9 @@ public class FunXmlToJson extends BasicFunction {
         }
     }
 
-    private void emitNumber(final Element element, final StringBuilder out) throws XPathException {
+    private void emitNumber(final Element element, final StringBuilder out, final Options opts) throws XPathException {
         final String text = collectText(element, "number");
-        String trimmed = text.trim();
+        final String trimmed = text.trim();
         if (trimmed.isEmpty()) {
             throw new XPathException(this, ErrorCodes.FOJS0006,
                     "Number element must have non-empty content");
@@ -301,19 +309,128 @@ public class FunXmlToJson extends BasicFunction {
             throw new XPathException(this, ErrorCodes.FOJS0006,
                     "Number must be finite, not NaN or Infinity");
         }
-        // Strip optional leading +
-        if (trimmed.startsWith("+")) {
-            trimmed = trimmed.substring(1);
-        }
-        try {
-            // BigDecimal preserves precision, normalizes leading zeros, and
-            // produces canonical exponent form (E+/E-).
-            final java.math.BigDecimal bd = new java.math.BigDecimal(trimmed);
-            out.append(bd.toString());
-        } catch (final NumberFormatException e) {
+        if (!isValidJsonNumber40(trimmed)) {
             throw new XPathException(this, ErrorCodes.FOJS0006,
                     "Invalid number: '" + text + "'");
         }
+        if (opts.xquery40) {
+            // XQ40 PR1455: preserve lexical form, with minimal canonicalization
+            out.append(normalizeJsonNumber40(trimmed));
+        } else {
+            // XQ31: BigDecimal-based output preserved for backward compatibility
+            // with existing eXist behavior (e.g. '1E9' -> '1E+9'). The W3C-canonical
+            // xs:double form ('1.0E9') would be more spec-compliant but breaks
+            // existing user expectations.
+            final String normalized = trimmed.startsWith("+") ? trimmed.substring(1) : trimmed;
+            try {
+                final java.math.BigDecimal bd = new java.math.BigDecimal(normalized);
+                out.append(bd.toString());
+            } catch (final NumberFormatException e) {
+                throw new XPathException(this, ErrorCodes.FOJS0006,
+                        "Invalid number: '" + text + "'");
+            }
+        }
+    }
+
+    /**
+     * Validate a trimmed number string per the XQ40 (PR1455) extended JSON number
+     * grammar: optional sign, optional integer part, optional fraction (with optional
+     * leading or trailing digits), optional exponent. At least one digit overall.
+     */
+    private static boolean isValidJsonNumber40(final String s) {
+        if (s.isEmpty()) {
+            return false;
+        }
+        int i = 0;
+        if (s.charAt(0) == '+' || s.charAt(0) == '-') {
+            i++;
+        }
+        boolean hasDigit = false;
+        while (i < s.length() && isDigit(s.charAt(i))) {
+            hasDigit = true;
+            i++;
+        }
+        if (i < s.length() && s.charAt(i) == '.') {
+            i++;
+            while (i < s.length() && isDigit(s.charAt(i))) {
+                hasDigit = true;
+                i++;
+            }
+        }
+        if (!hasDigit) {
+            return false;
+        }
+        if (i < s.length() && (s.charAt(i) == 'e' || s.charAt(i) == 'E')) {
+            i++;
+            if (i < s.length() && (s.charAt(i) == '+' || s.charAt(i) == '-')) {
+                i++;
+            }
+            boolean hasExpDigit = false;
+            while (i < s.length() && isDigit(s.charAt(i))) {
+                hasExpDigit = true;
+                i++;
+            }
+            if (!hasExpDigit) {
+                return false;
+            }
+        }
+        return i == s.length();
+    }
+
+    /**
+     * Apply the XQ40 PR1455 transformations to a validated JSON number lexical form:
+     * strip leading '+', strip leading zeros from the integer part (keep one),
+     * prepend '0' if no integer digit precedes a '.', and append '0' if no fraction
+     * digit follows a '.'. Preserves case of 'e'/'E' and preserves negative zero.
+     */
+    private static String normalizeJsonNumber40(final String s) {
+        final StringBuilder out = new StringBuilder(s.length() + 2);
+        int i = 0;
+        if (s.charAt(0) == '+') {
+            i = 1;
+        } else if (s.charAt(0) == '-') {
+            out.append('-');
+            i = 1;
+        }
+        // Integer part
+        final int intStart = i;
+        while (i < s.length() && isDigit(s.charAt(i))) {
+            i++;
+        }
+        final int intEnd = i;
+        if (intStart == intEnd) {
+            // No integer digits — prepend '0'
+            out.append('0');
+        } else {
+            int firstNonZero = intStart;
+            while (firstNonZero < intEnd - 1 && s.charAt(firstNonZero) == '0') {
+                firstNonZero++;
+            }
+            out.append(s, firstNonZero, intEnd);
+        }
+        // Fraction part
+        if (i < s.length() && s.charAt(i) == '.') {
+            out.append('.');
+            i++;
+            final int fracStart = i;
+            while (i < s.length() && isDigit(s.charAt(i))) {
+                i++;
+            }
+            if (fracStart == i) {
+                out.append('0');
+            } else {
+                out.append(s, fracStart, i);
+            }
+        }
+        // Exponent (preserve verbatim — case of e/E, sign, digits)
+        if (i < s.length()) {
+            out.append(s, i, s.length());
+        }
+        return out.toString();
+    }
+
+    private static boolean isDigit(final char c) {
+        return c >= '0' && c <= '9';
     }
 
     private void emitString(final Element element, final StringBuilder out, final Options opts) throws XPathException {
