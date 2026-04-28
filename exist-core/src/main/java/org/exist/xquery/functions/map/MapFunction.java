@@ -521,7 +521,7 @@ public class MapFunction extends BasicFunction {
         if (args.length == 1 || args[1].isEmpty()) {
             return DuplicateMergeStrategy.USE_FIRST;
         }
-        final MapType map = (MapType) args[1].itemAt(0);
+        final AbstractMapType map = (AbstractMapType) args[1].itemAt(0);
         final StringValue key = new StringValue(this, "duplicates");
         final Sequence mapValue = map.get(key);
         if (mapValue.isEmpty()) {
