@@ -137,6 +137,7 @@ public class ErrorCodes {
         "It is a static error if the properties representing characters used in a picture string " +
         "do not each have distinct values, or if a property value is not valid for its property.");
     public static final ErrorCode XQST0118 = new W3CErrorCode("XQST0118", "It is a static error if an element constructor uses a name in the end tag that does not match the name in the start tag.");
+    public static final ErrorCode XQST0125 = new W3CErrorCode("XQST0125", "It is a static error if an inline function expression is annotated as %public or %private.");
 
     public static final ErrorCode XQDY0101 = new W3CErrorCode("XQDY0101", "An error is raised if a computed namespace constructor attempts to do any of the following:\n" +
             "Bind the prefix xml to some namespace URI other than http://www.w3.org/XML/1998/namespace.\n" +

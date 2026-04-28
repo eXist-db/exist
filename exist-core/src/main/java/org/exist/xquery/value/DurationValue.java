@@ -52,6 +52,12 @@ public class DurationValue extends ComputableValue {
     protected static final BigDecimal
             SIXTY_DECIMAL = BigDecimal.valueOf(60),
             ZERO_DECIMAL = BigDecimal.ZERO;
+
+    // XQuery 3.1 §10.1.1 leaves duration value-space limits implementation-defined.
+    // We cap signed total seconds (xdt:dayTimeDuration) and signed total months
+    // (xdt:yearMonthDuration) at the long range; values outside raise FODT0002.
+    protected static final BigDecimal MAX_DAY_TIME_SECONDS = new BigDecimal(Long.MAX_VALUE);
+    protected static final BigInteger MAX_YEAR_MONTH_MONTHS = BigInteger.valueOf(Long.MAX_VALUE);
     protected static final Duration CANONICAL_ZERO_DURATION =
             TimeUtils.getInstance().newDuration(true, null, null, null, null, null, ZERO_DECIMAL);
     protected final Duration duration;
@@ -253,6 +259,20 @@ public class DurationValue extends ComputableValue {
             x = x.negate();
         }
         return x;
+    }
+
+    protected void checkDayTimeOverflow(final BigDecimal seconds) throws XPathException {
+        if (seconds.abs().compareTo(MAX_DAY_TIME_SECONDS) > 0) {
+            throw new XPathException(getExpression(), ErrorCodes.FODT0002,
+                    "Overflow/underflow in xdt:dayTimeDuration operation");
+        }
+    }
+
+    protected void checkYearMonthOverflow(final BigInteger months) throws XPathException {
+        if (months.abs().compareTo(MAX_YEAR_MONTH_MONTHS) > 0) {
+            throw new XPathException(getExpression(), ErrorCodes.FODT0002,
+                    "Overflow/underflow in xdt:yearMonthDuration operation");
+        }
     }
 
     protected Duration canonicalZeroDuration() {
