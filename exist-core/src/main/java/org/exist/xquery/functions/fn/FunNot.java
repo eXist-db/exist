@@ -108,6 +108,10 @@ public class FunNot extends Function {
 		return deps;
 	}
 	
+	// PMD.NPathComplexity: handles fn:not's effective-boolean-value rules with
+	// XQ 3.1 compliance fixes for empty/single-item/multi-item sequence shapes
+	// and node-set vs atomic dispatch; branches mirror EBV spec.
+	@SuppressWarnings("PMD.NPathComplexity")
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
        if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);       

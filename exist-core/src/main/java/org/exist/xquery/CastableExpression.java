@@ -83,6 +83,10 @@ public class CastableExpression extends AbstractExpression {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.AbstractExpression#eval(org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
+	// PMD.NPathComplexity: castable-as evaluates the same XQ 3.1 cast spec rules
+	// as CastExpression.eval() but returns boolean instead of throwing; branches
+	// mirror the spec.
+	@SuppressWarnings("PMD.NPathComplexity")
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);       

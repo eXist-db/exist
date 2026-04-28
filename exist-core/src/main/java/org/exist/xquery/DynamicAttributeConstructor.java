@@ -80,6 +80,11 @@ public class DynamicAttributeConstructor extends NodeConstructor {
     /* (non-Javadoc)
      * @see org.exist.xquery.Expression#eval(org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
      */
+    // PMD.NPathComplexity: computed attribute constructor resolves a name expr
+    // against multiple spec error conditions (XQDY0044/XQDY0074/XQTY0024/
+    // XPTY0004) before serializing the value sequence with separator handling.
+    // Branches mirror XQ § 3.9 attribute-constructor rules.
+    @SuppressWarnings("PMD.NPathComplexity")
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);       

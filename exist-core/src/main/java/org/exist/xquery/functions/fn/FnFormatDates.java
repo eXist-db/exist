@@ -219,6 +219,11 @@ public class FnFormatDates extends BasicFunction {
         return sb.toString();
     }
 
+    // PMD.NPathComplexity: dispatches over the W3C XSLT/XQuery format-dateTime
+    // specifier set (Y/M/D/d/F/W/w/H/h/P/m/s/f/Z/z) per § 4.6.1; each branch
+    // implements one specifier's formatting rules. Splitting would obscure the
+    // spec mapping. Covered by FnFormatDatesTest.
+    @SuppressWarnings("PMD.NPathComplexity")
     private void formatComponent(String component, AbstractDateTimeValue dt, final String language,
             final Optional<String> place, final boolean tzHMZNPictureHint, final StringBuilder sb)
             throws XPathException {
@@ -505,6 +510,10 @@ public class FnFormatDates extends BasicFunction {
         };
     }
 
+    // PMD.NPathComplexity: implements XSLT/XQuery format-dateTime number-picture
+    // semantics (digit/word/Roman/abbreviated/Greek/etc per § 4.7) with optional
+    // language-aware ordinal forms; branch reorganization obscures the spec.
+    @SuppressWarnings("PMD.NPathComplexity")
     private void formatNumber(char specifier, String picture, String width, int num, final String language,
                               StringBuilder sb) throws XPathException {
         // Handle Roman numeral formatting
@@ -584,6 +593,10 @@ public class FnFormatDates extends BasicFunction {
      *   [f,2-2]      → exactly 2 digits: "45" for .456
      *   [f,1-*]      → all significant digits: "456" for .456
      */
+    // PMD.NPathComplexity: fractional-seconds picture parsing applies precedence
+    // rules from XSLT/XQuery § 4.7.3 (picture > width modifier > defaults) over
+    // multiple digit-grouping forms; branches map to spec rules.
+    @SuppressWarnings("PMD.NPathComplexity")
     private void formatFractionalSeconds(int millis, String picture, String width,
                                           StringBuilder sb) throws XPathException {
         // Build fraction digits string: at least 3 digits (millisecond precision)
@@ -634,6 +647,9 @@ public class FnFormatDates extends BasicFunction {
         sb.append(result);
     }
 
+    // PMD.NPathComplexity: parses width modifier "[m,n]" with min/max/wildcard
+    // forms per spec; branches encode each accepted syntax variant.
+    @SuppressWarnings("PMD.NPathComplexity")
     private int[] getWidths(String width) throws XPathException {
         if (width == null || width.isEmpty())
             {return null;}

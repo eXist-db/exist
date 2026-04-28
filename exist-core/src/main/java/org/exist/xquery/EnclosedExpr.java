@@ -64,6 +64,10 @@ public class EnclosedExpr extends PathExpr {
      * @see org.exist.xquery.AbstractExpression#eval(org.exist.xquery.StaticContext,
      * org.exist.dom.persistent.DocumentSet, org.exist.xquery.value.Sequence)
      */
+    // PMD.NPathComplexity: serializes enclosed-expression sequences inside
+    // element/attribute/text content with separator handling and
+    // boundary-space/whitespace policy branches per XQ § 3.9.
+    @SuppressWarnings("PMD.NPathComplexity")
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);

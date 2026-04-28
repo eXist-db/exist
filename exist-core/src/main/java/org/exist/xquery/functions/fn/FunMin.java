@@ -121,6 +121,9 @@ public class FunMin extends CollatingFunction {
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.Expression#eval(org.exist.dom.persistent.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */
+	// PMD.NPathComplexity: dispatches over numeric/duration/date/string/untyped
+	// types per fn:min spec, applying ordering and FORG0006/FOTY0012 error rules.
+	@SuppressWarnings("PMD.NPathComplexity")
 	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);       
