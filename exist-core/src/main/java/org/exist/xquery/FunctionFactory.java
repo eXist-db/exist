@@ -54,14 +54,20 @@ public class FunctionFactory {
         } catch(final QName.IllegalQNameException xpe) {
             throw new XPathException(ast, ErrorCodes.XPST0081, "Invalid qname " +  ast.getText() + ". " + xpe.getMessage());
         }
-        // XQ4 (PR2200): for unprefixed function calls, check if there's a
-        // no-namespace user-defined function that should override fn:
+        // XQ4 (PR2200): unprefixed function calls prefer no-namespace
+        // user-declared functions over the default function namespace (fn:).
+        // If a same-name user fn is already declared in no-namespace, switch.
+        // Otherwise, when no fn: built-in matches the call (forward reference
+        // territory), still switch to no-namespace so a later user declaration
+        // can resolve via the forward-reference path.
         if (context.getXQueryVersion() >= 40
                 && !ast.getText().contains(":")
                 && Namespaces.XPATH_FUNCTIONS_NS.equals(qname.getNamespaceURI())) {
             final QName noNsName = new QName(ast.getText(), "");
             final UserDefinedFunction noNsFunc = context.resolveFunction(noNsName, params.size());
             if (noNsFunc != null) {
+                qname = noNsName;
+            } else if (!hasInternalOrUserFnFunction(context, qname, params.size())) {
                 qname = noNsName;
             }
         }
@@ -449,7 +455,16 @@ public class FunctionFactory {
             fc.setLocation(ast.getLine(), ast.getColumn());
             if (hasKeywordArgs) {
                 final List<Expression> resolved = resolveKeywordArguments(context, params, func.getSignature(), ast);
-                fc.setArguments(resolved != null ? resolved : params);
+                if (resolved == null) {
+                    // For user-defined functions there is exactly one signature per
+                    // QName+arity, so a null return means an unmatchable keyword
+                    // argument or a missing required parameter — surface as XPST0017.
+                    throw new XPathException(ast.getLine(), ast.getColumn(),
+                            ErrorCodes.XPST0017,
+                            "Keyword arguments do not match the signature of "
+                                    + qname.toURIQualifiedName() + '#' + func.getSignature().getArgumentCount());
+                }
+                fc.setArguments(resolved);
             } else {
                 fc.setArguments(params);
             }
@@ -626,14 +641,20 @@ public class FunctionFactory {
             }
             final KeywordArgumentExpression kwArg = (KeywordArgumentExpression) param;
             final String kwName = kwArg.getKeywordName();
+            final String kwClark = normalizeQNameToClark(context, kwName);
 
-            // Find matching parameter by name
+            // Find matching parameter by name. Compare in Clark notation so
+            // {prefix:local, Q{ns}local, plain local} all match a parameter that
+            // resolves to the same expanded QName. Search ALL positions, not
+            // just those at/after the first keyword, so that supplying the same
+            // parameter both positionally and by keyword is caught (XPST0017).
             int matchPos = -1;
-            for (int j = firstKeyword; j < argTypes.length; j++) {
+            for (int j = 0; j < argTypes.length; j++) {
                 if (argTypes[j] instanceof org.exist.xquery.value.FunctionParameterSequenceType) {
                     final String paramName = ((org.exist.xquery.value.FunctionParameterSequenceType) argTypes[j])
                             .getAttributeName();
-                    if (kwName.equals(paramName)) {
+                    final String paramClark = normalizeQNameToClark(context, paramName);
+                    if (kwClark != null && kwClark.equals(paramClark)) {
                         matchPos = j;
                         break;
                     }
@@ -644,16 +665,19 @@ public class FunctionFactory {
                 return null; // no matching parameter found — signature mismatch
             }
             if (resolved.get(matchPos) != null) {
+                // XQ4 (PR197): supplying the same parameter twice — whether by two
+                // keyword args or one positional + one keyword — is XPST0017.
                 throw new XPathException(ast.getLine(), ast.getColumn(),
-                        ErrorCodes.XPST0003,
-                        "Duplicate keyword argument: " + kwName);
+                        ErrorCodes.XPST0017,
+                        "Parameter '" + kwName + "' supplied more than once in call");
             }
             resolved.set(matchPos, kwArg.getArgument());
         }
 
-        // Fill gaps: for parameters that allow empty sequences or have defaults,
-        // supply an empty sequence expression. This enables keyword arguments to
-        // skip optional positional parameters in overloaded built-in functions.
+        // Fill gaps: parameters with default values get them substituted in.
+        // A parameter without a default is required; if the call did not supply
+        // it (positionally or by keyword), the signature does not match — return
+        // null so the caller can report XPST0017 or try another overload.
         for (int i = 0; i < resolved.size(); i++) {
             if (resolved.get(i) == null) {
                 if (argTypes[i] instanceof org.exist.xquery.value.FunctionParameterSequenceType) {
@@ -661,19 +685,69 @@ public class FunctionFactory {
                             (org.exist.xquery.value.FunctionParameterSequenceType) argTypes[i];
                     if (pst.hasDefaultValue()) {
                         resolved.set(i, pst.getDefaultValue());
-                    } else if (pst.getCardinality().isSuperCardinalityOrEqualOf(
-                            org.exist.xquery.Cardinality.EMPTY_SEQUENCE)) {
-                        // Parameter allows empty — fill with empty sequence
-                        resolved.set(i, new PathExpr(context));
                     } else {
-                        return null; // required parameter missing
+                        return null;
                     }
                 } else {
-                    return null; // can't determine if parameter is optional
+                    return null;
                 }
             }
         }
 
         return resolved;
+    }
+
+    /**
+     * True if the namespace's modules (Internal or XQuery) declare any function
+     * matching {@code qname}, regardless of arity. Used by the XQ4 PR2200
+     * unprefixed-call resolver to decide whether an unmatched call should be
+     * deferred to no-namespace forward-reference resolution.
+     */
+    private static boolean hasInternalOrUserFnFunction(final XQueryContext context, final QName qname, final int arity) {
+        final Module[] modules = context.getModules(qname.getNamespaceURI());
+        if (modules != null) {
+            for (final Module module : modules) {
+                if (module instanceof InternalModule) {
+                    if (((InternalModule) module).getFunctionDef(qname, arity) != null) {
+                        return true;
+                    }
+                    if (!((InternalModule) module).getFunctionsByName(qname).isEmpty()) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Resolve a (possibly prefixed) QName-shaped string to Clark notation
+     * {@code {namespace}local}. Plain NCNames map to {@code {}local}; EQName
+     * inputs ({@code Q{uri}local}) and Clark inputs are returned in Clark form.
+     * Returns {@code null} only when the input is {@code null}; an unresolvable
+     * prefix falls through to the raw input so error messages stay readable.
+     */
+    private static String normalizeQNameToClark(final XQueryContext context, final String name) {
+        if (name == null) {
+            return null;
+        }
+        if (name.length() > 0 && name.charAt(0) == '{') {
+            return name;
+        }
+        if (name.length() > 1 && name.charAt(0) == 'Q' && name.charAt(1) == '{') {
+            // EQName: Q{uri}local — strip the leading 'Q'.
+            return name.substring(1);
+        }
+        final int colonIdx = name.indexOf(':');
+        if (colonIdx < 0) {
+            return "{}" + name;
+        }
+        final String prefix = name.substring(0, colonIdx);
+        final String local = name.substring(colonIdx + 1);
+        final String uri = context.getURIForPrefix(prefix);
+        if (uri == null) {
+            return name;
+        }
+        return "{" + uri + "}" + local;
     }
 }

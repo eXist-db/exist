@@ -85,6 +85,10 @@ options {
 	protected XQueryLexer lexer;
 	protected boolean xq4Enabled = false;
 
+	// Version declared via "xquery version <ver>;" prolog: 10, 30, 31, or 40.
+	// Default 30 preserves historical eXist behavior (no version decl => XQ 3.0+ rules).
+	protected int parsedXQueryVersion = 30;
+
 	public XQueryParser(XQueryLexer lexer) {
 		this((TokenStream)lexer);
 		this.lexer = lexer;
@@ -92,6 +96,8 @@ options {
 	}
 
 	public boolean isXQ4() { return xq4Enabled; }
+
+	public int getParsedXQueryVersion() { return parsedXQueryVersion; }
 
 	public boolean foundErrors() {
 		return foundError;
@@ -351,8 +357,16 @@ versionDecl throws XPathException
 	"xquery" "version" v:STRING_LITERAL ( "encoding"! enc:STRING_LITERAL )?
         {
             #versionDecl = #(#[VERSION_DECL, v.getText()], enc);
-            if ("4.0".equals(v.getText())) {
+            final String ver = v.getText();
+            if ("4.0".equals(ver)) {
                 xq4Enabled = true;
+                parsedXQueryVersion = 40;
+            } else if ("3.1".equals(ver)) {
+                parsedXQueryVersion = 31;
+            } else if ("3.0".equals(ver)) {
+                parsedXQueryVersion = 30;
+            } else if ("1.0".equals(ver)) {
+                parsedXQueryVersion = 10;
             }
         }
 	;
@@ -578,7 +592,8 @@ functionDecl [XQueryAST ann] throws XPathException
 :
 	"function"! name=eqName!
 	{
-		if (isReservedFunctionName(name)) {
+		// Reserved-name restriction was introduced in XQuery 3.0; XQuery 1.0 allows these names.
+		if (parsedXQueryVersion >= 30 && isReservedFunctionName(name)) {
 			throw new XPathException(ErrorCodes.XPST0003,
 				"A reserved function name '" + name + "' cannot be used as the name of a function declaration.");
 		}
@@ -2170,22 +2185,38 @@ argument throws XPathException
 :
 	(QUESTION ( ncnameOrKeyword | INTEGER_LITERAL | DECIMAL_LITERAL | DOUBLE_LITERAL | STRING_LITERAL | LPAREN | DOLLAR | SELF | HASH | STAR )) => unaryLookup
 	| argumentPlaceholder
+	// XQ4 keyword arg lookahead. Four shapes are possible: bare name (ncname COLON EQ),
+	// lexer-split prefix:local (ncname COLON ncname COLON EQ), lexer-collapsed prefix:local
+	// (QNAME COLON EQ), and EQName (BRACED_URI_LITERAL ncname COLON EQ).
 	| ( { xq4Enabled }? ncnameOrKeyword COLON ( EQ | ncnameOrKeyword COLON EQ ) ) => keywordArgument
+	| ( { xq4Enabled }? QNAME COLON EQ ) => keywordArgument
+	| ( { xq4Enabled }? BRACED_URI_LITERAL ncnameOrKeyword COLON EQ ) => keywordArgument
 	| exprSingle
 	;
 
-// XQ4: keyword arguments - name := value, or prefix:name := value
+// XQ4: keyword arguments - name := value, prefix:name := value, or Q{uri}name := value
 keywordArgument throws XPathException
-{ String kwName = null; String prefix = null; String local = null; }
+{ String kwName = null; String prefix = null; String local = null; String uri = null; }
 :
-    // Prefixed keyword: prefix:name := value
-    ( ( ncnameOrKeyword COLON ncnameOrKeyword COLON EQ ) =>
-        prefix=ncnameOrKeyword! COLON! local=ncnameOrKeyword! COLON! EQ! keywordArgumentValue
-        { kwName = prefix + ":" + local; }
-    |
-    // Simple keyword: name := value
-        kwName=ncnameOrKeyword! COLON! EQ! keywordArgumentValue
-    )
+	(
+	    // EQName keyword: Q{uri}local := value
+	    ( BRACED_URI_LITERAL ncnameOrKeyword COLON EQ ) =>
+	        uriLit:BRACED_URI_LITERAL! local=ncnameOrKeyword! COLON! EQ! keywordArgumentValue
+	        { kwName = "{" + uriLit.getText() + "}" + local; }
+	    |
+	    // Lexer-collapsed prefixed keyword: QNAME(prefix:local) := value
+	    ( QNAME COLON EQ ) =>
+	        qn:QNAME! COLON! EQ! keywordArgumentValue
+	        { kwName = qn.getText(); }
+	    |
+	    // Lexer-split prefixed keyword: prefix:name := value (when prefix is a keyword, etc.)
+	    ( ncnameOrKeyword COLON ncnameOrKeyword COLON EQ ) =>
+	        prefix=ncnameOrKeyword! COLON! local=ncnameOrKeyword! COLON! EQ! keywordArgumentValue
+	        { kwName = prefix + ":" + local; }
+	    |
+	    // Simple keyword: name := value
+	        kwName=ncnameOrKeyword! COLON! EQ! keywordArgumentValue
+	)
 	{
 		#keywordArgument = #(#[KEYWORD_ARG, kwName], #keywordArgument);
 	}
