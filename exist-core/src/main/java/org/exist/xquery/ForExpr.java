@@ -116,9 +116,13 @@ public class ForExpr extends BindingExpression {
      * This implementation tries to process the "where" clause in advance, i.e. in one single
      * step. This is possible if the input sequence is a node set and the where expression
      * has no dependencies on other variables than those declared in this "for" statement.
-     * 
+     *
      * @see org.exist.xquery.Expression#eval(Sequence, Item)
      */
+    // PMD.NPathComplexity: extended for XQFT score-binding alongside the existing
+    // FLWOR positional/cardinality/profiler dispatch; branches map to the FLWOR
+    // and XQFT spec rules.
+    @SuppressWarnings("PMD.NPathComplexity")
     public Sequence eval(Sequence contextSequence, Item contextItem)
             throws XPathException {
         if (context.getProfiler().isEnabled()) {
