@@ -922,6 +922,32 @@ public class XQueryParserTest {
     }
 
     @Test
+    public void qnameLiteralBracedURI() throws Exception {
+        // XQ4 §3.x: #Q{uri}local is a QName literal whose namespace is uri.
+        assertModuleEval("http://example.com/ns",
+                "xquery version '4.0';\nnamespace-uri-from-QName(#Q{http://example.com/ns}foo)");
+    }
+
+    @Test
+    public void qnameLiteralEmptyBracedURI() throws Exception {
+        // Empty namespace URI is valid: #Q{}local has no namespace.
+        assertModuleEval("hello", "xquery version '4.0';\nlocal-name-from-QName(#Q{}hello)");
+    }
+
+    @Test
+    public void qnameLiteralXsType() throws Exception {
+        // #xs:decimal should evaluate to a QName referring to xs:decimal.
+        assertModuleEval("decimal", "xquery version '4.0';\nlocal-name-from-QName(#xs:decimal)");
+    }
+
+    // XQ4: U+00F7 DIVISION SIGN is an alternative spelling of `div`.
+    @Test
+    public void divisionSignOperator() throws Exception {
+        assertEval("5", "10 \u00f7 2");
+        assertEval("0.5", "1 \u00f7 2");
+    }
+
+    @Test
     public void stringConstructorSimple() throws Exception {
         assertEval("Hello, World!", "``[Hello, World!]``");
     }

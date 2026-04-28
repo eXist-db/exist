@@ -138,9 +138,18 @@ public final class XQueryLexer {
         switch (ch) {
             case '(':
                 advance();
+                // XQ4 §3.x: a Pragma is `(#` followed by whitespace, then an
+                // EQName. Without the whitespace requirement, an expression
+                // like fn:error(#err:XPTY0004) is mis-tokenized as a pragma.
+                // Only emit PRAGMA_START when the `#` is followed by ASCII
+                // whitespace; otherwise emit LPAREN and let the next call
+                // tokenize `#` as HASH (which begins a QNameLiteral).
                 if (at('#')) {
-                    advance();
-                    return token(Token.PRAGMA_START, "(#");
+                    final int after = ahead(1);
+                    if (after == ' ' || after == '\t' || after == '\n' || after == '\r') {
+                        advance();
+                        return token(Token.PRAGMA_START, "(#");
+                    }
                 }
                 return token(Token.LPAREN);
 
@@ -345,6 +354,11 @@ public final class XQueryLexer {
             case '%':
                 advance();
                 return token(Token.PERCENT);
+
+            // XQ4: U+00F7 DIVISION SIGN is an alternate spelling of 'div'.
+            case 0x00F7:
+                advance();
+                return token(Token.NCNAME, "div");
 
             default:
                 // ---- Numeric literals ----

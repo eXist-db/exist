@@ -5545,7 +5545,9 @@ public final class XQueryParser {
      */
     private boolean peekIsNameStart() {
         if (bufferedNext == null) bufferedNext = lexer.nextToken();
-        return bufferedNext.type == Token.NCNAME || bufferedNext.type == Token.QNAME;
+        return bufferedNext.type == Token.NCNAME
+                || bufferedNext.type == Token.QNAME
+                || bufferedNext.type == Token.BRACED_URI_LITERAL;
     }
 
     private boolean isStepStart() {
