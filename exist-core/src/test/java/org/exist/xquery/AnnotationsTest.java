@@ -68,182 +68,120 @@ public class AnnotationsTest {
     
     @Test
     public void annotation() throws XMLDBException {
-        
-        final String TEST_VALUE_CONSTANT = "hello world";
-        
-        final String query = 
-                "declare namespace hello = 'http://world.com';\n"
-                + "declare\n"
-                + "%hello:world\n"
-                + "function local:hello() {\n"
-                +   "'" + TEST_VALUE_CONSTANT + "'\n"
-                + "};\n"
-                + "local:hello()";
-            
+        final String query = """
+                declare namespace hello = 'http://world.com';
+                declare
+                %hello:world
+                function local:hello() {
+                    'hello world'
+                };
+                local:hello()""";
+
         final XPathQueryService service = getQueryService();
         final ResourceSet result = service.query(query);
-        
+
         assertEquals(1, result.getSize());
         Resource res = result.getIterator().nextResource();
-        assertEquals(TEST_VALUE_CONSTANT, res.getContent());
+        assertEquals("hello world", res.getContent());
     }
-    
+
     @Test
     public void annotationWithLiterals() throws XMLDBException {
-        
-        final String TEST_VALUE_CONSTANT = "hello world";
-        
-        final String query = 
-                "declare namespace hello = 'http://world.com';\n"
-                + "declare\n"
-                + "%hello:world('a=b', 'b=c')\n"
-                + "function local:hello() {\n"
-                +   "'" + TEST_VALUE_CONSTANT + "'\n"
-                + "};\n"
-                + "local:hello()";
+        final String query = """
+                declare namespace hello = 'http://world.com';
+                declare
+                %hello:world('a=b', 'b=c')
+                function local:hello() {
+                    'hello world'
+                };
+                local:hello()""";
             
         final XPathQueryService service = getQueryService();
         final ResourceSet result = service.query(query);
-        
+
         assertEquals(1, result.getSize());
         Resource res = result.getIterator().nextResource();
-        assertEquals(TEST_VALUE_CONSTANT, res.getContent());
+        assertEquals("hello world", res.getContent());
     }
-    
+
     @Test(expected = XMLDBException.class)
     public void annotationInXMLNamespaceFails() throws XMLDBException {
-        
-        final String TEST_VALUE_CONSTANT = "hello world";
-        
-        final String query = 
-                "declare namespace hello = 'http://www.w3.org/XML/1998/namespace';\n"
-                + "declare\n"
-                + "%hello:world\n"
-                + "function local:hello() {\n"
-                +   "'" + TEST_VALUE_CONSTANT + "'\n"
-                + "};\n"
-                + "local:hello()";
-            
-        final XPathQueryService service = getQueryService();
-        service.query(query);
+        final String query = """
+                declare namespace hello = 'http://www.w3.org/XML/1998/namespace';
+                declare %hello:world function local:hello() { 'hello world' };
+                local:hello()""";
+        getQueryService().query(query);
     }
-    
+
     @Test(expected = XMLDBException.class)
     public void annotationInXMLSchemaNamespaceFails() throws XMLDBException {
-        
-        final String TEST_VALUE_CONSTANT = "hello world";
-        
-        final String query = 
-                "declare namespace hello = 'http://www.w3.org/2001/XMLSchema';\n"
-                + "declare\n"
-                + "%hello:world\n"
-                + "function local:hello() {\n"
-                +   "'" + TEST_VALUE_CONSTANT + "'\n"
-                + "};\n"
-                + "local:hello()";
-            
-        final XPathQueryService service = getQueryService();
-        service.query(query);
+        final String query = """
+                declare namespace hello = 'http://www.w3.org/2001/XMLSchema';
+                declare %hello:world function local:hello() { 'hello world' };
+                local:hello()""";
+        getQueryService().query(query);
     }
-    
+
     @Test(expected = XMLDBException.class)
     public void annotationInXMLSchemaInstanceNamespaceFails() throws XMLDBException {
-        
-        final String TEST_VALUE_CONSTANT = "hello world";
-        
-        final String query = 
-                "declare namespace hello = 'http://www.w3.org/2001/XMLSchema-instance';\n"
-                + "declare\n"
-                + "%hello:world\n"
-                + "function local:hello() {\n"
-                +   "'" + TEST_VALUE_CONSTANT + "'\n"
-                + "};\n"
-                + "local:hello()";
-            
-        final XPathQueryService service = getQueryService();
-        service.query(query);
+        final String query = """
+                declare namespace hello = 'http://www.w3.org/2001/XMLSchema-instance';
+                declare %hello:world function local:hello() { 'hello world' };
+                local:hello()""";
+        getQueryService().query(query);
     }
-    
+
     @Test(expected = XMLDBException.class)
     public void annotationInXPathFunctionsNamespaceFails() throws XMLDBException {
-        
-        final String TEST_VALUE_CONSTANT = "hello world";
-        
-        final String query = 
-                "declare namespace hello = 'http://www.w3.org/2005/xpath-functions';\n"
-                + "declare\n"
-                + "%hello:world\n"
-                + "function local:hello() {\n"
-                +   "'" + TEST_VALUE_CONSTANT + "'\n"
-                + "};\n"
-                + "local:hello()";
-            
-        final XPathQueryService service = getQueryService();
-        service.query(query);
+        final String query = """
+                declare namespace hello = 'http://www.w3.org/2005/xpath-functions';
+                declare %hello:world function local:hello() { 'hello world' };
+                local:hello()""";
+        getQueryService().query(query);
     }
-    
+
     @Test(expected = XMLDBException.class)
     public void annotationInXPathFunctionsMathNamespaceFails() throws XMLDBException {
-        
-        final String TEST_VALUE_CONSTANT = "hello world";
-        
-        final String query = 
-                "declare namespace hello = 'http://www.w3.org/2005/xpath-functions/math';\n"
-                + "declare\n"
-                + "%hello:world\n"
-                + "function local:hello() {\n"
-                +   "'" + TEST_VALUE_CONSTANT + "'\n"
-                + "};\n"
-                + "local:hello()";
-            
-        final XPathQueryService service = getQueryService();
-        service.query(query);
+        final String query = """
+                declare namespace hello = 'http://www.w3.org/2005/xpath-functions/math';
+                declare %hello:world function local:hello() { 'hello world' };
+                local:hello()""";
+        getQueryService().query(query);
     }
-    
+
     @Test(expected = XMLDBException.class)
     public void annotationInXQueryOptionsNamespaceFails() throws XMLDBException {
-
-        final String TEST_VALUE_CONSTANT = "hello world";
-
-        final String query =
-                "declare namespace hello = 'http://www.w3.org/2011/xquery-options';\n"
-                + "declare\n"
-                + "%hello:world\n"
-                + "function local:hello() {\n"
-                +   "'" + TEST_VALUE_CONSTANT + "'\n"
-                + "};\n"
-                + "local:hello()";
-
-        final XPathQueryService service = getQueryService();
-        service.query(query);
+        final String query = """
+                declare namespace hello = 'http://www.w3.org/2011/xquery-options';
+                declare %hello:world function local:hello() { 'hello world' };
+                local:hello()""";
+        getQueryService().query(query);
     }
 
     @Test(expected = XMLDBException.class)
     public void annotationInXPathFunctionsMapNamespaceFails() throws XMLDBException {
-        final String query =
-                "declare namespace m = 'http://www.w3.org/2005/xpath-functions/map';\n"
-                + "declare %m:x function local:foo() { 'bar' };\n"
-                + "local:foo()";
-
+        final String query = """
+                declare namespace m = 'http://www.w3.org/2005/xpath-functions/map';
+                declare %m:x function local:foo() { 'bar' };
+                local:foo()""";
         getQueryService().query(query);
     }
 
     @Test(expected = XMLDBException.class)
     public void annotationInXPathFunctionsArrayNamespaceFails() throws XMLDBException {
-        final String query =
-                "declare namespace a = 'http://www.w3.org/2005/xpath-functions/array';\n"
-                + "declare %a:x function local:foo() { 'bar' };\n"
-                + "local:foo()";
-
+        final String query = """
+                declare namespace a = 'http://www.w3.org/2005/xpath-functions/array';
+                declare %a:x function local:foo() { 'bar' };
+                local:foo()""";
         getQueryService().query(query);
     }
 
     @Test(expected = XMLDBException.class)
     public void annotationInXQueryNamespaceFails() throws XMLDBException {
-        final String query =
-                "declare namespace xq = 'http://www.w3.org/2012/xquery';\n"
-                + "declare %xq:x function local:foo() { 'bar' };\n"
-                + "local:foo()";
+        final String query = """
+                declare namespace xq = 'http://www.w3.org/2012/xquery';
+                declare %xq:x function local:foo() { 'bar' };
+                local:foo()""";
 
         getQueryService().query(query);
     }
@@ -251,9 +189,9 @@ public class AnnotationsTest {
     /** XQ3.1+ allows annotations on FunctionTest in sequence-type positions. */
     @Test
     public void annotationOnFunctionTestParses() throws XMLDBException {
-        final String query =
-                "declare namespace eg = 'http://example.com';\n"
-                + "() instance of %eg:x function(*)";
+        final String query = """
+                declare namespace eg = 'http://example.com';
+                () instance of %eg:x function(*)""";
 
         final ResourceSet result = getQueryService().query(query);
         assertEquals(1, result.getSize());
@@ -262,9 +200,9 @@ public class AnnotationsTest {
 
     @Test
     public void multipleAnnotationsOnFunctionTestParse() throws XMLDBException {
-        final String query =
-                "declare namespace eg = 'http://example.com';\n"
-                + "() instance of %eg:x %eg:y(1) %eg:z('foo') function(*)";
+        final String query = """
+                declare namespace eg = 'http://example.com';
+                () instance of %eg:x %eg:y(1) %eg:z('foo') function(*)""";
 
         final ResourceSet result = getQueryService().query(query);
         assertEquals(1, result.getSize());
@@ -273,9 +211,9 @@ public class AnnotationsTest {
 
     @Test
     public void annotationOnTypedFunctionTestParses() throws XMLDBException {
-        final String query =
-                "declare namespace eg = 'http://example.com';\n"
-                + "() instance of %eg:x function(xs:integer) as xs:string";
+        final String query = """
+                declare namespace eg = 'http://example.com';
+                () instance of %eg:x function(xs:integer) as xs:string""";
 
         final ResourceSet result = getQueryService().query(query);
         assertEquals(1, result.getSize());
