@@ -412,10 +412,8 @@ public class IntegerValue extends NumericValue {
 
     @Override
     public ComputableValue minus(final ComputableValue other) throws XPathException {
-        if (Type.subTypeOf(other.getType(), Type.INTEGER))
-        // return new IntegerValue(value - ((IntegerValue) other).value, type);
-        {
-            return new IntegerValue(getExpression(), value.subtract(((IntegerValue) other).value), type);
+        if (Type.subTypeOf(other.getType(), Type.INTEGER)) {
+            return integerArithmetic(value.subtract(((IntegerValue) other).value));
         } else {
             return ((ComputableValue) convertTo(other.getType())).minus(other);
         }
@@ -423,10 +421,8 @@ public class IntegerValue extends NumericValue {
 
     @Override
     public ComputableValue plus(final ComputableValue other) throws XPathException {
-        if (Type.subTypeOf(other.getType(), Type.INTEGER))
-        // return new IntegerValue(value + ((IntegerValue) other).value, type);
-        {
-            return new IntegerValue(getExpression(), value.add(((IntegerValue) other).value), type);
+        if (Type.subTypeOf(other.getType(), Type.INTEGER)) {
+            return integerArithmetic(value.add(((IntegerValue) other).value));
         } else {
             return ((ComputableValue) convertTo(other.getType())).plus(other);
         }
@@ -435,11 +431,31 @@ public class IntegerValue extends NumericValue {
     @Override
     public ComputableValue mult(final ComputableValue other) throws XPathException {
         if (Type.subTypeOf(other.getType(), Type.INTEGER)) {
-            return new IntegerValue(getExpression(), value.multiply(((IntegerValue) other).value), type);
+            return integerArithmetic(value.multiply(((IntegerValue) other).value));
         } else if (Type.subTypeOf(other.getType(), Type.DURATION)) {
             return other.mult(this);
         } else {
             return ((ComputableValue) convertTo(other.getType())).mult(other);
+        }
+    }
+
+    /**
+     * Build the result of an integer-typed +/-/* operation. When the
+     * computed value fits the operand's derived subtype, the result keeps
+     * that subtype (xs:short + xs:short = xs:short). When it would
+     * overflow, widen to xs:integer rather than raising FORG0001 — this
+     * matches Saxon/BaseX semantics and is what fn:sum(0 to 0x7FFF as
+     * xs:short*) requires (intermediate sums overflow xs:short long
+     * before the input sequence is exhausted).
+     */
+    private IntegerValue integerArithmetic(final BigInteger result) throws XPathException {
+        try {
+            return new IntegerValue(getExpression(), result, type);
+        } catch (final XPathException e) {
+            if (type != Type.INTEGER && e.getErrorCode() == ErrorCodes.FORG0001) {
+                return new IntegerValue(getExpression(), result, Type.INTEGER);
+            }
+            throw e;
         }
     }
 

@@ -100,7 +100,8 @@ public class MapExpr extends AbstractExpression {
             final Mapping mapping = this.mappings.get(0);
             final Sequence key = mapping.key.eval(contextSequence, null);
             if (key.getItemCount() != 1) {
-                throw new XPathException(this, MapErrorCode.EXMPDY001, "Expected single value for key, got " + key.getItemCount());
+                throw new XPathException(this, ErrorCodes.XPTY0004,
+                        "Map key expression must yield a single atomic value, got " + key.getItemCount());
             }
             final AtomicValue atomic = key.itemAt(0).atomize();
             final Sequence value = mapping.value.eval(contextSequence, null);
@@ -145,7 +146,8 @@ public class MapExpr extends AbstractExpression {
             }
             final Sequence key = mapping.key.eval(contextSequence, null);
             if (key.getItemCount() != 1) {
-                throw new XPathException(this, MapErrorCode.EXMPDY001, "Expected single value for key, got " + key.getItemCount());
+                throw new XPathException(this, ErrorCodes.XPTY0004,
+                        "Map key expression must yield a single atomic value, got " + key.getItemCount());
             }
             final AtomicValue atomic = key.itemAt(0).atomize();
             final Sequence value = mapping.value.eval(contextSequence, null);
