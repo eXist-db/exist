@@ -103,7 +103,7 @@ public class OneParamFunctions extends BasicFunction {
     public final static FunctionSignature FNS_LOG10 = new FunctionSignature( // NEW
             new QName(LOG10, MathModule.NAMESPACE_URI, MathModule.PREFIX),
             "Returns the base-ten logarithm of the argument.",
-            new SequenceType[]{new FunctionParameterSequenceType("arg", Type.DOUBLE, Cardinality.ZERO_OR_ONE, "The input number")},
+            new SequenceType[]{new FunctionParameterSequenceType("value", Type.DOUBLE, Cardinality.ZERO_OR_ONE, "The input number")},
             new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the log")
     );
 
