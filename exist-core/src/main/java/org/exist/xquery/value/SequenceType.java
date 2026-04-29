@@ -21,12 +21,15 @@
  */
 package org.exist.xquery.value;
 
+import io.lacuna.bifurcan.IEntry;
 import org.exist.dom.QName;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Expression;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
+import org.exist.xquery.functions.array.ArrayType;
+import org.exist.xquery.functions.map.AbstractMapType;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -177,8 +180,21 @@ public class SequenceType {
             return false;
         }
 
-        // For function types, check parameter and return type compatibility
-        if (Type.subTypeOf(primaryType, Type.FUNCTION) && item instanceof FunctionReference) {
+        // For typed map(K, V) tests against a map item: validate every entry's key and value
+        if (primaryType == Type.MAP_ITEM && functionParamTypes != null
+                && item instanceof AbstractMapType map) {
+            if (!checkMapType(map)) {
+                return false;
+            }
+        // For typed array(T) tests against an array item: validate every member
+        } else if (primaryType == Type.ARRAY_ITEM && functionParamTypes != null
+                && item instanceof ArrayType array) {
+            if (!checkArrayType(array)) {
+                return false;
+            }
+        // For function-type tests against a function item (including the function-shape
+        // of map/array items, e.g. map matching function(xs:anyAtomicType) as item()*)
+        } else if (Type.subTypeOf(primaryType, Type.FUNCTION) && item instanceof FunctionReference) {
             if (!checkFunctionType((FunctionReference) item)) {
                 return false;
             }
@@ -214,6 +230,17 @@ public class SequenceType {
      * @return true if the function matches the required function type
      */
     private boolean checkFunctionType(final FunctionReference funcRef) {
+        // Map and array items are also functions: a map(K, V) is an instance of
+        // function(xs:anyAtomicType) as V*; an array(T) is function(xs:integer) as T.
+        // We treat them specially so the synthetic accessor signature does not
+        // dictate parameter/return shape.
+        if (funcRef instanceof AbstractMapType map) {
+            return checkMapAsFunction(map);
+        }
+        if (funcRef instanceof ArrayType array) {
+            return checkArrayAsFunction(array);
+        }
+
         final FunctionSignature sig = funcRef.getSignature();
 
         // Check arity: if we have typed parameter info, check against it
@@ -237,6 +264,120 @@ public class SequenceType {
         // The return type check alone fixes the majority of subtyping test failures
 
         return true;
+    }
+
+    /**
+     * Validate a map item against a typed {@code map(K, V)} test.
+     * Every entry's key must satisfy K (an item type with cardinality EXACTLY_ONE
+     * by construction in the grammar), and every entry's value must satisfy V.
+     */
+    private boolean checkMapType(final AbstractMapType map) {
+        if (functionParamTypes.length != 2) {
+            return false;
+        }
+        final SequenceType keyType = functionParamTypes[0];
+        final SequenceType valueType = functionParamTypes[1];
+        for (final IEntry<AtomicValue, Sequence> entry : map) {
+            if (!keyType.checkType((Item) entry.key())) {
+                return false;
+            }
+            if (!matchesSequence(valueType, entry.value())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Validate an array item against a typed {@code array(T)} test.
+     * Every member sequence must satisfy T.
+     */
+    private boolean checkArrayType(final ArrayType array) {
+        if (functionParamTypes.length != 1) {
+            return false;
+        }
+        final SequenceType memberType = functionParamTypes[0];
+        for (final Sequence member : array.toArray()) {
+            if (!matchesSequence(memberType, member)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Treat a map as a function {@code function(xs:anyAtomicType) as V*}. The map
+     * matches a function-type test if (a) the required parameter type is a subtype
+     * of {@code xs:anyAtomicType} (contravariant), and (b) every value in the map
+     * conforms to the required return type (an empty map matches vacuously).
+     */
+    private boolean checkMapAsFunction(final AbstractMapType map) {
+        if (functionParamTypes != null) {
+            if (functionParamTypes.length != 1) {
+                return false;
+            }
+            // Required param type must be a subtype of xs:anyAtomicType (contravariant:
+            // the function-shape's parameter is xs:anyAtomicType; required must be ⊑ that)
+            if (!Type.subTypeOf(functionParamTypes[0].getPrimaryType(), Type.ANY_ATOMIC_TYPE)) {
+                return false;
+            }
+        }
+        if (functionReturnType != null) {
+            for (final IEntry<AtomicValue, Sequence> entry : map) {
+                if (!matchesSequence(functionReturnType, entry.value())) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Treat an array as a function {@code function(xs:integer) as T}. The array
+     * matches a function-type test if (a) the required parameter type is a subtype
+     * of {@code xs:integer} (contravariant), and (b) every member conforms to the
+     * required return type (an empty array matches vacuously).
+     */
+    private boolean checkArrayAsFunction(final ArrayType array) {
+        if (functionParamTypes != null) {
+            if (functionParamTypes.length != 1) {
+                return false;
+            }
+            if (!Type.subTypeOf(functionParamTypes[0].getPrimaryType(), Type.INTEGER)) {
+                return false;
+            }
+        }
+        if (functionReturnType != null) {
+            for (final Sequence member : array.toArray()) {
+                if (!matchesSequence(functionReturnType, member)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Check whether a value sequence satisfies a sequence type's item type and cardinality.
+     */
+    private static boolean matchesSequence(final SequenceType type, final Sequence value) {
+        try {
+            type.checkCardinality(value);
+        } catch (final XPathException e) {
+            return false;
+        }
+        // An empty sequence has no item type to validate against; only its
+        // cardinality matters (handled above). Item-type tests on empty
+        // sequences would otherwise fail because getItemType() returns
+        // Type.EMPTY_SEQUENCE, which is not a subtype of any concrete type.
+        if (value.isEmpty()) {
+            return true;
+        }
+        try {
+            return type.checkType(value);
+        } catch (final XPathException e) {
+            return false;
+        }
     }
 
     private static QName getRealName(final Item item) {
@@ -320,11 +461,25 @@ public class SequenceType {
         } else if (primaryType == Type.ELEMENT && nodeName != null) {
             str = "element(" + nodeName.getStringValue() + ")";
         } else if (primaryType == Type.MAP_ITEM) {
-            str = "map(*)";
+            str = functionParamTypes != null && functionParamTypes.length == 2
+                    ? "map(" + functionParamTypes[0] + ", " + functionParamTypes[1] + ")"
+                    : "map(*)";
         } else if (primaryType == Type.ARRAY_ITEM) {
-            str = "array(*)";
+            str = functionParamTypes != null && functionParamTypes.length == 1
+                    ? "array(" + functionParamTypes[0] + ")"
+                    : "array(*)";
         } else if (primaryType == Type.FUNCTION) {
-            str = "function(*)";
+            if (functionParamTypes != null && functionReturnType != null) {
+                final StringBuilder sb = new StringBuilder("function(");
+                for (int i = 0; i < functionParamTypes.length; i++) {
+                    if (i > 0) sb.append(", ");
+                    sb.append(functionParamTypes[i]);
+                }
+                sb.append(") as ").append(functionReturnType);
+                str = sb.toString();
+            } else {
+                str = "function(*)";
+            }
         } else {
             str = Type.getTypeName(primaryType);
         }

@@ -1227,6 +1227,9 @@ stepExpr throws XPathException
 	|
 	( ( "element" | "attribute" | "processing-instruction" | "namespace" ) eqName LCURLY ) => postfixExpr
 	|
+	// XQuery 4.0 PR1071: bare-brace map constructor at primaryExpr level
+	( LCURLY ) => postfixExpr
+	|
 	( MOD | DOLLAR | ( eqName ( LPAREN | HASH ) ) | SELF | LPAREN | literal | XML_COMMENT | LT |
 	  XML_PI | QUESTION | LPPAREN | STRING_CONSTRUCTOR_START )
 	=> postfixExpr
@@ -1423,6 +1426,9 @@ primaryExpr throws XPathException
 	|
 	( "map" LCURLY ) => mapConstructor
 	|
+	// XQuery 4.0 bare-brace map constructor (PR1071): { } or { k: v, ... }
+	( LCURLY ) => bareMapConstructor
+	|
 	directConstructor
 	|
 	( MOD | "function" LPAREN | eqName HASH ) => functionItemExpr
@@ -1473,6 +1479,19 @@ mapConstructor throws XPathException
         #mapConstructor.copyLexInfo(#a);
     }
     ;
+
+// === XQuery 4.0 Parser Extensions ===
+// XQ4 PR1071 bare-brace map constructor: { } or { k: v, ... }
+// Builds the same MAP AST as `map { ... }` so the tree walker treats both alike.
+bareMapConstructor throws XPathException
+:
+    b:LCURLY! ( mapAssignment ( COMMA! mapAssignment )* )? RCURLY!
+    {
+        #bareMapConstructor = #(#[MAP, "map"], #bareMapConstructor);
+        #bareMapConstructor.copyLexInfo(#b);
+    }
+    ;
+// === End XQuery 4.0 Parser Extensions ===
 
 mapAssignment throws XPathException
 :
