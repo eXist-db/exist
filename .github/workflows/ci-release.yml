@@ -46,8 +46,16 @@ jobs:
 
       - name: Release preflight + build + publish to Central
         run: |
+          TAG_NAME="${{ github.event.inputs.tag }}"
+          if [ -z "${TAG_NAME}" ]; then
+            TAG_NAME="${GITHUB_REF_NAME}"
+          fi
+          # GitHub tag format: eXist-<version> (e.g. eXist-7.0.0)
+          REVISION="${TAG_NAME#eXist-}"
+
           ./mvnw -V -B --no-transfer-progress \
           -Prelease-build \
+          -Drevision="${REVISION}" \
           -Drelease.preflight=true \
           -DskipTests \
           -Ddependency-check.skip=true \

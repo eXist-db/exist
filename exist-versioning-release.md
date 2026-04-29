@@ -120,7 +120,7 @@ Once development on a new stable version is complete, prepare a tag from `develo
 3. Create and push a release tag (for example, `eXist-7.0.0`) from the intended commit.
 4. Trigger the release workflow (tag-triggered or manual dispatch) which should:
    - run release preflight checks in `validate` (credentials, signing keys, push access, etc.)
-   - build with `./mvnw -Prelease-build`
+   - build with `./mvnw -Prelease-build -Drevision=<tag-version>` (for example, `eXist-7.0.0` -> `7.0.0`)
    - publish Maven artifacts via Sonatype Central Portal
    - publish Docker images
    - attach release distributions/installer assets to GitHub Releases
@@ -128,7 +128,7 @@ Once development on a new stable version is complete, prepare a tag from `develo
 For local release-like packaging verification before tagging, use:
 
 ```
-./mvnw -Prelease-build -DskipTests -Ddependency-check.skip=true clean package
+./mvnw -Prelease-build -Drevision=<tag-version> -DskipTests -Ddependency-check.skip=true clean package
 ```
 
 #### Credentials and signing material (CI source of truth)
