@@ -1501,7 +1501,11 @@ mapAssignment throws XPathException
                "The ':=' notation is no longer accepted in map expressions: use ':' instead.");
     }
     |
-	exprSingle COLON^ exprSingle
+    (exprSingle COLON) => exprSingle COLON^ exprSingle
+    |
+    // XQuery 4.0 PR2094: a map entry may be a single expression that
+    // evaluates to a map; that map is merged into the surrounding one.
+    exprSingle
 	;
 
 arrayConstructor throws XPathException

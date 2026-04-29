@@ -21,12 +21,14 @@
  */
 package org.exist.xquery.functions.map;
 
+import io.lacuna.bifurcan.IEntry;
 import io.lacuna.bifurcan.IMap;
 import org.exist.xquery.*;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
 
 import java.util.ArrayList;
@@ -50,6 +52,16 @@ public class MapExpr extends AbstractExpression {
         this.mappings.add(mapping);
     }
 
+    /**
+     * Add a bare expression entry (XQ4 PR2094). At evaluation time the
+     * expression must yield a map, whose entries are merged into the
+     * surrounding map. Used for {@code { $m1, $m2, "k": v }} and similar
+     * conditional/spread patterns introduced in XPath/XQuery 4.0.
+     */
+    public void merge(final PathExpr expr) {
+        this.mappings.add(new Mapping(null, expr.simplify()));
+    }
+
     @Override
     public void analyze(final AnalyzeContextInfo contextInfo) throws XPathException {
         if (getContext().getXQueryVersion() < 30) {
@@ -58,7 +70,9 @@ public class MapExpr extends AbstractExpression {
         }
         contextInfo.setParent(this);
         for (final Mapping mapping : this.mappings) {
-            mapping.key.analyze(contextInfo);
+            if (mapping.key != null) {
+                mapping.key.analyze(contextInfo);
+            }
             mapping.value.analyze(contextInfo);
         }
     }
@@ -69,9 +83,10 @@ public class MapExpr extends AbstractExpression {
             contextSequence = contextItem.toSequence();
         }
 
-        // Fast path for a single-mapping literal — skip the linear/forked dance
+        // Fast path for a single colon-pair literal — skip the linear/forked dance
         // and the duplicate-key check (a single mapping cannot collide with itself).
-        if (this.mappings.size() == 1) {
+        // Bare-content mappings still need the full merge path below.
+        if (this.mappings.size() == 1 && this.mappings.get(0).key != null) {
             final Mapping mapping = this.mappings.get(0);
             final Sequence key = mapping.key.eval(contextSequence, null);
             if (key.getItemCount() != 1) {
@@ -88,6 +103,34 @@ public class MapExpr extends AbstractExpression {
         int prevType = AbstractMapType.UNKNOWN_KEY_TYPE;
 
         for (final Mapping mapping : this.mappings) {
+            if (mapping.key == null) {
+                // XQ4 PR2094 bare-content entry: evaluate, must be a map, merge entries.
+                final Sequence merged = mapping.value.eval(contextSequence, null);
+                for (final SequenceIterator i = merged.iterate(); i.hasNext(); ) {
+                    final Item item = i.nextItem();
+                    if (!(item instanceof AbstractMapType subMap)) {
+                        throw new XPathException(this, ErrorCodes.XPTY0004,
+                                "Bare map content expression must evaluate to a sequence of maps; got " +
+                                        Type.getTypeName(item.getType()));
+                    }
+                    for (final IEntry<AtomicValue, Sequence> entry : subMap) {
+                        final AtomicValue ek = entry.key();
+                        if (map.contains(ek)) {
+                            throw new XPathException(this, ErrorCodes.XQDY0137,
+                                    "Key \"" + ek.getStringValue() + "\" already exists in map.");
+                        }
+                        map.put(ek, entry.value());
+                        final int et = ek.getType();
+                        if (firstType) {
+                            prevType = et;
+                            firstType = false;
+                        } else if (et != prevType) {
+                            prevType = AbstractMapType.MIXED_KEY_TYPES;
+                        }
+                    }
+                }
+                continue;
+            }
             final Sequence key = mapping.key.eval(contextSequence, null);
             if (key.getItemCount() != 1) {
                 throw new XPathException(this, MapErrorCode.EXMPDY001, "Expected single value for key, got " + key.getItemCount());
@@ -122,7 +165,9 @@ public class MapExpr extends AbstractExpression {
     public void accept(final ExpressionVisitor visitor) {
         super.accept(visitor);
         for (final Mapping mapping : this.mappings) {
-            mapping.key.accept(visitor);
+            if (mapping.key != null) {
+                mapping.key.accept(visitor);
+            }
             mapping.value.accept(visitor);
         }
     }
@@ -135,8 +180,10 @@ public class MapExpr extends AbstractExpression {
             if (i > 0) {
                 dumper.display(", ");
             }
-            mapping.key.dump(dumper);
-            dumper.display(" : ");
+            if (mapping.key != null) {
+                mapping.key.dump(dumper);
+                dumper.display(" : ");
+            }
             mapping.value.dump(dumper);
         }
         dumper.display("}");
@@ -163,7 +210,9 @@ public class MapExpr extends AbstractExpression {
         }
 
         private void resetState(final boolean postOptimization) {
-            key.resetState(postOptimization);
+            if (key != null) {
+                key.resetState(postOptimization);
+            }
             value.resetState(postOptimization);
         }
     }

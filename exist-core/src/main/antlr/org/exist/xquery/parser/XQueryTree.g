@@ -4031,6 +4031,15 @@ throws XPathException, PermissionDeniedException, EXistException
 				expr[value]
 				{ expr.map(key, value); }
 			)
+			|
+			// XQuery 4.0 PR2094: bare expression as map content; the
+			// expression must evaluate to a map and is merged into the result.
+			{
+				PathExpr bare = new PathExpr(context);
+				bare.setASTNode(mapConstr_AST_in);
+			}
+			expr [bare]
+			{ expr.merge(bare); }
 		)*
 	)
 	;

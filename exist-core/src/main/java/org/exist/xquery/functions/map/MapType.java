@@ -55,7 +55,44 @@ import java.util.function.ToLongFunction;
  */
 public class MapType extends AbstractMapType {
 
-    private static final ToLongFunction<AtomicValue> KEY_HASH_FN = AtomicValue::hashCode;
+    /**
+     * Hash an atomic value using a key that is consistent with op:same-key.
+     * Numeric keys with the same value (regardless of subtype) must hash the same
+     * so a duplicate-key check can find them in the same bucket. NaN, +INF and
+     * -INF use sentinel hashes; finite numerics canonicalise via xs:decimal.
+     * Strings, anyURI and untypedAtomic share a string-content hash. Other
+     * atomic types fall back to {@link AtomicValue#hashCode()}.
+     */
+    private static final ToLongFunction<AtomicValue> KEY_HASH_FN = MapType::sameKeyHash;
+
+    private static long sameKeyHash(final AtomicValue v) {
+        final int t = v.getType();
+        if (Type.subTypeOf(t, Type.STRING) || t == Type.ANY_URI || t == Type.UNTYPED_ATOMIC) {
+            try {
+                return v.getStringValue().hashCode();
+            } catch (final XPathException e) {
+                return v.hashCode();
+            }
+        }
+        if (Type.subTypeOf(t, Type.DECIMAL) || t == Type.DOUBLE || t == Type.FLOAT) {
+            final NumericValue n = (NumericValue) v;
+            if (n.isNaN()) {
+                return 0x4e614e4eL; // 'NaNN'
+            }
+            if (n.isPositiveInfinity()) {
+                return 0x70496e66L; // 'pInf'
+            }
+            if (n.isNegativeInfinity()) {
+                return 0x6e496e66L; // 'nInf'
+            }
+            try {
+                return n.convertTo(Type.DECIMAL).hashCode();
+            } catch (final XPathException e) {
+                return v.hashCode();
+            }
+        }
+        return v.hashCode();
+    }
 
     // TODO(AR) future potential optimisation... could the class member `map` remain `linear` ?
     private IMap<AtomicValue, Sequence> map;
