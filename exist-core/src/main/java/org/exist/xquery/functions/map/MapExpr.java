@@ -68,6 +68,16 @@ public class MapExpr extends AbstractExpression {
             throw new XPathException(this, ErrorCodes.EXXQDY0003,
                     "Map is not available before XQuery 3.0");
         }
+        // XQ4 PR2094: bare expression entries (no key) are an XQuery 4.0 feature.
+        // In earlier versions the spec requires a parse-level XPST0003 error.
+        if (getContext().getXQueryVersion() < 40) {
+            for (final Mapping mapping : this.mappings) {
+                if (mapping.key == null) {
+                    throw new XPathException(this, ErrorCodes.XPST0003,
+                            "Bare expression entries in a map constructor require XQuery 4.0; expected key:value pair");
+                }
+            }
+        }
         contextInfo.setParent(this);
         for (final Mapping mapping : this.mappings) {
             if (mapping.key != null) {
