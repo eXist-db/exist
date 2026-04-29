@@ -1657,6 +1657,7 @@ argumentList throws XPathException
 	;
 
 argument throws XPathException
+{ String kwName = null; }
 :
 	(QUESTION! ( NCNAME | INTEGER_LITERAL | LPAREN | STAR )) => lookup
 	| argumentPlaceholder
@@ -1664,16 +1665,16 @@ argument throws XPathException
 	// not `:=` because the lexer keeps them as separate tokens). Wrapped
 	// in a KEYWORD_ARG node so FunctionFactory can resolve it to a
 	// positional slot using the called function's parameter names.
-	| (NCNAME COLON EQ) => kwArg:NCNAME! COLON! EQ! exprSingle
+	// The name accepts NCNAME or any reserved keyword (e.g. `value`, `to`,
+	// `node`, `function`) -- XQuery 4.0 spec parameter names sometimes
+	// collide with the reserved-keyword set.
+	| (ncnameOrKeyword COLON EQ) => kwName=ncnameOrKeyword! COLON! EQ!
+		// `?` followed by `,` or `)` is a partial-application placeholder.
+		// `?` followed by NCNAME/INT/LPAREN/STAR would be a unary lookup
+		// expression, so let exprSingle handle that case.
+		( (QUESTION (COMMA | RPAREN)) => argumentPlaceholder | exprSingle )
 	{
-		#argument = #(#[KEYWORD_ARG, kwArg.getText()], #argument);
-	}
-	// XQ4 keyword argument when the parameter name collides with an
-	// XQUF reserved keyword (e.g. `value`). Only accepted when the
-	// `:= expr` shape is unambiguous, so updateExpr stays unaffected.
-	| ("value" COLON EQ) => "value"! COLON! EQ! exprSingle
-	{
-		#argument = #(#[KEYWORD_ARG, "value"], #argument);
+		#argument = #(#[KEYWORD_ARG, kwName], #argument);
 	}
 	| exprSingle
 	;

@@ -3289,14 +3289,26 @@ throws PermissionDeniedException, EXistException, XPathException
                 |
                 #(
                     kw:KEYWORD_ARG
-                    {
-                        PathExpr kwValue = new PathExpr(context);
-                        kwValue.setASTNode(functionCall_AST_in);
-                    }
-                    expr [kwValue]
-                    {
-                        params.add(new KeywordArgument(context, kw.getText(), kwValue.simplify()));
-                    }
+                    (
+                        // XQ4 partial application: keyword arg whose value
+                        // is a `?` placeholder, e.g. f(value := ?). Wrap the
+                        // placeholder in a KeywordArgument and mark the call
+                        // as partial so PartialFunctionApplication picks it up.
+                        QUESTION {
+                            params.add(new KeywordArgument(context, kw.getText(),
+                                new Function.Placeholder(context)));
+                            isPartial = true;
+                        }
+                        |
+                        {
+                            PathExpr kwValue = new PathExpr(context);
+                            kwValue.setASTNode(functionCall_AST_in);
+                        }
+                        expr [kwValue]
+                        {
+                            params.add(new KeywordArgument(context, kw.getText(), kwValue.simplify()));
+                        }
+                    )
                 )
                 |
                 expr [pathExpr] { params.add(pathExpr); }
