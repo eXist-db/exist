@@ -166,16 +166,13 @@ public class ForMemberExpr extends BindingExpression {
     private boolean callPostEval() {
         FLWORClause prev = getPreviousClause();
         while (prev != null) {
-            switch (prev.getType()) {
-                case LET:
-                case FOR:
-                case FOR_MEMBER:
-                    return false;
-                case ORDERBY:
-                case GROUPBY:
-                    return true;
-                default:
-                    break;
+            final Boolean decision = switch (prev.getType()) {
+                case LET, FOR, FOR_MEMBER -> Boolean.FALSE;
+                case ORDERBY, GROUPBY -> Boolean.TRUE;
+                default -> null;
+            };
+            if (decision != null) {
+                return decision;
             }
             prev = prev.getPreviousClause();
         }

@@ -73,12 +73,11 @@ public class LetDestructureExpr extends AbstractFLWORClause {
 
     @Override
     public ClauseType getType() {
-        switch (mode) {
-            case SEQUENCE: return ClauseType.LET_SEQ_DESTRUCTURE;
-            case ARRAY: return ClauseType.LET_ARRAY_DESTRUCTURE;
-            case MAP: return ClauseType.LET_MAP_DESTRUCTURE;
-            default: return ClauseType.LET;
-        }
+        return switch (mode) {
+            case SEQUENCE -> ClauseType.LET_SEQ_DESTRUCTURE;
+            case ARRAY -> ClauseType.LET_ARRAY_DESTRUCTURE;
+            case MAP -> ClauseType.LET_MAP_DESTRUCTURE;
+        };
     }
 
     @Override
@@ -115,17 +114,9 @@ public class LetDestructureExpr extends AbstractFLWORClause {
                 final Sequence input = inputSequence.eval(contextSequence, null);
 
                 switch (mode) {
-                    case SEQUENCE:
-                        bindSequenceVars(input);
-                        break;
-                    case ARRAY:
-                        bindArrayVars(input);
-                        break;
-                    case MAP:
-                        bindMapVars(input);
-                        break;
-                    default:
-                        throw new XPathException(this, ErrorCodes.ERROR, "Unknown destructure mode: " + mode);
+                    case SEQUENCE -> bindSequenceVars(input);
+                    case ARRAY -> bindArrayVars(input);
+                    case MAP -> bindMapVars(input);
                 }
 
                 resultSequence = returnExpr.eval(contextSequence, null);
@@ -261,22 +252,20 @@ public class LetDestructureExpr extends AbstractFLWORClause {
     @Override
     public void dump(final ExpressionDumper dumper) {
         dumper.display("let ");
-        switch (mode) {
-            case SEQUENCE: dumper.display("$("); break;
-            case ARRAY: dumper.display("$["); break;
-            case MAP: dumper.display("${"); break;
-            default: break;
-        }
+        dumper.display(switch (mode) {
+            case SEQUENCE -> "$(";
+            case ARRAY -> "$[";
+            case MAP -> "${";
+        });
         for (int i = 0; i < varNames.size(); i++) {
             if (i > 0) dumper.display(", ");
             dumper.display("$").display(varNames.get(i).getLocalPart());
         }
-        switch (mode) {
-            case SEQUENCE: dumper.display(")"); break;
-            case ARRAY: dumper.display("]"); break;
-            case MAP: dumper.display("}"); break;
-            default: break;
-        }
+        dumper.display(switch (mode) {
+            case SEQUENCE -> ")";
+            case ARRAY -> "]";
+            case MAP -> "}";
+        });
         dumper.display(" := ");
         inputSequence.dump(dumper);
         dumper.nl().display("return ");
@@ -286,22 +275,20 @@ public class LetDestructureExpr extends AbstractFLWORClause {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("let ");
-        switch (mode) {
-            case SEQUENCE: sb.append("$("); break;
-            case ARRAY: sb.append("$["); break;
-            case MAP: sb.append("${"); break;
-            default: break;
-        }
+        sb.append(switch (mode) {
+            case SEQUENCE -> "$(";
+            case ARRAY -> "$[";
+            case MAP -> "${";
+        });
         for (int i = 0; i < varNames.size(); i++) {
             if (i > 0) sb.append(", ");
             sb.append("$").append(varNames.get(i).getLocalPart());
         }
-        switch (mode) {
-            case SEQUENCE: sb.append(")"); break;
-            case ARRAY: sb.append("]"); break;
-            case MAP: sb.append("}"); break;
-            default: break;
-        }
+        sb.append(switch (mode) {
+            case SEQUENCE -> ")";
+            case ARRAY -> "]";
+            case MAP -> "}";
+        });
         sb.append(" := ").append(inputSequence.toString());
         sb.append(" return ").append(returnExpr.toString());
         return sb.toString();

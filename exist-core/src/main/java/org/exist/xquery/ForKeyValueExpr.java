@@ -212,30 +212,23 @@ public class ForKeyValueExpr extends BindingExpression {
     }
 
     private String clauseLabel() {
-        switch (clauseType) {
-            case FOR_KEY: return "key";
-            case FOR_VALUE: return "value";
-            case FOR_KEY_VALUE: return "key/value";
-            default: return "key";
-        }
+        return switch (clauseType) {
+            case FOR_VALUE -> "value";
+            case FOR_KEY_VALUE -> "key/value";
+            default -> "key";
+        };
     }
 
     private boolean callPostEval() {
         FLWORClause prev = getPreviousClause();
         while (prev != null) {
-            switch (prev.getType()) {
-                case LET:
-                case FOR:
-                case FOR_MEMBER:
-                case FOR_KEY:
-                case FOR_VALUE:
-                case FOR_KEY_VALUE:
-                    return false;
-                case ORDERBY:
-                case GROUPBY:
-                    return true;
-                default:
-                    break;
+            final Boolean decision = switch (prev.getType()) {
+                case LET, FOR, FOR_MEMBER, FOR_KEY, FOR_VALUE, FOR_KEY_VALUE -> Boolean.FALSE;
+                case ORDERBY, GROUPBY -> Boolean.TRUE;
+                default -> null;
+            };
+            if (decision != null) {
+                return decision;
             }
             prev = prev.getPreviousClause();
         }

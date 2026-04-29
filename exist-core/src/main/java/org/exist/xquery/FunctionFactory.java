@@ -336,11 +336,12 @@ public class FunctionFactory {
      * @param throwOnNotFound true to throw an XPST0017 if the functions is not found, false to just return null
      */
     private static @Nullable Function getInternalModuleFunction(final XQueryContext context,
-            final XQueryAST ast, List<Expression> params, QName qname, Module module,
+            final XQueryAST ast, final List<Expression> params, QName qname, Module module,
             final boolean throwOnNotFound) throws XPathException {
         //For internal modules: create a new function instance from the class
         final boolean hasKeywordArgs = hasKeywordArguments(params);
         FunctionDef def = null;
+        List<Expression> effectiveParams = params;
 
         // When keyword args are present, skip the initial arity-based lookup because
         // params.size() may not match the correct overload. Instead, resolve keyword
@@ -354,7 +355,7 @@ public class FunctionFactory {
                 if (resolved != null) {
                     def = ((InternalModule) module).getFunctionDef(qname, sig.getArgumentCount());
                     if (def != null) {
-                        params = resolved;
+                        effectiveParams = resolved;
                         break;
                     }
                 }
@@ -415,11 +416,12 @@ public class FunctionFactory {
                     "Access to deprecated functions is not allowed. Call to '" + qname.getStringValue() + "()' denied. " + def.getSignature().getDeprecated());
         }
         final Function fn = Function.createFunction(context, ast, module, def);
-        if (hasKeywordArgs) {
+        if (hasKeywordArgs && effectiveParams == params) {
+            // No prior keyword-arg resolution succeeded; try once more against def's signature
             final List<Expression> resolved = resolveKeywordArguments(context, params, def.getSignature(), ast);
             fn.setArguments(resolved != null ? resolved : params);
         } else {
-            fn.setArguments(params);
+            fn.setArguments(effectiveParams);
         }
         fn.setASTNode(ast);
         return new InternalFunctionCall(fn);

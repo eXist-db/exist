@@ -384,78 +384,38 @@ public class LocationStep extends Step {
             }
 
             try {
-                switch (axis) {
-
-                    case Constants.DESCENDANT_AXIS:
-                    case Constants.DESCENDANT_SELF_AXIS:
-                        result = getDescendants(context, contextSequence);
-                        break;
-
-                    case Constants.CHILD_AXIS:
-                        // VirtualNodeSets may have modified the axis ; checking the
-                        // type
-                        // TODO : further checks ?
-//				if (this.test.getType() == Type.ATTRIBUTE) {
-//					this.axis = Constants.ATTRIBUTE_AXIS;
-//					result = getAttributes(context, contextSequence);
-//				} else {
-                        result = getChildren(context, contextSequence);
-//				}
-                        break;
-
-                    case Constants.ANCESTOR_SELF_AXIS:
-                    case Constants.ANCESTOR_AXIS:
-                        result = getAncestors(context, contextSequence);
-                        break;
-
-                    case Constants.PARENT_AXIS:
-                        result = getParents(context, contextSequence);
-                        break;
-
-                    case Constants.SELF_AXIS:
+                result = switch (axis) {
+                    case Constants.DESCENDANT_AXIS, Constants.DESCENDANT_SELF_AXIS ->
+                            getDescendants(context, contextSequence);
+                    case Constants.CHILD_AXIS -> getChildren(context, contextSequence);
+                    case Constants.ANCESTOR_SELF_AXIS, Constants.ANCESTOR_AXIS ->
+                            getAncestors(context, contextSequence);
+                    case Constants.PARENT_AXIS -> getParents(context, contextSequence);
+                    case Constants.SELF_AXIS -> {
                         if (!(contextSequence instanceof VirtualNodeSet)
                                 && Type.subTypeOf(contextSequence.getItemType(),
                                 Type.ANY_ATOMIC_TYPE)) {
-                            // This test is copied from the legacy method
-                            // getSelfAtomic()
+                            // This test is copied from the legacy method getSelfAtomic()
                             if (!test.isWildcardTest()) {
                                 throw new XPathException(this, test.toString()
                                         + " cannot be applied to an atomic value.");
                             }
-                            result = contextSequence;
-                        } else {
-                            result = getSelf(context, contextSequence);
+                            yield contextSequence;
                         }
-                        break;
-
-                    case Constants.ATTRIBUTE_AXIS:
-                    case Constants.DESCENDANT_ATTRIBUTE_AXIS:
-                        result = getAttributes(context, contextSequence);
-                        break;
-
-                    case Constants.PRECEDING_AXIS:
-                    case Constants.FOLLOWING_AXIS:
-                        result = getPrecedingOrFollowing(context, contextSequence);
-                        break;
-
-                    case Constants.PRECEDING_SIBLING_AXIS:
-                    case Constants.FOLLOWING_SIBLING_AXIS:
-                        result = getSiblings(context, contextSequence);
-                        break;
-
-                    case Constants.FOLLOWING_OR_SELF_AXIS:
-                    case Constants.PRECEDING_OR_SELF_AXIS:
-                        result = getOrSelfAxis(context, contextSequence);
-                        break;
-
-                    case Constants.FOLLOWING_SIBLING_OR_SELF_AXIS:
-                    case Constants.PRECEDING_SIBLING_OR_SELF_AXIS:
-                        result = getSiblingOrSelfAxis(context, contextSequence);
-                        break;
-
-                    default:
-                        throw new IllegalArgumentException("Unsupported axis specified");
-                }
+                        yield getSelf(context, contextSequence);
+                    }
+                    case Constants.ATTRIBUTE_AXIS, Constants.DESCENDANT_ATTRIBUTE_AXIS ->
+                            getAttributes(context, contextSequence);
+                    case Constants.PRECEDING_AXIS, Constants.FOLLOWING_AXIS ->
+                            getPrecedingOrFollowing(context, contextSequence);
+                    case Constants.PRECEDING_SIBLING_AXIS, Constants.FOLLOWING_SIBLING_AXIS ->
+                            getSiblings(context, contextSequence);
+                    case Constants.FOLLOWING_OR_SELF_AXIS, Constants.PRECEDING_OR_SELF_AXIS ->
+                            getOrSelfAxis(context, contextSequence);
+                    case Constants.FOLLOWING_SIBLING_OR_SELF_AXIS, Constants.PRECEDING_SIBLING_OR_SELF_AXIS ->
+                            getSiblingOrSelfAxis(context, contextSequence);
+                    default -> throw new IllegalArgumentException("Unsupported axis specified");
+                };
             } catch (final XPathException e) {
                 if (e.getLine() <= 0) {
                     e.setLocation(getLine(), getColumn(), getSource());

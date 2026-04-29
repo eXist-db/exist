@@ -136,26 +136,12 @@ options {
 		if (name == null || name.indexOf(':') >= 0 || name.indexOf('{') >= 0) {
 			return false;
 		}
-		switch (name) {
-			case "attribute":
-			case "comment":
-			case "document-node":
-			case "element":
-			case "function":
-			case "if":
-			case "item":
-			case "namespace-node":
-			case "node":
-			case "processing-instruction":
-			case "schema-attribute":
-			case "schema-element":
-			case "switch":
-			case "text":
-			case "typeswitch":
-				return true;
-			default:
-				return false;
-		}
+		return switch (name) {
+			case "attribute", "comment", "document-node", "element", "function",
+				"if", "item", "namespace-node", "node", "processing-instruction",
+				"schema-attribute", "schema-element", "switch", "text", "typeswitch" -> true;
+			default -> false;
+		};
 	}
 }
 

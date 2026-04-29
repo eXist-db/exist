@@ -373,36 +373,33 @@ public class StringValue extends AtomicValue {
 
     private void checkType() throws XPathException {
         switch (type) {
-            case Type.NORMALIZED_STRING:
-            case Type.TOKEN:
-                return;
-            case Type.LANGUAGE:
+            case Type.NORMALIZED_STRING, Type.TOKEN -> { }
+            case Type.LANGUAGE -> {
                 final Matcher matcher = langPattern.matcher(value);
                 if (!matcher.matches()) {
                     throw new XPathException(getExpression(), ErrorCodes.FORG0001,
                             "String '" + value + "' is not valid for type xs:language");
                 }
-                return;
-            case Type.NAME:
+            }
+            case Type.NAME -> {
                 if (QName.isQName(value) != VALID.val) {
                     throw new XPathException(getExpression(), ErrorCodes.FORG0001,
                             "String '" + value + "' is not a valid xs:Name");
                 }
-                return;
-            case Type.NCNAME:
-            case Type.ID:
-            case Type.IDREF:
-            case Type.ENTITY:
+            }
+            case Type.NCNAME, Type.ID, Type.IDREF, Type.ENTITY -> {
                 if (!XMLNames.isNCName(value)) {
                     throw new XPathException(getExpression(), ErrorCodes.FORG0001,
                             "String '" + value + "' is not a valid " + Type.getTypeName(type));
                 }
-                return;
-            case Type.NMTOKEN:
+            }
+            case Type.NMTOKEN -> {
                 if (!XMLNames.isNmToken(value)) {
                     throw new XPathException(getExpression(), ErrorCodes.FORG0001,
                             "String '" + value + "' is not a valid xs:NMTOKEN");
                 }
+            }
+            default -> { }
         }
     }
 
