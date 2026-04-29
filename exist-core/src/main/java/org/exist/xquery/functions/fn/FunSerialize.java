@@ -214,10 +214,6 @@ public class FunSerialize extends BasicFunction {
      *
      * @throws XPathException in case of dynamic error.
      */
-    // PMD.NPathComplexity: implements Serialization 3.1 § 2 sequence normalization
-    // with item-separator handling, atomization, document-node merging, and
-    // text-node coalescing; branches map to spec rules.
-    @SuppressWarnings("PMD.NPathComplexity")
     public static Sequence normalize(final Expression callingExpr, final XQueryContext context, final Sequence input, final String itemSeparator) throws XPathException {
         // "If the sequence that is input to serialization is empty, create a sequence S1 that consists of a zero-length string."
         if (input.isEmpty()) {
