@@ -119,10 +119,6 @@ public class ForExpr extends BindingExpression {
      *
      * @see org.exist.xquery.Expression#eval(Sequence, Item)
      */
-    // PMD.NPathComplexity: extended for XQFT score-binding alongside the existing
-    // FLWOR positional/cardinality/profiler dispatch; branches map to the FLWOR
-    // and XQFT spec rules.
-    @SuppressWarnings("PMD.NPathComplexity")
     public Sequence eval(Sequence contextSequence, Item contextItem)
             throws XPathException {
         if (context.getProfiler().isEnabled()) {
