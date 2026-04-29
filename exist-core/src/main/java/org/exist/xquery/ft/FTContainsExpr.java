@@ -118,7 +118,6 @@ public class FTContainsExpr extends AbstractExpression {
     }
 
     @Override
-    @SuppressWarnings("PMD.NPathComplexity")
     public Sequence eval(final Sequence contextSequence, final Item contextItem) throws XPathException {
         Sequence effectiveContext = contextSequence;
         if (contextItem != null) {

@@ -50,7 +50,6 @@ import java.util.regex.Pattern;
  *
  * @see <a href="https://www.w3.org/TR/xpath-full-text-30/#ftcontains">XQFT 3.0 §2</a>
  */
-@SuppressWarnings("PMD.NPathComplexity")
 public class FTEvaluator {
 
     // --- Instance fields (declared before inner classes per Java convention) ---
