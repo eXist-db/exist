@@ -52,6 +52,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import static org.exist.xquery.FunctionDSL.funParam;
+import static org.exist.xquery.FunctionDSL.optFunParam;
 import static org.exist.xquery.FunctionDSL.optManyParam;
 import static org.exist.xquery.FunctionDSL.optParam;
 import static org.exist.xquery.FunctionDSL.param;
@@ -197,6 +198,13 @@ public class MapFunction extends BasicFunction {
             optManyParam("default", Type.ITEM, "The default value")
     );
 
+    public static final FunctionSignature BUILD_0 = functionSignature(
+            Fn.BUILD.fname,
+            "Builds a map from a sequence of items, using each item as both key and value.",
+            RETURN_MAP,
+            optManyParam("input", Type.ITEM, "The input sequence")
+    );
+
     public static final FunctionSignature BUILD_1 = functionSignature(
             Fn.BUILD.fname,
             "Builds a map from a sequence of items, using a key function. " +
@@ -214,6 +222,21 @@ public class MapFunction extends BasicFunction {
             optManyParam("input", Type.ITEM, "The input sequence"),
             param("key", Type.FUNCTION, "The key function"),
             param("value", Type.FUNCTION, "The value function")
+    );
+
+    public static final FunctionSignature BUILD_3 = functionSignature(
+            Fn.BUILD.fname,
+            "Builds a map from a sequence of items, with key/value functions and options. " +
+                    "The options map may contain a 'duplicates' entry controlling duplicate-key handling.",
+            RETURN_MAP,
+            optManyParam("input", Type.ITEM, "The input sequence"),
+            optFunParam("keys", new FunctionParameterSequenceType[]{
+                            optManyParam("item", Type.ITEM, "the item")},
+                    returnsOptMany(Type.ANY_ATOMIC_TYPE), "The key function"),
+            optFunParam("value", new FunctionParameterSequenceType[]{
+                            optManyParam("item", Type.ITEM, "the item")},
+                    returnsOptMany(Type.ITEM), "The value function"),
+            optParam("options", Type.MAP_ITEM, "Options map controlling duplicate-key handling")
     );
 
     public static final FunctionSignature ITEMS = functionSignature(
@@ -585,6 +608,8 @@ public class MapFunction extends BasicFunction {
             valueArity = -1;
         }
 
+        final DuplicateMergeStrategy duplicates = getBuildDuplicatesStrategy(args);
+
         final MapType result = new MapType(this, context);
         int position = 1;
         for (final SequenceIterator i = input.iterate(); i.hasNext(); ) {
@@ -602,16 +627,13 @@ public class MapFunction extends BasicFunction {
                             buildBuildCallbackArgs(valueArity, itemSeq, position)) : itemSeq;
             // XQ4 PR1041: key function may return multiple keys; each maps to the same value
             for (final SequenceIterator ki = keyResult.iterate(); ki.hasNext(); ) {
-                final AtomicValue key = (AtomicValue) ki.nextItem();
-                // Duplicate keys: combine values into a sequence (XQ4 default behavior)
-                final Sequence existing = result.get(key);
-                if (existing != null && !existing.isEmpty()) {
-                    final ValueSequence combined = new ValueSequence(existing);
-                    combined.addAll(value);
-                    result.add(key, combined);
-                } else {
-                    result.add(key, value);
+                final Item rawKey = ki.nextItem();
+                if (!(rawKey instanceof AtomicValue)) {
+                    throw new XPathException(this, ErrorCodes.XPTY0004,
+                            "map:build key function must return atomic values");
                 }
+                final AtomicValue key = (AtomicValue) rawKey;
+                applyBuildEntry(result, key, value, duplicates);
             }
             position++;
         }
@@ -630,6 +652,53 @@ public class MapFunction extends BasicFunction {
             default -> throw new XPathException(this, ErrorCodes.XPTY0004,
                     "map:build callback must accept 0 to 2 arguments, got " + arity);
         };
+    }
+
+    /**
+     * Apply one (key, value) pair to the in-progress build map, honoring the
+     * caller-selected duplicate-key strategy.
+     */
+    private void applyBuildEntry(final MapType result, final AtomicValue key,
+            final Sequence value, final DuplicateMergeStrategy duplicates) throws XPathException {
+        final Sequence existing = result.get(key);
+        final boolean isDuplicate = existing != null && !existing.isEmpty();
+        if (!isDuplicate) {
+            result.add(key, value);
+            return;
+        }
+        switch (duplicates) {
+            case USE_FIRST, USE_ANY -> { /* keep existing */ }
+            case USE_LAST -> result.add(key, value);
+            case COMBINE -> {
+                final ValueSequence combined = new ValueSequence(existing);
+                combined.addAll(value);
+                result.add(key, combined);
+            }
+            case REJECT -> throw new XPathException(this, ErrorCodes.FOJS0003,
+                    "map:build: duplicate key \"" + key.getStringValue() + "\" with duplicates strategy 'reject'");
+        }
+    }
+
+    /**
+     * Resolve the duplicate-key strategy from the options argument (4th positional).
+     * If absent or empty, default to COMBINE so multi-key results from a single
+     * input item (XQ4 PR1041) accumulate values.
+     */
+    private DuplicateMergeStrategy getBuildDuplicatesStrategy(final Sequence[] args) throws XPathException {
+        if (args.length < 4 || args[3].isEmpty()) {
+            return DuplicateMergeStrategy.COMBINE;
+        }
+        final AbstractMapType options = (AbstractMapType) args[3].itemAt(0);
+        final Sequence value = options.get(new StringValue(this, "duplicates"));
+        if (value == null || value.isEmpty()) {
+            return DuplicateMergeStrategy.COMBINE;
+        }
+        final DuplicateMergeStrategy strategy = DuplicateMergeStrategy.get(value.getStringValue());
+        if (strategy == null) {
+            throw new XPathException(this, ErrorCodes.FOJS0005,
+                    "map:build: unrecognised value for 'duplicates' option: " + value.getStringValue());
+        }
+        return strategy;
     }
 
     /**
