@@ -21,11 +21,14 @@
  */
 package org.exist.xquery.functions.fn;
 
+import net.sf.saxon.expr.number.Alphanumeric;
 import org.exist.dom.QName;
 import org.exist.xquery.*;
 import org.exist.xquery.util.NumberFormatter;
 import org.exist.xquery.value.*;
 
+import java.time.LocalDate;
+import java.time.temporal.WeekFields;
 import java.util.Calendar;
 import java.util.Locale;
 import java.util.Optional;
@@ -35,42 +38,42 @@ import java.util.regex.Pattern;
 
 public class FnFormatDates extends BasicFunction {
 
-	private static FunctionParameterSequenceType DATETIME =
-		new FunctionParameterSequenceType(
-			"value", Type.DATE_TIME, Cardinality.ZERO_OR_ONE, "The datetime");
+    private static FunctionParameterSequenceType DATETIME =
+        new FunctionParameterSequenceType(
+            "value", Type.DATE_TIME, Cardinality.ZERO_OR_ONE, "The datetime");
 
-	private static FunctionParameterSequenceType DATE =  
-		new FunctionParameterSequenceType(
-			"value", Type.DATE, Cardinality.ZERO_OR_ONE, "The date");
-	
-	private static FunctionParameterSequenceType TIME =  
-		new FunctionParameterSequenceType(
-			"value", Type.TIME, Cardinality.ZERO_OR_ONE, "The time");
-	
-	private static FunctionParameterSequenceType PICTURE = 
-		new FunctionParameterSequenceType(
-			"picture", Type.STRING, Cardinality.EXACTLY_ONE, "The picture string");
-	
-	private static FunctionParameterSequenceType LANGUAGE = 
-		new FunctionParameterSequenceType(
-			"language", Type.STRING, Cardinality.ZERO_OR_ONE, "The language string");
+    private static FunctionParameterSequenceType DATE =
+        new FunctionParameterSequenceType(
+            "value", Type.DATE, Cardinality.ZERO_OR_ONE, "The date");
 
-	private static FunctionParameterSequenceType CALENDAR = 
-		new FunctionParameterSequenceType(
-			"calendar", Type.STRING, Cardinality.ZERO_OR_ONE, "The calendar string");
+    private static FunctionParameterSequenceType TIME =
+        new FunctionParameterSequenceType(
+            "value", Type.TIME, Cardinality.ZERO_OR_ONE, "The time");
 
-	private static FunctionParameterSequenceType PLACE = 
-		new FunctionParameterSequenceType(
-			"place", Type.STRING, Cardinality.ZERO_OR_ONE, "The place string");
+    private static FunctionParameterSequenceType PICTURE =
+        new FunctionParameterSequenceType(
+            "picture", Type.STRING, Cardinality.EXACTLY_ONE, "The picture string");
 
-	private static FunctionReturnSequenceType RETURN = 
-		new FunctionReturnSequenceType(
-			Type.STRING, Cardinality.ZERO_OR_ONE, "The formatted date");
+    private static FunctionParameterSequenceType LANGUAGE =
+        new FunctionParameterSequenceType(
+            "language", Type.STRING, Cardinality.ZERO_OR_ONE, "The language string");
+
+    private static FunctionParameterSequenceType CALENDAR =
+        new FunctionParameterSequenceType(
+            "calendar", Type.STRING, Cardinality.ZERO_OR_ONE, "The calendar string");
+
+    private static FunctionParameterSequenceType PLACE =
+        new FunctionParameterSequenceType(
+            "place", Type.STRING, Cardinality.ZERO_OR_ONE, "The place string");
+
+    private static FunctionReturnSequenceType RETURN =
+        new FunctionReturnSequenceType(
+            Type.STRING, Cardinality.ZERO_OR_ONE, "The formatted date");
 
 
     public final static FunctionSignature FNS_FORMAT_DATETIME_2 = new FunctionSignature(
         new QName("format-dateTime", Function.BUILTIN_FUNCTION_NS),
-        "Returns a string containing an xs:date value formatted for display.",
+        "Returns a string containing an xs:dateTime value formatted for display.",
         new SequenceType[] {
             DATETIME,
             PICTURE
@@ -78,9 +81,20 @@ public class FnFormatDates extends BasicFunction {
         RETURN
     );
 
+    public final static FunctionSignature FNS_FORMAT_DATETIME_3 = new FunctionSignature(
+        new QName("format-dateTime", Function.BUILTIN_FUNCTION_NS),
+        "Returns a string containing an xs:dateTime value formatted for display (XPath/XQuery 4.0).",
+        new SequenceType[] {
+            DATETIME,
+            PICTURE,
+            LANGUAGE
+        },
+        RETURN
+    );
+
     public final static FunctionSignature FNS_FORMAT_DATETIME_5 = new FunctionSignature(
         new QName("format-dateTime", Function.BUILTIN_FUNCTION_NS),
-        "Returns a string containing an xs:date value formatted for display.",
+        "Returns a string containing an xs:dateTime value formatted for display.",
         new SequenceType[] {
             DATETIME,
             PICTURE,
@@ -97,6 +111,17 @@ public class FnFormatDates extends BasicFunction {
         new SequenceType[] {
             DATE,
             PICTURE
+        },
+        RETURN
+    );
+
+    public final static FunctionSignature FNS_FORMAT_DATE_3 = new FunctionSignature(
+        new QName("format-date", Function.BUILTIN_FUNCTION_NS),
+        "Returns a string containing an xs:date value formatted for display (XPath/XQuery 4.0).",
+        new SequenceType[] {
+            DATE,
+            PICTURE,
+            LANGUAGE
         },
         RETURN
     );
@@ -124,6 +149,17 @@ public class FnFormatDates extends BasicFunction {
         RETURN
     );
 
+    public final static FunctionSignature FNS_FORMAT_TIME_3 = new FunctionSignature(
+        new QName("format-time", Function.BUILTIN_FUNCTION_NS),
+        "Returns a string containing an xs:time value formatted for display (XPath/XQuery 4.0).",
+        new SequenceType[] {
+            TIME,
+            PICTURE,
+            LANGUAGE
+        },
+        RETURN
+    );
+
     public final static FunctionSignature FNS_FORMAT_TIME_5 = new FunctionSignature(
         new QName("format-time", Function.BUILTIN_FUNCTION_NS),
         "Returns a string containing an xs:time value formatted for display.",
@@ -137,7 +173,14 @@ public class FnFormatDates extends BasicFunction {
         RETURN
     );
 
-    private static final Pattern componentPattern = Pattern.compile("\\s*([YMDdWwFHhmsfZzPCE])\\s*(.*)");
+    private static final Pattern componentPattern =
+            Pattern.compile("\\s*([YMDdWwFHhmsfZzPCE])\\s*(.*)", Pattern.DOTALL);
+
+    // Width modifier appears at the end of the variable marker as ",<min>[-<max>]"
+    // where each part is digits or *. We anchor at end-of-string and allow optional
+    // surrounding whitespace within the modifier.
+    private static final Pattern WIDTH_MODIFIER_PATTERN =
+            Pattern.compile(",\\s*([0-9]+|\\*)(?:\\s*-\\s*([0-9]+|\\*))?\\s*$");
 
     public FnFormatDates(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
@@ -151,20 +194,28 @@ public class FnFormatDates extends BasicFunction {
         final AbstractDateTimeValue value = (AbstractDateTimeValue) args[0].itemAt(0);
         final String picture = args[1].getStringValue();
         final String language;
+        final Optional<String> calendarFallback;
         final Optional<String> place;
-        if (getArgumentCount() == 5) {
+        final int argCount = getArgumentCount();
+        if (argCount == 5) {
             if (args[2].hasOne()) {
                 language = args[2].getStringValue();
             } else {
                 language = context.getDefaultLanguage();
             }
 
-            // Validate calendar argument — we only support Gregorian/ISO
+            // Validate calendar argument — we only support Gregorian/ISO. Unknown
+            // (but syntactically valid) names produce a fallback marker rather
+            // than an error per W3C XSLT/XQuery spec § 9.5.3.
             if (args[3].hasOne()) {
                 final String calendar = args[3].getStringValue().trim();
                 if (!calendar.isEmpty()) {
-                    validateCalendar(calendar);
+                    calendarFallback = validateCalendar(calendar);
+                } else {
+                    calendarFallback = Optional.empty();
                 }
+            } else {
+                calendarFallback = Optional.empty();
             }
 
             if(args[4].hasOne()) {
@@ -172,12 +223,43 @@ public class FnFormatDates extends BasicFunction {
             } else {
                 place = Optional.empty();
             }
+        } else if (argCount == 3) {
+            if (args[2].hasOne()) {
+                language = args[2].getStringValue();
+            } else {
+                language = context.getDefaultLanguage();
+            }
+            calendarFallback = Optional.empty();
+            place = Optional.empty();
         } else {
             language = context.getDefaultLanguage();
+            calendarFallback = Optional.empty();
             place = Optional.empty();
         }
 
-        return new StringValue(this, formatDate(picture, value, language, place));
+        final String result = formatDate(picture, value, language, place);
+        final StringBuilder prefix = new StringBuilder();
+        if (calendarFallback.isPresent()) {
+            prefix.append("[Calendar: AD] ");
+        }
+        if (!isLanguageSupported(language)) {
+            prefix.append("[Language: en] ");
+        }
+        if (prefix.length() > 0) {
+            return new StringValue(this, prefix.toString() + result);
+        }
+        return new StringValue(this, result);
+    }
+
+    private static final java.util.Set<String> SUPPORTED_LANGUAGES =
+            java.util.Set.of("en", "de", "fr", "nl", "ru", "sv");
+
+    private static boolean isLanguageSupported(String lang) {
+        if (lang == null || lang.isEmpty()) return true;
+        // Strip region/variant subtags ("en-US" → "en")
+        final int hyphen = lang.indexOf('-');
+        final String base = (hyphen >= 0 ? lang.substring(0, hyphen) : lang).toLowerCase();
+        return SUPPORTED_LANGUAGES.contains(base);
     }
 
     private String formatDate(String pic, AbstractDateTimeValue dt, final String language,
@@ -233,17 +315,24 @@ public class FnFormatDates extends BasicFunction {
         }
 
         final char specifier = matcher.group(1).charAt(0);
+        // Strip whitespace from the picture/width part (spec: whitespace within a
+        // variable marker is ignored — except within string literals, which date
+        // pictures don't have)
+        String rest = matcher.group(2).replaceAll("\\s+", "");
+
+        // Detect width modifier (last comma followed by digits/* and an optional
+        // -digits/* segment, anchored at end). Grouping commas are NOT mistaken for
+        // width separators because the regex requires the trailing form.
         String width = null;
-        // Strip whitespace from the picture/width part (spec: whitespace within a variable marker is ignored)
-        String picture = matcher.group(2).replaceAll("\\s+", "");
-        // check if there's an optional width specifier
-        final int widthSep = picture.indexOf(',');
-        if (-1 < widthSep) {
-            width = picture.substring(widthSep + 1);
-            picture = picture.substring(0, widthSep);
+        String picture = rest;
+        final Matcher wm = WIDTH_MODIFIER_PATTERN.matcher(rest);
+        if (wm.find()) {
+            picture = rest.substring(0, wm.start());
+            width = rest.substring(wm.start() + 1);
         }
-        // get default format picture if none was specified
-        if (picture == null || picture.isEmpty()) {
+
+        final boolean pictureWasEmpty = picture.isEmpty();
+        if (pictureWasEmpty) {
             picture = getDefaultFormat(specifier);
         }
         final boolean allowDate = !Type.subTypeOf(dt.getType(), Type.TIME);
@@ -251,7 +340,14 @@ public class FnFormatDates extends BasicFunction {
         switch (specifier) {
             case 'Y':
                 if (allowDate) {
-                    final int year = dt.getPart(AbstractDateTimeValue.YEAR);
+                    int year = dt.getPart(AbstractDateTimeValue.YEAR);
+                    if (year < 0) {
+                        // Spec: when an era component is present elsewhere, year is
+                        // shown as the absolute value. Even without [E], producing
+                        // the absolute value is the common-sense reading and matches
+                        // both Saxon and BaseX.
+                        year = -year;
+                    }
                     formatNumber(specifier, picture, width, year, language, sb);
                 } else {
                     throw new XPathException(this, ErrorCodes.FOFD1350, "format-time does not support a year component");
@@ -292,7 +388,7 @@ public class FnFormatDates extends BasicFunction {
                 break;
             case 'W':
                 if (allowDate) {
-                    final int week = dt.getWeekWithinYear();
+                    final int week = isoWeekOfYear(dt);
                     formatNumber(specifier, picture, width, week, language, sb);
                 } else {
                     throw new XPathException(this, ErrorCodes.FOFD1350, "format-time does not support a week component");
@@ -300,7 +396,7 @@ public class FnFormatDates extends BasicFunction {
                 break;
             case 'w':
                 if (allowDate) {
-                    final int week = dt.getWeekWithinMonth();
+                    final int week = isoWeekOfMonth(dt);
                     formatNumber(specifier, picture, width, week, language, sb);
                 } else {
                     throw new XPathException(this, ErrorCodes.FOFD1350, "format-time does not support a week component");
@@ -314,7 +410,7 @@ public class FnFormatDates extends BasicFunction {
                      * We convert from the 1 == Sunday base
                      * used by {@link AbstractDateTimeValue#getDayOfWeek()}
                      * to the 1 == Monday base expected
-                     * by {@link #formatNumber(char, String, String, int, Optional, StringBuilder)}.
+                     * by {@link #formatNumber(char, String, String, int, String, StringBuilder)}.
                      */
                     if (day == Calendar.SUNDAY) {
                         day = 7;
@@ -364,7 +460,7 @@ public class FnFormatDates extends BasicFunction {
             case 'f':
                 if (allowTime) {
                     final int fraction = dt.getPart(AbstractDateTimeValue.MILLISECOND);
-                    formatFractionalSeconds(fraction, picture, width, sb);
+                    formatFractionalSeconds(fraction, picture, width, pictureWasEmpty, sb);
                 } else {
                     throw new XPathException(this, ErrorCodes.FOFD1350,
                             "format-date does not support a fractional seconds component");
@@ -395,19 +491,20 @@ public class FnFormatDates extends BasicFunction {
                 }
                 break;
             case 'C':
-                // Calendar name — we only support Gregorian
+                // Calendar name — we only support Gregorian/ISO
                 sb.append("ISO");
                 break;
             case 'z':
-                if(dt.getTimezone() != Sequence.EMPTY_SEQUENCE) {
-                    sb.append("GMT");
+                if (allowTime || dt.getTimezone() != Sequence.EMPTY_SEQUENCE) {
+                    if (dt.getTimezone() != Sequence.EMPTY_SEQUENCE) {
+                        sb.append("GMT");
+                    }
                 }
+                // FALL-THROUGH to 'Z' to emit the offset
             case 'Z':
-                final Calendar cal = dt.toJavaObject(Calendar.class);
-
                 final Sequence tz = dt.getTimezone();
-                if(tz != Sequence.EMPTY_SEQUENCE) {
-                    final DayTimeDurationValue dtv = ((DayTimeDurationValue)tz);
+                if (tz != Sequence.EMPTY_SEQUENCE) {
+                    final DayTimeDurationValue dtv = ((DayTimeDurationValue) tz);
 
                     // Determine timezone sign from the total offset,
                     // since getPart(HOUR) loses the sign for -00:30 offsets
@@ -416,9 +513,13 @@ public class FnFormatDates extends BasicFunction {
                     final int totalMinutes = (int) Math.abs(totalSeconds / 60);
                     final int absHour = totalMinutes / 60;
                     final int absMinute = totalMinutes % 60;
+                    final TimeZone javaTz = dt.toJavaObject(Calendar.class).getTimeZone();
 
                     sb.append(formatTimeZone(picture,
-                            absHour, absMinute, isNegative, cal.getTimeZone(), language, place));
+                            absHour, absMinute, isNegative, javaTz, language, place));
+                } else if (specifier == 'Z' && pictureWasEmpty == false && isMilitaryTimezonePicture(picture)) {
+                    // [ZZ] on a value with no timezone → 'J' (military-time local)
+                    sb.append('J');
                 }
                 break;
 
@@ -427,76 +528,270 @@ public class FnFormatDates extends BasicFunction {
         }
     }
 
+    private static boolean isMilitaryTimezonePicture(String picture) {
+        return "Z".equals(picture) || "ZZ".equals(picture);
+    }
+
+    /**
+     * Format a timezone offset. Supports flexible pictures of the form
+     * <digits>[<separator><digits>] where digits use any Unicode digit family.
+     * Special pictures: "N" (named), "Z" (military), pictures ending in 't' (UTC → "Z").
+     */
+    @SuppressWarnings("PMD.NPathComplexity")
     private String formatTimeZone(final String timezonePicture, final int absHour, final int absMinute,
             final boolean isNegative, final TimeZone timeZone, final String language,
             final Optional<String> place) {
         final Locale locale = new Locale(language);
-        final String sign = isNegative ? "-" : "+";
 
-        switch(timezonePicture) {
-            case "0":
-                if(absMinute != 0) {
-                    return String.format(locale, "%s%d:%02d", sign, absHour, absMinute);
-                } else {
-                    return String.format(locale, "%s%d", sign, absHour);
-                }
-
-            case "0000":
-                return String.format(locale, "%s%02d%02d", sign, absHour, absMinute);
-
-            case "0:00":
-                return String.format(locale, "%s%d:%02d", sign, absHour, absMinute);
-
-            case "00:00t":
-                if(absHour == 0 && absMinute == 0 && !isNegative) {
-                    return "Z";
-                }
-                return String.format(locale, "%s%02d:%02d", sign, absHour, absMinute);
-
-            case "N":
-                final TimeZone tz = place.map(TimeZone::getTimeZone).orElse(timeZone);
-                return tz.getDisplayName(timeZone.useDaylightTime(), TimeZone.SHORT, locale);
-
-            case "Z":
-                return formatMilitaryTimeZone(absHour, absMinute, isNegative);
-
-            case "00:00":
-            default:
-                return String.format(locale, "%s%02d:%02d", sign, absHour, absMinute);
+        // [ZN] / [zN] - timezone name
+        if ("N".equals(timezonePicture)) {
+            final TimeZone tz = place.map(TimeZone::getTimeZone).orElse(timeZone);
+            return tz.getDisplayName(timeZone.useDaylightTime(), TimeZone.SHORT, locale);
         }
+
+        // Military letter form: picture is "Z" alone
+        if ("Z".equals(timezonePicture)) {
+            return formatMilitaryTimeZone(absHour, absMinute, isNegative);
+        }
+
+        // UTC marker via 't' suffix on picture
+        boolean utcMarker = false;
+        String pic = timezonePicture;
+        if (!pic.isEmpty() && pic.charAt(pic.length() - 1) == 't') {
+            utcMarker = true;
+            pic = pic.substring(0, pic.length() - 1);
+        }
+        if (utcMarker && absHour == 0 && absMinute == 0 && !isNegative) {
+            return "Z";
+        }
+
+        // Split picture into hour-part [separator hour-minute-part]+
+        // First, find the digit family from the first digit in the picture.
+        final TimezonePictureParts parts = parseTimezonePicture(pic);
+        if (parts == null) {
+            // Picture does not parse as a digit/separator format — fall back.
+            return defaultTimezoneFormat(absHour, absMinute, isNegative);
+        }
+
+        final StringBuilder sb = new StringBuilder();
+        sb.append(isNegative ? '-' : '+');
+        final int zero = parts.digitFamilyZero;
+
+        // Format hours
+        appendDigits(sb, absHour, parts.hourMin, parts.hourMax, zero);
+
+        if (parts.separator != null && !parts.separator.isEmpty()) {
+            // Picture has explicit hh<sep>mm form. Always emit minutes per spec.
+            sb.append(parts.separator);
+            appendDigits(sb, absMinute, Math.max(parts.minuteMin, 2), parts.minuteMax, zero);
+        } else if (parts.pictureDigitCount >= 3) {
+            // Picture is "999" or similar — output hours and minutes concatenated
+            // with no separator.
+            appendDigits(sb, absMinute, 2, 2, zero);
+        } else {
+            // 1-2 digit picture like "0" or "00": minutes appear only when
+            // non-zero, prefixed with ':'.
+            if (absMinute != 0) {
+                sb.append(':');
+                appendDigits(sb, absMinute, 2, 2, zero);
+            }
+        }
+        return sb.toString();
     }
 
-    private final static char[] MILITARY_TZ_CHARS = {'Z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L',
-            'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y' };
+    private static String defaultTimezoneFormat(int absHour, int absMinute, boolean isNegative) {
+        return String.format("%s%02d:%02d", isNegative ? "-" : "+", absHour, absMinute);
+    }
 
     /**
-     * Military time zone
+     * Append {@code value} as {@code min}-{@code max} digits using the digit family
+     * starting at codepoint {@code zero}. Treats max ≤ 0 as unbounded. {@code min}
+     * and {@code max} count digits (codepoints), so non-BMP digit families like
+     * Osmanya work correctly even though each digit occupies two char units.
+     */
+    private static void appendDigits(StringBuilder sb, int value, int min, int max, int zero) {
+        final StringBuilder digits = new StringBuilder();
+        int digitCount = 0;
+        int n = value;
+        if (n == 0) {
+            digits.appendCodePoint(zero);
+            digitCount = 1;
+        } else {
+            while (n > 0) {
+                digits.insert(0, Character.toChars(zero + n % 10));
+                digitCount++;
+                n /= 10;
+            }
+        }
+        while (digitCount < min) {
+            digits.insert(0, Character.toChars(zero));
+            digitCount++;
+        }
+        if (max > 0 && max != Integer.MAX_VALUE && digitCount > max) {
+            int toRemove = digitCount - max;
+            int charsToRemove = 0;
+            while (toRemove-- > 0) {
+                charsToRemove += Character.charCount(digits.codePointAt(charsToRemove));
+            }
+            digits.delete(0, charsToRemove);
+        }
+        sb.append(digits);
+    }
+
+    private static class TimezonePictureParts {
+        int digitFamilyZero;
+        int hourMin;
+        int hourMax;
+        int minuteMin;
+        int minuteMax;
+        // Total digit-sign count in the picture (mandatory + optional). Used for
+        // the hour-only vs. hh+mm routing decision in formatTimeZone, since
+        // hourMax is set to MAX_VALUE so signed offsets are never truncated.
+        int pictureDigitCount;
+        String separator;
+    }
+
+    /**
+     * Parse a timezone digit picture like "00:00", "0:00", "0", "999", "٠٠:٠٠", or
+     * astral-plane variants. Returns null if the picture isn't a digit/separator
+     * pattern.
      *
-     * Z = +00:00, A = +01:00, B = +02:00, ..., M = +12:00, N = -01:00, O = -02:00, ... Y = -12:00.
+     * When the picture has a separator (e.g. "00:00"), the parts to the left and
+     * right of it are the hour and minute components respectively. Without a
+     * separator, picture interpretation depends on the digit count:
+     *   • 1-2 digits → hour only; minutes appended as ":mm" only if non-zero
+     *   • ≥3 digits  → last 2 digits are minutes (always emitted), the rest are hours
+     */
+    private static TimezonePictureParts parseTimezonePicture(String pic) {
+        if (pic.isEmpty()) {
+            return null;
+        }
+        final int firstCp = pic.codePointAt(0);
+        final int zero = Alphanumeric.getDigitFamily(firstCp);
+        if (zero < 0) {
+            return null;
+        }
+        final TimezonePictureParts r = new TimezonePictureParts();
+        r.digitFamilyZero = zero;
+
+        int i = 0;
+        int leftMandatory = 0;
+        int leftOptional = 0;
+        int rightMandatory = 0;
+        int rightOptional = 0;
+        StringBuilder sep = null;
+        boolean inRightPart = false;
+
+        while (i < pic.length()) {
+            final int cp = pic.codePointAt(i);
+            final int charLen = Character.charCount(cp);
+            if (cp == '#') {
+                if (inRightPart) {
+                    rightOptional++;
+                } else {
+                    leftOptional++;
+                }
+            } else if (Alphanumeric.getDigitFamily(cp) == zero) {
+                if (inRightPart) {
+                    rightMandatory++;
+                } else {
+                    leftMandatory++;
+                }
+            } else if (Alphanumeric.getDigitFamily(cp) >= 0) {
+                return null;
+            } else {
+                if (sep == null) {
+                    sep = new StringBuilder();
+                    sep.appendCodePoint(cp);
+                    inRightPart = true;
+                } else {
+                    sep.appendCodePoint(cp);
+                }
+            }
+            i += charLen;
+        }
+        if (leftMandatory + leftOptional == 0) {
+            return null;
+        }
+        r.pictureDigitCount = leftMandatory + leftOptional + rightMandatory + rightOptional;
+        if (sep != null) {
+            // "<hour><sep><minute>" form. Hour is never truncated — large offsets
+            // emit more digits than the picture's mandatory width.
+            r.hourMin = leftMandatory;
+            r.hourMax = Integer.MAX_VALUE;
+            r.minuteMin = rightMandatory;
+            r.minuteMax = rightMandatory + rightOptional;
+            r.separator = sep.toString();
+        } else {
+            final int totalDigits = leftMandatory + leftOptional;
+            if (totalDigits >= 3) {
+                // No separator, ≥3 digits: hour=remainder, minute=last 2 (mandatory)
+                r.hourMin = Math.max(1, totalDigits - 2);
+                r.hourMax = Integer.MAX_VALUE;
+                r.minuteMin = 2;
+                r.minuteMax = 2;
+                r.separator = "";
+            } else {
+                // No separator, 1-2 digits: hour-only picture; minutes use a
+                // synthetic ':mm' format only when non-zero
+                r.hourMin = leftMandatory;
+                r.hourMax = Integer.MAX_VALUE;
+                r.minuteMin = 0;
+                r.minuteMax = 0;
+                r.separator = null;
+            }
+        }
+        return r;
+    }
+
+    /**
+     * MILITARY_TZ_OFFSET_TO_LETTER[i+12] yields the letter for offset i (-12..+12).
+     * Note J is intentionally absent — it represents "local time" / no timezone.
+     */
+    private final static char[] MILITARY_TZ_OFFSET_TO_LETTER = {
+        'Y', // -12
+        'X', // -11
+        'W', // -10
+        'V', // -9
+        'U', // -8
+        'T', // -7
+        'S', // -6
+        'R', // -5
+        'Q', // -4
+        'P', // -3
+        'O', // -2
+        'N', // -1
+        'Z', //  0
+        'A', // +1
+        'B', // +2
+        'C', // +3
+        'D', // +4
+        'E', // +5
+        'F', // +6
+        'G', // +7
+        'H', // +8
+        'I', // +9
+        'K', // +10  (J is skipped)
+        'L', // +11
+        'M'  // +12
+    };
+
+    /**
+     * Military time zone:
+     * Z = +00:00, A = +01:00, ..., I = +09:00, K = +10:00, L = +11:00, M = +12:00
+     * (J is skipped — it denotes local time / unspecified timezone).
+     * N = -01:00, O = -02:00, ..., Y = -12:00.
      *
-     * The letter J (meaning local time) is used in the case of a value that does not specify a timezone
-     * offset.
-     *
-     * Timezone offsets that have no representation in this system (for example Indian Standard Time, +05:30)
-     * are output as if the format 01:01 had been requested.
+     * Offsets that have no representation (e.g. fractional or out of range) are
+     * output as the signed +HH:MM form.
      */
     private String formatMilitaryTimeZone(final int absHour, final int absMinute,
             final boolean isNegative) {
-        if(absMinute == 0 && absHour >= 0 && absHour <= 12) {
-            if (!isNegative) {
-                // +00 = Z, +01 = A, +02 = B, ..., +12 = M
-                return String.valueOf(MILITARY_TZ_CHARS[absHour]);
-            } else if (absHour > 0) {
-                // -01 = N, -02 = O, ..., -12 = Y
-                return String.valueOf(MILITARY_TZ_CHARS[12 + absHour]);
-            } else {
-                // -00:00 should not normally occur, but treat as Z
-                return "Z";
-            }
-        } else {
-            final String sign = isNegative ? "-" : "+";
-            return String.format("%s%02d:%02d", sign, absHour, absMinute);
+        if (absMinute == 0 && absHour <= 12) {
+            final int offset = isNegative ? -absHour : absHour;
+            return String.valueOf(MILITARY_TZ_OFFSET_TO_LETTER[offset + 12]);
         }
+        return defaultTimezoneFormat(absHour, absMinute, isNegative);
     }
 
     private String getDefaultFormat(char specifier) {
@@ -516,18 +811,64 @@ public class FnFormatDates extends BasicFunction {
     @SuppressWarnings("PMD.NPathComplexity")
     private void formatNumber(char specifier, String picture, String width, int num, final String language,
                               StringBuilder sb) throws XPathException {
-        // Handle Roman numeral formatting
-        if ("I".equals(picture) || "i".equals(picture)) {
+        // Detect and strip ordinal/cardinal modifier suffix
+        final boolean ordinal;
+        final boolean traditional;
+        String pic = picture;
+        if (pic.endsWith("o")) {
+            ordinal = true; traditional = false;
+            pic = pic.substring(0, pic.length() - 1);
+        } else if (pic.endsWith("c")) {
+            ordinal = false; traditional = true;
+            pic = pic.substring(0, pic.length() - 1);
+        } else {
+            ordinal = false; traditional = false;
+        }
+
+        // Roman numerals — width's min pads with spaces; max never truncates
+        // (Roman tokens are not subject to digit-style truncation per W3C
+        // spec § 9.5).
+        if ("I".equals(pic) || "i".equals(pic)) {
             String roman = toRomanNumerals(num);
-            if ("i".equals(picture)) {
+            if ("i".equals(pic)) {
                 roman = roman.toLowerCase();
             }
-            sb.append(roman);
+            applyMinWidthOnly(roman, width, sb);
+            return;
+        }
+
+        // Alphabetic sequence A,B,...Z,AA,AB,... (case-sensitive). Same width
+        // rule as Roman.
+        if ("A".equals(pic) || "a".equals(pic)) {
+            final boolean upper = "A".equals(pic);
+            applyMinWidthOnly(toAlphabetic(num, upper), width, sb);
             return;
         }
 
         final NumberFormatter formatter = NumberFormatter.getInstance(language);
-        if ("N".equals(picture) || "n".equals(picture) || "Nn".equals(picture)) {
+
+        // Word forms: W (upper), w (lower), Ww (title), with optional 'o' for ordinal.
+        // Plain N/n for textual forms (month, day, am/pm), with optional 'o' for ordinal.
+        final boolean isWordForm = pic.equals("W") || pic.equals("w") || pic.equals("Ww") || pic.equals("Wn");
+        final boolean isNameForm = pic.equals("N") || pic.equals("n") || pic.equals("Nn");
+        if (isWordForm) {
+            String name;
+            if (ordinal) {
+                name = formatter.getOrdinalWord(num);
+            } else {
+                name = formatter.getCardinalWord(num);
+            }
+            if ("W".equals(pic)) {
+                name = name.toUpperCase();
+            } else if ("w".equals(pic)) {
+                name = name.toLowerCase();
+            } else if ("Ww".equals(pic)) {
+                name = formatter.toTitleCase(name);
+            }
+            applyWidthToText(name, width, sb);
+            return;
+        }
+        if (isNameForm) {
             String name = switch (specifier) {
                 case 'M' -> formatter.getMonth(num);
                 case 'F' -> formatter.getDay(num);
@@ -535,116 +876,424 @@ public class FnFormatDates extends BasicFunction {
                 default -> "";
             };
 
-            if ("N".equals(picture)) {
+            // When a width modifier truncates a name component, prefer the
+            // locale's standard short form if it fits within [min,max] —
+            // produces "Mon" rather than "Mond" for day-of-week 1, "Tue"
+            // rather than "Tues", etc.
+            final int[] widthsForName = getWidths(width);
+            if (widthsForName != null && widthsForName[1] > 0
+                    && name.length() > widthsForName[1]) {
+                final String shortName = switch (specifier) {
+                    case 'M' -> formatter.getMonthShort(num);
+                    case 'F' -> formatter.getDayShort(num);
+                    case 'P' -> formatter.getAmPm(num);
+                    default -> "";
+                };
+                if (!shortName.isEmpty() && shortName.length() >= widthsForName[0]
+                        && shortName.length() <= widthsForName[1]) {
+                    name = shortName;
+                }
+            }
+
+            if ("N".equals(pic)) {
                 name = name.toUpperCase();
-            } else if ("n".equals(picture)) {
+            } else if ("n".equals(pic)) {
                 name = name.toLowerCase();
             }
 
-            final int[] widths = getWidths(width);
-            if (widths != null) {
-                final int min = widths[0];
-                final int max = widths[1];
-                final StringBuilder ws = new StringBuilder();
-                while(name.length() < min) {
-                    ws.append(" ");
-                }
-                name = name + ws;
-
-                if(name.length() > max) {
-                    name = name.substring(0, max);
-                }
-            }
-
-            sb.append(name);
+            applyWidthToText(name, width, sb);
             return;
         }
 
+        // Numeric picture: parse positions and grouping separators
+        final NumericPicture np = parseNumericPicture(pic);
+
         // determine min and max width
-        int min = NumberFormatter.getMinDigits(picture);
-        int max = NumberFormatter.getMaxDigits(picture);
-        if (max == 1) {
+        int min = np.mandatoryDigits;
+        int max = np.mandatoryDigits + np.optionalDigits;
+        // When picture is exactly "1" with no separators, max is unbounded — this is the
+        // canonical default form per W3C spec § 4.7. We track whether max is implicit
+        // (came from this default) so width modifiers can override rather than widen it.
+        final boolean picMaxImplicit = np.mandatoryDigits == 1 && np.optionalDigits == 0
+                && np.rightGroupingPositions.isEmpty();
+        if (picMaxImplicit) {
             max = Integer.MAX_VALUE;
         }
-        // explicit width takes precedence
+        // Width modifier interaction with picture:
+        //  • min: take max(picMin, widthMin)
+        //  • max: when picture max is explicit, take max(picMax, widthMax) (widening
+        //         rule per W3C spec); when implicit, widthMax overrides outright.
         final int[] widths = getWidths(width);
         if (widths != null) {
-            if (widths[0] > 0) {min = widths[0];}
-            if (widths[1] > 0) {max = widths[1];}
+            if (widths[0] > 0) {min = Math.max(min, widths[0]);}
+            if (widths[1] > 0) {
+                if (picMaxImplicit) {
+                    max = widths[1];
+                } else {
+                    max = Math.max(max, widths[1]);
+                }
+            }
         }
-        try {
-            sb.append(formatter.formatNumber(num, picture, min, max));
-        } catch (final XPathException e) {
-            throw new XPathException(this, ErrorCodes.FOFD1350, e.getMessage());
+        if (max < min) {
+            max = min;
         }
+
+        String formatted = formatNumberWithPicture(num, np, min, max);
+        if (ordinal) {
+            formatted = formatted + formatter.getOrdinalSuffix(num);
+        }
+        sb.append(formatted);
+    }
+
+    /**
+     * Format an integer using a parsed numeric picture, applying width constraints,
+     * digit family, and grouping separators (positions counted from the RIGHT).
+     */
+    private static String formatNumberWithPicture(int num, NumericPicture np, int min, int max) {
+        final int zero = np.digitFamilyZero >= 0 ? np.digitFamilyZero : '0';
+        // Build raw digit string
+        final StringBuilder digits = new StringBuilder();
+        int n = Math.abs(num);
+        if (n == 0) {
+            digits.append('0');
+        } else {
+            while (n > 0) {
+                digits.insert(0, (char)('0' + n % 10));
+                n /= 10;
+            }
+        }
+        // Truncate from LEFT if exceeding max
+        if (max > 0 && max != Integer.MAX_VALUE && digits.length() > max) {
+            digits.delete(0, digits.length() - max);
+        }
+        // Pad LEFT with '0' to min
+        while (digits.length() < min) {
+            digits.insert(0, '0');
+        }
+        // Apply digit family
+        final StringBuilder out = new StringBuilder();
+        for (int i = 0; i < digits.length(); i++) {
+            final int d = digits.charAt(i) - '0';
+            out.appendCodePoint(zero + d);
+        }
+        // Apply grouping separators counted from the RIGHT. Insert from highest
+        // codepoint-index to lowest so each insert leaves earlier positions intact.
+        if (!np.rightGroupingPositions.isEmpty()) {
+            final int len = out.codePointCount(0, out.length());
+            final java.util.List<int[]> inserts = new java.util.ArrayList<>();
+            for (int idx = 0; idx < np.rightGroupingPositions.size(); idx++) {
+                final int pos = np.rightGroupingPositions.get(idx);
+                final int sepChar = np.rightGroupingChars.get(idx);
+                if (pos > 0 && pos < len) {
+                    inserts.add(new int[]{len - pos, sepChar});
+                }
+            }
+            inserts.sort((a, b) -> Integer.compare(b[0], a[0]));
+            for (final int[] entry : inserts) {
+                final int charIdx = out.offsetByCodePoints(0, entry[0]);
+                out.insert(charIdx, Character.toChars(entry[1]));
+            }
+        }
+        return out.toString();
+    }
+
+    /**
+     * Apply only the minimum width of a width modifier, padding with trailing
+     * spaces. Used for Roman/alphabetic forms where the maximum never truncates.
+     */
+    private void applyMinWidthOnly(String text, String width, StringBuilder sb) throws XPathException {
+        final int[] widths = getWidths(width);
+        String result = text;
+        if (widths != null && widths[0] > 0 && result.length() < widths[0]) {
+            final StringBuilder ws = new StringBuilder(result);
+            while (ws.length() < widths[0]) {
+                ws.append(' ');
+            }
+            result = ws.toString();
+        }
+        sb.append(result);
+    }
+
+    private void applyWidthToText(String text, String width, StringBuilder sb) throws XPathException {
+        final int[] widths = getWidths(width);
+        String result = text;
+        if (widths != null) {
+            final int min = widths[0];
+            final int max = widths[1];
+            if (min > 0 && result.length() < min) {
+                final StringBuilder ws = new StringBuilder(result);
+                while (ws.length() < min) {
+                    ws.append(' ');
+                }
+                result = ws.toString();
+            }
+            if (max > 0 && result.length() > max) {
+                result = result.substring(0, max);
+            }
+        }
+        sb.append(result);
     }
 
     /**
      * Format fractional seconds. Unlike regular numbers, fractional second digits
      * are significant from left to right (most significant first).
      *
-     * The picture determines precision (number of fraction digits):
-     *   [f1]         → max 1 digit: "4" for .456
-     *   [f01]        → exactly 2 digits: "45" for .456
-     *   [f001]       → exactly 3 digits: "456" for .456
-     *   [f111,2-2]   → picture takes precedence: 3 digits "123"
+     * Picture rules per W3C XSLT § 9.5 / XQuery § 4.7:
+     *   [f]            → no picture digits → min=1, max=∞ (significant-digit default)
+     *   [f1]           → single mandatory '1' → min=1, max=∞ (canonical default form)
+     *   [f01]          → mandatory '01' → min=2, max=2
+     *   [f001]         → exactly 3 digits
+     *   [f99#]         → 2 mandatory + 1 optional (max=3)
+     *   [f111,2-2]     → picture+width: union (max=3, since picture gives 3)
+     *   [f,4-4]        → empty picture → exactly 4 digits (zero-padded)
+     *   [f,1-*]        → empty picture → 1+ digits, all significant
+     *   [f0'0'0]       → mandatory + grouping separators
      *
-     * Width modifier controls precision only when no picture digits are specified:
-     *   [f,2-2]      → exactly 2 digits: "45" for .456
-     *   [f,1-*]      → all significant digits: "456" for .456
+     * Validation: '#' (optional) digits must follow mandatory digits, picture
+     * must use a single Unicode digit family.
      */
-    // PMD.NPathComplexity: fractional-seconds picture parsing applies precedence
-    // rules from XSLT/XQuery § 4.7.3 (picture > width modifier > defaults) over
-    // multiple digit-grouping forms; branches map to spec rules.
     @SuppressWarnings("PMD.NPathComplexity")
     private void formatFractionalSeconds(int millis, String picture, String width,
-                                          StringBuilder sb) throws XPathException {
-        // Build fraction digits string: at least 3 digits (millisecond precision)
+                                          boolean pictureWasEmpty, StringBuilder sb) throws XPathException {
+        // Strip ordinal/cardinal suffix (rare for f component)
+        String pic = picture;
+        if (pic.endsWith("o") || pic.endsWith("c")) {
+            pic = pic.substring(0, pic.length() - 1);
+        }
+
+        // Non-digit presentation modifiers like 'i' (Roman numeral) — treat as
+        // empty picture but produce something useful (Saxon falls through to a
+        // default; we render the millisecond value as significant digits with
+        // unbounded max).
+        if (pictureWasEmpty || isNonDigitPresentationModifier(pic)) {
+            pic = ""; // treat as no-picture
+        }
+
+        final NumericPicture np = parseFractionPicture(pic);
+
+        // Fraction digits string: at least 3 (millisecond precision), most significant first.
         final String fractionDigits = String.format("%03d", millis);
 
-        // Determine min and max from picture
-        int picMin = NumberFormatter.getMinDigits(picture);
-        int picMax = NumberFormatter.getMaxDigits(picture);
+        // Determine effective min/max
+        int picMin = np.mandatoryDigits;
+        int picMax = np.mandatoryDigits + np.optionalDigits;
+        boolean picUnbounded = false;
+        if (pic.isEmpty()) {
+            picMin = 0;
+            picMax = 0;
+        } else if (np.mandatoryDigits == 1 && np.optionalDigits == 0 && np.groupings.isEmpty()) {
+            // Canonical "[f1]" — single mandatory digit means min=1, max unbounded.
+            picUnbounded = true;
+        }
 
+        final int[] widths = getWidths(width);
         int min;
         int max;
 
-        if (picMax > 0) {
-            // Picture specifies precision — use it
-            min = picMin;
-            max = picMax;
-        } else {
-            // No picture digits — use width modifier or defaults
-            min = 1;
-            max = Integer.MAX_VALUE;
-        }
-
-        // Width modifier overrides ONLY when picture doesn't specify digits
-        final int[] widths = getWidths(width);
         if (widths != null) {
-            if (widths[0] > 0 && picMax == 0) { min = widths[0]; }
-            if (widths[1] > 0 && picMax == 0) { max = widths[1]; }
-            // When picture has digits, width min still applies for padding
-            if (widths[0] > 0 && picMax > 0 && widths[0] > min) { min = widths[0]; }
-        }
-
-        // Build result: start with full fraction digits, extend if needed
-        final StringBuilder result = new StringBuilder(fractionDigits);
-        while (result.length() < min) {
-            result.append('0');
-        }
-
-        // Apply max: truncate from right (preserving most significant digits)
-        if (max < Integer.MAX_VALUE && result.length() > max) {
-            result.setLength(max);
-        } else if (max == Integer.MAX_VALUE) {
-            // Trim trailing zeros but keep at least min digits
-            while (result.length() > min && result.charAt(result.length() - 1) == '0') {
-                result.setLength(result.length() - 1);
+            min = Math.max(picMin, widths[0] > 0 ? widths[0] : 0);
+            if (picUnbounded) {
+                max = widths[1] > 0 ? widths[1] : Integer.MAX_VALUE;
+            } else if (picMax == 0) {
+                max = widths[1] > 0 ? widths[1] : Integer.MAX_VALUE;
+            } else {
+                max = Math.max(picMax, widths[1] > 0 ? widths[1] : 0);
+            }
+            if (min == 0) {
+                min = 1;
+            }
+        } else {
+            if (picUnbounded || pic.isEmpty()) {
+                min = picUnbounded ? 1 : 1;
+                max = Integer.MAX_VALUE;
+            } else {
+                min = picMin > 0 ? picMin : 1;
+                max = picMax > 0 ? picMax : Integer.MAX_VALUE;
             }
         }
 
-        sb.append(result);
+        // Build digit value: start with full fraction digits, extend if needed
+        final StringBuilder digits = new StringBuilder(fractionDigits);
+        while (digits.length() < min) {
+            digits.append('0');
+        }
+
+        if (max < Integer.MAX_VALUE && digits.length() > max) {
+            // Truncate from the right (preserving most significant digits — no rounding)
+            digits.setLength(max);
+        }
+        // Trim trailing zeros down to min when there's flexibility (max > min)
+        if (max > min) {
+            while (digits.length() > min && digits.charAt(digits.length() - 1) == '0') {
+                digits.setLength(digits.length() - 1);
+            }
+        }
+
+        // Apply digit family from picture (default ASCII '0')
+        final int zero = np.digitFamilyZero >= 0 ? np.digitFamilyZero : '0';
+        final StringBuilder out = new StringBuilder();
+        if (np.groupings.isEmpty()) {
+            for (int i = 0; i < digits.length(); i++) {
+                final int d = digits.charAt(i) - '0';
+                out.appendCodePoint(zero + d);
+            }
+        } else {
+            // Apply grouping separators by position from the LEFT (per W3C fractional-seconds rule)
+            for (int i = 0; i < digits.length(); i++) {
+                if (np.groupings.contains(i)) {
+                    out.appendCodePoint(np.groupingChar);
+                }
+                final int d = digits.charAt(i) - '0';
+                out.appendCodePoint(zero + d);
+            }
+        }
+        sb.append(out);
+    }
+
+    private static boolean isNonDigitPresentationModifier(String pic) {
+        if (pic.isEmpty()) return false;
+        final int firstCp = pic.codePointAt(0);
+        return Alphanumeric.getDigitFamily(firstCp) < 0 && firstCp != '#';
+    }
+
+    /**
+     * Parsed numeric picture: digit positions, optional digits, grouping separators,
+     * digit family.
+     */
+    static class NumericPicture {
+        int mandatoryDigits;
+        int optionalDigits;
+        int digitFamilyZero = -1; // codepoint of '0' in the picture's digit family
+        int groupingChar = ',';
+        // Positions where grouping separators appear, counted from the LEFT in the digit-only string
+        // (used for fractional seconds).
+        java.util.Set<Integer> groupings = new java.util.HashSet<>();
+        // Picture template for variable-width grouping: "9,99-9" → ["9","99","9"]
+        // groupingChars holds the separator character at each junction from the right.
+        java.util.List<Integer> rightGroupingPositions = new java.util.ArrayList<>();
+        java.util.List<Integer> rightGroupingChars = new java.util.ArrayList<>();
+    }
+
+    /**
+     * Parse a numeric picture for non-fractional components (Y, M, D, H, etc.).
+     * Format: optional-digit-signs followed by mandatory digit-signs, optionally
+     * separated by grouping characters. Examples: "01", "0001", "9,999", "9,99-9".
+     */
+    private NumericPicture parseNumericPicture(String pic) throws XPathException {
+        final NumericPicture np = new NumericPicture();
+        if (pic.isEmpty()) {
+            return np;
+        }
+
+        // Validation: '#' may only appear before mandatory digits, and there can't
+        // be a '#' interspersed between mandatory digits.
+        boolean seenMandatory = false;
+        boolean seenOptionalAfterMandatory = false;
+        int i = 0;
+        // Track separator positions from the LEFT (in digit-only space)
+        int digitIndex = 0;
+        // Track separator character + position from RIGHT — used for output grouping
+        java.util.List<Integer> sepCharsFromRight = new java.util.ArrayList<>();
+        java.util.List<Integer> sepPosFromRight = new java.util.ArrayList<>();
+
+        while (i < pic.length()) {
+            final int cp = pic.codePointAt(i);
+            final int charLen = Character.charCount(cp);
+            if (cp == '#') {
+                if (seenMandatory) {
+                    seenOptionalAfterMandatory = true;
+                }
+                np.optionalDigits++;
+                digitIndex++;
+            } else if (Alphanumeric.getDigitFamily(cp) >= 0) {
+                if (np.digitFamilyZero == -1) {
+                    np.digitFamilyZero = Alphanumeric.getDigitFamily(cp);
+                } else if (np.digitFamilyZero != Alphanumeric.getDigitFamily(cp)) {
+                    throw new XPathException(this, ErrorCodes.FOFD1340,
+                            "Mixed Unicode digit families in picture: " + pic);
+                }
+                np.mandatoryDigits++;
+                seenMandatory = true;
+                digitIndex++;
+            } else {
+                // Grouping separator
+                np.groupings.add(digitIndex);
+                sepCharsFromRight.add(0, cp);
+                sepPosFromRight.add(0, digitIndex);
+            }
+            i += charLen;
+        }
+        if (seenOptionalAfterMandatory) {
+            throw new XPathException(this, ErrorCodes.FOFD1340,
+                    "Optional-digit signs (#) must precede mandatory digits in picture: " + pic);
+        }
+        // Convert positions to from-right based on total digit count
+        final int totalDigits = np.mandatoryDigits + np.optionalDigits;
+        for (int idx = 0; idx < sepPosFromRight.size(); idx++) {
+            final int posFromLeft = sepPosFromRight.get(idx);
+            np.rightGroupingPositions.add(totalDigits - posFromLeft);
+            np.rightGroupingChars.add(sepCharsFromRight.get(idx));
+        }
+        return np;
+    }
+
+    /**
+     * Parse a fraction picture. Same as numeric but mixed-digit-family is enforced
+     * and grouping positions are from the LEFT (since fraction digits read
+     * most-significant first).
+     */
+    private NumericPicture parseFractionPicture(String pic) throws XPathException {
+        final NumericPicture np = new NumericPicture();
+        if (pic.isEmpty()) {
+            return np;
+        }
+
+        boolean seenOptional = false;
+        boolean seenMandatoryAfterOptional = false;
+        int i = 0;
+        int digitIndex = 0;
+        Integer firstSeparator = null;
+
+        while (i < pic.length()) {
+            final int cp = pic.codePointAt(i);
+            final int charLen = Character.charCount(cp);
+            if (cp == '#') {
+                if (digitIndex > 0 && np.optionalDigits == 0 && np.mandatoryDigits == 0) {
+                    // (impossible state) — skip
+                }
+                np.optionalDigits++;
+                seenOptional = true;
+                digitIndex++;
+            } else if (Alphanumeric.getDigitFamily(cp) >= 0) {
+                final int family = Alphanumeric.getDigitFamily(cp);
+                if (np.digitFamilyZero == -1) {
+                    np.digitFamilyZero = family;
+                } else if (np.digitFamilyZero != family) {
+                    throw new XPathException(this, ErrorCodes.FOFD1340,
+                            "Mixed Unicode digit families in fraction picture: " + pic);
+                }
+                if (seenOptional) {
+                    seenMandatoryAfterOptional = true;
+                }
+                np.mandatoryDigits++;
+                digitIndex++;
+            } else {
+                np.groupings.add(digitIndex);
+                if (firstSeparator == null) {
+                    firstSeparator = cp;
+                }
+            }
+            i += charLen;
+        }
+        if (seenMandatoryAfterOptional) {
+            // For fraction component: optional digits must follow mandatory (right side)
+            throw new XPathException(this, ErrorCodes.FOFD1340,
+                    "Optional-digit signs (#) must follow mandatory digits in fraction picture: " + pic);
+        }
+        if (firstSeparator != null) {
+            np.groupingChar = firstSeparator;
+        }
+        return np;
     }
 
     // PMD.NPathComplexity: parses width modifier "[m,n]" with min/max/wildcard
@@ -656,7 +1305,7 @@ public class FnFormatDates extends BasicFunction {
 
         int min = -1;
         int max = -1;
-        String minPart = width;
+        String minPart;
         String maxPart = null;
         final int p = width.indexOf('-');
         if (p < 0) {
@@ -671,7 +1320,7 @@ public class FnFormatDates extends BasicFunction {
             try {
                 min = Integer.parseInt(minPart);
             } catch (final NumberFormatException e) {
-
+                // leave as -1
             }
         }
         if (maxPart != null) {
@@ -681,19 +1330,47 @@ public class FnFormatDates extends BasicFunction {
                 try {
                     max = Integer.parseInt(maxPart);
                 } catch (final NumberFormatException e) {
+                    // leave as -1
                 }
             }
+        } else if ("*".equals(minPart)) {
+            // Single '*' means unbounded
+            max = Integer.MAX_VALUE;
+        } else if (min > 0) {
+            // When only min is given, max defaults to min
+            max = min;
+        }
+        if (min == 0) {
+            throw new XPathException(this, ErrorCodes.FOFD1340,
+                    "Width modifier minimum must be > 0: " + width);
         }
         if (max != -1 && min > max)
             {throw new XPathException(this, ErrorCodes.FOFD1340,"Minimum width > maximum width in component");}
         return new int[] { min, max };
     }
 
+    /**
+     * W3C XSLT/XQuery recognised calendar codes (spec § 9.5.3). We only implement
+     * the AD/ISO Gregorian calendar; recognised-but-unsupported codes produce a
+     * fallback marker. Unrecognised codes raise FOFD1340.
+     */
     private static final java.util.Set<String> KNOWN_CALENDARS = java.util.Set.of(
-            "AD", "ISO", "OS", "NS", "CE", "CB", "AH", "AM", "AP", "AE", "JE", "HE", "ME", "SE",
-            "SH", "SS", "BS", "BE", "KO", "TH", "JP");
+            "AD", "AH", "AM", "AME", "AP", "AS", "BE", "CB", "CE", "CL", "CS",
+            "EE", "FE", "ISO", "JE", "KE", "KY", "ME", "MS", "NS", "OS", "RS",
+            "SE", "SH", "SS", "TE", "VE", "VS", "Y",
+            // additional codes seen in the wild
+            "AE", "BS", "HE", "JP", "KO", "TH");
 
-    private void validateCalendar(String calendar) throws XPathException {
+    /** Calendars we implement directly (no fallback marker needed). */
+    private static final java.util.Set<String> SUPPORTED_CALENDARS = java.util.Set.of("AD", "ISO");
+
+    /**
+     * Validate a calendar argument. Returns the original calendar name if it is
+     * recognised-but-unsupported (so callers prepend the W3C-mandated
+     * '[Calendar: AD]' fallback marker). Throws FOFD1340 for syntactically
+     * malformed or unrecognised names.
+     */
+    private Optional<String> validateCalendar(String calendar) throws XPathException {
         // EQName form: Q{uri}local
         if (calendar.startsWith("Q{")) {
             final int closeBrace = calendar.indexOf('}');
@@ -708,17 +1385,26 @@ public class FnFormatDates extends BasicFunction {
                         "Badly-formed calendar name: " + calendar);
             }
             if (uri.isEmpty()) {
-                // Q{}name — treated as no-namespace, must be a known calendar
+                // Q{}name — same rules as a bare NCName: must be a recognised code
                 if (!KNOWN_CALENDARS.contains(local.toUpperCase())) {
                     throw new XPathException(this, ErrorCodes.FOFD1340,
                             "Unknown calendar: " + calendar);
                 }
+                if (SUPPORTED_CALENDARS.contains(local.toUpperCase())) {
+                    return Optional.empty();
+                }
+                return Optional.of(local);
             }
-            // Calendar in a non-empty namespace — accept and use Gregorian fallback
-            return;
+            // Calendar in a non-empty namespace — unrecognised but well-formed → fallback
+            return Optional.of(local);
         }
-        // Bare name — must be a valid NCName and a known calendar code
-        if (calendar.isEmpty() || !Character.isLetter(calendar.charAt(0)) || calendar.contains(":")) {
+        // Lexical QName: prefix:local — accept and use Gregorian fallback
+        final int colonIdx = calendar.indexOf(':');
+        if (colonIdx > 0) {
+            return Optional.of(calendar.substring(colonIdx + 1));
+        }
+        // Bare name — must be a valid NCName start char and a recognised code
+        if (calendar.isEmpty() || !Character.isLetter(calendar.charAt(0))) {
             throw new XPathException(this, ErrorCodes.FOFD1340,
                     "Badly-formed calendar name: " + calendar);
         }
@@ -726,10 +1412,47 @@ public class FnFormatDates extends BasicFunction {
             throw new XPathException(this, ErrorCodes.FOFD1340,
                     "Unknown calendar: " + calendar);
         }
+        if (SUPPORTED_CALENDARS.contains(calendar.toUpperCase())) {
+            return Optional.empty();
+        }
+        return Optional.of(calendar);
     }
 
     private static final int[] ROMAN_VALUES = {1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1};
     private static final String[] ROMAN_SYMBOLS = {"M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"};
+
+    /**
+     * ISO 8601 week-of-week-based-year (1-53). [W] uses ISO week numbering per
+     * the W3C spec, regardless of locale or calendar argument.
+     */
+    private static int isoWeekOfYear(AbstractDateTimeValue dt) {
+        try {
+            final int year = dt.getPart(AbstractDateTimeValue.YEAR);
+            final int month = dt.getPart(AbstractDateTimeValue.MONTH);
+            final int day = dt.getPart(AbstractDateTimeValue.DAY);
+            return LocalDate.of(year, month, day).get(WeekFields.ISO.weekOfWeekBasedYear());
+        } catch (final Exception e) {
+            // Fall back to legacy calendar-based numbering for out-of-range years
+            return dt.getWeekWithinYear();
+        }
+    }
+
+    /**
+     * ISO 8601 week-of-month: weeks defined as Monday-to-Sunday with the first
+     * week being the one containing the first Thursday of the month (matches the
+     * year-level ISO rule applied within month boundaries).
+     */
+    private static int isoWeekOfMonth(AbstractDateTimeValue dt) {
+        try {
+            final int year = dt.getPart(AbstractDateTimeValue.YEAR);
+            final int month = dt.getPart(AbstractDateTimeValue.MONTH);
+            final int day = dt.getPart(AbstractDateTimeValue.DAY);
+            final LocalDate date = LocalDate.of(year, month, day);
+            return date.get(WeekFields.ISO.weekOfMonth());
+        } catch (final Exception e) {
+            return dt.getWeekWithinMonth();
+        }
+    }
 
     private static String toRomanNumerals(int num) {
         if (num <= 0) {
@@ -741,6 +1464,22 @@ public class FnFormatDates extends BasicFunction {
                 sb.append(ROMAN_SYMBOLS[i]);
                 num -= ROMAN_VALUES[i];
             }
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Convert a 1-based index to alphabetic A,B,...,Z,AA,AB,... sequence.
+     */
+    private static String toAlphabetic(int num, boolean upper) {
+        if (num <= 0) return String.valueOf(num);
+        final char base = upper ? 'A' : 'a';
+        final StringBuilder sb = new StringBuilder();
+        int n = num;
+        while (n > 0) {
+            n--;
+            sb.insert(0, (char)(base + n % 26));
+            n /= 26;
         }
         return sb.toString();
     }

@@ -50,8 +50,18 @@ public abstract class NumberFormatter {
         return Month.of(month).getDisplayName(TextStyle.FULL, locale);
     }
 
+    /** Locale's standard short month name (e.g. English January → "Jan"). */
+    public String getMonthShort(int month) {
+        return Month.of(month).getDisplayName(TextStyle.SHORT, locale);
+    }
+
     public String getDay(int day) {
         return DayOfWeek.of(day).getDisplayName(TextStyle.FULL, locale);
+    }
+
+    /** Locale's standard short day-of-week name (e.g. English Monday → "Mon"). */
+    public String getDayShort(int day) {
+        return DayOfWeek.of(day).getDisplayName(TextStyle.SHORT, locale);
     }
 
     public String getAmPm(int hour) {
@@ -64,6 +74,48 @@ public abstract class NumberFormatter {
     }
 
     public abstract String getOrdinalSuffix(long number);
+
+    /**
+     * Cardinal word form of a number, e.g. English 1 → "one", 21 → "twenty-one".
+     * Default returns the digit string; subclasses provide language-specific
+     * spelling.
+     */
+    public String getCardinalWord(long number) {
+        return Long.toString(number);
+    }
+
+    /**
+     * Ordinal word form of a number, e.g. English 1 → "first", 21 → "twenty-first".
+     * Default returns the digit string with the ordinal suffix; subclasses provide
+     * full language-specific spelling.
+     */
+    public String getOrdinalWord(long number) {
+        return Long.toString(number) + getOrdinalSuffix(number);
+    }
+
+    /**
+     * Convert a phrase to title case: capitalize the first letter of each word
+     * (where word boundaries are spaces and hyphens). The default implementation
+     * uppercases the first letter of each space- or hyphen-separated token.
+     */
+    public String toTitleCase(final String name) {
+        if (name == null || name.isEmpty()) return name;
+        final StringBuilder sb = new StringBuilder(name.length());
+        boolean atWordStart = true;
+        for (int i = 0; i < name.length(); i++) {
+            final char ch = name.charAt(i);
+            if (atWordStart && Character.isLetter(ch)) {
+                sb.append(Character.toUpperCase(ch));
+                atWordStart = false;
+            } else {
+                sb.append(Character.toLowerCase(ch));
+                if (ch == ' ' || ch == '-') {
+                    atWordStart = true;
+                }
+            }
+        }
+        return sb.toString();
+    }
 
     public String formatNumber(final long number, final String picture) throws XPathException {
         final int min = getMinDigits(picture);
@@ -141,15 +193,16 @@ public abstract class NumberFormatter {
     }
 
     public static NumberFormatter getInstance(final String language) {
-        final Locale locale = new Locale(language);
-
         return switch (language) {
-            case "de" -> new NumberFormatter_de(locale);
-            case "fr" -> new NumberFormatter_fr(locale);
-            case "nl" -> new NumberFormatter_nl(locale);
-            case "ru" -> new NumberFormatter_ru(locale);
-            case "sv" -> new NumberFormatter_sv(locale);
-            default -> new NumberFormatter_en(locale);
+            case "de" -> new NumberFormatter_de(new Locale("de"));
+            case "fr" -> new NumberFormatter_fr(new Locale("fr"));
+            case "nl" -> new NumberFormatter_nl(new Locale("nl"));
+            case "ru" -> new NumberFormatter_ru(new Locale("ru"));
+            case "sv" -> new NumberFormatter_sv(new Locale("sv"));
+            // Unsupported languages fall back to English; using Locale.ENGLISH ensures
+            // Month/DayOfWeek display names come back in full English form rather
+            // than the JDK ROOT-locale abbreviated form.
+            default -> new NumberFormatter_en(Locale.ENGLISH);
         };
     }
 }
