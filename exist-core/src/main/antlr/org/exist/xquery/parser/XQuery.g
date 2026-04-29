@@ -1668,6 +1668,13 @@ argument throws XPathException
 	{
 		#argument = #(#[KEYWORD_ARG, kwArg.getText()], #argument);
 	}
+	// XQ4 keyword argument when the parameter name collides with an
+	// XQUF reserved keyword (e.g. `value`). Only accepted when the
+	// `:= expr` shape is unambiguous, so updateExpr stays unaffected.
+	| ("value" COLON EQ) => "value"! COLON! EQ! exprSingle
+	{
+		#argument = #(#[KEYWORD_ARG, "value"], #argument);
+	}
 	| exprSingle
 	;
 
