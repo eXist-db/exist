@@ -121,10 +121,6 @@ public class JSON extends BasicFunction {
         super(context, signature);
     }
 
-    // PMD.NPathComplexity: dispatches over the parse-json/json-doc options map
-    // (liberal, duplicates, escape, validate, fallback, encoding) per XQ 3.1
-    // § 17.5; branches mirror spec parameters.
-    @SuppressWarnings("PMD.NPathComplexity")
     @Override
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
         if (context.getXQueryVersion() < 31) {
@@ -330,10 +326,6 @@ public class JSON extends BasicFunction {
         return readValue(context, parser, null, handleDuplicates);
     }
 
-    // PMD.NPathComplexity: recursive JSON-to-XDM converter dispatching over
-    // Jackson token kinds (object/array/string/number/boolean/null) per XQ 3.1
-    // § 17.5; branches mirror spec mapping.
-    @SuppressWarnings("PMD.NPathComplexity")
     private static Item readValue(XQueryContext context, JsonParser parser, Item parent, String handleDuplicates) throws IOException, XPathException {
         JsonToken token;
         Item next = null;

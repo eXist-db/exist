@@ -123,10 +123,6 @@ public class XHTML5Writer extends XHTMLWriter {
         super(writer, emptyTags, inlineTags);
     }
 
-    // PMD.NPathComplexity: emits the XSLT/XQuery Serialization 3.1 doctype with
-    // public/system/internal-subset/version permutations and attribute-value-
-    // quote escaping; branches map to the W3C HTML5/XHTML5 doctype emission rules.
-    @SuppressWarnings("PMD.NPathComplexity")
     @Override
     protected void writeDoctype(String rootElement) throws TransformerException {
         if (doctypeWritten) {
