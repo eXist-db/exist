@@ -4205,7 +4205,14 @@ options {
 
 protected INTEGER_LITERAL
 :
-	{ !(inElementContent || inAttributeContent) }? DIGITS
+	{ !(inElementContent || inAttributeContent) }?
+	(
+		// XQuery 4.0 numeric literal extensions: hex (0x...) and binary (0b...)
+		// prefixes, plus '_' digit separators between digits.
+		( '0' ('x' | 'X') ) => '0' ('x' | 'X') HEX_DIGITS ( '_' HEX_DIGITS )*
+		| ( '0' ('b' | 'B') ) => '0' ('b' | 'B') ('0' | '1')+ ( '_' ('0' | '1')+ )*
+		| DIGITS ( '_' DIGITS )*
+	)
 	;
 
 protected HEX_INTEGER_LITERAL
