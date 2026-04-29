@@ -674,17 +674,17 @@ public class MapFunction extends BasicFunction {
     }
 
     /**
-     * map:entries — returns a sequence of maps, each with 'key' and 'value' entries.
-     * (XQ4 spec says records, but without record support we return maps.)
+     * map:entries — returns a sequence of single-entry maps, one per entry of
+     * the source map, where each entry preserves the source's key and value.
+     * Per the XPath/XQuery 4.0 spec (post-PR2148), the output of map:entries
+     * is the sequence of singleton maps {k: v} - not 2-entry records with
+     * literal "key" and "value" labels.
      */
     private Sequence entries(final Sequence[] args) throws XPathException {
         final AbstractMapType map = (AbstractMapType) args[0].itemAt(0);
         final ValueSequence result = new ValueSequence();
         for (final IEntry<AtomicValue, Sequence> entry : map) {
-            final MapType entryMap = new MapType(this, context);
-            entryMap.add(new StringValue("key"), entry.key().toSequence());
-            entryMap.add(new StringValue("value"), entry.value());
-            result.add(entryMap);
+            result.add(new SingleKeyMapType(this, context, null, entry.key(), entry.value()));
         }
         return result;
     }
