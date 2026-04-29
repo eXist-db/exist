@@ -206,6 +206,21 @@ public class LetExpr extends BindingExpression {
                 var.setContextDocs(inputSequence.getContextDocSet());
                 registerUpdateListener(in);
 
+                // XQuery 4.0 PR1501: coerce map(K, V) / array(T) bindings to
+                // the declared component types BEFORE the body runs, so
+                // subsequent uses of the variable (including instance-of
+                // tests) see the coerced shape.
+                if (sequenceType != null && !var.getValue().isEmpty()
+                        && sequenceType.getFunctionParamTypes() != null
+                        && (sequenceType.getPrimaryType() == Type.MAP_ITEM
+                                || sequenceType.getPrimaryType() == Type.ARRAY_ITEM)) {
+                    final Sequence coerced = MapTypeCoercion.tryCoerce(
+                            context, sequenceType, var.getValue());
+                    if (coerced != null) {
+                        var.setValue(coerced);
+                    }
+                }
+
                 try {
                     resultSequence = returnExpr.eval(contextSequence, null);
                 } catch (final WhileClause.WhileTerminationException e) {
@@ -236,19 +251,27 @@ public class LetExpr extends BindingExpression {
                                 ". Expected " + Type.getTypeName(sequenceType.getPrimaryType()) +
                                 ", got " +Type.getTypeName(var.getValue().getItemType()), in);
                         }
-                        // For typed map(K, V) and array(T) bindings, also walk the
-                        // structure so a shape mismatch (e.g. xs:byte* required but
-                        // an xs:decimal value present) raises XPTY0004 instead of
-                        // silently accepting the value (XQ4 PR1501).
+                        // For typed map(K, V) and array(T) bindings, walk the
+                        // structure so a shape mismatch raises XPTY0004 instead
+                        // of silently accepting the value. In XQuery 4.0 mode,
+                        // first attempt PR1501 coercion: if every entry's key
+                        // and value can be converted to the declared key/value
+                        // types, build a coerced map and bind that instead.
                         if (!var.getValue().isEmpty() && sequenceType.getFunctionParamTypes() != null
                                 && (sequenceType.getPrimaryType() == Type.MAP_ITEM
                                         || sequenceType.getPrimaryType() == Type.ARRAY_ITEM)) {
-                            for (final SequenceIterator i = var.getValue().iterate(); i.hasNext(); ) {
-                                final Item item = i.nextItem();
-                                if (!sequenceType.checkType(item)) {
-                                    throw new XPathException(this, ErrorCodes.XPTY0004,
-                                        "Invalid value for variable $" + varName +
-                                        ". Expected " + sequenceType + ", got value not matching the structural type");
+                            final Sequence coerced = MapTypeCoercion.tryCoerce(
+                                    context, sequenceType, var.getValue());
+                            if (coerced != null) {
+                                var.setValue(coerced);
+                            } else {
+                                for (final SequenceIterator i = var.getValue().iterate(); i.hasNext(); ) {
+                                    final Item item = i.nextItem();
+                                    if (!sequenceType.checkType(item)) {
+                                        throw new XPathException(this, ErrorCodes.XPTY0004,
+                                            "Invalid value for variable $" + varName +
+                                            ". Expected " + sequenceType + ", got value not matching the structural type");
+                                    }
                                 }
                             }
                         }
