@@ -106,6 +106,13 @@ public final class MapTypeCoercion {
             if (coercedKey == null) {
                 return null;
             }
+            // PR1501: if coercion would collapse two distinct source keys
+            // into one (e.g. xs:double 1.0e0 and 1.0e0 + epsilon both
+            // becoming xs:float 1.0), the result no longer matches the
+            // declared type — abort and let the caller raise XPTY0004.
+            if (result.contains(coercedKey)) {
+                return null;
+            }
             final Sequence coercedValue = coerceSequence(entry.value(), valueType);
             if (coercedValue == null) {
                 return null;
@@ -162,6 +169,17 @@ public final class MapTypeCoercion {
     private static AtomicValue coerceAtomic(final AtomicValue av, final int targetType) {
         if (Type.subTypeOf(av.getType(), targetType)) {
             return av;
+        }
+        // Per XPath casting rules, xs:decimal/double/float -> xs:integer
+        // (or its subtypes) is only permitted when the source has no
+        // fractional part. eXist's general convertTo silently truncates,
+        // which is acceptable for explicit casts that opt-in to that
+        // behaviour but would mask coercion failures here.
+        if (Type.subTypeOf(targetType, Type.INTEGER)
+                && Type.subTypeOf(av.getType(), Type.DECIMAL)
+                && av instanceof org.exist.xquery.value.NumericValue nv
+                && nv.hasFractionalPart()) {
+            return null;
         }
         try {
             return av.convertTo(targetType);
