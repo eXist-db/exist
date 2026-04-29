@@ -79,11 +79,6 @@ public class ForMemberExpr extends BindingExpression {
         }
     }
 
-    // PMD.NPathComplexity: XQuery 4.0 `for member $m in array` evaluator
-    // mirrors the FLWOR ForExpr structure (profiler/dependency/positional/
-    // binding branches over array iteration). The branches are required by the
-    // spec and collapsing them obscures the parallel with ForExpr/ForKeyValueExpr.
-    @SuppressWarnings("PMD.NPathComplexity")
     @Override
     public Sequence eval(Sequence contextSequence, final Item contextItem)
             throws XPathException {

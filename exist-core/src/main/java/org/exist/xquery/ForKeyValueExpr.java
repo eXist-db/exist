@@ -98,11 +98,6 @@ public class ForKeyValueExpr extends BindingExpression {
         }
     }
 
-    // PMD.NPathComplexity: XQuery 4.0 `for key $k value $v in map` evaluator
-    // mirrors the FLWOR ForExpr structure (profiler/dependency/positional/binding
-    // branches over map iteration). The branches are required by the spec and
-    // collapsing them obscures the parallel with ForExpr/ForMemberExpr.
-    @SuppressWarnings("PMD.NPathComplexity")
     @Override
     public Sequence eval(Sequence contextSequence, final Item contextItem)
             throws XPathException {
