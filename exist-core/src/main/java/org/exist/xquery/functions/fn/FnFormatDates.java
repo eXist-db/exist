@@ -570,7 +570,6 @@ public class FnFormatDates extends BasicFunction {
      * <digits>[<separator><digits>] where digits use any Unicode digit family.
      * Special pictures: "N" (named), "Z" (military), pictures ending in 't' (UTC → "Z").
      */
-    @SuppressWarnings("PMD.NPathComplexity")
     private String formatTimeZone(final String timezonePicture, final int absHour, final int absMinute,
             final boolean isNegative, final TimeZone timeZone, final String language,
             final Optional<String> place) {
@@ -838,10 +837,6 @@ public class FnFormatDates extends BasicFunction {
         };
     }
 
-    // PMD.NPathComplexity: implements XSLT/XQuery format-dateTime number-picture
-    // semantics (digit/word/Roman/abbreviated/Greek/etc per § 4.7) with optional
-    // language-aware ordinal forms; branch reorganization obscures the spec.
-    @SuppressWarnings("PMD.NPathComplexity")
     private void formatNumber(char specifier, String picture, String width, int num, final String language,
                               StringBuilder sb) throws XPathException {
         // Detect and strip ordinal/cardinal modifier suffix
@@ -1085,7 +1080,6 @@ public class FnFormatDates extends BasicFunction {
      * Validation: '#' (optional) digits must follow mandatory digits, picture
      * must use a single Unicode digit family.
      */
-    @SuppressWarnings("PMD.NPathComplexity")
     private void formatFractionalSeconds(int millis, String picture, String width,
                                           boolean pictureWasEmpty, StringBuilder sb) throws XPathException {
         // Strip ordinal/cardinal suffix (rare for f component)
@@ -1329,9 +1323,6 @@ public class FnFormatDates extends BasicFunction {
         return np;
     }
 
-    // PMD.NPathComplexity: parses width modifier "[m,n]" with min/max/wildcard
-    // forms per spec; branches encode each accepted syntax variant.
-    @SuppressWarnings("PMD.NPathComplexity")
     private int[] getWidths(String width) throws XPathException {
         if (width == null || width.isEmpty())
             {return null;}
