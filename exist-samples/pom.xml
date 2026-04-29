@@ -29,8 +29,7 @@
         <groupId>org.exist-db</groupId>
 <artifactId>exist-parent</artifactId>
         <version>${revision}</version>
-<relativePath>../exist-parent</relativePath>
-    </parent>
+</parent>
 
     <artifactId>exist-samples</artifactId>
     <packaging>jar</packaging>
@@ -46,14 +45,35 @@
   </scm>
 
     <dependencies>
+        <!-- Compile-time nullability annotations used in Samples.java. -->
         <dependency>
             <groupId>com.google.code.findbugs</groupId>
             <artifactId>jsr305</artifactId>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>analyze</id>
+                        <goals>
+                            <goal>analyze-only</goal>
+                        </goals>
+                        <configuration>
+                            <failOnWarning>true</failOnWarning>
+                            <!-- Annotation-only dependency is required at compile-time only. -->
+                            <ignoredUnusedDeclaredDependencies>
+                                <ignoredUnusedDeclaredDependency>com.google.code.findbugs:jsr305</ignoredUnusedDeclaredDependency>
+                            </ignoredUnusedDeclaredDependencies>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>com.mycila</groupId>
                 <artifactId>license-maven-plugin</artifactId>

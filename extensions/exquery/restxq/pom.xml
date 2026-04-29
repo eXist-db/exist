@@ -33,8 +33,7 @@
         <groupId>org.exist-db</groupId>
 <artifactId>exist-parent</artifactId>
         <version>${revision}</version>
-<relativePath>../../../exist-parent</relativePath>
-    </parent>
+</parent>
 
     <artifactId>exist-restxq</artifactId>
     <packaging>jar</packaging>

@@ -29,8 +29,7 @@
         <groupId>org.exist-db</groupId>
 <artifactId>exist-parent</artifactId>
         <version>${revision}</version>
-<relativePath>../exist-parent</relativePath>
-    </parent>
+</parent>
 
     <artifactId>exist-start</artifactId>
     <packaging>jar</packaging>
@@ -107,6 +106,10 @@ The original license statement is also included below.]]></preamble>
                         </goals>
                         <configuration>
                             <failOnWarning>true</failOnWarning>
+                            <!-- Used by test sources; dependency analyzer can still flag it as unused. -->
+                            <ignoredUnusedDeclaredDependencies>
+                                <ignoredUnusedDeclaredDependency>junit:junit</ignoredUnusedDeclaredDependency>
+                            </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>
                 </executions>
