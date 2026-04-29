@@ -3287,6 +3287,18 @@ throws PermissionDeniedException, EXistException, XPathException
                     isPartial = true;
                 }
                 |
+                #(
+                    kw:KEYWORD_ARG
+                    {
+                        PathExpr kwValue = new PathExpr(context);
+                        kwValue.setASTNode(functionCall_AST_in);
+                    }
+                    expr [kwValue]
+                    {
+                        params.add(new KeywordArgument(context, kw.getText(), kwValue.simplify()));
+                    }
+                )
+                |
                 expr [pathExpr] { params.add(pathExpr); }
             )
         )*

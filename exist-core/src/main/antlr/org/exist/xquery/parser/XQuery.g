@@ -159,6 +159,7 @@ imaginaryTokenDefinitions
 	FUNCTION_INLINE
 	FUNCTION_TEST
 	CONTEXT_ITEM_FUNC
+	KEYWORD_ARG
 	MAP
 	MAP_TEST
 	LOOKUP
@@ -1659,6 +1660,14 @@ argument throws XPathException
 :
 	(QUESTION! ( NCNAME | INTEGER_LITERAL | LPAREN | STAR )) => lookup
 	| argumentPlaceholder
+	// XQuery 4.0 keyword argument: name := expr (a colon followed by `=`,
+	// not `:=` because the lexer keeps them as separate tokens). Wrapped
+	// in a KEYWORD_ARG node so FunctionFactory can resolve it to a
+	// positional slot using the called function's parameter names.
+	| (NCNAME COLON EQ) => kwArg:NCNAME! COLON! EQ! exprSingle
+	{
+		#argument = #(#[KEYWORD_ARG, kwArg.getText()], #argument);
+	}
 	| exprSingle
 	;
 
