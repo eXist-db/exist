@@ -206,36 +206,10 @@ public class TEXTWriter extends XMLWriter {
 
     @Override
     protected void writeChars(final CharSequence s, final boolean inAttribute) throws IOException {
-        final int len = s.length();
-        writeCharSeq(s, 0, len);
+        writeCharSeq(s, 0, s.length());
     }
-    
-    private void writeCharSeq(final CharSequence ch, final int start, final int end) throws IOException {
-        final int len = end - start;
-        if (len <= 0) {
-            return;
-        }
-        if (ch instanceof String s) {
-            writer.write(s, start, len);
-        } else if (ch instanceof CharSlice cs) {
-            cs.write(writer, start, len);
-        } else if (ch instanceof StringBuilder sb) {
-            final char[] buf = new char[len];
-            sb.getChars(start, end, buf, 0);
-            writer.write(buf, 0, len);
-        } else if (ch instanceof StringBuffer sb) {
-            final char[] buf = new char[len];
-            sb.getChars(start, end, buf, 0);
-            writer.write(buf, 0, len);
-        } else {
-            final char[] buf = new char[len];
-            for (int i = 0; i < len; i++) {
-                buf[i] = ch.charAt(start + i);
-            }
-            writer.write(buf, 0, len);
-        }
-    }
-    
+
+
     @Override
     protected void writeCharacterReference(final char charval) throws IOException {
         int o = 0;
