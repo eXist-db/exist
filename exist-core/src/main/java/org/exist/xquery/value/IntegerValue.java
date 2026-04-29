@@ -142,7 +142,7 @@ public class IntegerValue extends NumericValue {
     public IntegerValue(final Expression expression, final String stringValue, final int requiredType) throws XPathException {
         super(expression);
         try {
-            this.value = new BigInteger(StringValue.trimWhitespace(stringValue));
+            this.value = parseIntegerLiteral(StringValue.trimWhitespace(stringValue));
             this.type = requiredType;
             if (!(checkType())) {
                 throw new XPathException(getExpression(), ErrorCodes.FORG0001, "can not convert '" +
@@ -152,6 +152,29 @@ public class IntegerValue extends NumericValue {
             throw new XPathException(getExpression(), ErrorCodes.FORG0001, "can not convert '" +
                     stringValue + "' to " + Type.getTypeName(requiredType));
         }
+    }
+
+    /**
+     * Parse an XPath/XQuery integer literal, accepting the XQuery 4.0
+     * extensions: hex prefix {@code 0x...} / {@code 0X...}, binary prefix
+     * {@code 0b...} / {@code 0B...}, and {@code _} as a digit separator
+     * between digits. Decimal literals (no prefix) match the original
+     * XPath 3.1 behaviour.
+     */
+    private static BigInteger parseIntegerLiteral(final String text) {
+        if (text.length() > 2 && text.charAt(0) == '0') {
+            final char p = text.charAt(1);
+            if (p == 'x' || p == 'X') {
+                return new BigInteger(text.substring(2).replace("_", ""), 16);
+            }
+            if (p == 'b' || p == 'B') {
+                return new BigInteger(text.substring(2).replace("_", ""), 2);
+            }
+        }
+        if (text.indexOf('_') >= 0) {
+            return new BigInteger(text.replace("_", ""));
+        }
+        return new BigInteger(text);
     }
 
     private boolean checkType() throws XPathException {
