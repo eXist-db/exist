@@ -158,13 +158,28 @@ public class WebSocketEndpointTest {
 
         try {
             assertTrue("Should subscribe within 2s", subscribedLatch.await(2, TimeUnit.SECONDS));
-            // small delay for server to process subscription
-            Thread.sleep(100);
-            assertEquals("One subscriber", 1, WebSocketEndpoint.getChannelCount("count-test"));
+            // poll for the server to process the subscription; @OnMessage runs
+            // on a separate thread, so the client-side latch does not guarantee
+            // the server-side state has been updated yet.
+            assertTrue("One subscriber within 2s",
+                    awaitChannelCount("count-test", 1, 2000));
         } finally {
             session.close();
-            // small delay for session cleanup
-            Thread.sleep(100);
+            // poll for session cleanup so a leaked session cannot affect
+            // subsequent tests sharing the static sessions map.
+            awaitChannelCount("count-test", 0, 2000);
         }
+    }
+
+    private static boolean awaitChannelCount(final String channel, final int expected,
+                                             final long timeoutMillis) throws InterruptedException {
+        final long deadline = System.currentTimeMillis() + timeoutMillis;
+        while (System.currentTimeMillis() < deadline) {
+            if (WebSocketEndpoint.getChannelCount(channel) == expected) {
+                return true;
+            }
+            Thread.sleep(25);
+        }
+        return WebSocketEndpoint.getChannelCount(channel) == expected;
     }
 }
