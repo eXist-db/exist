@@ -100,6 +100,7 @@ public class MapExpr extends AbstractExpression {
         }
 
         final IMap<AtomicValue, Sequence> map = newLinearMap(null);
+        final java.util.ArrayList<AtomicValue> insertionOrder = new java.util.ArrayList<>(this.entries.size());
 
         boolean firstType = true;
         int prevType = AbstractMapType.UNKNOWN_KEY_TYPE;
@@ -116,6 +117,7 @@ public class MapExpr extends AbstractExpression {
                     throw new XPathException(this, ErrorCodes.XQDY0137, "Key \"" + atomic.getStringValue() + "\" already exists in map.");
                 }
                 map.put(atomic, value);
+                insertionOrder.add(atomic);
 
                 final int thisType = atomic.getType();
                 if (firstType) {
@@ -142,6 +144,7 @@ public class MapExpr extends AbstractExpression {
                             throw new XPathException(this, ErrorCodes.XQDY0137, "Key \"" + atomic.getStringValue() + "\" already exists in map.");
                         }
                         map.put(atomic, mapEntry.value());
+                        insertionOrder.add(atomic);
 
                         final int thisType = atomic.getType();
                         if (firstType) {
@@ -157,7 +160,7 @@ public class MapExpr extends AbstractExpression {
             }
         }
 
-        return new MapType(this, context, map.forked(), prevType);
+        return new MapType(this, context, map.forked(), prevType, insertionOrder);
     }
 
     @Override
