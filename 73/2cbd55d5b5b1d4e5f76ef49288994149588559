@@ -1,0 +1,33 @@
+exist-versioning-release.md
+  d860c86ca9c322d9 123,131
+.github/workflows/ci-container.yml
+  d860c86ca9c322d9 89-101
+.github/workflows/ci-release.yml
+  d860c86ca9c322d9 49-55,58
+.gitignore
+  d860c86ca9c322d9 13-14
+pom.xml
+  d860c86ca9c322d9 41-45
+exist-parent/pom.xml
+  d860c86ca9c322d9 112-113,1203-1229
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "732cbd55d5b5b1d4e5f76ef49288994149588559",
+  "prompts": {
+    "d860c86ca9c322d9": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "e403d713-ccd9-488f-96f2-427b849a4434",
+        "model": "default"
+      },
+      "human_author": "duncdrum",
+      "messages": [],
+      "total_additions": 123,
+      "total_deletions": 64,
+      "accepted_lines": 123,
+      "overriden_lines": 0
+    }
+  }
+}
