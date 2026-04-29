@@ -100,5 +100,6 @@ public class XQueryWatchDogTest {
         watchDog.setTimeoutFromOption(timeoutOption("-1"));
         // Should not throw TerminatedException even though startTime is in the past
         watchDog.proceed(null);
+        assertEquals(Long.MAX_VALUE, getTimeout(watchDog));
     }
 }
