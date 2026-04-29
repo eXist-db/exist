@@ -71,10 +71,6 @@ public class CastExpression extends AbstractExpression {
         contextInfo.setStaticReturnType(requiredType);
     }
 
-    // PMD.NPathComplexity: dispatches over XQ 3.1 cast-as-target type rules
-    // (xs:NOTATION/xs:anyAtomicType reject + cardinality + atomization + numeric
-    // narrowing) with profiler instrumentation; each branch maps to a spec rule.
-    @SuppressWarnings("PMD.NPathComplexity")
     @Override
     public Sequence eval(final Sequence contextSequence, final Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {

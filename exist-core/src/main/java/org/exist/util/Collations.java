@@ -533,12 +533,6 @@ public class Collations {
      *
      * @throws XPathException if an error occurs whilst getting the Collator
      */
-    // PMD.NPathComplexity: implements W3C UCA collation parameter set (§ Collation
-    // URIs) with 13 independent options (lang, strength, alternate, decomposition,
-    // numeric, case-first, case-level, hira-quat, normalization, fallback, etc).
-    // Each branch validates one named parameter; collapsing them obscures the
-    // parameter-to-spec mapping. Covered by CollationsTest.
-    @SuppressWarnings("PMD.NPathComplexity")
     private static @Nullable Collator getCollationFromParams(
             final boolean fallback, @Nullable final String lang,
             @Nullable final String version, @Nullable final String strength,
