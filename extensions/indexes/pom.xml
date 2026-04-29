@@ -22,8 +22,8 @@
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.1.0 http://maven.apache.org/xsd/maven-4.1.0.xsd">
+    <modelVersion>4.1.0</modelVersion>
 
     <parent>
         <groupId>org.exist-db</groupId>
@@ -38,15 +38,15 @@
     <name>eXist-db Index Extensions</name>
     <description>eXist-db NoSQL Database Index Extensions</description>
 
-    <modules>
-        <module>lucene</module>
-        <module>ngram</module>
-        <module>range</module>
-        <module>sort</module>
-        <module>spatial</module>
-        <module>indexes-integration-tests</module>
-        <module>vector-it</module>
-    </modules>
+    <subprojects>
+        <subproject>lucene</subproject>
+        <subproject>ngram</subproject>
+        <subproject>range</subproject>
+        <subproject>sort</subproject>
+        <subproject>spatial</subproject>
+        <subproject>indexes-integration-tests</subproject>
+        <subproject>vector-it</subproject>
+    </subprojects>
 
     <scm>
         <connection>scm:git:https://github.com/exist-db/exist.git</connection>

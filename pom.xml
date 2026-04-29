@@ -22,8 +22,8 @@
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.1.0 http://maven.apache.org/xsd/maven-4.1.0.xsd">
+    <modelVersion>4.1.0</modelVersion>
 
     <parent>
         <groupId>org.exist-db</groupId>
@@ -43,18 +43,18 @@
         <revision>7.0.0-SNAPSHOT</revision>
     </properties>
 
-    <modules>
-        <module>exist-parent</module>
-        <module>exist-ant</module>
-        <module>exist-core</module>
-        <module>exist-distribution</module>
-        <module>exist-jetty-config</module>
-        <module>exist-samples</module>
-        <module>exist-service</module>
-        <module>exist-start</module>
-        <module>extensions</module>
-        <module>exist-xqts</module>
-    </modules>
+    <subprojects>
+        <subproject>exist-parent</subproject>
+        <subproject>exist-ant</subproject>
+        <subproject>exist-core</subproject>
+        <subproject>exist-distribution</subproject>
+        <subproject>exist-jetty-config</subproject>
+        <subproject>exist-samples</subproject>
+        <subproject>exist-service</subproject>
+        <subproject>exist-start</subproject>
+        <subproject>extensions</subproject>
+        <subproject>exist-xqts</subproject>
+    </subprojects>
 
     <scm>
         <connection>scm:git:https://github.com/exist-db/exist.git</connection>

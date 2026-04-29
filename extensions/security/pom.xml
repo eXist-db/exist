@@ -22,8 +22,8 @@
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.1.0 http://maven.apache.org/xsd/maven-4.1.0.xsd">
+    <modelVersion>4.1.0</modelVersion>
 
     <parent>
         <groupId>org.exist-db</groupId>
@@ -38,11 +38,11 @@
     <name>eXist-db Extension Security Modules</name>
     <description>eXist-db Extension Security Modules</description>
 
-    <modules>
-        <module>activedirectory</module>
-        <module>iprange</module>
-        <module>ldap</module>
-    </modules>
+    <subprojects>
+        <subproject>activedirectory</subproject>
+        <subproject>iprange</subproject>
+        <subproject>ldap</subproject>
+    </subprojects>
 
     <scm>
         <connection>scm:git:https://github.com/exist-db/exist.git</connection>

@@ -22,8 +22,8 @@
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.1.0 http://maven.apache.org/xsd/maven-4.1.0.xsd">
+    <modelVersion>4.1.0</modelVersion>
 
     <parent>
         <groupId>org.exist-db</groupId>
@@ -38,22 +38,22 @@
     <name>eXist-db Extensions</name>
     <description>eXist-db NoSQL Database Extensions</description>
 
-    <modules>
-        <module>contentextraction</module>
+    <subprojects>
+        <subproject>contentextraction</subproject>
         <!-- module>debuggee</module -->
         <!-- Not used -->
-        <module>exiftool</module>
-        <module>expath</module>
-        <module>exquery</module>
+        <subproject>exiftool</subproject>
+        <subproject>expath</subproject>
+        <subproject>exquery</subproject>
         <!-- module>images</module -->
         <!-- Not used -->
-        <module>indexes</module>
-        <module>modules</module>
-        <module>vector</module>
-        <module>security</module>
-        <module>webdav</module>
-        <module>xqdoc</module>
-    </modules>
+        <subproject>indexes</subproject>
+        <subproject>modules</subproject>
+        <subproject>vector</subproject>
+        <subproject>security</subproject>
+        <subproject>webdav</subproject>
+        <subproject>xqdoc</subproject>
+    </subprojects>
 
     <scm>
         <connection>scm:git:https://github.com/exist-db/exist.git</connection>

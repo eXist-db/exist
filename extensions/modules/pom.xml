@@ -22,8 +22,8 @@
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.1.0 http://maven.apache.org/xsd/maven-4.1.0.xsd">
+    <modelVersion>4.1.0</modelVersion>
 
     <parent>
         <groupId>org.exist-db</groupId>
@@ -38,28 +38,28 @@
     <name>eXist-db Extension XQuery Modules</name>
     <description>eXist-db Extension XQuery Modules</description>
 
-    <modules>
-        <module>cache</module>
-        <module>compression</module>
-        <module>counter</module>
-        <module>cqlparser</module>
-        <module>example</module>
-        <module>exi</module>
-        <module>expathrepo</module>
-        <module>expathrepo/expathrepo-trigger-test</module>
-        <module>file</module>
-        <module>image</module>
-        <module>jndi</module>
-        <module>mail</module>
-        <module>persistentlogin</module>
-        <module>process</module>
-        <module>scheduler</module>
-        <module>simpleql</module>
-        <module>sql</module>
-        <module>sql-oracle</module>
-        <module>xmldiff</module>
-        <module>xslfo</module>
-    </modules>
+    <subprojects>
+        <subproject>cache</subproject>
+        <subproject>compression</subproject>
+        <subproject>counter</subproject>
+        <subproject>cqlparser</subproject>
+        <subproject>example</subproject>
+        <subproject>exi</subproject>
+        <subproject>expathrepo</subproject>
+        <subproject>expathrepo/expathrepo-trigger-test</subproject>
+        <subproject>file</subproject>
+        <subproject>image</subproject>
+        <subproject>jndi</subproject>
+        <subproject>mail</subproject>
+        <subproject>persistentlogin</subproject>
+        <subproject>process</subproject>
+        <subproject>scheduler</subproject>
+        <subproject>simpleql</subproject>
+        <subproject>sql</subproject>
+        <subproject>sql-oracle</subproject>
+        <subproject>xmldiff</subproject>
+        <subproject>xslfo</subproject>
+    </subprojects>
 
     <scm>
         <connection>scm:git:https://github.com/exist-db/exist.git</connection>
