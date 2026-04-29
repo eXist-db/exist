@@ -98,6 +98,16 @@ public class MapType extends AbstractMapType {
     private IMap<AtomicValue, Sequence> map;
 
     /**
+     * Insertion-order index of distinct keys (XPath/XQuery 4.0 PR1703).
+     * Maintained when entries are appended via {@link #add(AtomicValue, Sequence)}
+     * so {@link #keys()} can return keys in the order they were first inserted.
+     * Lazily allocated. Reset to {@code null} when an operation can no longer
+     * preserve order (e.g. union with another map of unknown order).
+     */
+    @Nullable
+    private java.util.ArrayList<AtomicValue> insertionOrder;
+
+    /**
      * The type of the keys in the map,
      * if not all keys have the same type
      * then this is set to {@link #MIXED_KEY_TYPES}.
@@ -178,6 +188,15 @@ public class MapType extends AbstractMapType {
 
     public MapType(final XQueryContext context, final IMap<AtomicValue, Sequence> other, @Nullable final Integer keyType) {
         this(null, context, other, keyType);
+    }
+
+    public MapType(final Expression expression, final XQueryContext context,
+            final IMap<AtomicValue, Sequence> other, @Nullable final Integer keyType,
+            @Nullable final java.util.List<AtomicValue> insertionOrder) {
+        this(expression, context, other, keyType);
+        if (insertionOrder != null && !insertionOrder.isEmpty()) {
+            this.insertionOrder = new java.util.ArrayList<>(insertionOrder);
+        }
     }
 
     public MapType(final Expression expression, final XQueryContext context, final IMap<AtomicValue, Sequence> other, @Nullable final Integer keyType) {
@@ -308,7 +327,14 @@ public class MapType extends AbstractMapType {
 
     public void add(final AtomicValue key, final Sequence value) {
         setKeyType(key.getType());
+        final boolean wasPresent = map.contains(key);
         map = map.put(key, value);
+        if (!wasPresent) {
+            if (insertionOrder == null) {
+                insertionOrder = new java.util.ArrayList<>(Math.max(8, (int) map.size()));
+            }
+            insertionOrder.add(key);
+        }
     }
 
     @Override
@@ -366,8 +392,16 @@ public class MapType extends AbstractMapType {
     @Override
     public Sequence keys() {
         final ArrayListValueSequence seq = new ArrayListValueSequence((int)map.size());
-        for (final AtomicValue key: map.keys()) {
-            seq.add(key);
+        // Prefer the recorded insertion order (XPath/XQuery 4.0 PR1703) when
+        // available; fall back to the bifurcan map's hash-bucket order.
+        if (insertionOrder != null && insertionOrder.size() == map.size()) {
+            for (final AtomicValue key : insertionOrder) {
+                seq.add(key);
+            }
+        } else {
+            for (final AtomicValue key : map.keys()) {
+                seq.add(key);
+            }
         }
         return seq;
     }
