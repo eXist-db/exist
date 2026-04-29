@@ -2444,6 +2444,10 @@ throws PermissionDeniedException, EXistException, XPathException
     step=postfixExpr [step]
     { path.add(step); }
     |
+    step=contextItemFunctionExpr [path]
+    step=postfixExpr [step]
+    { path.add(step); }
+    |
     step=arrayConstr [path]
     step=postfixExpr [step]
     { path.add(step); }
@@ -4001,6 +4005,28 @@ throws XPathException, PermissionDeniedException, EXistException
             mod.setASTNode(updateAST);
             path.add(mod);
             step = mod;
+        }
+    )
+    ;
+
+// XQ4 PR1499 context-item function expression: fn { body }
+contextItemFunctionExpr [PathExpr path]
+returns [Expression step]
+throws XPathException, PermissionDeniedException, EXistException
+{
+    step = null;
+}:
+    #(
+        t:CONTEXT_ITEM_FUNC
+        {
+            PathExpr body = new PathExpr(context);
+            body.setASTNode(contextItemFunctionExpr_AST_in);
+        }
+        expr [body]
+        {
+            ContextItemFunctionExpr cif = new ContextItemFunctionExpr(context, body.simplify());
+            cif.setASTNode(contextItemFunctionExpr_AST_in);
+            step = cif;
         }
     )
     ;

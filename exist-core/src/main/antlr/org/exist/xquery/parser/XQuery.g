@@ -158,6 +158,7 @@ imaginaryTokenDefinitions
 	INLINE_FUNCTION_DECL
 	FUNCTION_INLINE
 	FUNCTION_TEST
+	CONTEXT_ITEM_FUNC
 	MAP
 	MAP_TEST
 	LOOKUP
@@ -1222,7 +1223,7 @@ stepExpr throws XPathException
 	|
 	( ( "element" | "attribute" | "text" | "document" | "comment" |
 	  "namespace-node" | "processing-instruction" | "namespace" | "ordered" |
-	  "unordered" | "map" | "array" ) LCURLY ) =>
+	  "unordered" | "map" | "array" | "fn" ) LCURLY ) =>
 	postfixExpr
 	|
 	( ( "element" | "attribute" | "processing-instruction" | "namespace" ) eqName LCURLY ) => postfixExpr
@@ -1426,12 +1427,16 @@ primaryExpr throws XPathException
 	|
 	( "map" LCURLY ) => mapConstructor
 	|
+	// XQuery 4.0 context-item function expression (PR1499): fn { body }
+	// Equivalent to function($_) { body-with-.-bound-to-$_ }; arity 1.
+	( "fn" LCURLY ) => contextItemFunctionExpr
+	|
 	// XQuery 4.0 bare-brace map constructor (PR1071): { } or { k: v, ... }
 	( LCURLY ) => bareMapConstructor
 	|
 	directConstructor
 	|
-	( MOD | "function" LPAREN | eqName HASH ) => functionItemExpr
+	( MOD | "function" LPAREN | "fn" LPAREN | eqName HASH ) => functionItemExpr
 	|
 	( eqName LPAREN ) => functionCall
 	|
@@ -1489,6 +1494,21 @@ bareMapConstructor throws XPathException
     {
         #bareMapConstructor = #(#[MAP, "map"], #bareMapConstructor);
         #bareMapConstructor.copyLexInfo(#b);
+    }
+    ;
+
+// XQ4 PR1499 context-item function expression: fn { body }
+// Equivalent to function($_arg) { body }, where `.` inside body is bound to $_arg.
+// The CONTEXT_ITEM_FUNC node holds the body expression as its single child;
+// the tree walker materialises it as a UserDefinedFunction-like callable.
+// `expr` (not `exprSingle`) so the body may be a comma-separated sequence
+// like `fn { ., .+10, .+20 }`.
+contextItemFunctionExpr throws XPathException
+:
+    f:"fn"! LCURLY! expr RCURLY!
+    {
+        #contextItemFunctionExpr = #(#[CONTEXT_ITEM_FUNC, "fn"], #contextItemFunctionExpr);
+        #contextItemFunctionExpr.copyLexInfo(#f);
     }
     ;
 // === End XQuery 4.0 Parser Extensions ===
@@ -1564,7 +1584,26 @@ functionItemExpr throws XPathException
 :
 	( MOD | "function" ) => inlineFunctionExpr
 	|
+	// XQ4 PR1499: `fn (params) { body }` is shorthand for
+	// `function (params) { body }`. We funnel it through inlineFunctionExpr
+	// after consuming the `fn` keyword.
+	( "fn" LPAREN ) => fnInlineFunctionExpr
+	|
 	namedFunctionRef
+	;
+
+fnInlineFunctionExpr throws XPathException
+:
+	"fn"! lp:LPAREN! ( paramList )? RPAREN! ( returnType )? functionBody
+	{
+		#fnInlineFunctionExpr = #(#[INLINE_FUNCTION_DECL, null], null, #fnInlineFunctionExpr);
+		#fnInlineFunctionExpr.copyLexInfo(#lp);
+	}
+	exception catch [RecognitionException e]
+	{
+		throw new XPathException(e.getLine(), e.getColumn(), ErrorCodes.XPST0003,
+				"Syntax error within fn(...){} expression: " + e.getMessage());
+	}
 	;
 
 namedFunctionRef throws XPathException
@@ -2183,6 +2222,11 @@ reservedKeywords returns [String name]
 	"default" { name= "default"; }
 	|
 	"function" { name= "function"; }
+	|
+	// XQ4 PR1499 introduces `fn` as a keyword in `fn { ... }` expressions.
+	// Allow it as an unprefixed name elsewhere (e.g. variable parts, function
+	// names without a namespace) so it stays compatible with existing scripts.
+	"fn" { name = "fn"; }
 	|
 	"external" { name = "external"; }
 	|
