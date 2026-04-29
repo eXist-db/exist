@@ -31,6 +31,7 @@ import org.exist.source.Source;
 import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.Constants.StringTruncationOperator;
 import org.exist.xquery.parser.XQueryAST;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
@@ -682,8 +683,8 @@ public class FunctionFactory {
             // parameter both positionally and by keyword is caught (XPST0017).
             int matchPos = -1;
             for (int j = 0; j < argTypes.length; j++) {
-                if (argTypes[j] instanceof org.exist.xquery.value.FunctionParameterSequenceType) {
-                    final String paramName = ((org.exist.xquery.value.FunctionParameterSequenceType) argTypes[j])
+                if (argTypes[j] instanceof FunctionParameterSequenceType) {
+                    final String paramName = ((FunctionParameterSequenceType) argTypes[j])
                             .getAttributeName();
                     final String paramClark = normalizeQNameToClark(context, paramName);
                     if (kwClark != null && kwClark.equals(paramClark)) {
@@ -712,9 +713,9 @@ public class FunctionFactory {
         // null so the caller can report XPST0017 or try another overload.
         for (int i = 0; i < resolved.size(); i++) {
             if (resolved.get(i) == null) {
-                if (argTypes[i] instanceof org.exist.xquery.value.FunctionParameterSequenceType) {
-                    final org.exist.xquery.value.FunctionParameterSequenceType pst =
-                            (org.exist.xquery.value.FunctionParameterSequenceType) argTypes[i];
+                if (argTypes[i] instanceof FunctionParameterSequenceType) {
+                    final FunctionParameterSequenceType pst =
+                            (FunctionParameterSequenceType) argTypes[i];
                     if (pst.hasDefaultValue()) {
                         resolved.set(i, pst.getDefaultValue());
                     } else {

@@ -447,15 +447,12 @@ versionDecl throws XPathException
         {
             #versionDecl = #(#[VERSION_DECL, v.getText()], enc);
             final String ver = v.getText();
-            if ("4.0".equals(ver)) {
-                xq4Enabled = true;
-                parsedXQueryVersion = 40;
-            } else if ("3.1".equals(ver)) {
-                parsedXQueryVersion = 31;
-            } else if ("3.0".equals(ver)) {
-                parsedXQueryVersion = 30;
-            } else if ("1.0".equals(ver)) {
-                parsedXQueryVersion = 10;
+            switch (ver) {
+                case "4.0" -> { xq4Enabled = true; parsedXQueryVersion = 40; }
+                case "3.1" -> parsedXQueryVersion = 31;
+                case "3.0" -> parsedXQueryVersion = 30;
+                case "1.0" -> parsedXQueryVersion = 10;
+                default -> { }
             }
         }
 	;
