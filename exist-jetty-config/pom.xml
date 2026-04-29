@@ -27,9 +27,9 @@
 
     <parent>
         <groupId>org.exist-db</groupId>
-        <artifactId>exist-parent</artifactId>
+<artifactId>exist-parent</artifactId>
         <version>${revision}</version>
-        <relativePath>../exist-parent</relativePath>
+<relativePath>../exist-parent</relativePath>
     </parent>
 
     <artifactId>exist-jetty-config</artifactId>
