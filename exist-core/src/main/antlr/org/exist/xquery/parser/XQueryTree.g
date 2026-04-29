@@ -1510,7 +1510,7 @@ throws XPathException
         )
         |
         #(
-            MAP_TEST { type.setPrimaryType(Type.MAP_ITEM); }
+            mt:MAP_TEST { type.setPrimaryType(Type.MAP_ITEM); }
             (
                 STAR
                 |
@@ -1522,6 +1522,17 @@ throws XPathException
                         { paramTypes.add(paramType); }
                     )*
                     {
+                        // Per XPath/XQuery 3.1 MapTest: must be either map(*) (already
+                        // handled by STAR above) or map(KeyType, ValueType) - exactly
+                        // two sequence types, with KeyType an ItemType (no cardinality).
+                        if (paramTypes.size() != 2) {
+                            throw new XPathException(mt.getLine(), mt.getColumn(), ErrorCodes.XPST0003,
+                                "Map test must take exactly 0 or 2 type arguments, got " + paramTypes.size());
+                        }
+                        if (paramTypes.get(0).getCardinality() != org.exist.xquery.Cardinality.EXACTLY_ONE) {
+                            throw new XPathException(mt.getLine(), mt.getColumn(), ErrorCodes.XPST0003,
+                                "Map key type must be an ItemType (cardinality must be 1, no occurrence indicator)");
+                        }
                         type.setFunctionParamTypes(paramTypes.toArray(new SequenceType[0]));
                     }
                 )
@@ -1529,7 +1540,7 @@ throws XPathException
         )
         |
         #(
-            ARRAY_TEST { type.setPrimaryType(Type.ARRAY_ITEM); }
+            at:ARRAY_TEST { type.setPrimaryType(Type.ARRAY_ITEM); }
             (
                 STAR
                 |
@@ -1541,6 +1552,12 @@ throws XPathException
                         { paramTypes.add(paramType); }
                     )*
                     {
+                        // Per XPath/XQuery 3.1 ArrayTest: must be either array(*) (STAR
+                        // above) or array(SequenceType) - exactly one sequence type.
+                        if (paramTypes.size() != 1) {
+                            throw new XPathException(at.getLine(), at.getColumn(), ErrorCodes.XPST0003,
+                                "Array test must take exactly 0 or 1 type arguments, got " + paramTypes.size());
+                        }
                         type.setFunctionParamTypes(paramTypes.toArray(new SequenceType[0]));
                     }
                 )

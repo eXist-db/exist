@@ -525,16 +525,24 @@ public class SequenceType {
 
         // Check return type: function's return type must be a subtype of required return type (covariant)
         if (functionReturnType != null && sig.getReturnType() != null) {
-            final int actualReturnType = sig.getReturnType().getPrimaryType();
-            final int requiredReturnType = functionReturnType.getPrimaryType();
-            if (!Type.subTypeOf(actualReturnType, requiredReturnType)) {
+            if (!isSubtypeOf(sig.getReturnType(), functionReturnType)) {
                 return false;
             }
         }
 
-        // Check parameter types: required param types must be subtypes of function's param types (contravariant)
-        // Note: for now we skip contravariant parameter checking as it requires more infrastructure
-        // The return type check alone fixes the majority of subtyping test failures
+        // Contravariant parameter check: each required param type must be a subtype
+        // of the function's actual param type. This catches subsumption mismatches
+        // like `function(map(*)) ⊑ function(map(K,V))` (false: map(*) is broader).
+        if (functionParamTypes != null) {
+            final SequenceType[] actualParams = sig.getArgumentTypes();
+            if (actualParams != null) {
+                for (int i = 0; i < functionParamTypes.length; i++) {
+                    if (!isSubtypeOf(functionParamTypes[i], actualParams[i])) {
+                        return false;
+                    }
+                }
+            }
+        }
 
         return true;
     }
@@ -555,6 +563,122 @@ public class SequenceType {
         }
         // count > 1
         return cardinality == Cardinality.ONE_OR_MORE || cardinality == Cardinality.ZERO_OR_MORE;
+    }
+
+    /**
+     * Structural subtype relation between two sequence types.
+     * {@code sub} is a subtype of {@code sup} when every value matching
+     * {@code sub} also matches {@code sup}.
+     * <p>
+     * Handles cardinality, item-type subtyping, and the structural cases
+     * for {@code map(K, V)}, {@code array(T)}, and {@code function(...) as ...}.
+     */
+    private static boolean isSubtypeOf(final SequenceType sub, final SequenceType sup) {
+        // Cardinality: every cardinality permitted by sub must also be permitted by sup.
+        if (!cardinalitySubsumes(sup.cardinality, sub.cardinality)) {
+            return false;
+        }
+        // EMPTY_SEQUENCE on the sub side has no item type to compare; the cardinality
+        // check above is sufficient.
+        if (sub.cardinality == Cardinality.EMPTY_SEQUENCE) {
+            return true;
+        }
+        // Item type subsumption (covariant in the simple case)
+        if (!Type.subTypeOf(sub.primaryType, sup.primaryType)) {
+            return false;
+        }
+        // map(K, V) is a subtype of map(K2, V2) only when K ⊑ K2 AND V ⊑ V2.
+        // map(*) is broader than any specific map(K, V), so it is NOT a subtype.
+        if (sup.primaryType == Type.MAP_ITEM && sup.functionParamTypes != null) {
+            if (sub.primaryType != Type.MAP_ITEM || sub.functionParamTypes == null) {
+                return false;
+            }
+            if (sub.functionParamTypes.length != 2 || sup.functionParamTypes.length != 2) {
+                return false;
+            }
+            return isSubtypeOf(sub.functionParamTypes[0], sup.functionParamTypes[0])
+                    && isSubtypeOf(sub.functionParamTypes[1], sup.functionParamTypes[1]);
+        }
+        // array(T) ⊑ array(T2) iff T ⊑ T2; array(*) is not a subtype of typed arrays.
+        if (sup.primaryType == Type.ARRAY_ITEM && sup.functionParamTypes != null) {
+            if (sub.primaryType != Type.ARRAY_ITEM || sub.functionParamTypes == null) {
+                return false;
+            }
+            if (sub.functionParamTypes.length != 1 || sup.functionParamTypes.length != 1) {
+                return false;
+            }
+            return isSubtypeOf(sub.functionParamTypes[0], sup.functionParamTypes[0]);
+        }
+        // Typed function: arity matches; return is covariant; params are contravariant.
+        // Maps and arrays act as their function-shape (function(xs:anyAtomicType)
+        // as item()*, function(xs:integer) as item()*) for this comparison.
+        if (Type.subTypeOf(sup.primaryType, Type.FUNCTION) && sup.functionParamTypes != null) {
+            if (!Type.subTypeOf(sub.primaryType, Type.FUNCTION)) {
+                return false;
+            }
+            final SequenceType[] subParams;
+            final SequenceType subReturn;
+            if (sub.primaryType == Type.MAP_ITEM) {
+                subParams = new SequenceType[]{
+                        new SequenceType(Type.ANY_ATOMIC_TYPE, Cardinality.EXACTLY_ONE)};
+                subReturn = new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE);
+            } else if (sub.primaryType == Type.ARRAY_ITEM) {
+                subParams = new SequenceType[]{
+                        new SequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE)};
+                subReturn = new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE);
+            } else {
+                if (sub.functionParamTypes == null) {
+                    return false;
+                }
+                subParams = sub.functionParamTypes;
+                subReturn = sub.functionReturnType;
+            }
+            if (subParams.length != sup.functionParamTypes.length) {
+                return false;
+            }
+            for (int i = 0; i < subParams.length; i++) {
+                // Contravariant: sup's param must be ⊑ sub's param
+                if (!isSubtypeOf(sup.functionParamTypes[i], subParams[i])) {
+                    return false;
+                }
+            }
+            if (sup.functionReturnType != null) {
+                if (subReturn == null) {
+                    return false;
+                }
+                // Covariant: sub's return must be ⊑ sup's return
+                if (!isSubtypeOf(subReturn, sup.functionReturnType)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * True when {@code outer} permits every cardinality permitted by {@code inner}
+     * (e.g. {@code *} subsumes {@code +}, {@code ?}, and {@code 1}).
+     */
+    private static boolean cardinalitySubsumes(final Cardinality outer, final Cardinality inner) {
+        if (outer == inner) {
+            return true;
+        }
+        // Empty inner is only subsumed by something that allows zero
+        if (inner == Cardinality.EMPTY_SEQUENCE) {
+            return !outer.atLeastOne();
+        }
+        if (inner == Cardinality.EXACTLY_ONE) {
+            return outer == Cardinality.ZERO_OR_ONE
+                    || outer == Cardinality.ONE_OR_MORE
+                    || outer == Cardinality.ZERO_OR_MORE;
+        }
+        if (inner == Cardinality.ZERO_OR_ONE) {
+            return outer == Cardinality.ZERO_OR_MORE;
+        }
+        if (inner == Cardinality.ONE_OR_MORE) {
+            return outer == Cardinality.ZERO_OR_MORE;
+        }
+        return false;
     }
 
     /**
@@ -614,6 +738,12 @@ public class SequenceType {
             }
         }
         if (functionReturnType != null) {
+            // A map applied to a missing key returns the empty sequence, so the
+            // required return cardinality must permit zero results — otherwise the
+            // map cannot fulfil the contract for arbitrary inputs (qt3tests #28).
+            if (functionReturnType.cardinality.atLeastOne()) {
+                return false;
+            }
             for (final IEntry<AtomicValue, Sequence> entry : map) {
                 if (!matchesSequence(functionReturnType, entry.value())) {
                     return false;
