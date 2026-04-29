@@ -152,7 +152,7 @@ public class YearMonthDurationValue extends OrderedDurationValue {
             }
             return super.plus(other);
         } catch (final IllegalArgumentException e) {
-            throw new XPathException(getExpression(), 
+            throw new XPathException(getExpression(), ErrorCodes.XPTY0004,
                     "Operand to plus should be of type xdt:yearMonthDuration, xs:date, "
                             + "or xs:dateTime; got: "
                             + Type.getTypeName(other.getType()));

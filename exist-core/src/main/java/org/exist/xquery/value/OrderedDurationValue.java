@@ -168,9 +168,13 @@ abstract class OrderedDurationValue extends DurationValue {
                 date.checkYearOverflow(date.calendar);
                 final XMLGregorianCalendar gc = (XMLGregorianCalendar) date.calendar.clone();
                 gc.add(duration);
-                //Shift one year
-                if (gc.getYear() < 0) {
-                    gc.setYear(gc.getYear() - 1);
+                // For xs:time the year/month/day are FIELD_UNDEFINED; the legacy
+                // BC-year shift below must not run, since FIELD_UNDEFINED is
+                // Integer.MIN_VALUE and setYear(MIN_VALUE - 1) would int-overflow
+                // to MAX_VALUE, falsely tripping the eon overflow check.
+                final int gcYear = gc.getYear();
+                if (gcYear != DatatypeConstants.FIELD_UNDEFINED && gcYear < 0) {
+                    gc.setYear(gcYear - 1);
                 }
                 date.checkYearOverflow(gc);
                 return date.createSameKind(gc);
