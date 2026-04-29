@@ -1013,7 +1013,7 @@ public class XMLWriter implements SerializerWriter {
         }
     }
 
-    private void writeCharSeq(final CharSequence ch, final int start, final int end) throws IOException {
+    protected void writeCharSeq(final CharSequence ch, final int start, final int end) throws IOException {
         final int len = end - start;
         if (len <= 0) {
             return;
@@ -1038,6 +1038,13 @@ public class XMLWriter implements SerializerWriter {
         }
     }
 
+    /**
+     * Scratch buffer for bulk character writes. Grows as needed and is
+     * reused across serializations within the same pool-borrow cycle.
+     * Thread-safe: XMLWriter instances are borrowed exclusively from
+     * {@link SerializerPool} (Commons Pool2), guaranteeing no concurrent
+     * access to the same instance.
+     */
     private char[] charBuffer;
 
     private char[] ensureCharBuffer(final int minLen) {
