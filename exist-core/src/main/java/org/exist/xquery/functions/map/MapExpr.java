@@ -28,6 +28,7 @@ import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.Type;
 
 import java.util.ArrayList;
@@ -76,7 +77,7 @@ public class MapExpr extends AbstractExpression {
             contextSequence = contextItem.toSequence();
         }
 
-        // Fast path for a single-mapping literal — skip the linear/forked dance
+        // Fast path for a single colon-pair literal — skip the linear/forked dance
         // and the duplicate-key check (a single mapping cannot collide with itself).
         if (this.entries.size() == 1 && this.entries.get(0) instanceof Mapping mapping) {
             final Sequence key = mapping.key.eval(contextSequence, null);
