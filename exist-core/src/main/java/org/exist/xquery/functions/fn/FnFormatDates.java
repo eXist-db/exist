@@ -301,11 +301,6 @@ public class FnFormatDates extends BasicFunction {
         return sb.toString();
     }
 
-    // PMD.NPathComplexity: dispatches over the W3C XSLT/XQuery format-dateTime
-    // specifier set (Y/M/D/d/F/W/w/H/h/P/m/s/f/Z/z) per § 4.6.1; each branch
-    // implements one specifier's formatting rules. Splitting would obscure the
-    // spec mapping. Covered by FnFormatDatesTest.
-    @SuppressWarnings("PMD.NPathComplexity")
     private void formatComponent(String component, AbstractDateTimeValue dt, final String language,
             final Optional<String> place, final boolean tzHMZNPictureHint, final StringBuilder sb)
             throws XPathException {
@@ -338,193 +333,231 @@ public class FnFormatDates extends BasicFunction {
         final boolean allowDate = !Type.subTypeOf(dt.getType(), Type.TIME);
         final boolean allowTime = !Type.subTypeOf(dt.getType(), Type.DATE);
         switch (specifier) {
-            case 'Y':
-                if (allowDate) {
-                    int year = dt.getPart(AbstractDateTimeValue.YEAR);
-                    if (year < 0) {
-                        // Spec: when an era component is present elsewhere, year is
-                        // shown as the absolute value. Even without [E], producing
-                        // the absolute value is the common-sense reading and matches
-                        // both Saxon and BaseX.
-                        year = -year;
-                    }
-                    formatNumber(specifier, picture, width, year, language, sb);
-                } else {
-                    throw new XPathException(this, ErrorCodes.FOFD1350, "format-time does not support a year component");
-                }
-                break;
-            case 'M':
-                if(!tzHMZNPictureHint) {
-                    if (allowDate) {
-                        final int month = dt.getPart(AbstractDateTimeValue.MONTH);
-                        formatNumber(specifier, picture, width, month, language, sb);
-                    } else {
-                        throw new XPathException(this, ErrorCodes.FOFD1350, "format-time does not support a month component");
-                    }
-                } else {
-                    if (allowTime) {
-                        final int minute = dt.getPart(AbstractDateTimeValue.MINUTE);
-                        formatNumber(specifier, picture, width, minute, language, sb);
-                    } else {
-                        throw new XPathException(this, ErrorCodes.FOFD1350, "format-date does not support a minute component");
-                    }
-                }
-                break;
-            case 'D':
-                if (allowDate) {
-                    final int day = dt.getPart(AbstractDateTimeValue.DAY);
-                    formatNumber(specifier, picture, width, day, language, sb);
-                } else {
-                    throw new XPathException(this, ErrorCodes.FOFD1350, "format-time does not support a day component");
-                }
-                break;
-            case 'd':
-                if (allowDate) {
-                    final int dayInYear = dt.getDayWithinYear();
-                    formatNumber(specifier, picture, width, dayInYear, language, sb);
-                } else {
-                    throw new XPathException(this, ErrorCodes.FOFD1350, "format-time does not support a day component");
-                }
-                break;
-            case 'W':
-                if (allowDate) {
-                    final int week = isoWeekOfYear(dt);
-                    formatNumber(specifier, picture, width, week, language, sb);
-                } else {
-                    throw new XPathException(this, ErrorCodes.FOFD1350, "format-time does not support a week component");
-                }
-                break;
-            case 'w':
-                if (allowDate) {
-                    final int week = isoWeekOfMonth(dt);
-                    formatNumber(specifier, picture, width, week, language, sb);
-                } else {
-                    throw new XPathException(this, ErrorCodes.FOFD1350, "format-time does not support a week component");
-                }
-                break;
-            case 'F':
-                if (allowDate) {
-                    int day = dt.getDayOfWeek();
+            case 'Y' -> formatYear(dt, picture, width, language, sb, allowDate);
+            case 'M' -> formatMonthOrMinute(dt, picture, width, language, sb, allowDate, allowTime, tzHMZNPictureHint);
+            case 'D' -> formatDayOfMonth(dt, picture, width, language, sb, allowDate);
+            case 'd' -> formatDayOfYear(dt, picture, width, language, sb, allowDate);
+            case 'W' -> formatWeekOfYear(dt, picture, width, language, sb, allowDate);
+            case 'w' -> formatWeekOfMonth(dt, picture, width, language, sb, allowDate);
+            case 'F' -> formatDayOfWeek(dt, picture, width, language, sb, allowDate);
+            case 'H' -> formatHour24(dt, picture, width, language, sb, allowTime);
+            case 'h' -> formatHour12(dt, picture, width, language, sb, allowTime);
+            case 'm' -> formatMinute(dt, picture, width, language, sb, allowTime);
+            case 's' -> formatSecond(dt, picture, width, language, sb, allowTime);
+            case 'f' -> formatFractionComponent(dt, picture, width, pictureWasEmpty, sb, allowTime);
+            case 'P' -> formatAmPmComponent(dt, picture, width, language, sb, allowTime);
+            case 'E' -> formatEra(dt, picture, sb, allowDate);
+            case 'C' -> sb.append("ISO");
+            case 'z', 'Z' -> formatTimezoneComponent(specifier, dt, picture, language, place,
+                    pictureWasEmpty, allowTime, sb);
+            default -> throw new XPathException(this, ErrorCodes.FOFD1340,
+                    "Unrecognized date/time component: " + component);
+        }
+    }
 
-                    /**
-                     * We convert from the 1 == Sunday base
-                     * used by {@link AbstractDateTimeValue#getDayOfWeek()}
-                     * to the 1 == Monday base expected
-                     * by {@link #formatNumber(char, String, String, int, String, StringBuilder)}.
-                     */
-                    if (day == Calendar.SUNDAY) {
-                        day = 7;
-                    } else {
-                        day--;
-                    }
+    /** [Y] year; spec § 4.6.1. Negative years are rendered as their absolute value. */
+    private void formatYear(AbstractDateTimeValue dt, String picture, String width, String language,
+            StringBuilder sb, boolean allowDate) throws XPathException {
+        if (!allowDate) {
+            throw new XPathException(this, ErrorCodes.FOFD1350, "format-time does not support a year component");
+        }
+        int year = dt.getPart(AbstractDateTimeValue.YEAR);
+        if (year < 0) {
+            // Spec: when an era component is present elsewhere, year is
+            // shown as the absolute value. Even without [E], producing
+            // the absolute value is the common-sense reading and matches
+            // both Saxon and BaseX.
+            year = -year;
+        }
+        formatNumber('Y', picture, width, year, language, sb);
+    }
 
-                    formatNumber(specifier, picture, width, day, language, sb);
-                } else {
-                    throw new XPathException(this, ErrorCodes.FOFD1350, "format-time does not support a day component");
-                }
-                break;
-            case 'H':
-                if (allowTime) {
-                    final int hour = dt.getPart(AbstractDateTimeValue.HOUR);
-                    formatNumber(specifier, picture, width, hour, language, sb);
-                } else {
-                    throw new XPathException(this, ErrorCodes.FOFD1350, "format-date does not support a hour component");
-                }
-                break;
-            case 'h':
-                if (allowTime) {
-                    int hour = dt.getPart(AbstractDateTimeValue.HOUR) % 12;
-                    if (hour == 0)
-                        {hour = 12;}
-                    formatNumber(specifier, picture, width, hour, language, sb);
-                } else {
-                    throw new XPathException(this, ErrorCodes.FOFD1350, "format-date does not support a hour component");
-                }
-                break;
-            case 'm':
-                if (allowTime) {
-                    final int minute = dt.getPart(AbstractDateTimeValue.MINUTE);
-                    formatNumber(specifier, picture, width, minute, language, sb);
-                } else {
-                    throw new XPathException(this, ErrorCodes.FOFD1350, "format-date does not support a minute component");
-                }
-                break;
-            case 's':
-                if (allowTime) {
-                    final int second = dt.getPart(AbstractDateTimeValue.SECOND);
-                    formatNumber(specifier, picture, width, second, language, sb);
-                } else {
-                    throw new XPathException(this, ErrorCodes.FOFD1350, "format-date does not support a second component");
-                }
-                break;
-            case 'f':
-                if (allowTime) {
-                    final int fraction = dt.getPart(AbstractDateTimeValue.MILLISECOND);
-                    formatFractionalSeconds(fraction, picture, width, pictureWasEmpty, sb);
-                } else {
-                    throw new XPathException(this, ErrorCodes.FOFD1350,
-                            "format-date does not support a fractional seconds component");
-                }
-                break;
-            case 'P':
-                if (allowTime) {
-                    final int hour = dt.getPart(AbstractDateTimeValue.HOUR);
-                    formatNumber(specifier, picture, width, hour, language, sb);
-                } else {
-                    throw new XPathException(this, ErrorCodes.FOFD1350,
-                            "format-date does not support an am/pm component");
-                }
-                break;
-            case 'E':
-                if (allowDate) {
-                    final int year = dt.getPart(AbstractDateTimeValue.YEAR);
-                    String era = year > 0 ? "AD" : "BC";
-                    if ("n".equals(picture)) {
-                        era = era.toLowerCase();
-                    } else if ("Nn".equals(picture)) {
-                        era = era.charAt(0) + era.substring(1).toLowerCase();
-                    }
-                    sb.append(era);
-                } else {
-                    throw new XPathException(this, ErrorCodes.FOFD1350,
-                            "format-time does not support an era component");
-                }
-                break;
-            case 'C':
-                // Calendar name — we only support Gregorian/ISO
-                sb.append("ISO");
-                break;
-            case 'z':
-                if (allowTime || dt.getTimezone() != Sequence.EMPTY_SEQUENCE) {
-                    if (dt.getTimezone() != Sequence.EMPTY_SEQUENCE) {
-                        sb.append("GMT");
-                    }
-                }
-                // FALL-THROUGH to 'Z' to emit the offset
-            case 'Z':
-                final Sequence tz = dt.getTimezone();
-                if (tz != Sequence.EMPTY_SEQUENCE) {
-                    final DayTimeDurationValue dtv = ((DayTimeDurationValue) tz);
+    /** [M] month — or minute when the picture matches the "[H00]:[M00] [ZN]" ISO time hint. */
+    private void formatMonthOrMinute(AbstractDateTimeValue dt, String picture, String width, String language,
+            StringBuilder sb, boolean allowDate, boolean allowTime, boolean tzHMZNPictureHint)
+            throws XPathException {
+        if (!tzHMZNPictureHint) {
+            if (!allowDate) {
+                throw new XPathException(this, ErrorCodes.FOFD1350, "format-time does not support a month component");
+            }
+            final int month = dt.getPart(AbstractDateTimeValue.MONTH);
+            formatNumber('M', picture, width, month, language, sb);
+        } else {
+            if (!allowTime) {
+                throw new XPathException(this, ErrorCodes.FOFD1350, "format-date does not support a minute component");
+            }
+            final int minute = dt.getPart(AbstractDateTimeValue.MINUTE);
+            formatNumber('M', picture, width, minute, language, sb);
+        }
+    }
 
-                    // Determine timezone sign from the total offset,
-                    // since getPart(HOUR) loses the sign for -00:30 offsets
-                    final double totalSeconds = dtv.getValue();
-                    final boolean isNegative = totalSeconds < 0;
-                    final int totalMinutes = (int) Math.abs(totalSeconds / 60);
-                    final int absHour = totalMinutes / 60;
-                    final int absMinute = totalMinutes % 60;
-                    final TimeZone javaTz = dt.toJavaObject(Calendar.class).getTimeZone();
+    /** [D] day of month. */
+    private void formatDayOfMonth(AbstractDateTimeValue dt, String picture, String width, String language,
+            StringBuilder sb, boolean allowDate) throws XPathException {
+        if (!allowDate) {
+            throw new XPathException(this, ErrorCodes.FOFD1350, "format-time does not support a day component");
+        }
+        final int day = dt.getPart(AbstractDateTimeValue.DAY);
+        formatNumber('D', picture, width, day, language, sb);
+    }
 
-                    sb.append(formatTimeZone(picture,
-                            absHour, absMinute, isNegative, javaTz, language, place));
-                } else if (specifier == 'Z' && pictureWasEmpty == false && isMilitaryTimezonePicture(picture)) {
-                    // [ZZ] on a value with no timezone → 'J' (military-time local)
-                    sb.append('J');
-                }
-                break;
+    /** [d] day within year. */
+    private void formatDayOfYear(AbstractDateTimeValue dt, String picture, String width, String language,
+            StringBuilder sb, boolean allowDate) throws XPathException {
+        if (!allowDate) {
+            throw new XPathException(this, ErrorCodes.FOFD1350, "format-time does not support a day component");
+        }
+        final int dayInYear = dt.getDayWithinYear();
+        formatNumber('d', picture, width, dayInYear, language, sb);
+    }
 
-            default:
-                throw new XPathException(this, ErrorCodes.FOFD1340, "Unrecognized date/time component: " + component);
+    /** [W] ISO week of year. */
+    private void formatWeekOfYear(AbstractDateTimeValue dt, String picture, String width, String language,
+            StringBuilder sb, boolean allowDate) throws XPathException {
+        if (!allowDate) {
+            throw new XPathException(this, ErrorCodes.FOFD1350, "format-time does not support a week component");
+        }
+        final int week = isoWeekOfYear(dt);
+        formatNumber('W', picture, width, week, language, sb);
+    }
+
+    /** [w] ISO week of month. */
+    private void formatWeekOfMonth(AbstractDateTimeValue dt, String picture, String width, String language,
+            StringBuilder sb, boolean allowDate) throws XPathException {
+        if (!allowDate) {
+            throw new XPathException(this, ErrorCodes.FOFD1350, "format-time does not support a week component");
+        }
+        final int week = isoWeekOfMonth(dt);
+        formatNumber('w', picture, width, week, language, sb);
+    }
+
+    /** [F] day of week. Converts from Sunday=1 (Java Calendar) to Monday=1 (XSLT spec). */
+    private void formatDayOfWeek(AbstractDateTimeValue dt, String picture, String width, String language,
+            StringBuilder sb, boolean allowDate) throws XPathException {
+        if (!allowDate) {
+            throw new XPathException(this, ErrorCodes.FOFD1350, "format-time does not support a day component");
+        }
+        int day = dt.getDayOfWeek();
+        if (day == Calendar.SUNDAY) {
+            day = 7;
+        } else {
+            day--;
+        }
+        formatNumber('F', picture, width, day, language, sb);
+    }
+
+    /** [H] 24-hour hour. */
+    private void formatHour24(AbstractDateTimeValue dt, String picture, String width, String language,
+            StringBuilder sb, boolean allowTime) throws XPathException {
+        if (!allowTime) {
+            throw new XPathException(this, ErrorCodes.FOFD1350, "format-date does not support a hour component");
+        }
+        final int hour = dt.getPart(AbstractDateTimeValue.HOUR);
+        formatNumber('H', picture, width, hour, language, sb);
+    }
+
+    /** [h] 12-hour hour; midnight/noon render as 12. */
+    private void formatHour12(AbstractDateTimeValue dt, String picture, String width, String language,
+            StringBuilder sb, boolean allowTime) throws XPathException {
+        if (!allowTime) {
+            throw new XPathException(this, ErrorCodes.FOFD1350, "format-date does not support a hour component");
+        }
+        int hour = dt.getPart(AbstractDateTimeValue.HOUR) % 12;
+        if (hour == 0) {
+            hour = 12;
+        }
+        formatNumber('h', picture, width, hour, language, sb);
+    }
+
+    /** [m] minute of hour. */
+    private void formatMinute(AbstractDateTimeValue dt, String picture, String width, String language,
+            StringBuilder sb, boolean allowTime) throws XPathException {
+        if (!allowTime) {
+            throw new XPathException(this, ErrorCodes.FOFD1350, "format-date does not support a minute component");
+        }
+        final int minute = dt.getPart(AbstractDateTimeValue.MINUTE);
+        formatNumber('m', picture, width, minute, language, sb);
+    }
+
+    /** [s] whole seconds. */
+    private void formatSecond(AbstractDateTimeValue dt, String picture, String width, String language,
+            StringBuilder sb, boolean allowTime) throws XPathException {
+        if (!allowTime) {
+            throw new XPathException(this, ErrorCodes.FOFD1350, "format-date does not support a second component");
+        }
+        final int second = dt.getPart(AbstractDateTimeValue.SECOND);
+        formatNumber('s', picture, width, second, language, sb);
+    }
+
+    /** [f] fractional seconds. */
+    private void formatFractionComponent(AbstractDateTimeValue dt, String picture, String width,
+            boolean pictureWasEmpty, StringBuilder sb, boolean allowTime) throws XPathException {
+        if (!allowTime) {
+            throw new XPathException(this, ErrorCodes.FOFD1350,
+                    "format-date does not support a fractional seconds component");
+        }
+        final int fraction = dt.getPart(AbstractDateTimeValue.MILLISECOND);
+        formatFractionalSeconds(fraction, picture, width, pictureWasEmpty, sb);
+    }
+
+    /** [P] AM/PM marker derived from the hour. */
+    private void formatAmPmComponent(AbstractDateTimeValue dt, String picture, String width, String language,
+            StringBuilder sb, boolean allowTime) throws XPathException {
+        if (!allowTime) {
+            throw new XPathException(this, ErrorCodes.FOFD1350,
+                    "format-date does not support an am/pm component");
+        }
+        final int hour = dt.getPart(AbstractDateTimeValue.HOUR);
+        formatNumber('P', picture, width, hour, language, sb);
+    }
+
+    /** [E] era — AD/BC, optionally lower- or title-cased per the picture. */
+    private void formatEra(AbstractDateTimeValue dt, String picture, StringBuilder sb, boolean allowDate)
+            throws XPathException {
+        if (!allowDate) {
+            throw new XPathException(this, ErrorCodes.FOFD1350,
+                    "format-time does not support an era component");
+        }
+        final int year = dt.getPart(AbstractDateTimeValue.YEAR);
+        String era = year > 0 ? "AD" : "BC";
+        if ("n".equals(picture)) {
+            era = era.toLowerCase();
+        } else if ("Nn".equals(picture)) {
+            era = era.charAt(0) + era.substring(1).toLowerCase();
+        }
+        sb.append(era);
+    }
+
+    /**
+     * [Z]/[z] timezone. For [z], emits a "GMT" prefix when the value carries a
+     * timezone; both then emit the offset (or 'J' for [ZZ] on a tz-less value).
+     */
+    private void formatTimezoneComponent(char specifier, AbstractDateTimeValue dt, String picture,
+            String language, Optional<String> place, boolean pictureWasEmpty, boolean allowTime,
+            StringBuilder sb) throws XPathException {
+        if (specifier == 'z'
+                && (allowTime || dt.getTimezone() != Sequence.EMPTY_SEQUENCE)
+                && dt.getTimezone() != Sequence.EMPTY_SEQUENCE) {
+            sb.append("GMT");
+        }
+        final Sequence tz = dt.getTimezone();
+        if (tz != Sequence.EMPTY_SEQUENCE) {
+            final DayTimeDurationValue dtv = ((DayTimeDurationValue) tz);
+
+            // Determine timezone sign from the total offset,
+            // since getPart(HOUR) loses the sign for -00:30 offsets
+            final double totalSeconds = dtv.getValue();
+            final boolean isNegative = totalSeconds < 0;
+            final int totalMinutes = (int) Math.abs(totalSeconds / 60);
+            final int absHour = totalMinutes / 60;
+            final int absMinute = totalMinutes % 60;
+            final TimeZone javaTz = dt.toJavaObject(Calendar.class).getTimeZone();
+
+            sb.append(formatTimeZone(picture,
+                    absHour, absMinute, isNegative, javaTz, language, place));
+        } else if (specifier == 'Z' && !pictureWasEmpty && isMilitaryTimezonePicture(picture)) {
+            // [ZZ] on a value with no timezone → 'J' (military-time local)
+            sb.append('J');
         }
     }
 
