@@ -292,29 +292,19 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
     public abstract AtomicValue convertTo(int requiredType) throws XPathException;
 
     public int getPart(int part) {
-        switch (part) {
-            case YEAR:
-                return calendar.getYear();
-            case MONTH:
-                return calendar.getMonth();
-            case DAY:
-                return calendar.getDay();
-            case HOUR:
-                return calendar.getHour();
-            case MINUTE:
-                return calendar.getMinute();
-            case SECOND:
-                return calendar.getSecond();
-            case MILLISECOND:
+        return switch (part) {
+            case YEAR -> calendar.getYear();
+            case MONTH -> calendar.getMonth();
+            case DAY -> calendar.getDay();
+            case HOUR -> calendar.getHour();
+            case MINUTE -> calendar.getMinute();
+            case SECOND -> calendar.getSecond();
+            case MILLISECOND -> {
                 final int mSec = calendar.getMillisecond();
-                if (mSec == DatatypeConstants.FIELD_UNDEFINED) {
-                    return 0;
-                } else {
-                    return calendar.getMillisecond();
-                }
-            default:
-                throw new IllegalArgumentException("Invalid argument to method getPart");
-        }
+                yield mSec == DatatypeConstants.FIELD_UNDEFINED ? 0 : mSec;
+            }
+            default -> throw new IllegalArgumentException("Invalid argument to method getPart");
+        };
     }
 
     /**
