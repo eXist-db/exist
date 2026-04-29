@@ -419,7 +419,17 @@ public class MapType extends AbstractMapType {
         final IMap<AtomicValue, Sequence> newMap = map.put(key, value);
         final java.util.ArrayList<AtomicValue> newOrder;
         if (insertionOrder == null) {
-            newOrder = null;
+            // No prior order; bootstrap from the bifurcan map's keys (in their
+            // hash-bucket order, since that is the only order we have for the
+            // existing entries) and append the new key. For an empty map this
+            // simply yields a one-element list.
+            newOrder = new java.util.ArrayList<>((int) map.size() + (wasPresent ? 0 : 1));
+            for (final AtomicValue k : map.keys()) {
+                newOrder.add(k);
+            }
+            if (!wasPresent) {
+                newOrder.add(key);
+            }
         } else if (wasPresent) {
             // Replacing an existing key preserves the existing order.
             newOrder = new java.util.ArrayList<>(insertionOrder);
@@ -517,30 +527,41 @@ public class MapType extends AbstractMapType {
 
     @Override
     public Iterator<IEntry<AtomicValue, Sequence>> iterator() {
+        // Iterate in insertion order when we have it (XQ4 PR1703); fall back
+        // to the bifurcan iterator when order tracking is unavailable.
+        if (insertionOrder != null && insertionOrder.size() == map.size()) {
+            final java.util.Iterator<AtomicValue> keyIter = insertionOrder.iterator();
+            return new Iterator<>() {
+                @Override public boolean hasNext() { return keyIter.hasNext(); }
+                @Override public IEntry<AtomicValue, Sequence> next() {
+                    final AtomicValue k = keyIter.next();
+                    return IEntry.of(k, map.get(k, Sequence.EMPTY_SEQUENCE));
+                }
+            };
+        }
         return map.iterator();
     }
 
     @Override
     public AtomicValue key() {
+        if (insertionOrder != null && !insertionOrder.isEmpty() && insertionOrder.size() == map.size()) {
+            return insertionOrder.get(0);
+        }
         if (map.size() > 0) {
             final IEntry<AtomicValue, Sequence> entry = map.nth(0);
             if (entry != null) {
                 return entry.key();
             }
         }
-
         return null;
     }
 
     @Override
     public Sequence value() {
-        if (map.size() > 0) {
-            final IEntry<AtomicValue, Sequence> entry = map.nth(0);
-            if (entry != null) {
-                return entry.value();
-            }
+        final AtomicValue first = key();
+        if (first != null) {
+            return map.get(first, Sequence.EMPTY_SEQUENCE);
         }
-
         return null;
     }
 
