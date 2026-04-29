@@ -370,36 +370,26 @@ public class MapFunction extends BasicFunction {
         final DuplicateMergeStrategy mergeDuplicates = getMergeStrategy(args);
         final Sequence maps = args[0];
 
-
         final int totalMaps = maps.getItemCount();
-        final AbstractMapType head;
+        // Iterate in source order so the resulting map's key order matches the
+        // order entries were first added (XPath/XQuery 4.0 PR1703).
+        final AbstractMapType head = (AbstractMapType) maps.itemAt(0);
         final List<AbstractMapType> tail = new ArrayList<>(totalMaps - 1);
-
-        // USE_LAST will pick the item from the last map containing a duplicate item
-        // COMBINE will combine duplicate items in head-first order
-        if (mergeDuplicates == DuplicateMergeStrategy.USE_LAST || mergeDuplicates == DuplicateMergeStrategy.COMBINE) {
-            // head is the first map
-            head = (AbstractMapType) maps.itemAt(0);
-            for (int i = 1; i < totalMaps; i++) {
-                final AbstractMapType other = (AbstractMapType) maps.itemAt(i);
-                tail.add(other);
-            }
-        } else {
-            // head is the last map
-            // USE_FIRST will pick the item from the first map containing a duplicate item
-            head = (AbstractMapType) maps.itemAt(totalMaps - 1);
-            for (int i = totalMaps - 2; i >= 0; i--) {
-                final AbstractMapType other = (AbstractMapType) maps.itemAt(i);
-                tail.add(other);
-            }
+        for (int i = 1; i < totalMaps; i++) {
+            tail.add((AbstractMapType) maps.itemAt(i));
         }
-        if (mergeDuplicates == DuplicateMergeStrategy.COMBINE) {
-            return combineDuplicates(head, tail);
+        switch (mergeDuplicates) {
+            case COMBINE -> { return combineDuplicates(head, tail); }
+            case REJECT -> { return rejectDuplicates(head, tail); }
+            case USE_FIRST, USE_ANY ->
+                    // Forward iteration with a "keep the existing value" merge
+                    // function gives use-first/use-any while preserving insertion order.
+                    { return head.merge(tail, (existing, incoming) -> existing); }
+            case USE_LAST ->
+                    // The default bifurcan union semantics replace existing values,
+                    // matching use-last while keeping forward insertion order.
+                    { return head.merge(tail); }
         }
-        if (mergeDuplicates == DuplicateMergeStrategy.REJECT) {
-            return rejectDuplicates(head, tail);
-        }
-
         return head.merge(tail);
     }
 
