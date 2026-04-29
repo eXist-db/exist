@@ -52,12 +52,19 @@ abstract class OrderedDurationValue extends DurationValue {
             return false;
         }
 
-        // Mixed duration subtypes (e.g., xs:yearMonthDuration vs xs:dayTimeDuration) are
-        // not comparable for ANY operator per XPath spec — reject before comparing
+        // Mixed duration subtypes (e.g., xs:yearMonthDuration vs xs:dayTimeDuration):
+        // equality comparisons return false (they can never be equal);
+        // ordering operators (lt/gt/le/ge) are not defined and raise XPTY0004.
         if (Type.subTypeOf(other.getType(), Type.DURATION)
                 && getType() != other.getType()
                 && getType() != Type.DURATION
                 && other.getType() != Type.DURATION) {
+            if (operator == Comparison.EQ) {
+                return false;
+            }
+            if (operator == Comparison.NEQ) {
+                return true;
+            }
             throw new XPathException(getExpression(), ErrorCodes.XPTY0004,
                     "cannot compare " + Type.getTypeName(getType()) + " to "
                             + Type.getTypeName(other.getType()));
