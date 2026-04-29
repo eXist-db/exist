@@ -285,6 +285,9 @@ public abstract class Function extends PathExpr {
             if (argType instanceof final FunctionParameterFunctionSequenceType functionParameterType) {
                 return new FunctionTypeCheck(context, functionParameterType, argument);
             }
+            if (isStructurallyTypedMapOrArray(argType)) {
+                return new StructuralTypeCheck(context, argType, argument);
+            }
 
             return argument;
         }
@@ -322,8 +325,25 @@ public abstract class Function extends PathExpr {
         if (argType instanceof final FunctionParameterFunctionSequenceType functionParameterType) {
             return new FunctionTypeCheck(context, functionParameterType, argument);
         }
+        if (isStructurallyTypedMapOrArray(argType)) {
+            return new StructuralTypeCheck(context, argType, argument);
+        }
 
         return new DynamicTypeCheck(context, argType.getPrimaryType(), argument);
+    }
+
+    /**
+     * True when the argument's declared type is a typed {@code map(K, V)} or
+     * {@code array(T)} (i.e. carries structural information beyond the primary
+     * type), so the runtime check needs to walk entries/members. The plain
+     * {@link DynamicTypeCheck} only checks the primary type code.
+     */
+    private static boolean isStructurallyTypedMapOrArray(final SequenceType argType) {
+        if (argType.getFunctionParamTypes() == null) {
+            return false;
+        }
+        final int pt = argType.getPrimaryType();
+        return pt == Type.MAP_ITEM || pt == Type.ARRAY_ITEM;
     }
 
     protected boolean checkArgumentTypeCardinality(

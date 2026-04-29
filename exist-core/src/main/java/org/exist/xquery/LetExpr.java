@@ -131,6 +131,22 @@ public class LetExpr extends BindingExpression {
                                 ". Expected " + Type.getTypeName(sequenceType.getPrimaryType()) +
                                 ", got " +Type.getTypeName(var.getValue().getItemType()), in);
                         }
+                        // For typed map(K, V) and array(T) bindings, also walk the
+                        // structure so a shape mismatch (e.g. xs:byte* required but
+                        // an xs:decimal value present) raises XPTY0004 instead of
+                        // silently accepting the value (XQ4 PR1501).
+                        if (!var.getValue().isEmpty() && sequenceType.getFunctionParamTypes() != null
+                                && (sequenceType.getPrimaryType() == Type.MAP_ITEM
+                                        || sequenceType.getPrimaryType() == Type.ARRAY_ITEM)) {
+                            for (final SequenceIterator i = var.getValue().iterate(); i.hasNext(); ) {
+                                final Item item = i.nextItem();
+                                if (!sequenceType.checkType(item)) {
+                                    throw new XPathException(this, ErrorCodes.XPTY0004,
+                                        "Invalid value for variable $" + varName +
+                                        ". Expected " + sequenceType + ", got value not matching the structural type");
+                                }
+                            }
+                        }
                     //Here is an attempt to process the nodes correctly
                     } else {
                         //Same as above : we probably may factorize 
