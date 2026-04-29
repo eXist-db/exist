@@ -433,7 +433,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
     public ComputableValue plus(ComputableValue other) throws XPathException {
         return switch (other.getType()) {
             case Type.YEAR_MONTH_DURATION, Type.DAY_TIME_DURATION -> other.plus(this);
-            default -> throw new XPathException(getExpression(),
+            default -> throw new XPathException(getExpression(), ErrorCodes.XPTY0004,
                     "Operand to plus should be of type xdt:dayTimeDuration or xdt:yearMonthDuration; got: "
                             + Type.getTypeName(other.getType()));
         };
