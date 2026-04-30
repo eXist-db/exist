@@ -706,6 +706,8 @@
                             -->
                             <header>${session.executionRootDirectory}/exist-parent/LGPL-21-license.template.txt</header>
                             <excludes>
+                                <!-- OpenRewrite/Moderne analysis artifacts -->
+                                <exclude>.moderne/**</exclude>
                                 <exclude>ARC-BSD-3-license.template.txt</exclude>
                                 <exclude>BX-BSD-3-license.template.txt</exclude>
                                 <exclude>DBXML-10-license.template.txt</exclude>

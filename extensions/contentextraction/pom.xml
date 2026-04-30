@@ -52,7 +52,6 @@
         <dependency>
             <groupId>org.exist-db</groupId>
             <artifactId>exist-core</artifactId>
-            <version>${project.version}</version>
         </dependency>
 
         <dependency>
