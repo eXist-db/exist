@@ -151,17 +151,24 @@ public class SequenceType {
      * @throws XPathException if check fails for one item in the sequence
      * @return true, if all items of the sequence have the same type as or a subtype of primaryType
      */
-    public boolean checkType(final Sequence seq) throws XPathException {
-        if (nodeName == null) {
-            return Type.subTypeOf(seq.getItemType(), primaryType);
-        }
-
-        for (final SequenceIterator i = seq.iterate(); i.hasNext(); ) {
-            if (!checkType(i.nextItem())) {
-                return false;
+    public boolean checkType(Sequence seq) throws XPathException {
+        // Choice (union) types: every item must match at least one alternative.
+        // Node-name constraints, record types, and structurally-typed maps/arrays
+        // also require per-item validation rather than a primary-type subtype check
+        // (e.g. record(y as xs:decimal) has primaryType RECORD, but a value of type
+        // map(*) — a parent of RECORD — would erroneously pass a primaryType check).
+        final boolean structural = isRecordType() || (functionParamTypes != null
+                && (primaryType == Type.MAP_ITEM || primaryType == Type.ARRAY_ITEM));
+        if (isChoiceType() || nodeName != null || structural) {
+            for (final SequenceIterator i = seq.iterate(); i.hasNext(); ) {
+                final Item next = i.nextItem();
+                if (!checkType(next)) {
+                    return false;
+                }
             }
+            return true;
         }
-        return true;
+        return Type.subTypeOf(seq.getItemType(), primaryType);
     }
 
     /**
