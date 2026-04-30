@@ -427,25 +427,17 @@ public class FunParseIetfDate extends BasicFunction {
                 skipWS();
             }
             if (peek() == '(') {
+                // Parenthesized comment (e.g. "(CET)") — per W3C XPath F&O
+                // §19.1.5, the comment is informational only and need not match
+                // a known timezone abbreviation. Skip everything to the closing
+                // parenthesis.
                 vidx++;
-                if (isWS(peek())) {
-                    skipWS();
-                }
-                final int nameStart = vidx;
-                while (isAsciiLetter(peek())) {
+                while (vidx < vlen && value.charAt(vidx) != ')') {
                     vidx++;
                 }
-                final String tzName = value.substring(nameStart, vidx).toUpperCase();
-                if (tzName.isEmpty() || !TZ_MAP.containsKey(tzName)) {
-                    throw new IllegalArgumentException(value);
+                if (vidx < vlen && value.charAt(vidx) == ')') {
+                    vidx++;
                 }
-                if (isWS(peek())) {
-                    skipWS();
-                }
-                if (peek() != ')') {
-                    throw new IllegalArgumentException(value);
-                }
-                vidx++;
             } else {
                 vidx = beforeTrailingWs;
             }
