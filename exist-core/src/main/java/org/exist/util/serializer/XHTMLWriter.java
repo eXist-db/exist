@@ -473,6 +473,36 @@ public class XHTMLWriter extends IndentingXMLWriter {
         return super.shouldUseCdataSections();
     }
 
+    /**
+     * Processing-instruction serialization for HTML method (pre-HTML5).
+     * Per W3C XSLT and XQuery Serialization 3.1 § 7.1.5, the HTML output
+     * method emits PIs as {@code <?target data>} (no closing {@code ?>});
+     * XHTML uses the regular XML form which the parent already provides.
+     * The HTML5 (PR2372) variant lives in {@link HTML5Writer}.
+     */
+    @Override
+    public void processingInstruction(final String target, final String data) throws TransformerException {
+        if (!isHtmlMethod()) {
+            super.processingInstruction(target, data);
+            return;
+        }
+        try {
+            if (tagIsOpen) {
+                closeStartTag(false);
+            }
+            final Writer w = getWriter();
+            w.write("<?");
+            w.write(target);
+            if (data != null && !data.isEmpty()) {
+                w.write(' ');
+                w.write(data);
+            }
+            w.write('>');
+        } catch (final IOException ioe) {
+            throw new TransformerException(ioe.getMessage(), ioe);
+        }
+    }
+
     @Override
     protected boolean escapeAmpersandBeforeBrace() {
         // HTML spec: & before { in attribute values should not be escaped
