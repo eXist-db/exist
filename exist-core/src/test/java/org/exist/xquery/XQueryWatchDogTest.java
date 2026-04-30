@@ -46,7 +46,7 @@ public class XQueryWatchDogTest {
 
     private long getTimeout(final XQueryWatchDog watchDog) throws Exception {
         final Field f = XQueryWatchDog.class.getDeclaredField("timeout");
-        f.setAccessible(true);
+        f.trySetAccessible();
         return (long) f.get(watchDog);
     }
 
