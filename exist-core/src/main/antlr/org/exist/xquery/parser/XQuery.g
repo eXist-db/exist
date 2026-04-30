@@ -1355,7 +1355,10 @@ letClause throws XPathException
 
 windowClause throws XPathException
 :
-	"for"! ("tumbling"|"sliding") "window"^ inVarBinding windowStartCondition ( windowEndCondition )?
+	// XQ4 PR483: WindowStartCondition and the trailing WindowEndCondition are
+	// both individually optional (sliding without an end clause is rejected
+	// downstream during AST construction).
+	"for"! ("tumbling"|"sliding") "window"^ inVarBinding ( windowStartCondition )? ( windowEndCondition )?
 	;
 
 inVarBinding throws XPathException
@@ -1385,12 +1388,15 @@ allowingEmpty
 
 windowStartCondition throws XPathException
 :
-    "start"^ windowVars "when" exprSingle
+    // XQ4 PR483: the "when ExprSingle" guard is optional; absent means the
+    // condition is implicitly true() (every item starts a window).
+    "start"^ windowVars ( "when" exprSingle )?
 ;
 
 windowEndCondition throws XPathException
 :
-    ( "only" )? "end"^ windowVars "when" exprSingle
+    // XQ4 PR483: same treatment for the end condition's "when ExprSingle".
+    ( "only" )? "end"^ windowVars ( "when" exprSingle )?
 ;
 
 windowVars throws XPathException
