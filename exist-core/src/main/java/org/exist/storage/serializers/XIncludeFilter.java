@@ -449,7 +449,6 @@ public class XIncludeFilter implements Receiver {
         try {
             resolution.docUri = XmldbURI.xmldbUriFor(href);
         } catch (final URISyntaxException e) {
-            //could be an external URI!
         }
 
         LOG.debug("found href=\"{}\"", href);
@@ -500,7 +499,6 @@ public class XIncludeFilter implements Receiver {
         }
 
         // if docName has no collection specified, assume current collection
-        // Patch 1520454 start
         if (!resolution.docUri.isAbsolute() && document != null) {
             final String base = document.getCollection().getURI() + "/";
             final String child = "./" + resolution.docUri;
@@ -511,7 +509,6 @@ public class XIncludeFilter implements Receiver {
             final URI uri = baseUri.resolve(childUri);
             resolution.docUri = XmldbURI.create(uri);
         }
-        // Patch 1520454 end
 
         // retrieve the document
         try {
