@@ -322,20 +322,74 @@ public class XQuerySerializer {
     }
 
     private void serializeJSON(final Sequence sequence, final long compilationTime, final long executionTime) throws SAXException, XPathException {
-        // The legacy XML-to-JSON conversion (where an element became a JSON object
-        // graph and an empty element became `null`) violates W3C JSON Output Method
-        // semantics, which require a node to be serialized as XML and the result
-        // wrapped in a JSON string. Callers wanting the legacy behavior must opt
-        // in via {@code exist:legacy-json-conversion=yes}.
-        final String legacy = outputProperties.getProperty(EXistOutputKeys.LEGACY_JSON_CONVERSION, "no");
-        if (("yes".equals(legacy) || "true".equals(legacy) || "1".equals(legacy))
-                && sequence.hasOne()
-                && (Type.subTypeOf(sequence.getItemType(), Type.DOCUMENT) || Type.subTypeOf(sequence.getItemType(), Type.ELEMENT))) {
-            serializeXMLDirect(sequence, 1, 1, false, false, compilationTime, executionTime);
-        } else {
-            JSONSerializer serializer = new JSONSerializer(broker, outputProperties);
-            serializer.serialize(sequence, writer);
+        // Routing between two incompatible interpretations of method=json on a node:
+        //
+        //  * eXist's legacy XML-to-JSON conversion (where the element tree is mapped
+        //    to a JSON object graph using the json:literal / json:array / json:value
+        //    convention, and an empty element renders as the JSON literal `null`).
+        //  * W3C XSLT and XQuery Serialization 3.1 § 10, where a node is serialized
+        //    as XML and the resulting string is wrapped in a JSON string.
+        //
+        // Selection rules:
+        //  1. Explicit opt-in via {@code exist:legacy-json-conversion="yes"|"no"}
+        //     overrides everything.
+        //  2. Otherwise auto-detect: if the input root carries the legacy
+        //     {@code json:literal/array/value/name} convention (attribute or
+        //     element in {@code http://www.json.org}), use the legacy converter;
+        //     anything else routes to the W3C-compliant JSONSerializer.
+        // Maps, arrays, atomics and multi-item sequences always go through
+        // JSONSerializer regardless.
+        if (sequence.hasOne() && (Type.subTypeOf(sequence.getItemType(), Type.DOCUMENT) || Type.subTypeOf(sequence.getItemType(), Type.ELEMENT))) {
+            final String legacyProp = outputProperties.getProperty(EXistOutputKeys.LEGACY_JSON_CONVERSION);
+            final boolean useLegacy;
+            if (legacyProp != null) {
+                useLegacy = "yes".equals(legacyProp) || "true".equals(legacyProp) || "1".equals(legacyProp);
+            } else {
+                useLegacy = hasJsonConventionMarkers((NodeValue) sequence.itemAt(0));
+            }
+            if (useLegacy) {
+                serializeXMLDirect(sequence, 1, 1, false, false, compilationTime, executionTime);
+                return;
+            }
         }
+        JSONSerializer serializer = new JSONSerializer(broker, outputProperties);
+        serializer.serialize(sequence, writer);
+    }
+
+    /**
+     * Returns true when the given node uses the legacy {@code json:literal /
+     * json:array / json:value / json:name} convention anywhere in its tree.
+     * Detection is by the {@code json:} prefix on elements or attributes, since
+     * the convention has historically been used with several different
+     * namespace URIs ({@code http://www.json.org}, {@code http://json.org/},
+     * etc.) and the legacy writer in fact dispatches on the prefixed name.
+     */
+    private static boolean hasJsonConventionMarkers(final NodeValue node) {
+        return scanForJsonPrefix(node.getNode());
+    }
+
+    private static boolean scanForJsonPrefix(final org.w3c.dom.Node node) {
+        if (node == null) {
+            return false;
+        }
+        if ("json".equals(node.getPrefix())) {
+            return true;
+        }
+        final org.w3c.dom.NamedNodeMap attrs = node.getAttributes();
+        if (attrs != null) {
+            for (int i = 0; i < attrs.getLength(); i++) {
+                final org.w3c.dom.Node attr = attrs.item(i);
+                if ("json".equals(attr.getPrefix())) {
+                    return true;
+                }
+            }
+        }
+        for (org.w3c.dom.Node child = node.getFirstChild(); child != null; child = child.getNextSibling()) {
+            if (scanForJsonPrefix(child)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void serializeCSV(final Sequence sequence) throws SAXException {

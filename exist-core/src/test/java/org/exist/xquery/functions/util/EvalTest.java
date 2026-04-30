@@ -315,7 +315,7 @@ public class EvalTest {
     public void evalAndSerializeJson() throws XMLDBException {
         String query = "let $query := \"<outer><elem1>hello</elem1></outer>\"\n" +
                 "return\n" +
-                "util:eval-and-serialize($query, map { \"method\": \"json\" })";
+                "util:eval-and-serialize($query, map { \"method\": \"json\", \"legacy-json-conversion\": \"yes\" })";
         ResourceSet result = existEmbeddedServer.executeQuery(query);
         Resource r = result.getResource(0);
         assertEquals("{\"elem1\":\"hello\"}", r.getContent());

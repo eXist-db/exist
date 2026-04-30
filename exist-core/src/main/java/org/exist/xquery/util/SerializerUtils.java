@@ -138,6 +138,7 @@ public class SerializerUtils {
         INDENT(OutputKeys.INDENT, Type.BOOLEAN, Cardinality.ZERO_OR_ONE, BooleanValue.FALSE),
         ITEM_SEPARATOR(EXistOutputKeys.ITEM_SEPARATOR, Type.STRING, Cardinality.ZERO_OR_ONE, Sequence.EMPTY_SEQUENCE),  //default: () means "absent"
         JSON_LINES(EXistOutputKeys.JSON_LINES, Type.BOOLEAN, Cardinality.ZERO_OR_ONE, BooleanValue.FALSE),
+        LEGACY_JSON_CONVERSION(EXistOutputKeys.LEGACY_JSON_CONVERSION, Type.STRING, Cardinality.ZERO_OR_ONE, new StringValue("no")),
         JSON_NODE_OUTPUT_METHOD(EXistOutputKeys.JSON_NODE_OUTPUT_METHOD, Type.STRING, Cardinality.ZERO_OR_ONE, new StringValue("xml")),
         // CSV serialization parameters (vendor extension, modeled on BaseX)
         CSV_FIELD_DELIMITER(EXistOutputKeys.CSV_FIELD_DELIMITER, Type.STRING, Cardinality.ZERO_OR_ONE, new StringValue(",")),

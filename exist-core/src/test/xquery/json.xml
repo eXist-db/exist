@@ -33,7 +33,7 @@
     <tearDown>
         <remove-collection collection="/db/test"/>
     </tearDown>
-    <test output="text" serialize="method=json">
+    <test output="text" serialize="method=json legacy-json-conversion=yes">
         <task>Simple serialization test</task>
         <code><![CDATA[
             <root>
@@ -47,7 +47,7 @@
             {"object":{"prop1":"PROP1","prop2":"PROP2"}}
         ]]></expected>
     </test>
-    <test output="text" serialize="method=json">
+    <test output="text" serialize="method=json legacy-json-conversion=yes">
         <task>Attribute serialization test</task>
         <code><![CDATA[
             <root>
@@ -61,7 +61,7 @@
             {"object":{"attr1":"a1","attr2":"a2","prop1":"PROP1","prop2":"PROP2"}}
         ]]></expected>
     </test>
-    <test output="text" serialize="method=json">
+    <test output="text" serialize="method=json legacy-json-conversion=yes">
         <task>Multiple children with same name: serialize as array</task>
         <code><![CDATA[
             <root>
@@ -75,7 +75,7 @@
             {"object":{"attr1":"a1","attr2":"a2","prop":["PROP1","PROP2"]}}
         ]]></expected>
     </test>
-    <test output="text" serialize="method=json">
+    <test output="text" serialize="method=json legacy-json-conversion=yes">
         <task>Empty element: serialize as null</task>
         <code><![CDATA[
             <root>
@@ -88,7 +88,7 @@
             {"object":{"attr1":"a1","attr2":"a2","prop":null}}
         ]]></expected>
     </test>
-    <test output="text" serialize="method=json">
+    <test output="text" serialize="method=json legacy-json-conversion=yes">
         <task>Attributes plus text content: serialize as #text</task>
         <code><![CDATA[
             <root>
@@ -99,7 +99,7 @@
             {"object":{"attr1":"a1","attr2":"a2","#text":"text"}}
         ]]></expected>
     </test>
-    <test output="text" serialize="method=json">
+    <test output="text" serialize="method=json legacy-json-conversion=yes">
         <task>Nested element serialization</task>
         <code><![CDATA[
             <root>
@@ -115,7 +115,7 @@
             {"object":{"address":{"street":"a street","city":"a city"}}}
         ]]></expected>
     </test>
-    <test output="text" serialize="method=json">
+    <test output="text" serialize="method=json legacy-json-conversion=yes">
         <task>Nested elements of same name</task>
         <code><![CDATA[
             <root>
@@ -133,7 +133,7 @@
         ]]></code>
         <expected><![CDATA[{"object":{"address":[{"street":"a street","city":"a city"},{"street":"another street","city":"another city"}]}}]]></expected>
     </test>
-    <test output="text" serialize="method=json">
+    <test output="text" serialize="method=json legacy-json-conversion=yes">
         <task>Enforce array for single child</task>
         <code><![CDATA[
             <root xmlns:json="http://json.org/">
@@ -146,7 +146,7 @@
             {"object":{"prop":["PROP1"]}}
         ]]></expected>
     </test>
-    <test output="text" serialize="method=json">
+    <test output="text" serialize="method=json legacy-json-conversion=yes">
         <task>Enforce array for multiple children</task>
         <code><![CDATA[
             <root xmlns:json="http://json.org/">
@@ -160,7 +160,7 @@
             {"object":{"prop":["PROP1","PROP2"]}}
         ]]></expected>
     </test>
-    <test output="text" serialize="method=json">
+    <test output="text" serialize="method=json legacy-json-conversion=yes">
         <task>Nested json:value</task>
         <code><![CDATA[
             <root xmlns:json="http://json.org/">
@@ -175,7 +175,7 @@
         ]]></expected>
     </test>
     <!-- The following should not be allowed as it generates invalid json -->
-    <!--test output="text" serialize="method=json">
+    <!--test output="text" serialize="method=json legacy-json-conversion=yes">
         <task>Serialization error: json:value cannot be child of json:value</task>
         <code><![CDATA[
             <root xmlns:json="http://json.org/">
@@ -187,7 +187,7 @@
         ]]></code>
         <error>json:value cannot be a child of another json:value</error>
     </test-->
-    <test output="text" serialize="method=json">
+    <test output="text" serialize="method=json legacy-json-conversion=yes">
         <task>Enforce nested array of values</task>
         <code><![CDATA[
             <root xmlns:json="http://json.org/">
@@ -202,7 +202,7 @@
             {"object":[["PROP1"]]}
         ]]></expected>
     </test>
-    <test output="text" serialize="method=json">
+    <test output="text" serialize="method=json legacy-json-conversion=yes">
         <task>Enforce nested array of values without object wrapper</task>
         <code><![CDATA[
             <json:value json:array="true" xmlns:json="http://json.org">
@@ -214,7 +214,7 @@
             [["PROP1","PROP2"]]
         ]]></expected>
     </test>
-    <test output="text" serialize="method=json">
+    <test output="text" serialize="method=json legacy-json-conversion=yes">
         <task>Array of objects</task>
         <code><![CDATA[
             <json:object xmlns:json="http://json.org">
@@ -232,7 +232,7 @@
             [{"first":"Max","last":"Müller"},{"first":"Heinz","last":"Müller"}]
         ]]></expected>
     </test>
-    <test output="text" serialize="method=json">
+    <test output="text" serialize="method=json legacy-json-conversion=yes">
         <task>Array of objects</task>
         <code><![CDATA[
             <json:value xmlns:json="http://json.org">

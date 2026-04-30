@@ -113,7 +113,7 @@ public class EXistOutputKeys {
      * nodes follow W3C JSON Output Method semantics: serialize as XML and wrap
      * the result in a JSON string.
      */
-    public static final String LEGACY_JSON_CONVERSION = "exist:legacy-json-conversion";
+    public static final String LEGACY_JSON_CONVERSION = "legacy-json-conversion";
 
     public static final String HTML_VERSION = "html-version";
 
