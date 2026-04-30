@@ -135,6 +135,10 @@ public class DatabaseResources {
     }
 
     public Sequence executeQuery(final String queryPath, final Map<String, String> params, final Subject user) {
+        return executeQuery(new XQueryContext(brokerPool), queryPath, params, user);
+    }
+
+    Sequence executeQuery(final XQueryContext context, final String queryPath, final Map<String, String> params, final Subject user) {
 
         final String namespace = params.get(TARGETNAMESPACE);
         final String publicId = params.get(PUBLICID);
@@ -146,7 +150,6 @@ public class DatabaseResources {
         }
 
         Sequence result = null;
-        final XQueryContext context = new XQueryContext(brokerPool);
         try (final DBBroker broker = brokerPool.get(Optional.ofNullable(user))) {
 
             final XQuery xquery = brokerPool.getXQueryService();
