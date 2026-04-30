@@ -314,7 +314,7 @@ public class XHTMLWriter extends IndentingXMLWriter {
      * Returns true if the output method is "html" (not "xhtml").
      * HTML uses void element syntax (<br>) while XHTML uses self-closing (<br />).
      */
-    private boolean isHtmlMethod() {
+    protected boolean isHtmlMethod() {
         if (outputProperties != null) {
             final String method = outputProperties.getProperty(OutputKeys.METHOD);
             return "html".equalsIgnoreCase(method);
@@ -324,10 +324,19 @@ public class XHTMLWriter extends IndentingXMLWriter {
 
     /**
      * Returns true if the HTML version is 5.0 or higher.
+     * Checks html-version first, then falls back to version (per W3C spec for html method).
      */
-    private boolean isHtml5Version() {
+    protected boolean isHtml5Version() {
         if (outputProperties == null) {
             return true; // default to HTML5
+        }
+        final String htmlVersion = outputProperties.getProperty(org.exist.storage.serializers.EXistOutputKeys.HTML_VERSION);
+        if (htmlVersion != null) {
+            try {
+                return Double.parseDouble(htmlVersion) >= 5.0;
+            } catch (final NumberFormatException e) {
+                // fall through
+            }
         }
         final String version = outputProperties.getProperty(OutputKeys.VERSION);
         if (version != null) {
@@ -338,6 +347,54 @@ public class XHTMLWriter extends IndentingXMLWriter {
             }
         }
         return true; // default to HTML5
+    }
+
+    /**
+     * DOCTYPE emission for XHTML/HTML output methods, per
+     * W3C XSLT and XQuery Serialization 3.1 sections 7.1 and 7.2.
+     *
+     * <ul>
+     *   <li>doctype-system set: emit DOCTYPE with PUBLIC/SYSTEM ids</li>
+     *   <li>doctype-system absent, html method, doctype-public set: emit DOCTYPE PUBLIC</li>
+     *   <li>doctype-system absent, html-version &ge; 5: emit {@code <!DOCTYPE html>}</li>
+     *   <li>otherwise: no DOCTYPE</li>
+     * </ul>
+     *
+     * Only emitted when the root element is {@code html} (case-insensitive); for
+     * fragments rooted on any other element the DOCTYPE is suppressed.
+     */
+    @Override
+    protected void writeDoctype(final String rootElement) throws TransformerException {
+        if (doctypeWritten) {
+            return;
+        }
+        if (isCanonical()) {
+            doctypeWritten = true;
+            return;
+        }
+        final String localName = rootElement.contains(":")
+                ? rootElement.substring(rootElement.indexOf(':') + 1)
+                : rootElement;
+        if (!"html".equalsIgnoreCase(localName)) {
+            doctypeWritten = true;
+            return;
+        }
+
+        final String publicId = outputProperties != null
+                ? outputProperties.getProperty(OutputKeys.DOCTYPE_PUBLIC) : null;
+        final String systemId = outputProperties != null
+                ? outputProperties.getProperty(OutputKeys.DOCTYPE_SYSTEM) : null;
+        final boolean htmlMethod = isHtmlMethod();
+        final boolean html5 = isHtml5Version();
+
+        if (systemId != null) {
+            documentType("html", publicId, systemId);
+        } else if (htmlMethod && publicId != null) {
+            documentType("html", publicId, null);
+        } else if (html5) {
+            documentType("html", null, null);
+        }
+        doctypeWritten = true;
     }
     
     @Override
