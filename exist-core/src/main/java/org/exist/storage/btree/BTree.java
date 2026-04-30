@@ -729,7 +729,7 @@ public class BTree extends Paged implements Lockable {
                 idx = idx < 0 ? - (idx + 1) : idx + 1;
                 node = node.getChildNode(idx);
             } catch (final Exception e) {
-                e.printStackTrace();
+                LOG.error("Error while scanning page {}", node.page.getPageNum(), e);
                 throw new IOException("Error while scanning page " + node.page.getPageNum());
             }
         }
@@ -814,8 +814,7 @@ public class BTree extends Paged implements Lockable {
                 try {
                     dump(writer);
                 } catch (final Exception e) {
-                    LOG.warn(e);
-                    e.printStackTrace();
+                    LOG.warn("Failed to dump BTree state during recovery", e);
                 }
                 LOG.warn(writer.toString());
                 throw new LogException("Critical error during recovery");
@@ -1255,8 +1254,8 @@ public class BTree extends Paged implements Lockable {
                         p += valSize - prefixLen;
                         keys[i] = new Value(t);
                     } catch (final Exception e) {
-                        e.printStackTrace();
-                        LOG.error("prefixLen = {}; i = {}; nKeys = {}", prefixLen, i, nKeys);
+                        LOG.error("Failed to read BTree key prefix (prefixLen={}; i={}; nKeys={})",
+                                prefixLen, i, nKeys, e);
                         throw new IOException(e.getMessage());
                     }
                 } else {

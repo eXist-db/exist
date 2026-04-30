@@ -642,8 +642,7 @@ public class HttpRequestWrapper implements RequestWrapper {
                     try {
                         values[position] = getPartContentAsString(part, formEncoding);
                     } catch (final IOException e) {
-                        LOG.warn(e);
-                        e.printStackTrace();
+                        LOG.warn("Failed to read multipart form field as string", e);
                     }
 
                 } else {
@@ -664,8 +663,7 @@ public class HttpRequestWrapper implements RequestWrapper {
                 try {
                     values[0] = getPartContentAsString(part, formEncoding);
                 } catch (final IOException e) {
-                    LOG.warn(e);
-                    e.printStackTrace();
+                    LOG.warn("Failed to read multipart form field as string", e);
                 }
 
             } else {

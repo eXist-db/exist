@@ -680,13 +680,11 @@ public class BFile extends BTree {
                 addValue(transaction, key, p);
                 return p;
             } catch (final IOException ioe) {
-                ioe.printStackTrace();
-                LOG.warn(ioe);
+                LOG.warn("Failed to store value while updating key in BFile", ioe);
                 return UNKNOWN_ADDRESS;
             }
         } catch (final BTreeException | IOException e) {
-            e.printStackTrace();
-            LOG.warn(e);
+            LOG.warn("Failed to update value in BFile", e);
             return UNKNOWN_ADDRESS;
         }
     }

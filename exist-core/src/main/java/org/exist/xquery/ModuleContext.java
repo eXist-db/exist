@@ -211,7 +211,7 @@ public class ModuleContext extends XQueryContext {
                     }
                 }
             } catch (final URISyntaxException e) {
-                e.printStackTrace();
+                LOG.warn("Failed to derive module load path from parent context", e);
             }
         }
     }

@@ -189,7 +189,7 @@ public abstract class Paged implements AutoCloseable {
             fileHeader.write();
             return true;
         } catch (final Exception e) {
-            e.printStackTrace();
+            LOG.error("Error creating paged file {}", FileUtils.fileName(file), e);
             throw new DBException(0, "Error creating " + FileUtils.fileName(file));
         }
     }
@@ -361,7 +361,7 @@ public abstract class Paged implements AutoCloseable {
                 return false;
             }
         } catch (final Exception e) {
-            e.printStackTrace();
+            LOG.error("Error opening paged file {}", FileUtils.fileName(file), e);
             throw new DBException(0, "Error opening " + FileUtils.fileName(file) + ": " + e.getMessage());
         }
     }

@@ -507,7 +507,7 @@ public class XQueryContext implements BinaryValueManager, Context {
             try {
                 declareNamespace(prefix, copyFrom.staticNamespaces.get(prefix));
             } catch (final XPathException ex) {
-                ex.printStackTrace();
+                LOG.warn("Failed to copy namespace declaration for prefix '{}'", prefix, ex);
             }
         }
     }
