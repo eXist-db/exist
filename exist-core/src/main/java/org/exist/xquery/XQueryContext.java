@@ -3460,7 +3460,7 @@ public class XQueryContext implements BinaryValueManager, Context {
                 if (Namespaces.XSLT_XQUERY_SERIALIZATION_NS.equals(option.getQName().getNamespaceURI())
                         && !"parameter-document".equals(option.getQName().getLocalPart())) {
                     SerializerUtils.setProperty(option.getQName().getLocalPart(), option.getContents(), properties,
-                            inScopeNamespaces::get);
+                            this::getURIForPrefix);
                 }
             }
         }
@@ -3471,7 +3471,7 @@ public class XQueryContext implements BinaryValueManager, Context {
                         && !"parameter-document".equals(option.getQName().getLocalPart())
                         && !properties.containsKey(option.getQName().getLocalPart())) {
                     SerializerUtils.setProperty(option.getQName().getLocalPart(), option.getContents(), properties,
-                            inScopeNamespaces::get);
+                            this::getURIForPrefix);
                 }
             }
         }
