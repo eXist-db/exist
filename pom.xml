@@ -38,13 +38,6 @@
     <name>eXist-db</name>
     <description>eXist-db multi-module project</description>
 
-    <scm>
-        <connection>scm:git:https://github.com/exist-db/exist.git</connection>
-        <developerConnection>scm:git:https://github.com/exist-db/exist.git</developerConnection>
-        <url>scm:git:https://github.com/exist-db/exist.git</url>
-      <tag>HEAD</tag>
-  </scm>
-
     <modules>
         <module>exist-parent</module>
         <module>exist-ant</module>
@@ -57,6 +50,13 @@
         <module>extensions</module>
         <module>exist-xqts</module>
     </modules>
+
+    <scm>
+        <connection>scm:git:https://github.com/exist-db/exist.git</connection>
+        <developerConnection>scm:git:https://github.com/exist-db/exist.git</developerConnection>
+        <url>scm:git:https://github.com/exist-db/exist.git</url>
+        <tag>HEAD</tag>
+    </scm>
 
     <build>
         <plugins>

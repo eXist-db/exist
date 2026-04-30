@@ -42,8 +42,8 @@
         <connection>scm:git:https://github.com/exist-db/exist.git</connection>
         <developerConnection>scm:git:https://github.com/exist-db/exist.git</developerConnection>
         <url>scm:git:https://github.com/exist-db/exist.git</url>
-      <tag>HEAD</tag>
-  </scm>
+        <tag>HEAD</tag>
+    </scm>
 
     <properties>
         <geotools.version>34.3</geotools.version>
@@ -124,6 +124,30 @@
 
     </dependencies>
 
+    <repositories>
+        <!-- GeoTools: use repository/release (official per docs.geotools.org); geotools-releases can timeout on Windows CI -->
+        <repository>
+            <id>osgeo</id>
+            <url>https://repo.osgeo.org/repository/release/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>atlassian</id>
+            <url>https://packages.atlassian.com/maven-3rdparty/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+
     <build>
         <testResources>
             <testResource>
@@ -185,21 +209,5 @@
             </plugin>
         </plugins>
     </build>
-
-    <repositories>
-        <!-- GeoTools: use repository/release (official per docs.geotools.org); geotools-releases can timeout on Windows CI -->
-        <repository>
-            <id>osgeo</id>
-            <url>https://repo.osgeo.org/repository/release/</url>
-            <releases><enabled>true</enabled></releases>
-            <snapshots><enabled>false</enabled></snapshots>
-        </repository>
-        <repository>
-            <id>atlassian</id>
-            <url>https://packages.atlassian.com/maven-3rdparty/</url>
-            <releases><enabled>true</enabled></releases>
-            <snapshots><enabled>false</enabled></snapshots>
-        </repository>
-    </repositories>
     
 </project>

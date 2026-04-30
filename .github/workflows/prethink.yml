@@ -17,7 +17,7 @@ jobs:
       - uses: actions/setup-java@v5
         with:
           java-version: '21'
-          distribution: 'liberica'
+          distribution: 'temurin'
 
       - name: Install Moderne CLI
         run: |
