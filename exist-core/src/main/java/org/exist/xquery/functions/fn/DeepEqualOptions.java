@@ -708,6 +708,11 @@ public class DeepEqualOptions {
             }
         }
 
+        cmp = compareAttributes(a, b);
+        if (cmp != Constants.EQUAL) {
+            return cmp;
+        }
+
         // Determine if this element's children should be compared unordered:
         // - global ordered=false makes ALL elements unordered
         // - unordered-elements QName set makes specific elements unordered
