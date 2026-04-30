@@ -575,6 +575,19 @@ public class XQueryContext implements BinaryValueManager, Context {
                 ex.printStackTrace();
             }
         }
+
+        // Carry forward host-supplied in-scope namespaces (e.g. environment
+        // namespaces declared by an embedding caller via declareInScopeNamespace)
+        // so they are visible to static analysis on the copied context.
+        if (copyFrom.inScopeNamespaces != null) {
+            for (final Map.Entry<String, String> entry : copyFrom.inScopeNamespaces.entrySet()) {
+                final String prefix = entry.getKey();
+                if (XML_NS_PREFIX.equals(prefix) || XMLNS_ATTRIBUTE.equals(prefix)) {
+                    continue;
+                }
+                declareInScopeNamespace(prefix, entry.getValue());
+            }
+        }
     }
 
 
