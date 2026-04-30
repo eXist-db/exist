@@ -289,9 +289,10 @@ public final class FunMatches extends Function implements Optimizable, IndexUseR
         newContextInfo.setParent(this);
         //  call analyze for each argument
         inPredicate = (newContextInfo.getFlags() & IN_PREDICATE) > 0;
-        // The function call boundary breaks the predicate chain for nested
-        // expressions; see Function.analyze and issue #4958.
-        newContextInfo.removeFlag(IN_PREDICATE);
+        // FunMatches implements Optimizable and depends on IN_PREDICATE
+        // being visible to the range/Lucene index optimizers via its
+        // arguments. Do not strip it here. The general Function.analyze()
+        // strips it for non-Optimizable functions (issue #4958).
         for (int i = 0; i < getArgumentCount(); i++) {
             getArgument(i).analyze(newContextInfo);
         }
