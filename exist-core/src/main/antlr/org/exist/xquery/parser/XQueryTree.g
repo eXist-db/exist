@@ -5667,6 +5667,34 @@ throws PermissionDeniedException, EXistException, XPathException
             c.setASTNode(e);
             step= c;
             staticContext.pushInScopeNamespaces();
+            // Per XQuery spec, all xmlns declarations on a direct element
+            // constructor are in scope for the entire element including its
+            // attribute value expressions. Pre-declare them so attribute
+            // expressions parsed below can resolve QNames using these prefixes.
+            for (AST nsScan = e.getFirstChild(); nsScan != null; nsScan = nsScan.getNextSibling()) {
+                if (nsScan.getType() != ATTRIBUTE) continue;
+                final String anm = nsScan.getText();
+                if (anm == null) continue;
+                if (!anm.equals("xmlns") && !anm.startsWith("xmlns:")) continue;
+                StringBuilder uriBuf = new StringBuilder();
+                boolean literalOnly = true;
+                for (AST piece = nsScan.getFirstChild(); piece != null; piece = piece.getNextSibling()) {
+                    if (piece.getType() == ATTRIBUTE_CONTENT) {
+                        uriBuf.append(piece.getText());
+                    } else {
+                        literalOnly = false;
+                        break;
+                    }
+                }
+                if (!literalOnly) continue;
+                final String nsPrefix = anm.equals("xmlns") ? "" : anm.substring(6);
+                try {
+                    final String uriStr = StringValue.expand(uriBuf.toString());
+                    staticContext.declareInScopeNamespace(nsPrefix, uriStr);
+                } catch (final XPathException xpe) {
+                    // Defer error to the main attribute pass below
+                }
+            }
         }
         (
             #(
