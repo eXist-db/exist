@@ -53,6 +53,19 @@ From the repo root:
 - **exist-core only:** add `--projects exist-core --also-make` to the above
 - **Single test class:** `./mvnw -Dtest=fully.qualified.TestClass test --projects exist-core --also-make`
 
+### Maven 4 rerun/resume guidance
+
+Use Maven 4's reactor resume mode (`-r` / `--resume`) for reruns after module failures:
+
+- Initial CI-like run:
+  - `./mvnw -V -B --no-transfer-progress -DskipTests -Ddependency-check.skip=true clean verify`
+- Retry from the failed module onward:
+  - `./mvnw -V -B --no-transfer-progress -DskipTests -Ddependency-check.skip=true -r verify`
+
+This avoids rebuilding already successful modules and keeps reruns deterministic.
+
+For release/snapshot publish jobs that call `deploy`, treat `-r deploy` as a full publish rerun strategy only. Maven 4 deploy behavior is effectively all-or-nothing when using deploy-at-end semantics, so do not assume partial publish recovery from a previous failed deploy.
+
 **NOTE:** 
 In the above example, we switched the current (checked-out) branch from `develop` to `master`. We use the [GitFlow for eXist-db](#contributing-to-exist) process:
 - `develop` is the current (and stable) work-in-progress (the next release)

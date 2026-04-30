@@ -120,10 +120,27 @@ Once development on a new stable version is complete, prepare a tag from `develo
 3. Create and push a release tag (for example, `eXist-7.0.0`) from the intended commit.
 4. Trigger the release workflow (tag-triggered or manual dispatch) which should:
    - run release preflight checks in `validate` (credentials, signing keys, push access, etc.)
-   - build with `./mvnw -Prelease-build -Drevision=<tag-version>` (for example, `eXist-7.0.0` -> `7.0.0`)
+   - build with `./mvnw -Prelease-build -Dmaven.consumer.pom.flatten=true -Drevision=<tag-version>` (for example, `eXist-7.0.0` -> `7.0.0`)
    - publish Maven artifacts via Sonatype Central Portal
    - publish Docker images
    - attach release distributions/installer assets to GitHub Releases
+
+Consumer POM flattening is intentionally enabled only in the release publish path (`-Dmaven.consumer.pom.flatten=true`) so published metadata uses Maven 4 native consumer-POM output while local/default CI builds keep their existing behavior.
+
+##### Maven 4 rerun and deploy expectations
+
+For failed CI/release builds, use Maven 4 reactor resume (`-r` / `--resume`) to rerun from the failed module:
+
+```
+./mvnw -Prelease-build -Drevision=<tag-version> -DskipTests -Ddependency-check.skip=true clean verify
+./mvnw -Prelease-build -Drevision=<tag-version> -DskipTests -Ddependency-check.skip=true -r verify
+```
+
+For publishing runs (`deploy`), assume Maven 4 deploy-at-end all-or-nothing behavior:
+
+- Do not rely on partial deployment from a failed `clean deploy` run.
+- If deploy fails, fix the issue and rerun the deploy job intentionally.
+- If using `-r deploy`, treat it as a complete publish retry path, not a partial publish continuation.
 
 For local release-like packaging verification before tagging, use:
 
