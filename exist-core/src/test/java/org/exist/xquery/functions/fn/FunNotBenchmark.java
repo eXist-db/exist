@@ -49,6 +49,7 @@ public class FunNotBenchmark {
     private static final String COLLECTION_NAME = "bench-fn-not";
     private static final int WARMUP_ITERATIONS = 100;
     private static final int MEASURED_ITERATIONS = 500;
+    private static final String DOC = "doc('/db/" + COLLECTION_NAME + "/data.xml')";
 
     @ClassRule
     public static final ExistXmldbEmbeddedServer server =
@@ -100,8 +101,6 @@ public class FunNotBenchmark {
     }
 
     // --- Benchmark queries ---
-
-    private static final String DOC = "doc('/db/" + COLLECTION_NAME + "/data.xml')";
 
     /** Set-difference optimization: child axis */
     @Test

@@ -47,21 +47,21 @@ public class CompAttrConstructorErrorCodeTest {
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Test
-    public void xqty0024_attributeAfterPi() {
+    public void xqty0024AttributeAfterPi() {
         // K2-ComputeConAttr-2: <elem> <?target c ?> {attribute name {"x"}} </elem>
         assertErrorCode("XQTY0024",
                 "<elem> <?target c ?> {attribute name {\"x\"}} </elem>");
     }
 
     @Test
-    public void xqdy0025_duplicateComputedAttribute() {
+    public void xqdy0025DuplicateComputedAttribute() {
         // Computed attributes with duplicate names should raise XQDY0025 (not generic ERROR).
         assertErrorCode("XQDY0025",
                 "<foo>{attribute a {\"1\"}, attribute a {\"2\"}}</foo>");
     }
 
     @Test
-    public void eqname_namespaceWithWhitespace() throws Exception {
+    public void eqnameNamespaceWithWhitespace() throws Exception {
         // Constr-compattr-eqname-2: " Q{ _   _ }x " with surrounding whitespace
         // should yield local-name 'x' and namespace '_ _' (collapsed).
         final String result = executeStringValue(
@@ -71,7 +71,7 @@ public class CompAttrConstructorErrorCodeTest {
     }
 
     @Test
-    public void prefixedQName_withSurroundingWhitespace() throws Exception {
+    public void prefixedQNameWithSurroundingWhitespace() throws Exception {
         // Constr-compattr-eqname-3: " xml:x " should auto-bind xml namespace
         final String result = executeStringValue(
                 "let $r := attribute { \" xml:x \" } {} return " +

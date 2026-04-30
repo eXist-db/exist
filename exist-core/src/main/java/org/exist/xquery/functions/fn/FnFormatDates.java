@@ -182,6 +182,60 @@ public class FnFormatDates extends BasicFunction {
     private static final Pattern WIDTH_MODIFIER_PATTERN =
             Pattern.compile(",\\s*([0-9]+|\\*)(?:\\s*-\\s*([0-9]+|\\*))?\\s*$");
 
+    private static final java.util.Set<String> SUPPORTED_LANGUAGES =
+            java.util.Set.of("en", "de", "fr", "nl", "ru", "sv");
+
+    /**
+     * Military time zone letter assignments, indexed by hour offset + 12.
+     * MILITARY_TZ_OFFSET_TO_LETTER[i+12] yields the letter for offset i (-12..+12).
+     * Note J is intentionally absent — it represents "local time" / no timezone.
+     */
+    private static final char[] MILITARY_TZ_OFFSET_TO_LETTER = {
+        'Y', // -12
+        'X', // -11
+        'W', // -10
+        'V', // -9
+        'U', // -8
+        'T', // -7
+        'S', // -6
+        'R', // -5
+        'Q', // -4
+        'P', // -3
+        'O', // -2
+        'N', // -1
+        'Z', //  0
+        'A', // +1
+        'B', // +2
+        'C', // +3
+        'D', // +4
+        'E', // +5
+        'F', // +6
+        'G', // +7
+        'H', // +8
+        'I', // +9
+        'K', // +10  (J is skipped)
+        'L', // +11
+        'M'  // +12
+    };
+
+    /**
+     * W3C XSLT/XQuery recognised calendar codes (spec § 9.5.3). We only implement
+     * the AD/ISO Gregorian calendar; recognised-but-unsupported codes produce a
+     * fallback marker. Unrecognised codes raise FOFD1340.
+     */
+    private static final java.util.Set<String> KNOWN_CALENDARS = java.util.Set.of(
+            "AD", "AH", "AM", "AME", "AP", "AS", "BE", "CB", "CE", "CL", "CS",
+            "EE", "FE", "ISO", "JE", "KE", "KY", "ME", "MS", "NS", "OS", "RS",
+            "SE", "SH", "SS", "TE", "VE", "VS", "Y",
+            // additional codes seen in the wild
+            "AE", "BS", "HE", "JP", "KO", "TH");
+
+    /** Calendars we implement directly (no fallback marker needed). */
+    private static final java.util.Set<String> SUPPORTED_CALENDARS = java.util.Set.of("AD", "ISO");
+
+    private static final int[] ROMAN_VALUES = {1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1};
+    private static final String[] ROMAN_SYMBOLS = {"M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"};
+
     public FnFormatDates(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
     }
@@ -250,9 +304,6 @@ public class FnFormatDates extends BasicFunction {
         }
         return new StringValue(this, result);
     }
-
-    private static final java.util.Set<String> SUPPORTED_LANGUAGES =
-            java.util.Set.of("en", "de", "fr", "nl", "ru", "sv");
 
     private static boolean isLanguageSupported(String lang) {
         if (lang == null || lang.isEmpty()) return true;
@@ -777,38 +828,6 @@ public class FnFormatDates extends BasicFunction {
     }
 
     /**
-     * MILITARY_TZ_OFFSET_TO_LETTER[i+12] yields the letter for offset i (-12..+12).
-     * Note J is intentionally absent — it represents "local time" / no timezone.
-     */
-    private final static char[] MILITARY_TZ_OFFSET_TO_LETTER = {
-        'Y', // -12
-        'X', // -11
-        'W', // -10
-        'V', // -9
-        'U', // -8
-        'T', // -7
-        'S', // -6
-        'R', // -5
-        'Q', // -4
-        'P', // -3
-        'O', // -2
-        'N', // -1
-        'Z', //  0
-        'A', // +1
-        'B', // +2
-        'C', // +3
-        'D', // +4
-        'E', // +5
-        'F', // +6
-        'G', // +7
-        'H', // +8
-        'I', // +9
-        'K', // +10  (J is skipped)
-        'L', // +11
-        'M'  // +12
-    };
-
-    /**
      * Military time zone:
      * Z = +00:00, A = +01:00, ..., I = +09:00, K = +10:00, L = +11:00, M = +12:00
      * (J is skipped — it denotes local time / unspecified timezone).
@@ -841,16 +860,15 @@ public class FnFormatDates extends BasicFunction {
                               StringBuilder sb) throws XPathException {
         // Detect and strip ordinal/cardinal modifier suffix
         final boolean ordinal;
-        final boolean traditional;
         String pic = picture;
         if (pic.endsWith("o")) {
-            ordinal = true; traditional = false;
+            ordinal = true;
             pic = pic.substring(0, pic.length() - 1);
         } else if (pic.endsWith("c")) {
-            ordinal = false; traditional = true;
+            ordinal = false;
             pic = pic.substring(0, pic.length() - 1);
         } else {
-            ordinal = false; traditional = false;
+            ordinal = false;
         }
 
         // Roman numerals — width's min pads with spaces; max never truncates
@@ -1374,21 +1392,6 @@ public class FnFormatDates extends BasicFunction {
     }
 
     /**
-     * W3C XSLT/XQuery recognised calendar codes (spec § 9.5.3). We only implement
-     * the AD/ISO Gregorian calendar; recognised-but-unsupported codes produce a
-     * fallback marker. Unrecognised codes raise FOFD1340.
-     */
-    private static final java.util.Set<String> KNOWN_CALENDARS = java.util.Set.of(
-            "AD", "AH", "AM", "AME", "AP", "AS", "BE", "CB", "CE", "CL", "CS",
-            "EE", "FE", "ISO", "JE", "KE", "KY", "ME", "MS", "NS", "OS", "RS",
-            "SE", "SH", "SS", "TE", "VE", "VS", "Y",
-            // additional codes seen in the wild
-            "AE", "BS", "HE", "JP", "KO", "TH");
-
-    /** Calendars we implement directly (no fallback marker needed). */
-    private static final java.util.Set<String> SUPPORTED_CALENDARS = java.util.Set.of("AD", "ISO");
-
-    /**
      * Validate a calendar argument. Returns the original calendar name if it is
      * recognised-but-unsupported (so callers prepend the W3C-mandated
      * '[Calendar: AD]' fallback marker). Throws FOFD1340 for syntactically
@@ -1442,9 +1445,6 @@ public class FnFormatDates extends BasicFunction {
         return Optional.of(calendar);
     }
 
-    private static final int[] ROMAN_VALUES = {1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1};
-    private static final String[] ROMAN_SYMBOLS = {"M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"};
-
     /**
      * ISO 8601 week-of-week-based-year (1-53). [W] uses ISO week numbering per
      * the W3C spec, regardless of locale or calendar argument.
@@ -1483,10 +1483,11 @@ public class FnFormatDates extends BasicFunction {
             return String.valueOf(num);
         }
         final StringBuilder sb = new StringBuilder();
+        int n = num;
         for (int i = 0; i < ROMAN_VALUES.length; i++) {
-            while (num >= ROMAN_VALUES[i]) {
+            while (n >= ROMAN_VALUES[i]) {
                 sb.append(ROMAN_SYMBOLS[i]);
-                num -= ROMAN_VALUES[i];
+                n -= ROMAN_VALUES[i];
             }
         }
         return sb.toString();

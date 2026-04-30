@@ -1038,9 +1038,9 @@ public class XQueryContext implements BinaryValueManager, Context {
             throw new XPathException(rootExpression, ErrorCodes.XQST0070,
                     "The namespace URI '" + Namespaces.XMLNS_NS + "' cannot be used as the default function namespace");
         }
-        if (Namespaces.XML_NS.equals(uri)) {
+        if (XML_NS.equals(uri)) {
             throw new XPathException(rootExpression, ErrorCodes.XQST0070,
-                    "The namespace URI '" + Namespaces.XML_NS + "' cannot be bound to a prefix other than 'xml'");
+                    "The namespace URI '" + XML_NS + "' cannot be bound to a prefix other than 'xml'");
         }
         //Not sure for the 2nd clause : eXist-db forces the function NS as default.
         if (defaultFunctionNamespace != null
@@ -1079,9 +1079,9 @@ public class XQueryContext implements BinaryValueManager, Context {
             throw new XPathException(rootExpression, ErrorCodes.XQST0070,
                     "The namespace URI '" + Namespaces.XMLNS_NS + "' cannot be used as the default element namespace");
         }
-        if (Namespaces.XML_NS.equals(uri)) {
+        if (XML_NS.equals(uri)) {
             throw new XPathException(rootExpression, ErrorCodes.XQST0070,
-                    "The namespace URI '" + Namespaces.XML_NS + "' cannot be bound to a prefix other than 'xml'");
+                    "The namespace URI '" + XML_NS + "' cannot be bound to a prefix other than 'xml'");
         }
         // eXist forces the empty element NS as default.
         if (!defaultElementNamespace.equals(AnyURIValue.EMPTY_URI)) {

@@ -241,11 +241,11 @@ public class JSON extends BasicFunction {
                     try (final JsonParser parser = factory.createParser(sb.toString())) {
                         final Item result = readValue(context, parser, handleDuplicates);
                         return result == null ? Sequence.EMPTY_SEQUENCE : result.toSequence();
-                    } catch (final java.io.IOException jsonErr) {
+                    } catch (final IOException jsonErr) {
                         throw new XPathException(this, ErrorCodes.FOJS0001, jsonErr.getMessage());
                     }
                 }
-            } catch (final java.io.IOException e) {
+            } catch (final IOException e) {
                 // Not a dynamic resource, fall through to URL resolution
             }
             boolean resolvedFromBaseUri = false;

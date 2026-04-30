@@ -215,7 +215,7 @@ public class FunSerialize extends BasicFunction {
         } catch (final SAXException e) {
             final String msg = e.getMessage();
             if (msg != null) {
-                final java.util.regex.Matcher m = java.util.regex.Pattern
+                final Matcher m = Pattern
                         .compile("err:(SER[EPM]\\d{4})").matcher(msg);
                 if (m.find()) {
                     throw new XPathException(callingExpr,

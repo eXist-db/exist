@@ -30,6 +30,27 @@ import java.util.Locale;
  */
 public class NumberFormatter_en extends NumberFormatter {
 
+    private static final String[] CARDINALS_BELOW_20 = {
+            "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
+            "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen",
+            "seventeen", "eighteen", "nineteen"
+    };
+
+    private static final String[] CARDINAL_TENS = {
+            "", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"
+    };
+
+    private static final String[] ORDINALS_BELOW_20 = {
+            "zeroth", "first", "second", "third", "fourth", "fifth", "sixth", "seventh",
+            "eighth", "ninth", "tenth", "eleventh", "twelfth", "thirteenth", "fourteenth",
+            "fifteenth", "sixteenth", "seventeenth", "eighteenth", "nineteenth"
+    };
+
+    private static final String[] ORDINAL_TENS = {
+            "", "", "twentieth", "thirtieth", "fortieth", "fiftieth", "sixtieth", "seventieth",
+            "eightieth", "ninetieth"
+    };
+
     public NumberFormatter_en(final Locale locale) {
         super(locale);
     }
@@ -52,27 +73,6 @@ public class NumberFormatter_en extends NumberFormatter {
         else
             {return "th";}
     }
-
-    private static final String[] CARDINALS_BELOW_20 = {
-            "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
-            "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen",
-            "seventeen", "eighteen", "nineteen"
-    };
-
-    private static final String[] CARDINAL_TENS = {
-            "", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"
-    };
-
-    private static final String[] ORDINALS_BELOW_20 = {
-            "zeroth", "first", "second", "third", "fourth", "fifth", "sixth", "seventh",
-            "eighth", "ninth", "tenth", "eleventh", "twelfth", "thirteenth", "fourteenth",
-            "fifteenth", "sixteenth", "seventeenth", "eighteenth", "nineteenth"
-    };
-
-    private static final String[] ORDINAL_TENS = {
-            "", "", "twentieth", "thirtieth", "fortieth", "fiftieth", "sixtieth", "seventieth",
-            "eightieth", "ninetieth"
-    };
 
     @Override
     public String getCardinalWord(long number) {
