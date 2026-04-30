@@ -156,8 +156,15 @@ public class HTML5Writer extends XHTML5Writer {
         if (!isEmptyTag(qname.getLocalPart())) {
             super.endElement(qname);
         } else {
+            // HTML5 omits the close tag for void elements; we still need to
+            // honor the meta-in-head dedup that XHTMLWriter sets up at startElement
+            // time. Capture the buffered-meta flag before closeStartTag flips state.
+            final boolean wasBufferedMeta = isBufferedMeta(qname.getLocalPart());
             closeStartTag(true);
             endIndent(qname.getNamespaceURI(), qname.getLocalPart());
+            if (wasBufferedMeta) {
+                endMetaBuffer();
+            }
         }
     }
 
@@ -166,13 +173,20 @@ public class HTML5Writer extends XHTML5Writer {
         if (!isEmptyTag(localName)) {
             super.endElement(namespaceURI, localName, qname);
         } else {
+            final boolean wasBufferedMeta = isBufferedMeta(localName);
             closeStartTag(true);
             endIndent(namespaceURI, localName);
+            if (wasBufferedMeta) {
+                endMetaBuffer();
+            }
         }
     }
 
     @Override
     public void attribute(String qname, CharSequence value) throws TransformerException {
+        // Strip prefix for the meta-dedup redundancy check
+        final int colon = qname.indexOf(':');
+        noteMetaAttribute(colon < 0 ? qname : qname.substring(colon + 1), value);
         try {
             if(!tagIsOpen) {
                 characters(value);
@@ -193,6 +207,7 @@ public class HTML5Writer extends XHTML5Writer {
 
     @Override
     public void attribute(QName qname, CharSequence value) throws TransformerException {
+        noteMetaAttribute(qname.getLocalPart(), value);
         try {
             if(!tagIsOpen) {
                 characters(value);

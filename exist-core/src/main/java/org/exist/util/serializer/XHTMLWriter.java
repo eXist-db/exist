@@ -115,6 +115,16 @@ public class XHTMLWriter extends IndentingXMLWriter {
     protected boolean inHead = false;
     protected boolean contentTypeMetaWritten = false;
 
+    // Meta-tag dedup state: when a `<meta>` element is encountered inside
+    // `<head>` AFTER the auto-generated content-type meta has been emitted,
+    // its bytes are diverted to {@link #metaScratch}. If, while buffering,
+    // we observe a {@code charset} or {@code http-equiv="Content-Type"}
+    // attribute, the buffered meta is dropped (the auto-meta replaces it);
+    // otherwise the buffer is flushed verbatim at endElement time.
+    private Writer metaSuspendedWriter = null;
+    private java.io.StringWriter metaScratch = null;
+    private boolean metaIsContentTypeOrCharset = false;
+
     protected final ObjectSet<String> emptyTags;
     protected final ObjectSet<String> inlineTags;
 
@@ -151,6 +161,58 @@ public class XHTMLWriter extends IndentingXMLWriter {
         super.resetObjectState();
         inHead = false;
         contentTypeMetaWritten = false;
+        metaSuspendedWriter = null;
+        metaScratch = null;
+        metaIsContentTypeOrCharset = false;
+    }
+
+    private boolean shouldBufferDuplicateMeta(final String localName) {
+        return inHead && contentTypeMetaWritten && metaSuspendedWriter == null
+                && "meta".equalsIgnoreCase(localName);
+    }
+
+    /** True when the writer is currently diverting bytes for a candidate-duplicate meta. */
+    protected boolean isBufferedMeta(final String localName) {
+        return metaSuspendedWriter != null && "meta".equalsIgnoreCase(localName);
+    }
+
+    private void beginMetaBuffer() {
+        metaSuspendedWriter = writer;
+        metaScratch = new java.io.StringWriter();
+        writer = metaScratch;
+        metaIsContentTypeOrCharset = false;
+    }
+
+    protected void endMetaBuffer() throws TransformerException {
+        if (metaSuspendedWriter == null) {
+            return;
+        }
+        final Writer original = metaSuspendedWriter;
+        final String buffered = metaScratch.toString();
+        final boolean dropDuplicate = metaIsContentTypeOrCharset;
+        metaSuspendedWriter = null;
+        metaScratch = null;
+        metaIsContentTypeOrCharset = false;
+        writer = original;
+        if (!dropDuplicate) {
+            try {
+                writer.write(buffered);
+            } catch (final IOException ioe) {
+                throw new TransformerException(ioe.getMessage(), ioe);
+            }
+        }
+    }
+
+    protected void noteMetaAttribute(final String localName, final CharSequence value) {
+        if (metaSuspendedWriter == null) {
+            return;
+        }
+        if ("charset".equalsIgnoreCase(localName)) {
+            metaIsContentTypeOrCharset = true;
+        } else if ("http-equiv".equalsIgnoreCase(localName)
+                && value != null && "Content-Type".equalsIgnoreCase(value.toString())) {
+            metaIsContentTypeOrCharset = true;
+        }
     }
 
     protected boolean isEmptyTag(final String tag) {
@@ -168,6 +230,9 @@ public class XHTMLWriter extends IndentingXMLWriter {
 
         final QName xhtmlQName = removeXhtmlPrefix(qname);
 
+        if (shouldBufferDuplicateMeta(xhtmlQName.getLocalPart())) {
+            beginMetaBuffer();
+        }
         super.startElement(xhtmlQName);
         currentTag = xhtmlQName.getStringValue();
         if ("head".equalsIgnoreCase(xhtmlQName.getLocalPart())) {
@@ -175,15 +240,21 @@ public class XHTMLWriter extends IndentingXMLWriter {
             writeContentTypeMeta();
         }
     }
-    
+
     @Override
     public void endElement(final QName qname) throws TransformerException {
         final QName xhtmlQName = removeXhtmlPrefix(qname);
+        final boolean isMetaInHead = metaSuspendedWriter != null
+                && "meta".equalsIgnoreCase(xhtmlQName.getLocalPart());
         if (inHead && "head".equalsIgnoreCase(xhtmlQName.getLocalPart())) {
             inHead = false;
         }
 
         super.endElement(xhtmlQName);
+
+        if (isMetaInHead) {
+            endMetaBuffer();
+        }
 
         haveCollapsedXhtmlPrefix = false;
         collapsedForeignNs = null;
@@ -211,6 +282,9 @@ public class XHTMLWriter extends IndentingXMLWriter {
 
         final String xhtmlQName = removeXhtmlPrefix(namespaceURI, qname);
 
+        if (shouldBufferDuplicateMeta(localName)) {
+            beginMetaBuffer();
+        }
         super.startElement(namespaceURI, localName, xhtmlQName);
         currentTag = xhtmlQName;
         if ("head".equalsIgnoreCase(localName)) {
@@ -218,9 +292,11 @@ public class XHTMLWriter extends IndentingXMLWriter {
             writeContentTypeMeta();
         }
     }
-    
+
     @Override
     public void endElement(final String namespaceURI, final String localName, final String qname) throws TransformerException {
+        final boolean isMetaInHead = metaSuspendedWriter != null
+                && "meta".equalsIgnoreCase(localName);
         if (inHead && "head".equalsIgnoreCase(localName)) {
             inHead = false;
         }
@@ -228,6 +304,10 @@ public class XHTMLWriter extends IndentingXMLWriter {
         final String xhtmlQName = removeXhtmlPrefix(namespaceURI, qname);
 
         super.endElement(namespaceURI, localName, xhtmlQName);
+
+        if (isMetaInHead) {
+            endMetaBuffer();
+        }
 
         haveCollapsedXhtmlPrefix = false;
         collapsedForeignNs = null;
@@ -393,6 +473,7 @@ public class XHTMLWriter extends IndentingXMLWriter {
     
     @Override
     public void attribute(final QName qname, final CharSequence value) throws TransformerException {
+        noteMetaAttribute(qname.getLocalPart(), value);
         // For method="html", minimize boolean attributes when value matches name
         if (isHtmlMethod() && isBooleanAttribute(qname.getLocalPart(), value)) {
             try {
@@ -414,6 +495,10 @@ public class XHTMLWriter extends IndentingXMLWriter {
 
     @Override
     public void attribute(final String qname, final CharSequence value) throws TransformerException {
+        // Strip prefix for the redundancy check (we want the local name).
+        final int colon = qname.indexOf(':');
+        final String localName = colon < 0 ? qname : qname.substring(colon + 1);
+        noteMetaAttribute(localName, value);
         if (isHtmlMethod() && isBooleanAttribute(qname, value)) {
             try {
                 if (!tagIsOpen) {
