@@ -27,7 +27,9 @@ import org.exist.xquery.functions.map.MapType;
 import org.exist.xquery.value.*;
 
 import javax.xml.datatype.DatatypeConstants;
+import javax.xml.datatype.Duration;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.math.RoundingMode;
 
 /**
@@ -100,64 +102,66 @@ public class FnDateTimeParts extends BasicFunction {
     private Sequence buildDateTimeFromRecord(final Sequence[] args) throws XPathException {
         final MapType record = (MapType) args[0].itemAt(0);
 
-        // Determine which fields are present
         final boolean hasYear = hasField(record, "year");
         final boolean hasMonth = hasField(record, "month");
         final boolean hasDay = hasField(record, "day");
         final boolean hasHours = hasField(record, "hours");
         final boolean hasMinutes = hasField(record, "minutes");
         final boolean hasSeconds = hasField(record, "seconds");
+        final boolean hasTimezone = hasField(record, "timezone");
 
-        final boolean hasDate = hasYear || hasMonth || hasDay;
-        final boolean hasTime = hasHours || hasMinutes || hasSeconds;
+        final boolean hasAnyDate = hasYear || hasMonth || hasDay;
+        final boolean hasAnyTime = hasHours || hasMinutes || hasSeconds;
 
-        // Validate field values are numeric (not NaN/INF)
-        validateNumericFields(record);
-
-        // Get timezone
-        final String tzSuffix = getTimezone(record);
-
-        // Determine target type based on present fields
-        if (hasYear && hasMonth && hasDay && hasTime) {
-            // Full dateTime
-            return buildFullDateTime(record, tzSuffix);
-        } else if (hasYear && hasMonth && hasDay && !hasTime) {
-            // xs:date
-            return buildDate(record, tzSuffix);
-        } else if (!hasDate && hasTime) {
-            // xs:time — require at least hours
-            if (!hasHours) {
-                throw new XPathException(this, ErrorCodes.FODT0005,
-                        "Missing required field 'hours' for time construction");
-            }
-            return buildTime(record, tzSuffix);
-        } else if (hasYear && hasMonth && !hasDay && !hasTime) {
-            // xs:gYearMonth
-            return buildGYearMonth(record, tzSuffix);
-        } else if (hasYear && !hasMonth && !hasDay && !hasTime) {
-            // xs:gYear
-            return buildGYear(record, tzSuffix);
-        } else if (!hasYear && hasMonth && hasDay && !hasTime) {
-            // xs:gMonthDay
-            return buildGMonthDay(record, tzSuffix);
-        } else if (!hasYear && hasMonth && !hasDay && !hasTime) {
-            // xs:gMonth
-            return buildGMonth(record, tzSuffix);
-        } else if (!hasYear && !hasMonth && hasDay && !hasTime) {
-            // xs:gDay
-            return buildGDay(record, tzSuffix);
-        } else if (hasYear && hasMonth && hasDay && hasTime) {
-            return buildFullDateTime(record, tzSuffix);
-        } else {
-            // Invalid combination: date fields present but incomplete, plus time fields
-            // Check for unexpected combinations
-            if (hasDate && hasTime) {
-                // Some date fields missing — fill in defaults
-                return buildFullDateTime(record, tzSuffix);
-            }
+        // Empty record (or only timezone) is FODT0005.
+        if (!hasAnyDate && !hasAnyTime) {
             throw new XPathException(this, ErrorCodes.FODT0005,
-                    "Invalid combination of date/time components");
+                    "Cannot build a date/time value: no date or time components supplied");
         }
+
+        // If time fields are present they must all be present.
+        if (hasAnyTime && !(hasHours && hasMinutes && hasSeconds)) {
+            throw new XPathException(this, ErrorCodes.FODT0005,
+                    "Time components require all of hours, minutes, and seconds");
+        }
+
+        // If we have time but no date fields: build xs:time.
+        if (hasAnyTime && !hasAnyDate) {
+            return buildTime(record, hasTimezone);
+        }
+
+        // If we have date and time, the date must be complete (year+month+day).
+        if (hasAnyTime) {
+            if (!(hasYear && hasMonth && hasDay)) {
+                throw new XPathException(this, ErrorCodes.FODT0005,
+                        "When time components are supplied with date components, " +
+                                "all of year, month, and day are required");
+            }
+            return buildFullDateTime(record, hasTimezone);
+        }
+
+        // Date-only combinations.
+        if (hasYear && hasMonth && hasDay) {
+            return buildDate(record, hasTimezone);
+        }
+        if (hasYear && hasMonth) { // && !hasDay
+            return buildGYearMonth(record, hasTimezone);
+        }
+        if (hasYear && !hasMonth && !hasDay) {
+            return buildGYear(record, hasTimezone);
+        }
+        if (!hasYear && hasMonth && hasDay) {
+            return buildGMonthDay(record, hasTimezone);
+        }
+        if (!hasYear && hasMonth && !hasDay) {
+            return buildGMonth(record, hasTimezone);
+        }
+        if (!hasYear && !hasMonth && hasDay) {
+            return buildGDay(record, hasTimezone);
+        }
+        // Remaining: hasYear && !hasMonth && hasDay — invalid (year+day without month).
+        throw new XPathException(this, ErrorCodes.FODT0005,
+                "Invalid combination of date components: year and day without month");
     }
 
     private boolean hasField(final MapType record, final String key) throws XPathException {
@@ -165,150 +169,283 @@ public class FnDateTimeParts extends BasicFunction {
         return seq != null && !seq.isEmpty();
     }
 
-    private void validateNumericFields(final MapType record) throws XPathException {
-        final String[] numericFields = {"year", "month", "day", "hours", "minutes", "seconds"};
-        for (final String field : numericFields) {
-            final Sequence seq = record.get(new StringValue(this, field));
-            if (seq != null && !seq.isEmpty()) {
-                final Item item = seq.itemAt(0);
-                if (item instanceof DoubleValue) {
-                    final double d = ((DoubleValue) item).getDouble();
-                    if (Double.isNaN(d) || Double.isInfinite(d)) {
-                        throw new XPathException(this, ErrorCodes.XPTY0004,
-                                "Invalid value for '" + field + "': " + d);
-                    }
-                }
-            }
-        }
-    }
-
+    /**
+     * Coerce a numeric record field to int. Accepts xs:integer (any subtype) and
+     * xs:decimal that is exactly an integer. Rejects xs:double/xs:float
+     * (XPTY0004), as well as xs:decimal with a fractional part (XPTY0004).
+     */
     private int getIntField(final MapType record, final String key) throws XPathException {
         final Sequence seq = record.get(new StringValue(this, key));
         if (seq == null || seq.isEmpty()) {
             return 0;
         }
-        return ((NumericValue) seq.itemAt(0).convertTo(Type.INTEGER)).getInt();
+        final Item item = seq.itemAt(0);
+        if (item instanceof IntegerValue) {
+            return ((IntegerValue) item).getInt();
+        }
+        if (item instanceof DecimalValue) {
+            final BigDecimal d = ((DecimalValue) item).getValue();
+            try {
+                return d.intValueExact();
+            } catch (final ArithmeticException e) {
+                throw new XPathException(this, ErrorCodes.XPTY0004,
+                        "Field '" + key + "' must be an integer; got " + d);
+            }
+        }
+        // Untyped atomic and node values: parse the string value as an integer.
+        if (item instanceof NodeValue || Type.subTypeOf(item.getType(), Type.UNTYPED_ATOMIC)) {
+            final String s = item.getStringValue().trim();
+            try {
+                return Integer.parseInt(s);
+            } catch (final NumberFormatException e) {
+                throw new XPathException(this, ErrorCodes.XPTY0004,
+                        "Field '" + key + "' is not a valid integer: '" + s + "'");
+            }
+        }
+        throw new XPathException(this, ErrorCodes.XPTY0004,
+                "Field '" + key + "' must be xs:integer or xs:decimal; got "
+                        + Type.getTypeName(item.getType()));
     }
 
+    /**
+     * Coerce the seconds field to a BigDecimal. Accepts xs:integer, xs:decimal,
+     * xs:double, xs:float — but rejects NaN/Infinity (XPTY0004).
+     */
+    private BigDecimal getSecondsField(final MapType record) throws XPathException {
+        final Sequence seq = record.get(new StringValue(this, "seconds"));
+        if (seq == null || seq.isEmpty()) {
+            return null;
+        }
+        final Item item = seq.itemAt(0);
+        if (item instanceof IntegerValue) {
+            return BigDecimal.valueOf(((IntegerValue) item).getLong());
+        }
+        if (item instanceof DecimalValue) {
+            return ((DecimalValue) item).getValue();
+        }
+        if (item instanceof DoubleValue) {
+            final double d = ((DoubleValue) item).getDouble();
+            if (Double.isNaN(d) || Double.isInfinite(d)) {
+                throw new XPathException(this, ErrorCodes.XPTY0004,
+                        "Field 'seconds' must be a finite numeric value; got " + d);
+            }
+            return BigDecimal.valueOf(d);
+        }
+        if (item instanceof FloatValue) {
+            final float f = ((FloatValue) item).getValue();
+            if (Float.isNaN(f) || Float.isInfinite(f)) {
+                throw new XPathException(this, ErrorCodes.XPTY0004,
+                        "Field 'seconds' must be a finite numeric value; got " + f);
+            }
+            return BigDecimal.valueOf((double) f);
+        }
+        throw new XPathException(this, ErrorCodes.XPTY0004,
+                "Field 'seconds' must be numeric; got " + Type.getTypeName(item.getType()));
+    }
+
+    /**
+     * Compute the timezone suffix string from the record. Returns "" for absent timezone.
+     */
     private String getTimezone(final MapType record) throws XPathException {
         final Sequence tzSeq = record.get(new StringValue(this, "timezone"));
         if (tzSeq == null || tzSeq.isEmpty()) {
             return "";
         }
         final Item tzItem = tzSeq.itemAt(0);
-        if (tzItem instanceof DayTimeDurationValue) {
-            final long totalMinutes = ((DayTimeDurationValue) tzItem).getValueInMilliseconds() / 60000L;
-            // Validate timezone range: must be -14:00 to +14:00
-            if (Math.abs(totalMinutes) > 14 * 60) {
-                throw new XPathException(this, ErrorCodes.FODT0006,
-                        "Timezone offset out of range: " + totalMinutes + " minutes");
-            }
-            if (totalMinutes == 0) {
-                return "Z";
-            }
-            final int tzH = (int) (totalMinutes / 60);
-            final int tzM = (int) Math.abs(totalMinutes % 60);
-            return String.format("%+03d:%02d", tzH, tzM);
-        } else {
-            return tzItem.getStringValue();
+        if (!(tzItem instanceof DurationValue)) {
+            throw new XPathException(this, ErrorCodes.XPTY0004,
+                    "Field 'timezone' must be xs:dayTimeDuration; got "
+                            + Type.getTypeName(tzItem.getType()));
         }
+        // Reject xs:duration values that contain year/month components.
+        if (!(tzItem instanceof DayTimeDurationValue)) {
+            final Duration dur = ((DurationValue) tzItem).getCanonicalDuration();
+            if (dur.isSet(DatatypeConstants.YEARS) || dur.isSet(DatatypeConstants.MONTHS)) {
+                throw new XPathException(this, ErrorCodes.FODT0006,
+                        "Timezone duration must not contain year or month components");
+            }
+        }
+        final DayTimeDurationValue dtv = (DayTimeDurationValue) ((DurationValue) tzItem)
+                .convertTo(Type.DAY_TIME_DURATION);
+        final long totalMillis = dtv.getValueInMilliseconds();
+        // Per XSD, timezone offset must be expressible in whole minutes and within ±14:00.
+        if (totalMillis % 60000L != 0L) {
+            throw new XPathException(this, ErrorCodes.FODT0006,
+                    "Timezone duration must be a whole number of minutes");
+        }
+        final long totalMinutes = totalMillis / 60000L;
+        if (Math.abs(totalMinutes) > 14 * 60) {
+            throw new XPathException(this, ErrorCodes.FODT0006,
+                    "Timezone offset out of range (-14:00..+14:00): " + totalMinutes + " minutes");
+        }
+        if (totalMinutes == 0) {
+            return "Z";
+        }
+        final int tzH = (int) (totalMinutes / 60);
+        final int tzM = (int) Math.abs(totalMinutes % 60);
+        return String.format("%+03d:%02d", tzH, tzM);
     }
 
-    private void validateRange(final String field, final int value, final int min, final int max) throws XPathException {
+    private void requireRange(final String field, final int value, final int min, final int max) throws XPathException {
         if (value < min || value > max) {
             throw new XPathException(this, ErrorCodes.FODT0006,
                     "Value " + value + " out of range for '" + field + "' (expected " + min + " to " + max + ")");
         }
     }
 
-    private Sequence buildFullDateTime(final MapType record, final String tz) throws XPathException {
-        final int year = getIntField(record, "year");
-        final int month = hasField(record, "month") ? getIntField(record, "month") : 1;
-        final int day = hasField(record, "day") ? getIntField(record, "day") : 1;
-        final int hours = getIntField(record, "hours");
-        final int minutes = getIntField(record, "minutes");
-
-        validateRange("month", month, 1, 12);
-        validateRange("day", day, 1, 31);
-        validateRange("hours", hours, 0, 23);
-        validateRange("minutes", minutes, 0, 59);
-
-        final String secStr = getSecondsStr(record);
-        final String lexical = String.format("%04d-%02d-%02dT%02d:%02d:%s%s",
-                year, month, day, hours, minutes, secStr, tz);
-        return new DateTimeValue(this, lexical);
+    private void validateDate(final int year, final int month, final int day) throws XPathException {
+        requireRange("month", month, 1, 12);
+        requireRange("day", day, 1, daysInMonth(year, month));
     }
 
-    private Sequence buildDate(final MapType record, final String tz) throws XPathException {
+    private int daysInMonth(final int year, final int month) {
+        return switch (month) {
+            case 1, 3, 5, 7, 8, 10, 12 -> 31;
+            case 4, 6, 9, 11 -> 30;
+            case 2 -> isLeapYear(year) ? 29 : 28;
+            default -> 31;
+        };
+    }
+
+    private boolean isLeapYear(final int year) {
+        return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);
+    }
+
+    private String formatYear(final int year) {
+        if (year < 0) {
+            return "-" + String.format("%04d", -year);
+        }
+        if (year < 10000) {
+            return String.format("%04d", year);
+        }
+        return Integer.toString(year);
+    }
+
+    private Sequence buildFullDateTime(final MapType record, final boolean hasTimezone) throws XPathException {
         final int year = getIntField(record, "year");
         final int month = getIntField(record, "month");
         final int day = getIntField(record, "day");
-        validateRange("month", month, 1, 12);
-        validateRange("day", day, 1, 31);
-        final String lexical = String.format("%04d-%02d-%02d%s", year, month, day, tz);
+        final int hours = getIntField(record, "hours");
+        final int minutes = getIntField(record, "minutes");
+
+        validateDate(year, month, day);
+        requireRange("hours", hours, 0, 23);
+        requireRange("minutes", minutes, 0, 59);
+
+        final BigDecimal seconds = getSecondsField(record);
+        final String secStr = formatSeconds(seconds);
+        final String tz = hasTimezone ? getTimezone(record) : "";
+
+        final String lexical = formatYear(year) + String.format("-%02d-%02dT%02d:%02d:%s%s",
+                month, day, hours, minutes, secStr, tz);
+        if (hasTimezone) {
+            return new DateTimeStampValue(this, lexical);
+        }
+        return new DateTimeValue(this, lexical);
+    }
+
+    private Sequence buildDate(final MapType record, final boolean hasTimezone) throws XPathException {
+        final int year = getIntField(record, "year");
+        final int month = getIntField(record, "month");
+        final int day = getIntField(record, "day");
+        validateDate(year, month, day);
+        final String tz = hasTimezone ? getTimezone(record) : "";
+        final String lexical = formatYear(year) + String.format("-%02d-%02d%s", month, day, tz);
         return new DateValue(this, lexical);
     }
 
-    private Sequence buildTime(final MapType record, final String tz) throws XPathException {
+    private Sequence buildTime(final MapType record, final boolean hasTimezone) throws XPathException {
         final int hours = getIntField(record, "hours");
-        final int minutes = hasField(record, "minutes") ? getIntField(record, "minutes") : 0;
-        validateRange("hours", hours, 0, 23);
-        validateRange("minutes", minutes, 0, 59);
-        final String secStr = getSecondsStr(record);
+        final int minutes = getIntField(record, "minutes");
+        requireRange("hours", hours, 0, 23);
+        requireRange("minutes", minutes, 0, 59);
+        final BigDecimal seconds = getSecondsField(record);
+        final String secStr = formatSeconds(seconds);
+        final String tz = hasTimezone ? getTimezone(record) : "";
         final String lexical = String.format("%02d:%02d:%s%s", hours, minutes, secStr, tz);
         return new TimeValue(this, lexical);
     }
 
-    private Sequence buildGYear(final MapType record, final String tz) throws XPathException {
+    private Sequence buildGYear(final MapType record, final boolean hasTimezone) throws XPathException {
         final int year = getIntField(record, "year");
-        final String lexical = String.format("%04d%s", year, tz);
+        final String tz = hasTimezone ? getTimezone(record) : "";
+        final String lexical = formatYear(year) + tz;
         return new GYearValue(this, lexical);
     }
 
-    private Sequence buildGYearMonth(final MapType record, final String tz) throws XPathException {
+    private Sequence buildGYearMonth(final MapType record, final boolean hasTimezone) throws XPathException {
         final int year = getIntField(record, "year");
         final int month = getIntField(record, "month");
-        validateRange("month", month, 1, 12);
-        final String lexical = String.format("%04d-%02d%s", year, month, tz);
+        requireRange("month", month, 1, 12);
+        final String tz = hasTimezone ? getTimezone(record) : "";
+        final String lexical = formatYear(year) + String.format("-%02d%s", month, tz);
         return new GYearMonthValue(this, lexical);
     }
 
-    private Sequence buildGMonthDay(final MapType record, final String tz) throws XPathException {
+    private Sequence buildGMonthDay(final MapType record, final boolean hasTimezone) throws XPathException {
         final int month = getIntField(record, "month");
         final int day = getIntField(record, "day");
-        validateRange("month", month, 1, 12);
-        validateRange("day", day, 1, 31);
+        requireRange("month", month, 1, 12);
+        requireRange("day", day, 1, daysInMonth(2000, month)); // 2000 is a leap year for Feb 29
+        final String tz = hasTimezone ? getTimezone(record) : "";
         final String lexical = String.format("--%02d-%02d%s", month, day, tz);
         return new GMonthDayValue(this, lexical);
     }
 
-    private Sequence buildGMonth(final MapType record, final String tz) throws XPathException {
+    private Sequence buildGMonth(final MapType record, final boolean hasTimezone) throws XPathException {
         final int month = getIntField(record, "month");
-        validateRange("month", month, 1, 12);
+        requireRange("month", month, 1, 12);
+        final String tz = hasTimezone ? getTimezone(record) : "";
         final String lexical = String.format("--%02d%s", month, tz);
         return new GMonthValue(this, lexical);
     }
 
-    private Sequence buildGDay(final MapType record, final String tz) throws XPathException {
+    private Sequence buildGDay(final MapType record, final boolean hasTimezone) throws XPathException {
         final int day = getIntField(record, "day");
-        validateRange("day", day, 1, 31);
+        requireRange("day", day, 1, 31);
+        final String tz = hasTimezone ? getTimezone(record) : "";
         final String lexical = String.format("---%02d%s", day, tz);
         return new GDayValue(this, lexical);
     }
 
-    private String getSecondsStr(final MapType record) throws XPathException {
-        final Sequence secSeq = record.get(new StringValue(this, "seconds"));
-        if (secSeq == null || secSeq.isEmpty()) {
+    private String formatSeconds(final BigDecimal seconds) throws XPathException {
+        if (seconds == null) {
             return "00";
         }
-        final BigDecimal secVal = new BigDecimal(secSeq.getStringValue());
-        final int whole = secVal.intValue();
-        final BigDecimal frac = secVal.subtract(BigDecimal.valueOf(whole));
-        if (frac.compareTo(BigDecimal.ZERO) > 0) {
-            final String fracStr = frac.toPlainString().substring(1); // ".123"
-            return String.format("%02d%s", whole, fracStr);
+        final int sign = seconds.signum();
+        // Accept signed -0 (treated as 0); reject negative.
+        if (sign < 0) {
+            throw new XPathException(this, ErrorCodes.FODT0006,
+                    "Seconds value out of range (must be 0..<60): " + seconds);
         }
-        return String.format("%02d", whole);
+        if (seconds.compareTo(BigDecimal.valueOf(60)) >= 0) {
+            throw new XPathException(this, ErrorCodes.FODT0006,
+                    "Seconds value out of range (must be 0..<60): " + seconds);
+        }
+        // Strip trailing zeroes from fractional part for canonical form.
+        BigDecimal val = seconds;
+        if (val.scale() > 0) {
+            val = val.stripTrailingZeros();
+            if (val.scale() < 0) {
+                val = val.setScale(0, RoundingMode.UNNECESSARY);
+            }
+        }
+        final BigDecimal whole = val.setScale(0, RoundingMode.DOWN);
+        final BigDecimal frac = val.subtract(whole);
+        final String wholeStr = String.format("%02d", whole.intValueExact());
+        if (frac.signum() == 0) {
+            return wholeStr;
+        }
+        // Build fractional part as ".XXXX..." with no trailing zeroes.
+        String fracStr = frac.toPlainString();
+        // frac is in [0,1); toPlainString returns "0.XXX"
+        final int dotIdx = fracStr.indexOf('.');
+        if (dotIdx >= 0) {
+            fracStr = fracStr.substring(dotIdx);
+        } else {
+            fracStr = "";
+        }
+        return wholeStr + fracStr;
     }
 
     private Sequence buildDateTime(final Sequence[] args) throws XPathException {
@@ -378,10 +515,13 @@ public class FnDateTimeParts extends BasicFunction {
         }
         final AbstractDateTimeValue dt = (AbstractDateTimeValue) av;
         final int t = dt.getType();
-        final boolean hasYear = (t == Type.DATE_TIME || t == Type.DATE || t == Type.G_YEAR_MONTH || t == Type.G_YEAR);
-        final boolean hasMonth = (t == Type.DATE_TIME || t == Type.DATE || t == Type.G_YEAR_MONTH || t == Type.G_MONTH || t == Type.G_MONTH_DAY);
-        final boolean hasDay = (t == Type.DATE_TIME || t == Type.DATE || t == Type.G_DAY || t == Type.G_MONTH_DAY);
-        final boolean hasTime = (t == Type.DATE_TIME || t == Type.TIME);
+        final boolean hasYear = (t == Type.DATE_TIME || t == Type.DATE_TIME_STAMP || t == Type.DATE
+                || t == Type.G_YEAR_MONTH || t == Type.G_YEAR);
+        final boolean hasMonth = (t == Type.DATE_TIME || t == Type.DATE_TIME_STAMP || t == Type.DATE
+                || t == Type.G_YEAR_MONTH || t == Type.G_MONTH || t == Type.G_MONTH_DAY);
+        final boolean hasDay = (t == Type.DATE_TIME || t == Type.DATE_TIME_STAMP || t == Type.DATE
+                || t == Type.G_DAY || t == Type.G_MONTH_DAY);
+        final boolean hasTime = (t == Type.DATE_TIME || t == Type.DATE_TIME_STAMP || t == Type.TIME);
 
         final MapType result = new MapType(this, context);
 
