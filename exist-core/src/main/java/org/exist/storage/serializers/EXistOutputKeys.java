@@ -106,6 +106,15 @@ public class EXistOutputKeys {
      */
     public static final String ALLOW_DUPLICATE_NAMES = "allow-duplicate-names";
 
+    /**
+     * eXist-specific opt-in for the legacy XML-to-JSON conversion (where a single
+     * XML element/document was converted to a JSON object graph and an empty
+     * element became {@code null}). Default is {@code "no"}, which makes single
+     * nodes follow W3C JSON Output Method semantics: serialize as XML and wrap
+     * the result in a JSON string.
+     */
+    public static final String LEGACY_JSON_CONVERSION = "exist:legacy-json-conversion";
+
     public static final String HTML_VERSION = "html-version";
 
     /**

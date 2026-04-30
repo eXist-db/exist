@@ -322,11 +322,15 @@ public class XQuerySerializer {
     }
 
     private void serializeJSON(final Sequence sequence, final long compilationTime, final long executionTime) throws SAXException, XPathException {
-        // Backwards compatibility: if the sequence contains a single element or document,
-        // use the legacy XML-to-JSON writer (which converts XML structure to JSON properties).
-        // This is needed for RESTXQ and REST API which return XML documents with method=json.
-        // Maps, arrays, atomics, and multi-item sequences go through the W3C-compliant JSONSerializer.
-        if (sequence.hasOne() && (Type.subTypeOf(sequence.getItemType(), Type.DOCUMENT) || Type.subTypeOf(sequence.getItemType(), Type.ELEMENT))) {
+        // The legacy XML-to-JSON conversion (where an element became a JSON object
+        // graph and an empty element became `null`) violates W3C JSON Output Method
+        // semantics, which require a node to be serialized as XML and the result
+        // wrapped in a JSON string. Callers wanting the legacy behavior must opt
+        // in via {@code exist:legacy-json-conversion=yes}.
+        final String legacy = outputProperties.getProperty(EXistOutputKeys.LEGACY_JSON_CONVERSION, "no");
+        if (("yes".equals(legacy) || "true".equals(legacy) || "1".equals(legacy))
+                && sequence.hasOne()
+                && (Type.subTypeOf(sequence.getItemType(), Type.DOCUMENT) || Type.subTypeOf(sequence.getItemType(), Type.ELEMENT))) {
             serializeXMLDirect(sequence, 1, 1, false, false, compilationTime, executionTime);
         } else {
             JSONSerializer serializer = new JSONSerializer(broker, outputProperties);
