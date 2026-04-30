@@ -554,7 +554,7 @@ public final class XQueryParser {
         int patternSeparator = DecimalFormat.UNNAMED.patternSeparator;
         String infinity = DecimalFormat.UNNAMED.infinity;
         String nan = DecimalFormat.UNNAMED.NaN;
-        int minusSign = DecimalFormat.UNNAMED.minusSign;
+        String minusSign = DecimalFormat.UNNAMED.minusSign;
 
         while (check(Token.NCNAME) && !check(Token.SEMICOLON)) {
             final String prop = current.value;
@@ -567,7 +567,7 @@ public final class XQueryParser {
                 case "decimal-separator": decimalSeparator = requireSingleChar(prop, value); break;
                 case "grouping-separator": groupingSeparator = requireSingleChar(prop, value); break;
                 case "infinity": infinity = value; break;
-                case "minus-sign": minusSign = requireSingleChar(prop, value); break;
+                case "minus-sign": minusSign = value; break;
                 case "NaN": nan = value; break;
                 case "percent": percent = requireSingleChar(prop, value); break;
                 case "per-mille": perMille = requireSingleChar(prop, value); break;

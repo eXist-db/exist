@@ -358,7 +358,7 @@ options {
         int patternSeparator = DecimalFormat.UNNAMED.patternSeparator;
         String infinity = DecimalFormat.UNNAMED.infinity;
         String nan = DecimalFormat.UNNAMED.NaN;
-        int minusSign = DecimalFormat.UNNAMED.minusSign;
+        String minusSign = DecimalFormat.UNNAMED.minusSign;
 
         AST child = parentNode.getFirstChild();
         while (child != null) {
@@ -383,8 +383,8 @@ options {
                     infinity = value;
                     break;
                 case "minus-sign":
-                    dfRequireSingleChar(child, propName, value);
-                    minusSign = value.codePointAt(0);
+                    // XPath 4.0: minus-sign is a string (rendition) -- multi-character allowed
+                    minusSign = value;
                     break;
                 case "NaN":
                     nan = value;
@@ -3084,11 +3084,13 @@ throws PermissionDeniedException, EXistException, XPathException
             			}
             		)
             	)
-            	// windowStartCondition
+            	// windowStartCondition (XQ4 PR483: whole clause is optional, "when" within is optional)
+            	(
             	#(
             	    "start"
             	    {
             	        PathExpr whenExpr = new PathExpr(context);
+                        boolean hasWhen = false;
                         QName currentItemName = null;
                         QName previousItemName = null;
                         QName nextItemName = null;
@@ -3144,19 +3146,30 @@ throws PermissionDeniedException, EXistException, XPathException
                             }
                         )?
                     )
-                    "when"
-                    step=expr [whenExpr]
+                    (
+                        "when"
+                        step=expr [whenExpr]
+                        { hasWhen = true; }
+                    )?
                     {
                         WindowCondition windowCondition = new WindowCondition(
-                        	context, false, currentItemName, windowStartPosVar, previousItemName, nextItemName, whenExpr
+                        	context, false, currentItemName, windowStartPosVar, previousItemName, nextItemName, hasWhen ? whenExpr : null
                     	);
                     	clause.windowConditions.add(windowCondition);
                     }
             	)
-            	// windowEndCondition
+            	)?
+            	{
+            	    // XQ4 PR483: synthesize a default-true start condition if none was given.
+            	    if (clause.windowConditions.isEmpty()) {
+            	        clause.windowConditions.add(new WindowCondition(context, false, null, null, null, null, null));
+            	    }
+            	}
+            	// windowEndCondition (XQ4 PR483: "when" within is optional)
             	(
                     {
                          PathExpr endWhenExpr = new PathExpr(context);
+                         boolean hasEndWhen = false;
                          QName endCurrentItemName = null;
                          QName endPreviousItemName = null;
                          QName endNextItemName = null;
@@ -3221,16 +3234,25 @@ throws PermissionDeniedException, EXistException, XPathException
                                 }
                             )?
                         )
-                        "when"
-                        step=expr [endWhenExpr]
+                        (
+                            "when"
+                            step=expr [endWhenExpr]
+                            { hasEndWhen = true; }
+                        )?
                         {
                         	WindowCondition endWindowCondition = new WindowCondition(
-                            	context, only, endCurrentItemName, windowEndPosVar, endPreviousItemName, endNextItemName, endWhenExpr
+                            	context, only, endCurrentItemName, windowEndPosVar, endPreviousItemName, endNextItemName, hasEndWhen ? endWhenExpr : null
                         	);
                             clause.windowConditions.add(endWindowCondition);
                         }
                     )
                 )?
+                {
+                    // Sliding windows still require an end condition (XQ4 PR483 keeps this constraint).
+                    if (clause.windowType == WindowExpr.WindowType.SLIDING_WINDOW && clause.windowConditions.size() < 2) {
+                        throw new XPathException(wc.getLine(), wc.getColumn(), ErrorCodes.XPST0003, "Sliding window expression requires an end condition");
+                    }
+                }
             )
 			|
       // XQuery 3.0 group by clause

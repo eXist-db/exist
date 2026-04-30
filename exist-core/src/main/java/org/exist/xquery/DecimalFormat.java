@@ -48,7 +48,7 @@ public class DecimalFormat {
             ';',
             "Infinity",
             "NaN",
-            '-'
+            "-"
     );
 
 
@@ -64,10 +64,11 @@ public class DecimalFormat {
     public final int digit;
     public final int patternSeparator;
 
-    // used in the result of formatting the number, but not in the picture string
+    // used in the result of formatting the number, but not in the picture string.
+    // Per XPath 4.0, minus-sign is a string (rendition) — multi-character allowed.
     public final String infinity;
     public final String NaN;
-    public final int minusSign;
+    public final String minusSign;
 
     // XQ4 renditions: output strings for properties that support char:rendition.
     // When marker != rendition, the marker is used for picture parsing and the
@@ -80,7 +81,7 @@ public class DecimalFormat {
 
     public DecimalFormat(final int decimalSeparator, final int exponentSeparator, final int groupingSeparator,
             final int percent, final int perMille, final int zeroDigit, final int digit,
-            final int patternSeparator, final String infinity, final String NaN, final int minusSign) {
+            final int patternSeparator, final String infinity, final String NaN, final String minusSign) {
         this(decimalSeparator, exponentSeparator, groupingSeparator, percent, perMille,
                 zeroDigit, digit, patternSeparator, infinity, NaN, minusSign,
                 null, null, null, null, null);
@@ -88,7 +89,7 @@ public class DecimalFormat {
 
     public DecimalFormat(final int decimalSeparator, final int exponentSeparator, final int groupingSeparator,
             final int percent, final int perMille, final int zeroDigit, final int digit,
-            final int patternSeparator, final String infinity, final String NaN, final int minusSign,
+            final int patternSeparator, final String infinity, final String NaN, final String minusSign,
             final String decimalSeparatorRendition, final String exponentSeparatorRendition,
             final String groupingSeparatorRendition, final String percentRendition,
             final String perMilleRendition) {
