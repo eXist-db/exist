@@ -157,10 +157,11 @@ public class JSON extends BasicFunction {
 
         boolean liberal = false;
         boolean escape = false;
-        // Default for parse-json/json-doc is use-first (XPath/XQuery 3.1+ §17.5.1).
-        // For json-to-xml it is also use-first; we use retain only as a safe default
-        // when callers do not specify, but the spec default is use-first.
-        String handleDuplicates = OPTION_DUPLICATES_USE_FIRST;
+        // parse-json/json-doc default is use-first (it produces a map which cannot
+        // hold duplicate keys). json-to-xml default is retain (the XML output can
+        // represent duplicates as repeated child elements). See QT4 test
+        // json-to-xml-018 ("Duplicate entries in a map: default is to retain").
+        String handleDuplicates = isJsonToXml ? OPTION_DUPLICATES_RETAIN : OPTION_DUPLICATES_USE_FIRST;
         FunctionReference fallbackFn = null;
         FunctionReference numberParserFn = null;
         Sequence nullValue = null;  // null indicates "use empty sequence" (default)
@@ -211,20 +212,24 @@ public class JSON extends BasicFunction {
                             "Option 'duplicates' must be a string, got " + Type.getTypeName(atomized.getType()));
                 }
                 handleDuplicates = atomized.getStringValue();
+                final boolean validForJsonToXml = OPTION_DUPLICATES_USE_FIRST.equals(handleDuplicates)
+                        || OPTION_DUPLICATES_USE_LAST.equals(handleDuplicates)
+                        || OPTION_DUPLICATES_REJECT.equals(handleDuplicates)
+                        || OPTION_DUPLICATES_RETAIN.equals(handleDuplicates);
                 final boolean validForParse = OPTION_DUPLICATES_USE_FIRST.equals(handleDuplicates)
                         || OPTION_DUPLICATES_USE_LAST.equals(handleDuplicates)
                         || OPTION_DUPLICATES_REJECT.equals(handleDuplicates);
-                if (!validForParse) {
-                    // 'retain' is allowed only as a vendor extension in 3.1 and removed in 4.0;
-                    // any other value is invalid for parse-json/json-doc.
+                if (isJsonToXml) {
+                    if (!validForJsonToXml) {
+                        throw new XPathException(this, ErrorCodes.FOJS0005,
+                                "fn:json-to-xml: 'duplicates' option must be 'reject', 'use-first', 'use-last' or 'retain', got: "
+                                        + handleDuplicates);
+                    }
+                } else if (!validForParse) {
+                    // 'retain' is not meaningful for parse-json/json-doc since maps
+                    // cannot hold duplicate keys.
                     throw new XPathException(this, ErrorCodes.FOJS0005,
                             "Invalid value for 'duplicates' option: " + handleDuplicates);
-                }
-                if (isJsonToXml && !OPTION_DUPLICATES_USE_FIRST.equals(handleDuplicates)
-                        && !OPTION_DUPLICATES_REJECT.equals(handleDuplicates)) {
-                    throw new XPathException(this, ErrorCodes.FOJS0005,
-                            "fn:json-to-xml: 'duplicates' option must be 'reject' or 'use-first', got: "
-                                    + handleDuplicates);
                 }
             }
 
@@ -375,6 +380,15 @@ public class JSON extends BasicFunction {
             builder.startDocument();
             try {
                 jsonToXml(builder, parser, escape, handleDuplicates, fallbackFn, numberParserFn, context);
+                // Spec: a JSON text consists of a single value. Anything after the
+                // top-level value is invalid (FOJS0001). Jackson silently stops at
+                // the end of the first value, so check explicitly.
+                if (parser.nextToken() != null) {
+                    throw new XPathException(this, ErrorCodes.FOJS0001,
+                            "Extra content after JSON value at line "
+                                    + parser.getCurrentLocation().getLineNr()
+                                    + ", column " + parser.getCurrentLocation().getColumnNr());
+                }
             } catch (final RuntimeException re) {
                 if (re.getMessage() != null && re.getMessage().contains("FOCH0001")) {
                     throw new XPathException(this, ErrorCodes.FOJS0001, re.getMessage());
@@ -911,14 +925,28 @@ public class JSON extends BasicFunction {
         writeKeyAttribute(builder, key, escape, fallbackFn);
 
         if (numberParserFn != null) {
-            final Sequence numResult = numberParserFn.evalFunction(null, null,
-                    new Sequence[]{new StringValue(parser.getText())});
+            // Most number-parser functions take the lexical form as an argument,
+            // but the spec also permits 0-arg functions (e.g. constant returns
+            // like true#0) — call with the function's declared arity.
+            final Sequence[] callArgs = numberParserFn.getSignature().getArgumentCount() == 0
+                    ? new Sequence[0]
+                    : new Sequence[]{new StringValue(parser.getText())};
+            final Sequence numResult = numberParserFn.evalFunction(null, null, callArgs);
             if (numResult != null && !numResult.isEmpty()) {
                 if (numResult.getItemCount() > 1) {
                     throw new XPathException((Expression) null, ErrorCodes.XPTY0004,
                             "number-parser function must return zero or one item, got " + numResult.getItemCount());
                 }
-                builder.characters(numResult.itemAt(0).getStringValue());
+                final Item parsed = numResult.itemAt(0);
+                // Spec: number-parser may return any item that can be atomized
+                // to xs:numeric or xs:string. Function items other than arrays
+                // cannot be atomized (FOTY0013).
+                if (parsed instanceof FunctionReference) {
+                    throw new XPathException((Expression) null, ErrorCodes.FOTY0013,
+                            "number-parser function must return xs:numeric or xs:string, got a function item");
+                }
+                // Atomize: nodes are atomized via getStringValue; atomics use getStringValue.
+                builder.characters(parsed.getStringValue());
             }
         } else {
             builder.characters(parser.getText());
