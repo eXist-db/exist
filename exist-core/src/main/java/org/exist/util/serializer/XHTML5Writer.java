@@ -22,9 +22,7 @@
 package org.exist.util.serializer;
 
 import java.io.Writer;
-import javax.xml.transform.TransformerException;
 
-import org.exist.storage.serializers.EXistOutputKeys;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 
@@ -121,53 +119,5 @@ public class XHTML5Writer extends XHTMLWriter {
 
     public XHTML5Writer(Writer writer, ObjectSet<String> emptyTags, ObjectSet<String> inlineTags) {
         super(writer, emptyTags, inlineTags);
-    }
-
-    @Override
-    protected void writeDoctype(String rootElement) throws TransformerException {
-        if (doctypeWritten) {
-            return;
-        }
-
-        // Canonical serialization: never output DOCTYPE
-        final String canonicalProp = outputProperties != null
-                ? outputProperties.getProperty(EXistOutputKeys.CANONICAL) : null;
-        if ("yes".equals(canonicalProp) || "true".equals(canonicalProp) || "1".equals(canonicalProp)) {
-            doctypeWritten = true;
-            return;
-        }
-
-        // Only output DOCTYPE when the root element is <html> (case-insensitive)
-        // Per W3C Serialization: DOCTYPE is for the html element only, not fragments
-        final String localName = rootElement.contains(":") ? rootElement.substring(rootElement.indexOf(':') + 1) : rootElement;
-        if (!"html".equalsIgnoreCase(localName)) {
-            doctypeWritten = true;  // suppress future attempts
-            return;
-        }
-
-        final String publicId = outputProperties != null
-                ? outputProperties.getProperty(javax.xml.transform.OutputKeys.DOCTYPE_PUBLIC) : null;
-        final String systemId = outputProperties != null
-                ? outputProperties.getProperty(javax.xml.transform.OutputKeys.DOCTYPE_SYSTEM) : null;
-        final String method = outputProperties != null
-                ? outputProperties.getProperty(javax.xml.transform.OutputKeys.METHOD, "xhtml") : "xhtml";
-
-        if ("xhtml".equalsIgnoreCase(method)) {
-            // XHTML: per W3C spec section 5.2, only output doctype-public when
-            // doctype-system is also present
-            if (systemId != null) {
-                documentType("html", publicId, systemId);
-            } else if (publicId == null) {
-                // Neither set — simple DOCTYPE
-                documentType("html", null, null);
-            } else {
-                // doctype-public without doctype-system — suppress DOCTYPE for XHTML
-                doctypeWritten = true;
-            }
-        } else {
-            // HTML method: pass through doctype-public and doctype-system as set
-            documentType("html", publicId, systemId);
-        }
-        doctypeWritten = true;
     }
 }
