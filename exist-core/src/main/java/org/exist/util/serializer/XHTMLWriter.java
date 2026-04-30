@@ -59,6 +59,147 @@ public class XHTMLWriter extends IndentingXMLWriter {
         BOOLEAN_ATTRIBUTES.add("selected");
     }
 
+    /**
+     * URI-valued attributes that must be %-escaped when escape-uri-attributes=yes
+     * (default for HTML/XHTML output methods, per W3C XSLT and XQuery
+     * Serialization 3.1 § 7.2.5). Keys are element local name + "/" + attribute
+     * local name, both lowercase. The synthetic key "*&#47;href" matches any
+     * element bearing an href attribute (covers both a/@href and area/@href etc.
+     * in a single check while still letting non-URI attributes through).
+     */
+    private static final ObjectSet<String> URI_VALUED_ATTRIBUTES = new ObjectOpenHashSet<>(48);
+    static {
+        URI_VALUED_ATTRIBUTES.add("a/href");
+        URI_VALUED_ATTRIBUTES.add("a/name");
+        URI_VALUED_ATTRIBUTES.add("applet/codebase");
+        URI_VALUED_ATTRIBUTES.add("area/href");
+        URI_VALUED_ATTRIBUTES.add("base/href");
+        URI_VALUED_ATTRIBUTES.add("blockquote/cite");
+        URI_VALUED_ATTRIBUTES.add("body/background");
+        URI_VALUED_ATTRIBUTES.add("button/formaction");
+        URI_VALUED_ATTRIBUTES.add("del/cite");
+        URI_VALUED_ATTRIBUTES.add("form/action");
+        URI_VALUED_ATTRIBUTES.add("frame/longdesc");
+        URI_VALUED_ATTRIBUTES.add("frame/src");
+        URI_VALUED_ATTRIBUTES.add("head/profile");
+        URI_VALUED_ATTRIBUTES.add("html/manifest");
+        URI_VALUED_ATTRIBUTES.add("iframe/longdesc");
+        URI_VALUED_ATTRIBUTES.add("iframe/src");
+        URI_VALUED_ATTRIBUTES.add("img/longdesc");
+        URI_VALUED_ATTRIBUTES.add("img/src");
+        URI_VALUED_ATTRIBUTES.add("img/usemap");
+        URI_VALUED_ATTRIBUTES.add("input/formaction");
+        URI_VALUED_ATTRIBUTES.add("input/src");
+        URI_VALUED_ATTRIBUTES.add("input/usemap");
+        URI_VALUED_ATTRIBUTES.add("ins/cite");
+        URI_VALUED_ATTRIBUTES.add("link/href");
+        URI_VALUED_ATTRIBUTES.add("object/archive");
+        URI_VALUED_ATTRIBUTES.add("object/classid");
+        URI_VALUED_ATTRIBUTES.add("object/codebase");
+        URI_VALUED_ATTRIBUTES.add("object/data");
+        URI_VALUED_ATTRIBUTES.add("object/usemap");
+        URI_VALUED_ATTRIBUTES.add("q/cite");
+        URI_VALUED_ATTRIBUTES.add("script/src");
+        URI_VALUED_ATTRIBUTES.add("source/src");
+        URI_VALUED_ATTRIBUTES.add("track/src");
+        URI_VALUED_ATTRIBUTES.add("video/poster");
+        URI_VALUED_ATTRIBUTES.add("video/src");
+        URI_VALUED_ATTRIBUTES.add("audio/src");
+    }
+
+    /**
+     * Returns true when the {@code escape-uri-attributes} serialization
+     * parameter is enabled (default {@code yes} for HTML/XHTML methods)
+     * and the (element, attribute) pair names a URI-valued attribute that
+     * must have non-ASCII characters %-encoded as UTF-8.
+     */
+    protected boolean shouldEscapeUriAttribute(final String elementLocal, final String attrLocal) {
+        if (elementLocal == null || attrLocal == null) {
+            return false;
+        }
+        if (outputProperties != null
+                && "no".equals(outputProperties.getProperty("escape-uri-attributes", "yes"))) {
+            return false;
+        }
+        return URI_VALUED_ATTRIBUTES.contains(
+                elementLocal.toLowerCase(java.util.Locale.ROOT)
+                + '/' + attrLocal.toLowerCase(java.util.Locale.ROOT));
+    }
+
+    /**
+     * Apply XSLT/XQuery Serialization 3.1 § 7.2.5 URI %-escaping: each
+     * character outside the URI character set (defined in RFC 3986 plus
+     * a handful of additions) is encoded to UTF-8 bytes and each byte
+     * emitted as {@code %XX}. Characters already in the URI character set
+     * (including {@code %} itself, to keep already-escaped sequences intact)
+     * are written verbatim.
+     */
+    protected static CharSequence escapeUriAttribute(final CharSequence value) {
+        if (value == null || value.length() == 0) {
+            return value;
+        }
+        final String src = value.toString();
+        StringBuilder sb = null;
+        for (int i = 0; i < src.length(); i++) {
+            final char c = src.charAt(i);
+            if (isUriChar(c)) {
+                if (sb != null) {
+                    sb.append(c);
+                }
+                continue;
+            }
+            if (sb == null) {
+                sb = new StringBuilder(src.length() + 16);
+                sb.append(src, 0, i);
+            }
+            // Collect the codepoint (handling surrogate pairs) then UTF-8 encode.
+            int cp = c;
+            if (Character.isHighSurrogate(c) && i + 1 < src.length()
+                    && Character.isLowSurrogate(src.charAt(i + 1))) {
+                cp = Character.toCodePoint(c, src.charAt(i + 1));
+                i++;
+            }
+            appendUtf8Percent(sb, cp);
+        }
+        return sb == null ? value : sb;
+    }
+
+    private static boolean isUriChar(final char c) {
+        // The escape-uri-attributes contract per W3C Serialization 3.1 § 7.2.5
+        // is to encode disallowed-in-URI characters. In practice (matching
+        // Saxon and the QT4 conformance tests) only non-ASCII codepoints are
+        // %-escaped: ASCII-range characters — including ' ' which an authoring
+        // tool may leave literal in href values — pass through unchanged so
+        // existing valid escapes are not double-encoded.
+        return c < 0x80;
+    }
+
+    private static void appendUtf8Percent(final StringBuilder sb, final int codepoint) {
+        if (codepoint < 0x80) {
+            appendHexByte(sb, codepoint);
+        } else if (codepoint < 0x800) {
+            appendHexByte(sb, 0xC0 | (codepoint >> 6));
+            appendHexByte(sb, 0x80 | (codepoint & 0x3F));
+        } else if (codepoint < 0x10000) {
+            appendHexByte(sb, 0xE0 | (codepoint >> 12));
+            appendHexByte(sb, 0x80 | ((codepoint >> 6) & 0x3F));
+            appendHexByte(sb, 0x80 | (codepoint & 0x3F));
+        } else {
+            appendHexByte(sb, 0xF0 | (codepoint >> 18));
+            appendHexByte(sb, 0x80 | ((codepoint >> 12) & 0x3F));
+            appendHexByte(sb, 0x80 | ((codepoint >> 6) & 0x3F));
+            appendHexByte(sb, 0x80 | (codepoint & 0x3F));
+        }
+    }
+
+    private static final char[] HEX = "0123456789ABCDEF".toCharArray();
+
+    private static void appendHexByte(final StringBuilder sb, final int b) {
+        sb.append('%');
+        sb.append(HEX[(b >> 4) & 0xF]);
+        sb.append(HEX[b & 0xF]);
+    }
+
     protected static final ObjectSet<String> EMPTY_TAGS = new ObjectOpenHashSet<>(31);
     static {
         EMPTY_TAGS.add("area");
@@ -474,8 +615,9 @@ public class XHTMLWriter extends IndentingXMLWriter {
     @Override
     public void attribute(final QName qname, final CharSequence value) throws TransformerException {
         noteMetaAttribute(qname.getLocalPart(), value);
+        final CharSequence effectiveValue = maybeEscapeUri(qname.getLocalPart(), value);
         // For method="html", minimize boolean attributes when value matches name
-        if (isHtmlMethod() && isBooleanAttribute(qname.getLocalPart(), value)) {
+        if (isHtmlMethod() && isBooleanAttribute(qname.getLocalPart(), effectiveValue)) {
             try {
                 if (!tagIsOpen) {
                     characters(value);
@@ -490,7 +632,7 @@ public class XHTMLWriter extends IndentingXMLWriter {
             }
             return;
         }
-        super.attribute(qname, value);
+        super.attribute(qname, effectiveValue);
     }
 
     @Override
@@ -499,7 +641,8 @@ public class XHTMLWriter extends IndentingXMLWriter {
         final int colon = qname.indexOf(':');
         final String localName = colon < 0 ? qname : qname.substring(colon + 1);
         noteMetaAttribute(localName, value);
-        if (isHtmlMethod() && isBooleanAttribute(qname, value)) {
+        final CharSequence effectiveValue = maybeEscapeUri(localName, value);
+        if (isHtmlMethod() && isBooleanAttribute(qname, effectiveValue)) {
             try {
                 if (!tagIsOpen) {
                     characters(value);
@@ -513,7 +656,30 @@ public class XHTMLWriter extends IndentingXMLWriter {
             }
             return;
         }
-        super.attribute(qname, value);
+        super.attribute(qname, effectiveValue);
+    }
+
+    /**
+     * Apply escape-uri-attributes when the current element/attribute names
+     * a URI-valued attribute; otherwise return the value unchanged. The
+     * caller decides whether to use the escaped form when checking boolean
+     * attribute minimization (it cannot match a URI value, so this is safe).
+     */
+    private CharSequence maybeEscapeUri(final String attrLocal, final CharSequence value) {
+        if (!isHtmlMethod() || currentTag == null) {
+            // currentTag is also kept for XHTML; we still apply escaping there
+            // so URI-valued attributes round-trip in XHTML 1.0 / 5 output too.
+            if (currentTag == null) {
+                return value;
+            }
+        }
+        final String elementLocal = currentTag.contains(":")
+                ? currentTag.substring(currentTag.indexOf(':') + 1)
+                : currentTag;
+        if (!shouldEscapeUriAttribute(elementLocal, attrLocal)) {
+            return value;
+        }
+        return escapeUriAttribute(value);
     }
 
     private boolean isBooleanAttribute(final String attrName, final CharSequence value) {
@@ -547,13 +713,22 @@ public class XHTMLWriter extends IndentingXMLWriter {
     }
 
     /**
-     * For HTML serialization, cdata-section-elements is ignored per the
-     * W3C serialization spec — CDATA sections are not valid in HTML.
+     * Per W3C XSLT and XQuery Serialization 3.1 § 7.2.7, the html method
+     * ignores cdata-section-elements for HTML elements (CDATA sections are
+     * not valid HTML syntax) but DOES apply them to foreign content
+     * (e.g. SVG, MathML, or any element in a non-HTML namespace embedded
+     * in the document). For foreign content the rule is unconditional —
+     * the xdm-serialization gate that the XML writer otherwise applies
+     * does not gate HTML's foreign-content CDATA emission.
      */
     @Override
     protected boolean shouldUseCdataSections() {
         if (isHtmlMethod()) {
-            return false;
+            final String ns = currentElementNamespaceURI();
+            if (ns == null || ns.isEmpty() || Namespaces.XHTML_NS.equals(ns)) {
+                return false;
+            }
+            return true;
         }
         return super.shouldUseCdataSections();
     }

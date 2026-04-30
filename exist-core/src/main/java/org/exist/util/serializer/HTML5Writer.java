@@ -118,6 +118,13 @@ public class HTML5Writer extends XHTML5Writer {
         BOOLEAN_ATTRIBUTE_NAMES.add("willValidate");
     }
 
+    private static final ObjectSet<String> BOOLEAN_ATTRIBUTE_NAMES_LOWER = new ObjectOpenHashSet<>(BOOLEAN_ATTRIBUTE_NAMES.size());
+    static {
+        for (final String n : BOOLEAN_ATTRIBUTE_NAMES) {
+            BOOLEAN_ATTRIBUTE_NAMES_LOWER.add(n.toLowerCase(java.util.Locale.ROOT));
+        }
+    }
+
     private static final ObjectSet<String> EMPTY_TAGS = new ObjectOpenHashSet<>(31);
     static {
         EMPTY_TAGS.add("area");
@@ -186,18 +193,20 @@ public class HTML5Writer extends XHTML5Writer {
     public void attribute(String qname, CharSequence value) throws TransformerException {
         // Strip prefix for the meta-dedup redundancy check
         final int colon = qname.indexOf(':');
-        noteMetaAttribute(colon < 0 ? qname : qname.substring(colon + 1), value);
+        final String localName = colon < 0 ? qname : qname.substring(colon + 1);
+        noteMetaAttribute(localName, value);
+        final CharSequence effectiveValue = maybeEscapeUriHtml5(localName, value);
         try {
             if(!tagIsOpen) {
-                characters(value);
+                characters(effectiveValue);
                 return;
             }
             final Writer writer = getWriter();
             writer.write(' ');
             writer.write(qname);
-            if (!(BOOLEAN_ATTRIBUTE_NAMES.contains(qname) && qname.contentEquals(value))) {
+            if (!isBooleanAttributeMatch(qname, effectiveValue)) {
                 writer.write("=\"");
-                writeChars(value, true);
+                writeChars(effectiveValue, true);
                 writer.write('"');
             }
         } catch(final IOException ioe) {
@@ -208,9 +217,11 @@ public class HTML5Writer extends XHTML5Writer {
     @Override
     public void attribute(QName qname, CharSequence value) throws TransformerException {
         noteMetaAttribute(qname.getLocalPart(), value);
+        final String localPart = qname.getLocalPart();
+        final CharSequence effectiveValue = maybeEscapeUriHtml5(localPart, value);
         try {
             if(!tagIsOpen) {
-                characters(value);
+                characters(effectiveValue);
                 return;
                 // throw new TransformerException("Found an attribute outside an
                 // element");
@@ -221,11 +232,10 @@ public class HTML5Writer extends XHTML5Writer {
                 writer.write(qname.getPrefix());
                 writer.write(':');
             }
-            final String localPart = qname.getLocalPart();
             writer.write(localPart);
-            if (!(BOOLEAN_ATTRIBUTE_NAMES.contains(localPart) && localPart.contentEquals(value))) {
+            if (!isBooleanAttributeMatch(localPart, effectiveValue)) {
                 writer.write("=\"");
-                writeChars(value, true);
+                writeChars(effectiveValue, true);
                 writer.write('"');
             }
         } catch(final IOException ioe) {
@@ -233,9 +243,53 @@ public class HTML5Writer extends XHTML5Writer {
         }
     }
 
+    /**
+     * URI-attribute escaping for the HTML5 writer. Mirrors
+     * {@link XHTMLWriter#shouldEscapeUriAttribute(String, String)} but unwraps
+     * the prefixed form of {@link #currentTag} so the (element, attribute)
+     * lookup uses local names only.
+     */
+    private CharSequence maybeEscapeUriHtml5(final String attrLocal, final CharSequence value) {
+        if (currentTag == null) {
+            return value;
+        }
+        final String elementLocal = currentTag.contains(":")
+                ? currentTag.substring(currentTag.indexOf(':') + 1)
+                : currentTag;
+        if (!shouldEscapeUriAttribute(elementLocal, attrLocal)) {
+            return value;
+        }
+        return escapeUriAttribute(value);
+    }
+
+    /**
+     * HTML5 boolean attribute minimization: emit just the bare name when the
+     * value is empty or matches the attribute name case-insensitively
+     * (per W3C XSLT/XQuery Serialization 3.1, section 7.2.2).
+     */
+    private static boolean isBooleanAttributeMatch(final String name, final CharSequence value) {
+        if (!BOOLEAN_ATTRIBUTE_NAMES_LOWER.contains(name.toLowerCase(java.util.Locale.ROOT))) {
+            return false;
+        }
+        if (value == null || value.length() == 0) {
+            return true;
+        }
+        return name.equalsIgnoreCase(value.toString());
+    }
+
     @Override
     public void namespace(String prefix, String nsURI) throws TransformerException {
-        // no namespaces allowed in HTML5
+        // HTML5 elements never carry an explicit xmlns since the parser puts
+        // them in the HTML namespace implicitly. Foreign content (anything
+        // outside the XHTML namespace, e.g. SVG, MathML, custom XML) keeps
+        // its namespace declarations so the receiver can re-parse it as XML.
+        if (nsURI == null || nsURI.isEmpty()) {
+            return;
+        }
+        if (org.exist.Namespaces.XHTML_NS.equals(nsURI)) {
+            return;
+        }
+        super.namespace(prefix, nsURI);
     }
 
     @Override
@@ -246,6 +300,11 @@ public class HTML5Writer extends XHTML5Writer {
                 if (isEmpty) {
                     if (isEmptyTag(currentTag)) {
                         w.write('>');
+                    } else if (isForeignContent()) {
+                        // Foreign content (SVG, MathML, custom XML namespace)
+                        // embedded in HTML5 is serialized with XML self-close
+                        // syntax so the receiver can re-parse it as XML.
+                        w.write("/>");
                     } else {
                         // Coalesce ">", "</", tag, ">" into 2 writer calls instead of 4
                         w.write("></");
@@ -260,6 +319,17 @@ public class HTML5Writer extends XHTML5Writer {
         } catch (final IOException ioe) {
             throw new TransformerException(ioe.getMessage(), ioe);
         }
+    }
+
+    /**
+     * The current element is "foreign content" when its namespace is neither
+     * the XHTML namespace nor the empty (no-namespace) HTML namespace; that
+     * is the trigger for XML-style self-closing per HTML5's foreign-content
+     * serialization rule.
+     */
+    private boolean isForeignContent() {
+        final String ns = currentElementNamespaceURI();
+        return ns != null && !ns.isEmpty() && !org.exist.Namespaces.XHTML_NS.equals(ns);
     }
 
     @Override
