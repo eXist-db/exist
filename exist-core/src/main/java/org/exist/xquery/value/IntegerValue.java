@@ -142,7 +142,11 @@ public class IntegerValue extends NumericValue {
     public IntegerValue(final Expression expression, final String stringValue, final int requiredType) throws XPathException {
         super(expression);
         try {
-            this.value = parseIntegerLiteral(StringValue.trimWhitespace(stringValue));
+            // String-to-integer cast follows XSD lexical rules (decimal only).
+            // XQuery 4.0 hex/binary prefixes and underscore separators apply
+            // only to integer LITERALS in source code (handled in XQueryTree.g),
+            // not to runtime string-to-integer conversions like xs:integer("0x0").
+            this.value = new BigInteger(StringValue.trimWhitespace(stringValue));
             this.type = requiredType;
             if (!(checkType())) {
                 throw new XPathException(getExpression(), ErrorCodes.FORG0001, "can not convert '" +
