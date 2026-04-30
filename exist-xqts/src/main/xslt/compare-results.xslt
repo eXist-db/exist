@@ -82,8 +82,10 @@
         <xsl:variable name="skipped" select="sum($testsuite/@skipped/xs:integer(.))" as="xs:integer"/>
         <xsl:variable name="failures" select="sum($testsuite/@failures/xs:integer(.))" as="xs:integer"/>
         <xsl:variable name="errors" select="sum($testsuite/@errors/xs:integer(.))" as="xs:integer"/>
+        <xsl:variable name="pass" select="$tests - $skipped - $failures - $errors" as="xs:integer"/>
+        <xsl:variable name="pass-pct" select="if ($tests eq 0) then 0 else (100 * $pass) div $tests" as="xs:decimal"/>
         <xsl:document>
-            <cr:results tests="{$tests}" pass="{$tests - $skipped - $failures - $errors}" skipped="{$skipped}" failures="{$failures}" errors="{$errors}" time="{sum($testsuite/@time/xs:float(.))}">
+            <cr:results tests="{$tests}" pass="{$pass}" pass-pct="{$pass-pct}" skipped="{$skipped}" failures="{$failures}" errors="{$errors}" time="{sum($testsuite/@time/xs:float(.))}">
                 <cr:skipped>
                     <xsl:sequence select="$testsuite/testcase[skipped]"/>
                 </cr:skipped>
@@ -109,7 +111,14 @@
         <xsl:variable name="current-attr" select="$current-results/@*[local-name(.) eq $attr-name]"/>
         
         <xsl:attribute name="{$attr-name}" select="$current-attr - $previous-attr"/>
-        <xsl:attribute name="{$attr-name}-pct" select="(($current-attr - $previous-attr) div $previous-attr) * 100"/>
+        <xsl:choose>
+            <xsl:when test="$attr-name eq 'pass'">
+                <xsl:attribute name="pass-pct-delta" select="xs:decimal($current-results/@pass-pct) - xs:decimal($previous-results/@pass-pct)"/>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:attribute name="{$attr-name}-pct" select="(($current-attr - $previous-attr) div $previous-attr) * 100"/>
+            </xsl:otherwise>
+        </xsl:choose>
     </xsl:function>
 
     <xsl:function name="cr:new-changes">
