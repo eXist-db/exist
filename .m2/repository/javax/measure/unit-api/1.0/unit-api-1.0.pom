@@ -1,0 +1,914 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>javax.measure</groupId>
+	<artifactId>unit-api</artifactId>
+	<version>1.0</version>
+	<name>Units of Measurement API</name>
+	<packaging>bundle</packaging>
+	<url>http://unitsofmeasurement.github.io/</url>
+	<description>Units of Measurement Standard - This JSR specifies Java packages for modeling and working with measurement values, quantities and their corresponding units.</description>
+	<organization>
+		<name>Jean-Marie Dautelle, Werner Keil, V2COM</name>
+		<url>http://unitsofmeasurement.github.io</url>
+	</organization>
+	<inceptionYear>2014</inceptionYear>
+	<licenses>
+		<license>
+			<name>BSD</name>
+			<url>LICENSE.txt</url>
+			<distribution>manual</distribution>
+		</license>
+	</licenses>
+	<parent>
+		<groupId>org.sonatype.oss</groupId>
+		<artifactId>oss-parent</artifactId>
+		<version>9</version>
+	</parent>
+
+	<!-- Issue managements and mailing lists. -->
+	<issueManagement>
+		<system>JIRA</system>
+		<url>https://java.net/jira/browse/UNITSOFMEASUREMENT</url>
+	</issueManagement>
+	<ciManagement>
+		<system>CircleCI</system>
+		<url>https://circleci.com/gh/unitsofmeasurement/unit-api</url>
+	</ciManagement>
+
+	<mailingLists>
+		<mailingList>
+			<name>Units-Dev</name>
+			<subscribe>http://groups.google.com/group/units-dev/subscribe</subscribe>
+			<post>units-dev@googlegroups.com</post>
+		</mailingList>
+		<mailingList>
+			<name>Units-Users</name>
+			<subscribe>http://groups.google.com/group/units-users/subscribe</subscribe>
+			<post>units-users@googlegroups.com</post>
+		</mailingList>
+	</mailingLists>
+
+	<scm>
+		<connection>scm:git:git@github.com:unitsofmeasurement/unit-api.git</connection>
+		<developerConnection>scm:git:git@github.com:unitsofmeasurement/unit-api.git</developerConnection>
+		<url>https://github.com/unitsofmeasurement/unit-api</url>
+	</scm>
+
+	<!-- Build Settings -->
+	<properties>
+		<basedir>.</basedir>
+		<sourceEncoding>UTF-8</sourceEncoding> <!-- in Maven 3. -->
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>${sourceEncoding}</project.reporting.outputEncoding>
+		<jdkVersion>1.7</jdkVersion>
+		<project.build.javaVersion>${jdkVersion}</project.build.javaVersion>
+		<maven.compile.targetLevel>${jdkVersion}</maven.compile.targetLevel>
+		<maven.compile.sourceLevel>${jdkVersion}</maven.compile.sourceLevel>
+
+		<!-- Plugins -->
+		<felix.version>3.2.0</felix.version>
+		<github.maven.version>0.12</github.maven.version>
+		<github.global.server>github</github.global.server>
+		<maven.resources.version>3.0.1</maven.resources.version>
+		<maven.site.version>3.5.1</maven.site.version>
+		<maven.jar.version>3.0.2</maven.jar.version>
+	</properties>
+
+	<!-- Developers and Contributors -->
+	<developers>
+		<developer>
+			<id>dautelle</id>
+			<name>Jean-Marie Dautelle</name>
+			<email>jean-marie@dautelle.com</email>
+			<organization>Airbus</organization>
+			<organizationUrl>http://www.airbus.com</organizationUrl>
+			<timezone>+1</timezone>
+			<roles>
+				<role>Architect</role>
+				<role>Java Developer</role>
+				<role>Spec Lead</role>
+			</roles>
+		</developer>
+		<developer>
+			<id>werner.keil</id>
+			<name>Werner Keil</name>
+			<email>werner@uom.technology</email>
+			<organization>Creative Arts &amp; Technologies</organization>
+			<organizationUrl>http://www.catmedia.us</organizationUrl>
+			<timezone>+1</timezone>
+			<roles>
+				<role>Architect</role>
+				<role>Java Developer</role>
+				<role>Spec Lead</role>
+			</roles>
+		</developer>
+		<developer>
+			<id>leomrlima</id>
+			<name>Leonardo de Moura Rocha Lima</name>
+			<email>llima@v2com.mobi</email>
+			<organization>V2COM</organization>
+			<organizationUrl>http://www.v2com.mobi/</organizationUrl>
+			<timezone>-5</timezone>
+			<roles>
+				<role>Architect</role>
+				<role>Java Developer</role>
+				<role>Spec Lead</role>
+			</roles>
+		</developer>
+		<developer>
+			<id>desruisseaux</id>
+			<name>Martin Desruisseaux</name>
+			<email>martin.desruisseaux@geomatys.com</email>
+			<organization>Geomatys</organization>
+			<organizationUrl>http://www.geomatys.com</organizationUrl>
+			<timezone>+1</timezone>
+			<roles>
+				<role>Expert</role>
+				<role>Java Developer</role>
+				<role>Architect</role>
+			</roles>
+		</developer>
+		<developer>
+			<id>otaviojava</id>
+			<name>Otávio Gonçalves de Santana</name>
+			<email>otaviopolianasantana@gmail.com</email>
+			<organization>Individual / SouJava</organization>
+			<timezone>-5</timezone>
+			<roles>
+				<role>Expert</role>
+				<role>Java Developer</role>
+			</roles>
+		</developer>
+		<developer>
+			<id>eralmas7</id>
+			<name>Almas Shaikh</name>
+			<email>eralmas7@yahoo.com</email>
+			<organization>Individual / JP Morgan</organization>
+			<timezone>+5.5</timezone>
+			<roles>
+				<role>Expert</role>
+				<role>Test Engineer</role>
+			</roles>
+		</developer>
+		<developer>
+			<id>duckasteroid</id>
+			<name>Chris Senior</name>
+			<email>christopher.senior@gmail.com</email>
+			<organization>Snap-on Inc.</organization>
+			<roles>
+				<role>Expert</role>
+				<role>Java Developer</role>
+			</roles>
+		</developer>
+		<developer>
+			<id>rajmahendra</id>
+			<name>Rajmahendra Hegde</name>
+			<email>rajmahendra@gmail.com</email>
+			<organization>JUG Chennai</organization>
+			<timezone>+5.5</timezone>
+			<roles>
+				<role>Expert</role>
+				<role>Java Developer</role>
+			</roles>
+		</developer>
+		<developer>
+			<id>karen_legrand</id>
+			<name>Karen Legrand</name>
+			<email>karen.legrand@iem.com</email>
+			<organization>Innovation Emergency Management (IEM)</organization>
+			<organizationUrl>http://www.iem.com</organizationUrl>
+			<timezone>-5</timezone>
+			<roles>
+				<role>Expert</role>
+				<role>Java Developer</role>
+			</roles>
+		</developer>
+		<developer>
+			<id>mohamed-taman</id>
+			<name>Mohamed Mahmoud Taman</name>
+			<email>mohamed.taman@gmail.com</email>
+			<organization>Individual / Morocco JUG</organization>
+			<timezone>+2</timezone>
+			<roles>
+				<role>Expert</role>
+				<role>Java Developer</role>
+			</roles>
+		</developer>
+	</developers>
+	<contributors>
+		<contributor>
+			<name>Nathan Scott</name>
+			<email>nathans@redhat.com</email>
+			<organization>Red Hat</organization>
+			<timezone>-5</timezone>
+			<roles>
+				<role>Contributor</role>
+			</roles>
+		</contributor>
+		<contributor>
+			<name>Daniel Leuck</name>
+			<email>dan@ikayzo.com</email>
+			<organization>Ikayzo</organization>
+			<timezone>-9</timezone>
+			<roles>
+				<role>Supporter</role>
+			</roles>
+		</contributor>
+		<contributor>
+			<name>Eric Russell</name>
+			<email>eric-r@northwestern.edu</email>
+			<timezone>-5</timezone>
+			<roles>
+				<role>Supporter</role>
+			</roles>
+		</contributor>
+		<contributor>
+			<name>John Paul Morrison</name>
+			<organization>J.P. Morrison Enterprises, Ltd.</organization>
+			<timezone>-5</timezone>
+			<roles>
+				<role>Supporter</role>
+			</roles>
+		</contributor>
+		<contributor>
+			<name>Michael Gruebsch</name>
+			<email>michael@mkm-rabis.de</email>
+			<roles>
+				<role>Supporter</role>
+			</roles>
+			<timezone>+1</timezone>
+		</contributor>
+	</contributors>
+
+	<build>
+		<pluginManagement>
+			<plugins>
+				<!-- License -->
+				<plugin>
+					<groupId>com.mycila</groupId>
+					<artifactId>license-maven-plugin</artifactId>
+					<version>2.11</version>
+					<executions>
+						<execution>
+							<goals>
+								<goal>check</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+
+				<!-- Format -->
+				<plugin>
+					<groupId>net.revelc.code</groupId>
+					<artifactId>formatter-maven-plugin</artifactId>
+					<version>0.5.2</version>
+				</plugin>
+
+				<!--This plugin's configuration is used to store Eclipse m2e settings 
+					only. It has no influence on the Maven build itself. -->
+				<plugin>
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>org.jacoco</groupId>
+										<artifactId>
+											jacoco-maven-plugin
+										</artifactId>
+										<versionRange>
+											[0.7.1.201405082137,)
+										</versionRange>
+										<goals>
+											<goal>prepare-agent</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore></ignore>
+									</action>
+								</pluginExecution>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>
+											net.revelc.code
+										</groupId>
+										<artifactId>
+											formatter-maven-plugin
+										</artifactId>
+										<versionRange>
+											[0.5.2,)
+										</versionRange>
+										<goals>
+											<goal>format</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore></ignore>
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+
+		<plugins>
+			<!-- Compilation -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.5.1</version>
+				<configuration>
+					<source>${maven.compile.sourceLevel}</source>
+					<target>${maven.compile.targetLevel}</target>
+					<encoding>${project.build.sourceEncoding}</encoding>
+				</configuration>
+			</plugin>
+
+			<!-- Coverage -->
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>0.7.7.201606060606</version>
+				<configuration>
+					<destfile>${basedir}/target/coverage-reports/jacoco-unit.exec</destfile>
+					<datafile>${basedir}/target/coverage-reports/jacoco-unit.exec</datafile>
+					<excludes>
+					</excludes>
+				</configuration>
+				<executions>
+					<execution>
+						<id>pre-unit-test</id>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>post-unit-test</id>
+						<phase>test</phase>
+						<goals>
+							<goal>report</goal>
+							<goal>check</goal>
+						</goals>
+						<configuration>
+							<rules>
+								<rule>
+									<element>BUNDLE</element>
+									<limits>
+										<limit implementation="org.jacoco.report.check.Limit">
+											<counter>INSTRUCTION</counter>
+											<value>COVEREDRATIO</value>
+											<minimum>0.8</minimum>
+										</limit>
+										<limit>
+											<counter>COMPLEXITY</counter>
+											<value>COVEREDRATIO</value>
+											<minimum>0.8</minimum>
+										</limit>
+									</limits>
+								</rule>
+							</rules>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.eluder.coveralls</groupId>
+				<artifactId>coveralls-maven-plugin</artifactId>
+				<version>4.2.0</version>
+				<configuration>
+					<repoToken>${env.COVERALLS_REPO_TOKEN}</repoToken>
+				</configuration>
+			</plugin>
+
+			<!-- Attach Sources -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<version>3.0.1</version>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<phase>package</phase>
+						<goals>
+							<goal>jar-no-fork</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>2.10.4</version>
+				<executions>
+					<execution>
+						<id>attach-javadocs</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<detectLinks>true</detectLinks>
+					<keywords>true</keywords>
+					<linksource>true</linksource>
+					<failOnError>false</failOnError>
+					<source>${maven.compile.sourceLevel}</source>
+					<verbose>true</verbose>
+				</configuration>
+			</plugin>
+
+			<!-- JAR packaging -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>${maven.jar.version}</version>
+				<configuration>
+					<archive>
+						<manifest>
+							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+						</manifest>
+						<manifestEntries>
+							<Specification-Title>${project.name}</Specification-Title>
+							<Specification-Version>${project.version}</Specification-Version>
+							<Specification-Vendor>${project.organization.name}</Specification-Vendor>
+							<Implementation-Vendor>Unit-API contributors</Implementation-Vendor>
+							<Implementation-URL>http://unitsofmeasurement.github.io</Implementation-URL>
+						</manifestEntries>
+					</archive>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>${maven.jar.version}</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>test-jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			
+			<!-- Packaging (OSGi bundle) -->
+			<plugin>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>maven-bundle-plugin</artifactId>
+				<version>${felix.version}</version>
+				<extensions>true</extensions>
+			</plugin>
+
+			<!-- Resources -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>${maven.resources.version}</version>
+				<configuration>
+					<encoding>${project.build.sourceEncoding}</encoding>
+				</configuration>
+			</plugin>
+
+			<!-- ======================================================= -->
+			<!-- Maven License Plugin -->
+			<!-- ======================================================= -->
+			<plugin>
+				<groupId>com.mycila</groupId>
+				<artifactId>license-maven-plugin</artifactId>
+				<configuration>
+					<header>src/etc/header.txt</header>
+					<properties>
+						<owner>Jean-Marie Dautelle, Werner Keil, V2COM</owner>
+						<currentYear>2016</currentYear>
+					</properties>
+					<excludes>
+						<exclude>**/pom.xml</exclude>
+						<exclude>**/README</exclude>
+						<exclude>**/settings.xml</exclude>
+						<exclude>src/test/resources/**</exclude>
+						<exclude>src/main/resources/**</exclude>
+						<exclude>src/main/emf/**</exclude>
+						<exclude>src/site/**</exclude>
+						<exclude>src/etc/**</exclude>
+						<exclude>*.css</exclude>
+						<exclude>*.jpg</exclude>
+						<exclude>*.png</exclude>
+						<exclude>*.yml</exclude>
+					</excludes>
+					<headerDefinitions>
+						<headerDefinition>src/etc/headers.xml</headerDefinition>
+					</headerDefinitions>
+					<mapping>
+						<java>JAVA_STYLE</java>
+					</mapping>
+				</configuration>
+			</plugin>
+
+			<!-- ======================================================= -->
+			<!-- Maven Code Formatter -->
+			<!-- ======================================================= -->
+			<plugin>
+				<groupId>net.revelc.code</groupId>
+				<artifactId>formatter-maven-plugin</artifactId>
+				<configuration>
+					<configFile>${project.basedir}/src/etc/eclipse-formatter-config.xml</configFile>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>format</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- Maven web site -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-site-plugin</artifactId>
+				<version>${maven.site.version}</version>
+				<configuration>
+					<locales>en</locales>
+					<inputEncoding>${project.build.sourceEncoding}</inputEncoding>
+					<outputEncoding>UTF-8</outputEncoding>
+					<skipDeploy>true</skipDeploy>
+					<reportPlugins>
+						<plugin>
+							<groupId>org.apache.maven.plugins</groupId>
+							<artifactId>maven-project-info-reports-plugin</artifactId>
+							<version>2.7</version>
+							<reportSets>
+								<reportSet>
+									<reports>
+										<report>index</report>
+										<report>summary</report>
+										<report>license</report>
+										<report>scm</report>
+										<report>cim</report>
+										<report>project-team</report>
+										<report>mailing-list</report>
+										<report>issue-tracking</report>
+									</reports>
+								</reportSet>
+							</reportSets>
+						</plugin>
+
+						<!-- Javadoc generation -->
+						<plugin>
+							<groupId>org.apache.maven.plugins</groupId>
+							<artifactId>maven-javadoc-plugin</artifactId>
+							<version>2.9.1</version>
+							<configuration>
+								<source>${maven.compile.sourceLevel}</source>
+								<encoding>${project.build.sourceEncoding}</encoding>
+								<docencoding>${project.reporting.outputEncoding}</docencoding>
+								<charset>${project.reporting.outputEncoding}</charset>
+								<locale>en</locale>
+								<noqualifier>all</noqualifier>
+								<quiet>true</quiet>
+								<keywords>true</keywords>
+								<links>
+									<link>http://docs.oracle.com/javase/8/docs/api/</link>
+								</links>
+							</configuration>
+						</plugin>
+
+						<!-- Code analysis -->
+						<plugin>
+							<groupId>org.apache.maven.plugins</groupId>
+							<artifactId>maven-pmd-plugin</artifactId>
+							<version>3.2</version>
+							<configuration>
+								<sourceEncoding>${project.build.sourceEncoding}</sourceEncoding>
+								<targetJdk>${project.build.javaVersion}</targetJdk>
+							</configuration>
+						</plugin>
+
+						<!-- Report on test results -->
+						<plugin>
+							<groupId>org.apache.maven.plugins</groupId>
+							<artifactId>maven-surefire-report-plugin</artifactId>
+							<version>2.17</version>
+						</plugin>
+
+						<!-- Static analysis for occurrences of bug patterns -->
+						<plugin>
+							<groupId>org.codehaus.mojo</groupId>
+							<artifactId>findbugs-maven-plugin</artifactId>
+							<version>2.5.5</version>
+						</plugin>
+						<plugin>
+							<groupId>org.apache.maven.plugins</groupId>
+							<artifactId>maven-checkstyle-plugin</artifactId>
+							<version>2.12.1</version>
+							<configuration>
+								<configLocation>src/etc/checkstyle.xml</configLocation>
+							</configuration>
+						</plugin>
+					</reportPlugins>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<!-- Deployment to public servers -->
+	<distributionManagement>
+		<repository>
+			<id>bintray-release</id>
+			<name>oss-jfrog-artifactory-release</name>
+			<url>https://oss.jfrog.org/artifactory/oss-release-local</url>
+		</repository>
+		<snapshotRepository>
+			<id>bintray-snapshot</id>
+			<name>oss-jfrog-artifactory-snapshot</name>
+			<url>https://oss.jfrog.org/artifactory/oss-snapshot-local</url>
+		</snapshotRepository>
+		<site>
+			<id>JSR-363</id>
+			<name>JSR-363 Maven reports</name>
+			<url>file:///var/www/www.unitsofmeasurement.org/jsr-363</url>
+			<!-- No longer active, just a placeholder! -->
+		</site>
+	</distributionManagement>
+
+	<dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.12</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<profiles>
+		<profile>
+			<id>jdk6</id>
+			<properties>
+				<jdkVersion>1.6</jdkVersion>
+			</properties>
+		</profile>
+		<profile>
+			<id>jdk7</id>
+			<properties>
+				<jdkVersion>1.7</jdkVersion>
+			</properties>
+		</profile>
+		<profile>
+			<id>jdk8</id>
+			<properties>
+				<jdkVersion>1.8</jdkVersion>
+			</properties>
+		</profile>
+
+		<!-- Individual JARs -->
+		<profile>
+			<id>core-jar</id>
+			<!-- This profile builds only the core (root level) elements into a separate 
+				-core.jar file -->
+			<activation>
+				<activeByDefault>false</activeByDefault>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<artifactId>maven-jar-plugin</artifactId>
+						<version>${maven.jar.version}</version>
+						<executions>
+							<execution>
+								<id>core-jar</id>
+								<goals>
+									<goal>jar</goal>
+								</goals>
+								<configuration>
+									<classifier>core</classifier>
+									<excludes>
+										<exclude>javax/measure/format/**</exclude>
+										<exclude>javax/measure/quantity/**</exclude>
+										<exclude>javax/measure/spi/**</exclude>
+									</excludes>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
+		<profile>
+			<id>format-jar</id>
+			<!-- This profile builds (optional) format elements into separate JAR 
+				files -->
+			<build>
+				<plugins>
+					<plugin>
+						<artifactId>maven-jar-plugin</artifactId>
+						<version>${maven.jar.version}</version>
+						<executions>
+							<execution>
+								<id>format-jar</id>
+								<goals>
+									<goal>jar</goal>
+								</goals>
+								<configuration>
+									<classifier>format</classifier>
+									<includes>
+										<include>javax/measure/format/**</include>
+									</includes>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
+		<profile>
+			<id>quantity-jar</id>
+			<!-- This profile builds (optional) quantities into separate JAR files -->
+			<build>
+				<plugins>
+					<plugin>
+						<artifactId>maven-jar-plugin</artifactId>
+						<version>${maven.jar.version}</version>
+						<executions>
+							<execution>
+								<id>quanity-jar</id>
+								<goals>
+									<goal>jar</goal>
+								</goals>
+								<configuration>
+									<classifier>quantity</classifier>
+									<includes>
+										<include>javax/measure/quantity/**</include>
+									</includes>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
+		<profile>
+			<id>spi-jar</id>
+			<!-- This profile builds (optional) SPI into separate JAR files -->
+			<build>
+				<plugins>
+					<plugin>
+						<artifactId>maven-jar-plugin</artifactId>
+						<version>${maven.jar.version}</version>
+						<executions>
+							<execution>
+								<id>spi-jar</id>
+								<goals>
+									<goal>jar</goal>
+								</goals>
+								<configuration>
+									<classifier>spi</classifier>
+									<includes>
+										<include>javax/measure/spi/**</include>
+									</includes>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
+		<!-- Profile JARs -->
+		<profile>
+			<id>format-profile</id>
+			<!-- This profile builds the Format Profile (core+format) into a separate 
+				jar file -->
+			<activation>
+				<activeByDefault>false</activeByDefault>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<artifactId>maven-jar-plugin</artifactId>
+						<version>${maven.jar.version}</version>
+						<executions>
+							<execution>
+								<id>format-profile-jar</id>
+								<goals>
+									<goal>jar</goal>
+								</goals>
+								<configuration>
+									<classifier>format-profile</classifier>
+									<excludes>
+										<exclude>javax/measure/quantity/**</exclude>
+										<exclude>javax/measure/spi/**</exclude>
+									</excludes>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
+		<profile>
+			<id>spi-profile</id>
+			<!-- This profile builds the SPI Profile (core+format+spi) into a separate 
+				jar file -->
+			<activation>
+				<activeByDefault>false</activeByDefault>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<artifactId>maven-jar-plugin</artifactId>
+						<version>${maven.jar.version}</version>
+						<executions>
+							<execution>
+								<id>core-jar</id>
+								<goals>
+									<goal>jar</goal>
+								</goals>
+								<configuration>
+									<classifier>spi-profile</classifier>
+									<excludes>
+										<exclude>javax/measure/quantity/**</exclude>
+									</excludes>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
+		<profile>
+			<id>documentation</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.asciidoctor</groupId>
+						<artifactId>asciidoctor-maven-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>output-html</id>
+								<phase>generate-resources</phase>
+								<goals>
+									<goal>process-asciidoc</goal>
+								</goals>
+								<configuration>
+									<outputDirectory>target/docs</outputDirectory>
+									<sourceHighlighter>highlightjs</sourceHighlighter> <!-- coderay -->
+									<backend>html</backend>
+									<embedAssets>true</embedAssets>
+									<imagesDir>arc/main/asciidoc/images</imagesDir>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<id>brokenGitHubSite</id>
+			<build>
+				<plugins>
+					<!-- ======================================================= -->
+					<!-- GitHub Plugin -->
+					<!-- ======================================================= -->
+					<!-- This plugin seems permanently broken, will remove it to profile -->
+					<plugin>
+						<groupId>com.github.github</groupId>
+						<artifactId>site-maven-plugin</artifactId>
+						<version>${github.maven.version}</version>
+						<configuration>
+							<!-- must match the server's id -->
+							<server>github</server>
+							<message>Building site for ${project.version}</message>
+						</configuration>
+						<executions>
+							<execution>
+								<goals>
+									<goal>site</goal>
+								</goals>
+								<phase>site-deploy</phase>
+								<configuration>
+									<path>site</path>
+									<merge>true</merge>
+									<!-- <outputDirectory>${project.build.directory}/mvn-repo</outputDirectory> -->
+									<repositoryName>unit-api</repositoryName>
+									<repositoryOwner>unitsofmeasurement</repositoryOwner>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+</project>

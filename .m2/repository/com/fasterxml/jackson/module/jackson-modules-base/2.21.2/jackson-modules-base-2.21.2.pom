@@ -1,0 +1,122 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion> 
+  <parent>
+    <groupId>com.fasterxml.jackson</groupId>
+    <artifactId>jackson-base</artifactId>
+    <version>2.21.2</version>
+  </parent>
+  <groupId>com.fasterxml.jackson.module</groupId>
+  <artifactId>jackson-modules-base</artifactId>
+  <name>Jackson modules: Base</name>
+  <version>2.21.2</version>
+  <packaging>pom</packaging>
+  <description>Parent pom for Jackson "base" modules: modules that build directly on databind, and are
+not datatype, data format, or JAX-RS provider modules.
+  </description>
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <modules>
+    <module>afterburner</module>
+    <module>android-record</module>
+    <module>blackbird</module>
+    <module>guice</module>
+    <module>guice7</module>
+    <module>jakarta-xmlbind</module>
+    <module>jaxb</module>
+    <module>mrbean</module>
+    <module>osgi</module>
+    <module>paranamer</module>
+    <module>spi-subtypes</module>
+    <!-- since 2.13: -->
+    <module>no-ctor-deser</module>
+  </modules>
+
+  <url>https://github.com/FasterXML/jackson-modules-base</url>
+  <scm>
+    <connection>scm:git:git@github.com:FasterXML/jackson-modules-base.git</connection>
+    <developerConnection>scm:git:git@github.com:FasterXML/jackson-modules-base.git</developerConnection>
+    <url>https://github.com/FasterXML/jackson-modules-base</url>
+    <tag>jackson-modules-base-2.21.2</tag>
+  </scm>
+  <issueManagement>
+    <url>https://github.com/FasterXML/jackson-modules-base/issues</url>
+  </issueManagement>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <!-- 22-Sep-2020, tatu: 7.3.1 -> 9.0 for Jackson 2.12 -->
+    <!-- 02-Oct-2022, tatu: 9.0 -> 9.4 for Jackson 2.14 -->
+    <!-- 20-May-2023, tatu: 9.4 -> 9.5 for Jackson 2.15.2 -->
+    <!-- 02-Oct-2023, tatu: 9.5 -> 9.6 for Jackson 2.16 -->
+    <version.asm>9.6</version.asm>
+
+    <version.android.sdk>26</version.android.sdk>
+    <version.android.sdk.signature>0.5.1</version.android.sdk.signature>
+    <version.plugin.animal-sniffer>1.23</version.plugin.animal-sniffer>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.ow2.asm</groupId>
+        <artifactId>asm</artifactId>
+        <version>${version.asm}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <!-- 11-Jan-2025, joohyukkim: For JSTEP-10, migrate to JUnit5 -->
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+  
+  <!-- Need to include snapshot reference to find snapshot of parent -->
+  <repositories>
+    <!-- 13-May-2025, tatu: now access snapshots via Central Portal -->
+    <repository>
+      <id>central-snapshots</id>
+      <name>Sonatype Central Portal (snapshots)</name>
+      <url>https://central.sonatype.com/repository/maven-snapshots</url>
+      <releases><enabled>false</enabled></releases>
+      <snapshots><enabled>true</enabled></snapshots>
+    </repository>
+  </repositories>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+	<plugin>
+	  <!-- Inherited from oss-base. Generate PackageVersion.java.-->
+          <groupId>com.google.code.maven-replacer-plugin</groupId>
+          <artifactId>replacer</artifactId>
+	  <executions>
+            <execution>
+              <id>process-packageVersion</id>
+              <phase>generate-sources</phase>
+            </execution>
+          </executions>
+	</plugin>
+
+	<plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+	</plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+</project>

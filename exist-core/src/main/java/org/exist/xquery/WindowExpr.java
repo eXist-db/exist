@@ -101,14 +101,12 @@ public class WindowExpr extends BindingExpression {
             // Declare start WindowCondition variables
             declareWindowConditionVariables(true, windowStartCondition);
             final AnalyzeContextInfo startWhenContextInfo = new AnalyzeContextInfo(contextInfo);
-            if (windowStartCondition.getWhenExpression() != null) {
-                windowStartCondition.getWhenExpression().analyze(startWhenContextInfo);
-            }
+            windowStartCondition.getWhenExpression().analyze(startWhenContextInfo);
 
             // Declare end WindowCondition variables
             declareWindowConditionVariables(true, windowEndCondition);
             final AnalyzeContextInfo endWhenContextInfo = new AnalyzeContextInfo(contextInfo);
-            if (windowEndCondition != null && windowEndCondition.getWhenExpression() != null) {
+            if (windowEndCondition != null) {
                 windowEndCondition.getWhenExpression().analyze(endWhenContextInfo);
             }
 
@@ -184,14 +182,9 @@ public class WindowExpr extends BindingExpression {
                 windowStartConditionVariables = declareWindowConditionVariables(false, windowStartCondition);
                 setWindowConditionVariables(windowStartConditionVariables, currentItem, i, previousItem, nextItem);
 
-                // check if the start-when condition is true (absent "when" defaults to true())
-                final boolean startWhen;
-                if (windowStartCondition.getWhenExpression() == null) {
-                    startWhen = true;
-                } else {
-                    startWhen = windowStartCondition.getWhenExpression().eval(contextSequence, contextItem).effectiveBooleanValue();
-                }
-                if (startWhen) {
+                // check if the start-when condition is true
+                final Sequence startWhen = windowStartCondition.getWhenExpression().eval(contextSequence, contextItem);
+                if (startWhen.effectiveBooleanValue()) {
 
                     // signal we have started
                     window = new Window();
@@ -212,12 +205,7 @@ public class WindowExpr extends BindingExpression {
                     windowStartConditionVariables = declareWindowConditionVariables(false, windowStartCondition);
                     setWindowConditionVariables(windowStartConditionVariables, currentItem, i, previousItem, nextItem);
 
-                    final boolean endWhen;
-                    if (windowStartCondition.getWhenExpression() == null) {
-                        endWhen = true;
-                    } else {
-                        endWhen = windowStartCondition.getWhenExpression().eval(contextSequence, contextItem).effectiveBooleanValue();
-                    }
+                    final boolean endWhen = windowStartCondition.getWhenExpression().eval(contextSequence, contextItem).effectiveBooleanValue();
                     if (endWhen) {
 
                         window.end(windowEndConditionVariables);
@@ -262,14 +250,10 @@ public class WindowExpr extends BindingExpression {
                     }
                 }
 
-                // check if the end-when condition is true (absent "when" defaults to true())
+                // check if the end-when condition is true
                 final boolean endWhen;
                 if (windowEndCondition != null) {
-                    if (windowEndCondition.getWhenExpression() == null) {
-                        endWhen = true;
-                    } else {
-                        endWhen = windowEndCondition.getWhenExpression().eval(contextSequence, contextItem).effectiveBooleanValue();
-                    }
+                    endWhen = windowEndCondition.getWhenExpression().eval(contextSequence, contextItem).effectiveBooleanValue();
                 } else {
                     endWhen = false;
                 }

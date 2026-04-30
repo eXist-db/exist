@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.github.insubstantial</groupId>
+  <artifactId>substance</artifactId>
+  <version>7.3</version>
+  <name>substance</name>
+  <description>A fork of @kirilcool's substance project</description>
+  <url>http://insubstantial.github.com/insubstantial/substance/</url>
+  <licenses>
+    <license>
+      <name>BSD License</name>
+      <url>http://www.opensource.org/licenses/bsd-license.php</url>
+      <distribution>repo</distribution>
+      <comments>Does not cover the Xoetrope Color Wheel</comments>
+    </license>
+    <license>
+      <name>Mozilla Public License 1.1</name>
+      <url>http://www.opensource.org/licenses/mozilla1.1</url>
+      <distribution>repo</distribution>
+      <comments>Covers the Xoetrope Color Wheel</comments>
+    </license>
+  </licenses>
+  <developers>
+    <developer>
+      <name>Kirill Grouchnikov</name>
+      <email>kirillcool@yahoo.com</email>
+      <roles>
+        <role>author</role>
+        <role>developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Danno Ferrin</name>
+      <email>danno.ferrin@shemnon.com</email>
+      <roles>
+        <role>maintainer</role>
+      </roles>
+    </developer>
+  </developers>
+  <scm>
+    <connection>scm:git:git@github.com:Insubstantial/insubstantial.git</connection>
+    <developerConnection>scm:git:git@github.com:Insubstantial/insubstantial.git</developerConnection>
+    <url>scm:git:git@github.com:Insubstantial/insubstantial.git</url>
+  </scm>
+  <dependencies>
+    <dependency>
+      <groupId>com.github.insubstantial</groupId>
+      <artifactId>trident</artifactId>
+      <version>7.3</version>
+      <classifier>swing</classifier>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>net.jcip</groupId>
+      <artifactId>jcip-annotations</artifactId>
+      <version>1.0</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.swinglabs.swingx</groupId>
+      <artifactId>swingx-core</artifactId>
+      <version>1.6.3</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.github.insubstantial</groupId>
+      <artifactId>laf-plugin</artifactId>
+      <version>7.3</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.jgoodies</groupId>
+      <artifactId>forms</artifactId>
+      <version>1.2.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.github.insubstantial</groupId>
+      <artifactId>laf-widget</artifactId>
+      <version>7.3</version>
+      <scope>compile</scope>
+    </dependency>
+  </dependencies>
+</project>

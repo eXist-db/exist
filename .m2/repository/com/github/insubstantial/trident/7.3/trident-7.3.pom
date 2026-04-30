@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.github.insubstantial</groupId>
+  <artifactId>trident</artifactId>
+  <version>7.3</version>
+  <name>trident</name>
+  <description>A fork of @kirilcool's trident project</description>
+  <url>https://github.com/Insubstantial/insubstantial/tree/master/trident</url>
+  <licenses>
+    <license>
+      <name>The BSD License</name>
+      <url>http://www.opensource.org/licenses/bsd-license.php</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  <developers>
+    <developer>
+      <name>Kirill Grouchnikov</name>
+      <email>kirillcool@yahoo.com</email>
+      <roles>
+        <role>author</role>
+        <role>developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Danno Ferrin</name>
+      <email>danno.ferrin@shemnon.com</email>
+      <roles>
+        <role>maintainer</role>
+      </roles>
+    </developer>
+  </developers>
+  <scm>
+    <connection>scm:git:git@github.com:Insubstantial/insubstantial.git</connection>
+    <developerConnection>scm:git:git@github.com:Insubstantial/insubstantial.git</developerConnection>
+    <url>scm:git:git@github.com:Insubstantial/insubstantial.git</url>
+  </scm>
+  <dependencies>
+    <dependency>
+      <groupId>org.eclipse.swt.win32.win32</groupId>
+      <artifactId>x86</artifactId>
+      <version>3.3.0-v3346</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.google.android</groupId>
+      <artifactId>android</artifactId>
+      <version>2.3.1</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>net.jcip</groupId>
+      <artifactId>jcip-annotations</artifactId>
+      <version>1.0</version>
+      <scope>provided</scope>
+    </dependency>
+  </dependencies>
+</project>

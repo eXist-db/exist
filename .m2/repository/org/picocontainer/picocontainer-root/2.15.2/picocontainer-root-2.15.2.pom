@@ -1,0 +1,78 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+
+<modelVersion>4.0.0</modelVersion>
+   <groupId>org.picocontainer</groupId>
+   <artifactId>picocontainer-root</artifactId>
+   <name>PicoContainer Root</name>
+   <version>2.15.2</version>
+   <packaging>pom</packaging>
+   <url>http://www.picocontainer.com</url>
+
+   <modules>
+	<module>pico</module>
+   </modules>
+   <inceptionYear>2003</inceptionYear>
+   <description>A small Java embeddable Dependency Injection container</description>
+   <scm>
+      <connection>scm:git:git://github.com/picocontainer/PicoContainer2.git</connection>
+      <developerConnection>scm:git:git@github.com:picocontainer/PicoContainer2.git</developerConnection>
+      <url>https://github.com/picocontainer/PicoContainer2</url>
+      <tag>picocontainer-root-2.15.2</tag>
+   </scm>
+
+
+
+   <licenses>
+      <license>
+         <name>BSD</name>
+         <url>LICENSE.txt</url>
+      </license>
+   </licenses>
+
+   <build>
+      <plugins>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-release-plugin</artifactId>
+            <version>3.1.1</version>
+         </plugin>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>1.6</version>
+            <executions>
+               <execution>
+                  <id>sign-artifacts</id>
+                  <phase>verify</phase>
+                  <goals>
+                     <goal>sign</goal>
+                  </goals>
+               </execution>
+            </executions>
+         </plugin>
+      </plugins>
+   </build>
+
+   <developers>
+      <developer>
+         <id>devs</id>
+         <name>Developers</name>
+         <email>dev@picocontainer.codehaus.org</email>
+         <roles>
+            <role>developer</role>
+         </roles>
+         <timezone>-6</timezone>
+      </developer>
+   </developers>
+   <distributionManagement>
+      <snapshotRepository>
+         <id>ossrh</id>
+         <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+      </snapshotRepository>
+      <repository>
+         <id>ossrh</id>
+         <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+      </repository>
+   </distributionManagement>
+</project>

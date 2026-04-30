@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.expath</groupId>
+        <artifactId>expath-parent</artifactId>
+        <version>1.6.2</version>
+        <relativePath />
+    </parent>
+
+    <groupId>org.expath.packaging</groupId>
+    <artifactId>pkg-parent</artifactId>
+    <version>2.0.1</version>
+    <packaging>pom</packaging>
+
+    <name>EXPath Packaging POM</name>    
+    <description>The base POM for all EXPath Packaging modules.</description>
+
+    <scm>
+        <connection>scm:git:https://github.com/expath/expath-pkg-java.git</connection>
+        <developerConnection>scm:git:https://github.com/expath/expath-pkg-java.git</developerConnection>
+        <url>scm:git:https://github.com/expath/expath-pkg-java.git</url>
+      <tag>pkg-2.0.1</tag>
+    </scm>
+
+</project>

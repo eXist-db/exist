@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>net.sf.xmldb-org</groupId>
+  <artifactId>xmldb-api</artifactId>
+  <version>2.0.0</version>
+  <name>XML:DB API specification</name>
+  <description>XML:DB Initiative for XML Databases</description>
+  <url>https://github.com/xmldb-org/xmldb-api</url>
+  <inceptionYear>2000</inceptionYear>
+  <licenses>
+    <license>
+      <name>The XML:DB Initiative Software License</name>
+      <url>https://github.com/xmldb-org/xmldb-api/raw/master/LICENSE</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  <developers>
+    <developer>
+      <id>reinhapa</id>
+      <name>Patrick Reinhart</name>
+      <email>patrick@reini.net</email>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>per_nyfelt</id>
+      <name>Per Nyfelt</name>
+      <email>per_nyfelt@users.sf.net</email>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>walkabout</id>
+      <name>Lars Martin</name>
+      <email>walkabout@users.sf.net</email>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </developer>
+  </developers>
+  <scm>
+    <connection>scm:git://github.com/xmldb-org/xmldb-api.git</connection>
+    <developerConnection>scm:git://github.com/xmldb-org/xmldb-api.git</developerConnection>
+    <url>https://github.com/xmldb-org/xmldb-api</url>
+  </scm>
+  <properties/>
+  <dependencies/>
+</project>

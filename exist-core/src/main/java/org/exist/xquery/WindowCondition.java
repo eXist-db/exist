@@ -100,12 +100,10 @@ public class WindowCondition {
         appendVar(result, "previous", previousItem);
         appendVar(result, "next", nextItem);
 
-        if (whenExpression != null) {
-            if (!result.isEmpty()) {
-                result.append(' ');
-            }
-            result.append("when ").append(whenExpression);
+        if (!result.isEmpty()) {
+            result.append(' ');
         }
+        result.append("when ").append(whenExpression);
 
         return result.toString();
     }

@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+ <!-- General information -->
+
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+      <groupId>com.fasterxml</groupId>
+      <artifactId>oss-parent</artifactId>
+      <version>69</version>
+  </parent>
+  <groupId>com.fasterxml.uuid</groupId>
+  <artifactId>java-uuid-generator</artifactId>
+  <!-- 07-Jan-2022, tatu: wrt [#65] SHOULD be able to use "jar" but somehow
+         that won't work (unlike with Jackson).
+    -->
+  <packaging>bundle</packaging>
+  <name>Java UUID Generator</name>
+  <version>5.2.0</version>
+  <description>
+Java UUID Generator (JUG) is a Java library for generating
+Universally Unique IDentifiers, UUIDs (see http://en.wikipedia.org/wiki/UUID).
+It can be used either as a component in a bigger application, or as a standalone command line tool.
+JUG generates UUIDs according to the IETF UUID draft specification.
+JUG supports 3 original official UUID generation methods as well as later additions (v6, v7)
+</description>
+  <url>https://github.com/cowtowncoder/java-uuid-generator</url>
+  <scm>
+    <connection>scm:git:git://github.com/cowtowncoder/java-uuid-generator.git</connection>
+    <url>https://github.com/cowtowncoder/java-uuid-generator</url>
+    <developerConnection>scm:git:git@github.com:cowtowncoder/java-uuid-generator.git</developerConnection>
+    <tag>java-uuid-generator-5.2.0</tag>
+  </scm>
+  <developers>
+    <developer>
+      <id>cowtowncoder</id>
+      <name>Tatu Saloranta</name>
+      <email>tatu.saloranta@iki.fi</email>
+    </developer>
+  </developers>
+  <issueManagement>
+    <url>http://github.com/cowtowncoder/java-uuid-generator/issues</url>
+  </issueManagement>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <slf4j.version>1.7.36</slf4j.version>
+
+    <project.build.outputTimestamp>2025-12-05T19:49:07Z</project.build.outputTimestamp>
+  </properties>
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  <organization>
+    <name>FasterXML.com</name>
+    <url>http://fasterxml.com</url>
+  </organization>
+
+ <!-- Dependency information -->
+ 
+  <dependencies>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>${slf4j.version}</version>
+    </dependency>
+    <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-simple</artifactId>
+        <version>${slf4j.version}</version>
+        <scope>runtime</scope>
+        <optional>true</optional>
+    </dependency>
+    <!-- For testing, JUnit 5 is needed -->
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>${version.junit5}</version>
+      <scope>test</scope>
+    </dependency>
+    <!-- For JUnit 4 parameterized tests migration -->
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-params</artifactId>
+      <version>${version.junit5}</version>
+      <scope>test</scope>
+    </dependency>
+    <!-- For Hamcrest matchers used in tests -->
+    <dependency>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest</artifactId>
+      <version>2.2</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+ <!-- Also: must specify non-standard source level -->
+  <build>
+    <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>${version.plugin.compiler}</version>
+          <configuration>
+            <source>1.8</source>
+            <target>1.8</target>
+          </configuration>
+        </plugin>
+
+        <!-- javadocs? yes please -->
+       <plugin>
+         <groupId>org.apache.maven.plugins</groupId>
+         <artifactId>maven-javadoc-plugin</artifactId>
+         <!-- 20-Nov-2021, tatu: No idea why this is needed, but it is, as per:
+
+https://stackoverflow.com/questions/37958104/maven-javadoc-no-source-files-for-package          
+          -->
+         <configuration>
+           <sourcepath>src/main/java</sourcepath>         
+         </configuration>
+         <executions>
+             <execution>
+                  <id>attach-javadocs</id>
+                  <phase>verify</phase>
+                  <goals>
+                      <goal>jar</goal>
+                  </goals>
+             </execution>
+         </executions>
+       </plugin>
+
+       <!-- Plus, let's make jars OSGi bundles as well  -->
+        <plugin>
+          <groupId>org.apache.felix</groupId>
+          <artifactId>maven-bundle-plugin</artifactId>
+          <extensions>true</extensions>
+          <configuration>
+            <instructions>
+              <Bundle-Name>${project.name}</Bundle-Name>
+              <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
+              <Bundle-Description>${project.description}</Bundle-Description>
+              <Bundle-Vendor>FasterXML.com</Bundle-Vendor>
+              <Export-Package>
+                com.fasterxml.uuid;version="${project.version}",
+                com.fasterxml.uuid.ext;version="${project.version}",
+                com.fasterxml.uuid.impl;version="${project.version}",
+                com.fasterxml.uuid.jug;version="${project.version}"
+              </Export-Package>
+              <Import-Package>
+                com.fasterxml.uuid;version="[${project.version},${project.version}]",
+                com.fasterxml.uuid.ext;version="[${project.version},${project.version}]",
+                com.fasterxml.uuid.impl;version="[${project.version},${project.version}]",
+                com.fasterxml.uuid.jug;version="[${project.version},${project.version}]",
+                org.slf4j;version="[${slf4j.version},2)"
+              </Import-Package>
+              <Private-Package />
+	      <Main-Class>com.fasterxml.uuid.Jug</Main-Class>
+            </instructions>
+          </configuration>
+       </plugin>
+
+        <!-- for maven release, need yet another plug-in -->
+        <!-- And Sonatype also mandates GPG... -->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-release-plugin</artifactId>
+          <configuration>
+            <mavenExecutorId>forked-path</mavenExecutorId>
+          </configuration>
+        </plugin>
+     <!--  22-Mar-2019, tatu: Add rudimentary JDK9+ module info. To build with JDK 8
+             will have to use `moduleInfoFile` which is not optimal but anything else
+             requires JDK 9+.
+        -->
+      <plugin>
+        <groupId>org.moditect</groupId>
+        <artifactId>moditect-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>add-module-infos</id>
+            <phase>package</phase>
+            <goals>
+              <goal>add-module-info</goal>
+            </goals>
+            <configuration>
+              <overwriteExistingFiles>true</overwriteExistingFiles>
+              <module>
+                <moduleInfoFile>src/moditect/module-info.java</moduleInfoFile>
+              </module>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <!-- 12-Oct-2023, tatu: JaCoCo for code coverage -->
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <configuration>
+          <excludes>
+            <exclude>perf/**</exclude>
+            <exclude>test/**</exclude>
+          </excludes>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>report</id>
+            <phase>test</phase>
+            <goals>
+              <goal>report</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <!-- 28-May-2025, tatu: Ensure we use new Sonatype Central Portal: -->
+      <plugin>
+        <groupId>org.sonatype.central</groupId>
+        <artifactId>central-publishing-maven-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
+
+  <profiles>
+        <profile>
+            <id>release-sign-artifacts</id>
+            <activation>
+                <property>
+                    <name>performRelease</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>${version.plugin.gpg}</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+  </profiles>
+
+  <!-- NOTE: repositories from parent POM -->
+
+</project>

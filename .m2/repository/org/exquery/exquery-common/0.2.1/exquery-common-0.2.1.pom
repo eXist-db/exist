@@ -1,0 +1,45 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    
+    <parent>
+        <groupId>org.exquery</groupId>
+        <artifactId>exquery-parent</artifactId>
+        <version>0.2.1</version>
+        <relativePath>../exquery-parent/pom.xml</relativePath>
+    </parent>
+    
+    <artifactId>exquery-common</artifactId>
+    <packaging>jar</packaging>
+    
+    <name>EXQuery Common</name>
+    <description>Common EXQuery code</description>
+    
+    <scm>
+        <connection>scm:git:https://github.com/exquery/exquery.git</connection>
+        <developerConnection>scm:git:https://github.com/exquery/exquery.git</developerConnection>
+        <url>scm:git:https://github.com/exquery/exquery.git</url>
+      <tag>exquery-distribution-0.2.1</tag>
+  </scm>
+    
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <!-- we ourselves have a test scoped dependency on a newer hamcrest... see below! -->
+                    <groupId>org.hamcrest</groupId>
+                    <artifactId>hamcrest-core</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest</artifactId>
+            <version>2.2</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+    
+</project>

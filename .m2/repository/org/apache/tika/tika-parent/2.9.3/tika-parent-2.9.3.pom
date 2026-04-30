@@ -1,0 +1,1470 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.apache</groupId>
+    <artifactId>apache</artifactId>
+    <version>32</version>
+    <relativePath />
+  </parent>
+
+  <groupId>org.apache.tika</groupId>
+  <artifactId>tika-parent</artifactId>
+  <version>2.9.3</version>
+  <packaging>pom</packaging>
+
+  <name>Apache Tika parent</name>
+  <description>
+    Apache Tika is a toolkit for detecting and extracting metadata and
+    structured text content from various documents using existing parser
+    libraries.
+  </description>
+  <inceptionYear>2007</inceptionYear>
+
+  <url>https://tika.apache.org/</url>
+
+  <organization>
+    <name>The Apache Software Foundation</name>
+    <url>https://www.apache.org</url>
+  </organization>
+
+  <issueManagement>
+    <system>JIRA</system>
+    <url>https://issues.apache.org/jira/browse/TIKA</url>
+  </issueManagement>
+
+  <ciManagement>
+    <system>Jenkins</system>
+    <url>https://ci-builds.apache.org/job/Tika/</url>
+  </ciManagement>
+
+  <mailingLists>
+    <mailingList>
+      <name>Development mailing list</name>
+      <subscribe>dev-subscribe@tika.apache.org</subscribe>
+      <unsubscribe>dev-unsubscribe@tika.apache.org</unsubscribe>
+      <post>dev@tika.apache.org</post>
+      <archive>https://lists.apache.org/list.html?dev@tika.apache.org</archive>
+      <otherArchives>
+        <otherArchive>http://mail-archives.apache.org/mod_mbox/tika-dev/</otherArchive>
+        <otherArchive>http://mail-archives.apache.org/mod_mbox/lucene-tika-dev</otherArchive>
+        <otherArchive>http://www.mail-archive.com/dev@tika.apache.org</otherArchive>
+        <otherArchive>http://www.mail-archive.com/tika-dev@lucene.apache.org/</otherArchive>
+        <otherArchive>http://www.mail-archive.com/tika-dev@incubator.apache.org/</otherArchive>
+        <otherArchive>http://www.nabble.com/Apache-Tika---Development-f20913.html</otherArchive>
+        <otherArchive>http://news.gmane.org/gmane.comp.apache.tika.devel</otherArchive>
+        <otherArchive>http://tika.markmail.org/</otherArchive>
+      </otherArchives>
+    </mailingList>
+    <mailingList>
+      <name>Commit mailing list</name>
+      <subscribe>commits-subscribe@tika.apache.org</subscribe>
+      <unsubscribe>commits-unsubscribe@tika.apache.org</unsubscribe>
+      <post>commits@tika.apache.org</post>
+      <archive>https://lists.apache.org/list.html?commits@tika.apache.org</archive>
+      <otherArchives>
+        <otherArchive>http://mail-archives.apache.org/mod_mbox/tika-commits/</otherArchive>
+        <otherArchive>http://mail-archives.apache.org/mod_mbox/lucene-tika-commits/</otherArchive>
+        <otherArchive>http://www.mail-archive.com/tika-commits@lucene.apache.org/</otherArchive>
+        <otherArchive>http://www.mail-archive.com/tika-commits@incubator.apache.org/</otherArchive>
+      </otherArchives>
+    </mailingList>
+    <mailingList>
+      <name>User mailing list</name>
+      <subscribe>user-subscribe@tika.apache.org</subscribe>
+      <unsubscribe>user-unsubscribe@tika.apache.org</unsubscribe>
+      <post>user@tika.apache.org</post>
+      <archive>https://lists.apache.org/list.html?user@tika.apache.org</archive>
+      <otherArchives>
+        <otherArchive>http://mail-archives.apache.org/mod_mbox/tika-user/</otherArchive>
+        <otherArchive>http://mail-archives.apache.org/mod_mbox/lucene-tika-user/</otherArchive>
+        <otherArchive>http://www.mail-archive.com/tika-user@lucene.apache.org/</otherArchive>
+      </otherArchives>
+    </mailingList>
+  </mailingLists>
+
+  <developers>
+    <developer>
+      <name>Rida Benjelloun</name>
+      <id>ridabenjelloun</id>
+      <email>ridabenjelloun@apache.org</email>
+      <roles>
+        <role>committer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Mark Harwood</name>
+      <id>mharwood</id>
+      <roles>
+        <role>committer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Ken Krugler</name>
+      <id>kkrugler</id>
+      <email>kkrugler@apache.org</email>
+      <url>http://ken-blog.krugler.org</url>
+      <organization>Scale Unlimited</organization>
+      <organizationUrl>http://www.scaleunlimited.com</organizationUrl>
+      <roles>
+        <role>committer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Chris A. Mattmann</name>
+      <id>mattmann</id>
+      <email>mattmann@apache.org</email>
+      <url>http://people.apache.org/~mattmann/</url>
+      <organization>NASA Jet Propulsion Laboratory</organization>
+      <organizationUrl>http://www.jpl.nasa.gov</organizationUrl>
+      <timezone>-8</timezone>
+      <properties />
+      <roles>
+        <role>committer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Michael McCandless</name>
+      <id>mikemccand</id>
+      <email>mikemccand@apache.org</email>
+      <organization>IBM</organization>
+      <properties />
+      <roles>
+        <role>committer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Dave Meikle</name>
+      <id>dmeikle</id>
+      <roles>
+        <role>committer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Sami Siren</name>
+      <id>siren</id>
+      <roles>
+        <role>committer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Nick Burch</name>
+      <id>nick</id>
+      <organization>Alfresco</organization>
+      <organizationUrl>http://alfresco.com</organizationUrl>
+      <roles>
+        <role>committer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Maxim Valyanskiy</name>
+      <id>maxcom</id>
+      <organization>Jet Infosystems</organization>
+      <roles>
+        <role>committer</role>
+      </roles>
+      <timezone>+3</timezone>
+    </developer>
+    <developer>
+      <name>Oleg Tikhonov</name>
+      <id>oleg</id>
+      <roles>
+        <role>committer</role>
+      </roles>
+      <timezone>+2</timezone>
+    </developer>
+    <developer>
+      <name>Ray Gauss II</name>
+      <id>rgauss</id>
+      <organization>Alfresco</organization>
+      <organizationUrl>http://alfresco.com</organizationUrl>
+      <timezone>-5</timezone>
+      <roles>
+        <role>committer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Tyler Palsulich</name>
+      <id>tpalsulich</id>
+      <timezone>-8</timezone>
+      <roles>
+        <role>committer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Tim Allison</name>
+      <id>tallison</id>
+      <timezone>-5</timezone>
+      <roles>
+        <role>committer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Konstantin Gribov</name>
+      <id>grossws</id>
+      <timezone>+3</timezone>
+      <roles>
+        <role>committer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Tilman Hausherr</name>
+      <id>tilman</id>
+      <timezone>Europe/Berlin</timezone>
+      <roles>
+        <role>committer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Jukka Zitting</name>
+      <id>jukka</id>
+      <roles>
+        <role>emeritus</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Julien Nioche</name>
+      <id>jnioche</id>
+      <roles>
+        <role>emeritus</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Keith Bennett</name>
+      <id>kbennett</id>
+      <roles>
+        <role>emeritus</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Niall Pemberton</name>
+      <id>niallp</id>
+      <roles>
+        <role>emeritus</role>
+      </roles>
+    </developer>
+  </developers>
+  <contributors>
+    <contributor>
+      <name>Doug Cutting</name>
+      <roles>
+        <role>mentor</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Bertrand Delacrétaz</name>
+      <roles>
+        <role>mentor</role>
+      </roles>
+    </contributor>
+  </contributors>
+
+  <properties>
+    <maven.compiler.source>8</maven.compiler.source>
+    <maven.compiler.target>8</maven.compiler.target>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>${project.build.sourceEncoding}</project.reporting.outputEncoding>
+    <project.build.outputTimestamp>1738582345</project.build.outputTimestamp>
+    <!-- plugin versions -->
+    <checkstyle.plugin.version>3.6.0</checkstyle.plugin.version>
+    <forbiddenapis.version>3.8</forbiddenapis.version>
+    <groovy.maven.version>2.1.1</groovy.maven.version>
+    <maven.antrun.version>3.1.0</maven.antrun.version>
+    <maven.assembly.version>3.7.1</maven.assembly.version>
+    <!-- can't update to 6, needs jdk17 -->
+    <maven.bundle.version>5.1.9</maven.bundle.version>
+    <maven.compiler.plugin.version>3.13.0</maven.compiler.plugin.version>
+    <maven.javadoc.version>3.11.2</maven.javadoc.version>
+    <maven.jar.version>3.4.2</maven.jar.version>
+    <maven.scr.version>1.26.4</maven.scr.version>
+    <maven.failsafe.version>3.5.2</maven.failsafe.version>
+    <maven.surefire.version>3.5.2</maven.surefire.version>
+    <maven.shade.version>3.6.0</maven.shade.version>
+    <maven.project.info.reports.version>3.8.0</maven.project.info.reports.version>
+    <maven.site.version>3.8.2</maven.site.version>
+    <maven.exec.version>3.5.0</maven.exec.version>
+    <!-- need above java 8 for 10.[0-2] -->
+    <puppycrawl.version>9.3</puppycrawl.version>
+    <rat.version>0.16.1</rat.version>
+
+    <!-- dependency versions -->
+    <google.cloud.version>2.48.0</google.cloud.version>
+    <aws.version>1.12.780</aws.version>
+    <!-- WARNING: when you upgrade asm make sure that you update the
+        OpCode in the initializer in org.apache.tika.parser.asm.XHTMLClassVisitor
+        See TIKA-2992.
+    -->
+    <asm.version>9.7.1</asm.version>
+    <boilerpipe.version>1.1.0</boilerpipe.version>
+    <!-- used by POI, PDFBox and Jackcess ...try to sync -->
+    <bouncycastle.version>1.80</bouncycastle.version>
+    <!-- NOTE: sync brotli version with commons-compress-->
+    <brotli.version>0.1.2</brotli.version>
+    <commons.cli.version>1.9.0</commons.cli.version>
+    <commons.codec.version>1.18.0</commons.codec.version>
+    <!-- 4.5.0-M2 successfully tested -->
+    <commons.collections4.version>4.4</commons.collections4.version>
+    <commons.compress.version>1.27.1</commons.compress.version>
+    <commons.csv.version>1.13.0</commons.csv.version>
+    <commons.exec.version>1.4.0</commons.exec.version>
+    <commons.io.version>2.18.0</commons.io.version>
+    <commons.lang3.version>3.17.0</commons.lang3.version>
+    <commons.logging.version>1.3.4</commons.logging.version>
+    <commons.math3.version>3.6.1</commons.math3.version>
+    <commons.net.version>3.11.1</commons.net.version>
+    <commons.fileupload.version>1.5</commons.fileupload.version>
+    <ctakes.version>5.1.0</ctakes.version>
+    <!-- can't update to 3.6.0, needs jdk11 -->
+    <cxf.version>3.5.10</cxf.version>
+    <ddplist.version>1.28</ddplist.version>
+    <!-- can't update to 1.0.0-M2.1, needs jdk11 -->
+    <dl4j.version>1.0.0-M2</dl4j.version>
+    <!-- fakeload versions > 0.4.0 require java > 8 -->
+    <fakeload.version>0.4.0</fakeload.version>
+    <guava.version>33.4.0-jre</guava.version>
+    <hdf5.version>1.14.3-1.5.10</hdf5.version>
+    <httpcomponents.version>4.5.14</httpcomponents.version>
+    <httpcore.version>4.4.16</httpcore.version>
+    <!-- versions greater than 62.2 are not compatible with icu4j handler in lucene 8.11.1 -->
+    <icu4j.version>62.2</icu4j.version>
+    <imageio.version>1.4.0</imageio.version>
+    <!-- jackrabbit 2.21.23 requires java 11 -->
+    <jackrabbit.version>2.21.22</jackrabbit.version>
+    <jackson.version>2.18.2</jackson.version>
+    <jackcess.version>4.0.8</jackcess.version>
+    <jackcess.encrypt.version>4.0.2</jackcess.encrypt.version>
+    <javax.annotation.version>1.3.2</javax.annotation.version>
+    <javax.jcr.version>2.0</javax.jcr.version>
+    <javax.rest.version>2.1.1</javax.rest.version>
+    <!-- updating jaxb to 3.0.2 brings convergence problems with modules that use cxf
+          which can be helped by excluding old versions jakarta.xml.bind,
+          but it turns out tika-parser-advancedmedia-module fails its tests,
+          because we need bind 2.3.3 for xmpbox, which uses javax.xml.bind -->
+    <jaxb.version>2.3.6</jaxb.version>
+    <jbig2.version>3.0.4</jbig2.version>
+    <jdom2.version>2.0.6.1</jdom2.version>
+    <jempbox.version>1.8.17</jempbox.version>
+    <jetty.version>9.4.57.v20241219</jetty.version>
+    <jhighlight.version>1.1.0</jhighlight.version>
+    <jna.version>5.16.0</jna.version>
+    <json.simple.version>1.1.1</json.simple.version>
+    <junit4.version>4.13.2</junit4.version>
+    <junit5.version>5.11.4</junit5.version>
+    <junrar.version>7.5.5</junrar.version>
+    <libpst.version>0.9.3</libpst.version>
+    <log4j2.version>2.24.3</log4j2.version>
+    <lombok.version>1.18.20</lombok.version>
+    <!-- lucene >= 9.x requires Java 11 -->
+    <lucene.version>8.11.4</lucene.version>
+    <metadata.extractor.version>2.19.0</metadata.extractor.version>
+    <microsoft.translator.version>0.6.2</microsoft.translator.version>
+    <mime4j.version>0.8.12</mime4j.version>
+    <!-- mockito >= 5 requires jdk11 -->
+    <mockito.version>4.11.0</mockito.version>
+    <netcdf-java.version>4.5.5</netcdf-java.version>
+    <!-- 4.2.0.Alpha4 tested successfully -->
+    <netty.version>4.1.117.Final</netty.version>
+    <oak.jackrabbit.version>1.74.0</oak.jackrabbit.version>
+    <openjson.version>1.0.13</openjson.version>
+    <!-- 2.0.0 doesn't compile with jdk8 -->
+    <opennlp.version>1.9.4</opennlp.version>
+    <ops4j.version>1.5.1</ops4j.version>
+    <optimaize.version>0.6</optimaize.version>
+    <osgi.core.version>6.0.0</osgi.core.version>
+    <osgi.compendium.version>5.0.0</osgi.compendium.version>
+    <parso.version>2.0.14</parso.version>
+    <!-- 4.14.0 needs jdk11 -->
+    <pax.exam.version>4.13.5</pax.exam.version>
+    <pdfbox.version>2.0.33</pdfbox.version>
+    <poi.version>5.4.0</poi.version>
+    <!-- 2.5.0 needs jakarta.xml.bind 4.0.2 in tika-parser-scientific-module -->
+    <quartz.version>2.3.2</quartz.version>
+    <reactor.core.version>3.7.2</reactor.core.version>
+    <reactor.netty.version>1.2.2</reactor.netty.version>
+    <rome.version>2.1.0</rome.version>
+    <scm.version>2.1.0</scm.version>
+    <sis.version>1.3</sis.version>
+    <slf4j.version>2.0.16</slf4j.version>
+    <solrj.version>8.11.4</solrj.version>
+    <!-- NOTE: Spring 6 requires jdk17  -->
+    <!-- remove from ossindex when bumping from 5.3.39 -->
+    <spring.version>5.3.39</spring.version>
+    <sqlite.version>3.48.0.0</sqlite.version>
+    <tagsoup.version>1.2.1</tagsoup.version>
+    <test.containers.version>1.20.4</test.containers.version>
+    <!-- NOTE: sync tukaani version with commons-compress in tika-parent-->
+    <tukaani.version>1.10</tukaani.version>
+    <twelvemonkeys.version>3.12.0</twelvemonkeys.version>
+    <!-- 3.5.0 doesn't compile with jdk8 -->
+    <uima.version>3.4.1</uima.version>
+    <!-- 3.5.0 doesn't compile with jdk8 -->
+    <uimafit.version>3.4.0</uimafit.version>
+    <uimaj.cpe.version>3.6.0</uimaj.cpe.version>
+    <vorbis.version>0.8</vorbis.version>
+    <xerces.version>2.12.2</xerces.version>
+    <xmpcore.version>6.1.11</xmpcore.version>
+    <zstd.version>1.5.6-9</zstd.version>
+    <kafka.version>3.9.0</kafka.version>
+    <snappy.java.version>1.1.10.7</snappy.java.version>
+    <!-- can't update to 1.4, these need jdk11 -->
+    <logback.version>1.3.15</logback.version>
+    <javacpp.version>1.5.11</javacpp.version>
+    <!-- h2 2.3 requires jdk11 -->
+    <h2.version>2.2.224</h2.version>
+    <!-- This has to be < 3.9 to work with Solr 8's integration tests (doesn't fail on windows) -->
+    <zookeeper.version>3.8.4</zookeeper.version>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <!-- boms -->
+      <dependency>
+        <groupId>com.fasterxml.jackson</groupId>
+        <artifactId>jackson-bom</artifactId>
+        <version>${jackson.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-bom</artifactId>
+        <version>${netty.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.cxf</groupId>
+        <artifactId>cxf-bom</artifactId>
+        <version>${cxf.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-bom</artifactId>
+        <version>${log4j2.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-bom</artifactId>
+        <version>${jetty.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.junit</groupId>
+        <artifactId>junit-bom</artifactId>
+        <version>${junit5.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>testcontainers-bom</artifactId>
+        <version>${test.containers.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>biz.aQute.bnd</groupId>
+        <artifactId>biz.aQute.bndlib</artifactId>
+        <!-- can't update to 7.0.0: "class file has wrong version 61.0, should be 52.0" -->
+        <version>6.4.1</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.zookeeper</groupId>
+        <artifactId>zookeeper</artifactId>
+        <version>${zookeeper.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.amazonaws</groupId>
+        <artifactId>aws-java-sdk-s3</artifactId>
+        <version>${aws.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.azure</groupId>
+        <artifactId>azure-storage-blob</artifactId>
+        <version>12.29.0</version>
+      </dependency>
+      <dependency>
+        <groupId>com.azure</groupId>
+        <artifactId>azure-storage-common</artifactId>
+        <version>12.28.0</version>
+      </dependency>
+      <dependency>
+        <groupId>com.azure</groupId>
+        <artifactId>azure-core</artifactId>
+        <version>1.54.1</version>
+      </dependency>
+      <dependency>
+        <groupId>com.azure</groupId>
+        <artifactId>azure-core-http-netty</artifactId>
+        <version>1.15.7</version>
+      </dependency>
+      <dependency>
+        <groupId>com.drewnoakes</groupId>
+        <artifactId>metadata-extractor</artifactId>
+        <version>${metadata.extractor.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.google.cloud</groupId>
+        <artifactId>google-cloud-storage</artifactId>
+        <version>${google.cloud.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.woodstox</groupId>
+        <artifactId>woodstox-core</artifactId>
+        <version>7.1.0</version>
+      </dependency>
+      <dependency>
+        <groupId>com.mchange</groupId>
+        <artifactId>c3p0</artifactId>
+        <version>0.10.2</version>
+      </dependency>
+      <dependency>
+        <groupId>com.mchange</groupId>
+        <artifactId>mchange-commons-java</artifactId>
+        <version>0.3.1</version>
+      </dependency>
+      <dependency>
+        <groupId>com.beust</groupId>
+        <artifactId>jcommander</artifactId>
+        <version>1.82</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.jaxrs</groupId>
+        <artifactId>jackson-jaxrs-json-provider</artifactId>
+        <version>${jackson.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>jakarta.xml.bind</groupId>
+            <artifactId>jakarta.xml.bind-api</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>jakarta.activation</groupId>
+            <artifactId>jakarta.activation-api</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>com.github.albfernandez</groupId>
+        <artifactId>juniversalchardet</artifactId>
+        <version>2.5.0</version>
+      </dependency>
+      <!-- jai-imageio-core is allowed since LEGAL-304 -->
+      <dependency>
+        <groupId>com.github.jai-imageio</groupId>
+        <artifactId>jai-imageio-core</artifactId>
+        <version>${imageio.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.google.code.findbugs</groupId>
+        <artifactId>jsr305</artifactId>
+        <version>3.0.2</version>
+      </dependency>
+      <dependency>
+        <groupId>com.google.code.gson</groupId>
+        <artifactId>gson</artifactId>
+        <version>2.12.1</version>
+      </dependency>
+      <dependency>
+        <groupId>com.google.guava</groupId>
+        <artifactId>guava</artifactId>
+        <version>${guava.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.googlecode.json-simple</groupId>
+        <artifactId>json-simple</artifactId>
+        <version>${json.simple.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>com.google.protobuf</groupId>
+        <artifactId>protobuf-java</artifactId>
+        <version>3.25.6</version>
+      </dependency>
+      <dependency>
+        <groupId>com.h2database</groupId>
+        <artifactId>h2</artifactId>
+        <version>${h2.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.healthmarketscience.jackcess</groupId>
+        <artifactId>jackcess</artifactId>
+        <version>${jackcess.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.healthmarketscience.jackcess</groupId>
+        <artifactId>jackcess-encrypt</artifactId>
+        <version>${jackcess.encrypt.version}</version>
+        <exclusions>
+          <!-- to avoid maven-enforcer convergence error,
+            let's make this explicit -->
+          <exclusion>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk15on</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>com.ibm.icu</groupId>
+        <artifactId>icu4j</artifactId>
+        <version>${icu4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.twelvemonkeys.common</groupId>
+        <artifactId>common-io</artifactId>
+        <version>${twelvemonkeys.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.twelvemonkeys.imageio</groupId>
+        <artifactId>imageio-bmp</artifactId>
+        <version>${twelvemonkeys.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.twelvemonkeys.imageio</groupId>
+        <artifactId>imageio-jpeg</artifactId>
+        <version>${twelvemonkeys.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.twelvemonkeys.imageio</groupId>
+        <artifactId>imageio-psd</artifactId>
+        <version>${twelvemonkeys.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.twelvemonkeys.imageio</groupId>
+        <artifactId>imageio-tiff</artifactId>
+        <version>${twelvemonkeys.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>commons-cli</groupId>
+        <artifactId>commons-cli</artifactId>
+        <version>${commons.cli.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>commons-codec</groupId>
+        <artifactId>commons-codec</artifactId>
+        <version>${commons.codec.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>commons-io</groupId>
+        <artifactId>commons-io</artifactId>
+        <version>${commons.io.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>commons-logging</groupId>
+        <artifactId>commons-logging</artifactId>
+        <version>${commons.logging.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.projectreactor</groupId>
+        <artifactId>reactor-core</artifactId>
+        <version>${reactor.core.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.projectreactor.netty</groupId>
+        <artifactId>reactor-netty-core</artifactId>
+        <version>${reactor.netty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.projectreactor.netty</groupId>
+        <artifactId>reactor-netty-http</artifactId>
+        <version>${reactor.netty.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>javax.annotation</groupId>
+        <artifactId>javax.annotation-api</artifactId>
+        <version>${javax.annotation.version}</version>
+      </dependency>
+      <!-- can't upgrade higher until geoapi does because of changes in classes after 2.1 -->
+      <dependency>
+        <groupId>javax.measure</groupId>
+        <artifactId>unit-api</artifactId>
+        <version>2.1</version>
+      </dependency>
+      <dependency>
+        <groupId>javax.ws.rs</groupId>
+        <artifactId>javax.ws.rs-api</artifactId>
+        <version>${javax.rest.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>javax.xml.soap</groupId>
+        <artifactId>javax.xml.soap-api</artifactId>
+        <version>1.4.0</version>
+      </dependency>
+      <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>${junit4.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>net.java.dev.jna</groupId>
+        <artifactId>jna</artifactId>
+        <version>${jna.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-collections4</artifactId>
+        <version>${commons.collections4.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-compress</artifactId>
+        <version>${commons.compress.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-csv</artifactId>
+        <version>${commons.csv.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-exec</artifactId>
+        <version>${commons.exec.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-lang3</artifactId>
+        <version>${commons.lang3.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-math3</artifactId>
+        <version>${commons.math3.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>org.apache.felix.scr.annotations</artifactId>
+        <version>1.12.0</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.httpcomponents</groupId>
+        <artifactId>httpclient</artifactId>
+        <version>${httpcomponents.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.httpcomponents</groupId>
+        <artifactId>httpcore</artifactId>
+        <version>${httpcore.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.httpcomponents</groupId>
+        <artifactId>httpmime</artifactId>
+        <version>${httpcomponents.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.jackrabbit</groupId>
+        <artifactId>oak-jackrabbit-api</artifactId>
+        <version>${oak.jackrabbit.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-core</artifactId>
+        <version>${log4j2.version}</version>
+        <exclusions>
+        <!-- weak dependency on org.osgi.core 4.3.1 -->
+          <exclusion>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.core</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.lucene</groupId>
+        <artifactId>lucene-analyzers-common</artifactId>
+        <version>${lucene.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.lucene</groupId>
+        <artifactId>lucene-analyzers-icu</artifactId>
+        <version>${lucene.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.lucene</groupId>
+        <artifactId>lucene-core</artifactId>
+        <version>${lucene.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.opennlp</groupId>
+        <artifactId>opennlp-tools</artifactId>
+        <version>${opennlp.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.poi</groupId>
+        <artifactId>poi</artifactId>
+        <version>${poi.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.poi</groupId>
+        <artifactId>poi-ooxml</artifactId>
+        <version>${poi.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.xmlbeans</groupId>
+        <artifactId>xmlbeans</artifactId>
+        <version>5.3.0</version>
+        <!-- need to exclude these provided dependencies -->
+        <exclusions>
+          <exclusion>
+            <groupId>com.github.javaparser</groupId>
+            <artifactId>javaparser-core</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>com.github.javaparser</groupId>
+            <artifactId>javaparser-symbol-solver-core</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>com.sun.org.apache.xml.internal</groupId>
+            <artifactId>resolver</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.ant</groupId>
+            <artifactId>ant</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>net.sf.saxon</groupId>
+            <artifactId>Saxon-HE</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.maven</groupId>
+            <artifactId>maven-core</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.maven</groupId>
+            <artifactId>maven-model</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.maven</groupId>
+            <artifactId>maven-plugin-api</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.maven.plugin-tools</groupId>
+            <artifactId>maven-plugin-annotations</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.maven.plugin-tools</groupId>
+            <artifactId>maven-plugin-tools</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <!-- prevent zookeeper 3.6.2 from being used in Apache Solr emitter by solr 8.11.4 -->
+      <dependency>
+        <groupId>org.apache.zookeeper</groupId>
+        <artifactId>zookeeper</artifactId>
+        <version>${zookeeper.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.bouncycastle</groupId>
+        <artifactId>bcmail-jdk18on</artifactId>
+        <version>${bouncycastle.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.bouncycastle</groupId>
+        <artifactId>bcpkix-jdk18on</artifactId>
+        <version>${bouncycastle.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.bouncycastle</groupId>
+        <artifactId>bcprov-jdk18on</artifactId>
+        <version>${bouncycastle.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.ccil.cowan.tagsoup</groupId>
+        <artifactId>tagsoup</artifactId>
+        <version>1.2.1</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.plexus</groupId>
+        <artifactId>plexus-classworlds</artifactId>
+        <version>2.8.0</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.plexus</groupId>
+        <artifactId>plexus-utils</artifactId>
+        <version>4.0.2</version>
+      </dependency>
+      <dependency>
+        <groupId>org.freemarker</groupId>
+        <artifactId>freemarker</artifactId>
+        <version>2.3.34</version>
+      </dependency>
+      <dependency>
+        <groupId>org.glassfish.jaxb</groupId>
+        <artifactId>jaxb-runtime</artifactId>
+        <version>${jaxb.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jdom</groupId>
+        <artifactId>jdom2</artifactId>
+        <version>${jdom2.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jvnet.staxex</groupId>
+        <artifactId>stax-ex</artifactId>
+        <version>2.1.0</version>
+        <exclusions>
+            <!-- avoid dependency convergence error in tika-translate if > 2.0.1 on jdk18 -->
+            <exclusion>
+                <groupId>jakarta.activation</groupId>
+                <artifactId>jakarta.activation-api</artifactId>
+            </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.mockito</groupId>
+        <artifactId>mockito-core</artifactId>
+        <version>${mockito.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.netpreserve</groupId>
+        <artifactId>jwarc</artifactId>
+        <version>0.31.1</version>
+      </dependency>
+      <dependency>
+        <groupId>org.opengis</groupId>
+        <artifactId>geoapi</artifactId>
+        <version>3.0.2</version>
+      </dependency>
+      <dependency>
+        <groupId>org.ops4j.base</groupId>
+        <artifactId>ops4j-base-lang</artifactId>
+        <version>${ops4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.ops4j.base</groupId>
+        <artifactId>ops4j-base-util-property</artifactId>
+        <version>${ops4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.osgi</groupId>
+        <artifactId>org.osgi.compendium</artifactId>
+        <version>${osgi.compendium.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.osgi</groupId>
+        <artifactId>org.osgi.core</artifactId>
+        <version>${osgi.core.version}</version>
+      </dependency>
+      <!-- for bndlib -->
+      <dependency>
+        <groupId>org.osgi</groupId>
+        <artifactId>org.osgi.util.function</artifactId>
+        <version>1.2.0</version>
+      </dependency>
+      <dependency>
+        <groupId>org.quartz-scheduler</groupId>
+        <artifactId>quartz</artifactId>
+        <version>${quartz.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>jcl-over-slf4j</artifactId>
+        <version>${slf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>${slf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-simple</artifactId>
+        <version>${slf4j.version}</version>
+      </dependency>
+      <!-- need to specify this to avoid
+      version clash within ctakes-core 4.0.0 -->
+      <dependency>
+        <groupId>org.apache.uima</groupId>
+        <artifactId>uimafit-core</artifactId>
+        <version>${uimafit.version}</version>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.uima</groupId>
+        <artifactId>uimaj-core</artifactId>
+        <version>${uima.version}</version>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.uima</groupId>
+        <artifactId>uimaj-cpe</artifactId>
+        <version>${uimaj.cpe.version}</version>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.xerial.snappy</groupId>
+        <artifactId>snappy-java</artifactId>
+        <version>${snappy.java.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>xerces</groupId>
+        <artifactId>xercesImpl</artifactId>
+        <version>${xerces.version}</version>
+      </dependency>
+      <dependency>
+          <groupId>commons-fileupload</groupId>
+          <artifactId>commons-fileupload</artifactId>
+          <version>${commons.fileupload.version}</version>
+      </dependency>
+      <!-- this one only to keep version plugin output smaller -->
+      <dependency>
+        <groupId>org.apache.maven.plugin-tools</groupId>
+        <artifactId>maven-plugin-annotations</artifactId>
+        <version>3.15.1</version>
+      </dependency>
+      <!-- for zookeeper to avoid CVE-2023-6378 -->
+      <dependency>
+          <groupId>ch.qos.logback</groupId>
+          <artifactId>logback-core</artifactId>
+          <version>${logback.version}</version>
+      </dependency>
+      <dependency>
+          <groupId>ch.qos.logback</groupId>
+          <artifactId>logback-classic</artifactId>
+          <version>${logback.version}</version>
+      </dependency>
+      <dependency>
+          <groupId>org.bytedeco</groupId>
+          <artifactId>hdf5</artifactId>
+          <version>${hdf5.version}</version>
+      </dependency>
+      <dependency>
+          <groupId>org.bytedeco</groupId>
+          <artifactId>hdf5-platform</artifactId>
+          <version>${hdf5.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>${maven.compiler.plugin.version}</version>
+        <configuration>
+          <showDeprecation>true</showDeprecation>
+          <compilerArgument>-Xlint:deprecation</compilerArgument>
+          <source>${maven.compiler.source}</source>
+          <target>${maven.compiler.target}</target>
+        </configuration>
+      </plugin>
+      <!--
+        mvn versions:display-plugin-updates
+        mvn versions:display-dependency-updates
+      -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>versions-maven-plugin</artifactId>
+        <version>2.18.0</version>
+        <configuration>
+          <generateBackupPoms>false</generateBackupPoms>
+        </configuration>
+      </plugin>
+      <!-- to run just this: mvn ossindex:audit -Dossindex.fail=(true|false)
+          Although, -Dossindex.fail doesn't seem to work for us -->
+      <plugin>
+        <groupId>org.sonatype.ossindex.maven</groupId>
+        <artifactId>ossindex-maven-plugin</artifactId>
+        <version>3.2.0</version>
+        <configuration>
+          <excludeCoordinates>
+            <!-- the link from ossindex "divide by zero" points to fixes that were made in 2.18.0 -->
+            <exclude>
+              <groupId>com.drewnoakes</groupId>
+              <artifactId>metadata-extractor</artifactId>
+              <version>2.18.0</version>
+            </exclude>
+            <exclude>
+              <!-- CVE-2018-18928 does affect the java library not just the c/c++ library,
+              upon further research -->
+              <groupId>com.ibm.icu</groupId>
+              <artifactId>icu4j</artifactId>
+              <version>${icu4j.version}</version>
+            </exclude>
+            <exclude>
+              <!-- the most recent cve in sonatype for this artifact is 2.11.0,
+                  not at all the version we're using...smh-->
+              <groupId>xerces</groupId>
+              <artifactId>xercesImpl</artifactId>
+              <version>${xerces.version}</version>
+            </exclude>
+            <!-- used only in tests and in tika-eval, and this problem requires the use of the console.
+                 https://github.com/h2database/h2database/issues/1294 -->
+            <exclude>
+                <groupId>com.h2database</groupId>
+                <artifactId>h2</artifactId>
+                <version>${h2.version}</version>
+            </exclude>
+            <!-- CVE-2023-39913: Uima is used because ctakes is used in the
+            natural language process module. Serialization is only on data that is configured in
+            tika-config.xml. We don't think we'd be vulnerable to crafted user input. -->
+            <coordinate>
+                <groupId>org.apache.uima</groupId>
+                <artifactId>uimaj-core</artifactId>
+                <version>3.4.1</version>
+            </coordinate>
+            <!-- provided dependency brought in by org.deeplearning4j:deeplearning4j-utility-iterators -->
+            <coordinate>
+              <groupId>org.threeten</groupId>
+              <artifactId>threetenbp</artifactId>
+              <version>1.3.3</version>
+            </coordinate>
+            <!-- brought in by gcs fetcher -->
+            <!-- CVE-2024-23082 and CVE-2024-23081 are disputed -->
+            <coordinate>
+              <groupId>org.threeten</groupId>
+              <artifactId>threetenbp</artifactId>
+              <version>1.7.0</version>
+            </coordinate>
+            <!-- while waiting for 1.14.4 to appear on maven central, see
+                 https://www.hdfgroup.org/2024/05/new-hdf5-cve-issues-fixed-in-1-14-4/
+            -->
+            <coordinate>
+                <groupId>org.bytedeco</groupId>
+                <artifactId>hdf5</artifactId>
+                <version>1.14.3-1.5.10</version>
+            </coordinate>
+            <coordinate>
+                <groupId>org.bytedeco</groupId>
+                <artifactId>hdf5-platform</artifactId>
+                <version>1.14.3-1.5.10</version>
+            </coordinate>
+            <!-- https://github.com/jetty/jetty.project/pull/12012
+                 "As stated in CVE-2024-6763, the use of Jetty server, or Jetty client, does not make you vulnerable to that CVE.
+                  The code for HttpURI is also quite different in those older, no longer supported, versions of Jetty.
+            -->
+            <coordinate>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-http</artifactId>
+                <version>9.4.57.v20241219</version>
+            </coordinate>
+            <coordinate>
+              <groupId>org.springframework</groupId>
+              <artifactId>spring-context</artifactId>
+              <version>5.3.39</version>
+            </coordinate>
+          </excludeCoordinates>
+          <fail>true</fail>
+        </configuration>
+        <executions>
+          <execution>
+            <id>audit-dependencies</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>audit</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>de.thetaphi</groupId>
+        <artifactId>forbiddenapis</artifactId>
+        <version>${forbiddenapis.version}</version>
+        <configuration>
+          <targetVersion>${maven.compiler.target}</targetVersion>
+          <ignoreSignaturesOfMissingClasses>true</ignoreSignaturesOfMissingClasses>
+          <failOnUnsupportedJava>false</failOnUnsupportedJava>
+          <excludes>test-documents/*.class</excludes>
+          <bundledSignatures>
+            <bundledSignature>jdk-unsafe</bundledSignature>
+            <bundledSignature>jdk-deprecated</bundledSignature>
+            <bundledSignature>jdk-non-portable</bundledSignature>
+            <bundledSignature>jdk-internal</bundledSignature>
+            <!-- replace with ${commons.io.version} when available -->
+            <bundledSignature>commons-io-unsafe-2.11.0</bundledSignature>
+          </bundledSignatures>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>check</goal>
+              <goal>testCheck</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>maven-bundle-plugin</artifactId>
+        <version>${maven.bundle.version}</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>${maven.surefire.version}
+        </version> <!-- versions greater than this don't like System.exit calls in tika-batch -->
+        <configuration>
+          <argLine>-Xmx3072m -Djava.awt.headless=true</argLine>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>${maven.shade.version}</version>
+      </plugin>
+      <!-- assembly must happen after shade so that
+        tika-server's -bin.tgz/zip includes the uber jar
+        -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>${maven.assembly.version}</version>
+        <configuration>
+          <tarLongFileMode>posix</tarLongFileMode>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-release-plugin</artifactId>
+        <version>3.1.1</version>
+        <configuration>
+          <autoVersionSubmodules>true</autoVersionSubmodules>
+        </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>org.apache.maven.scm</groupId>
+            <artifactId>maven-scm-provider-gitexe</artifactId>
+            <version>${scm.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.apache.maven.scm</groupId>
+            <artifactId>maven-scm-api</artifactId>
+            <version>${scm.version}</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <version>3.5.0</version>
+        <executions>
+          <execution>
+            <id>enforce-maven</id>
+            <configuration>
+              <rules>
+                <dependencyConvergence />
+                <requireMavenVersion>
+                  <version>3.6.3</version>
+                </requireMavenVersion>
+              </rules>
+            </configuration>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>ban-bad-log4j-versions</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <bannedDependencies>
+                  <excludes>
+                    <!-- log4shell -->
+                    <exclude>org.apache.logging.log4j:log4j-core:(,2.17.1)</exclude>
+                    <!--
+                          https://github.com/apache/logging-log4j2/issues/3143
+                          https://github.com/apache/logging-log4j2/issues/3196
+                      -->
+                    <exclude>org.apache.logging.log4j:log4j-core:[2.24.1]</exclude>
+                    <exclude>org.apache.logging.log4j:log4j-api:[2.24.1]</exclude>
+                  </excludes>
+                </bannedDependencies>
+              </rules>
+              <fail>true</fail>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <!-- mvn validate -->
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <version>${checkstyle.plugin.version}</version>
+        <dependencies>
+          <dependency>
+            <groupId>com.puppycrawl.tools</groupId>
+            <artifactId>checkstyle</artifactId>
+            <version>${puppycrawl.version}</version>
+          </dependency>
+        </dependencies>
+        <executions>
+          <execution>
+            <id>validate</id>
+            <phase>validate</phase>
+            <configuration>
+              <configLocation>checkstyle.xml</configLocation>
+              <consoleOutput>false</consoleOutput>
+              <includeTestSourceDirectory>true</includeTestSourceDirectory>
+              <testSourceDirectories>${project.basedir}/src/test/java</testSourceDirectories>
+              <violationSeverity>warn</violationSeverity>
+              <failOnViolation>true</failOnViolation>
+              <failsOnError>true</failsOnError>
+            </configuration>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+  <profiles>
+    <profile>
+      <id>pedantic</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.rat</groupId>
+            <artifactId>apache-rat-plugin</artifactId>
+            <version>${rat.version}</version>
+            <executions>
+              <execution>
+                <phase>verify</phase>
+                <goals>
+                  <goal>check</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>sonar</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <excludes>
+                <exclude>**/ForkParser*Test.java</exclude>
+              </excludes>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>doclint-java8-disable</id>
+      <activation>
+        <jdk>[1.8,)</jdk>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>${maven.javadoc.version}</version>
+            <configuration>
+              <doclint>none</doclint>
+              <source>8</source>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>jdk9</id>
+      <activation>
+        <jdk>[1.9,)</jdk>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <configuration>
+              <release>8</release>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>ossindex-fail</id>
+      <!-- actually fail the build on vulnerabilities -->
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.sonatype.ossindex.maven</groupId>
+            <artifactId>ossindex-maven-plugin</artifactId>
+            <version>3.2.0</version>
+            <configuration>
+              <fail>true</fail>
+              <excludeCoordinates>
+                <!--            <coordinate>            </coordinate> -->
+              </excludeCoordinates>
+            </configuration>
+            <executions>
+              <execution>
+                <id>audit-dependencies</id>
+                <phase>validate</phase>
+                <goals>
+                  <goal>audit</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+  <!--
+      <connection>scm:git:https://github.com/apache/</connection>
+      <developerConnection>scm:git:https://github.com/apache/</developerConnection>
+      <url>https://github.com/apache/tika</url>
+  -->
+  <scm>
+    <tag>2.9.3-rc1</tag>
+    <connection>scm:git:https://github.com/apache/</connection>
+    <developerConnection>scm:git:https://github.com/apache/</developerConnection>
+    <url>https://github.com/apache/tika</url>
+  </scm>
+</project>

@@ -1,0 +1,645 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.    
+
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.apache</groupId>
+    <artifactId>apache</artifactId>
+    <version>5</version>
+  </parent>
+  <groupId>com.evolvedbinary.thirdparty.org.apache.xmlrpc</groupId>
+  <artifactId>xmlrpc</artifactId>
+  <name>Apache XML-RPC</name>
+  <version>5.0.0</version>
+  <description>
+    Apache XML-RPC is a Java implementation of XML-RPC, a popular protocol that uses XML over HTTP to
+    implement remote procedure calls. Compared to SOAP, or JAX-RPC, it is stable, much simpler and easier to handle.
+    Version 3 of Apache XML-RPC introduces several important vendor extensions over the original XML-RPC
+    specification.
+  </description>
+  <packaging>pom</packaging>
+  <url>https://ws.apache.org/xmlrpc/</url>
+  <inceptionYear>2001</inceptionYear>
+
+  <licenses>
+    <license>
+      <name>Apache 2.0</name>
+      <url>https://opensource.org/licenses/Apache2.0</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <modules>
+    <module>common</module>
+    <module>client</module>
+    <module>server</module>
+    <module>dist</module>
+  </modules>
+
+  <issueManagement>
+    <system>GitHub</system>
+    <url>https://github.com/evolvedbinary/apaxche-xmlrpc/issues</url>
+  </issueManagement>
+
+  <ciManagement>
+    <system>CircleCI</system>
+    <url>https://circleci.com/gh/evolvedbinary/apache-xmlrpc/tree/main</url>
+  </ciManagement>
+
+  <mailingLists>
+    <mailingList>
+      <name>XML-RPC Developers</name>
+      <subscribe>xmlrpc-dev-subscribe@ws.apache.org</subscribe>
+      <unsubscribe>xmlrpc-dev-unsubscribe@ws.apache.org</unsubscribe>
+      <post>xmlrpc-dev@ws.apache.org</post>
+      <archive>http://mail-archives.apache.org/mod_mbox/ws-xmlrpc-dev/</archive>
+      <otherArchives>
+        <otherArchive>http://marc.theaimsgroup.com/?l=xmlrpc-dev</otherArchive>
+      </otherArchives>
+    </mailingList>
+    <mailingList>
+      <name>XML-RPC Automatic Mails</name>
+      <subscribe>xmlrpc-auto-subscribe@ws.apache.org</subscribe>
+      <unsubscribe>xmlrpc-auto-unsubscribe@ws.apache.org</unsubscribe>
+      <post>xmlrpc-auto@ws.apache.org</post>
+      <archive>http://mail-archives.apache.org/mod_mbox/ws-xmlrpc-auto/</archive>
+    </mailingList>
+  </mailingLists>
+
+  <developers>
+    <developer>
+      <name>Andrew Evers</name>
+      <id>aevers</id>
+      <email>aevers@redwood.nl</email>
+    </developer>
+    <developer>
+      <name>Siegfried Goeschl</name>
+      <id>sgoeschl</id>
+      <email>sgoeschl@apache.org</email>
+    </developer>
+    <developer>
+      <name>Henri Gomez</name>
+      <id>hgomez</id>
+      <email>hgomez@apache.org</email>
+    </developer>
+    <developer>
+      <name>Ryan Hoegg</name>
+      <id>rhoegg</id>
+      <email>rhoegg@isisnetworks.net</email>
+      <organization>ISIS Networks</organization>
+    </developer>
+    <developer>
+      <name>Daniel Rall</name>
+      <id>dlr</id>
+      <email>dlr@finemaltcoding.com</email>
+      <organization>CollabNet, Inc.</organization>
+    </developer>
+    <developer>
+      <name>Leonard Richarson</name>
+      <id>leonardr</id>
+      <email>leonardr@collab.net</email>
+      <organization>CollabNet, Inc.</organization>
+    </developer>
+    <developer>
+      <name>Jon Scott Stevens</name>
+      <id>jon</id>
+      <email>jon@latchkey.com</email>
+      <organization>CollabNet, Inc.</organization>
+    </developer>
+    <developer>
+      <name>Hannes Wallnoefer</name>
+      <id>hannes</id>
+      <email>hannes@apache.org</email>
+    </developer>
+    <developer>
+      <name>Jochen Wiedmann</name>
+      <id>jochen</id>
+      <email>jochen.wiedmann@gmail.com</email>
+    </developer>
+    <developer>
+      <name>John Wilson</name>
+      <id>jwilson</id>
+      <email>tug@wilson.co.uk</email>
+      <organization>The Wilson Partnership</organization>
+    </developer>
+    <developer>
+      <name>Jason van Zyl</name>
+      <id>jvanzyl</id>
+      <email>jason@zenplex.com</email>
+      <organization>Zenplex</organization>
+    </developer>
+  </developers>
+
+  <contributors>
+    <contributor>
+      <name>Gamaliel Amaudruz</name>
+      <email>gamaliel@fastmail.fm</email>
+    </contributor>
+    <contributor>
+      <name>Póka Balázs</name>
+      <email>p.balazs@gmail.com</email>
+    </contributor>
+    <contributor>
+      <name>Alan Burlison</name>
+      <email>Alan.Burlison@sun.com</email>
+    </contributor>
+    <contributor>
+      <name>James Baldassari</name>
+      <email>jbaldassari@gmail.com</email>
+    </contributor>
+    <contributor>
+      <name>Denis Carniel</name>
+      <email>2nis@aktiv-design.com</email>
+    </contributor>
+    <contributor>
+      <name>Steve Cohen</name>
+      <email>sc1478@att.com</email>
+    </contributor>
+    <contributor>
+      <name>Chris Conrad</name>
+      <email>rhavyn@gmail.com</email>
+    </contributor>
+    <contributor>
+      <name>Brandon DuRette</name>
+      <email>brandond@alum.mit.edu</email>
+    </contributor>
+    <contributor>
+      <name>Landon Fuller</name>
+      <email>landonf@threerings.net</email>
+    </contributor>
+    <contributor>
+      <name>Gam</name>
+      <email>gamaliel@fastmail.fm</email>
+    </contributor>
+    <contributor>
+      <name>Mark Gertsvolf</name>
+      <email>markg@nortel.com</email>
+    </contributor>
+    <contributor>
+      <name>Johan Hôgre</name>
+      <email>johan.hagre@home.se</email>
+    </contributor>
+    <contributor>
+      <name>Catalin Hritcu</name>
+      <email>Catalin.Hritcu@gmail.com</email>
+    </contributor>
+    <contributor>
+      <name>Teemu Kanstren</name>
+      <email>tkanstren@gmail.com</email>
+    </contributor>
+    <contributor>
+      <name>Brad Karp</name>
+      <email>bkarp@cs.ucl.ac.uk</email>
+    </contributor>
+    <contributor>
+      <name>Kay Tiong Khoo</name>
+      <email>kaytiong@gmail.com</email>
+    </contributor>
+    <contributor>
+      <name>Jimisola Laursen</name>
+      <email>jimisola@jimisola.com</email>
+    </contributor>
+    <contributor>
+      <name>Mario Linke</name>
+      <email>linke.mario@web.de</email>
+    </contributor>
+    <contributor>
+        <name>Livnat Peer</name>
+        <email>livnats@gmail.com</email>
+    </contributor>
+    <contributor>
+      <name>Marek Ludha</name>
+      <email>mludha@gmail.com</email>
+    </contributor>
+    <contributor>
+      <name>Jason McLaurin</name>
+      <email>jmclaurin@petronworld.com</email>
+    </contributor>
+    <contributor>
+      <name>Keith McNeill</name>
+      <email>mcneill@streambase.com</email>
+    </contributor>
+    <contributor>
+      <name>Stanislav Miklik</name>
+      <email>stanislav.miklik@gmail.com</email>
+    </contributor>
+    <contributor>
+      <name>Walter Mundt</name>
+      <email>Walter.Mundt@coleengineering.com</email>
+    </contributor>
+    <contributor>
+      <name>Andrew Norman</name>
+      <email>anorman@piczoinc.com</email>
+    </contributor>
+    <contributor>
+      <name>Perry Nguyen</name>
+      <email>pfnguyen@hanhuy.com</email>
+    </contributor>
+    <contributor>
+      <name>Jonathan Oexner</name>
+      <email>jonathan.oexner@alum.wpi.edu</email>
+    </contributor>
+    <contributor>
+      <name>Mark Petrovic</name>
+      <email>mspetrovic@gmail.com</email>
+    </contributor>
+    <contributor>
+      <name>Steffen Pingel</name>
+      <email>steffenp@gmx.de</email>
+    </contributor>
+    <contributor>
+      <name>Matt Preston</name>
+      <email>matt@knowledgeview.co.uk</email>
+    </contributor>
+    <contributor>
+      <name>Eugene Prokopiev</name>
+      <email>prokopiev@stc.donpac.ru</email>
+    </contributor>
+    <contributor>
+      <name>Sir Bode Rafael</name>
+      <email>sirboderafael@gmail.com</email>
+    </contributor>
+    <contributor>
+      <name>Andreas Sahlbach</name>
+      <email>andreas.sahlbach@gmail.com</email>
+    </contributor>
+    <contributor>
+      <name>Antoine Toulme</name>
+      <email>antoine@lunar-ocean.com</email>
+    </contributor>
+    <contributor>
+      <name>Julio Francisco Veronelli</name>
+      <email>ckjfveronelli@fibertel.com.ar</email>
+    </contributor>
+    <contributor>
+      <name>Oliver Wagner</name>
+      <email>apache@garagemaxx.de</email>
+    </contributor>
+    <contributor>
+      <name>Ken Weiner</name>
+      <email>kweiner@gmail.com</email>
+    </contributor>
+    <contributor>
+      <name>Carsten Wolters</name>
+      <email>c.wolters@gmx.de</email>
+    </contributor>
+    <contributor>
+      <name>Greg Wurth</name>
+      <email>hackwurth@mac.com</email>
+    </contributor>
+    <contributor>
+      <name>Juho Yli-Krekola</name>
+      <email>Juho.Yli-Krekola@iki.fi</email>
+    </contributor>
+    <contributor>
+      <name>Adam Retter</name>
+      <email>adam@evolvedbinary.com</email>
+      <organization>Evolved Binary</organization>
+      <organizationUrl>https://www.evolvedbinary.com</organizationUrl>
+      <timezone>UTC</timezone>
+    </contributor>
+  </contributors>
+
+  <scm>
+    <connection>scm:git:https://github.com/evolvedbinary/apache-xmlrpc.git</connection>
+    <developerConnection>scm:git:https://github.com/evolvedbinary/apache-xmlrpc.git</developerConnection>
+    <url>scm:git:https://github.com/evolvedbinary/apache-xmlrpc.git</url>
+    <tag>xmlrpc-5.0.0</tag>
+  </scm>
+
+  <build>
+  	<resources>
+  		<resource>
+  			<filtering>true</filtering>
+  			<directory>src/main/filtered-resources</directory>
+  		</resource>
+  	</resources>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>2.0.2</version>
+        <inherited>true</inherited>
+        <configuration>
+          <source>1.3</source>
+          <target>1.2</target>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-release-plugin</artifactId>
+        <version>2.5.3</version>
+        <configuration>
+          <autoVersionSubmodules>true</autoVersionSubmodules>
+          <useReleaseProfile>true</useReleaseProfile>
+          <releaseProfiles>eb-xmlrpc-release</releaseProfiles>
+        </configuration>
+      </plugin>
+
+    </plugins>
+    <pluginManagement>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <version>2.0.1</version>
+            </plugin>
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-gpg-plugin</artifactId>
+              <version>1.6</version>
+            </plugin>
+        </plugins>
+    </pluginManagement>
+  </build>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>commons-logging</groupId>
+        <artifactId>commons-logging</artifactId>
+        <version>1.1</version>
+        <exclusions>
+          <exclusion>
+            <groupId>avalon-framework</groupId>
+            <artifactId>avalon-framework</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>logkit</groupId>
+            <artifactId>logkit</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>jakarta.servlet</groupId>
+        <artifactId>jakarta.servlet-api</artifactId>
+        <version>5.0.0</version>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>3.8.1</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.ws.commons.util</groupId>
+        <artifactId>ws-commons-util</artifactId>
+        <version>1.0.2</version>
+      </dependency>
+      <dependency>
+        <groupId>jaxme</groupId>
+        <artifactId>jaxmeapi</artifactId>
+        <version>0.5.1</version>
+        <scope>provided</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>2.5</version>
+        <reportSets>
+          <reportSet>
+            <configuration>
+              <aggregate>true</aggregate>
+              <source>${maven.compile.source}</source>
+            </configuration>
+            <reports>
+              <report>javadoc</report>
+            </reports>
+          </reportSet>
+        </reportSets>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-changes-plugin</artifactId>
+        <version>2.1</version>
+        <reportSets>
+          <reportSet>
+            <reports>
+              <report>changes-report</report>
+            </reports>
+          </reportSet>
+        </reportSets>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.rat</groupId>
+        <artifactId>apache-rat-plugin</artifactId>
+        <version>0.6</version>
+      </plugin>
+    </plugins>
+  </reporting>
+
+  <distributionManagement>
+    <site>
+      <id>${xmlrpc.www.id}</id>
+      <name>XML-RPC directory on ws.apache.org</name>
+      <url>${xmlrpc.www.url}</url>
+    </site>
+    <repository>
+      <id>sonatype-nexus-staging</id>
+      <name>Nexus Release Repository</name>
+      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+    </repository>
+  </distributionManagement>
+
+  <profiles>
+    <profile>
+      <activation>
+        <jdk>1.4</jdk>
+      </activation>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.ws.commons</groupId>
+          <artifactId>ws-commons-java5</artifactId>
+          <version>1.0.1</version>
+        </dependency>
+      </dependencies>
+    </profile>
+    <profile>
+      <id>release</id>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-site-plugin</artifactId>
+            <executions>
+              <execution>
+                <inherited>false</inherited>
+                <phase>generate-resources</phase>
+                <goals>
+                  <goal>site</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <artifactId>maven-remote-resources-plugin</artifactId>
+            <version>1.0</version>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>process</goal>
+                </goals>
+                <configuration>
+                  <resourceBundles>
+                    <resourceBundle>org.apache:apache-jar-resource-bundle:1.4</resourceBundle>
+                  </resourceBundles>
+                  <properties>
+                    <addLicense>true</addLicense>
+                  </properties>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <version>2.2-beta-3</version>
+            <executions>
+              <execution>
+                <id>create-assemblies</id>
+                <goals>
+                  <goal>attached</goal>
+                </goals>
+                <phase>packaging</phase>
+                <configuration>
+                  <descriptors>
+                    <descriptor>src/main/assembly/bin.xml</descriptor>
+                    <descriptor>src/main/assembly/src.xml</descriptor>
+                  </descriptors>
+                  <tarLongFileMode>gnu</tarLongFileMode>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <!-- We want to sign the artifact, the POM, and all attached artifacts -->
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <configuration>
+              <passphrase>${gpg.passphrase}</passphrase>
+            </configuration>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <!-- We want to deploy the artifact to a staging location for perusal -->
+          <plugin>
+            <inherited>true</inherited>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-deploy-plugin</artifactId>
+            <version>2.4</version>
+            <configuration>
+              <altDeploymentRepository>${deploy.altRepository}</altDeploymentRepository>
+              <updateReleaseInfo>true</updateReleaseInfo>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <version>2.0.4</version>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>2.5</version>
+            <configuration>
+              <source>${maven.compile.source}</source>
+            </configuration>
+            <executions>
+              <execution>
+                <id>attach-javadocs</id>
+                <goals>
+                  <goal>jar</goal>
+                  <goal>aggregate</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>clirr-maven-plugin</artifactId>
+            <version>2.2.2</version>
+            <executions>
+              <execution>
+                <id>clirr-check</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>check</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.rat</groupId>
+            <artifactId>apache-rat-plugin</artifactId>
+            <version>0.6</version>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <!-- NOTE: this is used from the maven-release-plugin -->
+      <id>eb-xmlrpc-release</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <xmlrpc.www.url>scp://people.apache.org/www/ws.apache.org/xmlrpc</xmlrpc.www.url>
+    <xmlrpc.www.id>people.apache.org</xmlrpc.www.id>
+  </properties>
+</project>

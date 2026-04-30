@@ -1,0 +1,514 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+   Licensed to the Apache Software Foundation (ASF) under one or more
+   contributor license agreements.  See the NOTICE file distributed with
+   this work for additional information regarding copyright ownership.
+   The ASF licenses this file to You under the Apache License, Version 2.0
+   (the "License"); you may not use this file except in compliance with
+   the License.  You may obtain a copy of the License at
+
+       https://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+<project
+    xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/maven-v4_0_0.xsd">
+  <parent>
+    <groupId>org.apache.commons</groupId>
+    <artifactId>commons-parent</artifactId>
+    <version>93</version>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>commons-dbcp2</artifactId>
+  <version>2.14.0</version>
+  <name>Apache Commons DBCP</name>
+  <inceptionYear>2001</inceptionYear>
+  <description>Apache Commons DBCP software implements Database Connection Pooling</description>
+  <url>https://commons.apache.org/proper/commons-dbcp/</url>
+  <distributionManagement>
+    <!-- Cannot define in parent ATM, see COMMONSSITE-26 -->
+    <site>
+      <id>apache.website</id>
+      <name>Apache Commons Site</name>
+      <url>scm:svn:https://svn.apache.org/repos/infra/websites/production/commons/content/proper/commons-dbcp/</url>
+    </site>
+  </distributionManagement>
+  <issueManagement>
+    <url>https://issues.apache.org/jira/browse/DBCP</url>
+  </issueManagement>
+  <scm>
+    <connection>scm:git:https://gitbox.apache.org/repos/asf/commons-dbcp.git</connection>
+    <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/commons-dbcp.git</developerConnection>
+    <url>https://gitbox.apache.org/repos/asf?p=commons-dbcp.git</url>
+    <tag>rel/commons-dbcp-2.14.0</tag>
+  </scm>
+  <ciManagement>
+    <system>GitHub</system>
+    <url>https://github.com/apache/commons-dbcp/actions</url>
+  </ciManagement>
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-pool2</artifactId>
+      <version>${commons.pool.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>commons-logging</groupId>
+      <artifactId>commons-logging</artifactId>
+      <version>1.3.5</version>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>${commons.mockito.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <version>3.20.0</version>
+      <scope>test</scope>
+    </dependency>
+    <!-- For managed connections -->
+    <dependency>
+      <groupId>jakarta.transaction</groupId>
+      <artifactId>jakarta.transaction-api</artifactId>
+      <version>1.3.3</version>
+    </dependency>
+    <!-- tomcat naming jars for jndi reference tests -->
+    <dependency>
+      <groupId>tomcat</groupId>
+      <artifactId>naming-common</artifactId>
+      <version>5.0.28</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>tomcat</groupId>
+      <artifactId>naming-java</artifactId>
+      <version>5.0.28</version>
+      <scope>test</scope>
+    </dependency>
+    <!-- for testing of managed connections -->
+    <dependency>
+      <groupId>org.apache.geronimo.modules</groupId>
+      <artifactId>geronimo-transaction</artifactId>
+      <version>2.2.1</version>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>org.junit.jupiter</artifactId>
+          <groupId>junit-jupiter</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>commons-logging</artifactId>
+          <groupId>commons-logging</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+      <version>2.0.17</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.h2database</groupId>
+      <artifactId>h2</artifactId>
+      <!-- Versions >= 2.3.232 requires Java 11 -->
+      <version>2.2.224</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.narayana.jta</groupId>
+      <artifactId>narayana-jta</artifactId>
+      <!-- Versions >= 5.13.0 require Java 11 -->
+      <version>5.12.7.Final</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss</groupId>
+      <artifactId>jboss-transaction-spi</artifactId>
+      <version>8.0.0.Final</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.jboss.logging</groupId>
+          <artifactId>jboss-logging-spi</artifactId>
+        </exclusion>
+      </exclusions>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.logging</groupId>
+      <artifactId>jboss-logging</artifactId>
+      <!-- Versions >= 3.5.0 require Java 11 -->
+      <version>3.4.3.Final</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <!-- project.build.outputTimestamp is managed by Maven plugins, see https://maven.apache.org/guides/mini/guide-reproducible-builds.html -->
+    <project.build.outputTimestamp>2025-12-11T22:57:07Z</project.build.outputTimestamp>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+    <commons.componentid>dbcp</commons.componentid>
+    <commons.rc.version>RC1</commons.rc.version>
+    <commons.module.name>org.apache.commons.dbcp2</commons.module.name>
+    <commons.release.version>2.14.0</commons.release.version>
+    <commons.release.next>2.14.1</commons.release.next>
+    <commons.release.desc>for JDBC 4.2 on Java 8</commons.release.desc>
+    <commons.release.hash>sha512</commons.release.hash>
+    <commons.release.2.version>2.4.0</commons.release.2.version>
+    <commons.release.2.desc>for JDBC 4.1 on Java 7</commons.release.2.desc>
+    <commons.release.2.hash>sha256</commons.release.2.hash>
+    <commons.site.path>dbcp</commons.site.path>
+    <commons.scmPubUrl>https://svn.apache.org/repos/infra/websites/production/commons/content/proper/commons-dbcp</commons.scmPubUrl>
+    <commons.scmPubCheckoutDirectory>site-content</commons.scmPubCheckoutDirectory>
+    <commons.jira.id>DBCP</commons.jira.id>
+    <commons.jira.pid>12310469</commons.jira.pid>
+    <commons.pool.version>2.13.0</commons.pool.version>
+    <!-- See DBCP-445 and DBCP-454 -->
+    <commons.osgi.import>javax.transaction;version="1.1.0",javax.transaction.xa;version="1.1.0";partial=true;mandatory:=partial,*</commons.osgi.import>
+    <commons.japicmp.ignoreMissingClasses>true</commons.japicmp.ignoreMissingClasses>
+    <!-- Commons Release Plugin -->
+    <commons.bc.version>2.13.0</commons.bc.version>
+    <commons.release.isDistModule>true</commons.release.isDistModule>
+    <japicmp.skip>false</japicmp.skip>
+    <spotbugs.skip>false</spotbugs.skip>
+    <findbugs.skip>true</findbugs.skip>
+    <!-- spdx 0.6.0 can require Java 11 depending on undocumented behavior which kicks in for us here. -->
+    <commons.spdx.version>0.5.5</commons.spdx.version>
+    <surefire.argline></surefire.argline>
+    <!-- JaCoCo: Don't make code coverage worse than: -->
+    <commons.jacoco.haltOnFailure>true</commons.jacoco.haltOnFailure>
+    <!-- Keep the jacoco property order below which matches console output -->
+    <commons.jacoco.classRatio>0.98</commons.jacoco.classRatio>
+    <commons.jacoco.instructionRatio>0.74</commons.jacoco.instructionRatio>
+    <commons.jacoco.methodRatio>0.89</commons.jacoco.methodRatio>
+    <commons.jacoco.branchRatio>0.66</commons.jacoco.branchRatio>
+    <commons.jacoco.lineRatio>0.62</commons.jacoco.lineRatio>
+    <commons.jacoco.complexityRatio>0.78</commons.jacoco.complexityRatio>
+  </properties>
+  <build>
+    <defaultGoal>clean verify apache-rat:check japicmp:cmp checkstyle:check spotbugs:check pmd:check pmd:cpd-check javadoc:javadoc</defaultGoal>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-scm-publish-plugin</artifactId>
+          <version>${commons.scm-publish.version}</version>
+          <configuration>
+            <ignorePathsToDelete>
+              <ignorePathToDelete>javadocs</ignorePathToDelete>
+            </ignorePathsToDelete>
+          </configuration>
+        </plugin>
+        <!-- Allow use of "mvn checkstyle:checkstyle" -->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-checkstyle-plugin</artifactId>
+          <version>${commons.checkstyle-plugin.version}</version>
+          <configuration>
+            <configLocation>${basedir}/src/conf/checkstyle.xml</configLocation>
+            <enableRulesSummary>false</enableRulesSummary>
+            <includeTestSourceDirectory>true</includeTestSourceDirectory>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>com.github.spotbugs</groupId>
+          <artifactId>spotbugs-maven-plugin</artifactId>
+          <configuration>
+            <excludeFilterFile>${basedir}/src/conf/spotbugs-exclude-filter.xml</excludeFilterFile>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-javadoc-plugin</artifactId>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <argLine>${argLine} ${surefire.argline}</argLine>
+          <excludes>
+            <!-- Test support files -->
+            <exclude>**/Tester*.java</exclude>
+            <!-- Exclude nested classes which Surefire cannot handle -->
+            <exclude>**/Test*$*.java</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <configuration>
+          <descriptors>
+            <descriptor>src/main/assembly/bin.xml</descriptor>
+            <descriptor>src/main/assembly/src-tar-gz.xml</descriptor>
+            <descriptor>src/main/assembly/src-zip.xml</descriptor>
+          </descriptors>
+          <tarLongFileMode>gnu</tarLongFileMode>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-scm-publish-plugin</artifactId>
+        <configuration>
+          <ignorePathsToDelete>
+            <ignorePathToDelete>api-*</ignorePathToDelete>
+          </ignorePathsToDelete>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>com.github.siom79.japicmp</groupId>
+        <artifactId>japicmp-maven-plugin</artifactId>
+        <reportSets>
+          <reportSet>
+            <reports>
+              <report>cmp-report</report>
+            </reports>
+          </reportSet>
+        </reportSets>
+        <configuration>
+          <parameter>
+            <onlyModified>true</onlyModified>
+            <breakBuildOnBinaryIncompatibleModifications>${commons.japicmp.breakBuildOnBinaryIncompatibleModifications}</breakBuildOnBinaryIncompatibleModifications>
+            <!-- skip japicmp on "mvn site" - use "mvn package site" to include report -->
+            <ignoreMissingNewVersion>true</ignoreMissingNewVersion>
+            <reportOnlyFilename>true</reportOnlyFilename>
+            <skipPomModules>true</skipPomModules>
+            <ignoreMissingClasses>${commons.japicmp.ignoreMissingClasses}</ignoreMissingClasses>
+            <oldVersionPattern>${commons.bc.version}</oldVersionPattern>
+          </parameter>
+          <dependencies>
+            <dependency>
+              <groupId>jakarta.transaction</groupId>
+              <artifactId>jakarta.transaction-api</artifactId>
+              <version>1.3.1</version>
+            </dependency>
+          </dependencies>
+        </configuration>
+      </plugin>    
+      <plugin>
+        <groupId>com.github.spotbugs</groupId>
+        <artifactId>spotbugs-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-changes-plugin</artifactId>
+        <version>${commons.changes.version}</version>
+        <configuration>
+          <template>release-notes.vm</template>
+          <templateDirectory>src/changes</templateDirectory>
+          <!-- Limit this to released, supported versions else there are -->
+          <!-- to many issues in the report -->
+          <fixVersionIds>12313721,12326766,12328750</fixVersionIds>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <configuration>
+          <configLocation>${basedir}/src/conf/checkstyle.xml</configLocation>
+          <enableRulesSummary>false</enableRulesSummary>
+          <includeTestSourceDirectory>true</includeTestSourceDirectory>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-pmd-plugin</artifactId>
+        <configuration>
+          <targetJdk>${maven.compiler.target}</targetJdk>
+        </configuration>
+        <reportSets>
+          <reportSet>
+            <reports>
+              <report>pmd</report>
+              <report>cpd</report>
+            </reports>
+          </reportSet>
+        </reportSets>
+      </plugin>
+    </plugins>
+  </reporting>
+  <profiles>
+    <profile>
+      <id>jdk9-plus</id>
+      <activation>
+        <jdk>[1.9,)</jdk>
+      </activation>
+      <properties>
+        <surefire.argline>--add-exports=java.management/com.sun.jmx.mbeanserver=ALL-UNNAMED</surefire.argline>
+      </properties>
+    </profile>
+    <profile>
+      <id>jdk11-plus</id>
+      <activation>
+        <jdk>[11,)</jdk>
+      </activation>
+      <build>
+        <pluginManagement>
+          <plugins>
+            <plugin>
+              <!-- Javadoc 8 doesn't know how to deal with external sites that where generated with newer javadocs versions. -->
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-javadoc-plugin</artifactId>
+              <configuration>
+                <links>
+                  <link>https://commons.apache.org/proper/commons-pool/apidocs</link>
+                  <link>${commons.javadoc.javaee.link}</link>
+                </links>
+              </configuration>
+            </plugin>
+          </plugins>
+        </pluginManagement>
+      </build>
+    </profile>
+  </profiles>
+  <developers>
+    <developer>
+      <name>Morgan Delagrange</name>
+      <id>morgand</id>
+      <email></email>
+      <organization></organization>
+    </developer>
+    <developer>
+      <name>Geir Magnusson</name>
+      <id>geirm</id>
+      <email></email>
+      <organization></organization>
+    </developer>
+    <developer>
+      <name>Craig McClanahan</name>
+      <id>craigmcc</id>
+      <email></email>
+      <organization></organization>
+    </developer>
+    <developer>
+      <name>John McNally</name>
+      <id>jmcnally</id>
+      <email></email>
+      <organization></organization>
+    </developer>
+    <developer>
+      <name>Martin Poeschl</name>
+      <id>mpoeschl</id>
+      <email>mpoeschl@marmot.at</email>
+      <organization>tucana.at</organization>
+    </developer>
+    <developer>
+      <name>Rodney Waldhoff</name>
+      <id>rwaldhoff</id>
+      <email></email>
+      <organization></organization>
+    </developer>
+    <developer>
+      <name>David Weinrich</name>
+      <id>dweinr1</id>
+      <email></email>
+      <organization></organization>
+    </developer>
+    <developer>
+      <name>Dirk Verbeeck</name>
+      <id>dirkv</id>
+      <email></email>
+      <organization></organization>
+    </developer>
+    <developer>
+      <name>Yoav Shapira</name>
+      <id>yoavs</id>
+      <email>yoavs@apache.org</email>
+      <organization>The Apache Software Foundation</organization>
+    </developer>
+    <developer>
+      <name>J&#x00f6;rg Schaible</name>
+      <id>joehni</id>
+      <email>joerg.schaible@gmx.de</email>
+      <organization></organization>
+      <timezone>+1</timezone>
+    </developer>
+    <developer>
+      <name>Mark Thomas</name>
+      <id>markt</id>
+      <email>markt@apache.org</email>
+      <organization>The Apache Software Foundation</organization>
+    </developer>
+    <developer>
+      <id>ggregory</id>
+      <name>Gary Gregory</name>
+      <email>ggregory at apache.org</email>
+      <url>https://www.garygregory.com</url>
+      <organization>The Apache Software Foundation</organization>
+      <organizationUrl>https://www.apache.org/</organizationUrl>
+      <roles>
+        <role>PMC Member</role>
+      </roles>
+      <timezone>America/New_York</timezone>
+      <properties>
+        <picUrl>https://people.apache.org/~ggregory/img/garydgregory80.png</picUrl>
+      </properties>
+    </developer>
+    <developer>
+      <name>Ignacio J. Ortega</name>
+      <id>nacho</id>
+    </developer>
+    <developer>
+      <name>Sean C. Sullivan</name>
+      <id>sullis</id>
+    </developer>
+  </developers>
+  <contributors>
+    <contributor>
+      <name>Todd Carmichael</name>
+      <email>toddc@concur.com</email>
+    </contributor>
+    <contributor>
+      <name>Wayne Woodfield</name>
+    </contributor>
+    <contributor>
+      <name>Dain Sundstrom</name>
+      <email>dain@apache.org</email>
+    </contributor>
+    <contributor>
+      <name>Philippe Mouawad</name>
+    </contributor>
+    <contributor>
+      <name>Glenn L. Nielsen</name>
+    </contributor>
+    <contributor>
+      <name>James House</name>
+    </contributor>
+    <contributor>
+      <name>James Ring</name>
+    </contributor>
+    <contributor>
+      <name>Peter Wicks</name>
+       <email>pwicks@apache.org</email>
+    </contributor>
+  </contributors>
+</project>

@@ -35,17 +35,11 @@ public class DynamicTypeCheck extends AbstractExpression {
 
 	final private Expression expression;
 	final private int requiredType;
-	final private ErrorCodes.ErrorCode errorCode;
-
+	
 	public DynamicTypeCheck(XQueryContext context, int requiredType, Expression expr) {
-		this(context, requiredType, expr, null);
-	}
-
-	public DynamicTypeCheck(XQueryContext context, int requiredType, Expression expr, ErrorCodes.ErrorCode errorCode) {
 		super(context);
 		this.requiredType = requiredType;
 		this.expression = expr;
-		this.errorCode = errorCode;
 	}
 	
     /* (non-Javadoc)
@@ -79,10 +73,6 @@ public class DynamicTypeCheck extends AbstractExpression {
 		return result == null ? seq : result;
 	}
 
-    private ErrorCodes.ErrorCode effectiveErrorCode() {
-        return errorCode != null ? errorCode : ErrorCodes.XPTY0004;
-    }
-
     private void check(Sequence result, Item item) throws XPathException {
         int type = item.getType();
         if (type == Type.NODE &&
@@ -92,34 +82,14 @@ public class DynamicTypeCheck extends AbstractExpression {
                 //Retrieve the actual node
                 {type= ((NodeProxy) item).getNode().getNodeType();}
         }
-        // Record types: maps can satisfy record types structurally
-        if (requiredType == Type.RECORD && Type.subTypeOf(type, Type.MAP_ITEM)) {
-            // Let SequenceType.checkRecordType() handle structural validation
-            if (result != null) { result.add(item); }
-            return;
-        }
-        // XQuery 4.0 JNode types: JNode items satisfy json-node() and its subtypes
-        if (Type.subTypeOf(requiredType, Type.JSON_NODE) && item instanceof org.exist.xquery.value.jnode.JNode) {
-            final int jnodeType = item.getType();
-            if (jnodeType == requiredType || Type.subTypeOf(jnodeType, requiredType)) {
-                if (result != null) { result.add(item); }
-                return;
-            }
-        }
         if(type != requiredType && !Type.subTypeOf(type, requiredType)) {
             //TODO : how to make this block more generic ? -pb
             if (type == Type.UNTYPED_ATOMIC) {
-                // XPTY0117: untypedAtomic cannot be coerced to namespace-sensitive types
-                if (requiredType == Type.QNAME || requiredType == Type.NOTATION) {
-                    throw new XPathException(expression, ErrorCodes.XPTY0117,
-                            "Cannot coerce xs:untypedAtomic to namespace-sensitive type " +
-                            Type.getTypeName(requiredType));
-                }
                 try {
                     item = item.convertTo(requiredType);
                 //No way
                 } catch (final XPathException e) {
-                    throw new XPathException(expression, effectiveErrorCode(), "Required type is " +
+                    throw new XPathException(expression, ErrorCodes.FOCH0002, "Required type is " +
                             Type.getTypeName(requiredType) + " but got '" + Type.getTypeName(item.getType()) + "(" +
                             item.getStringValue() + ")'");
                 }
@@ -133,7 +103,7 @@ public class DynamicTypeCheck extends AbstractExpression {
                     item = item.convertTo(requiredType);
                 //No way
                 } catch (final XPathException e) {
-                    throw new XPathException(expression, effectiveErrorCode(), "Required type is " +
+                    throw new XPathException(expression, ErrorCodes.FOCH0002, "Required type is " +
                             Type.getTypeName(requiredType) + " but got '" + Type.getTypeName(item.getType()) + "(" +
                             item.getStringValue() + ")'");
                 }
@@ -145,7 +115,7 @@ public class DynamicTypeCheck extends AbstractExpression {
                     item = item.convertTo(requiredType);
                 //No way
                 } catch (final XPathException e) {
-                    throw new XPathException(expression, effectiveErrorCode(), "Required type is " +
+                    throw new XPathException(expression, ErrorCodes.FOCH0002, "Required type is " +
                             Type.getTypeName(requiredType) + " but got '" + Type.getTypeName(item.getType()) + "(" +
                             item.getStringValue() + ")'");
                 }
@@ -155,7 +125,7 @@ public class DynamicTypeCheck extends AbstractExpression {
                     item = item.convertTo(requiredType);
                 //No way
                 } catch (final XPathException e) {
-                    throw new XPathException(expression, effectiveErrorCode(), "Required type is " +
+                    throw new XPathException(expression, ErrorCodes.FOCH0002, "Required type is " +
                             Type.getTypeName(requiredType) + " but got '" + Type.getTypeName(item.getType()) + "(" +
                             item.getStringValue() + ")'");
                 }
@@ -166,167 +136,29 @@ public class DynamicTypeCheck extends AbstractExpression {
             } else if (type == Type.ANY_URI && requiredType == Type.STRING) {
                     item = item.convertTo(Type.STRING);
                     type = Type.STRING;
-            // XQuery 4.0 implicit casting (spec §3.4.1 item 4)
-            } else if (context.getXQueryVersion() >= 40) {
-                item = xq4ImplicitCast(item, type, requiredType);
+            //Binary type promotion (XQuery 4.0): xs:base64Binary ↔ xs:hexBinary
+            } else if ((type == Type.BASE64_BINARY && requiredType == Type.HEX_BINARY)
+                    || (type == Type.HEX_BINARY && requiredType == Type.BASE64_BINARY)) {
+                try {
+                    item = item.convertTo(requiredType);
+                } catch (final XPathException e) {
+                    throw new XPathException(expression, ErrorCodes.XPTY0004,
+                            "cannot convert " + Type.getTypeName(type) + " to " + Type.getTypeName(requiredType));
+                }
             } else {
                 if (!(Type.subTypeOf(type, requiredType))) {
-                    throw new XPathException(expression, effectiveErrorCode(),
+                    throw new XPathException(expression, ErrorCodes.XPTY0004,
                             Type.getTypeName(item.getType()) + "(" + item.getStringValue() +
                             ") is not a sub-type of " + Type.getTypeName(requiredType));
 
                 } else
-                    {throw new XPathException(expression, effectiveErrorCode(), "Required type is " +
+                    {throw new XPathException(expression, ErrorCodes.FOCH0002, "Required type is " +
                         Type.getTypeName(requiredType) + " but got '" + Type.getTypeName(item.getType()) + "(" +
                         item.getStringValue() + ")'");}
             }
         }
         if (result != null)
             {result.add(item);}
-    }
-
-    /**
-     * Apply function-coercion rules to a single item against a required atomic type
-     * (XQ4 §3.4.1). Handles untypedAtomic casting, numeric promotion, anyURI to xs:string
-     * promotion, and XQuery 4.0 implicit casting/relabeling. Used by callers that need
-     * to coerce values outside of the expression-tree path (e.g. record-field coercion
-     * in {@link UserDefinedFunction}).
-     */
-    public static Item coerceAtomicItem(final XQueryContext ctx, final Expression caller,
-            Item item, final int requiredType) throws XPathException {
-        int type = item.getType();
-        if (type == requiredType || Type.subTypeOf(type, requiredType)) {
-            return item;
-        }
-        if (type == Type.UNTYPED_ATOMIC) {
-            if (requiredType == Type.QNAME || requiredType == Type.NOTATION) {
-                throw new XPathException(caller, ErrorCodes.XPTY0117,
-                        "Cannot coerce xs:untypedAtomic to namespace-sensitive type "
-                                + Type.getTypeName(requiredType));
-            }
-            return item.convertTo(requiredType);
-        }
-        if (requiredType == Type.STRING && Type.subTypeOf(type, Type.NODE)) {
-            return item.convertTo(Type.STRING);
-        }
-        if (Type.subTypeOfUnion(requiredType, Type.NUMERIC) && Type.subTypeOf(type, requiredType)) {
-            return item.convertTo(requiredType);
-        }
-        if (Type.subTypeOf(requiredType, Type.DURATION) && Type.subTypeOf(type, requiredType)) {
-            return item.convertTo(requiredType);
-        }
-        if (Type.subTypeOf(requiredType, Type.DATE) && Type.subTypeOf(type, requiredType)) {
-            return item.convertTo(requiredType);
-        }
-        if (type == Type.ANY_URI && requiredType == Type.STRING) {
-            return item.convertTo(Type.STRING);
-        }
-        if (ctx.getXQueryVersion() >= 40) {
-            if (isXQ4ImplicitCast(type, requiredType) || isXQ4Relabeling(type, requiredType)) {
-                return item.convertTo(requiredType);
-            }
-        }
-        throw new XPathException(caller, ErrorCodes.XPTY0004,
-                Type.getTypeName(type) + "(" + item.getStringValue() +
-                ") is not a sub-type of " + Type.getTypeName(requiredType));
-    }
-
-    /**
-     * XQuery 4.0 coercion rules per spec §3.4.1.
-     * Handles implicit casting (item 4) and relabeling (item 6).
-     */
-    private Item xq4ImplicitCast(Item item, final int type, final int requiredType) throws XPathException {
-        // Item 4: Implicit Casting table
-        if (isXQ4ImplicitCast(type, requiredType)) {
-            try {
-                return item.convertTo(requiredType);
-            } catch (final XPathException e) {
-                throw new XPathException(expression, ErrorCodes.XPTY0004,
-                        "Cannot coerce " + Type.getTypeName(type) + "(" +
-                        item.getStringValue() + ") to " + Type.getTypeName(requiredType));
-            }
-        }
-        // Item 6: Relabeling — if R is derived from primitive P, and J is an instance of P,
-        // relabel J as R if J's datum is within the value space of R.
-        if (isXQ4Relabeling(type, requiredType)) {
-            try {
-                return item.convertTo(requiredType);
-            } catch (final XPathException e) {
-                throw new XPathException(expression, ErrorCodes.XPTY0004,
-                        "Cannot relabel " + Type.getTypeName(type) + "(" +
-                        item.getStringValue() + ") as " + Type.getTypeName(requiredType) +
-                        ": value is not in the value space of the target type");
-            }
-        }
-        // Fall through to the standard type error
-        if (!(Type.subTypeOf(type, requiredType))) {
-            throw new XPathException(expression, ErrorCodes.XPTY0004,
-                    Type.getTypeName(item.getType()) + "(" + item.getStringValue() +
-                    ") is not a sub-type of " + Type.getTypeName(requiredType));
-        } else {
-            throw new XPathException(expression, ErrorCodes.FOCH0002, "Required type is " +
-                    Type.getTypeName(requiredType) + " but got '" + Type.getTypeName(item.getType()) + "(" +
-                    item.getStringValue() + ")'");
-        }
-    }
-
-    /**
-     * Check if an implicit cast is allowed from a source type to a target type
-     * under XQuery 4.0 coercion rules (spec §3.4.1 item 4, Implicit Casting table).
-     *
-     * The "from" column matches if J is an instance of "from" (including subtypes).
-     * The "to" column must match R exactly (the required type must be the primitive type).
-     */
-    static boolean isXQ4ImplicitCast(final int sourceType, final int requiredType) {
-        // xs:string → xs:anyURI
-        if (Type.subTypeOf(sourceType, Type.STRING) && requiredType == Type.ANY_URI) {
-            return true;
-        }
-        // xs:hexBinary ↔ xs:base64Binary
-        if (Type.subTypeOf(sourceType, Type.HEX_BINARY) && requiredType == Type.BASE64_BINARY) {
-            return true;
-        }
-        if (Type.subTypeOf(sourceType, Type.BASE64_BINARY) && requiredType == Type.HEX_BINARY) {
-            return true;
-        }
-        // Bidirectional numeric: xs:double → xs:decimal, xs:float → xs:decimal
-        // (Note: decimal→float, decimal→double, float→double already handled by XQ 3.1 rules)
-        if (Type.subTypeOf(sourceType, Type.DOUBLE) && requiredType == Type.DECIMAL) {
-            return true;
-        }
-        if (Type.subTypeOf(sourceType, Type.FLOAT) && requiredType == Type.DECIMAL) {
-            return true;
-        }
-        // XQ4 also allows any numeric → any other numeric
-        // "any numeric type to be implicitly converted to any other"
-        if (Type.subTypeOfUnion(sourceType, Type.NUMERIC) && Type.subTypeOfUnion(requiredType, Type.NUMERIC)) {
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * Check if relabeling is allowed under XQuery 4.0 coercion rules (spec §3.4.1 item 6).
-     * Relabeling applies when R is derived from a primitive type P, and J is an instance of P
-     * (but not already an instance of R). The actual value check (whether the datum is in
-     * the value space of R) is deferred to convertTo().
-     */
-    static boolean isXQ4Relabeling(final int sourceType, final int requiredType) {
-        // Only applies to atomic types
-        if (!Type.subTypeOf(sourceType, Type.ANY_ATOMIC_TYPE) || !Type.subTypeOf(requiredType, Type.ANY_ATOMIC_TYPE)) {
-            return false;
-        }
-        try {
-            final int requiredPrimitive = Type.primitiveTypeOf(requiredType);
-            // Relabeling only applies when R is a derived type (not a primitive itself)
-            if (requiredPrimitive == requiredType) {
-                return false;
-            }
-            // J must be an instance of the same primitive type P
-            return Type.subTypeOf(sourceType, requiredPrimitive);
-        } catch (final IllegalArgumentException e) {
-            return false;
-        }
     }
 
     /* (non-Javadoc)

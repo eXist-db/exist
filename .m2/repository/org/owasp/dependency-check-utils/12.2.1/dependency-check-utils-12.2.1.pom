@@ -1,0 +1,105 @@
+<!--
+This file is part of dependency-check-utils.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+Copyright (c) 2014 - Jeremy Long. All Rights Reserved.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.owasp</groupId>
+        <artifactId>dependency-check-parent</artifactId>
+        <version>12.2.1</version>
+   </parent>
+
+    <artifactId>dependency-check-utils</artifactId>
+    <name>Dependency-Check Utils</name>
+    <description>dependency-check-utils is a collection of common utility classes used within dependency-check that might be useful in other projects.</description>
+    <scm>
+        <connection>scm:git:https://github.com/dependency-check/DependencyCheck.git</connection>
+        <url>https://github.com/dependency-check/DependencyCheck/tree/main/utils</url>
+        <developerConnection>scm:git:git@github.com/dependency-check/DependencyCheck.git</developerConnection>
+        <tag>v12.2.1</tag>
+    </scm>
+    <properties>
+        <spotbugs.onlyAnalyze>org.owasp.dependencycheck.utils.*</spotbugs.onlyAnalyze>
+    </properties>
+    <dependencies>
+        <dependency>
+            <groupId>org.eclipse.parsson</groupId>
+            <artifactId>jakarta.json</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents.client5</groupId>
+            <artifactId>httpclient5</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents.core5</groupId>
+            <artifactId>httpcore5</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <configuration>
+                        <usedDependencies combine.children="append">
+                            <!-- logback is our logging implementation during test and is test-scoped due to a lack of a
+                            test-runtime scope - it should be considered 'used' in the context of dependency:analyze-report -->
+                            <usedDependency>ch.qos.logback:logback-classic</usedDependency>
+                            <usedDependency>ch.qos.logback:logback-core</usedDependency>
+                        </usedDependencies>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+</project>

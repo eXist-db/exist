@@ -1,0 +1,4 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Wed Apr 29 08:25:25 EDT 2026
+exist-core-7.0.0-SNAPSHOT.jar>=
+exist-core-7.0.0-SNAPSHOT.pom>=

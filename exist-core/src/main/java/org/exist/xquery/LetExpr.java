@@ -125,28 +125,7 @@ public class LetExpr extends BindingExpression {
                     }
                 }
 
-                // XQuery 4.0 PR1131 (coercion-in-variables): apply function conversion
-                // to atomic typed bindings BEFORE the body runs. This casts xs:untypedAtomic,
-                // promotes numerics (xs:integer/xs:decimal -> xs:float/xs:double, xs:float -> xs:double),
-                // converts xs:anyURI -> xs:string, and applies subtype casting permitted by 4.0.
-                if (sequenceType != null && context.getXQueryVersion() >= 40
-                        && !var.getValue().isEmpty()
-                        && Type.subTypeOf(sequenceType.getPrimaryType(), Type.ANY_ATOMIC_TYPE)
-                        && !Type.subTypeOf(var.getValue().getItemType(), sequenceType.getPrimaryType())) {
-                    final Sequence coerced = coerceAtomicSequence(var.getValue(), sequenceType.getPrimaryType());
-                    if (coerced != null) {
-                        var.setValue(coerced);
-                    }
-                }
-
-                try {
-                    resultSequence = returnExpr.eval(contextSequence, null);
-                } catch (final WhileClause.WhileTerminationException e) {
-                    resultSequence = Sequence.EMPTY_SEQUENCE;
-                }
-                if (getPreviousClause() == null && WhileClause.isTerminated()) {
-                    WhileClause.clearTerminated();
-                }
+                resultSequence = returnExpr.eval(contextSequence, null);
 
                 if (sequenceType != null) {
                     Cardinality actualCardinality;
@@ -247,29 +226,6 @@ public class LetExpr extends BindingExpression {
         } finally {
             context.popDocumentContext();
             context.expressionEnd(this);
-        }
-    }
-
-    /**
-     * XQ4 PR1131 atomic coercion: cast each item to the declared atomic type
-     * (function-conversion semantics). Returns null if any item cannot be cast,
-     * leaving the original value in place so the existing XPTY0004 path runs.
-     */
-    private Sequence coerceAtomicSequence(final Sequence value, final int targetType) {
-        try {
-            final ValueSequence out = new ValueSequence(value.getItemCount());
-            for (final SequenceIterator it = value.iterate(); it.hasNext(); ) {
-                final Item item = it.nextItem();
-                final AtomicValue atomized = item.atomize();
-                if (Type.subTypeOf(atomized.getType(), targetType)) {
-                    out.add(atomized);
-                } else {
-                    out.add(atomized.convertTo(targetType));
-                }
-            }
-            return out;
-        } catch (final XPathException e) {
-            return null;
         }
     }
 

@@ -1,0 +1,106 @@
+<project
+	xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.incors</groupId>
+	<artifactId>kunstoff-laf</artifactId>
+	<version>2.0.2</version>
+	<packaging>jar</packaging>
+	<name>Kunststoff Look and Feel</name>
+	<description> The Kunststoff Look and Feel is an extension to the the Java ™ Metal Look and Feel. This makes
+		it very compact in size (approx. 43 kBytes) and ensures that all the great features provided by the Metal
+		Look and Feel do not get lost. It is our little contribution for making the Java ™ platform even better and
+		we hope that it will help you make some wonderful GUIs. </description>
+	<inceptionYear>2001</inceptionYear>
+	<url>http://kunstoff.incors.com/archive</url>
+	<licenses>
+		<license>
+			<name>GNU Lesser General Public License</name>
+			<url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+	<developers>
+		<developer>
+			<name>Aljoscha Rittner</name>
+		</developer>
+		<developer>
+			<name>C.J. Kent</name>
+		</developer>
+		<developer>
+			<name>Christian Peter</name>
+		</developer>
+		<developer>
+			<name>Christoph Wilhelms</name>
+		</developer>
+		<developer>
+			<name>Eric Georges</name>
+		</developer>
+		<developer>
+			<name>Gerald Bauer</name>
+		</developer>
+		<developer>
+			<name>Gino Marckx</name>
+		</developer>
+		<developer>
+			<name>Ingo Kegel</name>
+		</developer>
+		<developer>
+			<name>Jamie LaScolea</name>
+		</developer>
+		<developer>
+			<name>Jens Niemeyer</name>
+		</developer>
+		<developer>
+			<name>Jerason Banes</name>
+		</developer>
+		<developer>
+			<name>Jim Wissner</name>
+		</developer>
+		<developer>
+			<name>Johannes Ernst</name>
+		</developer>
+		<developer>
+			<name>Jonas Kilian</name>
+		</developer>
+		<developer>
+			<name>Julien Ponge, developer of the install tool IzPack</name>
+		</developer>
+		<developer>
+			<name>Karsten Lentzsch</name>
+		</developer>
+		<developer>
+			<name>Matthew Philips</name>
+		</developer>
+		<developer>
+			<name>Romain Guy, main developer of Jext</name>
+		</developer>
+		<developer>
+			<name>Sebastian Ferreyra</name>
+		</developer>
+		<developer>
+			<name>Steve Varghese</name>
+		</developer>
+		<developer>
+			<name>Taoufik Romdhane</name>
+		</developer>
+		<developer>
+			<name>Timo Haberkern</name>
+		</developer>
+	</developers>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.3</version>
+			</plugin>
+		</plugins>
+	</build>
+	<scm>
+		<url>http://kunststoff-laf.svn.sourceforge.net/viewvc/kunststoff-laf/</url>
+		<connection>https://kunststoff-laf.svn.sourceforge.net/svnroot/kunststoff-laf</connection>
+		<developerConnection>https://kunststoff-laf.svn.sourceforge.net/svnroot/kunststoff-laf</developerConnection>
+	</scm>
+</project>

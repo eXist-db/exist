@@ -1,0 +1,586 @@
+<!--
+
+   Licensed to the Apache Software Foundation (ASF) under one or more
+   contributor license agreements.  See the NOTICE file distributed with
+   this work for additional information regarding copyright ownership.
+   The ASF licenses this file to You under the Apache License, Version 2.0
+   (the "License"); you may not use this file except in compliance with
+   the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.apache.commons</groupId>
+    <artifactId>commons-parent</artifactId>
+    <version>58</version>
+  </parent>
+
+  <artifactId>commons-jcs3</artifactId>
+  <packaging>pom</packaging>
+  <version>3.2.1</version>
+
+  <!--
+   * Build with -PjcacheTck to run the JSR-107 TCK
+  -->
+
+  <name>Apache Commons JCS</name>
+  <url>http://commons.apache.org/proper/commons-jcs/</url>
+  <description>Apache Commons JCS is a distributed, versatile caching system.</description>
+  <inceptionYear>2002</inceptionYear>
+
+  <!-- Required for staging to work -->
+  <distributionManagement>
+      <site>
+          <id>commons.jcs.apache.org</id>
+          <url>http://commons.apache.org/proper/commons-jcs/</url>
+      </site>
+  </distributionManagement>
+
+  <issueManagement>
+    <system>jira</system>
+    <url>http://issues.apache.org/jira/browse/JCS</url>
+  </issueManagement>
+
+  <scm>
+    <connection>scm:git:http://gitbox.apache.org/repos/asf/commons-jcs.git</connection>
+    <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/commons-jcs.git</developerConnection>
+    <url>https://gitbox.apache.org/repos/asf?p=commons-jcs.git</url>
+      <tag>commons-jcs3-3.2.1-rc3</tag>
+  </scm>
+
+  <mailingLists>
+    <mailingList>
+      <name>Jakarta JCS User List Archive</name>
+      <subscribe />
+      <unsubscribe />
+      <archive>http://mail-archives.apache.org/mod_mbox/jakarta-jcs-users/</archive>
+    </mailingList>
+    <mailingList>
+      <name>Jakarta JCS Developer List Archive</name>
+      <subscribe />
+      <unsubscribe />
+      <archive>http://mail-archives.apache.org/mod_mbox/jakarta-jcs-dev/</archive>
+    </mailingList>
+    <mailingList>
+      <name>OLD User List Archive</name>
+      <subscribe />
+      <unsubscribe />
+      <archive>http://mail-archives.apache.org/mod_mbox/jakarta-turbine-jcs-user/</archive>
+    </mailingList>
+    <mailingList>
+      <name>OLD Developer List Archive</name>
+      <subscribe />
+      <unsubscribe />
+      <archive>http://mail-archives.apache.org/mod_mbox/jakarta-turbine-jcs-dev/</archive>
+    </mailingList>
+    <mailingList>
+      <name>Commons User List</name>
+      <subscribe>user-subscribe@commons.apache.org</subscribe>
+      <unsubscribe>user-unsubscribe@commons.apache.org</unsubscribe>
+      <post>user@commons.apache.org</post>
+      <archive>http://mail-archives.apache.org/mod_mbox/commons-user/</archive>
+      <otherArchives>
+        <otherArchive>http://markmail.org/list/org.apache.commons.users/</otherArchive>
+        <otherArchive>http://old.nabble.com/Commons---User-f319.html</otherArchive>
+        <otherArchive>http://www.mail-archive.com/user@commons.apache.org/</otherArchive>
+        <otherArchive>http://news.gmane.org/gmane.comp.jakarta.commons.user</otherArchive>
+      </otherArchives>
+    </mailingList>
+    <mailingList>
+      <name>Commons Dev List</name>
+      <subscribe>dev-subscribe@commons.apache.org</subscribe>
+      <unsubscribe>dev-unsubscribe@commons.apache.org</unsubscribe>
+      <post>dev@commons.apache.org</post>
+      <archive>http://mail-archives.apache.org/mod_mbox/commons-dev/</archive>
+      <otherArchives>
+        <otherArchive>http://markmail.org/list/org.apache.commons.dev/</otherArchive>
+        <otherArchive>http://old.nabble.com/Commons---Dev-f317.html</otherArchive>
+        <otherArchive>http://www.mail-archive.com/dev@commons.apache.org/</otherArchive>
+        <otherArchive>http://news.gmane.org/gmane.comp.jakarta.commons.devel</otherArchive>
+      </otherArchives>
+    </mailingList>
+    <mailingList>
+      <name>Commons Issues List</name>
+      <subscribe>issues-subscribe@commons.apache.org</subscribe>
+      <unsubscribe>issues-unsubscribe@commons.apache.org</unsubscribe>
+      <archive>http://mail-archives.apache.org/mod_mbox/commons-issues/</archive>
+      <otherArchives>
+        <otherArchive>http://markmail.org/list/org.apache.commons.issues/</otherArchive>
+        <otherArchive>http://old.nabble.com/Commons---Issues-f25499.html</otherArchive>
+        <otherArchive>http://www.mail-archive.com/issues@commons.apache.org/</otherArchive>
+      </otherArchives>
+    </mailingList>
+    <mailingList>
+      <name>Commons Commits List</name>
+      <subscribe>commits-subscribe@commons.apache.org</subscribe>
+      <unsubscribe>commits-unsubscribe@commons.apache.org</unsubscribe>
+      <archive>http://mail-archives.apache.org/mod_mbox/commons-commits/</archive>
+      <otherArchives>
+        <otherArchive>http://markmail.org/list/org.apache.commons.commits/</otherArchive>
+        <otherArchive>http://www.mail-archive.com/commits@commons.apache.org/</otherArchive>
+      </otherArchives>
+    </mailingList>
+    <mailingList>
+      <name>Apache Announce List</name>
+      <subscribe>announce-subscribe@apache.org</subscribe>
+      <unsubscribe>announce-unsubscribe@apache.org</unsubscribe>
+      <archive>http://mail-archives.apache.org/mod_mbox/www-announce/</archive>
+      <otherArchives>
+        <otherArchive>http://markmail.org/list/org.apache.announce/</otherArchive>
+        <otherArchive>http://old.nabble.com/Apache-News-and-Announce-f109.html</otherArchive>
+        <otherArchive>http://www.mail-archive.com/announce@apache.org/</otherArchive>
+        <otherArchive>http://news.gmane.org/gmane.comp.apache.announce</otherArchive>
+      </otherArchives>
+    </mailingList>
+  </mailingLists>
+
+  <modules>
+    <module>commons-jcs-core</module>
+    <module>commons-jcs-jcache</module>
+    <module>commons-jcs-tck-tests</module>
+    <module>commons-jcs-jcache-extras</module>
+    <module>commons-jcs-jcache-openjpa</module>
+    <module>commons-jcs-dist</module>
+  </modules>
+
+  <developers>
+    <developer>
+      <id>asmuts</id>
+      <name>Aaron Smuts</name>
+      <email>asmuts@apache.org</email>
+      <organization />
+    </developer>
+    <developer>
+      <id>jtaylor</id>
+      <name>James Taylor</name>
+      <email>james@jamestaylor.org</email>
+      <organization />
+    </developer>
+    <developer>
+      <id>hchar</id>
+      <name>Hanson Char</name>
+      <email>hchar@apache.org</email>
+      <organization />
+    </developer>
+    <developer>
+      <id>tsavo</id>
+      <name>Travis Savo</name>
+      <email>tsavo@ifilm.com</email>
+      <organization>IFilm</organization>
+    </developer>
+    <developer>
+      <id>tv</id>
+      <name>Thomas Vandahl</name>
+      <email>tv@apache.org</email>
+      <organization />
+    </developer>
+    <developer>
+      <id>rmannibucau</id>
+      <name>Romain Manni-Bucau</name>
+      <email>rmannibucau@apache.org</email>
+      <organization />
+    </developer>
+  </developers>
+
+  <contributors>
+    <contributor>
+      <name>Scott Eade</name>
+      <email>seade@backstagetech.com.au</email>
+    </contributor>
+    <contributor>
+      <name>Michael Stevens</name>
+      <email>mstevens@etla.org</email>
+    </contributor>
+  </contributors>
+
+  <build>
+    <defaultGoal>clean apache-rat:check verify javadoc:javadoc</defaultGoal>
+    <pluginManagement>
+      <plugins>
+        <!-- Re-enable standard copying of N&L files from apache parent -->
+        <plugin>
+          <artifactId>maven-remote-resources-plugin</artifactId>
+          <configuration>
+            <skip>false</skip>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+
+    <plugins>
+      <!-- Disable copying of N&L files from commons parent -->
+      <plugin>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>javadoc.resources</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <skip>true</skip>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.rat</groupId>
+        <artifactId>apache-rat-plugin</artifactId>
+        <!-- Should agree with config in reporting section -->
+        <configuration>
+          <!--
+            If you wish to override this list in the component (child) pom, ensure you use
+            <excludes combine.children="merge">
+            so that the child pom entries replace the parent entries
+          -->
+          <excludes combine.children="append">
+            <exclude>.java-version</exclude>
+            <exclude>**/zipcodes.txt</exclude>
+            <exclude>**/.gitignore</exclude>
+            <exclude>**/derby.log</exclude>
+            <exclude>**/META-INF/services/javax.*</exclude>
+            <!-- Exclude Eclipse local files and folders -->
+            <exclude>**/.settings/**</exclude>
+            <exclude>**/.project</exclude>
+            <exclude>**/.classpath</exclude>
+            <!-- Exclude build directory -->
+            <exclude>**/target/**</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <!-- Disable Apache Parent POM built-in source assembly -->
+        <executions>
+          <execution>
+            <id>source-release-assembly</id>
+            <configuration>
+              <skipAssembly>true</skipAssembly>
+            </configuration>
+          </execution>
+          <execution>
+            <id>default</id>
+            <configuration>
+              <skipAssembly>true</skipAssembly>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>      
+    </plugins>
+  </build>
+
+  <dependencyManagement>
+    <dependencies>
+
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>commons-jcs3-core</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>commons-jcs3-core</artifactId>
+        <version>${project.version}</version>
+        <type>test-jar</type>
+        <scope>test</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>commons-jcs3-jcache</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <!--  JDBC DISK CACHE -->
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-dbcp2</artifactId>
+        <version>2.12.0</version>
+        <optional>true</optional>
+      </dependency>
+
+      <dependency>
+        <groupId>hsqldb</groupId>
+        <artifactId>hsqldb</artifactId>
+        <version>1.8.0.10</version>
+        <optional>true</optional>
+      </dependency>
+
+      <!--  For comparative performance tests only -->
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-collections4</artifactId>
+        <version>${commons.collections.version}</version>
+        <scope>test</scope>
+      </dependency>
+
+      <!--  Test dependencies -->
+      <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>4.13.2</version>
+        <scope>test</scope>
+        <exclusions>
+          <exclusion>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest-core</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.hamcrest</groupId>
+        <artifactId>hamcrest</artifactId>
+        <version>${hamcrest.version}</version>
+        <scope>test</scope>
+      </dependency>
+
+      <!-- Exclude for now -->
+      <!-- dependency>
+        <groupId>org.jgroups</groupId>
+        <artifactId>jgroups</artifactId>
+        <version>3.4.1.Final</version>
+        <optional>true</optional>
+      </dependency -->
+
+      <dependency>
+        <groupId>org.apache.httpcomponents</groupId>
+        <artifactId>httpclient</artifactId>
+        <version>4.5.14</version>
+        <optional>true</optional>
+      </dependency>
+
+      <dependency>
+        <groupId>javax.servlet</groupId>
+        <artifactId>javax.servlet-api</artifactId>
+        <version>3.1.0</version>
+        <optional>true</optional>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.geronimo.specs</groupId>
+        <artifactId>geronimo-jcdi_1.1_spec</artifactId>
+        <version>1.0</version>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.geronimo.specs</groupId>
+        <artifactId>geronimo-interceptor_1.2_spec</artifactId>
+        <version>1.1</version>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.geronimo.specs</groupId>
+        <artifactId>geronimo-atinject_1.0_spec</artifactId>
+        <version>1.1</version>
+        <scope>provided</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.geronimo.specs</groupId>
+        <artifactId>geronimo-jcache_1.0_spec</artifactId>
+        <version>1.0-alpha-1</version>
+        <scope>provided</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.geronimo.specs</groupId>
+        <artifactId>geronimo-annotation_1.2_spec</artifactId>
+        <version>1.0</version>
+        <scope>provided</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.openwebbeans</groupId>
+        <artifactId>openwebbeans-impl</artifactId>
+        <version>1.7.6</version>
+        <scope>test</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>javax.cache</groupId>
+        <artifactId>test-domain</artifactId>
+        <version>${jsr107.api.version}</version>
+        <!-- should this be scope test? -->
+      </dependency>
+
+      <dependency>
+        <groupId>javax.cache</groupId>
+        <artifactId>app-domain</artifactId>
+        <version>${jsr107.api.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>javax.cache</groupId>
+        <artifactId>cache-tests</artifactId>
+        <version>${jsr107.api.version}</version>
+        <scope>test</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>javax.cache</groupId>
+        <artifactId>cache-tests</artifactId>
+        <classifier>tests</classifier>
+        <scope>test</scope>
+        <version>${jsr107.api.version}</version>
+      </dependency>
+
+    </dependencies>
+  </dependencyManagement>
+
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-pmd-plugin</artifactId>
+        <version>${commons.pmd.version}</version>
+        <configuration>
+          <targetJdk>${maven.compiler.target}</targetJdk>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>com.github.spotbugs</groupId>
+        <artifactId>spotbugs-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.rat</groupId>
+        <artifactId>apache-rat-plugin</artifactId>
+        <version>${commons.rat.version}</version>
+        <!-- Should agree with config in build section -->
+        <configuration>
+          <!--
+            If you wish to override this list in the component (child) pom, ensure you use
+            <excludes combine.children="merge">
+            so that the child pom entries replace the parent entries
+          -->
+          <excludes combine.children="append">
+            <exclude>.java-version</exclude>
+            <exclude>**/zipcodes.txt</exclude>
+            <exclude>**/.gitignore</exclude>
+            <exclude>**/derby.log</exclude>
+            <exclude>**/META-INF/services/javax.*</exclude>
+            <!-- Exclude Eclipse local files and folders -->
+            <exclude>**/.settings/**</exclude>
+            <exclude>**/.project</exclude>
+            <exclude>**/.classpath</exclude>
+            <!-- Exclude build directory -->
+            <exclude>**/target/**</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+    </plugins>
+  </reporting>
+
+  <profiles>
+    <profile>
+      <id>sandbox</id>
+      <modules>
+        <module>commons-jcs-sandbox</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>release</id>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-release-plugin</artifactId>
+            <configuration>
+              <releaseProfiles>release</releaseProfiles>
+            </configuration>
+          </plugin>
+          <!-- Disable commons-release-plugin -->
+          <plugin>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-release-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>clean-staging</id>
+                <phase>none</phase>
+              </execution>
+              <execution>
+                <id>detatch-distributions</id>
+                <phase>none</phase>
+              </execution>
+              <execution>
+                <id>stage-distributions</id>
+                <phase>none</phase>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>javaNinePlus</id>
+      <activation>
+        <jdk>[9,)</jdk>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <argLine>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED</argLine>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+
+  <properties>
+
+    <!-- Default configuration for compiler source and target JVM -->
+    <maven.compiler.sourceEncoding>UTF-8</maven.compiler.sourceEncoding>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+
+    <commons.componentid>jcs</commons.componentid>
+    <commons.osgi.symbolicName>org.apache.commons.${project.artifactId}</commons.osgi.symbolicName>
+    <commons.module.name>org.apache.commons.jcs3</commons.module.name>
+    <commons.release.version>3.2.1</commons.release.version>
+    <commons.release.name>commons-jcs3-dist-3.2.1</commons.release.name>
+    <commons.release.desc>(Java 8+)</commons.release.desc>
+    <commons.release.isDistModule>false</commons.release.isDistModule>
+    <commons.distSvnStagingUrl>scm:svn:https://dist.apache.org/repos/dist/dev/commons/${commons.componentid}</commons.distSvnStagingUrl>
+    <!-- The RC version used in the staging repository URL. -->
+    <commons.bc.version>3.2</commons.bc.version>
+    <commons.rc.version>rc3</commons.rc.version>
+    <commons.jira.id>JCS</commons.jira.id>
+    <commons.site.path>commons-jcs</commons.site.path>
+    <commons.scmPubUrl>
+      https://svn.apache.org/repos/infra/websites/production/commons/content/proper/${commons.site.path}
+    </commons.scmPubUrl>
+    <!-- Ensure copies work OK (can be removed later when this is in parent POM) -->
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <commons.encoding>UTF-8</commons.encoding>
+    <commons.javadoc.java.link>https://docs.oracle.com/javase/8/docs/api/</commons.javadoc.java.link>
+
+    <jsr107.api.version>1.0.1</jsr107.api.version>
+    <commons.collections.version>4.4</commons.collections.version>
+    <commons.text.version>1.11.0</commons.text.version>
+    <commons.lang.version>3.13.0</commons.lang.version>
+    <commons.log4j.version>2.23.1</commons.log4j.version>
+    <commons.build-plugin.version>1.14.0</commons.build-plugin.version>
+    
+    <test.type>Unit</test.type>
+    <doclint>none</doclint>
+    <hamcrest.version>2.2</hamcrest.version>
+    
+    <project.build.outputTimestamp>2024-05-27T17:37:13Z</project.build.outputTimestamp>
+  </properties>
+
+</project>

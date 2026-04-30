@@ -1,0 +1,693 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <!-- Keep around to uncomment and quickly look up some information from the former parent -->
+  <!--
+  <parent>
+    <groupId>org.codehaus.mojo</groupId>
+    <artifactId>mojo-parent</artifactId>
+    <version>77</version>
+  </parent>
+  -->
+
+  <groupId>dev.aspectj</groupId>
+  <artifactId>aspectj-maven-plugin</artifactId>
+  <version>1.14.1</version>
+  <packaging>maven-plugin</packaging>
+
+  <organization>
+    <name>AspectJ.dev</name>
+    <url>https://github.com/dev-aspectj</url>
+  </organization>
+
+  <name>AspectJ Maven Plugin</name>
+  <description>
+    Handles AspectJ usage within Maven.
+    Functionality provided is: weaving of aspects (or existing aspects from libraries) with the
+    test and/or main classes, weaving of pre-existing jars and ajdoc reporting.
+  </description>
+  <inceptionYear>2018</inceptionYear>
+
+  <url>https://github.com/dev-aspectj/aspectj-maven-plugin</url>
+  <licenses>
+    <license>
+      <name>MIT License</name>
+      <url>https://spdx.org/licenses/MIT.html</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <maven.compiler.source>8</maven.compiler.source>
+    <maven.compiler.target>8</maven.compiler.target>
+
+    <!--
+      AJC 1.9.7 is the Last version that runs on Java 8. 1.9.8+ needs Java 11, 1.9.21+ Java 17 during build time,
+      due to AJC's upstream dependency on ECJ (JDT Core). During runtime, the latest AspectJ still only needs Java 8.
+    -->
+    <aspectjVersion>1.9.7</aspectjVersion>
+
+    <!-- Minimum Maven version required to build this plugin -->
+    <mavenBuildVersion>3.1.1</mavenBuildVersion>
+    <!-- Maven API version used by this plugin (seems to be backward compatible to Maven 3.1.x, maybe even 3.0.x) -->
+    <mavenAPIVersion>3.9.4</mavenAPIVersion>
+    <!-- Minimum Maven version required to run this plugin (not enforced at the moment, see 'prerequisites' section) -->
+    <mavenRuntimeVersion>3.0.5</mavenRuntimeVersion>
+
+    <!-- Reproducible builds, https://maven.apache.org/guides/mini/guide-reproducible-builds.html -->
+    <project.build.outputTimestamp>1</project.build.outputTimestamp>
+
+    <junitVersion>4.13.2</junitVersion>
+    <doxiaVersion>2.0.0-M8</doxiaVersion>
+    <doxiaSitetoolsVersion>2.0.0-M16</doxiaSitetoolsVersion>
+    <!-- Override mojo-parent:77 - requires Java 11+ -->
+    <checkstyle.version>10.12.2</checkstyle.version>
+    <mojo.java.target>8</mojo.java.target> <!-- aspectJ > 1.8.13 is JDK 8 minimum -->
+    <maven-plugin-plugin.version>3.9.0</maven-plugin-plugin.version>
+    <maven-fluido-skin.version>1.11.1</maven-fluido-skin.version>
+    <!-- work around until it is correctly fixed at top parent -->
+    <scmpublish.content>${project.build.directory}/staging/aspectj-maven-plugin</scmpublish.content>
+  </properties>
+
+  <prerequisites>
+    <!--
+      Minimum Maven version required to both build and use plugin. See Maven Enforcer configuration where the build
+      version is further restricted. Actually, despite using API version 3.8.1, a quick test shows that this plugin
+      still works fine on Maven 3.0.5, as long as the plugins from the Maven root POM for that old version are
+        - locally available or
+        - can be downloaded via HTTP instead of HTTPS (e.g. via Nexus, Maven Central deactivated HTTP) or
+        - have been updated in the user's POM to versions locally available or downloadable via HTTP (not HTTPS).
+      Maybe it would work on still older Maven versions, but I (Alexander Kriegisch) did not test.
+    -->
+    <maven>${mavenRuntimeVersion}</maven>
+  </prerequisites>
+
+  <issueManagement>
+    <system>GitHub</system>
+    <url>https://github.com/dev-aspectj/aspectj-maven-plugin/issues/</url>
+  </issueManagement>
+  <ciManagement>
+    <system>GitHub</system>
+    <url>https://github.com/dev-aspectj/aspectj-maven-plugin/actions</url>
+  </ciManagement>
+
+  <scm>
+    <connection>scm:git:https://github.com/dev-aspectj/aspectj-maven-plugin.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/dev-aspectj/aspectj-maven-plugin.git</developerConnection>
+    <url>https://github.com/dev-aspectj/aspectj-maven-plugin</url>
+  </scm>
+
+  <distributionManagement>
+      <snapshotRepository>
+          <id>ossrh-s01</id>
+          <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+      </snapshotRepository>
+      <repository>
+          <id>ossrh-s01</id>
+          <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2</url>
+      </repository>
+  </distributionManagement>
+
+  <developers>
+    <developer>
+      <id>kriegaex</id>
+      <name>Alexander Kriegisch</name>
+      <email>kriegaex@aspectj.dev</email>
+      <organization>Scrum-Master.de - Agile Project Management</organization>
+      <organizationUrl>https://scrum-master.de</organizationUrl>
+      <roles>
+        <role>Maintainer</role>
+        <role>Java Developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Nicholas Wong</name>
+      <email>nickwongdev@gmail.com</email>
+      <timezone>America/LosAngeles</timezone>
+      <roles>
+        <role>Java Developer (alumnus)</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>kaare</id>
+      <name>Kaare Nilsen</name>
+      <email>kaare.nilsen@gmail.com</email>
+      <organization>Arktekk</organization>
+      <organizationUrl>http://arktekk.no</organizationUrl>
+      <roles>
+        <role>Java Developer (alumnus)</role>
+      </roles>
+      <timezone>+1</timezone>
+    </developer>
+    <developer>
+      <name>Lennart Jörelid</name>
+      <email>lj@jguru.se</email>
+      <organization>jGuru Europe AB</organization>
+      <roles>
+        <role>Java Developer (alumnus)</role>
+      </roles>
+      <timezone>+1</timezone>
+    </developer>
+    <developer>
+      <name>David J. M. Karlsen</name>
+      <email>david@davidkarlsen.com</email>
+      <organization>davidkarlsen.com</organization>
+      <organizationUrl>http://www.davidkarlsen.com</organizationUrl>
+      <roles>
+        <role>Java Developer (alumnus)</role>
+      </roles>
+      <timezone>+1</timezone>
+    </developer>
+  </developers>
+
+  <contributors>
+    <contributor>
+      <name>Thor Age Eldby</name>
+      <email>tel@objectnet.no</email>
+      <roles>
+        <role>Java Developer</role>
+      </roles>
+      <timezone>+1</timezone>
+    </contributor>
+    <contributor>
+      <name>Marvin Froeder</name>
+      <email>velo.br@gmail.com</email>
+      <timezone>-3</timezone>
+    </contributor>
+    <contributor>
+      <name>Krzysztof Debski</name>
+      <email>kdebski85@gmail.com</email>
+      <timezone>+1</timezone>
+    </contributor>
+  </contributors>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>${junitVersion}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.plugin-tools</groupId>
+        <artifactId>maven-plugin-annotations</artifactId>
+        <!--must be same version of m-plugin-p -->
+        <version>${maven-plugin-plugin.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+        <!-- Maven core -->
+        <dependency>
+            <groupId>org.codehaus.plexus</groupId>
+            <artifactId>plexus-utils</artifactId>
+            <version>4.0.0</version>
+        </dependency>
+        <!--
+            Do not remove, even though reported as unused by dependency:analyze.
+            Do not use scope 'provided', either.
+            Otherwise, there will be a runtime error like: "No implementation for SiteTool was bound."
+        -->
+        <dependency>
+            <groupId>org.codehaus.plexus</groupId>
+            <artifactId>plexus-xml</artifactId>
+            <version>4.0.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven</groupId>
+            <artifactId>maven-core</artifactId>
+            <version>${mavenAPIVersion}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven</groupId>
+            <artifactId>maven-model</artifactId>
+            <version>${mavenAPIVersion}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven.reporting</groupId>
+            <artifactId>maven-reporting-api</artifactId>
+            <version>4.0.0-M9</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven.reporting</groupId>
+            <artifactId>maven-reporting-impl</artifactId>
+            <version>4.0.0-M13</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven</groupId>
+            <artifactId>maven-plugin-api</artifactId>
+            <version>${mavenAPIVersion}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven</groupId>
+            <artifactId>maven-artifact</artifactId>
+            <version>${mavenAPIVersion}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven.plugin-tools</groupId>
+            <artifactId>maven-plugin-annotations</artifactId>
+            <version>${maven-plugin-plugin.version}</version>
+            <scope>provided</scope><!-- annotations are needed only to build the plugin -->
+        </dependency>
+        <!-- Other -->
+        <!-- see: https://cwiki.apache.org/confluence/display/MAVEN/Plugin+migration+to+Maven3+dependencies -->
+        <dependency>
+            <groupId>org.apache.maven</groupId>
+            <artifactId>maven-compat</artifactId>
+            <version>${mavenAPIVersion}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Needed by goal 'aspectj-report' -->
+        <dependency>
+            <groupId>org.apache.maven.doxia</groupId>
+            <artifactId>doxia-sink-api</artifactId>
+            <version>${doxiaVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven.doxia</groupId>
+            <artifactId>doxia-site-renderer</artifactId>
+            <version>${doxiaSitetoolsVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven.doxia</groupId>
+            <artifactId>doxia-integration-tools</artifactId>
+            <version>${doxiaSitetoolsVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven.doxia</groupId>
+            <artifactId>doxia-site-model</artifactId>
+            <version>${doxiaSitetoolsVersion}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjtools</artifactId>
+            <version>${aspectjVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-collections4</artifactId>
+            <version>4.4</version>
+        </dependency>
+        <dependency>
+            <!-- Add tools.jar dependency without extra profile for JDK 8 -->
+            <groupId>com.github.olivergondza</groupId>
+            <artifactId>maven-jdk-tools-wrapper</artifactId>
+            <version>0.1</version>
+        </dependency>
+        <!--
+            This is required to make the ajdoc tool work properly.
+            When generating the AspectJ site documentation, the following debug statement is emitted onto the log:
+
+            [DEBUG] Running : ajdoc  -classpath [... a long classpath follows ...]
+            ajdoc requires a JDK 1.4 or later tools jar - exiting
+        -->
+        <!-- Test -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!--
+          Get rid of transitive plexus-container-default dependency in maven-plugin-testing-harness:3.3.0, because
+          it causes warnings about that deprecated component when running AJ Maven Plugin
+        -->
+        <dependency>
+            <groupId>org.apache.maven.plugin-testing</groupId>
+            <artifactId>maven-plugin-testing-harness</artifactId>
+            <version>4.0.0-alpha-1</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+  <build>
+
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.11.0</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-source-plugin</artifactId>
+          <version>3.3.0</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>3.6.0</version>
+          <configuration>
+            <quiet>true</quiet>
+            <!-- Amend mojo-parent default config, avoiding errors concerning modules vs. unnamed module packages -->
+            <source>8</source>
+            <!-- Reproducible builds, https://maven.apache.org/guides/mini/guide-reproducible-builds.html -->
+            <notimestamp>true</notimestamp>
+            <!--
+              Avoid non-English javadoc generation. Due to https://bugs.openjdk.org/browse/JDK-8222793 reoccurring at
+              least in JDKs 19-21 and also being broken in some older JDKs, we cannot rely on just setting the locale
+              parameter, but also need the 'user.language' and 'user.country' parameters in 'additionalJOptions' as a
+              workaround.
+            -->
+            <locale>en</locale>
+            <additionalJOptions>
+              <additionalJOption>-J-Dfile.encoding=UTF-8</additionalJOption>
+              <additionalJOption>-J-Duser.language=en</additionalJOption>
+              <additionalJOption>-J-Duser.country=US</additionalJOption>
+            </additionalJOptions>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-site-plugin</artifactId>
+          <version>3.12.1</version>
+          <dependencies>
+            <dependency>
+              <groupId>org.asciidoctor</groupId>
+              <artifactId>asciidoctor-maven-plugin</artifactId>
+              <version>2.2.6</version>
+            </dependency>
+            <dependency>
+              <groupId>org.asciidoctor</groupId>
+              <artifactId>asciidoctorj-diagram</artifactId>
+              <version>2.3.0</version>
+            </dependency>
+          </dependencies>
+          <configuration>
+            <generateReports>true</generateReports>
+            <generateSitemap>true</generateSitemap>
+            <relativizeDecorationLinks>false</relativizeDecorationLinks>
+            <locales>en</locales>
+            <inputEncoding>UTF-8</inputEncoding>
+            <outputEncoding>UTF-8</outputEncoding>
+            <asciidoc>
+              <!-- Optional site-wide AsciiDoc attributes -->
+              <attributes>
+                <imagesoutdir>${project.build.directory}/site/images</imagesoutdir>
+                <icons>font</icons>
+                <!-- Add required rouge styles in '/css/site.css' -->
+                <source-highlighter>rouge</source-highlighter>
+                <toclevels>2</toclevels>
+                <!-- Suppress timestamp meta tag -->
+                <docdate/>
+                <docdatetime/>
+              </attributes>
+              <requires>
+                <require>asciidoctor-diagram</require>
+              </requires>
+            </asciidoc>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-plugin-plugin</artifactId>
+          <version>${maven-plugin-plugin.version}</version>
+          <executions>
+            <execution>
+              <id>help-mojo</id>
+              <goals>
+                <goal>helpmojo</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-plugin-report-plugin</artifactId>
+          <version>${maven-plugin-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-project-info-reports-plugin</artifactId>
+          <version>3.5.0</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-enforcer-plugin</artifactId>
+          <version>3.4.1</version>
+          <executions>
+            <execution>
+              <id>enforce-bytecode-version</id>
+              <goals>
+                <goal>enforce</goal>
+              </goals>
+              <configuration>
+                <rules>
+                  <enforceBytecodeVersion>
+                    <maxJdkVersion>${mojo.java.target}</maxJdkVersion>
+                    <excludes>
+                      <!-- Yields warning despite ignore -->
+                      <exclude>jdk.tools:jdk.tools</exclude>
+                      <!--
+                        AspectJ 1.9.8.M1 was the last one to use older Eclipse Core dependencies limited to Java 8 byte
+                        code. As of 1.9.8.RC1 with full Java 17 support, ECJ and JDT Core depend on libraries containing
+                        Java 11 class files, though. Since 1.9.21.M1, there are Java 17 class files in JDT Core.
+                      -->
+                      <exclude>org.aspectj:aspectjtools</exclude>
+                    </excludes>
+                  </enforceBytecodeVersion>
+                  <requireMavenVersion>
+                    <version>${mavenBuildVersion}</version>
+                  </requireMavenVersion>
+                </rules>
+              </configuration>
+            </execution>
+          </executions>
+          <dependencies>
+            <dependency>
+              <groupId>org.codehaus.mojo</groupId>
+              <artifactId>extra-enforcer-rules</artifactId>
+              <version>1.7.0</version>
+            </dependency>
+          </dependencies>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>3.1.2</version>
+          <configuration>
+            <skip>false</skip>
+            <excludes>
+              <exclude>**/test-project/**/*.java</exclude>
+              <exclude>**/parent-child-test-project/**/*.java</exclude>
+              <exclude>**/AbstractAjcMojoTest.java</exclude>
+            </excludes>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-invoker-plugin</artifactId>
+          <version>3.6.0</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-gpg-plugin</artifactId>
+          <version>3.1.0</version>
+          <executions>
+            <execution>
+              <id>sign-artifacts</id>
+              <phase>verify</phase>
+              <goals>
+                <goal>sign</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <!--
+            Other than Maven Deploy, this plugin cannot just be added to the 'build/plugins' section of the parent POM
+            once and (de-)activated with a simple property like 'maven.deploy.skip' on a per-module basis. See also
+            https://issues.sonatype.org/browse/OSSRH-68966. Consequently, we do not add it to the parent but separately
+            to each module meant to be published.
+          -->
+          <groupId>org.sonatype.plugins</groupId>
+          <artifactId>nexus-staging-maven-plugin</artifactId>
+          <version>1.6.8</version>
+          <extensions>true</extensions>
+          <configuration>
+            <serverId>ossrh-s01</serverId>
+            <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
+            <!-- Activate in order to directly release to Maven Central after successful staging -->
+            <autoReleaseAfterClose>false</autoReleaseAfterClose>
+          </configuration>
+          <dependencies>
+            <!--
+              Plugin version 1.6.8 does not work on JDK 16+ without special MAVEN_OPTS opening certain modules,
+              because the XStream version used needs it. One workaround is to use a more recent XStream version.
+              Attention: Do *not* upgrade to e.g. 1.4.18, because it causes exceptions during deployment.
+              TODO: remove plugin dependency after OSSRH-66257, NEXUS-26993 are fixed.
+            -->
+            <dependency>
+              <groupId>com.thoughtworks.xstream</groupId>
+              <artifactId>xstream</artifactId>
+              <version>1.4.15</version>
+            </dependency>
+          </dependencies>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+      </plugin>
+    </plugins>
+
+  </build>
+
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-plugin-report-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-project-info-reports-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </reporting>
+
+  <profiles>
+    <profile>
+      <id>maven-repo-local</id>
+      <activation>
+        <property>
+          <name>maven.repo.local</name>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <systemProperties>
+                <property>
+                 <!--
+                    Pass this through to the tests (if set!) to
+                    have them pick the right repository
+                  -->
+                  <name>maven.repo.local</name>
+                  <value>${maven.repo.local}</value>
+                </property>
+              </systemProperties>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>integration-test</id>
+      <activation>
+        <!--
+          CAVEAT: 'activeByDefault=true' does not work reliably and immediately deactivates the profile, as soon as
+          other profiles are activated explicitly or via activation conditions, either in this POM or in the Mojohaus
+          parent. See https://stackoverflow.com/a/5309576/1082681, https://issues.apache.org/jira/browse/MNG-4917.
+
+          Therefore, we activate it based on a file which always exists. Thanks, Maven! :-/
+          Note: ${project.basedir} is not supported during profile activation, use ${basedir} instead.
+        -->
+        <file>
+          <exists>${basedir}/pom.xml</exists>
+        </file>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-invoker-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>integration-test</id>
+                <goals>
+                  <goal>install</goal>
+                  <goal>run</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <projectsDirectory>src/it</projectsDirectory>
+              <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
+              <postBuildHookScript>verify</postBuildHookScript>
+              <localRepositoryPath>${project.build.directory}/local-repo</localRepositoryPath>
+              <goals>
+                <goal>clean</goal>
+                <goal>test</goal>
+              </goals>
+              <settingsFile>src/it/settings.xml</settingsFile>
+              <!-- Do not deactivate! At least 14 integration tests assert on debug output. -->
+              <debug>true</debug>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <!-- GPG Signature on release -->
+    <profile>
+      <id>release-sign-artifacts</id>
+      <activation>
+        <property>
+          <name>performRelease</name>
+          <value>true</value>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+          </plugin>
+          <plugin>
+            <groupId>org.sonatype.plugins</groupId>
+            <artifactId>nexus-staging-maven-plugin</artifactId>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>default-jar-no-fork</id>
+                <goals>
+                  <goal>jar-no-fork</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <configuration>
+              <failOnError>false</failOnError>
+            </configuration>
+            <executions>
+              <execution>
+                <id>attach-javadocs</id>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+</project>

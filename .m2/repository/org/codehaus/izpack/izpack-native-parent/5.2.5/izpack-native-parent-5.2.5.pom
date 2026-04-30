@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>izpack</artifactId>
+        <groupId>org.codehaus.izpack</groupId>
+        <version>5.2.5</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>izpack-native-parent</artifactId>
+    <name>IzPack native module parent</name>
+    <packaging>pom</packaging>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-clean-plugin</artifactId>
+                <configuration>
+                    <filesets>
+                        <fileset>
+                            <directory>.</directory>
+                            <includes>
+                                <include>*.pdb</include>
+                                <include>*.idb</include>
+                            </includes>
+                        </fileset>
+                    </filesets>
+                </configuration>
+            </plugin>
+        </plugins>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>native-maven-plugin</artifactId>
+                    <extensions>true</extensions>
+                    <configuration>
+                        <compilerProvider>msvc</compilerProvider>
+
+                        <compilerStartOptions>
+                            <compilerStartOption>${unicodeCompilerOptions}</compilerStartOption>
+                        </compilerStartOptions>
+
+                        <linkerStartOptions>
+                            <linkerStartOption>${commonLinkerOptions}</linkerStartOption>
+                        </linkerStartOptions>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>buildDLL</id>
+            <activation>
+                <property>
+                    <name>buildDLL</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <modules>
+                <module>izpack-native-maven-plugin</module>
+                <module>izpack-native-coioshelper</module>
+                <module>izpack-native-coioshelper-x64</module>
+                <module>izpack-native-setupapi</module>
+                <module>izpack-native-setupapi-x64</module>
+                <module>izpack-native-shelllink</module>
+                <module>izpack-native-shelllink-x64</module>
+                <module>izpack-native-package</module>
+                <module>izpack-native</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>useExistingDLL</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+                <property>
+                    <name>buildDLL</name>
+                    <value>false</value>
+                </property>
+            </activation>
+            <modules>
+                <module>izpack-native</module>
+            </modules>
+        </profile>
+    </profiles>
+
+    <properties>
+        <compilerOptions>/Zi /nologo /W3 /WX /O2 /Ob1 /D "NDEBUG" /D "WIN32" /D "_WINDLL" /D "_USRDLL" /D
+            "_CRT_SECURE_NO_DEPRECATE" /EHsc /MT /GS /Gy
+        </compilerOptions>
+        <unicodeOptions>/D "_UNICODE" /D "UNICODE"</unicodeOptions>
+        <javaIncludes>"/I${JAVA_HOME}/include" "/I${JAVA_HOME}/include/win32"</javaIncludes>
+        <commonCompilerOptions>${compilerOptions} ${javaIncludes}</commonCompilerOptions>
+        <unicodeCompilerOptions>${unicodeOptions} ${commonCompilerOptions}</unicodeCompilerOptions>
+        <commonLinkerOptions>/INCREMENTAL:NO /DLL user32.lib advapi32.lib kernel32.lib</commonLinkerOptions>
+    </properties>
+</project>

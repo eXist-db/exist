@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.relaxng</groupId>
+  <artifactId>jing</artifactId>
+  <version>20241231</version>
+  <name>Jing</name>
+  <description>Jing, a tool for validating documents against RelaxNG schemas.</description>
+  <url>http://www.thaiopensource.com/relaxng/jing.html</url>
+  <licenses>
+    <license>
+      <name>3-clause BSD license</name>
+      <url>https://github.com/relaxng/jing-trang/blob/master/copying.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  <developers>
+    <developer>
+      <id>jjc@jclark.com</id>
+      <name>James Clark</name>
+      <email>jjc@jclark.com</email>
+      <url>http://jclark.com/</url>
+    </developer>
+    <developer>
+      <id>georgebina</id>
+      <name>George Bina</name>
+      <email>george@oxygenxml.com</email>
+      <url>http://www.oxygenxml.com</url>
+    </developer>
+    <developer>
+      <id>sideshowbarker</id>
+      <name>Michael[tm] Smith</name>
+      <email>mike@w3.org</email>
+      <url>https://people.w3.org/mike/</url>
+    </developer>
+  </developers>
+  <issueManagement>
+    <system>GitHub Issues</system>
+    <url>https://github.com/relaxng/jing-trang/issues</url>
+  </issueManagement>
+  <scm>
+    <connection>scm:git:git@github.com:relaxng/jing-trang.git</connection>
+    <developerConnection>scm:git:git@github.com:relaxng/jing-trang.git</developerConnection>
+    <url>https://github.com/relaxng/jing-trang/</url>
+  </scm>
+  <ciManagement>
+    <system>Travis CI</system>
+    <url>https://travis-ci.org/relaxng/jing-trang</url>
+  </ciManagement>
+  <dependencies>
+    <dependency>
+      <groupId>isorelax</groupId>
+      <artifactId>isorelax</artifactId>
+      <version>20030108</version>
+    </dependency>
+    <dependency>
+      <groupId>net.sf.saxon</groupId>
+      <artifactId>Saxon-HE</artifactId>
+      <version>9.6.0-4</version>
+    </dependency>
+  </dependencies>
+</project>

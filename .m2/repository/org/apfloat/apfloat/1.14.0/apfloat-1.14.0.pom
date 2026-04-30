@@ -1,0 +1,323 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.apfloat</groupId>
+    <artifactId>apfloat-parent</artifactId>
+    <version>1.14.0</version>
+  </parent>
+
+  <artifactId>apfloat</artifactId>
+
+  <name>apfloat</name>
+  <description>High performance arbitrary precision arithmetic library</description>
+  <url>http://www.apfloat.org</url>
+
+  <properties>
+    <java9.build.sourceDirectory>${project.build.sourceDirectory}9</java9.build.sourceDirectory>
+    <java9.build.outputDirectory>${project.build.outputDirectory}/META-INF/versions/9</java9.build.outputDirectory>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>generate-sources</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <target>
+                <loadproperties srcFile="serialver.properties" />
+                <copy todir="target/generated-sources/main">
+                  <fileset dir="src/main/template" />
+                  <mapper type="regexp" from="(.*)Rawtype(.*)" to="\1Int\2" />
+                  <filterchain>
+                    <tokenfilter>
+                      <replacestring from="rawtype" to="int" />
+                      <replacestring from="Rawtype" to="Int" />
+                      <replacestring from="RawType" to="Integer" />
+                    </tokenfilter>
+                    <expandproperties />
+                  </filterchain>
+                </copy>
+                <copy todir="target/generated-sources/main">
+                  <fileset dir="src/main/template" />
+                  <mapper type="regexp" from="(.*)Rawtype(.*)" to="\1Long\2" />
+                  <filterchain>
+                    <tokenfilter>
+                      <replacestring from="rawtype" to="long" />
+                      <replacestring from="Rawtype" to="Long" />
+                      <replacestring from="RawType" to="Long" />
+                    </tokenfilter>
+                    <expandproperties />
+                  </filterchain>
+                </copy>
+                <copy todir="target/generated-sources/main">
+                  <fileset dir="src/main/template" />
+                  <mapper type="regexp" from="(.*)Rawtype(.*)" to="\1Float\2" />
+                  <filterchain>
+                    <tokenfilter>
+                      <replacestring from="rawtype" to="float" />
+                      <replacestring from="Rawtype" to="Float" />
+                      <replacestring from="RawType" to="Float" />
+                    </tokenfilter>
+                    <expandproperties />
+                  </filterchain>
+                </copy>
+                <copy todir="target/generated-sources/main">
+                  <fileset dir="src/main/template" />
+                  <mapper type="regexp" from="(.*)Rawtype(.*)" to="\1Double\2" />
+                  <filterchain>
+                    <tokenfilter>
+                      <replacestring from="rawtype" to="double" />
+                      <replacestring from="Rawtype" to="Double" />
+                      <replacestring from="RawType" to="Double" />
+                    </tokenfilter>
+                    <expandproperties />
+                  </filterchain>
+                </copy>
+              </target>
+            </configuration>
+          </execution>
+          <execution>
+            <id>generate-test-sources</id>
+            <phase>generate-test-sources</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <target>
+                <copy todir="target/generated-sources/test">
+                  <fileset dir="src/test/template" />
+                  <mapper type="regexp" from="(.*)Rawtype(.*)" to="\1Int\2" />
+                  <filterchain>
+                    <tokenfilter>
+                      <replacestring from="rawtype" to="int" />
+                      <replacestring from="Rawtype" to="Int" />
+                      <replacestring from="RawType" to="Integer" />
+                    </tokenfilter>
+                  </filterchain>
+                </copy>
+                <copy todir="target/generated-sources/test">
+                  <fileset dir="src/test/template" />
+                  <mapper type="regexp" from="(.*)Rawtype(.*)" to="\1Long\2" />
+                  <filterchain>
+                    <tokenfilter>
+                      <replacestring from="rawtype" to="long" />
+                      <replacestring from="Rawtype" to="Long" />
+                      <replacestring from="RawType" to="Long" />
+                    </tokenfilter>
+                  </filterchain>
+                </copy>
+                <copy todir="target/generated-sources/test">
+                  <fileset dir="src/test/template" />
+                  <mapper type="regexp" from="(.*)Rawtype(.*)" to="\1Float\2" />
+                  <filterchain>
+                    <tokenfilter>
+                      <replacestring from="rawtype" to="float" />
+                      <replacestring from="Rawtype" to="Float" />
+                      <replacestring from="RawType" to="Float" />
+                    </tokenfilter>
+                  </filterchain>
+                </copy>
+                <copy todir="target/generated-sources/test">
+                  <fileset dir="src/test/template" />
+                  <mapper type="regexp" from="(.*)Rawtype(.*)" to="\1Double\2" />
+                  <filterchain>
+                    <tokenfilter>
+                      <replacestring from="rawtype" to="double" />
+                      <replacestring from="Rawtype" to="Double" />
+                      <replacestring from="RawType" to="Double" />
+                    </tokenfilter>
+                  </filterchain>
+                </copy>
+              </target>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>add-sources</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>add-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+                <source>target/generated-sources/main</source>
+              </sources>
+            </configuration>
+          </execution>
+          <execution>
+            <id>add-test-sources</id>
+            <phase>generate-test-sources</phase>
+            <goals>
+              <goal>add-test-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+                <source>target/generated-sources/test</source>
+              </sources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <excludes>
+            <exclude>*</exclude>
+          </excludes>
+        </configuration>
+        <executions>
+          <execution>
+            <id>default-testCompile</id>
+            <goals>
+              <goal>testCompile</goal>
+            </goals>
+            <configuration>
+              <release>9</release>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>biz.aQute.bnd</groupId>
+        <artifactId>bnd-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>generate-osgi-manifest</id>
+            <goals>
+              <goal>bnd-process</goal>
+            </goals>
+            <configuration>
+              <bnd><![CDATA[
+                DynamicImport-Package: org.apfloat.aparapi
+                Multi-Release: true
+              ]]></bnd>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>test-jar</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <archive>
+            <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+          </archive>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <outputFile>${project.build.directory}/apfloat.jar</outputFile>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <includes>
+          <include>META-INF/**</include>
+        </includes>
+      </resource>
+    </resources>
+  </build>
+
+  <profiles>
+    <profile>
+      <id>java9</id>
+      <activation>
+        <property>
+          <name>!skipJava9</name>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>compile-java9</id>
+                <phase>compile</phase>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+                <configuration>
+                  <target>
+                    <mkdir dir="${java9.build.outputDirectory}" />
+                    <javac srcdir="${java9.build.sourceDirectory}" destdir="${java9.build.outputDirectory}" classpath="${project.build.outputDirectory}" includeantruntime="false" release="9" />
+                  </target>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>java9-test</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>copy-java9-classes</id>
+                <phase>compile</phase>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+                <configuration>
+                  <target>
+                    <copy overwrite="on" todir="${project.build.outputDirectory}">
+                      <fileset dir="${java9.build.outputDirectory}" />
+                    </copy>
+                  </target>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+
+</project>

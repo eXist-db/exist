@@ -1,0 +1,1253 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    eXist-db Open Source Native XML Database
+    Copyright (C) 2001 The eXist-db Authors
+
+    info@exist-db.org
+    http://www.exist-db.org
+
+    This library is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Lesser General Public
+    License as published by the Free Software Foundation; either
+    version 2.1 of the License, or (at your option) any later version.
+
+    This library is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public
+    License along with this library; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.exist-db</groupId>
+        <artifactId>exist-parent</artifactId>
+        <version>7.0.0-SNAPSHOT</version>
+        <relativePath>../exist-parent</relativePath>
+    </parent>
+
+    <artifactId>exist-core</artifactId>
+    <packaging>jar</packaging>
+
+    <name>eXist-db Core</name>
+    <description>eXist-db NoSQL Database Core</description>
+
+    <scm>
+        <connection>scm:git:https://github.com/exist-db/exist.git</connection>
+        <developerConnection>scm:git:https://github.com/exist-db/exist.git</developerConnection>
+        <url>scm:git:https://github.com/exist-db/exist.git</url>
+      <tag>HEAD</tag>
+  </scm>
+
+    <dependencies>
+        <dependency>
+            <groupId>net.jcip</groupId>
+            <artifactId>jcip-annotations</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>antlr</groupId>
+            <artifactId>antlr</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>2.21.2</version>
+        </dependency>
+
+        <!-- dependency>
+            <groupId>com.fasterxml.woodstox</groupId>
+            <artifactId>woodstox-core</artifactId>
+            <version>5.0.3</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.codehaus.woodstox</groupId>
+            <artifactId>stax2-api</artifactId>
+            <version>3.1.4</version>
+        </dependency -->
+
+        <dependency>
+            <groupId>com.evolvedbinary.multilock</groupId>
+            <artifactId>multilock</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.krukow</groupId>
+            <artifactId>clj-ds</artifactId>
+            <version>0.0.4</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.siemens.ct.exi</groupId>
+            <artifactId>exificient</artifactId>
+            <exclusions>
+                <exclusion> <!-- conflicts with xerces 2.12.2 -->
+                    <groupId>xerces</groupId>
+                    <artifactId>xercesImpl</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>com.siemens.ct.exi</groupId>
+            <artifactId>exificient-grammars</artifactId>
+            <scope>compile</scope>
+            <exclusions>
+                <exclusion> <!-- conflicts with xerces 2.12.2 -->
+                    <groupId>xerces</groupId>
+                    <artifactId>xercesImpl</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>com.siemens.ct.exi</groupId>
+            <artifactId>exificient-core</artifactId>
+            <scope>compile</scope>
+            <exclusions>
+                <exclusion> <!-- conflicts with xerces 2.12.2 -->
+                    <groupId>xerces</groupId>
+                    <artifactId>xercesImpl</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>com.ibm.icu</groupId>
+            <artifactId>icu4j</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>jsr305</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.relaxng</groupId>
+            <artifactId>jing</artifactId>
+            <version>20241231</version>
+            <exclusions>
+                <exclusion> <!-- conflicts with Java 17's javax.xml module -->
+                    <groupId>xml-apis</groupId>
+                    <artifactId>xml-apis</artifactId>
+                </exclusion>
+                <exclusion> <!-- conflicts -->
+                    <groupId>net.sf.saxon</groupId>
+                    <artifactId>saxon</artifactId>
+                </exclusion>
+                <exclusion> <!-- conflicts -->
+                    <groupId>xerces</groupId>
+                    <artifactId>xercesImpl</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.exist-db</groupId>
+            <artifactId>exist-start</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.exquery</groupId>
+            <artifactId>exquery-common</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk18on</artifactId>
+            <version>1.83</version>
+        </dependency>
+
+        <dependency>
+            <groupId>at.yawk.lz4</groupId>
+            <artifactId>lz4-java</artifactId>
+            <version>1.11.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.evolvedbinary.j8fu</groupId>
+            <artifactId>j8fu</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.uuid</groupId>
+            <artifactId>java-uuid-generator</artifactId>
+            <version>5.2.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>jakarta.xml.bind</groupId>
+            <artifactId>jakarta.xml.bind-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.eclipse.angus</groupId>
+            <artifactId>angus-activation</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>jaxb-runtime</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.exist-db.thirdparty.javax.xml.xquery</groupId>
+            <artifactId>xqjri</artifactId>
+            <version>20080114-133351</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jline</groupId>
+            <artifactId>jline</artifactId>
+            <version>4.0.9</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.fusesource.jansi</groupId>
+            <artifactId>jansi</artifactId>
+            <version>${jansi.version}</version>
+            <!--
+                Optionally used by jline at runtime on Linux and macOS,
+                and required by jline at runtime on Windows.
+            -->
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>se.softhouse</groupId>
+            <artifactId>jargo</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+            <version>1.3.6</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-pool2</artifactId>
+            <version>2.13.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-jcl</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-jul</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j2-impl</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.exist-db.thirdparty.xerces</groupId>
+            <artifactId>xercesImpl</artifactId>
+            <version>2.12.2</version>
+            <classifier>jdk14-xml-schema-1.1</classifier>
+            <exclusions>
+                <exclusion> <!-- conflicts with Java 17's javax.xml module -->
+                    <groupId>xml-apis</groupId>
+                    <artifactId>xml-apis</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.codelibs</groupId>
+            <artifactId>nekohtml</artifactId>
+            <version>${nekohtml.version}</version>
+            <scope>runtime</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>xerces</groupId>
+                    <artifactId>xercesImpl</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>nu.validator</groupId>
+            <artifactId>htmlparser</artifactId>
+            <version>1.4.16</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.ws.commons.util</groupId>
+            <artifactId>ws-commons-util</artifactId>
+            <version>1.0.2</version>
+            <exclusions>
+                <exclusion> <!-- conflicts with Java 17's javax.xml module -->
+                    <groupId>xml-apis</groupId>
+                    <artifactId>xml-apis</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- xml-resolver is needed at runtime because xercesImpl declares this as optional,
+            but we use a part of Xerces XMLCatalogResolver which requires this -->
+        <dependency>
+            <groupId>xml-resolver</groupId>
+            <artifactId>xml-resolver</artifactId>
+            <version>1.2</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.xmlresolver</groupId>
+            <artifactId>xmlresolver</artifactId>
+            <version>${xmlresolver.version}</version>
+            <exclusions>
+                <exclusion> <!-- conflicts with Java 17's javax.xml module -->
+                    <groupId>xml-apis</groupId>
+                    <artifactId>xml-apis</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.xmlresolver</groupId>
+            <artifactId>xmlresolver</artifactId>
+            <version>${xmlresolver.version}</version>
+            <classifier>data</classifier>
+            <scope>runtime</scope>
+            <exclusions>
+                <exclusion> <!-- conflicts with Java 17's javax.xml module -->
+                    <groupId>xml-apis</groupId>
+                    <artifactId>xml-apis</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- xpath2 and java-cup are needed at runtime because xercesImpl declares this as optional,
+            but we need them to enable Schema 1.1 support -->
+        <dependency>
+            <groupId>org.exist-db.thirdparty.org.eclipse.wst.xml</groupId>
+            <artifactId>xpath2</artifactId>
+            <version>1.2.0</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>edu.princeton.cup</groupId>
+            <artifactId>java-cup</artifactId>
+            <version>10k</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>net.sf.saxon</groupId>
+            <artifactId>Saxon-HE</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>de.bottlecaps</groupId>
+            <artifactId>markup-blitz</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.exist-db</groupId>
+            <artifactId>exist-saxon-regex</artifactId>
+            <version>9.4.0-9.e1</version>
+            <exclusions>
+                <exclusion>
+                    <!-- we have our own dependency on Saxon -->
+                    <groupId>net.sf.saxon</groupId>
+                    <artifactId>Saxon-HE</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>com.evolvedbinary.thirdparty.org.apache.xmlrpc</groupId>
+            <artifactId>xmlrpc-common</artifactId>
+            <exclusions>
+                <exclusion> <!-- conflicts with Java 17's javax.xml module -->
+                    <artifactId>xml-apis</artifactId>
+                    <groupId>xml-apis</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.evolvedbinary.thirdparty.org.apache.xmlrpc</groupId>
+            <artifactId>xmlrpc-client</artifactId>
+            <version>${apache.xmlrpc.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.evolvedbinary.thirdparty.org.apache.xmlrpc</groupId>
+            <artifactId>xmlrpc-server</artifactId>
+            <version>${apache.xmlrpc.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjrt</artifactId>
+            <version>${aspectj.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-jaas</artifactId>
+            <version>${jetty.version}</version>
+            <scope>runtime</scope>
+            <exclusions>
+                <exclusion>
+                    <!-- conflicts with antlr 2.7.7 -->
+                    <groupId>org.apache.servicemix.bundles</groupId>
+                    <artifactId>org.apache.servicemix.bundles.antlr</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- Force newer MINA version for jetty-jaas -->
+        <dependency>
+            <groupId>org.apache.mina</groupId>
+            <artifactId>mina-core</artifactId>
+            <version>2.2.5</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-http</artifactId>
+            <version>${jetty.version}</version>
+            <!-- NOTE: needed for both scopes: <scope>runtime</scope><scope>test</scope> -->
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-security</artifactId>
+            <version>${jetty.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-server</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-util</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.expath.packaging</groupId>
+            <artifactId>pkg-java</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fifesoft</groupId>
+            <artifactId>rsyntaxtextarea</artifactId>
+            <version>3.6.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.quartz-scheduler</groupId>
+            <artifactId>quartz</artifactId>
+            <version>2.5.2</version>  <!-- Quartz 2.3.1 has an issue on Windows, see: https://github.com/quartz-scheduler/quartz/issues/448 -->
+            <!-- exclude Quartz SQL connectivity options -->
+            <exclusions>
+                <exclusion>
+                    <groupId>com.mchange</groupId>
+                    <artifactId>c3p0</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.mchange</groupId>
+                    <artifactId>mchange-commons-java</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.zaxxer</groupId>
+                    <artifactId>HikariCP-java6</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.zaxxer</groupId>
+                    <artifactId>HikariCP-java7</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>net.sf.xmldb-org</groupId>
+            <artifactId>xmldb-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>it.unimi.dsi</groupId>
+            <artifactId>fastutil</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.lacuna</groupId>
+            <artifactId>bifurcan</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.ant</groupId>
+            <artifactId>ant</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jgrapht</groupId>
+            <artifactId>jgrapht-core</artifactId>
+            <version>1.5.3</version>
+        </dependency>
+
+	<dependency>
+            <groupId>org.jgrapht</groupId>
+            <artifactId>jgrapht-opt</artifactId>
+            <version>1.5.3</version>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <!-- scope>test</scope --> <!-- not just test scope, as needed for org.exist.test -->
+        </dependency>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest</artifactId>
+            <!-- scope>test</scope --> <!-- not just test scope, as needed for org.exist.test -->
+        </dependency>
+
+        <!-- test dependencies -->
+        <dependency>
+            <groupId>org.exist-db</groupId>
+            <artifactId>exist-jetty-config</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.exist-db</groupId>
+            <artifactId>exist-samples</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.awaitility</groupId>
+            <artifactId>awaitility</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.easymock</groupId>
+            <artifactId>easymock</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.xmlunit</groupId>
+            <artifactId>xmlunit-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.xmlunit</groupId>
+            <artifactId>xmlunit-matchers</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.xmlunit</groupId>
+            <artifactId>xmlunit-legacy</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.googlecode.junit-toolbox</groupId>
+            <artifactId>junit-toolbox</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- needed for starting up a jetty server -->
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-deploy</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-jmx</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- dependencies from exist-optional.jar -->
+        <dependency>
+            <!--
+                 NOTE(AR) This is needed to enable loading of Servlets etc
+                          that use Java Annotations for configuration.
+                          This is less than ideal as it allows any extension to
+                          serve arbitary Web requests, and should ultimately be
+                          removed. Unfortunately, at this time, it is required for
+                          Monex's Remote Console to function.
+            -->
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-annotations</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-servlet</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-webapp</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-xml</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpmime</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>fluent-hc</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>false</filtering>
+            </resource>
+            <resource>
+                <directory>src/main/resources-filtered</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+
+        <testResources>
+            <testResource>
+                <directory>src/test/resources</directory>
+                <filtering>false</filtering>
+            </testResource>
+            <testResource>
+                <directory>src/test/resources-filtered</directory>
+                <filtering>true</filtering>
+            </testResource>
+        </testResources>
+
+        <plugins>
+            <plugin>
+                <groupId>com.mycila</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <configuration>
+                    <licenseSets>
+
+                        <licenseSet>
+                            <!--
+                                eXist-db's License
+                            -->
+                            <header>${project.parent.relativePath}/LGPL-21-license.template.txt</header>
+                            <excludes>
+                                <exclude>ARC-BSD-3-license.template.txt</exclude>
+                                <exclude>BX-BSD-3-license.template.txt</exclude>
+                                <exclude>DBXML-10-license.template.txt</exclude>
+                                <exclude>FDB-backport-BSD-3-license.template.txt</exclude>
+                                <exclude>**/README</exclude>
+                                <exclude>src/main/resources/org/exist/client/*.tmpl</exclude>
+                                <exclude>src/test/resources/uk-towns.txt</exclude>
+                                <exclude>src/test/resources/**/*.xar</exclude>
+                                <exclude>src/test/resources/**/*.bin</exclude>
+                                <exclude>src/test/resources/org/exist/validation/entities/**</exclude>
+                                <exclude>src/test/resources/org/exist/xmldb/allowAnyUri.xml</exclude>
+
+                                <!--
+                                    Already under LGPL 2.1, but with a different Copyright
+                                -->
+                                <exclude>src/main/java/org/exist/dom/persistent/XMLDeclarationImpl.java</exclude>
+                                <exclude>src/main/java/org/exist/resolver/ResolverFactory.java</exclude>
+                                <exclude>src/main/java/org/exist/resolver/XercesXmlResolverAdapter.java</exclude>
+                                <exclude>src/main/java/org/exist/util/UTF8.java</exclude>
+                                <exclude>src/test/java/org/exist/storage/MoveCollectionTest.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/blob/**</exclude>
+                                <exclude>src/test/java/org/exist/storage/blob/**</exclude>
+                                <exclude>src/main/java/org/exist/storage/journal/JournalManager.java</exclude>
+                                <exclude>src/test/java/org/exist/storage/AbstractRecoverTest.java</exclude>
+                                <exclude>src/test/java/org/exist/storage/RecoverBinaryTest.java</exclude>
+                                <exclude>src/test/java/org/exist/storage/RecoverXmlTest.java</exclude>
+                                <exclude>src/test/java/org/exist/storage/journal/AbstractJournalTest.java</exclude>
+                                <exclude>src/test/java/org/exist/storage/journal/JournalBinaryTest.java</exclude>
+                                <exclude>src/test/java/org/exist/storage/journal/JournalXmlTest.java</exclude>
+                                <exclude>src/test/java/org/exist/storage/journal/LsnTest.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/BrokerPoolService.java</exclude>
+                                <exclude>src/test/java/org/exist/storage/BrokerPoolServiceTest.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/BrokerPoolServiceException.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/BrokerPoolServicesManager.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/BrokerPoolServicesManagerException.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/FluentBrokerAPI.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/XQueryPool.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/lock/EnsureContainerLocked.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/lock/EnsureContainerUnlocked.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/lock/EnsureLocked.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/lock/EnsureLockingAspect.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/lock/EnsureUnlocked.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/lock/FileLockService.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/lock/LockEventJsonListener.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/lock/LockEventLogListener.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/lock/LockEventXmlListener.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/lock/LockedPath.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/lock/LockGroup.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/lock/LockManager.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/lock/LockTable.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/lock/LockTableUtils.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/lock/ManagedCollectionLock.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/lock/ManagedDocumentLock.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/lock/ManagedLock.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/lock/ManagedLockGroupDocumentLock.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/lock/ManagedSingleLockDocumentLock.java</exclude>
+                                <exclude>src/test/java/org/exist/storage/lock/CollectionLocksTest.java</exclude>
+                                <exclude>src/test/java/org/exist/storage/lock/DocumentLocksTest.java</exclude>
+                                <exclude>src/test/java/org/exist/storage/lock/LockManagerTest.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/txn/TransactionManager.java</exclude>
+                                <exclude>src/test/java/org/exist/storage/txn/ConcurrentTransactionsTest.java</exclude>
+                                <exclude>src/test/java/org/exist/storage/txn/CountingTxnListener.java</exclude>
+                                <exclude>src/test/java/org/exist/storage/txn/ReusableTxnTest.java</exclude>
+                                <exclude>src/test/java/org/exist/storage/txn/TransactionManagerTestHelper.java</exclude>
+                                <exclude>src/test/java/org/exist/storage/txn/TxnTest.java</exclude>
+                                <exclude>src/main/java/org/exist/test/DiffMatcher.java</exclude>
+                                <exclude>src/test/java/org/exist/test/Util.java</exclude>
+                                <exclude>src/main/java/org/exist/util/CollectionOfArrayIterator.java</exclude>
+                                <exclude>src/test/java/org/exist/util/CollectionOfArrayIteratorTest.java</exclude>
+                                <exclude>src/main/java/org/exist/util/IPUtil.java</exclude>
+                                <exclude>src/main/java/org/exist/util/MapUtil.java</exclude>
+                                <exclude>src/main/java/org/exist/xmlrpc/ACEAiderParser.java</exclude>
+                                <exclude>src/main/java/org/exist/xmlrpc/ACEAiderSerializer.java</exclude>
+                                <exclude>src/main/java/org/exist/xquery/Cardinality.java</exclude>
+                                <exclude>src/test/java/org/exist/xquery/CastExpressionTest.java</exclude>
+                                <exclude>src/test/java/org/exist/xquery/ImportModuleTest.java</exclude>
+                                <exclude>src/main/java/org/exist/xquery/Materializable.java</exclude>
+                                <exclude>src/test/java/org/exist/xquery/XQueryContextAttributesTest.java</exclude>
+                                <exclude>src/main/java/org/exist/xquery/functions/map/MapType.java</exclude>
+                                <exclude>src/test/java/org/exist/xquery/functions/session/AbstractSessionTest.java</exclude>
+                                <exclude>src/test/java/org/exist/xquery/functions/xmldb/AbstractXMLDBTest.java</exclude>
+                                <exclude>src/test/java/org/exist/xquery/functions/session/AttributeTest.java</exclude>
+                                <exclude>src/test/java/org/exist/xquery/functions/xmldb/XMLDBAuthenticateTest.java</exclude>
+                                <exclude>src/main/java/org/exist/xquery/functions/util/Eval.java</exclude>
+                                <exclude>src/main/java/org/exist/xquery/pragmas/TimePragma.java</exclude>
+                                <exclude>src/test/java/org/exist/xquery/util/URIUtilsTest.java</exclude>
+                                <exclude>src/main/java/org/exist/xquery/value/ArrayListValueSequence.java</exclude>
+                                <exclude>src/test/java/org/exist/xquery/value/BifurcanMapTest.java</exclude>
+                                <exclude>src/main/java/org/exist/xquery/value/AtomicValueComparator.java</exclude>
+                                <exclude>src/main/java/org/exist/xquery/value/ItemComparator.java</exclude>
+                                <exclude>src/main/java/org/exist/xquery/value/SequenceComparator.java</exclude>
+                                <exclude>src/main/java/org/exist/xquery/value/SubSequence.java</exclude>
+                                <exclude>src/test/java/org/exist/xquery/value/SubSequenceRangeTest.java</exclude>
+                                <exclude>src/test/java/org/exist/xquery/value/SubSequenceTest.java</exclude>
+                                <exclude>src/test/xquery/binary-value.xqm</exclude>
+                                <exclude>src/test/xquery/instance-of.xqm</exclude>
+                                <exclude>src/test/xquery/operator-mapping.xqm</exclude>
+                                <exclude>src/test/xquery/order.xqm</exclude>
+                                <exclude>src/test/xquery/type-promotion.xqm</exclude>
+                                <exclude>src/test/xquery/xqsuite/xqsuite-assertions-dynamic.xqm</exclude>
+                                <exclude>src/test/xquery/xqsuite/xqsuite-assertions-inline.xqm</exclude>
+                                <exclude>src/test/xquery/xqsuite/xqsuite-assertions.resources.xqm.ignore</exclude>
+                                <exclude>src/test/xquery/xquery3/function-reference.xqm</exclude>
+                                <exclude>src/test/xquery/xquery3/postfix-expr.xqm</exclude>
+
+                                <!--
+                                    Derivative work licensed under dbXML 1.0 and LGPL 2.1
+                                -->
+                                <exclude>src/main/java/org/exist/storage/btree/BTree.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/btree/BTreeCallback.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/btree/BTreeException.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/btree/DBException.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/btree/IndexQuery.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/btree/Paged.java</exclude>
+                                <exclude>src/main/java/org/exist/storage/btree/Value.java</exclude>
+
+                                <!--
+                                   Licensed under BSD 3
+                                -->
+                                <exclude>src/main/java/org/exist/util/CodePointString.java</exclude>
+                                <exclude>src/test/java/org/exist/util/CodePointStringTest.java</exclude>
+                                <exclude>src/main/java/org/exist/util/io/ByteBufferAccessor.java</exclude>
+                                <exclude>src/main/java/org/exist/util/io/ByteBufferInputStream.java</exclude>
+                                <exclude>src/main/java/org/exist/util/io/CachingFilterInputStream.java</exclude>
+                                <exclude>src/main/java/org/exist/util/io/FileFilterInputStreamCache.java</exclude>
+                                <exclude>src/main/java/org/exist/util/io/FilterInputStreamCache.java</exclude>
+                                <exclude>src/main/java/org/exist/util/io/FilterInputStreamCacheFactory.java</exclude>
+                                <exclude>src/main/java/org/exist/util/io/MemoryFilterInputStreamCache.java</exclude>
+                                <exclude>src/main/java/org/exist/util/io/MemoryMappedFileFilterInputStreamCache.java</exclude>
+                                <exclude>src/main/java/org/exist/util/io/TemporaryFileManager.java</exclude>
+                                <exclude>src/test/java/org/exist/util/io/CachingFilterInputStreamNonMarkableByteArrayInputStreamTest.java</exclude>
+                                <exclude>src/main/java/org/exist/xquery/functions/fn/FnFormatNumbers.java</exclude>
+                            </excludes>
+                        </licenseSet>
+
+                        <licenseSet>
+                            <!--
+                                Derivative work licensed under dbXML 1.0 and LGPL 2.1
+                            -->
+                            <multi>
+                                <preamble><![CDATA[NOTE: This file is in part based on code from The dbXML Group.
+The original license statement is also included below.]]></preamble>
+                                <header>${project.parent.relativePath}/LGPL-21-license.template.txt</header>
+                                <header>DBXML-10-license.template.txt</header>
+                            </multi>
+                            <includes>
+                                <include>src/main/java/org/exist/storage/btree/BTree.java</include>
+                                <include>src/main/java/org/exist/storage/btree/BTreeCallback.java</include>
+                                <include>src/main/java/org/exist/storage/btree/BTreeException.java</include>
+                                <include>src/main/java/org/exist/storage/btree/DBException.java</include>
+                                <include>src/main/java/org/exist/storage/btree/IndexQuery.java</include>
+                                <include>src/main/java/org/exist/storage/btree/Paged.java</include>
+                                <include>src/main/java/org/exist/storage/btree/Value.java</include>
+                            </includes>
+                        </licenseSet>
+
+                        <licenseSet>
+                            <!--
+                                ARC BSD-3 licensed code
+                            -->
+                            <header>ARC-BSD-3-license.template.txt</header>
+                            <includes>
+
+                                <!-- TODO(AR) Consider upstreaming to Apache Commons IO project -->
+                                <include>src/main/java/org/exist/util/io/ByteBufferAccessor.java</include>
+                                <include>src/main/java/org/exist/util/io/ByteBufferInputStream.java</include>
+                                <include>src/main/java/org/exist/util/io/CachingFilterInputStream.java</include>
+                                <include>src/main/java/org/exist/util/io/FileFilterInputStreamCache.java</include>
+                                <include>src/main/java/org/exist/util/io/FilterInputStreamCache.java</include>
+                                <include>src/main/java/org/exist/util/io/FilterInputStreamCacheFactory.java</include>
+                                <include>src/main/java/org/exist/util/io/MemoryFilterInputStreamCache.java</include>
+                                <include>src/main/java/org/exist/util/io/MemoryMappedFileFilterInputStreamCache.java</include>
+                                <include>src/main/java/org/exist/util/io/TemporaryFileManager.java</include>
+                                <include>src/test/java/org/exist/util/io/CachingFilterInputStreamNonMarkableByteArrayInputStreamTest.java</include>
+                            </includes>
+                        </licenseSet>
+
+                        <licenseSet>
+                            <!--
+                                FDB backport to LGPL 2.1-only licensed code
+                            -->
+                            <header>${project.parent.relativePath}/FDB-backport-LGPL-21-ONLY-license.template.txt</header>
+                            <includes>
+                                <include>src/main/java/org/exist/dom/persistent/XMLDeclarationImpl.java</include>
+                                <include>src/main/java/org/exist/resolver/ResolverFactory.java</include>
+                                <include>src/main/java/org/exist/resolver/XercesXmlResolverAdapter.java</include>
+                                <include>src/test/java/org/exist/storage/MoveCollectionTest.java</include>
+                                <include>src/main/java/org/exist/storage/blob/**</include>
+                                <include>src/test/java/org/exist/storage/blob/**</include>
+                                <include>src/main/java/org/exist/storage/journal/JournalManager.java</include>
+                                <include>src/test/java/org/exist/storage/AbstractRecoverTest.java</include>
+                                <include>src/test/java/org/exist/storage/RecoverBinaryTest.java</include>
+                                <include>src/test/java/org/exist/storage/RecoverXmlTest.java</include>
+                                <include>src/test/java/org/exist/storage/journal/AbstractJournalTest.java</include>
+                                <include>src/test/java/org/exist/storage/journal/JournalBinaryTest.java</include>
+                                <include>src/test/java/org/exist/storage/journal/JournalXmlTest.java</include>
+                                <include>src/test/java/org/exist/storage/journal/LsnTest.java</include>
+                                <include>src/main/java/org/exist/storage/BrokerPoolService.java</include>
+                                <include>src/test/java/org/exist/storage/BrokerPoolServiceTest.java</include>
+                                <include>src/main/java/org/exist/storage/BrokerPoolServiceException.java</include>
+                                <include>src/main/java/org/exist/storage/BrokerPoolServicesManager.java</include>
+                                <include>src/main/java/org/exist/storage/BrokerPoolServicesManagerException.java</include>
+                                <include>src/main/java/org/exist/storage/FluentBrokerAPI.java</include>
+                                <include>src/main/java/org/exist/storage/XQueryPool.java</include>
+                                <include>src/main/java/org/exist/storage/lock/EnsureContainerLocked.java</include>
+                                <include>src/main/java/org/exist/storage/lock/EnsureContainerUnlocked.java</include>
+                                <include>src/main/java/org/exist/storage/lock/EnsureLocked.java</include>
+                                <include>src/main/java/org/exist/storage/lock/EnsureLockingAspect.java</include>
+                                <include>src/main/java/org/exist/storage/lock/EnsureUnlocked.java</include>
+                                <include>src/main/java/org/exist/storage/lock/FileLockService.java</include>
+                                <include>src/main/java/org/exist/storage/lock/LockEventJsonListener.java</include>
+                                <include>src/main/java/org/exist/storage/lock/LockEventLogListener.java</include>
+                                <include>src/main/java/org/exist/storage/lock/LockEventXmlListener.java</include>
+                                <include>src/main/java/org/exist/storage/lock/LockedPath.java</include>
+                                <include>src/main/java/org/exist/storage/lock/LockGroup.java</include>
+                                <include>src/main/java/org/exist/storage/lock/LockManager.java</include>
+                                <include>src/main/java/org/exist/storage/lock/LockTable.java</include>
+                                <include>src/main/java/org/exist/storage/lock/LockTableUtils.java</include>
+                                <include>src/main/java/org/exist/storage/lock/ManagedCollectionLock.java</include>
+                                <include>src/main/java/org/exist/storage/lock/ManagedDocumentLock.java</include>
+                                <include>src/main/java/org/exist/storage/lock/ManagedLock.java</include>
+                                <include>src/main/java/org/exist/storage/lock/ManagedLockGroupDocumentLock.java</include>
+                                <include>src/main/java/org/exist/storage/lock/ManagedSingleLockDocumentLock.java</include>
+                                <include>src/test/java/org/exist/storage/lock/CollectionLocksTest.java</include>
+                                <include>src/test/java/org/exist/storage/lock/DocumentLocksTest.java</include>
+                                <include>src/test/java/org/exist/storage/lock/LockManagerTest.java</include>
+                                <include>src/main/java/org/exist/storage/txn/TransactionManager.java</include>
+                                <include>src/test/java/org/exist/storage/txn/ConcurrentTransactionsTest.java</include>
+                                <include>src/test/java/org/exist/storage/txn/CountingTxnListener.java</include>
+                                <include>src/test/java/org/exist/storage/txn/ReusableTxnTest.java</include>
+                                <include>src/test/java/org/exist/storage/txn/TransactionManagerTestHelper.java</include>
+                                <include>src/test/java/org/exist/storage/txn/TxnTest.java</include>
+                                <include>src/main/java/org/exist/test/DiffMatcher.java</include>
+                                <include>src/test/java/org/exist/test/Util.java</include>
+                                <include>src/main/java/org/exist/util/CollectionOfArrayIterator.java</include>
+                                <include>src/test/java/org/exist/util/CollectionOfArrayIteratorTest.java</include>
+                                <include>src/main/java/org/exist/util/IPUtil.java</include>
+                                <include>src/main/java/org/exist/util/MapUtil.java</include>
+                                <include>src/main/java/org/exist/xmlrpc/ACEAiderParser.java</include>
+                                <include>src/main/java/org/exist/xmlrpc/ACEAiderSerializer.java</include>
+                                <include>src/main/java/org/exist/xquery/Cardinality.java</include>
+                                <exclude>src/test/java/org/exist/xquery/CastExpressionTest.java</exclude>
+                                <include>src/test/java/org/exist/xquery/ImportModuleTest.java</include>
+                                <include>src/main/java/org/exist/xquery/Materializable.java</include>
+                                <include>src/test/java/org/exist/xquery/XQueryContextAttributesTest.java</include>
+                                <include>src/main/java/org/exist/xquery/functions/map/MapType.java</include>
+                                <include>src/test/java/org/exist/xquery/functions/session/AbstractSessionTest.java</include>
+                                <include>src/test/java/org/exist/xquery/functions/xmldb/AbstractXMLDBTest.java</include>
+                                <include>src/test/java/org/exist/xquery/functions/session/AttributeTest.java</include>
+                                <include>src/test/java/org/exist/xquery/functions/xmldb/XMLDBAuthenticateTest.java</include>
+                                <include>src/main/java/org/exist/xquery/functions/util/Eval.java</include>
+                                <include>src/main/java/org/exist/xquery/pragmas/TimePragma.java</include>
+                                <include>src/test/java/org/exist/xquery/util/URIUtilsTest.java</include>
+                                <include>src/main/java/org/exist/xquery/value/ArrayListValueSequence.java</include>
+                                <include>src/test/java/org/exist/xquery/value/BifurcanMapTest.java</include>
+                                <include>src/main/java/org/exist/xquery/value/AtomicValueComparator.java</include>
+                                <include>src/main/java/org/exist/xquery/value/ItemComparator.java</include>
+                                <include>src/main/java/org/exist/xquery/value/SequenceComparator.java</include>
+                                <include>src/main/java/org/exist/xquery/value/SubSequence.java</include>
+                                <include>src/test/java/org/exist/xquery/value/SubSequenceRangeTest.java</include>
+                                <include>src/test/java/org/exist/xquery/value/SubSequenceTest.java</include>
+                                <include>src/test/xquery/binary-value.xqm</include>
+                                <include>src/test/xquery/instance-of.xqm</include>
+                                <include>src/test/xquery/operator-mapping.xqm</include>
+                                <include>src/test/xquery/order.xqm</include>
+                                <include>src/test/xquery/type-promotion.xqm</include>
+                                <include>src/test/xquery/xqsuite/xqsuite-assertions-dynamic.xqm</include>
+                                <include>src/test/xquery/xqsuite/xqsuite-assertions-inline.xqm</include>
+                                <include>src/test/xquery/xqsuite/xqsuite-assertions.resources.xqm.ignore</include>
+                                <include>src/test/xquery/xquery3/function-reference.xqm</include>
+                                <include>src/test/xquery/xquery3/postfix-expr.xqm</include>
+                            </includes>
+
+                        </licenseSet>
+
+                        <licenseSet>
+                            <!--
+                                FDB backport to BSD-3 licensed code
+                            -->
+                            <header>FDB-backport-BSD-3-license.template.txt</header>
+                            <includes>
+                                <include>src/main/java/org/exist/util/CodePointString.java</include>
+                                <include>src/test/java/org/exist/util/CodePointStringTest.java</include>
+                            </includes>
+
+                        </licenseSet>
+
+                        <licenseSet>
+                            <!--
+                                FDB backport to BSD-3 licensed code with code from BaseX
+                            -->
+                            <multi>
+                                <preamble><![CDATA[NOTE: Where indicated, this file is in part based on code from
+The BaseX Team. The original license statement is also included below.]]></preamble>
+                                <header>FDB-backport-BSD-3-license.template.txt</header>
+                                <header>BX-BSD-3-license.template.txt</header>
+                            </multi>
+                            <includes>
+                                <include>src/main/java/org/exist/xquery/functions/fn/FnFormatNumbers.java</include>
+                            </includes>
+
+                        </licenseSet>
+
+                    </licenseSets>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>analyze</id>
+                        <goals>
+                            <goal>analyze-only</goal>
+                        </goals>
+                        <configuration>
+                            <failOnWarning>true</failOnWarning>
+                            <ignoredUnusedDeclaredDependencies>
+                                <ignoredUnusedDeclaredDependency>org.apache.logging.log4j:log4j-core:jar:${log4j.version}</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>org.apache.logging.log4j:log4j-jcl:jar:${log4j.version}</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>org.apache.logging.log4j:log4j-slf4j2-impl:jar:${log4j.version}</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>org.apache.logging.log4j:log4j-jul:jar:${log4j.version}</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>org.eclipse.angus:angus-activation:jar:${eclipse.angus-activation.version}</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>org.glassfish.jaxb:jaxb-runtime:jar:${jaxb.impl.version}</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>org.fusesource.jansi:jansi:jar:${jansi.version}</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>org.codelibs:nekohtml:jar:${nekohtml.version}</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>xml-resolver:xml-resolver:jar:1.2</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>org.xmlresolver:xmlresolver:jar:${xmlresolver.version}</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>org.exist-db.thirdparty.org.eclipse.wst.xml:xpath2:jar:1.2.0</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>edu.princeton.cup:java-cup:jar:10k</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>org.eclipse.jetty:jetty-jaas:jar:${jetty.version}</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>org.eclipse.jetty:jetty-deploy:jar:${jetty.version}</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>org.eclipse.jetty:jetty-jmx:jar:${jetty.version}</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>org.eclipse.jetty:jetty-annotations:jar:${jetty.version}</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>org.eclipse.jetty:jetty-security:jar:${jetty.version}</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>${project.groupId}:exist-jetty-config:jar:${project.version}</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>org.apache.mina:mina-core</ignoredUnusedDeclaredDependency>
+                            </ignoredUnusedDeclaredDependencies>
+
+                            <ignoredNonTestScopedDependencies>
+                                <ignoredNonTestScopedDependency>org.eclipse.jetty:jetty-http:jar:${jetty.version}</ignoredNonTestScopedDependency>
+                            </ignoredNonTestScopedDependencies>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.omnifaces</groupId>
+                <artifactId>antlr-maven-plugin</artifactId>
+                <version>2.4</version>
+                <configuration>
+                    <grammars>
+                        org/exist/xquery/parser/XQuery.g,org/exist/xquery/parser/XQueryTree.g,org/exist/xquery/parser/DeclScanner.g,org/exist/xquery/xqdoc/parser/XQDocParser.g
+                    </grammars>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>software.xdev</groupId>
+                <artifactId>find-and-replace-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>replace-underscore-with-hyphen</id>
+                        <phase>process-sources</phase>
+                        <goals>
+                            <goal>file-contents</goal>
+                        </goals>
+                        <configuration>
+                            <baseDir>target/generated-sources/antlr/org/exist/xquery/parser/</baseDir>
+                            <fileMask>XQueryLexer.java</fileMask>
+                            <findRegex>new Integer</findRegex>
+                            <replaceValue>Integer.valueOf</replaceValue>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>default-compile</id>
+                        <configuration>
+                            <excludes>
+                                <!-- compiled by the Aspectj plugin below -->
+                                <exclude>org/exist/storage/lock/EnsureLockingAspect.java</exclude>
+                                <exclude>org/exist/security/PermissionRequiredAspect.java</exclude>
+                            </excludes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>dev.aspectj</groupId>
+                <artifactId>aspectj-maven-plugin</artifactId>
+                <version>1.14.1</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.aspectj</groupId>
+                        <artifactId>aspectjtools</artifactId>
+                        <version>${aspectj.version}</version>
+                    </dependency>
+                </dependencies>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+
+                        <!-- Compile and weave aspects after all classes compiled by javac -->
+                        <!-- phase>process-classes</phase>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals -->
+
+                        <configuration>
+                            <forceAjcCompile>true</forceAjcCompile>  <!-- Required, otherwise the Aspects are not re-compiled when the src/main/java is recompiled for the test phase -->
+                            <showWeaveInfo>true</showWeaveInfo>
+                            <complianceLevel>${maven.compiler.release}</complianceLevel>
+                            <source>${maven.compiler.source}</source>
+                            <target>${maven.compiler.target}</target>
+                            <!-- sources>
+                                <source>
+                                    <basedir>${project.build.sourceDirectory}</basedir>
+                                    <includes>
+                                        <include>**/PermissionRequiredAspect.java</include>
+                                    </includes>
+                                    <excludes>
+                                        <exclude>**/EnsureLockingAspect.java</exclude>
+                                    </excludes>
+                                </source>
+                            </sources -->
+
+                            <!-- weaveDirectories>
+                                <weaveDirectory>${project.build.directory}/classes</weaveDirectory>
+                            </weaveDirectories -->
+
+                            <excludes>
+                                <!-- excluded by default, as only really needed for debugging lock ownership issues -->
+                                <exclude>**/EnsureLockingAspect.java</exclude>
+                            </excludes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                    <excludePackageNames>org.exist.xquery.parser:org.exist.xquery.xqdoc.parser</excludePackageNames>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.junit.jupiter</groupId>
+                        <artifactId>junit-jupiter-engine</artifactId>
+                        <version>${junit.jupiter.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.junit.vintage</groupId>
+                        <artifactId>junit-vintage-engine</artifactId>
+                        <version>${junit.jupiter.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.objenesis</groupId>
+                        <artifactId>objenesis</artifactId>
+                        <version>${objenesis.version}</version>
+                    </dependency>
+                </dependencies>
+                <configuration>
+                    <skip>${skipUnitTests}</skip>
+                    <argLine>@{jacocoArgLine} -Dfile.encoding=${project.build.sourceEncoding} -Dexist.recovery.progressbar.hide=true</argLine>
+                    <systemPropertyVariables>
+                        <jetty.home>${project.basedir}/../exist-jetty-config/target/classes/org/exist/jetty</jetty.home>
+                        <exist.configurationFile>${project.build.testOutputDirectory}/conf.xml</exist.configurationFile>
+                        <exist.jetty.standalone.webapp.dir>${project.build.testOutputDirectory}/standalone-webapp</exist.jetty.standalone.webapp.dir>
+                        <log4j.configurationFile>${project.build.testOutputDirectory}/log4j2.xml</log4j.configurationFile>
+                    </systemPropertyVariables>
+
+                    <excludes>
+
+                        <!-- NOTE: these can still exhibit deadlocks
+                                 see https://github.com/eXist-db/exist/issues/4140
+                                 see https://github.com/eXist-db/exist/issues/3685 -->
+                        <exclude>org.exist.collections.ConcurrencyTest</exclude>
+
+                        <!-- Passes locally (~54s) but hangs on CI during BrokerPool shutdown,
+                                 causing the entire unit test step to time out.
+                                 see https://github.com/eXist-db/exist/pull/6153 -->
+                        <exclude>org.exist.xmldb.concurrent.FragmentsTest</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <configuration>
+                    <argLine>@{jacocoArgLine} -Dfile.encoding=${project.build.sourceEncoding} -Dexist.recovery.progressbar.hide=true</argLine>
+                    <systemPropertyVariables>
+                        <jetty.home>${project.basedir}/../exist-jetty-config/target/classes/org/exist/jetty</jetty.home>
+                        <exist.configurationFile>${project.build.testOutputDirectory}/conf.xml</exist.configurationFile>
+                        <exist.jetty.standalone.webapp.dir>${project.build.testOutputDirectory}/standalone-webapp</exist.jetty.standalone.webapp.dir>
+                        <log4j.configurationFile>${project.build.testOutputDirectory}/log4j2.xml</log4j.configurationFile>
+                    </systemPropertyVariables>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+
+    </build>
+
+</project>

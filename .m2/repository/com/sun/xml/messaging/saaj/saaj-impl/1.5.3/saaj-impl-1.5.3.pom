@@ -1,0 +1,364 @@
+<!--
+
+    Copyright (c) 2011, 2021 Oracle and/or its affiliates. All rights reserved.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Distribution License v. 1.0, which is available at
+    http://www.eclipse.org/org/documents/edl-v10.php.
+
+    SPDX-License-Identifier: BSD-3-Clause
+
+-->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.sun.xml.messaging.saaj</groupId>
+        <artifactId>metro-saaj</artifactId>
+        <version>1.5.3</version>
+    </parent>
+
+    <groupId>com.sun.xml.messaging.saaj</groupId>
+    <artifactId>saaj-impl</artifactId>
+    <version>1.5.3</version>
+
+    <name>Jakarta SOAP Implementation</name>
+    <description>
+       Implementation of Jakarta SOAP with Attachments Specification
+    </description>
+
+    <properties>
+        <upgrade.mods>${project.build.directory}/upgrade-mods</upgrade.mods>
+        <proxyOpts/>
+        <!-- arguments for surefire-plugin -->
+        <argLine>${proxyOpts}</argLine>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-upgrade-module-path</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${upgrade.mods}</outputDirectory>
+                            <includeArtifactIds>jakarta.xml.soap-api,jakarta.activation,jakarta.xml.bind-api</includeArtifactIds>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>9</source>
+                    <target>9</target>
+                    <compilerArgs>
+                        <arg>-Xlint:all</arg>
+                    </compilerArgs>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>base-compile</id>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                        <configuration>
+                            <release>8</release>
+                            <excludes>
+                                <exclude>module-info.java</exclude>
+                            </excludes>
+                            <compilerArgs>
+                                <arg>-Djava.endorsed.dirs=${upgrade.mods}</arg>
+                            </compilerArgs>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>default-testCompile</id>
+                        <goals>
+                            <goal>testCompile</goal>
+                        </goals>
+                        <configuration>
+                            <release>11</release>
+                            <compilerArgs>
+                                <arg>--add-exports</arg>
+                                <arg>com.sun.xml.messaging.saaj/com.sun.xml.messaging.saaj.soap.impl=com.sun.xml.messaging.saaj.test</arg>
+                            </compilerArgs>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>bundle-manifest</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>manifest</goal>
+                        </goals>
+                        <configuration>
+                            <instructions>
+                                <Export-Package>
+                                    !com.sun.xml.messaging.saaj.client.p2p,
+                                    !com.sun.xml.messaging.saaj.soap.impl,
+                                    !com.sun.xml.messaging.saaj.soap.ver1_1,
+                                    !com.sun.xml.messaging.saaj.soap.ver1_2,
+                                    *
+                                </Export-Package>
+                                <Import-Package>
+                                    javax.activation;version=!,
+                                    javax.xml.bind.attachment;version=!,
+                                    *
+                                </Import-Package>
+                                <Implementation-Build-Id>${project.version} - ${buildNumber}</Implementation-Build-Id>
+                            </instructions>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+                        <manifest>
+                            <addDefaultEntries>false</addDefaultEntries>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addDefaultEntries>false</addDefaultEntries>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                        </manifest>
+                        <manifestEntries>
+                            <Implementation-Build-Id>${project.version} - ${buildNumber}</Implementation-Build-Id>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addDefaultEntries>false</addDefaultEntries>
+                        </manifest>
+                    </archive>
+                    <release>11</release>
+                    <notimestamp>true</notimestamp>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <!-- jakarta.activation impl is required for tests -->
+                    <classpathDependencyExcludes>
+                        <classpathDependencyExclude>jakarta.activation:jakarta.activation-api</classpathDependencyExclude>
+                    </classpathDependencyExcludes>
+                    <systemProperties>
+                        <java.awt.headless>true</java.awt.headless>
+                    </systemProperties>
+                    <reuseForks>false</reuseForks>
+                    <argLine>
+                        @{argLine} --add-opens jakarta.activation/javax.activation=com.sun.xml.messaging.saaj
+                    </argLine>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>test-not-optimized</id>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <reportsDirectory>${project.build.directory}/surefire-reports/not-optimized</reportsDirectory>
+                            <systemProperties>
+                                <java.awt.headless>true</java.awt.headless>
+                                <saaj.mime.optimization>false</saaj.mime.optimization>
+                            </systemProperties>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>jakarta.xml.soap</groupId>
+            <artifactId>jakarta.xml.soap-api</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>jakarta.activation</groupId>
+                    <artifactId>jakarta.activation-api</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.jvnet.staxex</groupId>
+            <artifactId>stax-ex</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jvnet.mimepull</groupId>
+            <artifactId>mimepull</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>com.sun.activation</groupId>
+            <artifactId>jakarta.activation</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>jakarta.activation</groupId>
+            <artifactId>jakarta.activation-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>jakarta.xml.bind</groupId>
+            <artifactId>jakarta.xml.bind-api</artifactId>
+            <scope>provided</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.xml.fastinfoset</groupId>
+            <artifactId>FastInfoset</artifactId>
+            <scope>provided</scope>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <profiles>
+        <!-- invoke unit tests against JDK like this:
+         mvn clean test -DtestInJdk -Djdk.to.test=$jdk/home/path/bin/java
+         -->
+        <profile>
+            <id>jdk</id>
+            <activation>
+                <property>
+                    <name>testInJdk</name>
+                </property>
+            </activation>
+            <properties>
+                <argLine>${proxyOpts} -Djdk.build=true</argLine>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <!-- some random non-existing directory to make sure the built classes are not found, instead the ones from jdk are used -->
+                            <classesDirectory>jerreAbfAFgfreu</classesDirectory>
+                            <excludes>
+                                <!-- tests using RI specific API -->
+                                <exclude>**/MimeUtilityTest.java</exclude>
+                            </excludes>
+                            <classpathDependencyScopeExcludes>compile</classpathDependencyScopeExcludes>
+                            <classpathDependencyExcludes>
+                                <classpathDependencyExclude>jakarta.xml.soap:jakarta.xml.soap-api</classpathDependencyExclude>
+                                <classpathDependencyExclude>org.jvnet.mimepull:mimepull</classpathDependencyExclude>
+                            </classpathDependencyExcludes>
+                            <jvm>${jdk.to.test}</jvm>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>jdk-sm</id>
+            <activation>
+                <property>
+                    <name>testInJdkWithSM</name>
+                </property>
+            </activation>
+            <properties>
+                <argLine>${proxyOpts} -Djdk.build=true -Djava.security.manager -Djava.security.policy=./src/test/resources/test.policy</argLine>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <!-- some random non-existing directory to make sure the built classes are not found, instead the ones from jdk are used -->
+                            <classesDirectory>jerreAbfAFgfreu</classesDirectory>
+                            <excludes>
+                                <!-- tests using RI specific API -->
+                                <exclude>**/MimeUtilityTest.java</exclude>
+                            </excludes>
+                            <classpathDependencyScopeExcludes>compile</classpathDependencyScopeExcludes>
+                            <classpathDependencyExcludes>
+                                <classpathDependencyExclude>jakarta.xml.soap:jakarta.xml.soap-api</classpathDependencyExclude>
+                                <classpathDependencyExclude>org.jvnet.mimepull:mimepull</classpathDependencyExclude>
+                            </classpathDependencyExcludes>
+                            <jvm>${jdk.to.test}</jvm>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>coverage</id>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <groupId>org.jacoco</groupId>
+                            <artifactId>jacoco-maven-plugin</artifactId>
+                            <version>0.8.6</version>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>default-prepare-agent</id>
+                                <goals>
+                                    <goal>prepare-agent</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>default-report</id>
+                                <goals>
+                                    <goal>report</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+</project>
