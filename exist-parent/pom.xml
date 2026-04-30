@@ -611,6 +611,11 @@
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-antrun-plugin</artifactId>
+                    <version>3.2.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-clean-plugin</artifactId>
                     <version>3.5.0</version>
                 </plugin>
@@ -933,6 +938,7 @@
                     <configuration>
                         <autoVersionSubmodules>true</autoVersionSubmodules>
                         <tagNameFormat>eXist-@{project.version}</tagNameFormat>
+                        <preparationGoals>clean verify -P citation-release-metadata -DupdateCff=true</preparationGoals>
                         <useReleaseProfile>true</useReleaseProfile>
                         <releaseProfiles>exist-release</releaseProfiles>
                     </configuration>

@@ -29,3 +29,6 @@ plans/
 
 # Debug logs (e.g. from reindex investigation)
 reindex-dbg.log
+
+# Temporary files occasionally created by Ant replaceregexp
+/tmp*tmp

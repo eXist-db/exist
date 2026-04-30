@@ -1,0 +1,26 @@
+name: CITATION.cff validation
+
+on:
+  push:
+    paths:
+      - CITATION.cff
+      - .github/workflows/citation-cff.yml
+  pull_request:
+    paths:
+      - CITATION.cff
+      - .github/workflows/citation-cff.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-citation-cff:
+    name: Validate CITATION.cff
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Validate CITATION.cff schema
+        uses: citation-file-format/cffconvert-github-action@2.0.0
+        with:
+          args: "--validate"

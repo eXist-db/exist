@@ -1,0 +1,29 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: eXist-db
+message: Native XML Database
+type: software
+authors:
+  - name: The eXist-db authors
+identifiers:
+  - type: url
+    value: >-
+      https://github.com/eXist-db/exist/releases/tag/eXist-6.4.1
+    description: The URL of the latest GitHub release
+repository-code: 'https://github.com/eXist-db/exist'
+url: 'https://exist-db.org/'
+repository-artifact: 'https://central.sonatype.com/artifact/org.exist-db/exist'
+abstract: >-
+  eXist-db is a high-performance open source native XML
+  database — a NoSQL document database and application
+  platform built entirely around XML technologies. 
+keywords:
+  - xquery
+  - xml
+  - database
+license: LGPL-2.1
+commit: facea6b4c49004848f918480351a18b8f9a8128a
+version: 6.4.1
+date-released: '2026-03-05'
