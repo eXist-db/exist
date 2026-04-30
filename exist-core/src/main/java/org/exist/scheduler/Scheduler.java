@@ -43,6 +43,21 @@ public interface Scheduler {
      */
     void shutdown(final boolean waitForJobsToComplete);
 
+    /**
+     * Shutdown the running Scheduler with a maximum wait time.
+     *
+     * Equivalent to {@link #shutdown(boolean) shutdown(true)} but bounded by {@code timeoutMs}:
+     * if the underlying scheduler has not finished joining its worker threads before the
+     * deadline, currently executing jobs are interrupted and the scheduler is then forcibly
+     * stopped via {@code shutdown(false)}. This protects JVM shutdown from blocking
+     * indefinitely on a stuck Quartz job (audit finding C3, 2026-04-29).
+     *
+     * @param timeoutMs maximum time to wait for jobs to complete, in milliseconds.
+     *                  A non-positive value falls back to {@link #shutdown(boolean) shutdown(false)}
+     *                  (no wait).
+     */
+    void shutdown(final long timeoutMs);
+
     boolean isShutdown();
 
     /**

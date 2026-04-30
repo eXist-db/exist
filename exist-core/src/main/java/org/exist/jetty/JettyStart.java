@@ -483,6 +483,10 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
                 try {
                     Runtime.getRuntime().addShutdownHook(shutdownHookThread);
                     logger.debug("BrokerPoolsAndJetty.ShutdownHook hook registered");
+                    // Avoid C2 race: deregister the default BrokerPools static hook so that only
+                    // BrokerPoolsAndJetty.ShutdownHook runs at JVM shutdown. The default hook would
+                    // otherwise call BrokerPool.stopAll(true) concurrently with this hook.
+                    BrokerPool.deregisterDefaultShutdownHook();
                 } catch (final IllegalArgumentException | IllegalStateException e) {
                     // Hook already registered, or Shutdown in progress
                     logger.error("Unable to add BrokerPoolsAndJetty.ShutdownHook hook: {}", e.getMessage(), e);
@@ -562,9 +566,9 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
                 logger.warn("Unable to remove BrokerPoolsAndJetty.ShutdownHook hook: {}", e.getMessage());
             }
         });
-        
+
         BrokerPool.stopAll(false);
-        
+
         while (status != STATUS_STOPPED) {
             try {
                 wait();

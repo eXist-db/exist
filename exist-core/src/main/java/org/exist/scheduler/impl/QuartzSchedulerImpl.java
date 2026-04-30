@@ -190,6 +190,69 @@ public class QuartzSchedulerImpl implements Scheduler, BrokerPoolService {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * Shutdown sequence:
+     * <ol>
+     *   <li>Spawn a daemon worker that calls {@code scheduler.shutdown(true)} (waits for jobs).</li>
+     *   <li>Wait up to {@code timeoutMs} for that worker to finish.</li>
+     *   <li>If the deadline expires, log every currently-executing job, attempt
+     *       {@code interrupt(jobKey)} on each (no-op for non-{@code InterruptableJob} bodies),
+     *       then call {@code scheduler.shutdown(false)} from the calling thread to release
+     *       the blocked worker. The worker thread's {@code shutdown(true)} will then return
+     *       once the underlying scheduler signals stop.</li>
+     * </ol>
+     */
+    @Override
+    public void shutdown(final long timeoutMs) {
+        if (timeoutMs <= 0) {
+            shutdown(false);
+            return;
+        }
+
+        final org.quartz.Scheduler quartz = getScheduler();
+        if (quartz == null) {
+            return;
+        }
+
+        final Thread shutdownWorker = new Thread(() -> {
+            try {
+                quartz.shutdown(true);
+            } catch (final SchedulerException se) {
+                LOG.warn("Unable to cleanly shutdown the Scheduler: {}", se.getMessage(), se);
+            }
+        }, nameInstanceThread(brokerPool, "scheduler-shutdown-watchdog"));
+        shutdownWorker.setDaemon(true);
+        shutdownWorker.start();
+
+        try {
+            shutdownWorker.join(timeoutMs);
+        } catch (final InterruptedException ie) {
+            Thread.currentThread().interrupt();
+            LOG.warn("Interrupted while waiting for Scheduler shutdown");
+        }
+
+        if (shutdownWorker.isAlive()) {
+            LOG.warn("Scheduler did not stop within {} ms; escalating to forced shutdown", timeoutMs);
+            try {
+                final List<JobExecutionContext> running = quartz.getCurrentlyExecutingJobs();
+                for (final JobExecutionContext jec : running) {
+                    final JobKey key = jec.getJobDetail().getKey();
+                    LOG.warn("Forcing interrupt of running scheduler job: {}", key);
+                    try {
+                        quartz.interrupt(key);
+                    } catch (final UnableToInterruptJobException uije) {
+                        LOG.warn("Job {} is not interruptible: {}", key, uije.getMessage());
+                    }
+                }
+                quartz.shutdown(false);
+            } catch (final SchedulerException se) {
+                LOG.warn("Unable to force-shutdown the Scheduler: {}", se.getMessage(), se);
+            }
+        }
+    }
+
     @Override
     public boolean isShutdown() {
         try {
