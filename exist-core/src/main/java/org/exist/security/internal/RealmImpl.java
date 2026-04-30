@@ -128,11 +128,31 @@ public class RealmImpl extends AbstractRealm {
         super.start(broker, transaction);
         try {
             createAdminAndGuestIfNotExist(broker);
+            warnIfAdminPasswordIsEmpty();
         } catch(final PermissionDeniedException pde) {
             final boolean exportOnly = broker.getConfiguration().getProperty(BrokerPool.PROPERTY_EXPORT_ONLY, false);
             if(!exportOnly) {
             	throw new EXistException(pde.getMessage(), pde);
             }
+        }
+    }
+
+    private void warnIfAdminPasswordIsEmpty() {
+        final Account admin = getSecurityManager().getAccount(ADMIN_ACCOUNT_ID);
+        if (admin == null) {
+            return;
+        }
+        try {
+            authenticate(admin.getName(), DEFAULT_ADMIN_PASSWORD);
+            LOG.error("""
+                    SECURITY WARNING: the '{}' account has an empty password. \
+                    Any client able to reach the network port can take full \
+                    administrative control of this database. Set a strong password \
+                    immediately, e.g. via the dashboard or:
+                      sm:passwd('{}', '<new-password>')""",
+                    admin.getName(), admin.getName());
+        } catch (final AuthenticationException e) {
+            // expected: admin password is not the empty string
         }
     }
     

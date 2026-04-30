@@ -262,6 +262,11 @@ public class JMXServlet extends HttpServlet {
      * @return TRUE if request contains correct value for token, else FALSE
      */
     boolean hasSecretToken(final HttpServletRequest request, final String token) {
+        if (StringUtils.isBlank(token)) {
+            // Refuse to authenticate against an empty or whitespace-only token,
+            // even if the request supplied a matching empty value.
+            return false;
+        }
         final String[] tokenValue = request.getParameterValues(TOKEN_KEY);
         return ArrayUtils.contains(tokenValue, token);
     }

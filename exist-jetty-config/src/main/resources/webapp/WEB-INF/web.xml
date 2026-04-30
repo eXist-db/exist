@@ -140,7 +140,7 @@
         -->
         <init-param>
             <param-name>xquery-submission</param-name>
-            <param-value>enabled</param-value>
+            <param-value>authenticated</param-value>
         </init-param>
 
         <!--
@@ -162,7 +162,7 @@
         -->
         <init-param>
             <param-name>xupdate-submission</param-name>
-            <param-value>enabled</param-value>
+            <param-value>authenticated</param-value>
         </init-param>
 
 
@@ -206,9 +206,15 @@
             <param-value>UTF-8</param-value>
         </init-param>
 
+        <!--
+            Hide internal error details (stack traces, file paths, query
+            source) from HTTP responses. Errors are still logged to the
+            server log. Set to "false" to surface details to clients
+            (useful for development).
+        -->
         <init-param>
             <param-name>hide-error-messages</param-name>
-            <param-value>false</param-value>
+            <param-value>true</param-value>
         </init-param>
 
     </servlet>
