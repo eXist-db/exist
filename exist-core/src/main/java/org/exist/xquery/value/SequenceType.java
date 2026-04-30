@@ -582,17 +582,49 @@ public class SequenceType {
         if (!Type.subTypeOf(sub.primaryType, sup.primaryType)) {
             return false;
         }
+        // Element/attribute kind tests with a name: sup-name=null is wildcard;
+        // sup-name set requires sub to have the same name. element(*) is NOT
+        // a subtype of element(a).
+        if ((sup.primaryType == Type.ELEMENT || sup.primaryType == Type.ATTRIBUTE)
+                && sup.nodeName != null) {
+            if (sub.nodeName == null) {
+                return false;
+            }
+            if (!sup.nodeName.equals(sub.nodeName)) {
+                return false;
+            }
+        }
+        // record(...) ⊑ record(...): structural compatibility on declared fields.
+        // Every required field of sup must be present (and non-optional, unless
+        // sup permits extension) in sub, with sub's type ⊑ sup's type. sub may
+        // not declare extra fields beyond sup's declared set unless sup is
+        // extensible.
+        if (sup.primaryType == Type.RECORD && sup.recordType != null) {
+            if (sub.primaryType != Type.RECORD || sub.recordType == null) {
+                return false;
+            }
+            return isRecordSubtype(sub.recordType, sup.recordType);
+        }
         // map(K, V) is a subtype of map(K2, V2) only when K ⊑ K2 AND V ⊑ V2.
-        // map(*) is broader than any specific map(K, V), so it is NOT a subtype.
+        // Records also flow through here (RECORD ⊑ MAP_ITEM): a record without
+        // declared field types acts as map(xs:string, item()*).
         if (sup.primaryType == Type.MAP_ITEM && sup.functionParamTypes != null) {
-            if (sub.primaryType != Type.MAP_ITEM || sub.functionParamTypes == null) {
+            if (!Type.subTypeOf(sub.primaryType, Type.MAP_ITEM)) {
                 return false;
             }
-            if (sub.functionParamTypes.length != 2 || sup.functionParamTypes.length != 2) {
+            if (sup.functionParamTypes.length != 2) {
                 return false;
             }
-            return isSubtypeOf(sub.functionParamTypes[0], sup.functionParamTypes[0])
-                    && isSubtypeOf(sub.functionParamTypes[1], sup.functionParamTypes[1]);
+            final SequenceType subKey, subVal;
+            if (sub.functionParamTypes != null && sub.functionParamTypes.length == 2) {
+                subKey = sub.functionParamTypes[0];
+                subVal = sub.functionParamTypes[1];
+            } else {
+                subKey = new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE);
+                subVal = new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE);
+            }
+            return isSubtypeOf(subKey, sup.functionParamTypes[0])
+                    && isSubtypeOf(subVal, sup.functionParamTypes[1]);
         }
         // array(T) ⊑ array(T2) iff T ⊑ T2; array(*) is not a subtype of typed arrays.
         if (sup.primaryType == Type.ARRAY_ITEM && sup.functionParamTypes != null) {
@@ -605,22 +637,42 @@ public class SequenceType {
             return isSubtypeOf(sub.functionParamTypes[0], sup.functionParamTypes[0]);
         }
         // Typed function: arity matches; return is covariant; params are contravariant.
-        // Maps and arrays act as their function-shape (function(xs:anyAtomicType)
-        // as item()*, function(xs:integer) as item()*) for this comparison.
+        // Maps and arrays act as their function-shape: per XQuery 4.0 PR1501/PR2050,
+        // a map's key parameter is xs:anyAtomicType (atomic-coercion at lookup) and
+        // its return is the value type with cardinality widened to permit empty
+        // (lookup miss). An array becomes function(xs:integer) as T where T is the
+        // declared element type.
         if (Type.subTypeOf(sup.primaryType, Type.FUNCTION) && sup.functionParamTypes != null) {
             if (!Type.subTypeOf(sub.primaryType, Type.FUNCTION)) {
                 return false;
             }
             final SequenceType[] subParams;
             final SequenceType subReturn;
-            if (sub.primaryType == Type.MAP_ITEM) {
+            if (Type.subTypeOf(sub.primaryType, Type.MAP_ITEM)) {
                 subParams = new SequenceType[]{
                         new SequenceType(Type.ANY_ATOMIC_TYPE, Cardinality.EXACTLY_ONE)};
-                subReturn = new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE);
+                final SequenceType valueType;
+                if (sub.functionParamTypes != null && sub.functionParamTypes.length == 2) {
+                    valueType = sub.functionParamTypes[1];
+                } else {
+                    valueType = new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE);
+                }
+                final Cardinality returnCard;
+                if (valueType.cardinality == Cardinality.EXACTLY_ONE
+                        || valueType.cardinality == Cardinality.ZERO_OR_ONE) {
+                    returnCard = Cardinality.ZERO_OR_ONE;
+                } else {
+                    returnCard = Cardinality.ZERO_OR_MORE;
+                }
+                subReturn = new SequenceType(valueType.primaryType, returnCard);
             } else if (sub.primaryType == Type.ARRAY_ITEM) {
                 subParams = new SequenceType[]{
                         new SequenceType(Type.INTEGER, Cardinality.EXACTLY_ONE)};
-                subReturn = new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE);
+                if (sub.functionParamTypes != null && sub.functionParamTypes.length == 1) {
+                    subReturn = sub.functionParamTypes[0];
+                } else {
+                    subReturn = new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE);
+                }
             } else {
                 if (sub.functionParamTypes == null) {
                     return false;
@@ -643,6 +695,49 @@ public class SequenceType {
                 }
                 // Covariant: sub's return must be ⊑ sup's return
                 if (!isSubtypeOf(subReturn, sup.functionReturnType)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * record-vs-record subsumption per XQuery 4.0 Records.
+     */
+    private static boolean isRecordSubtype(final RecordType subRec, final RecordType supRec) {
+        final java.util.List<RecordType.FieldDeclaration> subFields = subRec.getFieldDeclarations();
+        final java.util.List<RecordType.FieldDeclaration> supFields = supRec.getFieldDeclarations();
+        final java.util.Map<String, RecordType.FieldDeclaration> subByName = new java.util.HashMap<>();
+        for (final RecordType.FieldDeclaration f : subFields) {
+            subByName.put(f.getName(), f);
+        }
+        final java.util.Set<String> supNames = new java.util.HashSet<>();
+        for (final RecordType.FieldDeclaration supField : supFields) {
+            supNames.add(supField.getName());
+            final RecordType.FieldDeclaration subField = subByName.get(supField.getName());
+            if (subField == null) {
+                if (!supField.isOptional()) {
+                    return false;
+                }
+                continue;
+            }
+            if (!supField.isOptional() && subField.isOptional()) {
+                return false;
+            }
+            if (supField.getType() != null) {
+                final SequenceType supType = supField.getType();
+                final SequenceType subType = subField.getType() != null
+                        ? subField.getType()
+                        : new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE);
+                if (!isSubtypeOf(subType, supType)) {
+                    return false;
+                }
+            }
+        }
+        if (!supRec.isExtensible()) {
+            for (final RecordType.FieldDeclaration f : subFields) {
+                if (!supNames.contains(f.getName())) {
                     return false;
                 }
             }

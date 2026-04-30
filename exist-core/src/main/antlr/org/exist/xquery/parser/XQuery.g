@@ -1046,7 +1046,7 @@ recordFieldDecl throws XPathException
 { String fieldName = null; String fieldLabel = null; boolean isOptional = false; }
 :
 	fieldName=ncnameOrKeyword!
-	( QUESTION { isOptional = true; } )?
+	( QUESTION! { isOptional = true; } )?
 	( "as"! sequenceType )?
 	{
 		fieldLabel = isOptional ? fieldName.concat("?") : fieldName;
@@ -2613,7 +2613,12 @@ piTest
 documentTest
 :
     "document-node"^ LPAREN!
-    ( elementTest | schemaElementTest )?
+    (
+        // XQ4 PR1604: document-node(*) is sugar for document-node(element(*)).
+        ( STAR ) => STAR
+        | elementTest
+        | schemaElementTest
+    )?
     RPAREN!
     ;
 
