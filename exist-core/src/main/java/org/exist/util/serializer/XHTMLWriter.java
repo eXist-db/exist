@@ -107,6 +107,116 @@ public class XHTMLWriter extends IndentingXMLWriter {
         URI_VALUED_ATTRIBUTES.add("audio/src");
     }
 
+    private static final char[] HEX = "0123456789ABCDEF".toCharArray();
+
+    protected static final ObjectSet<String> EMPTY_TAGS = new ObjectOpenHashSet<>(31);
+    static {
+        EMPTY_TAGS.add("area");
+        EMPTY_TAGS.add("base");
+        EMPTY_TAGS.add("br");
+        EMPTY_TAGS.add("col");
+        EMPTY_TAGS.add("embed");
+        EMPTY_TAGS.add("hr");
+        EMPTY_TAGS.add("img");
+        EMPTY_TAGS.add("input");
+        EMPTY_TAGS.add("link");
+        EMPTY_TAGS.add("meta");
+        EMPTY_TAGS.add("basefont");
+        EMPTY_TAGS.add("frame");
+        EMPTY_TAGS.add("isindex");
+        EMPTY_TAGS.add("param");
+    }
+
+    protected static final ObjectSet<String> INLINE_TAGS = new ObjectOpenHashSet<>(31);
+    static {
+        INLINE_TAGS.add("a");
+        INLINE_TAGS.add("abbr");
+        INLINE_TAGS.add("acronym");
+        INLINE_TAGS.add("b");
+        INLINE_TAGS.add("bdo");
+        INLINE_TAGS.add("big");
+        INLINE_TAGS.add("br");
+        INLINE_TAGS.add("button");
+        INLINE_TAGS.add("cite");
+        INLINE_TAGS.add("code");
+        INLINE_TAGS.add("del");
+        INLINE_TAGS.add("dfn");
+        INLINE_TAGS.add("em");
+        INLINE_TAGS.add("i");
+        INLINE_TAGS.add("img");
+        INLINE_TAGS.add("input");
+        INLINE_TAGS.add("kbd");
+        INLINE_TAGS.add("label");
+        INLINE_TAGS.add("q");
+        INLINE_TAGS.add("samp");
+        INLINE_TAGS.add("select");
+        INLINE_TAGS.add("small");
+        INLINE_TAGS.add("span");
+        INLINE_TAGS.add("strong");
+        INLINE_TAGS.add("sub");
+        INLINE_TAGS.add("sup");
+        INLINE_TAGS.add("textarea");
+        INLINE_TAGS.add("tt");
+        INLINE_TAGS.add("var");
+    }
+
+    private static final String SVG_NS = "http://www.w3.org/2000/svg";
+    private static final String MATHML_NS = "http://www.w3.org/1998/Math/MathML";
+
+    private static final ObjectSet<String> RAW_TEXT_ELEMENTS_HTML = new ObjectOpenHashSet<>(4);
+    static {
+        RAW_TEXT_ELEMENTS_HTML.add("script");
+        RAW_TEXT_ELEMENTS_HTML.add("style");
+    }
+
+    protected final ObjectSet<String> emptyTags;
+    protected final ObjectSet<String> inlineTags;
+
+    protected String currentTag;
+    protected boolean inHead = false;
+    protected boolean contentTypeMetaWritten = false;
+
+    // Meta-tag dedup state: when a `<meta>` element is encountered inside
+    // `<head>` AFTER the auto-generated content-type meta has been emitted,
+    // its bytes are diverted to {@link #metaScratch}. If, while buffering,
+    // we observe a {@code charset} or {@code http-equiv="Content-Type"}
+    // attribute, the buffered meta is dropped (the auto-meta replaces it);
+    // otherwise the buffer is flushed verbatim at endElement time.
+    private Writer metaSuspendedWriter = null;
+    private java.io.StringWriter metaScratch = null;
+    private boolean metaIsContentTypeOrCharset = false;
+
+    boolean haveCollapsedXhtmlPrefix = false;
+    private String collapsedForeignNs = null;  // SVG or MathML ns being normalized
+
+    /**
+     *
+     */
+    public XHTMLWriter() {
+        this(EMPTY_TAGS, INLINE_TAGS);
+    }
+
+    public XHTMLWriter(ObjectSet<String> emptyTags, ObjectSet<String> inlineTags) {
+        super();
+        this.emptyTags = emptyTags;
+        this.inlineTags = inlineTags;
+    }
+
+    public XHTMLWriter(final Writer writer) {
+        this(writer, EMPTY_TAGS, INLINE_TAGS);
+    }
+
+    /**
+     * @param writer the writer
+     * @param emptyTags tags that are allowed to be empty
+     * @param inlineTags tags that should be written inline
+     */
+    public XHTMLWriter(final Writer writer, ObjectSet<String> emptyTags, ObjectSet<String> inlineTags) {
+        super(writer);
+        this.emptyTags = emptyTags;
+        this.inlineTags = inlineTags;
+    }
+
     /**
      * Returns true when the {@code escape-uri-attributes} serialization
      * parameter is enabled (default {@code yes} for HTML/XHTML methods)
@@ -192,121 +302,10 @@ public class XHTMLWriter extends IndentingXMLWriter {
         }
     }
 
-    private static final char[] HEX = "0123456789ABCDEF".toCharArray();
-
     private static void appendHexByte(final StringBuilder sb, final int b) {
         sb.append('%');
         sb.append(HEX[(b >> 4) & 0xF]);
         sb.append(HEX[b & 0xF]);
-    }
-
-    protected static final ObjectSet<String> EMPTY_TAGS = new ObjectOpenHashSet<>(31);
-    static {
-        EMPTY_TAGS.add("area");
-        EMPTY_TAGS.add("base");
-        EMPTY_TAGS.add("br");
-        EMPTY_TAGS.add("col");
-        EMPTY_TAGS.add("embed");
-        EMPTY_TAGS.add("hr");
-        EMPTY_TAGS.add("img");
-        EMPTY_TAGS.add("input");
-        EMPTY_TAGS.add("link");
-        EMPTY_TAGS.add("meta");
-        EMPTY_TAGS.add("basefont");
-        EMPTY_TAGS.add("frame");
-        EMPTY_TAGS.add("isindex");
-        EMPTY_TAGS.add("param");
-    }
-    
-    protected static final ObjectSet<String> INLINE_TAGS = new ObjectOpenHashSet<>(31);
-    
-    static {
-    	INLINE_TAGS.add("a");
-    	INLINE_TAGS.add("abbr");
-    	INLINE_TAGS.add("acronym");
-    	INLINE_TAGS.add("b");
-    	INLINE_TAGS.add("bdo");
-    	INLINE_TAGS.add("big");
-    	INLINE_TAGS.add("br");
-    	INLINE_TAGS.add("button");
-    	INLINE_TAGS.add("cite");
-    	INLINE_TAGS.add("code");
-    	INLINE_TAGS.add("del");
-    	INLINE_TAGS.add("dfn");
-    	INLINE_TAGS.add("em");
-    	INLINE_TAGS.add("i");
-    	INLINE_TAGS.add("img");
-    	INLINE_TAGS.add("input");
-    	INLINE_TAGS.add("kbd");
-    	INLINE_TAGS.add("label");
-    	INLINE_TAGS.add("q");
-    	INLINE_TAGS.add("samp");
-    	INLINE_TAGS.add("select");
-    	INLINE_TAGS.add("small");
-    	INLINE_TAGS.add("span");
-    	INLINE_TAGS.add("strong");
-    	INLINE_TAGS.add("sub");
-    	INLINE_TAGS.add("sup");
-    	INLINE_TAGS.add("textarea");
-    	INLINE_TAGS.add("tt");
-    	INLINE_TAGS.add("var");
-    }
-    
-    protected String currentTag;
-    protected boolean inHead = false;
-    protected boolean contentTypeMetaWritten = false;
-
-    // Meta-tag dedup state: when a `<meta>` element is encountered inside
-    // `<head>` AFTER the auto-generated content-type meta has been emitted,
-    // its bytes are diverted to {@link #metaScratch}. If, while buffering,
-    // we observe a {@code charset} or {@code http-equiv="Content-Type"}
-    // attribute, the buffered meta is dropped (the auto-meta replaces it);
-    // otherwise the buffer is flushed verbatim at endElement time.
-    private Writer metaSuspendedWriter = null;
-    private java.io.StringWriter metaScratch = null;
-    private boolean metaIsContentTypeOrCharset = false;
-
-    protected final ObjectSet<String> emptyTags;
-    protected final ObjectSet<String> inlineTags;
-
-    private static final String SVG_NS = "http://www.w3.org/2000/svg";
-    private static final String MATHML_NS = "http://www.w3.org/1998/Math/MathML";
-
-    boolean haveCollapsedXhtmlPrefix = false;
-    private String collapsedForeignNs = null;  // SVG or MathML ns being normalized
-
-    private static final ObjectSet<String> RAW_TEXT_ELEMENTS_HTML = new ObjectOpenHashSet<>(4);
-    static {
-        RAW_TEXT_ELEMENTS_HTML.add("script");
-        RAW_TEXT_ELEMENTS_HTML.add("style");
-    }
-
-    /**
-     *
-     */
-    public XHTMLWriter() {
-        this(EMPTY_TAGS, INLINE_TAGS);
-    }
-
-    public XHTMLWriter(ObjectSet<String> emptyTags, ObjectSet<String> inlineTags) {
-        super();
-        this.emptyTags = emptyTags;
-        this.inlineTags = inlineTags;
-    }
-
-    public XHTMLWriter(final Writer writer) {
-        this(writer, EMPTY_TAGS, INLINE_TAGS);
-    }
-
-    /**
-     * @param writer the writer
-     * @param emptyTags tags that are allowed to be empty
-     * @param inlineTags tags that should be written inline
-     */
-    public XHTMLWriter(final Writer writer, ObjectSet<String> emptyTags, ObjectSet<String> inlineTags) {
-        super(writer);
-        this.emptyTags = emptyTags;
-        this.inlineTags = inlineTags;
     }
 
     @Override
@@ -406,7 +405,7 @@ public class XHTMLWriter extends IndentingXMLWriter {
         haveCollapsedXhtmlPrefix = false;
         collapsedForeignNs = null;
     }
-    
+
     protected QName removeXhtmlPrefix(final QName qname) {
         final String prefix = qname.getPrefix();
         final String namespaceURI = qname.getNamespaceURI();
@@ -490,8 +489,8 @@ public class XHTMLWriter extends IndentingXMLWriter {
         }
         super.namespace(prefix, nsURI);
     }
-    
-    
+
+
     @Override
     protected void closeStartTag(final boolean isEmpty) throws TransformerException {
         try {
@@ -589,35 +588,36 @@ public class XHTMLWriter extends IndentingXMLWriter {
         if (doctypeWritten) {
             return;
         }
-        if (isCanonical()) {
+        if (isCanonical() || !isHtmlRoot(rootElement)) {
             doctypeWritten = true;
             return;
         }
-        final String localName = rootElement.contains(":")
-                ? rootElement.substring(rootElement.indexOf(':') + 1)
-                : rootElement;
-        if (!"html".equalsIgnoreCase(localName)) {
-            doctypeWritten = true;
-            return;
-        }
-
-        final String publicId = outputProperties != null
-                ? outputProperties.getProperty(OutputKeys.DOCTYPE_PUBLIC) : null;
-        final String systemId = outputProperties != null
-                ? outputProperties.getProperty(OutputKeys.DOCTYPE_SYSTEM) : null;
-        final boolean htmlMethod = isHtmlMethod();
-        final boolean html5 = isHtml5Version();
-
-        if (systemId != null) {
-            documentType("html", publicId, systemId);
-        } else if (htmlMethod && publicId != null) {
-            documentType("html", publicId, null);
-        } else if (html5) {
-            documentType("html", null, null);
-        }
+        emitHtmlDoctype();
         doctypeWritten = true;
     }
-    
+
+    private static boolean isHtmlRoot(final String rootElement) {
+        final int colon = rootElement.indexOf(':');
+        final String localName = colon < 0 ? rootElement : rootElement.substring(colon + 1);
+        return "html".equalsIgnoreCase(localName);
+    }
+
+    private String getDoctypeProperty(final String key) {
+        return outputProperties != null ? outputProperties.getProperty(key) : null;
+    }
+
+    private void emitHtmlDoctype() throws TransformerException {
+        final String publicId = getDoctypeProperty(OutputKeys.DOCTYPE_PUBLIC);
+        final String systemId = getDoctypeProperty(OutputKeys.DOCTYPE_SYSTEM);
+        if (systemId != null) {
+            documentType("html", publicId, systemId);
+        } else if (isHtmlMethod() && publicId != null) {
+            documentType("html", publicId, null);
+        } else if (isHtml5Version()) {
+            documentType("html", null, null);
+        }
+    }
+
     @Override
     public void attribute(final QName qname, final CharSequence value) throws TransformerException {
         noteMetaAttribute(qname.getLocalPart(), value);
@@ -667,17 +667,13 @@ public class XHTMLWriter extends IndentingXMLWriter {
 
     /**
      * Apply escape-uri-attributes when the current element/attribute names
-     * a URI-valued attribute; otherwise return the value unchanged. The
-     * caller decides whether to use the escaped form when checking boolean
-     * attribute minimization (it cannot match a URI value, so this is safe).
+     * a URI-valued attribute; otherwise return the value unchanged. Escaping
+     * is applied for both HTML and XHTML output methods, so URI-valued
+     * attributes round-trip in XHTML 1.0 / 5 output too.
      */
     private CharSequence maybeEscapeUri(final String attrLocal, final CharSequence value) {
-        if (!isHtmlMethod() || currentTag == null) {
-            // currentTag is also kept for XHTML; we still apply escaping there
-            // so URI-valued attributes round-trip in XHTML 1.0 / 5 output too.
-            if (currentTag == null) {
-                return value;
-            }
+        if (currentTag == null) {
+            return value;
         }
         final String elementLocal = currentTag.contains(":")
                 ? currentTag.substring(currentTag.indexOf(':') + 1)
@@ -725,10 +721,7 @@ public class XHTMLWriter extends IndentingXMLWriter {
     protected boolean shouldUseCdataSections() {
         if (isHtmlMethod()) {
             final String ns = currentElementNamespaceURI();
-            if (ns == null || ns.isEmpty() || Namespaces.XHTML_NS.equals(ns)) {
-                return false;
-            }
-            return true;
+            return ns != null && !ns.isEmpty() && !Namespaces.XHTML_NS.equals(ns);
         }
         return super.shouldUseCdataSections();
     }
@@ -771,8 +764,8 @@ public class XHTMLWriter extends IndentingXMLWriter {
 
     @Override
     protected boolean isInlineTag(final String namespaceURI, final String localName) {
-    	return (namespaceURI == null || namespaceURI.isEmpty() || Namespaces.XHTML_NS.equals(namespaceURI))
-    			&& inlineTags.contains(localName);
+        return (namespaceURI == null || namespaceURI.isEmpty() || Namespaces.XHTML_NS.equals(namespaceURI))
+                && inlineTags.contains(localName);
     }
 
     /**
