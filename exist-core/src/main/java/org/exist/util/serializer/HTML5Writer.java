@@ -382,10 +382,7 @@ public class HTML5Writer extends XHTML5Writer {
         // Mirror the per-char rule above: TEXT content inside script/style is
         // raw text and never needs escaping. Lets writeChars() bulk-stream
         // the entire block in one Writer.write() call.
-        if (!inAttribute && RAW_TEXT_ELEMENTS.contains(currentTag)) {
-            return false;
-        }
-        return true;
+        return inAttribute || !RAW_TEXT_ELEMENTS.contains(currentTag);
     }
 
 }
