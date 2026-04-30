@@ -76,7 +76,15 @@ public class FnDeepEqualOptions extends BasicFunction {
                 }
             } else {
                 // XQ3.1 compat: string collation URI
-                final Collator collator = context.getCollator(optionsItem.getStringValue());
+                final Collator collator;
+                try {
+                    collator = context.getCollator(optionsItem.getStringValue());
+                } catch (final XPathException e) {
+                    // Per spec, an unsupported collation in deep-equal raises FOCH0002,
+                    // not the static XQST0076 thrown by getCollator at runtime use.
+                    throw new XPathException(this, ErrorCodes.FOCH0002,
+                            "Unsupported collation: " + optionsItem.getStringValue(), e);
+                }
                 return BooleanValue.valueOf(FunDeepEqual.deepEqualsSeq(items1, items2, collator));
             }
         }

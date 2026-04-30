@@ -162,10 +162,10 @@ function det:function-items-same-name() {
     deep-equal(true#0, true#0)
 };
 
-declare function local:helper() { 42 };
+declare function det:helper() { 42 };
 
 declare
     %test:assertTrue
 function det:function-items-user-defined-same() {
-    deep-equal(local:helper#0, local:helper#0)
+    deep-equal(det:helper#0, det:helper#0)
 };

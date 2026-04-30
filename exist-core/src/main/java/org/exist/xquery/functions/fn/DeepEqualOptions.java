@@ -296,13 +296,10 @@ public class DeepEqualOptions {
                                 "items-equal option must be a function reference, got: " +
                                         Type.getTypeName(fnItem.getType()));
                     }
-                    final FunctionReference ref = (FunctionReference) fnItem;
-                    if (ref.getSignature().getArgumentCount() != 2) {
-                        throw new XPathException(ErrorCodes.XPTY0004,
-                                "items-equal function must accept exactly 2 arguments, got: " +
-                                        ref.getSignature().getArgumentCount());
-                    }
-                    itemsEqualFn = ref;
+                    // Arity is validated lazily at call time: deep-equal returns
+                    // false on length-mismatched sequences before invoking the callback,
+                    // so a non-2-arg callback is only an error if it's actually called.
+                    itemsEqualFn = (FunctionReference) fnItem;
                 }
             } else if ("unordered-elements".equals(keyStr)) {
                 if (!value.isEmpty()) {
@@ -592,6 +589,31 @@ public class DeepEqualOptions {
             return map1.size() < map2.size() ? Constants.INFERIOR : Constants.SUPERIOR;
         }
 
+        if (mapOrder) {
+            // XQ4 PR1855: map-order=true requires keys in the same insertion order.
+            // Iterate via keys() which returns the recorded insertion order (PR1703).
+            try {
+                final Sequence keys1 = map1.keys();
+                final Sequence keys2 = map2.keys();
+                final int n = keys1.getItemCount();
+                for (int i = 0; i < n; i++) {
+                    final AtomicValue k1 = (AtomicValue) keys1.itemAt(i);
+                    final AtomicValue k2 = (AtomicValue) keys2.itemAt(i);
+                    final int keyCmp = ValueComparison.compareAtomic(collator, k1, k2);
+                    if (keyCmp != Constants.EQUAL) {
+                        return keyCmp;
+                    }
+                    final int valCmp = deepCompareSeq(map1.get(k1), map2.get(k2));
+                    if (valCmp != Constants.EQUAL) {
+                        return valCmp;
+                    }
+                }
+            } catch (final XPathException ex) {
+                return Constants.INFERIOR;
+            }
+            return Constants.EQUAL;
+        }
+
         for (final IEntry<AtomicValue, Sequence> entry1 : map1) {
             if (!map2.contains(entry1.key())) {
                 return Constants.SUPERIOR;
@@ -632,6 +654,17 @@ public class DeepEqualOptions {
                     return Constants.EQUAL;
                 }
             }
+
+            // XQ4 PR320: timezones option requires explicit timezones to match.
+            // Two date/time values that compare equal as instants but have
+            // different (or only one explicitly specified) timezones are unequal.
+            if (timezones && av instanceof AbstractDateTimeValue dtA && bv instanceof AbstractDateTimeValue dtB) {
+                final int tzA = dtA.calendar.getTimezone();
+                final int tzB = dtB.calendar.getTimezone();
+                if (tzA != tzB) {
+                    return Constants.INFERIOR;
+                }
+            }
             return ValueComparison.compareAtomic(collator, av, bv);
         } catch (final XPathException e) {
             return Constants.INFERIOR;
@@ -652,15 +685,26 @@ public class DeepEqualOptions {
 
         // Compare namespace prefixes if option is set
         if (namespacePrefixes) {
-            cmp = safeCompare(a.getPrefix(), b.getPrefix(), null);
+            cmp = safeCompare(extractPrefix(a), extractPrefix(b), null);
             if (cmp != Constants.EQUAL) {
                 return cmp;
             }
         }
 
-        cmp = compareAttributes(a, b);
-        if (cmp != Constants.EQUAL) {
-            return cmp;
+        // XQ4 PR320: base-uri option requires xml:base / inherited base URI to match
+        if (baseUri) {
+            cmp = safeCompare(a.getBaseURI(), b.getBaseURI(), null);
+            if (cmp != Constants.EQUAL) {
+                return cmp;
+            }
+        }
+
+        // XQ4 PR320: in-scope-namespaces option requires identical in-scope NS bindings
+        if (inScopeNamespaces) {
+            cmp = compareInScopeNamespaces(a, b);
+            if (cmp != Constants.EQUAL) {
+                return cmp;
+            }
         }
 
         // Determine if this element's children should be compared unordered:
@@ -940,6 +984,13 @@ public class DeepEqualOptions {
             if (tb == null) {
                 return Constants.SUPERIOR;
             }
+            // XQ4 PR320: namespace-prefixes option also applies to attribute prefixes
+            if (namespacePrefixes) {
+                final int prefixCmp = safeCompare(extractPrefix(ta), extractPrefix(tb), null);
+                if (prefixCmp != Constants.EQUAL) {
+                    return prefixCmp;
+                }
+            }
             final int cmp = safeCompare(
                     maybeNormalizeWSAttr(ta.getNodeValue()),
                     maybeNormalizeWSAttr(tb.getNodeValue()),
@@ -949,6 +1000,55 @@ public class DeepEqualOptions {
             }
         }
         return Constants.EQUAL;
+    }
+
+    /**
+     * Compare in-scope namespace bindings of two elements. Two elements have
+     * equal in-scope namespaces iff they have the same set of (prefix, uri)
+     * pairs, where the default namespace is keyed by the empty string.
+     */
+    private static int compareInScopeNamespaces(final org.w3c.dom.Node a, final org.w3c.dom.Node b) {
+        final Map<String, String> nsA = collectInScopeNamespaces(a);
+        final Map<String, String> nsB = collectInScopeNamespaces(b);
+        if (nsA.size() != nsB.size()) {
+            return nsA.size() < nsB.size() ? Constants.INFERIOR : Constants.SUPERIOR;
+        }
+        for (final Map.Entry<String, String> entry : nsA.entrySet()) {
+            final String otherUri = nsB.get(entry.getKey());
+            final int cmp = safeCompare(entry.getValue(), otherUri, null);
+            if (cmp != Constants.EQUAL) {
+                return cmp;
+            }
+        }
+        return Constants.EQUAL;
+    }
+
+    /**
+     * Collect in-scope namespace bindings (prefix -> URI) by walking up
+     * ancestor elements and accumulating xmlns declarations. The default
+     * namespace is keyed by the empty string.
+     */
+    private static Map<String, String> collectInScopeNamespaces(final org.w3c.dom.Node element) {
+        final Map<String, String> bindings = new HashMap<>();
+        // The xml prefix is always implicitly bound
+        bindings.put("xml", "http://www.w3.org/XML/1998/namespace");
+        org.w3c.dom.Node current = element;
+        while (current != null && current.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
+            final org.w3c.dom.NamedNodeMap attrs = current.getAttributes();
+            if (attrs != null) {
+                for (int i = 0; i < attrs.getLength(); i++) {
+                    final org.w3c.dom.Node attr = attrs.item(i);
+                    final String attrNs = attr.getNamespaceURI();
+                    final String name = attr.getNodeName();
+                    if (Namespaces.XMLNS_NS.equals(attrNs) || "xmlns".equals(name) || (name != null && name.startsWith("xmlns:"))) {
+                        final String prefix = "xmlns".equals(name) ? "" : (attr.getLocalName() != null ? attr.getLocalName() : name.substring(6));
+                        bindings.putIfAbsent(prefix, attr.getNodeValue());
+                    }
+                }
+            }
+            current = current.getParentNode();
+        }
+        return bindings;
     }
 
     // ========================================================================
@@ -1015,6 +1115,25 @@ public class DeepEqualOptions {
             return safeCompare(a.getLocalName(), b.getLocalName(), null);
         }
         return safeCompare(a.getNodeName(), b.getNodeName(), null);
+    }
+
+    /**
+     * Extract the prefix of a node, falling back to parsing nodeName when
+     * getPrefix() returns null/empty. Returns "" for default-namespace nodes.
+     */
+    private static String extractPrefix(final org.w3c.dom.Node node) {
+        final String prefix = node.getPrefix();
+        if (prefix != null && !prefix.isEmpty()) {
+            return prefix;
+        }
+        final String name = node.getNodeName();
+        if (name != null) {
+            final int colon = name.indexOf(':');
+            if (colon > 0) {
+                return name.substring(0, colon);
+            }
+        }
+        return "";
     }
 
     private static int safeCompare(@Nullable final String a, @Nullable final String b, @Nullable final Collator collator) {
