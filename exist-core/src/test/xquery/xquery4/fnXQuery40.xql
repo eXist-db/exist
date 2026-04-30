@@ -576,36 +576,36 @@ function t:qname-literal-prefixed-ns() {
 
 (: ======== Default Parameter Values ======== :)
 
-declare function local:add($x as xs:integer, $y as xs:integer := 10) {
+declare function t:add($x as xs:integer, $y as xs:integer := 10) {
     $x + $y
 };
 
 declare
     %test:assertEquals(13)
 function t:default-param-override() {
-    local:add(10, 3)
+    t:add(10, 3)
 };
 
 declare
     %test:assertEquals(20)
 function t:default-param-used() {
-    local:add(10)
+    t:add(10)
 };
 
-declare function local:greet($name as xs:string, $greeting as xs:string := "Hello") {
+declare function t:greet($name as xs:string, $greeting as xs:string := "Hello") {
     $greeting || ", " || $name || "!"
 };
 
 declare
     %test:assertEquals("Hello, World!")
 function t:default-param-string() {
-    local:greet("World")
+    t:greet("World")
 };
 
 declare
     %test:assertEquals("Hi, World!")
 function t:default-param-string-override() {
-    local:greet("World", "Hi")
+    t:greet("World", "Hi")
 };
 
 (: ======================== :)
@@ -654,20 +654,20 @@ function t:choice-type-no-match-node() {
     <!-- comment --> instance of (element() | text())
 };
 
-declare function local:choice-param($x as (xs:string | xs:integer)) as xs:string {
+declare function t:choice-param($x as (xs:string | xs:integer)) as xs:string {
     string($x)
 };
 
 declare
     %test:assertEquals("hello")
 function t:choice-type-param-string() {
-    local:choice-param("hello")
+    t:choice-param("hello")
 };
 
 declare
     %test:assertEquals("42")
 function t:choice-type-param-integer() {
-    local:choice-param(42)
+    t:choice-param(42)
 };
 
 declare

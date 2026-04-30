@@ -1126,13 +1126,13 @@ function t:formatNumber-map-exponentRendition() {
 
 (: fn:function-annotations :)
 
-declare %private function local:annotated-fn() { 42 };
+declare %private function t:annotated-fn() { 42 };
 
 declare
     %test:assertTrue
 function t:functionAnnotations-private() {
     (: %private annotation should be returned :)
-    let $anns := function-annotations(local:annotated-fn#0)
+    let $anns := function-annotations(t:annotated-fn#0)
     return some $m in $anns satisfies
         map:keys($m) = xs:QName("fn:private")
 };
@@ -1148,7 +1148,7 @@ declare
     %test:assertTrue
 function t:functionAnnotations-returns-maps() {
     (: Each annotation is a single-entry map :)
-    let $anns := function-annotations(local:annotated-fn#0)
+    let $anns := function-annotations(t:annotated-fn#0)
     return every $m in $anns satisfies ($m instance of map(*) and map:size($m) = 1)
 };
 
