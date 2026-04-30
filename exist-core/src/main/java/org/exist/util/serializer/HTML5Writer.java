@@ -248,18 +248,23 @@ public class HTML5Writer extends XHTML5Writer {
     }
 
     @Override
-    public void processingInstruction(String target, String data) throws TransformerException {
+    public void processingInstruction(final String target, final String data) throws TransformerException {
+        // QT4 PR2372: HTML5 has no PI syntax, so the serializer renders
+        // processing instructions as comments of the form `<!--?target data?-->`,
+        // matching the HTML5 parser's coercion of `<?...?>` content.
         try {
-            closeStartTag(false);
+            if (tagIsOpen) {
+                closeStartTag(false);
+            }
             final Writer writer = getWriter();
-            writer.write("<?");
+            writer.write("<!--?");
             writer.write(target);
             if (data != null && !data.isEmpty()) {
                 writer.write(' ');
                 writer.write(data);
             }
-            writer.write('>');
-        } catch (IOException e) {
+            writer.write("?-->");
+        } catch (final IOException e) {
             throw new TransformerException(e.getMessage(), e);
         }
     }
