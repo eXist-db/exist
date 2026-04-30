@@ -43,15 +43,6 @@ import java.util.List;
  */
 public class CsvParser {
 
-    /**
-     * Callback interface for CSV parsing events.
-     */
-    public interface CsvConverter {
-        void header(List<String> fields) throws XPathException;
-        void record(List<String> fields) throws XPathException;
-        void finish() throws XPathException;
-    }
-
     private final int fieldDelimiter;
     private final int rowDelimiter;
     private final int quoteChar;
@@ -60,6 +51,15 @@ public class CsvParser {
     private final int[] selectColumns;
     private final boolean trimRows;
     private final Expression expression;
+
+    /**
+     * Callback interface for CSV parsing events.
+     */
+    public interface CsvConverter {
+        void header(List<String> fields) throws XPathException;
+        void record(List<String> fields) throws XPathException;
+        void finish() throws XPathException;
+    }
 
     public CsvParser(final CsvOptions options, final Expression expression) {
         this.fieldDelimiter = options.fieldDelimiter;

@@ -84,7 +84,7 @@ public class FnElementToMapPlan extends BasicFunction {
         for (final Map.Entry<String, List<Element>> entry : elementInstances.entrySet()) {
             final String elemKey = entry.getKey();
             final List<Element> instances = entry.getValue();
-            final MapType layoutMap = analyzeInstances(elemKey, instances);
+            final MapType layoutMap = analyzeInstances(instances);
             plan = (MapType) plan.put(new StringValue(this, elemKey), layoutMap);
         }
 
@@ -138,7 +138,7 @@ public class FnElementToMapPlan extends BasicFunction {
         }
     }
 
-    private MapType analyzeInstances(final String elemKey, final List<Element> instances) throws XPathException {
+    private MapType analyzeInstances(final List<Element> instances) throws XPathException {
         final MapType layoutMap = new MapType(this, context);
 
         // Analyze each instance and merge
@@ -221,24 +221,10 @@ public class FnElementToMapPlan extends BasicFunction {
                 // Check if any instance has non-unique children
                 layout = "sequence";
                 // Actually, if all instances have unique children → record
-                boolean allInstancesUnique = true;
-                for (final Element elem : instances) {
-                    final List<Element> childElements = getChildElements(elem);
-                    if (!childElements.isEmpty()) {
-                        final Set<String> names = new HashSet<>();
-                        boolean unique = true;
-                        for (final Element child : childElements) {
-                            if (!names.add(getElementKey(child))) {
-                                unique = false;
-                                break;
-                            }
-                        }
-                        if (!unique) {
-                            allInstancesUnique = false;
-                            break;
-                        }
-                    }
-                }
+                final boolean allInstancesUnique = instances.stream()
+                        .map(this::getChildElements)
+                        .filter(c -> !c.isEmpty())
+                        .allMatch(FnElementToMapPlan::hasUniqueElementKeys);
                 if (allInstancesUnique && !anyIsEmpty) {
                     layout = "record";
                 } else if (allInstancesUnique) {
@@ -281,7 +267,7 @@ public class FnElementToMapPlan extends BasicFunction {
         return layoutMap;
     }
 
-    private String getElementKey(final Node elem) {
+    private static String getElementKey(final Node elem) {
         final String ns = elem.getNamespaceURI();
         final String local = elem.getLocalName() != null ? elem.getLocalName() : elem.getNodeName();
         if (ns != null && !ns.isEmpty()) {
@@ -333,6 +319,16 @@ public class FnElementToMapPlan extends BasicFunction {
         return false;
     }
 
+    private static boolean hasUniqueElementKeys(final List<Element> childElements) {
+        final Set<String> names = new HashSet<>();
+        for (final Element child : childElements) {
+            if (!names.add(getElementKey(child))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     private String detectAggregateType(final Set<String> values) {
         if (values.isEmpty()) {
             return null;
@@ -349,11 +345,9 @@ public class FnElementToMapPlan extends BasicFunction {
                     }
                 }
             }
-            if (allBoolean) {
-                if (!"true".equals(value) && !"false".equals(value) &&
-                        !"1".equals(value) && !"0".equals(value)) {
-                    allBoolean = false;
-                }
+            if (allBoolean && !"true".equals(value) && !"false".equals(value)
+                    && !"1".equals(value) && !"0".equals(value)) {
+                allBoolean = false;
             }
         }
         if (allNumeric) return "numeric";

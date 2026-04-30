@@ -194,10 +194,9 @@ public class SequenceType {
             }
         // For function-type tests against a function item (including the function-shape
         // of map/array items, e.g. map matching function(xs:anyAtomicType) as item()*)
-        } else if (Type.subTypeOf(primaryType, Type.FUNCTION) && item instanceof FunctionReference) {
-            if (!checkFunctionType((FunctionReference) item)) {
-                return false;
-            }
+        } else if (Type.subTypeOf(primaryType, Type.FUNCTION) && item instanceof FunctionReference funcRef
+                && !checkFunctionType(funcRef)) {
+            return false;
         }
 
         if (nodeName == null) {
@@ -244,17 +243,14 @@ public class SequenceType {
         final FunctionSignature sig = funcRef.getSignature();
 
         // Check arity: if we have typed parameter info, check against it
-        if (functionParamTypes != null) {
-            if (sig.getArgumentCount() != functionParamTypes.length) {
-                return false;
-            }
+        if (functionParamTypes != null && sig.getArgumentCount() != functionParamTypes.length) {
+            return false;
         }
 
         // Check return type: function's return type must be a subtype of required return type (covariant)
-        if (functionReturnType != null && sig.getReturnType() != null) {
-            if (!isSubtypeOf(sig.getReturnType(), functionReturnType)) {
-                return false;
-            }
+        if (functionReturnType != null && sig.getReturnType() != null
+                && !isSubtypeOf(sig.getReturnType(), functionReturnType)) {
+            return false;
         }
 
         // Contravariant parameter check: each required param type must be a subtype

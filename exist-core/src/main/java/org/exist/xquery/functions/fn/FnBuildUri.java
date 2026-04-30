@@ -140,10 +140,8 @@ public class FnBuildUri extends BasicFunction {
         }
 
         // Omit default ports
-        if (omitDefaultPorts && port != null && scheme != null) {
-            if (isDefaultPort(scheme.toLowerCase(), port)) {
-                port = null;
-            }
+        if (omitDefaultPorts && port != null && scheme != null && isDefaultPort(scheme.toLowerCase(), port)) {
+            port = null;
         }
 
         if (effectiveUserinfo != null || host != null || port != null) {

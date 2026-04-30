@@ -21,9 +21,6 @@
  */
 package org.exist.xquery;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -214,7 +211,7 @@ public class TryCatchExpression extends AbstractExpression {
                             addErrModule(throwable);
                             addErrLineNumber(throwable);
                             addErrColumnNumber(throwable);
-                            addErrAdditional(throwable);
+                            addErrAdditional();
                             addFunctionTrace(throwable);
                             addJavaTrace(throwable);
                             addStackTrace(throwable);
@@ -260,7 +257,7 @@ public class TryCatchExpression extends AbstractExpression {
     // can reference it without raising an error. The purpose of this 
     // variable is to allow implementations to provide any additional 
     // information that might be useful.
-    private void addErrAdditional(final Throwable t) throws XPathException {
+    private void addErrAdditional() throws XPathException {
         final LocalVariable err_additional = new LocalVariable(QN_ADDITIONAL);
         err_additional.setSequenceType(new SequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE));
         err_additional.setValue(Sequence.EMPTY_SEQUENCE);
@@ -491,23 +488,6 @@ public class TryCatchExpression extends AbstractExpression {
         }
 
         return new String[]{errorText.substring(0, p).trim(), errorText.substring(p + 1).trim()};
-    }
-
-    /**
-     * Write stacktrace to String. 
-     */
-    private String getStackTrace(final Throwable t ) throws IOException {
-		if (t == null) {
-            return null;
-        }
-
-        try(final StringWriter sw = new StringWriter();
-            final PrintWriter pw = new PrintWriter(sw)) {
-
-            t.printStackTrace(pw);
-            pw.flush();
-            return sw.toString();
-        }
     }
 
     private void addFunctionTrace(final Throwable t) throws XPathException {

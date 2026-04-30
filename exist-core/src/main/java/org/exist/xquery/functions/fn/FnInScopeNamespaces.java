@@ -130,13 +130,11 @@ public class FnInScopeNamespaces extends BasicFunction {
                     nsMap.put(entry.getKey(), entry.getValue());
                 }
             }
-        } else if (element instanceof org.exist.dom.persistent.ElementImpl elemImpl) {
-            if (elemImpl.declaresNamespacePrefixes()) {
-                for (final java.util.Iterator<String> i = elemImpl.getPrefixes(); i.hasNext(); ) {
-                    final String prefix = i.next();
-                    if (seen.add(prefix)) {
-                        nsMap.put(prefix, elemImpl.getNamespaceForPrefix(prefix));
-                    }
+        } else if (element instanceof org.exist.dom.persistent.ElementImpl elemImpl && elemImpl.declaresNamespacePrefixes()) {
+            for (final java.util.Iterator<String> i = elemImpl.getPrefixes(); i.hasNext(); ) {
+                final String prefix = i.next();
+                if (seen.add(prefix)) {
+                    nsMap.put(prefix, elemImpl.getNamespaceForPrefix(prefix));
                 }
             }
         }
