@@ -49,8 +49,8 @@ import static org.exist.xquery.functions.fn.FnModule.functionSignatures;
  */
 public class JSON extends BasicFunction {
 
-    private static final FunctionParameterSequenceType FS_PARAM_JSON_TEXT = optParam("json-text", Type.STRING, "JSON text as defined in [RFC 7159]. The function parses this string to return an XDM value");
-    private static final FunctionParameterSequenceType FS_PARAM_HREF = optParam("href", Type.STRING, "URL pointing to a JSON resource");
+    private static final FunctionParameterSequenceType FS_PARAM_JSON_TEXT = optParam("value", Type.STRING, "JSON text as defined in [RFC 7159]. The function parses this string to return an XDM value");
+    private static final FunctionParameterSequenceType FS_PARAM_HREF = optParam("source", Type.STRING, "URL pointing to a JSON resource");
     private static final FunctionParameterSequenceType FS_PARAM_OPTIONS = optParam("options", Type.MAP_ITEM, "Parsing options");
 
     private static final String FS_PARSE_JSON_NAME = "parse-json";
