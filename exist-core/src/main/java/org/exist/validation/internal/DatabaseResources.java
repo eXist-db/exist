@@ -34,6 +34,7 @@ import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.BinaryValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 
@@ -173,8 +174,20 @@ public class DatabaseResources {
         } catch (final EXistException | XPathException | IOException | PermissionDeniedException ex) {
             logger.error("Problem executing xquery", ex);
             result = null;
-            context.runCleanupTasks();
-
+        } finally {
+            // Don't close BinaryValues that are part of the result the caller
+            // will read; mirrors the predicate used by LocalXPathQueryService.
+            final Sequence resSeq = result;
+            context.runCleanupTasks(o -> {
+                if (resSeq != null && o instanceof BinaryValue) {
+                    for (int i = 0; i < resSeq.getItemCount(); i++) {
+                        if (resSeq.itemAt(i) == o) {
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            });
         }
         return result;
     }
