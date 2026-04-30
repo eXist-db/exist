@@ -24,6 +24,7 @@ package org.exist.xquery.functions.fn;
 import org.exist.dom.QName;
 import org.exist.xquery.*;
 import org.exist.xquery.functions.map.MapType;
+import org.exist.xquery.functions.map.RecordMapType;
 import org.exist.xquery.value.*;
 
 import javax.xml.datatype.DatatypeConstants;
@@ -31,6 +32,7 @@ import javax.xml.datatype.Duration;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
+import java.util.List;
 
 /**
  * fn:build-dateTime($date, $time) — Combine xs:date + xs:time into xs:dateTime (XQ 3.1).
@@ -79,6 +81,9 @@ public class FnDateTimeParts extends BasicFunction {
             },
             new FunctionReturnSequenceType(Type.MAP_ITEM, Cardinality.ZERO_OR_ONE,
                     "A map with keys appropriate for the input type"));
+
+    private static final List<String> DATETIME_RECORD_FIELD_ORDER =
+            List.of("year", "month", "day", "hours", "minutes", "seconds", "timezone");
 
     public FnDateTimeParts(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
@@ -523,7 +528,8 @@ public class FnDateTimeParts extends BasicFunction {
                 || t == Type.G_DAY || t == Type.G_MONTH_DAY);
         final boolean hasTime = (t == Type.DATE_TIME || t == Type.DATE_TIME_STAMP || t == Type.TIME);
 
-        final MapType result = new MapType(this, context);
+        final RecordMapType result = new RecordMapType(this, context,
+                DATETIME_RECORD_FIELD_ORDER, Type.DATETIME_RECORD);
 
         if (hasYear) {
             result.add(new StringValue("year"),

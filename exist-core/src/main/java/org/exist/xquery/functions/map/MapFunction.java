@@ -250,8 +250,8 @@ public class MapFunction extends BasicFunction {
 
     public static final FunctionSignature ENTRIES = functionSignature(
             Fn.ENTRIES.fname,
-            "Returns a sequence of maps, each with 'key' and 'value' entries.",
-            returnsOptMany(Type.MAP_ITEM, "A sequence of key-value pair maps"),
+            "Returns a sequence of singleton maps, one per entry of the input map.",
+            returnsOptMany(Type.MAP_ITEM, "A sequence of singleton maps"),
             PARAM_INPUT_MAP
     );
 
@@ -775,16 +775,15 @@ public class MapFunction extends BasicFunction {
     }
 
     /**
-     * map:entries — returns a sequence of maps, each with 'key' and 'value' entries.
-     * (XQ4 spec says records, but without record support we return maps.)
+     * map:entries — returns a sequence of singleton maps, one per entry of the input map.
+     * Per XPath/XQuery 4.0 spec: each output map contains a single key-value pair from the input.
      */
     private Sequence entries(final Sequence[] args) throws XPathException {
         final AbstractMapType map = (AbstractMapType) args[0].itemAt(0);
         final ValueSequence result = new ValueSequence();
         for (final IEntry<AtomicValue, Sequence> entry : map) {
             final MapType entryMap = new MapType(this, context);
-            entryMap.add(new StringValue("key"), entry.key().toSequence());
-            entryMap.add(new StringValue("value"), entry.value());
+            entryMap.add(entry.key(), entry.value());
             result.add(entryMap);
         }
         return result;

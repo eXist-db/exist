@@ -88,15 +88,19 @@ public class FnElementToMapPlan extends BasicFunction {
             plan = (MapType) plan.put(new StringValue(this, elemKey), layoutMap);
         }
 
-        // Add attribute plans
+        // Add attribute plans, but only when something distinctive is detected.
+        // Per the XQ4 spec a plain string attribute (no detected type) does not
+        // contribute its own plan entry; including an empty map makes the result
+        // unequal to the spec's expected output.
         for (final Map.Entry<String, Set<String>> entry : attrValues.entrySet()) {
             final String attrKey = entry.getKey();
             final Set<String> values = entry.getValue();
-            final MapType attrMap = new MapType(this, context);
             final String type = detectAggregateType(values);
-            if (type != null) {
-                attrMap.add(new StringValue("type"), new StringValue(type));
+            if (type == null) {
+                continue;
             }
+            final MapType attrMap = new MapType(this, context);
+            attrMap.add(new StringValue("type"), new StringValue(type));
             plan = (MapType) plan.put(new StringValue(this, attrKey), attrMap);
         }
 

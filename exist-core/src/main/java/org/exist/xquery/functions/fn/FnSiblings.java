@@ -32,10 +32,12 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Item;
+import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
+import org.exist.xquery.value.jnode.JNode;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -68,43 +70,82 @@ public class FnSiblings extends BasicFunction {
 
     @Override
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
-        final Sequence input;
-        if (args.length == 0) {
-            // 0-arity: use context item
-            if (contextSequence == null || contextSequence.isEmpty()) {
-                throw new XPathException(this, ErrorCodes.XPDY0002,
-                        "fn:siblings() called with no context item");
-            }
-            input = contextSequence;
-        } else {
-            input = args[0];
-        }
-
+        final Sequence input = resolveInput(args, contextSequence);
         if (input.isEmpty()) {
             return Sequence.EMPTY_SEQUENCE;
         }
+        if (input.getItemCount() > 1) {
+            throw new XPathException(this, ErrorCodes.XPTY0004,
+                    "fn:siblings() expects at most one node");
+        }
+        return siblingsOf(input.itemAt(0));
+    }
 
-        final Item nodeItem = input.itemAt(0);
+    /**
+     * Resolve the effective input sequence. The 0-arg form uses the context
+     * value: a truly absent context (null) is XPDY0002, while an empty context
+     * is permitted and yields the empty sequence per XQ4.
+     */
+    private Sequence resolveInput(final Sequence[] args, final Sequence contextSequence) throws XPathException {
+        if (args.length != 0) {
+            return args[0];
+        }
+        if (contextSequence == null) {
+            throw new XPathException(this, ErrorCodes.XPDY0002,
+                    "fn:siblings() called with no context item");
+        }
+        return contextSequence;
+    }
+
+    /**
+     * Compute siblings for a single item, dispatching by item kind.
+     */
+    private Sequence siblingsOf(final Item nodeItem) throws XPathException {
+        if (nodeItem instanceof JNode) {
+            return jnodeSiblings((JNode) nodeItem);
+        }
         final int nodeType = nodeItem.getType();
-
-        // Attribute and namespace nodes: return just the node itself
+        if (!(nodeItem instanceof NodeValue) || !Type.subTypeOf(nodeType, Type.NODE)) {
+            throw new XPathException(this, ErrorCodes.XPTY0004,
+                    Type.getTypeName(nodeType) + " is not a sub-type of node()");
+        }
         if (nodeType == Type.ATTRIBUTE || nodeType == Type.NAMESPACE) {
             return nodeItem.toSequence();
         }
+        return xmlSiblings((NodeValue) nodeItem);
+    }
 
-        final Node node = (Node) nodeItem;
+    /**
+     * Compute siblings for an XML node by enumerating the parent's children.
+     */
+    private Sequence xmlSiblings(final NodeValue nodeItem) {
+        final Node node = nodeItem.getNode();
         final Node parent = node.getParentNode();
-
-        // No parent: return just the node
         if (parent == null) {
             return nodeItem.toSequence();
         }
-
-        // Return all children of the parent (which includes all siblings + the node itself)
         final NodeList children = parent.getChildNodes();
         final ValueSequence result = new ValueSequence(children.getLength());
         for (int i = 0; i < children.getLength(); i++) {
             result.add((Item) children.item(i));
+        }
+        return result;
+    }
+
+    /**
+     * Compute siblings of a JSON node: preceding siblings, the node itself,
+     * and following siblings, in document order. Root JNodes have no parent
+     * and therefore return just themselves.
+     */
+    private Sequence jnodeSiblings(final JNode node) throws XPathException {
+        final JNode parent = node.getParent();
+        if (parent == null) {
+            return node;
+        }
+        final java.util.List<JNode> all = parent.getChildren();
+        final ValueSequence result = new ValueSequence(all.size());
+        for (final JNode child : all) {
+            result.add(child);
         }
         return result;
     }
