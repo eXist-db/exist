@@ -186,6 +186,52 @@ public class DynamicTypeCheck extends AbstractExpression {
     }
 
     /**
+     * Apply function-coercion rules to a single item against a required atomic type
+     * (XQ4 §3.4.1). Handles untypedAtomic casting, numeric promotion, anyURI to xs:string
+     * promotion, and XQuery 4.0 implicit casting/relabeling. Used by callers that need
+     * to coerce values outside of the expression-tree path (e.g. record-field coercion
+     * in {@link UserDefinedFunction}).
+     */
+    public static Item coerceAtomicItem(final XQueryContext ctx, final Expression caller,
+            Item item, final int requiredType) throws XPathException {
+        int type = item.getType();
+        if (type == requiredType || Type.subTypeOf(type, requiredType)) {
+            return item;
+        }
+        if (type == Type.UNTYPED_ATOMIC) {
+            if (requiredType == Type.QNAME || requiredType == Type.NOTATION) {
+                throw new XPathException(caller, ErrorCodes.XPTY0117,
+                        "Cannot coerce xs:untypedAtomic to namespace-sensitive type "
+                                + Type.getTypeName(requiredType));
+            }
+            return item.convertTo(requiredType);
+        }
+        if (requiredType == Type.STRING && Type.subTypeOf(type, Type.NODE)) {
+            return item.convertTo(Type.STRING);
+        }
+        if (Type.subTypeOfUnion(requiredType, Type.NUMERIC) && Type.subTypeOf(type, requiredType)) {
+            return item.convertTo(requiredType);
+        }
+        if (Type.subTypeOf(requiredType, Type.DURATION) && Type.subTypeOf(type, requiredType)) {
+            return item.convertTo(requiredType);
+        }
+        if (Type.subTypeOf(requiredType, Type.DATE) && Type.subTypeOf(type, requiredType)) {
+            return item.convertTo(requiredType);
+        }
+        if (type == Type.ANY_URI && requiredType == Type.STRING) {
+            return item.convertTo(Type.STRING);
+        }
+        if (ctx.getXQueryVersion() >= 40) {
+            if (isXQ4ImplicitCast(type, requiredType) || isXQ4Relabeling(type, requiredType)) {
+                return item.convertTo(requiredType);
+            }
+        }
+        throw new XPathException(caller, ErrorCodes.XPTY0004,
+                Type.getTypeName(type) + "(" + item.getStringValue() +
+                ") is not a sub-type of " + Type.getTypeName(requiredType));
+    }
+
+    /**
      * XQuery 4.0 coercion rules per spec §3.4.1.
      * Handles implicit casting (item 4) and relabeling (item 6).
      */

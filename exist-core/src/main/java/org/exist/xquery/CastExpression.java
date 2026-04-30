@@ -106,6 +106,16 @@ public class CastExpression extends AbstractExpression {
 
         final Sequence result;
         final Sequence seq = Atomize.atomize(expression.eval(contextSequence, contextItem));
+        // xs:NMTOKENS, xs:IDREFS, xs:ENTITIES are W3C Schema list types: split source
+        // string on whitespace and produce a sequence of items typed as the
+        // corresponding atomic item type (xs:NMTOKEN, xs:IDREF, xs:ENTITY).
+        if (requiredType == Type.NMTOKENS || requiredType == Type.IDREFS || requiredType == Type.ENTITIES) {
+            result = castToListType(seq, requiredType);
+            if (context.getProfiler().isEnabled()) {
+                context.getProfiler().end(this, "", result);
+            }
+            return result;
+        }
         if (seq.isEmpty()) {
             if (cardinality.atLeastOne()) {
                 throw new XPathException(this, ErrorCodes.XPTY0004, "Type error: empty sequence is not allowed here");
@@ -201,6 +211,32 @@ public class CastExpression extends AbstractExpression {
     @Override
     public void accept(final ExpressionVisitor visitor) {
         visitor.visitCastExpr(this);
+    }
+
+    private Sequence castToListType(final Sequence seq, final int listType) throws XPathException {
+        final int itemType = switch (listType) {
+            case Type.NMTOKENS -> Type.NMTOKEN;
+            case Type.IDREFS -> Type.IDREF;
+            case Type.ENTITIES -> Type.ENTITY;
+            default -> throw new XPathException(this, ErrorCodes.XPTY0004,
+                    "Internal error: unsupported list type " + Type.getTypeName(listType));
+        };
+        final ValueSequence out = new ValueSequence();
+        for (final SequenceIterator iter = seq.iterate(); iter.hasNext(); ) {
+            final Item src = iter.nextItem();
+            final String s = src.getStringValue();
+            if (s == null) {
+                continue;
+            }
+            final String trimmed = s.trim();
+            if (trimmed.isEmpty()) {
+                continue;
+            }
+            for (final String token : trimmed.split("\\s+")) {
+                out.add(new StringValue(this, token, itemType));
+            }
+        }
+        return out;
     }
 
     public Function toFunction() throws XPathException {
