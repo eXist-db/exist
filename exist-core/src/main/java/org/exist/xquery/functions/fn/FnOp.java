@@ -103,20 +103,18 @@ public class FnOp extends BasicFunction {
     }
 
     private boolean isValidOperator(final String op) {
-        switch (op) {
-            case ",": case "and": case "or":
-            case "+": case "-": case "*": case "div": case "idiv": case "mod":
-            case "=": case "<": case "<=": case ">": case ">=": case "!=":
-            case "eq": case "lt": case "le": case "gt": case "ge": case "ne":
-            case "<<": case ">>": case "precedes": case "follows":
-            case "precedes-or-is": case "follows-or-is":
-            case "is": case "is-not":
-            case "||": case "|": case "union": case "except": case "intersect":
-            case "to": case "otherwise":
-                return true;
-            default:
-                return false;
-        }
+        return switch (op) {
+            case ",", "and", "or",
+                 "+", "-", "*", "div", "idiv", "mod",
+                 "=", "<", "<=", ">", ">=", "!=",
+                 "eq", "lt", "le", "gt", "ge", "ne",
+                 "<<", ">>", "precedes", "follows",
+                 "precedes-or-is", "follows-or-is",
+                 "is", "is-not",
+                 "||", "|", "union", "except", "intersect",
+                 "to", "otherwise" -> true;
+            default -> false;
+        };
     }
 
     /**
@@ -137,60 +135,49 @@ public class FnOp extends BasicFunction {
             final Sequence a = context.resolveVariable(PARAM_A).getValue();
             final Sequence b = context.resolveVariable(PARAM_B).getValue();
 
-            switch (operator) {
-                // Arithmetic
-                case "+": return arithmetic(a, b, "plus");
-                case "-": return arithmetic(a, b, "minus");
-                case "*": return arithmetic(a, b, "mult");
-                case "div": return arithmetic(a, b, "div");
-                case "idiv": return arithmetic(a, b, "idiv");
-                case "mod": return arithmetic(a, b, "mod");
+            return switch (operator) {
+                case "+" -> arithmetic(a, b, "plus");
+                case "-" -> arithmetic(a, b, "minus");
+                case "*" -> arithmetic(a, b, "mult");
+                case "div" -> arithmetic(a, b, "div");
+                case "idiv" -> arithmetic(a, b, "idiv");
+                case "mod" -> arithmetic(a, b, "mod");
 
-                // General comparison
-                case "=": return generalCompare(a, b, org.exist.xquery.Constants.Comparison.EQ);
-                case "!=": return generalCompare(a, b, org.exist.xquery.Constants.Comparison.NEQ);
-                case "<": return generalCompare(a, b, org.exist.xquery.Constants.Comparison.LT);
-                case "<=": return generalCompare(a, b, org.exist.xquery.Constants.Comparison.LTEQ);
-                case ">": return generalCompare(a, b, org.exist.xquery.Constants.Comparison.GT);
-                case ">=": return generalCompare(a, b, org.exist.xquery.Constants.Comparison.GTEQ);
+                case "=" -> generalCompare(a, b, org.exist.xquery.Constants.Comparison.EQ);
+                case "!=" -> generalCompare(a, b, org.exist.xquery.Constants.Comparison.NEQ);
+                case "<" -> generalCompare(a, b, org.exist.xquery.Constants.Comparison.LT);
+                case "<=" -> generalCompare(a, b, org.exist.xquery.Constants.Comparison.LTEQ);
+                case ">" -> generalCompare(a, b, org.exist.xquery.Constants.Comparison.GT);
+                case ">=" -> generalCompare(a, b, org.exist.xquery.Constants.Comparison.GTEQ);
 
-                // Value comparison
-                case "eq": return valueCompare(a, b, org.exist.xquery.Constants.Comparison.EQ);
-                case "ne": return valueCompare(a, b, org.exist.xquery.Constants.Comparison.NEQ);
-                case "lt": return valueCompare(a, b, org.exist.xquery.Constants.Comparison.LT);
-                case "le": return valueCompare(a, b, org.exist.xquery.Constants.Comparison.LTEQ);
-                case "gt": return valueCompare(a, b, org.exist.xquery.Constants.Comparison.GT);
-                case "ge": return valueCompare(a, b, org.exist.xquery.Constants.Comparison.GTEQ);
+                case "eq" -> valueCompare(a, b, org.exist.xquery.Constants.Comparison.EQ);
+                case "ne" -> valueCompare(a, b, org.exist.xquery.Constants.Comparison.NEQ);
+                case "lt" -> valueCompare(a, b, org.exist.xquery.Constants.Comparison.LT);
+                case "le" -> valueCompare(a, b, org.exist.xquery.Constants.Comparison.LTEQ);
+                case "gt" -> valueCompare(a, b, org.exist.xquery.Constants.Comparison.GT);
+                case "ge" -> valueCompare(a, b, org.exist.xquery.Constants.Comparison.GTEQ);
 
-                // Boolean
-                case "and": return BooleanValue.valueOf(a.effectiveBooleanValue() && b.effectiveBooleanValue());
-                case "or": return BooleanValue.valueOf(a.effectiveBooleanValue() || b.effectiveBooleanValue());
+                case "and" -> BooleanValue.valueOf(a.effectiveBooleanValue() && b.effectiveBooleanValue());
+                case "or" -> BooleanValue.valueOf(a.effectiveBooleanValue() || b.effectiveBooleanValue());
 
-                // String concatenation
-                case "||": return new StringValue(this, a.getStringValue() + b.getStringValue());
+                case "||" -> new StringValue(this, a.getStringValue() + b.getStringValue());
 
-                // Sequence
-                case ",": return opComma(a, b);
-                case "|":
-                case "union": return opVenn(a, b, "union");
-                case "except": return opVenn(a, b, "except");
-                case "intersect": return opVenn(a, b, "intersect");
-                case "to": return opTo(a, b);
-                case "otherwise": return a.isEmpty() ? b : a;
+                case "," -> opComma(a, b);
+                case "|", "union" -> opVenn(a, b, "union");
+                case "except" -> opVenn(a, b, "except");
+                case "intersect" -> opVenn(a, b, "intersect");
+                case "to" -> opTo(a, b);
+                case "otherwise" -> a.isEmpty() ? b : a;
 
-                // Node comparison
-                case "is": return nodeIs(a, b);
-                case "is-not": return nodeIsNot(a, b);
-                case "<<":
-                case "precedes": return nodePrecedes(a, b);
-                case ">>":
-                case "follows": return nodeFollows(a, b);
-                case "precedes-or-is": return nodePrecedesOrIs(a, b);
-                case "follows-or-is": return nodeFollowsOrIs(a, b);
+                case "is" -> nodeIs(a, b);
+                case "is-not" -> nodeIsNot(a, b);
+                case "<<", "precedes" -> nodePrecedes(a, b);
+                case ">>", "follows" -> nodeFollows(a, b);
+                case "precedes-or-is" -> nodePrecedesOrIs(a, b);
+                case "follows-or-is" -> nodeFollowsOrIs(a, b);
 
-                default:
-                    throw new XPathException(this, ErrorCodes.FOJS0005, "Unknown operator: " + operator);
-            }
+                default -> throw new XPathException(this, ErrorCodes.FOJS0005, "Unknown operator: " + operator);
+            };
         }
 
         private Sequence arithmetic(final Sequence a, final Sequence b, final String op) throws XPathException {
@@ -199,15 +186,15 @@ public class FnOp extends BasicFunction {
             }
             final ComputableValue left = toComputable(a.itemAt(0).atomize());
             final ComputableValue right = toComputable(b.itemAt(0).atomize());
-            switch (op) {
-                case "plus": return left.plus(right);
-                case "minus": return left.minus(right);
-                case "mult": return left.mult(right);
-                case "div": return left.div(right);
-                case "idiv": return ((org.exist.xquery.value.NumericValue) left).idiv((org.exist.xquery.value.NumericValue) right);
-                case "mod": return ((org.exist.xquery.value.NumericValue) left).mod((org.exist.xquery.value.NumericValue) right);
-                default: throw new IllegalStateException();
-            }
+            return switch (op) {
+                case "plus" -> left.plus(right);
+                case "minus" -> left.minus(right);
+                case "mult" -> left.mult(right);
+                case "div" -> left.div(right);
+                case "idiv" -> ((org.exist.xquery.value.NumericValue) left).idiv((org.exist.xquery.value.NumericValue) right);
+                case "mod" -> ((org.exist.xquery.value.NumericValue) left).mod((org.exist.xquery.value.NumericValue) right);
+                default -> throw new IllegalStateException();
+            };
         }
 
         private Sequence generalCompare(final Sequence a, final Sequence b,
@@ -268,12 +255,12 @@ public class FnOp extends BasicFunction {
                 }
             }
             try {
-                switch (op) {
-                    case "union": return a.toNodeSet().union(b.toNodeSet());
-                    case "except": return a.toNodeSet().except(b.toNodeSet());
-                    case "intersect": return a.toNodeSet().intersection(b.toNodeSet());
-                    default: throw new IllegalStateException();
-                }
+                return switch (op) {
+                    case "union" -> a.toNodeSet().union(b.toNodeSet());
+                    case "except" -> a.toNodeSet().except(b.toNodeSet());
+                    case "intersect" -> a.toNodeSet().intersection(b.toNodeSet());
+                    default -> throw new IllegalStateException();
+                };
             } catch (final XPathException e) {
                 throw new XPathException(this, ErrorCodes.XPTY0004, e.getMessage());
             }

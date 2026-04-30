@@ -65,26 +65,19 @@ public class FnGet extends BasicFunction {
         final Item contextItem = ctxSeq.itemAt(0);
         final AtomicValue key = (AtomicValue) args[0].itemAt(0);
 
-        if (contextItem instanceof ArrayType) {
-            // Array lookup by position
-            final ArrayType array = (ArrayType) contextItem;
+        if (contextItem instanceof ArrayType array) {
             final int index = ((IntegerValue) key.convertTo(Type.INTEGER)).getInt();
             if (index < 1 || index > array.getSize()) {
                 throw new XPathException(this, ErrorCodes.FOAY0001,
                         "Array index " + index + " out of bounds (1.." + array.getSize() + ")");
             }
             return array.get(index - 1);
-        } else if (contextItem instanceof AbstractMapType) {
-            // Map lookup by key
-            final AbstractMapType map = (AbstractMapType) contextItem;
+        } else if (contextItem instanceof AbstractMapType map) {
             final Sequence value = map.get(key);
             return value != null ? value : Sequence.EMPTY_SEQUENCE;
-        } else if (contextItem instanceof FunctionReference) {
-            // Function application
-            final FunctionReference funcRef = (FunctionReference) contextItem;
+        } else if (contextItem instanceof FunctionReference funcRef) {
             return funcRef.evalFunction(null, null, new Sequence[]{key.toSequence()});
         } else {
-            // Atomic value: return the context item itself
             return contextItem.toSequence();
         }
     }

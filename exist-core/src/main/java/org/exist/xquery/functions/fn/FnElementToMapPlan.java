@@ -299,7 +299,7 @@ public class FnElementToMapPlan extends BasicFunction {
             if (name.startsWith("xmlns") && (name.length() == 5 || name.charAt(5) == ':')) {
                 continue;
             }
-            final String ns = attr instanceof Attr ? ((Attr) attr).getNamespaceURI() : null;
+            final String ns = attr instanceof Attr attribute ? attribute.getNamespaceURI() : null;
             if (XSI_NS.equals(ns)) {
                 continue;
             }

@@ -136,11 +136,12 @@ public class FnElementToMap extends BasicFunction {
             // plan
             final Sequence planSeq = options.get(new StringValue(this, "plan"));
             if (planSeq != null && !planSeq.isEmpty()) {
-                if (!(planSeq.itemAt(0) instanceof MapType)) {
+                if (planSeq.itemAt(0) instanceof MapType mapType) {
+                    plan = mapType;
+                } else {
                     throw new XPathException(this, ErrorCodes.XPTY0004,
                             "Option 'plan' must be a map");
                 }
-                plan = (MapType) planSeq.itemAt(0);
             }
         }
 
@@ -292,10 +293,10 @@ public class FnElementToMap extends BasicFunction {
             throw new XPathException(this, ErrorCodes.XPTY0004,
                     "Plan entry for '" + elemKey + "' missing required 'layout' field");
         }
-        if (!(layoutSeq.itemAt(0) instanceof StringValue) &&
-                layoutSeq.itemAt(0).getType() != Type.UNTYPED_ATOMIC) {
+        final Item layoutItem = layoutSeq.itemAt(0);
+        if (!(layoutItem instanceof StringValue) && layoutItem.getType() != Type.UNTYPED_ATOMIC) {
             throw new XPathException(this, ErrorCodes.XPTY0004,
-                    "Plan entry 'layout' must be a string, got " + Type.getTypeName(layoutSeq.itemAt(0).getType()));
+                    "Plan entry 'layout' must be a string, got " + Type.getTypeName(layoutItem.getType()));
         }
         final String layout = layoutSeq.getStringValue();
 
@@ -321,48 +322,40 @@ public class FnElementToMap extends BasicFunction {
             }
         }
 
-        switch (layout) {
-            case "empty":
+        return switch (layout) {
+            case "empty" -> {
                 if (!childElements.isEmpty()) {
-                    // Plan says empty but has children — try fallback
-                    return handlePlanFallback(elem, attrs, children, childElements, opts);
+                    yield handlePlanFallback(elem, attrs, children, childElements, opts);
                 }
-                return new StringValue(this, "");
-
-            case "empty-plus":
+                yield new StringValue(this, "");
+            }
+            case "empty-plus" -> {
                 if (!childElements.isEmpty()) {
-                    // Plan says empty-plus but has children — error
                     throw new XPathException(this, ErrorCodes.FOJS0008,
                             "Element has child elements but plan specifies 'empty-plus' layout");
                 }
-                if (attrs.isEmpty()) {
-                    return new MapType(this, context);
-                }
-                return buildAttrOnlyMap(attrs);
-
-            case "simple":
+                yield attrs.isEmpty() ? new MapType(this, context) : buildAttrOnlyMap(attrs);
+            }
+            case "simple" -> {
                 if (!childElements.isEmpty()) {
-                    // Plan says simple but has child elements — try fallback
-                    return handleSimpleFallback(elem, attrs, children, childElements, opts);
+                    yield handleSimpleFallback(elem, attrs, children, childElements, opts);
                 }
                 final String simpleText = getTextContent(children);
-                return coerceValue(simpleText, valueType);
-
-            case "simple-plus":
+                yield coerceValue(simpleText, valueType);
+            }
+            case "simple-plus" -> {
                 if (!childElements.isEmpty()) {
-                    return handleSimpleFallback(elem, attrs, children, childElements, opts);
+                    yield handleSimpleFallback(elem, attrs, children, childElements, opts);
                 }
                 final String spText = getTextContent(children);
                 final Sequence spValue = coerceValue(spText, valueType);
-                return buildContentMap(attrs, spValue, opts);
-
-            case "list": {
+                yield buildContentMap(attrs, spValue, opts);
+            }
+            case "list" -> {
                 if (childName == null) {
-                    // list without child → error
                     throw new XPathException(this, ErrorCodes.XPTY0004,
                             "Plan entry 'list' requires 'child' field");
                 }
-                // Check that all child elements match the child name, no text
                 final boolean hasSignificantText = children.stream().anyMatch(n ->
                         (n.getNodeType() == Node.TEXT_NODE || n.getNodeType() == Node.CDATA_SECTION_NODE)
                                 && !n.getTextContent().trim().isEmpty());
@@ -379,41 +372,23 @@ public class FnElementToMap extends BasicFunction {
                                 "Not all child elements match the expected child name '" + childName + "'");
                     }
                 }
-                // list layout drops attrs — only returns array of child values
-                return buildListArray(childElements, opts);
+                yield buildListArray(childElements, opts);
             }
-
-            case "list-plus": {
-                // list-plus includes attrs + child name key → array
+            case "list-plus" -> {
                 final String listPlusChildName = childName != null ? childName :
                         (!childElements.isEmpty() ? getPlanKey(childElements.get(0)) : "item");
-                return buildListPlusContent(childElements, attrs, listPlusChildName, opts);
+                yield buildListPlusContent(childElements, attrs, listPlusChildName, opts);
             }
-
-            case "record":
-                return buildRecordContent(childElements, attrs, elem, opts);
-
-            case "sequence":
-                return buildSequenceContent(children, attrs, elem, opts);
-
-            case "mixed":
-                return buildMixedContent(children, attrs, elem, opts);
-
-            case "xml":
-                return new StringValue(this, serializeToXml(elem));
-
-            case "error":
-                throw new XPathException(this, ErrorCodes.FOJS0008,
-                        "Plan specifies 'error' layout for element '" + elemKey + "'");
-
-            case "deep-skip":
-                // Return empty sequence marker — handled by caller
-                return Sequence.EMPTY_SEQUENCE;
-
-            default:
-                throw new XPathException(this, ErrorCodes.XPTY0004,
-                        "Invalid layout in plan: '" + layout + "'");
-        }
+            case "record" -> buildRecordContent(childElements, attrs, elem, opts);
+            case "sequence" -> buildSequenceContent(children, attrs, elem, opts);
+            case "mixed" -> buildMixedContent(children, attrs, elem, opts);
+            case "xml" -> new StringValue(this, serializeToXml(elem));
+            case "error" -> throw new XPathException(this, ErrorCodes.FOJS0008,
+                    "Plan specifies 'error' layout for element '" + elemKey + "'");
+            case "deep-skip" -> Sequence.EMPTY_SEQUENCE;
+            default -> throw new XPathException(this, ErrorCodes.XPTY0004,
+                    "Invalid layout in plan: '" + layout + "'");
+        };
     }
 
     private Sequence handlePlanFallback(final Element elem, final Map<String, Sequence> attrs,
@@ -426,16 +401,11 @@ public class FnElementToMap extends BasicFunction {
             if (fbLayoutSeq != null && !fbLayoutSeq.isEmpty()) {
                 final String fbLayout = fbLayoutSeq.getStringValue();
                 switch (fbLayout) {
-                    case "record":
-                        return buildRecordContent(childElements, attrs, elem, opts);
-                    case "sequence":
-                        return buildSequenceContent(children, attrs, elem, opts);
-                    case "mixed":
-                        return buildMixedContent(children, attrs, elem, opts);
-                    case "xml":
-                        return new StringValue(this, serializeToXml(elem));
-                    default:
-                        break;
+                    case "record" -> { return buildRecordContent(childElements, attrs, elem, opts); }
+                    case "sequence" -> { return buildSequenceContent(children, attrs, elem, opts); }
+                    case "mixed" -> { return buildMixedContent(children, attrs, elem, opts); }
+                    case "xml" -> { return new StringValue(this, serializeToXml(elem)); }
+                    default -> { /* fall through to throw */ }
                 }
             }
         }
@@ -453,19 +423,12 @@ public class FnElementToMap extends BasicFunction {
             if (fbLayoutSeq != null && !fbLayoutSeq.isEmpty()) {
                 final String fbLayout = fbLayoutSeq.getStringValue();
                 switch (fbLayout) {
-                    case "mixed":
-                        return buildMixedContent(children, attrs, elem, opts);
-                    case "xml":
-                        return new StringValue(this, serializeToXml(elem));
-                    case "deep-skip":
-                        // Simple layout + deep-skip fallback → strip child elements, return text only
-                        return Sequence.EMPTY_SEQUENCE;
-                    case "record":
-                        return buildRecordContent(childElements, attrs, elem, opts);
-                    case "sequence":
-                        return buildSequenceContent(children, attrs, elem, opts);
-                    default:
-                        break;
+                    case "mixed" -> { return buildMixedContent(children, attrs, elem, opts); }
+                    case "xml" -> { return new StringValue(this, serializeToXml(elem)); }
+                    case "deep-skip" -> { return Sequence.EMPTY_SEQUENCE; }
+                    case "record" -> { return buildRecordContent(childElements, attrs, elem, opts); }
+                    case "sequence" -> { return buildSequenceContent(children, attrs, elem, opts); }
+                    default -> { /* fall through to throw */ }
                 }
             }
         }
@@ -481,11 +444,11 @@ public class FnElementToMap extends BasicFunction {
         if (entry == null || entry.isEmpty()) {
             return null;
         }
-        if (!(entry.itemAt(0) instanceof MapType)) {
-            throw new XPathException(this, ErrorCodes.XPTY0004,
-                    "Plan entry for '" + key + "' must be a map");
+        if (entry.itemAt(0) instanceof MapType mapType) {
+            return mapType;
         }
-        return (MapType) entry.itemAt(0);
+        throw new XPathException(this, ErrorCodes.XPTY0004,
+                "Plan entry for '" + key + "' must be a map");
     }
 
     private String getPlanKey(final Node elem) {
@@ -571,14 +534,8 @@ public class FnElementToMap extends BasicFunction {
         for (int i = 0; i < childNodes.getLength(); i++) {
             final Node child = childNodes.item(i);
             switch (child.getNodeType()) {
-                case Node.ELEMENT_NODE:
-                case Node.TEXT_NODE:
-                case Node.CDATA_SECTION_NODE:
-                case Node.COMMENT_NODE:
-                    children.add(child);
-                    break;
-                default:
-                    break;
+                case Node.ELEMENT_NODE, Node.TEXT_NODE, Node.CDATA_SECTION_NODE, Node.COMMENT_NODE -> children.add(child);
+                default -> { /* ignore */ }
             }
         }
         return children;
@@ -749,25 +706,21 @@ public class FnElementToMap extends BasicFunction {
 
         for (final Node child : children) {
             switch (child.getNodeType()) {
-                case Node.ELEMENT_NODE:
-                    items.add(convertElement((Element) child, parent, opts));
-                    break;
-                case Node.TEXT_NODE:
-                case Node.CDATA_SECTION_NODE:
+                case Node.ELEMENT_NODE -> items.add(convertElement((Element) child, parent, opts));
+                case Node.TEXT_NODE, Node.CDATA_SECTION_NODE -> {
                     final String text = child.getTextContent();
                     if (!text.isEmpty()) {
                         items.add(new StringValue(this, text));
                     }
-                    break;
-                case Node.COMMENT_NODE:
+                }
+                case Node.COMMENT_NODE -> {
                     MapType commentMap = new MapType(this, context);
                     commentMap = (MapType) commentMap.put(
                             new StringValue(this, opts.commentKey),
                             new StringValue(this, child.getTextContent()));
                     items.add(commentMap);
-                    break;
-                default:
-                    break;
+                }
+                default -> { /* ignore */ }
             }
         }
         return new ArrayType(this, context, items);
@@ -780,106 +733,88 @@ public class FnElementToMap extends BasicFunction {
         }
         // Strip prefix if present (e.g. "xs:integer" → "integer")
         final String localType = xsiType.contains(":") ? xsiType.substring(xsiType.indexOf(':') + 1) : xsiType;
-        switch (localType) {
-            case "integer":
-            case "int":
-            case "long":
-            case "short":
-            case "byte":
-            case "nonNegativeInteger":
-            case "positiveInteger":
-            case "nonPositiveInteger":
-            case "negativeInteger":
-            case "unsignedLong":
-            case "unsignedInt":
-            case "unsignedShort":
-            case "unsignedByte":
+        return switch (localType) {
+            case "integer", "int", "long", "short", "byte", "nonNegativeInteger", "positiveInteger",
+                 "nonPositiveInteger", "negativeInteger", "unsignedLong", "unsignedInt",
+                 "unsignedShort", "unsignedByte" -> {
                 try {
-                    return new IntegerValue(this, Long.parseLong(text.trim()));
+                    yield new IntegerValue(this, Long.parseLong(text.trim()));
                 } catch (final NumberFormatException e) {
-                    return new StringValue(this, text);
+                    yield new StringValue(this, text);
                 }
-            case "decimal":
+            }
+            case "decimal" -> {
                 try {
-                    return new DecimalValue(this, text.trim());
+                    yield new DecimalValue(this, text.trim());
                 } catch (final XPathException e) {
-                    return new StringValue(this, text);
+                    yield new StringValue(this, text);
                 }
-            case "double":
-            case "float":
+            }
+            case "double", "float" -> {
                 try {
-                    return new DoubleValue(this, Double.parseDouble(text.trim()));
+                    yield new DoubleValue(this, Double.parseDouble(text.trim()));
                 } catch (final NumberFormatException e) {
-                    return new StringValue(this, text);
+                    yield new StringValue(this, text);
                 }
-            case "boolean":
-                if ("true".equals(text.trim()) || "1".equals(text.trim())) {
-                    return BooleanValue.TRUE;
-                } else if ("false".equals(text.trim()) || "0".equals(text.trim())) {
-                    return BooleanValue.FALSE;
+            }
+            case "boolean" -> {
+                final String trimmed = text.trim();
+                if ("true".equals(trimmed) || "1".equals(trimmed)) {
+                    yield BooleanValue.TRUE;
+                } else if ("false".equals(trimmed) || "0".equals(trimmed)) {
+                    yield BooleanValue.FALSE;
                 }
-                return new StringValue(this, text);
-            default:
-                return new StringValue(this, text);
-        }
+                yield new StringValue(this, text);
+            }
+            default -> new StringValue(this, text);
+        };
     }
 
     private Sequence coerceValue(final String text, final String type) throws XPathException {
         if (type == null || "string".equals(type)) {
             return new StringValue(this, text);
         }
-        switch (type) {
-            case "numeric":
+        return switch (type) {
+            case "numeric" -> {
                 try {
                     if (text.contains(".") || text.contains("e") || text.contains("E") ||
                             "NaN".equals(text) || "INF".equals(text) || "-INF".equals(text)) {
                         if (text.contains("e") || text.contains("E") ||
                                 "NaN".equals(text) || "INF".equals(text) || "-INF".equals(text)) {
-                            return new DoubleValue(this, Double.parseDouble(text));
+                            yield new DoubleValue(this, Double.parseDouble(text));
                         }
-                        return new DecimalValue(this, text);
+                        yield new DecimalValue(this, text);
                     }
-                    return new IntegerValue(this, Long.parseLong(text));
+                    yield new IntegerValue(this, Long.parseLong(text));
                 } catch (final NumberFormatException e) {
-                    return new StringValue(this, text);
+                    yield new StringValue(this, text);
                 }
-            case "boolean":
+            }
+            case "boolean" -> {
                 if ("true".equals(text) || "1".equals(text)) {
-                    return BooleanValue.TRUE;
+                    yield BooleanValue.TRUE;
                 } else if ("false".equals(text) || "0".equals(text)) {
-                    return BooleanValue.FALSE;
+                    yield BooleanValue.FALSE;
                 }
-                return new StringValue(this, text);
-            default:
-                return new StringValue(this, text);
-        }
+                yield new StringValue(this, text);
+            }
+            default -> new StringValue(this, text);
+        };
     }
 
     private String formatElementName(final Element elem, final Element parent, final Options opts) {
         final String ns = elem.getNamespaceURI();
         final String local = elem.getLocalName() != null ? elem.getLocalName() : elem.getTagName();
 
-        switch (opts.nameFormat) {
-            case "eqname":
-                if (ns != null && !ns.isEmpty()) {
-                    return "Q{" + ns + "}" + local;
-                }
-                return local;
-
-            case "lexical":
+        return switch (opts.nameFormat) {
+            case "eqname" -> (ns != null && !ns.isEmpty()) ? "Q{" + ns + "}" + local : local;
+            case "lexical" -> {
                 final String prefix = elem.getPrefix();
-                if (prefix != null && !prefix.isEmpty()) {
-                    return prefix + ":" + local;
-                }
-                return local;
-
-            case "local":
-                return local;
-
-            case "default":
-            default:
-                return formatDefaultName(ns, local, parent);
-        }
+                yield (prefix != null && !prefix.isEmpty()) ? prefix + ":" + local : local;
+            }
+            case "local" -> local;
+            default -> formatDefaultName(ns, local, parent);
+        };
     }
 
     private String formatDefaultName(final String ns, final String local, final Element parent) {
@@ -916,35 +851,23 @@ public class FnElementToMap extends BasicFunction {
         final String ns = attr.getNamespaceURI();
         final String local = attr.getLocalName() != null ? attr.getLocalName() : attr.getName();
 
-        switch (opts.nameFormat) {
-            case "eqname":
-                if (ns != null && !ns.isEmpty()) {
-                    return "Q{" + ns + "}" + local;
-                }
-                return local;
-
-            case "lexical":
+        return switch (opts.nameFormat) {
+            case "eqname" -> (ns != null && !ns.isEmpty()) ? "Q{" + ns + "}" + local : local;
+            case "lexical" -> {
                 final String prefix = attr.getPrefix();
-                if (prefix != null && !prefix.isEmpty()) {
-                    return prefix + ":" + local;
-                }
-                return local;
-
-            case "local":
-                return local;
-
-            case "default":
-            default:
-                // Default: no namespace → local; namespaced → Q{ns}local
-                // Special case: xml: namespace → xml:local
+                yield (prefix != null && !prefix.isEmpty()) ? prefix + ":" + local : local;
+            }
+            case "local" -> local;
+            default -> {
                 if (ns == null || ns.isEmpty()) {
-                    return local;
+                    yield local;
                 }
                 if (XML_NS.equals(ns)) {
-                    return "xml:" + local;
+                    yield "xml:" + local;
                 }
-                return "Q{" + ns + "}" + local;
-        }
+                yield "Q{" + ns + "}" + local;
+            }
+        };
     }
 
     private static String getTextContent(final List<Node> children) {
@@ -987,18 +910,12 @@ public class FnElementToMap extends BasicFunction {
             for (int i = 0; i < children.getLength(); i++) {
                 final Node child = children.item(i);
                 switch (child.getNodeType()) {
-                    case Node.ELEMENT_NODE:
-                        serializeElement((Element) child, sb);
-                        break;
-                    case Node.TEXT_NODE:
-                    case Node.CDATA_SECTION_NODE:
-                        sb.append(escapeXmlText(child.getTextContent()));
-                        break;
-                    case Node.COMMENT_NODE:
-                        sb.append("<!--").append(child.getTextContent()).append("-->");
-                        break;
-                    default:
-                        break;
+                    case Node.ELEMENT_NODE -> serializeElement((Element) child, sb);
+                    case Node.TEXT_NODE, Node.CDATA_SECTION_NODE ->
+                            sb.append(escapeXmlText(child.getTextContent()));
+                    case Node.COMMENT_NODE ->
+                            sb.append("<!--").append(child.getTextContent()).append("-->");
+                    default -> { /* ignore */ }
                 }
             }
             sb.append("</").append(tagName).append('>');

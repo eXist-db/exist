@@ -165,68 +165,6 @@ public class TryCatchExpression extends AbstractExpression {
                 if(xpe.getErrorCode() != null) {
                     if(xpe.getErrorCode() == ErrorCodes.ERROR) {
                         errorCode = extractErrorCode(xpe);
-                    }
-                } else {
-                    // Get errorcode from all other errors and exceptions
-                    errorCode = new JavaErrorCode(throwable);
-                }
-
-                // We need the qname in the end
-                final QName errorCodeQname = errorCode.getErrorQName();
-
-                // Exception in thrown, catch expression will be evaluated.
-                // catchvars (CatchErrorCode (, CatchErrorDesc (, CatchErrorVal)?)? )
-                // need to be retrieved as variables
-                Sequence catchResultSeq = null;
-                final LocalVariable mark0 = context.markLocalVariables(false);
-
-                context.declareInScopeNamespace(Namespaces.W3C_XQUERY_XPATH_ERROR_PREFIX, Namespaces.W3C_XQUERY_XPATH_ERROR_NS);
-                context.declareInScopeNamespace(Namespaces.EXIST_XQUERY_XPATH_ERROR_PREFIX, Namespaces.EXIST_XQUERY_XPATH_ERROR_NS);
-
-                try {
-                    // flag used to escape loop when errorcode has matched
-                    boolean errorMatched = false;
-
-                    // Iterate on all catch clauses
-                    for (final CatchClause catchClause : catchClauses) {
-
-                        if (isErrorInList(errorCodeQname, catchClause.getCatchErrorList()) && !errorMatched) {
-
-                            errorMatched = true;
-
-                            // Get catch variables
-                            final LocalVariable mark1 = context.markLocalVariables(false);
-
-                            try {
-                                // Add std errors
-                                addErrCode(errorCodeQname);
-                                addErrDescription(throwable, errorCode);
-                                addErrValue(throwable);
-                                addErrModule(throwable);
-                                addErrLineNumber(throwable);
-                                addErrColumnNumber(throwable);
-                                addErrAdditional(throwable);
-                                addFunctionTrace(throwable);
-                                addJavaTrace(throwable);
-                                addStackTrace(throwable);
-                                addErrMap(throwable, errorCode, errorCodeQname);
-
-                                // Evaluate catch expression
-                                catchResultSeq = ((Expression) catchClause.getCatchExpr()).eval(contextSequence, contextItem);
-
-
-                            } finally {
-                                context.popLocalVariables(mark1, catchResultSeq);
-                            }
-
-                        } else {
-                            // if in the end nothing is set, rethrow after loop
-                        }
-                    } // for catch clauses
-
-                    // If an error hasn't been caught, store for re-throw after finally
-                    if (!errorMatched) {
-                        pendingError = throwable;
                     } else {
                         errorCode = xpe.getErrorCode();
                     }
@@ -279,6 +217,8 @@ public class TryCatchExpression extends AbstractExpression {
                             addErrAdditional(throwable);
                             addFunctionTrace(throwable);
                             addJavaTrace(throwable);
+                            addStackTrace(throwable);
+                            addErrMap(throwable, errorCode, errorCodeQname);
 
                             // Evaluate catch expression
                             catchResultSeq = ((Expression) catchClause.getCatchExpr()).eval(contextSequence, contextItem);
@@ -612,6 +552,21 @@ public class TryCatchExpression extends AbstractExpression {
         context.declareVariableBinding(localVar);
     }
     
+    // Local recursive function
+    private void addJavaTrace(final Throwable t, final Sequence result) throws XPathException {
+        final StackTraceElement[] elements = t.getStackTrace();
+        result.add(new StringValue(this, "Caused by: " + t));
+        for (final StackTraceElement elt : elements) {
+            result.add(new StringValue(this, "at " + elt.toString()));
+        }
+
+        final Throwable cause = t.getCause();
+        if (cause != null) {
+            addJavaTrace(cause, result);
+        }
+    }
+
+
     // XQuery 4.0 PR1470/PR1599: $err:stack-trace as xs:string?
     private void addStackTrace(final Throwable t) throws XPathException {
         final LocalVariable localVar = new LocalVariable(QN_STACK_TRACE);
@@ -642,10 +597,8 @@ public class TryCatchExpression extends AbstractExpression {
 
         final MapType errMap = new MapType(this, context);
 
-        // code: xs:QName
         errMap.add(new StringValue(this, "code"), new QNameValue(this, context, errorCodeQname));
 
-        // description: xs:string?
         final Optional<String> errorDesc = Optional.ofNullable(errorCode.getDescription());
         final Optional<String> throwableDesc = Optional.ofNullable(t instanceof XPathException xpe2 ? xpe2.getDetailMessage() : (t != null ? t.getMessage() : null));
         final Sequence description = errorDesc
@@ -653,7 +606,6 @@ public class TryCatchExpression extends AbstractExpression {
                 .orElse(Sequence.EMPTY_SEQUENCE);
         errMap.add(new StringValue(this, "description"), description);
 
-        // value: item()*
         final Sequence errorValue;
         if (t instanceof XPathException xpe3 && xpe3.getErrorVal() != null) {
             errorValue = xpe3.getErrorVal();
@@ -662,7 +614,6 @@ public class TryCatchExpression extends AbstractExpression {
         }
         errMap.add(new StringValue(this, "value"), errorValue);
 
-        // module: xs:string?
         final Sequence module;
         if (t instanceof XPathException xpe4 && xpe4.getSource() != null) {
             module = new StringValue(this, xpe4.getSource().pathOrShortIdentifier());
@@ -671,7 +622,6 @@ public class TryCatchExpression extends AbstractExpression {
         }
         errMap.add(new StringValue(this, "module"), module);
 
-        // line-number: xs:integer?
         final Sequence lineNum;
         if (t instanceof XPathException xpe5 && xpe5.getLine() > 0) {
             lineNum = new IntegerValue(this, xpe5.getLine());
@@ -680,7 +630,6 @@ public class TryCatchExpression extends AbstractExpression {
         }
         errMap.add(new StringValue(this, "line-number"), lineNum);
 
-        // column-number: xs:integer?
         final Sequence colNum;
         if (t instanceof XPathException xpe6 && xpe6.getColumn() > 0) {
             colNum = new IntegerValue(this, xpe6.getColumn());
@@ -689,10 +638,8 @@ public class TryCatchExpression extends AbstractExpression {
         }
         errMap.add(new StringValue(this, "column-number"), colNum);
 
-        // additional: item()*
         errMap.add(new StringValue(this, "additional"), Sequence.EMPTY_SEQUENCE);
 
-        // stack-trace: xs:string?
         final Sequence stackTrace;
         if (t instanceof XPathException xpe7 && xpe7.getCallStack() != null && !xpe7.getCallStack().isEmpty()) {
             final StringBuilder sb = new StringBuilder();
@@ -711,21 +658,6 @@ public class TryCatchExpression extends AbstractExpression {
         localVar.setValue(errMap);
         context.declareVariableBinding(localVar);
     }
-
-    // Local recursive function
-    private void addJavaTrace(final Throwable t, final Sequence result) throws XPathException {
-        final StackTraceElement[] elements = t.getStackTrace();
-        result.add(new StringValue(this, "Caused by: " + t));
-        for (final StackTraceElement elt : elements) {
-            result.add(new StringValue(this, "at " + elt.toString()));
-        }
-
-        final Throwable cause = t.getCause();
-        if (cause != null) {
-            addJavaTrace(cause, result);
-        }
-    }
-
 
     /**
      * Data container

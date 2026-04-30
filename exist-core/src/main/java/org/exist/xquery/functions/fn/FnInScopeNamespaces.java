@@ -122,16 +122,15 @@ public class FnInScopeNamespaces extends BasicFunction {
         }
 
         // Namespace declarations from the element
-        if (element instanceof org.exist.dom.memtree.ElementImpl) {
+        if (element instanceof org.exist.dom.memtree.ElementImpl elementImpl) {
             final Map<String, String> elemNs = new LinkedHashMap<>();
-            ((org.exist.dom.memtree.ElementImpl) element).getNamespaceMap(elemNs);
+            elementImpl.getNamespaceMap(elemNs);
             for (final Map.Entry<String, String> entry : elemNs.entrySet()) {
                 if (seen.add(entry.getKey())) {
                     nsMap.put(entry.getKey(), entry.getValue());
                 }
             }
-        } else if (element instanceof org.exist.dom.persistent.ElementImpl) {
-            final org.exist.dom.persistent.ElementImpl elemImpl = (org.exist.dom.persistent.ElementImpl) element;
+        } else if (element instanceof org.exist.dom.persistent.ElementImpl elemImpl) {
             if (elemImpl.declaresNamespacePrefixes()) {
                 for (final java.util.Iterator<String> i = elemImpl.getPrefixes(); i.hasNext(); ) {
                     final String prefix = i.next();

@@ -215,11 +215,11 @@ public class FnHighestLowest extends BasicFunction {
     }
 
     private static boolean isNaN(final AtomicValue v) {
-        if (v instanceof DoubleValue) {
-            return Double.isNaN(((DoubleValue) v).getDouble());
+        if (v instanceof DoubleValue doubleValue) {
+            return Double.isNaN(doubleValue.getDouble());
         }
-        if (v instanceof FloatValue) {
-            return Float.isNaN(((FloatValue) v).getValue());
+        if (v instanceof FloatValue floatValue) {
+            return Float.isNaN(floatValue.getValue());
         }
         return false;
     }

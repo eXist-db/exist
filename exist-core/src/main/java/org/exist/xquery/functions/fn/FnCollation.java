@@ -222,43 +222,42 @@ public class FnCollation extends BasicFunction {
     private void validateOptionValue(final String mapKey, final String uriParam, final String val)
             throws XPathException {
         switch (uriParam) {
-            case "strength":
+            case "strength" -> {
                 if (!VALID_STRENGTH.contains(val)) {
                     throw new XPathException(this, ErrorCodes.FOCH0002,
                             "Invalid collation strength: " + val);
                 }
-                break;
-            case "maxVariable":
+            }
+            case "maxVariable" -> {
                 if (!VALID_MAX_VARIABLE.contains(val)) {
                     throw new XPathException(this, ErrorCodes.FOCH0002,
                             "Invalid collation maxVariable: " + val);
                 }
-                break;
-            case "alternate":
+            }
+            case "alternate" -> {
                 if (!VALID_ALTERNATE.contains(val)) {
                     throw new XPathException(this, ErrorCodes.FOCH0002,
                             "Invalid collation alternate: " + val);
                 }
-                break;
-            case "caseFirst":
+            }
+            case "caseFirst" -> {
                 if (!VALID_CASE_FIRST.contains(val)) {
                     throw new XPathException(this, ErrorCodes.FOCH0002,
                             "Invalid collation case-first: " + val);
                 }
-                break;
-            case "backwards":
-            case "normalization":
-            case "caseLevel":
-            case "numeric":
+            }
+            case "backwards", "normalization", "caseLevel", "numeric" -> {
                 if (!VALID_BOOLEAN.contains(val)) {
                     throw new XPathException(this, ErrorCodes.FOCH0002,
                             "Invalid boolean value for " + mapKey + ": " + val);
                 }
-                break;
-            case "fallback":
+            }
+            case "fallback" -> {
                 // fallback itself is always valid (already parsed)
-                break;
-            // lang, version, reorder: accept any string value
+            }
+            default -> {
+                // lang, version, reorder: accept any string value
+            }
         }
     }
 }

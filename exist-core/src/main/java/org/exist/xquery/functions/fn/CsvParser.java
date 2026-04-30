@@ -90,14 +90,13 @@ public class CsvParser {
             final int cpLen = Character.charCount(cp);
 
             switch (state) {
-                case 0: // FIELD_START — beginning of a new field
+                case 0 -> { // FIELD_START — beginning of a new field
                     if (cp == quoteChar && quoteChar != -1) {
                         state = 2; // start quoted field
                         i += cpLen;
                     } else if (cp == fieldDelimiter) {
                         currentRecord.add(finishField(field));
                         field.setLength(0);
-                        // remain in FIELD_START
                         i += cpLen;
                     } else if (isRowDelimiter(cp)) {
                         currentRecord.add(finishField(field));
@@ -110,11 +109,9 @@ public class CsvParser {
                         state = 1; // in unquoted field
                         i += cpLen;
                     }
-                    break;
-
-                case 1: // IN_UNQUOTED — inside an unquoted field
+                }
+                case 1 -> { // IN_UNQUOTED — inside an unquoted field
                     if (cp == quoteChar && quoteChar != -1) {
-                        // Quote in middle of unquoted field → error
                         throw new XPathException(expression, ErrorCodes.FOCV0001,
                                 "Quote character found in middle of unquoted field");
                     } else if (cp == fieldDelimiter) {
@@ -133,16 +130,13 @@ public class CsvParser {
                         field.appendCodePoint(cp);
                         i += cpLen;
                     }
-                    break;
-
-                case 2: // IN_QUOTED — inside a quoted field
+                }
+                case 2 -> { // IN_QUOTED — inside a quoted field
                     if (cp == quoteChar) {
-                        // Check for escaped quote (doubled)
                         if (i + cpLen < len && input.codePointAt(i + cpLen) == quoteChar) {
                             field.appendCodePoint(quoteChar);
                             i += cpLen * 2;
                         } else {
-                            // End of quoted field
                             state = 3; // after closing quote
                             i += cpLen;
                         }
@@ -150,9 +144,8 @@ public class CsvParser {
                         field.appendCodePoint(cp);
                         i += cpLen;
                     }
-                    break;
-
-                case 3: // AFTER_QUOTED — just saw closing quote
+                }
+                case 3 -> { // AFTER_QUOTED — just saw closing quote
                     if (cp == fieldDelimiter) {
                         currentRecord.add(finishField(field));
                         field.setLength(0);
@@ -166,14 +159,13 @@ public class CsvParser {
                         state = 0;
                         i += rowDelimiterLength(input, i, cp);
                     } else if (cp == ' ' || cp == '\t') {
-                        // Whitespace after closing quote is allowed (ignored)
                         i += cpLen;
                     } else {
-                        // Non-delimiter content after closing quote → error
                         throw new XPathException(expression, ErrorCodes.FOCV0001,
                                 "Content after closing quote in CSV field");
                     }
-                    break;
+                }
+                default -> throw new IllegalStateException("Unexpected CSV parser state: " + state);
             }
         }
 

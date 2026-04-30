@@ -49,6 +49,7 @@ public class ErrorCodes {
     public static final ErrorCode XPST0080 = new W3CErrorCode("XPST0080", "It is a static error if the target type of a cast or castable expression is xs:NOTATION or xs:anyAtomicType.");
     public static final ErrorCode XPST0081 = new W3CErrorCode("XPST0081", "It is a static error if a QName used in an expression contains a namespace prefix that cannot be expanded into a namespace URI by using the statically known namespaces.");
     public static final ErrorCode XPST0083 = new W3CErrorCode("XPST0083", "(Not currently used.)");
+    public static final ErrorCode XPTY0117 = new W3CErrorCode("XPTY0117", "It is a type error if an item in the value of an argument to a function call cannot be implicitly cast to the corresponding parameter type when the parameter type is namespace-sensitive (xs:QName or xs:NOTATION) and the supplied value is xs:untypedAtomic.");
 
     /* XQuery 1.0 http://www.w3.org/TR/xquery/#id-errors */
     public static final ErrorCode XQST0009 = new W3CErrorCode("XQST0009", "An implementation that does not support the Schema Import Feature must raise a static error if a Prolog contains a schema import.");
@@ -162,6 +163,8 @@ public class ErrorCodes {
     public static final ErrorCode FODT0001 = new W3CErrorCode("FODT0001", "Overflow/underflow in date/time operation.");
     public static final ErrorCode FODT0002 = new W3CErrorCode("FODT0002", "Overflow/underflow in duration operation.");
     public static final ErrorCode FODT0003 = new W3CErrorCode("FODT0003", "Invalid timezone value.");
+    public static final ErrorCode FODT0005 = new W3CErrorCode("FODT0005", "Invalid argument to fn:build-dateTime or related date/time constructors.");
+    public static final ErrorCode FODT0006 = new W3CErrorCode("FODT0006", "Invalid component value in date/time constructor.");
     public static final ErrorCode FONS0004 = new W3CErrorCode("FONS0004", "No namespace found for prefix.");
     public static final ErrorCode FONS0005 = new W3CErrorCode("FONS0005", "Base-uri not defined in the static context.");
     public static final ErrorCode FORG0001 = new W3CErrorCode("FORG0001", "Invalid value for cast/constructor.");

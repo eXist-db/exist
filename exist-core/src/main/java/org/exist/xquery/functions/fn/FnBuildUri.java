@@ -256,13 +256,13 @@ public class FnBuildUri extends BasicFunction {
     }
 
     private static boolean isDefaultPort(final String scheme, final int port) {
-        switch (scheme) {
-            case "http": return port == 80;
-            case "https": return port == 443;
-            case "ftp": return port == 21;
-            case "ssh": return port == 22;
-            default: return false;
-        }
+        return switch (scheme) {
+            case "http" -> port == 80;
+            case "https" -> port == 443;
+            case "ftp" -> port == 21;
+            case "ssh" -> port == 22;
+            default -> false;
+        };
     }
 
     // Encode path segment: control chars + space % / ? # + [ ]

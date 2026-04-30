@@ -118,31 +118,15 @@ public class FnHash extends BasicFunction {
             blake3.doFinal(hashBytes, 0);
         } else {
             // Map algorithm names to Java MessageDigest names
-            final String javaAlgorithm;
-            switch (algorithm) {
-                case "MD5":
-                    javaAlgorithm = "MD5";
-                    break;
-                case "SHA-1":
-                case "SHA1":
-                    javaAlgorithm = "SHA-1";
-                    break;
-                case "SHA-256":
-                case "SHA256":
-                    javaAlgorithm = "SHA-256";
-                    break;
-                case "SHA-384":
-                case "SHA384":
-                    javaAlgorithm = "SHA-384";
-                    break;
-                case "SHA-512":
-                case "SHA512":
-                    javaAlgorithm = "SHA-512";
-                    break;
-                default:
-                    throw new XPathException(this, FOHA0001,
-                            "Unsupported hash algorithm: " + algorithm);
-            }
+            final String javaAlgorithm = switch (algorithm) {
+                case "MD5" -> "MD5";
+                case "SHA-1", "SHA1" -> "SHA-1";
+                case "SHA-256", "SHA256" -> "SHA-256";
+                case "SHA-384", "SHA384" -> "SHA-384";
+                case "SHA-512", "SHA512" -> "SHA-512";
+                default -> throw new XPathException(this, FOHA0001,
+                        "Unsupported hash algorithm: " + algorithm);
+            };
             try {
                 final MessageDigest digest = MessageDigest.getInstance(javaAlgorithm);
                 hashBytes = digest.digest(inputBytes);
