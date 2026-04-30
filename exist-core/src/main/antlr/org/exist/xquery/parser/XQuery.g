@@ -688,6 +688,64 @@ arrayTypeTest throws XPathException
 	}
 	;
 
+// === XQuery 4.0 Record Type ===
+
+recordType throws XPathException
+:
+	( "record" LPAREN RPAREN ) => emptyRecordTest
+	|
+	( "record" LPAREN STAR ) => extensibleRecordReject
+	|
+	typedRecordTest
+	;
+
+emptyRecordTest throws XPathException
+:
+	m:"record"! LPAREN! RPAREN!
+	{
+		#emptyRecordTest = #(#[RECORD_TEST, "record"], #emptyRecordTest);
+		#emptyRecordTest.copyLexInfo(#m);
+	}
+	;
+
+extensibleRecordReject throws XPathException
+:
+	m:"record"! LPAREN! STAR RPAREN!
+	{
+		throw new XPathException(m.getLine(), m.getColumn(), ErrorCodes.XPST0003,
+			"Extensible record types record(*) are not supported in XQuery 4.0");
+	}
+	;
+
+typedRecordTest throws XPathException
+{ boolean extensible = false; }
+:
+	m:"record"! LPAREN! recordFieldDecl (COMMA!
+		( ( STAR ) => STAR { extensible = true; }
+		| recordFieldDecl
+		)
+	)* RPAREN!
+	{
+		if (extensible) {
+			throw new XPathException(m.getLine(), m.getColumn(), ErrorCodes.XPST0003,
+				"Extensible record types record(..., *) are not supported in XQuery 4.0");
+		}
+		#typedRecordTest = #(#[RECORD_TEST, "record"], #typedRecordTest);
+		#typedRecordTest.copyLexInfo(#m);
+	}
+	;
+
+recordFieldDecl throws XPathException
+{ String fieldName = null; String fieldLabel = null; boolean isOptional = false; }
+:
+	fieldName=ncnameOrKeyword!
+	( QUESTION! { isOptional = true; } )?
+	( "as"! sequenceType )?
+	{
+		fieldLabel = isOptional ? fieldName.concat("?") : fieldName;
+		#recordFieldDecl = #(#[RECORD_FIELD, fieldLabel], #recordFieldDecl);
+	}
+	;
 // === Expressions ===
 
 queryBody throws XPathException: expr ;
@@ -1757,7 +1815,12 @@ piTest
 documentTest
 :
     "document-node"^ LPAREN!
-    ( elementTest | schemaElementTest )?
+    (
+        // XQ4 PR1604: document-node(*) is sugar for document-node(element(*)).
+        ( STAR ) => STAR
+        | elementTest
+        | schemaElementTest
+    )?
     RPAREN!
     ;
 

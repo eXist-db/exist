@@ -267,16 +267,12 @@ throws PermissionDeniedException, EXistException, XPathException
             v:VERSION_DECL
             {
                 final String version = v.getText();
-                if (version.equals("4.0")) {
-                    context.setXQueryVersion(40);
-                } else if (version.equals("3.1")) {
-                    context.setXQueryVersion(31);
-                } else if (version.equals("3.0")) {
-                    context.setXQueryVersion(30);
-                } else if (version.equals("1.0")) {
-                    context.setXQueryVersion(10);
-                } else {
-                    throw new XPathException(v, ErrorCodes.XQST0031, "Wrong XQuery version: require 1.0, 3.0, 3.1, or 4.0");
+                switch (version) {
+                    case "4.0" -> context.setXQueryVersion(40);
+                    case "3.1" -> context.setXQueryVersion(31);
+                    case "3.0" -> context.setXQueryVersion(30);
+                    case "1.0" -> context.setXQueryVersion(10);
+                    default -> throw new XPathException(v, ErrorCodes.XQST0031, "Wrong XQuery version: require 1.0, 3.0, 3.1, or 4.0");
                 }
             }
             ( enc:STRING_LITERAL )?
@@ -1041,7 +1037,7 @@ throws XPathException
                 try {
                     QName qn= QName.parse(staticContext, t.getText());
                     int code= Type.getType(qn);
-                    if (!Type.subTypeOf(code, Type.ANY_ATOMIC_TYPE))
+                    if (!Type.subTypeOf(code, Type.ANY_ATOMIC_TYPE) && !Type.subTypeOf(code, Type.RECORD) && code != Type.ERROR)
                         throw new XPathException(t.getLine(), t.getColumn(), ErrorCodes.XPST0051, qn.toString() + " is not atomic");
                     type.setPrimaryType(code);
                 } catch (final XPathException e) {
@@ -1242,6 +1238,10 @@ throws XPathException
             "document-node"
             { type.setPrimaryType(Type.DOCUMENT); }
             (
+                // XQ4 PR1604: document-node(*) bare-STAR short form
+                // (already lowered by the parser into a STAR child).
+                STAR
+                |
                 #( lelement2:"element"
                     (
                     dneq:EQNAME
