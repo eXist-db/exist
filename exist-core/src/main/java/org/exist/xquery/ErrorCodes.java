@@ -209,6 +209,7 @@ public class ErrorCodes {
 
     /* XQuery 3.0 functions and operators */
     public static final ErrorCode FODF1280 = new W3CErrorCode("FODF1280", "Invalid decimal format name.");
+    public static final ErrorCode FODF1290 = new W3CErrorCode("FODF1290", "Invalid decimal format property value.");
     public static final ErrorCode FODF1310 = new W3CErrorCode("FODF1310", "Invalid decimal format picture string.");
     public static final ErrorCode FOFD1340 = new W3CErrorCode("FOFD1340", "Invalid date/time formatting picture string");
     public static final ErrorCode FOFD1350 = new W3CErrorCode("FOFD1350", "Invalid date/time formatting component");

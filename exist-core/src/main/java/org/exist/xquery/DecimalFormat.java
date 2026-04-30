@@ -24,7 +24,7 @@ package org.exist.xquery;
 /**
  * Data class for a Decimal Format.
  *
- * See https://www.w3.org/TR/xpath-31/#dt-static-decimal-formats
+ * See https://www.w3.org/TR/xquery-31/#id-decimal-format-decl
  *
  * NOTE: UTF-16 characters are stored as code-points!
  *
@@ -32,6 +32,11 @@ package org.exist.xquery;
  */
 public class DecimalFormat {
 
+    /**
+     * The default (unnamed) decimal format as defined by the XQuery 3.1 specification.
+     *
+     * @see <a href="https://www.w3.org/TR/xquery-31/#id-decimal-format-decl">XQuery 3.1 §4.10: Decimal Format Declaration</a>
+     */
     public static final DecimalFormat UNNAMED = new DecimalFormat(
             '.',
             'e',
@@ -43,11 +48,11 @@ public class DecimalFormat {
             ';',
             "Infinity",
             "NaN",
-            '-'
+            "-"
     );
 
 
-    // used both in the picture string, and in the formatted number
+    // Markers: used in the picture string to identify active elements
     public final int decimalSeparator;
     public final int exponentSeparator;
     public final int groupingSeparator;
@@ -55,18 +60,39 @@ public class DecimalFormat {
     public final int perMille;
     public final int zeroDigit;
 
-    // used in the picture string
+    // used in the picture string only
     public final int digit;
     public final int patternSeparator;
 
-    //used in the result of formatting the number, but not in the picture string
+    // used in the result of formatting the number, but not in the picture string.
+    // Per XPath 4.0, minus-sign is a string (rendition) — multi-character allowed.
     public final String infinity;
     public final String NaN;
-    public final int minusSign;
+    public final String minusSign;
+
+    // XQ4 renditions: output strings for properties that support char:rendition.
+    // When marker != rendition, the marker is used for picture parsing and the
+    // rendition string appears in the formatted output.
+    public final String decimalSeparatorRendition;
+    public final String exponentSeparatorRendition;
+    public final String groupingSeparatorRendition;
+    public final String percentRendition;
+    public final String perMilleRendition;
 
     public DecimalFormat(final int decimalSeparator, final int exponentSeparator, final int groupingSeparator,
             final int percent, final int perMille, final int zeroDigit, final int digit,
-            final int patternSeparator, final String infinity, final String NaN, final int minusSign) {
+            final int patternSeparator, final String infinity, final String NaN, final String minusSign) {
+        this(decimalSeparator, exponentSeparator, groupingSeparator, percent, perMille,
+                zeroDigit, digit, patternSeparator, infinity, NaN, minusSign,
+                null, null, null, null, null);
+    }
+
+    public DecimalFormat(final int decimalSeparator, final int exponentSeparator, final int groupingSeparator,
+            final int percent, final int perMille, final int zeroDigit, final int digit,
+            final int patternSeparator, final String infinity, final String NaN, final String minusSign,
+            final String decimalSeparatorRendition, final String exponentSeparatorRendition,
+            final String groupingSeparatorRendition, final String percentRendition,
+            final String perMilleRendition) {
         this.decimalSeparator = decimalSeparator;
         this.exponentSeparator = exponentSeparator;
         this.groupingSeparator = groupingSeparator;
@@ -78,5 +104,11 @@ public class DecimalFormat {
         this.infinity = infinity;
         this.NaN = NaN;
         this.minusSign = minusSign;
+        // Renditions default to the marker character as a string
+        this.decimalSeparatorRendition = decimalSeparatorRendition != null ? decimalSeparatorRendition : new String(Character.toChars(decimalSeparator));
+        this.exponentSeparatorRendition = exponentSeparatorRendition != null ? exponentSeparatorRendition : new String(Character.toChars(exponentSeparator));
+        this.groupingSeparatorRendition = groupingSeparatorRendition != null ? groupingSeparatorRendition : new String(Character.toChars(groupingSeparator));
+        this.percentRendition = percentRendition != null ? percentRendition : new String(Character.toChars(percent));
+        this.perMilleRendition = perMilleRendition != null ? perMilleRendition : new String(Character.toChars(perMille));
     }
 }
