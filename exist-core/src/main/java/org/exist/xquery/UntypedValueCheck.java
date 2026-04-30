@@ -126,11 +126,19 @@ public class UntypedValueCheck extends AbstractExpression {
                 if (Type.subTypeOf(item.getType(), requiredType)) {
                     return item;
                 }
-                if (context.getXQueryVersion() < 40
-                        && item.getType() == Type.INTEGER
-                        && requiredType == Type.POSITIVE_INTEGER) {
-                    // Preserve XQ3.1 strict rejection of integer →
-                    // positiveInteger relabeling (eXist legacy).
+                // XPTY0117: implicit cast of xs:untypedAtomic to namespace-sensitive
+                // types (xs:QName, xs:NOTATION) during function-call coercion is forbidden
+                // (XPath F&O 3.1 §19.1).
+                if (item.getType() == Type.UNTYPED_ATOMIC
+                        && (requiredType == Type.QNAME || requiredType == Type.NOTATION)) {
+                    throw new XPathException(expression, ErrorCodes.XPTY0117,
+                            "Cannot implicitly cast xs:untypedAtomic to namespace-sensitive type "
+                                    + Type.getTypeName(requiredType));
+                }
+                // In XQuery 3.1, reject integer→positiveInteger conversion.
+                // In XQuery 4.0, relabeling allows this if the value is positive (§3.4.1 item 6).
+                if (item.getType() == Type.INTEGER && requiredType == Type.POSITIVE_INTEGER
+                        && context.getXQueryVersion() < 40) {
                     throw new XPathException(this, ErrorCodes.FORG0001,
                             "cannot convert '"
                                     + Type.getTypeName(item.getType())

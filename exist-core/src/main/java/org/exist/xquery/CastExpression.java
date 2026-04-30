@@ -107,11 +107,16 @@ public class CastExpression extends AbstractExpression {
         } else {
             final Item item = seq.itemAt(0);
 
-            // Casting to QName needs special treatment
+            // Casting to xs:QName: per XQ30+ spec, the source value's static
+            // type must be xs:string, xs:untypedAtomic, or xs:anyAtomicType.
+            // QNameValue's constructor validates the lexical form and raises
+            // FORG0001 on failure.
             if (requiredType == Type.QNAME) {
                 if (item.getType() == Type.QNAME) {
                     result = item.toSequence();
-                } else if (item.getType() == Type.ANY_ATOMIC_TYPE || Type.subTypeOf(item.getType(), Type.STRING)) {
+                } else if (item.getType() == Type.ANY_ATOMIC_TYPE
+                        || item.getType() == Type.UNTYPED_ATOMIC
+                        || Type.subTypeOf(item.getType(), Type.STRING)) {
                     result = new QNameValue(this, context, item.getStringValue());
 
                 } else {
