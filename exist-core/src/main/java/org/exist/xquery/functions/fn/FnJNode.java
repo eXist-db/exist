@@ -306,6 +306,12 @@ public class FnJNode extends BasicFunction {
         if (jnode.isRoot()) {
             return Sequence.EMPTY_SEQUENCE;
         }
+        // Per W3C XQ4 fn:jposition spec: object members always return 1
+        // (their identity within an object is the key, not the position).
+        // Array items return their 1-based position.
+        if (jnode.getKey() != null) {
+            return new IntegerValue(this, 1);
+        }
         return new IntegerValue(this, jnode.getPosition());
     }
 

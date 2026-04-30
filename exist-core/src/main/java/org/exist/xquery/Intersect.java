@@ -41,14 +41,20 @@ public class Intersect extends CombiningExpression {
         if (ls.isEmpty() || rs.isEmpty()) {
             result = Sequence.EMPTY_SEQUENCE;
         } else {
-            if (!(Type.subTypeOf(ls.getItemType(), Type.NODE) && Type.subTypeOf(rs.getItemType(), Type.NODE))) {
+            if (!(Type.isNodeType(ls.getItemType()) && Type.isNodeType(rs.getItemType()))) {
                 throw new XPathException(this, ErrorCodes.XPTY0004, "intersect operand is not a node sequence");
             }
             if (ls.isPersistentSet() && rs.isPersistentSet()) {
                 result = ls.toNodeSet().intersection(rs.toNodeSet());
             } else {
                 result = new ValueSequence(true);
-                final Set<Item> set = new TreeSet<>(new ItemComparator());
+                // ItemComparator (TreeSet) cannot order JNodes; fall back to a
+                // HashSet that relies on JNode equals/hashCode for membership.
+                final boolean hasJsonNodes = Type.subTypeOf(ls.getItemType(), Type.JSON_NODE)
+                        || Type.subTypeOf(rs.getItemType(), Type.JSON_NODE);
+                final Set<Item> set = hasJsonNodes
+                        ? new java.util.HashSet<>()
+                        : new TreeSet<>(new ItemComparator());
                 for (final SequenceIterator i = ls.unorderedIterator(); i.hasNext(); ) {
                     set.add(i.nextItem());
                 }

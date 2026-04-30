@@ -95,6 +95,116 @@ public class JNode implements GNode, Sequence, Lookup.LookupSupport {
         this.position = position;
     }
 
+    /**
+     * Two JNodes are equal when they identify the same node within the same
+     * tree. Roots are only ever equal to themselves (so two `jtree(...)` calls
+     * produce distinct trees even when their contents match). For non-root
+     * nodes, equality is path-based: same parent (recursively), same key,
+     * same sibling position. This allows union/except/intersect on `$in/a`
+     * navigated independently to deduplicate correctly.
+     */
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof JNode)) {
+            return false;
+        }
+        final JNode other = (JNode) o;
+        if (parent == null || other.parent == null) {
+            // Roots only equal themselves.
+            return false;
+        }
+        if (position != other.position) {
+            return false;
+        }
+        if (!parent.equals(other.parent)) {
+            return false;
+        }
+        if (key == null) {
+            return other.key == null;
+        }
+        if (other.key == null) {
+            return false;
+        }
+        try {
+            return key.compareTo(null, other.key) == 0;
+        } catch (final XPathException e) {
+            return false;
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        if (parent == null) {
+            return System.identityHashCode(this);
+        }
+        int h = parent.hashCode();
+        h = 31 * h + position;
+        if (key != null) {
+            try {
+                h = 31 * h + key.getStringValue().hashCode();
+            } catch (final XPathException e) {
+                // ignore
+            }
+        }
+        return h;
+    }
+
+    /**
+     * Document-order comparison between two JNodes. Walks both nodes up to
+     * their lowest common ancestor and compares positions there. Nodes from
+     * different `jtree(...)` roots are ordered by root identity (stable but
+     * arbitrary, matching XQuery 4.0 semantics for distinct trees).
+     */
+    public static int compareDocumentOrder(final JNode a, final JNode b) {
+        if (a == b) {
+            return 0;
+        }
+        int da = depth(a);
+        int db = depth(b);
+        JNode aa = a;
+        JNode bb = b;
+        while (da > db) {
+            aa = aa.parent;
+            da--;
+        }
+        while (db > da) {
+            bb = bb.parent;
+            db--;
+        }
+        if (aa == bb) {
+            // One is an ancestor of the other; ancestor precedes descendant.
+            return depth(a) > depth(b) ? 1 : -1;
+        }
+        while (aa.parent != bb.parent) {
+            if (aa.parent == null || bb.parent == null) {
+                return Integer.compare(System.identityHashCode(rootOf(a)),
+                        System.identityHashCode(rootOf(b)));
+            }
+            aa = aa.parent;
+            bb = bb.parent;
+        }
+        return Integer.compare(aa.position, bb.position);
+    }
+
+    private static int depth(JNode n) {
+        int d = 0;
+        while (n.parent != null) {
+            d++;
+            n = n.parent;
+        }
+        return d;
+    }
+
+    private static JNode rootOf(JNode n) {
+        while (n.parent != null) {
+            n = n.parent;
+        }
+        return n;
+    }
+
     // ===================== JSON kind detection =====================
 
     /**
@@ -189,12 +299,15 @@ public class JNode implements GNode, Sequence, Lookup.LookupSupport {
         if (value instanceof AbstractMapType) {
             final AbstractMapType map = (AbstractMapType) value;
             final Sequence keys = map.keys();
+            int i = 0;
             for (final SequenceIterator it = keys.iterate(); it.hasNext(); ) {
                 final AtomicValue k = (AtomicValue) it.nextItem();
                 final Sequence v = map.get(k);
-                // Map member positions are always 1 — JSON keys are unique within an object,
-                // so each member is the only node with its key (W3C XQ4 fn:jposition spec).
-                children.add(new JNode(k, v, this, 1));
+                // Position tracks the member's iteration order in the parent map,
+                // used for document-order sorting in union/except. The W3C XQ4
+                // fn:jposition spec returns 1 for object members regardless;
+                // FnJNode handles that distinction.
+                children.add(new JNode(k, v, this, ++i));
             }
         } else if (value instanceof ArrayType) {
             final ArrayType array = (ArrayType) value;

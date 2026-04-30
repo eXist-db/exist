@@ -465,26 +465,37 @@ public class ValueSequence extends AbstractSequence implements MemoryNodeSet {
             if (itemType != Type.ANY_TYPE && Type.subTypeOf(itemType, Type.ANY_ATOMIC_TYPE)) {
                 return;
             }
-            // check if the sequence contains nodes
+            // check if the sequence contains nodes (XML or JSON)
             boolean hasNodes = false;
+            boolean hasJsonNodes = false;
             for (int i = 0; i <= size; i++) {
-                if (Type.subTypeOf(values[i].getType(), Type.NODE)) {
+                final int t = values[i].getType();
+                if (Type.subTypeOf(t, Type.NODE)) {
                     hasNodes = true;
+                } else if (Type.subTypeOf(t, Type.JSON_NODE)) {
+                    hasNodes = true;
+                    hasJsonNodes = true;
                 }
             }
             if (!hasNodes) {
                 return;
             }
-            final Map<Item, Item> nodes = new TreeMap<>(new ItemComparator());
+            // JNodes don't fit ItemComparator's TreeMap (no compareTo); rely on
+            // equals/hashCode via a HashMap for them while keeping the existing
+            // TreeMap path for XML nodes.
+            final Map<Item, Item> nodes = hasJsonNodes
+                    ? new java.util.HashMap<>()
+                    : new TreeMap<>(new ItemComparator());
             int j = 0;
             for (int i = 0; i <= size; i++) {
-                if (Type.subTypeOf(values[i].getType(), Type.NODE)) {
+                final int t = values[i].getType();
+                if (Type.subTypeOf(t, Type.NODE) || Type.subTypeOf(t, Type.JSON_NODE)) {
                     final Item found = nodes.get(values[i]);
                     if (found == null) {
                         final Item item = values[i];
                         values[j++] = item;
                         nodes.put(item, item);
-                    } else {
+                    } else if (found instanceof NodeValue) {
                         final NodeValue nv = (NodeValue) found;
                         if (nv.getImplementationType() == NodeValue.PERSISTENT_NODE) {
                             ((NodeProxy) nv).addMatches((NodeProxy) values[i]);
