@@ -976,34 +976,21 @@ public class XMLWriter implements SerializerWriter {
             
             if(needsEscape(ch, inAttribute)) {
                 switch(ch) {
-                    case '<':
-                        writer.write("&lt;");
-                        break;
-                    case '>':
-                        writer.write("&gt;");
-                        break;
-                    case '&':
+                    case '<' -> writer.write("&lt;");
+                    case '>' -> writer.write("&gt;");
+                    case '&' -> {
                         // HTML spec: & before { in attribute values should not be escaped
                         if (inAttribute && i + 1 < len && text.charAt(i + 1) == '{' && !escapeAmpersandBeforeBrace()) {
                             writer.write('&');
                         } else {
                             writer.write("&amp;");
                         }
-                        break;
-                    case '\r':
-                        writer.write("&#xD;");
-                        break;
-                    case '\n':
-                        writer.write("&#xA;");
-                        break;
-                    case '\t':
-                        writer.write("&#x9;");
-                        break;
-                    case '"':
-                        writer.write("&#34;");
-                        break;
-                    default:
-                        writeCharacterReference(ch);
+                    }
+                    case '\r' -> writer.write("&#xD;");
+                    case '\n' -> writer.write("&#xA;");
+                    case '\t' -> writer.write("&#x9;");
+                    case '"' -> writer.write("&#34;");
+                    default -> writeCharacterReference(ch);
                 }
             } else {
                 writer.write(ch);
@@ -1018,23 +1005,25 @@ public class XMLWriter implements SerializerWriter {
         if (len <= 0) {
             return;
         }
-        if (ch instanceof String s) {
-            writer.write(s, start, len);
-        } else if (ch instanceof CharSlice cs) {
-            cs.write(writer, start, len);
-        } else if (ch instanceof StringBuilder sb) {
-            sb.getChars(start, end, ensureCharBuffer(len), 0);
-            writer.write(charBuffer, 0, len);
-        } else if (ch instanceof StringBuffer sb) {
-            sb.getChars(start, end, ensureCharBuffer(len), 0);
-            writer.write(charBuffer, 0, len);
-        } else {
-            // Generic CharSequence — copy then bulk-write
-            final char[] buf = ensureCharBuffer(len);
-            for (int i = 0; i < len; i++) {
-                buf[i] = ch.charAt(start + i);
+        switch (ch) {
+            case String s -> writer.write(s, start, len);
+            case CharSlice cs -> cs.write(writer, start, len);
+            case StringBuilder sb -> {
+                sb.getChars(start, end, ensureCharBuffer(len), 0);
+                writer.write(charBuffer, 0, len);
             }
-            writer.write(buf, 0, len);
+            case StringBuffer sb -> {
+                sb.getChars(start, end, ensureCharBuffer(len), 0);
+                writer.write(charBuffer, 0, len);
+            }
+            default -> {
+                // Generic CharSequence — copy then bulk-write
+                final char[] buf = ensureCharBuffer(len);
+                for (int i = 0; i < len; i++) {
+                    buf[i] = ch.charAt(start + i);
+                }
+                writer.write(buf, 0, len);
+            }
         }
     }
 
