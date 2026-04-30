@@ -58,7 +58,6 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.exist-db</groupId>
             <artifactId>exist-core</artifactId>
         </dependency>
 
@@ -181,7 +180,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.exist-db</groupId>
             <artifactId>exist-expath</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>

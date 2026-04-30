@@ -47,20 +47,17 @@
     <dependencies>
 
         <dependency>
-            <groupId>org.exist-db</groupId>
             <artifactId>exist-core</artifactId>
             <scope>test</scope>
         </dependency>
 
         <dependency>
-            <groupId>org.exist-db</groupId>
             <artifactId>exist-index-lucene</artifactId>
             <version>${project.version}</version>
             <scope>runtime</scope>
         </dependency>
 
         <dependency>
-            <groupId>org.exist-db</groupId>
             <artifactId>exist-vector</artifactId>
             <version>${project.version}</version>
             <scope>runtime</scope>
