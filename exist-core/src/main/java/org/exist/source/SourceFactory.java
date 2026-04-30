@@ -98,6 +98,10 @@ public class SourceFactory {
                 }
             } catch (final IllegalArgumentException e) {
                 // this is allowed if the location is already an absolute URI, below we will try using other schemes
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("xmldb URI parse failed for contextPath={}, location={}: {}",
+                            contextPath, location, e.getMessage());
+                }
                 pathUri = null;
             }
 
@@ -137,6 +141,10 @@ public class SourceFactory {
                 final URL url = new URL(location);
                 source = new URLSource(url);
             } catch (final MalformedURLException e) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Source location is not a well-formed URL, returning null: {} ({})",
+                            location, e.getMessage());
+                }
                 return null;
             }
         }
@@ -163,7 +171,11 @@ public class SourceFactory {
         try {
             return new ClassLoaderSource(ClassLoaderSource.PROTOCOL + childLocation.toString().replace('\\', '/'));
         } catch (final IOException e) {
-            // no-op, we will try again below
+            // child resolution missed; fall through to sibling resolution below
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Classpath source not resolvable as child of {}: {} ({})",
+                        rootPath, childLocation, e.getMessage());
+            }
         }
 
         // 2) try resolving location as sibling
@@ -229,7 +241,11 @@ public class SourceFactory {
                 source = new FileSource(p, checkXQEncoding);
             }
         } catch (final InvalidPathException e) {
-            // continue trying
+            // not a valid path on this filesystem; fall through to next resolution attempt
+            if (LOG.isTraceEnabled()) {
+                LOG.trace("File source path invalid (contextPath={}, location={}): {}",
+                        contextPath, location, e.getMessage());
+            }
         }
 
         if (source == null) {
@@ -240,7 +256,11 @@ public class SourceFactory {
                     source = new FileSource(p2, checkXQEncoding);
                 }
             } catch (final InvalidPathException e) {
-                // continue trying
+                // not a valid path on this filesystem; fall through to next resolution attempt
+                if (LOG.isTraceEnabled()) {
+                    LOG.trace("File source path invalid (contextPath={}, location={}): {}",
+                            contextPath, location, e.getMessage());
+                }
             }
         }
 
@@ -252,7 +272,11 @@ public class SourceFactory {
                     source = new FileSource(p3, checkXQEncoding);
                 }
             } catch (final InvalidPathException e) {
-                // continue trying
+                // not a valid path on this filesystem; fall through to next resolution attempt
+                if (LOG.isTraceEnabled()) {
+                    LOG.trace("File source path invalid (contextPath={}, location={}): {}",
+                            contextPath, location, e.getMessage());
+                }
             }
         }
 
@@ -267,7 +291,11 @@ public class SourceFactory {
                     source = new FileSource(p4, checkXQEncoding);
                 }
             } catch (final InvalidPathException e) {
-                // continue trying
+                // not a valid path on this filesystem; fall through to next resolution attempt
+                if (LOG.isTraceEnabled()) {
+                    LOG.trace("File source path invalid (contextPath={}, location={}): {}",
+                            contextPath, location, e.getMessage());
+                }
             }
         }
 
@@ -282,7 +310,11 @@ public class SourceFactory {
                     source = new FileSource(p5, checkXQEncoding);
                 }
             } catch (final InvalidPathException e) {
-                // continue trying
+                // not a valid path on this filesystem; fall through to next resolution attempt
+                if (LOG.isTraceEnabled()) {
+                    LOG.trace("File source path invalid (contextPath={}, location={}): {}",
+                            contextPath, location, e.getMessage());
+                }
             }
         }
 
@@ -296,7 +328,11 @@ public class SourceFactory {
                     try {
                         p6 = Paths.get(new URI(contextPath)).resolveSibling(locationPath);
                     } catch (final URISyntaxException e) {
-                        // continue trying
+                        // contextPath is not a parseable URI; fall through to plain-path handling
+                        if (LOG.isTraceEnabled()) {
+                            LOG.trace("contextPath is not a parseable URI (contextPath={}): {}",
+                                    contextPath, e.getMessage());
+                        }
                     }
                 }
 
@@ -309,7 +345,11 @@ public class SourceFactory {
                     source = new FileSource(p6, checkXQEncoding);
                 }
             } catch (final InvalidPathException e) {
-                // continue trying
+                // not a valid path on this filesystem; fall through to next resolution attempt
+                if (LOG.isTraceEnabled()) {
+                    LOG.trace("File source path invalid (contextPath={}, location={}): {}",
+                            contextPath, location, e.getMessage());
+                }
             }
         }
 
@@ -323,7 +363,11 @@ public class SourceFactory {
                     try {
                         p7 = Paths.get(new URI(contextPath)).resolve(locationPath);
                     } catch (final URISyntaxException e) {
-                        // continue trying
+                        // contextPath is not a parseable URI; fall through to plain-path handling
+                        if (LOG.isTraceEnabled()) {
+                            LOG.trace("contextPath is not a parseable URI (contextPath={}): {}",
+                                    contextPath, e.getMessage());
+                        }
                     }
                 }
 
@@ -336,7 +380,11 @@ public class SourceFactory {
                     source = new FileSource(p7, checkXQEncoding);
                 }
             } catch (final InvalidPathException e) {
-                // continue trying
+                // not a valid path on this filesystem; fall through to next resolution attempt
+                if (LOG.isTraceEnabled()) {
+                    LOG.trace("File source path invalid (contextPath={}, location={}): {}",
+                            contextPath, location, e.getMessage());
+                }
             }
         }
 
@@ -354,7 +402,11 @@ public class SourceFactory {
             } catch (final EXistException e) {
                 LOG.warn(e);
             } catch (final InvalidPathException e) {
-                // continue and abort below
+                // fall through; getSource_fromFile will return null and the caller can fail loudly
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("File source path invalid against EXIST_HOME (location={}): {}",
+                            locationPath, e.getMessage());
+                }
             }
         }
 

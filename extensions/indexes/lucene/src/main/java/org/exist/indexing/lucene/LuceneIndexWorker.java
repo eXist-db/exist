@@ -1165,7 +1165,13 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                         // clean attributes
                         attribs.clear();
                     } catch (PermissionDeniedException e) {
-                        // not allowed to read the document: ignore the match.
+                        // The current user is not allowed to read this matching document.
+                        // We must drop it from the result set rather than leak its contents,
+                        // but log so partial-result situations are diagnosable.
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug("Lucene search hit dropped due to permission denial on document {}: {}",
+                                    fDocUri, e.getMessage());
+                        }
                     }
                 }
             }

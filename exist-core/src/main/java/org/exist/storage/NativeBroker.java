@@ -3979,8 +3979,7 @@ public class NativeBroker implements DBBroker {
                 }
             }
         } catch(final DBException dbe) {
-            dbe.printStackTrace();
-            LOG.error(dbe);
+            LOG.error("DBException during NativeBroker sync", dbe);
         }
     }
 

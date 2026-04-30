@@ -742,7 +742,6 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
 
                 transact.commit(txn);
             } catch(final Exception e) {
-                e.printStackTrace();
                 final String msg = "Initialisation of system collections failed: " + e.getMessage();
                 LOG.error(msg, e);
                 throw new EXistException(msg, e);

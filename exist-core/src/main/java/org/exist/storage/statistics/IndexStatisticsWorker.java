@@ -21,6 +21,8 @@
  */
 package org.exist.storage.statistics;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.collections.Collection;
 import org.exist.dom.persistent.DocumentImpl;
 import org.exist.dom.persistent.DocumentSet;
@@ -61,6 +63,9 @@ import java.util.Map;
 /**
  */
 public class IndexStatisticsWorker implements IndexWorker {
+
+    private static final Logger LOG = LogManager.getLogger(IndexStatisticsWorker.class);
+
     private final IndexStatistics index;
     private final StatisticsListener listener = new StatisticsListener();
 
@@ -197,7 +202,7 @@ public class IndexStatisticsWorker implements IndexWorker {
                 }
             }
         } catch (final IOException | XMLStreamException e) {
-            e.printStackTrace();
+            LOG.warn("Failed to update index statistics for document", e);
         }
     }
 
