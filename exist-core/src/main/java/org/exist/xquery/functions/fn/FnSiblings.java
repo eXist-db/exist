@@ -37,7 +37,6 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
-import org.exist.xquery.value.jnode.JNode;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -101,9 +100,6 @@ public class FnSiblings extends BasicFunction {
      * Compute siblings for a single item, dispatching by item kind.
      */
     private Sequence siblingsOf(final Item nodeItem) throws XPathException {
-        if (nodeItem instanceof JNode) {
-            return jnodeSiblings((JNode) nodeItem);
-        }
         final int nodeType = nodeItem.getType();
         if (!(nodeItem instanceof NodeValue) || !Type.subTypeOf(nodeType, Type.NODE)) {
             throw new XPathException(this, ErrorCodes.XPTY0004,
@@ -128,24 +124,6 @@ public class FnSiblings extends BasicFunction {
         final ValueSequence result = new ValueSequence(children.getLength());
         for (int i = 0; i < children.getLength(); i++) {
             result.add((Item) children.item(i));
-        }
-        return result;
-    }
-
-    /**
-     * Compute siblings of a JSON node: preceding siblings, the node itself,
-     * and following siblings, in document order. Root JNodes have no parent
-     * and therefore return just themselves.
-     */
-    private Sequence jnodeSiblings(final JNode node) throws XPathException {
-        final JNode parent = node.getParent();
-        if (parent == null) {
-            return node;
-        }
-        final java.util.List<JNode> all = parent.getChildren();
-        final ValueSequence result = new ValueSequence(all.size());
-        for (final JNode child : all) {
-            result.add(child);
         }
         return result;
     }
