@@ -75,65 +75,75 @@ public class LetExpr extends BindingExpression {
      */
     public Sequence eval(Sequence contextSequence, Item contextItem)
             throws XPathException {
-        if (context.getProfiler().isEnabled()){
-            context.getProfiler().start(this);
-            context.getProfiler().message(this, Profiler.DEPENDENCIES,
-                "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
-            if (contextSequence != null)
-                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                    "CONTEXT SEQUENCE", contextSequence);}
-            if (contextItem != null)
-                {context.getProfiler().message(this, Profiler.START_SEQUENCES,
-                    "CONTEXT ITEM", contextItem.toSequence());}
-        }
+        startProfiler(contextSequence, contextItem);
         context.expressionStart(this);
         context.pushDocumentContext();
         try {
-            //Save the local variable stack
-            LocalVariable mark = context.markLocalVariables(false);
-            Sequence in;
-            LocalVariable var;
-            Sequence resultSequence = null;
-            try {
-                // evaluate input sequence
-                in = inputSequence.eval(contextSequence, null);
-                clearContext(getExpressionId(), in);
-                // Declare the iteration variable
-                var = createVariable(varName);
-                var.setSequenceType(sequenceType);
-                context.declareVariableBinding(var);
-                var.setValue(in);
-                if (sequenceType == null)
-                    {var.checkType();} //Just because it makes conversions !
-                var.setContextDocs(inputSequence.getContextDocSet());
-                registerUpdateListener(in);
-
-                preCoerceMapOrArray(var);
-
-                resultSequence = returnExpr.eval(contextSequence, null);
-
-                if (sequenceType != null) {
-                    validateSequenceType(var, in);
-                }
-            } finally {
-                // Restore the local variable stack
-                context.popLocalVariables(mark, resultSequence);
-            }
-            clearContext(getExpressionId(), in);
-            if (context.getProfiler().isEnabled())
-                {context.getProfiler().end(this, "", resultSequence);}
-            if (resultSequence == null)
-                {return Sequence.EMPTY_SEQUENCE;}
-            if (!(resultSequence instanceof DeferredFunctionCall)) {
-                setActualReturnType(resultSequence.getItemType());
-            }
-            if (getPreviousClause() == null) {
-                resultSequence = postEval(resultSequence);
-            }
-            return resultSequence;
+            return evalLet(contextSequence);
         } finally {
             context.popDocumentContext();
             context.expressionEnd(this);
+        }
+    }
+
+    private Sequence evalLet(final Sequence contextSequence) throws XPathException {
+        final LocalVariable mark = context.markLocalVariables(false);
+        Sequence in = null;
+        Sequence resultSequence = null;
+        try {
+            in = inputSequence.eval(contextSequence, null);
+            clearContext(getExpressionId(), in);
+            final LocalVariable var = createVariable(varName);
+            var.setSequenceType(sequenceType);
+            context.declareVariableBinding(var);
+            var.setValue(in);
+            if (sequenceType == null) {
+                var.checkType(); //Just because it makes conversions !
+            }
+            var.setContextDocs(inputSequence.getContextDocSet());
+            registerUpdateListener(in);
+
+            preCoerceMapOrArray(var);
+
+            resultSequence = returnExpr.eval(contextSequence, null);
+
+            if (sequenceType != null) {
+                validateSequenceType(var, in);
+            }
+        } finally {
+            context.popLocalVariables(mark, resultSequence);
+        }
+        clearContext(getExpressionId(), in);
+        return finalizeResult(resultSequence);
+    }
+
+    private Sequence finalizeResult(final Sequence resultSequence) throws XPathException {
+        if (context.getProfiler().isEnabled()) {
+            context.getProfiler().end(this, "", resultSequence);
+        }
+        if (resultSequence == null) {
+            return Sequence.EMPTY_SEQUENCE;
+        }
+        if (!(resultSequence instanceof DeferredFunctionCall)) {
+            setActualReturnType(resultSequence.getItemType());
+        }
+        return getPreviousClause() == null ? postEval(resultSequence) : resultSequence;
+    }
+
+    private void startProfiler(final Sequence contextSequence, final Item contextItem) {
+        if (!context.getProfiler().isEnabled()) {
+            return;
+        }
+        context.getProfiler().start(this);
+        context.getProfiler().message(this, Profiler.DEPENDENCIES,
+                "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
+        if (contextSequence != null) {
+            context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT SEQUENCE", contextSequence);
+        }
+        if (contextItem != null) {
+            context.getProfiler().message(this, Profiler.START_SEQUENCES,
+                    "CONTEXT ITEM", contextItem.toSequence());
         }
     }
 

@@ -280,18 +280,20 @@ public class FnElementToMapPlan extends BasicFunction {
         final NamedNodeMap attrs = elem.getAttributes();
         if (attrs == null) return false;
         for (int i = 0; i < attrs.getLength(); i++) {
-            final Node attr = attrs.item(i);
-            final String name = attr.getNodeName();
-            if (name.startsWith("xmlns") && (name.length() == 5 || name.charAt(5) == ':')) {
-                continue;
+            if (isSignificantAttribute(attrs.item(i))) {
+                return true;
             }
-            final String ns = attr instanceof Attr attribute ? attribute.getNamespaceURI() : null;
-            if (XSI_NS.equals(ns)) {
-                continue;
-            }
-            return true;
         }
         return false;
+    }
+
+    private static boolean isSignificantAttribute(final Node attr) {
+        final String name = attr.getNodeName();
+        if (name.startsWith("xmlns") && (name.length() == 5 || name.charAt(5) == ':')) {
+            return false;
+        }
+        final String ns = attr instanceof Attr attribute ? attribute.getNamespaceURI() : null;
+        return !XSI_NS.equals(ns);
     }
 
     private List<Element> getChildElements(final Node elem) {

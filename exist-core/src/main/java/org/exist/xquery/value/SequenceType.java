@@ -385,10 +385,7 @@ public class SequenceType {
         if (inner == Cardinality.ZERO_OR_ONE) {
             return outer == Cardinality.ZERO_OR_MORE;
         }
-        if (inner == Cardinality.ONE_OR_MORE) {
-            return outer == Cardinality.ZERO_OR_MORE;
-        }
-        return false;
+        return inner == Cardinality.ONE_OR_MORE && outer == Cardinality.ZERO_OR_MORE;
     }
 
     /**
