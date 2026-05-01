@@ -249,13 +249,13 @@ public class FunGetDateComponent extends BasicFunction {
 			final boolean isFromDateTime = getName().getLocalPart().endsWith("-from-dateTime");
 
 			// XQ4 version gating: *-from-dateTime functions accept any Gregorian type in XQ4,
-			// but only xs:dateTime in XQ 3.1
+			// but only xs:dateTime (or its subtype xs:dateTimeStamp) in XQ 3.1
 			if (isFromDateTime) {
 				if (!(item instanceof AbstractDateTimeValue)) {
 					throw new XPathException(this, ErrorCodes.XPTY0004,
 							"Expected a Gregorian date/time value, got: " + Type.getTypeName(item.getType()));
 				}
-				if (context.getXQueryVersion() < 40 && item.getType() != Type.DATE_TIME) {
+				if (context.getXQueryVersion() < 40 && !Type.subTypeOf(item.getType(), Type.DATE_TIME)) {
 					throw new XPathException(this, ErrorCodes.XPTY0004,
 							Type.getTypeName(item.getType()) + " is not a sub-type of xs:dateTime");
 				}

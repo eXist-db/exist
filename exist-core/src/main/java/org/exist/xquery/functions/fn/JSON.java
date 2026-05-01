@@ -306,7 +306,7 @@ public class JSON extends BasicFunction {
 
     /**
      * Validate and extract a boolean option from the options map.
-     * Throws XPTY0004 if the key is present but the value is not a single xs:boolean.
+     * Throws FOJS0005 if the key is present but the value is not a single xs:boolean.
      */
     private boolean getBooleanOption(MapType options, String optionName, boolean defaultValue) throws XPathException {
         final StringValue optKey = new StringValue(optionName);
@@ -315,12 +315,12 @@ public class JSON extends BasicFunction {
         }
         final Sequence optVal = options.get(optKey);
         if (optVal == null || optVal.getItemCount() != 1) {
-            throw new XPathException(this, ErrorCodes.XPTY0004,
+            throw new XPathException(this, ErrorCodes.FOJS0005,
                     "Option '" + optionName + "' must be a single boolean value");
         }
         final Item item = optVal.itemAt(0);
         if (item.getType() != Type.BOOLEAN) {
-            throw new XPathException(this, ErrorCodes.XPTY0004,
+            throw new XPathException(this, ErrorCodes.FOJS0005,
                     "Option '" + optionName + "' must be a boolean, got " + Type.getTypeName(item.getType()));
         }
         return ((BooleanValue) item).effectiveBooleanValue();

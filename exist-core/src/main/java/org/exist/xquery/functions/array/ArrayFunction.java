@@ -460,7 +460,7 @@ public class ArrayFunction extends BasicFunction {
         final ArrayType array = (ArrayType) args[0].itemAt(0);
         try (final FunctionReference ref = (FunctionReference) args[1].itemAt(0)) {
             ref.analyze(cachedContextInfo);
-            final int arity = ref.getSignature().getArgumentCount();
+            final int arity = callbackArity(ref);
             if (arity == 1) {
                 // Standard XQ 3.1 behavior
                 return array.filter(ref);
@@ -494,7 +494,7 @@ public class ArrayFunction extends BasicFunction {
         final ArrayType array2 = (ArrayType) args[1].itemAt(0);
         try (final FunctionReference ref = (FunctionReference) args[2].itemAt(0)) {
             ref.analyze(cachedContextInfo);
-            final int arity = ref.getSignature().getArgumentCount();
+            final int arity = callbackArity(ref);
             if (arity == 2) {
                 // Standard XQ 3.1 behavior
                 return array1.forEachPair(array2, ref);
@@ -515,6 +515,16 @@ public class ArrayFunction extends BasicFunction {
             }
             return new ArrayType(this, context, ret);
         }
+    }
+
+    /**
+     * Resolve the arity of a callback function reference. Prefers the signature
+     * arity, falling back to the call's bound argument count when the signature
+     * is variadic (so e.g. concat#2 reports 2 instead of -1).
+     */
+    private static int callbackArity(final FunctionReference ref) {
+        final int sigArity = ref.getSignature().getArgumentCount();
+        return sigArity >= 0 ? sigArity : ref.getCall().getArgumentCount();
     }
 
     /**

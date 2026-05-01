@@ -191,14 +191,17 @@ public class LoadXQueryModule extends BasicFunction {
 
             // The version declared in the loaded module is recorded on the module's
             // own context, not on tempContext (which only hosts the import).
+            // A module is considered compatible if its declared version is less than
+            // or equal to the requested version (XQuery is backward-compatible).
+            final int requestedVersion = parseVersion(xqVersion);
             for (final Module loadedModule : loadedModules) {
                 if (loadedModule instanceof ExternalModule extMod) {
                     final XQueryContext modCtx = extMod.getContext();
                     if (modCtx != null) {
-                        final String moduleVersion = getXQueryVersion(modCtx.getXQueryVersion());
-                        if (!xqVersion.equals(moduleVersion)) {
+                        final int moduleVersionInt = modCtx.getXQueryVersion();
+                        if (moduleVersionInt > requestedVersion) {
                             throw new XPathException(this, ErrorCodes.FOQM0003,
-                                    "Imported module has wrong XQuery version: " + moduleVersion);
+                                    "Imported module has wrong XQuery version: " + getXQueryVersion(moduleVersionInt));
                         }
                     }
                 }
@@ -345,5 +348,23 @@ public class LoadXQueryModule extends BasicFunction {
 
     private static String getXQueryVersion(final int version) {
         return String.valueOf(version / 10) + '.' + version % 10;
+    }
+
+    private static int parseVersion(final String version) {
+        final int dot = version.indexOf('.');
+        if (dot < 0) {
+            try {
+                return Integer.parseInt(version) * 10;
+            } catch (final NumberFormatException e) {
+                return 0;
+            }
+        }
+        try {
+            final int major = Integer.parseInt(version.substring(0, dot));
+            final int minor = Integer.parseInt(version.substring(dot + 1));
+            return major * 10 + minor;
+        } catch (final NumberFormatException e) {
+            return 0;
+        }
     }
 }
