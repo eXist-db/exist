@@ -77,19 +77,42 @@ public class LoadXQueryModuleContentTest extends XQueryCompilationTest {
     @Test
     public void contentOption_versionMismatch_raisesFOQM0003()
             throws EXistException, PermissionDeniedException {
-        // Caller is 4.0, inline module declares 3.1. Spec requires FOQM0003.
+        // Module declares 4.0, but the caller is 3.1 and the explicit
+        // xquery-version option requests 3.1. FOQM0003 must be raised because
+        // the loaded module's version is greater than the requested version.
         final String query =
-                "xquery version \"4.0\";\n" +
-                "let $module := \"xquery version '3.1';\n" +
-                "module namespace m = 'http://example.com/m31';\n" +
+                "xquery version \"3.1\";\n" +
+                "let $module := \"xquery version '4.0';\n" +
+                "module namespace m = 'http://example.com/m40';\n" +
                 "declare function m:hello() as xs:string { 'hi' };\"\n" +
                 "return fn:load-xquery-module(\n" +
-                "  'http://example.com/m31',\n" +
-                "  map { 'content': $module }\n" +
+                "  'http://example.com/m40',\n" +
+                "  map { 'content': $module, 'xquery-version': '3.1' }\n" +
                 ")";
 
         final Either<XPathException, Sequence> result = executeQuery(query);
         assertTrue("Expected FOQM0003 error, got: " + result, result.isLeft());
         assertEquals(ErrorCodes.FOQM0003, result.left().get().getErrorCode());
+    }
+
+    @Test
+    public void contentOption_olderModuleAcceptedFromNewerCaller()
+            throws EXistException, PermissionDeniedException {
+        // Caller is 4.0, inline module declares 3.1. XQuery is backward
+        // compatible, so loading an older module from a newer caller succeeds
+        // when no explicit xquery-version is requested.
+        final String query =
+                "xquery version \"4.0\";\n" +
+                "let $module := \"xquery version '3.1';\n" +
+                "module namespace m = 'http://example.com/m31';\n" +
+                "declare function m:hello() as xs:string { 'hi' };\"\n" +
+                "let $loaded := fn:load-xquery-module(\n" +
+                "  'http://example.com/m31',\n" +
+                "  map { 'content': $module }\n" +
+                ")\n" +
+                "let $f := $loaded?functions(fn:QName('http://example.com/m31','hello'))?0\n" +
+                "return $f()";
+
+        assertEquals("hi", unwrap(executeQuery(query)));
     }
 }
