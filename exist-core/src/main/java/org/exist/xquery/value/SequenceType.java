@@ -316,7 +316,8 @@ public class SequenceType {
             if (sup.functionParamTypes.length != 2) {
                 return false;
             }
-            final SequenceType subKey, subVal;
+            final SequenceType subKey;
+            final SequenceType subVal;
             if (sub.functionParamTypes != null && sub.functionParamTypes.length == 2) {
                 subKey = sub.functionParamTypes[0];
                 subVal = sub.functionParamTypes[1];
