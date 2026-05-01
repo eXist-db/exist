@@ -244,8 +244,10 @@ public class FnFormatNumbers extends BasicFunction {
         final int zeroDigit = getCharProperty(map, "zero-digit", base.zeroDigit);
         final int digit = getCharProperty(map, "digit", base.digit);
         final int patternSeparator = getCharProperty(map, "pattern-separator", base.patternSeparator);
-        // minus-sign is a string (rendition) per XPath 4.0 -- multi-character allowed
-        final String minusSign = getStringProperty(map, "minus-sign", base.minusSign);
+        // minus-sign rendition (XPath 4.0): multi-character allowed; the marker
+        // codepoint defaults to the first codepoint of the rendition.
+        final String minusSignRendition = getStringProperty(map, "minus-sign", base.minusSignRendition);
+        final int minusSign = minusSignRendition.isEmpty() ? base.minusSign : minusSignRendition.codePointAt(0);
         final String infinity = getStringProperty(map, "infinity", base.infinity);
         final String nan = getStringProperty(map, "NaN", base.NaN);
 
@@ -255,7 +257,7 @@ public class FnFormatNumbers extends BasicFunction {
         return new DecimalFormat(decSep.marker(), expSep.marker(), grpSep.marker(),
                 pct.marker(), pml.marker(), zeroDigit, digit, patternSeparator, infinity, nan, minusSign,
                 decSep.rendition(), expSep.rendition(), grpSep.rendition(),
-                pct.rendition(), pml.rendition());
+                pct.rendition(), pml.rendition(), minusSignRendition);
     }
 
     /**
@@ -970,8 +972,8 @@ public class FnFormatNumbers extends BasicFunction {
             }
 
             if (negativeExp) {
-                // minus-sign may be a multi-character string (XPath 4.0)
-                final CodePointString signed = new CodePointString(decimalFormat.minusSign);
+                // minus-sign rendition may be a multi-character string (XPath 4.0)
+                final CodePointString signed = new CodePointString(decimalFormat.minusSignRendition);
                 signed.append(expStr);
                 formatted.append(signed);
             } else {
@@ -1065,7 +1067,7 @@ public class FnFormatNumbers extends BasicFunction {
         }
 
         public SubPicture negate(final DecimalFormat decimalFormat) {
-            this.prefix = new StringBuilder(decimalFormat.minusSign).append(getPrefixString());
+            this.prefix = new StringBuilder(decimalFormat.minusSignRendition).append(getPrefixString());
             return this;
         }
 
