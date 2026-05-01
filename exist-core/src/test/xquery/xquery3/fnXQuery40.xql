@@ -786,13 +786,13 @@ function t:typeOf-map() {
 declare
     %test:assertEquals("1970-01-01T00:00:00Z")
 function t:unixDateTime-epoch() {
-    string(unix-dateTime(0))
+    string(unix-dateTime(xs:nonNegativeInteger(0)))
 };
 
 declare
     %test:assertEquals("1970-01-01T00:00:01Z")
 function t:unixDateTime-oneSecond() {
-    string(unix-dateTime(1000))
+    string(unix-dateTime(xs:nonNegativeInteger(1000)))
 };
 
 (: fn:message :)
