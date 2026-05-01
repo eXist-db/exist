@@ -109,4 +109,16 @@ public class Dependency {
     public final static boolean dependsOnVar(Expression expr) {
         return ((expr.getDependencies() & VARS) != 0);
     }
+
+    /**
+     * Returns true if the expression depends on a variable declared in the
+     * same for/let iteration scope (LOCAL_VARS). Variables from outer scopes
+     * (CONTEXT_VARS) are static relative to the current iteration and do not
+     * prevent bulk evaluation.
+     *
+     * @see #dependsOnVar(Expression) which checks both LOCAL_VARS and CONTEXT_VARS
+     */
+    public static boolean dependsOnLocalVar(Expression expr) {
+        return ((expr.getDependencies() & LOCAL_VARS) != 0);
+    }
 }
