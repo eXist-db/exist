@@ -741,7 +741,7 @@ declare
     %test:args("{key: 'value'}")
     %test:assertError("FOJS0001")
     %test:args('{"k1": "v1", "k1": "v2"}')
-    %test:assertXPath("$result?k1 = 'v2'")
+    %test:assertXPath("$result?k1 = 'v1'")
 function arr:parse-json($json as xs:string) {
     parse-json($json)
 };

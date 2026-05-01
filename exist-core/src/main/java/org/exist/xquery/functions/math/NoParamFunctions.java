@@ -43,12 +43,20 @@ public class NoParamFunctions extends BasicFunction {
     //private static final Logger logger = LogManager.getLogger(NoParamFunctions.class);
 
     public static final String PI = "pi";
+    public static final String E = "e";
 
     public final static FunctionSignature FNS_PI = new FunctionSignature(
         new QName(PI, MathModule.NAMESPACE_URI, MathModule.PREFIX),
         "Returns the value of pi.",
         null,
         new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the value of pi")
+    );
+
+    public final static FunctionSignature FNS_E = new FunctionSignature(
+        new QName(E, MathModule.NAMESPACE_URI, MathModule.PREFIX),
+        "Returns the value of e (Euler's number, approximately 2.71828).",
+        null,
+        new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the value of e")
     );
 
     public NoParamFunctions(XQueryContext context, FunctionSignature signature) {
@@ -68,7 +76,8 @@ public class NoParamFunctions extends BasicFunction {
         final String functionName = getSignature().getName().getLocalPart();
         if(PI.equals(functionName)) {
             result=new DoubleValue(this, Math.PI);
-            
+        } else if(E.equals(functionName)) {
+            result=new DoubleValue(this, Math.E);
         } else {
             throw new XPathException(this, "Function "+functionName+" not found.");
         }

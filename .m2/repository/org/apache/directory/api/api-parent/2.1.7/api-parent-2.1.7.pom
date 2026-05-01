@@ -1,0 +1,808 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+  
+  https://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.apache.directory.project</groupId>
+    <artifactId>project</artifactId>
+    <version>49</version>
+    <relativePath />
+  </parent>
+
+  <!-- Temporary add snapshot repository here to be able to resolve snapshot parent pom -->
+  <repositories>
+    <repository>
+      <id>apache.snapshots</id>
+      <name>Apache Snapshot Repository</name>
+      <url>https://repository.apache.org/content/repositories/snapshots</url>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
+
+  <groupId>org.apache.directory.api</groupId>
+  <artifactId>api-parent</artifactId>
+  <name>Apache Directory LDAP API</name>
+  <packaging>pom</packaging>
+  <version>2.1.7</version>
+
+  <properties>
+    <projectName>ApacheDS-LDAP-API</projectName>
+    <distMgmtSiteUrl>scpexe://people.apache.org/www/directory.apache.org/api/gen-docs/${project.version}/</distMgmtSiteUrl>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+    
+    <!-- Activate reproductible builds -->
+    <project.build.outputTimestamp>1722609632</project.build.outputTimestamp>
+
+    <!-- Set versions for depending projects -->
+    <skin.version>1.0.3</skin.version>
+    <org.apache.directory.checkstyle-configuration.version>2.0.2</org.apache.directory.checkstyle-configuration.version>
+    
+    <!-- Set versions for depending jars -->
+    <antlr.version>2.7.7</antlr.version>
+    <caffeine.version>2.9.3</caffeine.version>
+    <commons.codec.version>1.17.1</commons.codec.version>
+    <commons.collections.version>4.4</commons.collections.version>
+    <commons.lang.version>3.15.0</commons.lang.version>
+    <commons.pool.version>2.12.0</commons.pool.version>
+    <commons.text.version>1.12.0</commons.text.version>
+    <dom4j.version>2.1.4</dom4j.version>
+    <forbiddenapis.version>3.7</forbiddenapis.version>
+    <hamcrest.version>3.0</hamcrest.version>
+    <junit.engine.version>5.10.3</junit.engine.version>
+    <junit.platform.version>1.10.3</junit.platform.version>
+    <mina.core.version>2.2.3</mina.core.version>
+    <org.osgi.core.version>6.0.0</org.osgi.core.version>
+    <org.apache.felix.version>7.0.5</org.apache.felix.version>
+
+    <!-- pax-exam 4.13.5 has an issue, don't use it now... -->
+    <pax-exam.version>4.13.4</pax-exam.version>
+
+    <pax-url.version>2.6.14</pax-url.version>
+    <slf4j.api.version>1.7.36</slf4j.api.version>
+    <slf4j.api.bundleversion>"$«range;[==,=+)»"</slf4j.api.bundleversion>
+    <velocity.version>1.7</velocity.version>
+    <wagon.ssh.version>3.5.3</wagon.ssh.version>
+    <wagon.ssh.external.version>3.5.3</wagon.ssh.external.version>
+    <xml.apis.version>2.0.2</xml.apis.version>
+    <xpp3.version>1.1.4c</xpp3.version>
+  </properties>
+  
+  <distributionManagement>
+    <site>
+      <id>apache.directory.shared</id>
+      <url>${distMgmtSiteUrl}</url>
+    </site>
+  </distributionManagement>
+
+  <issueManagement>
+    <system>JIRA</system>
+    <url>https://issues.apache.org/jira/browse/DIRAPI</url>
+  </issueManagement>
+
+  <modules>
+    <module>i18n</module>
+    <module>util</module>
+    <module>asn1</module>
+    <module>all</module>
+    <module>ldap</module>
+    <module>dsml</module>
+    <module>integ</module>
+    <module>integ-osgi</module>
+    <module>distribution</module>
+  </modules>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-site-plugin</artifactId>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-release-plugin</artifactId>
+          <configuration>
+            <preparationGoals>clean install</preparationGoals>
+            <goals>clean deploy</goals>
+            <tagNameFormat>@{project.version}</tagNameFormat>
+            <autoVersionSubmodules>true</autoVersionSubmodules>
+          </configuration>
+        </plugin>
+
+        <plugin>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <configuration>
+            <parallel>all</parallel>
+            <threadCount>10</threadCount>
+            <properties>
+              <configurationParameters>
+                junit.jupiter.execution.parallel.enabled=true
+              </configurationParameters>
+            </properties>
+          </configuration>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-report-plugin</artifactId>
+          <configuration>
+            <aggregate>true</aggregate>
+            <forkCount>3</forkCount>
+            <reuseForks>true</reuseForks>
+            <argLine>-Xmx2048m -XX:MaxPermSize=512</argLine>
+          </configuration>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.rat</groupId>
+          <artifactId>apache-rat-plugin</artifactId>
+          <configuration>
+            <!--licenses-->
+              <!-- TODO (low prio): Remove this simple workaround when Apache Rat 0.14 has been released. -->
+              <!-- See also: https://issues.apache.org/jira/browse/RAT-212 -->
+              <!-- and       https://issues.apache.org/jira/browse/LEGAL-265 -->
+              <!-- license implementation="org.apache.rat.analysis.license.ApacheSoftwareLicense20">
+                <notes>Also allow the license url to be https.</notes>
+                <patterns>
+                  <pattern>https://www.apache.org/licenses/LICENSE-2.0.txt</pattern>
+                </patterns>
+              </license>
+            </licenses-->
+            <excludeSubProjects>true</excludeSubProjects>
+            <excludes>
+              <!-- MAVEN_DEFAULT_EXCLUDES -->
+              <exclude>**/target/**/*</exclude>
+              <exclude>**/cobertura.ser</exclude>
+              <!-- ECLIPSE_DEFAULT_EXCLUDES -->
+              <exclude>**/.classpath</exclude>
+              <exclude>**/.project</exclude>
+              <exclude>**/.settings/**/*</exclude>
+              <!-- IDEA_DEFAULT_EXCLUDES -->
+              <exclude>**/*.iml</exclude>
+              <exclude>**/*.ipr</exclude>
+              <exclude>**/*.iws</exclude>
+              <!-- MANIFEST_MF_EXCLUDES -->
+              <exclude>**/MANIFEST.MF</exclude>
+              <!-- 3RD_PARTY_LICENSES -->
+              <exclude>distribution/src/main/release/licenses/*</exclude>
+              <exclude>src/main/release/licenses/*</exclude>
+              <!-- Missing license header in dependency reduced pom, see http://jira.codehaus.org/browse/MSHADE-48 -->
+              <exclude>**/dependency-reduced-pom.xml</exclude>
+              <!-- Generated ldif files -->
+              <exclude>ldap/schema/data/src/main/resources/schema/**</exclude>
+              <exclude>ldap/schema/data/src/main/resources/schema-all.ldif</exclude>
+              <exclude>schema/data/src/main/resources/schema/**</exclude>
+              <exclude>schema/data/src/main/resources/schema-all.ldif</exclude>
+              <exclude>data/src/main/resources/schema/**</exclude>
+              <exclude>data/src/main/resources/schema-all.ldif</exclude>
+              <exclude>src/main/resources/schema/**</exclude>
+              <exclude>src/main/resources/schema-all.ldif</exclude>
+              <!-- Exlude the imported external java code -->
+              <exclude>**/src/main/java/org/apache/directory/api/ldap/model/password/BCrypt.java</exclude>
+              <!-- exclude OpenLDAP schema files -->
+              <exclude>**/src/test/resources/org/apache/directory/api/ldap/model/schema/parsers/dyngroup.schema</exclude>
+              <exclude>**/src/test/resources/org/apache/directory/api/ldap/model/schema/parsers/inetorgperson.schema</exclude>
+              <exclude>**/src/test/resources/org/apache/directory/api/ldap/model/schema/parsers/core.schema</exclude>
+              <exclude>**/src/test/resources/org/apache/directory/api/ldap/model/schema/parsers/collective.schema</exclude>
+              <!-- exclude GitHub files (codeql-analysis.yml) -->
+              <exclude>.github/**</exclude>
+            </excludes>
+          </configuration>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-checkstyle-plugin</artifactId>
+          <configuration>
+            <failOnViolation>true</failOnViolation>
+            <includeTestSourceDirectory>false</includeTestSourceDirectory>
+          </configuration>
+          <executions>
+            <execution>
+              <id>validate</id>
+              <phase>validate</phase>
+              <goals>
+                <goal>check</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+
+        <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+        <plugin>
+          <groupId>org.eclipse.m2e</groupId>
+          <artifactId>lifecycle-mapping</artifactId>
+          <version>1.0.0</version>
+          <configuration>
+            <lifecycleMappingMetadata>
+              <pluginExecutions>
+                <pluginExecution>
+                  <pluginExecutionFilter>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-antrun-plugin</artifactId>
+                    <versionRange>[1.7,)</versionRange>
+                    <goals>
+                      <goal>run</goal>
+                    </goals>
+                  </pluginExecutionFilter>
+                  <action>
+                    <ignore />
+                  </action>
+                </pluginExecution>
+                
+                <pluginExecution>
+                  <pluginExecutionFilter>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <versionRange>[2.2,)</versionRange>
+                    <goals>
+                      <goal>copy</goal>
+                    </goals>
+                  </pluginExecutionFilter>
+                  <action>
+                    <ignore />
+                  </action>
+                </pluginExecution>
+                
+                <pluginExecution>
+                  <pluginExecutionFilter>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>antlr-maven-plugin</artifactId>
+                    <versionRange>[2.7.7,)</versionRange>
+                    <goals>
+                      <goal>generate</goal>
+                    </goals>
+                  </pluginExecutionFilter>
+                  <action>
+                    <ignore />
+                  </action>
+                </pluginExecution>
+                <pluginExecution>
+                    <pluginExecutionFilter>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-checkstyle-plugin</artifactId>
+                        <versionRange>[2.16,)</versionRange>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </pluginExecutionFilter>
+                    <action>
+                        <ignore />
+                    </action>
+                </pluginExecution>
+              </pluginExecutions>
+            </lifecycleMappingMetadata>
+          </configuration>
+        </plugin>
+
+        <plugin>
+          <groupId>org.cyclonedx</groupId>
+          <artifactId>cyclonedx-maven-plugin</artifactId>
+          <version>2.8.0</version>
+          <executions>
+            <execution>
+              <id>make-bom</id>
+              <phase>package</phase>
+              <goals>
+                <goal>makeAggregateBom</goal>
+              </goals>
+            </execution>
+          </executions>
+          <configuration>
+            <outputName>${project.artifactId}-${project.version}-bom</outputName>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-site-plugin</artifactId>
+        <dependencies>
+          <!-- Add support for 'scp'/'sftp' -->
+          <dependency>
+            <groupId>org.apache.maven.wagon</groupId>
+            <artifactId>wagon-ssh</artifactId>
+            <version>${wagon.ssh.version}</version>
+          </dependency>
+          <!-- Add support for 'scpexe' -->
+          <dependency>
+            <groupId>org.apache.maven.wagon</groupId>
+            <artifactId>wagon-ssh-external</artifactId>
+            <version>${wagon.ssh.external.version}</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <configuration>
+          <show>private</show>
+          <nohelp>true</nohelp>
+          <doclint>none</doclint>
+          <!-- additionalOptions>
+            <additionalOptions>-Xmaxwarns 1000</additionalOptions>
+            <additionalOptions>-Xmaxerrs 1000</additionalOptions>
+          </additionalOptions -->
+        </configuration>
+      </plugin>
+
+
+      <plugin>
+        <groupId>de.thetaphi</groupId>
+        <artifactId>forbiddenapis</artifactId>
+        <version>${forbiddenapis.version}</version>
+        <configuration>
+          <internalRuntimeForbidden>false</internalRuntimeForbidden>
+          <failOnUnsupportedJava>true</failOnUnsupportedJava>
+          <failOnViolation>true</failOnViolation>
+          <bundledSignatures>
+            <bundledSignature>jdk-unsafe</bundledSignature>
+            <bundledSignature>jdk-deprecated</bundledSignature>
+          </bundledSignatures>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>check</goal>
+              <goal>testCheck</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.cyclonedx</groupId>
+        <artifactId>cyclonedx-maven-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
+
+  <dependencyManagement>
+    <dependencies>
+      <!-- Project sub-modules dependencies -->
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>api-all</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>api-asn1-api</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>api-asn1-ber</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>api-dsml-engine</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>api-dsml-parser</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>api-i18n</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>api-ldap-client-api</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>api-ldap-codec-core</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>api-ldap-codec-standalone</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>api-ldap-extras-aci</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>api-ldap-extras-codec</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>api-ldap-extras-codec-api</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>api-ldap-extras-sp</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>api-ldap-extras-trigger</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>api-ldap-extras-util</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>api-ldap-model</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>api-ldap-net-mina</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>api-ldap-schema-converter</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>api-ldap-schema-data</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>api-util</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <!-- Mina dependencies -->
+
+      <dependency>
+        <groupId>org.apache.mina</groupId>
+        <artifactId>mina-core</artifactId>
+        <version>${mina.core.version}</version>
+      </dependency>
+
+      <!-- Commons dependencies -->
+
+      <dependency>
+        <groupId>commons-codec</groupId>
+        <artifactId>commons-codec</artifactId>
+        <version>${commons.codec.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-collections4</artifactId>
+        <version>${commons.collections.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-lang3</artifactId>
+        <version>${commons.lang.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-pool2</artifactId>
+        <version>${commons.pool.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-text</artifactId>
+        <version>${commons.text.version}</version>
+      </dependency>
+
+      <!-- OSGi and Felix Dependencies -->
+
+      <dependency>
+        <groupId>org.osgi</groupId>
+        <artifactId>org.osgi.core</artifactId>
+        <version>${org.osgi.core.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>org.apache.felix.framework</artifactId>
+        <version>${org.apache.felix.version}</version>
+      </dependency>
+
+      <!-- Test dependencies -->
+      <dependency>
+          <groupId>org.ops4j.pax.exam</groupId>
+          <artifactId>pax-exam-container-forked</artifactId>
+          <version>${pax-exam.version}</version>
+      </dependency>
+
+      <dependency>
+          <groupId>org.ops4j.pax.exam</groupId>
+          <artifactId>pax-exam-junit4</artifactId>
+          <version>${pax-exam.version}</version>
+      </dependency>
+
+      <dependency>
+          <groupId>org.ops4j.pax.exam</groupId>
+          <artifactId>pax-exam-link-mvn</artifactId>
+          <version>${pax-exam.version}</version>
+      </dependency>
+
+      <dependency>
+          <groupId>org.ops4j.pax.url</groupId>
+          <artifactId>pax-url-aether</artifactId>
+          <version>${pax-url.version}</version>
+      </dependency>
+
+      <!-- Logging dependencies -->
+
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>${slf4j.api.version}</version>
+      </dependency>
+
+      <!-- Other dependencies -->
+
+      <dependency>
+        <groupId>antlr</groupId>
+        <artifactId>antlr</artifactId>
+        <version>${antlr.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.servicemix.bundles</groupId>
+        <artifactId>org.apache.servicemix.bundles.antlr</artifactId>
+        <version>${antlr.version}_5</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.servicemix.bundles</groupId>
+        <artifactId>org.apache.servicemix.bundles.dom4j</artifactId>
+        <version>${dom4j.version}_1</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.servicemix.bundles</groupId>
+        <artifactId>org.apache.servicemix.bundles.xpp3</artifactId>
+        <version>${xpp3.version}_7</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-engine</artifactId>
+        <version>${junit.engine.version}</version>
+        <scope>test</scope>
+      </dependency>
+      
+      <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-params</artifactId>
+        <version>${junit.engine.version}</version>
+        <scope>test</scope>
+      </dependency>
+      
+      <dependency>
+        <groupId>org.junit.platform</groupId>
+        <artifactId>junit-platform-runner</artifactId>
+        <version>${junit.platform.version}</version>
+        <scope>test</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.hamcrest</groupId>
+        <artifactId>hamcrest-library</artifactId>
+        <version>${hamcrest.version}</version>
+        <scope>test</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>xml-apis</groupId>
+        <artifactId>xml-apis</artifactId>
+        <version>${xml.apis.version}</version>
+      </dependency>
+    
+      <dependency>
+        <groupId>com.github.ben-manes.caffeine</groupId>
+        <artifactId>caffeine</artifactId>
+        <version>${caffeine.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>com.google.errorprone</groupId>
+            <artifactId>error_prone_annotations</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.checkerframework</groupId>
+            <artifactId>checker-qual</artifactId>
+           </exclusion>
+         </exclusions>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <scm>
+    <connection>scm:git:https://gitbox.apache.org/repos/asf/directory-ldap-api.git</connection>
+    <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/directory-ldap-api.git</developerConnection>
+    <url>https://github.com/apache/directory-ldap-api/tree/${project.scm.tag}</url>
+    <tag>2.1.7</tag>
+  </scm>
+
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-project-info-reports-plugin</artifactId>
+        <configuration>
+          <dependencyDetailsEnabled>false</dependencyDetailsEnabled>
+          <dependencyLocationsEnabled>false</dependencyLocationsEnabled>
+        </configuration>
+        
+        <reportSets>
+          <reportSet>
+            <reports>
+              <report>dependencies</report>
+              <report>scm</report>
+            </reports>
+          </reportSet>
+        </reportSets>
+      </plugin>
+     
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jxr-plugin</artifactId>
+        <inherited>false</inherited>
+        <configuration>
+          <aggregate>true</aggregate>
+          <inputEncoding>UTF-8</inputEncoding>
+          <outputEncoding>UTF-8</outputEncoding>
+          <windowTitle>Apache LDAP API ${project.version} Cross Reference</windowTitle>
+          <docTitle>Apache LDAP API ${project.version} Cross Reference</docTitle>
+        </configuration>
+      </plugin>
+ 
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <configuration>
+          <windowtitle>Apache LDAP API ${project.version} API Documentation</windowtitle>
+          <doctitle>Apache LDAP API ${project.version} API Documentation</doctitle>
+          <minmemory>512m</minmemory>
+          <maxmemory>1g</maxmemory>
+          <linksource>true</linksource>
+          <doclint>none</doclint>
+          <tags>
+            <tag>
+              <name>todo</name>
+              <!-- todo tag for all places -->
+              <placement>a</placement>
+              <head>To do:</head>
+            </tag>
+          </tags>
+          <source>1.8</source>
+          <excludePackageNames>org.apache.directory.api.ldap.model.schema.syntaxes</excludePackageNames>
+          <show>public</show>
+        </configuration>
+
+        <reportSets>
+          <reportSet>
+            <id>apidocs</id>
+            <inherited>false</inherited>
+            <reports>
+              <report>aggregate</report>
+              <report>test-aggregate</report>
+            </reports>
+          </reportSet>
+        </reportSets>
+
+      </plugin>
+    </plugins>
+  </reporting>
+
+  <profiles>
+    <profile>
+      <id>apache-release</id>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>source-release-assembly</id>
+                <configuration>
+                  <!-- we have a dedicated distribution module -->
+                  <skipAssembly>true</skipAssembly>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.rat</groupId>
+            <artifactId>apache-rat-plugin</artifactId>
+            <executions>
+              <execution>
+                <phase>verify</phase>
+                <goals>
+                  <goal>check</goal>
+                </goals>
+              </execution>
+            </executions>
+         </plugin>
+        </plugins>
+      </build>
+    </profile>
+    
+    <!-- use JDK8 compilation for JDK9+ compiler -->
+    <profile>
+      <id>java-8-compilation</id>
+      <activation>
+        <jdk>[9,)</jdk>
+      </activation>
+      <properties>
+        <maven.compiler.release>8</maven.compiler.release>
+      </properties>
+    </profile>
+  </profiles>
+
+</project>

@@ -77,6 +77,10 @@ public class ValueComparison extends GeneralComparison {
 		if (ls.hasOne() && rs.hasOne()) {
 			final AtomicValue lv = ls.itemAt(0).atomize();
 			final AtomicValue rv = rs.itemAt(0).atomize();
+			// Propagate expression context to atomized values so version-gated
+			// comparisons (e.g., xs:duration ordering) can check the XQuery version
+			if (lv.getExpression() == null) { lv.setExpression(this); }
+			if (rv.getExpression() == null) { rv.setExpression(this); }
             final Collator collator = getCollator(contextSequence);
 			return BooleanValue.valueOf(compareAtomic(collator, lv, rv, StringTruncationOperator.NONE, relation));
 		}

@@ -214,7 +214,7 @@ public class DurationValue extends ComputableValue {
                 ).add(zeroIfNull((BigDecimal) duration.getField(DatatypeConstants.SECONDS)));
     }
 
-    protected BigDecimal secondsValueSigned() {
+    public BigDecimal secondsValueSigned() {
         BigDecimal x = secondsValue();
         if (duration.getSign() < 0) {
             x = x.negate();
@@ -229,7 +229,7 @@ public class DurationValue extends ComputableValue {
                         .add(zeroIfNull((BigInteger) duration.getField(DatatypeConstants.MONTHS)));
     }
 
-    protected BigInteger monthsValueSigned() {
+    public BigInteger monthsValueSigned() {
         BigInteger x = monthsValue();
         if (duration.getSign() < 0) {
             x = x.negate();
@@ -348,8 +348,28 @@ public class DurationValue extends ComputableValue {
             case LT:
             case LTEQ:
             case GT:
-            case GTEQ:
-                throw new XPathException(getExpression(), ErrorCodes.XPTY0004, Type.getTypeName(other.getType()) + " type can not be ordered");
+            case GTEQ: {
+                // XQ4 (PR2216): allow ordering of durations
+                // In XQ 3.1, duration ordering must throw XPTY0004
+                final Expression expr = getExpression();
+                final boolean xq4 = expr != null && expr.getContext() != null
+                        && expr.getContext().getXQueryVersion() >= 40;
+                if (!xq4) {
+                    throw new XPathException(getExpression(), ErrorCodes.XPTY0004,
+                            Type.getTypeName(other.getType()) + " type can not be ordered");
+                }
+                if (!(DurationValue.class.isAssignableFrom(other.getClass()))) {
+                    throw new XPathException(getExpression(), ErrorCodes.XPTY0004, "invalid operand type: " + Type.getTypeName(other.getType()));
+                }
+                final int cmp = compareTo(collator, other);
+                return switch (operator) {
+                    case LT -> cmp < 0;
+                    case LTEQ -> cmp <= 0;
+                    case GT -> cmp > 0;
+                    case GTEQ -> cmp >= 0;
+                    default -> false;
+                };
+            }
             default:
                 throw new IllegalArgumentException("Unknown comparison operator");
         }
@@ -364,10 +384,24 @@ public class DurationValue extends ComputableValue {
     }
 
     public AtomicValue max(Collator collator, AtomicValue other) throws XPathException {
+        if (DurationValue.class.isAssignableFrom(other.getClass())) {
+            final Expression expr = getExpression();
+            if (expr != null && expr.getContext() != null
+                    && expr.getContext().getXQueryVersion() >= 40) {
+                return compareTo(collator, other) >= 0 ? this : other;
+            }
+        }
         throw new XPathException(getExpression(), ErrorCodes.XPTY0004, "invalid operation on " + Type.getTypeName(this.getType()));
     }
 
     public AtomicValue min(Collator collator, AtomicValue other) throws XPathException {
+        if (DurationValue.class.isAssignableFrom(other.getClass())) {
+            final Expression expr = getExpression();
+            if (expr != null && expr.getContext() != null
+                    && expr.getContext().getXQueryVersion() >= 40) {
+                return compareTo(collator, other) <= 0 ? this : other;
+            }
+        }
         throw new XPathException(getExpression(), ErrorCodes.XPTY0004, "invalid operation on " + Type.getTypeName(this.getType()));
     }
 

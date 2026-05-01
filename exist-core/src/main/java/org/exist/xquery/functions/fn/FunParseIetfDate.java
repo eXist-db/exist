@@ -35,8 +35,6 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Arrays;
 
-import org.apache.commons.lang3.StringUtils;
-
 /**
  * Parses a string containing the date and time in IETF format,
  * returning the corresponding xs:dateTime value.
@@ -85,14 +83,14 @@ public class FunParseIetfDate extends BasicFunction {
         private final char[] WS = {0x000A, 0x0009, 0x000D, 0x0020};
         private final String WS_STR = new String(WS);
 
-        private final String[] dayNames = {
-                "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun",
-                "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"
+        private final String[] lowerDayNames = {
+                "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday",
+                "mon", "tue", "wed", "thu", "fri", "sat", "sun"
         };
 
-        private final String[] monthNames = {
-                "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-                "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+        private final String[] lowerMonthNames = {
+                "jan", "feb", "mar", "apr", "may", "jun",
+                "jul", "aug", "sep", "oct", "nov", "dec"
         };
 
         private final String[] tzNames = {
@@ -136,32 +134,34 @@ public class FunParseIetfDate extends BasicFunction {
             return result;
         }
 
-        /**
-         * <p>Parse a formatted <code>String</code> into an <code>XMLGregorianCalendar</code>.</p>
-         * <p>
-         * <p>If <code>String</code> is not formatted as a legal <code>IETF Date</code> value,
-         * an <code>IllegalArgumentException</code> is thrown.</p>
-         * <pre>
-         * input	::=	(dayname ","? S)? ((datespec S time) | asctime)
-         * datespec	::=	daynum dsep monthname dsep year
-         * dsep	::=	S | (S? "-" S?)
-         * daynum	::=	digit digit?
-         * year	::=	digit digit (digit digit)?
-         * digit	::=	[0-9]
-         * time	::=	hours ":" minutes (":" seconds)? (S? timezone)?
-         * hours	::=	digit digit?
-         * minutes	::=	digit digit
-         * seconds	::=	digit digit ("." digit+)?
-         * S ::= (x0A|x09|x0D|x20)+
-         * </pre>
-         *
-         * @throws IllegalArgumentException If <code>String</code> is not formatted as a legal <code>IETF Date</code> value.
-         */
         public XMLGregorianCalendar parse() throws IllegalArgumentException {
             dayName();
             dateSpec();
             if (vidx != vlen) {
                 throw new IllegalArgumentException(value);
+            }
+            // Default to UTC when no timezone was supplied (per spec note in tests).
+            if (timezone == DatatypeConstants.FIELD_UNDEFINED) {
+                timezone = 0;
+            }
+            // Handle 24:00 / 24:00:00 as midnight at the end of the day.
+            final boolean midnightEndOfDay = hour == 24 && minute == 0
+                    && (second == DatatypeConstants.FIELD_UNDEFINED || second == 0)
+                    && (fractionalSecond == null || fractionalSecond.signum() == 0);
+            if (midnightEndOfDay) {
+                hour = 0;
+                if (second == DatatypeConstants.FIELD_UNDEFINED) {
+                    second = 0;
+                }
+                final XMLGregorianCalendar cal = TimeUtils
+                        .getInstance()
+                        .getFactory()
+                        .newXMLGregorianCalendar(year, month, day, hour, minute, second, fractionalSecond, timezone);
+                cal.add(TimeUtils.getInstance().getFactory().newDuration(true, 0, 0, 1, 0, 0, 0));
+                return cal;
+            }
+            if (second == DatatypeConstants.FIELD_UNDEFINED) {
+                second = 0;
             }
             return TimeUtils
                     .getInstance()
@@ -170,9 +170,33 @@ public class FunParseIetfDate extends BasicFunction {
         }
 
         private void dayName() {
-            if (StringUtils.startsWithAny(value, dayNames)) {
-                skipTo(WS_STR);
+            final String lower = value.substring(vidx).toLowerCase();
+            String matched = null;
+            for (final String dn : lowerDayNames) {
+                if (lower.startsWith(dn)) {
+                    matched = dn;
+                    break;
+                }
+            }
+            if (matched == null) {
+                return;
+            }
+            vidx += matched.length();
+            // The character after the day name must be whitespace or a comma
+            // (followed by whitespace). "Wed,20 ..." is invalid (errs15).
+            boolean ateComma = false;
+            if (peek() == ',') {
                 vidx++;
+                ateComma = true;
+            }
+            if (!isWS(peek())) {
+                if (ateComma) {
+                    throw new IllegalArgumentException(value);
+                }
+                // No comma either: only valid if we're at end (unlikely for full input)
+                if (vidx != vlen) {
+                    throw new IllegalArgumentException(value);
+                }
             }
         }
 
@@ -180,11 +204,21 @@ public class FunParseIetfDate extends BasicFunction {
             if (isWS(peek())) {
                 skipWS();
             }
-            if (StringUtils.startsWithAny(value.substring(vidx), monthNames)) {
+            if (startsWithMonthName(value.substring(vidx))) {
                 asctime();
             } else {
                 rfcDate();
             }
+        }
+
+        private boolean startsWithMonthName(final String s) {
+            final String lower = s.toLowerCase();
+            for (final String mn : lowerMonthNames) {
+                if (lower.startsWith(mn)) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         private void rfcDate() throws IllegalArgumentException {
@@ -229,11 +263,11 @@ public class FunParseIetfDate extends BasicFunction {
         private void month() throws IllegalArgumentException {
             final int vstart = vidx;
             vidx += 3;
-            if (vidx >= vlen) {
+            if (vidx > vlen) {
                 throw new IllegalArgumentException(value);
             }
-            final String monthName = value.substring(vstart, vidx);
-            final int idx = Arrays.asList(monthNames).indexOf(monthName);
+            final String monthName = value.substring(vstart, vidx).toLowerCase();
+            final int idx = Arrays.asList(lowerMonthNames).indexOf(monthName);
             if (idx < 0) {
                 throw new IllegalArgumentException(value);
             }
@@ -248,12 +282,30 @@ public class FunParseIetfDate extends BasicFunction {
             hours();
             minutes();
             seconds();
-            skipWS();
-            timezone();
+            // Whitespace before the timezone is optional. We must avoid greedily
+            // consuming digits following the time (which can be the year in
+            // asctime form, e.g. "Aug 20 19:36 2014").
+            final int wsStart = vidx;
+            if (isWS(peek())) {
+                skipWS();
+            }
+            if (looksLikeTimezone()) {
+                timezone();
+            } else {
+                vidx = wsStart;
+            }
+        }
+
+        private boolean looksLikeTimezone() {
+            if (vidx >= vlen) {
+                return false;
+            }
+            final char c = peek();
+            return c == '+' || c == '-' || isAsciiLetter(c);
         }
 
         private void hours() throws IllegalArgumentException {
-            hour = parseInt(2, 2);
+            hour = parseInt(1, 2);
         }
 
         private void minutes() throws IllegalArgumentException {
@@ -263,7 +315,8 @@ public class FunParseIetfDate extends BasicFunction {
         }
 
         private void seconds() throws IllegalArgumentException {
-            if (isWS(peek())) {
+            if (peek() != ':') {
+                // No colon means no seconds component
                 second = 0;
                 return;
             }
@@ -273,19 +326,35 @@ public class FunParseIetfDate extends BasicFunction {
         }
 
         private void timezone() throws IllegalArgumentException {
-            if (!StringUtils.startsWithAny(value.substring(vidx), tzNames)) {
+            if (startsWithTzName()) {
+                parseTimezoneName();
+            } else {
                 tzoffset();
-                return;
             }
-            parseTimezoneName();
+        }
+
+        private boolean startsWithTzName() {
+            final String upper = value.substring(vidx).toUpperCase();
+            for (final String tz : tzNames) {
+                if (upper.startsWith(tz)) {
+                    // Make sure the following character isn't another letter
+                    // (so "GMT" matches but "GMTSomething" doesn't accidentally
+                    // produce the wrong timezone). The longest valid name is 3.
+                    final int after = vidx + tz.length();
+                    if (after >= vlen || !isAsciiLetter(value.charAt(after))) {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
 
         private void parseTimezoneName() {
             final int vstart = vidx;
-            while (isUpperCaseLetter(peek())) {
+            while (isAsciiLetter(peek())) {
                 vidx++;
             }
-            final String tzName = value.substring(vstart, vidx);
+            final String tzName = value.substring(vstart, vidx).toUpperCase();
             if (!TZ_MAP.containsKey(tzName)) {
                 throw new IllegalArgumentException(value);
             }
@@ -297,40 +366,98 @@ public class FunParseIetfDate extends BasicFunction {
             if (!(sign == '+' || sign == '-')) {
                 throw new IllegalArgumentException(value);
             }
-
             vidx++;
-            final int h = parseInt(1, 2);
-
-            if (peek() == ':') {
-                skip(':');
+            final int digitsStart = vidx;
+            while (isDigit(peek()) && (vidx - digitsStart) < 4) {
+                vidx++;
+            }
+            final int totalDigits = vidx - digitsStart;
+            if (totalDigits == 0) {
+                throw new IllegalArgumentException(value);
             }
 
+            int h;
             int m = 0;
-            if (isDigit(peek())) {
-                m = parseInt(2, 2);
+            if (peek() == ':') {
+                // Hour digits before colon, then optional minutes
+                if (totalDigits > 2) {
+                    throw new IllegalArgumentException(value);
+                }
+                h = Integer.parseInt(value.substring(digitsStart, vidx));
+                skip(':');
+                if (isDigit(peek())) {
+                    final int mStart = vidx;
+                    while (isDigit(peek()) && (vidx - mStart) < 2) {
+                        vidx++;
+                    }
+                    final int mDigits = vidx - mStart;
+                    if (mDigits != 2) {
+                        throw new IllegalArgumentException(value);
+                    }
+                    m = Integer.parseInt(value.substring(mStart, vidx));
+                }
+                // else: trailing colon with no minutes is allowed (test 47, 60)
+            } else {
+                // No colon: split based on number of digits
+                switch (totalDigits) {
+                    case 1:
+                    case 2:
+                        h = Integer.parseInt(value.substring(digitsStart, vidx));
+                        break;
+                    case 3:
+                        h = Integer.parseInt(value.substring(digitsStart, digitsStart + 1));
+                        m = Integer.parseInt(value.substring(digitsStart + 1, vidx));
+                        break;
+                    default: // 4
+                        h = Integer.parseInt(value.substring(digitsStart, digitsStart + 2));
+                        m = Integer.parseInt(value.substring(digitsStart + 2, vidx));
+                        break;
+                }
             }
             checkMinutes(m);
+            checkHours(h);
+            timezone = (h * 60 + m) * (sign == '+' ? 1 : -1);
 
-            final int offset = h * 60 + m;
-            final int factor = (sign == '+' ? 1 : -1);
-            timezone = offset * factor;
-
-            // cut off whitespace and optional timezone in parenthesis
-            if (isWS(peek()) || peek() == '(') {
-                vidx = vlen;
+            // After the offset, an optional parenthesized timezone-name comment
+            // is allowed (e.g. "-05:00(EST)" or "-05:00  (  EST  )"). Do NOT
+            // greedily consume any other trailing whitespace; the year may
+            // follow in asctime form.
+            final int beforeTrailingWs = vidx;
+            if (isWS(peek())) {
+                skipWS();
+            }
+            if (peek() == '(') {
+                // Parenthesized comment (e.g. "(CET)") — per W3C XPath F&O
+                // §19.1.5, the comment is informational only and need not match
+                // a known timezone abbreviation. Skip everything to the closing
+                // parenthesis.
+                vidx++;
+                while (vidx < vlen && value.charAt(vidx) != ')') {
+                    vidx++;
+                }
+                if (vidx < vlen && value.charAt(vidx) == ')') {
+                    vidx++;
+                }
+            } else {
+                vidx = beforeTrailingWs;
             }
         }
 
         private void dsep() throws IllegalArgumentException {
+            boolean consumed = false;
             if (isWS(peek())) {
                 skipWS();
+                consumed = true;
             }
-            if (peek() != '-') {
-                return;
+            if (peek() == '-') {
+                skip('-');
+                consumed = true;
+                if (isWS(peek())) {
+                    skipWS();
+                }
             }
-            skip('-');
-            if (isWS(peek())) {
-                skipWS();
+            if (!consumed) {
+                throw new IllegalArgumentException(value);
             }
         }
 
@@ -356,12 +483,6 @@ public class FunParseIetfDate extends BasicFunction {
                 throw new IllegalArgumentException(value);
             }
             return value.charAt(vidx++);
-        }
-
-        private void skipTo(String sequence) throws IllegalArgumentException {
-            while (sequence.indexOf(peek()) < 0) {
-                read();
-            }
         }
 
         private void skip(char ch) throws IllegalArgumentException {
@@ -392,11 +513,22 @@ public class FunParseIetfDate extends BasicFunction {
             while (isDigit(peek())) {
                 vidx++;
             }
+            if (vidx - vstart < 2) {
+                // Just "." with no digits is invalid (errs27)
+                throw new IllegalArgumentException(value);
+            }
             return new BigDecimal(value.substring(vstart, vidx));
         }
 
         private void checkMinutes(int m) {
             if (m >= 60 || m < 0) {
+                throw new IllegalArgumentException(value);
+            }
+        }
+
+        private void checkHours(int h) {
+            // Per XSD, timezone offset hours range is 0..14
+            if (h < 0 || h > 14) {
                 throw new IllegalArgumentException(value);
             }
         }
@@ -409,8 +541,8 @@ public class FunParseIetfDate extends BasicFunction {
             return '0' <= ch && ch <= '9';
         }
 
-        private boolean isUpperCaseLetter(char ch) {
-            return 'A' <= ch && ch <= 'Z';
+        private boolean isAsciiLetter(char ch) {
+            return ('A' <= ch && ch <= 'Z') || ('a' <= ch && ch <= 'z');
         }
     }
 }

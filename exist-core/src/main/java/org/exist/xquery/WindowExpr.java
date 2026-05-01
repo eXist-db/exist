@@ -257,35 +257,32 @@ public class WindowExpr extends BindingExpression {
                 } else {
                     endWhen = false;
                 }
-                if (endWhen || (windowType == WindowType.SLIDING_WINDOW && (windowEndCondition != null && !windowEndCondition.isOnly()) && i == inCount - 1 && i > windowStartIdx)) {
+                if (window != null && (endWhen || (windowType == WindowType.SLIDING_WINDOW && (windowEndCondition != null && !windowEndCondition.isOnly()) && i == inCount - 1 && i > windowStartIdx))) {
 
-                    if (window != null) {
+                    window.end(windowEndConditionVariables);
 
-                        window.end(windowEndConditionVariables);
+                    // eval the return expression on the window binding
+                    returnEvalWindowBinding(in, window, resultSequence);
 
-                        // eval the return expression on the window binding
-                        returnEvalWindowBinding(in, window, resultSequence);
+                    // reset the window
+                    if (windowEndMark != null) {
+                        context.popLocalVariables(windowEndMark, resultSequence);
+                        windowEndConditionVariables.destroy(context, resultSequence);
+                        windowEndConditionVariables = null;
+                        windowEndMark = null;
 
-                        // reset the window
-                        if (windowEndMark != null) {
-                            context.popLocalVariables(windowEndMark, resultSequence);
-                            windowEndConditionVariables.destroy(context, resultSequence);
-                            windowEndConditionVariables = null;
-                            windowEndMark = null;
+                    }
+                    if (windowStartMark != null) {
+                        context.popLocalVariables(windowStartMark, resultSequence);
+                        windowStartConditionVariables.destroy(context, resultSequence);
+                        windowStartConditionVariables = null;
+                        windowStartMark = null;
+                    }
+                    window = null;
 
-                        }
-                        if (windowStartMark != null) {
-                            context.popLocalVariables(windowStartMark, resultSequence);
-                            windowStartConditionVariables.destroy(context, resultSequence);
-                            windowStartConditionVariables = null;
-                            windowStartMark = null;
-                        }
-                        window = null;
-
-                        if (windowType == WindowType.SLIDING_WINDOW) {
-                            // return to the start of the window, so that when we next come around the loop we start examining a new window immediately after the start of the previous window
-                            i = windowStartIdx;
-                        }
+                    if (windowType == WindowType.SLIDING_WINDOW) {
+                        // return to the start of the window, so that when we next come around the loop we start examining a new window immediately after the start of the previous window
+                        i = windowStartIdx;
                     }
                 }
             }

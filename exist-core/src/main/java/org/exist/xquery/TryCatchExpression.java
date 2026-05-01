@@ -21,9 +21,6 @@
  */
 package org.exist.xquery;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -36,6 +33,7 @@ import org.exist.dom.QName;
 
 import org.exist.xquery.ErrorCodes.ErrorCode;
 import org.exist.xquery.ErrorCodes.JavaErrorCode;
+import org.exist.xquery.functions.map.MapType;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.*;
 
@@ -60,6 +58,11 @@ public class TryCatchExpression extends AbstractExpression {
 
     private static final QName QN_XQUERY_STACK_TRACE = new QName("xquery-stack-trace", Namespaces.EXIST_XQUERY_XPATH_ERROR_NS, Namespaces.EXIST_XQUERY_XPATH_ERROR_PREFIX);
     private static final QName QN_JAVA_STACK_TRACE = new QName("java-stack-trace", Namespaces.EXIST_XQUERY_XPATH_ERROR_NS, Namespaces.EXIST_XQUERY_XPATH_ERROR_PREFIX);
+
+    // XQuery 4.0 PR1470/PR1599: $err:stack-trace as xs:string?
+    private static final QName QN_STACK_TRACE = new QName("stack-trace", Namespaces.W3C_XQUERY_XPATH_ERROR_NS, Namespaces.W3C_XQUERY_XPATH_ERROR_PREFIX);
+    // XQuery 4.0 PR493: $err:map as map(xs:string, item()*)
+    private static final QName QN_MAP = new QName("map", Namespaces.W3C_XQUERY_XPATH_ERROR_NS, Namespaces.W3C_XQUERY_XPATH_ERROR_PREFIX);
 
     private final Expression tryTargetExpr;
     private final List<CatchClause> catchClauses = new ArrayList<>();
@@ -121,6 +124,8 @@ public class TryCatchExpression extends AbstractExpression {
             context.declareVariableBinding(new LocalVariable(QN_VALUE));
             context.declareVariableBinding(new LocalVariable(QN_JAVA_STACK_TRACE));
             context.declareVariableBinding(new LocalVariable(QN_XQUERY_STACK_TRACE));
+            context.declareVariableBinding(new LocalVariable(QN_STACK_TRACE));
+            context.declareVariableBinding(new LocalVariable(QN_MAP));
 
             tryTargetExpr.analyze(contextInfo);
             for (final CatchClause catchClause : catchClauses) {
@@ -206,9 +211,11 @@ public class TryCatchExpression extends AbstractExpression {
                             addErrModule(throwable);
                             addErrLineNumber(throwable);
                             addErrColumnNumber(throwable);
-                            addErrAdditional(throwable);
+                            addErrAdditional();
                             addFunctionTrace(throwable);
                             addJavaTrace(throwable);
+                            addStackTrace(throwable);
+                            addErrMap(throwable, errorCode, errorCodeQname);
 
                             // Evaluate catch expression
                             catchResultSeq = ((Expression) catchClause.getCatchExpr()).eval(contextSequence, contextItem);
@@ -250,7 +257,7 @@ public class TryCatchExpression extends AbstractExpression {
     // can reference it without raising an error. The purpose of this 
     // variable is to allow implementations to provide any additional 
     // information that might be useful.
-    private void addErrAdditional(final Throwable t) throws XPathException {
+    private void addErrAdditional() throws XPathException {
         final LocalVariable err_additional = new LocalVariable(QN_ADDITIONAL);
         err_additional.setSequenceType(new SequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE));
         err_additional.setValue(Sequence.EMPTY_SEQUENCE);
@@ -483,23 +490,6 @@ public class TryCatchExpression extends AbstractExpression {
         return new String[]{errorText.substring(0, p).trim(), errorText.substring(p + 1).trim()};
     }
 
-    /**
-     * Write stacktrace to String. 
-     */
-    private String getStackTrace(final Throwable t ) throws IOException {
-		if (t == null) {
-            return null;
-        }
-
-        try(final StringWriter sw = new StringWriter();
-            final PrintWriter pw = new PrintWriter(sw)) {
-
-            t.printStackTrace(pw);
-            pw.flush();
-            return sw.toString();
-        }
-    }
-
     private void addFunctionTrace(final Throwable t) throws XPathException {
         final LocalVariable localVar = new LocalVariable(QN_XQUERY_STACK_TRACE);
         localVar.setSequenceType(new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE));
@@ -556,6 +546,102 @@ public class TryCatchExpression extends AbstractExpression {
         }
     }
 
+
+    // XQuery 4.0 PR1470/PR1599: $err:stack-trace as xs:string?
+    private void addStackTrace(final Throwable t) throws XPathException {
+        final LocalVariable localVar = new LocalVariable(QN_STACK_TRACE);
+        localVar.setSequenceType(new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE));
+
+        final Sequence trace;
+        if (t instanceof XPathException xpe && xpe.getCallStack() != null && !xpe.getCallStack().isEmpty()) {
+            final StringBuilder sb = new StringBuilder();
+            for (final XPathException.FunctionStackElement elt : xpe.getCallStack()) {
+                if (sb.length() > 0) {
+                    sb.append('\n');
+                }
+                sb.append("at ").append(elt.toString());
+            }
+            trace = new StringValue(this, sb.toString());
+        } else {
+            trace = Sequence.EMPTY_SEQUENCE;
+        }
+        localVar.setValue(trace);
+
+        context.declareVariableBinding(localVar);
+    }
+
+    // XQuery 4.0 PR493: $err:map -- map(xs:string, item()*) of all error properties
+    private void addErrMap(final Throwable t, final ErrorCode errorCode, final QName errorCodeQname) throws XPathException {
+        final LocalVariable localVar = new LocalVariable(QN_MAP);
+        localVar.setSequenceType(new SequenceType(Type.MAP_ITEM, Cardinality.EXACTLY_ONE));
+
+        final MapType errMap = new MapType(this, context);
+        errMap.add(new StringValue(this, "code"), new QNameValue(this, context, errorCodeQname));
+        errMap.add(new StringValue(this, "description"), buildDescription(t, errorCode));
+        errMap.add(new StringValue(this, "value"), errorValueOf(t));
+        errMap.add(new StringValue(this, "module"), moduleOf(t));
+        errMap.add(new StringValue(this, "line-number"), lineNumberOf(t));
+        errMap.add(new StringValue(this, "column-number"), columnNumberOf(t));
+        errMap.add(new StringValue(this, "additional"), Sequence.EMPTY_SEQUENCE);
+        errMap.add(new StringValue(this, "stack-trace"), stackTraceOf(t));
+
+        localVar.setValue(errMap);
+        context.declareVariableBinding(localVar);
+    }
+
+    private Sequence buildDescription(final Throwable t, final ErrorCode errorCode) {
+        final Optional<String> errorDesc = Optional.ofNullable(errorCode.getDescription());
+        final Optional<String> throwableDesc = Optional.ofNullable(
+                t instanceof XPathException xpe ? xpe.getDetailMessage() : (t != null ? t.getMessage() : null));
+        return errorDesc
+                .<Sequence>map(d -> new StringValue(this,
+                        throwableDesc.filter(td -> !td.equals(d))
+                                .map(td -> d + (d.endsWith(".") ? " " : ". ") + td)
+                                .orElse(d)))
+                .orElse(Sequence.EMPTY_SEQUENCE);
+    }
+
+    private static Sequence errorValueOf(final Throwable t) {
+        if (t instanceof XPathException xpe && xpe.getErrorVal() != null) {
+            return xpe.getErrorVal();
+        }
+        return Sequence.EMPTY_SEQUENCE;
+    }
+
+    private Sequence moduleOf(final Throwable t) {
+        if (t instanceof XPathException xpe && xpe.getSource() != null) {
+            return new StringValue(this, xpe.getSource().pathOrShortIdentifier());
+        }
+        return Sequence.EMPTY_SEQUENCE;
+    }
+
+    private Sequence lineNumberOf(final Throwable t) {
+        if (t instanceof XPathException xpe && xpe.getLine() > 0) {
+            return new IntegerValue(this, xpe.getLine());
+        }
+        return Sequence.EMPTY_SEQUENCE;
+    }
+
+    private Sequence columnNumberOf(final Throwable t) {
+        if (t instanceof XPathException xpe && xpe.getColumn() > 0) {
+            return new IntegerValue(this, xpe.getColumn());
+        }
+        return Sequence.EMPTY_SEQUENCE;
+    }
+
+    private Sequence stackTraceOf(final Throwable t) {
+        if (!(t instanceof XPathException xpe) || xpe.getCallStack() == null || xpe.getCallStack().isEmpty()) {
+            return Sequence.EMPTY_SEQUENCE;
+        }
+        final StringBuilder sb = new StringBuilder();
+        for (final XPathException.FunctionStackElement elt : xpe.getCallStack()) {
+            if (sb.length() > 0) {
+                sb.append('\n');
+            }
+            sb.append("at ").append(elt.toString());
+        }
+        return new StringValue(this, sb.toString());
+    }
 
     /**
      * Data container

@@ -158,6 +158,8 @@ imaginaryTokenDefinitions
 	INLINE_FUNCTION_DECL
 	FUNCTION_INLINE
 	FUNCTION_TEST
+	CONTEXT_ITEM_FUNC
+	KEYWORD_ARG
 	MAP
 	MAP_TEST
 	LOOKUP
@@ -1222,10 +1224,13 @@ stepExpr throws XPathException
 	|
 	( ( "element" | "attribute" | "text" | "document" | "comment" |
 	  "namespace-node" | "processing-instruction" | "namespace" | "ordered" |
-	  "unordered" | "map" | "array" ) LCURLY ) =>
+	  "unordered" | "map" | "array" | "fn" ) LCURLY ) =>
 	postfixExpr
 	|
 	( ( "element" | "attribute" | "processing-instruction" | "namespace" ) eqName LCURLY ) => postfixExpr
+	|
+	// XQuery 4.0 PR1071: bare-brace map constructor at primaryExpr level
+	( LCURLY ) => postfixExpr
 	|
 	( MOD | DOLLAR | ( eqName ( LPAREN | HASH ) ) | SELF | LPAREN | literal | XML_COMMENT | LT |
 	  XML_PI | QUESTION | LPPAREN | STRING_CONSTRUCTOR_START )
@@ -1423,9 +1428,16 @@ primaryExpr throws XPathException
 	|
 	( "map" LCURLY ) => mapConstructor
 	|
+	// XQuery 4.0 context-item function expression (PR1499): fn { body }
+	// Equivalent to function($_) { body-with-.-bound-to-$_ }; arity 1.
+	( "fn" LCURLY ) => contextItemFunctionExpr
+	|
+	// XQuery 4.0 bare-brace map constructor (PR1071): { } or { k: v, ... }
+	( LCURLY ) => bareMapConstructor
+	|
 	directConstructor
 	|
-	( MOD | "function" LPAREN | eqName HASH ) => functionItemExpr
+	( MOD | "function" LPAREN | "fn" LPAREN | eqName HASH ) => functionItemExpr
 	|
 	( eqName LPAREN ) => functionCall
 	|
@@ -1474,6 +1486,34 @@ mapConstructor throws XPathException
     }
     ;
 
+// === XQuery 4.0 Parser Extensions ===
+// XQ4 PR1071 bare-brace map constructor: { } or { k: v, ... }
+// Builds the same MAP AST as `map { ... }` so the tree walker treats both alike.
+bareMapConstructor throws XPathException
+:
+    b:LCURLY! ( mapAssignment ( COMMA! mapAssignment )* )? RCURLY!
+    {
+        #bareMapConstructor = #(#[MAP, "map"], #bareMapConstructor);
+        #bareMapConstructor.copyLexInfo(#b);
+    }
+    ;
+
+// XQ4 PR1499 context-item function expression: fn { body }
+// Equivalent to function($_arg) { body }, where `.` inside body is bound to $_arg.
+// The CONTEXT_ITEM_FUNC node holds the body expression as its single child;
+// the tree walker materialises it as a UserDefinedFunction-like callable.
+// `expr` (not `exprSingle`) so the body may be a comma-separated sequence
+// like `fn { ., .+10, .+20 }`.
+contextItemFunctionExpr throws XPathException
+:
+    f:"fn"! LCURLY! expr RCURLY!
+    {
+        #contextItemFunctionExpr = #(#[CONTEXT_ITEM_FUNC, "fn"], #contextItemFunctionExpr);
+        #contextItemFunctionExpr.copyLexInfo(#f);
+    }
+    ;
+// === End XQuery 4.0 Parser Extensions ===
+
 mapAssignment throws XPathException
 :
     (exprSingle COLON! EQ!) => exprSingle COLON^ eq:EQ^ exprSingle
@@ -1482,7 +1522,11 @@ mapAssignment throws XPathException
                "The ':=' notation is no longer accepted in map expressions: use ':' instead.");
     }
     |
-	exprSingle COLON^ exprSingle
+    (exprSingle COLON) => exprSingle COLON^ exprSingle
+    |
+    // XQuery 4.0 PR2094: a map entry may be a single expression that
+    // evaluates to a map; that map is merged into the surrounding one.
+    exprSingle
 	;
 
 arrayConstructor throws XPathException
@@ -1541,7 +1585,26 @@ functionItemExpr throws XPathException
 :
 	( MOD | "function" ) => inlineFunctionExpr
 	|
+	// XQ4 PR1499: `fn (params) { body }` is shorthand for
+	// `function (params) { body }`. We funnel it through inlineFunctionExpr
+	// after consuming the `fn` keyword.
+	( "fn" LPAREN ) => fnInlineFunctionExpr
+	|
 	namedFunctionRef
+	;
+
+fnInlineFunctionExpr throws XPathException
+:
+	"fn"! lp:LPAREN! ( paramList )? RPAREN! ( returnType )? functionBody
+	{
+		#fnInlineFunctionExpr = #(#[INLINE_FUNCTION_DECL, null], null, #fnInlineFunctionExpr);
+		#fnInlineFunctionExpr.copyLexInfo(#lp);
+	}
+	exception catch [RecognitionException e]
+	{
+		throw new XPathException(e.getLine(), e.getColumn(), ErrorCodes.XPST0003,
+				"Syntax error within fn(...){} expression: " + e.getMessage());
+	}
 	;
 
 namedFunctionRef throws XPathException
@@ -1594,9 +1657,25 @@ argumentList throws XPathException
 	;
 
 argument throws XPathException
+{ String kwName = null; }
 :
 	(QUESTION! ( NCNAME | INTEGER_LITERAL | LPAREN | STAR )) => lookup
 	| argumentPlaceholder
+	// XQuery 4.0 keyword argument: name := expr (a colon followed by `=`,
+	// not `:=` because the lexer keeps them as separate tokens). Wrapped
+	// in a KEYWORD_ARG node so FunctionFactory can resolve it to a
+	// positional slot using the called function's parameter names.
+	// The name accepts NCNAME or any reserved keyword (e.g. `value`, `to`,
+	// `node`, `function`) -- XQuery 4.0 spec parameter names sometimes
+	// collide with the reserved-keyword set.
+	| (ncnameOrKeyword COLON EQ) => kwName=ncnameOrKeyword! COLON! EQ!
+		// `?` followed by `,` or `)` is a partial-application placeholder.
+		// `?` followed by NCNAME/INT/LPAREN/STAR would be a unary lookup
+		// expression, so let exprSingle handle that case.
+		( (QUESTION (COMMA | RPAREN)) => argumentPlaceholder | exprSingle )
+	{
+		#argument = #(#[KEYWORD_ARG, kwName], #argument);
+	}
 	| exprSingle
 	;
 
@@ -2161,6 +2240,11 @@ reservedKeywords returns [String name]
 	|
 	"function" { name= "function"; }
 	|
+	// XQ4 PR1499 introduces `fn` as a keyword in `fn { ... }` expressions.
+	// Allow it as an unprefixed name elsewhere (e.g. variable parts, function
+	// names without a namespace) so it stays compatible with existing scripts.
+	"fn" { name = "fn"; }
+	|
 	"external" { name = "external"; }
 	|
 	"as" { name = "as"; }
@@ -2467,7 +2551,14 @@ options {
 
 protected INTEGER_LITERAL
 :
-	{ !(inElementContent || inAttributeContent) }? DIGITS
+	{ !(inElementContent || inAttributeContent) }?
+	(
+		// XQuery 4.0 numeric literal extensions: hex (0x...) and binary (0b...)
+		// prefixes, plus '_' digit separators between digits.
+		( '0' ('x' | 'X') ) => '0' ('x' | 'X') HEX_DIGITS ( '_' HEX_DIGITS )*
+		| ( '0' ('b' | 'B') ) => '0' ('b' | 'B') ('0' | '1')+ ( '_' ('0' | '1')+ )*
+		| DIGITS ( '_' DIGITS )*
+	)
 	;
 
 protected DOUBLE_LITERAL

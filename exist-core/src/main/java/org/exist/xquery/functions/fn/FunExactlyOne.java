@@ -53,7 +53,7 @@ public class FunExactlyOne extends Function {
 			"Returns the argument sequence, $items, if it contains exactly one item. Otherwise, " +
 			"raises an error.",
 			new SequenceType[] {
-                new FunctionParameterSequenceType("items", Type.ITEM, Cardinality.ZERO_OR_MORE, "The item sequence")
+                new FunctionParameterSequenceType("input", Type.ITEM, Cardinality.ZERO_OR_MORE, "The item sequence")
 			},
 			new FunctionReturnSequenceType(Type.ITEM, Cardinality.EXACTLY_ONE, "the sole item in $items if it contains exactly one item. Otherwise, an error is raised."));
 

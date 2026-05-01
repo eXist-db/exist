@@ -44,9 +44,9 @@ public class FunCollationKey extends BasicFunction {
                     "property that the matching and ordering of collation " +
                     "keys reflects the matching and ordering of strings " +
                     "under the specified collation.";
-    private static final FunctionReturnSequenceType FN_RETURN = returnsOpt(Type.BASE64_BINARY, "the collation key");
-    private static final FunctionParameterSequenceType PARAM_VALUE_STRING = param("value-string", Type.STRING, "The value string");
-    private static final FunctionParameterSequenceType PARAM_COLLATION_STRING = param("collation-string", Type.STRING, "The collation string");
+    private static final FunctionReturnSequenceType FN_RETURN = returns(Type.BASE64_BINARY, "the collation key");
+    private static final FunctionParameterSequenceType PARAM_VALUE_STRING = param("value", Type.STRING, "The value string");
+    private static final FunctionParameterSequenceType PARAM_COLLATION_STRING = optParam("collation", Type.STRING, "The collation string");
     public static final FunctionSignature[] FS_COLLATION_KEY_SIGNATURES = functionSignatures(
             FN_NAME,
             FN_DESCRIPTION,
@@ -63,7 +63,9 @@ public class FunCollationKey extends BasicFunction {
 
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
         final String source = (args.length >= 1) ? args[0].itemAt(0).toString() : "";
-        final Collator collator = (args.length >= 2) ? Collations.getCollationFromURI(args[1].itemAt(0).toString(), ErrorCodes.FOCH0002) : null;
+        final Collator collator = (args.length >= 2 && !args[1].isEmpty())
+                ? Collations.getCollationFromURI(args[1].itemAt(0).toString(), ErrorCodes.FOCH0002)
+                : null;
         final Sequence sequence;
         try (BinaryValueFromBinaryString binaryValue = new BinaryValueFromBinaryString(
                 new Base64BinaryValueType(),

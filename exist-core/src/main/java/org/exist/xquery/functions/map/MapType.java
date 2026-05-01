@@ -55,10 +55,57 @@ import java.util.function.ToLongFunction;
  */
 public class MapType extends AbstractMapType {
 
-    private static final ToLongFunction<AtomicValue> KEY_HASH_FN = AtomicValue::hashCode;
+    /**
+     * Hash an atomic value using a key that is consistent with op:same-key.
+     * Numeric keys with the same value (regardless of subtype) must hash the same
+     * so a duplicate-key check can find them in the same bucket. NaN, +INF and
+     * -INF use sentinel hashes; finite numerics canonicalise via xs:decimal.
+     * Strings, anyURI and untypedAtomic share a string-content hash. Other
+     * atomic types fall back to {@link AtomicValue#hashCode()}.
+     */
+    private static final ToLongFunction<AtomicValue> KEY_HASH_FN = MapType::sameKeyHash;
+
+    private static long sameKeyHash(final AtomicValue v) {
+        final int t = v.getType();
+        if (Type.subTypeOf(t, Type.STRING) || t == Type.ANY_URI || t == Type.UNTYPED_ATOMIC) {
+            try {
+                return v.getStringValue().hashCode();
+            } catch (final XPathException e) {
+                return v.hashCode();
+            }
+        }
+        if (Type.subTypeOf(t, Type.DECIMAL) || t == Type.DOUBLE || t == Type.FLOAT) {
+            final NumericValue n = (NumericValue) v;
+            if (n.isNaN()) {
+                return 0x4e614e4eL; // 'NaNN'
+            }
+            if (n.isPositiveInfinity()) {
+                return 0x70496e66L; // 'pInf'
+            }
+            if (n.isNegativeInfinity()) {
+                return 0x6e496e66L; // 'nInf'
+            }
+            try {
+                return n.convertTo(Type.DECIMAL).hashCode();
+            } catch (final XPathException e) {
+                return v.hashCode();
+            }
+        }
+        return v.hashCode();
+    }
 
     // TODO(AR) future potential optimisation... could the class member `map` remain `linear` ?
     private IMap<AtomicValue, Sequence> map;
+
+    /**
+     * Insertion-order index of distinct keys (XPath/XQuery 4.0 PR1703).
+     * Maintained when entries are appended via {@link #add(AtomicValue, Sequence)}
+     * so {@link #keys()} can return keys in the order they were first inserted.
+     * Lazily allocated. Reset to {@code null} when an operation can no longer
+     * preserve order (e.g. union with another map of unknown order).
+     */
+    @Nullable
+    private java.util.ArrayList<AtomicValue> insertionOrder;
 
     /**
      * The type of the keys in the map,
@@ -114,6 +161,8 @@ public class MapType extends AbstractMapType {
         super(expression, context);
         this.map = newMap(collator).put(key, value);
         this.keyType = key.getType();
+        this.insertionOrder = new java.util.ArrayList<>(1);
+        this.insertionOrder.add(key);
     }
 
     public MapType(final XQueryContext context, @Nullable final Collator collator, final Iterable<Tuple2<AtomicValue, Sequence>> keyValues) {
@@ -131,16 +180,32 @@ public class MapType extends AbstractMapType {
     public MapType(final Expression expression, final XQueryContext context, @Nullable final Collator collator, final Iterator<Tuple2<AtomicValue, Sequence>> keyValues) {
         super(expression, context);
 
-        // bulk put
+        // bulk put; record insertion order for iteration consumers
         final IMap<AtomicValue, Sequence> map = newMap(collator).linear();
-        keyValues.forEachRemaining(kv -> map.put(kv._1, kv._2));
+        final java.util.ArrayList<AtomicValue> order = new java.util.ArrayList<>();
+        keyValues.forEachRemaining(kv -> {
+            if (!map.contains(kv._1)) {
+                order.add(kv._1);
+            }
+            map.put(kv._1, kv._2);
+        });
         this.map = map.forked();
+        this.insertionOrder = order.isEmpty() ? null : order;
 
         setKeyType(map);
     }
 
     public MapType(final XQueryContext context, final IMap<AtomicValue, Sequence> other, @Nullable final Integer keyType) {
         this(null, context, other, keyType);
+    }
+
+    public MapType(final Expression expression, final XQueryContext context,
+            final IMap<AtomicValue, Sequence> other, @Nullable final Integer keyType,
+            @Nullable final java.util.List<AtomicValue> insertionOrder) {
+        this(expression, context, other, keyType);
+        if (insertionOrder != null && !insertionOrder.isEmpty()) {
+            this.insertionOrder = new java.util.ArrayList<>(insertionOrder);
+        }
     }
 
     public MapType(final Expression expression, final XQueryContext context, final IMap<AtomicValue, Sequence> other, @Nullable final Integer keyType) {
@@ -162,14 +227,25 @@ public class MapType extends AbstractMapType {
     public void add(final AbstractMapType other) {
         setKeyType(other.key() != null ? other.key().getType() : UNKNOWN_KEY_TYPE);
 
-        if(other instanceof MapType) {
-            map = map.union(((MapType)other).map);
+        if(other instanceof MapType otherMap) {
+            // Capture new keys in source order before union mutates the map.
+            if (insertionOrder == null) {
+                insertionOrder = new java.util.ArrayList<>();
+            }
+            appendNewKeys(map, otherMap, insertionOrder);
+            map = map.union(otherMap.map);
         } else {
 
             // create a transient map
             final IMap<AtomicValue, Sequence> newMap = map.linear();
 
             for (final IEntry<AtomicValue, Sequence> entry : other) {
+                if (insertionOrder == null) {
+                    insertionOrder = new java.util.ArrayList<>();
+                }
+                if (!newMap.contains(entry.key())) {
+                    insertionOrder.add(entry.key());
+                }
                 newMap.put(entry.key(), entry.value());
             }
 
@@ -181,22 +257,43 @@ public class MapType extends AbstractMapType {
     @Override
     public AbstractMapType merge(final Iterable<AbstractMapType> others) {
 
-        // create a transient map
+        // create a transient map; track insertion order so map:keys returns
+        // entries in the order they were first inserted across the merged maps.
         IMap<AtomicValue, Sequence> newMap = map.linear();
+        final java.util.ArrayList<AtomicValue> newOrder = insertionOrder != null
+                ? new java.util.ArrayList<>(insertionOrder)
+                : null;
 
         int prevType = keyType;
         for (final AbstractMapType other: others) {
             if (other instanceof MapType otherMap) {
                 // MapType - optimise merge
+                if (newOrder != null) {
+                    appendNewKeys(newMap, otherMap, newOrder);
+                }
                 newMap = newMap.union(otherMap.map);
-
                 if (prevType != otherMap.keyType) {
                     prevType = MIXED_KEY_TYPES;
+                }
+            } else if (other instanceof SingleKeyMapType skm) {
+                // SingleKeyMapType - avoid iterator allocation
+                final AtomicValue key = skm.key();
+                if (key != null) {
+                    if (newOrder != null && !newMap.contains(key)) {
+                        newOrder.add(key);
+                    }
+                    newMap = newMap.put(key, skm.value());
+                    if (prevType != key.getType()) {
+                        prevType = MIXED_KEY_TYPES;
+                    }
                 }
             } else {
                 // non MapType
                 for (final IEntry<AtomicValue, Sequence> entry : other) {
                     final AtomicValue key = entry.key();
+                    if (newOrder != null && !newMap.contains(key)) {
+                        newOrder.add(key);
+                    }
                     newMap = newMap.put(key, entry.value());
                     if (prevType != key.getType()) {
                         prevType = MIXED_KEY_TYPES;
@@ -206,32 +303,78 @@ public class MapType extends AbstractMapType {
         }
 
         // return an immutable map
-        return new MapType(getExpression(), context, newMap.forked(), prevType);
+        return new MapType(getExpression(), context, newMap.forked(), prevType, newOrder);
+    }
+
+    /**
+     * For a {@link MapType} merge source, append any of its keys that are not
+     * already present in {@code current} to {@code newOrder} in source order
+     * (using the source's recorded insertion order if available, otherwise its
+     * iterator order).
+     */
+    private static void appendNewKeys(final IMap<AtomicValue, Sequence> current,
+            final MapType source, final java.util.ArrayList<AtomicValue> newOrder) {
+        if (source.insertionOrder != null) {
+            for (final AtomicValue k : source.insertionOrder) {
+                if (!current.contains(k)) {
+                    newOrder.add(k);
+                }
+            }
+        } else {
+            for (final AtomicValue k : source.map.keys()) {
+                if (!current.contains(k)) {
+                    newOrder.add(k);
+                }
+            }
+        }
     }
 
     @Override
     public AbstractMapType merge(final Iterable<AbstractMapType> others, final BinaryOperator<Sequence> mergeFn) {
 
-        // create a transient map
+        // create a transient map; track insertion order alongside.
         IMap<AtomicValue, Sequence> newMap = map.linear();
+        final java.util.ArrayList<AtomicValue> newOrder = insertionOrder != null
+                ? new java.util.ArrayList<>(insertionOrder)
+                : null;
 
         int prevType = keyType;
         for (final AbstractMapType other: others) {
             if (other instanceof MapType otherMap) {
-                // MapType - optimise merge
+                if (newOrder != null) {
+                    appendNewKeys(newMap, otherMap, newOrder);
+                }
                 newMap = newMap.merge(otherMap.map, mergeFn);
-
                 if (prevType != otherMap.keyType) {
                     prevType = MIXED_KEY_TYPES;
                 }
+            } else if (other instanceof SingleKeyMapType skm) {
+                final AtomicValue key = skm.key();
+                if (key != null) {
+                    final Sequence value = skm.value();
+                    final Optional<Sequence> headEntry = newMap.get(key);
+                    if (headEntry.isPresent()) {
+                        newMap = newMap.put(key, mergeFn.apply(headEntry.get(), value));
+                    } else {
+                        if (newOrder != null) {
+                            newOrder.add(key);
+                        }
+                        newMap = newMap.put(key, value);
+                    }
+                    if (prevType != key.getType()) {
+                        prevType = MIXED_KEY_TYPES;
+                    }
+                }
             } else {
-                // non MapType
                 for (final IEntry<AtomicValue, Sequence> entry : other) {
                     final AtomicValue key = entry.key();
                     final Optional<Sequence> headEntry = newMap.get(key);
                     if (headEntry.isPresent()) {
                         newMap = newMap.put(key, mergeFn.apply(headEntry.get(), entry.value()));
                     } else {
+                        if (newOrder != null) {
+                            newOrder.add(key);
+                        }
                         newMap = newMap.put(key, entry.value());
                     }
                     if (prevType != key.getType()) {
@@ -242,19 +385,29 @@ public class MapType extends AbstractMapType {
         }
 
         // return an immutable map
-        return new MapType(context, newMap.forked(), prevType);
+        return new MapType(null, context, newMap.forked(), prevType, newOrder);
     }
 
     public void add(final AtomicValue key, final Sequence value) {
         setKeyType(key.getType());
+        final boolean wasPresent = map.contains(key);
         map = map.put(key, value);
+        if (!wasPresent) {
+            if (insertionOrder == null) {
+                insertionOrder = new java.util.ArrayList<>(Math.max(8, (int) map.size()));
+            }
+            insertionOrder.add(key);
+        }
     }
 
     @Override
     public Sequence get(AtomicValue key) {
-        key = convert(key);
-        if (key == null) {
-            return Sequence.EMPTY_SEQUENCE;
+        if (keyType != UNKNOWN_KEY_TYPE && keyType != MIXED_KEY_TYPES && key.getType() != keyType) {
+            try {
+                key = key.convertTo(keyType);
+            } catch (final XPathException e) {
+                return Sequence.EMPTY_SEQUENCE;
+            }
         }
 
         return map.get(key, Sequence.EMPTY_SEQUENCE);
@@ -262,15 +415,41 @@ public class MapType extends AbstractMapType {
 
     @Override
     public AbstractMapType put(final AtomicValue key, final Sequence value) {
+        final boolean wasPresent = map.contains(key);
         final IMap<AtomicValue, Sequence> newMap = map.put(key, value);
-        return new MapType(getExpression(), this.context, newMap, keyType == key.getType() ? keyType : MIXED_KEY_TYPES);
+        final java.util.ArrayList<AtomicValue> newOrder;
+        if (insertionOrder == null) {
+            // No prior order; bootstrap from the bifurcan map's keys (in their
+            // hash-bucket order, since that is the only order we have for the
+            // existing entries) and append the new key. For an empty map this
+            // simply yields a one-element list.
+            newOrder = new java.util.ArrayList<>((int) map.size() + (wasPresent ? 0 : 1));
+            for (final AtomicValue k : map.keys()) {
+                newOrder.add(k);
+            }
+            if (!wasPresent) {
+                newOrder.add(key);
+            }
+        } else if (wasPresent) {
+            // Replacing an existing key preserves the existing order.
+            newOrder = new java.util.ArrayList<>(insertionOrder);
+        } else {
+            newOrder = new java.util.ArrayList<>(insertionOrder.size() + 1);
+            newOrder.addAll(insertionOrder);
+            newOrder.add(key);
+        }
+        return new MapType(getExpression(), this.context, newMap,
+                keyType == key.getType() ? keyType : MIXED_KEY_TYPES, newOrder);
     }
 
     @Override
     public boolean contains(AtomicValue key) {
-        key = convert(key);
-        if (key == null) {
-            return false;
+        if (keyType != UNKNOWN_KEY_TYPE && keyType != MIXED_KEY_TYPES && key.getType() != keyType) {
+            try {
+                key = key.convertTo(keyType);
+            } catch (final XPathException e) {
+                return false;
+            }
         }
 
         return map.contains(key);
@@ -299,23 +478,46 @@ public class MapType extends AbstractMapType {
     @Override
     public Sequence keys() {
         final ArrayListValueSequence seq = new ArrayListValueSequence((int)map.size());
-        for (final AtomicValue key: map.keys()) {
-            seq.add(key);
+        // Prefer the recorded insertion order (XPath/XQuery 4.0 PR1703) when
+        // available; fall back to the bifurcan map's hash-bucket order.
+        if (insertionOrder != null && insertionOrder.size() == map.size()) {
+            for (final AtomicValue key : insertionOrder) {
+                seq.add(key);
+            }
+        } else {
+            for (final AtomicValue key : map.keys()) {
+                seq.add(key);
+            }
         }
         return seq;
     }
 
     public AbstractMapType remove(final AtomicValue[] keysAtomicValues) {
-
-        // create a transient map
+        if (keysAtomicValues.length == 0) {
+            return this;
+        }
+        // create a transient map and trim the insertion order list to match.
         IMap<AtomicValue, Sequence> newMap = map.linear();
-
-        for (final AtomicValue key: keysAtomicValues) {
+        for (final AtomicValue key : keysAtomicValues) {
             newMap = newMap.remove(key);
         }
-
-        // return an immutable map
-        return new MapType(getExpression(), context, newMap.forked(), keyType);
+        final java.util.ArrayList<AtomicValue> newOrder;
+        if (insertionOrder == null) {
+            newOrder = null;
+        } else {
+            newOrder = new java.util.ArrayList<>(insertionOrder.size());
+            // Use the bifurcan map's contains() with same-key semantics to
+            // decide which keys remain. This handles the op:same-key cases
+            // (e.g. xs:double('-INF') vs xs:float('-INF')) correctly because
+            // the bifurcan map's equality function is sameKey.
+            final IMap<AtomicValue, Sequence> finalMap = newMap;
+            for (final AtomicValue k : insertionOrder) {
+                if (finalMap.contains(k)) {
+                    newOrder.add(k);
+                }
+            }
+        }
+        return new MapType(getExpression(), context, newMap.forked(), keyType, newOrder);
     }
 
     @Override
@@ -325,30 +527,41 @@ public class MapType extends AbstractMapType {
 
     @Override
     public Iterator<IEntry<AtomicValue, Sequence>> iterator() {
+        // Iterate in insertion order when we have it (XQ4 PR1703); fall back
+        // to the bifurcan iterator when order tracking is unavailable.
+        if (insertionOrder != null && insertionOrder.size() == map.size()) {
+            final java.util.Iterator<AtomicValue> keyIter = insertionOrder.iterator();
+            return new Iterator<>() {
+                @Override public boolean hasNext() { return keyIter.hasNext(); }
+                @Override public IEntry<AtomicValue, Sequence> next() {
+                    final AtomicValue k = keyIter.next();
+                    return IEntry.of(k, map.get(k, Sequence.EMPTY_SEQUENCE));
+                }
+            };
+        }
         return map.iterator();
     }
 
     @Override
     public AtomicValue key() {
+        if (insertionOrder != null && !insertionOrder.isEmpty() && insertionOrder.size() == map.size()) {
+            return insertionOrder.get(0);
+        }
         if (map.size() > 0) {
             final IEntry<AtomicValue, Sequence> entry = map.nth(0);
             if (entry != null) {
                 return entry.key();
             }
         }
-
         return null;
     }
 
     @Override
     public Sequence value() {
-        if (map.size() > 0) {
-            final IEntry<AtomicValue, Sequence> entry = map.nth(0);
-            if (entry != null) {
-                return entry.value();
-            }
+        final AtomicValue first = key();
+        if (first != null) {
+            return map.get(first, Sequence.EMPTY_SEQUENCE);
         }
-
         return null;
     }
 
@@ -373,17 +586,6 @@ public class MapType extends AbstractMapType {
                 break; // done, we only have to detect this once!
             }
         }
-    }
-
-    private AtomicValue convert(final AtomicValue key) {
-        if (keyType != UNKNOWN_KEY_TYPE && keyType != MIXED_KEY_TYPES) {
-            try {
-                return key.convertTo(keyType);
-            } catch (final XPathException e) {
-                return null;
-            }
-        }
-        return key;
     }
 
     @Override

@@ -24,6 +24,7 @@ xquery version "3.1";
 module namespace xtj="http://exist-db.org/xquery/test/xml-to-json";
 
 declare default element namespace "http://www.w3.org/2005/xpath-functions";
+
 declare namespace test="http://exist-db.org/xquery/xqsuite";
 
 declare variable $xtj:collection-name := "xml-to-json-test";
@@ -100,10 +101,14 @@ function xtj:xml-to-json-null($arg1) {
 
 declare
     %test:arg('arg1','')
-    %test:assertEquals('false')
+    %test:assertError('FOJS0006')
     %test:arg('arg1','0')
     %test:assertEquals('false')
     %test:arg('arg1','1')
+    %test:assertEquals('true')
+    %test:arg('arg1','false')
+    %test:assertEquals('false')
+    %test:arg('arg1','true')
     %test:assertEquals('true')
 function xtj:xml-to-json-boolean($arg1) {
     let $node := <boolean>{$arg1}</boolean>
@@ -152,11 +157,9 @@ declare
     %test:arg('arg1', '&#10;')
     %test:assertEquals('"\n"')
     %test:arg('arg1', '/')
-    %test:assertEquals('"/"')
-(: TODO: needs implementation
+    %test:assertEquals('"\/"')
     %test:arg('arg1', '&#127;')
     %test:assertEquals('"\u007F"')
-:)
 function xtj:xml-to-json-string-unescaped($arg1) {
     let $node := <string>{$arg1}</string>
     return fn:xml-to-json($node)
@@ -173,22 +176,16 @@ declare
     %test:assertEquals('"ab"')
     %test:arg('arg1', '\n')
     %test:assertEquals('"\n"')
-    %test:arg('arg1', '"')
+    %test:arg('arg1', '\x')
     %test:assertError('FOJS0007')
-    %test:arg('arg1', '&#10;')
+    %test:arg('arg1', '\uABC')
     %test:assertError('FOJS0007')
-(: TODO: needs implementation
     %test:arg('arg1', '/')
     %test:assertEquals('"\/"')
-    %test:arg('arg1', ' /')
-    %test:assertEquals('" \/"')
     %test:arg('arg1', '\/')
     %test:assertEquals('"\/"')
     %test:arg('arg1', '&#127;')
     %test:assertEquals('"\u007F"')
-    %test:arg('arg1', '""')
-    %test:assertEquals('"\"\""')
-:)
 function xtj:xml-to-json-string-escaped($arg1) {
     let $node := <string escaped="true">{$arg1}</string>
     return fn:xml-to-json($node)
@@ -352,7 +349,7 @@ function xtj:xml-to-json-toplevelElementKey($arg1) {
 };
 
 declare
-    %test:assertEquals('"<test> \\ </test>"')
+    %test:assertEquals('"<test> \\ <\/test>"')
 function xtj:xml-to-json-xmlInJsonString() {
     let $node := <string>&lt;test&gt; \ &lt;/test&gt;</string>
     return fn:xml-to-json($node)

@@ -55,7 +55,19 @@ public class MapModule extends AbstractInternalModule {
             MapFunction.PUT,
             MapFunction.ENTRY,
             MapFunction.REMOVE,
-            MapFunction.FOR_EACH
+            MapFunction.FOR_EACH,
+            // --- XQuery 4.0 map functions ---
+            MapFunction.FNS_GET_DEFAULT,
+            MapFunction.FNS_EMPTY[0],
+            MapFunction.FNS_EMPTY[1],
+            MapFunction.BUILD_0,
+            MapFunction.BUILD_1,
+            MapFunction.BUILD_2,
+            MapFunction.BUILD_3,
+            MapFunction.ITEMS,
+            MapFunction.ENTRIES,
+            MapFunction.FILTER_SIG,
+            MapFunction.KEYS_WHERE
     );
 
     public MapModule(Map<String, List<?>> parameters) {

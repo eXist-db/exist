@@ -325,6 +325,12 @@
         </dependency>
 
         <dependency>
+            <groupId>nu.validator</groupId>
+            <artifactId>htmlparser</artifactId>
+            <version>1.4.16</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.apache.ws.commons.util</groupId>
             <artifactId>ws-commons-util</artifactId>
             <version>1.0.2</version>
@@ -389,6 +395,11 @@
         <dependency>
             <groupId>net.sf.saxon</groupId>
             <artifactId>Saxon-HE</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>de.bottlecaps</groupId>
+            <artifactId>markup-blitz</artifactId>
         </dependency>
 
         <dependency>

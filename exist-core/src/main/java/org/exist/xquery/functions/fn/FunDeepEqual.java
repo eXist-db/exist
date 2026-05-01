@@ -35,6 +35,7 @@ import org.exist.xquery.Constants;
 import org.exist.xquery.Dependency;
 import org.exist.xquery.Function;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.InlineFunction;
 import org.exist.xquery.Profiler;
 import org.exist.xquery.ValueComparison;
 import org.exist.xquery.XPathException;
@@ -43,6 +44,7 @@ import org.exist.xquery.functions.array.ArrayType;
 import org.exist.xquery.functions.map.AbstractMapType;
 import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.BooleanValue;
+import org.exist.xquery.value.FunctionReference;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Item;
@@ -55,6 +57,8 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Implements the fn:deep-equal library function.
@@ -72,9 +76,9 @@ public class FunDeepEqual extends CollatingFunction {
             "at the same position in $items-2, false() otherwise. " +
             "If both $items-1 and $items-2 are the empty sequence, returns true(). ",
             new SequenceType[] {
-                new FunctionParameterSequenceType("items-1", Type.ITEM,
+                new FunctionParameterSequenceType("input1", Type.ITEM,
                     Cardinality.ZERO_OR_MORE, "The first item sequence"),
-                new FunctionParameterSequenceType("items-2", Type.ITEM,
+                new FunctionParameterSequenceType("input2", Type.ITEM,
                     Cardinality.ZERO_OR_MORE, "The second item sequence")
             },
             new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE,
@@ -88,11 +92,11 @@ public class FunDeepEqual extends CollatingFunction {
             "Comparison collation is specified by $collation-uri. " + 
             THIRD_REL_COLLATION_ARG_EXAMPLE,
             new SequenceType[] {
-                new FunctionParameterSequenceType("items-1", Type.ITEM,
+                new FunctionParameterSequenceType("input1", Type.ITEM,
                     Cardinality.ZERO_OR_MORE, "The first item sequence"),
-                new FunctionParameterSequenceType("items-2", Type.ITEM,
+                new FunctionParameterSequenceType("input2", Type.ITEM,
                     Cardinality.ZERO_OR_MORE, "The second item sequence"),
-                new FunctionParameterSequenceType("collation-uri", Type.STRING,
+                new FunctionParameterSequenceType("collation", Type.STRING,
                     Cardinality.EXACTLY_ONE, "The collation URI")
             },
             new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE,
@@ -176,149 +180,180 @@ public class FunDeepEqual extends CollatingFunction {
         if (item1 == item2) {
             return Constants.EQUAL;
         }
-
         try {
             if (item1.getType() == Type.ARRAY_ITEM || item2.getType() == Type.ARRAY_ITEM) {
-                if (item1.getType() != item2.getType()) {
-                    return Constants.INFERIOR;
-                }
-                final ArrayType array1 = (ArrayType) item1;
-                final ArrayType array2 = (ArrayType) item2;
-                final int array1Size = array1.getSize();
-                final int array2Size = array2.getSize();
-                if (array1Size == array2Size) {
-                    for (int i = 0; i < array1.getSize(); i++) {
-                        final int comparison = deepCompareSeq(array1.get(i), array2.get(i), collator);
-                        if (comparison != Constants.EQUAL) {
-                            return comparison;
-                        }
-                    }
-                    return Constants.EQUAL;
-                } else {
-                    return array1Size < array2Size ? Constants.INFERIOR : Constants.SUPERIOR;
-                }
+                return compareArrays(item1, item2, collator);
             }
-
             if (item1.getType() == Type.MAP_ITEM || item2.getType() == Type.MAP_ITEM) {
-                if (item1.getType() != item2.getType()) {
-                    return Constants.INFERIOR;
-                }
-                final AbstractMapType map1 = (AbstractMapType) item1;
-                final AbstractMapType map2 = (AbstractMapType) item2;
-                final int map1Size = map1.size();
-                final int map2Size = map2.size();
-
-                if (map1Size == map2Size) {
-                    for (final IEntry<AtomicValue, Sequence> entry1 : map1) {
-                        if (!map2.contains(entry1.key())) {
-                            return Constants.SUPERIOR;
-                        }
-
-                        final int comparison = deepCompareSeq(entry1.value(), map2.get(entry1.key()), collator);
-                        if (comparison != Constants.EQUAL) {
-                            return comparison;
-                        }
-                    }
-                    return Constants.EQUAL;
-                } else {
-                    return map1Size < map2Size ? Constants.INFERIOR : Constants.SUPERIOR;
-                }
+                return compareMaps(item1, item2, collator);
             }
-
+            if (Type.subTypeOf(item1.getType(), Type.FUNCTION) || Type.subTypeOf(item2.getType(), Type.FUNCTION)) {
+                return compareFunctions(item1, item2);
+            }
             final boolean item1IsAtomic = Type.subTypeOf(item1.getType(), Type.ANY_ATOMIC_TYPE);
             final boolean item2IsAtomic = Type.subTypeOf(item2.getType(), Type.ANY_ATOMIC_TYPE);
             if (item1IsAtomic || item2IsAtomic) {
-                if (!item1IsAtomic) {
-                    return Constants.SUPERIOR;
-                }
-
-                if (!item2IsAtomic) {
-                    return Constants.INFERIOR;
-                }
-
-                try {
-                    final AtomicValue av = (AtomicValue) item1;
-                    final AtomicValue bv = (AtomicValue) item2;
-                    if (Type.subTypeOfUnion(av.getType(), Type.NUMERIC) &&
-                            Type.subTypeOfUnion(bv.getType(), Type.NUMERIC)) {
-                        //or if both values are NaN
-                        if (((NumericValue) item1).isNaN() && ((NumericValue) item2).isNaN()) {
-                            return Constants.EQUAL;
-                        }
-                    }
-
-                    return ValueComparison.compareAtomic(collator, av, bv);
-                } catch (final XPathException e) {
-                    if (logger.isTraceEnabled()) {
-                        logger.trace(e.getMessage());
-                    }
-                    return Constants.INFERIOR;
-                }
+                return compareAtomics(item1, item2, item1IsAtomic, item2IsAtomic, collator);
             }
-
-            if (item1.getType() != item2.getType()) {
-                return Constants.INFERIOR;
-            }
-            final NodeValue nva = (NodeValue) item1;
-            final NodeValue nvb = (NodeValue) item2;
-            // NOTE(AR): intentional reference equality check
-            if (nva == nvb) {
-                return Constants.EQUAL;
-            }
-
-            try {
-                //Don't use this shortcut for in-memory nodes
-                //since the symbol table is ignored.
-                if (nva.getImplementationType() != NodeValue.IN_MEMORY_NODE &&
-                        nva.equals(nvb)) {
-                    return Constants.EQUAL;  // shortcut!
-                }
-            } catch (final XPathException e) {
-                // apparently incompatible values, do manual comparison
-            }
-
-            final Node node1;
-            final Node node2;
-            switch (item1.getType()) {
-                case Type.DOCUMENT:
-                    node1 = nva instanceof Node nnva ? nnva : ((NodeProxy) nva).getOwnerDocument();
-                    node2 = nvb instanceof Node nnvb ? nnvb : ((NodeProxy) nvb).getOwnerDocument();
-                    return compareContents(node1, node2, collator);
-
-                case Type.ELEMENT:
-                    node1 = nva.getNode();
-                    node2 = nvb.getNode();
-                    return compareElements(node1, node2, collator);
-
-                case Type.ATTRIBUTE:
-                    node1 = nva.getNode();
-                    node2 = nvb.getNode();
-                    final int attributeNameComparison = compareNames(node1, node2);
-                    if (attributeNameComparison != Constants.EQUAL) {
-                        return attributeNameComparison;
-                    }
-                    return safeCompare(node1.getNodeValue(), node2.getNodeValue(), collator);
-
-                case Type.PROCESSING_INSTRUCTION:
-                case Type.NAMESPACE:
-                    node1 = nva.getNode();
-                    node2 = nvb.getNode();
-                    final int nameComparison = safeCompare(node1.getNodeName(), node2.getNodeName(), null);
-                    if (nameComparison != Constants.EQUAL) {
-                        return nameComparison;
-                    }
-                    return safeCompare(nva.getStringValue(), nvb.getStringValue(), collator);
-
-                case Type.TEXT:
-                case Type.COMMENT:
-                    return safeCompare(nva.getStringValue(), nvb.getStringValue(), collator);
-
-                default:
-                    throw new UnexpectedItemTypeException(item1);
-            }
+            return compareNodes(item1, item2, collator);
         } catch (final XPathException e) {
             logger.error(e.getMessage(), e);
             return Constants.INFERIOR;
+        }
+    }
+
+    private static int compareArrays(final Item item1, final Item item2, @Nullable final Collator collator) {
+        if (item1.getType() != item2.getType()) {
+            return Constants.INFERIOR;
+        }
+        final ArrayType array1 = (ArrayType) item1;
+        final ArrayType array2 = (ArrayType) item2;
+        final int array1Size = array1.getSize();
+        final int array2Size = array2.getSize();
+        if (array1Size != array2Size) {
+            return array1Size < array2Size ? Constants.INFERIOR : Constants.SUPERIOR;
+        }
+        for (int i = 0; i < array1Size; i++) {
+            final int comparison = deepCompareSeq(array1.get(i), array2.get(i), collator);
+            if (comparison != Constants.EQUAL) {
+                return comparison;
+            }
+        }
+        return Constants.EQUAL;
+    }
+
+    private static int compareMaps(final Item item1, final Item item2, @Nullable final Collator collator) {
+        if (item1.getType() != item2.getType()) {
+            return Constants.INFERIOR;
+        }
+        final AbstractMapType map1 = (AbstractMapType) item1;
+        final AbstractMapType map2 = (AbstractMapType) item2;
+        final int map1Size = map1.size();
+        final int map2Size = map2.size();
+        if (map1Size != map2Size) {
+            return map1Size < map2Size ? Constants.INFERIOR : Constants.SUPERIOR;
+        }
+        for (final IEntry<AtomicValue, Sequence> entry1 : map1) {
+            if (!map2.contains(entry1.key())) {
+                return Constants.SUPERIOR;
+            }
+            final int comparison = deepCompareSeq(entry1.value(), map2.get(entry1.key()), collator);
+            if (comparison != Constants.EQUAL) {
+                return comparison;
+            }
+        }
+        return Constants.EQUAL;
+    }
+
+    private static int compareFunctions(final Item item1, final Item item2) {
+        if (!Type.subTypeOf(item1.getType(), Type.FUNCTION)
+                || !Type.subTypeOf(item2.getType(), Type.FUNCTION)) {
+            return Constants.INFERIOR;
+        }
+        if (item1 == item2) {
+            return Constants.EQUAL;
+        }
+        if (item1 instanceof FunctionReference ref1 && item2 instanceof FunctionReference ref2) {
+            final QName name1 = ref1.getSignature().getName();
+            final QName name2 = ref2.getSignature().getName();
+            if (name1 != null && name2 != null
+                    && name1 != InlineFunction.INLINE_FUNCTION_QNAME
+                    && name2 != InlineFunction.INLINE_FUNCTION_QNAME
+                    && name1.equals(name2)
+                    && ref1.getSignature().getArgumentCount() == ref2.getSignature().getArgumentCount()) {
+                return Constants.EQUAL;
+            }
+        }
+        return Constants.INFERIOR;
+    }
+
+    private static int compareAtomics(final Item item1, final Item item2,
+            final boolean item1IsAtomic, final boolean item2IsAtomic,
+            @Nullable final Collator collator) {
+        if (!item1IsAtomic) {
+            return Constants.SUPERIOR;
+        }
+        if (!item2IsAtomic) {
+            return Constants.INFERIOR;
+        }
+        try {
+            final AtomicValue av = (AtomicValue) item1;
+            final AtomicValue bv = (AtomicValue) item2;
+            if (Type.subTypeOfUnion(av.getType(), Type.NUMERIC)
+                    && Type.subTypeOfUnion(bv.getType(), Type.NUMERIC)
+                    && ((NumericValue) item1).isNaN() && ((NumericValue) item2).isNaN()) {
+                return Constants.EQUAL;
+            }
+            return ValueComparison.compareAtomic(collator, av, bv);
+        } catch (final XPathException e) {
+            if (logger.isTraceEnabled()) {
+                logger.trace(e.getMessage());
+            }
+            return Constants.INFERIOR;
+        }
+    }
+
+    private static int compareNodes(final Item item1, final Item item2, @Nullable final Collator collator) throws XPathException {
+        if (item1.getType() != item2.getType()) {
+            return Constants.INFERIOR;
+        }
+        final NodeValue nva = (NodeValue) item1;
+        final NodeValue nvb = (NodeValue) item2;
+        // NOTE(AR): intentional reference equality check
+        if (nva == nvb) {
+            return Constants.EQUAL;
+        }
+        if (tryEqualsShortcut(nva, nvb)) {
+            return Constants.EQUAL;
+        }
+        return compareNodeByType(item1, nva, nvb, collator);
+    }
+
+    private static boolean tryEqualsShortcut(final NodeValue nva, final NodeValue nvb) {
+        try {
+            //Don't use this shortcut for in-memory nodes
+            //since the symbol table is ignored.
+            return nva.getImplementationType() != NodeValue.IN_MEMORY_NODE && nva.equals(nvb);
+        } catch (final XPathException e) {
+            // apparently incompatible values, do manual comparison
+            return false;
+        }
+    }
+
+    private static int compareNodeByType(final Item item1, final NodeValue nva, final NodeValue nvb,
+            @Nullable final Collator collator) throws XPathException {
+        switch (item1.getType()) {
+            case Type.DOCUMENT: {
+                final Node node1 = nva instanceof Node nnva ? nnva : ((NodeProxy) nva).getOwnerDocument();
+                final Node node2 = nvb instanceof Node nnvb ? nnvb : ((NodeProxy) nvb).getOwnerDocument();
+                return compareContents(node1, node2, collator);
+            }
+            case Type.ELEMENT:
+                return compareElements(nva.getNode(), nvb.getNode(), collator);
+            case Type.ATTRIBUTE: {
+                final Node node1 = nva.getNode();
+                final Node node2 = nvb.getNode();
+                final int nameCmp = compareNames(node1, node2);
+                if (nameCmp != Constants.EQUAL) {
+                    return nameCmp;
+                }
+                return safeCompare(node1.getNodeValue(), node2.getNodeValue(), collator);
+            }
+            case Type.PROCESSING_INSTRUCTION:
+            case Type.NAMESPACE: {
+                final Node node1 = nva.getNode();
+                final Node node2 = nvb.getNode();
+                final int nameCmp = safeCompare(node1.getNodeName(), node2.getNodeName(), null);
+                if (nameCmp != Constants.EQUAL) {
+                    return nameCmp;
+                }
+                return safeCompare(nva.getStringValue(), nvb.getStringValue(), collator);
+            }
+            case Type.TEXT:
+            case Type.COMMENT:
+                return safeCompare(nva.getStringValue(), nvb.getStringValue(), collator);
+            default:
+                throw new UnexpectedItemTypeException(item1);
         }
     }
 
@@ -370,44 +405,75 @@ public class FunDeepEqual extends CollatingFunction {
     }
 
     private static int compareContents(Node a, Node b, @Nullable final Collator collator) {
-        a = findNextTextOrElementNode(a.getFirstChild());
-        b = findNextTextOrElementNode(b.getFirstChild());
-        while (!(a == null || b == null)) {
-            final int nodeTypeA = getEffectiveNodeType(a);
-            final int nodeTypeB = getEffectiveNodeType(b);
-            if (nodeTypeA != nodeTypeB) {
-                return Constants.INFERIOR;
-            }
-            switch (nodeTypeA) {
-            case Node.TEXT_NODE:
-                final String nodeValueA = getNodeValue(a);
-                final String nodeValueB = getNodeValue(b);
-                final int textComparison = safeCompare(nodeValueA, nodeValueB, collator);
+        // XQ4: merge adjacent text nodes (split by ignored comments/PIs)
+        final List<Object> childrenA = mergeTextNodes(a);
+        final List<Object> childrenB = mergeTextNodes(b);
+
+        if (childrenA.size() != childrenB.size()) {
+            return childrenA.size() < childrenB.size() ? Constants.INFERIOR : Constants.SUPERIOR;
+        }
+
+        for (int i = 0; i < childrenA.size(); i++) {
+            final Object ca = childrenA.get(i);
+            final Object cb = childrenB.get(i);
+
+            if (ca instanceof String sa && cb instanceof String sb) {
+                final int textComparison = safeCompare(sa, sb, collator);
                 if (textComparison != Constants.EQUAL) {
                     return textComparison;
                 }
-                break;
-            case Node.ELEMENT_NODE:
-                final int elementComparison = compareElements(a, b, collator);
-                if (elementComparison != Constants.EQUAL) {
-                    return elementComparison;
+            } else if (ca instanceof Node na && cb instanceof Node nb) {
+                if (getEffectiveNodeType(na) != getEffectiveNodeType(nb)) {
+                    return Constants.INFERIOR;
                 }
-                break;
-            default:
-                throw new RuntimeException("unexpected node type " + nodeTypeA);
+                if (getEffectiveNodeType(na) != getEffectiveNodeType(nb)) {
+                    return Constants.INFERIOR;
+                }
+                if (getEffectiveNodeType(na) == Node.ELEMENT_NODE) {
+                    final int cmp = compareElements(na, nb, collator);
+                    if (cmp != Constants.EQUAL) {
+                        return cmp;
+                    }
+                }
+            } else {
+                return Constants.INFERIOR;
             }
-            a = findNextTextOrElementNode(a.getNextSibling());
-            b = findNextTextOrElementNode(b.getNextSibling());
         }
+        return Constants.EQUAL;
+    }
 
-        // NOTE(AR): intentional reference equality check
-        if (a == b) {
-            return Constants.EQUAL; // both null
-        } else if (a == null) {
-            return Constants.INFERIOR;
-        } else {
-            return Constants.SUPERIOR;
+    /**
+     * Collect significant children for deep-equal comparison.
+     * Per XQ3.1 spec §15.3.1: "children are compared after removing all
+     * comment and processing-instruction nodes" — but text nodes are
+     * NOT merged (elements with split text nodes differ from single text).
+     */
+    static List<Object> mergeTextNodes(final Node parent) {
+        final List<Object> result = new ArrayList<>();
+        StringBuilder textAccum = null;
+        Node child = parent.getFirstChild();
+        while (child != null) {
+            final int nodeType = getEffectiveNodeType(child);
+            if (nodeType == Node.TEXT_NODE) {
+                // XQ4: merge adjacent text nodes (split by ignored comments/PIs)
+                if (textAccum == null) {
+                    textAccum = new StringBuilder();
+                }
+                textAccum.append(getNodeValue(child));
+            } else if (nodeType == Node.ELEMENT_NODE) {
+                if (textAccum != null) {
+                    result.add(textAccum.toString());
+                    textAccum = null;
+                }
+                result.add(child);
+            }
+            // Skip comments and PIs per spec — text continues to merge
+            child = child.getNextSibling();
         }
+        if (textAccum != null) {
+            result.add(textAccum.toString());
+        }
+        return result;
     }
 
     private static String getNodeValue(final Node n) {

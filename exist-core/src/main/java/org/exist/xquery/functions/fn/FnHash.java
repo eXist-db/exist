@@ -1,0 +1,172 @@
+/*
+ * eXist-db Open Source Native XML Database
+ * Copyright (C) 2001 The eXist-db Authors
+ *
+ * info@exist-db.org
+ * http://www.exist-db.org
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ */
+package org.exist.xquery.functions.fn;
+
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.zip.CRC32;
+
+import org.bouncycastle.crypto.digests.Blake3Digest;
+
+import org.exist.dom.QName;
+import org.exist.xquery.BasicFunction;
+import org.exist.xquery.Cardinality;
+import org.exist.xquery.ErrorCodes;
+import org.exist.xquery.Function;
+import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
+import org.exist.xquery.value.BinaryValue;
+import org.exist.xquery.value.BinaryValueFromBinaryString;
+import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.FunctionReturnSequenceType;
+import org.exist.xquery.value.HexBinaryValueType;
+import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceType;
+import org.exist.xquery.value.Type;
+
+/**
+ * Implements fn:hash (XQuery 4.0).
+ *
+ * Returns the result of a hash/checksum function applied to the input.
+ * Supports MD5, SHA-1, SHA-256, CRC-32.
+ */
+public class FnHash extends BasicFunction {
+
+    public static final ErrorCodes.ErrorCode FOHA0001 = new ErrorCodes.ErrorCode("FOHA0001",
+            "Unsupported hash algorithm");
+
+    public static final FunctionSignature[] FN_HASH = {
+            new FunctionSignature(
+                    new QName("hash", Function.BUILTIN_FUNCTION_NS),
+                    "Returns the hash of the input value using the default algorithm (MD5).",
+                    new SequenceType[] {
+                            new FunctionParameterSequenceType("value", Type.ITEM, Cardinality.ZERO_OR_ONE, "The value to hash (string, hexBinary, or base64Binary)")
+                    },
+                    new FunctionReturnSequenceType(Type.HEX_BINARY, Cardinality.ZERO_OR_ONE, "the hash value")),
+            new FunctionSignature(
+                    new QName("hash", Function.BUILTIN_FUNCTION_NS),
+                    "Returns the hash of the input value using the specified algorithm.",
+                    new SequenceType[] {
+                            new FunctionParameterSequenceType("value", Type.ITEM, Cardinality.ZERO_OR_ONE, "The value to hash (string, hexBinary, or base64Binary)"),
+                            new FunctionParameterSequenceType("algorithm", Type.STRING, Cardinality.ZERO_OR_ONE, "The hash algorithm (MD5, SHA-1, SHA-256, CRC-32)")
+                    },
+                    new FunctionReturnSequenceType(Type.HEX_BINARY, Cardinality.ZERO_OR_ONE, "the hash value")),
+            new FunctionSignature(
+                    new QName("hash", Function.BUILTIN_FUNCTION_NS),
+                    "Returns the hash of the input value using the specified algorithm and options.",
+                    new SequenceType[] {
+                            new FunctionParameterSequenceType("value", Type.ITEM, Cardinality.ZERO_OR_ONE, "The value to hash (string, hexBinary, or base64Binary)"),
+                            new FunctionParameterSequenceType("algorithm", Type.STRING, Cardinality.ZERO_OR_ONE, "The hash algorithm (MD5, SHA-1, SHA-256, CRC-32)"),
+                            new FunctionParameterSequenceType("options", Type.MAP_ITEM, Cardinality.ZERO_OR_ONE, "Options map (reserved for future use)")
+                    },
+                    new FunctionReturnSequenceType(Type.HEX_BINARY, Cardinality.ZERO_OR_ONE, "the hash value"))
+    };
+
+    public FnHash(final XQueryContext context, final FunctionSignature signature) {
+        super(context, signature);
+    }
+
+    @Override
+    public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
+        if (args[0].isEmpty()) {
+            return Sequence.EMPTY_SEQUENCE;
+        }
+        final byte[] inputBytes = getInputBytes(args[0]);
+        final String algorithm = resolveAlgorithm(args);
+        final byte[] hashBytes = computeHash(algorithm, inputBytes);
+        return new BinaryValueFromBinaryString(this, new HexBinaryValueType(), toHexString(hashBytes));
+    }
+
+    private static String resolveAlgorithm(final Sequence[] args) throws XPathException {
+        if (args.length > 1 && !args[1].isEmpty()) {
+            return args[1].getStringValue().trim().toUpperCase();
+        }
+        return "MD5";
+    }
+
+    private byte[] computeHash(final String algorithm, final byte[] inputBytes) throws XPathException {
+        if ("CRC-32".equals(algorithm) || "CRC32".equals(algorithm)) {
+            return computeCrc32(inputBytes);
+        }
+        if ("BLAKE3".equals(algorithm)) {
+            return computeBlake3(inputBytes);
+        }
+        return computeMessageDigest(algorithm, inputBytes);
+    }
+
+    private static byte[] computeCrc32(final byte[] inputBytes) {
+        final CRC32 crc32 = new CRC32();
+        crc32.update(inputBytes);
+        // Return as 4-byte big-endian hexBinary
+        return ByteBuffer.allocate(4).putInt((int) crc32.getValue()).array();
+    }
+
+    private static byte[] computeBlake3(final byte[] inputBytes) {
+        final Blake3Digest blake3 = new Blake3Digest(32);
+        blake3.update(inputBytes, 0, inputBytes.length);
+        final byte[] out = new byte[32];
+        blake3.doFinal(out, 0);
+        return out;
+    }
+
+    private byte[] computeMessageDigest(final String algorithm, final byte[] inputBytes) throws XPathException {
+        final String javaAlgorithm = switch (algorithm) {
+            case "MD5" -> "MD5";
+            case "SHA-1", "SHA1" -> "SHA-1";
+            case "SHA-256", "SHA256" -> "SHA-256";
+            case "SHA-384", "SHA384" -> "SHA-384";
+            case "SHA-512", "SHA512" -> "SHA-512";
+            default -> throw new XPathException(this, FOHA0001,
+                    "Unsupported hash algorithm: " + algorithm);
+        };
+        try {
+            return MessageDigest.getInstance(javaAlgorithm).digest(inputBytes);
+        } catch (final NoSuchAlgorithmException e) {
+            throw new XPathException(this, FOHA0001,
+                    "Hash algorithm not available: " + javaAlgorithm);
+        }
+    }
+
+    private static String toHexString(final byte[] bytes) {
+        final StringBuilder hex = new StringBuilder(bytes.length * 2);
+        for (final byte b : bytes) {
+            hex.append(String.format("%02X", b & 0xFF));
+        }
+        return hex.toString();
+    }
+
+    private byte[] getInputBytes(final Sequence value) throws XPathException {
+        final int type = value.itemAt(0).getType();
+        if (Type.subTypeOf(type, Type.STRING) || Type.subTypeOf(type, Type.ANY_URI) || Type.subTypeOf(type, Type.UNTYPED_ATOMIC)) {
+            return value.getStringValue().getBytes(StandardCharsets.UTF_8);
+        } else if (Type.subTypeOf(type, Type.BASE64_BINARY) || Type.subTypeOf(type, Type.HEX_BINARY)) {
+            final BinaryValue binaryValue = (BinaryValue) value.itemAt(0);
+            return binaryValue.toJavaObject(byte[].class);
+        } else {
+            throw new XPathException(this, ErrorCodes.XPTY0004,
+                    "fn:hash expects string, hexBinary, or base64Binary, got: " + Type.getTypeName(type));
+        }
+    }
+}

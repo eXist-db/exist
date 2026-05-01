@@ -186,7 +186,7 @@ public abstract class AbstractMapType extends FunctionReference
 
                 // Both $k1 and $k2 are negative infinity
                 // Note: xs:double('-INF') is the same key as xs:float('-INF')
-                if (((NumericValue) k1).isNegativeInfinity() && ((NumericValue) k2).isNegative()) {
+                if (((NumericValue) k1).isNegativeInfinity() && ((NumericValue) k2).isNegativeInfinity()) {
                     return true;
                 }
 

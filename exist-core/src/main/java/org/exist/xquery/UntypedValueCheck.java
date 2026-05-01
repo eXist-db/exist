@@ -109,12 +109,36 @@ public class UntypedValueCheck extends AbstractExpression {
 	}
 
     private Item convert(Item item) throws XPathException {
-        if (atomize || item.getType() == Type.UNTYPED_ATOMIC || Type.hasMember(Type.NUMERIC, requiredType) && Type.subTypeOfUnion(item.getType(), Type.NUMERIC)) {
+        // XQ3.1: only coerce when target is a top-level NUMERIC member
+        // (xs:decimal, xs:double, xs:float, xs:integer). Derived subtypes like
+        // xs:positiveInteger were skipped, leaving items unrelabeled.
+        // XQ4: coerce whenever both source and target are numeric subtypes,
+        // letting convertTo() validate the value space (relabeling). This
+        // fixes function-call-coercion tests like DynamicFunctionCall-080
+        // while preserving XQ3.1 strict-typing behavior.
+        final boolean numericCoerce = context.getXQueryVersion() >= 40
+                ? (Type.subTypeOfUnion(requiredType, Type.NUMERIC)
+                    && Type.subTypeOfUnion(item.getType(), Type.NUMERIC))
+                : (Type.hasMember(Type.NUMERIC, requiredType)
+                    && Type.subTypeOfUnion(item.getType(), Type.NUMERIC));
+        if (atomize || item.getType() == Type.UNTYPED_ATOMIC || numericCoerce) {
             try {
                 if (Type.subTypeOf(item.getType(), requiredType)) {
                     return item;
                 }
-                if (item.getType() == Type.INTEGER && requiredType == Type.POSITIVE_INTEGER) {
+                // XPTY0117: implicit cast of xs:untypedAtomic to namespace-sensitive
+                // types (xs:QName, xs:NOTATION) during function-call coercion is forbidden
+                // (XPath F&O 3.1 §19.1).
+                if (item.getType() == Type.UNTYPED_ATOMIC
+                        && (requiredType == Type.QNAME || requiredType == Type.NOTATION)) {
+                    throw new XPathException(expression, ErrorCodes.XPTY0117,
+                            "Cannot implicitly cast xs:untypedAtomic to namespace-sensitive type "
+                                    + Type.getTypeName(requiredType));
+                }
+                // In XQuery 3.1, reject integer→positiveInteger conversion.
+                // In XQuery 4.0, relabeling allows this if the value is positive (§3.4.1 item 6).
+                if (item.getType() == Type.INTEGER && requiredType == Type.POSITIVE_INTEGER
+                        && context.getXQueryVersion() < 40) {
                     throw new XPathException(this, ErrorCodes.FORG0001,
                             "cannot convert '"
                                     + Type.getTypeName(item.getType())
@@ -123,6 +147,9 @@ public class UntypedValueCheck extends AbstractExpression {
                                     + ")' into "
                                     + Type.getTypeName(requiredType));
                 }
+                // Let convertTo() validate the value — IntegerValue.convertTo
+                // checks the value is in the required type's value space and
+                // throws FORG0001 if it is not (e.g. -5 cast to xs:positiveInteger).
                 item = item.convertTo(requiredType);
             } catch (final XPathException e) {
                 error.addArgs(ExpressionDumper.dump(expression), Type.getTypeName(requiredType),

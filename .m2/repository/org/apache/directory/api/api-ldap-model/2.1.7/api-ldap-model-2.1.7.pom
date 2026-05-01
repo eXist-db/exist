@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+  
+  https://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.apache.directory.api</groupId>
+    <artifactId>api-ldap-parent</artifactId>
+    <version>2.1.7</version>
+  </parent>
+  
+  <artifactId>api-ldap-model</artifactId>
+  <name>Apache Directory LDAP API Model</name>
+  <packaging>bundle</packaging>
+  <description>Common LDAP Model used by clients and servers</description>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest-library</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>api-util</artifactId>
+    </dependency> 
+
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>api-asn1-api</artifactId>
+    </dependency> 
+
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>api-asn1-ber</artifactId>
+    </dependency> 
+
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>api-i18n</artifactId>
+    </dependency> 
+
+    <dependency>
+      <groupId>org.apache.mina</groupId>
+      <artifactId>mina-core</artifactId>
+    </dependency>
+
+  <!-- The original antlr artifact is needed by the antlr-maven-plugin which 
+    checks for its existence within the classpath. Use scope provided to avoid 
+    propagation to dependent projects. Choosen artifact is a valid OSGi bundle 
+    repackaged by ServiceMix team, kudos to them. -->
+    <dependency>
+      <groupId>antlr</groupId>
+      <artifactId>antlr</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    
+    <dependency>
+      <groupId>org.apache.servicemix.bundles</groupId>
+      <artifactId>org.apache.servicemix.bundles.antlr</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-collections4</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>commons-codec</groupId>
+      <artifactId>commons-codec</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.github.ben-manes.caffeine</groupId>
+      <artifactId>caffeine</artifactId>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>generate-sources</phase>
+            <configuration />
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>antlr-maven-plugin</artifactId>
+        <configuration>
+          <grammars>*.g</grammars>
+        </configuration>
+        <executions>
+           <execution>
+              <goals>
+                 <goal>generate</goal>
+              </goals>
+           </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <excludes>
+            <exclude>**/Abstract*</exclude>
+            <exclude>**/*RegressionTest*</exclude>
+          </excludes>
+          <parallel>all</parallel>
+          <threadCount>10</threadCount>
+          <properties>
+            <configurationParameters>
+              junit.jupiter.execution.parallel.enabled=true
+            </configurationParameters>
+          </properties>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifestFile>META-INF/MANIFEST.MF</manifestFile>
+            <addMavenDescriptor>false</addMavenDescriptor>
+          </archive>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>maven-bundle-plugin</artifactId>
+        <inherited>true</inherited>
+        <extensions>true</extensions>
+        <configuration>
+          <manifestLocation>META-INF</manifestLocation>
+          <instructions>
+            <Bundle-SymbolicName>${project.groupId}.ldap.model</Bundle-SymbolicName>
+            <Export-Package>
+              org.apache.directory.api.ldap.model.constants;version=${project.version};-noimport:=true,
+              org.apache.directory.api.ldap.model.csn;version=${project.version};-noimport:=true,
+              org.apache.directory.api.ldap.model.cursor;version=${project.version};-noimport:=true,
+              org.apache.directory.api.ldap.model.entry;version=${project.version};-noimport:=true,
+              org.apache.directory.api.ldap.model.exception;version=${project.version};-noimport:=true,
+              org.apache.directory.api.ldap.model.filter;version=${project.version};-noimport:=true,
+              org.apache.directory.api.ldap.model.ldif;version=${project.version};-noimport:=true,
+              org.apache.directory.api.ldap.model.ldif.anonymizer;version=${project.version};-noimport:=true,
+              org.apache.directory.api.ldap.model.message;version=${project.version};-noimport:=true,
+              org.apache.directory.api.ldap.model.message.controls;version=${project.version};-noimport:=true,
+              org.apache.directory.api.ldap.model.message.extended;version=${project.version};-noimport:=true,
+              org.apache.directory.api.ldap.model.name;version=${project.version};-noimport:=true,
+              org.apache.directory.api.ldap.model.password;version=${project.version};-noimport:=true,
+              org.apache.directory.api.ldap.model.schema;version=${project.version};-noimport:=true,
+              org.apache.directory.api.ldap.model.schema.comparators;version=${project.version};-noimport:=true,
+              org.apache.directory.api.ldap.model.schema.normalizers;version=${project.version};-noimport:=true,
+              org.apache.directory.api.ldap.model.schema.parsers;version=${project.version};-noimport:=true,
+              org.apache.directory.api.ldap.model.schema.registries;version=${project.version};-noimport:=true,
+              org.apache.directory.api.ldap.model.schema.registries.helper;version=${project.version};-noimport:=true,
+              org.apache.directory.api.ldap.model.schema.syntaxCheckers;version=${project.version};-noimport:=true,
+              org.apache.directory.api.ldap.model.schema.syntaxes;version=${project.version};-noimport:=true,
+              org.apache.directory.api.ldap.model.subtree;version=${project.version};-noimport:=true,
+              org.apache.directory.api.ldap.model.url;version=${project.version};-noimport:=true
+            </Export-Package>
+            <Import-Package>
+              antlr;version=${antlr.version},
+              antlr.collections.impl;version=${antlr.version},
+              com.github.benmanes.caffeine.cache;bundle-version=${caffeine.version},
+              javax.crypto,
+              javax.crypto.spec,
+              javax.naming,
+              javax.naming.directory,
+              javax.naming.ldap,
+              org.apache.commons.codec.digest;version=${commons.codec.version},
+              org.apache.commons.collections4;version=${commons.collections.version},
+              org.apache.commons.collections4.list;version=${commons.collections.version},
+              org.apache.commons.lang3;version=${commons.lang.version},
+              org.apache.commons.lang3.exception;version=${commons.lang.version},
+              org.apache.directory.api.asn1.util;version=${project.version},
+              org.apache.directory.api.i18n;version=${project.version},
+              org.apache.directory.api.util;version=${project.version},
+              org.apache.directory.api.util.exception;version=${project.version},
+              org.slf4j;version=${slf4j.api.bundleversion}
+            </Import-Package>
+            <Automatic-Module-Name>apache.directory.ldap.api.model</Automatic-Module-Name>
+          </instructions>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>

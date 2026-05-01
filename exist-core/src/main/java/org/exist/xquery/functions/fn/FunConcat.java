@@ -66,7 +66,7 @@ public class FunConcat extends Function {
             "is treated as the zero-length string.",
             new SequenceType[] {
                 //More complicated : see below
-                new FunctionParameterSequenceType("atomizable-values",
+                new FunctionParameterSequenceType("values",
                     Type.ANY_ATOMIC_TYPE, Cardinality.ZERO_OR_ONE, "The atomizable values")
             },
             new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE,

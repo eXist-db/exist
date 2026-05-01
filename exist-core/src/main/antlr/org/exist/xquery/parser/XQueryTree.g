@@ -267,14 +267,16 @@ throws PermissionDeniedException, EXistException, XPathException
             v:VERSION_DECL
             {
                 final String version = v.getText();
-                if (version.equals("3.1")) {
+                if (version.equals("4.0")) {
+                    context.setXQueryVersion(40);
+                } else if (version.equals("3.1")) {
                     context.setXQueryVersion(31);
                 } else if (version.equals("3.0")) {
                     context.setXQueryVersion(30);
                 } else if (version.equals("1.0")) {
                     context.setXQueryVersion(10);
                 } else {
-                    throw new XPathException(v, ErrorCodes.XQST0031, "Wrong XQuery version: require 1.0, 3.0 or 3.1");
+                    throw new XPathException(v, ErrorCodes.XQST0031, "Wrong XQuery version: require 1.0, 3.0, 3.1, or 4.0");
                 }
             }
             ( enc:STRING_LITERAL )?
@@ -1072,8 +1074,6 @@ throws XPathException
                 STAR
                 |
                 (
-                    // TODO: parameter types are collected, but not used!
-                    // Change SequenceType accordingly.
                     { List<SequenceType> paramTypes = new ArrayList<SequenceType>(5); }
                     (
                         { SequenceType paramType = new SequenceType(); }
@@ -1082,42 +1082,65 @@ throws XPathException
                     )*
                     { SequenceType returnType = new SequenceType(); }
                     "as" sequenceType [returnType]
+                    {
+                        type.setFunctionParamTypes(paramTypes.toArray(new SequenceType[0]));
+                        type.setFunctionReturnType(returnType);
+                    }
                 )
             )
         )
         |
         #(
-            MAP_TEST { type.setPrimaryType(Type.MAP_ITEM); }
+            mt:MAP_TEST { type.setPrimaryType(Type.MAP_ITEM); }
             (
                 STAR
                 |
                 (
-                    // TODO: parameter types are collected, but not used!
-                    // Change SequenceType accordingly.
                     { List<SequenceType> paramTypes = new ArrayList<SequenceType>(5); }
                     (
                         { SequenceType paramType = new SequenceType(); }
                         sequenceType [paramType]
                         { paramTypes.add(paramType); }
                     )*
+                    {
+                        // Per XPath/XQuery 3.1 MapTest: must be either map(*) (already
+                        // handled by STAR above) or map(KeyType, ValueType) - exactly
+                        // two sequence types, with KeyType an ItemType (no cardinality).
+                        if (paramTypes.size() != 2) {
+                            throw new XPathException(mt.getLine(), mt.getColumn(), ErrorCodes.XPST0003,
+                                "Map test must take exactly 0 or 2 type arguments, got " + paramTypes.size());
+                        }
+                        if (paramTypes.get(0).getCardinality() != org.exist.xquery.Cardinality.EXACTLY_ONE) {
+                            throw new XPathException(mt.getLine(), mt.getColumn(), ErrorCodes.XPST0003,
+                                "Map key type must be an ItemType (cardinality must be 1, no occurrence indicator)");
+                        }
+                        type.setFunctionParamTypes(paramTypes.toArray(new SequenceType[0]));
+                    }
                 )
             )
         )
         |
         #(
-            ARRAY_TEST { type.setPrimaryType(Type.ARRAY_ITEM); }
+            at:ARRAY_TEST { type.setPrimaryType(Type.ARRAY_ITEM); }
             (
                 STAR
                 |
                 (
-                    // TODO: parameter types are collected, but not used!
-                    // Change SequenceType accordingly.
                     { List<SequenceType> paramTypes = new ArrayList<SequenceType>(5); }
                     (
                         { SequenceType paramType = new SequenceType(); }
                         sequenceType [paramType]
                         { paramTypes.add(paramType); }
                     )*
+                    {
+                        // Per XPath/XQuery 3.1 ArrayTest: must be either array(*) (STAR
+                        // above) or array(SequenceType) - exactly one sequence type.
+                        if (paramTypes.size() != 1) {
+                            throw new XPathException(at.getLine(), at.getColumn(), ErrorCodes.XPST0003,
+                                "Array test must take exactly 0 or 1 type arguments, got " + paramTypes.size());
+                        }
+                        type.setFunctionParamTypes(paramTypes.toArray(new SequenceType[0]));
+                    }
                 )
             )
         )
@@ -2421,6 +2444,10 @@ throws PermissionDeniedException, EXistException, XPathException
     step=postfixExpr [step]
     { path.add(step); }
     |
+    step=contextItemFunctionExpr [path]
+    step=postfixExpr [step]
+    { path.add(step); }
+    |
     step=arrayConstr [path]
     step=postfixExpr [step]
     { path.add(step); }
@@ -3260,6 +3287,30 @@ throws PermissionDeniedException, EXistException, XPathException
                     isPartial = true;
                 }
                 |
+                #(
+                    kw:KEYWORD_ARG
+                    (
+                        // XQ4 partial application: keyword arg whose value
+                        // is a `?` placeholder, e.g. f(value := ?). Wrap the
+                        // placeholder in a KeywordArgument and mark the call
+                        // as partial so PartialFunctionApplication picks it up.
+                        QUESTION {
+                            params.add(new KeywordArgument(context, kw.getText(),
+                                new Function.Placeholder(context)));
+                            isPartial = true;
+                        }
+                        |
+                        {
+                            PathExpr kwValue = new PathExpr(context);
+                            kwValue.setASTNode(functionCall_AST_in);
+                        }
+                        expr [kwValue]
+                        {
+                            params.add(new KeywordArgument(context, kw.getText(), kwValue.simplify()));
+                        }
+                    )
+                )
+                |
                 expr [pathExpr] { params.add(pathExpr); }
             )
         )*
@@ -3982,6 +4033,28 @@ throws XPathException, PermissionDeniedException, EXistException
     )
     ;
 
+// XQ4 PR1499 context-item function expression: fn { body }
+contextItemFunctionExpr [PathExpr path]
+returns [Expression step]
+throws XPathException, PermissionDeniedException, EXistException
+{
+    step = null;
+}:
+    #(
+        t:CONTEXT_ITEM_FUNC
+        {
+            PathExpr body = new PathExpr(context);
+            body.setASTNode(contextItemFunctionExpr_AST_in);
+        }
+        expr [body]
+        {
+            ContextItemFunctionExpr cif = new ContextItemFunctionExpr(context, body.simplify());
+            cif.setASTNode(contextItemFunctionExpr_AST_in);
+            step = cif;
+        }
+    )
+    ;
+
 mapConstr [PathExpr path]
 returns [Expression step]
 throws XPathException, PermissionDeniedException, EXistException
@@ -4008,6 +4081,15 @@ throws XPathException, PermissionDeniedException, EXistException
 				expr[value]
 				{ expr.map(key, value); }
 			)
+			|
+			// XQuery 4.0 PR2094: bare expression as map content; the
+			// expression must evaluate to a map and is merged into the result.
+			{
+				PathExpr bare = new PathExpr(context);
+				bare.setASTNode(mapConstr_AST_in);
+			}
+			expr [bare]
+			{ expr.merge(bare); }
 		)*
 	)
 	;

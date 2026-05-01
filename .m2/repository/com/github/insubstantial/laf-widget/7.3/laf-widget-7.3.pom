@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.github.insubstantial</groupId>
+  <artifactId>laf-widget</artifactId>
+  <version>7.3</version>
+  <name>laf-widget</name>
+  <description>A fork of @kirilcool's laf-widget project</description>
+  <url>http://insubstantial.github.com/insubstantial/laf-widget/</url>
+  <licenses>
+    <license>
+      <name>The BSD License</name>
+      <url>http://www.opensource.org/licenses/bsd-license.php</url>
+      <distribution>repo</distribution>
+      <comments>Covers ASM, BlogOfBug, JibX, LafWidget, and Looks contributions</comments>
+    </license>
+    <license>
+      <name>CC BY-SA 2.5</name>
+      <url>http://creativecommons.org/licenses/by-sa/2.5/</url>
+      <distribution>repo</distribution>
+      <comments>Covers the TangoIcons</comments>
+    </license>
+  </licenses>
+  <developers>
+    <developer>
+      <name>Kirill Grouchnikov</name>
+      <email>kirillcool@yahoo.com</email>
+      <roles>
+        <role>author</role>
+        <role>developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Danno Ferrin</name>
+      <email>danno.ferrin@shemnon.com</email>
+      <roles>
+        <role>maintainer</role>
+      </roles>
+    </developer>
+  </developers>
+  <scm>
+    <connection>scm:git:git@github.com:Insubstantial/insubstantial.git</connection>
+    <developerConnection>scm:git:git@github.com:Insubstantial/insubstantial.git</developerConnection>
+    <url>scm:git:git@github.com:Insubstantial/insubstantial.git</url>
+  </scm>
+  <dependencies>
+    <dependency>
+      <groupId>com.github.insubstantial</groupId>
+      <artifactId>trident</artifactId>
+      <version>7.3</version>
+      <classifier>swing</classifier>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.ant</groupId>
+      <artifactId>ant</artifactId>
+      <version>1.7.0</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>asm</groupId>
+      <artifactId>asm-all</artifactId>
+      <version>2.2.3</version>
+      <scope>provided</scope>
+    </dependency>
+  </dependencies>
+</project>

@@ -29,6 +29,7 @@ import org.exist.xquery.value.FunctionReference;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
+import org.exist.xquery.value.ValueSequence;
 
 public class DynamicFunctionCall extends AbstractExpression {
 
@@ -78,18 +79,41 @@ public class DynamicFunctionCall extends AbstractExpression {
             throws XPathException {
         context.proceed(this);
         final Sequence funcSeq = functionExpr.eval(contextSequence, contextItem);
-        if (funcSeq.getCardinality() != Cardinality.EXACTLY_ONE)
-            {throw new XPathException(this, ErrorCodes.XPTY0004,
-                "Expected exactly one item for the function to be called, got " + funcSeq.getItemCount() +
-                ". Expression: " + ExpressionDumper.dump(functionExpr));}
-        final Item item0 = funcSeq.itemAt(0);
-        if (!Type.subTypeOf(item0.getType(), Type.FUNCTION))
-            {throw new XPathException(this, ErrorCodes.XPTY0004,
-                "Type error: expected function, got " + Type.getTypeName(item0.getType()));}
-        final FunctionReference ref = (FunctionReference)item0;
+        // XQ4 PR1975: dynamic function call dispatches over a sequence of function items.
+        // Empty target -> empty result; multiple targets -> call each, concatenate.
+        // XQ3.1 still requires exactly one item.
+        final int itemCount = funcSeq.getItemCount();
+        if (context.getXQueryVersion() < 40) {
+            if (itemCount != 1) {
+                throw new XPathException(this, ErrorCodes.XPTY0004,
+                        "Expected exactly one item for the function to be called, got " + itemCount
+                                + ". Expression: " + ExpressionDumper.dump(functionExpr));
+            }
+            return evalOne(funcSeq.itemAt(0), contextSequence, contextItem);
+        }
+        if (itemCount == 0) {
+            return Sequence.EMPTY_SEQUENCE;
+        }
+        if (itemCount == 1) {
+            return evalOne(funcSeq.itemAt(0), contextSequence, contextItem);
+        }
+        final ValueSequence result = new ValueSequence(itemCount);
+        for (int i = 0; i < itemCount; i++) {
+            result.addAll(evalOne(funcSeq.itemAt(i), contextSequence, contextItem));
+        }
+        return result;
+    }
+
+    private Sequence evalOne(final Item item, final Sequence contextSequence, final Item contextItem)
+            throws XPathException {
+        if (!Type.subTypeOf(item.getType(), Type.FUNCTION)) {
+            throw new XPathException(this, ErrorCodes.XPTY0004,
+                "Type error: expected function, got " + Type.getTypeName(item.getType()));
+        }
+        final FunctionReference ref = (FunctionReference) item;
         // if the call is a partial application, create a new function
         if (isPartial) {
-        	try {
+            try {
                 if (ref instanceof ArrayType) {
                     ref.setArguments(arguments);
                     return ref;
@@ -100,18 +124,17 @@ public class DynamicFunctionCall extends AbstractExpression {
                     partialApp.analyze(new AnalyzeContextInfo(cachedContextInfo));
                     return partialApp.eval(contextSequence, contextItem);
                 }
-        	} catch (final XPathException e) {
-				e.setLocation(line, column, getSource());
-				throw e;
-        	} catch (final Exception e) {
+            } catch (final XPathException e) {
+                e.setLocation(line, column, getSource());
+                throw e;
+            } catch (final Exception e) {
                 throw new XPathException(this, e);
             }
         } else {
-	        ref.setArguments(arguments);
+            ref.setArguments(arguments);
             // need to create a new AnalyzeContextInfo to avoid memory leak
             // cachedContextInfo will stay in memory
-	        ref.analyze(new AnalyzeContextInfo(cachedContextInfo));
-	        // Evaluate the function
+            ref.analyze(new AnalyzeContextInfo(cachedContextInfo));
             try {
                 return ref.eval(contextSequence, contextItem);
             } catch (XPathException e) {

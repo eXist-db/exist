@@ -1,0 +1,9 @@
+<project>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>batik</groupId>
+  <artifactId>batik-svggen</artifactId>
+  <name>Batik SVG Generator</name>
+  <version>1.6</version>
+  <description>Batik SVG Generator</description>
+  <inceptionYear>2000</inceptionYear>
+</project>

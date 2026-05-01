@@ -58,8 +58,8 @@ public class FunRemove extends Function {
 			"is greater than $position. If $target is the empty sequence, the empty sequence " +
 			"is returned.",
 			new SequenceType[] {
-					new FunctionParameterSequenceType("target", Type.ITEM, Cardinality.ZERO_OR_MORE, "The input sequence"),
-					new FunctionParameterSequenceType("position", Type.INTEGER, Cardinality.EXACTLY_ONE, "The position of the value to be removed")
+					new FunctionParameterSequenceType("input", Type.ITEM, Cardinality.ZERO_OR_MORE, "The input sequence"),
+					new FunctionParameterSequenceType("positions", Type.INTEGER, Cardinality.EXACTLY_ONE, "The position of the value to be removed")
 			},
 			new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "the new sequence with the item at the position specified by the value of $position removed."));
 

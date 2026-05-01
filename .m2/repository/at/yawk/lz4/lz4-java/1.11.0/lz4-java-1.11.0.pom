@@ -1,0 +1,1158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Maven build that reproduces org.lz4:lz4-java:1.8.0 jar contents.
+
+  Key points:
+  - Java 7 bytecode (source/target 1.7)
+  - Generate sources via MVEL 2.3.2.Final (same as Ant)
+  - Compile src/java, src/java-unsafe, and generated sources
+  - Include resources from src/resources
+  - Include native libraries by extracting them from the published 1.8.0 jar
+  - Preserve Automatic-Module-Name: org.lz4.java
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion> <!-- do_not_remove: published-with-gradle-metadata -->
+
+  <groupId>at.yawk.lz4</groupId>
+  <artifactId>lz4-java</artifactId>
+  <version>1.11.0</version> <!-- set by maven-git-versioning-extension -->
+  <packaging>jar</packaging>
+
+  <name>LZ4 Java Compression</name>
+  <description>Java bindings and pure Java implementations of LZ4 and XXHash</description>
+  <url>https://github.com/yawkat/lz4-java</url>
+  <licenses>
+    <license>
+      <name>Apache License, Version 2.0</name>
+      <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <id>jpountz</id>
+      <name>Adrien Grand</name>
+      <email>jpountz@gmail.com</email>
+    </developer>
+    <developer>
+      <id>odaira</id>
+      <name>Rei Odaira</name>
+      <email>Rei.Odaira@gmail.com</email>
+    </developer>
+    <developer>
+      <id>yawkat</id>
+      <name>Jonas Konrad</name>
+      <email>me@yawk.at</email>
+    </developer>
+  </developers>
+
+  <scm>
+    <connection>https://github.com/yawkat/lz4-java.git</connection>
+    <developerConnection>git@github.com:yawkat/lz4-java.git</developerConnection>
+    <url>https://github.com/yawkat/lz4-java</url>
+  </scm>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+    <!-- Paths -->
+    <generated.sources.dir>${project.build.directory}/generated-sources/mvel</generated.sources.dir>
+
+    <!-- reproducible build -->
+    <project.build.outputTimestamp>1980-01-01T00:00:02Z</project.build.outputTimestamp>
+
+    <!-- Native build defaults (overridable via -Dnative.*) -->
+    <native.cc>gcc</native.cc>
+    <native.cflags></native.cflags>
+    <native.ldflags></native.ldflags>
+
+    <!-- plugin versions -->
+    <bnd.maven.plugin.version>7.1.0</bnd.maven.plugin.version>
+    <packages.version>${project.version}</packages.version>
+    <ivy.version>${project.version}</ivy.version>
+
+    <!-- javac compiler source and target -->
+    <maven.compiler.source>1.7</maven.compiler.source>
+    <maven.compiler.target>1.7</maven.compiler.target>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.junit.vintage</groupId>
+      <artifactId>junit-vintage-engine</artifactId>
+      <version>5.9.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.13.2</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.platform</groupId>
+      <artifactId>junit-platform-launcher</artifactId>
+      <version>1.9.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.platform</groupId>
+      <artifactId>junit-platform-commons</artifactId>
+      <version>1.9.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.carrotsearch.randomizedtesting</groupId>
+      <artifactId>randomizedtesting-runner</artifactId>
+      <version>2.7.7</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.code-intelligence</groupId>
+      <artifactId>jazzer-junit</artifactId>
+      <version>0.26.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
+      <version>5.9.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <version>5.9.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-params</artifactId>
+      <version>5.9.0</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <sourceDirectory>${project.basedir}/src/java</sourceDirectory>
+    <testSourceDirectory>${project.basedir}/src/test</testSourceDirectory>
+    <resources>
+      <resource>
+        <directory>${project.basedir}/src/resources</directory>
+        <filtering>false</filtering>
+      </resource>
+    </resources>
+    <testResources>
+      <testResource>
+        <directory>${project.basedir}/src/test-resources</directory>
+        <filtering>false</filtering>
+      </testResource>
+    </testResources>
+    <plugins>
+      <!-- Add extra source directories: src/java-unsafe and generated sources -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>3.6.0</version>
+        <executions>
+          <execution>
+            <id>add-extra-source-roots</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>add-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+                <source>${project.basedir}/src/java-unsafe</source>
+                <source>${generated.sources.dir}</source>
+              </sources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+
+      <!-- Compile to Java 7 bytecode with debug info, match Ant javac settings -->
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.11.0</version>
+        <executions>
+          <execution>
+            <id>default-compile</id>
+            <phase>compile</phase>
+            <goals>
+              <goal>compile</goal>
+            </goals>
+            <configuration>
+              <encoding>${project.build.sourceEncoding}</encoding>
+              <debug>true</debug>
+              <fork>true</fork>
+              <jdkToolchain>
+                <version>7</version>
+              </jdkToolchain>
+            </configuration>
+          </execution>
+          <execution>
+            <id>default-testCompile</id>
+            <phase>test-compile</phase>
+            <goals>
+              <goal>testCompile</goal>
+            </goals>
+            <configuration>
+              <release>21</release>
+              <encoding>${project.build.sourceEncoding}</encoding>
+              <debug>true</debug>
+              <fork>true</fork>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Produce initial jar with Automatic-Module-Name header -->
+      <plugin>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>3.4.1</version>
+        <configuration>
+          <archive>
+            <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+            <manifestEntries>
+              <Automatic-Module-Name>org.lz4.java</Automatic-Module-Name>
+            </manifestEntries>
+          </archive>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>biz.aQute.bnd</groupId>
+        <artifactId>bnd-maven-plugin</artifactId>
+        <version>${bnd.maven.plugin.version}</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>bnd-process</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <bndfile>lz4-java.bnd</bndfile>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <version>3.1.0</version>
+        <dependencies>
+          <dependency>
+            <groupId>biz.aQute.bnd</groupId>
+            <artifactId>biz.aQute.bnd.ant</artifactId>
+            <version>${bnd.maven.plugin.version}</version>
+          </dependency>
+          <dependency>
+            <groupId>org.mvel</groupId>
+            <artifactId>mvel2</artifactId>
+            <version>2.5.2.Final</version>
+          </dependency>
+        </dependencies>
+        <executions>
+          <!-- Use MVEL2 to generate sources -->
+          <execution>
+            <id>mvel-generate-sources</id>
+            <phase>generate-sources</phase>
+            <configuration>
+              <target>
+                <property name="out.dir" value="${generated.sources.dir}"/>
+                <property environment="env"/>
+                <java classname="org.mvel2.sh.Main" dir="${project.basedir}/src/build/source_templates" fork="true" failonerror="true">
+                  <sysproperty key="out.dir" value="${generated.sources.dir}"/>
+                  <classpath refid="maven.plugin.classpath"/>
+                  <arg value="${project.basedir}/src/build/gen_sources.mvel"/>
+                </java>
+              </target>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.2.5</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <version>3.2.0</version>
+        <executions>
+          <execution>
+            <id>attach-sources</id>
+            <goals>
+              <goal>jar-no-fork</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>3.1.1</version>
+        <executions>
+          <execution>
+            <id>attach-javadocs</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <excludePackageNames>net.jpountz.util</excludePackageNames>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.gradlex</groupId>
+        <artifactId>gradle-module-metadata-maven-plugin</artifactId>
+        <version>1.2</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>gmm</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <capabilities>
+            <capability>
+              <groupId>org.lz4</groupId>
+              <artifactId>lz4-java</artifactId>
+            </capability>
+            <capability>
+              <!-- there is no lz4-pure-java artifact anymore. -->
+              <groupId>org.lz4</groupId>
+              <artifactId>lz4-pure-java</artifactId>
+            </capability>
+            <capability>
+              <groupId>net.jpountz.lz4</groupId>
+              <artifactId>lz4</artifactId>
+            </capability>
+          </capabilities>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <profiles>
+    <profile>
+      <id>deploy</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>1.6</version>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+                <configuration>
+                  <!-- Prevent `gpg` from using pinentry programs -->
+                  <gpgArguments>
+                    <arg>--pinentry-mode</arg>
+                    <arg>loopback</arg>
+                  </gpgArguments>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.sonatype.central</groupId>
+            <artifactId>central-publishing-maven-plugin</artifactId>
+            <version>0.9.0</version>
+            <extensions>true</extensions>
+            <configuration>
+              <publishingServerId>central</publishingServerId>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>native-linux</id>
+      <activation>
+        <os>
+          <name>Linux</name>
+        </os>
+      </activation>
+      <properties>
+        <native.cflags>-O2 -fno-omit-frame-pointer -fstack-protector-strong -fstack-clash-protection -Wformat -Werror=format-security</native.cflags>
+        <native.xxhash.cflags>${native.cflags} -fno-tree-vectorize</native.xxhash.cflags>
+      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>build-jni-linux</id>
+                <phase>process-resources</phase>
+                <configuration>
+                  <target>
+                    <property name="os.id" value="linux"/>
+                    <property name="lib.ext" value="so"/>
+
+                    <!-- Arch mapping (overridable via -Darch.id) -->
+                    <property name="arch.id" value="${os.arch}"/>
+                    <condition property="arch.id" value="x86_64">
+                      <matches pattern="^(x86_64|amd64|AMD64)$" string="${arch.id}"/>
+                    </condition>
+                    <condition property="arch.id" value="aarch64">
+                      <matches pattern="^(aarch64|arm64|ARM64)$" string="${arch.id}"/>
+                    </condition>
+                    <condition property="arch.id" value="i386">
+                      <matches pattern="^(x86|i386|i686)$" string="${arch.id}"/>
+                    </condition>
+
+                    <!-- Toolchain overrides come from Maven properties: ${native.cc}, ${native.cflags}, ${native.ldflags} -->
+
+                    <mkdir dir="${project.build.outputDirectory}/net/jpountz/util/${os.id}/${arch.id}"/>
+                    <mkdir dir="${project.build.directory}/native/${os.id}/${arch.id}"/>
+                    <exec executable="${native.cc}" failonerror="true">
+                      <env key="SOURCE_DATE_EPOCH" value="0"/>
+                      <arg line="${native.cflags}"/>
+                      <arg value="-fPIC"/>
+                      <arg value="-I${project.basedir}/src/lz4/lib"/>
+                      <arg value="-I${java.home}/include"/>
+                      <arg value="-I${java.home}/include/linux"/>
+                      <arg value="-c"/>
+                      <arg value="${project.basedir}/src/jni/net_jpountz_lz4_LZ4JNI.c"/>
+                      <arg value="-o"/>
+                      <arg value="${project.build.directory}/native/${os.id}/${arch.id}/net_jpountz_lz4_LZ4JNI.o"/>
+                    </exec>
+                    <exec executable="${native.cc}" failonerror="true">
+                      <env key="SOURCE_DATE_EPOCH" value="0"/>
+                      <arg line="${native.cflags}"/>
+                      <arg value="-fPIC"/>
+                      <arg value="-I${project.basedir}/src/lz4/lib"/>
+                      <arg value="-I${java.home}/include"/>
+                      <arg value="-I${java.home}/include/linux"/>
+                      <arg value="-c"/>
+                      <arg value="${project.basedir}/src/jni/net_jpountz_xxhash_XXHashJNI.c"/>
+                      <arg value="-o"/>
+                      <arg value="${project.build.directory}/native/${os.id}/${arch.id}/net_jpountz_xxhash_XXHashJNI.o"/>
+                    </exec>
+                    <exec executable="${native.cc}" failonerror="true">
+                      <env key="SOURCE_DATE_EPOCH" value="0"/>
+                      <arg line="${native.cflags}"/>
+                      <arg value="-fPIC"/>
+                      <arg value="-I${project.basedir}/src/lz4/lib"/>
+                      <arg value="-I${java.home}/include"/>
+                      <arg value="-I${java.home}/include/linux"/>
+                      <arg value="-c"/>
+                      <arg value="${project.basedir}/src/lz4/lib/lz4.c"/>
+                      <arg value="-o"/>
+                      <arg value="${project.build.directory}/native/${os.id}/${arch.id}/lz4.o"/>
+                    </exec>
+                    <exec executable="${native.cc}" failonerror="true">
+                      <env key="SOURCE_DATE_EPOCH" value="0"/>
+                      <arg line="${native.cflags}"/>
+                      <arg value="-fPIC"/>
+                      <arg value="-I${project.basedir}/src/lz4/lib"/>
+                      <arg value="-I${java.home}/include"/>
+                      <arg value="-I${java.home}/include/linux"/>
+                      <arg value="-c"/>
+                      <arg value="${project.basedir}/src/lz4/lib/lz4hc.c"/>
+                      <arg value="-o"/>
+                      <arg value="${project.build.directory}/native/${os.id}/${arch.id}/lz4hc.o"/>
+                    </exec>
+                    <exec executable="${native.cc}" failonerror="true">
+                      <env key="SOURCE_DATE_EPOCH" value="0"/>
+                      <arg line="${native.xxhash.cflags}"/>
+                      <arg value="-fPIC"/>
+                      <arg value="-I${project.basedir}/src/lz4/lib"/>
+                      <arg value="-I${java.home}/include"/>
+                      <arg value="-I${java.home}/include/linux"/>
+                      <arg value="-c"/>
+                      <arg value="${project.basedir}/src/lz4/lib/xxhash.c"/>
+                      <arg value="-o"/>
+                      <arg value="${project.build.directory}/native/${os.id}/${arch.id}/xxhash.o"/>
+                    </exec>
+                    <exec executable="${native.cc}" failonerror="true">
+                      <env key="SOURCE_DATE_EPOCH" value="0"/>
+                      <arg value="-shared"/>
+                      <arg value="${project.build.directory}/native/${os.id}/${arch.id}/net_jpountz_lz4_LZ4JNI.o"/>
+                      <arg value="${project.build.directory}/native/${os.id}/${arch.id}/net_jpountz_xxhash_XXHashJNI.o"/>
+                      <arg value="${project.build.directory}/native/${os.id}/${arch.id}/lz4.o"/>
+                      <arg value="${project.build.directory}/native/${os.id}/${arch.id}/lz4hc.o"/>
+                      <arg value="${project.build.directory}/native/${os.id}/${arch.id}/xxhash.o"/>
+                      <arg line="${native.ldflags}"/>
+                      <arg value="-o"/>
+                      <arg value="${project.build.outputDirectory}/net/jpountz/util/${os.id}/${arch.id}/liblz4-java.${lib.ext}"/>
+                    </exec>
+                  </target>
+                </configuration>
+                <goals><goal>run</goal></goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <profile>
+      <id>native-macos</id>
+      <activation>
+        <os>
+          <family>mac</family>
+        </os>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>build-jni-macos</id>
+                <phase>process-resources</phase>
+                <configuration>
+                  <target>
+                    <property name="os.id" value="darwin"/>
+                    <property name="lib.ext" value="dylib"/>
+
+                    <!-- Arch mapping (overridable via -Darch.id) -->
+                    <property name="arch.id" value="${os.arch}"/>
+                    <condition property="arch.id" value="x86_64">
+                      <matches pattern="^(x86_64|amd64|AMD64)$" string="${arch.id}"/>
+                    </condition>
+                    <condition property="arch.id" value="aarch64">
+                      <matches pattern="^(aarch64|arm64|ARM64)$" string="${arch.id}"/>
+                    </condition>
+
+                    <!-- Toolchain overrides come from Maven properties: ${native.cc}, ${native.cflags}, ${native.ldflags} -->
+
+                    <mkdir dir="${project.build.outputDirectory}/net/jpountz/util/${os.id}/${arch.id}"/>
+                    <exec executable="${native.cc}" failonerror="true">
+                      <env key="SOURCE_DATE_EPOCH" value="0"/>
+                      <arg value="-O3"/>
+                      <arg value="-fPIC"/>
+                      <arg value="-dynamiclib"/>
+                      <arg line="${native.cflags}"/>
+                      <arg value="-mmacosx-version-min=10.9"/>
+                      <arg value="-I${project.basedir}/src/lz4/lib"/>
+                      <arg value="-I${java.home}/include"/>
+                      <arg value="-I${java.home}/include/darwin"/>
+                      <arg value="${project.basedir}/src/jni/net_jpountz_lz4_LZ4JNI.c"/>
+                      <arg value="${project.basedir}/src/jni/net_jpountz_xxhash_XXHashJNI.c"/>
+                      <arg value="${project.basedir}/src/lz4/lib/lz4.c"/>
+                      <arg value="${project.basedir}/src/lz4/lib/lz4hc.c"/>
+                      <arg value="${project.basedir}/src/lz4/lib/xxhash.c"/>
+                      <arg line="${native.ldflags}"/>
+                      <arg value="-o"/>
+                      <arg value="${project.build.outputDirectory}/net/jpountz/util/${os.id}/${arch.id}/liblz4-java.${lib.ext}"/>
+                    </exec>
+                  </target>
+                </configuration>
+                <goals><goal>run</goal></goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <profile>
+      <id>native-windows</id>
+      <activation>
+        <os>
+          <family>windows</family>
+        </os>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>build-jni-windows</id>
+                <phase>process-resources</phase>
+                <configuration>
+                  <target>
+                    <property name="os.id" value="windows"/>
+                    <property name="lib.ext" value="dll"/>
+
+                    <!-- Arch mapping (overridable via -Darch.id) -->
+                    <property name="arch.id" value="${os.arch}"/>
+                    <condition property="arch.id" value="amd64">
+                      <matches pattern="^(x86_64|amd64|AMD64)$" string="${arch.id}"/>
+                    </condition>
+                    <condition property="arch.id" value="i386">
+                      <matches pattern="^(x86|i386|i686)$" string="${arch.id}"/>
+                    </condition>
+
+                    <!-- Toolchain overrides come from Maven properties: ${native.cc}, ${native.cflags}, ${native.ldflags} -->
+
+                    <mkdir dir="${project.build.outputDirectory}/net/jpountz/util/${os.id}/${arch.id}"/>
+                    <exec executable="${native.cc}" failonerror="true">
+                      <env key="SOURCE_DATE_EPOCH" value="0"/>
+                      <arg value="-O3"/>
+                      <arg value="-shared"/>
+                      <arg line="${native.cflags}"/>
+                      <arg value="-I${project.basedir}/src/lz4/lib"/>
+                      <arg value="-I${java.home}/include"/>
+                      <arg value="-I${java.home}/include/win32"/>
+                      <arg value="${project.basedir}/src/jni/net_jpountz_lz4_LZ4JNI.c"/>
+                      <arg value="${project.basedir}/src/jni/net_jpountz_xxhash_XXHashJNI.c"/>
+                      <arg value="${project.basedir}/src/lz4/lib/lz4.c"/>
+                      <arg value="${project.basedir}/src/lz4/lib/lz4hc.c"/>
+                      <arg value="${project.basedir}/src/lz4/lib/xxhash.c"/>
+                      <arg line="${native.ldflags}"/>
+                      <arg value="-o"/>
+                      <arg value="${project.build.outputDirectory}/net/jpountz/util/${os.id}/${arch.id}/liblz4-java.${lib.ext}"/>
+                    </exec>
+                  </target>
+                </configuration>
+                <goals><goal>run</goal></goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>fuzz</id>
+      <properties>
+        <native.cc>clang</native.cc>
+        <native.cflags>-O1 -g -fPIC -fno-omit-frame-pointer</native.cflags>
+        <native.ldflags></native.ldflags>
+        <jazzer.max_duration>5s</jazzer.max_duration>
+      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <version>3.1.0</version>
+            <executions>
+              <execution>
+                <id>detect-asan-runtime</id>
+                <phase>validate</phase>
+                <configuration>
+                  <exportAntProperties>true</exportAntProperties>
+                  <target>
+                    <exec executable="clang" outputproperty="clang.resource.dir">
+                      <arg value="-print-resource-dir"/>
+                    </exec>
+                    <property name="clang.asan.lib" value="${clang.resource.dir}/lib/linux"/>
+                  </target>
+                </configuration>
+                <goals><goal>run</goal></goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <version>3.2.5</version>
+            <configuration>
+              <failIfNoTests>true</failIfNoTests>
+              <systemPropertyVariables>
+                <!-- Limit each Jazzer @FuzzTest to the configured duration -->
+                <jazzer.max_duration>${jazzer.max_duration}</jazzer.max_duration>
+              </systemPropertyVariables>
+              <environmentVariables>
+                <JAZZER_FUZZ>1</JAZZER_FUZZ>
+                <ASAN_OPTIONS>detect_leaks=1,abort_on_error=1,fast_unwind_on_malloc=0</ASAN_OPTIONS>
+                <LD_LIBRARY_PATH>${clang.asan.lib}:${env.LD_LIBRARY_PATH}</LD_LIBRARY_PATH>
+              </environmentVariables>
+            </configuration>
+            <executions>
+              <!-- Skip regular unit tests -->
+              <execution>
+                <id>default-test</id>
+                <configuration>
+                  <skipTests>true</skipTests>
+                </configuration>
+              </execution>
+              <!-- Specify custom fuzz tests; each execution covers one fuzz test method -->
+              <execution>
+                <id>fuzz-net.jpountz.fuzz.LZ4DecompressorTest#safe_safe_array</id>
+                <goals><goal>test</goal></goals>
+                <configuration>
+                  <test>net.jpountz.fuzz.LZ4DecompressorTest#safe_safe_array</test>
+                </configuration>
+              </execution>
+              <execution>
+                <id>fuzz-net.jpountz.fuzz.LZ4DecompressorTest#safe_fast_array</id>
+                <goals><goal>test</goal></goals>
+                <configuration>
+                  <test>net.jpountz.fuzz.LZ4DecompressorTest#safe_fast_array</test>
+                </configuration>
+              </execution>
+              <execution>
+                <id>fuzz-net.jpountz.fuzz.LZ4DecompressorTest#unsafe_safe_array</id>
+                <goals><goal>test</goal></goals>
+                <configuration>
+                  <test>net.jpountz.fuzz.LZ4DecompressorTest#unsafe_safe_array</test>
+                </configuration>
+              </execution>
+              <execution>
+                <id>fuzz-net.jpountz.fuzz.LZ4DecompressorTest#unsafe_fast_array</id>
+                <goals><goal>test</goal></goals>
+                <configuration>
+                  <test>net.jpountz.fuzz.LZ4DecompressorTest#unsafe_fast_array</test>
+                </configuration>
+              </execution>
+              <execution>
+                <id>fuzz-net.jpountz.fuzz.LZ4DecompressorTest#native_safe_array</id>
+                <goals><goal>test</goal></goals>
+                <configuration>
+                  <test>net.jpountz.fuzz.LZ4DecompressorTest#native_safe_array</test>
+                </configuration>
+              </execution>
+              <execution>
+                <id>fuzz-net.jpountz.fuzz.LZ4DecompressorTest#native_fast_array</id>
+                <goals><goal>test</goal></goals>
+                <configuration>
+                  <test>net.jpountz.fuzz.LZ4DecompressorTest#native_fast_array</test>
+                </configuration>
+              </execution>
+              <execution>
+                <id>fuzz-net.jpountz.fuzz.LZ4DecompressorTest#safe_safe_bytebuffer</id>
+                <goals><goal>test</goal></goals>
+                <configuration>
+                  <test>net.jpountz.fuzz.LZ4DecompressorTest#safe_safe_bytebuffer</test>
+                </configuration>
+              </execution>
+              <execution>
+                <id>fuzz-net.jpountz.fuzz.LZ4DecompressorTest#safe_fast_bytebuffer</id>
+                <goals><goal>test</goal></goals>
+                <configuration>
+                  <test>net.jpountz.fuzz.LZ4DecompressorTest#safe_fast_bytebuffer</test>
+                </configuration>
+              </execution>
+              <execution>
+                <id>fuzz-net.jpountz.fuzz.LZ4DecompressorTest#unsafe_safe_bytebuffer</id>
+                <goals><goal>test</goal></goals>
+                <configuration>
+                  <test>net.jpountz.fuzz.LZ4DecompressorTest#unsafe_safe_bytebuffer</test>
+                </configuration>
+              </execution>
+              <execution>
+                <id>fuzz-net.jpountz.fuzz.LZ4DecompressorTest#unsafe_fast_bytebuffer</id>
+                <goals><goal>test</goal></goals>
+                <configuration>
+                  <test>net.jpountz.fuzz.LZ4DecompressorTest#unsafe_fast_bytebuffer</test>
+                </configuration>
+              </execution>
+              <execution>
+                <id>fuzz-net.jpountz.fuzz.LZ4DecompressorTest#native_safe_bytebuffer</id>
+                <goals><goal>test</goal></goals>
+                <configuration>
+                  <test>net.jpountz.fuzz.LZ4DecompressorTest#native_safe_bytebuffer</test>
+                </configuration>
+              </execution>
+              <execution>
+                <id>fuzz-net.jpountz.fuzz.LZ4DecompressorTest#native_fast_bytebuffer</id>
+                <goals><goal>test</goal></goals>
+                <configuration>
+                  <test>net.jpountz.fuzz.LZ4DecompressorTest#native_fast_bytebuffer</test>
+                </configuration>
+              </execution>
+
+              <!-- LZ4CompressorTest fast compressor (array) -->
+              <execution>
+                <id>fuzz-net.jpountz.fuzz.LZ4CompressorTest#safe_fast_array</id>
+                <goals><goal>test</goal></goals>
+                <configuration>
+                  <test>net.jpountz.fuzz.LZ4CompressorTest#safe_fast_array</test>
+                </configuration>
+              </execution>
+              <execution>
+                <id>fuzz-net.jpountz.fuzz.LZ4CompressorTest#unsafe_fast_array</id>
+                <goals><goal>test</goal></goals>
+                <configuration>
+                  <test>net.jpountz.fuzz.LZ4CompressorTest#unsafe_fast_array</test>
+                </configuration>
+              </execution>
+              <execution>
+                <id>fuzz-net.jpountz.fuzz.LZ4CompressorTest#native_fast_array</id>
+                <goals><goal>test</goal></goals>
+                <configuration>
+                  <test>net.jpountz.fuzz.LZ4CompressorTest#native_fast_array</test>
+                </configuration>
+              </execution>
+
+              <!-- LZ4CompressorTest fast compressor (bytebuffer) -->
+              <execution>
+                <id>fuzz-net.jpountz.fuzz.LZ4CompressorTest#safe_fast_bytebuffer</id>
+                <goals><goal>test</goal></goals>
+                <configuration>
+                  <test>net.jpountz.fuzz.LZ4CompressorTest#safe_fast_bytebuffer</test>
+                </configuration>
+              </execution>
+              <execution>
+                <id>fuzz-net.jpountz.fuzz.LZ4CompressorTest#unsafe_fast_bytebuffer</id>
+                <goals><goal>test</goal></goals>
+                <configuration>
+                  <test>net.jpountz.fuzz.LZ4CompressorTest#unsafe_fast_bytebuffer</test>
+                </configuration>
+              </execution>
+              <execution>
+                <id>fuzz-net.jpountz.fuzz.LZ4CompressorTest#native_fast_bytebuffer</id>
+                <goals><goal>test</goal></goals>
+                <configuration>
+                  <test>net.jpountz.fuzz.LZ4CompressorTest#native_fast_bytebuffer</test>
+                </configuration>
+              </execution>
+
+              <!-- LZ4CompressorTest high compressor level 1 (array) -->
+              <execution>
+                <id>fuzz-net.jpountz.fuzz.LZ4CompressorTest#safe_high_l1_array</id>
+                <goals><goal>test</goal></goals>
+                <configuration>
+                  <test>net.jpountz.fuzz.LZ4CompressorTest#safe_high_l1_array</test>
+                </configuration>
+              </execution>
+              <execution>
+                <id>fuzz-net.jpountz.fuzz.LZ4CompressorTest#unsafe_high_l1_array</id>
+                <goals><goal>test</goal></goals>
+                <configuration>
+                  <test>net.jpountz.fuzz.LZ4CompressorTest#unsafe_high_l1_array</test>
+                </configuration>
+              </execution>
+              <execution>
+                <id>fuzz-net.jpountz.fuzz.LZ4CompressorTest#native_high_l1_array</id>
+                <goals><goal>test</goal></goals>
+                <configuration>
+                  <test>net.jpountz.fuzz.LZ4CompressorTest#native_high_l1_array</test>
+                </configuration>
+              </execution>
+
+              <!-- LZ4CompressorTest high compressor level 9 (array) -->
+              <execution>
+                <id>fuzz-net.jpountz.fuzz.LZ4CompressorTest#safe_high_l9_array</id>
+                <goals><goal>test</goal></goals>
+                <configuration>
+                  <test>net.jpountz.fuzz.LZ4CompressorTest#safe_high_l9_array</test>
+                </configuration>
+              </execution>
+              <execution>
+                <id>fuzz-net.jpountz.fuzz.LZ4CompressorTest#unsafe_high_l9_array</id>
+                <goals><goal>test</goal></goals>
+                <configuration>
+                  <test>net.jpountz.fuzz.LZ4CompressorTest#unsafe_high_l9_array</test>
+                </configuration>
+              </execution>
+              <execution>
+                <id>fuzz-net.jpountz.fuzz.LZ4CompressorTest#native_high_l9_array</id>
+                <goals><goal>test</goal></goals>
+                <configuration>
+                  <test>net.jpountz.fuzz.LZ4CompressorTest#native_high_l9_array</test>
+                </configuration>
+              </execution>
+
+              <!-- LZ4CompressorTest high compressor level 17 (array) -->
+              <execution>
+                <id>fuzz-net.jpountz.fuzz.LZ4CompressorTest#safe_high_l17_array</id>
+                <goals><goal>test</goal></goals>
+                <configuration>
+                  <test>net.jpountz.fuzz.LZ4CompressorTest#safe_high_l17_array</test>
+                </configuration>
+              </execution>
+              <execution>
+                <id>fuzz-net.jpountz.fuzz.LZ4CompressorTest#unsafe_high_l17_array</id>
+                <goals><goal>test</goal></goals>
+                <configuration>
+                  <test>net.jpountz.fuzz.LZ4CompressorTest#unsafe_high_l17_array</test>
+                </configuration>
+              </execution>
+              <execution>
+                <id>fuzz-net.jpountz.fuzz.LZ4CompressorTest#native_high_l17_array</id>
+                <goals><goal>test</goal></goals>
+                <configuration>
+                  <test>net.jpountz.fuzz.LZ4CompressorTest#native_high_l17_array</test>
+                </configuration>
+              </execution>
+
+              <!-- LZ4CompressorTest high compressor level 1 (bytebuffer) -->
+              <execution>
+                <id>fuzz-net.jpountz.fuzz.LZ4CompressorTest#safe_high_l1_bytebuffer</id>
+                <goals><goal>test</goal></goals>
+                <configuration>
+                  <test>net.jpountz.fuzz.LZ4CompressorTest#safe_high_l1_bytebuffer</test>
+                </configuration>
+              </execution>
+              <execution>
+                <id>fuzz-net.jpountz.fuzz.LZ4CompressorTest#unsafe_high_l1_bytebuffer</id>
+                <goals><goal>test</goal></goals>
+                <configuration>
+                  <test>net.jpountz.fuzz.LZ4CompressorTest#unsafe_high_l1_bytebuffer</test>
+                </configuration>
+              </execution>
+              <execution>
+                <id>fuzz-net.jpountz.fuzz.LZ4CompressorTest#native_high_l1_bytebuffer</id>
+                <goals><goal>test</goal></goals>
+                <configuration>
+                  <test>net.jpountz.fuzz.LZ4CompressorTest#native_high_l1_bytebuffer</test>
+                </configuration>
+              </execution>
+
+              <!-- LZ4CompressorTest high compressor level 9 (bytebuffer) -->
+              <execution>
+                <id>fuzz-net.jpountz.fuzz.LZ4CompressorTest#safe_high_l9_bytebuffer</id>
+                <goals><goal>test</goal></goals>
+                <configuration>
+                  <test>net.jpountz.fuzz.LZ4CompressorTest#safe_high_l9_bytebuffer</test>
+                </configuration>
+              </execution>
+              <execution>
+                <id>fuzz-net.jpountz.fuzz.LZ4CompressorTest#unsafe_high_l9_bytebuffer</id>
+                <goals><goal>test</goal></goals>
+                <configuration>
+                  <test>net.jpountz.fuzz.LZ4CompressorTest#unsafe_high_l9_bytebuffer</test>
+                </configuration>
+              </execution>
+              <execution>
+                <id>fuzz-net.jpountz.fuzz.LZ4CompressorTest#native_high_l9_bytebuffer</id>
+                <goals><goal>test</goal></goals>
+                <configuration>
+                  <test>net.jpountz.fuzz.LZ4CompressorTest#native_high_l9_bytebuffer</test>
+                </configuration>
+              </execution>
+
+              <!-- LZ4CompressorTest high compressor level 17 (bytebuffer) -->
+              <execution>
+                <id>fuzz-net.jpountz.fuzz.LZ4CompressorTest#safe_high_l17_bytebuffer</id>
+                <goals><goal>test</goal></goals>
+                <configuration>
+                  <test>net.jpountz.fuzz.LZ4CompressorTest#safe_high_l17_bytebuffer</test>
+                </configuration>
+              </execution>
+              <execution>
+                <id>fuzz-net.jpountz.fuzz.LZ4CompressorTest#unsafe_high_l17_bytebuffer</id>
+                <goals><goal>test</goal></goals>
+                <configuration>
+                  <test>net.jpountz.fuzz.LZ4CompressorTest#unsafe_high_l17_bytebuffer</test>
+                </configuration>
+              </execution>
+              <execution>
+                <id>fuzz-net.jpountz.fuzz.LZ4CompressorTest#native_high_l17_bytebuffer</id>
+                <goals><goal>test</goal></goals>
+                <configuration>
+                  <test>net.jpountz.fuzz.LZ4CompressorTest#native_high_l17_bytebuffer</test>
+                </configuration>
+              </execution>
+
+              <!-- LZ4CompressorTest fast-reset compressor (array) -->
+              <execution>
+                <id>fuzz-net.jpountz.fuzz.LZ4CompressorTest#native_fastReset_array</id>
+                <goals><goal>test</goal></goals>
+                <configuration>
+                  <test>net.jpountz.fuzz.LZ4CompressorTest#native_fastReset_array</test>
+                </configuration>
+              </execution>
+              <execution>
+                <id>fuzz-net.jpountz.fuzz.LZ4CompressorTest#native_fastReset_a9_array</id>
+                <goals><goal>test</goal></goals>
+                <configuration>
+                  <test>net.jpountz.fuzz.LZ4CompressorTest#native_fastReset_a9_array</test>
+                </configuration>
+              </execution>
+              <execution>
+                <id>fuzz-net.jpountz.fuzz.LZ4CompressorTest#native_fastReset_a17_array</id>
+                <goals><goal>test</goal></goals>
+                <configuration>
+                  <test>net.jpountz.fuzz.LZ4CompressorTest#native_fastReset_a17_array</test>
+                </configuration>
+              </execution>
+
+              <!-- LZ4CompressorTest fast-reset compressor (bytebuffer) -->
+              <execution>
+                <id>fuzz-net.jpountz.fuzz.LZ4CompressorTest#native_fastReset_bytebuffer</id>
+                <goals><goal>test</goal></goals>
+                <configuration>
+                  <test>net.jpountz.fuzz.LZ4CompressorTest#native_fastReset_bytebuffer</test>
+                </configuration>
+              </execution>
+              <execution>
+                <id>fuzz-net.jpountz.fuzz.LZ4CompressorTest#native_fastReset_a9_bytebuffer</id>
+                <goals><goal>test</goal></goals>
+                <configuration>
+                  <test>net.jpountz.fuzz.LZ4CompressorTest#native_fastReset_a9_bytebuffer</test>
+                </configuration>
+              </execution>
+              <execution>
+                <id>fuzz-net.jpountz.fuzz.LZ4CompressorTest#native_fastReset_a17_bytebuffer</id>
+                <goals><goal>test</goal></goals>
+                <configuration>
+                  <test>net.jpountz.fuzz.LZ4CompressorTest#native_fastReset_a17_bytebuffer</test>
+                </configuration>
+              </execution>
+
+              <!-- LZ4CompressorTest high fast-reset compressor (array) -->
+              <execution>
+                <id>fuzz-net.jpountz.fuzz.LZ4CompressorTest#native_highFastReset_array</id>
+                <goals><goal>test</goal></goals>
+                <configuration>
+                  <test>net.jpountz.fuzz.LZ4CompressorTest#native_highFastReset_array</test>
+                </configuration>
+              </execution>
+              <execution>
+                <id>fuzz-net.jpountz.fuzz.LZ4CompressorTest#native_highFastReset_l1_array</id>
+                <goals><goal>test</goal></goals>
+                <configuration>
+                  <test>net.jpountz.fuzz.LZ4CompressorTest#native_highFastReset_l1_array</test>
+                </configuration>
+              </execution>
+              <execution>
+                <id>fuzz-net.jpountz.fuzz.LZ4CompressorTest#native_highFastReset_l9_array</id>
+                <goals><goal>test</goal></goals>
+                <configuration>
+                  <test>net.jpountz.fuzz.LZ4CompressorTest#native_highFastReset_l9_array</test>
+                </configuration>
+              </execution>
+              <execution>
+                <id>fuzz-net.jpountz.fuzz.LZ4CompressorTest#native_highFastReset_l17_array</id>
+                <goals><goal>test</goal></goals>
+                <configuration>
+                  <test>net.jpountz.fuzz.LZ4CompressorTest#native_highFastReset_l17_array</test>
+                </configuration>
+              </execution>
+
+              <!-- LZ4CompressorTest high fast-reset compressor (bytebuffer) -->
+              <execution>
+                <id>fuzz-net.jpountz.fuzz.LZ4CompressorTest#native_highFastReset_bytebuffer</id>
+                <goals><goal>test</goal></goals>
+                <configuration>
+                  <test>net.jpountz.fuzz.LZ4CompressorTest#native_highFastReset_bytebuffer</test>
+                </configuration>
+              </execution>
+              <execution>
+                <id>fuzz-net.jpountz.fuzz.LZ4CompressorTest#native_highFastReset_l1_bytebuffer</id>
+                <goals><goal>test</goal></goals>
+                <configuration>
+                  <test>net.jpountz.fuzz.LZ4CompressorTest#native_highFastReset_l1_bytebuffer</test>
+                </configuration>
+              </execution>
+              <execution>
+                <id>fuzz-net.jpountz.fuzz.LZ4CompressorTest#native_highFastReset_l9_bytebuffer</id>
+                <goals><goal>test</goal></goals>
+                <configuration>
+                  <test>net.jpountz.fuzz.LZ4CompressorTest#native_highFastReset_l9_bytebuffer</test>
+                </configuration>
+              </execution>
+              <execution>
+                <id>fuzz-net.jpountz.fuzz.LZ4CompressorTest#native_highFastReset_l17_bytebuffer</id>
+                <goals><goal>test</goal></goals>
+                <configuration>
+                  <test>net.jpountz.fuzz.LZ4CompressorTest#native_highFastReset_l17_bytebuffer</test>
+                </configuration>
+              </execution>
+
+              <!-- XXHash32Test (array) -->
+              <execution>
+                <id>fuzz-net.jpountz.fuzz.XXHash32Test#safe_array</id>
+                <goals><goal>test</goal></goals>
+                <configuration>
+                  <test>net.jpountz.fuzz.XXHash32Test#safe_array</test>
+                </configuration>
+              </execution>
+              <execution>
+                <id>fuzz-net.jpountz.fuzz.XXHash32Test#unsafe_array</id>
+                <goals><goal>test</goal></goals>
+                <configuration>
+                  <test>net.jpountz.fuzz.XXHash32Test#unsafe_array</test>
+                </configuration>
+              </execution>
+              <execution>
+                <id>fuzz-net.jpountz.fuzz.XXHash32Test#native_array</id>
+                <goals><goal>test</goal></goals>
+                <configuration>
+                  <test>net.jpountz.fuzz.XXHash32Test#native_array</test>
+                </configuration>
+              </execution>
+
+              <!-- XXHash32Test (bytebuffer) -->
+              <execution>
+                <id>fuzz-net.jpountz.fuzz.XXHash32Test#safe_bytebuffer</id>
+                <goals><goal>test</goal></goals>
+                <configuration>
+                  <test>net.jpountz.fuzz.XXHash32Test#safe_bytebuffer</test>
+                </configuration>
+              </execution>
+              <execution>
+                <id>fuzz-net.jpountz.fuzz.XXHash32Test#unsafe_bytebuffer</id>
+                <goals><goal>test</goal></goals>
+                <configuration>
+                  <test>net.jpountz.fuzz.XXHash32Test#unsafe_bytebuffer</test>
+                </configuration>
+              </execution>
+              <execution>
+                <id>fuzz-net.jpountz.fuzz.XXHash32Test#native_bytebuffer</id>
+                <goals><goal>test</goal></goals>
+                <configuration>
+                  <test>net.jpountz.fuzz.XXHash32Test#native_bytebuffer</test>
+                </configuration>
+              </execution>
+
+              <!-- XXHash64Test (array) -->
+              <execution>
+                <id>fuzz-net.jpountz.fuzz.XXHash64Test#safe_array</id>
+                <goals><goal>test</goal></goals>
+                <configuration>
+                  <test>net.jpountz.fuzz.XXHash64Test#safe_array</test>
+                </configuration>
+              </execution>
+              <execution>
+                <id>fuzz-net.jpountz.fuzz.XXHash64Test#unsafe_array</id>
+                <goals><goal>test</goal></goals>
+                <configuration>
+                  <test>net.jpountz.fuzz.XXHash64Test#unsafe_array</test>
+                </configuration>
+              </execution>
+              <execution>
+                <id>fuzz-net.jpountz.fuzz.XXHash64Test#native_array</id>
+                <goals><goal>test</goal></goals>
+                <configuration>
+                  <test>net.jpountz.fuzz.XXHash64Test#native_array</test>
+                </configuration>
+              </execution>
+
+              <!-- XXHash64Test (bytebuffer) -->
+              <execution>
+                <id>fuzz-net.jpountz.fuzz.XXHash64Test#safe_bytebuffer</id>
+                <goals><goal>test</goal></goals>
+                <configuration>
+                  <test>net.jpountz.fuzz.XXHash64Test#safe_bytebuffer</test>
+                </configuration>
+              </execution>
+              <execution>
+                <id>fuzz-net.jpountz.fuzz.XXHash64Test#unsafe_bytebuffer</id>
+                <goals><goal>test</goal></goals>
+                <configuration>
+                  <test>net.jpountz.fuzz.XXHash64Test#unsafe_bytebuffer</test>
+                </configuration>
+              </execution>
+              <execution>
+                <id>fuzz-net.jpountz.fuzz.XXHash64Test#native_bytebuffer</id>
+                <goals><goal>test</goal></goals>
+                <configuration>
+                  <test>net.jpountz.fuzz.XXHash64Test#native_bytebuffer</test>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+</project>

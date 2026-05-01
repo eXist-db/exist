@@ -1,0 +1,9 @@
+<project>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>batik</groupId>
+  <artifactId>batik-dom</artifactId>
+  <name>Batik DOM</name>
+  <version>1.6</version>
+  <description>Batik DOM</description>
+  <inceptionYear>2000</inceptionYear>
+</project>

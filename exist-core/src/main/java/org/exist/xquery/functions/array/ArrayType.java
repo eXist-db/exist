@@ -107,14 +107,14 @@ public class ArrayType extends FunctionReference implements Lookup.LookupSupport
             throw new XPathException(getExpression(), ErrorCodes.XPTY0004,
                     "Position argument for array lookup must be a positive integer");
         }
-        final int pos = ((IntegerValue) key).getInt();
-        if (pos <= 0 || pos > getSize()) {
+        final long posLong = ((IntegerValue) key).getLong();
+        if (posLong <= 0 || posLong > getSize()) {
             final String startIdx = vector.length() == 0 ? "0" : "1";
             final String endIdx = String.valueOf(vector.length());
             throw new XPathException(getExpression(), ErrorCodes.FOAY0001,
-                    "Array index " + pos + " out of bounds (" + startIdx + ".." + endIdx + ")");
+                    "Array index " + posLong + " out of bounds (" + startIdx + ".." + endIdx + ")");
         }
-        return get(pos - 1);
+        return get((int) posLong - 1);
     }
 
     @Override

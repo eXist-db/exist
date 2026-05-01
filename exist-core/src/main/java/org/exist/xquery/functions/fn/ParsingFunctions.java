@@ -44,10 +44,16 @@ public class ParsingFunctions extends BasicFunction {
 	protected static final FunctionReturnSequenceType PARSE_RESULT_TYPE = new FunctionReturnSequenceType(Type.DOCUMENT,
 			Cardinality.ZERO_OR_ONE, "the document node with the parsed result");
 
+	// XQ4 spec: accepts xs:string | xs:hexBinary | xs:base64Binary; we widen to
+	// xs:anyAtomicType so the partial-application's static signature is broad
+	// enough; runtime impl handles only string conversion.
 	protected static final FunctionParameterSequenceType TO_BE_PARSED_PARAMETER = new FunctionParameterSequenceType(
-			"arg", Type.STRING, Cardinality.ZERO_OR_ONE, "The string to be parsed");
+			"value", Type.ANY_ATOMIC_TYPE, Cardinality.ZERO_OR_ONE, "The string or binary value to be parsed");
 
 	protected static final Logger logger = LogManager.getLogger(ParsingFunctions.class);
+
+	protected static final FunctionParameterSequenceType OPTIONS_PARAMETER = new FunctionParameterSequenceType(
+			"options", Type.MAP_ITEM, Cardinality.ZERO_OR_ONE, "Options map");
 
 	public final static FunctionSignature[] signatures = {
 			new FunctionSignature(
@@ -63,6 +69,22 @@ public class ParsingFunctions extends BasicFunction {
                             + "External entities must have been parsed before. "
 					        + "Returns the document node with the parsed document fragment.",
 					new SequenceType[] { TO_BE_PARSED_PARAMETER },
+                    PARSE_RESULT_TYPE
+            ),
+			// XQuery 4.0: fn:parse-xml with options map
+			new FunctionSignature(
+					new QName("parse-xml", Function.BUILTIN_FUNCTION_NS),
+					"Parse an XML document with options. "
+							+ "Returns the document node with the parsed document.",
+					new SequenceType[] { TO_BE_PARSED_PARAMETER, OPTIONS_PARAMETER },
+                    PARSE_RESULT_TYPE
+            ),
+			// XQuery 4.0: fn:parse-xml-fragment with options map
+			new FunctionSignature(
+					new QName("parse-xml-fragment", Function.BUILTIN_FUNCTION_NS),
+					"Parse an XML fragment with options. "
+					        + "Returns the document node with the parsed document fragment.",
+					new SequenceType[] { TO_BE_PARSED_PARAMETER, OPTIONS_PARAMETER },
                     PARSE_RESULT_TYPE
             )
     };

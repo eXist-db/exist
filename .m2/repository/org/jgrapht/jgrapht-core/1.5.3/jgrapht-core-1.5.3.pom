@@ -1,0 +1,124 @@
+<?xml version="1.0"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.jgrapht</groupId>
+        <artifactId>jgrapht</artifactId>
+        <version>1.5.3</version>
+    </parent>
+    <artifactId>jgrapht-core</artifactId>
+    <name>JGraphT - Core</name>
+    <properties>
+        <main.basedir>${project.parent.basedir}</main.basedir>
+        <excludedGroups>slow,optional</excludedGroups>
+    </properties>
+    <licenses>
+        <license>
+            <name>GNU Lesser General Public License Version 2.1, February 1999</name>
+            <url>http://jgrapht.sourceforge.net/LGPL.html</url>
+            <distribution>repo</distribution>
+        </license>
+        <license>
+            <name>Eclipse Public License (EPL) 2.0</name>
+            <url>http://www.eclipse.org/legal/epl-v20.html</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+    <dependencies>
+        <dependency>
+            <groupId>org.jheaps</groupId>
+            <artifactId>jheaps</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apfloat</groupId>
+            <artifactId>apfloat</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-suite</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.openjdk.jmh</groupId>
+            <artifactId>jmh-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.openjdk.jmh</groupId>
+            <artifactId>jmh-generator-annprocess</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+                    </archive>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>default-test</id>
+                        <configuration>
+                            <argLine>
+                                --add-exports org.jgrapht.core/org.jgrapht.interfaces=ALL-UNNAMED
+                                <!-- 
+                                    Manually export performance test packages
+                                    Ref: https://github.com/jgrapht/jgrapht/issues/1170
+                                -->
+                                --add-exports org.jgrapht.core/org.jgrapht.perf.clique=ALL-UNNAMED
+                                --add-exports org.jgrapht.core/org.jgrapht.perf.connectivity=ALL-UNNAMED
+                                --add-exports org.jgrapht.core/org.jgrapht.perf.flow=ALL-UNNAMED
+                                --add-exports org.jgrapht.core/org.jgrapht.perf.graph=ALL-UNNAMED
+                                --add-exports org.jgrapht.core/org.jgrapht.perf.lca=ALL-UNNAMED
+                                --add-exports org.jgrapht.core/org.jgrapht.perf.matching=ALL-UNNAMED
+                                --add-exports org.jgrapht.core/org.jgrapht.perf.shortestpath=ALL-UNNAMED
+                                --add-exports org.jgrapht.core/org.jgrapht.perf.spanning=ALL-UNNAMED
+                            </argLine>
+                            <excludes>
+                                <exclude>**/perf/**</exclude>
+                            </excludes>
+                            <excludedGroups>${excludedGroups}</excludedGroups>
+                            <includes>
+                                <include>**/FastTestSuite.java</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <configuration>
+                    <argLine>--add-exports org.jgrapht.core/org.jgrapht.interfaces=ALL-UNNAMED</argLine>
+                    <excludedGroups>optional</excludedGroups>
+                    <groups>slow</groups>
+                    <includes>
+                        <include>**/*Test.java</include>
+                    </includes>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

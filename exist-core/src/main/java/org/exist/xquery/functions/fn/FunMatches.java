@@ -61,9 +61,10 @@ import static org.exist.xquery.regex.RegexUtil.*;
  */
 public final class FunMatches extends Function implements Optimizable, IndexUseReporter {
 
-    private static final FunctionParameterSequenceType FS_PARAM_INPUT = optParam("input", Type.STRING, "The input string");
+    private static final FunctionParameterSequenceType FS_PARAM_INPUT = optParam("value", Type.STRING, "The input string");
     private static final FunctionParameterSequenceType FS_PARAM_PATTERN = param("pattern", Type.STRING, "The pattern");
-    private static final FunctionParameterSequenceType FS_PARAM_FLAGS = param("flags", Type.STRING, "The flags");
+    private static final FunctionParameterSequenceType FS_PARAM_FLAGS =
+            new FunctionParameterSequenceType("flags", Type.STRING, Cardinality.ZERO_OR_ONE, "The flags");
 
     private static final String FS_MATCHES_NAME = "matches";
     private static final String FS_DESCRIPTION =
@@ -138,7 +139,7 @@ public final class FunMatches extends Function implements Optimizable, IndexUseR
 
         if (arguments.size() >= 3) {
             Expression arg = arguments.get(2);
-            arg = new DynamicCardinalityCheck(context, Cardinality.EXACTLY_ONE, arg,
+            arg = new DynamicCardinalityCheck(context, Cardinality.ZERO_OR_ONE, arg,
                     new Error(Error.FUNC_PARAM_CARDINALITY, "3", getSignature()));
             if (!Type.subTypeOf(arg.returnsType(), Type.ANY_ATOMIC_TYPE)) {
                 arg = new Atomize(context, arg);
@@ -212,7 +213,8 @@ public final class FunMatches extends Function implements Optimizable, IndexUseR
 
         final int flags;
         if (getSignature().getArgumentCount() == 3) {
-            final String flagsArg = getArgument(2).eval(contextSequence, null).getStringValue();
+            final Sequence flagsSeq = getArgument(2).eval(contextSequence, null);
+            final String flagsArg = flagsSeq.isEmpty() ? "" : flagsSeq.getStringValue();
             flags = parseFlags(this, flagsArg);
         } else {
             flags = 0;
@@ -382,7 +384,8 @@ public final class FunMatches extends Function implements Optimizable, IndexUseR
 
         final int flags;
         if (getSignature().getArgumentCount() == 3) {
-            final String flagsArg = getArgument(2).eval(contextSequence, contextItem).getStringValue();
+            final Sequence flagsSeq = getArgument(2).eval(contextSequence, contextItem);
+            final String flagsArg = flagsSeq.isEmpty() ? "" : flagsSeq.getStringValue();
             flags = parseFlags(this, flagsArg);
         } else {
             flags = 0;
@@ -497,7 +500,8 @@ public final class FunMatches extends Function implements Optimizable, IndexUseR
 
         final String xmlRegexFlags;
         if (getSignature().getArgumentCount() == 3) {
-            xmlRegexFlags = getArgument(2).eval(contextSequence, contextItem).getStringValue();
+            final Sequence flagsSeq = getArgument(2).eval(contextSequence, contextItem);
+            xmlRegexFlags = flagsSeq.isEmpty() ? "" : flagsSeq.getStringValue();
         } else {
             xmlRegexFlags = "";
         }
@@ -512,7 +516,44 @@ public final class FunMatches extends Function implements Optimizable, IndexUseR
     }
 
 
-    private boolean matchXmlRegex(final String string, final String pattern, final String flags) throws XPathException {
+    private boolean matchXmlRegex(String string, String pattern, String flags) throws XPathException {
+        final boolean isXQuery40 = context.getXQueryVersion() >= 40;
+
+        // XQ4: 'c' flag — strip regex comments before compilation
+        final boolean hasCommentFlag = flags.indexOf('c') >= 0 && flags.indexOf('q') < 0;
+        if (flags.indexOf('c') >= 0) {
+            flags = flags.replace("c", "");
+        }
+        if (hasCommentFlag) {
+            pattern = FunReplace.stripRegexComments(pattern);
+        }
+
+        // XQ4: translate (*positive_lookahead:...) etc. to Java regex (?=...) syntax
+        if (isXQuery40 && org.exist.xquery.regex.RegexUtil.hasXPath4Lookaround(pattern)) {
+            pattern = org.exist.xquery.regex.RegexUtil.translateXPath4Lookaround(pattern);
+        }
+
+        // Pre-validate: reject constructs that are not valid in XPath regex
+        // but that Saxon's XP30 mode accepts (Java/Perl extensions)
+        if (!hasLiteral(flags)) {
+            org.exist.xquery.regex.RegexUtil.validateXPathRegex(this, pattern, isXQuery40);
+        }
+
+        // XQ4: patterns with \b, \B, or lookaround need Java regex since
+        // Saxon's XP30 mode doesn't support these XPath 4.0 extensions
+        if (isXQuery40 && org.exist.xquery.regex.RegexUtil.needsXQuery40JavaRegex(pattern)) {
+            try {
+                final String javaPattern = org.exist.xquery.regex.RegexUtil.translateRegexp(
+                        this, pattern, flags.contains("x"), flags.contains("i"));
+                final int javaFlags = org.exist.xquery.regex.RegexUtil.parseFlags(this, flags);
+                return Pattern.compile(javaPattern, javaFlags).matcher(string).find();
+            } catch (final PatternSyntaxException e) {
+                throw new XPathException(this, ErrorCodes.FORX0002,
+                        "Invalid regular expression: " + e.getMessage(),
+                        new StringValue(this, pattern), e);
+            }
+        }
+
         try {
             List<String> warnings = new ArrayList<>(1);
             RegularExpression regex = context.getBroker().getBrokerPool()

@@ -49,6 +49,7 @@ public class ErrorCodes {
     public static final ErrorCode XPST0080 = new W3CErrorCode("XPST0080", "It is a static error if the target type of a cast or castable expression is xs:NOTATION or xs:anyAtomicType.");
     public static final ErrorCode XPST0081 = new W3CErrorCode("XPST0081", "It is a static error if a QName used in an expression contains a namespace prefix that cannot be expanded into a namespace URI by using the statically known namespaces.");
     public static final ErrorCode XPST0083 = new W3CErrorCode("XPST0083", "(Not currently used.)");
+    public static final ErrorCode XPTY0117 = new W3CErrorCode("XPTY0117", "It is a type error if an item in the value of an argument to a function call cannot be implicitly cast to the corresponding parameter type when the parameter type is namespace-sensitive (xs:QName or xs:NOTATION) and the supplied value is xs:untypedAtomic.");
 
     /* XQuery 1.0 http://www.w3.org/TR/xquery/#id-errors */
     public static final ErrorCode XQST0009 = new W3CErrorCode("XQST0009", "An implementation that does not support the Schema Import Feature must raise a static error if a Prolog contains a schema import.");
@@ -88,6 +89,7 @@ public class ErrorCodes {
     public static final ErrorCode XQDY0052 = new W3CErrorCode("XQDY0052", "(Not currently used.)");
     public static final ErrorCode XQST0053 = new W3CErrorCode("XQST0053", "(Not currently used.)");
     public static final ErrorCode XQST0054 = new W3CErrorCode("XQST0054", "It is a static error if a variable depends on itself.");
+    public static final ErrorCode XQDY0054 = new W3CErrorCode("XQDY0054", "It is a dynamic error if a variable depends on itself.");
     public static final ErrorCode XQST0055 = new W3CErrorCode("XQST0055", "It is a static error if a Prolog contains more than one copy-namespaces declaration.");
     public static final ErrorCode XQST0056 = new W3CErrorCode("XQST0056", "(Not currently used.)");
     public static final ErrorCode XQST0057 = new W3CErrorCode("XQST0057", "It is a static error if a schema import binds a namespace prefix but does not specify a target namespace other than a zero-length string.");
@@ -161,6 +163,8 @@ public class ErrorCodes {
     public static final ErrorCode FODT0001 = new W3CErrorCode("FODT0001", "Overflow/underflow in date/time operation.");
     public static final ErrorCode FODT0002 = new W3CErrorCode("FODT0002", "Overflow/underflow in duration operation.");
     public static final ErrorCode FODT0003 = new W3CErrorCode("FODT0003", "Invalid timezone value.");
+    public static final ErrorCode FODT0005 = new W3CErrorCode("FODT0005", "Invalid argument to fn:build-dateTime or related date/time constructors.");
+    public static final ErrorCode FODT0006 = new W3CErrorCode("FODT0006", "Invalid component value in date/time constructor.");
     public static final ErrorCode FONS0004 = new W3CErrorCode("FONS0004", "No namespace found for prefix.");
     public static final ErrorCode FONS0005 = new W3CErrorCode("FONS0005", "Base-uri not defined in the static context.");
     public static final ErrorCode FORG0001 = new W3CErrorCode("FORG0001", "Invalid value for cast/constructor.");
@@ -176,6 +180,9 @@ public class ErrorCodes {
     public static final ErrorCode FORX0002 = new W3CErrorCode("FORX0002", "Invalid regular expression.");
     public static final ErrorCode FORX0003 = new W3CErrorCode("FORX0003", "Regular expression matches zero-length string.");
     public static final ErrorCode FORX0004 = new W3CErrorCode("FORX0004", "Invalid replacement string.");
+    public static final ErrorCode FOCV0001 = new W3CErrorCode("FOCV0001", "CSV quote error.");
+    public static final ErrorCode FOCV0002 = new W3CErrorCode("FOCV0002", "Invalid CSV delimiter.");
+    public static final ErrorCode FOCV0003 = new W3CErrorCode("FOCV0003", "Conflicting CSV delimiters.");
     public static final ErrorCode FOTY0012 = new W3CErrorCode("FOTY0012", "Argument node does not have a typed value.");
     public static final ErrorCode FOTY0013 = new W3CErrorCode("FOTY0013", "The argument to fn:data() contains a function item.");
 
@@ -211,6 +218,7 @@ public class ErrorCodes {
 	public static final ErrorCode FTDY0020 = new W3CErrorCode("FTDY0020", "");
 
 	public static final ErrorCode FODC0006 = new W3CErrorCode("FODC0006", "String passed to fn:parse-xml is not a well-formed XML document.");
+	public static final ErrorCode FODC0011 = new W3CErrorCode("FODC0011", "HTML parsing error.");
 
 	public static final ErrorCode FOAP0001 = new W3CErrorCode("FOAP0001", "Wrong number of arguments");
 
@@ -225,6 +233,7 @@ public class ErrorCodes {
     public static final ErrorCode FOJS0005 = new W3CErrorCode("FOJS0005", "Invalid options.");
     public static final ErrorCode FOJS0006 = new W3CErrorCode("FOJS0006", "Invalid XML representation of JSON.");
     public static final ErrorCode FOJS0007 = new W3CErrorCode("FOJS0007", "Bad JSON escape sequence.");
+    public static final ErrorCode FOJS0008 = new W3CErrorCode("FOJS0008", "Element cannot be converted with the specified layout.");
 
     public static final ErrorCode FOUT1170 = new W3CErrorCode("FOUT1170", "Invalid $href argument to fn:unparsed-text() (etc.)");
     public static final ErrorCode FOUT1190 = new W3CErrorCode("FOUT1190", "Cannot decode resource retrieved by fn:unparsed-text() (etc.)");
@@ -240,6 +249,10 @@ public class ErrorCodes {
     public static final ErrorCode FOXT0003 = new W3CErrorCode("FOXT0003", "XSLT transformation failed");
     public static final ErrorCode FOXT0004 = new W3CErrorCode("FOXT0004", "XSLT transformation has been disabled");
     public static final ErrorCode FOXT0006 = new W3CErrorCode("FOXT0006", "XSLT output contains non-accepted characters");
+
+    // Invisible XML errors
+    public static final ErrorCode FOIX0001 = new W3CErrorCode("FOIX0001", "Invalid ixml grammar");
+    public static final ErrorCode FOIX0002 = new W3CErrorCode("FOIX0002", "ixml parse error");
 
     public static final ErrorCode XTSE0165 = new W3CErrorCode("XTSE0165","It is a static error if the processor is not able to retrieve the resource identified by the URI reference [ in the href attribute of xsl:include or xsl:import] , or if the resource that is retrieved does not contain a stylesheet module conforming to this specification.");
 

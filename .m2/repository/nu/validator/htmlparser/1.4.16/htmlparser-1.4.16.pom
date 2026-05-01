@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>nu.validator</groupId>
+  <artifactId>htmlparser</artifactId>
+  <version>1.4.16</version>
+  <name>htmlparser</name>
+  <description>A fork of http://hg.mozilla.org/projects/htmlparser/ used by the Nu Html Checker.</description>
+  <url>https://about.validator.nu/htmlparser/</url>
+  <licenses>
+    <license>
+      <name>The MIT License</name>
+      <url>http://www.opensource.org/licenses/mit-license.php</url>
+      <distribution>repo</distribution>
+    </license>
+    <license>
+      <name>The (New) BSD License</name>
+      <url>http://opensource.org/licenses/bsd-license.php</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  <developers>
+    <developer>
+      <id>hsivonen</id>
+      <name>Henri Sivonen</name>
+      <email>hsivonen@iki.fi</email>
+      <url>https://hsivonen.iki.fi/</url>
+    </developer>
+    <developer>
+      <id>sideshowbarker</id>
+      <name>Michael[tm] Smith</name>
+      <email>mike@w3.org</email>
+      <url>https://people.w3.org/mike/</url>
+    </developer>
+  </developers>
+  <scm>
+    <connection>scm:git:git@github.com:validator/htmlparser.git</connection>
+    <developerConnection>scm:git:git@github.com:validator/htmlparser.git</developerConnection>
+    <url>https://github.com/validator/htmlparser</url>
+  </scm>
+  <dependencies>
+    <dependency>
+      <groupId>com.ibm.icu</groupId>
+      <artifactId>icu4j</artifactId>
+      <version>4.0.1</version>
+      <scope>compile</scope>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>com.sdicons.jsontools</groupId>
+      <artifactId>jsontools-core</artifactId>
+      <version>1.4</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>net.sourceforge.jchardet</groupId>
+      <artifactId>jchardet</artifactId>
+      <version>1.0</version>
+      <scope>compile</scope>
+      <optional>true</optional>
+    </dependency>
+  </dependencies>
+</project>

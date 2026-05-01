@@ -23,6 +23,7 @@ package org.exist.xquery;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.exist.Namespaces;
 import org.exist.dom.QName;
@@ -30,6 +31,7 @@ import org.exist.source.Source;
 import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.Constants.StringTruncationOperator;
 import org.exist.xquery.parser.XQueryAST;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
@@ -47,6 +49,17 @@ public class FunctionFactory {
     public static final String PROPERTY_DISABLE_DEPRECATED_FUNCTIONS = "xquery.disable-deprecated-functions";
     public static final boolean DISABLE_DEPRECATED_FUNCTIONS_BY_DEFAULT = false;
 
+    /**
+     * Reserved function names per XQuery 3.1/4.0 spec.
+     * These names must not be used as unprefixed function calls (XPST0003).
+     */
+    private static final Set<String> RESERVED_FUNCTION_NAMES = Set.of(
+        "array", "attribute", "comment", "document-node", "element",
+        "function", "if", "item", "map", "namespace-node", "node",
+        "processing-instruction", "schema-attribute", "schema-element",
+        "switch", "text", "typeswitch"
+    );
+
     public static Expression createFunction(XQueryContext context, XQueryAST ast, PathExpr parent, List<Expression> params) throws XPathException {
     	QName qname = null;
         try {
@@ -54,6 +67,19 @@ public class FunctionFactory {
         } catch(final QName.IllegalQNameException xpe) {
             throw new XPathException(ast, ErrorCodes.XPST0081, "Invalid qname " +  ast.getText() + ". " + xpe.getMessage());
         }
+
+        // Check for reserved function names — unprefixed reserved names cannot be
+        // used as function calls (XPST0003). Prefixed names like fn:item() are not
+        // subject to the reserved name restriction (they just won't be found → XPST0017).
+        final String rawName = ast.getText();
+        if (rawName != null && !rawName.contains(":") && !rawName.contains("{")) {
+            final String local = qname.getLocalPart();
+            if (RESERVED_FUNCTION_NAMES.contains(local)) {
+                throw new XPathException(ast.getLine(), ast.getColumn(), ErrorCodes.XPST0003,
+                    "'" + local + "' is a reserved function name and cannot be used as a function call");
+            }
+        }
+
         return createFunction(context, qname, ast, parent, params);
     }
 
@@ -84,6 +110,12 @@ public class FunctionFactory {
         boolean optimizeStrFuncs) throws XPathException {
         final String local = qname.getLocalPart();
         final String uri = qname.getNamespaceURI();
+        // Resolve any XQ4 keyword arguments (name := expr) into positional
+        // slots based on the called function's signature. Returns a list with
+        // KeywordArgument wrappers replaced by their expression placed at the
+        // resolved position; missing positions are padded with EMPTY_SEQUENCE
+        // wrapped as a literal expression.
+        params = resolveKeywordArguments(context, ast, qname, params);
         Expression step = null;
         if (optimizeStrFuncs && (Namespaces.XPATH_FUNCTIONS_NS.equals(uri) || Namespaces.XSL_NS.equals(uri))) {
             if("starts-with".equals(local)) {
@@ -245,7 +277,14 @@ public class FunctionFactory {
         		ErrorCodes.XPST0017, "Wrong number of arguments for constructor function");
         }
         final Expression arg = params.getFirst();
-        final int code = Type.getType(qname);
+        final int code;
+        try {
+            code = Type.getType(qname);
+        } catch (final XPathException e) {
+            // Unknown type name in xs: namespace → XPST0017 (no such function)
+            throw new XPathException(ast.getLine(), ast.getColumn(),
+                ErrorCodes.XPST0017, "Unknown constructor function: " + qname.getStringValue());
+        }
         final CastExpression castExpr = new CastExpression(context, arg, code, Cardinality.ZERO_OR_ONE);
         castExpr.setLocation(ast.getLine(), ast.getColumn());
         return castExpr;
@@ -265,6 +304,165 @@ public class FunctionFactory {
         call.setLocation(ast.getLine(), ast.getColumn());
         call.setArguments(params);
         return call;
+    }
+
+    /**
+     * Resolve XQuery 4.0 keyword arguments to positional slots.
+     *
+     * Walks the parameter list once. If no element is a {@link KeywordArgument},
+     * returns the input list unchanged. Otherwise it inspects all signatures
+     * of the named function and selects the smallest-arity signature that:
+     * <ul>
+     *   <li>has at least {@code positional + keyword} parameters,</li>
+     *   <li>names a parameter at position {@code i} matching every keyword
+     *       argument's name, where {@code i &gt; positional}, and</li>
+     *   <li>permits an empty sequence at every "skipped" position (so we can
+     *       fill it with {@code ()} as a default).</li>
+     * </ul>
+     * The resulting list is purely positional and is what callers
+     * (e.g. {@link #functionCall}) receive.
+     */
+    private static List<Expression> resolveKeywordArguments(final XQueryContext context,
+            final XQueryAST ast, final QName qname, final List<Expression> params) throws XPathException {
+        boolean hasKeyword = false;
+        for (final Expression p : params) {
+            if (p instanceof KeywordArgument) {
+                hasKeyword = true;
+                break;
+            }
+        }
+        if (!hasKeyword) {
+            return params;
+        }
+
+        // Split into leading positional and keyword args. We require all
+        // positional args to come before any keyword argument; this matches
+        // the spec and avoids ambiguity.
+        final List<Expression> positional = new java.util.ArrayList<>();
+        final java.util.LinkedHashMap<String, Expression> keywords = new java.util.LinkedHashMap<>();
+        boolean inKeywordSection = false;
+        for (final Expression p : params) {
+            if (p instanceof final KeywordArgument kw) {
+                inKeywordSection = true;
+                if (keywords.put(kw.getName(), kw.getValue()) != null) {
+                    throw new XPathException(ast.getLine(), ast.getColumn(), ErrorCodes.XPST0017,
+                            "Duplicate keyword argument '" + kw.getName() + "' in call to " +
+                                    qname.getStringValue());
+                }
+            } else {
+                if (inKeywordSection) {
+                    throw new XPathException(ast.getLine(), ast.getColumn(), ErrorCodes.XPST0017,
+                            "Positional arguments must precede keyword arguments in call to " +
+                                    qname.getStringValue());
+                }
+                positional.add(p);
+            }
+        }
+
+        // Find candidate signatures across all modules that match the qname.
+        final List<FunctionSignature> candidates = new java.util.ArrayList<>();
+        final Module[] modules = context.getModules(qname.getNamespaceURI());
+        if (modules != null) {
+            for (final Module module : modules) {
+                if (module instanceof final InternalModule im) {
+                    candidates.addAll(im.getFunctionsByName(qname));
+                }
+            }
+        }
+        // Also look at user-defined functions in scope.
+        final java.util.Iterator<UserDefinedFunction> userFuncs = context.localFunctions();
+        while (userFuncs.hasNext()) {
+            final UserDefinedFunction f = userFuncs.next();
+            if (f.getSignature().getName().equals(qname)) {
+                candidates.add(f.getSignature());
+            }
+        }
+        if (candidates.isEmpty()) {
+            // Function not found yet (e.g. forward reference). With keyword
+            // arguments we cannot resolve positions, so report a clear error.
+            throw new XPathException(ast.getLine(), ast.getColumn(), ErrorCodes.XPST0017,
+                    "Function " + qname.getStringValue() + " not found; cannot resolve keyword arguments");
+        }
+
+        // Pick the smallest signature whose parameter names cover the keywords
+        // and whose unfilled positions can be defaulted to empty sequence.
+        FunctionSignature chosen = null;
+        for (final FunctionSignature sig : candidates) {
+            final SequenceType[] sigParams = sig.getArgumentTypes();
+            if (sigParams == null || sigParams.length < positional.size() + keywords.size()) {
+                continue;
+            }
+            if (!keywordNamesMatch(sigParams, positional.size(), keywords)) {
+                continue;
+            }
+            if (!unfilledPositionsCanDefault(sigParams, positional.size(), keywords)) {
+                continue;
+            }
+            if (chosen == null || sigParams.length < chosen.getArgumentTypes().length) {
+                chosen = sig;
+            }
+        }
+        if (chosen == null) {
+            throw new XPathException(ast.getLine(), ast.getColumn(), ErrorCodes.XPST0017,
+                    "No signature of " + qname.getStringValue() + " matches the supplied " +
+                            positional.size() + " positional and " + keywords.size() +
+                            " keyword argument(s); known keyword names: " + keywordNames(keywords));
+        }
+
+        final SequenceType[] chosenParams = chosen.getArgumentTypes();
+        final List<Expression> resolved = new java.util.ArrayList<>(chosenParams.length);
+        for (int i = 0; i < positional.size(); i++) {
+            resolved.add(positional.get(i));
+        }
+        for (int i = positional.size(); i < chosenParams.length; i++) {
+            final String paramName = paramNameAt(chosenParams, i);
+            final Expression bound = paramName != null ? keywords.get(paramName) : null;
+            resolved.add(bound != null ? bound : new SequenceConstructor(context));
+        }
+        return resolved;
+    }
+
+    private static boolean keywordNamesMatch(final SequenceType[] sigParams, final int positionalCount,
+            final java.util.Map<String, Expression> keywords) {
+        final java.util.Set<String> remainingNames = new java.util.HashSet<>(keywords.keySet());
+        for (int i = positionalCount; i < sigParams.length; i++) {
+            final String name = paramNameAt(sigParams, i);
+            if (name != null) {
+                remainingNames.remove(name);
+            }
+        }
+        return remainingNames.isEmpty();
+    }
+
+    private static boolean unfilledPositionsCanDefault(final SequenceType[] sigParams,
+            final int positionalCount, final java.util.Map<String, Expression> keywords) {
+        for (int i = positionalCount; i < sigParams.length; i++) {
+            final String name = paramNameAt(sigParams, i);
+            if (name != null && keywords.containsKey(name)) {
+                continue;
+            }
+            // Only allow defaulting when the parameter accepts the empty sequence.
+            final Cardinality card = sigParams[i].getCardinality();
+            if (card.atLeastOne()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static String paramNameAt(final SequenceType[] sigParams, final int index) {
+        if (index >= sigParams.length) {
+            return null;
+        }
+        final SequenceType st = sigParams[index];
+        if (st instanceof final FunctionParameterSequenceType fp) {
+            return fp.getAttributeName();
+        }
+        return null;
+    }
+
+    private static String keywordNames(final java.util.Map<String, Expression> keywords) {
+        return String.join(", ", keywords.keySet());
     }
 
     private static Function functionCall(final XQueryContext context,
@@ -470,12 +668,13 @@ public class FunctionFactory {
                 newSignature.setArgumentTypes(newParamArray);
 
 		final UserDefinedFunction func = new UserDefinedFunction(context, newSignature);
+		func.setPassContextToBody(true);
 		for (final QName varName: variables) {
 			func.addVariable(varName);
 		}
-		
+
 		call.setArguments(innerArgs);
-		
+
 		func.setFunctionBody(call);
 		
 		final FunctionCall wrappedCall = new FunctionCall(context, func);

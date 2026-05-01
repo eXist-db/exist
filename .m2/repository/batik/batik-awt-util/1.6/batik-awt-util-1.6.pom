@@ -1,0 +1,9 @@
+<project>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>batik</groupId>
+  <artifactId>batik-awt-util</artifactId>
+  <name>Batik AWT Utilities</name>
+  <version>1.6</version>
+  <description>Batik AWT Utilities</description>
+  <inceptionYear>2000</inceptionYear>
+</project>

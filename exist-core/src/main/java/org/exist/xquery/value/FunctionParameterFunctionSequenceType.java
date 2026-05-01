@@ -81,6 +81,16 @@ public class FunctionParameterFunctionSequenceType extends FunctionParameterSequ
 
     @Override
     public boolean checkType(final Sequence seq) throws XPathException {
+        // An empty sequence has no item type to validate; the parent's
+        // cardinality test owns the empty-vs-non-empty decision and will have
+        // already accepted this case if the parameter declares zero-or-* or
+        // zero-or-one cardinality. Without this short-circuit a defaulted
+        // empty argument (e.g. an XQ4 keyword-argument fill from
+        // FunctionFactory.resolveKeywordArguments) would fail with a
+        // bogus "expected function(*); got item()" compile-time error.
+        if (seq.isEmpty()) {
+            return true;
+        }
         // all functions?
         if (!Type.subTypeOf(seq.getItemType(), getPrimaryType())) {
             throw new XPathException(ErrorCodes.XPTY0004,

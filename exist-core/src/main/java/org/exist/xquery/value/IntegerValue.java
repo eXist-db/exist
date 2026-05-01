@@ -142,6 +142,10 @@ public class IntegerValue extends NumericValue {
     public IntegerValue(final Expression expression, final String stringValue, final int requiredType) throws XPathException {
         super(expression);
         try {
+            // String-to-integer cast follows XSD lexical rules (decimal only).
+            // XQuery 4.0 hex/binary prefixes and underscore separators apply
+            // only to integer LITERALS in source code (handled in XQueryTree.g),
+            // not to runtime string-to-integer conversions like xs:integer("0x0").
             this.value = new BigInteger(StringValue.trimWhitespace(stringValue));
             this.type = requiredType;
             if (!(checkType())) {
@@ -152,6 +156,29 @@ public class IntegerValue extends NumericValue {
             throw new XPathException(getExpression(), ErrorCodes.FORG0001, "can not convert '" +
                     stringValue + "' to " + Type.getTypeName(requiredType));
         }
+    }
+
+    /**
+     * Parse an XPath/XQuery integer literal, accepting the XQuery 4.0
+     * extensions: hex prefix {@code 0x...} / {@code 0X...}, binary prefix
+     * {@code 0b...} / {@code 0B...}, and {@code _} as a digit separator
+     * between digits. Decimal literals (no prefix) match the original
+     * XPath 3.1 behaviour.
+     */
+    private static BigInteger parseIntegerLiteral(final String text) {
+        if (text.length() > 2 && text.charAt(0) == '0') {
+            final char p = text.charAt(1);
+            if (p == 'x' || p == 'X') {
+                return new BigInteger(text.substring(2).replace("_", ""), 16);
+            }
+            if (p == 'b' || p == 'B') {
+                return new BigInteger(text.substring(2).replace("_", ""), 2);
+            }
+        }
+        if (text.indexOf('_') >= 0) {
+            return new BigInteger(text.replace("_", ""));
+        }
+        return new BigInteger(text);
     }
 
     private boolean checkType() throws XPathException {
@@ -327,6 +354,26 @@ public class IntegerValue extends NumericValue {
         return value.longValue();
     }
 
+    /**
+     * Returns this integer's value as a {@code long}, raising
+     * {@link ErrorCodes#FOAR0002} when the value does not fit in the
+     * 64-bit signed long range.
+     *
+     * Prefer this over {@link #getLong()} in numeric contexts where
+     * silent truncation could produce wrong results (e.g. range bounds,
+     * sequence sizes, indexes).
+     *
+     * @return the value as a {@code long}.
+     * @throws XPathException FOAR0002 if the value would overflow {@code long}.
+     */
+    public long getLongChecked() throws XPathException {
+        if (value.compareTo(SMALLEST_LONG) < 0 || value.compareTo(LARGEST_LONG) > 0) {
+            throw new XPathException(getExpression(), ErrorCodes.FOAR0002,
+                    "Numeric overflow: integer value '" + value + "' is out of range for xs:long.");
+        }
+        return value.longValue();
+    }
+
     @Override
     public double getDouble() {
         return value.doubleValue();
@@ -369,10 +416,8 @@ public class IntegerValue extends NumericValue {
 
     @Override
     public ComputableValue minus(final ComputableValue other) throws XPathException {
-        if (Type.subTypeOf(other.getType(), Type.INTEGER))
-        // return new IntegerValue(value - ((IntegerValue) other).value, type);
-        {
-            return new IntegerValue(getExpression(), value.subtract(((IntegerValue) other).value), type);
+        if (Type.subTypeOf(other.getType(), Type.INTEGER)) {
+            return integerArithmetic(value.subtract(((IntegerValue) other).value));
         } else {
             return ((ComputableValue) convertTo(other.getType())).minus(other);
         }
@@ -380,10 +425,8 @@ public class IntegerValue extends NumericValue {
 
     @Override
     public ComputableValue plus(final ComputableValue other) throws XPathException {
-        if (Type.subTypeOf(other.getType(), Type.INTEGER))
-        // return new IntegerValue(value + ((IntegerValue) other).value, type);
-        {
-            return new IntegerValue(getExpression(), value.add(((IntegerValue) other).value), type);
+        if (Type.subTypeOf(other.getType(), Type.INTEGER)) {
+            return integerArithmetic(value.add(((IntegerValue) other).value));
         } else {
             return ((ComputableValue) convertTo(other.getType())).plus(other);
         }
@@ -392,11 +435,31 @@ public class IntegerValue extends NumericValue {
     @Override
     public ComputableValue mult(final ComputableValue other) throws XPathException {
         if (Type.subTypeOf(other.getType(), Type.INTEGER)) {
-            return new IntegerValue(getExpression(), value.multiply(((IntegerValue) other).value), type);
+            return integerArithmetic(value.multiply(((IntegerValue) other).value));
         } else if (Type.subTypeOf(other.getType(), Type.DURATION)) {
             return other.mult(this);
         } else {
             return ((ComputableValue) convertTo(other.getType())).mult(other);
+        }
+    }
+
+    /**
+     * Build the result of an integer-typed +/-/* operation. When the
+     * computed value fits the operand's derived subtype, the result keeps
+     * that subtype (xs:short + xs:short = xs:short). When it would
+     * overflow, widen to xs:integer rather than raising FORG0001 — this
+     * matches Saxon/BaseX semantics and is what fn:sum(0 to 0x7FFF as
+     * xs:short*) requires (intermediate sums overflow xs:short long
+     * before the input sequence is exhausted).
+     */
+    private IntegerValue integerArithmetic(final BigInteger result) throws XPathException {
+        try {
+            return new IntegerValue(getExpression(), result, type);
+        } catch (final XPathException e) {
+            if (type != Type.INTEGER && e.getErrorCode() == ErrorCodes.FORG0001) {
+                return new IntegerValue(getExpression(), result, Type.INTEGER);
+            }
+            throw e;
         }
     }
 

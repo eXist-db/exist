@@ -61,7 +61,7 @@ public class FunError extends BasicFunction {
             "The script will terminate immediately with an exception using " +
             "$qname and the default message, 'An error has been raised by the query'.",
             new SequenceType[] {
-                new FunctionParameterSequenceType("qname", Type.QNAME,
+                new FunctionParameterSequenceType("code", Type.QNAME,
                     Cardinality.ZERO_OR_ONE, "The qname")
             },
             new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)
@@ -72,10 +72,10 @@ public class FunError extends BasicFunction {
             "The script will terminate immediately with an exception using " +
             "$qname and $message.",
             new SequenceType[] {
-                new FunctionParameterSequenceType("qname", Type.QNAME,
+                new FunctionParameterSequenceType("code", Type.QNAME,
                     Cardinality.ZERO_OR_ONE, "The qname"),
-                new FunctionParameterSequenceType("message", Type.STRING,
-                    Cardinality.EXACTLY_ONE, "The message")
+                new FunctionParameterSequenceType("description", Type.STRING,
+                    Cardinality.ZERO_OR_ONE, "The message")
             },
             new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)),
         new FunctionSignature(
@@ -84,11 +84,11 @@ public class FunError extends BasicFunction {
             "The script will terminate immediately with an exception using " +
             "$qname and $message with $error-object appended.",
             new SequenceType[] {
-                new FunctionParameterSequenceType("qname", Type.QNAME,
+                new FunctionParameterSequenceType("code", Type.QNAME,
                     Cardinality.ZERO_OR_ONE, "The qname"),
-                new FunctionParameterSequenceType("message", Type.STRING,
-                    Cardinality.EXACTLY_ONE, "The message"),
-                new FunctionParameterSequenceType("error-object", Type.ITEM,
+                new FunctionParameterSequenceType("description", Type.STRING,
+                    Cardinality.ZERO_OR_ONE, "The message"),
+                new FunctionParameterSequenceType("value", Type.ITEM,
                     Cardinality.ZERO_OR_MORE, "The error object")
             },
             new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)),

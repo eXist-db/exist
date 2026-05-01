@@ -1,0 +1,9 @@
+<project>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>batik</groupId>
+  <artifactId>batik-xml</artifactId>
+  <name>Batik XML</name>
+  <version>1.6</version>
+  <description>Batik XML</description>
+  <inceptionYear>2000</inceptionYear>
+</project>

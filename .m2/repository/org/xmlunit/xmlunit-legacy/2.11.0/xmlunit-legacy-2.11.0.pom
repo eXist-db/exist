@@ -1,0 +1,110 @@
+<?xml version="1.0"?>
+<!--
+  This file is licensed to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.xmlunit</groupId>
+    <artifactId>xmlunit-parent</artifactId>
+    <version>2.11.0</version>
+  </parent>
+
+  <groupId>org.xmlunit</groupId>
+  <artifactId>xmlunit-legacy</artifactId>
+  <packaging>jar</packaging>
+  <name>org.xmlunit:xmlunit-legacy</name>
+  <description>XMLUnit 1.x Compatibility Layer</description>
+  <url>https://www.xmlunit.org/</url>
+
+  <properties>
+    <automatic.module.name>org.custommonkey.xmlunit</automatic.module.name>
+    <junit.version>3.8.1</junit.version>
+  </properties>
+
+  <licenses>
+    <license>
+      <name>The BSD 3-Clause License</name>
+      <url>https://github.com/xmlunit/xmlunit/blob/main/xmlunit-legacy/LICENSE.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.xmlunit</groupId>
+      <artifactId>xmlunit-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>${junit.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <includes>
+            <include>**/test_*.java</include>
+          </includes>
+          <systemPropertyVariables>
+            <user.dir>..</user.dir>
+          </systemPropertyVariables>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <configuration>
+          <artifactSet>
+            <excludes>
+              <exclude>junit:junit</exclude>
+            </excludes>
+          </artifactSet>
+          <shadedArtifactAttached>true</shadedArtifactAttached>
+          <shadedClassifierName>sumo</shadedClassifierName>
+          <createDependencyReducedPom>false</createDependencyReducedPom>
+          <createSourcesJar>false</createSourcesJar>
+          <createTestSourcesJar>false</createTestSourcesJar>
+        </configuration>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>maven-bundle-plugin</artifactId>
+        <configuration>
+          <instructions>
+            <Export-Package>org.custommonkey.xmlunit.*;version=${project.version};-noimport:=true</Export-Package>
+          </instructions>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>

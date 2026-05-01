@@ -67,6 +67,17 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
     @Override
     public Expression getExpression() { return expression; }
 
+    /**
+     * Sets the expression from which this value derives.
+     * Used to propagate context information (e.g., XQuery version)
+     * to values created at runtime without an expression reference.
+     */
+    public void setExpression(final Expression expression) {
+        if (this.expression == null) {
+            this.expression = expression;
+        }
+    }
+
     protected AtomicValue() { this(null); }
 
     protected AtomicValue(final Expression expression) { this.expression = expression; }
@@ -230,14 +241,14 @@ public abstract class AtomicValue implements Item, Sequence, Indexable {
 		if (!effectiveBooleanValue())
 			return NodeSet.EMPTY_SET;
 		*/
-        throw new XPathException(getExpression(), 
+        throw new XPathException(getExpression(), ErrorCodes.XPTY0019,
                 "cannot convert " + Type.getTypeName(getType()) + "('" + getStringValue() + "')"
                         + " to a node set");
     }
 
     @Override
     public MemoryNodeSet toMemNodeSet() throws XPathException {
-        throw new XPathException(getExpression(), 
+        throw new XPathException(getExpression(), ErrorCodes.XPTY0019,
                 "cannot convert " + Type.getTypeName(getType()) + "('" + getStringValue() + "')"
                         + " to a node set");
     }

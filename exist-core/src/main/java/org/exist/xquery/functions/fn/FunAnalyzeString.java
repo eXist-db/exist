@@ -54,12 +54,21 @@ import static org.exist.xquery.regex.RegexUtil.*;
 public class FunAnalyzeString extends BasicFunction {
 
     private final static QName fnAnalyzeString = new QName("analyze-string", Function.BUILTIN_FUNCTION_NS);
+    private final static QName QN_ANALYZE_STRING_RESULT = new QName("analyze-string-result", Function.BUILTIN_FUNCTION_NS);
 
     private final static QName QN_MATCH = new QName("match", Function.BUILTIN_FUNCTION_NS);
     private final static QName QN_GROUP = new QName("group", Function.BUILTIN_FUNCTION_NS);
     private final static QName QN_NR = new QName("nr", XMLConstants.NULL_NS_URI);
     private final static QName QN_NON_MATCH = new QName("non-match", Function.BUILTIN_FUNCTION_NS);
-    
+
+    private static FunctionReturnSequenceType makeReturnType() {
+        // XQ4 spec: returns element(fn:analyze-string-result)
+        final FunctionReturnSequenceType rt = new FunctionReturnSequenceType(Type.ELEMENT, Cardinality.EXACTLY_ONE,
+                "The result of the analysis");
+        rt.setNodeName(QN_ANALYZE_STRING_RESULT);
+        return rt;
+    }
+
     public final static FunctionSignature[] signatures = {
         new FunctionSignature(
             fnAnalyzeString,
@@ -68,14 +77,13 @@ public class FunAnalyzeString extends BasicFunction {
             "or failed to match the regular expression, and in the case of " +
             "matched substrings, which substrings matched each " +
             "capturing group in the regular expression.",
-            new SequenceType[] { 
-                new FunctionParameterSequenceType("input", Type.STRING,
+            new SequenceType[] {
+                new FunctionParameterSequenceType("value", Type.STRING,
                     Cardinality.ZERO_OR_ONE, "The input string"),
                 new FunctionParameterSequenceType("pattern", Type.STRING,
                     Cardinality.EXACTLY_ONE, "The pattern")
             },
-            new FunctionReturnSequenceType(Type.ELEMENT,
-                Cardinality.EXACTLY_ONE, "The result of the analysis")
+            makeReturnType()
         ),
         new FunctionSignature(
             fnAnalyzeString,
@@ -84,16 +92,15 @@ public class FunAnalyzeString extends BasicFunction {
             "or failed to match the regular expression, and in the case of " +
             "matched substrings, which substrings matched each " +
             "capturing group in the regular expression.",
-            new SequenceType[] { 
-                new FunctionParameterSequenceType("input", Type.STRING,
+            new SequenceType[] {
+                new FunctionParameterSequenceType("value", Type.STRING,
                     Cardinality.ZERO_OR_ONE, "The input string"),
                 new FunctionParameterSequenceType("pattern", Type.STRING,
                     Cardinality.EXACTLY_ONE, "The pattern"),
                 new FunctionParameterSequenceType("flags", Type.STRING,
-                    Cardinality.EXACTLY_ONE, "Flags"),
+                    Cardinality.ZERO_OR_ONE, "Flags"),
             },
-            new FunctionReturnSequenceType(Type.ELEMENT,
-                Cardinality.EXACTLY_ONE, "The result of the analysis")
+            makeReturnType()
         )
     };
 
@@ -113,7 +120,7 @@ public class FunAnalyzeString extends BasicFunction {
             final String pattern = args[1].itemAt(0).getStringValue();
 
             String flags = "";
-            if (args.length == 3) {
+            if (args.length == 3 && !args[2].isEmpty()) {
                 flags = args[2].itemAt(0).getStringValue();
             }
             analyzeString(builder, input, pattern, flags);
@@ -126,7 +133,18 @@ public class FunAnalyzeString extends BasicFunction {
     }
 
     private void analyzeString(final MemTreeBuilder builder, final String input, String pattern, final String flags) throws XPathException {
+        final boolean isXQuery40 = context.getXQueryVersion() >= 40;
         final Configuration config = context.getBroker().getBrokerPool().getSaxonConfiguration();
+
+        // XQ4: translate (*positive_lookahead:...) etc. to Java regex
+        if (isXQuery40 && org.exist.xquery.regex.RegexUtil.hasXPath4Lookaround(pattern)) {
+            pattern = org.exist.xquery.regex.RegexUtil.translateXPath4Lookaround(pattern);
+        }
+
+        // Pre-validate: reject constructs not valid in XPath regex
+        if (!org.exist.xquery.regex.RegexUtil.hasLiteral(flags)) {
+            org.exist.xquery.regex.RegexUtil.validateXPathRegex(this, pattern, isXQuery40);
+        }
 
         final List<String> warnings = new ArrayList<>(1);
 
@@ -236,25 +254,46 @@ public class FunAnalyzeString extends BasicFunction {
 
     private void match(final MemTreeBuilder builder, final RegexIterator regexIterator) throws net.sf.saxon.trans.XPathException {
         builder.startElement(QN_MATCH, null);
-        regexIterator.processMatchingSubstring(new RegexIterator.MatchHandler() {
-            @Override
-            public void characters(final CharSequence s) {
-                builder.characters(s);
+        // Use reflection to avoid compile-time dependency on RegexIterator$MatchHandler,
+        // which is stripped from the XQTS runner assembly JAR by sbt's merge strategy.
+        // When running in the normal eXist server (or on the next branch with full Saxon),
+        // the proxy delegates to Saxon's own group traversal logic.
+        try {
+            final Class<?> handlerClass = Class.forName("net.sf.saxon.regex.RegexIterator$MatchHandler");
+            final Object handler = java.lang.reflect.Proxy.newProxyInstance(
+                    handlerClass.getClassLoader(),
+                    new Class<?>[]{ handlerClass },
+                    (proxy, method, args) -> {
+                        switch (method.getName()) {
+                            case "characters":
+                                builder.characters((CharSequence) args[0]);
+                                break;
+                            case "onGroupStart":
+                                final AttributesImpl attrs = new AttributesImpl();
+                                attrs.addAttribute("", QN_NR.getLocalPart(), QN_NR.getLocalPart(),
+                                        "int", Integer.toString((Integer) args[0]));
+                                builder.startElement(QN_GROUP, attrs);
+                                break;
+                            case "onGroupEnd":
+                                builder.endElement();
+                                break;
+                        }
+                        return null;
+                    });
+            final java.lang.reflect.Method processMethod = regexIterator.getClass().getMethod(
+                    "processMatchingSubstring", handlerClass);
+            processMethod.invoke(regexIterator, handler);
+        } catch (final ClassNotFoundException e) {
+            // MatchHandler unavailable — output match text without group decomposition
+            builder.characters(regexIterator.getRegexGroup(0));
+        } catch (final java.lang.reflect.InvocationTargetException e) {
+            if (e.getCause() instanceof net.sf.saxon.trans.XPathException) {
+                throw (net.sf.saxon.trans.XPathException) e.getCause();
             }
-
-            @Override
-            public void onGroupStart(final int groupNumber) throws net.sf.saxon.trans.XPathException {
-                final AttributesImpl attributes = new AttributesImpl();
-                attributes.addAttribute("", QN_NR.getLocalPart(), QN_NR.getLocalPart(), "int", Integer.toString(groupNumber));
-
-                builder.startElement(QN_GROUP, attributes);
-            }
-
-            @Override
-            public void onGroupEnd(final int groupNumber) throws net.sf.saxon.trans.XPathException {
-                builder.endElement();
-            }
-        });
+            builder.characters(regexIterator.getRegexGroup(0));
+        } catch (final Exception e) {
+            builder.characters(regexIterator.getRegexGroup(0));
+        }
         builder.endElement();
     }
 

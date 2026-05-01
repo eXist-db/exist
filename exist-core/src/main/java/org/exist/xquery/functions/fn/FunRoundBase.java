@@ -45,6 +45,7 @@ abstract class FunRoundBase extends BasicFunction {
 
     abstract protected RoundingMode getFunctionRoundingMode(NumericValue value);
 
+
     @Override
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
 
@@ -60,9 +61,15 @@ abstract class FunRoundBase extends BasicFunction {
             value = (NumericValue) item.convertTo(Type.NUMERIC);
         }
 
-        final RoundingMode roundingMode = getFunctionRoundingMode(value);
+        // Determine rounding mode: 3-arg form overrides the function default
+        final RoundingMode roundingMode;
+        if (args.length > 2 && !args[2].isEmpty()) {
+            roundingMode = parseRoundingMode(args[2].getStringValue(), value);
+        } else {
+            roundingMode = getFunctionRoundingMode(value);
+        }
 
-        if (args.length > 1) {
+        if (args.length > 1 && !args[1].isEmpty()) {
             final Item precisionItem = args[1].itemAt(0);
             if (precisionItem instanceof IntegerValue precision) {
                 return convertValue(precision, value, roundingMode, this);
@@ -70,6 +77,27 @@ abstract class FunRoundBase extends BasicFunction {
         }
 
         return convertValue(IntegerValue.ZERO, value, roundingMode, this);
+    }
+
+    private RoundingMode parseRoundingMode(final String mode, final NumericValue value) throws XPathException {
+        // XQ4 rounding modes that map directly to Java RoundingMode
+        switch (mode) {
+            case "floor": return RoundingMode.FLOOR;
+            case "ceiling": return RoundingMode.CEILING;
+            case "toward-zero": return RoundingMode.DOWN;
+            case "away-from-zero": return RoundingMode.UP;
+            case "half-to-even": return RoundingMode.HALF_EVEN;
+            case "half-away-from-zero": return RoundingMode.HALF_UP;
+            case "half-toward-zero": return RoundingMode.HALF_DOWN;
+            // half-to-floor and half-to-ceiling need special handling based on sign
+            case "half-to-floor":
+                return value.isNegative() ? RoundingMode.HALF_UP : RoundingMode.HALF_DOWN;
+            case "half-to-ceiling":
+                return value.isNegative() ? RoundingMode.HALF_DOWN : RoundingMode.HALF_UP;
+            default:
+                throw new XPathException(this, ErrorCodes.XPTY0004,
+                        "Unknown rounding mode: '" + mode + "'");
+        }
     }
 
     /**

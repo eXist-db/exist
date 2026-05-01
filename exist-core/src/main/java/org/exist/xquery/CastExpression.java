@@ -73,59 +73,80 @@ public class CastExpression extends AbstractExpression {
 
     @Override
     public Sequence eval(final Sequence contextSequence, final Item contextItem) throws XPathException {
-        if (context.getProfiler().isEnabled()) {
-            context.getProfiler().start(this);
-            context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
-            if (contextSequence != null) {
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
-            }
-            if (contextItem != null) {
-                context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
-            }
-        }
+        startProfiler(contextSequence, contextItem);
+        validateRequiredType();
 
-        // Should be handled by the parser
-        if (requiredType == Type.ANY_ATOMIC_TYPE || (requiredType == Type.NOTATION && expression.returnsType() != Type.NOTATION)) {
-            throw new XPathException(this, ErrorCodes.XPST0080, "cannot cast to " + Type.getTypeName(requiredType));
-        }
-
-        if (requiredType == Type.ANY_SIMPLE_TYPE || expression.returnsType() == Type.ANY_SIMPLE_TYPE || requiredType == Type.UNTYPED || expression.returnsType() == Type.UNTYPED) {
-            throw new XPathException(this, ErrorCodes.XPST0051, "cannot cast to " + Type.getTypeName(requiredType));
-        }
-
-        final Sequence result;
         final Sequence seq = Atomize.atomize(expression.eval(contextSequence, contextItem));
-        if (seq.isEmpty()) {
-            if (cardinality.atLeastOne()) {
-                throw new XPathException(this, ErrorCodes.XPTY0004, "Type error: empty sequence is not allowed here");
-            } else {
-                result = Sequence.EMPTY_SEQUENCE;
-            }
-        } else if (seq.hasMany() && Type.subTypeOf(requiredType, Type.ANY_ATOMIC_TYPE)) {
-            throw new XPathException(this, ErrorCodes.XPTY0004, "cardinality error: sequence with more than one item is not allowed here");
-        } else {
-            final Item item = seq.itemAt(0);
-
-            // Casting to QName needs special treatment
-            if (requiredType == Type.QNAME) {
-                if (item.getType() == Type.QNAME) {
-                    result = item.toSequence();
-                } else if (item.getType() == Type.ANY_ATOMIC_TYPE || Type.subTypeOf(item.getType(), Type.STRING)) {
-                    result = new QNameValue(this, context, item.getStringValue());
-
-                } else {
-                    throw new XPathException(this, ErrorCodes.XPTY0004, "Cannot cast " + Type.getTypeName(item.getType()) + " to xs:QName");
-                }
-            } else {
-                result = item.convertTo(requiredType);
-            }
-        }
+        final Sequence result = castSequence(seq);
 
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().end(this, "", result);
         }
-
         return result;
+    }
+
+    private void startProfiler(final Sequence contextSequence, final Item contextItem) {
+        if (!context.getProfiler().isEnabled()) {
+            return;
+        }
+        context.getProfiler().start(this);
+        context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES",
+                Dependency.getDependenciesName(this.getDependencies()));
+        if (contextSequence != null) {
+            context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);
+        }
+        if (contextItem != null) {
+            context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());
+        }
+    }
+
+    private void validateRequiredType() throws XPathException {
+        // XPST0080: cannot cast to abstract or special types
+        if (requiredType == Type.ANY_ATOMIC_TYPE || requiredType == Type.ANY_SIMPLE_TYPE
+                || (requiredType == Type.NOTATION && expression.returnsType() != Type.NOTATION)) {
+            throw new XPathException(this, ErrorCodes.XPST0080, "cannot cast to " + Type.getTypeName(requiredType));
+        }
+        if (expression.returnsType() == Type.ANY_SIMPLE_TYPE || requiredType == Type.UNTYPED
+                || expression.returnsType() == Type.UNTYPED) {
+            throw new XPathException(this, ErrorCodes.XPST0051, "cannot cast to " + Type.getTypeName(requiredType));
+        }
+    }
+
+    private Sequence castSequence(final Sequence seq) throws XPathException {
+        if (seq.isEmpty()) {
+            if (cardinality.atLeastOne()) {
+                throw new XPathException(this, ErrorCodes.XPTY0004,
+                        "Type error: empty sequence is not allowed here");
+            }
+            return Sequence.EMPTY_SEQUENCE;
+        }
+        if (seq.hasMany() && Type.subTypeOf(requiredType, Type.ANY_ATOMIC_TYPE)) {
+            throw new XPathException(this, ErrorCodes.XPTY0004,
+                    "cardinality error: sequence with more than one item is not allowed here");
+        }
+        final Item item = seq.itemAt(0);
+        if (requiredType == Type.QNAME) {
+            return castToQName(item);
+        }
+        return item.convertTo(requiredType);
+    }
+
+    /**
+     * Casting to xs:QName: per XQ30+ spec, the source value's static type must
+     * be xs:string, xs:untypedAtomic, or xs:anyAtomicType. QNameValue's
+     * constructor validates the lexical form and raises FORG0001 on failure.
+     */
+    private Sequence castToQName(final Item item) throws XPathException {
+        if (item.getType() == Type.QNAME) {
+            return item.toSequence();
+        }
+        if (item.getType() == Type.ANY_ATOMIC_TYPE
+                || item.getType() == Type.UNTYPED_ATOMIC
+                || Type.subTypeOf(item.getType(), Type.STRING)) {
+            return new QNameValue(this, context, item.getStringValue());
+        }
+        throw new XPathException(this, ErrorCodes.XPTY0004,
+                "Cannot cast " + Type.getTypeName(item.getType()) + " to xs:QName");
     }
 
     @Override

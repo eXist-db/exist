@@ -1,0 +1,58 @@
+<project>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>edu.princeton.cup</groupId>
+  <artifactId>java-cup</artifactId>
+  <packaging>jar</packaging>
+  <version>10k</version>
+  <name>CUP Parser Generator for Java</name>
+  <description>LALR Parser Generator in Java</description>
+  <url>http://www.cs.princeton.edu/~appel/modern/java/CUP/</url>
+  <inceptionYear>1996</inceptionYear>
+
+  <licenses>
+    <license>
+      <name>CUP Parser Generator Copyright Notice, License, and Disclaimer</name>
+      <url>http://www.cs.princeton.edu/~appel/modern/java/CUP/#LICENSE</url>
+      <comments>Compatible to Standard ML of New Jersey Copyright License, http://www.gnu.org/licenses/license-list.html#StandardMLofNJ</comments>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <scm>
+    <url>https://www2.in.tum.de/repos/cup/develop/</url>
+    <connection>https://www2.in.tum.de/repos/cup/develop/</connection>
+  </scm>
+  
+  <developers>
+    <developer>
+      <id>hudson</id>
+      <name>Scott Hudson</name>
+    </developer>
+    <developer>
+      <id>flannery</id>
+      <name>Frank Flannery</name>
+    </developer>
+    <developer>
+      <id>ananian</id>
+      <name>C. Scott Ananian</name>
+    </developer>
+  </developers>
+  
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+  
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>2.3.2</version>
+        <configuration>
+          <source>1.4</source>
+          <target>1.4</target>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>

@@ -1,0 +1,193 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.siemens.ct.exi</groupId>
+	<artifactId>exificient-grammars</artifactId>
+	<name>EXIficient-Grammars</name>
+	<url>http://exificient.github.io/</url>
+	<version>1.0.7</version>
+	<packaging>jar</packaging>
+	<description>EXIficient is an open source implementation of the W3C Efficient XML Interchange
+    (EXI) format specification written in the Java programming language. The EXI format is a very
+    compact representation for the Extensible Markup Language (XML) Information Set that is intended
+    to simultaneously optimize performance and the utilization of computational resources. </description>
+	<organization>
+		<name>Siemens AG</name>
+		<url>http://www.siemens.com/corporate-technology/</url>
+	</organization>
+
+	<developers>
+		<developer>
+			<name>Daniel Peintner</name>
+			<email>Daniel.Peintner.EXT@siemens.com</email>
+			<organization>Siemens AG</organization>
+		</developer>
+	</developers>
+
+	<licenses>
+		<license>
+			<name>MIT License</name>
+			<url>http://www.opensource.org/licenses/mit-license.php</url>
+		</license>
+	</licenses>
+
+	<issueManagement>
+		<system>Github Issues</system>
+		<url>https://github.com/EXIficient/exificient-grammars/issues</url>
+	</issueManagement>
+
+	<scm>
+		<connection>scm:git:git://github.com/EXIficient/exificient-grammars.git</connection>
+		<!-- <developerConnection>scm:git:git@github.com:EXIficient/exificient-grammars.git</developerConnection> -->
+		<developerConnection>scm:git:https://github.com/EXIficient/exificient-grammars.git</developerConnection>
+		<url>https://github.com/EXIficient/exificient-grammars</url>
+		<tag>v1.0.7</tag>
+	</scm>
+
+	<dependencies>
+		<dependency>
+			<groupId>com.siemens.ct.exi</groupId>
+			<artifactId>exificient-core</artifactId>
+			<version>1.0.7</version>
+		</dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>2.0.6</version>
+        </dependency>
+		<!-- Runtime Dependencies (schema-informed mode) -->
+		<dependency>
+			<groupId>xerces</groupId>
+			<artifactId>xercesImpl</artifactId>
+			<version>2.12.2</version>
+		</dependency>
+		<!-- Test Dependencies -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.13.1</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>xmlunit</groupId>
+			<artifactId>xmlunit</artifactId>
+			<version>1.6</version>
+			<scope>test</scope>
+		</dependency>
+		<!--  allows persistency checking -->
+		<dependency>
+			<groupId>com.siemens.ct.exi</groupId>
+			<artifactId>exificient</artifactId>
+			<version>1.0.4</version><!-- -SNAPSHOT -->
+			<scope>test</scope>
+		</dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>2.0.6</version>
+            <scope>test</scope>
+        </dependency>
+	</dependencies>
+
+	<properties>
+		<!-- maven-compiler-plugin configuration -->
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+
+
+	<build>
+		<finalName>exificient-grammars</finalName>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+		<plugins>
+			<!-- Include test classes -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>2.4</version>
+				<executions>
+					<execution>
+						<id>attach-test</id>
+						<goals>
+							<goal>test-jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<!-- Include Java Source OR mvn source:jar -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<version>2.2.1</version><!--2.3.2 -->
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<!-- Include Java Doc OR mvn javadoc:jar -->
+			<!-- see http://maven.apache.org/plugins/maven-javadoc-plugin/examples/javadoc-resources.html -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>2.9.1</version><!--2.3.2 -->
+				<configuration>
+					<overview>${basedir}/src/main/java/overview.html</overview>
+					<!-- <failOnError>false</failOnError> -->
+					<additionalparam>-Xdoclint:none</additionalparam>
+				</configuration>
+				<executions>
+					<execution>
+						<id>attach-javadocs</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-release-plugin</artifactId>
+				<version>2.5.3</version>
+				<configuration>
+					<tagNameFormat>v@{project.version}</tagNameFormat>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<configuration>
+					<descriptorRefs>
+						<descriptorRef>jar-with-dependencies</descriptorRef>
+					</descriptorRefs>
+				</configuration>
+				<executions>
+					<execution>
+						<id>make-assembly</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+
+	<parent>
+		<groupId>org.sonatype.oss</groupId>
+		<artifactId>oss-parent</artifactId>
+		<version>7</version>
+	</parent>
+
+</project>

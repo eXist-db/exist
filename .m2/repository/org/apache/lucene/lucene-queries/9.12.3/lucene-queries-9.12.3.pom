@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.apache.lucene</groupId>
+  <artifactId>lucene-queries</artifactId>
+  <version>9.12.3</version>
+  <name>Apache Lucene (module: queries)</name>
+  <description>Apache Lucene (module: queries)</description>
+  <url>https://lucene.apache.org/</url>
+  <inceptionYear>2000</inceptionYear>
+  <licenses>
+    <license>
+      <name>Apache 2</name>
+      <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+    </license>
+  </licenses>
+  <mailingLists>
+    <mailingList>
+      <name>Java User List</name>
+      <subscribe>java-user-subscribe@lucene.apache.org</subscribe>
+      <unsubscribe>java-user-unsubscribe@lucene.apache.org</unsubscribe>
+      <archive>https://mail-archives.apache.org/mod_mbox/lucene-java-user/</archive>
+    </mailingList>
+    <mailingList>
+      <name>Java Developer List</name>
+      <subscribe>dev-subscribe@lucene.apache.org</subscribe>
+      <unsubscribe>dev-unsubscribe@lucene.apache.org</unsubscribe>
+      <archive>https://mail-archives.apache.org/mod_mbox/lucene-dev/</archive>
+    </mailingList>
+    <mailingList>
+      <name>Java Commits List</name>
+      <subscribe>commits-subscribe@lucene.apache.org</subscribe>
+      <unsubscribe>commits-unsubscribe@lucene.apache.org</unsubscribe>
+      <archive>https://mail-archives.apache.org/mod_mbox/lucene-java-commits/</archive>
+    </mailingList>
+  </mailingLists>
+  <scm>
+    <connection>scm:git:https://gitbox.apache.org/repos/asf/lucene.git</connection>
+    <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/lucene.git</developerConnection>
+    <url>https://gitbox.apache.org/repos/asf?p=lucene.git</url>
+  </scm>
+  <issueManagement>
+    <system>JIRA</system>
+    <url>https://issues.apache.org/jira/browse/LUCENE</url>
+  </issueManagement>
+  <ciManagement>
+    <system>Jenkins</system>
+    <url>https://builds.apache.org/job/Lucene/</url>
+  </ciManagement>
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.lucene</groupId>
+      <artifactId>lucene-core</artifactId>
+      <version>9.12.3</version>
+      <scope>compile</scope>
+    </dependency>
+  </dependencies>
+</project>

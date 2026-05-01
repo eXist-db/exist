@@ -50,8 +50,8 @@ public class TwoParamFunctions extends BasicFunction {
             new QName(POW, MathModule.NAMESPACE_URI, MathModule.PREFIX),
             "Returns the result of raising the first argument to the power of the second.",
             new SequenceType[]{
-                    new FunctionParameterSequenceType("value", Type.DOUBLE, Cardinality.ZERO_OR_ONE, "The value"),
-                    new FunctionParameterSequenceType("power", Type.NUMERIC, Cardinality.EXACTLY_ONE, "The power to raise the value to")
+                    new FunctionParameterSequenceType("x", Type.DOUBLE, Cardinality.ZERO_OR_ONE, "The value"),
+                    new FunctionParameterSequenceType("y", Type.NUMERIC, Cardinality.EXACTLY_ONE, "The power to raise the value to")
             },
             new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.ZERO_OR_ONE, "the result")
     );
@@ -83,7 +83,21 @@ public class TwoParamFunctions extends BasicFunction {
             calcValue = Math.atan2(valueA.getDouble(), valueB.getDouble());
 
         } else if (POW.equals(functionName)) {
-            calcValue = Math.pow(valueA.getDouble(), valueB.getDouble());
+            final double a = valueA.getDouble();
+            final double b = valueB.getDouble();
+            // XPath spec §4.2.7 overrides IEEE 754 for these cases:
+            // pow(x, 0) = 1.0 for ANY x (including NaN, ±INF)
+            // pow(1, y) = 1.0 for ANY y (including NaN, ±INF)
+            // pow(-1, ±INF) = 1.0
+            if (b == 0.0) {
+                calcValue = 1.0;
+            } else if (a == 1.0) {
+                calcValue = 1.0;
+            } else if (a == -1.0 && Double.isInfinite(b)) {
+                calcValue = 1.0;
+            } else {
+                calcValue = Math.pow(a, b);
+            }
 
         } else {
             throw new XPathException(this, ERROR, "Function " + functionName + " not found.");

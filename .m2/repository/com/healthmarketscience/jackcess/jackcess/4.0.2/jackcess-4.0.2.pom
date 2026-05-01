@@ -1,0 +1,331 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.healthmarketscience</groupId>
+    <artifactId>openhms-parent</artifactId>
+    <version>2.0.5</version>
+  </parent>
+  <groupId>com.healthmarketscience.jackcess</groupId>
+  <artifactId>jackcess</artifactId>
+  <name>Jackcess</name>
+  <description>A pure Java library for reading from and writing to MS Access databases.</description>
+  <version>4.0.2</version>
+  <url>https://jackcess.sourceforge.io</url>
+  <inceptionYear>2005</inceptionYear>
+  <developers>
+    <developer>
+      <name>Tim McCune</name>
+      <id>javajedi</id>
+      <email>javajedi@users.sf.net</email>
+      <roles>
+        <role>Original author and project founder</role>
+      </roles>
+      <timezone>-5</timezone>
+    </developer>
+    <developer>
+      <name>James Ahlborn</name>
+      <id>jahlborn</id>
+      <email>jahlborn@users.sf.net</email>
+      <roles>
+        <role>Owner</role>
+      </roles>
+      <timezone>-5</timezone>
+    </developer>
+  </developers>
+  <contributors>
+    <contributor>
+      <name>Rob Di Marco</name>
+      <roles>
+        <role>Added ability to import delimited text into new tables</role>
+      </roles>
+      <timezone>-5</timezone>
+    </contributor>
+    <contributor>
+      <name>Mitchell J. Friedman</name>
+      <roles>
+        <role>Added support for additional JDBC data types</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Jon Iles</name>
+      <roles>
+        <role>Added support for reading table definitions that span multiple
+              pages</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>James Schopp</name>
+      <roles>
+        <role>Added support for reading currency columns</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Patricia Donaldson</name>
+      <roles>
+        <role>Contributed RowFilter class</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Dan Rollo</name>
+      <email>bhamail@users.sf.net</email>
+      <organization>Composite Software, Inc.</organization>
+      <roles>
+        <role>Added support for new DB file formats (2003/2007)</role>
+      </roles>
+      <timezone>-5</timezone>
+    </contributor>
+    <contributor>
+      <name>F. Gerbig</name>
+      <roles>
+        <role>added ExportUtil, contributed some of the code for Jet3
+              read-only support</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Lorenzo Carrara</name>
+      <roles>
+        <role>Reverse engineered the attachment data encoding.</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Gordon Thompson</name>
+      <roles>
+        <role>Contributed to cookbook.</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Gabriele Favalessa</name>
+      <roles>
+        <role>Fixed various query generation issues.</role>
+      </roles>
+    </contributor>
+  </contributors>
+  <issueManagement>
+    <system>SourceForge2</system>
+    <url>https://sourceforge.net/p/jackcess/bugs/</url>
+  </issueManagement>
+  <scm>
+    <connection>scm:svn:svn://svn.code.sf.net/p/jackcess/code/jackcess/tags/jackcess-4.0.2</connection>
+    <!-- read/write svn connection -->
+    <developerConnection>scm:svn:svn+ssh://svn.code.sf.net/p/jackcess/code/jackcess/tags/jackcess-4.0.2</developerConnection>
+    <url>http://svn.code.sf.net/p/jackcess/code/jackcess/tags/jackcess-4.0.2</url>
+  </scm>
+  <build>
+    <defaultGoal>install</defaultGoal>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <configuration>
+            <forkMode>once</forkMode>
+            <parallel>classes</parallel>
+            <threadCount>2</threadCount>
+            <systemProperties>
+              <property>
+                <name>java.util.logging.config.file</name>
+                <value>logging_test.properties</value>
+              </property>
+              <property>
+                <name>com.healthmarketscience.jackcess.testFormats</name>
+                <value>${jackcess.testFormats}</value>
+              </property>
+            </systemProperties>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>maven-bundle-plugin</artifactId>
+        <extensions>true</extensions>
+        <configuration>
+          <instructions>
+            <Automatic-Module-Name>com.healthmarketscience.jackcess</Automatic-Module-Name>
+          </instructions>
+        </configuration>
+        <executions>
+          <execution>
+            <id>bundle-manifest</id>
+            <phase>process-classes</phase>
+            <goals>
+              <goal>manifest</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-changes-plugin</artifactId>
+        <configuration>
+          <smtpHost>localhost</smtpHost>
+          <toAddresses>
+            <toAddress>jackcess-users@lists.sourceforge.net</toAddress>
+          </toAddresses>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+          </archive>
+        </configuration>
+        <executions>
+          <execution>
+            <id>build-test-jar</id>
+            <goals>
+              <goal>test-jar</goal>
+            </goals>
+            <configuration>
+              <archive combine.self="override">
+              </archive>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <configuration>
+          <minmemory>128m</minmemory>
+          <maxmemory>512</maxmemory>
+          <links>
+            <list>https://docs.oracle.com/javase/8/docs/api/</list>
+            <list>http://docs.oracle.com/javaee/5/api/</list>
+          </links>
+          <source>1.8</source>
+          <show>public</show>
+          <stylesheetfile>${basedir}/src/site/javadoc/stylesheet.css</stylesheetfile>
+          <tags>
+            <tag>
+              <name>usage</name>
+              <placement>a</placement>
+              <head>Usage:</head>
+            </tag>
+          </tags>
+          <quiet>true</quiet>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>com.google.code.maven-replacer-plugin</groupId>
+        <artifactId>replacer</artifactId>
+        <executions>
+          <execution>
+            <id>with-regex2</id>
+            <phase>site</phase>
+            <goals>
+              <goal>replace</goal>
+            </goals>
+            <configuration>
+              <includes>
+                <include>${project.build.directory}/site/apidocs/**/*.html</include>
+              </includes>
+              <regex>true</regex>
+              <replacements>
+                <replacement>
+                  <token>_general_(method|class|field)_</token>
+                  <value>&lt;span class="UsageGeneral"&gt;&lt;span class="UsageGeneralHeader"&gt;General&lt;/span&gt;: This $1 is general use.&lt;/span&gt;</value>
+                </replacement>
+                <replacement>
+                  <token>_intermediate_(method|class|field)_</token>
+                  <value>&lt;span class="UsageIntermediate"&gt;&lt;span class="UsageIntermediateHeader"&gt;Intermediate&lt;/span&gt;: This $1 requires moderate API knowledge.&lt;/span&gt;</value>
+                </replacement>
+                <replacement>
+                  <token>_advanced_(method|class|field)_</token>
+                  <value>&lt;span class="UsageAdvanced"&gt;&lt;span class="UsageAdvancedHeader"&gt;Advanced&lt;/span&gt;: This $1 is for advanced/internal use.&lt;/span&gt;</value>
+                </replacement>
+              </replacements>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <version>3.10</version>
+    </dependency>
+    <dependency>
+      <groupId>commons-logging</groupId>
+      <artifactId>commons-logging</artifactId>
+      <version>1.2</version>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.13.1</version>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- Only necessary if working with compound ole data -->
+    <dependency>
+      <groupId>org.apache.poi</groupId>
+      <artifactId>poi</artifactId>
+      <version>4.1.1</version>
+      <optional>true</optional>
+    </dependency>
+
+  </dependencies>
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-pmd-plugin</artifactId>
+        <configuration>
+          <rulesets>
+            <ruleset>${basedir}/src/site/pmd/custom-ruleset.xml</ruleset>
+          </rulesets>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-changes-plugin</artifactId>
+        <configuration>
+          <issueLinkTemplatePerSystem>
+            <SourceForge2Features>https://sourceforge.net/p/jackcess/feature-requests/%ISSUE%</SourceForge2Features>
+            <SourceForge2Patches>https://sourceforge.net/p/jackcess/patches/%ISSUE%</SourceForge2Patches>
+            <GitHubPullRequests>https://github.com/jahlborn/jackcess/pull/%ISSUE%</GitHubPullRequests>
+          </issueLinkTemplatePerSystem>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <configuration>
+          <minmemory>128m</minmemory>
+          <maxmemory>512</maxmemory>
+          <links>
+            <list>https://docs.oracle.com/javase/8/docs/api/</list>
+            <list>http://docs.oracle.com/javaee/5/api/</list>
+          </links>
+          <source>1.8</source>
+          <show>public</show>
+          <stylesheetfile>${basedir}/src/site/javadoc/stylesheet.css</stylesheetfile>
+          <tags>
+            <tag>
+              <name>usage</name>
+              <placement>a</placement>
+              <head>Usage:</head>
+            </tag>
+          </tags>
+          <quiet>true</quiet>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>com.github.spotbugs</groupId>
+        <artifactId>spotbugs-maven-plugin</artifactId>
+        <configuration>
+          <excludeFilterFile>${basedir}/src/site/findbugs/exclude.xml</excludeFilterFile>
+        </configuration>
+      </plugin>
+    </plugins>
+  </reporting>
+  <distributionManagement>
+    <site>
+      <id>jackcess-build-site</id>
+      <url>scp://shell.sourceforge.net/home/project-web/jackcess/htdocs</url>
+    </site>
+  </distributionManagement>
+</project>

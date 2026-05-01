@@ -134,6 +134,7 @@
         <milton.version>1.8.1.3</milton.version>
         <milton.servlet.version>1.8.1.3-jakarta5</milton.servlet.version>
         <nekohtml.version>2.1.3</nekohtml.version>
+        <htmlparser.version>1.4.16</htmlparser.version>
         <saxon.version>9.9.1-8</saxon.version>
         <xmlresolver.version>6.0.21</xmlresolver.version>
         <xmlunit.version>2.11.0</xmlunit.version>
@@ -615,6 +616,20 @@
                 <artifactId>objenesis</artifactId>
                 <version>${objenesis.version}</version>
                 <scope>test</scope>
+            </dependency>
+
+            <!-- XQuery 4.0: fn:invisible-xml (Markup Blitz iXML parser) -->
+            <dependency>
+                <groupId>de.bottlecaps</groupId>
+                <artifactId>markup-blitz</artifactId>
+                <version>1.10</version>
+            </dependency>
+
+            <!-- XQuery 4.0: fn:parse-html (Validator.nu HTML5 parser) -->
+            <dependency>
+                <groupId>nu.validator</groupId>
+                <artifactId>htmlparser</artifactId>
+                <version>${htmlparser.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

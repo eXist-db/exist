@@ -27,13 +27,18 @@ import io.lacuna.bifurcan.IMap;
 import io.lacuna.bifurcan.Map;
 import io.lacuna.bifurcan.Maps;
 import org.exist.dom.QName;
+import org.exist.source.StringSource;
 import org.exist.xquery.*;
 import org.exist.xquery.Module;
 import org.exist.xquery.functions.map.AbstractMapType;
 import org.exist.xquery.functions.map.MapType;
 import org.exist.xquery.parser.XQueryAST;
+import org.exist.xquery.parser.XQueryLexer;
+import org.exist.xquery.parser.XQueryParser;
+import org.exist.xquery.parser.XQueryTreeParser;
 import org.exist.xquery.value.*;
 
+import java.io.Reader;
 import java.util.*;
 
 import static org.exist.xquery.functions.map.MapType.newLinearMap;
@@ -98,6 +103,7 @@ public class LoadXQueryModule extends BasicFunction {
     public final static StringValue OPTIONS_VARIABLES = new StringValue("variables");
     public final static StringValue OPTIONS_CONTEXT_ITEM = new StringValue("context-item");
     public final static StringValue OPTIONS_VENDOR = new StringValue("vendor-options");
+    public final static StringValue OPTIONS_CONTENT = new StringValue("content");
 
     public final static StringValue RESULT_FUNCTIONS = new StringValue("functions");
     public final static StringValue RESULT_VARIABLES = new StringValue("variables");
@@ -116,6 +122,7 @@ public class LoadXQueryModule extends BasicFunction {
         String xqVersion = getXQueryVersion(context.getXQueryVersion());
         AbstractMapType externalVars = new MapType(this, context);
         Sequence contextItem = Sequence.EMPTY_SEQUENCE;
+        String contentSource = null;
 
         // evaluate options
         if (getArgumentCount() == 2) {
@@ -144,6 +151,12 @@ public class LoadXQueryModule extends BasicFunction {
                 throw new XPathException(this, ErrorCodes.XPTY0004, "Option 'context-item' must contain zero or one " +
                         "items");
             }
+
+            // XQ4: content option — compile module from provided source string
+            final Sequence contentOption = map.get(OPTIONS_CONTENT);
+            if (!contentOption.isEmpty()) {
+                contentSource = contentOption.getStringValue();
+            }
         }
 
         // create temporary context so main context is not polluted
@@ -154,15 +167,21 @@ public class LoadXQueryModule extends BasicFunction {
             tempContext.prepareForExecution();
 
             Module[] loadedModules = null;
-            try {
-                loadedModules = tempContext.importModule(targetNamespace, null, locationHints);
 
-            } catch (final XPathException e) {
-                if (e.getErrorCode() == ErrorCodes.XQST0059) {
-                    // importModule may throw exception if no location is given and module cannot be resolved
-                    throw new XPathException(this, ErrorCodes.FOQM0002, "Module with URI " + targetNamespace + " not found");
+            if (contentSource != null) {
+                // XQ4: compile module from content string
+                final ExternalModule contentModule = compileModuleFromContent(
+                        targetNamespace, contentSource, tempContext);
+                loadedModules = new Module[] { contentModule };
+            } else {
+                try {
+                    loadedModules = tempContext.importModule(targetNamespace, null, locationHints);
+                } catch (final XPathException e) {
+                    if (e.getErrorCode() == ErrorCodes.XQST0059) {
+                        throw new XPathException(this, ErrorCodes.FOQM0002, "Module with URI " + targetNamespace + " not found");
+                    }
+                    throw new XPathException(this, ErrorCodes.FOQM0003, "Error found when importing module: " + e.getMessage());
                 }
-                throw new XPathException(this, ErrorCodes.FOQM0003, "Error found when importing module: " + e.getMessage());
             }
 
             // not found, raise error
@@ -170,9 +189,22 @@ public class LoadXQueryModule extends BasicFunction {
                 throw new XPathException(this, ErrorCodes.FOQM0002, "Module with URI " + targetNamespace + " not found");
             }
 
-            if (!xqVersion.equals(getXQueryVersion(tempContext.getXQueryVersion()))) {
-                throw new XPathException(this, ErrorCodes.FOQM0003, "Imported module has wrong XQuery version: " +
-                        getXQueryVersion(tempContext.getXQueryVersion()));
+            // The version declared in the loaded module is recorded on the module's
+            // own context, not on tempContext (which only hosts the import).
+            // A module is considered compatible if its declared version is less than
+            // or equal to the requested version (XQuery is backward-compatible).
+            final int requestedVersion = parseVersion(xqVersion);
+            for (final Module loadedModule : loadedModules) {
+                if (loadedModule instanceof ExternalModule extMod) {
+                    final XQueryContext modCtx = extMod.getContext();
+                    if (modCtx != null) {
+                        final int moduleVersionInt = modCtx.getXQueryVersion();
+                        if (moduleVersionInt > requestedVersion) {
+                            throw new XPathException(this, ErrorCodes.FOQM0003,
+                                    "Imported module has wrong XQuery version: " + getXQueryVersion(moduleVersionInt));
+                        }
+                    }
+                }
             }
 
             final IMap<AtomicValue, Sequence> variables = newLinearMap(null);
@@ -284,7 +316,55 @@ public class LoadXQueryModule extends BasicFunction {
         }
     }
 
+    /**
+     * XQ4: Compile a library module from a content string.
+     * Uses XQueryContext.compileModuleFromSource() which handles all the
+     * parsing, AST walking, and module registration.
+     */
+    private ExternalModule compileModuleFromContent(final String targetNamespace,
+            final String content, final XQueryContext tempContext) throws XPathException {
+        final StringSource source = new StringSource(content);
+        try {
+            final ExternalModule module = tempContext.compileModuleFromSource(targetNamespace, source);
+            if (module == null) {
+                throw new XPathException(this, ErrorCodes.FOQM0005,
+                        "Content string is not a library module");
+            }
+            // Verify the module's namespace matches the target
+            if (!module.getNamespaceURI().equals(targetNamespace)) {
+                throw new XPathException(this, ErrorCodes.FOQM0001,
+                        "Module namespace '" + module.getNamespaceURI() +
+                        "' does not match target namespace '" + targetNamespace + "'");
+            }
+            return module;
+        } catch (final XPathException e) {
+            if (e.getErrorCode() == ErrorCodes.FOQM0001 || e.getErrorCode() == ErrorCodes.FOQM0005) {
+                throw e;
+            }
+            throw new XPathException(this, ErrorCodes.FOQM0003,
+                    "Error compiling module content: " + e.getMessage(), e);
+        }
+    }
+
     private static String getXQueryVersion(final int version) {
         return String.valueOf(version / 10) + '.' + version % 10;
+    }
+
+    private static int parseVersion(final String version) {
+        final int dot = version.indexOf('.');
+        if (dot < 0) {
+            try {
+                return Integer.parseInt(version) * 10;
+            } catch (final NumberFormatException e) {
+                return 0;
+            }
+        }
+        try {
+            final int major = Integer.parseInt(version.substring(0, dot));
+            final int minor = Integer.parseInt(version.substring(dot + 1));
+            return major * 10 + minor;
+        } catch (final NumberFormatException e) {
+            return 0;
+        }
     }
 }

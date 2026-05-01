@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.github.insubstantial</groupId>
+  <artifactId>laf-plugin</artifactId>
+  <version>7.3</version>
+  <name>laf-plugin</name>
+  <description>A fork of @kirilcool's laf-plugin project</description>
+  <url>http://insubstantial.github.com/insubstantial/laf-plugin/</url>
+  <licenses>
+    <license>
+      <name>The BSD License</name>
+      <url>http://www.opensource.org/licenses/bsd-license.php</url>
+      <distribution>repo</distribution>
+      <comments>Covers LafPlugin</comments>
+    </license>
+    <license>
+      <name>The zlib/libpng License</name>
+      <url>http://www.opensource.org/licenses/zlib-license</url>
+      <distribution>repo</distribution>
+      <comments>Covers the XMLElement and XMLParseException classes</comments>
+    </license>
+  </licenses>
+  <developers>
+    <developer>
+      <name>Kirill Grouchnikov</name>
+      <email>kirillcool@yahoo.com</email>
+      <roles>
+        <role>author</role>
+        <role>developer</role>
+      </roles>
+    </developer>
+    <developer>
+      <name>Danno Ferrin</name>
+      <email>danno.ferrin@shemnon.com</email>
+      <roles>
+        <role>maintainer</role>
+      </roles>
+    </developer>
+  </developers>
+  <scm>
+    <connection>scm:git:git@github.com:Insubstantial/insubstantial.git</connection>
+    <developerConnection>scm:git:git@github.com:Insubstantial/insubstantial.git</developerConnection>
+    <url>scm:git:git@github.com:Insubstantial/insubstantial.git</url>
+  </scm>
+</project>

@@ -90,7 +90,7 @@ public class DocumentConstructor extends NodeConstructor {
                 while(next != null) {
                     context.proceed(this, builder);
                     if (next.getType() == Type.ATTRIBUTE || next.getType() == Type.NAMESPACE)
-                        {throw new XPathException(this, "Found a node of type " +
+                        {throw new XPathException(this, ErrorCodes.XPTY0004, "Found a node of type " +
                             Type.getTypeName(next.getType()) + " inside a document constructor");}
                     // if item is an atomic value, collect the string values of all
                     // following atomic values and seperate them by a space. 
