@@ -45,13 +45,26 @@ import java.util.HashSet;
  */
 public class FnInScopeNamespaces extends BasicFunction {
 
+    private static FunctionReturnSequenceType makeReturnType() {
+        // XQ4 spec: map((xs:NCName | enum('')), xs:anyURI) — we approximate with
+        // map(xs:NCName, xs:anyURI); empty prefix for the default namespace is
+        // a permitted value at runtime (passed through as xs:string).
+        final FunctionReturnSequenceType rt = new FunctionReturnSequenceType(Type.MAP_ITEM, Cardinality.EXACTLY_ONE,
+                "A map of prefix to URI");
+        rt.setFunctionParamTypes(new SequenceType[] {
+                new SequenceType(Type.NCNAME, Cardinality.EXACTLY_ONE),
+                new SequenceType(Type.ANY_URI, Cardinality.EXACTLY_ONE)
+        });
+        return rt;
+    }
+
     public static final FunctionSignature FN_IN_SCOPE_NAMESPACES = new FunctionSignature(
             new QName("in-scope-namespaces", Function.BUILTIN_FUNCTION_NS),
             "Returns a map from namespace prefixes to namespace URIs for all in-scope namespaces of the given element.",
             new SequenceType[]{
                     new FunctionParameterSequenceType("element", Type.ELEMENT, Cardinality.EXACTLY_ONE, "The element node")
             },
-            new FunctionReturnSequenceType(Type.MAP_ITEM, Cardinality.EXACTLY_ONE, "A map of prefix to URI"));
+            makeReturnType());
 
     public FnInScopeNamespaces(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);

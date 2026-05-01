@@ -62,7 +62,7 @@ public class FunStartsWith extends CollatingFunction {
 
 	protected static final FunctionParameterSequenceType ARG1_PARAM = new FunctionParameterSequenceType("value", Type.STRING, Cardinality.ZERO_OR_ONE, "The source string");
 	protected static final FunctionParameterSequenceType ARG2_PARAM = new FunctionParameterSequenceType("substring", Type.STRING, Cardinality.ZERO_OR_ONE, "The string to determine if is a prefix of $source");
-	protected static final FunctionParameterSequenceType COLLATION_PARAM = new FunctionParameterSequenceType("collation", Type.STRING, Cardinality.EXACTLY_ONE, "The collation URI");
+	protected static final FunctionParameterSequenceType COLLATION_PARAM = new FunctionParameterSequenceType("collation", Type.STRING, Cardinality.ZERO_OR_ONE, "The collation URI");
 	protected static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if $prefix is a prefix of the string $source");
 	
     public final static FunctionSignature[] signatures = {

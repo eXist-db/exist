@@ -81,7 +81,7 @@ public class FunDistinctValues extends CollatingFunction {
                 new FunctionParameterSequenceType("values", Type.ANY_ATOMIC_TYPE,
                     Cardinality.ZERO_OR_MORE, "The atomic values"),
                 new FunctionParameterSequenceType("collation", Type.STRING,
-                    Cardinality.EXACTLY_ONE, "The collation URI")
+                    Cardinality.ZERO_OR_ONE, "The collation URI")
             },
             new FunctionReturnSequenceType(Type.ANY_ATOMIC_TYPE, Cardinality.ZERO_OR_MORE,
                 "the distinct values sequence")

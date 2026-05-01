@@ -37,7 +37,7 @@ public class ArrayIndexOf extends BasicFunction {
     private static final FunctionParameterSequenceType ARG_TARGET =
             new FunctionParameterSequenceType("target", Type.ITEM, Cardinality.ZERO_OR_MORE, "The value to search for");
     private static final FunctionParameterSequenceType ARG_COLLATION =
-            new FunctionParameterSequenceType("collation", Type.STRING, Cardinality.EXACTLY_ONE, "Collation URI to use for comparisons");
+            new FunctionParameterSequenceType("collation", Type.STRING, Cardinality.ZERO_OR_ONE, "Collation URI to use for comparisons");
     private static final FunctionReturnSequenceType RESULT =
             new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_MORE, "The 1-based positions");
 

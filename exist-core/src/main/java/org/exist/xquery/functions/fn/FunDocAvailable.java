@@ -72,7 +72,7 @@ public class FunDocAvailable extends Function {
                             new FunctionParameterSequenceType("source", Type.STRING,
                                     Cardinality.ZERO_OR_ONE, "The document URI"),
                             new FunctionParameterSequenceType("options", Type.MAP_ITEM,
-                                    Cardinality.EXACTLY_ONE, "Options map")
+                                    Cardinality.ZERO_OR_ONE, "Options map")
                     },
                     new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE,
                             "true() if the document is available, false() otherwise"));

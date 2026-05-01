@@ -69,7 +69,7 @@ public class FunStringJoin extends BasicFunction {
                 new FunctionParameterSequenceType("values", Type.ANY_ATOMIC_TYPE, Cardinality.ZERO_OR_MORE,
                     "The sequence to be joined to form the string. If it is empty, " +
                     "a zero-length string is returned."),
-                new FunctionParameterSequenceType("separator", Type.STRING, Cardinality.EXACTLY_ONE, "The separator to be placed in the string between the items of $arg")
+                new FunctionParameterSequenceType("separator", Type.STRING, Cardinality.ZERO_OR_ONE, "The separator to be placed in the string between the items of $arg")
             },
             new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the joined string"))
     };

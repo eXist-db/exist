@@ -48,7 +48,7 @@ public class ArrayBuild extends BasicFunction {
                     "Builds an array by applying a function to each item of a sequence.",
                     new SequenceType[] {
                             new FunctionParameterSequenceType("input", Type.ITEM, Cardinality.ZERO_OR_MORE, "The input sequence"),
-                            new FunctionParameterSequenceType("action", Type.FUNCTION, Cardinality.EXACTLY_ONE, "The function to apply")
+                            new FunctionParameterSequenceType("action", Type.FUNCTION, Cardinality.ZERO_OR_ONE, "The function to apply")
                     },
                     new FunctionReturnSequenceType(Type.ARRAY_ITEM, Cardinality.EXACTLY_ONE, "The resulting array"))
     };
@@ -68,7 +68,7 @@ public class ArrayBuild extends BasicFunction {
         final Sequence input = args[0];
         final List<Sequence> members = new ArrayList<>();
 
-        if (getArgumentCount() == 2) {
+        if (getArgumentCount() == 2 && !args[1].isEmpty()) {
             try (final FunctionReference fn = (FunctionReference) args[1].itemAt(0)) {
                 fn.analyze(cachedContextInfo);
                 final int arity = fn.getSignature().getArgumentCount();

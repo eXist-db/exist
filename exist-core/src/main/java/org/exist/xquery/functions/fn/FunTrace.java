@@ -43,7 +43,7 @@ public class FunTrace extends BasicFunction {
 
 
     private static final FunctionParameterSequenceType FS_PARAM_VALUE = optManyParam("input", Type.ITEM, "The values");
-    private static final FunctionParameterSequenceType FS_PARAM_LABEL = param("label", Type.STRING, "The label in the log file");
+    private static final FunctionParameterSequenceType FS_PARAM_LABEL = optParam("label", Type.STRING, "The label in the log file");
 
     private static final String FS_TRACE_NAME = "trace";
 

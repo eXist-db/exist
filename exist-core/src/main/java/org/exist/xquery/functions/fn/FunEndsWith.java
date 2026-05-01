@@ -70,7 +70,7 @@ public class FunEndsWith extends CollatingFunction {
                 new FunctionParameterSequenceType("substring", Type.STRING,
                     Cardinality.ZERO_OR_ONE, "The suffix"),
                 new FunctionParameterSequenceType("collation", Type.STRING,
-                    Cardinality.EXACTLY_ONE, "The collation URI")
+                    Cardinality.ZERO_OR_ONE, "The collation URI")
                 },
             new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE,
                 "true() if $suffix is suffix of $source-string, false() otherwise"))

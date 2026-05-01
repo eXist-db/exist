@@ -54,6 +54,16 @@ public class CsvFunctions extends BasicFunction {
     // XQ4 namespace for CSV XML output
     private static final String CSV_NS = "http://www.w3.org/2005/xpath-functions";
 
+    private static FunctionReturnSequenceType makeCsvToArraysReturn() {
+        // XQ4 spec: array(xs:string)*
+        final FunctionReturnSequenceType rt = new FunctionReturnSequenceType(Type.ARRAY_ITEM, Cardinality.ZERO_OR_MORE,
+                "A sequence of arrays, one per row");
+        rt.setFunctionParamTypes(new SequenceType[] {
+                new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+        });
+        return rt;
+    }
+
     // fn:csv-to-arrays signatures
     public static final FunctionSignature[] FN_CSV_TO_ARRAYS = {
             new FunctionSignature(
@@ -62,15 +72,15 @@ public class CsvFunctions extends BasicFunction {
                     new SequenceType[]{
                             new FunctionParameterSequenceType("value", Type.STRING, Cardinality.ZERO_OR_ONE, "The CSV string to parse")
                     },
-                    new FunctionReturnSequenceType(Type.ARRAY_ITEM, Cardinality.ZERO_OR_MORE, "A sequence of arrays, one per row")),
+                    makeCsvToArraysReturn()),
             new FunctionSignature(
                     new QName("csv-to-arrays", Function.BUILTIN_FUNCTION_NS),
                     "Parses a string as CSV data and returns the result as a sequence of arrays, using the specified options.",
                     new SequenceType[]{
                             new FunctionParameterSequenceType("value", Type.STRING, Cardinality.ZERO_OR_ONE, "The CSV string to parse"),
-                            new FunctionParameterSequenceType("options", Type.MAP_ITEM, Cardinality.EXACTLY_ONE, "Parsing options")
+                            new FunctionParameterSequenceType("options", Type.MAP_ITEM, Cardinality.ZERO_OR_ONE, "Parsing options")
                     },
-                    new FunctionReturnSequenceType(Type.ARRAY_ITEM, Cardinality.ZERO_OR_MORE, "A sequence of arrays, one per row"))
+                    makeCsvToArraysReturn())
     };
 
     // fn:parse-csv signatures
@@ -87,7 +97,7 @@ public class CsvFunctions extends BasicFunction {
                     "Parses a string as CSV data and returns the result as a map, using the specified options.",
                     new SequenceType[]{
                             new FunctionParameterSequenceType("value", Type.STRING, Cardinality.ZERO_OR_ONE, "The CSV string to parse"),
-                            new FunctionParameterSequenceType("options", Type.MAP_ITEM, Cardinality.EXACTLY_ONE, "Parsing options")
+                            new FunctionParameterSequenceType("options", Type.MAP_ITEM, Cardinality.ZERO_OR_ONE, "Parsing options")
                     },
                     new FunctionReturnSequenceType(Type.MAP_ITEM, Cardinality.ZERO_OR_ONE, "A map with columns, column-index, rows, and get"))
     };
@@ -106,7 +116,7 @@ public class CsvFunctions extends BasicFunction {
                     "Parses a string as CSV data and returns the result as an XML document, using the specified options.",
                     new SequenceType[]{
                             new FunctionParameterSequenceType("value", Type.STRING, Cardinality.ZERO_OR_ONE, "The CSV string to parse"),
-                            new FunctionParameterSequenceType("options", Type.MAP_ITEM, Cardinality.EXACTLY_ONE, "Parsing options")
+                            new FunctionParameterSequenceType("options", Type.MAP_ITEM, Cardinality.ZERO_OR_ONE, "Parsing options")
                     },
                     new FunctionReturnSequenceType(Type.DOCUMENT, Cardinality.ZERO_OR_ONE, "An XML document representing the CSV data"))
     };
@@ -125,7 +135,7 @@ public class CsvFunctions extends BasicFunction {
                     "Reads CSV data from the specified URI and returns the result as a map, using the specified options.",
                     new SequenceType[]{
                             new FunctionParameterSequenceType("source", Type.STRING, Cardinality.ZERO_OR_ONE, "The URI of the CSV resource"),
-                            new FunctionParameterSequenceType("options", Type.MAP_ITEM, Cardinality.EXACTLY_ONE, "Parsing options")
+                            new FunctionParameterSequenceType("options", Type.MAP_ITEM, Cardinality.ZERO_OR_ONE, "Parsing options")
                     },
                     new FunctionReturnSequenceType(Type.MAP_ITEM, Cardinality.ZERO_OR_ONE, "A map with columns, column-index, rows, and get"))
     };

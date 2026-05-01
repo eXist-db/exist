@@ -55,7 +55,7 @@ public class FunPath extends BasicFunction {
             // XQuery 4.0: fn:path with options map
             functionSignature(FunPath.FN_PATH_NAME, FunPath.FN_PATH_DESCRIPTION, FunPath.FN_PATH_RETURN,
                     new FunctionParameterSequenceType("node", Type.NODE, Cardinality.ZERO_OR_ONE, "The node for which to calculate a path expression"),
-                    new FunctionParameterSequenceType("options", Type.MAP_ITEM, Cardinality.EXACTLY_ONE, "Options map (e.g., format)"))
+                    new FunctionParameterSequenceType("options", Type.MAP_ITEM, Cardinality.ZERO_OR_ONE, "Options map (e.g., format)"))
     };
 
     public FunPath(final XQueryContext context, final FunctionSignature signature) {

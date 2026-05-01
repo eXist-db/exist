@@ -56,12 +56,21 @@ import static org.exist.xquery.regex.RegexUtil.*;
 public class FunAnalyzeString extends BasicFunction {
 
     private final static QName fnAnalyzeString = new QName("analyze-string", Function.BUILTIN_FUNCTION_NS);
+    private final static QName QN_ANALYZE_STRING_RESULT = new QName("analyze-string-result", Function.BUILTIN_FUNCTION_NS);
 
     private final static QName QN_MATCH = new QName("match", Function.BUILTIN_FUNCTION_NS);
     private final static QName QN_GROUP = new QName("group", Function.BUILTIN_FUNCTION_NS);
     private final static QName QN_NR = new QName("nr", XMLConstants.NULL_NS_URI);
     private final static QName QN_NON_MATCH = new QName("non-match", Function.BUILTIN_FUNCTION_NS);
-    
+
+    private static FunctionReturnSequenceType makeReturnType() {
+        // XQ4 spec: returns element(fn:analyze-string-result)
+        final FunctionReturnSequenceType rt = new FunctionReturnSequenceType(Type.ELEMENT, Cardinality.EXACTLY_ONE,
+                "The result of the analysis");
+        rt.setNodeName(QN_ANALYZE_STRING_RESULT);
+        return rt;
+    }
+
     public final static FunctionSignature[] signatures = {
         new FunctionSignature(
             fnAnalyzeString,
@@ -70,14 +79,13 @@ public class FunAnalyzeString extends BasicFunction {
             "or failed to match the regular expression, and in the case of " +
             "matched substrings, which substrings matched each " +
             "capturing group in the regular expression.",
-            new SequenceType[] { 
+            new SequenceType[] {
                 new FunctionParameterSequenceType("value", Type.STRING,
                     Cardinality.ZERO_OR_ONE, "The input string"),
                 new FunctionParameterSequenceType("pattern", Type.STRING,
                     Cardinality.EXACTLY_ONE, "The pattern")
             },
-            new FunctionReturnSequenceType(Type.ELEMENT,
-                Cardinality.EXACTLY_ONE, "The result of the analysis")
+            makeReturnType()
         ),
         new FunctionSignature(
             fnAnalyzeString,
@@ -86,16 +94,15 @@ public class FunAnalyzeString extends BasicFunction {
             "or failed to match the regular expression, and in the case of " +
             "matched substrings, which substrings matched each " +
             "capturing group in the regular expression.",
-            new SequenceType[] { 
+            new SequenceType[] {
                 new FunctionParameterSequenceType("value", Type.STRING,
                     Cardinality.ZERO_OR_ONE, "The input string"),
                 new FunctionParameterSequenceType("pattern", Type.STRING,
                     Cardinality.EXACTLY_ONE, "The pattern"),
                 new FunctionParameterSequenceType("flags", Type.STRING,
-                    Cardinality.EXACTLY_ONE, "Flags"),
+                    Cardinality.ZERO_OR_ONE, "Flags"),
             },
-            new FunctionReturnSequenceType(Type.ELEMENT,
-                Cardinality.EXACTLY_ONE, "The result of the analysis")
+            makeReturnType()
         )
     };
 
@@ -115,7 +122,7 @@ public class FunAnalyzeString extends BasicFunction {
             final String pattern = args[1].itemAt(0).getStringValue();
 
             String flags = "";
-            if (args.length == 3) {
+            if (args.length == 3 && !args[2].isEmpty()) {
                 flags = args[2].itemAt(0).getStringValue();
             }
             analyzeString(builder, input, pattern, flags);

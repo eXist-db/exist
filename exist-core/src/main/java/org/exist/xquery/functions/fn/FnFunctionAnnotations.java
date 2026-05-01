@@ -34,6 +34,17 @@ import org.exist.xquery.value.*;
  */
 public class FnFunctionAnnotations extends BasicFunction {
 
+    private static FunctionReturnSequenceType makeReturnType() {
+        // XQ4 spec: map(xs:QName, xs:anyAtomicType*)*
+        final FunctionReturnSequenceType rt = new FunctionReturnSequenceType(Type.MAP_ITEM, Cardinality.ZERO_OR_MORE,
+                "A sequence of single-entry maps, one per annotation");
+        rt.setFunctionParamTypes(new SequenceType[] {
+                new SequenceType(Type.QNAME, Cardinality.EXACTLY_ONE),
+                new SequenceType(Type.ANY_ATOMIC_TYPE, Cardinality.ZERO_OR_MORE)
+        });
+        return rt;
+    }
+
     public static final FunctionSignature FN_FUNCTION_ANNOTATIONS = new FunctionSignature(
             new QName("function-annotations", Function.BUILTIN_FUNCTION_NS),
             "Returns the annotations of a function item as a sequence of single-entry maps.",
@@ -41,8 +52,7 @@ public class FnFunctionAnnotations extends BasicFunction {
                     new FunctionParameterSequenceType("function", Type.FUNCTION,
                             Cardinality.EXACTLY_ONE, "The function item to inspect")
             },
-            new FunctionReturnSequenceType(Type.MAP_ITEM, Cardinality.ZERO_OR_MORE,
-                    "A sequence of single-entry maps, one per annotation"));
+            makeReturnType());
 
     public FnFunctionAnnotations(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);

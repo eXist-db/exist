@@ -578,6 +578,34 @@ public class SequenceType {
         if (sub.cardinality == Cardinality.EMPTY_SEQUENCE) {
             return true;
         }
+        // Choice (union) type on sub side: sub ⊑ sup iff every alternative ⊑ sup.
+        // The parser stores union types `(T1 | T2 | ...)` with primaryType=ITEM and
+        // the alternatives in choiceAlternatives, so the regular primaryType test
+        // would otherwise incorrectly require sup ⊒ ITEM.
+        if (sub.isChoiceType()) {
+            for (final SequenceType alt : sub.choiceAlternatives) {
+                final SequenceType altWithCard = new SequenceType(alt.primaryType, sub.cardinality);
+                altWithCard.nodeName = alt.nodeName;
+                altWithCard.choiceAlternatives = alt.choiceAlternatives;
+                altWithCard.functionParamTypes = alt.functionParamTypes;
+                altWithCard.functionReturnType = alt.functionReturnType;
+                altWithCard.recordType = alt.recordType;
+                altWithCard.recordFields = alt.recordFields;
+                altWithCard.recordExtensible = alt.recordExtensible;
+                altWithCard.enumValues = alt.enumValues;
+                if (!isSubtypeOf(altWithCard, sup)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        // Note: a choice type on the sup side is intentionally NOT given dedicated
+        // structural handling here. The parser sets sup.primaryType = ITEM for
+        // unions, so the existing "primary type subsumption" check below acts as
+        // a permissive fallback. This matches both PR1400 (sub ⊑ at least one alt
+        // for atomic unions, which our sub-side handler covers) and PR2491 (a
+        // covering union of subtypes is a supertype of the parent — e.g.
+        // node() ⊑ (element()|attribute()|...|namespace-node())).
         // Item type subsumption (covariant in the simple case)
         if (!Type.subTypeOf(sub.primaryType, sup.primaryType)) {
             return false;
@@ -606,8 +634,10 @@ public class SequenceType {
             return isRecordSubtype(sub.recordType, sup.recordType);
         }
         // map(K, V) is a subtype of map(K2, V2) only when K ⊑ K2 AND V ⊑ V2.
-        // Records also flow through here (RECORD ⊑ MAP_ITEM): a record without
-        // declared field types acts as map(xs:string, item()*).
+        // Records flow through here (RECORD ⊑ MAP_ITEM): a record without declared
+        // field types acts as map(xs:string, item()*) since record keys are always
+        // xs:string. A bare map(*) primary type with no functionParamTypes is
+        // treated as map(xs:anyAtomicType, item()*) per XQuery 4.0.
         if (sup.primaryType == Type.MAP_ITEM && sup.functionParamTypes != null) {
             if (!Type.subTypeOf(sub.primaryType, Type.MAP_ITEM)) {
                 return false;
@@ -619,22 +649,34 @@ public class SequenceType {
             if (sub.functionParamTypes != null && sub.functionParamTypes.length == 2) {
                 subKey = sub.functionParamTypes[0];
                 subVal = sub.functionParamTypes[1];
-            } else {
+            } else if (sub.primaryType == Type.RECORD) {
                 subKey = new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE);
+                subVal = new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE);
+            } else {
+                subKey = new SequenceType(Type.ANY_ATOMIC_TYPE, Cardinality.EXACTLY_ONE);
                 subVal = new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE);
             }
             return isSubtypeOf(subKey, sup.functionParamTypes[0])
                     && isSubtypeOf(subVal, sup.functionParamTypes[1]);
         }
-        // array(T) ⊑ array(T2) iff T ⊑ T2; array(*) is not a subtype of typed arrays.
+        // array(T) ⊑ array(T2) iff T ⊑ T2. Per XQuery 4.0, array(*) is shorthand
+        // for array(item()*); an untyped array primary type is treated as
+        // array(item()*) for subtype tests, so array(*) ⊑ array(item()*) but
+        // array(*) is NOT a subtype of array(xs:integer) etc.
         if (sup.primaryType == Type.ARRAY_ITEM && sup.functionParamTypes != null) {
-            if (sub.primaryType != Type.ARRAY_ITEM || sub.functionParamTypes == null) {
+            if (sub.primaryType != Type.ARRAY_ITEM) {
                 return false;
             }
-            if (sub.functionParamTypes.length != 1 || sup.functionParamTypes.length != 1) {
+            if (sup.functionParamTypes.length != 1) {
                 return false;
             }
-            return isSubtypeOf(sub.functionParamTypes[0], sup.functionParamTypes[0]);
+            final SequenceType subElem;
+            if (sub.functionParamTypes != null && sub.functionParamTypes.length == 1) {
+                subElem = sub.functionParamTypes[0];
+            } else {
+                subElem = new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE);
+            }
+            return isSubtypeOf(subElem, sup.functionParamTypes[0]);
         }
         // Typed function: arity matches; return is covariant; params are contravariant.
         // Maps and arrays act as their function-shape: per XQuery 4.0 PR1501/PR2050,

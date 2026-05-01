@@ -42,7 +42,7 @@ public class FunSubSequence extends Function {
                             + "up to the end of the sequence are included.",
                     new SequenceType[]{
                             new FunctionParameterSequenceType("input", Type.ITEM, Cardinality.ZERO_OR_MORE, "The source sequence"),
-                            new FunctionParameterSequenceType("start", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The starting position in the $source")
+                            new FunctionParameterSequenceType("start", Type.NUMERIC, Cardinality.EXACTLY_ONE, "The starting position in the $source")
                     },
                     new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "the subsequence")),
             new FunctionSignature(
@@ -52,8 +52,8 @@ public class FunSubSequence extends Function {
                             + "including the number of items indicated by $length.",
                     new SequenceType[]{
                             new FunctionParameterSequenceType("input", Type.ITEM, Cardinality.ZERO_OR_MORE, "The source sequence"),
-                            new FunctionParameterSequenceType("start", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The starting position in the $source"),
-                            new FunctionParameterSequenceType("length", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The length of the subsequence")
+                            new FunctionParameterSequenceType("start", Type.NUMERIC, Cardinality.EXACTLY_ONE, "The starting position in the $source"),
+                            new FunctionParameterSequenceType("length", Type.NUMERIC, Cardinality.ZERO_OR_ONE, "The length of the subsequence")
                     },
                     new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "the subsequence"))};
 
@@ -113,9 +113,16 @@ public class FunSubSequence extends Function {
         if (seq.isEmpty()) {
             result = Sequence.EMPTY_SEQUENCE;
         } else {
+            DoubleValue lengthArg = null;
+            if (getArgumentCount() == 3) {
+                final Sequence lengthSeq = getArgument(2).eval(contextSequence, contextItem);
+                if (!lengthSeq.isEmpty()) {
+                    lengthArg = (DoubleValue) lengthSeq.convertTo(Type.DOUBLE);
+                }
+            }
             return subsequence(seq,
                     ((DoubleValue)getArgument(1).eval(contextSequence, contextItem).convertTo(Type.DOUBLE)),
-                    getArgumentCount() != 3 ? null : ((DoubleValue)getArgument(2).eval(contextSequence, contextItem).convertTo(Type.DOUBLE))
+                    lengthArg
             );
         }
 

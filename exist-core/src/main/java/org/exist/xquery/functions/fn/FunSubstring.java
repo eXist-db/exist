@@ -72,7 +72,7 @@ public class FunSubstring extends Function {
 				new SequenceType[] {
 					 new FunctionParameterSequenceType("value", Type.STRING, Cardinality.ZERO_OR_ONE, "The source string"),
 					 new FunctionParameterSequenceType("start", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The starting position"),
-					 new FunctionParameterSequenceType("length", Type.DOUBLE, Cardinality.EXACTLY_ONE, "The number of characters in the substring")
+					 new FunctionParameterSequenceType("length", Type.DOUBLE, Cardinality.ZERO_OR_ONE, "The number of characters in the substring")
 				},
 				new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the substring")
 			)
@@ -125,7 +125,16 @@ public class FunSubstring extends Function {
 				//are there 2 or 3 arguments to this function?
 				if(getArgumentCount() > 2) {
 					argLength = getArgument(2);
-                    final NumericValue length = ((NumericValue)(argLength.eval(contextSequence, null).itemAt(0).convertTo(Type.NUMERIC))).round();
+                    final Sequence lengthSeq = argLength.eval(contextSequence, null);
+                    if (lengthSeq.isEmpty()) {
+                        // XQuery 4.0: $length is xs:double?; absent means run to end of string
+                        result = substring(sourceString, startingLoc);
+                        if (context.getProfiler().isEnabled()) {
+                            context.getProfiler().end(this, "", result);
+                        }
+                        return result;
+                    }
+                    final NumericValue length = ((NumericValue)(lengthSeq.itemAt(0).convertTo(Type.NUMERIC))).round();
 
                     // Relocate length to position according to spec:
                     // fn:round($startingLoc) <=

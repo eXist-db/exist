@@ -36,7 +36,7 @@ public class FnSeconds extends BasicFunction {
             new QName("seconds", Function.BUILTIN_FUNCTION_NS),
             "Returns a dayTimeDuration representing the given number of seconds.",
             new SequenceType[]{
-                    new FunctionParameterSequenceType("value", Type.DOUBLE, Cardinality.ZERO_OR_ONE, "The number of seconds")
+                    new FunctionParameterSequenceType("value", Type.DECIMAL, Cardinality.ZERO_OR_ONE, "The number of seconds")
             },
             new FunctionReturnSequenceType(Type.DAY_TIME_DURATION, Cardinality.ZERO_OR_ONE, "The duration"));
 

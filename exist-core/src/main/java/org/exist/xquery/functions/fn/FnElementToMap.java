@@ -46,6 +46,17 @@ public class FnElementToMap extends BasicFunction {
     private static final String XML_NS = "http://www.w3.org/XML/1998/namespace";
     private static final String XSI_NS = XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI;
 
+    private static FunctionReturnSequenceType makeReturnType() {
+        // XQ4 spec: map(xs:string, item()?)?
+        final FunctionReturnSequenceType rt = new FunctionReturnSequenceType(Type.MAP_ITEM, Cardinality.ZERO_OR_ONE,
+                "The map representation");
+        rt.setFunctionParamTypes(new SequenceType[] {
+                new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE),
+                new SequenceType(Type.ITEM, Cardinality.ZERO_OR_ONE)
+        });
+        return rt;
+    }
+
     public static final FunctionSignature[] FN_ELEMENT_TO_MAP = {
             new FunctionSignature(
                     new QName("element-to-map", Function.BUILTIN_FUNCTION_NS),
@@ -53,7 +64,7 @@ public class FnElementToMap extends BasicFunction {
                     new SequenceType[]{
                             new FunctionParameterSequenceType("element", Type.ELEMENT, Cardinality.ZERO_OR_ONE, "The element to convert")
                     },
-                    new FunctionReturnSequenceType(Type.MAP_ITEM, Cardinality.ZERO_OR_ONE, "The map representation")),
+                    makeReturnType()),
             new FunctionSignature(
                     new QName("element-to-map", Function.BUILTIN_FUNCTION_NS),
                     "Converts an element to a map representation with options.",
@@ -61,7 +72,7 @@ public class FnElementToMap extends BasicFunction {
                             new FunctionParameterSequenceType("element", Type.ELEMENT, Cardinality.ZERO_OR_ONE, "The element to convert"),
                             new FunctionParameterSequenceType("options", Type.MAP_ITEM, Cardinality.ZERO_OR_ONE, "Options map")
                     },
-                    new FunctionReturnSequenceType(Type.MAP_ITEM, Cardinality.ZERO_OR_ONE, "The map representation"))
+                    makeReturnType())
     };
 
     private static final String DEFAULT_ATTR_MARKER = "@";

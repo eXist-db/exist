@@ -47,7 +47,7 @@ import org.exist.xquery.value.Type;
  */
 public class FunSubstringAfter extends CollatingFunction {
 
-	protected static final FunctionParameterSequenceType COLLATION_ARG = new FunctionParameterSequenceType("collation", Type.STRING, Cardinality.EXACTLY_ONE, "The collation URI");
+	protected static final FunctionParameterSequenceType COLLATION_ARG = new FunctionParameterSequenceType("collation", Type.STRING, Cardinality.ZERO_OR_ONE, "The collation URI");
 	protected static final FunctionParameterSequenceType SEARCH_ARG = new FunctionParameterSequenceType("substring", Type.STRING, Cardinality.ZERO_OR_ONE, "The search string");
 	protected static final FunctionParameterSequenceType SOURCE_ARG = new FunctionParameterSequenceType("value", Type.STRING, Cardinality.ZERO_OR_ONE, "The input string");
 	public final static FunctionSignature[] signatures = {

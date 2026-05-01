@@ -34,6 +34,7 @@ import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.fn.FunData;
 import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
+import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.FunctionReference;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.FunctionReturnSequenceType;
@@ -156,7 +157,7 @@ public class ArrayFunction extends BasicFunction {
             new FunctionReturnSequenceType(Type.ARRAY_ITEM, Cardinality.EXACTLY_ONE, "A new array containing all members from $start up to the specified length"),
             INPUT_ARRAY,
             START_INDEX,
-            new FunctionParameterSequenceType("length", Type.INTEGER, Cardinality.EXACTLY_ONE, "Length of the subarray")
+            new FunctionParameterSequenceType("length", Type.INTEGER, Cardinality.ZERO_OR_ONE, "Length of the subarray")
     );
     public static final FunctionSignature REMOVE = functionSignature(
             Fn.REMOVE.fname,
@@ -293,9 +294,23 @@ public class ArrayFunction extends BasicFunction {
     );
     public static final FunctionSignature ARRAY_MEMBERS = functionSignature(
             Fn.MEMBERS.fname, "Returns each member as a map with a 'value' key.",
-            returns(Type.MAP_ITEM, Cardinality.ZERO_OR_MORE, "Sequence of member maps"),
+            makeMembersReturnType(),
             INPUT_ARRAY
     );
+
+    private static FunctionReturnSequenceType makeMembersReturnType() {
+        // XQ4 spec: record(value as item()*)*
+        final FunctionReturnSequenceType rt = new FunctionReturnSequenceType(Type.RECORD, Cardinality.ZERO_OR_MORE,
+                "Sequence of member maps");
+        final List<org.exist.xquery.value.RecordType.FieldDeclaration> fields = new ArrayList<>();
+        fields.add(new org.exist.xquery.value.RecordType.FieldDeclaration(
+                "value",
+                new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE),
+                false
+        ));
+        rt.setRecordType(new org.exist.xquery.value.RecordType(fields, false));
+        return rt;
+    }
 
     private AnalyzeContextInfo cachedContextInfo;
 
@@ -379,7 +394,7 @@ public class ArrayFunction extends BasicFunction {
         final ArrayType array = (ArrayType) args[0].itemAt(0);
         final int start = ((IntegerValue) args[1].itemAt(0)).getInt();
         int end = array.getSize();
-        if (getArgumentCount() == 3) {
+        if (getArgumentCount() == 3 && !args[2].isEmpty()) {
             final int length = ((IntegerValue) args[2].itemAt(0)).getInt();
             if (start + length > array.getSize() + 1) {
                 throw new XPathException(this, ErrorCodes.FOAY0001, "Array index out of bounds: " + (start + length - 1));
