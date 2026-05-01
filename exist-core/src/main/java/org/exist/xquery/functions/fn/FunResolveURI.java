@@ -68,8 +68,8 @@ public class FunResolveURI extends Function {
 		"is raised [err:FORG0002].\n\n" +
 		"If $relative is the empty sequence, the empty sequence is returned.";
 	
-	protected static final FunctionParameterSequenceType RELATIVE_ARG = new FunctionParameterSequenceType("relative", Type.STRING, Cardinality.ZERO_OR_ONE, "The relative URI");
-	protected static final FunctionParameterSequenceType BASE_ARG = new FunctionParameterSequenceType("base", Type.STRING, Cardinality.EXACTLY_ONE, "The base URI");
+	protected static final FunctionParameterSequenceType RELATIVE_ARG = new FunctionParameterSequenceType("href", Type.STRING, Cardinality.ZERO_OR_ONE, "The relative URI");
+	protected static final FunctionParameterSequenceType BASE_ARG = new FunctionParameterSequenceType("base", Type.STRING, Cardinality.ZERO_OR_ONE, "The base URI");
 	protected static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.ANY_URI, Cardinality.ZERO_OR_ONE, "the absolute URI");
 	
     public final static FunctionSignature[] signatures = {
@@ -104,15 +104,18 @@ public class FunResolveURI extends Function {
 		if (contextItem != null)
 		    {contextSequence = contextItem.toSequence();}
 		
-		AnyURIValue base;		
-		if (getArgumentCount() == 1) {
+		AnyURIValue base;
+		final Sequence baseSeq = getArgumentCount() == 1
+				? Sequence.EMPTY_SEQUENCE
+				: getArgument(1).eval(contextSequence, null);
+		if (getArgumentCount() == 1 || baseSeq.isEmpty()) {
 			if (!context.isBaseURIDeclared())
-				{throw new XPathException(this, ErrorCodes.FONS0005, 
+				{throw new XPathException(this, ErrorCodes.FONS0005,
 					"base URI of the static context has not been assigned a value.");}
 			base = context.getBaseURI();
 		} else {
 			try {
-				final Item item = getArgument(1).eval(contextSequence, null).itemAt(0).convertTo(Type.ANY_URI);
+				final Item item = baseSeq.itemAt(0).convertTo(Type.ANY_URI);
 				base = (AnyURIValue)item;
 			} catch (final XPathException e) {
 	        	throw new XPathException(this, ErrorCodes.FORG0002, "invalid argument to fn:resolve-uri(): " + e.getMessage(), null, e);

@@ -70,8 +70,8 @@ public class FunContains extends CollatingFunction {
                     Cardinality.ZERO_OR_ONE, "The source-string"),
                 new FunctionParameterSequenceType("substring", Type.STRING,
                     Cardinality.ZERO_OR_ONE, "The substring"),
-                new FunctionParameterSequenceType("collation-uri", Type.STRING,
-                    Cardinality.EXACTLY_ONE, "The collation URI")
+                new FunctionParameterSequenceType("collation", Type.STRING,
+                    Cardinality.ZERO_OR_ONE, "The collation URI")
             },
             new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE,
                 "true() if $source-string contains $substring, false() otherwise"))

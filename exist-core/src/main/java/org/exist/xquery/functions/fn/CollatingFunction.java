@@ -52,9 +52,12 @@ public abstract class CollatingFunction extends Function {
     protected Collator getCollator(Sequence contextSequence, Item contextItem,
             int arg) throws XPathException {
         if (getSignature().getArgumentCount() == arg) {
-            final String collationURI = getArgument(arg - 1).eval(contextSequence,
-                contextItem).getStringValue();
-            return context.getCollator(collationURI, ErrorCodes.FOCH0002);
+            final Sequence collationSeq = getArgument(arg - 1).eval(contextSequence, contextItem);
+            // XQuery 4.0: collation argument is xs:string? — empty means default collator
+            if (collationSeq.isEmpty()) {
+                return context.getDefaultCollator();
+            }
+            return context.getCollator(collationSeq.getStringValue(), ErrorCodes.FOCH0002);
         } else {
             return context.getDefaultCollator();
         }

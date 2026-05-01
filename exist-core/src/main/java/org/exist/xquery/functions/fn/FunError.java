@@ -75,7 +75,7 @@ public class FunError extends BasicFunction {
                 new FunctionParameterSequenceType("code", Type.QNAME,
                     Cardinality.ZERO_OR_ONE, "The qname"),
                 new FunctionParameterSequenceType("description", Type.STRING,
-                    Cardinality.EXACTLY_ONE, "The message")
+                    Cardinality.ZERO_OR_ONE, "The message")
             },
             new SequenceType(Type.EMPTY_SEQUENCE, Cardinality.EMPTY_SEQUENCE)),
         new FunctionSignature(
@@ -87,7 +87,7 @@ public class FunError extends BasicFunction {
                 new FunctionParameterSequenceType("code", Type.QNAME,
                     Cardinality.ZERO_OR_ONE, "The qname"),
                 new FunctionParameterSequenceType("description", Type.STRING,
-                    Cardinality.EXACTLY_ONE, "The message"),
+                    Cardinality.ZERO_OR_ONE, "The message"),
                 new FunctionParameterSequenceType("value", Type.ITEM,
                     Cardinality.ZERO_OR_MORE, "The error object")
             },

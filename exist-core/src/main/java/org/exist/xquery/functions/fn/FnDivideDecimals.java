@@ -54,6 +54,13 @@ import java.math.RoundingMode;
  */
 public class FnDivideDecimals extends BasicFunction {
 
+    private static FunctionReturnSequenceType makeDivideReturnType() {
+        // XQ4 spec: record(quotient as xs:decimal, remainder as xs:decimal)
+        // RecordType is not yet available on this branch, so fall back to map(*).
+        return new FunctionReturnSequenceType(Type.MAP_ITEM, Cardinality.EXACTLY_ONE,
+                "record with quotient and remainder");
+    }
+
     public static final FunctionSignature[] FN_DIVIDE_DECIMALS = {
             new FunctionSignature(
                     new QName("divide-decimals", Function.BUILTIN_FUNCTION_NS),
@@ -63,7 +70,7 @@ public class FnDivideDecimals extends BasicFunction {
                             new FunctionParameterSequenceType("divisor", Type.DECIMAL, Cardinality.EXACTLY_ONE, "The divisor"),
                             new FunctionParameterSequenceType("precision", Type.INTEGER, Cardinality.ZERO_OR_ONE, "Decimal precision (default: 0)")
                     },
-                    new FunctionReturnSequenceType(Type.MAP_ITEM, Cardinality.EXACTLY_ONE, "record with quotient and remainder")),
+                    makeDivideReturnType()),
             new FunctionSignature(
                     new QName("divide-decimals", Function.BUILTIN_FUNCTION_NS),
                     "Divides one decimal by another returning integer quotient and remainder.",
@@ -71,7 +78,7 @@ public class FnDivideDecimals extends BasicFunction {
                             new FunctionParameterSequenceType("value", Type.DECIMAL, Cardinality.EXACTLY_ONE, "The dividend"),
                             new FunctionParameterSequenceType("divisor", Type.DECIMAL, Cardinality.EXACTLY_ONE, "The divisor")
                     },
-                    new FunctionReturnSequenceType(Type.MAP_ITEM, Cardinality.EXACTLY_ONE, "record with quotient and remainder"))
+                    makeDivideReturnType())
     };
 
     public FnDivideDecimals(final XQueryContext context, final FunctionSignature signature) {

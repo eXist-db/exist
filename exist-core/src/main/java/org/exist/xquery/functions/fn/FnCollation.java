@@ -93,11 +93,11 @@ public class FnCollation extends BasicFunction {
                     "With a string argument, returns the collation URI if supported. " +
                     "With a map argument, constructs a UCA collation URI from options.",
                     new SequenceType[] {
-                            new FunctionParameterSequenceType("options", Type.ITEM,
+                            new FunctionParameterSequenceType("options", Type.MAP_ITEM,
                                     Cardinality.EXACTLY_ONE,
-                                    "A collation URI string or a map of UCA collation options")
+                                    "A map of UCA collation options")
                     },
-                    new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE,
+                    new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE,
                             "The collation URI"))
     };
 

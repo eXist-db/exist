@@ -54,15 +54,15 @@ public class FnUnixDateTime extends BasicFunction {
                     new QName("unix-dateTime", Function.BUILTIN_FUNCTION_NS),
                     "Converts Unix time in milliseconds to xs:dateTime in UTC.",
                     new SequenceType[] {
-                            new FunctionParameterSequenceType("value", Type.INTEGER, Cardinality.ZERO_OR_ONE, "Unix time in milliseconds since epoch")
+                            new FunctionParameterSequenceType("value", Type.NON_NEGATIVE_INTEGER, Cardinality.ZERO_OR_ONE, "Unix time in milliseconds since epoch")
                     },
-                    new FunctionReturnSequenceType(Type.DATE_TIME, Cardinality.EXACTLY_ONE, "the corresponding dateTime in UTC")),
+                    new FunctionReturnSequenceType(Type.DATE_TIME_STAMP, Cardinality.EXACTLY_ONE, "the corresponding dateTime in UTC")),
             new FunctionSignature(
                     new QName("unix-dateTime", Function.BUILTIN_FUNCTION_NS),
                     "Returns the Unix epoch (1970-01-01T00:00:00Z).",
                     new SequenceType[] {
                     },
-                    new FunctionReturnSequenceType(Type.DATE_TIME, Cardinality.EXACTLY_ONE, "the Unix epoch"))
+                    new FunctionReturnSequenceType(Type.DATE_TIME_STAMP, Cardinality.EXACTLY_ONE, "the Unix epoch"))
     };
 
     public FnUnixDateTime(final XQueryContext context, final FunctionSignature signature) {

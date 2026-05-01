@@ -79,9 +79,18 @@ public class FnInvisibleXml extends BasicFunction {
     private static final FunctionParameterSequenceType PARAM_OPTIONS =
             new FunctionParameterSequenceType("options", Type.MAP_ITEM,
                     Cardinality.ZERO_OR_ONE, "Options map (fail-on-error: xs:boolean)");
-    private static final FunctionReturnSequenceType RETURN_TYPE =
-            new FunctionReturnSequenceType(Type.FUNCTION, Cardinality.EXACTLY_ONE,
-                    "a function that parses strings according to the grammar");
+    private static final FunctionReturnSequenceType RETURN_TYPE = makeReturnType();
+
+    private static FunctionReturnSequenceType makeReturnType() {
+        // XQ4 spec: returns fn(xs:string) as item() — a parser typed function
+        final FunctionReturnSequenceType rt = new FunctionReturnSequenceType(Type.FUNCTION, Cardinality.EXACTLY_ONE,
+                "a function that parses strings according to the grammar");
+        rt.setFunctionParamTypes(new SequenceType[] {
+                new SequenceType(Type.STRING, Cardinality.EXACTLY_ONE)
+        });
+        rt.setFunctionReturnType(new SequenceType(Type.ITEM, Cardinality.EXACTLY_ONE));
+        return rt;
+    }
 
     public static final FunctionSignature[] SIGNATURES = {
             new FunctionSignature(

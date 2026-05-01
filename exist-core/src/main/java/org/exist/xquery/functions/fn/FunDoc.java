@@ -74,7 +74,7 @@ public class FunDoc extends Function {
                 new FunctionParameterSequenceType("source", Type.STRING,
                     Cardinality.ZERO_OR_ONE, "The document URI"),
                 new FunctionParameterSequenceType("options", Type.MAP_ITEM,
-                    Cardinality.EXACTLY_ONE, "Options map")
+                    Cardinality.ZERO_OR_ONE, "Options map")
             },
             new FunctionReturnSequenceType(Type.DOCUMENT, Cardinality.ZERO_OR_ONE,
                 "the document node of $document-uri")

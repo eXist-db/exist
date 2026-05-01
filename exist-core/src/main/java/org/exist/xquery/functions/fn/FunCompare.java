@@ -83,8 +83,8 @@ public class FunCompare extends CollatingFunction {
                     Cardinality.ZERO_OR_ONE, "The first value"),
                 new FunctionParameterSequenceType("value-2", Type.ANY_ATOMIC_TYPE,
                     Cardinality.ZERO_OR_ONE, "The second value"),
-                new FunctionParameterSequenceType("collation-uri", Type.STRING,
-                    Cardinality.EXACTLY_ONE, "The relative collation URI")
+                new FunctionParameterSequenceType("collation", Type.STRING,
+                    Cardinality.ZERO_OR_ONE, "The relative collation URI")
             },
             new FunctionReturnSequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE,
                 "-1, 0, or 1 depending on comparison result"))

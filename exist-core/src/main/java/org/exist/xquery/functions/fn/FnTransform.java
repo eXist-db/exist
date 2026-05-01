@@ -31,7 +31,7 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 
 import static org.exist.xquery.FunctionDSL.param;
-import static org.exist.xquery.FunctionDSL.returnsOptMany;
+import static org.exist.xquery.FunctionDSL.returns;
 import static org.exist.xquery.functions.fn.FnModule.functionSignature;
 
 /**
@@ -46,7 +46,7 @@ public class FnTransform extends BasicFunction {
     static final FunctionSignature FS_TRANSFORM = functionSignature(
             FnTransform.FS_TRANSFORM_NAME,
             "Invokes a transformation using a dynamically-loaded XSLT stylesheet.",
-            returnsOptMany(Type.MAP_ITEM, "The result of the transformation is returned as a map. " +
+            returns(Type.MAP_ITEM, "The result of the transformation is returned as a map. " +
                     "There is one entry in the map for the principal result document, and one for each " +
                     "secondary result document. The key is a URI in the form of an xs:string value. " +
                     "The key for the principal result document is the base output URI if specified, or " +

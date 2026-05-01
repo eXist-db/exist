@@ -64,7 +64,19 @@ public class FnOp extends BasicFunction {
             new SequenceType[] {
                     new FunctionParameterSequenceType("operator", Type.STRING, Cardinality.EXACTLY_ONE, "The operator name")
             },
-            new FunctionReturnSequenceType(Type.FUNCTION, Cardinality.EXACTLY_ONE, "a function implementing the operator"));
+            makeOpReturnType());
+
+    private static FunctionReturnSequenceType makeOpReturnType() {
+        // XQ4 spec: returns fn(item()*, item()*) as item()*
+        final FunctionReturnSequenceType rt = new FunctionReturnSequenceType(Type.FUNCTION, Cardinality.EXACTLY_ONE,
+                "a function implementing the operator");
+        rt.setFunctionParamTypes(new SequenceType[] {
+                new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE),
+                new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE)
+        });
+        rt.setFunctionReturnType(new SequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE));
+        return rt;
+    }
 
     public FnOp(final XQueryContext context, final FunctionSignature signature) {
         super(context, signature);
