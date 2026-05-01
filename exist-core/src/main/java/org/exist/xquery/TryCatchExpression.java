@@ -576,67 +576,71 @@ public class TryCatchExpression extends AbstractExpression {
         localVar.setSequenceType(new SequenceType(Type.MAP_ITEM, Cardinality.EXACTLY_ONE));
 
         final MapType errMap = new MapType(this, context);
-
         errMap.add(new StringValue(this, "code"), new QNameValue(this, context, errorCodeQname));
-
-        final Optional<String> errorDesc = Optional.ofNullable(errorCode.getDescription());
-        final Optional<String> throwableDesc = Optional.ofNullable(t instanceof XPathException xpe2 ? xpe2.getDetailMessage() : (t != null ? t.getMessage() : null));
-        final Sequence description = errorDesc
-                .<Sequence>map(d -> new StringValue(this, throwableDesc.filter(td -> !td.equals(d)).map(td -> d + (d.endsWith(".") ? " " : ". ") + td).orElse(d)))
-                .orElse(Sequence.EMPTY_SEQUENCE);
-        errMap.add(new StringValue(this, "description"), description);
-
-        final Sequence errorValue;
-        if (t instanceof XPathException xpe3 && xpe3.getErrorVal() != null) {
-            errorValue = xpe3.getErrorVal();
-        } else {
-            errorValue = Sequence.EMPTY_SEQUENCE;
-        }
-        errMap.add(new StringValue(this, "value"), errorValue);
-
-        final Sequence module;
-        if (t instanceof XPathException xpe4 && xpe4.getSource() != null) {
-            module = new StringValue(this, xpe4.getSource().pathOrShortIdentifier());
-        } else {
-            module = Sequence.EMPTY_SEQUENCE;
-        }
-        errMap.add(new StringValue(this, "module"), module);
-
-        final Sequence lineNum;
-        if (t instanceof XPathException xpe5 && xpe5.getLine() > 0) {
-            lineNum = new IntegerValue(this, xpe5.getLine());
-        } else {
-            lineNum = Sequence.EMPTY_SEQUENCE;
-        }
-        errMap.add(new StringValue(this, "line-number"), lineNum);
-
-        final Sequence colNum;
-        if (t instanceof XPathException xpe6 && xpe6.getColumn() > 0) {
-            colNum = new IntegerValue(this, xpe6.getColumn());
-        } else {
-            colNum = Sequence.EMPTY_SEQUENCE;
-        }
-        errMap.add(new StringValue(this, "column-number"), colNum);
-
+        errMap.add(new StringValue(this, "description"), buildDescription(t, errorCode));
+        errMap.add(new StringValue(this, "value"), errorValueOf(t));
+        errMap.add(new StringValue(this, "module"), moduleOf(t));
+        errMap.add(new StringValue(this, "line-number"), lineNumberOf(t));
+        errMap.add(new StringValue(this, "column-number"), columnNumberOf(t));
         errMap.add(new StringValue(this, "additional"), Sequence.EMPTY_SEQUENCE);
-
-        final Sequence stackTrace;
-        if (t instanceof XPathException xpe7 && xpe7.getCallStack() != null && !xpe7.getCallStack().isEmpty()) {
-            final StringBuilder sb = new StringBuilder();
-            for (final XPathException.FunctionStackElement elt : xpe7.getCallStack()) {
-                if (sb.length() > 0) {
-                    sb.append('\n');
-                }
-                sb.append("at ").append(elt.toString());
-            }
-            stackTrace = new StringValue(this, sb.toString());
-        } else {
-            stackTrace = Sequence.EMPTY_SEQUENCE;
-        }
-        errMap.add(new StringValue(this, "stack-trace"), stackTrace);
+        errMap.add(new StringValue(this, "stack-trace"), stackTraceOf(t));
 
         localVar.setValue(errMap);
         context.declareVariableBinding(localVar);
+    }
+
+    private Sequence buildDescription(final Throwable t, final ErrorCode errorCode) {
+        final Optional<String> errorDesc = Optional.ofNullable(errorCode.getDescription());
+        final Optional<String> throwableDesc = Optional.ofNullable(
+                t instanceof XPathException xpe ? xpe.getDetailMessage() : (t != null ? t.getMessage() : null));
+        return errorDesc
+                .<Sequence>map(d -> new StringValue(this,
+                        throwableDesc.filter(td -> !td.equals(d))
+                                .map(td -> d + (d.endsWith(".") ? " " : ". ") + td)
+                                .orElse(d)))
+                .orElse(Sequence.EMPTY_SEQUENCE);
+    }
+
+    private static Sequence errorValueOf(final Throwable t) {
+        if (t instanceof XPathException xpe && xpe.getErrorVal() != null) {
+            return xpe.getErrorVal();
+        }
+        return Sequence.EMPTY_SEQUENCE;
+    }
+
+    private Sequence moduleOf(final Throwable t) {
+        if (t instanceof XPathException xpe && xpe.getSource() != null) {
+            return new StringValue(this, xpe.getSource().pathOrShortIdentifier());
+        }
+        return Sequence.EMPTY_SEQUENCE;
+    }
+
+    private Sequence lineNumberOf(final Throwable t) {
+        if (t instanceof XPathException xpe && xpe.getLine() > 0) {
+            return new IntegerValue(this, xpe.getLine());
+        }
+        return Sequence.EMPTY_SEQUENCE;
+    }
+
+    private Sequence columnNumberOf(final Throwable t) {
+        if (t instanceof XPathException xpe && xpe.getColumn() > 0) {
+            return new IntegerValue(this, xpe.getColumn());
+        }
+        return Sequence.EMPTY_SEQUENCE;
+    }
+
+    private Sequence stackTraceOf(final Throwable t) {
+        if (!(t instanceof XPathException xpe) || xpe.getCallStack() == null || xpe.getCallStack().isEmpty()) {
+            return Sequence.EMPTY_SEQUENCE;
+        }
+        final StringBuilder sb = new StringBuilder();
+        for (final XPathException.FunctionStackElement elt : xpe.getCallStack()) {
+            if (sb.length() > 0) {
+                sb.append('\n');
+            }
+            sb.append("at ").append(elt.toString());
+        }
+        return new StringValue(this, sb.toString());
     }
 
     /**

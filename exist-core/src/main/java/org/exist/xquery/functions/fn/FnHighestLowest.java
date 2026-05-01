@@ -41,7 +41,6 @@ import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReference;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Item;
-import org.exist.xquery.value.NumericValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.SequenceType;
@@ -128,57 +127,76 @@ public class FnHighestLowest extends BasicFunction {
             return Sequence.EMPTY_SEQUENCE;
         }
 
-        // Resolve collation
-        final Collator collator;
-        if (args.length >= 2 && !args[1].isEmpty()) {
-            collator = context.getCollator(args[1].getStringValue());
-        } else {
-            collator = context.getDefaultCollator();
-        }
-
-        // Resolve key function (default is data#1)
-        FunctionReference keyRef = null;
-        if (args.length >= 3 && !args[2].isEmpty()) {
-            keyRef = (FunctionReference) args[2].itemAt(0);
-            keyRef.analyze(cachedContextInfo);
-        }
-
+        final Collator collator = resolveCollator(args);
+        final FunctionReference keyRef = resolveKeyRef(args);
         final boolean findHighest = isCalledAs("highest");
 
-        // Compute keys for all items
         final List<Item> items = new ArrayList<>(input.getItemCount());
-        final List<AtomicValue> keys = new ArrayList<>(input.getItemCount());
+        final List<AtomicValue> keys = computeKeys(input, keyRef, items);
 
+        final AtomicValue extremeKey = findExtremeKey(keys, collator, findHighest);
+        if (extremeKey == null) {
+            if (keyRef != null) {
+                keyRef.close();
+            }
+            return Sequence.EMPTY_SEQUENCE;
+        }
+
+        final ValueSequence result = collectMatching(items, keys, extremeKey, collator);
+        if (keyRef != null) {
+            keyRef.close();
+        }
+        return result;
+    }
+
+    private Collator resolveCollator(final Sequence[] args) throws XPathException {
+        if (args.length >= 2 && !args[1].isEmpty()) {
+            return context.getCollator(args[1].getStringValue());
+        }
+        return context.getDefaultCollator();
+    }
+
+    private FunctionReference resolveKeyRef(final Sequence[] args) throws XPathException {
+        if (args.length < 3 || args[2].isEmpty()) {
+            return null;
+        }
+        final FunctionReference ref = (FunctionReference) args[2].itemAt(0);
+        ref.analyze(cachedContextInfo);
+        return ref;
+    }
+
+    private List<AtomicValue> computeKeys(final Sequence input, final FunctionReference keyRef,
+            final List<Item> items) throws XPathException {
+        final List<AtomicValue> keys = new ArrayList<>(input.getItemCount());
         for (final SequenceIterator i = input.iterate(); i.hasNext(); ) {
             final Item item = i.nextItem();
             items.add(item);
-
-            // Compute key: apply key function or default atomization (fn:data)
-            final AtomicValue keyVal;
-            if (keyRef != null) {
-                final Sequence keyResult = keyRef.evalFunction(null, null, new Sequence[]{item.toSequence()});
-                if (keyResult.isEmpty()) {
-                    keyVal = null;
-                } else {
-                    AtomicValue kv = keyResult.itemAt(0).atomize();
-                    if (kv.getType() == Type.UNTYPED_ATOMIC) {
-                        kv = kv.convertTo(Type.DOUBLE);
-                    }
-                    keyVal = kv;
-                }
-            } else {
-                // Default key is fn:data() — atomize the item directly
-                final AtomicValue atomized = item.atomize();
-                if (atomized.getType() == Type.UNTYPED_ATOMIC) {
-                    keyVal = atomized.convertTo(Type.DOUBLE);
-                } else {
-                    keyVal = atomized;
-                }
-            }
-            keys.add(keyVal);
+            keys.add(computeKey(item, keyRef));
         }
+        return keys;
+    }
 
-        // Find the extreme value
+    private static AtomicValue computeKey(final Item item, final FunctionReference keyRef) throws XPathException {
+        if (keyRef == null) {
+            // Default key is fn:data() — atomize the item directly
+            final AtomicValue atomized = item.atomize();
+            return atomized.getType() == Type.UNTYPED_ATOMIC
+                    ? atomized.convertTo(Type.DOUBLE)
+                    : atomized;
+        }
+        final Sequence keyResult = keyRef.evalFunction(null, null, new Sequence[]{item.toSequence()});
+        if (keyResult.isEmpty()) {
+            return null;
+        }
+        AtomicValue kv = keyResult.itemAt(0).atomize();
+        if (kv.getType() == Type.UNTYPED_ATOMIC) {
+            kv = kv.convertTo(Type.DOUBLE);
+        }
+        return kv;
+    }
+
+    private static AtomicValue findExtremeKey(final List<AtomicValue> keys, final Collator collator,
+            final boolean findHighest) throws XPathException {
         AtomicValue extremeKey = null;
         for (final AtomicValue key : keys) {
             if (key == null || isNaN(key)) {
@@ -186,19 +204,18 @@ public class FnHighestLowest extends BasicFunction {
             }
             if (extremeKey == null) {
                 extremeKey = key;
-            } else {
-                final int cmp = key.compareTo(collator, extremeKey);
-                if (findHighest ? cmp > 0 : cmp < 0) {
-                    extremeKey = key;
-                }
+                continue;
+            }
+            final int cmp = key.compareTo(collator, extremeKey);
+            if (findHighest ? cmp > 0 : cmp < 0) {
+                extremeKey = key;
             }
         }
+        return extremeKey;
+    }
 
-        if (extremeKey == null) {
-            return Sequence.EMPTY_SEQUENCE;
-        }
-
-        // Collect all items with the extreme key value
+    private static ValueSequence collectMatching(final List<Item> items, final List<AtomicValue> keys,
+            final AtomicValue extremeKey, final Collator collator) throws XPathException {
         final ValueSequence result = new ValueSequence();
         for (int i = 0; i < items.size(); i++) {
             final AtomicValue key = keys.get(i);
@@ -206,11 +223,6 @@ public class FnHighestLowest extends BasicFunction {
                 result.add(items.get(i));
             }
         }
-
-        if (keyRef != null) {
-            keyRef.close();
-        }
-
         return result;
     }
 

@@ -93,57 +93,68 @@ public class FnHash extends BasicFunction {
         if (args[0].isEmpty()) {
             return Sequence.EMPTY_SEQUENCE;
         }
-
-        // Get the input bytes
         final byte[] inputBytes = getInputBytes(args[0]);
+        final String algorithm = resolveAlgorithm(args);
+        final byte[] hashBytes = computeHash(algorithm, inputBytes);
+        return new BinaryValueFromBinaryString(this, new HexBinaryValueType(), toHexString(hashBytes));
+    }
 
-        // Get the algorithm
-        String algorithm = "MD5";
+    private static String resolveAlgorithm(final Sequence[] args) throws XPathException {
         if (args.length > 1 && !args[1].isEmpty()) {
-            algorithm = args[1].getStringValue().trim().toUpperCase();
+            return args[1].getStringValue().trim().toUpperCase();
         }
+        return "MD5";
+    }
 
-        // Compute hash
-        final byte[] hashBytes;
+    private byte[] computeHash(final String algorithm, final byte[] inputBytes) throws XPathException {
         if ("CRC-32".equals(algorithm) || "CRC32".equals(algorithm)) {
-            final CRC32 crc32 = new CRC32();
-            crc32.update(inputBytes);
-            final long crcValue = crc32.getValue();
-            // Return as 4-byte big-endian hexBinary
-            hashBytes = ByteBuffer.allocate(4).putInt((int) crcValue).array();
-        } else if ("BLAKE3".equals(algorithm)) {
-            final Blake3Digest blake3 = new Blake3Digest(32);
-            blake3.update(inputBytes, 0, inputBytes.length);
-            hashBytes = new byte[32];
-            blake3.doFinal(hashBytes, 0);
-        } else {
-            // Map algorithm names to Java MessageDigest names
-            final String javaAlgorithm = switch (algorithm) {
-                case "MD5" -> "MD5";
-                case "SHA-1", "SHA1" -> "SHA-1";
-                case "SHA-256", "SHA256" -> "SHA-256";
-                case "SHA-384", "SHA384" -> "SHA-384";
-                case "SHA-512", "SHA512" -> "SHA-512";
-                default -> throw new XPathException(this, FOHA0001,
-                        "Unsupported hash algorithm: " + algorithm);
-            };
-            try {
-                final MessageDigest digest = MessageDigest.getInstance(javaAlgorithm);
-                hashBytes = digest.digest(inputBytes);
-            } catch (final NoSuchAlgorithmException e) {
-                throw new XPathException(this, FOHA0001,
-                        "Hash algorithm not available: " + javaAlgorithm);
-            }
+            return computeCrc32(inputBytes);
         }
+        if ("BLAKE3".equals(algorithm)) {
+            return computeBlake3(inputBytes);
+        }
+        return computeMessageDigest(algorithm, inputBytes);
+    }
 
-        // Return as hexBinary — use BinaryValueFromBinaryString to avoid
-        // stream registration with the XQuery context (prevents deadlock
-        // in concurrent test execution environments)
-        final StringBuilder hex = new StringBuilder(hashBytes.length * 2);
-        for (final byte b : hashBytes) {
+    private static byte[] computeCrc32(final byte[] inputBytes) {
+        final CRC32 crc32 = new CRC32();
+        crc32.update(inputBytes);
+        // Return as 4-byte big-endian hexBinary
+        return ByteBuffer.allocate(4).putInt((int) crc32.getValue()).array();
+    }
+
+    private static byte[] computeBlake3(final byte[] inputBytes) {
+        final Blake3Digest blake3 = new Blake3Digest(32);
+        blake3.update(inputBytes, 0, inputBytes.length);
+        final byte[] out = new byte[32];
+        blake3.doFinal(out, 0);
+        return out;
+    }
+
+    private byte[] computeMessageDigest(final String algorithm, final byte[] inputBytes) throws XPathException {
+        final String javaAlgorithm = switch (algorithm) {
+            case "MD5" -> "MD5";
+            case "SHA-1", "SHA1" -> "SHA-1";
+            case "SHA-256", "SHA256" -> "SHA-256";
+            case "SHA-384", "SHA384" -> "SHA-384";
+            case "SHA-512", "SHA512" -> "SHA-512";
+            default -> throw new XPathException(this, FOHA0001,
+                    "Unsupported hash algorithm: " + algorithm);
+        };
+        try {
+            return MessageDigest.getInstance(javaAlgorithm).digest(inputBytes);
+        } catch (final NoSuchAlgorithmException e) {
+            throw new XPathException(this, FOHA0001,
+                    "Hash algorithm not available: " + javaAlgorithm);
+        }
+    }
+
+    private static String toHexString(final byte[] bytes) {
+        final StringBuilder hex = new StringBuilder(bytes.length * 2);
+        for (final byte b : bytes) {
             hex.append(String.format("%02X", b & 0xFF));
         }
-        return new BinaryValueFromBinaryString(this, new HexBinaryValueType(), hex.toString());
+        return hex.toString();
     }
 
     private byte[] getInputBytes(final Sequence value) throws XPathException {

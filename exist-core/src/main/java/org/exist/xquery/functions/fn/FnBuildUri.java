@@ -83,66 +83,60 @@ public class FnBuildUri extends BasicFunction {
     @Override
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
         final MapType parts = (MapType) args[0].itemAt(0);
-
-        // Parse options
-        boolean allowDeprecated = false;
-        boolean omitDefaultPorts = false;
-        boolean uncPath = false;
-        if (args.length > 1 && !args[1].isEmpty()) {
-            final MapType options = (MapType) args[1].itemAt(0);
-            allowDeprecated = getBooleanOption(options, "allow-deprecated-features", false);
-            omitDefaultPorts = getBooleanOption(options, "omit-default-ports", false);
-            uncPath = getBooleanOption(options, "unc-path", false);
-        }
+        final BuildOptions options = parseOptions(args);
 
         final StringBuilder uri = new StringBuilder();
-
-        // Get scheme
         final String scheme = getStringValue(parts, "scheme");
+        final boolean hierarchical = isHierarchical(parts, scheme);
 
-        // Determine if hierarchical
-        boolean hierarchical = true;
+        appendScheme(uri, scheme, hierarchical, options.uncPath);
+        appendAuthority(uri, parts, scheme, options);
+        appendPath(uri, parts, hierarchical);
+        appendQuery(uri, parts);
+        appendFragment(uri, parts);
+
+        return new StringValue(this, uri.toString());
+    }
+
+    private BuildOptions parseOptions(final Sequence[] args) throws XPathException {
+        if (args.length <= 1 || args[1].isEmpty()) {
+            return new BuildOptions(false, false, false);
+        }
+        final MapType options = (MapType) args[1].itemAt(0);
+        return new BuildOptions(
+                getBooleanOption(options, "allow-deprecated-features", false),
+                getBooleanOption(options, "omit-default-ports", false),
+                getBooleanOption(options, "unc-path", false));
+    }
+
+    private boolean isHierarchical(final MapType parts, final String scheme) throws XPathException {
         final Sequence hierSeq = parts.get(new StringValue(this, "hierarchical"));
         if (hierSeq != null && !hierSeq.isEmpty()) {
-            hierarchical = hierSeq.effectiveBooleanValue();
-        } else if (scheme != null) {
-            hierarchical = !NON_HIERARCHICAL_SCHEMES.contains(scheme.toLowerCase());
+            return hierSeq.effectiveBooleanValue();
         }
+        return scheme == null || !NON_HIERARCHICAL_SCHEMES.contains(scheme.toLowerCase());
+    }
 
-        // Add scheme
-        if (scheme != null) {
-            uri.append(scheme);
-            if (!hierarchical) {
-                uri.append(':');
-            } else if ("file".equalsIgnoreCase(scheme) && uncPath) {
-                uri.append(":////");
-            } else {
-                uri.append("://");
-            }
+    private static void appendScheme(final StringBuilder uri, final String scheme,
+            final boolean hierarchical, final boolean uncPath) {
+        if (scheme == null) {
+            return;
         }
+        uri.append(scheme);
+        if (!hierarchical) {
+            uri.append(':');
+        } else if ("file".equalsIgnoreCase(scheme) && uncPath) {
+            uri.append(":////");
+        } else {
+            uri.append("://");
+        }
+    }
 
-        // Build authority from components or use authority directly
-        final String userinfo = getStringValue(parts, "userinfo");
+    private void appendAuthority(final StringBuilder uri, final MapType parts,
+            final String scheme, final BuildOptions options) throws XPathException {
+        final String effectiveUserinfo = effectiveUserinfo(parts, options.allowDeprecated);
         final String host = getStringValue(parts, "host");
-        final Sequence portSeq = parts.get(new StringValue(this, "port"));
-        Integer port = null;
-        if (portSeq != null && !portSeq.isEmpty()) {
-            port = ((Number) portSeq.itemAt(0).toJavaObject(Long.class)).intValue();
-        }
-
-        // Handle deprecated password in userinfo
-        String effectiveUserinfo = userinfo;
-        if (!allowDeprecated && effectiveUserinfo != null && effectiveUserinfo.contains(":")) {
-            final String password = effectiveUserinfo.substring(effectiveUserinfo.indexOf(':') + 1);
-            if (!password.isEmpty()) {
-                effectiveUserinfo = null;
-            }
-        }
-
-        // Omit default ports
-        if (omitDefaultPorts && port != null && scheme != null && isDefaultPort(scheme.toLowerCase(), port)) {
-            port = null;
-        }
+        final Integer port = effectivePort(parts, scheme, options.omitDefaultPorts);
 
         if (effectiveUserinfo != null || host != null || port != null) {
             if (scheme == null) {
@@ -157,83 +151,119 @@ public class FnBuildUri extends BasicFunction {
             if (port != null) {
                 uri.append(':').append(port);
             }
-        } else {
-            final String authority = getStringValue(parts, "authority");
-            if (authority != null) {
-                if (scheme == null) {
-                    uri.append("//");
-                }
-                uri.append(authority);
-            }
+            return;
         }
+        final String authority = getStringValue(parts, "authority");
+        if (authority != null) {
+            if (scheme == null) {
+                uri.append("//");
+            }
+            uri.append(authority);
+        }
+    }
 
-        // Build path from path-segments or use path directly
+    private String effectiveUserinfo(final MapType parts, final boolean allowDeprecated) throws XPathException {
+        final String userinfo = getStringValue(parts, "userinfo");
+        if (allowDeprecated || userinfo == null || !userinfo.contains(":")) {
+            return userinfo;
+        }
+        final String password = userinfo.substring(userinfo.indexOf(':') + 1);
+        return password.isEmpty() ? userinfo : null;
+    }
+
+    private Integer effectivePort(final MapType parts, final String scheme,
+            final boolean omitDefaultPorts) throws XPathException {
+        final Sequence portSeq = parts.get(new StringValue(this, "port"));
+        if (portSeq == null || portSeq.isEmpty()) {
+            return null;
+        }
+        final int port = ((Number) portSeq.itemAt(0).toJavaObject(Long.class)).intValue();
+        if (omitDefaultPorts && scheme != null && isDefaultPort(scheme.toLowerCase(), port)) {
+            return null;
+        }
+        return port;
+    }
+
+    private void appendPath(final StringBuilder uri, final MapType parts,
+            final boolean hierarchical) throws XPathException {
         final Sequence pathSegments = parts.get(new StringValue(this, "path-segments"));
         if (pathSegments != null && !pathSegments.isEmpty()) {
-            final StringBuilder pathBuilder = new StringBuilder();
-            boolean first = true;
-            for (final SequenceIterator i = pathSegments.iterate(); i.hasNext(); ) {
+            uri.append(buildPathFromSegments(pathSegments, hierarchical));
+            return;
+        }
+        final String path = getStringValue(parts, "path");
+        if (path != null) {
+            uri.append(path);
+        }
+    }
+
+    private static String buildPathFromSegments(final Sequence pathSegments,
+            final boolean hierarchical) throws XPathException {
+        final StringBuilder pathBuilder = new StringBuilder();
+        boolean first = true;
+        for (final SequenceIterator i = pathSegments.iterate(); i.hasNext(); ) {
+            if (!first) {
+                pathBuilder.append('/');
+            }
+            first = false;
+            final String segment = i.nextItem().getStringValue();
+            pathBuilder.append(hierarchical ? encodePathSegment(segment) : segment);
+        }
+        return pathBuilder.toString();
+    }
+
+    private void appendQuery(final StringBuilder uri, final MapType parts) throws XPathException {
+        final Sequence queryParamsSeq = parts.get(new StringValue(this, "query-parameters"));
+        if (queryParamsSeq != null && !queryParamsSeq.isEmpty()
+                && queryParamsSeq.itemAt(0) instanceof MapType queryParams) {
+            final String queryString = buildQueryFromParams(queryParams);
+            if (!queryString.isEmpty()) {
+                uri.append('?').append(queryString);
+            }
+            return;
+        }
+        final String query = getStringValue(parts, "query");
+        if (query != null) {
+            uri.append('?').append(query);
+        }
+    }
+
+    private static String buildQueryFromParams(final MapType queryParams) throws XPathException {
+        final StringBuilder queryBuilder = new StringBuilder();
+        boolean first = true;
+        for (final SequenceIterator ki = queryParams.keys().iterate(); ki.hasNext(); ) {
+            final StringValue key = (StringValue) ki.nextItem();
+            final Sequence values = queryParams.get(key);
+            for (final SequenceIterator vi = values.iterate(); vi.hasNext(); ) {
                 if (!first) {
-                    pathBuilder.append('/');
+                    queryBuilder.append('&');
                 }
                 first = false;
-                final String segment = i.nextItem().getStringValue();
-                if (hierarchical) {
-                    pathBuilder.append(encodePathSegment(segment));
-                } else {
-                    pathBuilder.append(segment);
-                }
-            }
-            uri.append(pathBuilder);
-        } else {
-            final String path = getStringValue(parts, "path");
-            if (path != null) {
-                uri.append(path);
+                appendQueryParam(queryBuilder, key.getStringValue(), vi.nextItem().getStringValue());
             }
         }
+        return queryBuilder.toString();
+    }
 
-        // Build query from query-parameters or use query directly
-        final Sequence queryParamsSeq = parts.get(new StringValue(this, "query-parameters"));
-        if (queryParamsSeq != null && !queryParamsSeq.isEmpty() && queryParamsSeq.itemAt(0) instanceof MapType) {
-            final MapType queryParams = (MapType) queryParamsSeq.itemAt(0);
-            final StringBuilder queryBuilder = new StringBuilder();
-            boolean first = true;
-            for (final SequenceIterator ki = queryParams.keys().iterate(); ki.hasNext(); ) {
-                final StringValue key = (StringValue) ki.nextItem();
-                final Sequence values = queryParams.get(key);
-                for (final SequenceIterator vi = values.iterate(); vi.hasNext(); ) {
-                    if (!first) {
-                        queryBuilder.append('&');
-                    }
-                    first = false;
-                    final String keyStr = key.getStringValue();
-                    final String valStr = vi.nextItem().getStringValue();
-                    if (keyStr.isEmpty()) {
-                        queryBuilder.append(encodeQueryComponent(valStr));
-                    } else {
-                        queryBuilder.append(encodeQueryComponent(keyStr))
-                                .append('=')
-                                .append(encodeQueryComponent(valStr));
-                    }
-                }
-            }
-            if (queryBuilder.length() > 0) {
-                uri.append('?').append(queryBuilder);
-            }
+    private static void appendQueryParam(final StringBuilder queryBuilder,
+            final String keyStr, final String valStr) {
+        if (keyStr.isEmpty()) {
+            queryBuilder.append(encodeQueryComponent(valStr));
         } else {
-            final String query = getStringValue(parts, "query");
-            if (query != null) {
-                uri.append('?').append(query);
-            }
+            queryBuilder.append(encodeQueryComponent(keyStr))
+                    .append('=')
+                    .append(encodeQueryComponent(valStr));
         }
+    }
 
-        // Fragment
+    private void appendFragment(final StringBuilder uri, final MapType parts) throws XPathException {
         final String fragment = getStringValue(parts, "fragment");
         if (fragment != null) {
             uri.append('#').append(encodeFragment(fragment));
         }
+    }
 
-        return new StringValue(this, uri.toString());
+    private record BuildOptions(boolean allowDeprecated, boolean omitDefaultPorts, boolean uncPath) {
     }
 
     private String getStringValue(final MapType map, final String key) throws XPathException {

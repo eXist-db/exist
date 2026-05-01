@@ -76,149 +76,151 @@ public class CsvParser {
      * Parse CSV text, calling the converter for each record.
      */
     public void parse(final String input, final CsvConverter converter) throws XPathException {
-        final List<List<String>> allRecords = new ArrayList<>();
-        List<String> currentRecord = new ArrayList<>();
-        final StringBuilder field = new StringBuilder();
+        final ParseState ps = new ParseState();
+        runStateMachine(input, ps);
+        finalizeRecords(ps);
+        if (trimRows) {
+            trimAndNormalize(ps.allRecords);
+        }
+        emit(ps.allRecords, converter);
+    }
 
-        // State: FIELD_START, IN_UNQUOTED, IN_QUOTED, AFTER_QUOTED
-        int state = 0; // 0=field_start, 1=in_unquoted, 2=in_quoted, 3=after_quoted
-        int i = 0;
+    private void runStateMachine(final String input, final ParseState ps) throws XPathException {
         final int len = input.length();
-
-        while (i < len) {
-            final int cp = input.codePointAt(i);
+        while (ps.i < len) {
+            final int cp = input.codePointAt(ps.i);
             final int cpLen = Character.charCount(cp);
-
-            switch (state) {
-                case 0 -> { // FIELD_START — beginning of a new field
-                    if (cp == quoteChar && quoteChar != -1) {
-                        state = 2; // start quoted field
-                        i += cpLen;
-                    } else if (cp == fieldDelimiter) {
-                        currentRecord.add(finishField(field));
-                        field.setLength(0);
-                        i += cpLen;
-                    } else if (isRowDelimiter(cp)) {
-                        currentRecord.add(finishField(field));
-                        field.setLength(0);
-                        allRecords.add(currentRecord);
-                        currentRecord = new ArrayList<>();
-                        i += rowDelimiterLength(input, i, cp);
-                    } else {
-                        field.appendCodePoint(cp);
-                        state = 1; // in unquoted field
-                        i += cpLen;
-                    }
-                }
-                case 1 -> { // IN_UNQUOTED — inside an unquoted field
-                    if (cp == quoteChar && quoteChar != -1) {
-                        throw new XPathException(expression, ErrorCodes.FOCV0001,
-                                "Quote character found in middle of unquoted field");
-                    } else if (cp == fieldDelimiter) {
-                        currentRecord.add(finishField(field));
-                        field.setLength(0);
-                        state = 0;
-                        i += cpLen;
-                    } else if (isRowDelimiter(cp)) {
-                        currentRecord.add(finishField(field));
-                        field.setLength(0);
-                        allRecords.add(currentRecord);
-                        currentRecord = new ArrayList<>();
-                        state = 0;
-                        i += rowDelimiterLength(input, i, cp);
-                    } else {
-                        field.appendCodePoint(cp);
-                        i += cpLen;
-                    }
-                }
-                case 2 -> { // IN_QUOTED — inside a quoted field
-                    if (cp == quoteChar) {
-                        if (i + cpLen < len && input.codePointAt(i + cpLen) == quoteChar) {
-                            field.appendCodePoint(quoteChar);
-                            i += cpLen * 2;
-                        } else {
-                            state = 3; // after closing quote
-                            i += cpLen;
-                        }
-                    } else {
-                        field.appendCodePoint(cp);
-                        i += cpLen;
-                    }
-                }
-                case 3 -> { // AFTER_QUOTED — just saw closing quote
-                    if (cp == fieldDelimiter) {
-                        currentRecord.add(finishField(field));
-                        field.setLength(0);
-                        state = 0;
-                        i += cpLen;
-                    } else if (isRowDelimiter(cp)) {
-                        currentRecord.add(finishField(field));
-                        field.setLength(0);
-                        allRecords.add(currentRecord);
-                        currentRecord = new ArrayList<>();
-                        state = 0;
-                        i += rowDelimiterLength(input, i, cp);
-                    } else if (cp == ' ' || cp == '\t') {
-                        i += cpLen;
-                    } else {
-                        throw new XPathException(expression, ErrorCodes.FOCV0001,
-                                "Content after closing quote in CSV field");
-                    }
-                }
-                default -> throw new IllegalStateException("Unexpected CSV parser state: " + state);
+            switch (ps.state) {
+                case 0 -> handleFieldStart(input, ps, cp, cpLen);
+                case 1 -> handleUnquoted(input, ps, cp, cpLen);
+                case 2 -> handleQuoted(input, ps, cp, cpLen, len);
+                case 3 -> handleAfterQuoted(input, ps, cp, cpLen);
+                default -> throw new IllegalStateException("Unexpected CSV parser state: " + ps.state);
             }
         }
+    }
 
-        // Check for unterminated quotes
-        if (state == 2) {
+    private void handleFieldStart(final String input, final ParseState ps,
+            final int cp, final int cpLen) {
+        if (cp == quoteChar && quoteChar != -1) {
+            ps.state = 2;
+            ps.i += cpLen;
+        } else if (cp == fieldDelimiter) {
+            ps.currentRecord.add(finishField(ps.field));
+            ps.field.setLength(0);
+            ps.i += cpLen;
+        } else if (isRowDelimiter(cp)) {
+            endRow(ps);
+            ps.i += rowDelimiterLength(input, ps.i, cp);
+        } else {
+            ps.field.appendCodePoint(cp);
+            ps.state = 1;
+            ps.i += cpLen;
+        }
+    }
+
+    private void handleUnquoted(final String input, final ParseState ps,
+            final int cp, final int cpLen) throws XPathException {
+        if (cp == quoteChar && quoteChar != -1) {
+            throw new XPathException(expression, ErrorCodes.FOCV0001,
+                    "Quote character found in middle of unquoted field");
+        }
+        if (cp == fieldDelimiter) {
+            ps.currentRecord.add(finishField(ps.field));
+            ps.field.setLength(0);
+            ps.state = 0;
+            ps.i += cpLen;
+        } else if (isRowDelimiter(cp)) {
+            endRow(ps);
+            ps.state = 0;
+            ps.i += rowDelimiterLength(input, ps.i, cp);
+        } else {
+            ps.field.appendCodePoint(cp);
+            ps.i += cpLen;
+        }
+    }
+
+    private void handleQuoted(final String input, final ParseState ps,
+            final int cp, final int cpLen, final int len) {
+        if (cp != quoteChar) {
+            ps.field.appendCodePoint(cp);
+            ps.i += cpLen;
+            return;
+        }
+        if (ps.i + cpLen < len && input.codePointAt(ps.i + cpLen) == quoteChar) {
+            ps.field.appendCodePoint(quoteChar);
+            ps.i += cpLen * 2;
+        } else {
+            ps.state = 3;
+            ps.i += cpLen;
+        }
+    }
+
+    private void handleAfterQuoted(final String input, final ParseState ps,
+            final int cp, final int cpLen) throws XPathException {
+        if (cp == fieldDelimiter) {
+            ps.currentRecord.add(finishField(ps.field));
+            ps.field.setLength(0);
+            ps.state = 0;
+            ps.i += cpLen;
+        } else if (isRowDelimiter(cp)) {
+            endRow(ps);
+            ps.state = 0;
+            ps.i += rowDelimiterLength(input, ps.i, cp);
+        } else if (cp == ' ' || cp == '\t') {
+            ps.i += cpLen;
+        } else {
+            throw new XPathException(expression, ErrorCodes.FOCV0001,
+                    "Content after closing quote in CSV field");
+        }
+    }
+
+    private void endRow(final ParseState ps) {
+        ps.currentRecord.add(finishField(ps.field));
+        ps.field.setLength(0);
+        ps.allRecords.add(ps.currentRecord);
+        ps.currentRecord = new ArrayList<>();
+    }
+
+    private void finalizeRecords(final ParseState ps) throws XPathException {
+        if (ps.state == 2) {
             throw new XPathException(expression, ErrorCodes.FOCV0001,
                     "Unterminated quoted field in CSV input");
         }
-
         // Handle last field/record (if input doesn't end with row delimiter).
-        // A trailing row delimiter does not create an additional empty record.
-        // With trim-whitespace, a trailing row delimiter followed by only whitespace
-        // also does not create an additional record.
-        if (!currentRecord.isEmpty() || state == 3) {
-            // We had field delimiters on this line or a quoted field — always add
-            currentRecord.add(finishField(field));
-            allRecords.add(currentRecord);
-        } else if (field.length() > 0) {
-            final String finished = finishField(field);
+        if (!ps.currentRecord.isEmpty() || ps.state == 3) {
+            ps.currentRecord.add(finishField(ps.field));
+            ps.allRecords.add(ps.currentRecord);
+        } else if (ps.field.length() > 0) {
+            final String finished = finishField(ps.field);
             if (!finished.isEmpty()) {
-                currentRecord.add(finished);
-                allRecords.add(currentRecord);
+                ps.currentRecord.add(finished);
+                ps.allRecords.add(ps.currentRecord);
             }
         }
+    }
 
-        // Trim trailing empty rows if requested
-        if (trimRows) {
-            while (!allRecords.isEmpty()) {
-                final List<String> lastRow = allRecords.get(allRecords.size() - 1);
-                if (isEmptyRow(lastRow)) {
-                    allRecords.remove(allRecords.size() - 1);
-                } else {
-                    break;
-                }
-            }
-
-            // Normalize column count: all rows trimmed/padded to match first row (or header)
-            if (!allRecords.isEmpty()) {
-                final int columnCount = allRecords.get(0).size();
-                for (int r = 1; r < allRecords.size(); r++) {
-                    final List<String> row = allRecords.get(r);
-                    if (row.size() > columnCount) {
-                        allRecords.set(r, new ArrayList<>(row.subList(0, columnCount)));
-                    } else {
-                        while (row.size() < columnCount) {
-                            row.add("");
-                        }
-                    }
+    private static void trimAndNormalize(final List<List<String>> allRecords) {
+        while (!allRecords.isEmpty() && isEmptyRow(allRecords.get(allRecords.size() - 1))) {
+            allRecords.remove(allRecords.size() - 1);
+        }
+        if (allRecords.isEmpty()) {
+            return;
+        }
+        final int columnCount = allRecords.get(0).size();
+        for (int r = 1; r < allRecords.size(); r++) {
+            final List<String> row = allRecords.get(r);
+            if (row.size() > columnCount) {
+                allRecords.set(r, new ArrayList<>(row.subList(0, columnCount)));
+            } else {
+                while (row.size() < columnCount) {
+                    row.add("");
                 }
             }
         }
+    }
 
-        // Process header and records
+    private void emit(final List<List<String>> allRecords, final CsvConverter converter) throws XPathException {
         int startIdx = 0;
         if (hasHeader && !allRecords.isEmpty()) {
             // Headers are always trimmed (per XQ4 spec), regardless of trim-whitespace option
@@ -230,12 +232,19 @@ public class CsvParser {
             converter.header(selectFields(trimmedHeader));
             startIdx = 1;
         }
-
         for (int r = startIdx; r < allRecords.size(); r++) {
             converter.record(selectFields(allRecords.get(r)));
         }
-
         converter.finish();
+    }
+
+    private static final class ParseState {
+        final List<List<String>> allRecords = new ArrayList<>();
+        List<String> currentRecord = new ArrayList<>();
+        final StringBuilder field = new StringBuilder();
+        // 0=field_start, 1=in_unquoted, 2=in_quoted, 3=after_quoted
+        int state = 0;
+        int i = 0;
     }
 
     private String finishField(final StringBuilder field) {

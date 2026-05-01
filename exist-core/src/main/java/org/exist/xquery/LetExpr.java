@@ -108,104 +108,12 @@ public class LetExpr extends BindingExpression {
                 var.setContextDocs(inputSequence.getContextDocSet());
                 registerUpdateListener(in);
 
-                // XQuery 4.0 PR1501: coerce map(K, V) / array(T) bindings to
-                // the declared component types BEFORE the body runs, so
-                // subsequent uses of the variable (including instance-of
-                // tests) see the coerced shape. The post-eval cardinality /
-                // item-type check below still runs and will raise XPTY0004 if
-                // coercion fails or the value can't be made to fit.
-                if (sequenceType != null && !var.getValue().isEmpty()
-                        && sequenceType.getFunctionParamTypes() != null
-                        && (sequenceType.getPrimaryType() == Type.MAP_ITEM
-                                || sequenceType.getPrimaryType() == Type.ARRAY_ITEM)) {
-                    final Sequence coerced = MapTypeCoercion.tryCoerce(
-                            context, sequenceType, var.getValue());
-                    if (coerced != null) {
-                        var.setValue(coerced);
-                    }
-                }
+                preCoerceMapOrArray(var);
 
                 resultSequence = returnExpr.eval(contextSequence, null);
 
                 if (sequenceType != null) {
-                    Cardinality actualCardinality;
-                    if (var.getValue().isEmpty()) {actualCardinality = Cardinality.EMPTY_SEQUENCE;}
-                    else if (var.getValue().hasMany()) {actualCardinality = Cardinality._MANY;}
-                    else {actualCardinality = Cardinality.EXACTLY_ONE;}
-                    //Type.EMPTY is *not* a subtype of other types ; checking cardinality first
-                    if (!sequenceType.getCardinality().isSuperCardinalityOrEqualOf(actualCardinality))
-                        {throw new XPathException(this, ErrorCodes.XPTY0004,
-                            "Invalid cardinality for variable $" + varName +
-                            ". Expected " +
-                            sequenceType.getCardinality().getHumanDescription() +
-                            ", got " + actualCardinality.getHumanDescription(), in);}
-                    //TODO : ignore nodes right now ; they are returned as xs:untypedAtomicType
-                    if (!Type.subTypeOf(sequenceType.getPrimaryType(), Type.NODE)) {
-                        if (!var.getValue().isEmpty() && !Type.subTypeOf(var.getValue()
-                                .getItemType(), sequenceType.getPrimaryType())) {
-                            throw new XPathException(this, ErrorCodes.XPTY0004,
-                                "Invalid type for variable $" + varName +
-                                ". Expected " + Type.getTypeName(sequenceType.getPrimaryType()) +
-                                ", got " +Type.getTypeName(var.getValue().getItemType()), in);
-                        }
-                        // For typed map(K, V) and array(T) bindings, walk the
-                        // structure so a shape mismatch raises XPTY0004 instead
-                        // of silently accepting the value. In XQuery 4.0 mode,
-                        // first attempt PR1501 coercion: if every entry's key
-                        // and value can be converted to the declared key/value
-                        // types, build a coerced map and bind that instead.
-                        if (!var.getValue().isEmpty() && sequenceType.getFunctionParamTypes() != null
-                                && (sequenceType.getPrimaryType() == Type.MAP_ITEM
-                                        || sequenceType.getPrimaryType() == Type.ARRAY_ITEM)) {
-                            final Sequence coerced = MapTypeCoercion.tryCoerce(
-                                    context, sequenceType, var.getValue());
-                            if (coerced != null) {
-                                var.setValue(coerced);
-                            } else {
-                                for (final SequenceIterator i = var.getValue().iterate(); i.hasNext(); ) {
-                                    final Item item = i.nextItem();
-                                    if (!sequenceType.checkType(item)) {
-                                        throw new XPathException(this, ErrorCodes.XPTY0004,
-                                            "Invalid value for variable $" + varName +
-                                            ". Expected " + sequenceType + ", got value not matching the structural type");
-                                    }
-                                }
-                            }
-                        }
-                    //Here is an attempt to process the nodes correctly
-                    } else {
-                        //Same as above : we probably may factorize 
-                        if (!var.getValue().isEmpty() && !sequenceType.checkType(var.getValue())) {
-                            final Sequence value = var.getValue();
-                            final SequenceType valueType = new SequenceType(value.getItemType(), value.getCardinality());
-                            if ((!value.isEmpty()) && sequenceType.getPrimaryType() == Type.DOCUMENT && value.getItemType() == Type.DOCUMENT) {
-                                // it's a document... we need to get the document element's name
-                                final NodeValue nvItem = (NodeValue) value.itemAt(0);
-                                final Document doc;
-                                if (nvItem instanceof Document) {
-                                    doc = (Document) nvItem;
-                                } else {
-                                    doc = nvItem.getOwnerDocument();
-                                }
-                                if (doc != null) {
-                                    final Element elem = doc.getDocumentElement();
-                                    if (elem != null) {
-                                        valueType.setNodeName(new QName(elem.getLocalName(), elem.getNamespaceURI()));
-                                    }
-                                }
-                            }
-
-                            if ((!value.isEmpty()) && sequenceType.getPrimaryType() == Type.ELEMENT && value.getItemType() == Type.ELEMENT) {
-                                final NodeValue nvItem = (NodeValue) value.itemAt(0);
-                                valueType.setNodeName(nvItem.getQName());
-                            }
-
-                            throw new XPathException(
-                                    this,
-                                    ErrorCodes.XPTY0004,
-                                    String.format("Invalid type for variable $%s. Expected %s, got %s", varName, sequenceType.toString(), valueType), in);
-                        }
-                    }
+                    validateSequenceType(var, in);
                 }
             } finally {
                 // Restore the local variable stack
@@ -226,6 +134,114 @@ public class LetExpr extends BindingExpression {
         } finally {
             context.popDocumentContext();
             context.expressionEnd(this);
+        }
+    }
+
+    /**
+     * XQuery 4.0 PR1501: coerce map(K, V) / array(T) bindings to the declared
+     * component types BEFORE the body runs, so subsequent uses of the variable
+     * (including instance-of tests) see the coerced shape. The post-eval check
+     * still runs and will raise XPTY0004 if coercion fails.
+     */
+    private void preCoerceMapOrArray(final LocalVariable var) throws XPathException {
+        if (sequenceType == null || var.getValue().isEmpty()
+                || sequenceType.getFunctionParamTypes() == null
+                || !isMapOrArrayType(sequenceType)) {
+            return;
+        }
+        final Sequence coerced = MapTypeCoercion.tryCoerce(context, sequenceType, var.getValue());
+        if (coerced != null) {
+            var.setValue(coerced);
+        }
+    }
+
+    private static boolean isMapOrArrayType(final SequenceType type) {
+        return type.getPrimaryType() == Type.MAP_ITEM
+                || type.getPrimaryType() == Type.ARRAY_ITEM;
+    }
+
+    private void validateSequenceType(final LocalVariable var, final Sequence in) throws XPathException {
+        validateCardinality(var, in);
+        if (Type.subTypeOf(sequenceType.getPrimaryType(), Type.NODE)) {
+            validateNodeBinding(var, in);
+        } else {
+            validateNonNodeBinding(var);
+        }
+    }
+
+    private void validateCardinality(final LocalVariable var, final Sequence in) throws XPathException {
+        final Cardinality actualCardinality;
+        if (var.getValue().isEmpty()) {
+            actualCardinality = Cardinality.EMPTY_SEQUENCE;
+        } else if (var.getValue().hasMany()) {
+            actualCardinality = Cardinality._MANY;
+        } else {
+            actualCardinality = Cardinality.EXACTLY_ONE;
+        }
+        if (!sequenceType.getCardinality().isSuperCardinalityOrEqualOf(actualCardinality)) {
+            throw new XPathException(this, ErrorCodes.XPTY0004,
+                    "Invalid cardinality for variable $" + varName
+                            + ". Expected " + sequenceType.getCardinality().getHumanDescription()
+                            + ", got " + actualCardinality.getHumanDescription(), in);
+        }
+    }
+
+    private void validateNonNodeBinding(final LocalVariable var) throws XPathException {
+        if (!var.getValue().isEmpty()
+                && !Type.subTypeOf(var.getValue().getItemType(), sequenceType.getPrimaryType())) {
+            throw new XPathException(this, ErrorCodes.XPTY0004,
+                    "Invalid type for variable $" + varName
+                            + ". Expected " + Type.getTypeName(sequenceType.getPrimaryType())
+                            + ", got " + Type.getTypeName(var.getValue().getItemType()));
+        }
+        // For typed map(K, V) and array(T) bindings, walk the structure so a
+        // shape mismatch raises XPTY0004 instead of silently accepting the
+        // value. In XQuery 4.0 mode, first attempt PR1501 coercion.
+        if (var.getValue().isEmpty() || sequenceType.getFunctionParamTypes() == null
+                || !isMapOrArrayType(sequenceType)) {
+            return;
+        }
+        final Sequence coerced = MapTypeCoercion.tryCoerce(context, sequenceType, var.getValue());
+        if (coerced != null) {
+            var.setValue(coerced);
+            return;
+        }
+        for (final SequenceIterator i = var.getValue().iterate(); i.hasNext(); ) {
+            final Item item = i.nextItem();
+            if (!sequenceType.checkType(item)) {
+                throw new XPathException(this, ErrorCodes.XPTY0004,
+                        "Invalid value for variable $" + varName
+                                + ". Expected " + sequenceType
+                                + ", got value not matching the structural type");
+            }
+        }
+    }
+
+    private void validateNodeBinding(final LocalVariable var, final Sequence in) throws XPathException {
+        if (var.getValue().isEmpty() || sequenceType.checkType(var.getValue())) {
+            return;
+        }
+        final Sequence value = var.getValue();
+        final SequenceType valueType = new SequenceType(value.getItemType(), value.getCardinality());
+        applyNodeNameForError(value, valueType);
+        throw new XPathException(this, ErrorCodes.XPTY0004,
+                String.format("Invalid type for variable $%s. Expected %s, got %s",
+                        varName, sequenceType, valueType), in);
+    }
+
+    private void applyNodeNameForError(final Sequence value, final SequenceType valueType) {
+        if (sequenceType.getPrimaryType() == Type.DOCUMENT && value.getItemType() == Type.DOCUMENT) {
+            final NodeValue nvItem = (NodeValue) value.itemAt(0);
+            final Document doc = nvItem instanceof Document d ? d : nvItem.getOwnerDocument();
+            if (doc != null) {
+                final Element elem = doc.getDocumentElement();
+                if (elem != null) {
+                    valueType.setNodeName(new QName(elem.getLocalName(), elem.getNamespaceURI()));
+                }
+            }
+        } else if (sequenceType.getPrimaryType() == Type.ELEMENT && value.getItemType() == Type.ELEMENT) {
+            final NodeValue nvItem = (NodeValue) value.itemAt(0);
+            valueType.setNodeName(nvItem.getQName());
         }
     }
 

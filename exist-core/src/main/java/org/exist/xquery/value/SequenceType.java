@@ -256,17 +256,22 @@ public class SequenceType {
         // Contravariant parameter check: each required param type must be a subtype
         // of the function's actual param type. This catches subsumption mismatches
         // like `function(map(*)) ⊑ function(map(K,V))` (false: map(*) is broader).
-        if (functionParamTypes != null) {
-            final SequenceType[] actualParams = sig.getArgumentTypes();
-            if (actualParams != null) {
-                for (int i = 0; i < functionParamTypes.length; i++) {
-                    if (!isSubtypeOf(functionParamTypes[i], actualParams[i])) {
-                        return false;
-                    }
-                }
+        return checkFunctionParamSubsumption(sig);
+    }
+
+    private boolean checkFunctionParamSubsumption(final FunctionSignature sig) {
+        if (functionParamTypes == null) {
+            return true;
+        }
+        final SequenceType[] actualParams = sig.getArgumentTypes();
+        if (actualParams == null) {
+            return true;
+        }
+        for (int i = 0; i < functionParamTypes.length; i++) {
+            if (!isSubtypeOf(functionParamTypes[i], actualParams[i])) {
+                return false;
             }
         }
-
         return true;
     }
 
