@@ -138,6 +138,10 @@ public class ErrorCodes {
     public static final ErrorCode XQDY0137 = new W3CErrorCode("XQDY0137", "No two keys in a map may have the same key value");
     public static final ErrorCode XQDY0138 = new W3CErrorCode("XQDY0138", "Position n does not exist in this array");
 
+    // --- XQuery 4.0 Parser Extensions error codes ---
+    public static final ErrorCode XQST0148 = new W3CErrorCode("XQST0148", "It is a static error if a parameter without a default value follows a parameter with a default value in a function declaration.");
+    // --- End XQuery 4.0 Parser Extensions error codes ---
+
     public static final ErrorCode XUDY0023 = new W3CErrorCode("XUDY0023", "It is a dynamic error if an insert, replace, or rename expression affects an element node by introducing a new namespace binding that conflicts with one of its existing namespace bindings.");
 
     /* XQuery 1.0 and XPath 2.0 Functions and Operators http://www.w3.org/TR/xpath-functions/#error-summary */
@@ -216,6 +220,7 @@ public class ErrorCodes {
 
     /* XQuery 3.1 */
     public static final ErrorCode XQTY0105 = new W3CErrorCode("XQTY0105", "It is a type error if the content sequence in an element constructor contains a function.");
+    public static final ErrorCode XQTY0153 = new W3CErrorCode("XQTY0153", "It is a type error if the finally clause of a try/catch expression evaluates to a non-empty sequence.");
     public static final ErrorCode FOAY0001 = new W3CErrorCode("FOAY0001", "Array index out of bounds.");
     public static final ErrorCode FOAY0002 = new W3CErrorCode("FOAY0002", "Negative array length.");
 
@@ -240,6 +245,10 @@ public class ErrorCodes {
     public static final ErrorCode FOXT0003 = new W3CErrorCode("FOXT0003", "XSLT transformation failed");
     public static final ErrorCode FOXT0004 = new W3CErrorCode("FOXT0004", "XSLT transformation has been disabled");
     public static final ErrorCode FOXT0006 = new W3CErrorCode("FOXT0006", "XSLT output contains non-accepted characters");
+
+    // Invisible XML errors
+    public static final ErrorCode FOIX0001 = new W3CErrorCode("FOIX0001", "Invalid ixml grammar");
+    public static final ErrorCode FOIX0002 = new W3CErrorCode("FOIX0002", "ixml parse error");
 
     public static final ErrorCode XTSE0165 = new W3CErrorCode("XTSE0165","It is a static error if the processor is not able to retrieve the resource identified by the URI reference [ in the href attribute of xsl:include or xsl:import] , or if the resource that is retrieved does not contain a stylesheet module conforming to this specification.");
 

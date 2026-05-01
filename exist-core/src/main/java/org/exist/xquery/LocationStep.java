@@ -384,68 +384,38 @@ public class LocationStep extends Step {
             }
 
             try {
-                switch (axis) {
-
-                    case Constants.DESCENDANT_AXIS:
-                    case Constants.DESCENDANT_SELF_AXIS:
-                        result = getDescendants(context, contextSequence);
-                        break;
-
-                    case Constants.CHILD_AXIS:
-                        // VirtualNodeSets may have modified the axis ; checking the
-                        // type
-                        // TODO : further checks ?
-//				if (this.test.getType() == Type.ATTRIBUTE) {
-//					this.axis = Constants.ATTRIBUTE_AXIS;
-//					result = getAttributes(context, contextSequence);
-//				} else {
-                        result = getChildren(context, contextSequence);
-//				}
-                        break;
-
-                    case Constants.ANCESTOR_SELF_AXIS:
-                    case Constants.ANCESTOR_AXIS:
-                        result = getAncestors(context, contextSequence);
-                        break;
-
-                    case Constants.PARENT_AXIS:
-                        result = getParents(context, contextSequence);
-                        break;
-
-                    case Constants.SELF_AXIS:
+                result = switch (axis) {
+                    case Constants.DESCENDANT_AXIS, Constants.DESCENDANT_SELF_AXIS ->
+                            getDescendants(context, contextSequence);
+                    case Constants.CHILD_AXIS -> getChildren(context, contextSequence);
+                    case Constants.ANCESTOR_SELF_AXIS, Constants.ANCESTOR_AXIS ->
+                            getAncestors(context, contextSequence);
+                    case Constants.PARENT_AXIS -> getParents(context, contextSequence);
+                    case Constants.SELF_AXIS -> {
                         if (!(contextSequence instanceof VirtualNodeSet)
                                 && Type.subTypeOf(contextSequence.getItemType(),
                                 Type.ANY_ATOMIC_TYPE)) {
-                            // This test is copied from the legacy method
-                            // getSelfAtomic()
+                            // This test is copied from the legacy method getSelfAtomic()
                             if (!test.isWildcardTest()) {
                                 throw new XPathException(this, test.toString()
                                         + " cannot be applied to an atomic value.");
                             }
-                            result = contextSequence;
-                        } else {
-                            result = getSelf(context, contextSequence);
+                            yield contextSequence;
                         }
-                        break;
-
-                    case Constants.ATTRIBUTE_AXIS:
-                    case Constants.DESCENDANT_ATTRIBUTE_AXIS:
-                        result = getAttributes(context, contextSequence);
-                        break;
-
-                    case Constants.PRECEDING_AXIS:
-                    case Constants.FOLLOWING_AXIS:
-                        result = getPrecedingOrFollowing(context, contextSequence);
-                        break;
-
-                    case Constants.PRECEDING_SIBLING_AXIS:
-                    case Constants.FOLLOWING_SIBLING_AXIS:
-                        result = getSiblings(context, contextSequence);
-                        break;
-
-                    default:
-                        throw new IllegalArgumentException("Unsupported axis specified");
-                }
+                        yield getSelf(context, contextSequence);
+                    }
+                    case Constants.ATTRIBUTE_AXIS, Constants.DESCENDANT_ATTRIBUTE_AXIS ->
+                            getAttributes(context, contextSequence);
+                    case Constants.PRECEDING_AXIS, Constants.FOLLOWING_AXIS ->
+                            getPrecedingOrFollowing(context, contextSequence);
+                    case Constants.PRECEDING_SIBLING_AXIS, Constants.FOLLOWING_SIBLING_AXIS ->
+                            getSiblings(context, contextSequence);
+                    case Constants.FOLLOWING_OR_SELF_AXIS, Constants.PRECEDING_OR_SELF_AXIS ->
+                            getOrSelfAxis(context, contextSequence);
+                    case Constants.FOLLOWING_SIBLING_OR_SELF_AXIS, Constants.PRECEDING_SIBLING_OR_SELF_AXIS ->
+                            getSiblingOrSelfAxis(context, contextSequence);
+                    default -> throw new IllegalArgumentException("Unsupported axis specified");
+                };
             } catch (final XPathException e) {
                 if (e.getLine() <= 0) {
                     e.setLocation(getLine(), getColumn(), getSource());
@@ -1001,6 +971,93 @@ public class LocationStep extends Step {
                 }
             }
         }
+    }
+
+    /**
+     * XQ4: Evaluate following-or-self or preceding-or-self axis.
+     * Combines self:: with following:: or preceding:: and returns
+     * results in document order.
+     */
+    private Sequence getOrSelfAxis(final XQueryContext context, final Sequence contextSequence)
+            throws XPathException {
+        // Evaluate self:: axis
+        final int savedAxis = axis;
+        axis = Constants.SELF_AXIS;
+        final Sequence selfResult = getSelf(context, contextSequence);
+
+        // Evaluate the base axis (following or preceding)
+        axis = (savedAxis == Constants.FOLLOWING_OR_SELF_AXIS)
+                ? Constants.FOLLOWING_AXIS : Constants.PRECEDING_AXIS;
+        final Sequence baseResult = getPrecedingOrFollowing(context, contextSequence);
+
+        axis = savedAxis;
+
+        // Merge results
+        if (selfResult.isEmpty()) {
+            return baseResult;
+        }
+        if (baseResult.isEmpty()) {
+            return selfResult;
+        }
+        final ValueSequence combined = new ValueSequence();
+        if (savedAxis == Constants.PRECEDING_OR_SELF_AXIS) {
+            // preceding comes first in document order, then self
+            combined.addAll(baseResult);
+            combined.addAll(selfResult);
+        } else {
+            // self comes first, then following
+            combined.addAll(selfResult);
+            combined.addAll(baseResult);
+        }
+        combined.sortInDocumentOrder();
+        combined.removeDuplicates();
+        return combined;
+    }
+
+    /**
+     * XQ4: Evaluate following-sibling-or-self or preceding-sibling-or-self axis.
+     * Combines self:: with following-sibling:: or preceding-sibling:: and returns
+     * results in document order.
+     */
+    private Sequence getSiblingOrSelfAxis(final XQueryContext context, final Sequence contextSequence)
+            throws XPathException {
+        // Evaluate self:: axis
+        final int savedAxis = axis;
+        axis = Constants.SELF_AXIS;
+        final Sequence selfResult = getSelf(context, contextSequence);
+
+        // Evaluate the base sibling axis — guard against document nodes
+        // which don't have siblings and cause ArrayIndexOutOfBounds
+        axis = (savedAxis == Constants.FOLLOWING_SIBLING_OR_SELF_AXIS)
+                ? Constants.FOLLOWING_SIBLING_AXIS : Constants.PRECEDING_SIBLING_AXIS;
+        Sequence baseResult;
+        try {
+            baseResult = getSiblings(context, contextSequence);
+        } catch (final ArrayIndexOutOfBoundsException e) {
+            // Document nodes don't have siblings
+            baseResult = Sequence.EMPTY_SEQUENCE;
+        }
+
+        axis = savedAxis;
+
+        // Merge results
+        if (selfResult.isEmpty()) {
+            return baseResult;
+        }
+        if (baseResult.isEmpty()) {
+            return selfResult;
+        }
+        final ValueSequence combined = new ValueSequence();
+        if (savedAxis == Constants.PRECEDING_SIBLING_OR_SELF_AXIS) {
+            combined.addAll(baseResult);
+            combined.addAll(selfResult);
+        } else {
+            combined.addAll(selfResult);
+            combined.addAll(baseResult);
+        }
+        combined.sortInDocumentOrder();
+        combined.removeDuplicates();
+        return combined;
     }
 
     /**

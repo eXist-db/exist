@@ -30,6 +30,7 @@ import org.exist.source.Source;
 import org.exist.xquery.Constants.Comparison;
 import org.exist.xquery.Constants.StringTruncationOperator;
 import org.exist.xquery.parser.XQueryAST;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
@@ -53,6 +54,23 @@ public class FunctionFactory {
             qname = QName.parse(context, ast.getText(), context.getDefaultFunctionNamespace());
         } catch(final QName.IllegalQNameException xpe) {
             throw new XPathException(ast, ErrorCodes.XPST0081, "Invalid qname " +  ast.getText() + ". " + xpe.getMessage());
+        }
+        // XQ4 (PR2200): unprefixed function calls prefer no-namespace
+        // user-declared functions over the default function namespace (fn:).
+        // If a same-name user fn is already declared in no-namespace, switch.
+        // Otherwise, when no fn: built-in matches the call (forward reference
+        // territory), still switch to no-namespace so a later user declaration
+        // can resolve via the forward-reference path.
+        if (context.getXQueryVersion() >= 40
+                && !ast.getText().contains(":")
+                && Namespaces.XPATH_FUNCTIONS_NS.equals(qname.getNamespaceURI())) {
+            final QName noNsName = new QName(ast.getText(), "");
+            final UserDefinedFunction noNsFunc = context.resolveFunction(noNsName, params.size());
+            if (noNsFunc != null) {
+                qname = noNsName;
+            } else if (!hasInternalOrUserFnFunction(context, qname, params.size())) {
+                qname = noNsName;
+            }
         }
         return createFunction(context, qname, ast, parent, params);
     }
@@ -240,12 +258,25 @@ public class FunctionFactory {
 
     private static CastExpression castExpression(XQueryContext context,
             XQueryAST ast, List<Expression> params, QName qname) throws XPathException {
-        if (params.size() != 1) {
+        final Expression arg;
+        if (params.size() == 1) {
+            arg = params.getFirst();
+        } else if (params.isEmpty() && context.getXQueryVersion() >= 31) {
+            // XQ4 focus constructor: xs:type() uses context item as argument
+            arg = new ContextItemExpression(context);
+            ((ContextItemExpression) arg).setLocation(ast.getLine(), ast.getColumn());
+        } else {
             throw new XPathException(ast.getLine(), ast.getColumn(),
         		ErrorCodes.XPST0017, "Wrong number of arguments for constructor function");
         }
-        final Expression arg = params.getFirst();
-        final int code = Type.getType(qname);
+        final int code;
+        try {
+            code = Type.getType(qname);
+        } catch (final XPathException e) {
+            // Unknown type name in xs: namespace → XPST0017 (no such function)
+            throw new XPathException(ast.getLine(), ast.getColumn(),
+                ErrorCodes.XPST0017, "Unknown constructor function: " + qname.getStringValue());
+        }
         final CastExpression castExpr = new CastExpression(context, arg, code, Cardinality.ZERO_OR_ONE);
         castExpr.setLocation(ast.getLine(), ast.getColumn());
         return castExpr;
@@ -308,7 +339,32 @@ public class FunctionFactory {
             final XQueryAST ast, final List<Expression> params, QName qname, Module module,
             final boolean throwOnNotFound) throws XPathException {
         //For internal modules: create a new function instance from the class
-        FunctionDef def = ((InternalModule) module).getFunctionDef(qname, params.size());
+        final boolean hasKeywordArgs = hasKeywordArguments(params);
+        FunctionDef def = null;
+        List<Expression> effectiveParams = params;
+
+        // When keyword args are present, skip the initial arity-based lookup because
+        // params.size() may not match the correct overload. Instead, resolve keyword
+        // args against all signatures (largest arity first) to find the right one.
+        if (hasKeywordArgs) {
+            final List<FunctionSignature> funcs = ((InternalModule) module).getFunctionsByName(qname);
+            // Sort by arity descending — keyword args typically target the largest overload
+            funcs.sort((a, b) -> b.getArgumentCount() - a.getArgumentCount());
+            for (final FunctionSignature sig : funcs) {
+                final List<Expression> resolved = resolveKeywordArguments(context, params, sig, ast);
+                if (resolved != null) {
+                    def = ((InternalModule) module).getFunctionDef(qname, sig.getArgumentCount());
+                    if (def != null) {
+                        effectiveParams = resolved;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (def == null && !hasKeywordArgs) {
+            def = ((InternalModule) module).getFunctionDef(qname, params.size());
+        }
         //TODO: rethink: xsl namespace function should search xpath one too
         if (def == null && Namespaces.XSL_NS.equals(qname.getNamespaceURI())) {
             //Search xpath namespace
@@ -360,7 +416,13 @@ public class FunctionFactory {
                     "Access to deprecated functions is not allowed. Call to '" + qname.getStringValue() + "()' denied. " + def.getSignature().getDeprecated());
         }
         final Function fn = Function.createFunction(context, ast, module, def);
-        fn.setArguments(params);
+        if (hasKeywordArgs && effectiveParams == params) {
+            // No prior keyword-arg resolution succeeded; try once more against def's signature
+            final List<Expression> resolved = resolveKeywordArguments(context, params, def.getSignature(), ast);
+            fn.setArguments(resolved != null ? resolved : params);
+        } else {
+            fn.setArguments(effectiveParams);
+        }
         fn.setASTNode(ast);
         return new InternalFunctionCall(fn);
     }
@@ -370,11 +432,45 @@ public class FunctionFactory {
      */
     private static FunctionCall getUserDefinedFunction(XQueryContext context, XQueryAST ast, List<Expression> params, QName qname) throws XPathException {
         final FunctionCall fc;
-        final UserDefinedFunction func = context.resolveFunction(qname, params.size());
+        final boolean hasKeywordArgs = hasKeywordArguments(params);
+
+        // Count positional arguments to determine resolution arity
+        int positionalCount = params.size();
+        if (hasKeywordArgs) {
+            positionalCount = 0;
+            for (final Expression param : params) {
+                if (param instanceof KeywordArgumentExpression) {
+                    break;
+                }
+                positionalCount++;
+            }
+        }
+
+        UserDefinedFunction func = context.resolveFunction(qname, params.size());
+
+        // If keyword args and no exact match, try resolving with positional count
+        if (func == null && hasKeywordArgs && positionalCount != params.size()) {
+            func = context.resolveFunction(qname, positionalCount);
+        }
+
         if (func != null) {
             fc = new FunctionCall(context, func);
             fc.setLocation(ast.getLine(), ast.getColumn());
-            fc.setArguments(params);
+            if (hasKeywordArgs) {
+                final List<Expression> resolved = resolveKeywordArguments(context, params, func.getSignature(), ast);
+                if (resolved == null) {
+                    // For user-defined functions there is exactly one signature per
+                    // QName+arity, so a null return means an unmatchable keyword
+                    // argument or a missing required parameter — surface as XPST0017.
+                    throw new XPathException(ast.getLine(), ast.getColumn(),
+                            ErrorCodes.XPST0017,
+                            "Keyword arguments do not match the signature of "
+                                    + qname.toURIQualifiedName() + '#' + func.getSignature().getArgumentCount());
+                }
+                fc.setArguments(resolved);
+            } else {
+                fc.setArguments(params);
+            }
         } else {
             //Create a forward reference which will be resolved later
             fc = new FunctionCall(context, qname, params);
@@ -482,4 +578,179 @@ public class FunctionFactory {
 		wrappedCall.setArguments(wrapperArgs);
 		return wrappedCall;
 	}
+
+    /**
+     * Check if any parameter is a keyword argument.
+     */
+    private static boolean hasKeywordArguments(final List<Expression> params) {
+        for (final Expression param : params) {
+            if (param instanceof KeywordArgumentExpression) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Resolve keyword arguments to positional arguments using the function signature.
+     *
+     * Keyword arguments (name := value) are matched to the corresponding parameter
+     * position in the function signature. Positional arguments must come before
+     * keyword arguments. Gaps between positional and keyword arguments are filled
+     * with empty sequence expressions for optional parameters. Returns null if
+     * resolution fails.
+     */
+    private static @Nullable List<Expression> resolveKeywordArguments(
+            final XQueryContext context,
+            final List<Expression> params, final FunctionSignature signature,
+            final XQueryAST ast) throws XPathException {
+        final SequenceType[] argTypes = signature.getArgumentTypes();
+        if (argTypes == null) {
+            return null;
+        }
+
+        // Find where keyword arguments start
+        int firstKeyword = -1;
+        for (int i = 0; i < params.size(); i++) {
+            if (params.get(i) instanceof KeywordArgumentExpression) {
+                firstKeyword = i;
+                break;
+            }
+        }
+        if (firstKeyword < 0) {
+            return params; // no keyword args
+        }
+
+        // Build the resolved argument list
+        final List<Expression> resolved = new ArrayList<>(argTypes.length);
+
+        // Copy positional arguments
+        for (int i = 0; i < firstKeyword; i++) {
+            resolved.add(params.get(i));
+        }
+
+        // Fill remaining positions with nulls (to be filled by keyword args)
+        for (int i = firstKeyword; i < argTypes.length; i++) {
+            resolved.add(null);
+        }
+
+        // Match keyword arguments to parameter positions
+        for (int i = firstKeyword; i < params.size(); i++) {
+            final Expression param = params.get(i);
+            if (!(param instanceof KeywordArgumentExpression)) {
+                throw new XPathException(ast.getLine(), ast.getColumn(),
+                        ErrorCodes.XPST0003,
+                        "Positional arguments must not follow keyword arguments");
+            }
+            final KeywordArgumentExpression kwArg = (KeywordArgumentExpression) param;
+            final String kwName = kwArg.getKeywordName();
+            final String kwClark = normalizeQNameToClark(context, kwName);
+
+            // Find matching parameter by name. Compare in Clark notation so
+            // {prefix:local, Q{ns}local, plain local} all match a parameter that
+            // resolves to the same expanded QName. Search ALL positions, not
+            // just those at/after the first keyword, so that supplying the same
+            // parameter both positionally and by keyword is caught (XPST0017).
+            int matchPos = -1;
+            for (int j = 0; j < argTypes.length; j++) {
+                if (argTypes[j] instanceof FunctionParameterSequenceType) {
+                    final String paramName = ((FunctionParameterSequenceType) argTypes[j])
+                            .getAttributeName();
+                    final String paramClark = normalizeQNameToClark(context, paramName);
+                    if (kwClark != null && kwClark.equals(paramClark)) {
+                        matchPos = j;
+                        break;
+                    }
+                }
+            }
+
+            if (matchPos < 0) {
+                return null; // no matching parameter found — signature mismatch
+            }
+            if (resolved.get(matchPos) != null) {
+                // XQ4 (PR197): supplying the same parameter twice — whether by two
+                // keyword args or one positional + one keyword — is XPST0017.
+                throw new XPathException(ast.getLine(), ast.getColumn(),
+                        ErrorCodes.XPST0017,
+                        "Parameter '" + kwName + "' supplied more than once in call");
+            }
+            resolved.set(matchPos, kwArg.getArgument());
+        }
+
+        // Fill gaps: parameters with default values get them substituted in.
+        // A parameter without a default is required; if the call did not supply
+        // it (positionally or by keyword), the signature does not match — return
+        // null so the caller can report XPST0017 or try another overload.
+        for (int i = 0; i < resolved.size(); i++) {
+            if (resolved.get(i) == null) {
+                if (argTypes[i] instanceof FunctionParameterSequenceType) {
+                    final FunctionParameterSequenceType pst =
+                            (FunctionParameterSequenceType) argTypes[i];
+                    if (pst.hasDefaultValue()) {
+                        resolved.set(i, pst.getDefaultValue());
+                    } else {
+                        return null;
+                    }
+                } else {
+                    return null;
+                }
+            }
+        }
+
+        return resolved;
+    }
+
+    /**
+     * True if the namespace's modules (Internal or XQuery) declare any function
+     * matching {@code qname}, regardless of arity. Used by the XQ4 PR2200
+     * unprefixed-call resolver to decide whether an unmatched call should be
+     * deferred to no-namespace forward-reference resolution.
+     */
+    private static boolean hasInternalOrUserFnFunction(final XQueryContext context, final QName qname, final int arity) {
+        final Module[] modules = context.getModules(qname.getNamespaceURI());
+        if (modules != null) {
+            for (final Module module : modules) {
+                if (module instanceof InternalModule) {
+                    if (((InternalModule) module).getFunctionDef(qname, arity) != null) {
+                        return true;
+                    }
+                    if (!((InternalModule) module).getFunctionsByName(qname).isEmpty()) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Resolve a (possibly prefixed) QName-shaped string to Clark notation
+     * {@code {namespace}local}. Plain NCNames map to {@code {}local}; EQName
+     * inputs ({@code Q{uri}local}) and Clark inputs are returned in Clark form.
+     * Returns {@code null} only when the input is {@code null}; an unresolvable
+     * prefix falls through to the raw input so error messages stay readable.
+     */
+    private static String normalizeQNameToClark(final XQueryContext context, final String name) {
+        if (name == null) {
+            return null;
+        }
+        if (name.length() > 0 && name.charAt(0) == '{') {
+            return name;
+        }
+        if (name.length() > 1 && name.charAt(0) == 'Q' && name.charAt(1) == '{') {
+            // EQName: Q{uri}local — strip the leading 'Q'.
+            return name.substring(1);
+        }
+        final int colonIdx = name.indexOf(':');
+        if (colonIdx < 0) {
+            return "{}" + name;
+        }
+        final String prefix = name.substring(0, colonIdx);
+        final String local = name.substring(colonIdx + 1);
+        final String uri = context.getURIForPrefix(prefix);
+        if (uri == null) {
+            return name;
+        }
+        return "{" + uri + "}" + local;
+    }
 }

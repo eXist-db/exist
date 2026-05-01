@@ -50,7 +50,7 @@ public class FunOneOrMore extends Function {
 			"Returns $arg if it contains one or more items. Otherwise, " +
 			"raises an error.",
 			new SequenceType[] {
-				 new FunctionParameterSequenceType("arg", Type.ITEM, Cardinality.ZERO_OR_MORE, "The input sequence")
+				 new FunctionParameterSequenceType("input", Type.ITEM, Cardinality.ZERO_OR_MORE, "The input sequence")
 			},
 			new FunctionReturnSequenceType(Type.ITEM, Cardinality.ONE_OR_MORE, "the sequence passed in by $arg if it contains one or more items."));
 

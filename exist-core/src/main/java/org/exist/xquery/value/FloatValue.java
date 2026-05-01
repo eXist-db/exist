@@ -231,7 +231,7 @@ public class FloatValue extends NumericValue {
             case Type.UNTYPED_ATOMIC:
                 return new UntypedAtomicValue(getExpression(), getStringValue());
             default:
-                throw new XPathException(getExpression(), ErrorCodes.FORG0001, "cannot cast '"
+                throw new XPathException(getExpression(), ErrorCodes.XPTY0004, "cannot cast '"
                         + Type.getTypeName(this.getItemType())
                         + "(\""
                         + getStringValue()

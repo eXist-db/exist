@@ -1854,7 +1854,7 @@ public class XQueryContext implements BinaryValueManager, Context {
         final QName name = function.getSignature().getName();
         final String uri = name.getNamespaceURI();
 
-        if (uri.isEmpty()) {
+        if (uri.isEmpty() && getXQueryVersion() < 40) {
             throw new XPathException(function, ErrorCodes.XQST0060,
                     "Every declared function name must have a non-null namespace URI, " +
                             "but function '" + name + "' does not meet this requirement.");
@@ -1873,13 +1873,73 @@ public class XQueryContext implements BinaryValueManager, Context {
                             + " is already defined.");
         }
 
+        // XQ4 (PR197): a function declaration with default-valued parameters is
+        // callable at any arity from (count of required params) up to its
+        // declared arity. Two declarations with overlapping callable-arity ranges
+        // are ambiguous — raise XQST0034. The exact-arity collision check above
+        // already covers the no-defaults case, but ranges can overlap on a
+        // shared arity even when neither declaration is an exact duplicate.
+        final int declaredArity = signature.getArgumentCount();
+        final int requiredParams = countRequiredParams(signature.getArgumentTypes(), declaredArity);
+        for (final UserDefinedFunction existing : declaredFunctions.values()) {
+            if (!existing.getName().equals(name)) continue;
+            final int eDeclared = existing.getSignature().getArgumentCount();
+            final int eRequired = countRequiredParams(existing.getSignature().getArgumentTypes(), eDeclared);
+            // Skip if neither declaration has a default — exact-arity collision
+            // is already handled by the FunctionId map check above.
+            if (requiredParams == declaredArity && eRequired == eDeclared) continue;
+            final int lo = Math.max(requiredParams, eRequired);
+            final int hi = Math.min(declaredArity, eDeclared);
+            if (lo <= hi) {
+                throw new XPathException(function, ErrorCodes.XQST0034,
+                        "Function " + name.toURIQualifiedName()
+                                + " overlaps with a previously declared overload on arity "
+                                + lo + ".." + hi);
+            }
+        }
+
         declaredFunctions.put(functionKey, function);
+    }
+
+    private static int countRequiredParams(final SequenceType[] argTypes, final int fallback) {
+        if (argTypes == null) return fallback;
+        for (int i = 0; i < argTypes.length; i++) {
+            if (argTypes[i] instanceof FunctionParameterSequenceType
+                    && ((FunctionParameterSequenceType) argTypes[i]).hasDefaultValue()) {
+                return i;
+            }
+        }
+        return fallback;
     }
 
     @Override
     public @Nullable UserDefinedFunction resolveFunction(final QName name, final int argCount) {
         final FunctionId id = new FunctionId(name, argCount);
-        return declaredFunctions.get(id);
+        final UserDefinedFunction exact = declaredFunctions.get(id);
+        if (exact != null) {
+            return exact;
+        }
+        // XQ4: Try to find a function with more params where trailing params have defaults
+        for (final UserDefinedFunction func : declaredFunctions.values()) {
+            if (func.getName().equals(name)) {
+                final SequenceType[] argTypes = func.getSignature().getArgumentTypes();
+                if (argTypes.length > argCount) {
+                    // Check that all params from argCount onwards have defaults
+                    boolean allDefaulted = true;
+                    for (int i = argCount; i < argTypes.length; i++) {
+                        if (!(argTypes[i] instanceof FunctionParameterSequenceType) ||
+                            !((FunctionParameterSequenceType) argTypes[i]).hasDefaultValue()) {
+                            allDefaulted = false;
+                            break;
+                        }
+                    }
+                    if (allDefaulted) {
+                        return func;
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     @Override
@@ -2764,6 +2824,13 @@ public class XQueryContext implements BinaryValueManager, Context {
      * @return The compiled module, or null if the source is not a module
      * @throws XPathException if the module could not be loaded (XQST0059) or compiled (XPST0003)
      */
+    /**
+     * Compile a module from a Source. Public wrapper for fn:load-xquery-module content option.
+     */
+    public @Nullable ExternalModule compileModuleFromSource(final String namespaceURI, final Source source) throws XPathException {
+        return compileModule(namespaceURI, null, "content", source);
+    }
+
     private @Nullable ExternalModule compileModule(String namespaceURI, final String prefix, final String location,
                                                    final Source source) throws XPathException {
         if (LOG.isDebugEnabled()) {

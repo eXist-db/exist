@@ -69,9 +69,9 @@ public class FunInsertBefore extends Function {
 			new QName("insert-before", Function.BUILTIN_FUNCTION_NS),
 			FUNCTION_DESCRIPTION,
 			new SequenceType[] {
-					new FunctionParameterSequenceType("target", Type.ITEM, Cardinality.ZERO_OR_MORE, "The target"),
+					new FunctionParameterSequenceType("input", Type.ITEM, Cardinality.ZERO_OR_MORE, "The target"),
 					new FunctionParameterSequenceType("position", Type.INTEGER, Cardinality.EXACTLY_ONE, "The position to insert before"),
-					new FunctionParameterSequenceType("inserts", Type.ITEM, Cardinality.ZERO_OR_MORE, "The data to insert")
+					new FunctionParameterSequenceType("insert", Type.ITEM, Cardinality.ZERO_OR_MORE, "The data to insert")
 			},
 			new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "the new sequence"));
 

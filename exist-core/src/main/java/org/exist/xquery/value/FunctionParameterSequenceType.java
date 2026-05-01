@@ -22,6 +22,7 @@
 package org.exist.xquery.value;
 
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.Expression;
 
 /**
  * This class is used to specify the name and description of an XQuery function parameter.
@@ -32,6 +33,7 @@ import org.exist.xquery.Cardinality;
 public class FunctionParameterSequenceType extends FunctionReturnSequenceType {
 
     private String attributeName;
+    private Expression defaultValue;
 
     /**
      * @param attributeName The name of the parameter in the <strong>FunctionSignature</strong>.
@@ -77,6 +79,18 @@ public class FunctionParameterSequenceType extends FunctionReturnSequenceType {
      */
     public void setAttributeName(String attributeName) {
         this.attributeName = attributeName;
+    }
+
+    public boolean hasDefaultValue() {
+        return defaultValue != null;
+    }
+
+    public Expression getDefaultValue() {
+        return defaultValue;
+    }
+
+    public void setDefaultValue(final Expression defaultValue) {
+        this.defaultValue = defaultValue;
     }
 
 }

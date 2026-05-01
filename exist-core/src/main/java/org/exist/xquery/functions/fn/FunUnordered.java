@@ -52,7 +52,7 @@ public class FunUnordered extends Function {
 			"Takes a sequence $arg as input and returns an arbitrary implementation dependent permutation " +
 			"of it. Currently, this has no effect in eXist, but it might be used for future optimizations.",
 			new SequenceType[] {
-				 new FunctionParameterSequenceType("arg", Type.ITEM, Cardinality.ZERO_OR_MORE, "The input sequence")
+				 new FunctionParameterSequenceType("input", Type.ITEM, Cardinality.ZERO_OR_MORE, "The input sequence")
 			},
 			new FunctionReturnSequenceType(Type.ITEM, Cardinality.ZERO_OR_MORE, "the input sequence in an arbitrary implementation dependent permutation"));
     

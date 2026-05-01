@@ -307,7 +307,7 @@ public class IntegerValue extends NumericValue {
             case Type.BOOLEAN:
                 return (value.compareTo(ZERO_BIGINTEGER) == 0) ? BooleanValue.FALSE : BooleanValue.TRUE;
             default:
-                throw new XPathException(getExpression(), ErrorCodes.FORG0001,
+                throw new XPathException(getExpression(), ErrorCodes.XPTY0004,
                         "cannot convert '"
                                 + Type.getTypeName(this.getType())
                                 + " ("

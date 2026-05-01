@@ -58,7 +58,7 @@ public class FunString extends Function {
 			"If the value of $arg is the empty sequence, the zero-length string is returned. " +
 			"If the context item of $arg is undefined, an error is raised.",
 			new SequenceType[] {
-				 new FunctionParameterSequenceType("arg", Type.ITEM, Cardinality.ZERO_OR_ONE, "The sequence to get the value of as an xs:string")},
+				 new FunctionParameterSequenceType("value", Type.ITEM, Cardinality.ZERO_OR_ONE, "The sequence to get the value of as an xs:string")},
 			new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE, "the value of $arg as an xs:string")
 		)
 	};

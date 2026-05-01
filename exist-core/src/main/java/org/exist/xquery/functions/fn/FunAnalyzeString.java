@@ -69,7 +69,7 @@ public class FunAnalyzeString extends BasicFunction {
             "matched substrings, which substrings matched each " +
             "capturing group in the regular expression.",
             new SequenceType[] { 
-                new FunctionParameterSequenceType("input", Type.STRING,
+                new FunctionParameterSequenceType("value", Type.STRING,
                     Cardinality.ZERO_OR_ONE, "The input string"),
                 new FunctionParameterSequenceType("pattern", Type.STRING,
                     Cardinality.EXACTLY_ONE, "The pattern")
@@ -85,7 +85,7 @@ public class FunAnalyzeString extends BasicFunction {
             "matched substrings, which substrings matched each " +
             "capturing group in the regular expression.",
             new SequenceType[] { 
-                new FunctionParameterSequenceType("input", Type.STRING,
+                new FunctionParameterSequenceType("value", Type.STRING,
                     Cardinality.ZERO_OR_ONE, "The input string"),
                 new FunctionParameterSequenceType("pattern", Type.STRING,
                     Cardinality.EXACTLY_ONE, "The pattern"),

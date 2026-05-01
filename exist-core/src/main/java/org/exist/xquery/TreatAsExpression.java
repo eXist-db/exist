@@ -63,7 +63,7 @@ public class TreatAsExpression extends AbstractExpression {
         
         expression = new DynamicCardinalityCheck(context, type.getCardinality(), expression,
             new Error("XPDY0050", type.toString()));
-        expression = new DynamicTypeCheck(context, type.getPrimaryType(), expression);
+        expression = new DynamicTypeCheck(context, type.getPrimaryType(), expression, ErrorCodes.XPDY0050);
     }
 
     public void dump(ExpressionDumper dumper) {

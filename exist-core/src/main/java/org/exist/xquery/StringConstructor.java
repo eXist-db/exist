@@ -159,9 +159,13 @@ public class StringConstructor extends AbstractExpression {
         public String eval(final Sequence contextSequence) throws XPathException {
             final Sequence result = expression.eval(contextSequence, null);
 
+            // Atomize the result per spec: string constructor interpolation
+            // atomizes its content, joining with spaces
+            final Sequence atomized = Atomize.atomize(result);
+
             final StringBuilder out = new StringBuilder();
             boolean gotOne = false;
-            for(final SequenceIterator i = result.iterate(); i.hasNext(); ) {
+            for(final SequenceIterator i = atomized.iterate(); i.hasNext(); ) {
                 final Item next = i.nextItem();
                 if (gotOne) {
                     out.append(' ');

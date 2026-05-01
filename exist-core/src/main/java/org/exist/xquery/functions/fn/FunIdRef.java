@@ -72,7 +72,7 @@ public class FunIdRef extends Function {
 			"value of one or more of the ID values supplied in $ids. " +
 			"If none is matching or $ids is the empty sequence, returns the empty sequence.",
 			new SequenceType[] {
-                new FunctionParameterSequenceType("ids", Type.STRING, Cardinality.ZERO_OR_MORE, "The ID sequence"),
+                new FunctionParameterSequenceType("values", Type.STRING, Cardinality.ZERO_OR_MORE, "The ID sequence"),
             },
 			new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the elements with matching IDREF values from IDs in $ids")),
 
@@ -82,8 +82,8 @@ public class FunIdRef extends Function {
 			"value of one or more of the ID values supplied in $ids. " +
             "If none is matching or $ids is the empty sequence, returns the empty sequence.",
             new SequenceType[] {
-                new FunctionParameterSequenceType("ids", Type.STRING, Cardinality.ZERO_OR_MORE, "The ID sequence"),
-                new FunctionParameterSequenceType("node-in-document", Type.NODE, Cardinality.EXACTLY_ONE, "The node in document")
+                new FunctionParameterSequenceType("values", Type.STRING, Cardinality.ZERO_OR_MORE, "The ID sequence"),
+                new FunctionParameterSequenceType("node", Type.NODE, Cardinality.EXACTLY_ONE, "The node in document")
             },
             new FunctionReturnSequenceType(Type.NODE, Cardinality.ZERO_OR_MORE, "the elements with matching IDREF values from IDs in $ids in the same document as $node-in-document"))
     };

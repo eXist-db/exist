@@ -95,7 +95,7 @@ public class FunMax extends CollatingFunction {
 					FUNCTION_DESCRIPTION_COMMON_1 +
                     FUNCTION_DESCRIPTION_COMMON_2,
 					new SequenceType[] {
-						new FunctionParameterSequenceType("arg", Type.ANY_ATOMIC_TYPE, Cardinality.ZERO_OR_MORE, "The input sequence")
+						new FunctionParameterSequenceType("values", Type.ANY_ATOMIC_TYPE, Cardinality.ZERO_OR_MORE, "The input sequence")
 					},
 					new FunctionReturnSequenceType(Type.ANY_ATOMIC_TYPE, Cardinality.ZERO_OR_ONE, "the max value")
 			),
@@ -104,8 +104,8 @@ public class FunMax extends CollatingFunction {
 					FUNCTION_DESCRIPTION_COMMON_1  + FUNCTION_DESCRIPTION_2_PARAM +
                     FUNCTION_DESCRIPTION_COMMON_2,
 					new SequenceType[] {
-						new FunctionParameterSequenceType("arg", Type.ANY_ATOMIC_TYPE, Cardinality.ZERO_OR_MORE, "The input sequence"),
-						new FunctionParameterSequenceType("collation-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collation URI")
+						new FunctionParameterSequenceType("values", Type.ANY_ATOMIC_TYPE, Cardinality.ZERO_OR_MORE, "The input sequence"),
+						new FunctionParameterSequenceType("collation", Type.STRING, Cardinality.EXACTLY_ONE, "The collation URI")
 					},
 					new FunctionReturnSequenceType(Type.ANY_ATOMIC_TYPE, Cardinality.ZERO_OR_ONE, "the max value")
 			)

@@ -44,7 +44,7 @@ public class FunTokenize extends BasicFunction {
 
     private static final QName FS_TOKENIZE_NAME = new QName("tokenize", Function.BUILTIN_FUNCTION_NS);
 
-    private final static FunctionParameterSequenceType FS_TOKENIZE_PARAM_INPUT = optParam("input", Type.STRING, "The input string");
+    private final static FunctionParameterSequenceType FS_TOKENIZE_PARAM_INPUT = optParam("value", Type.STRING, "The input string");
     private final static FunctionParameterSequenceType FS_TOKENIZE_PARAM_PATTERN = param("pattern", Type.STRING, "The tokenization pattern");
 
     public final static FunctionSignature[] FS_TOKENIZE = functionSignatures(

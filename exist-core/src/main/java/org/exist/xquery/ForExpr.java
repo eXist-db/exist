@@ -176,15 +176,23 @@ public class ForExpr extends BindingExpression {
 
             // Loop through each variable binding
             int p = 0;
-            if (in.isEmpty() && allowEmpty) {
-                processItem(var, AtomicValue.EMPTY_VALUE, Sequence.EMPTY_SEQUENCE, resultSequence, at, p);
-            } else {
-                for (final SequenceIterator i = in.iterate(); i.hasNext(); p++) {
-                    processItem(var, i.nextItem(), in, resultSequence, at, p);
+            try {
+                if (in.isEmpty() && allowEmpty) {
+                    processItem(var, AtomicValue.EMPTY_VALUE, Sequence.EMPTY_SEQUENCE, resultSequence, at, p);
+                } else {
+                    for (final SequenceIterator i = in.iterate(); i.hasNext() && !WhileClause.isTerminated(); p++) {
+                        processItem(var, i.nextItem(), in, resultSequence, at, p);
+                    }
                 }
+            } catch (final WhileClause.WhileTerminationException e) {
+                // while clause signaled end of iteration for this for loop
+            }
+            // clear terminated flag if this is the outermost for
+            if (isOuterFor && WhileClause.isTerminated()) {
+                WhileClause.clearTerminated();
             }
         } finally {
-            // restore the local variable stack 
+            // restore the local variable stack
             context.popLocalVariables(mark, resultSequence);
         }
 

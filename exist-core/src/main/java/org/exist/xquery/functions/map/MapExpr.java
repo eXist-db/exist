@@ -21,6 +21,7 @@
  */
 package org.exist.xquery.functions.map;
 
+import io.lacuna.bifurcan.IEntry;
 import io.lacuna.bifurcan.IMap;
 import org.exist.xquery.*;
 import org.exist.xquery.util.ExpressionDumper;
@@ -39,15 +40,18 @@ import static org.exist.xquery.functions.map.MapType.newLinearMap;
  */
 public class MapExpr extends AbstractExpression {
 
-    private final List<Mapping> mappings = new ArrayList<>(13);
+    private final List<Entry> entries = new ArrayList<>(13);
 
     public MapExpr(final XQueryContext context) {
         super(context);
     }
 
     public void map(final PathExpr key, final PathExpr value) {
-        final Mapping mapping = new Mapping(key.simplify(), value.simplify());
-        this.mappings.add(mapping);
+        this.entries.add(new Mapping(key.simplify(), value.simplify()));
+    }
+
+    public void content(final PathExpr expr) {
+        this.entries.add(new ContentEntry(expr.simplify()));
     }
 
     @Override
@@ -57,9 +61,8 @@ public class MapExpr extends AbstractExpression {
                     "Map is not available before XQuery 3.0");
         }
         contextInfo.setParent(this);
-        for (final Mapping mapping : this.mappings) {
-            mapping.key.analyze(contextInfo);
-            mapping.value.analyze(contextInfo);
+        for (final Entry entry : this.entries) {
+            entry.analyze(contextInfo);
         }
     }
 
@@ -73,25 +76,55 @@ public class MapExpr extends AbstractExpression {
         boolean firstType = true;
         int prevType = AbstractMapType.UNKNOWN_KEY_TYPE;
 
-        for (final Mapping mapping : this.mappings) {
-            final Sequence key = mapping.key.eval(contextSequence, null);
-            if (key.getItemCount() != 1) {
-                throw new XPathException(this, MapErrorCode.EXMPDY001, "Expected single value for key, got " + key.getItemCount());
-            }
-            final AtomicValue atomic = key.itemAt(0).atomize();
-            final Sequence value = mapping.value.eval(contextSequence, null);
-            if (map.contains(atomic)) {
-                throw new XPathException(this, ErrorCodes.XQDY0137, "Key \"" + atomic.getStringValue() + "\" already exists in map.");
-            }
-            map.put(atomic, value);
+        for (final Entry entry : this.entries) {
+            if (entry instanceof Mapping mapping) {
+                final Sequence key = mapping.key.eval(contextSequence, null);
+                if (key.getItemCount() != 1) {
+                    throw new XPathException(this, MapErrorCode.EXMPDY001, "Expected single value for key, got " + key.getItemCount());
+                }
+                final AtomicValue atomic = key.itemAt(0).atomize();
+                final Sequence value = mapping.value.eval(contextSequence, null);
+                if (map.contains(atomic)) {
+                    throw new XPathException(this, ErrorCodes.XQDY0137, "Key \"" + atomic.getStringValue() + "\" already exists in map.");
+                }
+                map.put(atomic, value);
 
-            final int thisType = atomic.getType();
-            if (firstType) {
-                prevType = thisType;
-                firstType = false;
-            } else {
-                if (thisType != prevType) {
-                    prevType = AbstractMapType.MIXED_KEY_TYPES;
+                final int thisType = atomic.getType();
+                if (firstType) {
+                    prevType = thisType;
+                    firstType = false;
+                } else {
+                    if (thisType != prevType) {
+                        prevType = AbstractMapType.MIXED_KEY_TYPES;
+                    }
+                }
+            } else if (entry instanceof ContentEntry contentEntry) {
+                final Sequence result = contentEntry.expr.eval(contextSequence, null);
+                // content expression must evaluate to zero or more maps
+                for (int i = 0; i < result.getItemCount(); i++) {
+                    final Item item = result.itemAt(i);
+                    if (item.getType() != Type.MAP_ITEM && !(item instanceof AbstractMapType)) {
+                        throw new XPathException(this, ErrorCodes.XPTY0004,
+                                "Content expression in map constructor must be a map, got " + Type.getTypeName(item.getType()));
+                    }
+                    final AbstractMapType contentMap = (AbstractMapType) item;
+                    for (final IEntry<AtomicValue, Sequence> mapEntry : contentMap) {
+                        final AtomicValue atomic = mapEntry.key();
+                        if (map.contains(atomic)) {
+                            throw new XPathException(this, ErrorCodes.XQDY0137, "Key \"" + atomic.getStringValue() + "\" already exists in map.");
+                        }
+                        map.put(atomic, mapEntry.value());
+
+                        final int thisType = atomic.getType();
+                        if (firstType) {
+                            prevType = thisType;
+                            firstType = false;
+                        } else {
+                            if (thisType != prevType) {
+                                prevType = AbstractMapType.MIXED_KEY_TYPES;
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -107,23 +140,19 @@ public class MapExpr extends AbstractExpression {
     @Override
     public void accept(final ExpressionVisitor visitor) {
         super.accept(visitor);
-        for (final Mapping mapping : this.mappings) {
-            mapping.key.accept(visitor);
-            mapping.value.accept(visitor);
+        for (final Entry entry : this.entries) {
+            entry.accept(visitor);
         }
     }
 
     @Override
     public void dump(final ExpressionDumper dumper) {
         dumper.display("map {");
-        for (int i = 0; i < this.mappings.size(); i++) {
-            final Mapping mapping = this.mappings.get(i);
+        for (int i = 0; i < this.entries.size(); i++) {
             if (i > 0) {
                 dumper.display(", ");
             }
-            mapping.key.dump(dumper);
-            dumper.display(" : ");
-            mapping.value.dump(dumper);
+            this.entries.get(i).dump(dumper);
         }
         dumper.display("}");
     }
@@ -136,10 +165,17 @@ public class MapExpr extends AbstractExpression {
     @Override
     public void resetState(final boolean postOptimization) {
         super.resetState(postOptimization);
-        mappings.forEach(m -> m.resetState(postOptimization));
+        entries.forEach(e -> e.resetState(postOptimization));
     }
 
-    private static class Mapping {
+    private interface Entry {
+        void analyze(AnalyzeContextInfo contextInfo) throws XPathException;
+        void accept(ExpressionVisitor visitor);
+        void dump(ExpressionDumper dumper);
+        void resetState(boolean postOptimization);
+    }
+
+    private static class Mapping implements Entry {
         final Expression key;
         final Expression value;
 
@@ -148,9 +184,57 @@ public class MapExpr extends AbstractExpression {
             this.value = value;
         }
 
-        private void resetState(final boolean postOptimization) {
+        @Override
+        public void analyze(final AnalyzeContextInfo contextInfo) throws XPathException {
+            key.analyze(contextInfo);
+            value.analyze(contextInfo);
+        }
+
+        @Override
+        public void accept(final ExpressionVisitor visitor) {
+            key.accept(visitor);
+            value.accept(visitor);
+        }
+
+        @Override
+        public void dump(final ExpressionDumper dumper) {
+            key.dump(dumper);
+            dumper.display(" : ");
+            value.dump(dumper);
+        }
+
+        @Override
+        public void resetState(final boolean postOptimization) {
             key.resetState(postOptimization);
             value.resetState(postOptimization);
+        }
+    }
+
+    private static class ContentEntry implements Entry {
+        final Expression expr;
+
+        public ContentEntry(final Expression expr) {
+            this.expr = expr;
+        }
+
+        @Override
+        public void analyze(final AnalyzeContextInfo contextInfo) throws XPathException {
+            expr.analyze(contextInfo);
+        }
+
+        @Override
+        public void accept(final ExpressionVisitor visitor) {
+            expr.accept(visitor);
+        }
+
+        @Override
+        public void dump(final ExpressionDumper dumper) {
+            expr.dump(dumper);
+        }
+
+        @Override
+        public void resetState(final boolean postOptimization) {
+            expr.resetState(postOptimization);
         }
     }
 }

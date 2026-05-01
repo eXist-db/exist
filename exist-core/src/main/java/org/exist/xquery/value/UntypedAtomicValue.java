@@ -154,7 +154,7 @@ public class UntypedAtomicValue extends AtomicValue {
                 final DayTimeDurationValue dtdv = new DayTimeDurationValue(expression, value);
                 return new DayTimeDurationValue(expression, dtdv.getCanonicalDuration());
             default:
-                throw new XPathException(expression, ErrorCodes.FORG0001, "cannot cast '" +
+                throw new XPathException(expression, ErrorCodes.XPTY0004, "cannot cast '" +
                         Type.getTypeName(Type.ANY_ATOMIC_TYPE) + "(\"" + value + "\")' to " +
                         Type.getTypeName(requiredType));
         }

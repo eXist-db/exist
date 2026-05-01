@@ -57,9 +57,9 @@ public class FunCodepointEqual extends BasicFunction {
             "is equal to the value of $string-2, according to the Unicode " +
             "code point collation.",
             new SequenceType[] {
-                new FunctionParameterSequenceType("string-1", Type.STRING,
+                new FunctionParameterSequenceType("value1", Type.STRING,
                     Cardinality.ZERO_OR_ONE, "The first string"),
-                new FunctionParameterSequenceType("string-2", Type.STRING,
+                new FunctionParameterSequenceType("value2", Type.STRING,
                     Cardinality.ZERO_OR_ONE, "The second string"),
             },
             new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.ZERO_OR_ONE,

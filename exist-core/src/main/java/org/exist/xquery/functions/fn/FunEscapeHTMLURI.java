@@ -53,7 +53,7 @@ public class FunEscapeHTMLURI extends Function {
             "in the form %XX. If $html-uri is the empty sequence, " + 
             "returns the zero-length string.",
             new SequenceType[] {
-                new FunctionParameterSequenceType("html-uri", Type.STRING,
+                new FunctionParameterSequenceType("value", Type.STRING,
                     Cardinality.ZERO_OR_ONE, "The html URI")
             },
             new FunctionReturnSequenceType(Type.STRING, Cardinality.EXACTLY_ONE,

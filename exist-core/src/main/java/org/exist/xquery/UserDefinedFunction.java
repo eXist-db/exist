@@ -24,8 +24,10 @@ package org.exist.xquery;
 import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.QName;
 import org.exist.xquery.util.ExpressionDumper;
+import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
+import org.exist.xquery.value.SequenceType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -125,31 +127,51 @@ public class UserDefinedFunction extends Function implements Cloneable {
         }
         Sequence result = null;
         try {
-            QName varName;
-            LocalVariable var;
-            int j = 0;
-            for (int i = 0; i < parameters.size(); i++, j++) {
-                varName = parameters.get(i);
-                var = new LocalVariable(varName);
-                var.setValue(currentArguments[j]);
-                if (contextDocs != null) {
+            final SequenceType[] argTypes = getSignature().getArgumentTypes();
+
+            // Evaluate all argument values first, BEFORE declaring any parameters.
+            // Default value expressions must be evaluated in the prolog's variable scope,
+            // not the function body scope (XQ4 spec: default sees variables in scope at
+            // the function declaration, not other parameters). Context is passed so that
+            // default values like "." can access the context item at the call site.
+            final Sequence[] argValues = new Sequence[parameters.size()];
+            for (int i = 0; i < parameters.size(); i++) {
+                if (i < currentArguments.length) {
+                    argValues[i] = currentArguments[i];
+                } else if (argTypes[i] instanceof FunctionParameterSequenceType &&
+                           ((FunctionParameterSequenceType) argTypes[i]).hasDefaultValue()) {
+                    argValues[i] = ((FunctionParameterSequenceType) argTypes[i])
+                            .getDefaultValue().eval(contextSequence, contextItem);
+                } else {
+                    throw new XPathException(this, ErrorCodes.XPTY0004,
+                            "Missing required argument $" + parameters.get(i));
+                }
+            }
+
+            // Now declare all parameters with their resolved values
+            for (int i = 0; i < parameters.size(); i++) {
+                final QName varName = parameters.get(i);
+                final LocalVariable var = new LocalVariable(varName);
+
+                var.setValue(argValues[i]);
+                if (contextDocs != null && i < contextDocs.length) {
                     var.setContextDocs(contextDocs[i]);
                 }
                 context.declareVariableBinding(var);
 
                 Cardinality actualCardinality;
-                if (currentArguments[j].isEmpty()) {
+                if (argValues[i].isEmpty()) {
                     actualCardinality = Cardinality.EMPTY_SEQUENCE;
-                } else if (currentArguments[j].hasMany()) {
+                } else if (argValues[i].hasMany()) {
                     actualCardinality = Cardinality._MANY;
                 } else {
                     actualCardinality = Cardinality.EXACTLY_ONE;
                 }
 
-                if (!getSignature().getArgumentTypes()[j].getCardinality().isSuperCardinalityOrEqualOf(actualCardinality)) {
+                if (!argTypes[i].getCardinality().isSuperCardinalityOrEqualOf(actualCardinality)) {
                     throw new XPathException(this, ErrorCodes.XPTY0004, "Invalid cardinality for parameter $" + varName +
-                            ". Expected " + getSignature().getArgumentTypes()[j].getCardinality().getHumanDescription() +
-                            ", got " + currentArguments[j].getItemCount());
+                            ". Expected " + argTypes[i].getCardinality().getHumanDescription() +
+                            ", got " + argValues[i].getItemCount());
                 }
             }
             result = body.eval(null, null);
