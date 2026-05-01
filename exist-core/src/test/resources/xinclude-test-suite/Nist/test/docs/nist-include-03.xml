@@ -1,0 +1,4 @@
+<x xmlns:xinclude="http://www.w3.org/2001/XInclude">
+   <!-- Test that values other than "xml" and "text" in the parse attribute of the XInclude element will generate a fatal error. Negative test.-->
+   <xinclude:include href="../ents/something.xml" parse="xtext"/>
+</x>

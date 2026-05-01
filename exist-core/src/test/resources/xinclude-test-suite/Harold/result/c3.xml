@@ -1,0 +1,10 @@
+<?xml version='1.0'?>
+<document xmlns:xi="http://www.w3.org/2001/XInclude">
+  <p>The following is the source of the "data.xml" resource:</p>
+  <example>&lt;?xml version='1.0'?&gt;
+&lt;data&gt;
+  &lt;item&gt;&lt;![CDATA[Brooks &amp; Shields]]&gt;&lt;/item&gt;
+&lt;/data&gt;</example>
+</document>
+
+

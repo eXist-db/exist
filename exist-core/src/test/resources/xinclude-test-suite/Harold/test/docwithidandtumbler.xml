@@ -1,0 +1,14 @@
+<!DOCTYPE test [
+  <!ATTLIST p id ID #REQUIRED>
+]>
+<test>
+  <p id="p1">
+     <t>
+       <p/>
+       <q>If you only see the q element the test worked</q>
+       <r>bad!</r>
+     </t>
+     <r/> <u>If you see me, the test failed</u>
+   </p>
+</test>
+

@@ -1,0 +1,4 @@
+<x xmlns:xinclude="http://www.w3.org/2001/XInclude">
+   <!-- Including another XML document using the XPointer Framework. -->
+   <xinclude:include href="../ents/idtst.xml" xpointer="xpointer(id('f2'))element(/1/2)"/>
+</x>

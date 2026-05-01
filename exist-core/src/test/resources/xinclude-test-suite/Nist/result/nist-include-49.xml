@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<!DOCTYPE x [
+<!ENTITY e SYSTEM "../ents/004.ent">
+]>
+<x xmlns:xinclude="http://www.w3.org/2001/XInclude">
+   <!-- Including another XML document that contains an unexpanded entity reference. -->
+   <doc xml:base="../ents/extref.xml">&e;</doc>
+</x>

@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<!-- Testing the content of the xinclude element. The element elem should be ignored. -->
+<x xmlns:xi="http://www.w3.org/2001/XInclude">
+	<xi:include href="../ents/something.xml">
+		<xi:fallback>Resource not available.</xi:fallback>
+		<elem>This element must be ignored.</elem>
+	</xi:include>
+</x>

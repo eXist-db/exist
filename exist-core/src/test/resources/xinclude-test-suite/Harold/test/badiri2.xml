@@ -1,0 +1,3 @@
+<doc xmlns:xi='http://www.w3.org/2001/XInclude'>
+<xi:include href='scheme://www.example.com/a%5.html'>
+<xi:fallback>Ooops!</xi:fallback></xi:include></doc>

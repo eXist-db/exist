@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<x xmlns:xinclude="http://www.w3.org/2001/XInclude">
+   <!-- Test an empty fallback element. The include element is removed from the
+	results.  -->
+   
+</x>

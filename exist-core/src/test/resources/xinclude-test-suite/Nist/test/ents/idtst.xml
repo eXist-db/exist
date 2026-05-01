@@ -1,0 +1,16 @@
+<?xml version='1.0'?>
+<!DOCTYPE doc [
+    <!ELEMENT doc (family*)>
+    <!ATTLIST family fnumber ID #REQUIRED>
+    <!ATTLIST family father IDREF #IMPLIED>
+    <!ATTLIST family mother IDREF #IMPLIED>
+]>
+<doc>
+    <family fnumber="f1">Lopez</family>
+    <family fnumber="f2">Clark</family>
+    <family fnumber="f3" mother="f1" father="f2">Jackson</family>
+    <family fnumber="f4" mother="f1" father="f2">Medina</family>
+</doc>
+
+
+

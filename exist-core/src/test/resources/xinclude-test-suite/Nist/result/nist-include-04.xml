@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<x xmlns:xinclude="http://www.w3.org/2001/XInclude">
+   <!-- Test the fallback as a child of an xinclude element.
+	Resource should be fetch. This test should pass. -->
+   <doc xml:base="../ents/something.xml">
+<p>something</p>
+<p>really</p>
+<p>simple</p>
+</doc>
+</x>

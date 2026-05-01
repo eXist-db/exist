@@ -1,0 +1,21 @@
+<?xml  version="1.0"?>
+<!DOCTYPE x [
+<!ELEMENT x (xinclude:include*, view*)>
+<!ELEMENT xinclude:include EMPTY>
+<!ATTLIST xinclude:include
+	xmlns:xinclude CDATA #FIXED "http://www.w3.org/2001/XInclude"
+	href	CDATA #REQUIRED
+	parse	(xml|text) "xml"
+	encoding CDATA #IMPLIED>
+ <!ELEMENT view EMPTY>
+ <!NOTATION jpg SYSTEM "jpg">
+ <!ENTITY image SYSTEM "bkgris.jpg" NDATA jpg>
+ <!ATTLIST view sun ENTITY #IMPLIED>
+]>
+<!-- Including an unparsed entity with same name, but different sysid. Test should fail. -->
+<x xmlns:xinclude="http://www.w3.org/2001/XInclude">
+   	<!-- Including duplicate unparsed entity. -->
+   	<xinclude:include href="../ents/unparent.xml" parse="xml"/>
+	<view sun="image"/>
+</x>
+   

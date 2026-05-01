@@ -1,0 +1,10 @@
+<?xml version='1.0'?>
+<root>
+   Test that a document can include pieces of itself while 
+   recursively following xincludes
+  <xi:include xpointer="element(/1/3)" xmlns:xi="http://www.w3.org/2001/XInclude" />
+  <xi:include xpointer="element(/1/1)" xmlns:xi="http://www.w3.org/2001/XInclude" />
+  <data>
+     This will be copied
+  </data>
+</root>

@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<x xmlns:xi="http://www.w3.org/2001/XInclude">
+&lt;?xml version='1.0' encoding='utf-8'?&gt;
+&lt;foo xmlns:xi=&quot;http://www.w3.org/2001/XInclude&quot;&gt;
+  &lt;xi:include href=&quot;include1.xml&quot;/&gt;
+&lt;/foo&gt;
+
+</x>

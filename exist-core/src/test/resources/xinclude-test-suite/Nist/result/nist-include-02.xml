@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<x xmlns:xinclude="http://www.w3.org/2001/XInclude">
+   <!-- Test that the encoding attribute of the XInclude element has no efect when parse="xml"-->
+   <doc xml:base="../ents/something.xml">
+<p>something</p>
+<p>really</p>
+<p>simple</p>
+</doc>
+</x>

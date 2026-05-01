@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<!-- The content of the include element is another
+include element, this test should result in a fatal error. -->
+<x xmlns:xi="http://www.w3.org/2001/XInclude">
+	<p>The report is available.</p>
+	<xi:include href="../ents/something.xml">
+		<xi:include href="../ents/something.xml"/>
+	</xi:include>
+</x>

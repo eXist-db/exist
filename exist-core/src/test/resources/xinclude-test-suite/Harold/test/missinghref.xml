@@ -1,0 +1,6 @@
+<?xml version='1.0'?>
+<test>
+  This file is just for making sure my XIncluder can detect 
+  missing href attributes.
+  <xi:include parse="xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+</test>

@@ -1,0 +1,7 @@
+<x xmlns:xinclude="http://www.w3.org/2001/XInclude">
+   <!-- Test an empty fallback element. The include element is removed from the
+	results.  -->
+   <xinclude:include href="../ents/some.txt" parse="text">
+	<xinclude:fallback/>
+   </xinclude:include>
+</x>

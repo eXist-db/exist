@@ -1,0 +1,6 @@
+<?xml version='1.0'?>
+<root>
+   This tests whether syntactically incorrect element scheme data
+   simply fails to identify a subresource.
+  <xi:include href="docwithid.xml" xpointer="element(***)" xmlns:xi="http://www.w3.org/2001/XInclude"><xi:fallback>success!</xi:fallback> </xi:include>
+</root>

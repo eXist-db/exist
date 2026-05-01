@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<!-- comment before root -->
+<!DOCTYPE test [
+  <!ELEMENT test (latin1, test2)>
+]>
+<test xmlns:xinclude="http://www.w3.org/2001/XInclude">
+  <latin1>
+    <firstElement/>
+    <xinclude:include href="utf8.xml" parse="text"/>  
+    <insideChildren/>
+    <another>
+      <deeper>text</deeper>
+    </another>
+  </latin1>
+  <test2>
+    <xinclude:include href="test2.xml"/> 
+  </test2>
+</test>
+<!-- comment after root -->
+

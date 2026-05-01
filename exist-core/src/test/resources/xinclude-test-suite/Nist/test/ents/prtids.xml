@@ -1,0 +1,12 @@
+<!DOCTYPE doc [
+<!ELEMENT doc (isid*, lud*)>
+<!ELEMENT isid EMPTY>
+<!ELEMENT lud EMPTY>
+<!ATTLIST isid myid ID #IMPLIED>
+]>
+<doc>
+<isid myid="dup"/>
+<isid myid="foo"/>
+<isid myid="bar"/>
+<lud>just an additional element.</lud>
+</doc>

@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<!-- Testing the content of the xinclude element. This test should result in a fatal error. -->
+<x xmlns:xi="http://www.w3.org/2001/XInclude">
+	<xi:include href="../ents/some.xml">
+		<xi:fallback>A resource is missing.</xi:fallback>
+		<xi:include href="../ents/something.xml"/>
+	</xi:include>
+</x>

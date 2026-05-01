@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<x xmlns:xinclude="http://www.w3.org/2001/XInclude">
+   <!-- Including another XML document using XPointer Framework.  
+	If the processor does not support the scheme used in a pointer part, it skip that pointer part. -->
+   <family fnumber="f2" xml:base="../ents/idtst.xml">Clark</family>
+</x>

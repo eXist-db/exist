@@ -1,0 +1,20 @@
+<!DOCTYPE sentences [
+<!ATTLIST sentence id ID #IMPLIED>
+]>
+<sentences>
+ <sentence id="none">Hi.</sentence>
+ <sentence id="english" xml:lang="en-gb">Hello.</sentence>
+ <sentence id="french" xml:lang="fr">Bonjour.</sentence>
+ <sentences xml:lang="en-gb">
+   <sentence id="english2">Hello.</sentence>
+ </sentences>
+ <sentences xml:lang="de">
+   <sentence id="german">Guten Tag.</sentence>
+   <sentences xml:lang="en-au">
+     <sentence id="australian">G'day mate.</sentence>
+   </sentences>
+   <sentences xml:lang="">
+     <sentence id="none2">Yo..</sentence>
+   </sentences>
+ </sentences>
+</sentences>

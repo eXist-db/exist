@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    @(#)testcases.dtd   04/22/02
+   
+Typical use : 	<DOCTYPE test-suite SYSTEM "testcases.dtd">
+Purpose:	To collect test cases for submission to the Xinclude Test Suite.
+
+
+Elements:
+	testsuite : 		This is the root element of the XInclude test suite. It is a collection of testcases from 
+				various test suppliers.
+	
+	testcases:		This element should be the root element for an individual test collection. 
+
+	contributor: 		This element can be used to name test contributors at the
+				individual-person level.
+
+	date: 			Date stamp on the testcase. Identifies date of creation or modification in the "qualifier" 
+				argument.
+
+	testcase: 		An individual test in the test collection. It should provide with the following elements;
+				description, section, contributor, date and output
+
+	section:		This element contains the resource argument to Point to the relevant sections in the specification. Provides a mechanism 
+				for examining the description element.  Tests can apply to one or more particular SECTIONS.
+
+	description:		Contains the test description, used to evaluate the diagnostic produced on negative
+				tests. People will generally read this to evaluate whether the test failed for the 
+				correct reasons (when applicable). This description will be used by the test system to be included in 
+				the tables of test cases.
+	
+	output:			Output file (result-infoset) as expected by the submitter. This is an optional element 
+				for informational purposes only. 
+
+Attributes:
+	creator:		This argument provides with the test collection originator.
+	(tescases attribute)
+
+	basedir:		This argument is the base directory in which tests for this collection reside.
+            		
+	href:			Test name or reference to an individual test.
+	 			
+	id:			
+	("test-case" 
+	attribute)		Unique identifier for each test case.
+
+        features:		Any optional features that this test requires.
+                                Implementations not supporting a feature should
+				skip the test.  Values are:
+		xpointer-scheme:     requires the xpointer scheme
+		unexpanded-entities: requires the parser to not expand external
+		                     entities
+		unparsed-entities:   requires unparsed entity support
+		lang-fixup:          requires xml:lang fixup support
+
+	qualifier:		Indicates date of creation or modification of the test.
+
+	resource:		Pointer to the applicable section of the specification.,
+	("section" attribute)
+
+	
+
+
+		      	
+-->
+<!--The root element of the whole collection is test-suite and
+    The root element of a collection should be "testcases". 
+-->
+<!ENTITY % URI "CDATA">
+<!ENTITY % text "(#PCDATA | em | b | a)*">
+
+<!ELEMENT testsuite (testcases+ )>
+<!ELEMENT testcases (testcase | testresult)*>
+<!ATTLIST testcases 	creator 	CDATA 		#IMPLIED
+			basedir 	CDATA 		#IMPLIED>
+
+<!ELEMENT testcase	(contributor,section+,date,description,output*)>
+<!ATTLIST testcase 	id 		ID			#REQUIRED
+			href		%URI;			#REQUIRED
+			type	(success|error|optional)	#REQUIRED
+			features        NMTOKENS                #IMPLIED>
+
+<!ELEMENT description	(#PCDATA)>
+<!ELEMENT section	(#PCDATA)>
+<!ATTLIST section 	resource 	%URI; 		#REQUIRED>
+<!ELEMENT contributor 	(#PCDATA)>
+
+
+
+<!ELEMENT date	 	(#PCDATA)>
+<!ATTLIST date qualifier (created|modified) "created">
+
+<!ELEMENT output	(#PCDATA)>
+
+<!--
+    Really basic HTML font tweaks, to support highlighting
+    some aspects of test descriptions ...
+    EM == emphasis (e.g. italics, fun colors)
+    B == bold
+-->
+<!ELEMENT em (#PCDATA | b)*>
+<!ELEMENT b (#PCDATA | em)*>
+
+<!-- 
+    We also allow for hyperlinks in text (e.g., to include
+    references to supporting evidence within SPECPROBLEM and 
+    TESTPROBLEM).
+-->
+<!ELEMENT a (#PCDATA | b | em)*>
+<!ATTLIST a
+    href	%URI;				#REQUIRED
+>
+
+<!--
+    The TESTRESULT element is used to record test results.
+	It has a required ID attribute which identifies the TEST.
+	It has a required AGREEMENT attribute that indicates whether
+	the results are in full agreement with the expected
+	results as described in the TEST case or not.
+
+    The textual contents of the TESTRESULT element should describe
+	the results of the test and any issues or further information.
+
+    The target of the optional RESULTS attribute could be an XML Infoset
+
+    The optional FUTURESUPPORT attribute is used to indicate
+	expected future support of the feature tested by this
+	test case.  
+
+    The optional SPECPROBLEM attribute indicates if there is
+	any ambiguity or other problem found in the spec that relates
+	to this test.  Especially if the results weren't as expected
+	because of a misinterpretation of the spec, this should be
+	documented here.  Details/discussion should appear in the 
+	textual contents of the TESTRESULT element.
+
+    The optional TESTPROBLEM attribute indicates if there is
+	any issue with the TEST case and the expected results it
+	suggests.  Especially if the results of the test differ
+	from that given as "expected" by the test case but are,
+	in fact, believed to be the correct results, this should
+	be documented here.  Details/discussion should appear in the 
+	textual contents of the TESTRESULT element.
+
+-->
+
+<!ELEMENT testresult %text;>
+<!ATTLIST testresult
+    id		CDATA				#REQUIRED
+    agreement	(full|issues)			#REQUIRED
+    results		%URI;			#IMPLIED
+    futuresupport	(full|partial|none)	#IMPLIED
+    specproblem	(yes|no)		"no"
+    testproblem	(yes|no)		"no"
+>
+
