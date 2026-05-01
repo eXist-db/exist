@@ -994,28 +994,29 @@ public class FnFormatNumbers extends BasicFunction {
      * in the formatted output. Only applies when a rendition differs from the
      * marker (i.e., the property was specified as "marker:rendition").
      */
-    private static String applyRenditions(String result, final DecimalFormat df) {
+    private static String applyRenditions(final String input, final DecimalFormat df) {
+        String out = input;
         final String decMarker = new String(Character.toChars(df.decimalSeparator));
         if (!decMarker.equals(df.decimalSeparatorRendition)) {
-            result = result.replace(decMarker, df.decimalSeparatorRendition);
+            out = out.replace(decMarker, df.decimalSeparatorRendition);
         }
         final String grpMarker = new String(Character.toChars(df.groupingSeparator));
         if (!grpMarker.equals(df.groupingSeparatorRendition)) {
-            result = result.replace(grpMarker, df.groupingSeparatorRendition);
+            out = out.replace(grpMarker, df.groupingSeparatorRendition);
         }
         final String expMarker = new String(Character.toChars(df.exponentSeparator));
         if (!expMarker.equals(df.exponentSeparatorRendition)) {
-            result = result.replace(expMarker, df.exponentSeparatorRendition);
+            out = out.replace(expMarker, df.exponentSeparatorRendition);
         }
         final String pctMarker = new String(Character.toChars(df.percent));
         if (!pctMarker.equals(df.percentRendition)) {
-            result = result.replace(pctMarker, df.percentRendition);
+            out = out.replace(pctMarker, df.percentRendition);
         }
         final String pmlMarker = new String(Character.toChars(df.perMille));
         if (!pmlMarker.equals(df.perMilleRendition)) {
-            result = result.replace(pmlMarker, df.perMilleRendition);
+            out = out.replace(pmlMarker, df.perMilleRendition);
         }
-        return result;
+        return out;
     }
 
     /**

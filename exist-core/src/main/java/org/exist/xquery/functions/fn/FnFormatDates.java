@@ -624,12 +624,9 @@ public class FnFormatDates extends BasicFunction {
     private String formatTimeZone(final String timezonePicture, final int absHour, final int absMinute,
             final boolean isNegative, final TimeZone timeZone, final String language,
             final Optional<String> place) {
-        final Locale locale = new Locale(language);
-
         // [ZN] / [zN] - timezone name
         if ("N".equals(timezonePicture)) {
-            final TimeZone tz = place.map(TimeZone::getTimeZone).orElse(timeZone);
-            return tz.getDisplayName(timeZone.useDaylightTime(), TimeZone.SHORT, locale);
+            return formatNamedTimeZone(timeZone, place, language);
         }
 
         // Military letter form: picture is "Z" alone
@@ -638,31 +635,44 @@ public class FnFormatDates extends BasicFunction {
         }
 
         // UTC marker via 't' suffix on picture
-        boolean utcMarker = false;
-        String pic = timezonePicture;
-        if (!pic.isEmpty() && pic.charAt(pic.length() - 1) == 't') {
-            utcMarker = true;
-            pic = pic.substring(0, pic.length() - 1);
-        }
+        final boolean utcMarker = !timezonePicture.isEmpty()
+                && timezonePicture.charAt(timezonePicture.length() - 1) == 't';
+        final String pic = utcMarker
+                ? timezonePicture.substring(0, timezonePicture.length() - 1)
+                : timezonePicture;
         if (utcMarker && absHour == 0 && absMinute == 0 && !isNegative) {
             return "Z";
         }
 
         // Split picture into hour-part [separator hour-minute-part]+
-        // First, find the digit family from the first digit in the picture.
         final TimezonePictureParts parts = parseTimezonePicture(pic);
         if (parts == null) {
             // Picture does not parse as a digit/separator format — fall back.
             return defaultTimezoneFormat(absHour, absMinute, isNegative);
         }
 
+        return formatNumericTimeZone(parts, absHour, absMinute, isNegative);
+    }
+
+    private static String formatNamedTimeZone(final TimeZone timeZone, final Optional<String> place,
+            final String language) {
+        final Locale locale = new Locale(language);
+        final TimeZone tz = place.map(TimeZone::getTimeZone).orElse(timeZone);
+        return tz.getDisplayName(timeZone.useDaylightTime(), TimeZone.SHORT, locale);
+    }
+
+    private static String formatNumericTimeZone(final TimezonePictureParts parts, final int absHour,
+            final int absMinute, final boolean isNegative) {
         final StringBuilder sb = new StringBuilder();
         sb.append(isNegative ? '-' : '+');
         final int zero = parts.digitFamilyZero;
-
-        // Format hours
         appendDigits(sb, absHour, parts.hourMin, parts.hourMax, zero);
+        appendNumericTimeZoneMinutes(sb, parts, absMinute, zero);
+        return sb.toString();
+    }
 
+    private static void appendNumericTimeZoneMinutes(final StringBuilder sb, final TimezonePictureParts parts,
+            final int absMinute, final int zero) {
         if (parts.separator != null && !parts.separator.isEmpty()) {
             // Picture has explicit hh<sep>mm form. Always emit minutes per spec.
             sb.append(parts.separator);
@@ -671,15 +681,12 @@ public class FnFormatDates extends BasicFunction {
             // Picture is "999" or similar — output hours and minutes concatenated
             // with no separator.
             appendDigits(sb, absMinute, 2, 2, zero);
-        } else {
+        } else if (absMinute != 0) {
             // 1-2 digit picture like "0" or "00": minutes appear only when
             // non-zero, prefixed with ':'.
-            if (absMinute != 0) {
-                sb.append(':');
-                appendDigits(sb, absMinute, 2, 2, zero);
-            }
+            sb.append(':');
+            appendDigits(sb, absMinute, 2, 2, zero);
         }
-        return sb.toString();
     }
 
     private static String defaultTimezoneFormat(int absHour, int absMinute, boolean isNegative) {

@@ -400,18 +400,15 @@ public class FunParseIetfDate extends BasicFunction {
             } else {
                 // No colon: split based on number of digits
                 switch (totalDigits) {
-                    case 1:
-                    case 2:
-                        h = Integer.parseInt(value.substring(digitsStart, vidx));
-                        break;
-                    case 3:
+                    case 1, 2 -> h = Integer.parseInt(value.substring(digitsStart, vidx));
+                    case 3 -> {
                         h = Integer.parseInt(value.substring(digitsStart, digitsStart + 1));
                         m = Integer.parseInt(value.substring(digitsStart + 1, vidx));
-                        break;
-                    default: // 4
+                    }
+                    default -> { // 4
                         h = Integer.parseInt(value.substring(digitsStart, digitsStart + 2));
                         m = Integer.parseInt(value.substring(digitsStart + 2, vidx));
-                        break;
+                    }
                 }
             }
             checkMinutes(m);
