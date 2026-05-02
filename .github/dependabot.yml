@@ -15,11 +15,6 @@ updates:
     interval: "daily"
     time: "03:00"
   open-pull-requests-limit: 10
-  ignore:
-  - dependency-name: com.mycila:license-maven-plugin
-    versions:
-    - "4.0"
-    - "4.0.rc2"
   groups:
     # Major bumps stay separate for QA; patch/minor trains bundle here.
     jetty:
