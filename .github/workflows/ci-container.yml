@@ -57,11 +57,11 @@ jobs:
         if: failure()
         run: docker logs exist-ci | grep 'ERROR'
 
-      - name: Copy logs on failure
+      - name: Capture container logs on failure
         if: failure()
         run: |
-          echo "Copying logs..."
-          docker cp exist-ci:/exist/logs/exist.log ./exist.log
+          echo "Capturing container stdout/stderr..."
+          docker logs exist-ci > exist.log 2>&1 || true
 
       - name: Upload logs artifact
         if: failure()

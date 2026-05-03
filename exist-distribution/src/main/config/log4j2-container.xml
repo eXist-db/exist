@@ -9,13 +9,16 @@
   Activate by setting -Dlog4j.configurationFile=/exist/etc/log4j2-container.xml
   (the eXist Docker image does this by default).
 
-  GDPR: set EXIST_REQUEST_LOG_LEVEL=OFF to suppress access logs.
+  GDPR: access logging is OFF by default in the container — the Docker
+  HEALTHCHECK polls /exist/xmlrpc continuously, and logging client IPs
+  by default raises GDPR concerns. Set EXIST_REQUEST_LOG_LEVEL=info to
+  re-enable.
 -->
 <Configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
     <Properties>
-        <Property name="exist.console.pattern">%d{ISO8601} [%t] %-5p %logger{36} - %m%n</Property>
-        <Property name="exist.request.log.level">${env:EXIST_REQUEST_LOG_LEVEL:-info}</Property>
+        <Property name="exist.console.pattern">%d{DATE} [%t] %-5p (%F [%M]:%L) - %m %n</Property>
+        <Property name="exist.request.log.level">${env:EXIST_REQUEST_LOG_LEVEL:-off}</Property>
     </Properties>
 
     <Appenders>
@@ -55,7 +58,8 @@
             <AppenderRef ref="STDOUT"/>
         </Logger>
 
-        <!-- Jetty access/request log. EXIST_REQUEST_LOG_LEVEL=OFF disables it. -->
+        <!-- Jetty access/request log. OFF by default in the container (GDPR);
+             set EXIST_REQUEST_LOG_LEVEL=info to re-enable. -->
         <Logger name="org.eclipse.jetty.server.RequestLog" additivity="false" level="${exist.request.log.level}">
             <AppenderRef ref="REQUESTLOG"/>
         </Logger>
