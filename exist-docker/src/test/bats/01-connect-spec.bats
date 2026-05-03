@@ -22,7 +22,10 @@
 }
 
 @test "logs are error free" {
-  result=$(docker logs exist-ci | grep -ow -c 'ERROR' || true)
+  # Exclude the SECURITY WARNING that fires when 'admin' has the empty
+  # default password -- that line is the C1 startup warning and is the
+  # expected state for an unconfigured fresh container image.
+  result=$(docker logs exist-ci 2>&1 | grep -v 'SECURITY WARNING' | grep -ow -c 'ERROR' || true)
   [ "$result" -eq 0 ]
 }
 

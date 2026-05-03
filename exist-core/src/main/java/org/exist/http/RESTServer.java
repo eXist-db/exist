@@ -912,7 +912,7 @@ public class RESTServer {
                         return;
                     } else if(xupdateSubmission == EXistServlet.FeatureEnabled.AUTHENTICATED_USERS_ONLY) {
                         final Subject currentSubject = broker.getCurrentSubject();
-                        if(!currentSubject.isAuthenticated() || currentSubject.getId() == RealmImpl.GUEST_GROUP_ID) {
+                        if(!currentSubject.isAuthenticated() || currentSubject.getId() == RealmImpl.GUEST_ACCOUNT_ID) {
                             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                             return;
                         }
@@ -1335,7 +1335,7 @@ public class RESTServer {
             return;
         } else if(xquerySubmission == EXistServlet.FeatureEnabled.AUTHENTICATED_USERS_ONLY) {
             final Subject currentSubject = broker.getCurrentSubject();
-            if(!currentSubject.isAuthenticated() || currentSubject.getId() == RealmImpl.GUEST_GROUP_ID) {
+            if(!currentSubject.isAuthenticated() || currentSubject.getId() == RealmImpl.GUEST_ACCOUNT_ID) {
                 response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                 return;
             }
