@@ -68,10 +68,6 @@ public class WebSocketEndpoint {
     private static ScheduledExecutorService heartbeatService = null;
     private static ScheduledExecutorService monitorService = null;
 
-    public WebSocketEndpoint() {
-        // endpoint instances are created per-connection by the container
-    }
-
     /**
      * Initialize the WebSocket subsystem. Called once during Jetty startup.
      */

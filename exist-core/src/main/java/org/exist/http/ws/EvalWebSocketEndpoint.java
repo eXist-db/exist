@@ -69,6 +69,7 @@ public class EvalWebSocketEndpoint {
     private static final String USER_PROPERTY = "exist.eval.subject";
 
     private static final Map<Session, EvalSession> sessions = new ConcurrentHashMap<>();
+    private static final int MAX_TEXT_MESSAGE_SIZE = 10 * 1024 * 1024; // 10MB
     private static ExecutorService queryExecutorService = createExecutorService();
 
     private static ExecutorService createExecutorService() {
@@ -143,8 +144,6 @@ public class EvalWebSocketEndpoint {
             }
         }
     }
-
-    private static final int MAX_TEXT_MESSAGE_SIZE = 10 * 1024 * 1024; // 10MB
 
     @OnOpen
     public void onOpen(final Session session, final EndpointConfig config) {
