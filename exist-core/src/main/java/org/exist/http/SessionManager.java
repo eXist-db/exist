@@ -39,8 +39,8 @@ public class SessionManager {
 
     private static final Logger LOG = LogManager.getLogger(SessionManager.class);
     private static final long TIMEOUT = 120_000;  // ms (e.g. 2 minutes)
+    private static final SecureRandom RANDOM = new SecureRandom();
 
-    private final SecureRandom random = new SecureRandom();
     private final Cache<Long, QueryResult> cache;
 
     private static class QueryResult {
@@ -80,7 +80,7 @@ public class SessionManager {
     public long add(final int subjectId, final String query, final Sequence sequence) {
         long sessionId;
         do {
-            sessionId = random.nextLong() & Long.MAX_VALUE;
+            sessionId = RANDOM.nextLong() & Long.MAX_VALUE;
         } while (cache.getIfPresent(sessionId) != null);
         cache.put(sessionId, new QueryResult(subjectId, query, sequence));
         return sessionId;
