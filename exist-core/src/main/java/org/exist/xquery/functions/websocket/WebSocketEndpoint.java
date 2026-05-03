@@ -157,17 +157,13 @@ public class WebSocketEndpoint {
             try (final JsonGenerator gen = JSON_FACTORY.createGenerator(writer)) {
                 gen.writeStartObject();
                 for (final Map.Entry<String, Object> entry : data.entrySet()) {
-                    final Object val = entry.getValue();
-                    if (val instanceof String s) {
-                        gen.writeStringField(entry.getKey(), s);
-                    } else if (val instanceof Integer i) {
-                        gen.writeNumberField(entry.getKey(), i);
-                    } else if (val instanceof Boolean b) {
-                        gen.writeBooleanField(entry.getKey(), b);
-                    } else if (val == null) {
-                        gen.writeNullField(entry.getKey());
-                    } else {
-                        gen.writeStringField(entry.getKey(), val.toString());
+                    final String key = entry.getKey();
+                    switch (entry.getValue()) {
+                        case String s -> gen.writeStringField(key, s);
+                        case Integer i -> gen.writeNumberField(key, i);
+                        case Boolean b -> gen.writeBooleanField(key, b);
+                        case null -> gen.writeNullField(key);
+                        default -> gen.writeStringField(key, entry.getValue().toString());
                     }
                 }
                 gen.writeEndObject();

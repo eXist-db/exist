@@ -27,6 +27,7 @@ import org.junit.Test;
 
 import jakarta.websocket.*;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.URI;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -99,7 +100,7 @@ public class WebSocketEndpointTest {
                                 subscribed = true;
                                 subscribedLatch.countDown();
                             } catch (IOException e) {
-                                throw new RuntimeException(e);
+                                throw new UncheckedIOException(e);
                             }
                         } else if (subscribed && !"ping".equals(message)) {
                             receivedMessage.set(message);
@@ -148,7 +149,7 @@ public class WebSocketEndpointTest {
                                 session.getBasicRemote().sendText("{\"channel\": \"count-test\"}");
                                 subscribedLatch.countDown();
                             } catch (IOException e) {
-                                throw new RuntimeException(e);
+                                throw new UncheckedIOException(e);
                             }
                         }
                     }
