@@ -28,6 +28,7 @@ import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.xquery.AnalyzeContextInfo;
+import org.exist.xquery.Expression;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.ErrorCodes;
@@ -124,6 +125,21 @@ public class Compile extends BasicFunction {
 			if (getArgumentCount() == 2 && args[1].hasOne()) {
 				pContext.setModuleLoadPath(args[1].getStringValue());
 			}
+			// Route through rd parser if enabled
+			if (org.exist.xquery.XQuery.useRdParser()) {
+				try {
+					final org.exist.xquery.parser.next.XQueryParser rdParser =
+							new org.exist.xquery.parser.next.XQueryParser(pContext, expr);
+					final Expression rootExpr = rdParser.parse();
+					if (rootExpr instanceof PathExpr) {
+						((PathExpr) rootExpr).analyze(new AnalyzeContextInfo());
+					}
+				} catch (final XPathException e) {
+					line = e.getLine();
+					column = e.getColumn();
+					error = e.getDetailMessage();
+				}
+			} else {
 			final XQueryLexer lexer = new XQueryLexer(pContext, new StringReader(expr));
 			final XQueryParser parser = new XQueryParser(lexer);
 			// shares the context of the outer expression
@@ -155,8 +171,8 @@ public class Compile extends BasicFunction {
 			} finally {
 				context.popNamespaceContext();
 				pContext.reset(false);
-
 			}
+			} // end else (ANTLR 2 path)
 
 			if (isCalledAs("compile")) {
 				return error == null ? Sequence.EMPTY_SEQUENCE : new StringValue(this, error);

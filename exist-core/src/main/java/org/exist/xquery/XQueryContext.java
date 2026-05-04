@@ -2792,6 +2792,82 @@ public class XQueryContext implements BinaryValueManager, Context {
 
             final XQueryContext modContext = new ModuleContext(this, namespaceURI, prefix, location);
             modExternal.setContext(modContext);
+            // rd parser compileModule routing: GeneralComparison PathExpr unwrapping
+            // bug is fixed. Remaining blocker: rd parser fails on inline functions
+            // inside parenthesized sequences — e.g., (function ($a) {1}, ...) in
+            // bang.xql line 258. The parser doesn't recognize `function` as starting
+            // an inline function in this context. This is a general rd parser bug,
+            // not compileModule-specific. Re-enable once inline function parsing is fixed.
+            if (false && XQuery.useRdParser()) {
+                try {
+                    final StringBuilder sb = new StringBuilder(4096);
+                    final char[] buf = new char[4096];
+                    int n;
+                    while ((n = reader.read(buf)) != -1) sb.append(buf, 0, n);
+                    final String sourceText = sb.toString();
+                    if (LOG.isTraceEnabled()) {
+                        LOG.trace("compileModule rd-parser: source length={}, namespace={}, first200={}",
+                                sourceText.length(), namespaceURI,
+                                sourceText.substring(0, Math.min(200, sourceText.length())).replace("\n", "\\n"));
+                    }
+                    final org.exist.xquery.parser.next.XQueryParser rdParser =
+                            new org.exist.xquery.parser.next.XQueryParser(modContext, sourceText);
+                    final Expression parsedExpr = rdParser.parse();
+                    // Wrap in LibraryModuleRoot for function dispatch
+                    final Expression rootExpr;
+                    if (rdParser.isLibraryModule()) {
+                        final LibraryModuleRoot libRoot = new LibraryModuleRoot(modContext);
+                        if (parsedExpr instanceof PathExpr) {
+                            for (int ii = 0; ii < ((PathExpr) parsedExpr).getLength(); ii++) {
+                                libRoot.add(((PathExpr) parsedExpr).getExpression(ii));
+                            }
+                        }
+                        rootExpr = libRoot;
+                    } else {
+                        rootExpr = parsedExpr;
+                    }
+                    modContext.setRootExpression(rootExpr);
+                    modContext.resolveForwardReferences();
+
+                    for (final java.util.Iterator<UserDefinedFunction> it = modContext.localFunctions(); it.hasNext(); ) {
+                        modExternal.declareFunction(it.next());
+                    }
+                    // Register module-level variables from the parsed expression tree.
+                    // The rd parser adds VariableDeclaration expressions to rootExpr,
+                    // which need to be registered on the module (like ANTLR 2's
+                    // myModule.declareVariable(qn, decl) during tree walking).
+                    if (parsedExpr instanceof PathExpr) {
+                        final PathExpr rootPath = (PathExpr) parsedExpr;
+                        for (int vi = 0; vi < rootPath.getLength(); vi++) {
+                            final Expression step = rootPath.getExpression(vi);
+                            if (step instanceof VariableDeclaration) {
+                                final VariableDeclaration decl = (VariableDeclaration) step;
+                                modExternal.declareVariable(decl.getName(), decl);
+                            }
+                        }
+                    }
+                    // Also register any variables already in the context
+                    for (final Variable var : modContext.getVariables().values()) {
+                        if (var.getQName().getNamespaceURI().equals(namespaceURI)) {
+                            modExternal.declareVariable(var);
+                        }
+                    }
+                    modExternal.setRootExpression(rootExpr);
+
+                    if (namespaceURI != null && !modExternal.getNamespaceURI().equals(namespaceURI)) {
+                        throw new XPathException(rootExpression, ErrorCodes.XQST0059,
+                                "namespace URI declared by module (" + modExternal.getNamespaceURI() +
+                                ") does not match namespace URI in import statement, which was: " + namespaceURI);
+                    }
+                    modExternal.setSource(source);
+                    modContext.setSource(source);
+                    modExternal.setIsReady(true);
+                    return modExternal;
+                } catch (final XPathException e) {
+                    e.prependMessage("Error while loading module " + location + ": ");
+                    throw e;
+                }
+            }
             final XQueryLexer lexer = new XQueryLexer(modContext, reader);
             final XQueryParser parser = new XQueryParser(lexer);
             final XQueryTreeParser astParser = new XQueryTreeParser(modContext, modExternal);
@@ -2820,12 +2896,6 @@ public class XQueryContext implements BinaryValueManager, Context {
                 if (namespaceURI != null && !modExternal.getNamespaceURI().equals(namespaceURI)) {
                     throw new XPathException(rootExpression, ErrorCodes.XQST0059, "namespace URI declared by module (" + modExternal.getNamespaceURI() + ") does not match namespace URI in import statement, which was: " + namespaceURI);
                 }
-
-                // Set source information on module context
-//            String sourceClassName = source.getClass().getName();
-//            modContext.setSourceKey(source.getKey().toString());
-                // Extract the source type from the classname by removing the package prefix and the "Source" suffix
-//            modContext.setSourceType( sourceClassName.substring( 17, sourceClassName.length() - 6 ) );
 
                 modExternal.setSource(source);
                 modContext.setSource(source);

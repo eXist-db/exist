@@ -72,7 +72,9 @@ public class Predicate extends PathExpr {
 
     @Override
     public void addPath(final PathExpr path) {
-        if (path.getSubExpressionCount() == 1) {
+        // Only unwrap plain PathExpr containers, not Function/BinaryOp subclasses
+        // which use steps for their own purposes (arguments, operands)
+        if (path.getClass() == PathExpr.class && path.getSubExpressionCount() == 1) {
             add(path.getSubExpression(0));
         } else {
             super.addPath(path);
