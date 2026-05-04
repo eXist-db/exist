@@ -63,10 +63,6 @@ jobs:
           -Dexistdb.release.key="${EXISTDB_RELEASE_KEY}" \
           -Dexistdb.release.key.passphrase="${EXISTDB_RELEASE_KEY_PASSPHRASE}" \
           clean deploy
-          # Maven 4 rerun guidance:
-          # - For module build failures, rerun with: same args + -r verify
-          # - For deploy failures, treat reruns as full publish retries.
-          #   Deploy-at-end semantics are all-or-nothing; do not assume partial publish continuation.
 
       - name: Collect release assets
         run: |

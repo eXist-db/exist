@@ -30,7 +30,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Maven 4 rerun guidance:
-          # - Build/module failures can be rerun with: same args + -r verify
-          # - For deploy reruns, assume deploy-at-end all-or-nothing behavior and rerun intentionally.
           ./mvnw -V -B --no-transfer-progress -q -DskipTests -Ddependency-check.skip=true -Dmaven.consumer.pom.flatten=true clean deploy
