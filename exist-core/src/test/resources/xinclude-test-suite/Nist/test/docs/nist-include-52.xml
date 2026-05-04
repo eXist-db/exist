@@ -1,0 +1,6 @@
+<x xmlns:xinclude="http://www.w3.org/2001/XInclude">
+   <!-- Test an include location identifying a processing instruction. In this case
+	the set of top level included items  consist of the 
+	information item corresponding to the processing node in the acquired infoset. -->
+   <xinclude:include href="../ents/getnodes.xml" xpointer="xpointer(//processing-instruction())"/>
+</x>

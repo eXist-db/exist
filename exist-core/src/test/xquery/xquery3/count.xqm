@@ -101,8 +101,7 @@ function ct:order-descending-index1-after() {
 };
 
 declare
-%test:pending('Related to failing XQTS test prod-CountClause/count-009, see: https://github.com/eXist-db/exist/pull/4530#issue-1356325345')
-%test:assertEquals(
+    %test:assertEquals(
         '<x index1="2" index2="1">b</x>',
         '<x index1="1" index2="2">a</x>'
     )
@@ -149,7 +148,6 @@ function ct:order-descending-indexes() {
 };
 
 declare
-    %test:pending('Related to failing XQTS test prod-CountClause/count-009, see: https://github.com/eXist-db/exist/pull/4530#issue-1356325345')
     %test:assertEquals(
         '<item index1="3" remainder="0" index2="1"><x>3</x></item>',
         '<item index1="1" remainder="1" index2="2"><x>1</x></item>',
@@ -167,7 +165,6 @@ function ct:order-non-linear-ascending-indexes() {
 };
 
 declare
-    %test:pending('Related to failing XQTS test prod-CountClause/count-009, see: https://github.com/eXist-db/exist/pull/4530#issue-1356325345')
     %test:assertEquals(
         '<item index1="2" remainder="2" index2="1"><x>2</x></item>',
         '<item index1="1" remainder="1" index2="2"><x>1</x></item>',
@@ -185,7 +182,6 @@ function ct:order-non-linear-descending-indexes() {
 };
 
 declare
-    %test:pending('Related to failing XQTS test prod-CountClause/count-009, see: https://github.com/eXist-db/exist/pull/4530#issue-1356325345')
     %test:assertEquals(
         '<item index1="3" remainder="0" index2="1"><x>2</x><y>1</y></item>',
         '<item index1="1" remainder="1" index2="2"><x>1</x><y>1</y></item>',
@@ -204,7 +200,6 @@ function ct:order-ascending-indexes-two-keys() {
 };
 
 declare
-    %test:pending('Related to failing XQTS test prod-CountClause/count-009, see: https://github.com/eXist-db/exist/pull/4530#issue-1356325345')
     %test:assertEquals(
         '<item index1="2" remainder="2" index2="1"><x>1</x><y>2</y></item>',
         '<item index1="4" remainder="1" index2="2"><x>2</x><y>2</y></item>',
@@ -223,7 +218,6 @@ function ct:order-descending-indexes-two-keys() {
 };
 
 declare
-    %test:pending('Related to failing XQTS test prod-CountClause/count-009, see: https://github.com/eXist-db/exist/pull/4530#issue-1356325345')
     %test:assertEquals(
         '<item index1="3" remainder="0" index2="1"><x>2</x><y>1</y></item>',
         '<item index1="4" remainder="1" index2="2"><x>2</x><y>2</y></item>',
@@ -243,7 +237,6 @@ function ct:order-ascending-descending-indexes-two-keys() {
 
 
 declare
-    %test:pending('Related to failing XQTS test prod-CountClause/count-009, see: https://github.com/eXist-db/exist/pull/4530#issue-1356325345')
     %test:assertEquals(
         '<item index1="2" remainder="2" index2="1"><x>1</x><y>2</y></item>',
         '<item index1="1" remainder="1" index2="2"><x>1</x><y>1</y></item>',

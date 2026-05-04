@@ -1,0 +1,5 @@
+<?xml version='1.0'?>
+<document xmlns:xi="http://www.w3.org/2001/XInclude">
+<p>This example includes a range of characters.</p>
+<pre><xi:include parse="text" fragid="text(char=100,200;length=758,UTF-8)" href="code.pl"/></pre>
+</document>

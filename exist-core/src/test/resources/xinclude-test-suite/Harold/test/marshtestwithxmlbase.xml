@@ -1,0 +1,10 @@
+<!DOCTYPE root [
+  <!ATTLIST x id ID #IMPLIED>
+]>
+<root xmlns:xi="http://www.w3.org/2001/XInclude" xml:base="http://www.example.org/">
+<xi:include xpointer="foo"/>
+<x id="foo">
+  <xi:include xpointer="bar"/>
+</x>
+<x id="bar"/>
+</root>

@@ -67,16 +67,16 @@
             <artifactId>lucene-core</artifactId>
             <version>${lucene.version}</version>
         </dependency>
-        
+
         <dependency>
             <groupId>org.apache.lucene</groupId>
-            <artifactId>lucene-analyzers-common</artifactId>
+            <artifactId>lucene-analysis-common</artifactId>
             <version>${lucene.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.lucene</groupId>
-            <artifactId>lucene-analyzers-icu</artifactId>
+            <artifactId>lucene-analysis-icu</artifactId>
             <version>${lucene.version}</version>
         </dependency>
 
@@ -88,6 +88,12 @@
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-facet</artifactId>
+            <version>${lucene.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-queries</artifactId>
             <version>${lucene.version}</version>
         </dependency>
 
@@ -120,6 +126,13 @@
         <dependency>
             <groupId>com.google.code.findbugs</groupId>
             <artifactId>jsr305</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.exist-db</groupId>
+            <artifactId>exist-vector</artifactId>
+            <version>${project.version}</version>
+            <optional>true</optional>
         </dependency>
 
         <dependency>
@@ -165,6 +178,23 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <skip>${skipUnitTests}</skip>
+                    <!-- Avoid duplicate XQSuite execution in default runs:
+                         LuceneTests already executes src/test/xquery/lucene/** -->
+                    <excludes>
+                        <exclude>**/xquery/lucene/LuceneIndexingTests.java</exclude>
+                        <exclude>**/xquery/lucene/LuceneAnalyzersTests.java</exclude>
+                        <exclude>**/xquery/lucene/FtMatchTests.java</exclude>
+                        <exclude>**/xquery/lucene/FtAttrContextTests.java</exclude>
+                        <exclude>**/xquery/lucene/VectorSearchTests.java</exclude>
+                        <exclude>**/xquery/lucene/ReindexSecondStoreTest.java</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
                     <execution>
@@ -183,5 +213,40 @@
             </plugin>
         </plugins>
     </build>
-    
+
+    <profiles>
+        <!-- Model download is inherited from exist-parent. This profile adds exist.home for surefire tests that need it. -->
+        <profile>
+            <id>onnx-model</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <systemPropertyVariables>
+                                <exist.home>${project.basedir}</exist.home>
+                            </systemPropertyVariables>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>targeted-xquery-runners</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <!-- Re-enable targeted wrapper classes when explicitly requested. -->
+                            <excludes combine.self="override"/>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
 </project>

@@ -1,0 +1,3 @@
+Source path,Class name,Method name,Method signature,Framework,Schedule type,Expression,Initial delay
+exist-core/src/main/java/org/exist/storage/lock/FileLockHeartBeat.java,org.exist.storage.lock.FileLockHeartBeat,execute,"org.exist.storage.lock.FileLockHeartBeat{name=execute,return=void,parameters=[org.quartz.JobExecutionContext]}",Quartz,trigger,,
+exist-core/src/main/java/org/exist/security/internal/SecurityManagerImpl.java,org.exist.security.internal.SecurityManagerImpl$SessionsCheck,execute,"org.exist.security.internal.SecurityManagerImpl$SessionsCheck{name=execute,return=void,parameters=[org.quartz.JobExecutionContext]}",Quartz,trigger,,

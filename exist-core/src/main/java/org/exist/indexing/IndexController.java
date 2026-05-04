@@ -59,6 +59,7 @@ public class IndexController {
     private DocumentImpl currentDoc = null;
     private ReindexMode currentMode = ReindexMode.UNKNOWN;
     private boolean reindexing;
+    private ReindexScope reindexScope = ReindexScope.ALL;
 
     public IndexController(final DBBroker broker) {
         this.broker = broker;
@@ -245,6 +246,50 @@ public class IndexController {
 
     private void setReindexing(final boolean reindexing) {
         this.reindexing = reindexing;
+    }
+
+    /**
+     * Execute the given runnable with the reindexing flag set. Used when reindexing
+     * a single document via {@code xmldb:reindex($collection-uri, $doc-uri)} so that
+     * index workers (e.g. Lucene) remove existing entries before adding new ones,
+     * instead of creating duplicates. See GitHub #3977.
+     *
+     * @param runnable the operation to run with reindexing enabled
+     */
+    public void runWithReindexing(final Runnable runnable) {
+        runWithReindexing(runnable, ReindexScope.ALL);
+    }
+
+    /**
+     * Execute the given runnable with the reindexing flag and scope set. Used when
+     * reindexing via {@code xmldb:reindex($collection, $document?, $mode?)} with
+     * mode in {@code "all" | "fulltext" | "vector"}.
+     *
+     * @param runnable the operation to run with reindexing enabled
+     * @param scope   the reindex scope (all, fulltext, or vector)
+     */
+    public void runWithReindexing(final Runnable runnable, final ReindexScope scope) {
+        setReindexing(true);
+        setReindexScope(scope);
+        try {
+            runnable.run();
+        } finally {
+            setReindexScope(ReindexScope.ALL);
+            setReindexing(false);
+        }
+    }
+
+    /**
+     * Returns the current reindex scope for index workers (e.g. Lucene) to consult.
+     * When {@link ReindexScope#FULLTEXT}, workers may skip vector computation; when
+     * {@link ReindexScope#VECTOR}, workers may skip fulltext.
+     */
+    public ReindexScope getReindexScope() {
+        return reindexScope;
+    }
+
+    private void setReindexScope(final ReindexScope scope) {
+        this.reindexScope = scope;
     }
 
     /**

@@ -55,14 +55,7 @@ public class XIncludeSerializerTest {
 
     private final static XmldbURI XINCLUDE_COLLECTION = XmldbURI.ROOT_COLLECTION_URI.append("xinclude_test");
     private final static XmldbURI XINCLUDE_NESTED_COLLECTION = XmldbURI.ROOT_COLLECTION_URI.append("xinclude_test/data");
-
-    private final static String getXmlRpcApi() {
-        return "http://127.0.0.1:" + existWebServer.getPort() + "/xmlrpc";
-    }
-
-    private final static String getRestUri()  {
-        return "http://admin:admin@127.0.0.1:" + existWebServer.getPort() + "/db/xinclude_test";
-    }
+    private final static XmldbURI XINCLUDE_MODULES_COLLECTION = XmldbURI.ROOT_COLLECTION_URI.append("xinclude_test/modules");
 
     private final static String XML_DATA1
             = "<test xmlns:xi='" + Namespaces.XINCLUDE_NS + "'>"
@@ -122,6 +115,14 @@ public class XIncludeSerializerTest {
             + "</root>"
             + "</test>";
 
+    // XML doc in a subcollection referencing parent collection resource via ../
+    private final static String XML_DATA_REL_PARENT
+            = "<test xmlns:xi='" + Namespaces.XINCLUDE_NS + "'>"
+            + "<root>"
+            + "<xi:include href='../metatags.xml'/>"
+            + "</root>"
+            + "</test>";
+
     private final static String XML_RESULT = "<test xmlns:xi='" + Namespaces.XINCLUDE_NS + "'>"
             + "<root>"
             + "<html>"
@@ -143,6 +144,14 @@ public class XIncludeSerializerTest {
             + "<warning>Not found</warning>"
             + "</root>"
             + "</test>";
+
+    private final static String getXmlRpcApi() {
+        return "http://127.0.0.1:" + existWebServer.getPort() + "/xmlrpc";
+    }
+
+    private final static String getRestUri()  {
+        return "http://admin:admin@127.0.0.1:" + existWebServer.getPort() + "/db/xinclude_test";
+    }
 
     @Test
     public void absSimpleREST() throws IOException, SAXException {
@@ -281,6 +290,29 @@ public class XIncludeSerializerTest {
         assertTrue("but are they identical? " + myDiff, myDiff.identical());
     }
 
+    @Test
+    public void relParentPathFromSubcollectionXML() throws IOException, SAXException {
+        final String uri = getRestUri() + "/modules/test_rel_parent.xml?_indent=no&_wrap=no";
+
+        final HttpURLConnection connect = getConnection(uri);
+        connect.setRequestMethod("GET");
+        connect.connect();
+
+        final StringBuilder out = new StringBuilder();
+        try (final BufferedReader reader = new BufferedReader(new InputStreamReader(connect.getInputStream(), "UTF-8"))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                out.append(line);
+                out.append("\r\n");
+            }
+        }
+        final String responseXML = out.toString();
+
+        final Diff myDiff = new Diff(XML_RESULT, responseXML);
+        assertTrue("pieces of XML are similar " + myDiff, myDiff.similar());
+        assertTrue("but are they identical? " + myDiff, myDiff.identical());
+    }
+
     @Test(expected = IOException.class)
     public void fallback2() throws IOException {
         final String uri = getRestUri() + "/test_fallback2.xml?_indent=no&_wrap=no";
@@ -412,5 +444,16 @@ public class XIncludeSerializerTest {
         params.add("/db/xinclude_test/test_fallback2.xml");
         params.add(1);
         xmlrpc.execute("parse", params);
+
+        params.clear();
+        params.add(XINCLUDE_MODULES_COLLECTION.toString());
+        xmlrpc.execute("createCollection", params);
+
+        params.clear();
+        params.add(XML_DATA_REL_PARENT);
+        params.add("/db/xinclude_test/modules/test_rel_parent.xml");
+        params.add(1);
+        xmlrpc.execute("parse", params);
+
     }
 }

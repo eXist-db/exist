@@ -70,7 +70,7 @@ declare variable $fto:DATA :=
         </address>
     </test>;
 
-declare variable $fto:COLLECTION_NAME := "ft-optimizertest";
+declare variable $fto:COLLECTION_NAME := "lucene-test-ft-optimizer";
 declare variable $fto:COLLECTION := "/db/" || $fto:COLLECTION_NAME;
 
 declare

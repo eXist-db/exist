@@ -1,0 +1,8 @@
+<x xmlns:xinclude="http://www.w3.org/2001/XInclude">
+   <!-- Test a fallback element containing text even when xml is specified in the parse aurgument.-->
+   <xinclude:include href="../ents/some.xml" parse="xml">
+	<xinclude:fallback>
+	 Add something else.
+        </xinclude:fallback>
+   </xinclude:include>
+</x>

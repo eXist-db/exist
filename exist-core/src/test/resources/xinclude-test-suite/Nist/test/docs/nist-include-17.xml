@@ -1,0 +1,5 @@
+<x xmlns:xinc="http://www.w3.org/2001/XInclude">
+<!-- Test intra-document reference within include elements. -->
+	<xinc:include href="../ents/something.xml"/>
+	<xinc:include xpointer="element(/1/1)" parse="xml"/>
+</x>

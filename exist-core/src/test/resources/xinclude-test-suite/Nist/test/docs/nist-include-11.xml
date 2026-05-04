@@ -1,0 +1,4 @@
+<x xmlns:xinclude="http://www.w3.org/2001/XInclude">
+   <!-- Test the inclusion of a non-well-formed resource. The inclusion should generate a fatal error. -->
+   <xinclude:include href="../ents/nwfsomething.xml"/>
+</x>

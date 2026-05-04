@@ -1,0 +1,6 @@
+<?xml version='1.0'?>
+<root>
+   This tests whether syntactically incorrect element scheme data
+   simply fails to identify a subresource.
+  success!
+</root>

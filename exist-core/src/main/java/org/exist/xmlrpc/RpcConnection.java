@@ -3198,15 +3198,25 @@ public class RpcConnection implements RpcAPI {
 
     @Override
     public boolean reindexCollection(final String collectionName) throws URISyntaxException, EXistException, PermissionDeniedException {
-    	reindexCollection(XmldbURI.xmldbUriFor(collectionName));
+        return reindexCollection(collectionName, "all");
+    }
+
+    @Override
+    public boolean reindexCollection(final String collectionName, final String mode) throws URISyntaxException, EXistException, PermissionDeniedException {
+        final org.exist.indexing.ReindexScope scope = org.exist.indexing.ReindexScope.fromString(mode);
+        reindexCollection(XmldbURI.xmldbUriFor(collectionName), scope);
         return true;
     }
 
     private void reindexCollection(final XmldbURI collUri) throws EXistException, PermissionDeniedException {
+        reindexCollection(collUri, org.exist.indexing.ReindexScope.ALL);
+    }
+
+    private void reindexCollection(final XmldbURI collUri, final org.exist.indexing.ReindexScope scope) throws EXistException, PermissionDeniedException {
         withDb((broker, transaction) -> {
-            broker.reindexCollection(transaction, collUri);
+            broker.reindexCollection(transaction, collUri, scope);
             if(LOG.isDebugEnabled()) {
-                LOG.debug("collection {} and sub-collections reindexed", collUri);
+                LOG.debug("collection {} and sub-collections reindexed (scope={})", collUri, scope);
             }
             return null;
         });
@@ -3214,11 +3224,17 @@ public class RpcConnection implements RpcAPI {
 
     @Override
     public boolean reindexDocument(final String docUri) throws EXistException, PermissionDeniedException {
+        return reindexDocument(docUri, "all");
+    }
+
+    @Override
+    public boolean reindexDocument(final String docUri, final String mode) throws EXistException, PermissionDeniedException {
+        final org.exist.indexing.ReindexScope scope = org.exist.indexing.ReindexScope.fromString(mode);
         withDb((broker, transaction) -> {
             try(final LockedDocument lockedDoc = broker.getXMLResource(XmldbURI.create(docUri), LockMode.READ_LOCK)) {
-                broker.reindexXMLResource(transaction, lockedDoc.getDocument(), DBBroker.IndexMode.STORE);
+                broker.reindexXMLResource(transaction, lockedDoc.getDocument(), DBBroker.IndexMode.STORE, scope);
                 if(LOG.isDebugEnabled()) {
-                    LOG.debug("document {} reindexed", docUri);
+                    LOG.debug("document {} reindexed (scope={})", docUri, scope);
                 }
                 return null;
             }

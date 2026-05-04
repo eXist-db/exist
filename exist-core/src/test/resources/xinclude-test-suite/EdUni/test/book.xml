@@ -1,0 +1,11 @@
+<!DOCTYPE book [
+<!ATTLIST intro   id       ID    #IMPLIED>
+<!ATTLIST include xmlns    CDATA #FIXED "http://www.w3.org/2001/XInclude">
+]>
+<book>
+<intro id="intro">
+You will enjoy this book.
+</intro>
+<include href="chap1.xml"/>
+<include href="chap2.xml"/>
+</book>

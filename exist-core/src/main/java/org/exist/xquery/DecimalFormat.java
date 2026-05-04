@@ -42,7 +42,7 @@ public class DecimalFormat {
             'e',
             ',',
             '%',
-            '\u2030',
+            '‰',
             '0',
             '#',
             ';',
@@ -52,7 +52,7 @@ public class DecimalFormat {
     );
 
 
-    // used both in the picture string, and in the formatted number
+    // Markers: used in the picture string to identify active elements
     public final int decimalSeparator;
     public final int exponentSeparator;
     public final int groupingSeparator;
@@ -60,18 +60,40 @@ public class DecimalFormat {
     public final int perMille;
     public final int zeroDigit;
 
-    // used in the picture string
+    // used in the picture string only
     public final int digit;
     public final int patternSeparator;
 
-    //used in the result of formatting the number, but not in the picture string
+    // used in the result of formatting the number, but not in the picture string.
     public final String infinity;
     public final String NaN;
     public final int minusSign;
 
+    // XQ4 renditions: output strings for properties that support char:rendition.
+    // When marker != rendition, the marker is used for picture parsing and the
+    // rendition string appears in the formatted output.
+    public final String decimalSeparatorRendition;
+    public final String exponentSeparatorRendition;
+    public final String groupingSeparatorRendition;
+    public final String percentRendition;
+    public final String perMilleRendition;
+    // Per XPath 4.0, minus-sign supports multi-character renditions in the output.
+    public final String minusSignRendition;
+
     public DecimalFormat(final int decimalSeparator, final int exponentSeparator, final int groupingSeparator,
             final int percent, final int perMille, final int zeroDigit, final int digit,
             final int patternSeparator, final String infinity, final String NaN, final int minusSign) {
+        this(decimalSeparator, exponentSeparator, groupingSeparator, percent, perMille,
+                zeroDigit, digit, patternSeparator, infinity, NaN, minusSign,
+                null, null, null, null, null, null);
+    }
+
+    public DecimalFormat(final int decimalSeparator, final int exponentSeparator, final int groupingSeparator,
+            final int percent, final int perMille, final int zeroDigit, final int digit,
+            final int patternSeparator, final String infinity, final String NaN, final int minusSign,
+            final String decimalSeparatorRendition, final String exponentSeparatorRendition,
+            final String groupingSeparatorRendition, final String percentRendition,
+            final String perMilleRendition, final String minusSignRendition) {
         this.decimalSeparator = decimalSeparator;
         this.exponentSeparator = exponentSeparator;
         this.groupingSeparator = groupingSeparator;
@@ -83,5 +105,12 @@ public class DecimalFormat {
         this.infinity = infinity;
         this.NaN = NaN;
         this.minusSign = minusSign;
+        // Renditions default to the marker character as a string
+        this.decimalSeparatorRendition = decimalSeparatorRendition != null ? decimalSeparatorRendition : new String(Character.toChars(decimalSeparator));
+        this.exponentSeparatorRendition = exponentSeparatorRendition != null ? exponentSeparatorRendition : new String(Character.toChars(exponentSeparator));
+        this.groupingSeparatorRendition = groupingSeparatorRendition != null ? groupingSeparatorRendition : new String(Character.toChars(groupingSeparator));
+        this.percentRendition = percentRendition != null ? percentRendition : new String(Character.toChars(percent));
+        this.perMilleRendition = perMilleRendition != null ? perMilleRendition : new String(Character.toChars(perMille));
+        this.minusSignRendition = minusSignRendition != null ? minusSignRendition : new String(Character.toChars(minusSign));
     }
 }

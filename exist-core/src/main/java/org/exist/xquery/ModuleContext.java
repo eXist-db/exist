@@ -211,7 +211,7 @@ public class ModuleContext extends XQueryContext {
                     }
                 }
             } catch (final URISyntaxException e) {
-                e.printStackTrace();
+                LOG.warn("Failed to derive module load path from parent context", e);
             }
         }
     }
@@ -355,6 +355,11 @@ public class ModuleContext extends XQueryContext {
     @Override
     public MemTreeBuilder getDocumentBuilder(final boolean explicitCreation) {
         return parentContext.getDocumentBuilder(explicitCreation);
+    }
+
+    @Override
+    public MemTreeBuilder getCurrentDocumentBuilder() {
+        return parentContext.getCurrentDocumentBuilder();
     }
 
     @Override
@@ -521,6 +526,11 @@ public class ModuleContext extends XQueryContext {
     @Override
     public String getInheritedNamespace(final String prefix) {
         return parentContext.getInheritedNamespace(prefix);
+    }
+
+    @Override
+    public Map<String, String> getAllInheritedNamespaces() {
+        return parentContext.getAllInheritedNamespaces();
     }
 
     @Override

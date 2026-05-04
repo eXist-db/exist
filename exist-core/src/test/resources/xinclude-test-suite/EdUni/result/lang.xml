@@ -1,0 +1,20 @@
+<sentences xmlns:xi="http://www.w3.org/2001/XInclude">
+  <sentence>The cat sat on the mat.</sentence>
+  <sentence xml:lang="en-gb">Jackdaws love my big sphinx of quartz.</sentence>
+  <sentence id="none" xml:base="lang-samples.xml">Hi.</sentence>
+  <sentence id="none2" xml:base="lang-samples.xml">Yo..</sentence>
+  <sentence xml:lang="en-gb" id="english" xml:base="lang-samples.xml">Hello.</sentence>
+  <sentence xml:lang="en-gb" id="english2" xml:base="lang-samples.xml">Hello.</sentence>
+  <sentence xml:lang="fr" id="french" xml:base="lang-samples.xml">Bonjour.</sentence>
+  <sentence xml:lang="de" id="german" xml:base="lang-samples.xml">Guten Tag.</sentence>
+  <sentence xml:lang="en-au" id="australian" xml:base="lang-samples.xml">G'day mate.</sentence>
+  <sentences xml:lang="en-gb">
+    <sentence xml:lang="" id="none" xml:base="lang-samples.xml">Hi.</sentence>
+    <sentence xml:lang="" id="none2" xml:base="lang-samples.xml">Yo..</sentence>
+    <sentence xml:lang="en-gb" id="english" xml:base="lang-samples.xml">Hello.</sentence>
+    <sentence id="english2" xml:base="lang-samples.xml">Hello.</sentence>
+    <sentence xml:lang="fr" id="french" xml:base="lang-samples.xml">Bonjour.</sentence>
+    <sentence xml:lang="de" id="german" xml:base="lang-samples.xml">Guten Tag.</sentence>
+    <sentence xml:lang="en-au" id="australian" xml:base="lang-samples.xml">G'day mate.</sentence>
+  </sentences>
+</sentences>

@@ -344,16 +344,20 @@ public class QName implements Comparable<QName> {
     public static QName parse(final Context context, final String qname, final String defaultNS)
             throws IllegalQNameException {
 
-        final char firstChar = qname.isEmpty() ? 0 : qname.charAt(0);
+        // Per xs:QName casting (whitespace facet "collapse"), strip leading/trailing
+        // whitespace from the lexical form before parsing.
+        final String trimmed = qname.isEmpty() ? qname : qname.strip();
+
+        final char firstChar = trimmed.isEmpty() ? 0 : trimmed.charAt(0);
 
         // quick test if qname is in clark notation
         if (firstChar == '{') {
-            final Matcher clarkNotation = PTN_CLARK_NOTATION.matcher(qname);
+            final Matcher clarkNotation = PTN_CLARK_NOTATION.matcher(trimmed);
 
             // more expensive check
             if (clarkNotation.matches()) {
                 //parse as clark notation
-                final String ns = clarkNotation.group(1);
+                final String ns = collapseWhitespace(clarkNotation.group(1));
                 final String localPart = clarkNotation.group(2);
                 return new QName(localPart, ns);
             }
@@ -361,18 +365,18 @@ public class QName implements Comparable<QName> {
 
         // quick test if qname is in EqName notation
         if (firstChar == 'Q') {
-            final Matcher eqNameNotation = PTN_EQ_NAME_NOTATION.matcher(qname);
+            final Matcher eqNameNotation = PTN_EQ_NAME_NOTATION.matcher(trimmed);
 
             // more expensive check
             if (eqNameNotation.matches()) {
                 //parse as clark notation
-                final String ns = eqNameNotation.group(1);
+                final String ns = collapseWhitespace(eqNameNotation.group(1));
                 final String localPart = eqNameNotation.group(2);
                 return new QName(localPart, ns);
             }
         }
 
-        final String prefix = extractPrefix(qname);
+        final String prefix = extractPrefix(trimmed);
         String namespaceURI;
         if (prefix != null) {
             namespaceURI = context.getURIForPrefix(prefix);
@@ -385,7 +389,37 @@ public class QName implements Comparable<QName> {
         if (namespaceURI == null) {
             namespaceURI = XMLConstants.NULL_NS_URI;
         }
-        return new QName(extractLocalName(qname), namespaceURI, prefix);
+        return new QName(extractLocalName(trimmed), namespaceURI, prefix);
+    }
+
+    /**
+     * Replace each whitespace character with a space and collapse runs of spaces into one,
+     * then strip leading/trailing spaces. Mirrors the W3C XML Schema "collapse" whitespace
+     * facet, used here when normalizing the namespace portion of a Q{ns}local literal.
+     */
+    private static String collapseWhitespace(final String s) {
+        if (s == null || s.isEmpty()) {
+            return s;
+        }
+        final StringBuilder sb = new StringBuilder(s.length());
+        boolean lastSpace = true; // suppress leading whitespace
+        for (int i = 0; i < s.length(); i++) {
+            final char c = s.charAt(i);
+            if (c == ' ' || c == '\t' || c == '\n' || c == '\r') {
+                if (!lastSpace) {
+                    sb.append(' ');
+                    lastSpace = true;
+                }
+            } else {
+                sb.append(c);
+                lastSpace = false;
+            }
+        }
+        // strip trailing space
+        if (!sb.isEmpty() && sb.charAt(sb.length() - 1) == ' ') {
+            sb.setLength(sb.length() - 1);
+        }
+        return sb.toString();
     }
 
     /**

@@ -79,6 +79,10 @@ public class FunInScopePrefixes extends BasicFunction {
         final ValueSequence result = new ValueSequence();
 
         for (final String prefix : prefixes.keySet()) {
+            // Per XQuery spec §14.2: "xmlns" must not be included in the result
+            if ("xmlns".equals(prefix)) {
+                continue;
+            }
             //The predefined namespaces (e.g. "exist" for temporary nodes) could have been removed from the static context
             if (!(context.getURIForPrefix(prefix) == null &&
                     ("exist".equals(prefix) || "xs".equals(prefix) || "xsi".equals(prefix) ||
@@ -154,25 +158,20 @@ public class FunInScopePrefixes extends BasicFunction {
             Node node = nodeValue.getNode();
             if (context.preserveNamespaces()) {
                 //Horrible hacks to work-around bad in-scope NS : we reconstruct a NS context !
-                if (context.inheritNamespaces()) {
-                    //Grab ancestors' NS
-                    final Deque<Element> stack = new ArrayDeque<>();
-                    do {
-                        if (node.getNodeType() == Node.ELEMENT_NODE) {
-                            stack.add((Element) node);
-                        }
-                        node = node.getParentNode();
-                    } while (node != null && node.getNodeType() == Node.ELEMENT_NODE);
-
-                    while (!stack.isEmpty()) {
-                        collectNamespacePrefixes(stack.pop(), prefixes);
-                    }
-
-                } else {
-                    //Grab self's NS
+                // Always traverse ancestors for in-memory nodes.
+                // When copy-namespaces no-inherit is active, pre-existing nodes (variable copies)
+                // carry explicit namespace undeclarations (xmlns:prefix="") so that ancestor
+                // namespace entries are neutralized by the cleanup pass below.
+                final Deque<Element> stack = new ArrayDeque<>();
+                do {
                     if (node.getNodeType() == Node.ELEMENT_NODE) {
-                        collectNamespacePrefixes((Element) node, prefixes);
+                        stack.add((Element) node);
                     }
+                    node = node.getParentNode();
+                } while (node != null && node.getNodeType() == Node.ELEMENT_NODE);
+
+                while (!stack.isEmpty()) {
+                    collectNamespacePrefixes(stack.pop(), prefixes);
                 }
             } else {
                 if (context.inheritNamespaces()) {
@@ -192,17 +191,16 @@ public class FunInScopePrefixes extends BasicFunction {
             }
         }
 
-        //clean up
-        String key = null;
-        String value = null;
-        for (final Entry<String, String> entry : prefixes.entrySet()) {
-            key = entry.getKey();
-            value = entry.getValue();
-
-            if ((key == null || key.isEmpty()) && (value == null || value.isEmpty())) {
-                prefixes.remove(key);
+        // clean up: remove namespace undeclarations (entries with empty URI).
+        // With copy-namespaces no-inherit, pre-existing nodes carry explicit undeclarations
+        // (xmlns:prefix="") that neutralize ancestor namespace bindings; those must not appear
+        // in the in-scope-prefixes() result.
+        final Iterator<Entry<String, String>> cleanupIt = prefixes.entrySet().iterator();
+        while (cleanupIt.hasNext()) {
+            final Entry<String, String> entry = cleanupIt.next();
+            if (entry.getValue() == null || entry.getValue().isEmpty()) {
+                cleanupIt.remove();
             }
-
         }
 
         return prefixes;

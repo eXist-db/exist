@@ -1,0 +1,14 @@
+<?xml version='1.0'?>
+<root>
+   Test that a document can include pieces of itself while 
+   recursively following xincludes
+  <data>
+     This will be copied
+  </data>
+  <data>
+     This will be copied
+  </data>
+  <data>
+     This will be copied
+  </data>
+</root>

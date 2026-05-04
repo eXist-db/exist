@@ -29,6 +29,7 @@ import org.exist.dom.persistent.NodeProxy;
 import org.exist.numbering.NodeId;
 import org.exist.security.PermissionDeniedException;
 import org.exist.storage.DBBroker;
+import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.XPathException;
@@ -39,6 +40,7 @@ import org.w3c.dom.Element;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.xml.datatype.XMLGregorianCalendar;
+import java.math.BigInteger;
 import java.util.Map;
 import java.util.Optional;
 
@@ -57,6 +59,8 @@ import java.util.Optional;
  */
 public class LuceneFieldConfig extends AbstractFieldConfig {
 
+    private static final BigInteger LONG_MAX = new BigInteger("9223372036854775807");
+    private static final BigInteger LONG_MIN = new BigInteger("-9223372036854775808");
     private static final String ATTR_FIELD_NAME = "name";
     private static final String ATTR_TYPE = "type";
     private static final String ATTR_BINARY = "binary";
@@ -89,10 +93,7 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
             }
         }
 
-        final String storeStr = configElement.getAttribute(ATTR_STORE);
-        if (!storeStr.isEmpty()) {
-            this.store = "yes".equalsIgnoreCase(storeStr) || "true".equalsIgnoreCase(storeStr);
-        }
+        this.store = Configuration.parseBooleanAttribute(configElement, ATTR_STORE, true);
 
         final String analyzerOpt = configElement.getAttribute(ATTR_ANALYZER);
         if (!analyzerOpt.isEmpty()) {
@@ -107,10 +108,7 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
             this.condition = Optional.of(cond);
         }
 
-        final String binaryStr = configElement.getAttribute(ATTR_BINARY);
-        if (!binaryStr.isEmpty()) {
-            this.binary = "yes".equalsIgnoreCase(binaryStr) || "true".equalsIgnoreCase(binaryStr);
-        }
+        this.binary = Configuration.parseBooleanAttribute(configElement, ATTR_BINARY, false);
     }
 
     @Nonnull
@@ -193,29 +191,35 @@ public class LuceneFieldConfig extends AbstractFieldConfig {
                 case Type.INTEGER:
                 case Type.LONG:
                 case Type.UNSIGNED_LONG:
-                    long lvalue = Long.parseLong(content);
-                    return new LongField(fieldName, lvalue, LongField.TYPE_STORED);
+                    final BigInteger big = new BigInteger(content.trim());
+                    if (big.compareTo(LONG_MIN) < 0 || big.compareTo(LONG_MAX) > 0) {
+                        throw new IllegalStateException(String.format(
+                            "Lucene field '%s' of type xs:integer cannot store value outside long range (-9223372036854775808 to 9223372036854775807): %s. See https://github.com/eXist-db/exist/issues/4532",
+                            fieldName, content));
+                    }
+                    long lvalue = big.longValue();
+                    return new LongField(fieldName, lvalue, Field.Store.YES);
                 case Type.INT:
                 case Type.UNSIGNED_INT:
                 case Type.SHORT:
                 case Type.UNSIGNED_SHORT:
                     int ivalue = Integer.parseInt(content);
-                    return new IntField(fieldName, ivalue, IntField.TYPE_STORED);
+                    return new IntField(fieldName, ivalue, Field.Store.YES);
                 case Type.DECIMAL:
                 case Type.DOUBLE:
                     double dvalue = Double.parseDouble(content);
-                    return new DoubleField(fieldName, dvalue, DoubleField.TYPE_STORED);
+                    return new DoubleField(fieldName, dvalue, Field.Store.YES);
                 case Type.FLOAT:
                     float fvalue = Float.parseFloat(content);
-                    return new FloatField(fieldName, fvalue, FloatField.TYPE_STORED);
+                    return new FloatField(fieldName, fvalue, Field.Store.YES);
                 case Type.DATE:
                     DateValue dv = new DateValue(content);
                     long dl = dateToLong(dv);
-                    return new LongField(fieldName, dl, LongField.TYPE_STORED);
+                    return new LongField(fieldName, dl, Field.Store.YES);
                 case Type.TIME:
                     TimeValue tv = new TimeValue(content);
                     long tl = timeToLong(tv);
-                    return new LongField(fieldName, tl, LongField.TYPE_STORED);
+                    return new LongField(fieldName, tl, Field.Store.YES);
                 case Type.DATE_TIME:
                     DateTimeValue dtv = new DateTimeValue(content);
                     String dateStr = dateTimeToString(dtv);

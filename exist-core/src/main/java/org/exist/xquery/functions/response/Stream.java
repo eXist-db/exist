@@ -113,7 +113,7 @@ public class Stream extends StrictResponseFunction {
                     serializer.toSAX(inputNode, 1, inputNode.getItemCount(), false, false, 0, 0);
 
                 } catch (final SAXException e) {
-                    e.printStackTrace();
+                    logger.error("SAX error while serializing response stream", e);
                     throw new IOException(e);
                 } finally {
                     serializerPool.returnObject(sax);

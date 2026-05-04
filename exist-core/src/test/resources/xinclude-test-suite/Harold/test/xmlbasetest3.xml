@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<root xmlns:xi="http://www.w3.org/2001/XInclude">
+   Test that xml:base attribute in unincluded element
+   still applies in merged document
+  <xi:include href="baseinclude.xml" xpointer="element(/1/1)"/>
+</root>

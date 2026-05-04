@@ -638,13 +638,30 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 
             for( final NodeProxy item : nodes ) {
                 final AtomicValue lv = item.atomize();
-                final Sequence    rs = getRight().eval(contextSequence, null);
+                ContextItem ctxItem = item.getContext();
+                if( ctxItem != null ) {
+                    // use the context node (e.g. the parent element) so that
+                    // the right operand can resolve sibling attributes correctly
+                    do {
+                        final Sequence rs = getRight().eval(ctxItem.getNode().toSequence(), null);
 
-                for( final SequenceIterator i2 = Atomize.atomize(rs).iterate(); i2.hasNext(); ) {
-                    final AtomicValue rv = i2.nextItem().atomize();
+                        for( final SequenceIterator i2 = Atomize.atomize(rs).iterate(); i2.hasNext(); ) {
+                            final AtomicValue rv = i2.nextItem().atomize();
 
-                    if( compareAtomic( collator, lv, rv ) ) {
-                        result.add( item );
+                            if( compareAtomic( collator, lv, rv ) ) {
+                                result.add( item );
+                            }
+                        }
+                    } while( ( ctxItem = ctxItem.getNextDirect() ) != null );
+                } else {
+                    final Sequence rs = getRight().eval(contextSequence, null);
+
+                    for( final SequenceIterator i2 = Atomize.atomize(rs).iterate(); i2.hasNext(); ) {
+                        final AtomicValue rv = i2.nextItem().atomize();
+
+                        if( compareAtomic( collator, lv, rv ) ) {
+                            result.add( item );
+                        }
                     }
                 }
             }

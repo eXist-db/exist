@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<x xmlns:xi="http://www.w3.org/2001/XInclude">
+<ADDRBOOK xml:base="include3.xml">
+  <ENTRY ID="pa">
+    <NAME>Pieter Aaron</NAME>
+    <EMAIL>pieter.aaron@inter.net</EMAIL>
+  </ENTRY>
+</ADDRBOOK>
+</x>

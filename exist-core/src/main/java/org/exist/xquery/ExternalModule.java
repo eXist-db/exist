@@ -49,7 +49,7 @@ public interface ExternalModule extends Module {
      * 
      * @param func the function to add
      */
-    public void declareFunction(UserDefinedFunction func);
+    public void declareFunction(UserDefinedFunction func) throws XPathException;
 
     /**
      * Try to find the function identified by qname. Returns null

@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<x xmlns:xinclude="http://www.w3.org/2001/XInclude">
+   <!-- Simple test of including a set of nodes from an XML document -->
+   <chapter xml:base="../ents/books.xml">chapter 1.
+	<subtitle>first subtitle</subtitle>
+	<subtitle>Second subtitle</subtitle>
+</chapter>
+</x>

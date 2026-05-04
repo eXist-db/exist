@@ -31,7 +31,6 @@ import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -92,41 +91,9 @@ public class CountClause extends AbstractFLWORClause {
 
     @Override
     public Sequence preEval(final Sequence seq) throws XPathException {
-        // determine whether to count down or up
-        this.step = hasPreviousOrderByDescending() ? -1 : 1;
-
-        // get the count start position
-        if (this.step == 1) {
-            this.count = 0;
-        } else {
-            this.count = seq.getItemCountLong() + 1;
-        }
-
+        this.step = 1;
+        this.count = 0;
         return super.preEval(seq);
-    }
-
-    private boolean hasPreviousOrderByDescending() {
-        FLWORClause prev = getPreviousClause();
-        while (prev != null) {
-            switch (prev.getType()) {
-                case LET, GROUPBY, FOR -> {
-                    return false;
-                }
-                case ORDERBY -> {
-                    return isDescending(((OrderByClause) prev).getOrderSpecs());
-                }
-                default -> prev = prev.getPreviousClause();
-            }
-        }
-        return true;
-    }
-    private boolean isDescending(final List<OrderSpec> orderSpecs) {
-        for (final OrderSpec orderSpec : orderSpecs) {
-            if ((orderSpec.getModifiers() & OrderSpec.DESCENDING_ORDER) == OrderSpec.DESCENDING_ORDER) {
-                return true;
-            }
-        }
-        return false;
     }
 
     @Override

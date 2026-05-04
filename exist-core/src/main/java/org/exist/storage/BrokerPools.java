@@ -61,19 +61,45 @@ abstract class BrokerPools {
     public static String DEFAULT_INSTANCE_NAME = "exist";
 
     // register a shutdown hook
+    @GuardedBy("BrokerPools.class") private static Thread defaultShutdownHook;
+
     static {
+        final Thread hook = newGlobalThread("BrokerPools.ShutdownHook", () -> {
+            // Make sure that all instances are cleanly shut down.
+            LOG.info("Executing shutdown thread");
+            BrokerPools.stopAll(true);
+        });
         try {
-            Runtime.getRuntime().addShutdownHook(newGlobalThread("BrokerPools.ShutdownHook", () -> {
-                /**
-                 * Make sure that all instances are cleanly shut down.
-                 */
-                LOG.info("Executing shutdown thread");
-                BrokerPools.stopAll(true);
-            }));
+            Runtime.getRuntime().addShutdownHook(hook);
+            defaultShutdownHook = hook;
             LOG.debug("BrokerPools.ShutdownHook hook registered");
         } catch (final IllegalArgumentException e) {
             // hook already registered
             LOG.warn("Unable to add BrokerPools.ShutdownHook hook: {}", e.getMessage());
+        }
+    }
+
+    /**
+     * Deregister the default {@code BrokerPools.ShutdownHook}.
+     *
+     * Used by {@link org.exist.jetty.JettyStart} when it registers its own shutdown hook
+     * that subsumes the default one. Avoids the C2 race where two shutdown hooks both
+     * call {@link #stopAll(boolean)} concurrently and reach for {@code server.stop()}
+     * in non-deterministic order.
+     *
+     * Safe to call multiple times. If the JVM is already shutting down, the deregistration
+     * fails silently — the hook will run and is a no-op against an empty {@code instances} map.
+     */
+    public static synchronized void deregisterDefaultShutdownHook() {
+        if (defaultShutdownHook != null) {
+            try {
+                Runtime.getRuntime().removeShutdownHook(defaultShutdownHook);
+                LOG.debug("BrokerPools.ShutdownHook hook unregistered");
+            } catch (final IllegalStateException e) {
+                // JVM is already shutting down; not safe (and not necessary) to remove
+                LOG.debug("Could not unregister BrokerPools.ShutdownHook (shutdown in progress)");
+            }
+            defaultShutdownHook = null;
         }
     }
 

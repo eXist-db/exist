@@ -73,8 +73,13 @@ declare %private variable $t:test-collections :=
 declare
     %test:setUp
 function t:set-up() {
+    (: Create config parent chain first. :)
+    let $_ := (
+        xmldb:create-collection("/db/system", "config"),
+        xmldb:create-collection("/db/system/config", "db")
+    )
     (: Create and configure the test collections :)
-    array:for-each($t:test-collections, function($test-collection) {
+    return array:for-each($t:test-collections, function($test-collection) {
         let $collection-path := $t:test-collection-path || "/" || $test-collection?collection-name
         let $config-collection-path := "/db/system/config" || $collection-path
         return
@@ -90,7 +95,6 @@ function t:set-up() {
                 xmldb:store($collection-path, "test.xml", $test-collection?data)
             )
     }),
-
     (: Reindex the test collections :)
     xmldb:reindex($t:test-collection-path)
 };

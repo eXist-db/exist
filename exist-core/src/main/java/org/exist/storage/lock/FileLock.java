@@ -114,8 +114,7 @@ public class FileLock {
             try {
                 read();
             } catch (final IOException e) {
-                message("Failed to read lock file", null);
-                e.printStackTrace();
+                message("Failed to read lock file", e);
             }
             
             //Check if there's a heart-beat. If not, remove the stale .lck file and try again

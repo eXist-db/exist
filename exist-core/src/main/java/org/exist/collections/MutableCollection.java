@@ -461,8 +461,13 @@ public class MutableCollection implements Collection {
                         child.allDocs(broker, docs, recursive, lockMap);
                     }
                 } catch(final PermissionDeniedException pde) {
-                    //SKIP to next collection
-                    //TODO create an audit log??!
+                    // The caller is permitted to read this collection, but lacks read
+                    // permission on a sub-collection. Skip it and continue: the result is
+                    // a partial document set, not an error.
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("Skipping sub-collection {} during allDocs traversal of {}: {}",
+                                subCol, path, pde.getMessage());
+                    }
                 }
             }
         }
@@ -496,8 +501,13 @@ public class MutableCollection implements Collection {
                         child.allDocs(broker, docs, recursive, lockMap, lockType);
                     }
                 } catch (final PermissionDeniedException pde) {
-                    //SKIP to next collection
-                    //TODO create an audit log??!
+                    // The caller is permitted to read this collection, but lacks read
+                    // permission on a sub-collection. Skip it and continue: the result is
+                    // a partial document set, not an error.
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("Skipping sub-collection {} during allDocs traversal of {}: {}",
+                                uri, path, pde.getMessage());
+                    }
                 }
             }
         }
@@ -945,6 +955,7 @@ public class MutableCollection implements Collection {
                 }
             });
 
+            LOG.debug("loadCollection {}: collectionId={} loaded {} documents into cache", path, collectionId, documents.size());
             return collection;
 //        }
     }
@@ -1962,7 +1973,9 @@ public class MutableCollection implements Collection {
             return broker.getIndexConfiguration();
         }
         //... otherwise return the general config (the broker's one)
-        return conf.getIndexConfiguration();
+        // Fall back to broker config when collection.xconf has no <index> element (fixes #2948)
+        final IndexSpec spec = conf.getIndexConfiguration();
+        return (spec != null) ? spec : broker.getIndexConfiguration();
     }
 
     @Override

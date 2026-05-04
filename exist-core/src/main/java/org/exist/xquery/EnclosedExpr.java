@@ -21,20 +21,30 @@
  */
 package org.exist.xquery;
 
+import org.exist.dom.QName;
 import org.exist.dom.memtree.DocumentBuilderReceiver;
+import org.exist.dom.memtree.DocumentImpl;
 import org.exist.dom.memtree.MemTreeBuilder;
+import org.exist.dom.memtree.NodeImpl;
 import org.exist.dom.memtree.TextImpl;
+import org.exist.util.serializer.AttrList;
 import org.exist.xquery.functions.array.ArrayType;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.*;
 import org.w3c.dom.DOMException;
 import org.xml.sax.SAXException;
 
+import javax.xml.XMLConstants;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 /**
  * Represents an enclosed expression <code>{expr}</code> inside element
  * content. Enclosed expressions within attribute values are processed by
  * {@link org.exist.xquery.AttributeConstructor}.
- *  
+ *
  * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public class EnclosedExpr extends PathExpr {
@@ -42,7 +52,7 @@ public class EnclosedExpr extends PathExpr {
     public EnclosedExpr(XQueryContext context) {
         super(context);
     }
-    
+
 	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
 		final AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
 		newContextInfo.removeFlag(IN_NODE_CONSTRUCTOR);
@@ -74,12 +84,39 @@ public class EnclosedExpr extends PathExpr {
         Sequence result;
         context.enterEnclosedExpr();
         try {
+            // Check copy-namespaces mode before evaluation so we can lazily capture
+            // innerBuilder only when no-inherit is active. In the default (inherit) case
+            // this avoids the peekDocumentBuilder() call entirely.
+            final boolean noInherit = !context.inheritNamespaces();
+
             context.pushDocumentContext();
 
+            MemTreeBuilder innerBuilder = null;
             try {
                 result = super.eval(contextSequence, null);
+                // Only capture the inner builder when no-inherit is active — it is used
+                // solely to distinguish pre-existing nodes (variable references / copies)
+                // from nodes constructed inside this enclosed expression.
+                if (noInherit) {
+                    innerBuilder = context.getCurrentDocumentBuilder();
+                }
             } finally {
                 context.popDocumentContext();
+            }
+
+            // Compute ancestor namespace context for no-inherit copy handling.
+            // This is the union of inherited namespaces (from outer constructors) and
+            // in-scope namespaces (from the immediately enclosing constructor), i.e. all
+            // namespace bindings that an ancestor traversal from this element would find.
+            Map<String, String> ancestorNS = null;
+            if (noInherit) {
+                final Map<String, String> inherited = context.getAllInheritedNamespaces();
+                final Map<String, String> inScope = context.getInScopeNamespaces();
+                if ((inherited != null && !inherited.isEmpty()) || (inScope != null && !inScope.isEmpty())) {
+                    ancestorNS = new HashMap<>();
+                    if (inherited != null) { ancestorNS.putAll(inherited); }
+                    if (inScope != null) { ancestorNS.putAll(inScope); }
+                }
             }
 
             // create the output
@@ -130,11 +167,36 @@ public class EnclosedExpr extends PathExpr {
                         }
                         try {
                             receiver.setCheckNS(false);
-                            next.copyTo(context.getBroker(), receiver);
+                            // When copy-namespaces no-inherit is active, pre-existing element nodes
+                            // (i.e. nodes from variable references, not direct constructors) must have
+                            // namespace undeclarations injected so that ancestor-traversal in
+                            // in-scope-prefixes() is neutralized for inherited namespace bindings.
+                            if (noInherit && ancestorNS != null
+                                    && next.getType() == Type.ELEMENT
+                                    && next instanceof NodeImpl) {
+                                final NodeImpl nodeImpl = (NodeImpl) next;
+                                final boolean isPreExisting = (innerBuilder == null)
+                                        || (nodeImpl.getOwnerDocument() != innerBuilder.getDocument());
+                                if (isPreExisting) {
+                                    next.copyTo(context.getBroker(),
+                                            new NoInheritCopyReceiver(this, builder, ancestorNS));
+                                } else {
+                                    next.copyTo(context.getBroker(), receiver);
+                                }
+                            } else {
+                                next.copyTo(context.getBroker(), receiver);
+                            }
                             receiver.setCheckNS(true);
                         } catch (DOMException e) {
                             if (e.code == DOMException.NAMESPACE_ERR) {
                                 throw new XPathException(this, ErrorCodes.XQDY0102, e.getMessage());
+                            } else if (e.code == DOMException.INUSE_ATTRIBUTE_ERR) {
+                                final String msg = e.getMessage();
+                                if (msg != null && msg.contains("XQTY0024")) {
+                                    throw new XPathException(this, ErrorCodes.XQTY0024, msg);
+                                } else {
+                                    throw new XPathException(this, ErrorCodes.XQDY0025, msg);
+                                }
                             } else {
                                 throw new XPathException(this, e.getMessage(), e);
                             }
@@ -148,6 +210,18 @@ public class EnclosedExpr extends PathExpr {
                     receiver.characters(buf);
                 }
             } catch (final SAXException e) {
+                // DocumentBuilderReceiver wraps DOMException in SAXException; unwrap so that
+                // INUSE_ATTRIBUTE_ERR (used by DocumentImpl to signal XQTY0024 / XQDY0025)
+                // surfaces with the proper W3C error code rather than the generic ERROR code.
+                final Throwable cause = e.getCause();
+                if (cause instanceof DOMException de && de.code == DOMException.INUSE_ATTRIBUTE_ERR) {
+                    final String msg = de.getMessage();
+                    if (msg != null && msg.contains("XQTY0024")) {
+                        throw new XPathException(this, ErrorCodes.XQTY0024, msg);
+                    } else {
+                        throw new XPathException(this, ErrorCodes.XQDY0025, msg);
+                    }
+                }
                 LOG.warn("SAXException during serialization: {}", e.getMessage(), e);
                 throw new XPathException(this, e);
             }
@@ -193,5 +267,105 @@ public class EnclosedExpr extends PathExpr {
     @Override
     public boolean evalNextExpressionOnEmptyContextSequence() {
         return true;
+    }
+
+    /**
+     * A {@link DocumentBuilderReceiver} that injects namespace undeclarations onto the
+     * root element of a copied pre-existing node when {@code declare copy-namespaces no-inherit}
+     * is active.  The undeclarations neutralize ancestor namespace bindings so that
+     * {@code fn:in-scope-prefixes()} traversing the ancestor chain returns the correct result.
+     *
+     * <p>Only prefixes present in {@code ancestorNS} but absent from the root element's own
+     * namespace declarations are undeclared (i.e. recorded as {@code xmlns:prefix=""}).</p>
+     */
+    private static final class NoInheritCopyReceiver extends DocumentBuilderReceiver {
+
+        private final Map<String, String> ancestorNS;
+        /** True once the root element's startElement event has been seen. */
+        private boolean rootSeen = false;
+        /** True once undeclarations have been flushed (happens before first non-namespace event). */
+        private boolean undeclsFlushed = false;
+        /** Prefixes that the root element itself declares (element prefix + xmlns:* nodes). */
+        private final Set<String> rootOwnPrefixes = new HashSet<>();
+
+        NoInheritCopyReceiver(final Expression expr, final MemTreeBuilder builder,
+                final Map<String, String> ancestorNS) {
+            super(expr, builder);
+            this.ancestorNS = ancestorNS;
+        }
+
+        @Override
+        public void startElement(final QName qname, final AttrList attribs) {
+            if (!rootSeen) {
+                rootSeen = true;
+                // Track the element's own namespace prefix so we don't undeclare it.
+                final String prefix = qname.getPrefix();
+                if (prefix != null && !prefix.isEmpty()) {
+                    rootOwnPrefixes.add(prefix);
+                }
+                // Note: namespace declaration nodes for this element come via addNamespaceNode
+                // after startElement; they are collected in rootOwnPrefixes there.
+            } else {
+                maybeFlushUndeclarations();
+            }
+            super.startElement(qname, attribs);
+        }
+
+        @Override
+        public void addNamespaceNode(final QName qname) throws SAXException {
+            if (rootSeen && !undeclsFlushed) {
+                // Collect the prefix that this namespace node declares on the root element.
+                rootOwnPrefixes.add(qname.getLocalPart());
+            }
+            super.addNamespaceNode(qname);
+        }
+
+        @Override
+        public void characters(final CharSequence seq) throws SAXException {
+            maybeFlushUndeclarations();
+            super.characters(seq);
+        }
+
+        @Override
+        public void characters(final char[] ch, final int start, final int len) throws SAXException {
+            maybeFlushUndeclarations();
+            super.characters(ch, start, len);
+        }
+
+        @Override
+        public void endElement(final String ns, final String local, final String qname) throws SAXException {
+            maybeFlushUndeclarations();
+            super.endElement(ns, local, qname);
+        }
+
+        @Override
+        public void endElement(final QName qname) throws SAXException {
+            maybeFlushUndeclarations();
+            super.endElement(qname);
+        }
+
+        /**
+         * Emit namespace undeclarations for every ancestor namespace binding whose prefix is
+         * not already declared by the root element itself.  Called before the first non-namespace
+         * event on the root element (child, text, endElement) to ensure the nodes attach to the
+         * root element node number in the MemTree.
+         */
+        private void maybeFlushUndeclarations() {
+            if (rootSeen && !undeclsFlushed) {
+                undeclsFlushed = true;
+                for (final Map.Entry<String, String> entry : ancestorNS.entrySet()) {
+                    final String prefix = entry.getKey();
+                    if (!rootOwnPrefixes.contains(prefix)) {
+                        try {
+                            super.addNamespaceNode(
+                                    new QName(prefix, XMLConstants.NULL_NS_URI, XMLConstants.XMLNS_ATTRIBUTE));
+                        } catch (final SAXException e) {
+                            // Silently skip — undeclaration is best-effort; worst case
+                            // in-scope-prefixes() returns a superset which is handled by cleanup.
+                        }
+                    }
+                }
+            }
+        }
     }
 }

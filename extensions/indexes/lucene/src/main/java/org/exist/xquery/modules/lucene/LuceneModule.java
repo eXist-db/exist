@@ -76,7 +76,13 @@ public class LuceneModule extends AbstractInternalModule {
         new FunctionDef(Field.FS_FIELD[1], Field.class),
         new FunctionDef(Field.FS_BINARY_FIELD, Field.class),
         new FunctionDef(Field.FS_HIGHLIGHT_FIELD_MATCHES, Field.class),
-        new FunctionDef(LuceneIndexKeys.signatures[0], LuceneIndexKeys.class)
+        new FunctionDef(LuceneIndexKeys.signatures[0], LuceneIndexKeys.class),
+        new FunctionDef(QueryVector.signatures[0], QueryVector.class),
+        new FunctionDef(QueryVector.signatures[1], QueryVector.class),
+        new FunctionDef(QueryVector.signatures[2], QueryVector.class),
+        new FunctionDef(QueryFieldVector.signatures[0], QueryFieldVector.class),
+        new FunctionDef(QueryFieldVector.signatures[1], QueryFieldVector.class),
+        new FunctionDef(QueryFieldVector.signatures[2], QueryFieldVector.class)
     };
 
     public LuceneModule(Map<String, List<? extends Object>> parameters) {

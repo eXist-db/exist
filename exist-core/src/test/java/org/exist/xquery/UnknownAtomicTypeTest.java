@@ -74,13 +74,13 @@ public class UnknownAtomicTypeTest extends XQueryCompilationTest {
     public void castAs() throws EXistException, PermissionDeniedException {
         final String query = "1 cast as f";
         final String error = "Unknown simple type f";
-        assertXQStaticError(ErrorCodes.XPST0051, 1, 11, error, compileQuery(query));
+        assertXQStaticError(ErrorCodes.XQST0052, 1, 11, error, compileQuery(query));
     }
 
     @Test
     public void castableAs() throws EXistException, PermissionDeniedException {
         final String query = "1 castable as g";
         final String error = "Unknown simple type g";
-        assertXQStaticError(ErrorCodes.XPST0051, 1, 15, error, compileQuery(query));
+        assertXQStaticError(ErrorCodes.XQST0052, 1, 15, error, compileQuery(query));
     }
 }

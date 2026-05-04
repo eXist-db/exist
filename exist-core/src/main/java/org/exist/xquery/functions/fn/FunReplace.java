@@ -23,6 +23,9 @@ package org.exist.xquery.functions.fn;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import net.sf.saxon.Configuration;
 import net.sf.saxon.functions.Replace;
@@ -136,6 +139,23 @@ public class FunReplace extends BasicFunction {
 				result = new StringValue(this, res.toString());
 
 			} catch (final net.sf.saxon.trans.XPathException e) {
+				// Saxon's XP30 regex translator rejects some valid patterns.
+				// Fall back to Java regex before giving up.
+				if ("FORX0002".equals(e.getErrorCodeLocalPart())) {
+					try {
+						final String javaPattern = translateRegexp(
+								this, pattern, flags.contains("x"), flags.contains("i"));
+						final int javaFlags = parseFlags(this, flags);
+						final Pattern compiled = Pattern.compile(javaPattern, javaFlags);
+						final Matcher matcher = compiled.matcher(string);
+						if (compiled.matcher("").matches()) {
+							throw new XPathException(this, ErrorCodes.FORX0003, "regular expression could match empty string");
+						}
+						return new StringValue(this, matcher.replaceAll(replace));
+					} catch (final PatternSyntaxException ignored) {
+						// Java regex fallback also failed — throw original Saxon error below
+					}
+				}
 				switch (e.getErrorCodeLocalPart()) {
 					case "FORX0001" -> throw new XPathException(this, ErrorCodes.FORX0001, e.getMessage());
 					case "FORX0002" -> throw new XPathException(this, ErrorCodes.FORX0002, e.getMessage());

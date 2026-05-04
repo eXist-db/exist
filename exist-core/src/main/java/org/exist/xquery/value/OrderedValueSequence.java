@@ -212,6 +212,14 @@ public class OrderedValueSequence extends AbstractSequence {
 //		FastQSort.sort(items, 0, count - 1);
 
         Arrays.parallelSort(items, 0, count);
+
+        // Clear the shared BitSets once — they are shared across all entries,
+        // so clearing them per-entry in a parallel stream caused a race condition
+        // (concurrent BitSet.clear() corrupts internal wordsInUse counter).
+        for (final BitSet bitSet : encounteredPrimitiveTypesForOrderSpecs) {
+            bitSet.clear();
+        }
+        // Null out per-entry values to release memory (each entry has its own list, so this is safe in parallel)
         Arrays.stream(items, 0, count).parallel().forEach(Entry::clear);
     }
 
@@ -302,7 +310,7 @@ public class OrderedValueSequence extends AbstractSequence {
             }
             return set;
         } else {
-            throw new XPathException((Expression) null, "Type error: the sequence cannot be converted into" +
+            throw new XPathException((Expression) null, ErrorCodes.XPTY0019, "Type error: the sequence cannot be converted into" +
                     " a node set. Item type is " + Type.getTypeName(itemType));
         }
     }
@@ -330,7 +338,7 @@ public class OrderedValueSequence extends AbstractSequence {
             return MemoryNodeSet.EMPTY;
         }
         if (itemType == Type.ANY_TYPE || !Type.subTypeOf(itemType, Type.NODE)) {
-            throw new XPathException((Expression) null, "Type error: the sequence cannot be converted into" +
+            throw new XPathException((Expression) null, ErrorCodes.XPTY0019, "Type error: the sequence cannot be converted into" +
                     " a node set. Item type is " + Type.getTypeName(itemType));
         }
         for (int i = 0; i < count; i++) {
@@ -555,9 +563,6 @@ public class OrderedValueSequence extends AbstractSequence {
         }
 
         public void clear() {
-            for (final BitSet encounteredPrimitiveTypesForOrderSpec : encounteredPrimitiveTypesForOrderSpecs) {
-                encounteredPrimitiveTypesForOrderSpec.clear();
-            }
             values = null;
         }
     }

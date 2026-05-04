@@ -88,6 +88,9 @@ public class DeadlockIT {
 
     private static final int DELAY = 7000;
 
+    /** Max time to wait for executor to finish (fail fast instead of hanging CI). */
+    private static final int AWAIT_TERMINATION_MINUTES = 5;
+
     /** Use 4 test runs, querying different collections */
     @Parameters(name = "{0}")
     public static java.util.Collection<Object[]> data() {
@@ -179,7 +182,7 @@ public class DeadlockIT {
 		service.removeCollection(".");
     }
 
-    @Test
+	@Test(timeout = (AWAIT_TERMINATION_MINUTES + 1) * 60 * 1000)
 	public void runTasks() {
 		final ExecutorService executor = Executors.newFixedThreadPool(N_THREADS);
         executor.submit(new StoreTask("store", COLL_COUNT, DOC_COUNT));
@@ -203,13 +206,16 @@ public class DeadlockIT {
         executor.shutdown();
 		boolean terminated = false;
 		try {
-			terminated = executor.awaitTermination(60 * 60, TimeUnit.SECONDS);
+			terminated = executor.awaitTermination(AWAIT_TERMINATION_MINUTES, TimeUnit.MINUTES);
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
 			LOG.error(e.getMessage(), e);
 			fail(e.getMessage());
 		}
-		assertTrue(terminated);
+		if (!terminated) {
+			executor.shutdownNow();
+			assertTrue("Executor did not terminate within " + AWAIT_TERMINATION_MINUTES + " minutes; possible deadlock or hang", terminated);
+		}
 	}
 
 	private static class StoreTask implements Runnable {

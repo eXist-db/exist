@@ -136,7 +136,7 @@ public class    AnyURIValue extends AtomicValue {
             try {
                 XmldbURI.xmldbUriFor(escapedString);
             } catch (final URISyntaxException ex) {
-                throw new XPathException(getExpression(), 
+                throw new XPathException(getExpression(), ErrorCodes.XQST0046,
                         "Type error: the given string '" + s + "' cannot be cast to " + Type.getTypeName(getType()));
             }
         }

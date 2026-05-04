@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<!-- Including an XML document using an XPointer element schema. -->
+<document>
+  <p>The relevant excerpt is:</p>
+  <quotation>
+    <p xml:base="../ents/ptrtst.xml">Sentence 1.  Sentence 2.</p>
+  </quotation>
+</document>

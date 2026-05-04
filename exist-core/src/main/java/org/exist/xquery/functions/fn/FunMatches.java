@@ -289,6 +289,10 @@ public final class FunMatches extends Function implements Optimizable, IndexUseR
         newContextInfo.setParent(this);
         //  call analyze for each argument
         inPredicate = (newContextInfo.getFlags() & IN_PREDICATE) > 0;
+        // FunMatches implements Optimizable and depends on IN_PREDICATE
+        // being visible to the range/Lucene index optimizers via its
+        // arguments. Do not strip it here. The general Function.analyze()
+        // strips it for non-Optimizable functions (issue #4958).
         for (int i = 0; i < getArgumentCount(); i++) {
             getArgument(i).analyze(newContextInfo);
         }
@@ -526,6 +530,19 @@ public final class FunMatches extends Function implements Optimizable, IndexUseR
             return regex.containsMatch(string);
 
         } catch (final net.sf.saxon.trans.XPathException e) {
+            // Saxon's XP30 regex translator rejects some valid patterns:
+            // \b/\B word boundaries, certain quantifier sequences, \p{Is<Block>} names, etc.
+            // Fall back to Java regex before giving up.
+            if ("FORX0002".equals(e.getErrorCodeLocalPart())) {
+                try {
+                    final String javaPattern = translateRegexp(
+                            this, pattern, flags.contains("x"), flags.contains("i"));
+                    int javaFlags = parseFlags(this, flags);
+                    return Pattern.compile(javaPattern, javaFlags).matcher(string).find();
+                } catch (final XPathException | PatternSyntaxException ignored) {
+                    // Java regex fallback also failed — throw original Saxon error below
+                }
+            }
             switch (e.getErrorCodeLocalPart()) {
                 case "FORX0001" -> throw new XPathException(this, ErrorCodes.FORX0001, "Invalid regular expression: " + e.getMessage());
                 case "FORX0002" -> throw new XPathException(this, ErrorCodes.FORX0002, "Invalid regular expression: " + e.getMessage());

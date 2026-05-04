@@ -4,35 +4,126 @@ updates:
   directory: "/"
   schedule:
     interval: "weekly"
+  groups:
+    actions:
+      patterns:
+      - "*"
+
 - package-ecosystem: "maven"
   directory: "/"
   schedule:
     interval: "daily"
     time: "03:00"
   open-pull-requests-limit: 10
-  ignore:
-  - dependency-name: org.apache.lucene:lucene-analyzers-common
-    versions:
-    - ">= 8.a, < 9"
-  - dependency-name: org.apache.lucene:lucene-analyzers-icu
-    versions:
-    - ">= 8.a, < 9"
-  - dependency-name: org.apache.lucene:lucene-core
-    versions:
-    - ">= 8.a, < 9"
-  - dependency-name: org.apache.lucene:lucene-facet
-    versions:
-    - ">= 8.a, < 9"
-  - dependency-name: org.apache.lucene:lucene-queries
-    versions:
-    - ">= 8.a, < 9"
-  - dependency-name: org.apache.lucene:lucene-queryparser
-    versions:
-    - ">= 8.a, < 9"
-  - dependency-name: com.ibm.icu:icu4j
-    versions:
-    - "69.1"
-  - dependency-name: com.mycila:license-maven-plugin
-    versions:
-    - "4.0"
-    - "4.0.rc2"
+  groups:
+    # Major bumps stay separate for QA; patch/minor trains bundle here.
+    jetty:
+      patterns:
+      - "org.eclipse.jetty:*"
+      - "org.eclipse.jetty.websocket:*"
+      update-types:
+      - patch
+      - minor
+    lucene:
+      patterns:
+      - "org.apache.lucene:*"
+      update-types:
+      - patch
+      - minor
+    logging:
+      patterns:
+      - "org.apache.logging.log4j:*"
+      - "org.slf4j:*"
+      update-types:
+      - patch
+      - minor
+    junit-jupiter-bom:
+      patterns:
+      - "org.junit:junit-bom"
+      - "org.junit.jupiter:*"
+      - "org.junit.platform:*"
+      - "org.junit.vintage:*"
+      update-types:
+      - patch
+      - minor
+    junit4-test-support:
+      patterns:
+      - "junit:junit"
+      - "org.hamcrest:*"
+      - "org.assertj:*"
+      - "org.easymock:*"
+      - "org.objenesis:*"
+      - "org.awaitility:*"
+      - "com.googlecode.junit-toolbox:*"
+      - "org.xmlunit:*"
+      update-types:
+      - patch
+      - minor
+    httpcomponents:
+      patterns:
+      - "org.apache.httpcomponents:*"
+      update-types:
+      - patch
+      - minor
+    jaxb-angus:
+      patterns:
+      - "jakarta.xml.bind:*"
+      - "org.glassfish.jaxb:*"
+      - "org.eclipse.angus:*"
+      update-types:
+      - patch
+      - minor
+    apache-commons:
+      patterns:
+      - "commons-codec:*"
+      - "commons-io:*"
+      - "org.apache.commons:*"
+      update-types:
+      - patch
+      - minor
+    jackson:
+      patterns:
+      - "com.fasterxml.jackson.core:*"
+      update-types:
+      - patch
+      - minor
+    jline:
+      patterns:
+      - "org.jline:*"
+      update-types:
+      - patch
+      - minor
+    exificient:
+      patterns:
+      - "com.siemens.ct.exi:*"
+      update-types:
+      - patch
+      - minor
+    exquery:
+      patterns:
+      - "org.exquery:*"
+      update-types:
+      - patch
+      - minor
+    milton-webdav:
+      patterns:
+      - "org.exist-db.thirdparty.com.ettrema:*"
+      update-types:
+      - patch
+      - minor
+    maven-plugins-apache:
+      patterns:
+      - "org.apache.maven.plugins:*"
+      update-types:
+      - patch
+      - minor
+    maven-plugins-tools:
+      patterns:
+      - "org.codehaus.mojo:*"
+      - "org.jacoco:*"
+      - "org.owasp:*"
+      - "io.github.git-commit-id:*"
+      - "software.xdev:*"
+      update-types:
+      - patch
+      - minor

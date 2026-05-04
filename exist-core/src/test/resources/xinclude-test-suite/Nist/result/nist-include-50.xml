@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<x xmlns:xinclude="http://www.w3.org/2001/XInclude">
+    <!-- Test an include location identifying the document information item without an Xpointer, 
+the set of top-level included item should be the children of the acquired inforset's document
+information item, except for the document type declaration information item. -->
+   <doc xml:base="../ents/idtst.xml">
+    <family fnumber="f1">Lopez</family>
+    <family fnumber="f2">Clark</family>
+    <family fnumber="f3" mother="f1" father="f2">Jackson</family>
+    <family fnumber="f4" mother="f1" father="f2">Medina</family>
+</doc>
+</x>

@@ -1,0 +1,8 @@
+<document xmlns:xi="http://www.w3.org/2001/XInclude">
+<p>This example includes a range of characters.</p>
+<pre>_q $opt_u $opt_m);
+
+my $usage = "Usage: $0 [-q] [-u|-p|-m] file [ file ... ]\n";
+
+die $usage if ! ge</pre>
+</document>

@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<x xmlns:xinc="http://www.w3.org/2001/XInclude">
+<!-- Test intra-document reference within include elements. -->
+	<doc xml:base="../ents/something.xml">
+<p>something</p>
+<p>really</p>
+<p>simple</p>
+</doc>
+	<doc xml:base="../ents/something.xml">
+<p>something</p>
+<p>really</p>
+<p>simple</p>
+</doc>
+</x>

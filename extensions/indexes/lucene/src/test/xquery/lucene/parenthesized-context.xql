@@ -47,7 +47,7 @@ declare variable $pctx:XCONF as element(collection) :=
     <collection xmlns="http://exist-db.org/collection-config/1.0">
         <index xmlns:xs="http://www.w3.org/2001/XMLSchema">
             <lucene>
-                <analyzer class="org.apache.lucene.analysis.standard.StandardAnalyzer"/>
+                <analyzer class="org.exist.indexing.lucene.analyzers.EnglishStopwordsStandardAnalyzer"/>
                 <analyzer id="ws" class="org.apache.lucene.analysis.core.WhitespaceAnalyzer"/>
                 <text qname="qname"/>
                 <text qname="@att.qname"/>
@@ -72,7 +72,7 @@ declare variable $pctx:XML as document-node() :=
         </test>
     };
 
-declare variable $pctx:COLLECTION_NAME := "parenthesized-context";
+declare variable $pctx:COLLECTION_NAME := "lucene-test-parenthesized-context";
 declare variable $pctx:COLLECTION := "/db/" || $pctx:COLLECTION_NAME;
 
 (:~
@@ -221,12 +221,36 @@ function pctx:query-path-indirect-desc-attr() {
 };
 
 (:~
+ : util:index-keys with parenthesized qname context (collection()//test/(qname)).
+ : Parentheses affect how the optimizer derives index hints; index lookup must handle them.
+ : New test for Lucene 10; counterpart: pctx:index-qname-fully-paren.
+ :)
+declare
+    %test:assertTrue
+function pctx:index-qname-fully-paren-has-terms() {
+    let $a := (collection($pctx:COLLECTION)//test/qname),
+        $result := util:index-keys($a, '', util:function(xs:QName('pctx:term-callback'), 2), 100, 'lucene-index')
+    return count($result) eq count($pctx:EXPECTED_TERMS_ELEMENT)
+};
+
+(:~
  : [index] fully parenthesized element node.
  :)
 declare
     %test:assertTrue
 function pctx:index-qname-fully-paren() {
     let $a := (collection($pctx:COLLECTION)//test/qname) return deep-equal(util:index-keys($a,'', util:function(xs:QName('pctx:term-callback'), 2), 100, 'lucene-index'), $pctx:EXPECTED_TERMS_ELEMENT)
+};
+(:~
+ : util:index-keys with fully parenthesized path context. (collection()//test/path)
+ : wraps the entire step; scan must resolve path-based index from this context.
+ :)
+declare
+    %test:assertTrue
+function pctx:index-path-fully-paren-has-terms() {
+    let $a := (collection($pctx:COLLECTION)//test/path),
+        $result := util:index-keys($a, '', util:function(xs:QName('pctx:term-callback'), 2), 100, 'lucene-index')
+    return count($result) eq count($pctx:EXPECTED_TERMS_ELEMENT)
 };
 declare
     %test:assertTrue
@@ -356,6 +380,19 @@ declare
     %test:assertEquals("test")
 function pctx:query-path-indirect-desc-paren-attr() {
     let $a := collection($pctx:COLLECTION)//test/path/(@att.path) return $a[ft:query(., 'test')]/string()
+};
+
+(:~
+ : util:index-keys with (path) in location step. Context (collection()//test/(path))
+ : differs from //test/path; index lookup must resolve parenthesized step.
+ : New test for Lucene 10; counterpart: pctx:index-path-paren.
+ :)
+declare
+    %test:assertTrue
+function pctx:index-path-paren-has-terms() {
+    let $a := collection($pctx:COLLECTION)//test/(path),
+        $result := util:index-keys($a, '', util:function(xs:QName('pctx:term-callback'), 2), 100, 'lucene-index')
+    return count($result) eq count($pctx:EXPECTED_TERMS_ELEMENT)
 };
 
 (:~

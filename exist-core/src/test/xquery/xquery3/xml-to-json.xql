@@ -23,7 +23,63 @@ xquery version "3.1";
 
 module namespace xtj="http://exist-db.org/xquery/test/xml-to-json";
 
+declare default element namespace "http://www.w3.org/2005/xpath-functions";
 declare namespace test="http://exist-db.org/xquery/xqsuite";
+
+declare variable $xtj:collection-name := "xml-to-json-test";
+declare variable $xtj:collection := "/db/" || $xtj:collection-name;
+
+declare variable $xtj:simple-map :=
+    <map xmlns="http://www.w3.org/2005/xpath-functions">
+        <string key="hello">world</string>
+    </map>;
+
+declare variable $xtj:nested-structure :=
+    <map xmlns="http://www.w3.org/2005/xpath-functions">
+        <string key="name">test</string>
+        <number key="count">42</number>
+        <boolean key="active">true</boolean>
+        <null key="nothing"/>
+        <array key="items">
+            <string>a</string>
+            <number>1</number>
+            <boolean>false</boolean>
+        </array>
+    </map>;
+
+declare
+    %test:setUp
+function xtj:setup() {
+    xmldb:create-collection("/db", $xtj:collection-name),
+    xmldb:store($xtj:collection, "simple-map.xml", $xtj:simple-map),
+    xmldb:store($xtj:collection, "nested-structure.xml", $xtj:nested-structure)
+};
+
+declare
+    %test:tearDown
+function xtj:teardown() {
+    xmldb:remove($xtj:collection)
+};
+
+declare
+    %test:assertEquals('{"hello":"world"}')
+function xtj:xml-to-json-stored-simple-map() {
+    fn:xml-to-json(doc($xtj:collection || "/simple-map.xml")/*)
+};
+
+declare
+    %test:assertEquals('{"name":"test","count":42,"active":true,"nothing":null,"items":["a",1,false]}')
+function xtj:xml-to-json-stored-nested-structure() {
+    fn:xml-to-json(doc($xtj:collection || "/nested-structure.xml")/*)
+};
+
+declare
+    %test:assertTrue
+function xtj:xml-to-json-stored-matches-in-memory() {
+    let $stored := fn:xml-to-json(doc($xtj:collection || "/simple-map.xml")/*)
+    let $in-memory := fn:xml-to-json($xtj:simple-map)
+    return $stored eq $in-memory
+};
 
 declare
     %test:assertEmpty
@@ -306,8 +362,7 @@ declare
     %test:assertEquals('{"pcM9qSs":"YbFYeK10.e01xgS1DEJFaxxvm372Ru","wh5J8qAmnZx8WAHnHCeBpM":-1270212191.431,"ssEhB3U9zZhRNNH2Vm":["A","OIQwg4ICB9fkzihwpE.cQv1",false]}')
 function xtj:xml-to-json-generatedFromSchema-1() {
     let $node :=
-<map xmlns="http://www.w3.org/2005/xpath-functions"
- xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<map xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <string key="pcM9qSs" escaped-key="false" escaped="false">YbFYeK10.e01xgS1DEJFaxxvm372Ru</string>
     <number key="wh5J8qAmnZx8WAHnHCeBpM" escaped-key="false">-1270212191.431</number>
     <array key="ssEhB3U9zZhRNNH2Vm" escaped-key="false">
@@ -323,8 +378,7 @@ declare
     %test:assertEquals('{"v-DhbQUwZO3zpW":[{"fRcP.5e9btnuR3dOnd":[false,"_aQ",null],"yVlXSsyg1pPatQ7ilEaSSA9":"DVbrO2wpIRJimrskkRk.7wg1Gvh","K9xGofqp":true,"PatQ7iK9xGof":false},11145450.201,584608693.252],"IU6lSWbLYTzc3QvIVAdmJ.CG":1600374222.048,"_o3UT5zEy":"WFUwRRW5Jc3rdwKCoO8iV3RYDu_5"}')
 function xtj:xml-to-json-generatedFromSchema-2() {
     let $node :=
-<map xmlns="http://www.w3.org/2005/xpath-functions"
- xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<map xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <array key="v-DhbQUwZO3zpW" escaped-key="false">
         <map>
             <array key="fRcP.5e9btnuR3dOnd" escaped-key="false">
@@ -349,10 +403,23 @@ declare
     %test:assertError('FOJS0006')
 function xtj:xml-to-json-unsupportedElement() {
     let $node :=
-<map xmlns="http://www.w3.org/2005/xpath-functions"
- xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<map xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <my-element key=""></my-element>
 </map>
+    return fn:xml-to-json($node)
+};
+
+declare
+    %test:assertError('FOJS0006')
+function xtj:xml-to-json-wrong-namespace() {
+    let $node := element { QName("", "map") } {}
+    return fn:xml-to-json($node)
+};
+
+declare
+    %test:assertError('FOJS0006')
+function xtj:xml-to-json-wrong-namespace-non-empty() {
+    let $node := element { QName("http://example.com", "map") } {}
     return fn:xml-to-json($node)
 };
 

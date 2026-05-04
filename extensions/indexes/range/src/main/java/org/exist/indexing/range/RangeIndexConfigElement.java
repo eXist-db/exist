@@ -30,6 +30,7 @@ import org.exist.dom.QName;
 import org.exist.indexing.lucene.LuceneIndexConfig;
 import org.exist.indexing.range.conversion.TypeConverter;
 import org.exist.storage.NodePath;
+import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.util.XMLString;
 import org.exist.xquery.XPathException;
@@ -93,8 +94,7 @@ public class RangeIndexConfigElement {
             analyzer.addCollation(collation);
             usesCollation = true;
         }
-        String nested = node.getAttribute("nested");
-        includeNested = (nested.isEmpty() || "yes".equalsIgnoreCase(nested));
+        includeNested = Configuration.parseBooleanAttribute(node, "nested", true);
 
         // normalize whitespace if whitespace="normalize"
         String whitespace = node.getAttribute("whitespace");
@@ -106,10 +106,7 @@ public class RangeIndexConfigElement {
             }
         }
 
-        String caseStr = node.getAttribute("case");
-        if (!caseStr.isEmpty()) {
-            caseSensitive = "yes".equalsIgnoreCase(caseStr);
-        }
+        caseSensitive = Configuration.parseBooleanAttribute(node, "case", true);
         final String custom = node.getAttribute("converter");
         if (!custom.isEmpty()) {
             try {
@@ -149,28 +146,28 @@ public class RangeIndexConfigElement {
                 case Type.LONG:
                 case Type.UNSIGNED_LONG:
                     long lvalue = Long.parseLong(content);
-                    return new LongField(fieldName, lvalue, LongField.TYPE_NOT_STORED);
+                    return new LongField(fieldName, lvalue, Field.Store.NO);
                 case Type.INT:
                 case Type.UNSIGNED_INT:
                 case Type.SHORT:
                 case Type.UNSIGNED_SHORT:
                     int ivalue = Integer.parseInt(content);
-                    return new IntField(fieldName, ivalue, IntField.TYPE_NOT_STORED);
+                    return new IntField(fieldName, ivalue, Field.Store.NO);
                 case Type.DECIMAL:
                 case Type.DOUBLE:
                     double dvalue = Double.parseDouble(content);
-                    return new DoubleField(fieldName, dvalue, DoubleField.TYPE_NOT_STORED);
+                    return new DoubleField(fieldName, dvalue, Field.Store.NO);
                 case Type.FLOAT:
                     float fvalue = Float.parseFloat(content);
-                    return new FloatField(fieldName, fvalue, FloatField.TYPE_NOT_STORED);
+                    return new FloatField(fieldName, fvalue, Field.Store.NO);
                 case Type.DATE:
                     DateValue dv = new DateValue(content);
                     long dl = dateToLong(dv);
-                    return new LongField(fieldName, dl, LongField.TYPE_NOT_STORED);
+                    return new LongField(fieldName, dl, Field.Store.NO);
                 case Type.TIME:
                     TimeValue tv = new TimeValue(content);
                     long tl = timeToLong(tv);
-                    return new LongField(fieldName, tl, LongField.TYPE_NOT_STORED);
+                    return new LongField(fieldName, tl, Field.Store.NO);
                 case Type.DATE_TIME:
                     DateTimeValue dtv = new DateTimeValue(content);
                     String dateStr = dateTimeToString(dtv);
@@ -186,43 +183,53 @@ public class RangeIndexConfigElement {
 
     public static BytesRef convertToBytes(final AtomicValue content) throws XPathException {
         final BytesRefBuilder bytes = new BytesRefBuilder();
+        final byte[] data;
         switch(content.getType()) {
             case Type.INTEGER:
             case Type.LONG:
             case Type.UNSIGNED_LONG:
-                NumericUtils.longToPrefixCoded(((IntegerValue)content).getLong(), 0, bytes);
+                data = new byte[Long.BYTES];
+                NumericUtils.longToSortableBytes(((IntegerValue)content).getLong(), data, 0);
+                bytes.append(data, 0, data.length);
                 break;
 
             case Type.SHORT:
             case Type.UNSIGNED_SHORT:
             case Type.INT:
             case Type.UNSIGNED_INT:
-                NumericUtils.intToPrefixCoded(((IntegerValue)content).getInt(), 0, bytes);
+                data = new byte[Integer.BYTES];
+                NumericUtils.intToSortableBytes(((IntegerValue)content).getInt(), data, 0);
+                bytes.append(data, 0, data.length);
                 break;
 
             case Type.DECIMAL:
-                final long dv = NumericUtils.doubleToSortableLong(((DecimalValue)content).getDouble());
-                NumericUtils.longToPrefixCoded(dv, 0, bytes);
+                data = new byte[Long.BYTES];
+                NumericUtils.longToSortableBytes(NumericUtils.doubleToSortableLong(((DecimalValue)content).getDouble()), data, 0);
+                bytes.append(data, 0, data.length);
                 break;
 
             case Type.DOUBLE:
-                final long lv = NumericUtils.doubleToSortableLong(((DoubleValue)content).getDouble());
-                NumericUtils.longToPrefixCoded(lv, 0, bytes);
+                data = new byte[Long.BYTES];
+                NumericUtils.longToSortableBytes(NumericUtils.doubleToSortableLong(((DoubleValue)content).getDouble()), data, 0);
+                bytes.append(data, 0, data.length);
                 break;
 
             case Type.FLOAT:
-                final int iv = NumericUtils.floatToSortableInt(((FloatValue)content).getValue());
-                NumericUtils.longToPrefixCoded(iv, 0, bytes);
+                data = new byte[Integer.BYTES];
+                NumericUtils.intToSortableBytes(NumericUtils.floatToSortableInt(((FloatValue)content).getValue()), data, 0);
+                bytes.append(data, 0, data.length);
                 break;
 
             case Type.DATE:
-                final long dl = dateToLong((DateValue)content);
-                NumericUtils.longToPrefixCoded(dl, 0, bytes);
+                data = new byte[Long.BYTES];
+                NumericUtils.longToSortableBytes(dateToLong((DateValue)content), data, 0);
+                bytes.append(data, 0, data.length);
                 break;
 
             case Type.TIME:
-                final long tl = timeToLong((TimeValue) content);
-                NumericUtils.longToPrefixCoded(tl, 0, bytes);
+                data = new byte[Long.BYTES];
+                NumericUtils.longToSortableBytes(timeToLong((TimeValue) content), data, 0);
+                bytes.append(data, 0, data.length);
                 break;
 
             case Type.DATE_TIME:
@@ -291,6 +298,14 @@ public class RangeIndexConfigElement {
 
     public boolean isCaseSensitive(String fieldName) {
         return caseSensitive;
+    }
+
+    /**
+     * Returns the whitespace treatment for this index
+     * (e.g. {@link XMLString#SUPPRESS_NONE}, {@link XMLString#SUPPRESS_BOTH}, {@link XMLString#NORMALIZE}).
+     */
+    public int getWsTreatment() {
+        return wsTreatment;
     }
 
     public boolean usesCollation() {

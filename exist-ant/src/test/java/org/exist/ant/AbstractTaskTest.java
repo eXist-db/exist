@@ -56,7 +56,6 @@ public abstract class AbstractTaskTest {
 
         final Path buildFile = Paths.get(buildFileUrl.toURI());
         buildFileRule.configureProject(buildFile.toAbsolutePath().toString());
-        final Path path = Paths.get(getClass().getResource("user.xml").toURI());
         final Project project = buildFileRule.getProject();
         project.setProperty(PROP_ANT_ADMIN_USER, TestUtils.ADMIN_DB_USER);
         project.setProperty(PROP_ANT_ADMIN_PASSWORD, TestUtils.ADMIN_DB_PWD);

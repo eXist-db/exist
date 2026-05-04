@@ -60,6 +60,59 @@
             <artifactId>exist-index-lucene</artifactId>
             <version>${project.version}</version>
             <scope>runtime</scope>
+            <!-- Exclude transitive Lucene 4.x from remote snapshot; use Lucene 10 below -->
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.lucene</groupId>
+                    <artifactId>lucene-analyzers-common</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.lucene</groupId>
+                    <artifactId>lucene-analyzers-icu</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.lucene</groupId>
+                    <artifactId>lucene-queryparser</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- Lucene 10 (required after excluding transitives from exist-index-lucene) -->
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-core</artifactId>
+            <version>${lucene.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-analysis-common</artifactId>
+            <version>${lucene.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-analysis-icu</artifactId>
+            <version>${lucene.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-facet</artifactId>
+            <version>${lucene.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-queries</artifactId>
+            <version>${lucene.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-queryparser</artifactId>
+            <version>${lucene.version}</version>
+            <scope>runtime</scope>
         </dependency>
 
         <dependency>
@@ -108,9 +161,15 @@
                             </ignoredUsedUndeclaredDependencies>
 
                             <ignoredUnusedDeclaredDependencies>
-                                <!-- needed for running XQSuite tests that depend on lucene and ngram modules -->
-                                <ignoredUnusedDeclaredDependency>org.exist-db:exist-index-lucene:jar:${project.version}</ignoredUnusedDeclaredDependency>
-                                <ignoredUnusedDeclaredDependency>org.exist-db:exist-index-ngram:jar:${project.version}</ignoredUnusedDeclaredDependency>
+                                <!-- needed for running XQSuite tests that load lucene and ngram indexes at runtime -->
+                                <ignoredUnusedDeclaredDependency>org.exist-db:exist-index-lucene</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>org.exist-db:exist-index-ngram</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>org.apache.lucene:lucene-core</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>org.apache.lucene:lucene-analysis-common</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>org.apache.lucene:lucene-analysis-icu</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>org.apache.lucene:lucene-facet</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>org.apache.lucene:lucene-queries</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>org.apache.lucene:lucene-queryparser</ignoredUnusedDeclaredDependency>
                             </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>

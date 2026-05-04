@@ -1887,8 +1887,7 @@ public class DOMFile extends BTree implements Lockable {
             return true;
         } catch (final BTreeException | IOException e) {
             //TODO : rethrow exception ? -pb
-            LOG.error(e);
-            e.printStackTrace();
+            LOG.error("Failed to update value in DOMFile", e);
             return false;
         }
     }
@@ -3060,9 +3059,8 @@ public class DOMFile extends BTree implements Lockable {
                 this.page = getPage(pos);
                 load(page);
             } catch (final IOException ioe) {
-                LOG.error(ioe);
-                ioe.printStackTrace();
                 //TODO  :throw exception ? -pb
+                LOG.error("Failed to load DOMPage at position {}", pos, ioe);
             }
         }
         
@@ -3196,8 +3194,7 @@ public class DOMFile extends BTree implements Lockable {
                     return;
                 }
             } catch (final IOException ioe) {
-                LOG.error(ioe);
-                ioe.printStackTrace();
+                LOG.error("Failed to read DOMPage data from page {}", page != null ? page.getPageNum() : -1, ioe);
             }
             saved = true;
         }

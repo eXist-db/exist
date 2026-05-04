@@ -1,0 +1,7 @@
+<?xml version='1.0'?>
+<document xmlns:xi="http://www.w3.org/2001/XInclude">
+  <p>120 Mz is adequate for an average home user.</p>
+  <xi:include href="disclaimer.xml" name="value" something="something"/>
+</document>
+
+

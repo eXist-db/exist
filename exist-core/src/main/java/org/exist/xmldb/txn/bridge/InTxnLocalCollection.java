@@ -30,6 +30,7 @@ import org.exist.xmldb.*;
 import org.exist.xmldb.function.LocalXmldbFunction;
 import org.xmldb.api.base.ErrorCodes;
 import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.base.ServiceProviderCache.ProviderRegistry;
 
 import java.net.URISyntaxException;
 import java.util.Optional;
@@ -99,5 +100,11 @@ public class InTxnLocalCollection extends LocalCollection {
         } else {
             return null;
         }
+    }
+
+    @Override
+    protected void registerProvders(final ProviderRegistry registry) {
+        super.registerProvders(registry);
+        registry.add(IndexQueryService.class, () -> new InTxnLocalIndexQueryService(user, brokerPool, this));
     }
 }

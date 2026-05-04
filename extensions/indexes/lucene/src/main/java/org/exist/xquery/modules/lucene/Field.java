@@ -57,8 +57,9 @@ import static org.exist.xquery.modules.lucene.LuceneModule.functionSignatures;
 public class Field extends BasicFunction {
 
     private static final FunctionParameterSequenceType FS_PARAM_NODE = param("node", Type.NODE, "the context node to check for attached fields");
+    private static final FunctionParameterSequenceType FS_PARAM_NODES_OPT = optManyParam("nodes", Type.NODE, "zero or more context nodes (empty returns empty)");
     private static final FunctionParameterSequenceType FS_PARAM_FIELD = param("field", Type.STRING, "name of the field");
-    private static final FunctionParameterSequenceType TYPE_PARAMETER = param("type", Type.STRING, "intended target type to cast the field value to. Casting may fail with a dynamic error.");
+    private static final FunctionParameterSequenceType TYPE_PARAMETER = optParam("type", Type.STRING, "intended target type to cast the field value to. Empty sequence returns raw (untyped) values as the 2-arg form. Casting may fail with a dynamic error.");
 
     private static final String FS_FIELD_NAME = "field";
     static final FunctionSignature[] FS_FIELD = functionSignatures(
@@ -99,9 +100,9 @@ public class Field extends BasicFunction {
             FS_HIGHLIGHT_FIELD_MATCHES_NAME,
             "Highlights matches for the last executed lucene query within the value of a field " +
             "attached to a particular node obtained via a full text search. Only fields listed in the 'fields' option of ft:query will be " +
-            "available to highlighting.",
-            returnsOpt(Type.ELEMENT, "An exist:field containing the content of the requested field with all query matches enclosed in an exist:match"),
-            FS_PARAM_NODE,
+            "available to highlighting. Accepts zero or more nodes; empty input returns empty.",
+            returnsOptMany(Type.ELEMENT, "exist:field elements with matches enclosed in exist:match"),
+            FS_PARAM_NODES_OPT,
             FS_PARAM_FIELD
     );
 
@@ -111,35 +112,42 @@ public class Field extends BasicFunction {
 
     @Override
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
+        final String called = getSignature().getName().getLocalPart();
+
+        if (FS_HIGHLIGHT_FIELD_MATCHES_NAME.equals(called)) {
+            return evalHighlightFieldMatches(args);
+        }
+
+        return evalFieldLookup(args, called);
+    }
+
+    private Sequence evalFieldLookup(final Sequence[] args, final String called) throws XPathException {
+        if (args[0].isEmpty()) {
+            return Sequence.EMPTY_SEQUENCE;
+        }
         final NodeValue nodeValue = (NodeValue) args[0].itemAt(0);
         if (nodeValue.getImplementationType() != NodeValue.PERSISTENT_NODE) {
             return Sequence.EMPTY_SEQUENCE;
         }
 
         final String fieldName = args[1].itemAt(0).getStringValue();
-
-        int type = Type.STRING;
-        if (getArgumentCount() == 3) {
-            final String typeStr = args[2].itemAt(0).getStringValue();
-            type = Type.getType(typeStr);
-        }
+        final int type = resolveFieldType(args);
 
         final NodeProxy proxy = (NodeProxy) nodeValue;
         final LuceneMatch match = getMatch(proxy);
         if (match == null) {
             return Sequence.EMPTY_SEQUENCE;
         }
-        final String called = getSignature().getName().getLocalPart();
+        final org.exist.dom.persistent.DocumentImpl ownerDoc = proxy.getOwnerDocument();
+        if (ownerDoc == null) {
+            return Sequence.EMPTY_SEQUENCE;
+        }
 
         final LuceneIndexWorker index = (LuceneIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
         try {
             return switch (called) {
-                case FS_FIELD_NAME -> getFieldValues(fieldName, type, match, index);
-                case FS_HIGHLIGHT_FIELD_MATCHES_NAME -> {
-                    final Sequence result = getFieldValues(fieldName, type, match, index);
-                    yield highlightMatches(fieldName, proxy, match, result);
-                }
-                case FS_BINARY_FIELD_NAME -> getBinaryFieldValue(fieldName, type, match, index);
+                case FS_FIELD_NAME -> getFieldValues(fieldName, type, ownerDoc.getDocId(), proxy.getNodeId(), index);
+                case FS_BINARY_FIELD_NAME -> getBinaryFieldValue(fieldName, type, ownerDoc.getDocId(), proxy.getNodeId(), index);
                 default -> throw new XPathException(this, ErrorCodes.FOER0000, "Unknown function: " + getName());
             };
         } catch (final IOException e) {
@@ -147,16 +155,57 @@ public class Field extends BasicFunction {
         }
     }
 
-    private Sequence getBinaryFieldValue(final String fieldName, final int type, final LuceneMatch match, final LuceneIndexWorker index) throws IOException {
-        final BytesRef fieldValue = index.getBinaryField(match.getLuceneDocId(), fieldName);
+    private int resolveFieldType(final Sequence[] args) throws XPathException {
+        if (getArgumentCount() == 3 && !args[2].isEmpty()) {
+            return Type.getType(args[2].itemAt(0).getStringValue());
+        }
+        return Type.STRING;
+    }
+
+    private Sequence evalHighlightFieldMatches(final Sequence[] args) throws XPathException {
+        if (args[0].isEmpty()) {
+            return Sequence.EMPTY_SEQUENCE;
+        }
+        final String fieldName = args[1].itemAt(0).getStringValue();
+        final LuceneIndexWorker index = (LuceneIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
+        final ValueSequence result = new ValueSequence();
+        try {
+            for (final SequenceIterator i = args[0].iterate(); i.hasNext(); ) {
+                final NodeValue nodeValue = (NodeValue) i.nextItem();
+                if (nodeValue.getImplementationType() != NodeValue.PERSISTENT_NODE) {
+                    continue;
+                }
+                final NodeProxy proxy = (NodeProxy) nodeValue;
+                final LuceneMatch match = getMatch(proxy);
+                if (match == null) {
+                    continue;
+                }
+                final org.exist.dom.persistent.DocumentImpl ownerDoc = proxy.getOwnerDocument();
+                if (ownerDoc == null) {
+                    continue;
+                }
+                final Sequence fieldValues = getFieldValues(fieldName, Type.STRING, ownerDoc.getDocId(), proxy.getNodeId(), index);
+                final Sequence highlighted = highlightMatches(fieldName, proxy, match, fieldValues);
+                for (final SequenceIterator hi = highlighted.iterate(); hi.hasNext(); ) {
+                    result.add(hi.nextItem());
+                }
+            }
+            return result;
+        } catch (final IOException e) {
+            throw new XPathException(this, LuceneModule.EXXQDYFT0002, "Error retrieving field: " + e.getMessage());
+        }
+    }
+
+    private Sequence getBinaryFieldValue(final String fieldName, final int type, final int existDocId, final org.exist.numbering.NodeId nodeId, final LuceneIndexWorker index) throws IOException, XPathException {
+        final BytesRef fieldValue = index.getBinaryFieldByExistDocId(existDocId, nodeId, fieldName);
         if (fieldValue == null) {
             return Sequence.EMPTY_SEQUENCE;
         }
         return bytesToAtomic(fieldValue, type);
     }
 
-    private Sequence getFieldValues(final String fieldName, final int type, final LuceneMatch match, final LuceneIndexWorker index) throws IOException, XPathException {
-        final IndexableField[] fields = index.getField(match.getLuceneDocId(), fieldName);
+    private Sequence getFieldValues(final String fieldName, final int type, final int existDocId, final org.exist.numbering.NodeId nodeId, final LuceneIndexWorker index) throws IOException, XPathException {
+        final IndexableField[] fields = index.getFieldByExistDocId(existDocId, nodeId, fieldName);
         final Sequence result = new ValueSequence(fields.length);
         for (final IndexableField field : fields) {
             if (field.numericValue() != null) {
@@ -210,8 +259,8 @@ public class Field extends BasicFunction {
                         String token = stream.getAttribute(CharTermAttribute.class).toString();
                         final Query query = terms.get(token);
                         if (query != null) {
-                            if (match.getQuery() instanceof PhraseQuery) {
-                                final Term phraseTerms[] = ((PhraseQuery) match.getQuery()).getTerms();
+                            if (query instanceof PhraseQuery phraseQuery) {
+                                final Term phraseTerms[] = phraseQuery.getTerms();
                                 if (token.equals(phraseTerms[0].text())) {
                                     // Scan the following text and collect tokens to see
                                     // if they are part of the phrase.
@@ -285,8 +334,9 @@ public class Field extends BasicFunction {
         return null;
     }
 
-    static AtomicValue bytesToAtomic(final BytesRef field, final int type) {
+    static AtomicValue bytesToAtomic(final BytesRef field, final int type) throws XPathException {
         return switch (type) {
+            case Type.BOOLEAN -> FieldValueParser.parseBoolean(field.utf8ToString());
             case Type.TIME -> TimeValue.deserialize(ByteBuffer.wrap(field.bytes));
             case Type.DATE_TIME -> DateTimeValue.deserialize(ByteBuffer.wrap(field.bytes));
             case Type.DATE -> DateValue.deserialize(ByteBuffer.wrap(field.bytes));
@@ -301,6 +351,7 @@ public class Field extends BasicFunction {
 
     static AtomicValue stringToAtomic(final int type, final String value) throws XPathException {
         return switch (type) {
+            case Type.BOOLEAN -> FieldValueParser.parseBoolean(value);
             case Type.TIME -> new TimeValue(value);
             case Type.DATE_TIME -> new DateTimeValue(value);
             case Type.DATE -> new DateValue(value);

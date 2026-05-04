@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<!-- Testing when the document (top level) element in the source infoset is an
+include element.-->
+
+<book xml:base="../ents/books.xml">
+<chapter>chapter 1.
+	<subtitle>first subtitle</subtitle>
+	<subtitle>Second subtitle</subtitle>
+</chapter>
+<chapter>chapter 2.
+	<subtitle>first subtitle</subtitle>
+	<subtitle>Second subtitle</subtitle>
+</chapter>
+<chapter>chapter 3.
+	<subtitle>first subtitle</subtitle>
+	<subtitle>Second subtitle</subtitle>
+</chapter>
+</book>
+

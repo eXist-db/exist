@@ -48,7 +48,7 @@ declare variable $stof:XCONF as element(collection) :=
         </index>
     </collection>;
 
-declare variable $stof:COLLECTION_NAME := "start-offset";
+declare variable $stof:COLLECTION_NAME := "lucene-test-start-offset";
 declare variable $stof:COLLECTION := "/db/" || $stof:COLLECTION_NAME;
 
 (:~
@@ -80,102 +80,95 @@ function stof:tearDown() {
     xmldb:remove("/db/system/config/db/" || $stof:COLLECTION_NAME)
 };
 
+(:~ Serialize with consistent options for assertEquals string comparison. :)
+declare variable $stof:SER := map{"method":"xml","omit-xml-declaration":true(),"indent":false()};
+
 (:~
  : atomic match preceded by complex element, first word.
  :)
 declare
-    %test:assertTrue
+    %test:assertEquals('<el><exist:match xmlns:exist="http://exist.sourceforge.net/NS/exist">strong</exist:match> string</el>')
 function stof:atomic-complex-first-word() {
-    let $result := doc($stof:COLLECTION || "/test1.xml")//el[ft:query(., 'strong')]/util:expand(.)
-    return deep-equal($result, <el><exist:match xmlns:exist="http://exist.sourceforge.net/NS/exist">strong</exist:match> string</el>)
+    serialize(doc($stof:COLLECTION || "/test1.xml")//el[ft:query(., 'strong')]/util:expand(.), $stof:SER)
 };
 
 (:~
  : atomic match preceded by complex element, second word.
  :)
 declare
-    %test:assertTrue
+    %test:assertEquals('<el>strong <exist:match xmlns:exist="http://exist.sourceforge.net/NS/exist">string</exist:match></el>')
 function stof:atomic-complex-second-word() {
-    let $result := doc($stof:COLLECTION || "/test1.xml")//el[ft:query(., 'string')]/util:expand(.)
-    return deep-equal($result, <el>strong <exist:match xmlns:exist="http://exist.sourceforge.net/NS/exist">string</exist:match></el>)
+    serialize(doc($stof:COLLECTION || "/test1.xml")//el[ft:query(., 'string')]/util:expand(.), $stof:SER)
 };
 
 (:~
  : nested match preceded by simple element, first word.
  :)
 declare
-    %test:assertTrue
+    %test:assertEquals('<el><a>word</a><c><exist:match xmlns:exist="http://exist.sourceforge.net/NS/exist">strong</exist:match> string</c></el>')
 function stof:nested-simple-first-word() {
-    let $result := doc($stof:COLLECTION || "/test3.xml")//el[ft:query(., 'strong')]/util:expand(.)
-    return deep-equal($result, <el><a>word</a><c><exist:match xmlns:exist="http://exist.sourceforge.net/NS/exist">strong</exist:match> string</c></el>)
+    serialize(doc($stof:COLLECTION || "/test3.xml")//el[ft:query(., 'strong')]/util:expand(.), $stof:SER)
 };
 
 (:~
  : nested match preceded by simple element, second word.
  :)
 declare
-    %test:assertTrue
+    %test:assertEquals('<el><a>word</a><c>strong <exist:match xmlns:exist="http://exist.sourceforge.net/NS/exist">string</exist:match></c></el>')
 function stof:nested-simple-second-word() {
-    let $result := doc($stof:COLLECTION || "/test3.xml")//el[ft:query(., 'string')]/util:expand(.)
-    return deep-equal($result, <el><a>word</a><c>strong <exist:match xmlns:exist="http://exist.sourceforge.net/NS/exist">string</exist:match></c></el>)
+    serialize(doc($stof:COLLECTION || "/test3.xml")//el[ft:query(., 'string')]/util:expand(.), $stof:SER)
 };
 
 (:~
  : nested match preceded by empty element, first word.
  :)
 declare
-    %test:assertTrue
+    %test:assertEquals('<el><a><b/><c><exist:match xmlns:exist="http://exist.sourceforge.net/NS/exist">strong</exist:match> string</c></a></el>')
 function stof:nested-empty-first-word() {
-    let $result := doc($stof:COLLECTION || "/test5.xml")//el[ft:query(., 'strong')]/util:expand(.)
-    return deep-equal($result, <el><a><b/><c><exist:match xmlns:exist="http://exist.sourceforge.net/NS/exist">strong</exist:match> string</c></a></el>)
+    serialize(doc($stof:COLLECTION || "/test5.xml")//el[ft:query(., 'strong')]/util:expand(.), $stof:SER)
 };
 
 (:~
  : nested match preceded by empty element, second word.
  :)
 declare
-    %test:assertTrue
+    %test:assertEquals('<el><a><b/><c>strong <exist:match xmlns:exist="http://exist.sourceforge.net/NS/exist">string</exist:match></c></a></el>')
 function stof:nested-empty-second-word() {
-    let $result := doc($stof:COLLECTION || "/test5.xml")//el[ft:query(., 'string')]/util:expand(.)
-    return deep-equal($result, <el><a><b/><c>strong <exist:match xmlns:exist="http://exist.sourceforge.net/NS/exist">string</exist:match></c></a></el>)
+    serialize(doc($stof:COLLECTION || "/test5.xml")//el[ft:query(., 'string')]/util:expand(.), $stof:SER)
 };
 
 (:~
  : nested match preceded by complex element, first word.
  :)
 declare
-    %test:assertTrue
+    %test:assertEquals('<el><a><b>word</b></a><c><exist:match xmlns:exist="http://exist.sourceforge.net/NS/exist">strong</exist:match> string</c></el>')
 function stof:nested-complex-first-word() {
-    let $result := doc($stof:COLLECTION || "/test2.xml")//el[ft:query(., 'strong')]/util:expand(.)
-    return deep-equal($result, <el><a><b>word</b></a><c><exist:match xmlns:exist="http://exist.sourceforge.net/NS/exist">strong</exist:match> string</c></el>)
+    serialize(doc($stof:COLLECTION || "/test2.xml")//el[ft:query(., 'strong')]/util:expand(.), $stof:SER)
 };
 
 (:~
  : nested match preceded by complex element, second word.
  :)
 declare
-    %test:assertTrue
+    %test:assertEquals('<el><a><b>word</b></a><c>strong <exist:match xmlns:exist="http://exist.sourceforge.net/NS/exist">string</exist:match></c></el>')
 function stof:nested-complex-second-word() {
-    let $result := doc($stof:COLLECTION || "/test2.xml")//el[ft:query(., 'string')]/util:expand(.)
-    return deep-equal($result, <el><a><b>word</b></a><c>strong <exist:match xmlns:exist="http://exist.sourceforge.net/NS/exist">string</exist:match></c></el>)
+    serialize(doc($stof:COLLECTION || "/test2.xml")//el[ft:query(., 'string')]/util:expand(.), $stof:SER)
 };
 
 (:~
  : nested match preceded by complex element (with empty child), first word.
  :)
 declare
-    %test:assertTrue
+    %test:assertEquals('<el><a><b/></a><c><exist:match xmlns:exist="http://exist.sourceforge.net/NS/exist">strong</exist:match> string</c></el>')
 function stof:nested-complex-empty-child-first-word() {
-    let $result := doc($stof:COLLECTION || "/test4.xml")//el[ft:query(., 'strong')]/util:expand(.)
-    return deep-equal($result, <el><a><b/></a><c><exist:match xmlns:exist="http://exist.sourceforge.net/NS/exist">strong</exist:match> string</c></el>)
+    serialize(doc($stof:COLLECTION || "/test4.xml")//el[ft:query(., 'strong')]/util:expand(.), $stof:SER)
 };
 
 (:~
  : nested match preceded by complex element (with empty child), second word.
  :)
 declare
-    %test:assertTrue
+    %test:assertEquals('<el><a><b/></a><c>strong <exist:match xmlns:exist="http://exist.sourceforge.net/NS/exist">string</exist:match></c></el>')
 function stof:nested-complex-empty-child-second-word() {
-    let $result := doc($stof:COLLECTION || "/test4.xml")//el[ft:query(., 'string')]/util:expand(.)
-    return deep-equal($result, <el><a><b/></a><c>strong <exist:match xmlns:exist="http://exist.sourceforge.net/NS/exist">string</exist:match></c></el>)
+    serialize(doc($stof:COLLECTION || "/test4.xml")//el[ft:query(., 'string')]/util:expand(.), $stof:SER)
 };

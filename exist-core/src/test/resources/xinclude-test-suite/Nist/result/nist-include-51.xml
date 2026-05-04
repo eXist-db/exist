@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<x xmlns:xinclude="http://www.w3.org/2001/XInclude">
+   <!-- Test an include location identifying a comment. In this case
+	the set of top level include items  consist of the 
+	information item corresponding to the comment node in the acquired infoset. -->
+   <!-- Comment for chapter 1. -->
+</x>

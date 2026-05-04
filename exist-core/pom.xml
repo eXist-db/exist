@@ -59,7 +59,7 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
-            <version>2.21.2</version>
+            <version>2.21.3</version>
         </dependency>
 
         <!-- dependency>
@@ -169,7 +169,7 @@
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk18on</artifactId>
-            <version>1.83</version>
+            <version>1.84</version>
         </dependency>
 
         <dependency>
@@ -221,11 +221,12 @@
         <dependency>
             <groupId>org.jline</groupId>
             <artifactId>jline</artifactId>
-            <version>4.0.9</version>
+            <version>4.0.14</version>
+            <classifier>jdk11</classifier>
         </dependency>
 
         <dependency>
-            <groupId>org.fusesource.jansi</groupId>
+            <groupId>org.jline</groupId>
             <artifactId>jansi</artifactId>
             <version>${jansi.version}</version>
             <!--
@@ -448,7 +449,7 @@
         <dependency>
             <groupId>org.apache.mina</groupId>
             <artifactId>mina-core</artifactId>
-            <version>2.2.5</version>
+            <version>2.2.7</version>
         </dependency>
 
         <dependency>
@@ -717,6 +718,8 @@
                                 <exclude>src/test/resources/**/*.bin</exclude>
                                 <exclude>src/test/resources/org/exist/validation/entities/**</exclude>
                                 <exclude>src/test/resources/org/exist/xmldb/allowAnyUri.xml</exclude>
+                                <!-- W3C XInclude test suite — third-party test content, not eXist-db code -->
+                                <exclude>src/test/resources/xinclude-test-suite/**</exclude>
 
                                 <!--
                                     Already under LGPL 2.1, but with a different Copyright
@@ -1030,7 +1033,7 @@ The BaseX Team. The original license statement is also included below.]]></pream
                                 <ignoredUnusedDeclaredDependency>org.apache.logging.log4j:log4j-jul:jar:${log4j.version}</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>org.eclipse.angus:angus-activation:jar:${eclipse.angus-activation.version}</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>org.glassfish.jaxb:jaxb-runtime:jar:${jaxb.impl.version}</ignoredUnusedDeclaredDependency>
-                                <ignoredUnusedDeclaredDependency>org.fusesource.jansi:jansi:jar:${jansi.version}</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>org.jline:jansi:jar:${jansi.version}</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>org.codelibs:nekohtml:jar:${nekohtml.version}</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>xml-resolver:xml-resolver:jar:1.2</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>org.xmlresolver:xmlresolver:jar:${xmlresolver.version}</ignoredUnusedDeclaredDependency>
@@ -1192,7 +1195,7 @@ The BaseX Team. The original license statement is also included below.]]></pream
                 </dependencies>
                 <configuration>
                     <skip>${skipUnitTests}</skip>
-                    <argLine>@{jacocoArgLine} -Dfile.encoding=${project.build.sourceEncoding} -Dexist.recovery.progressbar.hide=true</argLine>
+                    <argLine>@{jacocoArgLine} --add-modules jdk.incubator.vector --enable-native-access=ALL-UNNAMED -Dfile.encoding=${project.build.sourceEncoding} -Dexist.recovery.progressbar.hide=true</argLine>
                     <systemPropertyVariables>
                         <jetty.home>${project.basedir}/../exist-jetty-config/target/classes/org/exist/jetty</jetty.home>
                         <exist.configurationFile>${project.build.testOutputDirectory}/conf.xml</exist.configurationFile>
@@ -1218,7 +1221,7 @@ The BaseX Team. The original license statement is also included below.]]></pream
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <configuration>
-                    <argLine>@{jacocoArgLine} -Dfile.encoding=${project.build.sourceEncoding} -Dexist.recovery.progressbar.hide=true</argLine>
+                    <argLine>@{jacocoArgLine} --add-modules jdk.incubator.vector --enable-native-access=ALL-UNNAMED -Dfile.encoding=${project.build.sourceEncoding} -Dexist.recovery.progressbar.hide=true</argLine>
                     <systemPropertyVariables>
                         <jetty.home>${project.basedir}/../exist-jetty-config/target/classes/org/exist/jetty</jetty.home>
                         <exist.configurationFile>${project.build.testOutputDirectory}/conf.xml</exist.configurationFile>

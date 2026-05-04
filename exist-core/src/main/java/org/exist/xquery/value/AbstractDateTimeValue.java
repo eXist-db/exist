@@ -178,15 +178,38 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
             }
             // fill in fields from default reference; don't have to worry about weird combinations of fields being set, since we control that on creation
             switch (getType()) {
-                case Type.DATE:
-                    implicitCalendar.setTime(0, 0, 0);
-                    break;
-                case Type.TIME:
+                case Type.DATE -> implicitCalendar.setTime(0, 0, 0);
+                case Type.TIME -> {
                     implicitCalendar.setYear(1972);
                     implicitCalendar.setMonth(12);
                     implicitCalendar.setDay(31);
-                    break;
-                default:
+                }
+                case Type.G_DAY -> {
+                    // Per XPath spec §10.4, use reference date 1972-12 for gDay comparison
+                    implicitCalendar.setYear(1972);
+                    implicitCalendar.setMonth(12);
+                    implicitCalendar.setTime(0, 0, 0);
+                }
+                case Type.G_MONTH -> {
+                    // Per XPath spec §10.4, use reference date 1972-xx-01 for gMonth
+                    implicitCalendar.setYear(1972);
+                    implicitCalendar.setDay(1);
+                    implicitCalendar.setTime(0, 0, 0);
+                }
+                case Type.G_YEAR -> {
+                    implicitCalendar.setMonth(1);
+                    implicitCalendar.setDay(1);
+                    implicitCalendar.setTime(0, 0, 0);
+                }
+                case Type.G_MONTH_DAY -> {
+                    implicitCalendar.setYear(1972);
+                    implicitCalendar.setTime(0, 0, 0);
+                }
+                case Type.G_YEAR_MONTH -> {
+                    implicitCalendar.setDay(1);
+                    implicitCalendar.setTime(0, 0, 0);
+                }
+                default -> { }
             }
             implicitCalendar = implicitCalendar.normalize();    // the comparison routines will normalize it anyway, just do it once here
         }
@@ -269,29 +292,19 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
     public abstract AtomicValue convertTo(int requiredType) throws XPathException;
 
     public int getPart(int part) {
-        switch (part) {
-            case YEAR:
-                return calendar.getYear();
-            case MONTH:
-                return calendar.getMonth();
-            case DAY:
-                return calendar.getDay();
-            case HOUR:
-                return calendar.getHour();
-            case MINUTE:
-                return calendar.getMinute();
-            case SECOND:
-                return calendar.getSecond();
-            case MILLISECOND:
+        return switch (part) {
+            case YEAR -> calendar.getYear();
+            case MONTH -> calendar.getMonth();
+            case DAY -> calendar.getDay();
+            case HOUR -> calendar.getHour();
+            case MINUTE -> calendar.getMinute();
+            case SECOND -> calendar.getSecond();
+            case MILLISECOND -> {
                 final int mSec = calendar.getMillisecond();
-                if (mSec == DatatypeConstants.FIELD_UNDEFINED) {
-                    return 0;
-                } else {
-                    return calendar.getMillisecond();
-                }
-            default:
-                throw new IllegalArgumentException("Invalid argument to method getPart");
-        }
+                yield mSec == DatatypeConstants.FIELD_UNDEFINED ? 0 : mSec;
+            }
+            default -> throw new IllegalArgumentException("Invalid argument to method getPart");
+        };
     }
 
     /**
@@ -301,6 +314,20 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
      */
     public boolean hasTimezone() {
         return calendar.getTimezone() != DatatypeConstants.FIELD_UNDEFINED;
+    }
+
+    /**
+     * XQuery 3.1 §10.1.1 leaves the date/time year value-space implementation-defined.
+     * eXist supports years that fit in {@code int} (the low 32 bits of XMLGregorianCalendar);
+     * year magnitudes that require a non-zero eon raise FODT0001.
+     */
+    protected void checkYearOverflow(final XMLGregorianCalendar gc) throws XPathException {
+        final BigInteger eon = gc.getEon();
+        if (eon != null && eon.signum() != 0) {
+            throw new XPathException(getExpression(), ErrorCodes.FODT0001,
+                    "Overflow/underflow in date/time operation: year value " + gc.getEonAndYear()
+                            + " is outside the supported range");
+        }
     }
 
     protected void validateTimezone(DayTimeDurationValue offset) throws XPathException {
@@ -323,6 +350,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
             offset = new DayTimeDurationValue(getExpression(), TimeUtils.getInstance().getLocalTimezoneOffsetMillis());
         }
         validateTimezone(offset);
+        checkYearOverflow(calendar);
         XMLGregorianCalendar xgc = (XMLGregorianCalendar) calendar.clone();
         if (xgc.getTimezone() != DatatypeConstants.FIELD_UNDEFINED) {
             if (getType() == Type.DATE) {
@@ -336,6 +364,7 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
         } catch (final IllegalArgumentException e) {
             throw new XPathException(getExpression(), ErrorCodes.FORG0001, "illegal timezone offset " + offset, e);
         }
+        checkYearOverflow(xgc);
         return createSameKind(xgc);
     }
 
@@ -394,18 +423,18 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
     public ComputableValue plus(ComputableValue other) throws XPathException {
         return switch (other.getType()) {
             case Type.YEAR_MONTH_DURATION, Type.DAY_TIME_DURATION -> other.plus(this);
-            default -> throw new XPathException(getExpression(),
+            default -> throw new XPathException(getExpression(), ErrorCodes.XPTY0004,
                     "Operand to plus should be of type xdt:dayTimeDuration or xdt:yearMonthDuration; got: "
                             + Type.getTypeName(other.getType()));
         };
     }
 
     public ComputableValue mult(ComputableValue other) throws XPathException {
-        throw new XPathException(getExpression(), "multiplication is not supported for type " + Type.getTypeName(getType()));
+        throw new XPathException(getExpression(), ErrorCodes.XPTY0004, "multiplication is not supported for type " + Type.getTypeName(getType()));
     }
 
     public ComputableValue div(ComputableValue other) throws XPathException {
-        throw new XPathException(getExpression(), "division is not supported for type " + Type.getTypeName(getType()));
+        throw new XPathException(getExpression(), ErrorCodes.XPTY0004, "division is not supported for type " + Type.getTypeName(getType()));
     }
 
     public int conversionPreference(Class<?> javaClass) {
@@ -684,6 +713,10 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
 
                     case 's': // parse seconds.
                         second = parseInt(2, 2);
+                        if (second >= 60) {
+                            throw new IllegalArgumentException(
+                                    DatatypeMessageFormatter.formatMessage(null, "InvalidFieldValue", new Object[]{second, "second"}));
+                        }
 
                         if (peek() == '.') {
                             fractionalSecond = parseBigDecimal();
@@ -745,7 +778,12 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
                 throw new IllegalArgumentException(value); //,vidx);
             }
 
-            if (hour == 24 && minute == 0 && second == 0) {
+            if (hour == 24) {
+                if (minute != 0 || second != 0
+                        || (fractionalSecond != null && fractionalSecond.compareTo(BigDecimal.ZERO) != 0)) {
+                    throw new IllegalArgumentException(
+                            DatatypeMessageFormatter.formatMessage(null, "InvalidFieldValue", new Object[]{hour, "hour"}));
+                }
                 if (getType() == Type.TIME) {
                     hour = 0;
                 }
@@ -791,15 +829,16 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
             final int digits = vidx - vstart - sign;
             if (digits < 4) {
                 // we are expecting more digits
-                throw new IllegalArgumentException(value); //,vidx);
+                throw new IllegalArgumentException(value);
+            }
+            // Per XML Schema Part 2 §3.2.7: year must have exactly 4 digits
+            // unless the value is >= 10000 (then more digits are needed).
+            // Leading zeros are not permitted (e.g., "02004" is invalid).
+            if (digits > 4 && value.charAt(vstart + sign) == '0') {
+                throw new IllegalArgumentException(value);
             }
             final String yearString = value.substring(vstart, vidx);
-//            if (digits < 10) {
-//            	year = Integer.parseInt(yearString);
-//            }
-//            else {
             year = new BigInteger(yearString);
-//            }
         }
 
         private int parseInt(int minDigits, int maxDigits)

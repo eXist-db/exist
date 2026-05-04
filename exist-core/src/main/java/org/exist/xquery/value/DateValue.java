@@ -59,7 +59,7 @@ public class DateValue extends AbstractDateTimeValue {
                 throw new IllegalStateException();
             }
         } catch (final IllegalStateException e) {
-            throw new XPathException(getExpression(), "xs:date must not have hour, minute or second fields set");
+            throw new XPathException(getExpression(), ErrorCodes.FORG0001, "xs:date must not have hour, minute or second fields set");
         }
     }
 
@@ -130,8 +130,11 @@ public class DateValue extends AbstractDateTimeValue {
 
     public ComputableValue minus(ComputableValue other) throws XPathException {
         return switch (other.getType()) {
-            case Type.DATE ->
-                    new DayTimeDurationValue(getExpression(), getTimeInMillis() - ((DateValue) other).getTimeInMillis());
+            case Type.DATE -> {
+                checkYearOverflow(calendar);
+                checkYearOverflow(((DateValue) other).calendar);
+                yield new DayTimeDurationValue(getExpression(), getTimeInMillis() - ((DateValue) other).getTimeInMillis());
+            }
             case Type.YEAR_MONTH_DURATION -> ((YearMonthDurationValue) other).negate().plus(this);
             case Type.DAY_TIME_DURATION -> ((DayTimeDurationValue) other).negate().plus(this);
             default -> throw new XPathException(getExpression(),

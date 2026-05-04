@@ -167,6 +167,16 @@ public class QueryField extends Query implements Optimizable {
 
     @Override
     public int getDependencies() {
+        // Check if any argument depends on a local iteration variable.
+        // If so, the expression cannot be bulk-evaluated during ForExpr preEval
+        // because the variable value changes per iteration. (GH-2204)
+        // Only LOCAL_VARS (same for/let scope) prevent bulk evaluation;
+        // CONTEXT_VARS (outer scope) are static and safe to preselect.
+        for (int i = 0; i < getArgumentCount(); i++) {
+            if (Dependency.dependsOnLocalVar(getArgument(i))) {
+                return Dependency.CONTEXT_SET + Dependency.CONTEXT_ITEM;
+            }
+        }
         return Dependency.CONTEXT_SET;
     }
 

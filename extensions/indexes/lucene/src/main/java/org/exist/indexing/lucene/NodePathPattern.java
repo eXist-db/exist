@@ -48,19 +48,18 @@ public class NodePathPattern {
 
     private final NodePath qnPath;
     private final ArrayList<Predicate> predicates = new ArrayList<>();
-
+    private static final Predicate CONST_TRUE_PREDICATE = new ConstTruePredicate();
 
     interface Predicate {
         boolean evaluate(NodePath2 nodePath, int elementIdx);
     }
 
-    private final static class ConstTruePredicate implements Predicate {
+    private static final class ConstTruePredicate implements Predicate {
         @Override
         public boolean evaluate(NodePath2 nodePath, int elementIdx) {
             return true;
         }
     }
-    private final static Predicate CONST_TRUE_PREDICATE = new ConstTruePredicate();
 
     enum PredicateCode {
         EQUALS,      // =
@@ -180,7 +179,8 @@ public class NodePathPattern {
         String[] ops = { "!=", "=", " ne ", " eq "};
         PredicateCode[] pcodes = { PredicateCode.NOT_EQUALS, PredicateCode.EQUALS, PredicateCode.NE, PredicateCode.EQ };
         PredicateCode pcode = null;
-        int opIdx = 0, opIdxEnd = 0;
+        int opIdx = 0;
+        int opIdxEnd = 0;
         for (int i=0; i < ops.length; ++i) {
             opIdx = input.indexOf(ops[i]);
             if (opIdx >= 1) { // as input should start with `@`

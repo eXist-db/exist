@@ -41,6 +41,7 @@ import org.exist.dom.memtree.NodeImpl;
 import org.exist.dom.persistent.*;
 import org.exist.numbering.NodeId;
 import org.exist.xquery.Cardinality;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
@@ -220,7 +221,7 @@ public class SubSequence extends AbstractSequence {
             final Item item = iterator.nextItem();
 
             if (!Type.subTypeOf(item.getType(), Type.NODE)) {
-                throw new XPathException((Expression) null, "Type error: the sub-sequence cannot be converted into" +
+                throw new XPathException((Expression) null, ErrorCodes.XPTY0019, "Type error: the sub-sequence cannot be converted into" +
                         " a node set. It contains an item of type: " + Type.getTypeName(item.getType()));
             }
 
@@ -318,7 +319,7 @@ public class SubSequence extends AbstractSequence {
         while (iterator.hasNext()) {
             final Item item = iterator.nextItem();
             if (!Type.subTypeOf(item.getType(), Type.NODE)) {
-                throw new XPathException((Expression) null, "Type error: the sub-sequence cannot be converted into" +
+                throw new XPathException((Expression) null, ErrorCodes.XPTY0019, "Type error: the sub-sequence cannot be converted into" +
                         " a MemoryNodeSet. It contains items which are not nodes");
             }
 

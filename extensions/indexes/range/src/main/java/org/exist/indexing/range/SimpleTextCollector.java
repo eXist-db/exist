@@ -49,6 +49,20 @@ public class SimpleTextCollector implements TextCollector {
         buf.append(content);
     }
 
+    /**
+     * Constructor for attribute indexing: uses configuration's wsTreatment and
+     * caseSensitive so case="no" is applied at index time.
+     *
+     * @param content      attribute value to index
+     * @param wsTreatment  whitespace treatment (e.g. XMLString.SUPPRESS_NONE)
+     * @param caseSensitive false when case="no" (case-insensitive matching)
+     */
+    public SimpleTextCollector(String content, int wsTreatment, boolean caseSensitive) {
+        this.buf.append(content);
+        this.wsTreatment = wsTreatment;
+        this.caseSensitive = caseSensitive;
+    }
+
     @Override
     public void startElement(QName qname, NodePath path) {
     }

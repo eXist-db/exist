@@ -149,19 +149,7 @@ public class FunMin extends CollatingFunction {
 
                 //Duration values must either all be xs:yearMonthDuration values or must all be xs:dayTimeDuration values.
         		if (Type.subTypeOf(value.getType(), Type.DURATION)) {
-        			value = ((DurationValue)value).wrap();
-        			if (value.getType() == Type.YEAR_MONTH_DURATION) {
-	                	if (min != null && min.getType() != Type.YEAR_MONTH_DURATION)
-	                		{throw new XPathException(this, ErrorCodes.FORG0006, "Cannot compare " + Type.getTypeName(min.getType()) +
-	                				" and " + Type.getTypeName(value.getType()), value);}
-            		
-        			} else if (value.getType() == Type.DAY_TIME_DURATION) {
-	                	if (min != null && min.getType() != Type.DAY_TIME_DURATION)
-	                		{throw new XPathException(this, ErrorCodes.FORG0006, "Cannot compare " + Type.getTypeName(min.getType()) +
-	                				" and " + Type.getTypeName(value.getType()), value);}
-        				
-        			} else
-        				{throw new XPathException(this, ErrorCodes.FORG0006, "Cannot compare " + Type.getTypeName(value.getType()), value);}
+        			value = validateAndWrapDuration((DurationValue) value, min, this);
 
     			//Any value of type xdt:untypedAtomic is cast to xs:double
         		} else if (value.getType() == Type.UNTYPED_ATOMIC) 
@@ -170,7 +158,9 @@ public class FunMin extends CollatingFunction {
         		if (min == null)
                     {min = value;}
                 else {                	
-                	if (Type.getCommonSuperType(min.getType(), value.getType()) == Type.ANY_ATOMIC_TYPE) {
+                	if (Type.getCommonSuperType(min.getType(), value.getType()) == Type.ANY_ATOMIC_TYPE
+                			&& !(Type.subTypeOfUnion(min.getType(), Type.NUMERIC)
+                					&& Type.subTypeOfUnion(value.getType(), Type.NUMERIC))) {
                 		throw new XPathException(this, ErrorCodes.FORG0006, "Cannot compare " + Type.getTypeName(min.getType()) +
                 				" and " + Type.getTypeName(value.getType()), value);
                 	}
@@ -219,7 +209,37 @@ public class FunMin extends CollatingFunction {
         if (context.getProfiler().isEnabled()) 
             {context.getProfiler().end(this, "", result);} 
         
-        return result;   
+        return result;
+    }
+
+    /**
+     * Validates that a duration value is either xs:yearMonthDuration or xs:dayTimeDuration,
+     * and that it is type-compatible with the current accumulator value.
+     *
+     * @param value the duration value to validate
+     * @param accumulator the current min/max accumulator, or null if this is the first value
+     * @param expression the calling expression, for error reporting
+     * @return the wrapped duration value
+     * @throws XPathException if the duration type is invalid or incompatible
+     */
+    static AtomicValue validateAndWrapDuration(final DurationValue value, final AtomicValue accumulator,
+            final Function expression) throws XPathException {
+        final AtomicValue wrapped = value.wrap();
+        if (wrapped.getType() == Type.YEAR_MONTH_DURATION) {
+            if (accumulator != null && accumulator.getType() != Type.YEAR_MONTH_DURATION) {
+                throw new XPathException(expression, ErrorCodes.FORG0006, "Cannot compare " +
+                        Type.getTypeName(accumulator.getType()) + " and " + Type.getTypeName(wrapped.getType()), wrapped);
+            }
+        } else if (wrapped.getType() == Type.DAY_TIME_DURATION) {
+            if (accumulator != null && accumulator.getType() != Type.DAY_TIME_DURATION) {
+                throw new XPathException(expression, ErrorCodes.FORG0006, "Cannot compare " +
+                        Type.getTypeName(accumulator.getType()) + " and " + Type.getTypeName(wrapped.getType()), wrapped);
+            }
+        } else {
+            throw new XPathException(expression, ErrorCodes.FORG0006, "Cannot compare " +
+                    Type.getTypeName(wrapped.getType()), wrapped);
+        }
+        return wrapped;
     }
 
 }

@@ -510,7 +510,7 @@ public class XQueryContext implements BinaryValueManager, Context {
             try {
                 declareNamespace(prefix, copyFrom.staticNamespaces.get(prefix));
             } catch (final XPathException ex) {
-                ex.printStackTrace();
+                LOG.warn("Failed to copy namespace declaration for prefix '{}'", prefix, ex);
             }
         }
     }
@@ -878,7 +878,9 @@ public class XQueryContext implements BinaryValueManager, Context {
         }
         //Forbids rebinding the *same* prefix in a *different* namespace in this *same* context
         if (!nonNullUri.equals(prevURI)) {
-            throw new XPathException(rootExpression, ErrorCodes.XQST0033,
+            // XQST0066 for default element namespace redeclaration, XQST0033 for other prefixes
+            final ErrorCodes.ErrorCode errorCode = nonNullPrefix.isEmpty() ? ErrorCodes.XQST0066 : ErrorCodes.XQST0033;
+            throw new XPathException(rootExpression, errorCode,
                     "Cannot bind prefix '" + prefix + "' to '" + nonNullUri + "' it is already bound to '" + prevURI + "'");
         }
 
@@ -972,6 +974,18 @@ public class XQueryContext implements BinaryValueManager, Context {
         return inheritedInScopeNamespaces == null ? null : inheritedInScopeNamespaces.get(prefix);
     }
 
+    public Map<String, String> getAllInheritedNamespaces() {
+        return inheritedInScopeNamespaces;
+    }
+
+    public Map<String, String> getInScopeNamespaces() {
+        return inScopeNamespaces;
+    }
+
+    public MemTreeBuilder getCurrentDocumentBuilder() {
+        return documentBuilder;
+    }
+
     @Override
     public String getInheritedPrefix(final String uri) {
         return inheritedInScopePrefixes == null ? null : inheritedInScopePrefixes.get(uri);
@@ -1021,6 +1035,16 @@ public class XQueryContext implements BinaryValueManager, Context {
 
     @Override
     public void setDefaultFunctionNamespace(final String uri) throws XPathException {
+        // XQST0070: A namespace URI bound to the predefined xmlns or to xml (with a
+        // non-xml binding) is reserved and cannot appear in a default namespace declaration.
+        if (Namespaces.XMLNS_NS.equals(uri)) {
+            throw new XPathException(rootExpression, ErrorCodes.XQST0070,
+                    "The namespace URI '" + Namespaces.XMLNS_NS + "' cannot be used as the default function namespace");
+        }
+        if (XML_NS.equals(uri)) {
+            throw new XPathException(rootExpression, ErrorCodes.XQST0070,
+                    "The namespace URI '" + XML_NS + "' cannot be bound to a prefix other than 'xml'");
+        }
         //Not sure for the 2nd clause : eXist-db forces the function NS as default.
         if (defaultFunctionNamespace != null
                 && !defaultFunctionNamespace.equals(Function.BUILTIN_FUNCTION_NS)
@@ -1052,6 +1076,16 @@ public class XQueryContext implements BinaryValueManager, Context {
 
     @Override
     public void setDefaultElementNamespace(final String uri, @Nullable final String schema) throws XPathException {
+        // XQST0070: A namespace URI bound to the predefined xmlns or to xml (with a
+        // non-xml binding) is reserved and cannot appear in a default namespace declaration.
+        if (Namespaces.XMLNS_NS.equals(uri)) {
+            throw new XPathException(rootExpression, ErrorCodes.XQST0070,
+                    "The namespace URI '" + Namespaces.XMLNS_NS + "' cannot be used as the default element namespace");
+        }
+        if (XML_NS.equals(uri)) {
+            throw new XPathException(rootExpression, ErrorCodes.XQST0070,
+                    "The namespace URI '" + XML_NS + "' cannot be bound to a prefix other than 'xml'");
+        }
         // eXist forces the empty element NS as default.
         if (!defaultElementNamespace.equals(AnyURIValue.EMPTY_URI)) {
             throw new XPathException(rootExpression, ErrorCodes.XQST0066,
@@ -2037,6 +2071,26 @@ public class XQueryContext implements BinaryValueManager, Context {
             }
         }
         return null;
+    }
+
+    /**
+     * Returns the first (earliest-declared) local variable currently in scope, or
+     * {@code null} if there are no local variables in scope.
+     *
+     * <p>Walks backward from {@code lastVar} to find the oldest variable declared in the
+     * current scope, stopping at the context-stack boundary.  Used by
+     * {@link OrderByClause#eval} to recover the true first active variable when
+     * {@link AbstractFLWORClause#getStartVariable()} returns a stale reference
+     * (e.g. in a FLWOR with two {@code order by} clauses where the inner one is
+     * evaluated during the outer one's {@code postEval} replay).</p>
+     */
+    LocalVariable getFirstLocalVariable() {
+        final LocalVariable end = contextStack.peek();
+        LocalVariable first = null;
+        for (LocalVariable var = lastVar; var != null && var != end; var = var.before) {
+            first = var;
+        }
+        return first;
     }
 
     @Override

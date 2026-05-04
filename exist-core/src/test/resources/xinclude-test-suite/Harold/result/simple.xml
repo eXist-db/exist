@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<simple>
+<test xmlns:xinclude="http://www.w3.org/2001/XInclude">
+  <latin1>
+    <firstElement/>
+    trjsagdkasgdhasdgashgdhsadgashdg
+
+    <insideChildren/>
+    <another>
+      <deeper>text</deeper>
+    </another>
+  </latin1>
+  <test2>
+    <!-- comment before root --><red xml:base="test2.xml" xmlns:xinclude="http://www.w3.org/2001/XInclude">
+  <blue>
+    trjsagdkasgdhasdgashgdhsadgashdg
+
+  </blue>
+</red><!-- comment after root -->
+  </test2>
+  <test3>
+   <!-- <xinclude:include href="roottest.xml"/> -->
+  </test3>
+</test>
+</simple>

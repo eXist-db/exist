@@ -38,13 +38,6 @@
     <name>eXist-db</name>
     <description>eXist-db multi-module project</description>
 
-    <scm>
-        <connection>scm:git:https://github.com/exist-db/exist.git</connection>
-        <developerConnection>scm:git:https://github.com/exist-db/exist.git</developerConnection>
-        <url>scm:git:https://github.com/exist-db/exist.git</url>
-      <tag>HEAD</tag>
-  </scm>
-
     <modules>
         <module>exist-parent</module>
         <module>exist-ant</module>
@@ -57,6 +50,13 @@
         <module>extensions</module>
         <module>exist-xqts</module>
     </modules>
+
+    <scm>
+        <connection>scm:git:https://github.com/exist-db/exist.git</connection>
+        <developerConnection>scm:git:https://github.com/exist-db/exist.git</developerConnection>
+        <url>scm:git:https://github.com/exist-db/exist.git</url>
+        <tag>HEAD</tag>
+    </scm>
 
     <build>
         <plugins>
@@ -112,6 +112,119 @@
             <modules>
                 <module>exist-core-jmh</module>
             </modules>
+        </profile>
+
+        <profile>
+            <id>citation-release-metadata</id>
+            <activation>
+                <property>
+                    <name>updateCff</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <properties>
+                <maven.build.timestamp.format>yyyy-MM-dd</maven.build.timestamp.format>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-enforcer-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>require-release-version-for-citation-update</id>
+                                <phase>validate</phase>
+                                <goals>
+                                    <goal>enforce</goal>
+                                </goals>
+                                <configuration>
+                                    <rules>
+                                        <requireProperty>
+                                            <property>project.version</property>
+                                            <regex>^(?!.*-SNAPSHOT$).+$</regex>
+                                            <regexMessage>The citation-release-metadata profile can only run for release versions (non-SNAPSHOT).</regexMessage>
+                                        </requireProperty>
+                                    </rules>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <!--
+                              git-commit-id-maven-plugin already sets git.commit.id, but Ant replaceregexp's
+                              replace= attribute is not re-interpolated with those runtime Maven properties
+                              before Ant applies it (literal ${git.commit.id} can end up in CITATION.cff).
+                              Export commitLine from Ant (git rev-parse) then use ${commitLine} in a second execution.
+                            -->
+                            <execution>
+                                <id>citation-cff-resolve-commit</id>
+                                <phase>validate</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <exportAntProperties>true</exportAntProperties>
+                                    <target>
+                                        <mkdir dir="${project.build.directory}"/>
+                                        <exec executable="git" dir="${project.basedir}" failonerror="true" output="${project.build.directory}/cff-commit.tmp">
+                                            <arg value="rev-parse"/>
+                                            <arg value="HEAD"/>
+                                        </exec>
+                                        <replaceregexp file="${project.build.directory}/cff-commit.tmp"
+                                                       match="^([0-9a-f]{7,40})\s*$"
+                                                       replace="\1"
+                                                       byline="true"/>
+                                        <loadfile property="cff.head" srcFile="${project.build.directory}/cff-commit.tmp" encoding="UTF-8">
+                                            <filterchain>
+                                                <striplinebreaks/>
+                                            </filterchain>
+                                        </loadfile>
+                                        <property name="commitLine" value="commit: ${cff.head}"/>
+                                        <delete file="${project.build.directory}/cff-commit.tmp" failonerror="false" quiet="true"/>
+                                    </target>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>update-citation-cff</id>
+                                <phase>validate</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <!-- Guard against stale temp files left by interrupted text replacements -->
+                                        <delete failonerror="false" quiet="true">
+                                            <fileset dir="${project.basedir}" includes="tmp*tmp"/>
+                                        </delete>
+                                        <replaceregexp file="${project.basedir}/CITATION.cff"
+                                                       match="^version:\s*.*$"
+                                                       replace="version: ${project.version}"
+                                                       byline="true"/>
+                                        <replaceregexp file="${project.basedir}/CITATION.cff"
+                                                       match="^date-released:\s*.*$"
+                                                       replace="date-released: '${maven.build.timestamp}'"
+                                                       byline="true"/>
+                                        <replaceregexp file="${project.basedir}/CITATION.cff"
+                                                       match="https://github\.com/eXist-db/exist/releases/tag/eXist-[^ '\&quot;]+"
+                                                       replace="https://github.com/eXist-db/exist/releases/tag/eXist-${project.version}"
+                                                       byline="true"/>
+                                        <replaceregexp file="${project.basedir}/CITATION.cff"
+                                                       match="^commit:\s*.*$"
+                                                       replace="${commitLine}"
+                                                       byline="true"/>
+                                        <delete failonerror="false" quiet="true">
+                                            <fileset dir="${project.basedir}" includes="tmp*tmp"/>
+                                        </delete>
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
 
     </profiles>

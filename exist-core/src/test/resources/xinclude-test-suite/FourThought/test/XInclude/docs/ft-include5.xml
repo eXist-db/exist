@@ -1,0 +1,3 @@
+<?xml version='1.0'?><x xmlns:xi="http://www.w3.org/2001/XInclude">
+<xi:include href="include4.xml" xpointer="xpointer(/ADDRBOOK/ENTRY)"/>
+</x>

@@ -23,21 +23,54 @@
 package org.exist.storage;
 
 import org.exist.EXistException;
+import org.exist.collections.Collection;
+import org.exist.security.PermissionDeniedException;
+import org.exist.storage.sync.Sync;
 import org.exist.storage.txn.Txn;
 import org.exist.test.ExistEmbeddedServer;
+import org.exist.test.TestConstants;
+import org.exist.collections.triggers.TriggerException;
+import org.exist.util.LockException;
+import org.exist.util.MimeType;
+import org.exist.util.StringInputSource;
+import org.exist.xmldb.XmldbURI;
+import org.junit.After;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.xml.sax.SAXException;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class DataBackupTest {
+
+    private static final long BACKUP_TIMEOUT_MS = TimeUnit.SECONDS.toMillis(30);
+
+    /**
+     * Required .dbx entries in the backup zip. Update this list when adding new storage files to
+     * {@link NativeBroker#backupToArchive} or {@link IndexManager#backupToArchive}.
+     */
+    private static final String[] REQUIRED_BACKUP_ENTRIES = {
+        "collections.dbx",
+        "dom.dbx",
+        "structure.dbx",
+        "symbols.dbx",
+        "values.dbx",
+        "blob.dbx",
+        "vector.dbx"
+    };
 
     @ClassRule
     public static ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
@@ -45,29 +78,81 @@ public class DataBackupTest {
     @ClassRule
     public static TemporaryFolder folder = new TemporaryFolder();
 
-    @Test
-    public void backup() throws InterruptedException, IOException {
-        final TestableDataBackup dataBackup = new TestableDataBackup(folder.getRoot().toPath());
-        existEmbeddedServer.getBrokerPool().triggerSystemTask(dataBackup);
+    @After
+    public void cleanup() throws EXistException, PermissionDeniedException, LockException, IOException, TriggerException {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+             final Txn transaction = pool.getTransactionManager().beginTransaction()) {
+            final Collection root = broker.getCollection(TestConstants.TEST_COLLECTION_URI);
+            if (root != null) {
+                broker.removeCollection(transaction, root);
+            }
+            pool.getTransactionManager().commit(transaction);
+        }
+    }
 
-        while(!dataBackup.isCompleted()) {
+    @Test
+    public void backup() throws InterruptedException, IOException, EXistException, PermissionDeniedException, SAXException, LockException {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+
+        // Store a document to ensure all storage systems are initialized and flushed
+        storeMinimalDocument(pool);
+
+        final TestableDataBackup dataBackup = new TestableDataBackup(folder.getRoot().toPath());
+        pool.triggerSystemTask(dataBackup);
+
+        final long deadline = System.currentTimeMillis() + BACKUP_TIMEOUT_MS;
+        while (!dataBackup.isCompleted()) {
+            if (System.currentTimeMillis() > deadline) {
+                fail("Backup did not complete within " + BACKUP_TIMEOUT_MS + " ms");
+            }
             Thread.sleep(100);
         }
 
-        final Optional<Path> lastBackup = dataBackup.getLastBackup();
-        assertTrue(lastBackup.isPresent());
+        if (dataBackup.getError().isPresent()) {
+            fail("Backup failed with error: " + dataBackup.getError().get().getMessage());
+        }
 
-        final ZipFile zipFile = new ZipFile(lastBackup.get().toFile());
-        assertNotNull(zipFile.getEntry("collections.dbx"));
-        assertNotNull(zipFile.getEntry("dom.dbx"));
-        assertNotNull(zipFile.getEntry("structure.dbx"));
-        assertNotNull(zipFile.getEntry("symbols.dbx"));
-        assertNotNull(zipFile.getEntry("values.dbx"));
-        assertNotNull(zipFile.getEntry("blob.dbx"));
+        final Optional<Path> lastBackup = dataBackup.getLastBackup();
+        assertTrue("Backup file should be present", lastBackup.isPresent());
+
+        final Path backupPath = lastBackup.get();
+        assertTrue("Backup file should exist: " + backupPath, Files.exists(backupPath));
+        assertTrue("Backup file should not be empty: " + backupPath, Files.size(backupPath) > 0);
+
+        try (final ZipFile zipFile = new ZipFile(backupPath.toFile())) {
+            final List<String> missing = new ArrayList<>();
+            for (final String entryName : REQUIRED_BACKUP_ENTRIES) {
+                final ZipEntry entry = zipFile.getEntry(entryName);
+                if (entry == null) {
+                    missing.add(entryName);
+                }
+            }
+            if (!missing.isEmpty()) {
+                fail("Backup missing required entries: " + String.join(", ", missing) +
+                    ". Zip contents: " + zipFile.stream().map(ZipEntry::getName).toList());
+            }
+        }
+    }
+
+    private void storeMinimalDocument(final BrokerPool pool) throws EXistException, PermissionDeniedException, IOException, SAXException, LockException {
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
+             final Txn transaction = pool.getTransactionManager().beginTransaction()) {
+            final Collection root = broker.getOrCreateCollection(transaction, TestConstants.TEST_COLLECTION_URI);
+            assertNotNull(root);
+            broker.saveCollection(transaction, root);
+            broker.storeDocument(transaction, XmldbURI.create("backup-test.xml"),
+                new StringInputSource("<root/>"), MimeType.XML_TYPE, root);
+            pool.getTransactionManager().commit(transaction);
+        }
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+            broker.sync(Sync.MAJOR);
+        }
     }
 
     private class TestableDataBackup extends DataBackup {
         private volatile boolean completed = false;
+        private volatile Throwable error = null;
 
         public TestableDataBackup(final Path destination) {
             super(destination);
@@ -75,12 +160,22 @@ public class DataBackupTest {
 
         @Override
         public void execute(final DBBroker broker, final Txn transaction) throws EXistException {
-            super.execute(broker, transaction);
-            completed = true;
+            try {
+                super.execute(broker, transaction);
+            } catch (final Throwable t) {
+                this.error = t;
+                throw t;
+            } finally {
+                completed = true;
+            }
         }
 
         public boolean isCompleted() {
             return completed;
+        }
+
+        public Optional<Throwable> getError() {
+            return Optional.ofNullable(error);
         }
     }
 }

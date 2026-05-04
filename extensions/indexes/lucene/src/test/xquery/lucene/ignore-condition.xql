@@ -56,7 +56,7 @@ declare variable $igc:XML as document-node() :=
         </doc>
     };
 
-declare variable $igc:COLLECTION_NAME := "ignore-condition-1113";
+declare variable $igc:COLLECTION_NAME := "lucene-test-ignore-condition";
 declare variable $igc:COLLECTION := "/db/" || $igc:COLLECTION_NAME;
 
 (:~

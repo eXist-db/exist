@@ -24,6 +24,7 @@ package org.exist.xquery.functions.xmldb;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
+import org.exist.indexing.ReindexScope;
 import org.exist.xmldb.IndexQueryService;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -59,15 +60,29 @@ public class XMLDBReindex extends XMLDBAbstractCollectionManipulator {
             new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if successfully reindexed, false() otherwise")
     );
 
-    public final static FunctionSignature FNS_REINDEX_DOCUMENT = new FunctionSignature(
+    public final static FunctionSignature FNS_REINDEX_2ARGS = new FunctionSignature(
             new QName("reindex", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
-            "Reindex document $doc-uri from $collection-uri. " +
+            "Reindex: if $arg2 is \"all\", \"fulltext\", or \"vector\", reindex collection with that scope; otherwise reindex document $arg2 from $collection-uri. " +
                     XMLDBModule.COLLECTION_URI + " " +
                     XMLDBModule.ANY_URI + " " +
                     XMLDBModule.NEED_PRIV_USER,
             new SequenceType[] {
                     new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collection URI"),
-                    new FunctionParameterSequenceType("doc-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The document URI")
+                    new FunctionParameterSequenceType("doc-uri-or-mode", Type.STRING, Cardinality.EXACTLY_ONE, "Document name, or mode: \"all\", \"fulltext\", \"vector\"")
+            },
+            new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if successfully reindexed, false() otherwise")
+    );
+
+    public final static FunctionSignature FNS_REINDEX_DOCUMENT_MODE = new FunctionSignature(
+            new QName("reindex", XMLDBModule.NAMESPACE_URI, XMLDBModule.PREFIX),
+            "Reindex document $doc-uri from $collection-uri with scope $mode. " +
+                    XMLDBModule.COLLECTION_URI + " " +
+                    XMLDBModule.ANY_URI + " " +
+                    XMLDBModule.NEED_PRIV_USER,
+            new SequenceType[] {
+                    new FunctionParameterSequenceType("collection-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The collection URI"),
+                    new FunctionParameterSequenceType("doc-uri", Type.STRING, Cardinality.EXACTLY_ONE, "The document URI"),
+                    new FunctionParameterSequenceType("mode", Type.STRING, Cardinality.EXACTLY_ONE, "Reindex scope: \"all\", \"fulltext\", or \"vector\"")
             },
             new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true() if successfully reindexed, false() otherwise")
     );
@@ -94,11 +109,20 @@ public class XMLDBReindex extends XMLDBAbstractCollectionManipulator {
 
         try {
             final IndexQueryService iqs = collection.getService(IndexQueryService.class);
-            if(args.length == 2) {
-                //reindex document
-                iqs.reindexDocument(args[1].getStringValue());
+            if (args.length == 3) {
+                // reindex document with mode
+                iqs.reindexDocument(args[1].getStringValue(), ReindexScope.fromString(args[2].getStringValue()));
+            } else if (args.length == 2) {
+                final String arg2 = args[1].getStringValue();
+                if (isReindexMode(arg2)) {
+                    // reindex collection with mode
+                    iqs.reindexCollection(ReindexScope.fromString(arg2));
+                } else {
+                    // reindex document
+                    iqs.reindexDocument(arg2);
+                }
             } else {
-                //reindex collection
+                // reindex collection
                 iqs.reindexCollection();
             }
         } catch (final XMLDBException xe) {
@@ -107,5 +131,13 @@ public class XMLDBReindex extends XMLDBAbstractCollectionManipulator {
         }
 
         return BooleanValue.TRUE;
+    }
+
+    private static boolean isReindexMode(final String s) {
+        if (s == null || s.isEmpty()) {
+            return false;
+        }
+        final String lower = s.toLowerCase();
+        return "all".equals(lower) || "fulltext".equals(lower) || "vector".equals(lower);
     }
 }

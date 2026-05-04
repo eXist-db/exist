@@ -24,6 +24,7 @@ package org.exist.indexing.range;
 import org.exist.dom.QName;
 import org.exist.storage.ElementValue;
 import org.exist.storage.NodePath;
+import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
 import org.exist.xquery.*;
 import org.exist.xquery.modules.range.RangeQueryRewriter;
@@ -36,6 +37,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 import javax.xml.XMLConstants;
+import java.util.Map;
 import java.util.function.BiPredicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -62,7 +64,7 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
     private String lowercaseValue = null;
     private Pattern pattern = null;
 
-    public RangeIndexConfigAttributeCondition(final Element elem, final NodePath parentPath) throws DatabaseConfigurationException {
+    public RangeIndexConfigAttributeCondition(final Element elem, final NodePath parentPath, final Map<String, String> namespaces) throws DatabaseConfigurationException {
 
         if (parentPath.getLastComponent().getNameType() == ElementValue.ATTRIBUTE) {
             throw new DatabaseConfigurationException(
@@ -74,12 +76,7 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
             throw new DatabaseConfigurationException("Range index module: Empty or no attribute qname in condition");
         }
 
-        try {
-            attribute = new QName(QName.extractLocalName(attributeName), XMLConstants.NULL_NS_URI,
-                    QName.extractPrefix(attributeName), ElementValue.ATTRIBUTE);
-        } catch (final QName.IllegalQNameException e) {
-            throw new DatabaseConfigurationException("Rand index module error: " + e.getMessage(), e);
-        }
+        attribute = resolveAttributeQName(attributeName, namespaces);
         value = elem.getAttribute("value");
 
         // parse operator (default to 'eq' if missing)
@@ -94,12 +91,8 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
             operator = Operator.EQ;
         }
 
-        // As default the range index shall be case-sensitive, unless explicitly set to 'no'.
-        final String caseString = elem.getAttribute("case");
-        caseSensitive = !"no".equalsIgnoreCase(caseString);
-
-        final String numericString = elem.getAttribute("numeric");
-        numericComparison = "yes".equalsIgnoreCase(numericString);
+        caseSensitive = Configuration.parseBooleanAttribute(elem, "case", true);
+        numericComparison = Configuration.parseBooleanAttribute(elem, "numeric", false);
 
         // try to create a pattern matcher for a 'matches' condition
         if (operator == Operator.MATCH) {
@@ -132,6 +125,25 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
 
     }
 
+    private static QName resolveAttributeQName(final String attributeName, final Map<String, String> namespaces) throws DatabaseConfigurationException {
+        try {
+            final String prefix = QName.extractPrefix(attributeName);
+            final String localName = QName.extractLocalName(attributeName);
+            String namespaceURI = XMLConstants.NULL_NS_URI;
+            if (prefix != null) {
+                namespaceURI = namespaces.get(prefix);
+                if (namespaceURI == null) {
+                    throw new DatabaseConfigurationException(
+                            "Range index module: No namespace defined for prefix: " + prefix +
+                                    " in condition attribute '" + attributeName + "'");
+                }
+            }
+            return new QName(localName, namespaceURI, prefix, ElementValue.ATTRIBUTE);
+        } catch (final QName.IllegalQNameException e) {
+            throw new DatabaseConfigurationException("Range index module error: " + e.getMessage(), e);
+        }
+    }
+
     // lazily evaluate lowercase value to convert once when needed
     private String getLowercaseValue() {
         if (lowercaseValue == null && value != null) {
@@ -142,8 +154,18 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
 
     @Override
     public boolean matches(final Node node) {
-        return node.getNodeType() == Node.ELEMENT_NODE
-                && matchValue(((Element) node).getAttribute(attributeName));
+        if (node.getNodeType() != Node.ELEMENT_NODE) {
+            return false;
+        }
+        final Element element = (Element) node;
+        final String ns = attribute.getNamespaceURI();
+        final String testValue;
+        if (XMLConstants.NULL_NS_URI.equals(ns)) {
+            testValue = element.getAttribute(attribute.getLocalPart());
+        } else {
+            testValue = element.getAttributeNS(ns, attribute.getLocalPart());
+        }
+        return matchValue(testValue);
     }
 
     private boolean matchValue(final String testValue) {
@@ -211,7 +233,8 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
     @Override
     public boolean find(final Predicate predicate) {
         final Expression inner = this.getInnerExpression(predicate);
-        if (!(inner instanceof GeneralComparison || inner instanceof InternalFunctionCall)) {
+        if (!(inner instanceof GeneralComparison || inner instanceof InternalFunctionCall
+                || inner instanceof org.exist.xquery.functions.fn.FunMatches)) {
             // predicate expression cannot be parsed as condition
             return false;
         }
@@ -227,8 +250,14 @@ public class RangeIndexConfigAttributeCondition extends RangeIndexConfigConditio
             lhe = comparison.getLeft();
             rhe = comparison.getRight();
 
+        } else if (inner instanceof org.exist.xquery.functions.fn.FunMatches funMatches) {
+            // fn:matches (e.g. from Lookup fallback when predicate was rewritten)
+            rewrittenOperator = Operator.MATCH;
+            lhe = unwrapSubExpression(funMatches.getArgument(0));
+            rhe = unwrapSubExpression(funMatches.getArgument(1));
+
         } else {
-            // calls to matches() will not have been rewritten to a comparison, so check for function call
+            // calls to matches() via InternalFunctionCall (range:matches)
             final InternalFunctionCall funcCall = (InternalFunctionCall) inner;
             final Function func = funcCall.getFunction();
 

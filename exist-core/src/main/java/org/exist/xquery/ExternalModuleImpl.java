@@ -125,7 +125,13 @@ public class ExternalModuleImpl implements ExternalModule {
     /* (non-Javadoc)
      * @see org.exist.xquery.ExternalModule#declareFunction(org.exist.xquery.UserDefinedFunction)
      */
-    public void declareFunction(UserDefinedFunction func) {
+    public void declareFunction(UserDefinedFunction func) throws XPathException {
+        final QName name = func.getSignature().getName();
+        if (!name.getNamespaceURI().equals(getNamespaceURI())) {
+            throw new XPathException(func, ErrorCodes.XQST0048,
+                "It is a static error if a function or variable declared in a library module" +
+                " is not in the target namespace of the library module: " + name);
+        }
         mFunctionMap.put(func.getSignature().getFunctionId(), func);
     }
 

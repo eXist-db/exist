@@ -28,14 +28,14 @@ import org.exist.dom.persistent.NodeProxy;
 import org.exist.numbering.NodeId;
 
 /**
-	This class implements Floyd's version 
-	of the heapsort algorithm.
-
-	http://users.encs.concordia.ca/~chvatal/notes/hsort.html
-	http://en.wikipedia.org/wiki/Heapsort#Variations
-	
-	@author José María Fernández (jmfg@users.sourceforge.net)
-*/
+ * This class implements Floyd's version
+ * of the heapsort algorithm.
+ *
+ * http://users.encs.concordia.ca/~chvatal/notes/hsort.html
+ * http://en.wikipedia.org/wiki/Heapsort#Variations
+ *
+ * @author José María Fernández (jmfg@users.sourceforge.net)
+ */
 
 public final class HSort {
 	public static <C extends Comparable<? super C>> void sort(C[] a, int lo, int hi)

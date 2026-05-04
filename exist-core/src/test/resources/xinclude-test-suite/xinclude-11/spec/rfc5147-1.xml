@@ -1,0 +1,6 @@
+<?xml version='1.0'?>
+<document xmlns:xi="http://www.w3.org/2001/XInclude">
+<p>This example includes just the ‘use' lines from a Perl script.</p>
+<pre><xi:include parse="text" fragid="line=2,6" href="code.pl"/></pre>
+<p>There are four of them.</p>
+</document>

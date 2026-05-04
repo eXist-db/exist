@@ -67,6 +67,13 @@ declare variable $ot:DATA :=
         </address>
     </test>;
 
+declare variable $ot:DATA2 :=
+    <root>
+        <y k1="a" k2="1"/>
+        <y k1="b" k2="2"/>
+        <y k1="c" k2="3"/>
+    </root>;
+
 declare variable $ot:COLLECTION_NAME := "optimizertest";
 declare variable $ot:COLLECTION := "/db/" || $ot:COLLECTION_NAME;
 
@@ -76,7 +83,8 @@ function ot:setup() {
     xmldb:create-collection("/db/system/config/db", $ot:COLLECTION_NAME),
     xmldb:store("/db/system/config/db/" || $ot:COLLECTION_NAME, "collection.xconf", $ot:COLLECTION_CONFIG),
     xmldb:create-collection("/db", $ot:COLLECTION_NAME),
-    xmldb:store($ot:COLLECTION, "test.xml", $ot:DATA)
+    xmldb:store($ot:COLLECTION, "test.xml", $ot:DATA),
+    xmldb:store($ot:COLLECTION, "test2.xml", $ot:DATA2)
 };
 
 declare
@@ -419,4 +427,22 @@ declare
     %test:assertXPath("$result//stats:function[@calls = 1]")
 function ot:optimize-self-element($name as xs:string) {
     collection($ot:COLLECTION)//address/name[self::* = $name]
+};
+
+(: Test for issue #2205: predicate with function call using context-dependent attribute :)
+declare
+    %test:assertEquals('<y k1="a" k2="1"/>', '<y k1="b" k2="2"/>', '<y k1="c" k2="3"/>')
+function ot:predicate-with-context-dependent-function-call() {
+    let $map := map { "a": "1", "b": "2", "c": "3" }
+    return
+        collection($ot:COLLECTION)//y[@k1][@k2 = map:get($map, @k1)]
+};
+
+(: Test for issue #2205: same test with eq instead of = :)
+declare
+    %test:assertEquals('<y k1="a" k2="1"/>', '<y k1="b" k2="2"/>', '<y k1="c" k2="3"/>')
+function ot:predicate-with-context-dependent-function-call-eq() {
+    let $map := map { "a": "1", "b": "2", "c": "3" }
+    return
+        collection($ot:COLLECTION)//y[@k1][@k2 eq map:get($map, @k1)]
 };

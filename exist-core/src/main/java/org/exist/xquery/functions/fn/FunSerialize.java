@@ -38,6 +38,8 @@ import org.xml.sax.SAXException;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.exist.Namespaces.XSLT_XQUERY_SERIALIZATION_NS;
 
@@ -95,7 +97,16 @@ public class FunSerialize extends BasicFunction {
 
             return new StringValue(this, writer.toString());
         } catch (final IOException | SAXException e) {
-            throw new XPathException(this, FnModule.SENR0001, e.getMessage());
+            // Preserve specific serialization error codes from the exception message
+            final String msg = e.getMessage();
+            if (msg != null) {
+                final Matcher m = Pattern.compile("err:(SER[EPM]\\d{4})").matcher(msg);
+                if (m.find()) {
+                    throw new XPathException(this,
+                            new ErrorCodes.ErrorCode(m.group(1), msg), msg);
+                }
+            }
+            throw new XPathException(this, FnModule.SENR0001, msg);
         }
     }
 
@@ -202,7 +213,16 @@ public class FunSerialize extends BasicFunction {
             }
             return (DocumentImpl)receiver.getDocument();
         } catch (final SAXException e) {
-            throw new XPathException(callingExpr, FnModule.SENR0001, e.getMessage());
+            final String msg = e.getMessage();
+            if (msg != null) {
+                final Matcher m = Pattern
+                        .compile("err:(SER[EPM]\\d{4})").matcher(msg);
+                if (m.find()) {
+                    throw new XPathException(callingExpr,
+                            new ErrorCodes.ErrorCode(m.group(1), msg), msg);
+                }
+            }
+            throw new XPathException(callingExpr, FnModule.SENR0001, msg);
         } finally {
             context.popDocumentContext();
         }

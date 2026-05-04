@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<!-- Testing the content of the xinclude element. The element elem should be ignored. -->
+<x xmlns:xi="http://www.w3.org/2001/XInclude">
+	<doc xml:base="../ents/something.xml">
+<p>something</p>
+<p>really</p>
+<p>simple</p>
+</doc>
+</x>

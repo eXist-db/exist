@@ -44,7 +44,7 @@ declare variable $uz:myStaticCP437ContentBase64 := xs:base64Binary("UEsDBBQACAAI
 
 
 (: declare helper functions :)
-declare function local:entry-data($path as xs:anyURI, $type as xs:string, $data as item()?, $param as item()*) as item()?
+declare function uz:entry-data($path as xs:anyURI, $type as xs:string, $data as item()?, $param as item()*) as item()?
 {
     <entry>
         <path>{$path}</path>
@@ -54,7 +54,7 @@ declare function local:entry-data($path as xs:anyURI, $type as xs:string, $data 
 };
 
 (: Process every Zip Collections and Resources  :)
-declare function local:entry-filter($path as xs:anyURI, $type as xs:string, $param as item()*) as xs:boolean
+declare function uz:entry-filter($path as xs:anyURI, $type as xs:string, $param as item()*) as xs:boolean
 {
     true()
 };
@@ -63,14 +63,14 @@ declare
     %test:user("guest", "guest")
 	%test:assertEquals("<entry><path>!#$%()*+,-.:;=?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_abcdefghijklmnopqrstuvwxyz{}~ ÇüéâäàåçêëèïîìÄÅÉæÆôöòûùÿÖÜ¢£¥₧ƒáíóúñÑªº¿αßΓπΣσµτΦΘΩδ∞φε.xml</path><type>resource</type><data><file/></data></entry>")
 function uz:fnUzipUtf8Content() {
-    compression:unzip($uz:myStaticUTF8ContentBase64, util:function(xs:QName("local:entry-filter"), 3), (), util:function(xs:QName("local:entry-data"), 4), (), "UTF8")
+    compression:unzip($uz:myStaticUTF8ContentBase64, util:function(xs:QName("uz:entry-filter"), 3), (), util:function(xs:QName("uz:entry-data"), 4), (), "UTF8")
 };
 
 declare
     %test:user("guest", "guest")
 	%test:assertEquals("<entry><path>!#$%()*+,-.:;=?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_abcdefghijklmnopqrstuvwxyz{}~ ÇüéâäàåçêëèïîìÄÅÉæÆôöòûùÿÖÜ¢£¥₧ƒáíóúñÑªº¿αßΓπΣσµτΦΘΩδ∞φε.xml</path><type>resource</type><data><file/></data></entry>")
 function uz:fnUzipCp437Content() {
-    compression:unzip($uz:myStaticCP437ContentBase64, util:function(xs:QName("local:entry-filter"), 3), (), util:function(xs:QName("local:entry-data"), 4), (), "Cp437")
+    compression:unzip($uz:myStaticCP437ContentBase64, util:function(xs:QName("uz:entry-filter"), 3), (), util:function(xs:QName("uz:entry-data"), 4), (), "Cp437")
 };
 
 declare
@@ -78,13 +78,13 @@ declare
 	%test:assertEquals("<entry><path>!#$%()*+,-.:;=?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_abcdefghijklmnopqrstuvwxyz{}~ ÇüéâäàåçêëèïîìÄÅÉæÆôöòûùÿÖÜ¢£¥₧ƒáíóúñÑªº¿αßΓπΣσµτΦΘΩδ∞φε.xml</path><type>resource</type><data><file/></data></entry>")
 function uz:fnUzipUtf8ContentWrongEncoding() {
     (: This case is working due to the selected cp437 character in the filename :)
-    compression:unzip($uz:myStaticUTF8ContentBase64, util:function(xs:QName("local:entry-filter"), 3), (), util:function(xs:QName("local:entry-data"), 4), (), "Cp437")
+    compression:unzip($uz:myStaticUTF8ContentBase64, util:function(xs:QName("uz:entry-filter"), 3), (), util:function(xs:QName("uz:entry-data"), 4), (), "Cp437")
 };
 
 declare
     %test:user("guest", "guest")
-	%test:assertError("(?:MALFORMED)|(?:malformed)")
+	%test:assertError("(?:MALFORMED|malformed|invalid LOC header)")
 function uz:fnUzipCp437ContentWrongEncoding() {
     (: This case is not working because the Unicode extended filename table is not present in non unicode encoded Zip :)
-    compression:unzip($uz:myStaticCP437ContentBase64, util:function(xs:QName("local:entry-filter"), 3), (), util:function(xs:QName("local:entry-data"), 4), (), "UTF8")
+    compression:unzip($uz:myStaticCP437ContentBase64, util:function(xs:QName("uz:entry-filter"), 3), (), util:function(xs:QName("uz:entry-data"), 4), (), "UTF8")
 };

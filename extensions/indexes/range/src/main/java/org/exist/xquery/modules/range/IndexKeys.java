@@ -22,8 +22,13 @@
 package org.exist.xquery.modules.range;
 
 import org.exist.dom.QName;
+import org.exist.dom.persistent.DefaultDocumentSet;
+import org.exist.dom.persistent.DocumentSet;
+import org.exist.dom.persistent.MutableDocumentSet;
 import org.exist.indexing.range.RangeIndexWorker;
 import org.exist.util.Occurrences;
+import org.exist.security.PermissionDeniedException;
+import org.exist.util.LockException;
 import org.exist.xquery.*;
 import org.exist.xquery.value.*;
 
@@ -83,7 +88,25 @@ public class IndexKeys extends BasicFunction {
 
             final Sequence result = new ValueSequence();
             final RangeIndexWorker worker = (RangeIndexWorker) context.getBroker().getIndexController().getWorkerByIndexName("range-index");
-            Occurrences[] occur = worker.scanIndexByField(field, contextSequence == null ? context.getStaticallyKnownDocuments() : contextSequence.getDocumentSet(), start, max);
+            DocumentSet docs;
+            if (contextSequence != null) {
+                docs = contextSequence.getDocumentSet();
+            } else {
+                docs = context.getStaticallyKnownDocuments();
+                if (docs.getDocumentCount() == 0) {
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("range:index-keys-for-field: getStaticallyKnownDocuments empty, falling back to getAllXMLResources (#4074)");
+                    }
+                    final MutableDocumentSet allDocs = new DefaultDocumentSet(40);
+                    try {
+                        context.getBroker().getAllXMLResources(allDocs);
+                        docs = allDocs;
+                    } catch (final PermissionDeniedException | LockException e) {
+                        throw new XPathException(this, "Permission denied to read resources: " + e.getMessage(), e);
+                    }
+                }
+            }
+            Occurrences[] occur = worker.scanIndexByField(field, docs, start, max);
             final int len = (max != -1 && occur.length > max ? max : occur.length);
             final Sequence params[] = new Sequence[2];
             ValueSequence data = new ValueSequence();

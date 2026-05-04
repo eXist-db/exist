@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<x xmlns:xinclude="http://www.w3.org/2001/XInclude">
+   <!-- Test a fallback when a resource error occurs. -->
+   
+	 <doc>
+	   <p>with</p>
+	   <p>something</p>
+           <p>else</p>
+         </doc>
+   
+</x>

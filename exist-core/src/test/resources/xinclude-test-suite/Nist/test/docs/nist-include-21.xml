@@ -1,0 +1,12 @@
+<?xml  version="1.0"?>
+<!DOCTYPE x [
+ <!ELEMENT x (view*)>
+ <!ELEMENT view EMPTY>
+ <!ATTLIST view sun ENTITY #IMPLIED>
+ <!NOTATION jpg SYSTEM "jpg">
+ <!ENTITY image SYSTEM "gris.jpg" NDATA jpg>
+]>
+<x xmlns:xinclude="http://www.w3.org/2001/XInclude">
+   <!-- Including an XML document with an unparsed entity.  -->
+   <xinclude:include href="../ents/unparent.xml" parse="xml"/>
+</x>

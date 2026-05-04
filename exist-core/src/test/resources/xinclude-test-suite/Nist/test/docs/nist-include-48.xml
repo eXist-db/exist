@@ -1,0 +1,9 @@
+<!DOCTYPE doc [
+<!ELEMENT doc (#PCDATA)>
+<!ENTITY e SYSTEM "../ents/004.ent">
+]>
+<x xmlns:xinclude="http://www.w3.org/2001/XInclude">
+   <!-- An attempt to resolve an xpointer schema on a documenent
+	that contains unexpanded entity reference. This test should fail.-->
+   <xinclude:include href="../ents/extref.xml" xpointer="xpointer(//doc)" parse="xml"/>
+</x>

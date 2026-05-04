@@ -26,6 +26,7 @@ import com.evolvedbinary.j8fu.function.FunctionE;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.facet.taxonomy.SearcherTaxonomyManager;
 import org.apache.lucene.facet.taxonomy.TaxonomyWriter;
@@ -33,7 +34,6 @@ import org.apache.lucene.facet.taxonomy.directory.DirectoryTaxonomyWriter;
 import org.apache.lucene.index.*;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.util.Version;
 import org.exist.backup.RawDataBackup;
 import org.exist.indexing.AbstractIndex;
 import org.exist.indexing.IndexWorker;
@@ -51,11 +51,11 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Stream;
 
 public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
-    
-    public final static Version LUCENE_VERSION_IN_USE = Version.LUCENE_4_10_4;
 
     private static final Logger LOG = LogManager.getLogger(LuceneIndexWorker.class);
 
@@ -68,6 +68,8 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
     protected Directory taxoDirectory;
 
     protected Analyzer defaultAnalyzer;
+    protected Map<String, Analyzer> fieldAnalyzers;
+    protected PerFieldAnalyzerWrapper fieldAnalyzerWrapper;
 
     protected double bufferSize = IndexWriterConfig.DEFAULT_RAM_BUFFER_SIZE_MB;
 
@@ -76,6 +78,8 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
 
     protected SearcherTaxonomyManager searcherManager = null;
     protected ReaderManager readerManager = null;
+
+    protected boolean needsCommit = false;
 
     public String getDirName() {
         return DIR_NAME;
@@ -105,7 +109,7 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
         }
 
         if (defaultAnalyzer == null)
-            defaultAnalyzer = new StandardAnalyzer(LUCENE_VERSION_IN_USE);
+            defaultAnalyzer = new StandardAnalyzer();
         if (LOG.isDebugEnabled())
             LOG.debug("Using default analyzer: {}", defaultAnalyzer.getClass().getName());
     }
@@ -127,16 +131,18 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
                 Files.createDirectories(taxoDir);
             }
 
-            directory = FSDirectory.open(dir.toFile());
-            taxoDirectory = FSDirectory.open(taxoDir.toFile());
+            directory = FSDirectory.open(dir);
+            taxoDirectory = FSDirectory.open(taxoDir);
 
-            final IndexWriterConfig idxWriterConfig = new IndexWriterConfig(LUCENE_VERSION_IN_USE, defaultAnalyzer);
+            fieldAnalyzers = new HashMap<>();
+            fieldAnalyzerWrapper = new PerFieldAnalyzerWrapper(defaultAnalyzer, fieldAnalyzers);
+            final IndexWriterConfig idxWriterConfig = new IndexWriterConfig(fieldAnalyzerWrapper);
             idxWriterConfig.setRAMBufferSizeMB(bufferSize);
             cachedWriter = new IndexWriter(directory, idxWriterConfig);
             cachedTaxonomyWriter = new DirectoryTaxonomyWriter(taxoDirectory);
 
             searcherManager = new SearcherTaxonomyManager(cachedWriter, true, null, cachedTaxonomyWriter);
-            readerManager = new ReaderManager(cachedWriter, true);
+            readerManager = new ReaderManager(cachedWriter);
         } catch (IOException e) {
             throw new DatabaseConfigurationException("Exception while reading Lucene index directory: " +
                 e.getMessage(), e);
@@ -173,7 +179,7 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
 
     @Override
     public synchronized void sync() throws DBException {
-        //Nothing special to do
+        // Lucene uses IndexWriter#commit() via commit() method
         commit();
     }
 
@@ -202,8 +208,16 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
     protected Analyzer getDefaultAnalyzer() {
         return defaultAnalyzer;
     }
-    
-    protected boolean needsCommit = false;
+
+    /**
+     * Register a field-specific analyzer for indexing. Used when indexing documents
+     * with custom analyzers (e.g. WhitespaceAnalyzer) per config.
+     */
+    public void addFieldAnalyzer(String field, Analyzer analyzer) {
+        if (fieldAnalyzers != null && field != null && analyzer != null) {
+            fieldAnalyzers.put(field, analyzer);
+        }
+    }
 
     public IndexWriter getWriter() throws IOException {
         return getWriter(false);
@@ -244,6 +258,9 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
     }
 
     public <R> R withReader(FunctionE<IndexReader, R, IOException> fn) throws IOException {
+        /* Commit any pending writes so readers see up-to-date data for Lucene-backed
+           features (full-text, facets, util:index-keys, etc.). See #4805. */
+        commit();
         readerManager.maybeRefreshBlocking();
         final DirectoryReader reader = readerManager.acquire();
         try {
@@ -254,6 +271,9 @@ public class LuceneIndex extends AbstractIndex implements RawBackupSupport {
     }
 
     public <R> R withSearcher(final Function2E<SearcherTaxonomyManager.SearcherAndTaxonomy, R, IOException, XPathException> consumer) throws IOException, XPathException {
+        /* Commit any pending writes so searchers see up-to-date data for Lucene-backed
+           features (full-text, facets, util:index-keys, etc.). See #4805. */
+        commit();
         searcherManager.maybeRefreshBlocking();
         final SearcherTaxonomyManager.SearcherAndTaxonomy searcher = searcherManager.acquire();
         try {

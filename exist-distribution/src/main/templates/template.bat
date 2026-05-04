@@ -104,12 +104,13 @@ set "CLASSPATH=%BASEDIR%\etc;%REPO%\*"
 if NOT "%CLASSPATH_PREFIX%" == "" set "CLASSPATH=%CLASSPATH_PREFIX%;%CLASSPATH%"
 
 %JAVACMD% %JAVA_OPTS% -Xms128m -XX:+UseNUMA -XX:+UseZGC -XX:+UseStringDeduplication ^
-    -Dfile.encoding=UTF-8 ^
-    -Dlog4j.configurationFile="%BASEDIR%\etc\log4j2.xml" ^
-    -Dexist.home="%BASEDIR%" ^
+    -Dexist.autodeploy.dir="$BASEDIR\autodeploy" ^
     -Dexist.configurationFile="%BASEDIR%\etc\conf.xml" ^
-    -Djetty.home="%BASEDIR%" ^
+    -Dexist.home="%BASEDIR%" ^
     -Dexist.jetty.config="%BASEDIR%\etc\jetty\standard.enabled-jetty-configs" ^
+    -Dfile.encoding=UTF-8 ^
+    -Djetty.home="%BASEDIR%" ^
+    -Dlog4j.configurationFile="%BASEDIR%\etc\log4j2.xml" ^
     -classpath "%CLASSPATH%" org.exist.start.Main %EXIST_COMMAND% %CMD_LINE_ARGS%
 if %ERRORLEVEL% NEQ 0 goto error
 goto end

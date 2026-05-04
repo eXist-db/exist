@@ -136,13 +136,15 @@ public class ElementConstructor extends NodeConstructor {
             namespaceDecls[0] = qn;
         } else {
             for (QName namespaceDecl : namespaceDecls) {
-                if (qn.equals(namespaceDecl)) {
+                // XQST0071: Two namespace declaration attributes on the same element constructor
+                // share the same name (prefix), regardless of namespace URI.
+                if (qn.getLocalPart().equals(namespaceDecl.getLocalPart())) {
                     throw new XPathException(this, ErrorCodes.XQST0071, "duplicate definition for '" + qn + "'");
                 }
             }
             final QName decls[] = new QName[namespaceDecls.length + 1];
             System.arraycopy(namespaceDecls, 0, decls, 0, namespaceDecls.length);
-            decls[namespaceDecls.length] = qn;          
+            decls[namespaceDecls.length] = qn;
             namespaceDecls = decls;
         }
         //context.inScopeNamespaces.put(qn.getLocalPart(), qn.getNamespaceURI());
@@ -226,7 +228,7 @@ public class ElementConstructor extends NodeConstructor {
                     try {
                         attrQName = QName.parse(context, constructor.getQName(), XMLConstants.NULL_NS_URI);
                     } catch (final QName.IllegalQNameException e) {
-                        throw new XPathException(this, ErrorCodes.XPTY0004, "'" + constructor.getQName() + "' is not a valid attribute name");
+                        throw new XPathException(this, ErrorCodes.XQDY0074, "'" + constructor.getQName() + "' is not a valid attribute name");
                     }
 
                     final String namespaceURI = attrQName.getNamespaceURI();
@@ -275,30 +277,38 @@ public class ElementConstructor extends NodeConstructor {
             if (qnitem instanceof QNameValue) {
                 qn = ((QNameValue) qnitem).getQName();
             } else {
-                //Do we have the same result than Atomize there ? -pb
-                try {
-                    qn = QName.parse(context, qnitem.getStringValue());
-                } catch (final QName.IllegalQNameException e) {
-                    throw new XPathException(this, ErrorCodes.XPTY0004, "'" + qnitem.getStringValue() + "' is not a valid element name");
-                } catch (final XPathException e) {
-                    e.setLocation(getLine(), getColumn(), getSource());
-                    throw e;
+                // Element constructors must resolve namespace prefixes using the full
+                // inherited namespace context, regardless of declare copy-namespaces no-inherit.
+                // The no-inherit option governs how namespaces propagate from copied source
+                // nodes, not how constructor names are resolved (XQuery 3.1 §3.9.3.4).
+                final boolean savedInherit = context.inheritNamespaces();
+                if (!savedInherit) {
+                    context.setInheritNamespaces(true);
                 }
+                try {
+                    //Do we have the same result than Atomize there ? -pb
+                    try {
+                        qn = QName.parse(context, qnitem.getStringValue());
+                    } catch (final QName.IllegalQNameException e) {
+                        throw new XPathException(this, ErrorCodes.XQDY0074, "'" + qnitem.getStringValue() + "' is not a valid element name");
+                    } catch (final XPathException e) {
+                        e.setLocation(getLine(), getColumn(), getSource());
+                        throw e;
+                    }
 
-                //Use the default namespace if specified
-                /*
-                 if (qn.getPrefix() == null && context.inScopeNamespaces.get("xmlns") != null) {
-                     qn.setNamespaceURI((String)context.inScopeNamespaces.get("xmlns"));
-                 }
-                 */
-                if (qn.getPrefix() == null && context.getInScopeNamespace(XMLConstants.DEFAULT_NS_PREFIX) != null) {
-                    qn = new QName(qn.getLocalPart(), context.getInScopeNamespace(XMLConstants.DEFAULT_NS_PREFIX), qn.getPrefix());
+                    if (qn.getPrefix() == null && context.getInScopeNamespace(XMLConstants.DEFAULT_NS_PREFIX) != null) {
+                        qn = new QName(qn.getLocalPart(), context.getInScopeNamespace(XMLConstants.DEFAULT_NS_PREFIX), qn.getPrefix());
+                    }
+                } finally {
+                    if (!savedInherit) {
+                        context.setInheritNamespaces(false);
+                    }
                 }
             }
 
             //Not in the specs but... makes sense
             if (!XMLNames.isName(qn.getLocalPart())) {
-                throw new XPathException(this, ErrorCodes.XPTY0004, "'" + qnitem.getStringValue() + "' is not a valid element name");
+                throw new XPathException(this, ErrorCodes.XQDY0074, "'" + qnitem.getStringValue() + "' is not a valid element name");
             }
 
             // add namespace declaration nodes

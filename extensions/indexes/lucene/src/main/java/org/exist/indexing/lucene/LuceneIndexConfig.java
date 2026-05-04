@@ -30,6 +30,7 @@ import org.exist.dom.QName;
 import org.exist.dom.persistent.AttrImpl;
 import org.exist.storage.ElementValue;
 import org.exist.storage.NodePath;
+import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
@@ -47,6 +48,7 @@ public class LuceneIndexConfig {
     private final static String HAS_SIBLING_ATTR_ELEMENT = "has-sibling-attribute";
     private final static String FACET_ELEMENT = "facet";
     private final static String FIELD_ELEMENT = "field";
+    private final static String VECTOR_FIELD_ELEMENT = "vector-field";
 
     public static final String QNAME_ATTR = "qname";
     public static final String MATCH_ATTR = "match";
@@ -73,6 +75,7 @@ public class LuceneIndexConfig {
 
     private boolean doIndex = true;
 
+    protected final LuceneConfig parent;
     // This is for the @attr match boosting
     // and the intention is to do a proper predicate check instead in the future. /ljo
     private MultiMap matchAttrs;
@@ -81,6 +84,7 @@ public class LuceneIndexConfig {
 
     public LuceneIndexConfig(LuceneConfig parent, Element config, Map<String, String> namespaces, AnalyzerConfig analyzers,
                              Map<String, FieldType> fieldTypes) throws DatabaseConfigurationException {
+        this.parent = parent;
         if (config.hasAttribute(QNAME_ATTR)) {
             QName qname = parseQName(config, namespaces);
             path = new NodePathPattern(qname);
@@ -112,10 +116,7 @@ public class LuceneIndexConfig {
             type = new FieldType(config, analyzers);
         }
 
-        String indexParam = config.getAttribute(INDEX_ATTR);
-        if (!indexParam.isEmpty()) {
-            doIndex = "yes".equalsIgnoreCase(indexParam) || "true".equalsIgnoreCase(indexParam);
-        }
+        doIndex = Configuration.parseBooleanAttribute(config, INDEX_ATTR, true);
 
         parse(parent, config, namespaces, analyzers);
     }
@@ -139,6 +140,10 @@ public class LuceneIndexConfig {
                             if (fieldConfig.getAnalyzer() != null) {
                                 type.addAnalzer(fieldConfig.getName(), fieldConfig.getAnalyzer());
                             }
+                            break;
+                        }
+                        case VECTOR_FIELD_ELEMENT: {
+                            facetsAndFields.add(new LuceneVectorFieldConfig(parent, configElement, namespaces));
                             break;
                         }
                         case IGNORE_ELEMENT: {
@@ -207,6 +212,8 @@ public class LuceneIndexConfig {
                             matchAttrs.put(qname, new MatchAttrData(qname, value, boost, onSibling));
                             break;
                         }
+                        default:
+                            break;
                     }
                 }
             }
@@ -241,6 +248,20 @@ public class LuceneIndexConfig {
 
     public float getBoost() {
         return type.getBoost();
+    }
+
+    /**
+     * @return true if this config or any in the chain uses attribute/element boosts
+     */
+    public boolean usesBoost() {
+        LuceneIndexConfig c = this;
+        while (c != null) {
+            if (c.matchAttrs != null || (c.type != null && c.type.getBoost() > 0)) {
+                return true;
+            }
+            c = c.nextConfig;
+        }
+        return false;
     }
 
     /**
@@ -299,6 +320,10 @@ public class LuceneIndexConfig {
 	    nextConfig.add(config);
     }
 
+    public LuceneConfig getParent() {
+        return parent;
+    }
+
     public LuceneIndexConfig getNext() {
 	return nextConfig;
     }
@@ -326,6 +351,22 @@ public class LuceneIndexConfig {
         return facetsAndFields;
     }
 
+    /**
+     * Get the searchable field names (from LuceneFieldConfig only, not facets).
+     * Used for MultiFieldQueryParser when the index has nested fields.
+     *
+     * @return array of field names, or empty array if none
+     */
+    public String[] getSearchableFieldNames() {
+        if (facetsAndFields.isEmpty()) {
+            return new String[0];
+        }
+        return facetsAndFields.stream()
+                .filter(LuceneFieldConfig.class::isInstance)
+                .map(fc -> ((LuceneFieldConfig) fc).getName())
+                .toArray(String[]::new);
+    }
+
     public static QName parseQName(Element config, Map<String, String> namespaces) throws DatabaseConfigurationException {
         String name = config.getAttribute(QNAME_ATTR);
         if (name.isEmpty()) {
@@ -336,16 +377,17 @@ public class LuceneIndexConfig {
         return parseQName(name, namespaces);
     }
 
-    protected static QName parseQName(String name, Map<String, String> namespaces) throws DatabaseConfigurationException {
+    protected static QName parseQName(final String name, Map<String, String> namespaces) throws DatabaseConfigurationException {
         boolean isAttribute = false;
-        if (name.startsWith("@")) {
+        String qnameStr = name;
+        if (qnameStr.startsWith("@")) {
             isAttribute = true;
-            name = name.substring(1);
+            qnameStr = qnameStr.substring(1);
         }
 
         try {
-            String prefix = QName.extractPrefix(name);
-            String localName = QName.extractLocalName(name);
+            String prefix = QName.extractPrefix(qnameStr);
+            String localName = QName.extractLocalName(qnameStr);
             String namespaceURI = "";
             if (prefix != null) {
                 namespaceURI = namespaces.get(prefix);

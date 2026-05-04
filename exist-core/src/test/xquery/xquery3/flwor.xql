@@ -238,3 +238,46 @@ function flwor:for-as-string-binding() {
     for $x as xs:string in "foo"
     return true()
 };
+
+(: https://github.com/eXist-db/exist/issues/4252 :)
+(: When a leading order-by key is the empty sequence, subsequent keys must still be applied. :)
+declare
+    %test:assertEquals("a3", "a4", "b1", "c2")
+function flwor:orderby-empty-ordering-spec-1st() {
+    let $xml := document { <root><a n="4"/><b n="1"/><c n="2"/><a n="3"/></root> }
+    for $elem in $xml/root/*
+    order by
+        (),
+        $elem/name(),
+        $elem/@n
+    return
+        $elem/name() || $elem/@n
+};
+
+(: When a middle order-by key is the empty sequence, subsequent keys must still be applied. :)
+declare
+    %test:assertEquals("a3", "a4", "b1", "c2")
+function flwor:orderby-empty-ordering-spec-2nd() {
+    let $xml := document { <root><a n="4"/><b n="1"/><c n="2"/><a n="3"/></root> }
+    for $elem in $xml/root/*
+    order by
+        $elem/name(),
+        (),
+        $elem/@n
+    return
+        $elem/name() || $elem/@n
+};
+
+(: When the trailing order-by key is the empty sequence, earlier keys must still be applied. :)
+declare
+    %test:assertEquals("a3", "a4", "b1", "c2")
+function flwor:orderby-empty-ordering-spec-last() {
+    let $xml := document { <root><a n="4"/><b n="1"/><c n="2"/><a n="3"/></root> }
+    for $elem in $xml/root/*
+    order by
+        $elem/name(),
+        $elem/@n,
+        ()
+    return
+        $elem/name() || $elem/@n
+};

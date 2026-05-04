@@ -64,7 +64,7 @@ declare variable $indq:XML as document-node() :=
         </test>
     };
 
-declare variable $indq:COLLECTION_NAME := "indirect-queries";
+declare variable $indq:COLLECTION_NAME := "lucene-test-indirect-queries";
 declare variable $indq:COLLECTION := "/db/" || $indq:COLLECTION_NAME;
 
 (:~

@@ -35,8 +35,13 @@ import org.w3c.dom.Element;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
+
+import org.exist.dom.persistent.NodeProxy;
 
 import static org.exist.xquery.FunctionDSL.*;
 import static org.exist.xquery.modules.lucene.LuceneModule.functionSignatures;
@@ -118,7 +123,10 @@ public class Query extends Function implements Optimizable {
     public void analyze(final AnalyzeContextInfo contextInfo) throws XPathException {
         super.analyze(new AnalyzeContextInfo(contextInfo));
 
-        final List<LocationStep> steps = BasicExpressionVisitor.findLocationSteps(getArgument(0));
+        List<LocationStep> steps = BasicExpressionVisitor.findLocationSteps(getArgument(0));
+        if (steps.isEmpty() && getArgument(0) instanceof LocationStep step) {
+            steps = List.of(step);
+        }
         if (!steps.isEmpty()) {
             final LocationStep firstStep = steps.getFirst();
             final LocationStep lastStep = steps.getLast();
@@ -235,7 +243,29 @@ public class Query extends Function implements Optimizable {
 
         final DocumentSet docs = contextSequence.getDocumentSet();
         final Item key = getKey(contextSequence, null);
-        @Nullable final List<QName> qnames = contextQNames != null ? Arrays.asList(contextQNames) : null;
+        @Nullable List<QName> qnames = contextQNames != null ? Arrays.asList(contextQNames) : null;
+        if (qnames == null && useContext) {
+            final NodeSet ctxSet = contextSequence.toNodeSet();
+            if (ctxSet != null && !ctxSet.isEmpty()) {
+                try {
+                    final List<QName> allIndexes = index.getDefinedIndexes(null);
+                    if (allIndexes.size() > 1) {
+                        final Set<QName> seen = new LinkedHashSet<>();
+                        for (final NodeProxy proxy : ctxSet) {
+                            final QName qn = proxy.getQName();
+                            if (qn != null) {
+                                seen.add(qn);
+                            }
+                        }
+                        if (!seen.isEmpty()) {
+                            qnames = new ArrayList<>(seen);
+                        }
+                    }
+                } catch (final IOException e) {
+                    LOG.trace("Failed to derive context qnames from defined Lucene indexes; falling back to unscoped query", e);
+                }
+            }
+        }
         final QueryOptions options = parseOptions(this, contextSequence, null, 3);
         try {
             if (key != null && Type.subTypeOf(key.getType(), Type.ELEMENT)) {
@@ -268,7 +298,19 @@ public class Query extends Function implements Optimizable {
             // in-memory docs won't have an index
             return Sequence.EMPTY_SEQUENCE;
         }
-        
+
+        // Fix #3114: When the path has predicates (e.g. [@attr="value"]), cannot use
+        // preselect shortcut – path must be evaluated first so predicates apply, then
+        // Lucene runs on that filtered set. Preselect returns Lucene-only matches and
+        // bypasses predicates (e.g. when range index optimizes @attr).
+        if (preselectResult != null) {
+            final boolean hasPredicates = pathHasPredicates(getArgument(0))
+                || (contextStep != null && contextStep.hasPredicates());
+            if (hasPredicates) {
+                preselectResult = null;
+            }
+        }
+
         final NodeSet result;
         if (preselectResult == null) {
             final long start = System.currentTimeMillis();
@@ -280,7 +322,26 @@ public class Query extends Function implements Optimizable {
                 final DocumentSet docs = inNodes.getDocumentSet();
                 final LuceneIndexWorker index = (LuceneIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
                 final Item key = getKey(contextSequence, contextItem);
-                @Nullable final List<QName> qnames = contextQNames != null ? Arrays.asList(contextQNames) : null;
+                @Nullable List<QName> qnames = contextQNames != null ? Arrays.asList(contextQNames) : null;
+                if (qnames == null && inNodes != null && !inNodes.isEmpty()) {
+                    try {
+                        final List<QName> allIndexes = index.getDefinedIndexes(null);
+                        if (allIndexes.size() > 1) {
+                            final Set<QName> seen = new LinkedHashSet<>();
+                            for (final NodeProxy proxy : inNodes) {
+                                final QName qn = proxy.getQName();
+                                if (qn != null) {
+                                    seen.add(qn);
+                                }
+                            }
+                            if (!seen.isEmpty()) {
+                                qnames = new ArrayList<>(seen);
+                            }
+                        }
+                    } catch (final IOException e) {
+                        LOG.trace("Failed to derive input qnames from defined Lucene indexes; falling back to unscoped query", e);
+                    }
+                }
                 final QueryOptions options = parseOptions(this, contextSequence, contextItem, 3);
                 try {
                     if (key != null && Type.subTypeOf(key.getType(), Type.ELEMENT)) {
@@ -299,7 +360,9 @@ public class Query extends Function implements Optimizable {
             }
         } else {
             // DW: contextSequence can be null
-            contextStep.setPreloadedData(preselectResult.getDocumentSet(), preselectResult);
+            if (contextStep != null) {
+                contextStep.setPreloadedData(preselectResult.getDocumentSet(), preselectResult);
+            }
             result = getArgument(0).eval(contextSequence, null).toNodeSet();
         }
 
@@ -326,6 +389,16 @@ public class Query extends Function implements Optimizable {
         final Expression stringArg = getArgument(0);
         if (Type.subTypeOf(stringArg.returnsType(), Type.NODE) &&
                 !Dependency.dependsOn(stringArg, Dependency.CONTEXT_ITEM)) {
+            // Check if any other argument depends on a local iteration variable.
+            // If so, the expression cannot be bulk-evaluated during ForExpr preEval
+            // because the variable value changes per iteration. (GH-2204)
+            // Only LOCAL_VARS (same for/let scope) prevent bulk evaluation;
+            // CONTEXT_VARS (outer scope) are static and safe to preselect.
+            for (int i = 1; i < getArgumentCount(); i++) {
+                if (Dependency.dependsOnLocalVar(getArgument(i))) {
+                    return Dependency.CONTEXT_SET + Dependency.CONTEXT_ITEM;
+                }
+            }
             return Dependency.CONTEXT_SET;
         } else {
             return Dependency.CONTEXT_SET + Dependency.CONTEXT_ITEM;
@@ -358,6 +431,30 @@ public class Query extends Function implements Optimizable {
         if (!postOptimization) {
             preselectResult = null;
         }
+    }
+
+    /**
+     * Returns true if the expression tree contains any predicates (e.g. [@attr="value"]).
+     * Checks LocationStep.getPredicates(), FilteredExpression.getPredicates(), and recurses
+     * into sub-expressions. Used by #3114: preselect cannot be used when predicates must apply.
+     *
+     * @param expr the path or expression to inspect
+     * @return true if any predicate is found
+     */
+    private static boolean pathHasPredicates(final Expression expr) {
+        if (expr instanceof LocationStep ls) {
+            final Predicate[] preds = ls.getPredicates();
+            return preds != null && preds.length > 0;
+        }
+        if (expr instanceof FilteredExpression fe) {
+            return !fe.getPredicates().isEmpty();
+        }
+        for (int i = 0; i < expr.getSubExpressionCount(); i++) {
+            if (pathHasPredicates(expr.getSubExpression(i))) {
+                return true;
+            }
+        }
+        return false;
     }
 }
 

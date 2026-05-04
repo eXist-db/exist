@@ -23,6 +23,7 @@ package org.exist.xmldb;
 
 import org.exist.collections.CollectionConfigurationException;
 import org.exist.collections.CollectionConfigurationManager;
+import org.exist.indexing.ReindexScope;
 import org.exist.dom.persistent.LockedDocument;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
@@ -54,7 +55,12 @@ public class LocalIndexQueryService extends AbstractLocalService implements Inde
 
     @Override
     public void reindexCollection() throws XMLDBException {
-        reindexCollection(collection.getURI().toCollectionPathURI());
+        reindexCollection(collection.getURI().toCollectionPathURI(), ReindexScope.ALL);
+    }
+
+    @Override
+    public void reindexCollection(final ReindexScope scope) throws XMLDBException {
+        reindexCollection(collection.getURI().toCollectionPathURI(), scope);
     }
 
     @Override
@@ -68,13 +74,18 @@ public class LocalIndexQueryService extends AbstractLocalService implements Inde
 
     @Override
     public void reindexCollection(final XmldbURI col) throws XMLDBException {
+        reindexCollection(col, ReindexScope.ALL);
+    }
+
+    @Override
+    public void reindexCollection(final XmldbURI col, final ReindexScope scope) throws XMLDBException {
         final XmldbURI collectionPath = resolve(col);
         read(collectionPath).apply((collection, broker, transaction) -> {
             try {
-                broker.reindexCollection(transaction, collectionPath);
+                broker.reindexCollection(transaction, collectionPath, scope);
                 broker.sync(Sync.MAJOR);
                 return null;
-            } catch(final LockException e) {
+            } catch (final LockException e) {
                 throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e);
             }
         });
@@ -82,15 +93,24 @@ public class LocalIndexQueryService extends AbstractLocalService implements Inde
 
     @Override
     public void reindexDocument(final String name) throws XMLDBException {
-        reindexDocument(collection.getURI().toCollectionPathURI(), name);
+        reindexDocument(name, ReindexScope.ALL);
+    }
+
+    @Override
+    public void reindexDocument(final String name, final ReindexScope scope) throws XMLDBException {
+        reindexDocument(collection.getURI().toCollectionPathURI(), name, scope);
     }
 
     private void reindexDocument(final XmldbURI col, final String docName) throws XMLDBException {
+        reindexDocument(col, docName, ReindexScope.ALL);
+    }
+
+    private void reindexDocument(final XmldbURI col, final String docName, final ReindexScope scope) throws XMLDBException {
         final XmldbURI collectionPath = resolve(col);
         withDb((broker, transaction) -> {
-            try(final LockedDocument lockedDoc = broker.getXMLResource(collectionPath.append(docName), LockMode.READ_LOCK)) {
-                if(lockedDoc != null) {
-                    broker.reindexXMLResource(transaction, lockedDoc.getDocument(), DBBroker.IndexMode.STORE);
+            try (final LockedDocument lockedDoc = broker.getXMLResource(collectionPath.append(docName), LockMode.READ_LOCK)) {
+                if (lockedDoc != null) {
+                    broker.reindexXMLResource(transaction, lockedDoc.getDocument(), DBBroker.IndexMode.STORE, scope);
                     broker.sync(Sync.MAJOR);
                 }
                 return null;

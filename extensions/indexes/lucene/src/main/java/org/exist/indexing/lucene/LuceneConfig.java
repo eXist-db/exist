@@ -32,10 +32,13 @@ import org.exist.dom.QName;
 import org.exist.indexing.lucene.analyzers.NoDiacriticsStandardAnalyzer;
 import org.exist.storage.NodePath;
 import org.exist.storage.NodePath2;
+import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import javax.annotation.Nullable;
 
 public class LuceneConfig {
 
@@ -52,6 +55,9 @@ public class LuceneConfig {
     private static final String IGNORE_ELEMENT = "ignore";
     private final static String BOOST_ATTRIB = "boost";
     private static final String DIACRITICS = "diacritics";
+    private static final String VECTOR_STORE = "vector-store";
+    private static final String VECTOR_STORE_LUCENE = "lucene";
+    private static final String VECTOR_STORE_DB = "db";
     private static final String MODULE_ELEMENT = "module";
     private static final String ATTR_MODULE_URI = "uri";
     private static final String ATTR_MODULE_PREFIX = "prefix";
@@ -69,6 +75,9 @@ public class LuceneConfig {
     private final PathIterator iterator = new PathIterator();
     
     private float boost = -1;
+
+    /** "lucene" = Lucene only (US-I6); "db" = Lucene + vector.dbx (default). */
+    private String vectorStore = VECTOR_STORE_DB;
 
     private AnalyzerConfig analyzers = new AnalyzerConfig();
 
@@ -99,8 +108,21 @@ public class LuceneConfig {
     	this.inlineNodes = other.inlineNodes;
     	this.ignoreNodes = other.ignoreNodes;
     	this.boost = other.boost;
+    	this.vectorStore = other.vectorStore;
     	this.analyzers = other.analyzers;
     	this.facetsConfig = other.facetsConfig;
+    }
+
+    /**
+     * Returns vector-store mode: "lucene" (Lucene only, reindex recomputes) or "db" (Lucene + vector.dbx, default).
+     * <p>
+     * When {@code xmldb:reindex($col, "fulltext")} is used: with {@code vector-store="db"}, vectors are read from
+     * vector.dbx (no recomputation). With {@code vector-store="lucene"}, fulltext-only is not supported and the
+     * reindex behaves as "all" (recomputes vectors from source text).
+     * </p>
+     */
+    public String getVectorStore() {
+        return vectorStore;
     }
 
     /**
@@ -173,13 +195,125 @@ public class LuceneConfig {
         return false;
     }
 
-    public Analyzer getAnalyzer(QName qname) {
+    /**
+     * Returns the set of configured field and facet dimension names.
+     * Terms from these fields should not produce highlights in util:expand,
+     * since they match metadata rather than main content.
+     * @see <a href="https://github.com/eXist-db/exist/pull/3467">PR #3467</a>
+     */
+    public Set<String> getConfiguredFieldNames() {
+        final Set<String> excluded = new HashSet<>();
+        for (LuceneIndexConfig c : paths.values()) {
+            collectFieldNames(c, excluded);
+        }
+        for (LuceneIndexConfig c : wildcardPaths) {
+            collectFieldNames(c, excluded);
+        }
+        for (LuceneIndexConfig c : namedIndexes.values()) {
+            collectFieldNames(c, excluded);
+        }
+        return excluded;
+    }
+
+    private static void collectFieldNames(LuceneIndexConfig config, Set<String> excluded) {
+        LuceneIndexConfig c = config;
+        while (c != null) {
+            for (AbstractFieldConfig fc : c.getFacetsAndFields()) {
+                if (fc instanceof LuceneFieldConfig lfc) {
+                    excluded.add(lfc.getName());
+                } else if (fc instanceof LuceneFacetConfig lfacet) {
+                    excluded.add(lfacet.getDimension());
+                }
+            }
+            c = c.getNext();
+        }
+    }
+
+    /**
+     * @return true if any index config uses boosts (match-attribute, has-attribute, or boost attr)
+     */
+    public boolean hasBoostConfig() {
+        for (LuceneIndexConfig config : paths.values()) {
+            if (config.usesBoost()) {
+                return true;
+            }
+        }
+        for (LuceneIndexConfig config : wildcardPaths) {
+            if (config.usesBoost()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Get the LuceneIndexConfig that matches the given QName.
+     *
+     * @param qname the QName to match
+     * @return the matching config, or null if none
+     */
+    public LuceneIndexConfig getIndexConfigForQName(QName qname) {
         LuceneIndexConfig idxConf = paths.get(qname);
+        if (idxConf == null && qname != null) {
+            idxConf = findByFallback(qname);
+            if (idxConf != null) {
+                return idxConf;
+            }
+        }
         while (idxConf != null) {
-            if (!idxConf.isNamed() && idxConf.getNodePathPattern().match(qname))
+            if (!idxConf.isNamed() && idxConf.getNodePathPattern().match(qname)) {
                 break;
+            }
             idxConf = idxConf.getNext();
         }
+        return idxConf;
+    }
+
+    @Nullable
+    private LuceneIndexConfig findByFallback(final QName qname) {
+        final String local = qname.getLocalPart();
+        final String ns = qname.getNamespaceURI();
+        if (local == null || local.equals(QName.WILDCARD)) {
+            return null;
+        }
+        for (LuceneIndexConfig config : paths.values()) {
+            LuceneIndexConfig c = config;
+            while (c != null) {
+                if (!c.isNamed()) {
+                    QName pathQName = c.getNodePathPattern().getLastComponent();
+                    if (pathQName != null
+                            && local.equals(pathQName.getLocalPart())
+                            && namespaceMatches(ns, pathQName.getNamespaceURI())) {
+                        return c;
+                    }
+                }
+                c = c.getNext();
+            }
+        }
+        return null;
+    }
+
+    private static boolean namespaceMatches(@Nullable final String ns, @Nullable final String pathNs) {
+        if (ns == null || ns.isEmpty()) {
+            return pathNs == null || pathNs.isEmpty();
+        }
+        return ns.equals(pathNs);
+    }
+
+    /**
+     * Returns all index configurations (for iterating searchable fields etc.).
+     *
+     * @return collection of index configs
+     */
+    public Collection<LuceneIndexConfig> getIndexConfigurations() {
+        return paths.values();
+    }
+
+    public Analyzer getAnalyzer(QName qname) {
+        if (qname == null) {
+            return analyzers.getDefaultAnalyzer();
+        }
+        LuceneIndexConfig idxConf = getIndexConfigForQName(qname);
         if (idxConf != null) {
             final Analyzer analyzer = idxConf.getAnalyzer();
             if (analyzer != null) {
@@ -190,8 +324,9 @@ public class LuceneConfig {
     }
 
     public Analyzer getAnalyzer(NodePath nodePath) {
-        if (nodePath.length() == 0)
-            throw new RuntimeException();
+        if (nodePath.length() == 0) {
+            throw new IllegalArgumentException("NodePath must not be empty");
+        }
         LuceneIndexConfig idxConf = paths.get(nodePath.getLastComponent());
         while (idxConf != null) {
             if (!idxConf.isNamed() && idxConf.match(nodePath))
@@ -215,21 +350,60 @@ public class LuceneConfig {
 
     public Analyzer getAnalyzer(String field) {
         LuceneIndexConfig config = namedIndexes.get(field);
-        String id = config != null ? config.getAnalyzerId() : null;
-        if (id == null)
-            return analyzers.getDefaultAnalyzer();
+        if (config != null) {
+            String id = config.getAnalyzerId();
+            if (id != null) {
+                final String indexSuffix = ":index";
+                if (id.endsWith(indexSuffix)) {
+                    // Substitute <analyzer-id>:index with <analyzer-id>:query
+                    String qid = id.substring(0, id.length() - indexSuffix.length()) + ":query";
+                    Analyzer queryAnalyzer = analyzers.getAnalyzerById(qid);
+                    if (queryAnalyzer != null)
+                        return queryAnalyzer;
 
-        final String indexSuffix = ":index";
-        if (id.endsWith(indexSuffix)) {
-            // Substitute <analyzer-id>:index with <analyzer-id>:query
-            String qid = id.substring(0, id.length() - indexSuffix.length()) + ":query";
-            Analyzer queryAnalyzer = analyzers.getAnalyzerById(qid);
-            if (queryAnalyzer != null)
-                return queryAnalyzer;
-
-            LOG.warn(String.format("Failed to substitute %s with %s analyzer", id, qid));
+                    LOG.warn(String.format("Failed to substitute %s with %s analyzer", id, qid));
+                }
+                return analyzers.getAnalyzerById(id);
+            }
         }
-        return analyzers.getAnalyzerById(config.getAnalyzerId());
+        // Look up field analyzer from nested <field name="..."> configs
+        Analyzer fieldAnalyzer = getFieldAnalyzer(field);
+        return fieldAnalyzer != null ? fieldAnalyzer : analyzers.getDefaultAnalyzer();
+    }
+
+    /**
+     * Find analyzer for a named field from nested &lt;field name="..."&gt; configs.
+     * When a field has no explicit analyzer, inherits from the parent index.
+     *
+     * @param field the field name
+     * @return the analyzer or null if not found
+     */
+    protected Analyzer getFieldAnalyzer(String field) {
+        for (LuceneIndexConfig idxConf : paths.values()) {
+            LuceneIndexConfig config = idxConf;
+            while (config != null) {
+                Analyzer a = getFieldAnalyzerFromConfig(config, field);
+                if (a != null) return a;
+                config = config.getNext();
+            }
+        }
+        for (LuceneIndexConfig config : wildcardPaths) {
+            Analyzer a = getFieldAnalyzerFromConfig(config, field);
+            if (a != null) return a;
+        }
+        return null;
+    }
+
+    private Analyzer getFieldAnalyzerFromConfig(LuceneIndexConfig config, String field) {
+        for (AbstractFieldConfig fc : config.getFacetsAndFields()) {
+            if (fc instanceof LuceneFieldConfig lfc && field.equals(lfc.getName())) {
+                if (lfc.getAnalyzer() != null) return lfc.getAnalyzer();
+                // Field exists but has no analyzer: inherit from parent index
+                String id = config.getAnalyzerId();
+                return id != null ? analyzers.getAnalyzerById(id) : null;
+            }
+        }
+        return null;
     }
 
     /**
@@ -322,10 +496,15 @@ public class LuceneConfig {
                                                 + "lucene index config: float expected, got " + value);
                                     }
                                 }
-                                if (elem.hasAttribute(DIACRITICS)) {
-                                    String value = elem.getAttribute(DIACRITICS);
-                                    if ("no".equalsIgnoreCase(value)) {
-                                        analyzers.setDefaultAnalyzer(new NoDiacriticsStandardAnalyzer(LuceneIndex.LUCENE_VERSION_IN_USE));
+                                if (!Configuration.parseBooleanAttribute(elem, DIACRITICS, true)) {
+                                    analyzers.setDefaultAnalyzer(new NoDiacriticsStandardAnalyzer());
+                                }
+                                final String vs = elem.getAttribute(VECTOR_STORE).trim();
+                                if (!vs.isEmpty()) {
+                                    if (VECTOR_STORE_LUCENE.equalsIgnoreCase(vs) || VECTOR_STORE_DB.equalsIgnoreCase(vs)) {
+                                        vectorStore = vs.toLowerCase();
+                                    } else {
+                                        throw new DatabaseConfigurationException("lucene vector-store must be 'lucene' or 'db', got: " + vs);
                                     }
                                 }
                                 parseConfig(node.getChildNodes(), namespaces);
@@ -385,6 +564,8 @@ public class LuceneConfig {
                                 ignoreNodes.add(qname);
                                 break;
                             }
+                            default:
+                                break;
                         }
                     }
                     

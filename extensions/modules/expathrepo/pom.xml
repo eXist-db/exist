@@ -114,7 +114,7 @@
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${basedir}/target/generated-test-resources</outputDirectory>
+                            <outputDirectory>${project.basedir}/target/generated-test-resources</outputDirectory>
                             <resources>
                                 <resource>
                                     <directory>expathrepo-trigger-test/target/</directory>

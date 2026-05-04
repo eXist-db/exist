@@ -1,0 +1,7 @@
+<?xml version='1.0'?>
+<root>
+   This tests whether a syntax error in the <strong>second</strong>
+   XPointer part will throw the exception as required.
+   Nothing should be included. Instead, there should be failure.
+  <xi:include href="docwithid.xml" xpointer="element(/1/1)element(^^^)" xmlns:xi="http://www.w3.org/2001/XInclude" />
+</root>

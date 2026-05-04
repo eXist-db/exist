@@ -90,7 +90,7 @@ public class FunContainsToken extends BasicFunction {
         Collator collator = context.getDefaultCollator();
 
         if (args.length > 2 && !args[2].isEmpty()) {
-            collator = context.getCollator(args[2].getStringValue());
+            collator = context.getCollator(args[2].getStringValue(), ErrorCodes.FOCH0002);
         }
 
         /* return true only if some fragment matches the trimmed token under current collation */

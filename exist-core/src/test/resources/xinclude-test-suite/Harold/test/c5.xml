@@ -1,0 +1,10 @@
+<?xml version='1.0'?>
+<div>
+  <xi:include href="example.txt" parse="text" xmlns:xi="http://www.w3.org/2001/XInclude">
+    <xi:fallback>
+      <xi:include href="fallback-example.txt" parse="text">
+        <xi:fallback><a href="mailto:bob@example.org">Report error</a></xi:fallback>
+      </xi:include>
+    </xi:fallback>
+  </xi:include>
+</div>

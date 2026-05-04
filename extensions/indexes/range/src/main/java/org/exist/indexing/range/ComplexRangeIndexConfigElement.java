@@ -69,7 +69,7 @@ public class ComplexRangeIndexConfigElement extends RangeIndexConfigElement {
                         fields.put(field.getName(), field);
                     }
                     case CONDITION_ELEMENT ->
-                            conditions.add(new RangeIndexConfigAttributeCondition((Element) child, path));
+                            conditions.add(new RangeIndexConfigAttributeCondition((Element) child, path, namespaces));
                     case FILTER_ELEMENT -> analyzer.addFilter((Element) child);
                     case null, default ->
                             LOG.warn("Invalid element encountered for range index configuration: {}", child.getLocalName());
@@ -115,10 +115,10 @@ public class ComplexRangeIndexConfigElement extends RangeIndexConfigElement {
 
     @Override
     public Analyzer getAnalyzer(String fieldName) {
-        if (fields.containsKey(fieldName)) {
-            return analyzer;
-        }
-        return null;
+        // Return analyzer for all fields. Path-based (encoded qname) fieldName is not in
+        // fields map; previously returned null causing 0 hits. Use default analyzer so
+        // index-time tokenization matches query-time analyzeContent.
+        return analyzer;
     }
 
     public RangeIndexConfigField getField(NodePath path) {

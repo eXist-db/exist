@@ -1,0 +1,10 @@
+<document xmlns:xi="http://www.w3.org/2001/XInclude"
+          xmlns:eg="http://example.org/namespace/example">
+   <p>This example includes a “definition” paragraph from some document
+twice using attribute copying.</p>
+
+   <para eg:root="one" xml:id="def">Some definition.</para>
+
+   <para eg:root="two" xml:id="def">Some definition.</para>
+
+</document>

@@ -1,0 +1,6 @@
+<?xml version='1.0'?>
+<circle>
+  This file is just for making sure my XIncluder can detect 
+  circular references.
+  <xi:include href="circle2b.xml" parse="xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+</circle>

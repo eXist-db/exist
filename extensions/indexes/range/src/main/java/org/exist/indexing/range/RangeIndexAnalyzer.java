@@ -27,7 +27,7 @@ import org.apache.lucene.analysis.TokenFilter;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.Tokenizer;
 import org.apache.lucene.analysis.core.KeywordTokenizer;
-import org.apache.lucene.collation.ICUCollationAttributeFactory;
+import org.apache.lucene.analysis.icu.ICUCollationAttributeFactory;
 import org.apache.lucene.util.AttributeFactory;
 import org.exist.util.Collations;
 import org.exist.util.DatabaseConfigurationException;
@@ -104,12 +104,12 @@ public class RangeIndexAnalyzer extends Analyzer {
     }
 
     @Override
-    protected TokenStreamComponents createComponents(final String fieldName, final Reader reader) {
+    protected TokenStreamComponents createComponents(final String fieldName) {
         AttributeFactory factory = AttributeFactory.DEFAULT_ATTRIBUTE_FACTORY;
         if (collator != null) {
             factory = new ICUCollationAttributeFactory(collator);
         }
-        final Tokenizer src = new KeywordTokenizer(factory, reader, 256);
+        final KeywordTokenizer src = new KeywordTokenizer(factory, KeywordTokenizer.DEFAULT_BUFFER_SIZE);
         TokenStream tok = src;
         for (final FilterConfig filter: filterConfigs) {
             tok = filter.constructor.apply(tok);

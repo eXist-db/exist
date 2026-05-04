@@ -1,0 +1,10 @@
+<?xml version='1.0'?>
+<document xmlns:xi="http://www.w3.org/2001/XInclude"
+          xmlns:eg="http://example.org/namespace/example">
+<p>This example shows attribute replacement.</p>
+
+<xi:include eg:root="one" xml:id="inc1" href="src-2.xml" xpointer="element(note)"/>
+
+<xi:include eg:root="two" xml:id="inc2" href="src-2.xml" xpointer="element(note)"/>
+
+</document>

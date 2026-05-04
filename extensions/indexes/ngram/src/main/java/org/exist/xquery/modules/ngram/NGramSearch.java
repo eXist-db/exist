@@ -568,6 +568,16 @@ public class NGramSearch extends Function implements Optimizable {
         final Expression stringArg = getArgument(0);
         if (Type.subTypeOf(stringArg.returnsType(), Type.NODE)
             && !Dependency.dependsOn(stringArg, Dependency.CONTEXT_ITEM)) {
+            // Check if any other argument depends on a local iteration variable.
+            // If so, the expression cannot be bulk-evaluated during ForExpr preEval
+            // because the variable value changes per iteration. (GH-2204)
+            // Only LOCAL_VARS (same for/let scope) prevent bulk evaluation;
+            // CONTEXT_VARS (outer scope) are static and safe to preselect.
+            for (int i = 1; i < getArgumentCount(); i++) {
+                if (Dependency.dependsOnLocalVar(getArgument(i))) {
+                    return Dependency.CONTEXT_SET + Dependency.CONTEXT_ITEM;
+                }
+            }
             return Dependency.CONTEXT_SET;
         } else {
             return Dependency.CONTEXT_SET + Dependency.CONTEXT_ITEM;

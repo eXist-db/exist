@@ -1,0 +1,6 @@
+<?xml version='1.0'?>
+<test>
+  Make sure base URIs are preserved when including from the same document.
+  <data xml:base="http://www.example.org/">This should be duplicated</data>
+  <data xml:base="http://www.example.org/">This should be duplicated</data>
+</test>

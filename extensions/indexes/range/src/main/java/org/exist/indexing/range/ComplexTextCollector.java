@@ -34,6 +34,7 @@ public class ComplexTextCollector implements TextCollector {
     private ComplexRangeIndexConfigElement config;
     private List<Field> fields = new LinkedList<>();
     private RangeIndexConfigField currentField = null;
+    private int currentFieldPathLength = -1;
     private int length = 0;
 
     public ComplexTextCollector(ComplexRangeIndexConfigElement configuration, NodePath parentPath) {
@@ -46,6 +47,7 @@ public class ComplexTextCollector implements TextCollector {
         RangeIndexConfigField fieldConf = config.getField(parentPath, path);
         if (fieldConf != null) {
             currentField = fieldConf;
+            currentFieldPathLength = path.length();
             Field field = new Field(currentField.getName(), false, fieldConf.whitespaceTreatment(), fieldConf.isCaseSensitive());
             fields.add(field);
         }
@@ -54,8 +56,15 @@ public class ComplexTextCollector implements TextCollector {
 
     @Override
     public void endElement(QName qname, NodePath path) {
-        if (currentField != null && currentField.match(path)) {
+        /* Only clear currentField when closing the element that owns the field,
+           not when closing a nested child. currentField.match(path) is true for any
+           descendant (field path has includeDescendants), so it wrongly cleared
+           after </x/> and skipped text like " ghi " in <def> abc <x>def</x> ghi </def>.
+           Use path length at startElement (document path) not config path length.
+           See GitHub #1353. */
+        if (currentField != null && path.length() == currentFieldPathLength) {
             currentField = null;
+            currentFieldPathLength = -1;
         }
     }
 

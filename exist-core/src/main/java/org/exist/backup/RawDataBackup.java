@@ -26,7 +26,12 @@ import java.io.OutputStream;
 
 
 /**
- * Callback interface, mainly used by the {@link org.exist.storage.DataBackup} system task to write the raw data files to an archive..
+ * Callback interface, mainly used by the {@link org.exist.storage.DataBackup} system task to write the raw data files to an archive.
+ *
+ * <p><strong>Important:</strong> The {@link OutputStream} returned by {@link #newEntry(String)} is the underlying
+ * archive stream (e.g. a {@link java.util.zip.ZipOutputStream}). Callers must <em>not</em> close it, as that would
+ * close the entire backup. Write the entry data, then call {@link #closeEntry()} to finish the entry. Do not use
+ * try-with-resources on the returned stream.</p>
  */
 public interface RawDataBackup
 {

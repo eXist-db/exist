@@ -61,6 +61,9 @@ declare
     %test:args('Tue Feb 28 2019 13:10:56 XYZ') %test:assertError("FORG0010")
     %test:args('Tue Feb 28 -2019 13:10:56') %test:assertError("FORG0010")
     %test:args('Tue Feb 28 2019 30:10') %test:assertError("FORG0010")
+    (: seconds must be exactly two digits per the IETF date EBNF :)
+    %test:args('Tue Feb 28 2019 13:10:5') %test:assertError("FORG0010")
+    %test:args('Tue Feb 28 2019 13:10:5.123') %test:assertError("FORG0010")
 function parse-ietf-date-spec:test-invalid-date ($date) {
     fn:parse-ietf-date($date)
 };
