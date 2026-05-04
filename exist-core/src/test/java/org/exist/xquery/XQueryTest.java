@@ -845,6 +845,10 @@ public class XQueryTest {
             message = e.getMessage();
         }
         assertTrue(message.indexOf("does not match namespace URI") > -1);
+        // module2 declares `module namespace foo=""`, which is a static error per
+        // XQuery 3.1 section 4.18 (XQST0088: zero-length target namespace literal).
+        // The error originates while compiling the imported module, regardless of
+        // the prefix or URI used in the importing module's `import module` clause.
         query = "xquery version \"1.0\";\n" + "import module namespace foo=\"ho\" at \"" + URI + "/test/" + MODULE2_NAME + "\";\n" + "$bar";
         try {
             message = "";
@@ -852,7 +856,8 @@ public class XQueryTest {
         } catch (XMLDBException e) {
             message = e.getMessage();
         }
-        assertTrue(message.indexOf("No namespace defined for prefix") > -1);
+        assertTrue("Expected XQST0088 for empty module namespace literal, got: " + message,
+                message.indexOf("XQST0088") > -1);
         query = "xquery version \"1.0\";\n" + "import module namespace foo=\"blah\" at \"" + URI + "/test/" + MODULE2_NAME + "\";\n" + "$bar";
         try {
             message = "";
@@ -860,7 +865,8 @@ public class XQueryTest {
         } catch (XMLDBException e) {
             message = e.getMessage();
         }
-        assertTrue(message.indexOf("No namespace defined for prefix") > -1);
+        assertTrue("Expected XQST0088 for empty module namespace literal, got: " + message,
+                message.indexOf("XQST0088") > -1);
         query = "declare namespace x = \"http://www.foo.com\"; \n" +
                 "let $a := doc('" + XmldbURI.ROOT_COLLECTION + "/test/" + NAMESPACED_NAME + "') \n" +
                 "return $a//x:edition";

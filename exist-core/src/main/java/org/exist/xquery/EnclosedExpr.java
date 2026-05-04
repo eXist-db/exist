@@ -191,7 +191,12 @@ public class EnclosedExpr extends PathExpr {
                             if (e.code == DOMException.NAMESPACE_ERR) {
                                 throw new XPathException(this, ErrorCodes.XQDY0102, e.getMessage());
                             } else if (e.code == DOMException.INUSE_ATTRIBUTE_ERR) {
-                                throw new XPathException(this, ErrorCodes.XQDY0025, e.getMessage());
+                                final String msg = e.getMessage();
+                                if (msg != null && msg.contains("XQTY0024")) {
+                                    throw new XPathException(this, ErrorCodes.XQTY0024, msg);
+                                } else {
+                                    throw new XPathException(this, ErrorCodes.XQDY0025, msg);
+                                }
                             } else {
                                 throw new XPathException(this, e.getMessage(), e);
                             }
@@ -205,6 +210,18 @@ public class EnclosedExpr extends PathExpr {
                     receiver.characters(buf);
                 }
             } catch (final SAXException e) {
+                // DocumentBuilderReceiver wraps DOMException in SAXException; unwrap so that
+                // INUSE_ATTRIBUTE_ERR (used by DocumentImpl to signal XQTY0024 / XQDY0025)
+                // surfaces with the proper W3C error code rather than the generic ERROR code.
+                final Throwable cause = e.getCause();
+                if (cause instanceof DOMException de && de.code == DOMException.INUSE_ATTRIBUTE_ERR) {
+                    final String msg = de.getMessage();
+                    if (msg != null && msg.contains("XQTY0024")) {
+                        throw new XPathException(this, ErrorCodes.XQTY0024, msg);
+                    } else {
+                        throw new XPathException(this, ErrorCodes.XQDY0025, msg);
+                    }
+                }
                 LOG.warn("SAXException during serialization: {}", e.getMessage(), e);
                 throw new XPathException(this, e);
             }

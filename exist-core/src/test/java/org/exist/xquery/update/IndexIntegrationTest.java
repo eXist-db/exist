@@ -68,11 +68,17 @@ public class IndexIntegrationTest extends AbstractTestUpdate {
             control.resetToStrict();
 
             //common
+            // Stub the void setNextInChain before any non-void expectations on the
+            // shared strict control: EasyMock's expectLastCall() tracks the last
+            // recorded call across all mocks of a control, and interleaving a
+            // class-mock void call with interface-mock non-void expects can leave
+            // expectLastCall() pointing at a non-void method ("last method called
+            // on mock is not a void method") under some JVM/test orderings.
+            stream.setNextInChain(anyObject()); expectLastCall().asStub();
+
             expect(worker.getQueryRewriter(anyObject(XQueryContext.class))).andStubReturn(null);
             expect(worker.getIndexName()).andStubReturn("TestIndex");
             expect(worker.getListener()).andStubReturn(stream);
-
-            stream.setNextInChain(anyObject()); expectLastCall().asStub();
 
             setup.accept(worker, stream);
 

@@ -935,7 +935,12 @@ declare %private function test:equals($annotation-value as element(value), $resu
             default return
                 $result
     let $value := test:xdm-value-from-annotation-value($annotation-value)
-    let $normValue := test:cast-to-type($value, $result)
+    let $normValue :=
+        typeswitch ($result)
+            case node() return
+                test:cast-to-type($value, $result) => test:normalize()
+            default return
+                test:cast-to-type($value, $result)
     return
         typeswitch ($normResult)
             case node() return

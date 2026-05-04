@@ -422,6 +422,16 @@ public abstract class Function extends PathExpr {
             if (arg != null) {
                 // call analyze for each argument
                 final AnalyzeContextInfo argContextInfo = new AnalyzeContextInfo(contextInfo);
+                // The function call boundary breaks the predicate chain: a
+                // GeneralComparison nested inside a function argument is
+                // consumed by the function as a value and must not switch to
+                // node-set-filter semantics. See issue #4958.
+                // However, Optimizable functions (e.g. ft:query) depend on
+                // IN_PREDICATE to set up index-based query optimization, so
+                // preserve it for those.
+                if (!(this instanceof Optimizable)) {
+                    argContextInfo.removeFlag(IN_PREDICATE);
+                }
                 arg.analyze(argContextInfo);
 
                 if (!argumentsChecked) {

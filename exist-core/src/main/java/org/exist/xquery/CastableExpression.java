@@ -93,11 +93,22 @@ public class CastableExpression extends AbstractExpression {
                 {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT ITEM", contextItem.toSequence());}
         }
         
-        if (requiredType == Type.ANY_ATOMIC_TYPE || (requiredType == Type.NOTATION && expression.returnsType() != Type.NOTATION))
+        // XPST0080: cannot castable-to xs:NOTATION, xs:anyAtomicType, or xs:anySimpleType
+        // (per QT4 §4.5.3 — three abstract atomic-related types)
+        if (requiredType == Type.ANY_ATOMIC_TYPE
+                || requiredType == Type.ANY_SIMPLE_TYPE
+                || (requiredType == Type.NOTATION && expression.returnsType() != Type.NOTATION))
             {throw new XPathException(this, ErrorCodes.XPST0080, "cannot convert to " + Type.getTypeName(requiredType));}
 
-        if (requiredType == Type.ANY_SIMPLE_TYPE || expression.returnsType() == Type.ANY_SIMPLE_TYPE || requiredType == Type.UNTYPED || expression.returnsType() == Type.UNTYPED)
-            {throw new XPathException(this, ErrorCodes.XPST0051, "cannot convert to " + Type.getTypeName(requiredType));}
+        // XQST0052: target type is not an atomic type (xs:anyType, xs:untyped are
+        // defined types but not simple atomic types per QT4 §4.5.3)
+        if (requiredType == Type.UNTYPED || requiredType == Type.ANY_TYPE)
+            {throw new XPathException(this, ErrorCodes.XQST0052, "cannot convert to " + Type.getTypeName(requiredType));}
+
+        // XPST0051: source value's type is non-atomic
+        if (expression.returnsType() == Type.ANY_SIMPLE_TYPE
+                || expression.returnsType() == Type.UNTYPED)
+            {throw new XPathException(this, ErrorCodes.XPST0051, "cannot convert from " + Type.getTypeName(expression.returnsType()));}
 
         Sequence result;
         //See : http://article.gmane.org/gmane.text.xml.xquery.general/1413
@@ -118,6 +129,11 @@ public class CastableExpression extends AbstractExpression {
 			}
 	        else {
 	    		try {
+	    			// Per XPath F&O 3.1: if the cast is impossible per the casting table,
+	    			// castable as returns false without attempting the conversion.
+	    			if (!Type.isCastable(seq.itemAt(0).getType(), requiredType)) {
+	    				result = BooleanValue.FALSE;
+	    			} else {
 	    			seq.itemAt(0).convertTo(requiredType);
 	    			//If ? is specified after the target type, the result of the cast expression is an empty sequence.
 	    			if (requiredCardinality.isSuperCardinalityOrEqualOf(seq.getCardinality()))
@@ -125,6 +141,7 @@ public class CastableExpression extends AbstractExpression {
 	    			//If ? is not specified after the target type, a type error is raised [err:XPTY0004].
 	    			else
 	    				{result = BooleanValue.FALSE;}
+	    			}
 	            //TODO : improve by *not* using a costly exception ?
 	    		} catch(final XPathException e) {
 	                result = BooleanValue.FALSE;

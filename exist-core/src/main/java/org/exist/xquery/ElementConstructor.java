@@ -136,13 +136,15 @@ public class ElementConstructor extends NodeConstructor {
             namespaceDecls[0] = qn;
         } else {
             for (QName namespaceDecl : namespaceDecls) {
-                if (qn.equals(namespaceDecl)) {
+                // XQST0071: Two namespace declaration attributes on the same element constructor
+                // share the same name (prefix), regardless of namespace URI.
+                if (qn.getLocalPart().equals(namespaceDecl.getLocalPart())) {
                     throw new XPathException(this, ErrorCodes.XQST0071, "duplicate definition for '" + qn + "'");
                 }
             }
             final QName decls[] = new QName[namespaceDecls.length + 1];
             System.arraycopy(namespaceDecls, 0, decls, 0, namespaceDecls.length);
-            decls[namespaceDecls.length] = qn;          
+            decls[namespaceDecls.length] = qn;
             namespaceDecls = decls;
         }
         //context.inScopeNamespaces.put(qn.getLocalPart(), qn.getNamespaceURI());

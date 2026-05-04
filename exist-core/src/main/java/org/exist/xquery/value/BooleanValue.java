@@ -70,36 +70,27 @@ public class BooleanValue extends AtomicValue {
     }
 
     public AtomicValue convertTo(final int requiredType) throws XPathException {
-        switch (requiredType) {
-            case Type.BOOLEAN:
-            case Type.ANY_ATOMIC_TYPE:
-            case Type.ITEM:
-                return this;
-            case Type.NUMERIC:
-            case Type.INTEGER:
-                return new IntegerValue(getExpression(), value ? 1 : 0);
-            case Type.DECIMAL:
-                return new DecimalValue(getExpression(), value ? 1 : 0);
-            case Type.FLOAT:
-                return new FloatValue(getExpression(), value ? 1 : 0);
-            case Type.DOUBLE:
-                return new DoubleValue(getExpression(), value ? 1 : 0);
-            case Type.STRING:
-                return new StringValue(getExpression(), getStringValue());
-            case Type.UNTYPED_ATOMIC:
-                return new UntypedAtomicValue(getExpression(), getStringValue());
-            default:
-                // Handle integer subtypes (nonPositiveInteger, negativeInteger, etc.)
-                if (Type.subTypeOf(requiredType, Type.INTEGER)) {
-                    return new IntegerValue(getExpression(), value ? 1 : 0).convertTo(requiredType);
-                }
-                // Handle string subtypes (xs:language, xs:token, xs:normalizedString, etc.)
-                if (Type.subTypeOf(requiredType, Type.STRING)) {
-                    return new StringValue(getExpression(), getStringValue()).convertTo(requiredType);
-                }
-                throw new XPathException(getExpression(), ErrorCodes.XPTY0004,
-                        "cannot convert 'xs:boolean(" + value + ")' to " + Type.getTypeName(requiredType));
+        return switch (requiredType) {
+            case Type.BOOLEAN, Type.ANY_ATOMIC_TYPE, Type.ITEM -> this;
+            case Type.NUMERIC, Type.INTEGER -> new IntegerValue(getExpression(), value ? 1 : 0);
+            case Type.DECIMAL -> new DecimalValue(getExpression(), value ? 1 : 0);
+            case Type.FLOAT -> new FloatValue(getExpression(), value ? 1 : 0);
+            case Type.DOUBLE -> new DoubleValue(getExpression(), value ? 1 : 0);
+            case Type.STRING -> new StringValue(getExpression(), getStringValue());
+            case Type.UNTYPED_ATOMIC -> new UntypedAtomicValue(getExpression(), getStringValue());
+            default -> convertToSubtype(requiredType);
+        };
+    }
+
+    private AtomicValue convertToSubtype(final int requiredType) throws XPathException {
+        if (Type.subTypeOf(requiredType, Type.INTEGER)) {
+            return new IntegerValue(getExpression(), value ? 1 : 0).convertTo(requiredType);
         }
+        if (Type.subTypeOf(requiredType, Type.STRING)) {
+            return new StringValue(getExpression(), getStringValue()).convertTo(requiredType);
+        }
+        throw new XPathException(getExpression(), ErrorCodes.XPTY0004,
+                "cannot convert 'xs:boolean(" + value + ")' to " + Type.getTypeName(requiredType));
     }
 
     @Override

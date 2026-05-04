@@ -44,7 +44,22 @@ public class OpSimpleMap extends AbstractExpression {
     @Override
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
         left.analyze(new AnalyzeContextInfo(contextInfo));
-        right.analyze(new AnalyzeContextInfo(contextInfo));
+        // The right side of "!" evaluates with each left-side item as the new
+        // context item.  Strip IN_PREDICATE so that sub-expressions (e.g.
+        // GeneralComparison) do not apply the node-set-intersection optimisation
+        // that is only valid for the outer predicate's direct children.
+        final AnalyzeContextInfo rightContextInfo = new AnalyzeContextInfo(contextInfo);
+        rightContextInfo.removeFlag(IN_PREDICATE);
+        right.analyze(rightContextInfo);
+    }
+
+    @Override
+    public int getDependencies() {
+        // The simple map's external dependencies come from the left operand,
+        // which evaluates in the caller's context.  The right operand evaluates
+        // in a per-item context derived from the left, so its dependencies are
+        // internal to the operator.
+        return left.getDependencies();
     }
 
     @Override

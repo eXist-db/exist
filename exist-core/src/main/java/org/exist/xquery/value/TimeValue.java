@@ -67,7 +67,7 @@ public class TimeValue extends AbstractDateTimeValue {
                 throw new IllegalStateException();
             }
         } catch (final IllegalStateException e) {
-            throw new XPathException(expression, "xs:time instance must not have year, month or day fields set");
+            throw new XPathException(expression, ErrorCodes.FORG0001, "xs:time instance must not have year, month or day fields set");
         }
     }
 
@@ -119,7 +119,7 @@ public class TimeValue extends AbstractDateTimeValue {
             case Type.TIME ->
                     new DayTimeDurationValue(getExpression(), getTimeInMillis() - ((TimeValue) other).getTimeInMillis());
             case Type.DAY_TIME_DURATION -> ((DayTimeDurationValue) other).negate().plus(this);
-            default -> throw new XPathException(getExpression(),
+            default -> throw new XPathException(getExpression(), ErrorCodes.XPTY0004,
                     "Operand to minus should be of type xs:time or xdt:dayTimeDuration; got: "
                             + Type.getTypeName(other.getType()));
         };
@@ -129,7 +129,7 @@ public class TimeValue extends AbstractDateTimeValue {
         if (other.getType() == Type.DAY_TIME_DURATION) {
             return other.plus(this);
         }
-        throw new XPathException(getExpression(),
+        throw new XPathException(getExpression(), ErrorCodes.XPTY0004,
                 "Operand to plus should be of type xdt:dayTimeDuration; got: "
                         + Type.getTypeName(other.getType()));
     }

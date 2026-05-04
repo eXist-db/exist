@@ -52,6 +52,12 @@ public class DurationValue extends ComputableValue {
     protected static final BigDecimal
             SIXTY_DECIMAL = BigDecimal.valueOf(60),
             ZERO_DECIMAL = BigDecimal.ZERO;
+
+    // XQuery 3.1 §10.1.1 leaves duration value-space limits implementation-defined.
+    // We cap signed total seconds (xdt:dayTimeDuration) and signed total months
+    // (xdt:yearMonthDuration) at the long range; values outside raise FODT0002.
+    protected static final BigDecimal MAX_DAY_TIME_SECONDS = new BigDecimal(Long.MAX_VALUE);
+    protected static final BigInteger MAX_YEAR_MONTH_MONTHS = BigInteger.valueOf(Long.MAX_VALUE);
     protected static final Duration CANONICAL_ZERO_DURATION =
             TimeUtils.getInstance().newDuration(true, null, null, null, null, null, ZERO_DECIMAL);
     protected final Duration duration;
@@ -73,10 +79,28 @@ public class DurationValue extends ComputableValue {
     public DurationValue(final Expression expression, String str) throws XPathException {
         super(expression);
         try {
-            this.duration = TimeUtils.getInstance().newDuration(StringValue.trimWhitespace(str));
+            final String trimmed = StringValue.trimWhitespace(str);
+            // XML Schema requires digits on both sides of a decimal point in durations.
+            // Java's DatatypeFactory is too lenient and accepts forms like "PT.5S" or "PT30.S".
+            validateDurationDecimal(trimmed);
+            this.duration = TimeUtils.getInstance().newDuration(trimmed);
         } catch (final IllegalArgumentException e) {
             throw new XPathException(getExpression(), ErrorCodes.FORG0001, "cannot construct " + Type.getTypeName(this.getItemType()) +
                     " from \"" + str + "\"");
+        }
+    }
+
+    static void validateDurationDecimal(final String str) {
+        final int dotIdx = str.indexOf('.');
+        if (dotIdx >= 0) {
+            // Must have at least one digit before the decimal point
+            if (dotIdx == 0 || !Character.isDigit(str.charAt(dotIdx - 1))) {
+                throw new IllegalArgumentException("Invalid duration: missing digit before decimal point in \"" + str + "\"");
+            }
+            // Must have at least one digit after the decimal point (before the letter suffix)
+            if (dotIdx + 1 >= str.length() || !Character.isDigit(str.charAt(dotIdx + 1))) {
+                throw new IllegalArgumentException("Invalid duration: missing digit after decimal point in \"" + str + "\"");
+            }
         }
     }
 
@@ -235,6 +259,20 @@ public class DurationValue extends ComputableValue {
             x = x.negate();
         }
         return x;
+    }
+
+    protected void checkDayTimeOverflow(final BigDecimal seconds) throws XPathException {
+        if (seconds.abs().compareTo(MAX_DAY_TIME_SECONDS) > 0) {
+            throw new XPathException(getExpression(), ErrorCodes.FODT0002,
+                    "Overflow/underflow in xdt:dayTimeDuration operation");
+        }
+    }
+
+    protected void checkYearMonthOverflow(final BigInteger months) throws XPathException {
+        if (months.abs().compareTo(MAX_YEAR_MONTH_MONTHS) > 0) {
+            throw new XPathException(getExpression(), ErrorCodes.FODT0002,
+                    "Overflow/underflow in xdt:yearMonthDuration operation");
+        }
     }
 
     protected Duration canonicalZeroDuration() {

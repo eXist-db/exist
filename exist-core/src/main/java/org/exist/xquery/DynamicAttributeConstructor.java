@@ -30,6 +30,8 @@ import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.*;
 import org.w3c.dom.DOMException;
 
+import javax.xml.XMLConstants;
+
 /**
  * Represents a dynamic attribute constructor. The implementation differs from
  * AttributeConstructor as the evaluation is not controlled by the surrounding 
@@ -99,25 +101,53 @@ public class DynamicAttributeConstructor extends NodeConstructor {
 
             final Sequence nameSeq = qnameExpr.eval(contextSequence, contextItem);
             if(!nameSeq.hasOne())
-            	{throw new XPathException(this, "The name expression should evaluate to a single value");}
+            	{throw new XPathException(this, ErrorCodes.XPTY0004, "The name expression should evaluate to a single value");}
 
             final Item qnItem = nameSeq.itemAt(0);
             QName qn;
             if (qnItem.getType() == Type.QNAME)
                 {qn = ((QNameValue) qnItem).getQName();}
-            else
+            else {
+				// Only xs:string and xs:untypedAtomic can be used as computed attribute names
+				final int itemType = qnItem.getType();
+				if (!Type.subTypeOf(itemType, Type.STRING) && itemType != Type.UNTYPED_ATOMIC) {
+					throw new XPathException(this, ErrorCodes.XPTY0004,
+							"The name expression must be of type xs:QName, xs:string, or xs:untypedAtomic, got " + Type.getTypeName(itemType));
+				}
             	try {
             		qn = QName.parse(context, nameSeq.getStringValue(), null);
 		    	} catch (final QName.IllegalQNameException e) {
 					throw new XPathException(this, ErrorCodes.XQDY0074, "'" + nameSeq.getStringValue() + "' is not a valid attribute name");
+				} catch (final XPathException e) {
+					// QName.parse throws XPST0081 for undeclared prefixes, but in a computed
+					// constructor the name is evaluated dynamically, so this is XQDY0074
+					if (e.getErrorCode() == ErrorCodes.XPST0081) {
+						throw new XPathException(this, ErrorCodes.XQDY0074, "'" + nameSeq.getStringValue() + "' is not a valid attribute name");
+					}
+					throw e;
 				}
+			}
 
             //Not in the specs but... makes sense
             if(!XMLNames.isName(qn.getLocalPart()))
             	{throw new XPathException(this, ErrorCodes.XQDY0074, "'" + qn.getLocalPart() + "' is not a valid attribute name");}
             
             if ("xmlns".equals(qn.getLocalPart()) && qn.getNamespaceURI().isEmpty())
-            	{throw new XPathException(this, ErrorCodes.XQDY0044, "'" + qn.getLocalPart() + "' is not a valid attribute name");}
+            	{throw new XPathException(this, ErrorCodes.XQDY0044,
+            			"The node-name property of the node constructed by a computed attribute constructor " +
+            			"is in no namespace and has local name xmlns.");}
+
+            if (Namespaces.XMLNS_NS.equals(qn.getNamespaceURI()))
+            	{throw new XPathException(this, ErrorCodes.XQDY0044,
+            			"The node-name property of the node constructed by a computed attribute constructor " +
+            			"is in the namespace " + Namespaces.XMLNS_NS +
+            			" (corresponding to namespace prefix xmlns).");}
+
+            // Auto-assign the 'xml' prefix for attributes in the XML namespace
+            if (Namespaces.XML_NS.equals(qn.getNamespaceURI())
+            		&& (qn.getPrefix() == null || qn.getPrefix().isEmpty())) {
+            	qn = new QName(qn.getLocalPart(), qn.getNamespaceURI(), XMLConstants.XML_NS_PREFIX);
+            }
 
             String value;
             final Sequence valueSeq = valueExpr.eval(contextSequence, contextItem);
@@ -141,8 +171,13 @@ public class DynamicAttributeConstructor extends NodeConstructor {
                 final int nodeNr = builder.addAttribute(qn, value);
                 node = builder.getDocument().getAttribute(nodeNr);
             } catch (final DOMException e) {
+                final String msg = e.getMessage();
+                if (msg != null && msg.contains("XQTY0024")) {
+                    throw new XPathException(this, ErrorCodes.XQTY0024,
+                            "An attribute node cannot follow a node that is not an element or namespace node.");
+                }
                 throw new XPathException(this, ErrorCodes.XQDY0025, "element has more than one attribute '" + qn + "'");
-            } 
+            }
         } finally {
             if (newDocumentContext)
                 {context.popDocumentContext();}

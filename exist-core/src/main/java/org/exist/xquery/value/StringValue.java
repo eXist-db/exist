@@ -34,7 +34,6 @@ import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static org.exist.dom.QName.Validity.VALID;
@@ -134,40 +133,27 @@ public class StringValue extends AtomicValue {
         if (in.isEmpty()) {
             return in.toString();
         }
-        int i = 0;
-        // this method is performance critical, so first test if we need to collapse at all
-        for (; i < in.length(); i++) {
-            final char c = in.charAt(i);
-            if (XMLChar.isSpace(c)) {
-                if (i + 1 < in.length() && XMLChar.isSpace(in.charAt(i + 1))) {
-                    break;
-                }
-            }
-        }
-        if (i == in.length()) {
-            // no whitespace to collapse, just return
-            return in.toString();
-        }
-
-        // start to collapse whitespace
+        // XML Schema "collapse" facet:
+        // 1. Replace #x9, #xA, #xD with #x20
+        // 2. Collapse consecutive #x20 to single #x20
+        // 3. Strip leading and trailing #x20
         final StringBuilder sb = new StringBuilder(in.length());
-        sb.append(in.subSequence(0, i + 1));
-        boolean inWhitespace = true;
-        for (; i < in.length(); i++) {
+        boolean lastWasSpace = true; // treat start as space to strip leading
+        for (int i = 0; i < in.length(); i++) {
             final char c = in.charAt(i);
             if (XMLChar.isSpace(c)) {
-                if (inWhitespace) {
-                    // remove the whitespace
-                } else {
+                if (!lastWasSpace) {
                     sb.append(' ');
-                    inWhitespace = true;
+                    lastWasSpace = true;
                 }
+                // else: skip consecutive whitespace
             } else {
                 sb.append(c);
-                inWhitespace = false;
+                lastWasSpace = false;
             }
         }
-        if (sb.charAt(sb.length() - 1) == ' ') {
+        // Strip trailing space
+        if (sb.length() > 0 && sb.charAt(sb.length() - 1) == ' ') {
             sb.deleteCharAt(sb.length() - 1);
         }
         return sb.toString();
@@ -373,35 +359,34 @@ public class StringValue extends AtomicValue {
 
     private void checkType() throws XPathException {
         switch (type) {
-            case Type.NORMALIZED_STRING:
-            case Type.TOKEN:
-                return;
-            case Type.LANGUAGE:
-                final Matcher matcher = langPattern.matcher(value);
-                if (!matcher.matches()) {
-                    throw new XPathException(getExpression(),
-                            "Type error: string "
-                                    + value
-                                    + " is not valid for type xs:language");
+            case Type.NORMALIZED_STRING, Type.TOKEN -> {
+            }
+            case Type.LANGUAGE -> {
+                if (!langPattern.matcher(value).matches()) {
+                    throw new XPathException(getExpression(), ErrorCodes.FORG0001,
+                            "String '" + value + "' is not valid for type xs:language");
                 }
-                return;
-            case Type.NAME:
-                if (QName.isQName(value) != VALID.val) {
-                    throw new XPathException(getExpression(), "Type error: string " + value + " is not a valid xs:Name");
+            }
+            case Type.NAME -> {
+                if (!XMLNames.isName(value)) {
+                    throw new XPathException(getExpression(), ErrorCodes.FORG0001,
+                            "String '" + value + "' is not a valid xs:Name");
                 }
-                return;
-            case Type.NCNAME:
-            case Type.ID:
-            case Type.IDREF:
-            case Type.ENTITY:
+            }
+            case Type.NCNAME, Type.ID, Type.IDREF, Type.ENTITY -> {
                 if (!XMLNames.isNCName(value)) {
-                    throw new XPathException(getExpression(), "Type error: string " + value + " is not a valid " + Type.getTypeName(type));
+                    throw new XPathException(getExpression(), ErrorCodes.FORG0001,
+                            "String '" + value + "' is not a valid " + Type.getTypeName(type));
                 }
-                return;
-            case Type.NMTOKEN:
+            }
+            case Type.NMTOKEN -> {
                 if (!XMLNames.isNmToken(value)) {
-                    throw new XPathException(getExpression(), "Type error: string " + value + " is not a valid xs:NMTOKEN");
+                    throw new XPathException(getExpression(), ErrorCodes.FORG0001,
+                            "String '" + value + "' is not a valid xs:NMTOKEN");
                 }
+            }
+            default -> {
+            }
         }
     }
 

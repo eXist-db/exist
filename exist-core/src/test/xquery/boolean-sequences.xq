@@ -49,10 +49,9 @@ function boolseq:countPositivesContextItem() {
 };
 
 (:~
-  this is the failing issue
+  this was the failing issue — fixed in GitHub #2308
 ~:)
 declare
-    %test:pending
     %test:assertEquals(1)
 function boolseq:countNegativesContextItem() {
     count($boolseq:sequence[not(.)])

@@ -158,6 +158,32 @@ options {
         }
     }
 
+    private static void checkInlineFunctionAnnotations(List annots, AST astNode) throws XPathException {
+        // XQuery 3.1 section 3.1.7.1: an inline function expression must not be
+        // annotated as %public or %private. The reserved annotation names live in
+        // the default function namespace; we also accept the bare local part to
+        // remain robust against differences in default function namespace
+        // resolution between top-level modules and util:eval scopes.
+        for (Object o : annots) {
+            List la = (List) o;
+            QName qn = (QName) la.get(0);
+            final String local = qn.getLocalPart();
+            if (("public".equals(local) || "private".equals(local))
+                    && annotationInDefaultFunctionNamespace(qn)) {
+                throw new XPathException(astNode.getLine(), astNode.getColumn(),
+                    ErrorCodes.XQST0125,
+                    "Inline function expressions must not be annotated as %" + local + ".");
+            }
+        }
+    }
+
+    private static boolean annotationInDefaultFunctionNamespace(QName qn) {
+        final String ns = qn.getNamespaceURI();
+        return ns == null
+            || ns.isEmpty()
+            || Namespaces.XPATH_FUNCTIONS_NS.equals(ns);
+    }
+
     private static void processAnnotations(List annots, FunctionSignature signature) {
         Annotation[] anns = new Annotation[annots.size()];
 
@@ -302,6 +328,10 @@ throws PermissionDeniedException, EXistException, XPathException
    #(
             m:MODULE_DECL uri:STRING_LITERAL
             {
+                if (uri.getText() == null || uri.getText().isEmpty()) {
+                    throw new XPathException(uri.getLine(), uri.getColumn(), ErrorCodes.XQST0088,
+                        "The literal that specifies the target namespace in a module declaration must not be of zero length.");
+                }
                 if (myModule == null)
                     myModule = new ExternalModuleImpl(uri.getText(), m.getText());
                 else {
@@ -461,9 +491,12 @@ throws PermissionDeniedException, EXistException, XPathException
         |
         #(
             DEF_NAMESPACE_DECL defu:STRING_LITERAL
-            { // Use setDefaultElementNamespace()
+            {
+                // Check for duplicate default element namespace first (XQST0066)
+                context.setDefaultElementNamespace(defu.getText(), null);
+                staticContext.setDefaultElementNamespace(defu.getText(), null);
                 context.declareNamespace("", defu.getText());
-                staticContext.declareNamespace("",defu.getText());
+                staticContext.declareNamespace("", defu.getText());
             }
         )
         |
@@ -893,6 +926,9 @@ throws PermissionDeniedException, EXistException, XPathException
         (
             annotations [annots]
             {
+                // XQuery 3.1 section 4.18 / section 3.1.7.1: an inline function expression
+                // must not be annotated as %public or %private (XQST0125).
+                checkInlineFunctionAnnotations(annots, name);
                 processAnnotations(annots, signature);
             }
         )?
@@ -2352,7 +2388,13 @@ throws PermissionDeniedException, EXistException, XPathException
                         (s.getTest().getType() == Type.ATTRIBUTE && s.getAxis() == Constants.CHILD_AXIS))
                         // combines descendant-or-self::node()/attribute:*
                         s.setAxis(Constants.DESCENDANT_ATTRIBUTE_AXIS);
-                    else {
+                    else if (s.getAxis() <= Constants.PRECEDING_SIBLING_AXIS) {
+                        // Reverse axis: insert explicit descendant-or-self::node() step
+                        LocationStep descStep = new LocationStep(context, Constants.DESCENDANT_SELF_AXIS, new TypeTest(Type.NODE));
+                        descStep.setAbbreviated(true);
+                        path.replaceLastExpression(descStep);
+                        path.add(step);
+                    } else {
                         s.setAxis(Constants.DESCENDANT_SELF_AXIS);
                         s.setAbbreviated(true);
                     }
@@ -2982,6 +3024,13 @@ throws PermissionDeniedException, EXistException, XPathException
                         rs.setAxis(Constants.DESCENDANT_AXIS);
                     } else if (rs.getAxis() == Constants.SELF_AXIS) {
                         rs.setAxis(Constants.DESCENDANT_SELF_AXIS);
+                    } else if (rs.getAxis() <= Constants.PRECEDING_SIBLING_AXIS) {
+                        // Reverse axis: cannot merge with descendant-or-self,
+                        // insert explicit descendant-or-self::node() step before the reverse axis step
+                        LocationStep descStep = new LocationStep(context, Constants.DESCENDANT_SELF_AXIS, new TypeTest(Type.NODE));
+                        descStep.setAbbreviated(true);
+                        path.replaceLastExpression(descStep);
+                        path.add(rightStep);
                     } else {
                         rs.setAxis(Constants.DESCENDANT_SELF_AXIS);
                         rs.setAbbreviated(true);
@@ -3597,7 +3646,9 @@ throws PermissionDeniedException, EXistException, XPathException
                     || ("".equals(qname.getNamespaceURI()) && qname.getLocalPart().equals(XMLConstants.XMLNS_ATTRIBUTE)))
                     throw new XPathException(constructor_AST_in, ErrorCodes.XQDY0044, "The node-name property of the node constructed by a computed attribute constructor is in the namespace http://www.w3.org/2000/xmlns/ (corresponding to namespace prefix xmlns), or is in no namespace and has local name xmlns.");
             } catch (final IllegalQNameException iqe) {
-                throw new XPathException(qna.getLine(), qna.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + qna.getText());
+                // Computed attribute constructors evaluate the name dynamically (XQuery 3.1 §3.9.3.1).
+                // An undeclared prefix is therefore a dynamic error XQDY0074, not the static XPST0081.
+                throw new XPathException(qna.getLine(), qna.getColumn(), ErrorCodes.XQDY0074, "'" + qna.getText() + "' is not a valid attribute name");
             }
         }
         #( LCURLY
@@ -3852,7 +3903,7 @@ throws PermissionDeniedException, EXistException, XPathException
                 path.add(castExpr);
                 step = castExpr;
             } catch (final XPathException e) {
-                throw new XPathException(t.getLine(), t.getColumn(), ErrorCodes.XPST0051, "Unknown simple type " + t.getText());
+                throw new XPathException(t.getLine(), t.getColumn(), ErrorCodes.XQST0052, "Unknown simple type " + t.getText());
             } catch (final IllegalQNameException e) {
                 throw new XPathException(t.getLine(), t.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + t.getText());
             }
@@ -3881,7 +3932,7 @@ throws PermissionDeniedException, EXistException, XPathException
                 path.add(castExpr);
                 step = castExpr;
             } catch (final XPathException e) {
-                throw new XPathException(t2.getLine(), t2.getColumn(), ErrorCodes.XPST0051, "Unknown simple type " + t2.getText());
+                throw new XPathException(t2.getLine(), t2.getColumn(), ErrorCodes.XQST0052, "Unknown simple type " + t2.getText());
             } catch (final IllegalQNameException e) {
                 throw new XPathException(t2.getLine(), t2.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix " + t2.getText());
             }

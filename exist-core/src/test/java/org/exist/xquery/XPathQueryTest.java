@@ -808,6 +808,65 @@ public class XPathQueryTest {
         queryResource(service, "siblings.xml", "//a/n[. = '3']/preceding::s", 3);
     }
 
+    /**
+     * Tests that // followed by a reverse axis correctly expands to
+     * /descendant-or-self::node()/ + reverse axis, rather than
+     * collapsing the reverse axis into descendant-or-self.
+     *
+     * @see <a href="https://github.com/eXist-db/exist/issues/691">#691</a>
+     */
+    @Test
+    public void dslashWithReverseAxis() throws XMLDBException {
+        final String xml = """
+                <root>
+                   <a>
+                       <b>1</b>
+                       <b>2</b>
+                   </a>
+                   <a>
+                       <b>3</b>
+                       <b>4</b>
+                   </a>
+                </root>""";
+
+        final XQueryService service =
+                storeXMLStringAndGetQueryService("dslash_reverse.xml", xml);
+
+        // //preceding::b should produce the same count as the expanded form
+        queryAndAssert(service, """
+                let $d := doc('/db/test/dslash_reverse.xml')
+                return count($d//preceding::b) eq count($d/descendant-or-self::node()/preceding::b)""",
+                1, "//preceding::b count should match expanded form");
+
+        // //ancestor::a should produce the same count as the expanded form
+        queryAndAssert(service, """
+                let $d := doc('/db/test/dslash_reverse.xml')
+                return count($d//ancestor::a) eq count($d/descendant-or-self::node()/ancestor::a)""",
+                1, "//ancestor::a count should match expanded form");
+
+        // Note: //preceding-sibling::b skipped due to pre-existing NPE in
+        // NewArrayNodeSet.selectPrecedingSiblings when evaluating preceding-sibling
+        // on descendant-or-self::node() context (affects both abbreviated and expanded forms)
+
+        // //ancestor-or-self::a should produce the same count as the expanded form
+        queryAndAssert(service, """
+                let $d := doc('/db/test/dslash_reverse.xml')
+                return count($d//ancestor-or-self::a) eq count($d/descendant-or-self::node()/ancestor-or-self::a)""",
+                1, "//ancestor-or-self::a count should match expanded form");
+
+        // //parent::a should produce the same count as the expanded form
+        queryAndAssert(service, """
+                let $d := doc('/db/test/dslash_reverse.xml')
+                return count($d//parent::a) eq count($d/descendant-or-self::node()/parent::a)""",
+                1, "//parent::a count should match expanded form");
+
+        // Relative path: $node//preceding::b should match expanded form
+        queryAndAssert(service, """
+                let $node := doc('/db/test/dslash_reverse.xml')/root/a[2]
+                return count($node//preceding::b) eq count($node/descendant-or-self::node()/preceding::b)""",
+                1, "$node//preceding::b count should match expanded form");
+    }
+
     @Test
     public void position() throws XMLDBException, IOException, SAXException {
 

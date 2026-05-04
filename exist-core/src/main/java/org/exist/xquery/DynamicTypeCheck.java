@@ -35,11 +35,18 @@ public class DynamicTypeCheck extends AbstractExpression {
 
 	final private Expression expression;
 	final private int requiredType;
-	
+	final private ErrorCodes.ErrorCode typeMismatchError;
+
 	public DynamicTypeCheck(XQueryContext context, int requiredType, Expression expr) {
+		this(context, requiredType, expr, ErrorCodes.XPTY0004);
+	}
+
+	public DynamicTypeCheck(XQueryContext context, int requiredType, Expression expr,
+			ErrorCodes.ErrorCode typeMismatchError) {
 		super(context);
 		this.requiredType = requiredType;
 		this.expression = expr;
+		this.typeMismatchError = typeMismatchError;
 	}
 	
     /* (non-Javadoc)
@@ -85,6 +92,12 @@ public class DynamicTypeCheck extends AbstractExpression {
         if(type != requiredType && !Type.subTypeOf(type, requiredType)) {
             //TODO : how to make this block more generic ? -pb
             if (type == Type.UNTYPED_ATOMIC) {
+                // XPTY0117: untypedAtomic cannot be coerced to namespace-sensitive types
+                if (requiredType == Type.QNAME || requiredType == Type.NOTATION) {
+                    throw new XPathException(expression, ErrorCodes.XPTY0117,
+                            "Cannot coerce xs:untypedAtomic to namespace-sensitive type " +
+                            Type.getTypeName(requiredType));
+                }
                 try {
                     item = item.convertTo(requiredType);
                 //No way
@@ -138,7 +151,7 @@ public class DynamicTypeCheck extends AbstractExpression {
                     type = Type.STRING;
             } else {
                 if (!(Type.subTypeOf(type, requiredType))) {
-                    throw new XPathException(expression, ErrorCodes.XPTY0004,
+                    throw new XPathException(expression, typeMismatchError,
                             Type.getTypeName(item.getType()) + "(" + item.getStringValue() +
                             ") is not a sub-type of " + Type.getTypeName(requiredType));
 

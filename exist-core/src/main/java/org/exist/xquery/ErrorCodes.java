@@ -43,6 +43,7 @@ public class ErrorCodes {
     public static final ErrorCode XPTY0018 = new W3CErrorCode("XPTY0018", "It is a type error if the result of the last step in a path expression contains both nodes and atomic values.");
     public static final ErrorCode XPTY0019 = new W3CErrorCode("XPTY0019", "It is a type error if the result of a step (other than the last step) in a path expression contains an atomic value.");
     public static final ErrorCode XPTY0020 = new W3CErrorCode("XPTY0020", "It is a type error if, in an axis step, the context item is not a node.");
+    public static final ErrorCode XPTY0117 = new W3CErrorCode("XPTY0117", "It is a type error to apply function coercion, or to cast to or from a union type, when a value of type xs:untypedAtomic is involved and the other type is namespace-sensitive.");
     public static final ErrorCode XPDY0021 = new W3CErrorCode("XPDY0021", "(Not currently used.)");
     public static final ErrorCode XPDY0050 = new W3CErrorCode("XPDY0050", "It is a dynamic error if the dynamic type of the operand of a treat expression does not match the sequence type specified by the treat expression. This error might also be raised by a path expression beginning with \"/\" or \"//\" if the context node is not in a tree that is rooted at a document node. This is because a leading \"/\" or \"//\" in a path expression is an abbreviation for an initial step that includes the clause treat as document-node().");
     public static final ErrorCode XPST0051 = new W3CErrorCode("XPST0051", "It is a static error if a QName that is used as an AtomicType in a SequenceType is not defined in the in-scope schema types as an atomic type.");
@@ -86,6 +87,7 @@ public class ErrorCodes {
     public static final ErrorCode XQST0048 = new W3CErrorCode("XQST0048", "It is a static error if a function or variable declared in a library module is not in the target namespace of the library module.");
     public static final ErrorCode XQST0049 = new W3CErrorCode("XQST0049", "It is a static error if two or more variables declared or imported by a module have equal expanded QNames (as defined by the eq operator.)");
     public static final ErrorCode XQDY0052 = new W3CErrorCode("XQDY0052", "(Not currently used.)");
+    public static final ErrorCode XQST0052 = new W3CErrorCode("XQST0052", "It is a static error if the type-name in a single-type or sequence-type for a cast or castable expression does not refer to a defined atomic type.");
     public static final ErrorCode XQST0053 = new W3CErrorCode("XQST0053", "(Not currently used.)");
     public static final ErrorCode XQST0054 = new W3CErrorCode("XQST0054", "It is a static error if a variable depends on itself.");
     public static final ErrorCode XQST0055 = new W3CErrorCode("XQST0055", "It is a static error if a Prolog contains more than one copy-namespaces declaration.");
@@ -126,6 +128,9 @@ public class ErrorCodes {
     public static final ErrorCode XQST0093 = new W3CErrorCode("XQST0093", "It is a static error to import a module M1 if there exists a sequence of modules M1 ... Mi ... M1 such that each module directly depends on the next module in the sequence (informally, if M1 depends on itself through some chain of module dependencies.)");
 
     public static final ErrorCode XQST0094 = new W3CErrorCode("XQST0094", "The name of each grouping variable must be equal (by the eq operator on expanded QNames) to the name of a variable in the input tuple stream.");
+
+    public static final ErrorCode XQST0118 = new W3CErrorCode("XQST0118", "It is a static error if an element constructor uses a name in the end tag that does not match the name in the start tag.");
+    public static final ErrorCode XQST0125 = new W3CErrorCode("XQST0125", "It is a static error if an inline function expression is annotated as %public or %private.");
 
     public static final ErrorCode XQDY0101 = new W3CErrorCode("XQDY0101", "An error is raised if a computed namespace constructor attempts to do any of the following:\n" +
             "Bind the prefix xml to some namespace URI other than http://www.w3.org/XML/1998/namespace.\n" +
@@ -204,6 +209,7 @@ public class ErrorCodes {
 
     /* XQuery 3.0 functions and operators */
     public static final ErrorCode FODF1280 = new W3CErrorCode("FODF1280", "Invalid decimal format name.");
+    public static final ErrorCode FODF1290 = new W3CErrorCode("FODF1290", "Invalid decimal format property value.");
     public static final ErrorCode FODF1310 = new W3CErrorCode("FODF1310", "Invalid decimal format picture string.");
     public static final ErrorCode FOFD1340 = new W3CErrorCode("FOFD1340", "Invalid date/time formatting picture string");
     public static final ErrorCode FOFD1350 = new W3CErrorCode("FOFD1350", "Invalid date/time formatting component");
