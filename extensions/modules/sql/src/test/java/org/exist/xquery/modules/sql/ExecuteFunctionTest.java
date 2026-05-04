@@ -21,25 +21,26 @@
  */
 package org.exist.xquery.modules.sql;
 
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.mock;
-import static org.easymock.EasyMock.verify;
-import static org.easymock.EasyMock.replay;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
+import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.ElementImpl;
 import org.exist.dom.memtree.MemTreeBuilder;
+import org.exist.storage.BrokerPool;
+import org.exist.storage.DBBroker;
+import org.exist.util.XMLReaderPool;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.*;
 import org.junit.Test;
 import org.w3c.dom.Node;
+import org.xml.sax.InputSource;
+import org.xml.sax.XMLReader;
 
 import java.sql.*;
+
+import static org.easymock.EasyMock.*;
+import static org.junit.Assert.*;
 
 /**
  * Unit Tests for sql:execute
@@ -449,10 +450,84 @@ public class ExecuteFunctionTest {
 
     }
 
+    @Test
+    public void testSQLXMLFreeCalled() throws Exception {
+        DBBroker broker = mock(DBBroker.class);
+        BrokerPool brokerPool = mock(BrokerPool.class);
+        XMLReaderPool xmlReaderPool = mock(XMLReaderPool.class);
+        XMLReader xmlReader = mock(XMLReader.class);
+
+        XQueryContext context = new XQueryContextStub(broker);
+        ExecuteFunction execute = new ExecuteFunction(context, signatureByArity(ExecuteFunction.FS_EXECUTE, functionName, 3));
+
+        final String sql = "SELECT XML_COL FROM BLA";
+
+        Connection connection = mock(Connection.class);
+        Statement stmt = mock(Statement.class);
+        ResultSet rs = mock(ResultSet.class);
+        ResultSetMetaData rsmd = mock(ResultSetMetaData.class);
+        SQLXML sqlXml = mock(SQLXML.class);
+
+        Object[] mocks = new Object[]{broker, brokerPool, xmlReaderPool, xmlReader, connection, stmt, rs, rsmd, sqlXml};
+
+        expect(connection.createStatement()).andReturn(stmt);
+        expect(stmt.execute(sql)).andReturn(true);
+        expect(stmt.getResultSet()).andReturn(rs);
+        expect(stmt.getUpdateCount()).andReturn(-1);
+        stmt.close();
+
+        expect(rs.getMetaData()).andReturn(rsmd);
+        expect(rs.next()).andReturn(true).andReturn(false);
+        expect(rs.getRow()).andReturn(1);
+        expect(rs.getSQLXML(1)).andReturn(sqlXml);
+        expect(rs.wasNull()).andReturn(false);
+        rs.close();
+
+        expect(rsmd.getColumnCount()).andStubReturn(1);
+        expect(rsmd.getColumnLabel(1)).andStubReturn("XML_COL");
+        expect(rsmd.getColumnTypeName(1)).andStubReturn("SQLXML");
+        expect(rsmd.getColumnType(1)).andStubReturn(Types.SQLXML);
+
+        expect(sqlXml.getCharacterStream()).andReturn(new java.io.StringReader("<test/>"));
+        sqlXml.free(); // THIS IS WHAT WE WANT TO VERIFY
+
+        expect(broker.getBrokerPool()).andStubReturn(brokerPool);
+        expect(brokerPool.getXmlReaderPool()).andStubReturn(xmlReaderPool);
+        expect(xmlReaderPool.borrowXMLReader()).andReturn(xmlReader);
+        xmlReader.setContentHandler(anyObject());
+        xmlReader.setProperty(eq(Namespaces.SAX_LEXICAL_HANDLER), anyObject());
+        xmlReader.parse(anyObject(InputSource.class));
+        xmlReaderPool.returnXMLReader(xmlReader);
+
+        replay(mocks);
+
+        final long connId = SQLModule.storeConnection(context, connection);
+
+        execute.eval(new Sequence[]{
+                new IntegerValue(connId),
+                new StringValue(sql),
+                new BooleanValue(false)
+        }, Sequence.EMPTY_SEQUENCE);
+
+        verify(mocks);
+    }
+
 
     public static class XQueryContextStub extends XQueryContext {
+        private final DBBroker broker;
+
         public XQueryContextStub() {
+            this(null);
+        }
+
+        public XQueryContextStub(DBBroker broker) {
             super();
+            this.broker = broker;
+        }
+
+        @Override
+        public DBBroker getBroker() {
+            return broker;
         }
 
         @Override
