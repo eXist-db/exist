@@ -281,8 +281,36 @@ public class RESTServer {
 
         String option;
         if ((option = getParameter(request, Release)) != null) {
-            final int sessionId = Integer.parseInt(option);
-            sessionManager.release(sessionId);
+            final Subject subject = broker.getCurrentSubject();
+            // DBA-only "force reaper": evict every cached entry, bypassing
+            // the subject-match check, so a DBA can recover from cases where
+            // entries are stranded by failed client sessions and would
+            // otherwise wait for the per-entry 2-minute timeout.
+            if ("all".equalsIgnoreCase(option) || "*".equals(option)) {
+                if (!subject.hasDbaRole()) {
+                    throw new PermissionDeniedException(
+                            "Releasing all cached query results requires DBA privileges.");
+                }
+                final long evicted = sessionManager.releaseAll();
+                LOG.info("DBA '{}' force-released all cached query results ({} entries).",
+                        subject.getName(), evicted);
+                response.setStatus(HttpServletResponse.SC_OK);
+                return;
+            }
+            final long sessionId;
+            try {
+                sessionId = Long.parseLong(option);
+            } catch (final NumberFormatException e) {
+                throw new BadRequestException("Invalid session id passed in release request: " + option);
+            }
+            // DBA callers may release any entry, regardless of which
+            // subject created it; non-DBA callers are restricted to their
+            // own entries by the subject-match check in release().
+            if (subject.hasDbaRole()) {
+                sessionManager.releaseAny(sessionId);
+            } else {
+                sessionManager.release(subject.getId(), sessionId);
+            }
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Released session {}", sessionId);
             }
@@ -907,7 +935,7 @@ public class RESTServer {
                         return;
                     } else if(xupdateSubmission == EXistServlet.FeatureEnabled.AUTHENTICATED_USERS_ONLY) {
                         final Subject currentSubject = broker.getCurrentSubject();
-                        if(!currentSubject.isAuthenticated() || currentSubject.getId() == RealmImpl.GUEST_GROUP_ID) {
+                        if(!currentSubject.isAuthenticated() || currentSubject.getId() == RealmImpl.GUEST_ACCOUNT_ID) {
                             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                             return;
                         }
@@ -1330,7 +1358,7 @@ public class RESTServer {
             return;
         } else if(xquerySubmission == EXistServlet.FeatureEnabled.AUTHENTICATED_USERS_ONLY) {
             final Subject currentSubject = broker.getCurrentSubject();
-            if(!currentSubject.isAuthenticated() || currentSubject.getId() == RealmImpl.GUEST_GROUP_ID) {
+            if(!currentSubject.isAuthenticated() || currentSubject.getId() == RealmImpl.GUEST_ACCOUNT_ID) {
                 response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                 return;
             }
@@ -1339,9 +1367,9 @@ public class RESTServer {
         final String sessionIdParam = outputProperties.getProperty(Serializer.PROPERTY_SESSION_ID);
         if (sessionIdParam != null) {
             try {
-                final int sessionId = Integer.parseInt(sessionIdParam);
+                final long sessionId = Long.parseLong(sessionIdParam);
                 if (sessionId > -1) {
-                    final Sequence cached = sessionManager.get(query, sessionId);
+                    final Sequence cached = sessionManager.get(broker.getCurrentSubject().getId(), query, sessionId);
                     if (cached != null) {
                         LOG.debug("Returning cached query result");
                         writeResults(response, broker, transaction, cached, howmany, start, typed, outputProperties, wrap, 0, 0);
@@ -1399,10 +1427,10 @@ public class RESTServer {
                 }
 
                 if (cache) {
-                    final int sessionId = sessionManager.add(query, resultSequence);
-                    outputProperties.setProperty(Serializer.PROPERTY_SESSION_ID, Integer.toString(sessionId));
+                    final long sessionId = sessionManager.add(broker.getCurrentSubject().getId(), query, resultSequence);
+                    outputProperties.setProperty(Serializer.PROPERTY_SESSION_ID, Long.toString(sessionId));
                     if (!response.isCommitted()) {
-                        response.setIntHeader("X-Session-Id", sessionId);
+                        response.setHeader("X-Session-Id", Long.toString(sessionId));
                     }
                 }
 
@@ -1922,7 +1950,7 @@ public class RESTServer {
 
             writer.write("<?xml version=\"1.0\" ?>");
             writer.write("<exception><path>");
-            writer.write(path);
+            writer.write(XMLUtil.encodeAttrMarkup(path));
             writer.write("</path>");
             writer.write("<message>");
             final String message = e.getMessage() == null ? e.toString() : e.getMessage();

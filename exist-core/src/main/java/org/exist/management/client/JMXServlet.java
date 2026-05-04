@@ -43,7 +43,6 @@ import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.storage.BrokerPool;
@@ -123,7 +122,7 @@ public class JMXServlet extends HttpServlet {
         if ("ping".equals(operation)) {
             long timeout = 5000;
             final String timeoutParam = request.getParameter("t");
-            if (StringUtils.isNotBlank(timeoutParam)) {
+            if (timeoutParam != null && !timeoutParam.isBlank()) {
                 try {
                     timeout = Long.parseLong(timeoutParam);
                 } catch (final NumberFormatException e) {
@@ -262,6 +261,11 @@ public class JMXServlet extends HttpServlet {
      * @return TRUE if request contains correct value for token, else FALSE
      */
     boolean hasSecretToken(final HttpServletRequest request, final String token) {
+        if (token == null || token.isBlank()) {
+            // Refuse to authenticate against an empty or whitespace-only token,
+            // even if the request supplied a matching empty value.
+            return false;
+        }
         final String[] tokenValue = request.getParameterValues(TOKEN_KEY);
         return ArrayUtils.contains(tokenValue, token);
     }

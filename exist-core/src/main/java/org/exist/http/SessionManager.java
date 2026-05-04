@@ -28,8 +28,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.xquery.value.Sequence;
 
+import java.security.SecureRandom;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
@@ -39,15 +39,17 @@ public class SessionManager {
 
     private static final Logger LOG = LogManager.getLogger(SessionManager.class);
     private static final long TIMEOUT = 120_000;  // ms (e.g. 2 minutes)
+    private static final SecureRandom RANDOM = new SecureRandom();
 
-    private final AtomicInteger sessionIdCounter = new AtomicInteger();
-    private final Cache<Integer, QueryResult> cache;
+    private final Cache<Long, QueryResult> cache;
 
     private static class QueryResult {
+        final int subjectId;
         final String query;
         final Sequence sequence;
 
-        private QueryResult(final String query, final Sequence sequence) {
+        private QueryResult(final int subjectId, final String query, final Sequence sequence) {
+            this.subjectId = subjectId;
             this.query = query;
             this.sequence = sequence;
         }
@@ -62,19 +64,46 @@ public class SessionManager {
         cache = cacheBuilder.build();
     }
 
-    public int add(final String query, final Sequence sequence) {
-        final int sessionId = sessionIdCounter.getAndIncrement();
-        cache.put(sessionId, new QueryResult(query, sequence));
+    /**
+     * Cache a query result and return a cryptographically random,
+     * non-negative session id.
+     *
+     * @param subjectId the id of the subject that owns this cache entry;
+     *                  only callers with the same subject id can later
+     *                  retrieve or release it
+     * @param query     the original query text (used as a secondary
+     *                  consistency check)
+     * @param sequence  the result sequence
+     * @return a non-negative session id; collisions with existing live
+     *         entries are retried
+     */
+    public long add(final int subjectId, final String query, final Sequence sequence) {
+        long sessionId;
+        do {
+            sessionId = RANDOM.nextLong() & Long.MAX_VALUE;
+        } while (cache.getIfPresent(sessionId) != null);
+        cache.put(sessionId, new QueryResult(subjectId, query, sequence));
         return sessionId;
     }
 
-    public Sequence get(final String query, final int sessionId) {
-        if (sessionId < 0 || sessionId >= sessionIdCounter.get()) {
-            return null; // out of scope
+    /**
+     * Look up a cached query result. Returns null when no entry exists,
+     * the entry has expired, the query text differs, or the requesting
+     * subject does not match the subject that created the entry.
+     */
+    public Sequence get(final int subjectId, final String query, final long sessionId) {
+        if (sessionId < 0) {
+            return null;
         }
 
         final QueryResult cached = cache.getIfPresent(sessionId);
         if (cached == null) {
+            return null;
+        }
+
+        if (cached.subjectId != subjectId) {
+            LOG.warn("Session {} requested by subject {} but owned by subject {}; refusing.",
+                    sessionId, subjectId, cached.subjectId);
             return null;
         }
 
@@ -86,10 +115,56 @@ public class SessionManager {
         }
     }
 
-    public void release(final int sessionId) {
-        if (sessionId < 0 || sessionId >= sessionIdCounter.get()) {
-            return; // out of scope
+    /**
+     * Release a cached query result. Only the original subject may
+     * release the entry. Privileged callers (DBAs) should use
+     * {@link #releaseAny(long)} to bypass the subject-match check, e.g.
+     * to reclaim entries whose creators ended without releasing them.
+     */
+    public void release(final int subjectId, final long sessionId) {
+        if (sessionId < 0) {
+            return;
+        }
+        final QueryResult cached = cache.getIfPresent(sessionId);
+        if (cached == null) {
+            return;
+        }
+        if (cached.subjectId != subjectId) {
+            LOG.warn("Session {} release requested by subject {} but owned by subject {}; refusing.",
+                    sessionId, subjectId, cached.subjectId);
+            return;
         }
         cache.invalidate(sessionId);
+    }
+
+    /**
+     * Privileged release of a single cache entry, bypassing the
+     * subject-match check. Intended for DBA-driven cleanup of entries
+     * whose creating subject ended without calling {@link #release}
+     * (e.g. browser closed, network drop, RESTXQ caller crashed).
+     * Callers MUST verify DBA privileges before invoking.
+     */
+    public void releaseAny(final long sessionId) {
+        if (sessionId < 0) {
+            return;
+        }
+        cache.invalidate(sessionId);
+    }
+
+    /**
+     * Privileged eviction of every cached entry, bypassing the
+     * subject-match check. Intended as a DBA-accessible "force reaper"
+     * to recover from cases where many entries are stranded by failed
+     * client sessions and would otherwise wait for the per-entry
+     * 2-minute timeout. Callers MUST verify DBA privileges before
+     * invoking.
+     *
+     * @return the approximate number of entries evicted
+     */
+    public long releaseAll() {
+        final long size = cache.estimatedSize();
+        cache.invalidateAll();
+        cache.cleanUp();
+        return size;
     }
 }
