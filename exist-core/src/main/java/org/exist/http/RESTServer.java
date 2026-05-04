@@ -281,13 +281,36 @@ public class RESTServer {
 
         String option;
         if ((option = getParameter(request, Release)) != null) {
+            final Subject subject = broker.getCurrentSubject();
+            // DBA-only "force reaper": evict every cached entry, bypassing
+            // the subject-match check, so a DBA can recover from cases where
+            // entries are stranded by failed client sessions and would
+            // otherwise wait for the per-entry 2-minute timeout.
+            if ("all".equalsIgnoreCase(option) || "*".equals(option)) {
+                if (!subject.hasDbaRole()) {
+                    throw new PermissionDeniedException(
+                            "Releasing all cached query results requires DBA privileges.");
+                }
+                final long evicted = sessionManager.releaseAll();
+                LOG.info("DBA '{}' force-released all cached query results ({} entries).",
+                        subject.getName(), evicted);
+                response.setStatus(HttpServletResponse.SC_OK);
+                return;
+            }
             final long sessionId;
             try {
                 sessionId = Long.parseLong(option);
             } catch (final NumberFormatException e) {
                 throw new BadRequestException("Invalid session id passed in release request: " + option);
             }
-            sessionManager.release(broker.getCurrentSubject().getId(), sessionId);
+            // DBA callers may release any entry, regardless of which
+            // subject created it; non-DBA callers are restricted to their
+            // own entries by the subject-match check in release().
+            if (subject.hasDbaRole()) {
+                sessionManager.releaseAny(sessionId);
+            } else {
+                sessionManager.release(subject.getId(), sessionId);
+            }
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Released session {}", sessionId);
             }

@@ -144,12 +144,20 @@ public class RealmImpl extends AbstractRealm {
         }
         try {
             authenticate(admin.getName(), DEFAULT_ADMIN_PASSWORD);
-            LOG.error("""
-                    SECURITY WARNING: the '{}' account has an empty password. \
-                    Any client able to reach the network port can take full \
-                    administrative control of this database. Set a strong password \
-                    immediately, e.g. via the dashboard or:
-                      sm:passwd('{}', '<new-password>')""",
+            LOG.warn("""
+                    *********************************************************************
+                    *                                                                   *
+                    *                       !!  SECURITY WARNING  !!                    *
+                    *                                                                   *
+                    *   The '{}' account has an EMPTY password.                      *
+                    *                                                                   *
+                    *   Any client able to reach this database's network port can       *
+                    *   take FULL ADMINISTRATIVE CONTROL of all data in this instance.  *
+                    *                                                                   *
+                    *   Set a strong password IMMEDIATELY, e.g. via the dashboard or:   *
+                    *     sm:passwd('{}', '<new-password>')                          *
+                    *                                                                   *
+                    *********************************************************************""",
                     admin.getName(), admin.getName());
         } catch (final AuthenticationException e) {
             // expected: admin password is not the empty string

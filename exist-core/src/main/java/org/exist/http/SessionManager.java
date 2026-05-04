@@ -117,7 +117,9 @@ public class SessionManager {
 
     /**
      * Release a cached query result. Only the original subject may
-     * release the entry.
+     * release the entry. Privileged callers (DBAs) should use
+     * {@link #releaseAny(long)} to bypass the subject-match check, e.g.
+     * to reclaim entries whose creators ended without releasing them.
      */
     public void release(final int subjectId, final long sessionId) {
         if (sessionId < 0) {
@@ -133,5 +135,36 @@ public class SessionManager {
             return;
         }
         cache.invalidate(sessionId);
+    }
+
+    /**
+     * Privileged release of a single cache entry, bypassing the
+     * subject-match check. Intended for DBA-driven cleanup of entries
+     * whose creating subject ended without calling {@link #release}
+     * (e.g. browser closed, network drop, RESTXQ caller crashed).
+     * Callers MUST verify DBA privileges before invoking.
+     */
+    public void releaseAny(final long sessionId) {
+        if (sessionId < 0) {
+            return;
+        }
+        cache.invalidate(sessionId);
+    }
+
+    /**
+     * Privileged eviction of every cached entry, bypassing the
+     * subject-match check. Intended as a DBA-accessible "force reaper"
+     * to recover from cases where many entries are stranded by failed
+     * client sessions and would otherwise wait for the per-entry
+     * 2-minute timeout. Callers MUST verify DBA privileges before
+     * invoking.
+     *
+     * @return the approximate number of entries evicted
+     */
+    public long releaseAll() {
+        final long size = cache.estimatedSize();
+        cache.invalidateAll();
+        cache.cleanUp();
+        return size;
     }
 }
