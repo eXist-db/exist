@@ -222,33 +222,36 @@ public class ExecuteFunction extends BasicFunction {
                 executeResult = stmt.execute(sql);
 
             } else if (args.length == 4 || args.length == 6) {
-                //get the prepared statement
-                final long statementUID = ((IntegerValue) args[1].itemAt(0)).getLong();
-                final PreparedStatementWithSQL stmtWithSQL = SQLModule.retrievePreparedStatement(context, statementUID);
-                sql = stmtWithSQL.getSql();
-                stmt = stmtWithSQL.getStmt();
+                    //get the prepared statement
+                    final long statementUID = ((IntegerValue) args[1].itemAt(0)).getLong();
+                    final PreparedStatementWithSQL stmtWithSQL = SQLModule.retrievePreparedStatement(context, statementUID);
+                    if (stmtWithSQL == null) {
+                        throw new XPathException(this, "No such SQL PreparedStatement");
+                    }
+                    sql = stmtWithSQL.getSql();
+                    stmt = stmtWithSQL.getStmt();
 
-                if (stmt.getConnection() != con) {
-                    throw new XPathException(this, "SQL Connection does not match that used for creating the PreparedStatement");
-                }
+                    if (stmt.getConnection() != con) {
+                        throw new XPathException(this, "SQL Connection does not match that used for creating the PreparedStatement");
+                    }
 
-                makeNodeFromColumnName = ((BooleanValue) args[3].itemAt(0)).effectiveBooleanValue();
-                if (args.length == 6) {
-                    namespaceUri = args[4].itemAt(0).getStringValue();
-                    namespacePrefix = args[5].itemAt(0).getStringValue();
-                } else {
-                    // The default namespace for result elements.
-                    namespaceUri = NAMESPACE_URI;
-                    namespacePrefix = PREFIX;
-                }
+                    makeNodeFromColumnName = ((BooleanValue) args[3].itemAt(0)).effectiveBooleanValue();
+                    if (args.length == 6) {
+                        namespaceUri = args[4].itemAt(0).getStringValue();
+                        namespacePrefix = args[5].itemAt(0).getStringValue();
+                    } else {
+                        // The default namespace for result elements.
+                        namespaceUri = NAMESPACE_URI;
+                        namespacePrefix = PREFIX;
+                    }
 
-                if (!args[2].isEmpty()) {
-                    parametersElement = (Element) args[2].itemAt(0);
-                    setParametersOnPreparedStatement(stmt, parametersElement);
-                }
+                    if (!args[2].isEmpty()) {
+                        parametersElement = (Element) args[2].itemAt(0);
+                        setParametersOnPreparedStatement(stmt, parametersElement);
+                    }
 
-                //execute the PreparedStatement
-                executeResult = ((PreparedStatement) stmt).execute();
+                    //execute the PreparedStatement
+                    executeResult = ((PreparedStatement) stmt).execute();
 
             } else {
                 throw new XPathException(this, "Unknown function call: " + getSignature());
@@ -409,7 +412,7 @@ public class ExecuteFunction extends BasicFunction {
                                 //get the content
                                 if (rsmd.getColumnType(i + 1) == Types.SQLXML) {
                                     //parse sqlxml value
-                                        final SQLXML sqlXml = rs.getSQLXML(i + 1);
+                                    final SQLXML sqlXml = rs.getSQLXML(i + 1);
                                     try {
                                         if (rs.wasNull()) {
                                             // Add a null indicator attribute if the value was SQL Null

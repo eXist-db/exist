@@ -94,28 +94,25 @@ public class PrepareFunction extends BasicFunction {
         }
 
         // get the Connection
-        long connectionUID = ((IntegerValue) args[0].itemAt(0)).getLong();
-        Connection con = SQLModule.retrieveConnection(context, connectionUID);
+        final long connectionUID = ((IntegerValue) args[0].itemAt(0)).getLong();
+        final Connection con = SQLModule.retrieveConnection(context, connectionUID);
 
         if (con == null) {
             return (Sequence.EMPTY_SEQUENCE);
         }
 
         // get the SQL statement
-        String sql = args[1].getStringValue();
-
-        PreparedStatement stmt = null;
+        final String sql = args[1].getStringValue();
 
         try {
-
             // execute the SQL statement
-            stmt = con.prepareStatement(sql);
+            final PreparedStatement stmt = con.prepareStatement(sql);
 
             // store the PreparedStatement and return the uid handle of the PreparedStatement
             return (new IntegerValue(this, SQLModule.storePreparedStatement(context, new PreparedStatementWithSQL(sql, stmt)), Type.LONG));
-        } catch (SQLException sqle) {
-            LOG.error("sql:prepare() Caught SQLException \"{}\" for SQL: \"{}\"", sqle.getMessage(), sql, sqle);
 
+        } catch (final SQLException sqle) {
+            LOG.error("sql:prepare() Caught SQLException \"{}\" for SQL: \"{}\"", sqle.getMessage(), sql, sqle);
             throw (new XPathException(this, "sql:prepare() Caught SQLException \"" + sqle.getMessage() + "\" for SQL: \"" + sql + "\"", sqle));
         }
     }
