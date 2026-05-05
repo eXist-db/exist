@@ -111,6 +111,7 @@
             </activation>
             <modules>
                 <module>exist-core-jmh</module>
+                <module>exist-indexes-jmh</module>
             </modules>
         </profile>
 
