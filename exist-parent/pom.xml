@@ -124,7 +124,7 @@
         <exquery.distribution.version>0.2.1</exquery.distribution.version>
         <icu.version>76.1</icu.version>
         <izpack.version>5.2.5</izpack.version>
-        <jansi.version>4.0.14</jansi.version>
+        <jansi.version>4.0.15</jansi.version>
         <jaxb.api.version>4.0.5</jaxb.api.version>
         <jaxb.impl.version>4.0.2</jaxb.impl.version>
         <eclipse.angus-activation.version>2.0.3</eclipse.angus-activation.version>
