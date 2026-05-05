@@ -183,3 +183,53 @@ function fte:search-field-with-configured-element() {
 declare %test:assertEquals("Foobar index data") function fte:get-field-control-without-configured-element() {
     ft:get-field("/db/" || $fte:COLL_GET_FIELD || "/without-foo.xml", "foo-field")
 };
+
+(:~
+ : #2318: collection reindex must preserve named field retrieval on configured-element document.
+ : @see https://github.com/eXist-db/exist/issues/2318
+ :)
+declare
+    %test:pending("Known bug tracked by #2318: collection reindex clears named field retrieval")
+    %test:assertEquals("Foobar index data")
+function fte:reindex-collection-preserves-get-field-with-configured-element() {
+    let $_ := xmldb:reindex("/db/" || $fte:COLL_GET_FIELD)
+    return ft:get-field("/db/" || $fte:COLL_GET_FIELD || "/with-foo.xml", "foo-field")
+};
+
+(:~
+ : #2318: document reindex must preserve named field retrieval on configured-element document.
+ : @see https://github.com/eXist-db/exist/issues/2318
+ :)
+declare
+    %test:pending("Known bug tracked by #2318: document reindex clears named field retrieval")
+    %test:assertEquals("Foobar index data")
+function fte:reindex-document-preserves-get-field-with-configured-element() {
+    let $_ := xmldb:reindex("/db/" || $fte:COLL_GET_FIELD, "with-foo.xml")
+    return ft:get-field("/db/" || $fte:COLL_GET_FIELD || "/with-foo.xml", "foo-field")
+};
+
+(:~
+ : #2318: repeated collection reindex should not clear named field retrieval.
+ : @see https://github.com/eXist-db/exist/issues/2318
+ :)
+declare
+    %test:pending("Known bug tracked by #2318: repeated collection reindex clears named field retrieval")
+    %test:assertEquals("Foobar index data")
+function fte:reindex-collection-repeat-preserves-get-field() {
+    let $_ := xmldb:reindex("/db/" || $fte:COLL_GET_FIELD)
+    let $_ := xmldb:reindex("/db/" || $fte:COLL_GET_FIELD)
+    let $_ := xmldb:reindex("/db/" || $fte:COLL_GET_FIELD)
+    return ft:get-field("/db/" || $fte:COLL_GET_FIELD || "/with-foo.xml", "foo-field")
+};
+
+(:~
+ : #2318 control: collection reindex preserves named field retrieval without configured element.
+ : @see https://github.com/eXist-db/exist/issues/2318
+ :)
+declare
+    %test:pending("Known bug tracked by #2318: collection reindex clears named field retrieval (control)")
+    %test:assertEquals("Foobar index data")
+function fte:reindex-collection-preserves-get-field-control-without-configured-element() {
+    let $_ := xmldb:reindex("/db/" || $fte:COLL_GET_FIELD)
+    return ft:get-field("/db/" || $fte:COLL_GET_FIELD || "/without-foo.xml", "foo-field")
+};
