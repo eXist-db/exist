@@ -83,6 +83,15 @@ declare variable $fte:INDEXED_FIELD as element(doc) :=
     <doc><field name="foo-field" store="yes">Foobar index data</field></doc>;
 
 declare
+    %private
+function fte:seed-get-field-indexes() {
+    (
+        ft:index("/db/" || $fte:COLL_GET_FIELD || "/with-foo.xml", $fte:INDEXED_FIELD),
+        ft:index("/db/" || $fte:COLL_GET_FIELD || "/without-foo.xml", $fte:INDEXED_FIELD)
+    )
+};
+
+declare
     %test:setUp
 function fte:setUp() {
     ( xmldb:create-collection("/db/system", "config"),
@@ -164,7 +173,8 @@ declare %test:assertEquals(0) function fte:query-empty-index-element-no-npe() {
 declare
     %test:assertEquals("Foobar index data")
 function fte:get-field-with-configured-element() {
-    ft:get-field("/db/" || $fte:COLL_GET_FIELD || "/with-foo.xml", "foo-field")
+    let $_ := fte:seed-get-field-indexes()
+    return ft:get-field("/db/" || $fte:COLL_GET_FIELD || "/with-foo.xml", "foo-field")
 };
 
 (:~
@@ -173,7 +183,8 @@ function fte:get-field-with-configured-element() {
  :)
 declare %test:assertEquals("/db/lucene-test-ft-edge-get-field/with-foo.xml")
 function fte:search-field-with-configured-element() {
-    string-join(ft:search("/db/" || $fte:COLL_GET_FIELD || "/with-foo.xml", "foo-field:foobar")//@uri/data(), " ")
+    let $_ := fte:seed-get-field-indexes()
+    return string-join(distinct-values(ft:search("/db/" || $fte:COLL_GET_FIELD || "/with-foo.xml", "foo-field:foobar")//@uri/data()), " ")
 };
 
 (:~
@@ -181,7 +192,8 @@ function fte:search-field-with-configured-element() {
  : @see https://github.com/eXist-db/exist/issues/2312
  :)
 declare %test:assertEquals("Foobar index data") function fte:get-field-control-without-configured-element() {
-    ft:get-field("/db/" || $fte:COLL_GET_FIELD || "/without-foo.xml", "foo-field")
+    let $_ := fte:seed-get-field-indexes()
+    return ft:get-field("/db/" || $fte:COLL_GET_FIELD || "/without-foo.xml", "foo-field")
 };
 
 (:~
@@ -189,9 +201,9 @@ declare %test:assertEquals("Foobar index data") function fte:get-field-control-w
  : @see https://github.com/eXist-db/exist/issues/2318
  :)
 declare
-    %test:pending("Known bug tracked by #2318: collection reindex clears named field retrieval")
     %test:assertEquals("Foobar index data")
 function fte:reindex-collection-preserves-get-field-with-configured-element() {
+    let $_ := fte:seed-get-field-indexes()
     let $_ := xmldb:reindex("/db/" || $fte:COLL_GET_FIELD)
     return ft:get-field("/db/" || $fte:COLL_GET_FIELD || "/with-foo.xml", "foo-field")
 };
@@ -201,9 +213,9 @@ function fte:reindex-collection-preserves-get-field-with-configured-element() {
  : @see https://github.com/eXist-db/exist/issues/2318
  :)
 declare
-    %test:pending("Known bug tracked by #2318: document reindex clears named field retrieval")
     %test:assertEquals("Foobar index data")
 function fte:reindex-document-preserves-get-field-with-configured-element() {
+    let $_ := fte:seed-get-field-indexes()
     let $_ := xmldb:reindex("/db/" || $fte:COLL_GET_FIELD, "with-foo.xml")
     return ft:get-field("/db/" || $fte:COLL_GET_FIELD || "/with-foo.xml", "foo-field")
 };
@@ -213,9 +225,9 @@ function fte:reindex-document-preserves-get-field-with-configured-element() {
  : @see https://github.com/eXist-db/exist/issues/2318
  :)
 declare
-    %test:pending("Known bug tracked by #2318: repeated collection reindex clears named field retrieval")
     %test:assertEquals("Foobar index data")
 function fte:reindex-collection-repeat-preserves-get-field() {
+    let $_ := fte:seed-get-field-indexes()
     let $_ := xmldb:reindex("/db/" || $fte:COLL_GET_FIELD)
     let $_ := xmldb:reindex("/db/" || $fte:COLL_GET_FIELD)
     let $_ := xmldb:reindex("/db/" || $fte:COLL_GET_FIELD)
@@ -227,9 +239,9 @@ function fte:reindex-collection-repeat-preserves-get-field() {
  : @see https://github.com/eXist-db/exist/issues/2318
  :)
 declare
-    %test:pending("Known bug tracked by #2318: collection reindex clears named field retrieval (control)")
     %test:assertEquals("Foobar index data")
 function fte:reindex-collection-preserves-get-field-control-without-configured-element() {
+    let $_ := fte:seed-get-field-indexes()
     let $_ := xmldb:reindex("/db/" || $fte:COLL_GET_FIELD)
     return ft:get-field("/db/" || $fte:COLL_GET_FIELD || "/without-foo.xml", "foo-field")
 };

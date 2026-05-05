@@ -357,7 +357,13 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         try {
             writer = index.getWriter();
             final Query docIdQuery = IntField.newExactQuery(FIELD_DOC_ID, docId);
-            writer.deleteDocuments(docIdQuery);
+            if (broker.getIndexController().isReindexing()) {
+                // During reindex, remove only node-based Lucene entries and keep
+                // non-node entries created via ft:index for this document.
+                writer.deleteDocuments(nodeScopedDeleteQuery(docIdQuery));
+            } else {
+                writer.deleteDocuments(docIdQuery);
+            }
         } catch (IOException e) {
             LOG.warn("Error while removing lucene index: {}", e.getMessage(), e);
         } finally {
@@ -401,6 +407,12 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     protected void removePlainTextIndexes() {
+        if (broker.getIndexController().isReindexing()) {
+            // Collection/document reindex should rebuild XML/node index entries but must
+            // preserve named-field entries created via ft:index for existing documents.
+            mode = ReindexMode.STORE;
+            return;
+        }
     	IndexWriter writer = null;
         try {
             writer = index.getWriter();
@@ -436,7 +448,12 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             writer = index.getWriter();
             for (Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
                 DocumentImpl doc = i.next();
-                writer.deleteDocuments(IntField.newExactQuery(FIELD_DOC_ID, doc.getDocId()));
+                final Query docIdQuery = IntField.newExactQuery(FIELD_DOC_ID, doc.getDocId());
+                if (reindex || broker.getIndexController().isReindexing()) {
+                    writer.deleteDocuments(nodeScopedDeleteQuery(docIdQuery));
+                } else {
+                    writer.deleteDocuments(docIdQuery);
+                }
             }
         } catch (IOException | PermissionDeniedException | LockException e) {
             LOG.error("Error while removing lucene index: {}", e.getMessage(), e);
@@ -453,6 +470,18 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         }
         if (LOG.isDebugEnabled())
             LOG.debug("Collection removed.");
+    }
+
+    /**
+     * Restricts deletion to node-backed Lucene records for the supplied doc-id query.
+     * Named-field records created via ft:index do not carry FIELD_NODE_ID_DV and are
+     * preserved during xmldb:reindex operations.
+     */
+    private static Query nodeScopedDeleteQuery(final Query docIdQuery) {
+        return new BooleanQuery.Builder()
+                .add(docIdQuery, BooleanClause.Occur.MUST)
+                .add(new FieldExistsQuery(LuceneUtil.FIELD_NODE_ID_DV), BooleanClause.Occur.MUST)
+                .build();
     }
 
     /**
