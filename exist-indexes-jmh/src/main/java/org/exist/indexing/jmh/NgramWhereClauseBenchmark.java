@@ -43,30 +43,20 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Benchmarks four shapes of {@code ngram:contains()} usage to characterise the
- * compile- and runtime-paths an index lookup can take inside a FLWOR
- * expression.  The shapes correspond directly to the cases discussed in
- * <a href="https://github.com/eXist-db/exist/pull/6295">PR #6295</a> and the
- * "where-clause optimization" tasking.
+ * Benchmarks four shapes of {@code ngram:contains()} usage inside FLWOR
+ * expressions.  See README.md for the full shape semantics; in short:
  *
- * <table>
- *   <tr><th>Shape</th><th>Form</th><th>Expected path</th></tr>
- *   <tr><td>A.literal</td><td>{@code //LINE[ngram:contains(., 'Denmark')]}</td>
- *       <td>Single bulk index probe</td></tr>
- *   <tr><td>A.letVar</td><td>{@code let $q := 'Denmark' return //LINE[ngram:contains(., $q)]}</td>
- *       <td>Single bulk index probe (Shape A)</td></tr>
- *   <tr><td>B.forVarPredicate</td><td>{@code for $q in $TERMS return //LINE[ngram:contains(., $q)]}</td>
- *       <td>One bulk probe per outer iteration -- the rewrite target</td></tr>
- *   <tr><td>B.forVarWhere</td><td>{@code for $q in $TERMS where //LINE[ngram:contains(., $q)] return $q}</td>
- *       <td>Currently per-tuple EBV -- the regression case</td></tr>
- * </table>
+ * <ul>
+ *   <li>{@code shapeALiteral} -- single bulk index probe with a string literal
+ *   <li>{@code shapeALetVar} -- single bulk index probe with an outer let-bound term
+ *   <li>{@code shapeBForVarPredicate} -- per-iteration bulk probe (the rewrite target)
+ *   <li>{@code shapeBForVarWhere} -- the GH-2204 / PR #6295 regression case in
+ *       a where-clause position
+ * </ul>
  *
- * <p>Run with:
- * <pre>
- *   mvn -P micro-benchmarks package -pl exist-indexes-jmh -am -DskipTests
- *   java -jar exist-indexes-jmh/target/exist-indexes-jmh-*-benchmarks.jar \
- *       NgramWhereClauseBenchmark -wi 3 -i 5 -f 1
- * </pre>
+ * <p>{@code termCount} parameterises the term list size so we can see whether
+ * Shape B scales linearly in N (the bulk-correct path) or in N x corpus-size
+ * (the per-tuple-EBV regression path).
  */
 @State(Scope.Benchmark)
 @BenchmarkMode(Mode.AverageTime)
@@ -76,16 +66,22 @@ import java.util.concurrent.TimeUnit;
 @Fork(1)
 public class NgramWhereClauseBenchmark {
 
-    private static final String CORPUS_RESOURCE = "/org/exist/indexing/jmh/hamlet.xml";
+    private static final String[] CORPUS_RESOURCES = {
+            "/org/exist/indexing/jmh/hamlet.xml",
+            "/org/exist/indexing/jmh/macbeth.xml",
+            "/org/exist/indexing/jmh/r_and_j.xml"
+    };
+    private static final String[] CORPUS_DOC_NAMES = {
+            "hamlet.xml",
+            "macbeth.xml",
+            "r_and_j.xml"
+    };
     private static final String CONFIG_RESOURCE = "/org/exist/indexing/jmh/collection.xconf";
-    private static final String CORPUS_DOC_NAME = "hamlet.xml";
 
-    /**
-     * A fixed list of search terms that all appear in Hamlet.  Using a
-     * deterministic list keeps benchmark numbers comparable across runs.
-     */
-    private static final String TERMS_SEQUENCE =
-            "('Denmark', 'England', 'Norway', 'Polonius', 'France')";
+    /** Cycled to fill the requested term count. All hit Hamlet's LINE text. */
+    private static final String[] BASE_TERMS = {
+            "Denmark", "England", "Norway", "Polonius", "France"
+    };
 
     private static final String DECLARE_NGRAM =
             "declare namespace ngram=\"http://exist-db.org/xquery/ngram\";\n";
@@ -93,44 +89,37 @@ public class NgramWhereClauseBenchmark {
     private static final String COLLECTION_PATH =
             TestConstants.TEST_COLLECTION_URI.toString();
 
-    /** Shape A.literal: search term is a string literal. */
     private static final String QUERY_LITERAL =
             DECLARE_NGRAM
             + "count(collection('" + COLLECTION_PATH + "')//LINE"
             + "[ngram:contains(., 'Denmark')])";
 
-    /** Shape A.letVar: search term is bound by an outer let -- invariant. */
     private static final String QUERY_LET_VAR =
             DECLARE_NGRAM
             + "let $q := 'Denmark'\n"
             + "return count(collection('" + COLLECTION_PATH + "')//LINE"
             + "[ngram:contains(., $q)])";
 
-    /**
-     * Shape B.forVarPredicate: search term varies per iteration but the
-     * ngram:contains() call is in predicate position.  This is the form
-     * BaseX's {@code toPredicate} rewrite would produce from Shape B.
-     */
-    private static final String QUERY_FOR_VAR_PREDICATE =
-            DECLARE_NGRAM
-            + "for $q in " + TERMS_SEQUENCE + "\n"
-            + "return count(collection('" + COLLECTION_PATH + "')//LINE"
-            + "[ngram:contains(., $q)])";
-
-    /**
-     * Shape B.forVarWhere: the literal regression case from GH-2204 /
-     * PR #6207 / PR #6295.  Today this falls back to per-tuple EBV.
-     */
-    private static final String QUERY_FOR_VAR_WHERE =
-            DECLARE_NGRAM
-            + "for $q in " + TERMS_SEQUENCE + "\n"
-            + "where collection('" + COLLECTION_PATH + "')//LINE"
-            + "[ngram:contains(., $q)]\n"
-            + "return $q";
+    @Param({"5", "50", "100"})
+    public int termCount;
 
     private ExistEmbeddedServer server;
     private BrokerPool pool;
     private XQuery xquery;
+    private String queryForVarPredicate;
+    private String queryForVarWhere;
+
+    static String buildTermSequence(final String[] base, final int count) {
+        final StringBuilder sb = new StringBuilder("(");
+        for (int i = 0; i < count; i++) {
+            if (i > 0) {
+                sb.append(", ");
+            }
+            sb.append('\'').append(base[i % base.length]).append('\'');
+        }
+        sb.append(')');
+        return sb.toString();
+    }
 
     @Setup(Level.Trial)
     public void setUp() throws Exception {
@@ -138,12 +127,14 @@ public class NgramWhereClauseBenchmark {
         server.startDb();
         pool = server.getBrokerPool();
 
-        final String corpus;
-        try (InputStream in = NgramWhereClauseBenchmark.class.getResourceAsStream(CORPUS_RESOURCE)) {
-            if (in == null) {
-                throw new IOException("Missing corpus resource: " + CORPUS_RESOURCE);
+        final String[] corpora = new String[CORPUS_RESOURCES.length];
+        for (int i = 0; i < CORPUS_RESOURCES.length; i++) {
+            try (InputStream in = NgramWhereClauseBenchmark.class.getResourceAsStream(CORPUS_RESOURCES[i])) {
+                if (in == null) {
+                    throw new IOException("Missing corpus resource: " + CORPUS_RESOURCES[i]);
+                }
+                corpora[i] = new String(in.readAllBytes(), StandardCharsets.UTF_8);
             }
-            corpus = new String(in.readAllBytes(), StandardCharsets.UTF_8);
         }
         final String collectionConfig;
         try (InputStream in = NgramWhereClauseBenchmark.class.getResourceAsStream(CONFIG_RESOURCE)) {
@@ -163,16 +154,29 @@ public class NgramWhereClauseBenchmark {
             final CollectionConfigurationManager mgr = pool.getConfigurationManager();
             mgr.addConfiguration(transaction, broker, root, collectionConfig);
 
-            broker.storeDocument(transaction, XmldbURI.create(CORPUS_DOC_NAME),
-                    new StringInputSource(corpus), MimeType.XML_TYPE, root);
+            for (int i = 0; i < CORPUS_DOC_NAMES.length; i++) {
+                broker.storeDocument(transaction, XmldbURI.create(CORPUS_DOC_NAMES[i]),
+                        new StringInputSource(corpora[i]), MimeType.XML_TYPE, root);
+            }
 
             transact.commit(transaction);
         }
 
         xquery = pool.getXQueryService();
 
-        // Sanity-check: every term must produce a non-empty result, otherwise
-        // the benchmark is silently measuring "no hits".
+        final String terms = buildTermSequence(BASE_TERMS, termCount);
+        queryForVarPredicate =
+                DECLARE_NGRAM
+                + "for $q in " + terms + "\n"
+                + "return count(collection('" + COLLECTION_PATH + "')//LINE"
+                + "[ngram:contains(., $q)])";
+        queryForVarWhere =
+                DECLARE_NGRAM
+                + "for $q in " + terms + "\n"
+                + "where collection('" + COLLECTION_PATH + "')//LINE"
+                + "[ngram:contains(., $q)]\n"
+                + "return $q";
+
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             final Sequence result = xquery.execute(broker, QUERY_LITERAL, null);
             final long hits = result.itemAt(0).toJavaObject(Long.class);
@@ -192,7 +196,6 @@ public class NgramWhereClauseBenchmark {
     private Sequence run(final String query) throws Exception {
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             final Sequence result = xquery.execute(broker, query, null);
-            // Force materialisation so JIT can't elide the work.
             result.getItemCount();
             return result;
         }
@@ -210,11 +213,11 @@ public class NgramWhereClauseBenchmark {
 
     @Benchmark
     public Sequence shapeBForVarPredicate() throws Exception {
-        return run(QUERY_FOR_VAR_PREDICATE);
+        return run(queryForVarPredicate);
     }
 
     @Benchmark
     public Sequence shapeBForVarWhere() throws Exception {
-        return run(QUERY_FOR_VAR_WHERE);
+        return run(queryForVarWhere);
     }
 }

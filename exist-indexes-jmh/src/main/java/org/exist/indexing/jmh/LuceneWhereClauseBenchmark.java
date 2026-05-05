@@ -56,13 +56,21 @@ import java.util.concurrent.TimeUnit;
 @Fork(1)
 public class LuceneWhereClauseBenchmark {
 
-    private static final String CORPUS_RESOURCE = "/org/exist/indexing/jmh/hamlet.xml";
+    private static final String[] CORPUS_RESOURCES = {
+            "/org/exist/indexing/jmh/hamlet.xml",
+            "/org/exist/indexing/jmh/macbeth.xml",
+            "/org/exist/indexing/jmh/r_and_j.xml"
+    };
+    private static final String[] CORPUS_DOC_NAMES = {
+            "hamlet.xml",
+            "macbeth.xml",
+            "r_and_j.xml"
+    };
     private static final String CONFIG_RESOURCE = "/org/exist/indexing/jmh/collection.xconf";
-    private static final String CORPUS_DOC_NAME = "hamlet.xml";
 
-    /** Same term list as NgramWhereClauseBenchmark -- all appear in Hamlet's LINE text. */
-    private static final String TERMS_SEQUENCE =
-            "('Denmark', 'England', 'Norway', 'Polonius', 'France')";
+    private static final String[] BASE_TERMS = {
+            "Denmark", "England", "Norway", "Polonius", "France"
+    };
 
     private static final String DECLARE_FT =
             "declare namespace ft=\"http://exist-db.org/xquery/lucene\";\n";
@@ -79,20 +87,14 @@ public class LuceneWhereClauseBenchmark {
             + "let $q := 'Denmark'\n"
             + "return count(ft:query(collection('" + COLLECTION_PATH + "')//LINE, $q))";
 
-    private static final String QUERY_FOR_VAR_PREDICATE =
-            DECLARE_FT
-            + "for $q in " + TERMS_SEQUENCE + "\n"
-            + "return count(ft:query(collection('" + COLLECTION_PATH + "')//LINE, $q))";
-
-    private static final String QUERY_FOR_VAR_WHERE =
-            DECLARE_FT
-            + "for $q in " + TERMS_SEQUENCE + "\n"
-            + "where ft:query(collection('" + COLLECTION_PATH + "')//LINE, $q)\n"
-            + "return $q";
+    @Param({"5", "50", "100"})
+    public int termCount;
 
     private ExistEmbeddedServer server;
     private BrokerPool pool;
     private XQuery xquery;
+    private String queryForVarPredicate;
+    private String queryForVarWhere;
 
     @Setup(Level.Trial)
     public void setUp() throws Exception {
@@ -100,12 +102,14 @@ public class LuceneWhereClauseBenchmark {
         server.startDb();
         pool = server.getBrokerPool();
 
-        final String corpus;
-        try (InputStream in = LuceneWhereClauseBenchmark.class.getResourceAsStream(CORPUS_RESOURCE)) {
-            if (in == null) {
-                throw new IOException("Missing corpus resource: " + CORPUS_RESOURCE);
+        final String[] corpora = new String[CORPUS_RESOURCES.length];
+        for (int i = 0; i < CORPUS_RESOURCES.length; i++) {
+            try (InputStream in = LuceneWhereClauseBenchmark.class.getResourceAsStream(CORPUS_RESOURCES[i])) {
+                if (in == null) {
+                    throw new IOException("Missing corpus resource: " + CORPUS_RESOURCES[i]);
+                }
+                corpora[i] = new String(in.readAllBytes(), StandardCharsets.UTF_8);
             }
-            corpus = new String(in.readAllBytes(), StandardCharsets.UTF_8);
         }
         final String collectionConfig;
         try (InputStream in = LuceneWhereClauseBenchmark.class.getResourceAsStream(CONFIG_RESOURCE)) {
@@ -125,13 +129,26 @@ public class LuceneWhereClauseBenchmark {
             final CollectionConfigurationManager mgr = pool.getConfigurationManager();
             mgr.addConfiguration(transaction, broker, root, collectionConfig);
 
-            broker.storeDocument(transaction, XmldbURI.create(CORPUS_DOC_NAME),
-                    new StringInputSource(corpus), MimeType.XML_TYPE, root);
+            for (int i = 0; i < CORPUS_DOC_NAMES.length; i++) {
+                broker.storeDocument(transaction, XmldbURI.create(CORPUS_DOC_NAMES[i]),
+                        new StringInputSource(corpora[i]), MimeType.XML_TYPE, root);
+            }
 
             transact.commit(transaction);
         }
 
         xquery = pool.getXQueryService();
+
+        final String terms = NgramWhereClauseBenchmark.buildTermSequence(BASE_TERMS, termCount);
+        queryForVarPredicate =
+                DECLARE_FT
+                + "for $q in " + terms + "\n"
+                + "return count(ft:query(collection('" + COLLECTION_PATH + "')//LINE, $q))";
+        queryForVarWhere =
+                DECLARE_FT
+                + "for $q in " + terms + "\n"
+                + "where ft:query(collection('" + COLLECTION_PATH + "')//LINE, $q)\n"
+                + "return $q";
 
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             final Sequence result = xquery.execute(broker, QUERY_LITERAL, null);
@@ -169,11 +186,11 @@ public class LuceneWhereClauseBenchmark {
 
     @Benchmark
     public Sequence shapeBForVarPredicate() throws Exception {
-        return run(QUERY_FOR_VAR_PREDICATE);
+        return run(queryForVarPredicate);
     }
 
     @Benchmark
     public Sequence shapeBForVarWhere() throws Exception {
-        return run(QUERY_FOR_VAR_WHERE);
+        return run(queryForVarWhere);
     }
 }

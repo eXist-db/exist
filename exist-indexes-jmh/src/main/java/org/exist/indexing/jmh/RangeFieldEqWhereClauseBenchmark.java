@@ -44,11 +44,9 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Benchmarks four shapes of {@code range:field-eq()} usage against a combined
- * (multi-field) range index.  Range:field-eq is what the optimizer rewrites a
- * comparison like {@code //SPEECH[SPEAKER = "HAMLET"]} into when a combined
- * range index with a {@code <field name="speaker" match="SPEAKER"/>}
- * declaration is configured on {@code SPEECH}.  This is a different
- * {@code getDependencies()} code path from {@code range:eq}.
+ * (multi-field) range index with a {@code <field name="speaker" match="SPEAKER"/>}
+ * declaration on {@code SPEECH}.  Different {@code getDependencies()} code path
+ * from {@code range:eq}: takes (fields, keys), no node-set.
  *
  * @see NgramWhereClauseBenchmark for shape semantics.
  */
@@ -60,12 +58,21 @@ import java.util.concurrent.TimeUnit;
 @Fork(1)
 public class RangeFieldEqWhereClauseBenchmark {
 
-    private static final String CORPUS_RESOURCE = "/org/exist/indexing/jmh/hamlet.xml";
+    private static final String[] CORPUS_RESOURCES = {
+            "/org/exist/indexing/jmh/hamlet.xml",
+            "/org/exist/indexing/jmh/macbeth.xml",
+            "/org/exist/indexing/jmh/r_and_j.xml"
+    };
+    private static final String[] CORPUS_DOC_NAMES = {
+            "hamlet.xml",
+            "macbeth.xml",
+            "r_and_j.xml"
+    };
     private static final String CONFIG_RESOURCE = "/org/exist/indexing/jmh/collection.xconf";
-    private static final String CORPUS_DOC_NAME = "hamlet.xml";
 
-    private static final String TERMS_SEQUENCE =
-            "('HAMLET', 'OPHELIA', 'KING CLAUDIUS', 'POLONIUS', 'HORATIO')";
+    private static final String[] BASE_TERMS = {
+            "HAMLET", "OPHELIA", "KING CLAUDIUS", "POLONIUS", "HORATIO"
+    };
 
     private static final String DECLARE_RANGE =
             "declare namespace range=\"http://exist-db.org/xquery/range\";\n";
@@ -73,10 +80,6 @@ public class RangeFieldEqWhereClauseBenchmark {
     private static final String COLLECTION_PATH =
             TestConstants.TEST_COLLECTION_URI.toString();
 
-    /**
-     * range:field-eq takes (fields, keys) -- not a node-set. The function looks
-     * up against the registered combined index on the collection in scope.
-     */
     private static final String QUERY_LITERAL =
             DECLARE_RANGE
             + "count(range:field-eq('speaker', 'HAMLET'))";
@@ -86,20 +89,14 @@ public class RangeFieldEqWhereClauseBenchmark {
             + "let $q := 'HAMLET'\n"
             + "return count(range:field-eq('speaker', $q))";
 
-    private static final String QUERY_FOR_VAR_PREDICATE =
-            DECLARE_RANGE
-            + "for $q in " + TERMS_SEQUENCE + "\n"
-            + "return count(range:field-eq('speaker', $q))";
-
-    private static final String QUERY_FOR_VAR_WHERE =
-            DECLARE_RANGE
-            + "for $q in " + TERMS_SEQUENCE + "\n"
-            + "where range:field-eq('speaker', $q)\n"
-            + "return $q";
+    @Param({"5", "50", "100"})
+    public int termCount;
 
     private ExistEmbeddedServer server;
     private BrokerPool pool;
     private XQuery xquery;
+    private String queryForVarPredicate;
+    private String queryForVarWhere;
 
     @Setup(Level.Trial)
     public void setUp() throws Exception {
@@ -107,12 +104,14 @@ public class RangeFieldEqWhereClauseBenchmark {
         server.startDb();
         pool = server.getBrokerPool();
 
-        final String corpus;
-        try (InputStream in = RangeFieldEqWhereClauseBenchmark.class.getResourceAsStream(CORPUS_RESOURCE)) {
-            if (in == null) {
-                throw new IOException("Missing corpus resource: " + CORPUS_RESOURCE);
+        final String[] corpora = new String[CORPUS_RESOURCES.length];
+        for (int i = 0; i < CORPUS_RESOURCES.length; i++) {
+            try (InputStream in = RangeFieldEqWhereClauseBenchmark.class.getResourceAsStream(CORPUS_RESOURCES[i])) {
+                if (in == null) {
+                    throw new IOException("Missing corpus resource: " + CORPUS_RESOURCES[i]);
+                }
+                corpora[i] = new String(in.readAllBytes(), StandardCharsets.UTF_8);
             }
-            corpus = new String(in.readAllBytes(), StandardCharsets.UTF_8);
         }
         final String collectionConfig;
         try (InputStream in = RangeFieldEqWhereClauseBenchmark.class.getResourceAsStream(CONFIG_RESOURCE)) {
@@ -132,13 +131,26 @@ public class RangeFieldEqWhereClauseBenchmark {
             final CollectionConfigurationManager mgr = pool.getConfigurationManager();
             mgr.addConfiguration(transaction, broker, root, collectionConfig);
 
-            broker.storeDocument(transaction, XmldbURI.create(CORPUS_DOC_NAME),
-                    new StringInputSource(corpus), MimeType.XML_TYPE, root);
+            for (int i = 0; i < CORPUS_DOC_NAMES.length; i++) {
+                broker.storeDocument(transaction, XmldbURI.create(CORPUS_DOC_NAMES[i]),
+                        new StringInputSource(corpora[i]), MimeType.XML_TYPE, root);
+            }
 
             transact.commit(transaction);
         }
 
         xquery = pool.getXQueryService();
+
+        final String terms = NgramWhereClauseBenchmark.buildTermSequence(BASE_TERMS, termCount);
+        queryForVarPredicate =
+                DECLARE_RANGE
+                + "for $q in " + terms + "\n"
+                + "return count(range:field-eq('speaker', $q))";
+        queryForVarWhere =
+                DECLARE_RANGE
+                + "for $q in " + terms + "\n"
+                + "where range:field-eq('speaker', $q)\n"
+                + "return $q";
 
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             final Sequence result = xquery.execute(broker, QUERY_LITERAL, null);
@@ -176,11 +188,11 @@ public class RangeFieldEqWhereClauseBenchmark {
 
     @Benchmark
     public Sequence shapeBForVarPredicate() throws Exception {
-        return run(QUERY_FOR_VAR_PREDICATE);
+        return run(queryForVarPredicate);
     }
 
     @Benchmark
     public Sequence shapeBForVarWhere() throws Exception {
-        return run(QUERY_FOR_VAR_WHERE);
+        return run(queryForVarWhere);
     }
 }

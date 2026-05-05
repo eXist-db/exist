@@ -116,6 +116,8 @@
                                     block so we follow the same precedent.
                                 -->
                                 <exclude>src/main/resources/org/exist/indexing/jmh/hamlet.xml</exclude>
+                                <exclude>src/main/resources/org/exist/indexing/jmh/macbeth.xml</exclude>
+                                <exclude>src/main/resources/org/exist/indexing/jmh/r_and_j.xml</exclude>
                                 <exclude>bin/run-bench.sh</exclude>
                             </excludes>
                         </licenseSet>
