@@ -456,14 +456,18 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             final int maxBatchClauses = resolveReindexDeleteBatchClauses();
             BooleanQuery.Builder batchedDocIdQuery = preserveNamedFieldEntries ? new BooleanQuery.Builder() : null;
             int batchedClauses = 0;
+            int reindexDeleteBatchCount = 0;
+            int reindexDeleteDocCount = 0;
             for (Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
                 DocumentImpl doc = i.next();
                 final Query docIdQuery = IntField.newExactQuery(FIELD_DOC_ID, doc.getDocId());
                 if (preserveNamedFieldEntries) {
                     batchedDocIdQuery.add(docIdQuery, BooleanClause.Occur.SHOULD);
                     batchedClauses++;
+                    reindexDeleteDocCount++;
                     if (batchedClauses >= maxBatchClauses) {
                         writer.deleteDocuments(nodeScopedDeleteQuery(batchedDocIdQuery.build()));
+                        reindexDeleteBatchCount++;
                         batchedDocIdQuery = new BooleanQuery.Builder();
                         batchedClauses = 0;
                     }
@@ -473,6 +477,16 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             }
             if (preserveNamedFieldEntries && batchedClauses > 0) {
                 writer.deleteDocuments(nodeScopedDeleteQuery(batchedDocIdQuery.build()));
+                reindexDeleteBatchCount++;
+            }
+            if (preserveNamedFieldEntries && LOG.isDebugEnabled()) {
+                LOG.debug(
+                        "Reindex node-delete batching for {}: {} docs across {} batch query deletes (batch size limit {}).",
+                        collection.getURI(),
+                        reindexDeleteDocCount,
+                        reindexDeleteBatchCount,
+                        maxBatchClauses
+                );
             }
         } catch (IOException | PermissionDeniedException | LockException e) {
             LOG.error("Error while removing lucene index: {}", e.getMessage(), e);
