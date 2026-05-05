@@ -89,6 +89,12 @@ import java.util.Set;
  * @author <a href="mailto:ljo@exist-db.org">Leif-Jöran Olsson</a>
  */
 public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
+    /**
+     * Tunable upper bound for docId clauses per delete batch during reindex.
+     * Can be overridden via -Dexist.lucene.reindex.delete.batchClauses=N.
+     */
+    private static final String REINDEX_DELETE_BATCH_PROPERTY = "exist.lucene.reindex.delete.batchClauses";
+    private static final int DEFAULT_REINDEX_DELETE_DOCID_BATCH_SIZE = 256;
 
     public static final org.apache.lucene.document.FieldType TYPE_NODE_ID = new org.apache.lucene.document.FieldType();
     static {
@@ -446,14 +452,27 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         IndexWriter writer = null;
         try {
             writer = index.getWriter();
+            final boolean preserveNamedFieldEntries = reindex || broker.getIndexController().isReindexing();
+            final int maxBatchClauses = resolveReindexDeleteBatchClauses();
+            BooleanQuery.Builder batchedDocIdQuery = preserveNamedFieldEntries ? new BooleanQuery.Builder() : null;
+            int batchedClauses = 0;
             for (Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
                 DocumentImpl doc = i.next();
                 final Query docIdQuery = IntField.newExactQuery(FIELD_DOC_ID, doc.getDocId());
-                if (reindex || broker.getIndexController().isReindexing()) {
-                    writer.deleteDocuments(nodeScopedDeleteQuery(docIdQuery));
+                if (preserveNamedFieldEntries) {
+                    batchedDocIdQuery.add(docIdQuery, BooleanClause.Occur.SHOULD);
+                    batchedClauses++;
+                    if (batchedClauses >= maxBatchClauses) {
+                        writer.deleteDocuments(nodeScopedDeleteQuery(batchedDocIdQuery.build()));
+                        batchedDocIdQuery = new BooleanQuery.Builder();
+                        batchedClauses = 0;
+                    }
                 } else {
                     writer.deleteDocuments(docIdQuery);
                 }
+            }
+            if (preserveNamedFieldEntries && batchedClauses > 0) {
+                writer.deleteDocuments(nodeScopedDeleteQuery(batchedDocIdQuery.build()));
             }
         } catch (IOException | PermissionDeniedException | LockException e) {
             LOG.error("Error while removing lucene index: {}", e.getMessage(), e);
@@ -482,6 +501,26 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 .add(docIdQuery, BooleanClause.Occur.MUST)
                 .add(new FieldExistsQuery(LuceneUtil.FIELD_NODE_ID_DV), BooleanClause.Occur.MUST)
                 .build();
+    }
+
+    private static int resolveReindexDeleteBatchClauses() {
+        final int maxClauses = IndexSearcher.getMaxClauseCount();
+        final int configured = Integer.getInteger(REINDEX_DELETE_BATCH_PROPERTY, DEFAULT_REINDEX_DELETE_DOCID_BATCH_SIZE);
+        final int effective = clampReindexDeleteBatchClauses(configured, maxClauses);
+        if (effective != configured && LOG.isDebugEnabled()) {
+            LOG.debug(
+                    "Clamped {} from {} to {} (allowed range: 1..{})",
+                    REINDEX_DELETE_BATCH_PROPERTY,
+                    configured,
+                    effective,
+                    maxClauses
+            );
+        }
+        return effective;
+    }
+
+    static int clampReindexDeleteBatchClauses(final int configured, final int maxClauses) {
+        return Math.max(1, Math.min(configured, maxClauses));
     }
 
     /**
