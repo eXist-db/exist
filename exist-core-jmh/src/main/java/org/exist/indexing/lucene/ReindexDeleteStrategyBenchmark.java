@@ -37,6 +37,7 @@ import org.apache.lucene.search.FieldExistsQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.search.TermInSetQuery;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.store.ByteBuffersDirectory;
 import org.apache.lucene.store.Directory;
@@ -52,6 +53,8 @@ import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Warmup;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -65,6 +68,7 @@ import java.util.concurrent.TimeUnit;
 public class ReindexDeleteStrategyBenchmark {
 
     private static final String FIELD_DOC_ID = "docId";
+    private static final String FIELD_DOC_ID_KEYWORD = "docIdKeyword";
     private static final String FIELD_INDEXED = "indexed";
     private static final int DELETE_BATCH_SIZE = 128;
     private static final Query NODE_EXISTS_QUERY = new FieldExistsQuery(LuceneUtil.FIELD_NODE_ID_DV);
@@ -76,6 +80,9 @@ public class ReindexDeleteStrategyBenchmark {
 
         @Param({"1", "10"})
         public int nodeDocStride;
+
+        @Param({"64", "128", "256", "512", "1024"})
+        public int batchSize;
     }
 
     @Benchmark
@@ -122,7 +129,7 @@ public class ReindexDeleteStrategyBenchmark {
             while (nextDocId <= state.docCount) {
                 final BooleanQuery.Builder batchedDocIdQuery = new BooleanQuery.Builder();
                 int clauses = 0;
-                final int maxClausesPerBatch = Math.min(DELETE_BATCH_SIZE, IndexSearcher.getMaxClauseCount());
+                final int maxClausesPerBatch = boundedBatchSize(state.batchSize);
                 while (nextDocId <= state.docCount && clauses < maxClausesPerBatch) {
                     batchedDocIdQuery.add(IntField.newExactQuery(FIELD_DOC_ID, nextDocId++), BooleanClause.Occur.SHOULD);
                     clauses++;
@@ -137,11 +144,58 @@ public class ReindexDeleteStrategyBenchmark {
         }
     }
 
+    @Benchmark
+    public int deleteInBatchesBooleanShouldSweep(final BenchmarkState state) throws IOException {
+        try (Directory directory = buildIndex(state.docCount, state.nodeDocStride);
+             IndexWriter writer = new IndexWriter(directory, new IndexWriterConfig(new StandardAnalyzer()))) {
+
+            int nextDocId = 1;
+            while (nextDocId <= state.docCount) {
+                final BooleanQuery.Builder batchedDocIdQuery = new BooleanQuery.Builder();
+                int clauses = 0;
+                final int maxClausesPerBatch = boundedBatchSize(state.batchSize);
+                while (nextDocId <= state.docCount && clauses < maxClausesPerBatch) {
+                    batchedDocIdQuery.add(IntField.newExactQuery(FIELD_DOC_ID, nextDocId++), BooleanClause.Occur.SHOULD);
+                    clauses++;
+                }
+                writer.deleteDocuments(nodeScopedDeleteQuery(batchedDocIdQuery.build()));
+            }
+            writer.commit();
+            return assertNamedFieldSurvivors(directory, state.docCount);
+        }
+    }
+
+    @Benchmark
+    public int deleteInBatchesTermInSetSweep(final BenchmarkState state) throws IOException {
+        try (Directory directory = buildIndex(state.docCount, state.nodeDocStride);
+             IndexWriter writer = new IndexWriter(directory, new IndexWriterConfig(new StandardAnalyzer()))) {
+
+            int nextDocId = 1;
+            while (nextDocId <= state.docCount) {
+                final int maxClausesPerBatch = boundedBatchSize(state.batchSize);
+                final List<BytesRef> docIds = new ArrayList<>(maxClausesPerBatch);
+                int clauses = 0;
+                while (nextDocId <= state.docCount && clauses < maxClausesPerBatch) {
+                    docIds.add(new BytesRef(Integer.toString(nextDocId++)));
+                    clauses++;
+                }
+                final Query termInSet = new TermInSetQuery(FIELD_DOC_ID_KEYWORD, docIds);
+                writer.deleteDocuments(nodeScopedDeleteQuery(termInSet));
+            }
+            writer.commit();
+            return assertNamedFieldSurvivors(directory, state.docCount);
+        }
+    }
+
     private static Query nodeScopedDeleteQuery(final Query docIdQuery) {
         return new BooleanQuery.Builder()
                 .add(docIdQuery, BooleanClause.Occur.MUST)
                 .add(NODE_EXISTS_QUERY, BooleanClause.Occur.MUST)
                 .build();
+    }
+
+    private static int boundedBatchSize(final int requestedBatchSize) {
+        return Math.max(1, Math.min(requestedBatchSize, IndexSearcher.getMaxClauseCount()));
     }
 
     private static Directory buildIndex(final int docCount, final int nodeDocStride) throws IOException {
@@ -161,6 +215,7 @@ public class ReindexDeleteStrategyBenchmark {
     private static Document nodeDocument(final int docId) {
         final Document doc = new Document();
         doc.add(new IntField(FIELD_DOC_ID, docId, Field.Store.NO));
+        doc.add(new StringField(FIELD_DOC_ID_KEYWORD, Integer.toString(docId), Field.Store.NO));
         doc.add(new StringField(FIELD_INDEXED, "node", Field.Store.NO));
         doc.add(new SortedDocValuesField(LuceneUtil.FIELD_NODE_ID_DV, new BytesRef("n-" + docId)));
         return doc;
@@ -169,6 +224,7 @@ public class ReindexDeleteStrategyBenchmark {
     private static Document namedFieldDocument(final int docId) {
         final Document doc = new Document();
         doc.add(new IntField(FIELD_DOC_ID, docId, Field.Store.NO));
+        doc.add(new StringField(FIELD_DOC_ID_KEYWORD, Integer.toString(docId), Field.Store.NO));
         doc.add(new StringField(FIELD_INDEXED, "named", Field.Store.NO));
         doc.add(new StoredField("foo-field", "Foobar index data"));
         return doc;
