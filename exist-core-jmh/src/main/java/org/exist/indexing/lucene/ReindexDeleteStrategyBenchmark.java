@@ -84,7 +84,7 @@ public class ReindexDeleteStrategyBenchmark {
                 writer.deleteDocuments(nodeScopedDeleteQuery(docIdQuery));
             }
             writer.commit();
-            return remainingNamedFieldDocs(directory);
+            return assertNamedFieldSurvivors(directory, state.docCount);
         }
     }
 
@@ -105,7 +105,7 @@ public class ReindexDeleteStrategyBenchmark {
                 writer.deleteDocuments(nodeScopedDeleteQuery(batchedDocIdQuery.build()));
             }
             writer.commit();
-            return remainingNamedFieldDocs(directory);
+            return assertNamedFieldSurvivors(directory, state.docCount);
         }
     }
 
@@ -144,10 +144,16 @@ public class ReindexDeleteStrategyBenchmark {
         return doc;
     }
 
-    private static int remainingNamedFieldDocs(final Directory directory) throws IOException {
+    private static int assertNamedFieldSurvivors(final Directory directory, final int expectedNamedDocs) throws IOException {
         try (DirectoryReader reader = DirectoryReader.open(directory)) {
             final IndexSearcher searcher = new IndexSearcher(reader);
-            return searcher.count(new TermQuery(new Term(FIELD_INDEXED, "named")));
+            final int named = searcher.count(new TermQuery(new Term(FIELD_INDEXED, "named")));
+            if (named != expectedNamedDocs) {
+                throw new IllegalStateException(
+                        "Expected " + expectedNamedDocs + " named-field docs after deletion, but found " + named
+                );
+            }
+            return named;
         }
     }
 }
