@@ -73,11 +73,14 @@ public class ReindexDeleteStrategyBenchmark {
     public static class BenchmarkState {
         @Param({"1000", "5000"})
         public int docCount;
+
+        @Param({"1", "10"})
+        public int nodeDocStride;
     }
 
     @Benchmark
     public int deletePerDoc(final BenchmarkState state) throws IOException {
-        try (Directory directory = buildIndex(state.docCount);
+        try (Directory directory = buildIndex(state.docCount, state.nodeDocStride);
              IndexWriter writer = new IndexWriter(directory, new IndexWriterConfig(new StandardAnalyzer()))) {
             for (int docId = 1; docId <= state.docCount; docId++) {
                 final Query docIdQuery = IntField.newExactQuery(FIELD_DOC_ID, docId);
@@ -90,7 +93,7 @@ public class ReindexDeleteStrategyBenchmark {
 
     @Benchmark
     public int deleteInBatches(final BenchmarkState state) throws IOException {
-        try (Directory directory = buildIndex(state.docCount);
+        try (Directory directory = buildIndex(state.docCount, state.nodeDocStride);
              IndexWriter writer = new IndexWriter(directory, new IndexWriterConfig(new StandardAnalyzer()))) {
 
             int nextDocId = 1;
@@ -109,6 +112,31 @@ public class ReindexDeleteStrategyBenchmark {
         }
     }
 
+    @Benchmark
+    public int deleteInBatchesWithNoopCheck(final BenchmarkState state) throws IOException {
+        try (Directory directory = buildIndex(state.docCount, state.nodeDocStride);
+             DirectoryReader preCheckReader = DirectoryReader.open(directory);
+             IndexWriter writer = new IndexWriter(directory, new IndexWriterConfig(new StandardAnalyzer()))) {
+            final IndexSearcher preCheckSearcher = new IndexSearcher(preCheckReader);
+            int nextDocId = 1;
+            while (nextDocId <= state.docCount) {
+                final BooleanQuery.Builder batchedDocIdQuery = new BooleanQuery.Builder();
+                int clauses = 0;
+                final int maxClausesPerBatch = Math.min(DELETE_BATCH_SIZE, IndexSearcher.getMaxClauseCount());
+                while (nextDocId <= state.docCount && clauses < maxClausesPerBatch) {
+                    batchedDocIdQuery.add(IntField.newExactQuery(FIELD_DOC_ID, nextDocId++), BooleanClause.Occur.SHOULD);
+                    clauses++;
+                }
+                final Query deleteQuery = nodeScopedDeleteQuery(batchedDocIdQuery.build());
+                if (preCheckSearcher.count(deleteQuery) > 0) {
+                    writer.deleteDocuments(deleteQuery);
+                }
+            }
+            writer.commit();
+            return assertNamedFieldSurvivors(directory, state.docCount);
+        }
+    }
+
     private static Query nodeScopedDeleteQuery(final Query docIdQuery) {
         return new BooleanQuery.Builder()
                 .add(docIdQuery, BooleanClause.Occur.MUST)
@@ -116,11 +144,13 @@ public class ReindexDeleteStrategyBenchmark {
                 .build();
     }
 
-    private static Directory buildIndex(final int docCount) throws IOException {
+    private static Directory buildIndex(final int docCount, final int nodeDocStride) throws IOException {
         final Directory directory = new ByteBuffersDirectory();
         try (IndexWriter writer = new IndexWriter(directory, new IndexWriterConfig(new StandardAnalyzer()))) {
             for (int docId = 1; docId <= docCount; docId++) {
-                writer.addDocument(nodeDocument(docId));
+                if (docId % nodeDocStride == 0) {
+                    writer.addDocument(nodeDocument(docId));
+                }
                 writer.addDocument(namedFieldDocument(docId));
             }
             writer.commit();
