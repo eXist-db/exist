@@ -74,20 +74,19 @@ public class RangeFieldEqWhereClauseBenchmark {
             "HAMLET", "OPHELIA", "KING CLAUDIUS", "POLONIUS", "HORATIO"
     };
 
-    private static final String DECLARE_RANGE =
-            "declare namespace range=\"http://exist-db.org/xquery/range\";\n";
-
     private static final String COLLECTION_PATH =
             TestConstants.TEST_COLLECTION_URI.toString();
 
-    private static final String QUERY_LITERAL =
-            DECLARE_RANGE
-            + "count(range:field-eq('speaker', 'HAMLET'))";
+    private static final String QUERY_LITERAL = """
+            declare namespace range="http://exist-db.org/xquery/range";
+            count(range:field-eq('speaker', 'HAMLET'))
+            """;
 
-    private static final String QUERY_LET_VAR =
-            DECLARE_RANGE
-            + "let $q := 'HAMLET'\n"
-            + "return count(range:field-eq('speaker', $q))";
+    private static final String QUERY_LET_VAR = """
+            declare namespace range="http://exist-db.org/xquery/range";
+            let $q := 'HAMLET'
+            return count(range:field-eq('speaker', $q))
+            """;
 
     @Param({"5", "50", "100"})
     public int termCount;
@@ -142,15 +141,17 @@ public class RangeFieldEqWhereClauseBenchmark {
         xquery = pool.getXQueryService();
 
         final String terms = NgramWhereClauseBenchmark.buildTermSequence(BASE_TERMS, termCount);
-        queryForVarPredicate =
-                DECLARE_RANGE
-                + "for $q in " + terms + "\n"
-                + "return count(range:field-eq('speaker', $q))";
-        queryForVarWhere =
-                DECLARE_RANGE
-                + "for $q in " + terms + "\n"
-                + "where range:field-eq('speaker', $q)\n"
-                + "return $q";
+        queryForVarPredicate = """
+                declare namespace range="http://exist-db.org/xquery/range";
+                for $q in %s
+                return count(range:field-eq('speaker', $q))
+                """.formatted(terms);
+        queryForVarWhere = """
+                declare namespace range="http://exist-db.org/xquery/range";
+                for $q in %s
+                where range:field-eq('speaker', $q)
+                return $q
+                """.formatted(terms);
 
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             final Sequence result = xquery.execute(broker, QUERY_LITERAL, null);

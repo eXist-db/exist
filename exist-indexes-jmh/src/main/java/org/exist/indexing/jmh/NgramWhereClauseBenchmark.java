@@ -83,22 +83,19 @@ public class NgramWhereClauseBenchmark {
             "Denmark", "England", "Norway", "Polonius", "France"
     };
 
-    private static final String DECLARE_NGRAM =
-            "declare namespace ngram=\"http://exist-db.org/xquery/ngram\";\n";
-
     private static final String COLLECTION_PATH =
             TestConstants.TEST_COLLECTION_URI.toString();
 
-    private static final String QUERY_LITERAL =
-            DECLARE_NGRAM
-            + "count(collection('" + COLLECTION_PATH + "')//LINE"
-            + "[ngram:contains(., 'Denmark')])";
+    private static final String QUERY_LITERAL = """
+            declare namespace ngram="http://exist-db.org/xquery/ngram";
+            count(collection('%s')//LINE[ngram:contains(., 'Denmark')])
+            """.formatted(COLLECTION_PATH);
 
-    private static final String QUERY_LET_VAR =
-            DECLARE_NGRAM
-            + "let $q := 'Denmark'\n"
-            + "return count(collection('" + COLLECTION_PATH + "')//LINE"
-            + "[ngram:contains(., $q)])";
+    private static final String QUERY_LET_VAR = """
+            declare namespace ngram="http://exist-db.org/xquery/ngram";
+            let $q := 'Denmark'
+            return count(collection('%s')//LINE[ngram:contains(., $q)])
+            """.formatted(COLLECTION_PATH);
 
     @Param({"5", "50", "100"})
     public int termCount;
@@ -165,17 +162,17 @@ public class NgramWhereClauseBenchmark {
         xquery = pool.getXQueryService();
 
         final String terms = buildTermSequence(BASE_TERMS, termCount);
-        queryForVarPredicate =
-                DECLARE_NGRAM
-                + "for $q in " + terms + "\n"
-                + "return count(collection('" + COLLECTION_PATH + "')//LINE"
-                + "[ngram:contains(., $q)])";
-        queryForVarWhere =
-                DECLARE_NGRAM
-                + "for $q in " + terms + "\n"
-                + "where collection('" + COLLECTION_PATH + "')//LINE"
-                + "[ngram:contains(., $q)]\n"
-                + "return $q";
+        queryForVarPredicate = """
+                declare namespace ngram="http://exist-db.org/xquery/ngram";
+                for $q in %s
+                return count(collection('%s')//LINE[ngram:contains(., $q)])
+                """.formatted(terms, COLLECTION_PATH);
+        queryForVarWhere = """
+                declare namespace ngram="http://exist-db.org/xquery/ngram";
+                for $q in %s
+                where collection('%s')//LINE[ngram:contains(., $q)]
+                return $q
+                """.formatted(terms, COLLECTION_PATH);
 
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             final Sequence result = xquery.execute(broker, QUERY_LITERAL, null);

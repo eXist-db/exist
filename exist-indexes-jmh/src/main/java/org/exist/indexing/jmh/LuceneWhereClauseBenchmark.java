@@ -72,20 +72,19 @@ public class LuceneWhereClauseBenchmark {
             "Denmark", "England", "Norway", "Polonius", "France"
     };
 
-    private static final String DECLARE_FT =
-            "declare namespace ft=\"http://exist-db.org/xquery/lucene\";\n";
-
     private static final String COLLECTION_PATH =
             TestConstants.TEST_COLLECTION_URI.toString();
 
-    private static final String QUERY_LITERAL =
-            DECLARE_FT
-            + "count(ft:query(collection('" + COLLECTION_PATH + "')//LINE, 'Denmark'))";
+    private static final String QUERY_LITERAL = """
+            declare namespace ft="http://exist-db.org/xquery/lucene";
+            count(ft:query(collection('%s')//LINE, 'Denmark'))
+            """.formatted(COLLECTION_PATH);
 
-    private static final String QUERY_LET_VAR =
-            DECLARE_FT
-            + "let $q := 'Denmark'\n"
-            + "return count(ft:query(collection('" + COLLECTION_PATH + "')//LINE, $q))";
+    private static final String QUERY_LET_VAR = """
+            declare namespace ft="http://exist-db.org/xquery/lucene";
+            let $q := 'Denmark'
+            return count(ft:query(collection('%s')//LINE, $q))
+            """.formatted(COLLECTION_PATH);
 
     @Param({"5", "50", "100"})
     public int termCount;
@@ -140,15 +139,17 @@ public class LuceneWhereClauseBenchmark {
         xquery = pool.getXQueryService();
 
         final String terms = NgramWhereClauseBenchmark.buildTermSequence(BASE_TERMS, termCount);
-        queryForVarPredicate =
-                DECLARE_FT
-                + "for $q in " + terms + "\n"
-                + "return count(ft:query(collection('" + COLLECTION_PATH + "')//LINE, $q))";
-        queryForVarWhere =
-                DECLARE_FT
-                + "for $q in " + terms + "\n"
-                + "where ft:query(collection('" + COLLECTION_PATH + "')//LINE, $q)\n"
-                + "return $q";
+        queryForVarPredicate = """
+                declare namespace ft="http://exist-db.org/xquery/lucene";
+                for $q in %s
+                return count(ft:query(collection('%s')//LINE, $q))
+                """.formatted(terms, COLLECTION_PATH);
+        queryForVarWhere = """
+                declare namespace ft="http://exist-db.org/xquery/lucene";
+                for $q in %s
+                where ft:query(collection('%s')//LINE, $q)
+                return $q
+                """.formatted(terms, COLLECTION_PATH);
 
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             final Sequence result = xquery.execute(broker, QUERY_LITERAL, null);
