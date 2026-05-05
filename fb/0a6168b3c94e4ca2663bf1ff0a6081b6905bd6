@@ -1,0 +1,25 @@
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndexWorker.java
+  dd267fc11decf911 1185-1190,1194-1195
+extensions/indexes/lucene/src/test/xquery/lucene/ft-edge.xqm
+  dd267fc11decf911 161
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "fb0a6168b3c94e4ca2663bf1ff0a6081b6905bd6",
+  "prompts": {
+    "dd267fc11decf911": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "222995ee-f2ce-4d67-b374-4d42062b29ea",
+        "model": "default"
+      },
+      "human_author": "duncdrum",
+      "messages": [],
+      "total_additions": 23,
+      "total_deletions": 20,
+      "accepted_lines": 11,
+      "overriden_lines": 0
+    }
+  }
+}
