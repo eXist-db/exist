@@ -522,8 +522,10 @@
 
         <modules>
 
-            <!-- Module under test! -->
+            <!-- Modules under test -->
             <module id="ngram-index" file="ngram.dbx" n="3" class="org.exist.indexing.ngram.NGramIndex"/>
+            <module id="lucene-index" buffer="32" class="org.exist.indexing.lucene.LuceneIndex"/>
+            <module id="range-index" class="org.exist.indexing.range.RangeIndex"/>
 
         </modules>
 
@@ -889,6 +891,8 @@
 
             <!-- Module under test! -->
             <module uri="http://exist-db.org/xquery/ngram"  class="org.exist.xquery.modules.ngram.NGramModule" />
+            <module uri="http://exist-db.org/xquery/range"  class="org.exist.xquery.modules.range.RangeIndexModule" />
+            <module uri="http://exist-db.org/xquery/lucene" class="org.exist.xquery.modules.lucene.LuceneModule" />
 
             <!-- dependencies needed for tests -->
             <module uri="http://exist-db.org/xquery/securitymanager" class="org.exist.xquery.functions.securitymanager.SecurityManagerModule"/>

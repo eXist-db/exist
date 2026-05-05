@@ -26,5 +26,14 @@
     <index>
         <ngram qname="LINE"/>
         <ngram qname="SPEAKER"/>
+        <lucene>
+            <text qname="LINE"/>
+        </lucene>
+        <range>
+            <create qname="SPEAKER" type="xs:string"/>
+            <create qname="SPEECH">
+                <field name="speaker" match="SPEAKER" type="xs:string"/>
+            </create>
+        </range>
     </index>
 </collection>
