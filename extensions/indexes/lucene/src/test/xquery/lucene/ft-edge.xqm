@@ -58,6 +58,7 @@ declare variable $fte:COLL_EMPTY := "lucene-test-ft-edge-empty";
 declare variable $fte:COLL_NO_INDEX := "lucene-test-ft-edge-no-index";
 declare variable $fte:COLL_EMPTY_INDEX := "lucene-test-ft-edge-empty-index";
 declare variable $fte:COLL_GET_FIELD := "lucene-test-ft-edge-get-field";
+declare variable $fte:COLL_984 := "lucene-test-ft-edge-984";
 
 (:~ #2312: Lucene configured text qname + indexed field retrieval. :)
 declare variable $fte:XCONF_GET_FIELD as element(collection) :=
@@ -81,6 +82,32 @@ declare variable $fte:DATA_WITHOUT_FOO as document-node() := document {
 
 declare variable $fte:INDEXED_FIELD as element(doc) :=
     <doc><field name="foo-field" store="yes">Foobar index data</field></doc>;
+
+declare variable $fte:XCONF_984_BROAD as element(collection) :=
+    <collection xmlns="http://exist-db.org/collection-config/1.0">
+        <index xmlns:xs="http://www.w3.org/2001/XMLSchema">
+            <lucene>
+                <text qname="a"/>
+                <text qname="b"/>
+            </lucene>
+        </index>
+    </collection>;
+
+declare variable $fte:XCONF_984_NARROW as element(collection) :=
+    <collection xmlns="http://exist-db.org/collection-config/1.0">
+        <index xmlns:xs="http://www.w3.org/2001/XMLSchema">
+            <lucene>
+                <text qname="b"/>
+            </lucene>
+        </index>
+    </collection>;
+
+declare variable $fte:DATA_984 as document-node() := document {
+    <root>
+        <a>oldterm</a>
+        <b>newterm</b>
+    </root>
+};
 
 declare
     %private
@@ -112,6 +139,10 @@ function fte:setUp() {
       xmldb:store("/db/system/config/db/" || $fte:COLL_GET_FIELD, "collection.xconf", $fte:XCONF_GET_FIELD),
       xmldb:store("/db/" || $fte:COLL_GET_FIELD, "with-foo.xml", $fte:DATA_WITH_FOO),
       xmldb:store("/db/" || $fte:COLL_GET_FIELD, "without-foo.xml", $fte:DATA_WITHOUT_FOO),
+      xmldb:create-collection("/db", $fte:COLL_984),
+      xmldb:create-collection("/db/system/config/db", $fte:COLL_984),
+      xmldb:store("/db/system/config/db/" || $fte:COLL_984, "collection.xconf", $fte:XCONF_984_BROAD),
+      xmldb:store("/db/" || $fte:COLL_984, "test.xml", $fte:DATA_984),
       ft:index("/db/" || $fte:COLL_GET_FIELD || "/with-foo.xml", $fte:INDEXED_FIELD),
       ft:index("/db/" || $fte:COLL_GET_FIELD || "/without-foo.xml", $fte:INDEXED_FIELD) )
 };
@@ -126,7 +157,9 @@ function fte:tearDown() {
       xmldb:remove("/db/" || $fte:COLL_EMPTY_INDEX),
       xmldb:remove("/db/system/config/db/" || $fte:COLL_EMPTY_INDEX),
       xmldb:remove("/db/" || $fte:COLL_GET_FIELD),
-      xmldb:remove("/db/system/config/db/" || $fte:COLL_GET_FIELD) )
+      xmldb:remove("/db/system/config/db/" || $fte:COLL_GET_FIELD),
+      xmldb:remove("/db/" || $fte:COLL_984),
+      xmldb:remove("/db/system/config/db/" || $fte:COLL_984) )
 };
 
 (:~
@@ -244,4 +277,28 @@ function fte:reindex-collection-preserves-get-field-control-without-configured-e
     let $_ := fte:seed-get-field-indexes()
     let $_ := xmldb:reindex("/db/" || $fte:COLL_GET_FIELD)
     return ft:get-field("/db/" || $fte:COLL_GET_FIELD || "/without-foo.xml", "foo-field")
+};
+
+(:~
+ : #984 reproducer: after narrowing index config and reindexing, prior broad-only terms should be removed.
+ : @see https://github.com/eXist-db/exist/issues/984
+ :)
+declare
+    %test:assertEquals(0)
+function fte:reindex-config-narrowing-removes-stale-terms() {
+    let $_ := xmldb:store("/db/system/config/db/" || $fte:COLL_984, "collection.xconf", $fte:XCONF_984_NARROW)
+    let $_ := xmldb:reindex("/db/" || $fte:COLL_984)
+    return count(collection("/db/" || $fte:COLL_984)//a[ft:query(., "oldterm")])
+};
+
+(:~
+ : #984 control: terms still covered by narrowed config remain searchable after reindex.
+ : @see https://github.com/eXist-db/exist/issues/984
+ :)
+declare
+    %test:assertEquals(1)
+function fte:reindex-config-narrowing-keeps-valid-terms() {
+    let $_ := xmldb:store("/db/system/config/db/" || $fte:COLL_984, "collection.xconf", $fte:XCONF_984_NARROW)
+    let $_ := xmldb:reindex("/db/" || $fte:COLL_984)
+    return count(collection("/db/" || $fte:COLL_984)//b[ft:query(., "newterm")])
 };
