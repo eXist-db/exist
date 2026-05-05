@@ -27,6 +27,7 @@ xquery version "3.1";
  : Merges:
  : - GitHub #4835 (multi-match util:expand on nested p elements)
  : - GitHub #4584 (util:expand across spanning text nodes/inline elements)
+ : - GitHub #2170 (util:expand duplicate content fragments)
  :)
 module namespace ueh="http://exist-db.org/xquery/lucene/util-expand-highlight/test";
 
@@ -106,6 +107,27 @@ declare variable $ueh:XCONF-4584 :=
 
 declare variable $ueh:COLL_4584 := "/db/lucene-test-util-expand-highlight-4584";
 
+(: #2170 -------------------------------------------------------------- :)
+
+declare variable $ueh:XML-2170 := document {
+    <test>
+        <p>Colorless green ideas sleep furiously. They sleep a furiously ideal green sleep.</p>
+        <p>Furiously sleep ideas green colorless. They greenly sleep a furiously ideal sleep.</p>
+    </test>
+};
+
+declare variable $ueh:XCONF-2170 :=
+    <collection xmlns="http://exist-db.org/collection-config/1.0">
+        <index xmlns:xs="http://www.w3.org/2001/XMLSchema">
+            <fulltext default="none" attributes="no"/>
+            <lucene>
+                <text qname="p"/>
+            </lucene>
+        </index>
+    </collection>;
+
+declare variable $ueh:COLL_2170 := "/db/lucene-test-util-expand-highlight-2170";
+
 (: shared setUp/tearDown ------------------------------------------------ :)
 
 declare
@@ -124,7 +146,13 @@ function ueh:setup() {
         xmldb:create-collection("/db/system/config/db", "lucene-test-util-expand-highlight-4584"),
         xmldb:store($ueh:COLL_4584, "test.xml", $ueh:XML-4584),
         xmldb:store("/db/system/config/db/lucene-test-util-expand-highlight-4584", "collection.xconf", $ueh:XCONF-4584),
-        xmldb:reindex($ueh:COLL_4584)
+        xmldb:reindex($ueh:COLL_4584),
+
+        xmldb:create-collection("/db", "lucene-test-util-expand-highlight-2170"),
+        xmldb:create-collection("/db/system/config/db", "lucene-test-util-expand-highlight-2170"),
+        xmldb:store($ueh:COLL_2170, "test.xml", $ueh:XML-2170),
+        xmldb:store("/db/system/config/db/lucene-test-util-expand-highlight-2170", "collection.xconf", $ueh:XCONF-2170),
+        xmldb:reindex($ueh:COLL_2170)
     )
 };
 
@@ -135,7 +163,9 @@ function ueh:tearDown() {
         xmldb:remove($ueh:COLL_4835),
         xmldb:remove("/db/system/config/db/lucene-test-util-expand-highlight-4835"),
         xmldb:remove($ueh:COLL_4584),
-        xmldb:remove("/db/system/config/db/lucene-test-util-expand-highlight-4584")
+        xmldb:remove("/db/system/config/db/lucene-test-util-expand-highlight-4584"),
+        xmldb:remove($ueh:COLL_2170),
+        xmldb:remove("/db/system/config/db/lucene-test-util-expand-highlight-2170")
     )
 };
 
@@ -215,5 +245,59 @@ declare
     %test:assertEquals("rose")
 function ueh:issue4584-expand-rose-full-match() {
     ueh:issue4584-expand-match("rose")
+};
+
+(: #2170 tests ---------------------------------------------------------- :)
+
+declare %private function ueh:issue2170-doc() as document-node() {
+    doc($ueh:COLL_2170 || "/test.xml")
+};
+
+declare %private function ueh:issue2170-query1-expanded() as element(test) {
+    util:expand(ueh:issue2170-doc()//p[ft:query(., "sleep")]/ancestor::test)
+};
+
+declare %private function ueh:issue2170-query2-expanded() as element(test) {
+    util:expand(ueh:issue2170-doc()//test[.//p[ft:query(., "sleep")]])
+};
+
+(:~
+ : #2170: util:expand on ancestor selection should wrap exactly 6 matches.
+ : @see https://github.com/eXist-db/exist/issues/2170
+ :)
+declare
+    %test:assertEquals(6)
+function ueh:issue2170-query1-match-count() {
+    count(ueh:issue2170-query1-expanded()//exist:match)
+};
+
+(:~
+ : #2170: util:expand on direct test selection should wrap exactly 6 matches.
+ : @see https://github.com/eXist-db/exist/issues/2170
+ :)
+declare
+    %test:assertEquals(6)
+function ueh:issue2170-query2-match-count() {
+    count(ueh:issue2170-query2-expanded()//exist:match)
+};
+
+(:~
+ : #2170: ensure the second paragraph is not duplicated by util:expand(query1 shape).
+ : @see https://github.com/eXist-db/exist/issues/2170
+ :)
+declare
+    %test:assertEquals(0)
+function ueh:issue2170-query1-no-duplicate-fragment() {
+    count(ueh:issue2170-query1-expanded()//p[contains(., "sleepsleep")])
+};
+
+(:~
+ : #2170: ensure the second paragraph is not duplicated by util:expand(query2 shape).
+ : @see https://github.com/eXist-db/exist/issues/2170
+ :)
+declare
+    %test:assertEquals(0)
+function ueh:issue2170-query2-no-duplicate-fragment() {
+    count(ueh:issue2170-query2-expanded()//p[contains(., "sleepsleep")])
 };
 
