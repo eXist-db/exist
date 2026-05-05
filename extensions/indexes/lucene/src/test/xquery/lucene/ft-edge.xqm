@@ -158,13 +158,10 @@ declare %test:assertEquals(0) function fte:query-empty-index-element-no-npe() {
 
 (:~
  : #2312 reproducer: when indexed document contains configured `<foo>`,
- : `ft:get-field` currently returns empty.
- :
- : Keep this test pending until the issue is fixed.
+ : `ft:get-field` should return the stored field value.
  : @see https://github.com/eXist-db/exist/issues/2312
  :)
 declare
-    %test:pending("Known bug tracked by issue #2312: ft:get-field returns empty when configured <foo> exists")
     %test:assertEquals("Foobar index data")
 function fte:get-field-with-configured-element() {
     ft:get-field("/db/" || $fte:COLL_GET_FIELD || "/with-foo.xml", "foo-field")

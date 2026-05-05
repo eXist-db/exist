@@ -1182,11 +1182,17 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         try {
             return index.withSearcher(searcher -> {
                 final Query docIdQuery = IntField.newExactQuery(FIELD_DOC_ID, docId);
-                final TopDocs topDocs = searcher.searcher().search(docIdQuery, 1);
+                final Query fieldExistsQuery = new FieldExistsQuery(field);
+                final Query query = new BooleanQuery.Builder()
+                        .add(docIdQuery, BooleanClause.Occur.MUST)
+                        .add(fieldExistsQuery, BooleanClause.Occur.MUST)
+                        .build();
+                final TopDocs topDocs = searcher.searcher().search(query, 1);
                 if (topDocs.totalHits.value() == 0) {
                     return null;
                 }
-                final Document doc = searcher.searcher().storedFields().document(topDocs.scoreDocs[0].doc);
+                final Set<String> fields = Collections.singleton(field);
+                final Document doc = searcher.searcher().storedFields().document(topDocs.scoreDocs[0].doc, fields);
                 return doc.get(field);
             });
         } catch (XPathException e) {
