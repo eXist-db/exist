@@ -132,6 +132,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     private Analyzer analyzer;
 
     public static final String FIELD_DOC_ID = "docId";
+    public static final String FIELD_DOC_ID_KEYWORD = "docIdKeyword";
     public static final String FIELD_DOC_URI = "docUri";
 
     private final StreamListener listener = new LuceneStreamListener();
@@ -454,7 +455,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             writer = index.getWriter();
             final boolean preserveNamedFieldEntries = reindex || broker.getIndexController().isReindexing();
             final int maxBatchClauses = resolveReindexDeleteBatchClauses();
-            BooleanQuery.Builder batchedDocIdQuery = preserveNamedFieldEntries ? new BooleanQuery.Builder() : null;
+            List<BytesRef> batchedDocIdTerms = preserveNamedFieldEntries ? new ArrayList<>(maxBatchClauses) : null;
             int batchedClauses = 0;
             int reindexDeleteBatchCount = 0;
             int reindexDeleteDocCount = 0;
@@ -462,13 +463,13 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 DocumentImpl doc = i.next();
                 final Query docIdQuery = IntField.newExactQuery(FIELD_DOC_ID, doc.getDocId());
                 if (preserveNamedFieldEntries) {
-                    batchedDocIdQuery.add(docIdQuery, BooleanClause.Occur.SHOULD);
+                    batchedDocIdTerms.add(new BytesRef(Integer.toString(doc.getDocId())));
                     batchedClauses++;
                     reindexDeleteDocCount++;
                     if (batchedClauses >= maxBatchClauses) {
-                        writer.deleteDocuments(nodeScopedDeleteQuery(batchedDocIdQuery.build()));
+                        writer.deleteDocuments(nodeScopedDeleteQuery(docIdKeywordBatchQuery(batchedDocIdTerms)));
                         reindexDeleteBatchCount++;
-                        batchedDocIdQuery = new BooleanQuery.Builder();
+                        batchedDocIdTerms = new ArrayList<>(maxBatchClauses);
                         batchedClauses = 0;
                     }
                 } else {
@@ -476,7 +477,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 }
             }
             if (preserveNamedFieldEntries && batchedClauses > 0) {
-                writer.deleteDocuments(nodeScopedDeleteQuery(batchedDocIdQuery.build()));
+                writer.deleteDocuments(nodeScopedDeleteQuery(docIdKeywordBatchQuery(batchedDocIdTerms)));
                 reindexDeleteBatchCount++;
             }
             if (preserveNamedFieldEntries && LOG.isDebugEnabled()) {
@@ -515,6 +516,10 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 .add(docIdQuery, BooleanClause.Occur.MUST)
                 .add(new FieldExistsQuery(LuceneUtil.FIELD_NODE_ID_DV), BooleanClause.Occur.MUST)
                 .build();
+    }
+
+    private static Query docIdKeywordBatchQuery(final List<BytesRef> docIdTerms) {
+        return new TermInSetQuery(FIELD_DOC_ID_KEYWORD, docIdTerms);
     }
 
     private static int resolveReindexDeleteBatchClauses() {
@@ -1052,6 +1057,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             // Set DocId. IntField (Points) for querying; SortedNumericDocValuesField for collectors (Lucene 10 consistency).
             final IntField fDocIdIdx = new IntField(FIELD_DOC_ID, currentDoc.getDocId(), Field.Store.NO);
             pendingDoc.add(fDocIdIdx);
+            pendingDoc.add(new StringField(FIELD_DOC_ID_KEYWORD, Integer.toString(currentDoc.getDocId()), Field.Store.NO));
             pendingDoc.add(new SortedNumericDocValuesField(FIELD_DOC_ID, currentDoc.getDocId()));
             pendingDoc.add(new FloatDocValuesField(LuceneUtil.FIELD_BOOST, 1.0f));
 
@@ -2067,6 +2073,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 doc.add(new StringField(LuceneUtil.FIELD_INDEX_TYPE, contentField, Field.Store.NO));
 
                 doc.add(new IntField(FIELD_DOC_ID, currentDoc.getDocId(), Field.Store.NO));
+                doc.add(new StringField(FIELD_DOC_ID_KEYWORD, Integer.toString(currentDoc.getDocId()), Field.Store.NO));
                 doc.add(new SortedNumericDocValuesField(FIELD_DOC_ID, currentDoc.getDocId()));
                 doc.add(new StoredField(FIELD_DOC_ID, currentDoc.getDocId()));
 
