@@ -110,7 +110,7 @@ public class LocalIndexQueryService extends AbstractLocalService implements Inde
         withDb((broker, transaction) -> {
             try (final LockedDocument lockedDoc = broker.getXMLResource(collectionPath.append(docName), LockMode.READ_LOCK)) {
                 if (lockedDoc != null) {
-                    broker.reindexXMLResource(transaction, lockedDoc.getDocument(), DBBroker.IndexMode.STORE, scope);
+                    broker.reindexXMLResource(transaction, lockedDoc.getDocument(), DBBroker.IndexMode.REINDEX, scope);
                     broker.sync(Sync.MAJOR);
                 }
                 return null;

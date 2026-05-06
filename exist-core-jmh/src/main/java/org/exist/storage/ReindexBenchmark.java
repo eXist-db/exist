@@ -55,6 +55,7 @@ import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -66,16 +67,31 @@ import java.util.concurrent.TimeUnit;
  * DOM BTree and structural/value index rebuilds, only touching custom
  * extension indexes (Lucene, range, etc.).</p>
  *
- * <p>After every invocation a correctness guard runs {@code ft:query} and
- * an XPath count to verify the indexes still work — preventing "fast but
- * wrong" results.</p>
+ * <p>After every invocation a correctness guard runs XPath-based checks to
+ * verify the indexed content still matches expected document counts —
+ * preventing "fast but wrong" results.</p>
  *
- * <h3>Build &amp; run (from project root)</h3>
+ * <h2>Build &amp; run (from project root)</h2>
  * <pre>{@code
  * mvn install -pl exist-core-jmh -am -DskipTests \
  *     -Ddependency-check.skip=true -Ddocker=false
  * java -jar exist-core-jmh/target/exist-core-jmh-7.0.0-SNAPSHOT-benchmarks.jar \
  *     ReindexBenchmark -f 1 -wi 3 -i 5
+ * }</pre>
+ *
+ * <h2>Common variants</h2>
+ * <pre>{@code
+ * # Default correctness checks enabled (CI-friendly baseline)
+ * java -jar exist-core-jmh/target/exist-core-jmh-7.0.0-SNAPSHOT-benchmarks.jar \
+ *     ReindexBenchmark -f 1 -wi 3 -i 5 -p verificationMode=STRICT
+ *
+ * # Throughput-only run (skip verification checks)
+ * java -jar exist-core-jmh/target/exist-core-jmh-7.0.0-SNAPSHOT-benchmarks.jar \
+ *     ReindexBenchmark -f 1 -wi 3 -i 5 -p verificationMode=SKIP
+ *
+ * # Smaller data volume for smoke checks
+ * java -jar exist-core-jmh/target/exist-core-jmh-7.0.0-SNAPSHOT-benchmarks.jar \
+ *     ReindexBenchmark -f 1 -wi 1 -i 2 -p docCount=100 -p verificationMode=STRICT
  * }</pre>
  *
  * <p>To compare old vs new behaviour, run the benchmark on a commit before
@@ -106,6 +122,9 @@ public class ReindexBenchmark {
     @Param({"100", "500", "1000"})
     int docCount;
 
+    @Param({"STRICT"})
+    String verificationMode;
+
     private ExistEmbeddedServer server;
     private BrokerPool pool;
 
@@ -113,7 +132,11 @@ public class ReindexBenchmark {
     public void setUp() throws EXistException, DatabaseConfigurationException, IOException,
             PermissionDeniedException, CollectionConfigurationException, LockException,
             SAXException, TriggerException {
-        server = new ExistEmbeddedServer(true, true);
+        final Properties configProperties = new Properties();
+        // Keep JMH forks clean: request immediate BrokerPool shutdown so Quartz
+        // workers do not linger past benchmark completion.
+        configProperties.setProperty("wait-before-shutdown", "0");
+        server = new ExistEmbeddedServer(configProperties, true, true);
         server.startDb();
         pool = server.getBrokerPool();
         storeDocuments();
@@ -145,10 +168,14 @@ public class ReindexBenchmark {
             broker.reindexCollection(tx, TEST_COLLECTION);
             transact.commit(tx);
         }
-        if (Boolean.getBoolean("exist.jmh.reindex.skipVerify")) {
+        if (!shouldVerify(verificationMode)) {
             return docCount;
         }
         return verifyIndex();
+    }
+
+    static boolean shouldVerify(final String verificationMode) {
+        return !"SKIP".equalsIgnoreCase(verificationMode);
     }
 
     private void storeDocuments() throws EXistException, PermissionDeniedException, IOException,
