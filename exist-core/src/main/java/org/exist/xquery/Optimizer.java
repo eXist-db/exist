@@ -157,6 +157,57 @@ public class Optimizer extends DefaultExpressionVisitor {
     }
 
     @Override
+    public void visitPathExpr(final PathExpr pathExpr) {
+        super.visitPathExpr(pathExpr);
+
+        // Unwrap parenthesised single-step expressions: `//(name)` -> `//name`,
+        // `$nodes/(child)` -> `$nodes/child`, etc. The parser produces a
+        // wrapping PathExpr for any parenthesised step expression without
+        // outer predicates. At runtime the engine treats such wrapped steps
+        // as generic expressions and materialises the descendant axis instead
+        // of using the structural index by qname. Lifting the inner
+        // LocationStep out of the wrapping PathExpr restores the optimised
+        // path and gets the same downstream optimiser treatment as the
+        // unparenthesised form.
+        //
+        // The wrapping PathExpr by definition has no predicates of its own
+        // (predicates would have produced a FilteredExpression, handled by
+        // visitFilteredExpr below) so the unwrap is semantics-preserving.
+        //
+        // Note: the union-of-steps case `//(A | B)` is a related but distinct
+        // shape and is not handled here -- distributing the parent path over
+        // the union branches requires rewriting the outer PathExpr's steps in
+        // bulk, which the current PathExpr API doesn't support cleanly. That
+        // case is tracked separately; for now users can write `//A | //B`.
+        boolean rewroteAny = true;
+        while (rewroteAny) {
+            rewroteAny = false;
+            for (int i = 0; i < pathExpr.getLength(); i++) {
+                final Expression step = pathExpr.getExpression(i);
+                // Exact class check: PathExpr has many semantically-loaded
+                // subclasses (UnaryExpr, BinaryOp, OpNumeric, ConcatExpr,
+                // EnclosedExpr, LogicalOp, RangeExpression, ...) that we must
+                // never unwrap. Only the parser's generic PathExpr-as-parens
+                // wrapper has class == PathExpr.class.
+                if (step.getClass() == PathExpr.class
+                        && step instanceof final PathExpr inner
+                        && inner.getLength() == 1
+                        && inner.getExpression(0) instanceof final LocationStep innerStep) {
+                    pathExpr.replace(inner, innerStep);
+                    innerStep.setParent(pathExpr);
+                    hasOptimized = true;
+                    // Re-visit the unwrapped step so it gets the same optimiser
+                    // treatment as if the user had written it without parens.
+                    visitLocationStep(innerStep);
+                    rewroteAny = true;
+                    // Restart the loop because the step at index i changed.
+                    break;
+                }
+            }
+        }
+    }
+
+    @Override
     public void visitFilteredExpr(final FilteredExpression filtered) {
         super.visitFilteredExpr(filtered);
 
