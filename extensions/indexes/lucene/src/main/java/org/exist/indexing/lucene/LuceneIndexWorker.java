@@ -455,38 +455,40 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             writer = index.getWriter();
             final boolean preserveNamedFieldEntries = reindex || broker.getIndexController().isReindexing();
             final int maxBatchClauses = resolveReindexDeleteBatchClauses();
-            List<BytesRef> batchedDocIdTerms = preserveNamedFieldEntries ? new ArrayList<>(maxBatchClauses) : null;
-            int batchedClauses = 0;
+            final long reindexDeleteStartNanos = preserveNamedFieldEntries ? System.nanoTime() : 0L;
+            // Reused across batches to keep transient allocations down on large collections.
+            final List<BytesRef> batchedDocIdTerms = preserveNamedFieldEntries ? new ArrayList<>(maxBatchClauses) : null;
             int reindexDeleteBatchCount = 0;
             int reindexDeleteDocCount = 0;
             for (Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
                 DocumentImpl doc = i.next();
-                final Query docIdQuery = IntField.newExactQuery(FIELD_DOC_ID, doc.getDocId());
                 if (preserveNamedFieldEntries) {
                     batchedDocIdTerms.add(new BytesRef(Integer.toString(doc.getDocId())));
-                    batchedClauses++;
                     reindexDeleteDocCount++;
-                    if (batchedClauses >= maxBatchClauses) {
-                        writer.deleteDocuments(nodeScopedDeleteQuery(docIdKeywordBatchQuery(batchedDocIdTerms)));
+                    if (batchedDocIdTerms.size() >= maxBatchClauses) {
+                        writer.deleteDocuments(reindexNodeDeleteQueryForDocIds(batchedDocIdTerms));
                         reindexDeleteBatchCount++;
-                        batchedDocIdTerms = new ArrayList<>(maxBatchClauses);
-                        batchedClauses = 0;
+                        batchedDocIdTerms.clear();
                     }
                 } else {
-                    writer.deleteDocuments(docIdQuery);
+                    writer.deleteDocuments(IntField.newExactQuery(FIELD_DOC_ID, doc.getDocId()));
                 }
             }
-            if (preserveNamedFieldEntries && batchedClauses > 0) {
-                writer.deleteDocuments(nodeScopedDeleteQuery(docIdKeywordBatchQuery(batchedDocIdTerms)));
+            final int trailingBatchSize = preserveNamedFieldEntries ? batchedDocIdTerms.size() : 0;
+            if (preserveNamedFieldEntries && trailingBatchSize > 0) {
+                writer.deleteDocuments(reindexNodeDeleteQueryForDocIds(batchedDocIdTerms));
                 reindexDeleteBatchCount++;
             }
             if (preserveNamedFieldEntries && LOG.isDebugEnabled()) {
+                final long elapsedMillis = (System.nanoTime() - reindexDeleteStartNanos) / 1_000_000L;
                 LOG.debug(
-                        "Reindex node-delete batching for {}: {} docs across {} batch query deletes (batch size limit {}).",
+                        "Reindex node-delete phase=removeCollection collection={} docsSeen={} batchDeletes={} effectiveBatchSize={} trailingBatchSize={} elapsedMs={}",
                         collection.getURI(),
                         reindexDeleteDocCount,
                         reindexDeleteBatchCount,
-                        maxBatchClauses
+                        maxBatchClauses,
+                        trailingBatchSize,
+                        elapsedMillis
                 );
             }
         } catch (IOException | PermissionDeniedException | LockException e) {
@@ -520,6 +522,15 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
 
     private static Query docIdKeywordBatchQuery(final List<BytesRef> docIdTerms) {
         return new TermInSetQuery(FIELD_DOC_ID_KEYWORD, docIdTerms);
+    }
+
+    /**
+     * Builds the reindex-aware delete query: keyword docId batch ANDed with the
+     * node-scope guard so named-field records survive xmldb:reindex. Package-private
+     * so the canary unit test can pin the query shape.
+     */
+    static Query reindexNodeDeleteQueryForDocIds(final List<BytesRef> docIdTerms) {
+        return nodeScopedDeleteQuery(docIdKeywordBatchQuery(docIdTerms));
     }
 
     private static int resolveReindexDeleteBatchClauses() {
