@@ -1,0 +1,27 @@
+extensions/indexes/lucene/src/test/xquery/lucene/util-expand-highlight.xqm
+  s_cc91f600c392c3::t_8e0da1df33f16f 31,130-132,134-138,140-142,145-150,152-154,157-163,188-200,213-217,353-356,358-362,364-367,377
+  s_cc91f600c392c3::t_1d2dec204ad27b 84,87,92,99,101-102,266,275,282
+  s_cc91f600c392c3::t_d772b2703328ee 133,139,143-144,151,155-156,357
+  s_cc91f600c392c3::t_97a6ad6ea12782 363,368-376,378-379
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.1",
+  "base_commit_sha": "89b0a4186c642b1c70f2f74f48d64ebf9d5d2305",
+  "prompts": {},
+  "humans": {
+    "h_ff0005bef58c9d": {
+      "author": "duncdrum <d.paterson@me.com>"
+    }
+  },
+  "sessions": {
+    "s_cc91f600c392c3": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "6b7256af-b6b2-47a4-bee2-1ae3ef59b841",
+        "model": "default"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
