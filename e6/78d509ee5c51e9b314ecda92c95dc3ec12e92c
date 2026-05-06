@@ -1,0 +1,19 @@
+exist-core/src/main/java/org/exist/storage/NativeBroker.java
+  s_cc91f600c392c3::t_e30ea5732e1af4 2061-2062,2107-2112,2136,2161-2165,2170
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.1",
+  "base_commit_sha": "e678d509ee5c51e9b314ecda92c95dc3ec12e92c",
+  "prompts": {},
+  "sessions": {
+    "s_cc91f600c392c3": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "6b7256af-b6b2-47a4-bee2-1ae3ef59b841",
+        "model": "default"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
