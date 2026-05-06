@@ -28,12 +28,12 @@ xquery version "3.1";
  : - GitHub #4835 (multi-match util:expand on nested p elements)
  : - GitHub #4584 (util:expand across spanning text nodes/inline elements)
  : - GitHub #2170 (util:expand duplicate content fragments)
+ : - GitHub #2755 (util:expand with query-field and analyzer-order config)
  :)
 module namespace ueh="http://exist-db.org/xquery/lucene/util-expand-highlight/test";
 
 declare namespace test="http://exist-db.org/xquery/xqsuite";
 declare namespace exist = "http://exist.sourceforge.net/NS/exist";
-declare namespace wwp = "http://www.wwp.northeastern.edu/ns/textbase";
 declare namespace xmldb = "http://exist-db.org/xquery/xmldb";
 declare namespace util = "http://exist-db.org/xquery/util";
 
@@ -81,26 +81,25 @@ declare variable $ueh:COLL_4835 := "/db/lucene-test-util-expand-highlight-4835";
 (: #4584 -------------------------------------------------------------- :)
 
 declare variable $ueh:XML-4584 :=
-    <div xmlns="http://www.wwp.northeastern.edu/ns/textbase" xml:lang="en">
+    <div xml:lang="en">
         <cit>
             <quote>
-                <p>In godlie <wwp:vuji>j</wwp:vuji>oy, but worldlie greefe.</p>
+                <p>In godlie <vuji>j</vuji>oy, but worldlie greefe.</p>
             </quote>
         </cit>
         <cit>
             <quote>
-                <p>he finally ro<wwp:vuji>s</wwp:vuji>e superior.</p>
+                <p>he finally ro<vuji>s</vuji>e superior.</p>
             </quote>
         </cit>
     </div>;
 
 declare variable $ueh:XCONF-4584 :=
     <collection xmlns="http://exist-db.org/collection-config/1.0">
-        <index xmlns:wwp="http://www.wwp.northeastern.edu/ns/textbase"
-               xmlns:xs="http://www.w3.org/2001/XMLSchema">
+        <index xmlns:xs="http://www.w3.org/2001/XMLSchema">
             <lucene>
-                <text qname="wwp:quote"/>
-                <inline qname="wwp:vuji"/>
+                <text qname="quote"/>
+                <inline qname="vuji"/>
             </lucene>
         </index>
     </collection>;
@@ -128,6 +127,40 @@ declare variable $ueh:XCONF-2170 :=
 
 declare variable $ueh:COLL_2170 := "/db/lucene-test-util-expand-highlight-2170";
 
+(: #2755 -------------------------------------------------------------- :)
+
+declare variable $ueh:XML-2755 :=
+    <test>
+        <phrase>All phenomena are devoid of independent existence</phrase>
+    </test>;
+
+declare variable $ueh:XCONF-2755-ORDERED :=
+    <collection xmlns="http://exist-db.org/collection-config/1.0">
+        <index>
+            <lucene>
+                <analyzer id="st" class="org.apache.lucene.analysis.standard.StandardAnalyzer"/>
+                <analyzer id="ws" class="org.apache.lucene.analysis.core.WhitespaceAnalyzer"/>
+                <text match="//phrase" analyzer="st" field="phrase-st"/>
+                <text match="//phrase" analyzer="ws" field="phrase-ws"/>
+            </lucene>
+        </index>
+    </collection>;
+
+declare variable $ueh:XCONF-2755-SWAPPED :=
+    <collection xmlns="http://exist-db.org/collection-config/1.0">
+        <index>
+            <lucene>
+                <analyzer id="st" class="org.apache.lucene.analysis.standard.StandardAnalyzer"/>
+                <analyzer id="ws" class="org.apache.lucene.analysis.core.WhitespaceAnalyzer"/>
+                <text match="//phrase" analyzer="ws" field="phrase-ws"/>
+                <text match="//phrase" analyzer="st" field="phrase-st"/>
+            </lucene>
+        </index>
+    </collection>;
+
+declare variable $ueh:COLL_2755_ORDERED := "/db/lucene-test-util-expand-highlight-2755-ordered";
+declare variable $ueh:COLL_2755_SWAPPED := "/db/lucene-test-util-expand-highlight-2755-swapped";
+
 (: shared setUp/tearDown ------------------------------------------------ :)
 
 declare
@@ -152,7 +185,19 @@ function ueh:setup() {
         xmldb:create-collection("/db/system/config/db", "lucene-test-util-expand-highlight-2170"),
         xmldb:store($ueh:COLL_2170, "test.xml", $ueh:XML-2170),
         xmldb:store("/db/system/config/db/lucene-test-util-expand-highlight-2170", "collection.xconf", $ueh:XCONF-2170),
-        xmldb:reindex($ueh:COLL_2170)
+        xmldb:reindex($ueh:COLL_2170),
+
+        xmldb:create-collection("/db", "lucene-test-util-expand-highlight-2755-ordered"),
+        xmldb:create-collection("/db/system/config/db", "lucene-test-util-expand-highlight-2755-ordered"),
+        xmldb:store($ueh:COLL_2755_ORDERED, "test.xml", $ueh:XML-2755),
+        xmldb:store("/db/system/config/db/lucene-test-util-expand-highlight-2755-ordered", "collection.xconf", $ueh:XCONF-2755-ORDERED),
+        xmldb:reindex($ueh:COLL_2755_ORDERED),
+
+        xmldb:create-collection("/db", "lucene-test-util-expand-highlight-2755-swapped"),
+        xmldb:create-collection("/db/system/config/db", "lucene-test-util-expand-highlight-2755-swapped"),
+        xmldb:store($ueh:COLL_2755_SWAPPED, "test.xml", $ueh:XML-2755),
+        xmldb:store("/db/system/config/db/lucene-test-util-expand-highlight-2755-swapped", "collection.xconf", $ueh:XCONF-2755-SWAPPED),
+        xmldb:reindex($ueh:COLL_2755_SWAPPED)
     )
 };
 
@@ -165,7 +210,11 @@ function ueh:tearDown() {
         xmldb:remove($ueh:COLL_4584),
         xmldb:remove("/db/system/config/db/lucene-test-util-expand-highlight-4584"),
         xmldb:remove($ueh:COLL_2170),
-        xmldb:remove("/db/system/config/db/lucene-test-util-expand-highlight-2170")
+        xmldb:remove("/db/system/config/db/lucene-test-util-expand-highlight-2170"),
+        xmldb:remove($ueh:COLL_2755_ORDERED),
+        xmldb:remove("/db/system/config/db/lucene-test-util-expand-highlight-2755-ordered"),
+        xmldb:remove($ueh:COLL_2755_SWAPPED),
+        xmldb:remove("/db/system/config/db/lucene-test-util-expand-highlight-2755-swapped")
     )
 };
 
@@ -214,7 +263,7 @@ function ueh:issue4835-two-in-one-matches-count() {
 
 declare %private function ueh:issue4584-expand-match($word as xs:string) as xs:string {
     string-join(
-        collection($ueh:COLL_4584)//wwp:quote[ft:query(., $word)]/util:expand(.)//exist:match/normalize-space(),
+        collection($ueh:COLL_4584)//quote[ft:query(., $word)]/util:expand(.)//exist:match/normalize-space(),
         ""
     )
 };
@@ -223,14 +272,14 @@ declare %private function ueh:issue4584-expand-match($word as xs:string) as xs:s
 declare
     %test:assertEquals(1)
 function ueh:issue4584-find-joy-count() {
-    count(collection($ueh:COLL_4584)//wwp:quote[ft:query(., "joy")])
+    count(collection($ueh:COLL_4584)//quote[ft:query(., "joy")])
 };
 
 (: Hit count: "rose" should be found once. :)
 declare
     %test:assertEquals(1)
 function ueh:issue4584-find-rose-count() {
-    count(collection($ueh:COLL_4584)//wwp:quote[ft:query(., "rose")])
+    count(collection($ueh:COLL_4584)//quote[ft:query(., "rose")])
 };
 
 (: util:expand for "joy": all portions wrapped. :)
@@ -299,5 +348,34 @@ declare
     %test:assertEquals(0)
 function ueh:issue2170-query2-no-duplicate-fragment() {
     count(ueh:issue2170-query2-expanded()//p[contains(., "sleepsleep")])
+};
+
+(: #2755 tests ---------------------------------------------------------- :)
+
+declare %private function ueh:issue2755-match-count($collection as xs:string) as xs:integer {
+    let $hits :=
+        collection($collection)//phrase[ft:query-field("phrase-ws", "of")]
+    let $expanded := util:expand($hits)
+    return count($expanded//exist:match)
+};
+
+(:~
+ : #2755: util:expand should preserve exist:match for analyzer order from issue report.
+ : @see https://github.com/eXist-db/exist/issues/2755
+ :)
+declare
+    %test:assertEquals(1)
+function ueh:issue2755-expand-has-match-ordered() {
+    ueh:issue2755-match-count($ueh:COLL_2755_ORDERED)
+};
+
+(:~
+ : #2755 control: swapping analyzer field declaration order should still preserve exist:match.
+ : @see https://github.com/eXist-db/exist/issues/2755
+ :)
+declare
+    %test:assertEquals(1)
+function ueh:issue2755-expand-has-match-swapped() {
+    ueh:issue2755-match-count($ueh:COLL_2755_SWAPPED)
 };
 
