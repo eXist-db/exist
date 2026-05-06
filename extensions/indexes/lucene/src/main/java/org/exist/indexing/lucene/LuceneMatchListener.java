@@ -272,9 +272,9 @@ public class LuceneMatchListener extends AbstractMatchListener {
 
         final String str = extractor.getText().toString();
         try (final Reader reader = new StringReader(str);
-                final TokenStream tokenStream = analyzer.tokenStream(null, reader)) {
-            tokenStream.reset();
-            final MarkableTokenFilter stream = new MarkableTokenFilter(tokenStream);
+             final TokenStream tokenStream = analyzer.tokenStream(null, reader);
+             final MarkableTokenFilter stream = new MarkableTokenFilter(tokenStream)) {
+            stream.reset();
             while (stream.incrementToken()) {
                 String text = stream.getAttribute(CharTermAttribute.class).toString();
                 final Query query = termMap.get(text);
