@@ -441,10 +441,13 @@ public class Lookup extends Function implements Optimizable, IndexUseReporter {
             }
 //            LOG.info("eval plain took " + (System.currentTimeMillis() - start));
         } else {
-//            long start = System.currentTimeMillis();
             contextStep.setPreloadedData(preselectResult.getDocumentSet(), preselectResult);
-            result = getArgument(0).eval(contextSequence, null).toNodeSet();
-            //LOG.info("eval took " + (System.currentTimeMillis() - start));
+            // Use effectiveContextSequence (the per-item context when contextItem is set) so
+            // BOOLEAN-mode per-item predicate evaluation actually checks the per-item node.
+            // With contextSequence (the full preloaded set), every per-item call returned the
+            // same non-empty NodeSet, silently dropping the value comparison from a for-bound
+            // variable: //x[@indexed = $v] over-returned by ~scale factor for each outer iter.
+            result = getArgument(0).eval(effectiveContextSequence, contextItem).toNodeSet();
         }
         return result;
     }
