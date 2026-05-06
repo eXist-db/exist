@@ -173,6 +173,7 @@ abstract class OrderedDurationValue extends DurationValue {
 
     private ComputableValue addDurationToDate(AbstractDateTimeValue date) throws XPathException {
         date.checkYearOverflow(date.calendar);
+        checkDateArithMagnitude(secondsValueSigned());
         final XMLGregorianCalendar gc = (XMLGregorianCalendar) date.calendar.clone();
         gc.add(duration);
         // For xs:time the year/month/day are FIELD_UNDEFINED; the legacy

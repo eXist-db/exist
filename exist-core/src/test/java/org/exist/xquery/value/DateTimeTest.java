@@ -24,13 +24,16 @@ package org.exist.xquery.value;
 import com.googlecode.junittoolbox.ParallelRunner;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Constants.Comparison;
+import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  *	note: some of these tests rely on local timezone override to -05:00, done in super.setUp()
@@ -425,5 +428,50 @@ public class DateTimeTest extends AbstractTimeRelatedTestCase {
 		final DurationValue d = new DayTimeDurationValue("P3DT1H15M");
 		final AbstractDateTimeValue r = new DateTimeValue("2000-10-27T09:57:00");
 		assertDateEquals(r, t.minus(d));
+	}
+
+	// Issue GH-5045: huge xs:dayTimeDuration values used to make
+	// XMLGregorianCalendar.add() iterate per-day, locking up CPU for hours.
+	// The pre-validation guard must reject them with FODT0001 fast.
+
+	@Test
+	public void plus_hugeDayTimeDuration_rejectsFast() throws XPathException {
+		final AbstractDateTimeValue t = new DateTimeValue("2026-05-05T12:00:00Z");
+		final DurationValue d = new DayTimeDurationValue("P1712073600000D");
+		final long start = System.nanoTime();
+		try {
+			t.plus(d);
+			fail("Expected FODT0001 for excessively large duration");
+		} catch (final XPathException ex) {
+			assertSame(ErrorCodes.FODT0001, ex.getErrorCode());
+		}
+		final long elapsedMs = (System.nanoTime() - start) / 1_000_000L;
+		assertTrue("Guard must reject in <1s; took " + elapsedMs + "ms", elapsedMs < 1000);
+	}
+
+	@Test
+	public void minus_hugeDayTimeDuration_rejectsFast() throws XPathException {
+		final AbstractDateTimeValue t = new DateTimeValue("2026-05-05T12:00:00Z");
+		final DurationValue d = new DayTimeDurationValue("P1712073600000D");
+		final long start = System.nanoTime();
+		try {
+			t.minus(d);
+			fail("Expected FODT0001 for excessively large duration");
+		} catch (final XPathException ex) {
+			assertSame(ErrorCodes.FODT0001, ex.getErrorCode());
+		}
+		final long elapsedMs = (System.nanoTime() - start) / 1_000_000L;
+		assertTrue("Guard must reject in <1s; took " + elapsedMs + "ms", elapsedMs < 1000);
+	}
+
+	@Test
+	public void plus_largeButPermittedDayTimeDuration_works() throws XPathException {
+		// 100,000 years -- well under the 1,000,000-year guard, must succeed.
+		final AbstractDateTimeValue t = new DateTimeValue("2026-05-05T12:00:00Z");
+		final DurationValue d = new DayTimeDurationValue("P36524250D");
+		final ComputableValue r = t.plus(d);
+		// Year arithmetic: 2026 + 100000 = 102026 (modulo Gregorian leap-year drift).
+		assertTrue("expected year ~102026, got " + r,
+				r.getStringValue().startsWith("102026") || r.getStringValue().startsWith("102025"));
 	}
 }

@@ -59,6 +59,17 @@ public class DurationValue extends ComputableValue {
     // (xdt:yearMonthDuration) at the long range; values outside raise FODT0002.
     protected static final BigDecimal MAX_DAY_TIME_SECONDS = new BigDecimal(Long.MAX_VALUE);
     protected static final BigInteger MAX_YEAR_MONTH_MONTHS = BigInteger.valueOf(Long.MAX_VALUE);
+
+    // Cap on the day-time magnitude of a duration when used in xs:date /
+    // xs:dateTime / xs:time arithmetic. XMLGregorianCalendar.add() iterates
+    // proportionally to the day count, so very large day-time durations make
+    // a single add() call take seconds to hours (issue #5045). The threshold
+    // below caps worst-case latency at well under one second on modern hardware
+    // while permitting +/- 1 million Gregorian years of arithmetic, which
+    // exceeds any realistic use of date/time arithmetic.
+    private static final long DATE_ARITH_DAYS_LIMIT = 365_242_500L; // 1,000,000 Gregorian years
+    protected static final BigDecimal MAX_DATE_ARITH_SECONDS =
+            BigDecimal.valueOf(DATE_ARITH_DAYS_LIMIT).multiply(BigDecimal.valueOf(86_400L));
     protected static final Duration CANONICAL_ZERO_DURATION =
             TimeUtils.getInstance().newDuration(true, null, null, null, null, null, ZERO_DECIMAL);
     protected final Duration duration;
@@ -273,6 +284,14 @@ public class DurationValue extends ComputableValue {
         if (months.abs().compareTo(MAX_YEAR_MONTH_MONTHS) > 0) {
             throw new XPathException(getExpression(), ErrorCodes.FODT0002,
                     "Overflow/underflow in xdt:yearMonthDuration operation");
+        }
+    }
+
+    protected void checkDateArithMagnitude(final BigDecimal seconds) throws XPathException {
+        if (seconds.abs().compareTo(MAX_DATE_ARITH_SECONDS) > 0) {
+            throw new XPathException(getExpression(), ErrorCodes.FODT0001,
+                    "Overflow/underflow in date/time operation: duration "
+                            + this + " is too large for date/time arithmetic");
         }
     }
 
