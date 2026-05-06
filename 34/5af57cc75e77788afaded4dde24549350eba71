@@ -1,0 +1,25 @@
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndexWorker.java
+  dd267fc11decf911 458-460,468-469,471,474,477-479,483,485,489-491,527-535
+extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/LuceneIndexWorkerBatchSizeTest.java
+  dd267fc11decf911 24-27,30-31,33,56-73
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "345af57cc75e77788afaded4dde24549350eba71",
+  "prompts": {
+    "dd267fc11decf911": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "222995ee-f2ce-4d67-b374-4d42062b29ea",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "duncdrum",
+      "messages": [],
+      "total_additions": 50,
+      "total_deletions": 13,
+      "accepted_lines": 50,
+      "overriden_lines": 0
+    }
+  }
+}
