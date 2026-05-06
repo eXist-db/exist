@@ -735,11 +735,21 @@ public class NewArrayNodeSet extends AbstractArrayNodeSet implements ExtNodeSet,
                 --mid;
             }
             final NodeId refId = reference.getNodeId();
+            // The walk-back at line 734 can position mid at or before the parent
+            // itself when the parent shares the candidate tag. Skip past leading
+            // non-descendants until we enter the subtree, then break when we
+            // leave it: nodes[] is sorted in document order within a document,
+            // so once we exit the parent's subtree we will not re-enter it.
+            boolean enteredSubtree = false;
             for(int i = mid; i < end; i++) {
                 final NodeId currentId = nodes[i].getNodeId();
                 if(!(currentId.isDescendantOf(parentId) || (p != null && parentId.equals(NodeId.DOCUMENT_NODE) && p.getNodeId().getTreeLevel() == 1))) {
+                    if (enteredSubtree) {
+                        break;
+                    }
                     continue;
                 }
+                enteredSubtree = true;
                 if(currentId.getTreeLevel() == refId.getTreeLevel() && currentId.compareTo(refId) > 0) {
                     if (contextId != Expression.IGNORE_CONTEXT
                             && nodes[i].getContext() != null
