@@ -205,20 +205,19 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         }
         if (operator == RangeIndex.Operator.NE) {
             Query eqQuery = switch (type) {
-                case Type.INTEGER:
-                case Type.LONG:
-                case Type.UNSIGNED_LONG: yield LongField.newExactQuery(field, ((NumericValue) content).getLong());
-                case Type.INT:
-                case Type.UNSIGNED_INT:
-                case Type.SHORT:
-                case Type.UNSIGNED_SHORT: yield IntField.newExactQuery(field, ((NumericValue) content).getInt());
-                case Type.DECIMAL:
-                case Type.DOUBLE: yield DoubleField.newExactQuery(field, ((NumericValue) content).getDouble());
-                case Type.FLOAT: yield FloatField.newExactQuery(field, (float) ((NumericValue) content).getDouble());
-                case Type.DATE: yield LongField.newExactQuery(field, RangeIndexConfigElement.dateToLong((DateValue) content));
-                case Type.TIME: yield LongField.newExactQuery(field, RangeIndexConfigElement.timeToLong((TimeValue) content));
-                case Type.DATE_TIME:
-                default: yield new TermQuery(new Term(field, RangeIndexConfigElement.convertToBytes(content)));
+                case Type.INTEGER, Type.LONG, Type.UNSIGNED_LONG ->
+                        LongField.newExactQuery(field, ((NumericValue) content).getLong());
+                case Type.INT, Type.UNSIGNED_INT, Type.SHORT, Type.UNSIGNED_SHORT ->
+                        IntField.newExactQuery(field, ((NumericValue) content).getInt());
+                case Type.DECIMAL, Type.DOUBLE ->
+                        DoubleField.newExactQuery(field, ((NumericValue) content).getDouble());
+                case Type.FLOAT ->
+                        FloatField.newExactQuery(field, (float) ((NumericValue) content).getDouble());
+                case Type.DATE ->
+                        LongField.newExactQuery(field, RangeIndexConfigElement.dateToLong((DateValue) content));
+                case Type.TIME ->
+                        LongField.newExactQuery(field, RangeIndexConfigElement.timeToLong((TimeValue) content));
+                default -> new TermQuery(new Term(field, RangeIndexConfigElement.convertToBytes(content)));
             };
             final BooleanQuery.Builder nqb = new BooleanQuery.Builder();
             nqb.add(new MatchAllDocsQuery(), BooleanClause.Occur.MUST);
@@ -922,17 +921,14 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         if (analyzer == null) {
             return new BytesRef(content);
         }
-        try {
-            TokenStream stream = analyzer.tokenStream(field, new StringReader(content));
+        try (TokenStream stream = analyzer.tokenStream(field, new StringReader(content))) {
             TermToBytesRefAttribute termAttr = stream.addAttribute(TermToBytesRefAttribute.class);
             BytesRef token = null;
-            try (stream) {
-                stream.reset();
-                if (stream.incrementToken()) {
-                    token = BytesRef.deepCopyOf(termAttr.getBytesRef());
-                }
-                stream.end();
+            stream.reset();
+            if (stream.incrementToken()) {
+                token = BytesRef.deepCopyOf(termAttr.getBytesRef());
             }
+            stream.end();
             if (LOG.isDebugEnabled()) {
                 LOG.debug("ANALYZE result token={}", safeBytesRefToDisplay(token));
             }

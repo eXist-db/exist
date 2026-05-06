@@ -237,7 +237,7 @@ public class Predicate extends PathExpr {
                     // Hack : GeneralComparison lies on its dependencies
                     // TODO : try to remove this since our dependency
                     // computation should now be better
-                    !((inner instanceof GeneralComparison comparison) &&
+                    !(inner instanceof GeneralComparison comparison &&
                             comparison.invalidNodeEvaluation)) {
                 innerSeq = inner.eval(contextSequence, null);
                 // Only if we have an actual *singleton* of numeric items

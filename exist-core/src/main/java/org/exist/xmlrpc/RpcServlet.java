@@ -109,7 +109,7 @@ public class RpcServlet extends XmlRpcServlet {
         } catch (final EXistException e) {
             throw new ServletException(e);
         } finally {
-            if (request != null && request instanceof HttpServletRequestWrapper wrapper) {
+            if (request instanceof HttpServletRequestWrapper wrapper) {
                 wrapper.close();
             }
         }

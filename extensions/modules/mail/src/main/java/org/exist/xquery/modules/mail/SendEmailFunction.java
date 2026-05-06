@@ -224,25 +224,26 @@ public class SendEmailFunction extends BasicFunction {
         allrecipients.addAll(mail.getCC());
         allrecipients.addAll(mail.getBCC());
 
-        //Get a string of all recipients email addresses
-        final StringBuilder recipients = new StringBuilder();
+        // Normalize all recipients to plain email addresses for sendmail arguments
+        final List<String> normalizedRecipients = new ArrayList<>(allrecipients.size());
 
         for (final String recipient : allrecipients) {
-            recipients.append(" ");
-
             //Check format of to address does it include a name as well as the email address?
             if (recipient.contains("<")) {
                 //yes, just add the email address
-                recipients.append(recipient, recipient.indexOf("<") + 1, recipient.indexOf(">"));
+                normalizedRecipients.add(recipient.substring(recipient.indexOf("<") + 1, recipient.indexOf(">")));
             } else {
                 //add the email address
-                recipients.append(recipient);
+                normalizedRecipients.add(recipient);
             }
         }
 
         try {
             //Create a sendmail Process
-            final Process p = Runtime.getRuntime().exec(("/usr/sbin/sendmail" + recipients).split(" "));
+            final List<String> command = new ArrayList<>(normalizedRecipients.size() + 1);
+            command.add("/usr/sbin/sendmail");
+            command.addAll(normalizedRecipients);
+            final Process p = new ProcessBuilder(command).start();
 
             //Get a Buffered Print Writer to the Processes stdOut
             try (final PrintWriter out = new PrintWriter(new OutputStreamWriter(p.getOutputStream(), charset))) {
