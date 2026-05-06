@@ -180,10 +180,11 @@ public interface IndexWorker {
      *
      * @param collection The collection to remove
      * @param broker The broker that will perform the operation
-     * @param reindex enable or disable reindex
+     * @param configOnlyReindex {@code true} for config-only reindex behavior,
+     *                          {@code false} for full index drop behavior
      * @throws PermissionDeniedException in case user does not have sufficient rights
      */
-    void removeCollection(Collection collection, DBBroker broker, boolean reindex) throws PermissionDeniedException;
+    void removeCollection(Collection collection, DBBroker broker, boolean configOnlyReindex) throws PermissionDeniedException;
 
     /** 
      * Checking index could be delegated to a worker. Use this method to do so.
