@@ -47,44 +47,60 @@ abstract class OrderedDurationValue extends DurationValue {
     }
 
     @Override
-    public boolean compareTo(Collator collator, Comparison operator, AtomicValue other) throws XPathException {
+    public boolean compareTo(final Collator collator, final Comparison operator, final AtomicValue other)
+            throws XPathException {
         if (other.isEmpty()) {
             return false;
         }
+        final Boolean mixedSubtypeResult = compareMixedSubtypes(operator, other);
+        if (mixedSubtypeResult != null) {
+            return mixedSubtypeResult;
+        }
+        validateOrderingComparable(operator, other);
+        return resultMatchesOperator(compareTo(collator, other), operator);
+    }
 
-        // Mixed duration subtypes (e.g., xs:yearMonthDuration vs xs:dayTimeDuration):
-        // equality comparisons return false (they can never be equal);
-        // ordering operators (lt/gt/le/ge) are not defined and raise XPTY0004.
-        if (Type.subTypeOf(other.getType(), Type.DURATION)
-                && getType() != other.getType()
-                && getType() != Type.DURATION
-                && other.getType() != Type.DURATION) {
-            if (operator == Comparison.EQ) {
-                return false;
-            }
-            if (operator == Comparison.NEQ) {
-                return true;
-            }
-            throw new XPathException(getExpression(), ErrorCodes.XPTY0004,
+    /**
+     * Mixed duration subtypes (e.g., xs:yearMonthDuration vs xs:dayTimeDuration):
+     * equality comparisons return false (they can never be equal);
+     * ordering operators (lt/gt/le/ge) are not defined and raise XPTY0004.
+     * Returns null when the subtypes are not mixed and the caller should
+     * continue with normal comparison.
+     */
+    private Boolean compareMixedSubtypes(final Comparison operator, final AtomicValue other) throws XPathException {
+        if (!Type.subTypeOf(other.getType(), Type.DURATION)
+                || getType() == other.getType()
+                || getType() == Type.DURATION
+                || other.getType() == Type.DURATION) {
+            return null;
+        }
+        return switch (operator) {
+            case EQ -> Boolean.FALSE;
+            case NEQ -> Boolean.TRUE;
+            default -> throw new XPathException(getExpression(), ErrorCodes.XPTY0004,
                     "cannot compare " + Type.getTypeName(getType()) + " to "
                             + Type.getTypeName(other.getType()));
-        }
+        };
+    }
 
-        // Ordering operators (LT/GT/LTEQ/GTEQ) are not defined for unordered xs:duration
-        if (operator != Comparison.EQ && operator != Comparison.NEQ) {
-            if (getType() == Type.DURATION) {
-                throw new XPathException(getExpression(), ErrorCodes.XPTY0004,
-                        "cannot compare unordered " + Type.getTypeName(getType()) + " to "
-                                + Type.getTypeName(other.getType()));
-            }
-            if (other.getType() == Type.DURATION) {
-                throw new XPathException(getExpression(), ErrorCodes.XPTY0004,
-                        "cannot compare " + Type.getTypeName(getType()) + " to unordered "
-                                + Type.getTypeName(other.getType()));
-            }
+    /** Ordering operators (LT/GT/LTEQ/GTEQ) are not defined for unordered xs:duration. */
+    private void validateOrderingComparable(final Comparison operator, final AtomicValue other) throws XPathException {
+        if (operator == Comparison.EQ || operator == Comparison.NEQ) {
+            return;
         }
+        if (getType() == Type.DURATION) {
+            throw new XPathException(getExpression(), ErrorCodes.XPTY0004,
+                    "cannot compare unordered " + Type.getTypeName(getType()) + " to "
+                            + Type.getTypeName(other.getType()));
+        }
+        if (other.getType() == Type.DURATION) {
+            throw new XPathException(getExpression(), ErrorCodes.XPTY0004,
+                    "cannot compare " + Type.getTypeName(getType()) + " to unordered "
+                            + Type.getTypeName(other.getType()));
+        }
+    }
 
-        final int r = compareTo(collator, other);
+    private boolean resultMatchesOperator(final int r, final Comparison operator) throws XPathException {
         return switch (operator) {
             case EQ -> r == DatatypeConstants.EQUAL;
             case NEQ -> r != DatatypeConstants.EQUAL;
@@ -116,7 +132,8 @@ abstract class OrderedDurationValue extends DurationValue {
                         Constants.INFERIOR : Constants.SUPERIOR;
             }
             if (r == DatatypeConstants.INDETERMINATE) {
-                throw new RuntimeException("indeterminate order between totally ordered duration values " + this + " and " + other);
+                throw new IllegalStateException(
+                        "indeterminate order between totally ordered duration values " + this + " and " + other);
             }
             return r;
         }
