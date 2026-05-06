@@ -1,0 +1,19 @@
+exist-core-jmh/pom.xml
+  s_cc91f600c392c3::t_c0ad4564e7de51 73-74,76-77
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.1",
+  "base_commit_sha": "bc53c4453c94818a1486307b483b452b016f2e3a",
+  "prompts": {},
+  "sessions": {
+    "s_cc91f600c392c3": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "6b7256af-b6b2-47a4-bee2-1ae3ef59b841",
+        "model": "default"
+      },
+      "human_author": null
+    }
+  }
+}
