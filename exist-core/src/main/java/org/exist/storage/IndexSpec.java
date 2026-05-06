@@ -147,6 +147,10 @@ public class IndexSpec {
         return !qnameSpecs.isEmpty();
     }
 
+    public boolean hasCustomIndexSpecs() {
+        return customIndexSpecs != null && !customIndexSpecs.isEmpty();
+    }
+
     public List<QName> getIndexedQNames() {
         return new ArrayList<>(qnameSpecs.keySet());
     }
