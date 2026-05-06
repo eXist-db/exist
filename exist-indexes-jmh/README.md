@@ -14,6 +14,7 @@ Four classes &mdash; one per index API &mdash; each running the same four shapes
 | `RangeEqWhereClauseBenchmark` | `range:eq(SPEAKER, $term)` | plain range index on `SPEAKER` &mdash; the path PR #6093 originally guarded |
 | `RangeFieldEqWhereClauseBenchmark` | `range:field-eq('speaker', $term)` | combined range index with `<field name="speaker" match="SPEAKER"/>` on `SPEECH` &mdash; the path PR #6093 also covered |
 | `LuceneWhereClauseBenchmark` | `ft:query(LINE, $term)` | lucene index on `LINE` &mdash; the path PR #6286 originally guarded |
+| `GeneralComparisonWhereClauseBenchmark` | `//SPEAKER[. = $term]` | Plain general comparison routed through the range index by the optimizer's `GeneralComparison` -> Optimizable rewrite. This is the case Wolfgang's [tuning docs](https://exist-db.org/exist/apps/doc/tuning#prefer-xpath-predicates-over-where-expressions) describe. |
 
 Each class has the same four `@Benchmark` methods:
 
