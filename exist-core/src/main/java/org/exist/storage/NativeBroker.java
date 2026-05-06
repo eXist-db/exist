@@ -2058,7 +2058,7 @@ public class NativeBroker implements DBBroker {
 
             LOG.info("Start indexing collection {}", collection.getURI().toString());
             pool.getProcessMonitor().startJob(ProcessMonitor.ACTION_REINDEX_COLLECTION, collection.getURI());
-            reindexCollection(transaction, collection, IndexMode.STORE, scope);
+            reindexCollection(transaction, collection, IndexMode.REINDEX, scope);
         } catch(final PermissionDeniedException | IOException e) {
             LOG.error("An error occurred during reindex: {}", e.getMessage(), e);
         } finally {
@@ -2082,8 +2082,8 @@ public class NativeBroker implements DBBroker {
         }
 
         LOG.debug("Reindexing collection {}", collection.getURI());
-        if(mode == IndexMode.STORE) {
-            dropCollectionIndex(transaction, collection, true);
+        if(mode == IndexMode.STORE || mode == IndexMode.REINDEX) {
+            dropCollectionIndex(transaction, collection, mode == IndexMode.REINDEX);
         }
 
         // reindex documents
@@ -2130,6 +2130,50 @@ public class NativeBroker implements DBBroker {
         dropCollectionIndex(transaction, collection, false);
     }
 
+    /**
+     * Drop index entries for all documents in the collection.
+     *
+     * <p>When {@code reindex} is {@code true} (config-only reindex fast path),
+     * only extension indexes ({@link org.exist.indexing.IndexWorker}s such as
+     * Lucene, new-range, etc.) are dropped via
+     * {@link IndexController#removeCollection}.  The DOM BTree
+     * ({@code dom.dbx}) and legacy value index ({@link NativeValueIndex}) are
+     * left untouched because the document content has not changed — only the
+     * {@code collection.xconf} configuration may have been updated.</p>
+     *
+     * <p>When {@code reindex} is {@code false} (full drop — used by
+     * collection removal and full repair), all indexes are dropped including
+     * DOM BTree entries and the legacy value index.</p>
+     *
+     * @param transaction the current transaction
+     * @param collection  the collection whose indexes should be dropped
+     * @param reindex     {@code true} for config-only reindex (skip DOM/value),
+     *                    {@code false} for full index drop
+     *
+     * @see <a href="https://github.com/eXist-db/exist/issues/572">#572</a>
+     */
+    /**
+     * Drop index entries for all documents in the collection.
+     *
+     * <p>When {@code reindex} is {@code true} (config-only reindex fast path),
+     * only extension indexes ({@link org.exist.indexing.IndexWorker}s such as
+     * Lucene, new-range, etc.) are dropped via
+     * {@link IndexController#removeCollection}.  The DOM BTree
+     * ({@code dom.dbx}) and legacy value index ({@link NativeValueIndex}) are
+     * left untouched because the document content has not changed — only the
+     * {@code collection.xconf} configuration may have been updated.</p>
+     *
+     * <p>When {@code reindex} is {@code false} (full drop — used by
+     * collection removal and full repair), all indexes are dropped including
+     * DOM BTree entries and the legacy value index.</p>
+     *
+     * @param transaction the current transaction
+     * @param collection  the collection whose indexes should be dropped
+     * @param reindex     {@code true} for config-only reindex (skip DOM/value),
+     *                    {@code false} for full index drop
+     *
+     * @see <a href="https://github.com/eXist-db/exist/issues/572">#572</a>
+     */
     private void dropCollectionIndex(final Txn transaction,
             @EnsureLocked(mode=LockMode.WRITE_LOCK) final Collection collection, final boolean reindex)
             throws PermissionDeniedException, IOException, LockException {
@@ -2139,26 +2183,30 @@ public class NativeBroker implements DBBroker {
         if(!collection.getPermissionsNoLock().validate(getCurrentSubject(), Permission.WRITE)) {
             throw new PermissionDeniedException("Account " + getCurrentSubject().getName() + " have insufficient privileges on collection " + collection.getURI());
         }
-        notifyDropIndex(collection);
+        if (!reindex) {
+            notifyDropIndex(collection);
+        }
         getIndexController().removeCollection(collection, this, reindex);
-        for (final Iterator<DocumentImpl> i = collection.iterator(this); i.hasNext(); ) {
-            final DocumentImpl doc = i.next();
-            LOG.debug("Dropping index for document {}", doc.getFileURI());
-            new DOMTransaction(this, domDb, () -> lockManager.acquireBtreeWriteLock(domDb.getLockName())) {
-                @Override
-                public Object start() {
-                    try {
-                        final Value ref = new NodeRef(doc.getDocId());
-                        final IndexQuery query =
-                                new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
-                        domDb.remove(transaction, query, null);
-                        domDb.flush();
-                    } catch (final TerminatedException | IOException | DBException e) {
-                        LOG.error("Error while removing Document '{}' from Collection index: {}", doc.getURI().lastSegment(), collection.getURI(), e);
+        if (!reindex) {
+            for (final Iterator<DocumentImpl> i = collection.iterator(this); i.hasNext(); ) {
+                final DocumentImpl doc = i.next();
+                LOG.debug("Dropping index for document {}", doc.getFileURI());
+                new DOMTransaction(this, domDb, () -> lockManager.acquireBtreeWriteLock(domDb.getLockName())) {
+                    @Override
+                    public Object start() {
+                        try {
+                            final Value ref = new NodeRef(doc.getDocId());
+                            final IndexQuery query =
+                                    new IndexQuery(IndexQuery.TRUNC_RIGHT, ref);
+                            domDb.remove(transaction, query, null);
+                            domDb.flush();
+                        } catch (final TerminatedException | IOException | DBException e) {
+                            LOG.error("Error while removing Document '{}' from Collection index: {}", doc.getURI().lastSegment(), collection.getURI(), e);
+                        }
+                        return null;
                     }
-                    return null;
-                }
-            }.run();
+                }.run();
+            }
         }
     }
 
@@ -3737,7 +3785,9 @@ public class NativeBroker implements DBBroker {
         if(node.getNodeType() == Node.ELEMENT_NODE) {
             currentPath.addNode(node);
         }
-        indexNode(transaction, node, currentPath, mode);
+        if (mode != IndexMode.REINDEX) {
+            indexNode(transaction, node, currentPath, mode);
+        }
         if(listener != null) {
             switch(node.getNodeType()) {
                 case Node.TEXT_NODE:
@@ -3769,7 +3819,9 @@ public class NativeBroker implements DBBroker {
             }
         }
         if(node.getNodeType() == Node.ELEMENT_NODE) {
-            endElement(node, currentPath, null, mode == IndexMode.REMOVE);
+            if (mode != IndexMode.REINDEX) {
+                endElement(node, currentPath, null, mode == IndexMode.REMOVE);
+            }
             if(listener != null) {
                 listener.endElement(transaction, (ElementImpl) node, currentPath);
             }

@@ -302,3 +302,54 @@ function fte:reindex-config-narrowing-keeps-valid-terms() {
     let $_ := xmldb:reindex("/db/" || $fte:COLL_984)
     return count(collection("/db/" || $fte:COLL_984)//b[ft:query(., "newterm")])
 };
+
+(:~
+ : #572: the REINDEX fast path (IndexMode.REINDEX) skips DOM BTree and value
+ : index writes for speed.  This test verifies that the persistent DOM is still
+ : readable afterwards — string() forces a DOM text-node read, which would fail
+ : if REINDEX corrupted the stored DOM.
+ : Unlike the #2318 / #984 tests above, this collection has NO Lucene config,
+ : so the only index activity is the structural and DOM layers.
+ : @see https://github.com/eXist-db/exist/issues/572
+ :)
+declare
+    %test:assertEquals("hello world")
+function fte:reindex-preserves-dom-xpath() {
+    let $_ := xmldb:reindex("/db/" || $fte:COLL_NO_INDEX)
+    return string(doc("/db/" || $fte:COLL_NO_INDEX || "/test.xml")//p)
+};
+
+(:~
+ : #572: the REINDEX fast path must not break the structural index.
+ : local-name() is resolved via the structural index (NativeStructuralIndexWorker),
+ : not by reading the serialised DOM — a distinct code path from the string()
+ : check in `reindex-preserves-dom-xpath` above.
+ : @see https://github.com/eXist-db/exist/issues/572
+ :)
+declare
+    %test:assertEquals("body")
+function fte:reindex-preserves-structural-navigation() {
+    let $_ := xmldb:reindex("/db/" || $fte:COLL_GET_FIELD)
+    return local-name(doc("/db/" || $fte:COLL_GET_FIELD || "/with-foo.xml")/text/body)
+};
+
+(:~
+ : #572: the REINDEX fast path must pick up a newly deployed Lucene config.
+ : This differs from the #984 config-narrowing tests above: here we *add*
+ : index coverage (no Lucene config → Lucene on `<p>`) and verify ft:query
+ : finds the newly-indexed content.  Ensures REINDEX re-reads collection.xconf
+ : rather than caching a stale index configuration.
+ : @see https://github.com/eXist-db/exist/issues/572
+ :)
+declare
+    %test:assertEquals(1)
+function fte:reindex-picks-up-new-config() {
+    let $broader := <collection xmlns="http://exist-db.org/collection-config/1.0">
+        <index xmlns:xs="http://www.w3.org/2001/XMLSchema">
+            <lucene><text qname="p"/></lucene>
+        </index>
+    </collection>
+    let $_ := xmldb:store("/db/system/config/db/" || $fte:COLL_NO_INDEX, "collection.xconf", $broader)
+    let $_ := xmldb:reindex("/db/" || $fte:COLL_NO_INDEX)
+    return count(collection("/db/" || $fte:COLL_NO_INDEX)//p[ft:query(., "hello")])
+};

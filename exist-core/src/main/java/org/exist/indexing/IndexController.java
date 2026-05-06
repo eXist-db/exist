@@ -202,6 +202,9 @@ public class IndexController {
      * @param collection the collection to remove
      * @param broker the broker that will perform the operation
      * @param reindex enable or disable reindexing after removal
+     *
+     * Caller lock contract: at least a collection READ lock must be held while
+     * invoking workers. WRITE lock callers are also valid.
      * @throws PermissionDeniedException in case user does not have sufficient rights
      */
     public void removeCollection(final Collection collection, final DBBroker broker, final boolean reindex)

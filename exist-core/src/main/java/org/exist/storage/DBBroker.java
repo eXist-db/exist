@@ -593,7 +593,18 @@ public interface DBBroker extends AutoCloseable {
     enum IndexMode {
         STORE,
         REPAIR,
-        REMOVE
+        REMOVE,
+        /**
+         * Rebuild only custom/extension indexes (Lucene, range, etc.) without
+         * touching the DOM BTree ({@code dom.dbx}) or the structural/value
+         * indexes.  Used by user-triggered {@code xmldb:reindex()} where only
+         * the {@code collection.xconf} configuration has changed — the
+         * document content itself is unchanged, so DOM and structural indexes
+         * are still valid.
+         *
+         * @see <a href="https://github.com/eXist-db/exist/issues/572">#572</a>
+         */
+        REINDEX
     }
 
     /**
