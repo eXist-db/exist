@@ -152,6 +152,11 @@ public class WhereClause extends AbstractFLWORClause {
     }
 
     @Override
+    public void accept(final ExpressionVisitor visitor) {
+        visitor.visitWhereClause(this);
+    }
+
+    @Override
     public void dump(ExpressionDumper dumper) {
         dumper.display("where", whereExpr.getLine());
         dumper.startIndent();
