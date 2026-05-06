@@ -295,51 +295,46 @@ options {
             final String value = valueNode.getText();
 
             switch (propName) {
-                case "decimal-separator":
+                case "decimal-separator" -> {
                     dfRequireSingleChar(child, propName, value);
                     decimalSeparator = value.codePointAt(0);
-                    break;
-                case "grouping-separator":
+                }
+                case "grouping-separator" -> {
                     dfRequireSingleChar(child, propName, value);
                     groupingSeparator = value.codePointAt(0);
-                    break;
-                case "infinity":
-                    infinity = value;
-                    break;
-                case "minus-sign":
+                }
+                case "infinity" -> infinity = value;
+                case "minus-sign" -> {
                     dfRequireSingleChar(child, propName, value);
                     minusSign = value.codePointAt(0);
-                    break;
-                case "NaN":
-                    nan = value;
-                    break;
-                case "percent":
+                }
+                case "NaN" -> nan = value;
+                case "percent" -> {
                     dfRequireSingleChar(child, propName, value);
                     percent = value.codePointAt(0);
-                    break;
-                case "per-mille":
+                }
+                case "per-mille" -> {
                     dfRequireSingleChar(child, propName, value);
                     perMille = value.codePointAt(0);
-                    break;
-                case "zero-digit":
+                }
+                case "zero-digit" -> {
                     dfRequireSingleChar(child, propName, value);
                     dfValidateZeroDigit(child, value);
                     zeroDigit = value.codePointAt(0);
-                    break;
-                case "digit":
+                }
+                case "digit" -> {
                     dfRequireSingleChar(child, propName, value);
                     digit = value.codePointAt(0);
-                    break;
-                case "pattern-separator":
+                }
+                case "pattern-separator" -> {
                     dfRequireSingleChar(child, propName, value);
                     patternSeparator = value.codePointAt(0);
-                    break;
-                case "exponent-separator":
+                }
+                case "exponent-separator" -> {
                     dfRequireSingleChar(child, propName, value);
                     exponentSeparator = value.codePointAt(0);
-                    break;
-                default:
-                    break;
+                }
+                default -> { }
             }
             child = child.getNextSibling();
         }
