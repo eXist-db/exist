@@ -2058,6 +2058,8 @@ public class NativeBroker implements DBBroker {
 
             LOG.info("Start indexing collection {}", collection.getURI().toString());
             pool.getProcessMonitor().startJob(ProcessMonitor.ACTION_REINDEX_COLLECTION, collection.getURI());
+            // Reindex traversal intentionally runs with collection READ_LOCKs:
+            // avoid lock escalation while descending into child collections.
             reindexCollection(transaction, collection, IndexMode.REINDEX, scope);
         } catch(final PermissionDeniedException | IOException e) {
             LOG.error("An error occurred during reindex: {}", e.getMessage(), e);
@@ -2102,6 +2104,12 @@ public class NativeBroker implements DBBroker {
                 reindexXMLResource(transaction, next, mode, scope);
             }
             LOG.info("Reindex collection {}: iterated {} documents", collection.getURI(), docCount);
+            if (LOG.isDebugEnabled()) {
+                final int skippedCoreRebuildUnits = mode == IndexMode.REINDEX ? docCount : 0;
+                final int rebuiltCoreRebuildUnits = mode == IndexMode.REINDEX ? 0 : docCount;
+                LOG.debug("Reindex counters collection={} scope={} mode={} docsProcessed={} skippedCoreRebuildUnits={} rebuiltCoreRebuildUnits={} rebuiltExtensionRebuildUnits={}",
+                        collection.getURI(), scope, mode, docCount, skippedCoreRebuildUnits, rebuiltCoreRebuildUnits, docCount);
+            }
         } catch(final LockException e) {
             LOG.error("LockException while reindexing documents of collection '{}'. Skipping...", collection.getURI(), e);
         }
@@ -2125,7 +2133,7 @@ public class NativeBroker implements DBBroker {
     }
 
     private void dropCollectionIndex(final Txn transaction,
-            @EnsureLocked(mode=LockMode.WRITE_LOCK) final Collection collection)
+            @EnsureLocked(mode=LockMode.READ_LOCK) final Collection collection)
             throws PermissionDeniedException, IOException, LockException {
         dropCollectionIndex(transaction, collection, false);
     }
@@ -2150,32 +2158,16 @@ public class NativeBroker implements DBBroker {
      * @param reindex     {@code true} for config-only reindex (skip DOM/value),
      *                    {@code false} for full index drop
      *
-     * @see <a href="https://github.com/eXist-db/exist/issues/572">#572</a>
-     */
-    /**
-     * Drop index entries for all documents in the collection.
-     *
-     * <p>When {@code reindex} is {@code true} (config-only reindex fast path),
-     * only extension indexes ({@link org.exist.indexing.IndexWorker}s such as
-     * Lucene, new-range, etc.) are dropped via
-     * {@link IndexController#removeCollection}.  The DOM BTree
-     * ({@code dom.dbx}) and legacy value index ({@link NativeValueIndex}) are
-     * left untouched because the document content has not changed — only the
-     * {@code collection.xconf} configuration may have been updated.</p>
-     *
-     * <p>When {@code reindex} is {@code false} (full drop — used by
-     * collection removal and full repair), all indexes are dropped including
-     * DOM BTree entries and the legacy value index.</p>
-     *
-     * @param transaction the current transaction
-     * @param collection  the collection whose indexes should be dropped
-     * @param reindex     {@code true} for config-only reindex (skip DOM/value),
-     *                    {@code false} for full index drop
+     * <p>Locking contract: caller must hold at least a collection READ lock.
+     * Reindex traversal acquires collections with READ_LOCK to avoid lock
+     * escalation/deadlock risk while still serializing against incompatible
+     * writers. Callers that already hold WRITE_LOCK (e.g. collection removal)
+     * also satisfy this contract.</p>
      *
      * @see <a href="https://github.com/eXist-db/exist/issues/572">#572</a>
      */
     private void dropCollectionIndex(final Txn transaction,
-            @EnsureLocked(mode=LockMode.WRITE_LOCK) final Collection collection, final boolean reindex)
+            @EnsureLocked(mode=LockMode.READ_LOCK) final Collection collection, final boolean reindex)
             throws PermissionDeniedException, IOException, LockException {
         if(isReadOnly()) {
             throw new IOException(DATABASE_IS_READ_ONLY);
