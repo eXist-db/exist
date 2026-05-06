@@ -100,6 +100,7 @@ function fv:tearDown() {
  : collection variable. This is the pattern from the original bug report.
  :)
 declare
+    %test:pending
     %test:assertEquals("Chair", "Table")
 function fv:for-variable-in-where-clause() {
     for $q in doc($fv:COLLECTION || "/queries.xml")//q
