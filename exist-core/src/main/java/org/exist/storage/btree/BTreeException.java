@@ -72,6 +72,8 @@
  */
 package org.exist.storage.btree;
 
+import java.io.Serial;
+
 /**
  * A BTreeException is thrown by the BTree if an exception occurs in the
  * managing of the BTree.
@@ -79,7 +81,8 @@ package org.exist.storage.btree;
 
 public class BTreeException extends DBException {
 
-	private static final long serialVersionUID = -9164807722775875790L;
+    @Serial
+    private static final long serialVersionUID = -9164807722775875790L;
 
 	public BTreeException() {
 	}

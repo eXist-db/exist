@@ -139,8 +139,8 @@ public class Password implements Credential {
             return equals(credentials);
         }
     	
-    	if(credentials instanceof char[]) {
-            return equals(String.valueOf((char[]) credentials));
+    	if(credentials instanceof char[] chars) {
+            return equals(String.valueOf(chars));
         }
     	
     	return false;

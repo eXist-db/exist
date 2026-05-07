@@ -64,12 +64,15 @@ public class DirectoryList extends BasicFunction {
     public static final FunctionSignature[] signatures = {
             new FunctionSignature(
                     new QName("directory-list", NAMESPACE_URI, PREFIX),
-                    "List all files, including their file size and modification time, "
-                            + "found in or below a directory, $directory. Files are located in the server's "
-                            + "file system, using filename patterns, $pattern.  File pattern matching is based "
-                            + "on code from Apache's Ant, thus following the same conventions. For example:\n\n"
-                            + "'*.xml' matches any file ending with .xml in the current directory,\n- '**/*.xml' matches files "
-                            + "in any directory below the specified directory.  This method is only available to the DBA role.",
+                    """
+                    List all files, including their file size and modification time, \
+                    found in or below a directory, $directory. Files are located in the server's \
+                    file system, using filename patterns, $pattern.  File pattern matching is based \
+                    on code from Apache's Ant, thus following the same conventions. For example:
+                    
+                    '*.xml' matches any file ending with .xml in the current directory,
+                    - '**/*.xml' matches files \
+                    in any directory below the specified directory.  This method is only available to the DBA role.""",
                     new SequenceType[]{
                             new FunctionParameterSequenceType("path", Type.ITEM,
                                     Cardinality.EXACTLY_ONE, "The base directory path or URI in the file system where the files are located."),

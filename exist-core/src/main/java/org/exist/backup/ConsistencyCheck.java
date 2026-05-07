@@ -579,8 +579,8 @@ public class ConsistencyCheck {
                     }
                 }
                 if (report != null) {
-                    if (report instanceof ErrorReport.ResourceError) {
-                        ((ErrorReport.ResourceError) report).setDocumentId(doc.getDocId());
+                    if (report instanceof ErrorReport.ResourceError error) {
+                        error.setDocumentId(doc.getDocId());
                     }
 
                     if (errors != null) {

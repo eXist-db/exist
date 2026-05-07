@@ -34,7 +34,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Enumeration;
 import java.util.List;
@@ -98,8 +97,8 @@ public class ZipArchiveBackupDescriptor extends AbstractBackupDescriptor {
             throw new FileNotFoundException("Archive " + fileArchive.toAbsolutePath() + " is not a valid eXist backup archive");
         }
 
-        final Path fakeDbRoot = Paths.get("/db");
-        if (!fakeDbRoot.resolve(Paths.get(base)).normalize().startsWith(fakeDbRoot)) {
+        final Path fakeDbRoot = Path.of("/db");
+        if (!fakeDbRoot.resolve(Path.of(base)).normalize().startsWith(fakeDbRoot)) {
             throw new IOException("Detected archive exit attack! zipFile=" + fileArchive.toAbsolutePath().normalize());
         }
 
@@ -173,8 +172,7 @@ public class ZipArchiveBackupDescriptor extends AbstractBackupDescriptor {
                         return Optional.<ZipArchiveBackupDescriptor>empty();
                     }
                 })
-                .filter(Optional::isPresent)
-                .map(Optional::get)) {
+                .flatMap(Optional::stream)) {
 
             return entries.collect(Collectors.toList());
         }
@@ -256,12 +254,12 @@ public class ZipArchiveBackupDescriptor extends AbstractBackupDescriptor {
 
     @Override
     public Path getParentDir() {
-        return Paths.get(archive.getName()).getParent();
+        return Path.of(archive.getName()).getParent();
     }
 
     @Override
     public String getName() {
-        return FileUtils.fileName(Paths.get(archive.getName()));
+        return FileUtils.fileName(Path.of(archive.getName()));
     }
 
     private void countDescendantResourceEntries(final ZipFile zipFile, final String base) {

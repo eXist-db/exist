@@ -38,7 +38,6 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
@@ -123,7 +122,7 @@ public class ExistEmbeddedServer extends ExternalResource {
 
             final String name = instanceName.orElse(BrokerPool.DEFAULT_INSTANCE_NAME);
 
-            final Optional<Path> home = Optional.ofNullable(System.getProperty("exist.home", System.getProperty("user.dir"))).map(Paths::get);
+            final Optional<Path> home = Optional.ofNullable(System.getProperty("exist.home", System.getProperty("user.dir"))).map(Path::of);
             final Path confFile = configFile.orElseGet(() -> ConfigurationHelper.lookup("conf.xml", home));
 
             final Configuration config;

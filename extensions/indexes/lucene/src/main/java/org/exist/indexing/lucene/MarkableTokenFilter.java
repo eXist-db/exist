@@ -23,26 +23,23 @@ package org.exist.indexing.lucene;
 
 import org.apache.lucene.analysis.TokenFilter;
 import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.util.AttributeSource;
 
-import java.util.List;
-import java.util.LinkedList;
 import java.io.IOException;
 import java.util.Iterator;
-import org.apache.lucene.util.AttributeSource;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * A caching token filter which can be reset to a position marked
  * via method {@link #mark()}.
  */
 public class MarkableTokenFilter extends TokenFilter {
-    
-    private List<AttributeSource.State> cache = null;
-    private Iterator<AttributeSource.State> iterator = null; 
-    private AttributeSource.State finalState;
-    
 
-    //private List<Token> cache = null;
-    private boolean isCaching = false;
+    private List<AttributeSource.State> cache;
+    private Iterator<AttributeSource.State> iterator;
+    private AttributeSource.State finalState;
+    private boolean isCaching;
 
     public MarkableTokenFilter(TokenStream tokenStream) {
         super(tokenStream);
@@ -53,69 +50,61 @@ public class MarkableTokenFilter extends TokenFilter {
         cache = new LinkedList<>();
     }
 
+    /**
+     * Rewind to the current in-memory mark buffer.
+     *
+     * <p>This is distinct from {@link #reset()}, which follows Lucene's
+     * TokenStream lifecycle and resets the wrapped input stream.</p>
+     */
+    public void rewindToMark() {
+        isCaching = false;
+        if (cache != null) {
+            iterator = cache.iterator();
+        }
+    }
+
     @Override
     public void reset() throws IOException {
         isCaching = false;
-        
-        if(cache != null) {
-            iterator = cache.iterator();
-        }
+        super.reset();
     }
     
     @Override
     public final void end() throws IOException {
-        if(finalState != null) {
+        if (finalState != null) {
             restoreState(finalState);
         }
     }
 
-    /*
-    @Override
-    public Token next(Token token) throws IOException {
-        if (isCaching) {
-            Token nextToken = input.next(new Token());
-            cache.add(nextToken);
-            return nextToken;
-        } else if (cache == null) {
-            return input.next(token);
-        } else {
-            Token nextToken = cache.remove(0);
-            if (cache.isEmpty())
-                cache = null;
-            return nextToken;
-        }
-    }*/
-
     @Override
     public final boolean incrementToken() throws IOException {
         if (isCaching) {
-            if(!input.incrementToken()) {
-                input.end();
-                finalState = captureState();
-                return false;
-            } else {
+            if (input.incrementToken()) {
                 cache.add(captureState());
                 return true;
             }
-        } else if (cache == null) {
-            if(!input.incrementToken()) {
-                input.end();
-                finalState = captureState();
-                return false;
-            } else {
+            input.end();
+            finalState = captureState();
+            return false;
+        }
+
+        if (cache == null) {
+            if (input.incrementToken()) {
                 return true;
             }
-            
-        } else {
-            if (!iterator.hasNext()) {
-	      // the cache is exhausted, return false
-              cache = null;
-	      return false;
-	    }
-	    
-            // Since the TokenFilter can be reset, the tokens need to be preserved as immutable.
+            input.end();
+            finalState = captureState();
+            return false;
+        }
+
+        if (iterator.hasNext()) {
+            // Since the TokenFilter can be reset, tokens are preserved as immutable states.
             restoreState(iterator.next());
             return true;
         }
+
+        // The cache is exhausted, return false.
+        cache = null;
+        return false;
     }
 }

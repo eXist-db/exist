@@ -160,13 +160,13 @@ public class YearMonthDurationValue extends OrderedDurationValue {
     }
 
     public ComputableValue mult(ComputableValue other) throws XPathException {
-        if (other instanceof NumericValue) {
+        if (other instanceof NumericValue value) {
             //If $arg2 is NaN an error is raised [err:FOCA0005]
-            if (((NumericValue) other).isNaN()) {
+            if (value.isNaN()) {
                 throw new XPathException(getExpression(), ErrorCodes.FOCA0005, "Operand is not a number");
             }
             //If $arg2 is positive or negative infinity, the result overflows
-            if (((NumericValue) other).isInfinite()) {
+            if (value.isInfinite()) {
                 throw new XPathException(getExpression(), ErrorCodes.FODT0002, "Multiplication by infinity overflow");
             }
         }
@@ -192,15 +192,15 @@ public class YearMonthDurationValue extends OrderedDurationValue {
             checkYearMonthOverflow(((YearMonthDurationValue) other).monthsValueSigned());
             return new IntegerValue(getExpression(), getValue()).div(new IntegerValue(getExpression(), ((YearMonthDurationValue) other).getValue()));
         }
-        if (other instanceof NumericValue) {
-            if (((NumericValue) other).isNaN()) {
+        if (other instanceof NumericValue value) {
+            if (value.isNaN()) {
                 throw new XPathException(getExpression(), ErrorCodes.FOCA0005, "Operand is not a number");
             }
-            if (((NumericValue) other).isInfinite()) {
+            if (value.isInfinite()) {
                 return new YearMonthDurationValue(getExpression(), "P0M");
             }
             //If $arg2 is positive or negative zero, the result overflows and is handled as discussed in 10.1.1 Limits and Precision
-            if (((NumericValue) other).isZero()) {
+            if (value.isZero()) {
                 throw new XPathException(getExpression(), ErrorCodes.FODT0002, "Division by zero overflow");
             }
         }

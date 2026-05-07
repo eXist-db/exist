@@ -252,9 +252,9 @@ public class Field extends BasicFunction {
                 final String content = si.nextItem().getStringValue();
                 int currentPos = 0;
                 try (final Reader reader = new StringReader(content);
-                     final TokenStream tokenStream = analyzer.tokenStream(fieldName, reader)) {
-                    tokenStream.reset();
-                    final MarkableTokenFilter stream = new MarkableTokenFilter(tokenStream);
+                     final TokenStream tokenStream = analyzer.tokenStream(fieldName, reader);
+                     final MarkableTokenFilter stream = new MarkableTokenFilter(tokenStream)) {
+                    stream.reset();
                     while (stream.incrementToken()) {
                         String token = stream.getAttribute(CharTermAttribute.class).toString();
                         final Query query = terms.get(token);

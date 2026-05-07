@@ -21,15 +21,22 @@
  */
 package org.exist.client.security;
 
-import org.exist.client.DialogCompleteWithResponse;
+import static org.exist.security.SecurityManager.DBA_GROUP;
+import static org.exist.security.SecurityManager.DBA_USER;
+import static org.exist.security.SecurityManager.GUEST_GROUP;
+import static org.exist.security.SecurityManager.GUEST_USER;
+import static org.exist.security.SecurityManager.SYSTEM;
+
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.Serial;
 import java.util.Arrays;
 import java.util.Properties;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import org.exist.client.ClientFrame;
+import org.exist.client.DialogCompleteWithResponse;
 import org.exist.client.HighlightedTableCellRenderer;
 import org.exist.client.InteractiveClient;
 import org.exist.security.AXSchemaType;
@@ -37,7 +44,6 @@ import org.exist.security.Account;
 import org.exist.security.AccountComparator;
 import org.exist.security.EXistSchemaType;
 import org.exist.security.Group;
-import org.exist.security.SecurityManager;
 import org.exist.xmldb.UserManagementService;
 import org.xmldb.api.base.XMLDBException;
 
@@ -47,6 +53,7 @@ import org.xmldb.api.base.XMLDBException;
  */
 public class UserManagerDialog extends javax.swing.JFrame {
 
+    @Serial
     private static final long serialVersionUID = 2091215304766070041L;
 
     private UserManagementService userManagementService;
@@ -420,16 +427,15 @@ public class UserManagerDialog extends javax.swing.JFrame {
     
     private void btnCreateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCreateActionPerformed
         switch(tpUserManager.getSelectedIndex()) {
-            case 0:
+            case 0 -> 
                 showUserDialog();
-                break;
             
-            case 1:
+            case 1 -> 
                 showGroupDialog();
-                break;
             
-            default:
+            default -> {
                 return;
+            }
         }
     }//GEN-LAST:event_btnCreateActionPerformed
 
@@ -437,8 +443,8 @@ public class UserManagerDialog extends javax.swing.JFrame {
         final boolean userSelected = tblUsers.getSelectedRow() > -1;
         final String selectedUsername = getSelectedUsername();
         
-        boolean canModify = userSelected && !selectedUsername.equals(SecurityManager.SYSTEM);
-        boolean canDelete = userSelected && !(selectedUsername.equals(SecurityManager.SYSTEM) || selectedUsername.equals(SecurityManager.DBA_USER) || selectedUsername.equals(SecurityManager.GUEST_USER));
+        boolean canModify = userSelected && !selectedUsername.equals(SYSTEM);
+        boolean canDelete = userSelected && !(selectedUsername.equals(SYSTEM) || selectedUsername.equals(DBA_USER) || selectedUsername.equals(GUEST_USER));
         miEditUser.setEnabled(canModify);
         miRemoveUser.setEnabled(canDelete);
         
@@ -480,7 +486,7 @@ public class UserManagerDialog extends javax.swing.JFrame {
         final boolean groupSelected = tblGroups.getSelectedRow() > -1;
         final String selectedGroup = getSelectedGroup();
         
-        boolean canDelete = groupSelected && !(selectedGroup.equals(SecurityManager.DBA_GROUP) || selectedGroup.equals(SecurityManager.GUEST_GROUP));
+        boolean canDelete = groupSelected && !(selectedGroup.equals(DBA_GROUP) || selectedGroup.equals(GUEST_GROUP));
         
         miRemoveGroup.setEnabled(canDelete);
         

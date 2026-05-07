@@ -36,7 +36,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -80,7 +79,7 @@ class WindowsServiceManager implements ServiceManager {
                 .flatMap(exe -> Files.isExecutable(exe) ? Right(exe) : Left(new ServiceManagerException("Procrun is not executable at: " + exe)))
         );
 
-        this.existHome = ConfigurationHelper.getExistHome().orElse(Paths.get("."));
+        this.existHome = ConfigurationHelper.getExistHome().orElse(Path.of("."));
     }
 
     @Override
@@ -145,10 +144,11 @@ class WindowsServiceManager implements ServiceManager {
                 LOG.error("Could not install service, exitCode={}, output='{}'", exitCode, result);
                 throw new ServiceManagerException("Could not install service, exitCode=" + exitCode + ", output='" + result + "'");
             }
-        } catch (final IOException | InterruptedException e) {
-            if (e instanceof InterruptedException) {
-                Thread.currentThread().interrupt();
-            }
+        } catch (final InterruptedException e) {
+            Thread.currentThread().interrupt();
+            LOG.error("Could not install service: {}", e.getMessage(), e);
+            throw new ServiceManagerException("Could not install service: " + e.getMessage(), e);
+        } catch (final IOException e) {
             LOG.error("Could not install service: {}", e.getMessage(), e);
             throw new ServiceManagerException("Could not install service: " + e.getMessage(), e);
         }
@@ -188,10 +188,11 @@ class WindowsServiceManager implements ServiceManager {
                 LOG.error("Could not uninstall service, exitCode={}, output='{}'", exitCode, result);
                 throw new ServiceManagerException("Could not uninstall service, exitCode=" + exitCode + ", output='" + result + "'");
             }
-        } catch (final IOException | InterruptedException e) {
-            if (e instanceof InterruptedException) {
-                Thread.currentThread().interrupt();
-            }
+        } catch (final InterruptedException e) {
+            Thread.currentThread().interrupt();
+            LOG.error("Could not uninstall service: {}", e.getMessage(), e);
+            throw new ServiceManagerException("Could not uninstall service: " + e.getMessage(), e);
+        } catch (final IOException e) {
             LOG.error("Could not uninstall service: {}", e.getMessage(), e);
             throw new ServiceManagerException("Could not uninstall service: " + e.getMessage(), e);
         }
@@ -219,10 +220,11 @@ class WindowsServiceManager implements ServiceManager {
                 LOG.error("Could not start service, exitCode={}, output='{}'", exitCode, result);
                 throw new ServiceManagerException("Could not start service, exitCode=" + exitCode + ", output='" + result + "'");
             }
-        } catch (final IOException | InterruptedException e) {
-            if (e instanceof InterruptedException) {
-                Thread.currentThread().interrupt();
-            }
+        } catch (final InterruptedException e) {
+            Thread.currentThread().interrupt();
+            LOG.error("Could not start service: {}", e.getMessage(), e);
+            throw new ServiceManagerException("Could not start service: " + e.getMessage(), e);
+        } catch (final IOException e) {
             LOG.error("Could not start service: {}", e.getMessage(), e);
             throw new ServiceManagerException("Could not start service: " + e.getMessage(), e);
         }
@@ -260,10 +262,11 @@ class WindowsServiceManager implements ServiceManager {
                 LOG.error("Could not stop service, exitCode={}, output='{}'", exitCode, result);
                 throw new ServiceManagerException("Could not stop service, exitCode=" + exitCode + ", output='" + result + "'");
             }
-        } catch (final IOException | InterruptedException e) {
-            if (e instanceof InterruptedException) {
-                Thread.currentThread().interrupt();
-            }
+        } catch (final InterruptedException e) {
+            Thread.currentThread().interrupt();
+            LOG.error("Could not stop service: {}", e.getMessage(), e);
+            throw new ServiceManagerException("Could not stop service: " + e.getMessage(), e);
+        } catch (final IOException e) {
             LOG.error("Could not stop service: {}", e.getMessage(), e);
             throw new ServiceManagerException("Could not stop service: " + e.getMessage(), e);
         }
@@ -287,7 +290,7 @@ class WindowsServiceManager implements ServiceManager {
      * @return Path to jvm.dll or empty Optional
      */
     private Optional<String> findJvm() {
-        final Path javaHome = Paths.get(System.getProperty("java.home")).toAbsolutePath();
+        final Path javaHome = Path.of(System.getProperty("java.home")).toAbsolutePath();
         Path jvm = javaHome.resolve("bin").resolve("client").resolve("jvm.dll");
         if (Files.exists(jvm)) {
             return Optional.of(jvm.toString());
@@ -325,10 +328,10 @@ class WindowsServiceManager implements ServiceManager {
 
             throw new ServiceManagerException("Could not determine service status, exitCode=" + exitCode + ", output='" + result + "'");
 
-        } catch (final IOException | InterruptedException e) {
-            if (e instanceof InterruptedException) {
-                Thread.currentThread().interrupt();
-            }
+        } catch (final InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new ServiceManagerException(e);
+        } catch (final IOException e) {
             throw new ServiceManagerException(e);
         }
     }

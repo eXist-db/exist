@@ -221,16 +221,10 @@ public abstract class BinaryValue extends AtomicValue implements Closeable {
     @Override
     public String getStringValue() throws XPathException {
         final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream();
-        try {
+        try (baos) {
             streamTo(baos);
         } catch (final IOException ex) {
             throw new XPathException(getExpression(), "Unable to encode string value: " + ex.getMessage(), ex);
-        } finally {
-            try {
-                baos.close();   //close the stream to ensure all data is flushed
-            } catch (final IOException ioe) {
-                LOG.error("Unable to close stream: {}", ioe.getMessage(), ioe);
-            }
         }
         return baos.toString(UTF_8);
     }

@@ -109,10 +109,8 @@ public class FunDocumentURI extends Function {
                 result = new AnyURIValue(this, path);
             }
 
-        } else {
-            if (value instanceof DocumentImpl && ((DocumentImpl) value).getDocumentURI() != null) {
-                result = new AnyURIValue(this, ((DocumentImpl) value).getDocumentURI());
-            }
+        } else if (value instanceof DocumentImpl impl && impl.getDocumentURI() != null) {
+            result = new AnyURIValue(this, impl.getDocumentURI());
         }
 
         if (context.getProfiler().isEnabled()) {

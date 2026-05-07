@@ -58,14 +58,15 @@ public class Search extends BasicFunction {
                             new FunctionParameterSequenceType("fields", Type.STRING, Cardinality.ZERO_OR_MORE,
                                     "Fields to return in search results"),
                             new FunctionParameterSequenceType("options", Type.NODE, Cardinality.ZERO_OR_ONE,
-                                    "An XML fragment containing options to be passed to Lucene's query parser. The following " +
-                                            "options are supported (a description can be found in the docs):\n" +
-                                            "<options>\n" +
-                                            "   <default-operator>and|or</default-operator>\n" +
-                                            "   <phrase-slop>number</phrase-slop>\n" +
-                                            "   <leading-wildcard>yes|no</leading-wildcard>\n" +
-                                            "   <filter-rewrite>yes|no</filter-rewrite>\n" +
-                                            "</options>")
+                                    """
+                                    An XML fragment containing options to be passed to Lucene's query parser. The following \
+                                    options are supported (a description can be found in the docs):
+                                    <options>
+                                       <default-operator>and|or</default-operator>
+                                       <phrase-slop>number</phrase-slop>
+                                       <leading-wildcard>yes|no</leading-wildcard>
+                                       <filter-rewrite>yes|no</filter-rewrite>
+                                    </options>""")
                     },
                     new FunctionReturnSequenceType(Type.NODE, Cardinality.EXACTLY_ONE,
                             "All documents that are match by the query")),

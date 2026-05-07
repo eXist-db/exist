@@ -103,9 +103,10 @@ public class DeclareVariableTest {
         xqueryService.declareVariable("x", value);
 
         final String query =
-                "xquery version \"3.1\";\n" +
-                "declare variable $x external;\n" +
-                "$x";
+                """
+                xquery version "3.1";
+                declare variable $x external;
+                $x""";
 
         final CompiledExpression compiled = xqueryService.compile(query);
 

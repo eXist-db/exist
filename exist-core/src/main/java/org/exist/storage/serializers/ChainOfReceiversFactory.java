@@ -43,7 +43,7 @@ public class ChainOfReceiversFactory {
             try {
                 final Class<?> listenerClass = Class.forName(className);
                 if (ChainOfReceivers.class.isAssignableFrom(listenerClass)) {
-                    listener = (ChainOfReceivers) listenerClass.newInstance();
+                    listener = (ChainOfReceivers) listenerClass.getDeclaredConstructor().newInstance();
                     if (first == null) {
                         first = listener;
                         last = listener;

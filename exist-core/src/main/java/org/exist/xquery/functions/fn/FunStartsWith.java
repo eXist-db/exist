@@ -42,23 +42,30 @@ import org.exist.xquery.value.Type;
 public class FunStartsWith extends CollatingFunction {
 	
 	protected static final String FUNCTION_DESCRIPTION =
-		"Returns an xs:boolean indicating whether or not " +
-		"the value of $source starts with a sequence of collation " +
-		"units that provides a minimal match to the collation " +
-		"units of $prefix according to the collation that is used.\n\n" +
-		"Note:\n\n" +
-		"\"Minimal match\" is defined in [Unicode Collation Algorithm].\n\n" +
-		"If the value of $source or $prefix is the empty sequence, or " +
-		"contains only ignorable collation units, it is interpreted " +
-		"as the zero-length string.\n\nIf the value of $prefix is the " +
-		"zero-length string, then the function returns true. If the " +
-		"value of $source is the zero-length string and the value of " +
-		"$prefix is not the zero-length string, then the function " +
-		"returns false.\n\n" +
-		"The collation used by the invocation of this function is " +
-		"determined according to the rules in 7.3.1 Collations. " +
-		"If the specified collation does not support collation " +
-		"units an error may be raised [err:FOCH0004]. ";
+		"""
+        Returns an xs:boolean indicating whether or not \
+        the value of $source starts with a sequence of collation \
+        units that provides a minimal match to the collation \
+        units of $prefix according to the collation that is used.
+        
+        Note:
+        
+        "Minimal match" is defined in [Unicode Collation Algorithm].
+        
+        If the value of $source or $prefix is the empty sequence, or \
+        contains only ignorable collation units, it is interpreted \
+        as the zero-length string.
+        
+        If the value of $prefix is the \
+        zero-length string, then the function returns true. If the \
+        value of $source is the zero-length string and the value of \
+        $prefix is not the zero-length string, then the function \
+        returns false.
+        
+        The collation used by the invocation of this function is \
+        determined according to the rules in 7.3.1 Collations. \
+        If the specified collation does not support collation \
+        units an error may be raised [err:FOCH0004]. """;
 
 	protected static final FunctionParameterSequenceType ARG1_PARAM = new FunctionParameterSequenceType("source", Type.STRING, Cardinality.ZERO_OR_ONE, "The source string");
 	protected static final FunctionParameterSequenceType ARG2_PARAM = new FunctionParameterSequenceType("prefix", Type.STRING, Cardinality.ZERO_OR_ONE, "The string to determine if is a prefix of $source");

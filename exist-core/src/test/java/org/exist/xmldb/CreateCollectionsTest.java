@@ -26,7 +26,6 @@ import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -178,7 +177,7 @@ public class CreateCollectionsTest  {
         UserManagementService ums = testCollection.getService(UserManagementService.class);
         ums.chmod("rwxr-xr-x");
 
-        final Path fLogo = Paths.get(getClass().getClassLoader().getResource("org/exist/xquery/value/logo.jpg").toURI());
+        final Path fLogo = Path.of(getClass().getClassLoader().getResource("org/exist/xquery/value/logo.jpg").toURI());
         byte[] data = storeBinaryResourceFromFile(fLogo, testCollection);
         Object content = testCollection.getResource("logo.jpg").getContent();
         byte[] dataStored = (byte[])content;

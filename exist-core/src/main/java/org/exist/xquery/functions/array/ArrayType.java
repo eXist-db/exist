@@ -219,7 +219,7 @@ public class ArrayType extends FunctionReference implements Lookup.LookupSupport
 
     public FunctionSignature getSignature() {
         return ACCESSOR;
-    };
+    }
 
 
     @Override

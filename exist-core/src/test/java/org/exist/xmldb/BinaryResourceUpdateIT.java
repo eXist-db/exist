@@ -35,7 +35,7 @@ import org.xmldb.api.modules.XMLResource;
 
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 
 import static org.junit.Assert.assertNotNull;
 
@@ -80,14 +80,14 @@ public class BinaryResourceUpdateIT {
     public void updateBinarySameName() throws XMLDBException, URISyntaxException {
         for (int i = 0; i < REPEAT; i++) {
             BinaryResource binaryResource = testCollection.createResource("test.xml", BinaryResource.class);
-            binaryResource.setContent(Paths.get(binFile.toURI()));
+            binaryResource.setContent(Path.of(binFile.toURI()));
             testCollection.storeResource(binaryResource);
 
             Resource resource = testCollection.getResource("test.xml");
             assertNotNull(resource);
 
             XMLResource xmlResource = testCollection.createResource("test.xml", XMLResource.class);
-            xmlResource.setContent(Paths.get(xmlFile.toURI()));
+            xmlResource.setContent(Path.of(xmlFile.toURI()));
             testCollection.storeResource(xmlResource);
 
             resource = testCollection.getResource("test.xml");

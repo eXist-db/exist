@@ -1707,8 +1707,8 @@ public class BlobStoreImpl implements BlobStore {
 
             @Override
             public int compareTo(final Request other) {
-                if (other instanceof RequestDeleteBlobFile) {
-                    return ((RequestDeleteBlobFile) other).blobReference.readers.get() - blobReference.readers.get();
+                if (other instanceof RequestDeleteBlobFile file) {
+                    return file.blobReference.readers.get() - blobReference.readers.get();
                 } else {
                     // This class has higher priority than other classes
                     return 1;
@@ -1770,8 +1770,8 @@ public class BlobStoreImpl implements BlobStore {
 
             @Override
             public int compareTo(final Request other) {
-                if (other instanceof RequestDeleteStagedBlobFile) {
-                    return stagedBlobUuid.compareTo(((RequestDeleteStagedBlobFile)other).stagedBlobUuid);
+                if (other instanceof RequestDeleteStagedBlobFile file) {
+                    return stagedBlobUuid.compareTo(file.stagedBlobUuid);
                 } else {
                     // This class has lower priority than other classes
                     return -1;

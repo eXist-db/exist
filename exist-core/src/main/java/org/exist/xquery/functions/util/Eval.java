@@ -99,17 +99,19 @@ public class Eval extends BasicFunction {
             "inner expression. " +
             "The function returns an empty sequence if a whitespace string is passed.";
 
-    private static final String contextArgumentText = "The query inherits the context described by the XML fragment in this parameter. " +
-            "It should have the format:\n" +
-            "<static-context>\n" +
-            "\t<output-size-limit value=\"-1\"/>\n" +
-            "\t<unbind-namespace uri=\"http://exist.sourceforge.net/NS/exist\"/>\n" +
-            "\t<current-dateTime value=\"dateTime\"/>\n" +
-            "\t<implicit-timezone value=\"duration\"/>\n" +
-            "\t<variable name=\"qname\">variable value</variable>\n" +
-            "\t<default-context>explicitly provide default context here</default-context>\n" +
-            "\t<mapModule namespace=\"uri\" uri=\"uri_to_module\"/>\n" +
-            "</static-context>.\n";
+    private static final String contextArgumentText = """
+            The query inherits the context described by the XML fragment in this parameter. \
+            It should have the format:
+            <static-context>
+            	<output-size-limit value="-1"/>
+            	<unbind-namespace uri="http://exist.sourceforge.net/NS/exist"/>
+            	<current-dateTime value="dateTime"/>
+            	<implicit-timezone value="duration"/>
+            	<variable name="qname">variable value</variable>
+            	<default-context>explicitly provide default context here</default-context>
+            	<mapModule namespace="uri" uri="uri_to_module"/>
+            </static-context>.
+            """;
 
     private static final FunctionParameterSequenceType FS_PARAM_EXPRESSION = param(
             "expression", Type.ITEM, evalArgumentText);
@@ -304,11 +306,11 @@ public class Eval extends BasicFunction {
         if (Type.subTypeOf(expr.getType(), Type.ANY_URI)) {
             String uri = null;
 
-            if (querySource instanceof DBSource) {
-                final XmldbURI documentPath = ((DBSource)querySource).getDocumentPath();
+            if (querySource instanceof DBSource source1) {
+                final XmldbURI documentPath = source1.getDocumentPath();
                 uri = XmldbURI.EMBEDDED_SERVER_URI.append(documentPath).removeLastSegment().toString();
-            } else if (querySource instanceof FileSource) {
-                uri = ((FileSource) querySource).getPath().getParent().toString();
+            } else if (querySource instanceof FileSource source) {
+                uri = source.getPath().getParent().toString();
             }
 
             if (uri != null) {
@@ -595,8 +597,8 @@ public class Eval extends BasicFunction {
                     value = loadVarFromURI(source);
                 } else {
                     value = (NodeValue) elem.getFirstChild();
-                    if (value instanceof ReferenceNode) {
-                        value = ((ReferenceNode) value).getReference();
+                    if (value instanceof ReferenceNode node) {
+                        value = node.getReference();
                     }
                 }
                 final String type = elem.getAttribute("type");
@@ -633,8 +635,8 @@ public class Eval extends BasicFunction {
                 final Element elem = (Element) child;
                 //TODO : iterate over the children
                 NodeValue value = (NodeValue) elem.getFirstChild();
-                if (value instanceof ReferenceNode) {
-                    value = ((ReferenceNode) value).getReference();
+                if (value instanceof ReferenceNode node) {
+                    value = node.getReference();
                 }
                 final XmldbURI[] pathes = new XmldbURI[1];
                 //TODO : aggregate !

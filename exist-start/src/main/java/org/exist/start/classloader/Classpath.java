@@ -44,7 +44,6 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.function.Supplier;
 
@@ -80,7 +79,7 @@ public class Classpath implements Iterable<Path> {
     public boolean addComponent(final String component) {
         if (component != null && !component.isEmpty()) {
             try {
-                final Path path = Paths.get(component);
+                final Path path = Path.of(component);
                 return addComponent(path);
             } catch (final InvalidPathException e) {
                 e.printStackTrace();
@@ -133,8 +132,7 @@ public class Classpath implements Iterable<Path> {
                             return Optional.<URL>empty();
                         }
                     })
-                .filter(Optional::isPresent)
-                .map(Optional::get)
+                .flatMap(Optional::stream)
                 .toArray(URL[]::new);
 
         // try and ensure we have a classloader

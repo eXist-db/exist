@@ -30,7 +30,6 @@ import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -151,7 +150,7 @@ public class TemporaryFileManager {
      * from the last time this was run
      */
     private void cleanupOldTempFolders() {
-        final Path tmpDir = Paths.get(System.getProperty("java.io.tmpdir"));
+        final Path tmpDir = Path.of(System.getProperty("java.io.tmpdir"));
         try {
             for (final Path dir : FileUtils.list(tmpDir, path -> Files.isDirectory(path) && path.startsWith(FOLDER_PREFIX))) {
                 final Path lockPath = dir.resolve(LOCK_FILENAME);

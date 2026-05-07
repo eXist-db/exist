@@ -23,7 +23,6 @@ package org.exist.util;
 
 import java.net.URISyntaxException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import static org.junit.Assert.*;
 
@@ -49,7 +48,7 @@ public class MimeTableTest  {
 	 */
     @Test
 	public void testDistributionVersionOfMimeTypesXml() throws URISyntaxException {
-		final Path mimeTypes = Paths.get(getClass().getResource("mime-types.xml").toURI());
+		final Path mimeTypes = Path.of(getClass().getResource("mime-types.xml").toURI());
 
 		MimeTable mimeTable = new MimeTable(mimeTypes);
 		assertNotNull("Mime table not found", mimeTable);
@@ -84,7 +83,7 @@ public class MimeTableTest  {
 	 */
     @Test
 	public void testWithDefaultResourceTypeFeature() throws URISyntaxException {
-		final Path mimeTypes = Paths.get(getClass().getResource("mime-types-xml-default.xml").toURI());
+		final Path mimeTypes = Path.of(getClass().getResource("mime-types-xml-default.xml").toURI());
 
 		MimeTable mimeTable = new MimeTable(mimeTypes);
 		assertNotNull("Mime table not found", mimeTable);
@@ -123,7 +122,7 @@ public class MimeTableTest  {
 	 */
     @Test
 	public void testWithDefaultMimeTypeFeature() throws URISyntaxException {
-		final Path mimeTypes = Paths.get(getClass().getResource("mime-types-foo-default.xml").toURI());
+		final Path mimeTypes = Path.of(getClass().getResource("mime-types-foo-default.xml").toURI());
 
 		MimeTable mimeTable = new MimeTable(mimeTypes);
 		assertNotNull("Mime table not found", mimeTable);

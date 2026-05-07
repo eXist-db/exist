@@ -53,11 +53,12 @@ public class AnalyzerConfigTest {
     @Test
     public void parameterFromCharArray() throws ParserConfigurationException, IOException, SAXException, AnalyzerConfig.ParameterException {
         final String strParam =
-                "<param xmlns=\"http://exist-db.org/collection-config/1.0\" name=\"punctuationDictionary\" type=\"char[]\">\n" +
-                "    <value>'</value>\n" +
-                "    <value>-</value>\n" +
-                "    <value>’</value>\n" +
-                "</param>";
+                """
+                <param xmlns="http://exist-db.org/collection-config/1.0" name="punctuationDictionary" type="char[]">
+                    <value>'</value>
+                    <value>-</value>
+                    <value>’</value>
+                </param>""";
 
         final Element elemParam = parse(strParam).getDocumentElement();
         final AnalyzerConfig.KeyTypedValue<?> constructorParameter = AnalyzerConfig.getConstructorParameter(elemParam);
@@ -70,11 +71,12 @@ public class AnalyzerConfigTest {
     @Test(expected = AnalyzerConfig.ParameterException.class)
     public void parameterFromInvalidCharArray() throws ParserConfigurationException, IOException, SAXException, AnalyzerConfig.ParameterException {
         final String strParam =
-                "<param xmlns=\"http://exist-db.org/collection-config/1.0\" name=\"punctuationDictionary\" type=\"char[]\">\n" +
-                        "    <value>'</value>\n" +
-                        "    <value/>\n" +
-                        "    <value>’</value>\n" +
-                        "</param>";
+                """
+                <param xmlns="http://exist-db.org/collection-config/1.0" name="punctuationDictionary" type="char[]">
+                    <value>'</value>
+                    <value/>
+                    <value>’</value>
+                </param>""";
 
         final Element elemParam = parse(strParam).getDocumentElement();
         AnalyzerConfig.getConstructorParameter(elemParam);
@@ -83,12 +85,13 @@ public class AnalyzerConfigTest {
     @Test
     public void parameterFromStringArray() throws ParserConfigurationException, IOException, SAXException, AnalyzerConfig.ParameterException {
         final String strParam =
-                "<param xmlns=\"http://exist-db.org/collection-config/1.0\" name=\"dictionary\" type=\"java.lang.String[]\">\n" +
-                "    <value>hello</value>\n" +
-                "    <value>hi</value>\n" +
-                "    <value/>\n" +
-                "    <value>goodbye</value>\n" +
-                "</param>";
+                """
+                <param xmlns="http://exist-db.org/collection-config/1.0" name="dictionary" type="java.lang.String[]">
+                    <value>hello</value>
+                    <value>hi</value>
+                    <value/>
+                    <value>goodbye</value>
+                </param>""";
 
         final Element elemParam = parse(strParam).getDocumentElement();
         final AnalyzerConfig.KeyTypedValue<?> constructorParameter = AnalyzerConfig.getConstructorParameter(elemParam);
@@ -101,13 +104,14 @@ public class AnalyzerConfigTest {
     @Test
     public void allParametersIntegerAndSet() throws ParserConfigurationException, IOException, SAXException, AnalyzerConfig.ParameterException {
         final String strAnalyzer =
-        "<analyzer xmlns=\"http://exist-db.org/collection-config/1.0\" id=\"cus\" class=\"ExampleAnalyzer\">\n" +
-        "      <param name=\"minimumTermLength\" type=\"java.lang.Integer\" value=\"2\"/>\n" +
-        "      <param name=\"punctuationDictionary\" type=\"java.util.Set\">\n" +
-        "          <value>'</value>\n" +
-        "          <value>-</value>\n" +
-        "      </param>\n" +
-        "</analyzer>";
+        """
+        <analyzer xmlns="http://exist-db.org/collection-config/1.0" id="cus" class="ExampleAnalyzer">
+              <param name="minimumTermLength" type="java.lang.Integer" value="2"/>
+              <param name="punctuationDictionary" type="java.util.Set">
+                  <value>'</value>
+                  <value>-</value>
+              </param>
+        </analyzer>""";
 
         final Element elemAnalyzer = parse(strAnalyzer).getDocumentElement();
         final List<AnalyzerConfig.KeyTypedValue<?>> extractedConstructorArgs = AnalyzerConfig.getAllConstructorParameters(elemAnalyzer);
@@ -129,13 +133,14 @@ public class AnalyzerConfigTest {
     @Test
     public void allParametersIntAndSet() throws ParserConfigurationException, IOException, SAXException, AnalyzerConfig.ParameterException {
         final String strAnalyzer =
-                "<analyzer xmlns=\"http://exist-db.org/collection-config/1.0\" id=\"cus\" class=\"ExampleAnalyzer\">\n" +
-                "      <param name=\"minimumTermLength\" type=\"int\" value=\"2\"/>\n" +
-                "      <param name=\"punctuationDictionary\" type=\"java.util.Set\">\n" +
-                "          <value>'</value>\n" +
-                "          <value>-</value>\n" +
-                "      </param>\n" +
-                "</analyzer>";
+                """
+                <analyzer xmlns="http://exist-db.org/collection-config/1.0" id="cus" class="ExampleAnalyzer">
+                      <param name="minimumTermLength" type="int" value="2"/>
+                      <param name="punctuationDictionary" type="java.util.Set">
+                          <value>'</value>
+                          <value>-</value>
+                      </param>
+                </analyzer>""";
 
         final Element elemAnalyzer = parse(strAnalyzer).getDocumentElement();
         final List<AnalyzerConfig.KeyTypedValue<?>> extractedConstructorArgs = AnalyzerConfig.getAllConstructorParameters(elemAnalyzer);
@@ -157,13 +162,14 @@ public class AnalyzerConfigTest {
     @Test
     public void allParametersBooleanAndSet() throws ParserConfigurationException, IOException, SAXException, AnalyzerConfig.ParameterException {
         final String strAnalyzer =
-                "<analyzer xmlns=\"http://exist-db.org/collection-config/1.0\" id=\"cus\" class=\"ExampleAnalyzer\">\n" +
-                        "      <param name=\"minimumTermLength\" type=\"java.lang.Boolean\" value=\"true\"/>\n" +
-                        "      <param name=\"punctuationDictionary\" type=\"java.util.Set\">\n" +
-                        "          <value>'</value>\n" +
-                        "          <value>-</value>\n" +
-                        "      </param>\n" +
-                        "</analyzer>";
+                """
+                <analyzer xmlns="http://exist-db.org/collection-config/1.0" id="cus" class="ExampleAnalyzer">
+                      <param name="minimumTermLength" type="java.lang.Boolean" value="true"/>
+                      <param name="punctuationDictionary" type="java.util.Set">
+                          <value>'</value>
+                          <value>-</value>
+                      </param>
+                </analyzer>""";
 
         final Element elemAnalyzer = parse(strAnalyzer).getDocumentElement();
         final List<AnalyzerConfig.KeyTypedValue<?>> extractedConstructorArgs = AnalyzerConfig.getAllConstructorParameters(elemAnalyzer);
@@ -185,13 +191,14 @@ public class AnalyzerConfigTest {
     @Test
     public void allParametersPrimitiveBooleanAndSet() throws ParserConfigurationException, IOException, SAXException, AnalyzerConfig.ParameterException {
         final String strAnalyzer =
-                "<analyzer xmlns=\"http://exist-db.org/collection-config/1.0\" id=\"cus\" class=\"ExampleAnalyzer\">\n" +
-                        "      <param name=\"minimumTermLength\" type=\"boolean\" value=\"true\"/>\n" +
-                        "      <param name=\"punctuationDictionary\" type=\"java.util.Set\">\n" +
-                        "          <value>'</value>\n" +
-                        "          <value>-</value>\n" +
-                        "      </param>\n" +
-                        "</analyzer>";
+                """
+                <analyzer xmlns="http://exist-db.org/collection-config/1.0" id="cus" class="ExampleAnalyzer">
+                      <param name="minimumTermLength" type="boolean" value="true"/>
+                      <param name="punctuationDictionary" type="java.util.Set">
+                          <value>'</value>
+                          <value>-</value>
+                      </param>
+                </analyzer>""";
 
         final Element elemAnalyzer = parse(strAnalyzer).getDocumentElement();
         final List<AnalyzerConfig.KeyTypedValue<?>> extractedConstructorArgs = AnalyzerConfig.getAllConstructorParameters(elemAnalyzer);
@@ -213,12 +220,13 @@ public class AnalyzerConfigTest {
     @Test
     public void allParametersCharArray() throws ParserConfigurationException, IOException, SAXException, AnalyzerConfig.ParameterException {
         final String strAnalyzer =
-                "<analyzer xmlns=\"http://exist-db.org/collection-config/1.0\" id=\"cus\" class=\"ExampleAnalyzer\">\n" +
-                        "      <param name=\"punctuationDictionary\" type=\"char[]\">\n" +
-                        "          <value>'</value>\n" +
-                        "          <value>-</value>\n" +
-                        "      </param>\n" +
-                        "</analyzer>";
+                """
+                <analyzer xmlns="http://exist-db.org/collection-config/1.0" id="cus" class="ExampleAnalyzer">
+                      <param name="punctuationDictionary" type="char[]">
+                          <value>'</value>
+                          <value>-</value>
+                      </param>
+                </analyzer>""";
 
         final Element elemAnalyzer = parse(strAnalyzer).getDocumentElement();
         final List<AnalyzerConfig.KeyTypedValue<?>> extractedConstructorArgs = AnalyzerConfig.getAllConstructorParameters(elemAnalyzer);
@@ -234,12 +242,13 @@ public class AnalyzerConfigTest {
     @Test
     public void allParametersStringArray() throws ParserConfigurationException, IOException, SAXException, AnalyzerConfig.ParameterException {
         final String strAnalyzer =
-                "<analyzer xmlns=\"http://exist-db.org/collection-config/1.0\" id=\"cus\" class=\"ExampleAnalyzer\">\n" +
-                        "      <param name=\"punctuationDictionary\" type=\"java.lang.String[]\">\n" +
-                        "          <value>abc</value>\n" +
-                        "          <value>def</value>\n" +
-                        "      </param>\n" +
-                        "</analyzer>";
+                """
+                <analyzer xmlns="http://exist-db.org/collection-config/1.0" id="cus" class="ExampleAnalyzer">
+                      <param name="punctuationDictionary" type="java.lang.String[]">
+                          <value>abc</value>
+                          <value>def</value>
+                      </param>
+                </analyzer>""";
 
         final Element elemAnalyzer = parse(strAnalyzer).getDocumentElement();
         final List<AnalyzerConfig.KeyTypedValue<?>> extractedConstructorArgs = AnalyzerConfig.getAllConstructorParameters(elemAnalyzer);

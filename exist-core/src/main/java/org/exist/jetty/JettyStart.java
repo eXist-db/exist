@@ -57,7 +57,6 @@ import java.io.Reader;
 import java.net.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -153,9 +152,9 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
 
         final Path jettyConfig;
         if (standalone) {
-            jettyConfig = Paths.get(jettyProperty).normalize().resolve("etc").resolve(Main.STANDALONE_ENABLED_JETTY_CONFIGS);
+            jettyConfig = Path.of(jettyProperty).normalize().resolve("etc").resolve(Main.STANDALONE_ENABLED_JETTY_CONFIGS);
         } else {
-            jettyConfig = Paths.get(jettyProperty).normalize().resolve("etc").resolve(Main.STANDARD_ENABLED_JETTY_CONFIGS);
+            jettyConfig = Path.of(jettyProperty).normalize().resolve("etc").resolve(Main.STANDARD_ENABLED_JETTY_CONFIGS);
         }
         run(new String[] { jettyConfig.toAbsolutePath().toString() }, null);
     }
@@ -166,7 +165,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
             return;
         }
 
-        Path jettyConfig = Paths.get(args[0]).normalize();
+        Path jettyConfig = Path.of(args[0]).normalize();
         boolean configFromClasspath = false;
         if (Files.notExists(jettyConfig)) {
             logger.warn("Configuration file: {} does not exist!", jettyConfig.toAbsolutePath().toString());
@@ -177,7 +176,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
             final URL jettyConfigUrl = getClass().getResource("etc/" + jettyConfigFileName);
             if (jettyConfigUrl != null) {
                 try {
-                    jettyConfig = Paths.get(jettyConfigUrl.toURI()).normalize();
+                    jettyConfig = Path.of(jettyConfigUrl.toURI()).normalize();
                     configFromClasspath = true;
                 } catch (final URISyntaxException e) {
                     logger.error("Unable to retrieve configuration file from classpath: {}", e.getMessage(), e);
@@ -273,7 +272,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
 
             // start Jetty
             final Optional<Server> maybeServer = startJetty(configuredObjects);
-            if(!maybeServer.isPresent()) {
+            if(maybeServer.isEmpty()) {
                 logger.error("Unable to find a server to start in jetty configurations");
                 throw new IllegalStateException();
             }

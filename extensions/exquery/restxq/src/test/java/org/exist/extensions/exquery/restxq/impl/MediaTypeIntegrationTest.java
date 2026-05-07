@@ -46,52 +46,54 @@ public class MediaTypeIntegrationTest extends AbstractClassIntegrationTest {
     private static String TEST_COLLECTION = "/db/restxq/media-type-integration-test";
 
     private static String XQUERY1 =
-            "xquery version \"3.0\";\n" +
-            "\n" +
-            "module namespace mod1 = \"http://mod1\";\n" +
-            "\n" +
-            "declare namespace rest = \"http://exquery.org/ns/restxq\";\n" +
-            "declare namespace output = \"http://www.w3.org/2010/xslt-xquery-serialization\";\n" +
-            "\n" +
-            "declare %private variable $mod1:data := document { <person><firstName>Adam</firstName><lastName>Retter</lastName></person> } ;\n" +
-            "\n" +
-            "declare\n" +
-            "    %rest:GET\n" +
-            "    %rest:path(\"/media-type-json1\")\n" +
-            "    %output:media-type(\"application/json\")\n" +
-            "    %output:method(\"json\")\n" +
-            "function mod1:media-type-json1() {\n" +
-            "    $mod1:data\n" +
-            "};\n" +
-            "\n" +
-            "declare\n" +
-            "    %rest:GET\n" +
-            "    %rest:path(\"/media-type-json2\")\n" +
-            "    %output:media-type(\"application/json\")\n" +
-            "    %output:method(\"json\")\n" +
-            "function mod1:media-type-json2() {\n" +
-            "    $mod1:data/person\n" +
-            "};\n" +
-            "\n" +
-            "declare\n" +
-            "    %rest:GET\n" +
-            "    %rest:path(\"/media-type-xml1\")\n" +
-            "    %output:media-type(\"application/xml\")\n" +
-            "    %output:method(\"xml\")\n" +
-            "    %output:indent(\"no\")\n" +
-            "function mod1:media-type-xml1() {\n" +
-            "    $mod1:data\n" +
-            "};\n" +
-            "\n" +
-            "declare\n" +
-            "    %rest:GET\n" +
-            "    %rest:path(\"/media-type-xml2\")\n" +
-            "    %output:media-type(\"application/xml\")\n" +
-            "    %output:method(\"xml\")\n" +
-            "    %output:indent(\"no\")\n" +
-            "function mod1:media-type-xml2() {\n" +
-            "    $mod1:data/person\n" +
-            "};\n";
+            """
+            xquery version "3.0";
+            
+            module namespace mod1 = "http://mod1";
+            
+            declare namespace rest = "http://exquery.org/ns/restxq";
+            declare namespace output = "http://www.w3.org/2010/xslt-xquery-serialization";
+            
+            declare %private variable $mod1:data := document { <person><firstName>Adam</firstName><lastName>Retter</lastName></person> } ;
+            
+            declare
+                %rest:GET
+                %rest:path("/media-type-json1")
+                %output:media-type("application/json")
+                %output:method("json")
+            function mod1:media-type-json1() {
+                $mod1:data
+            };
+            
+            declare
+                %rest:GET
+                %rest:path("/media-type-json2")
+                %output:media-type("application/json")
+                %output:method("json")
+            function mod1:media-type-json2() {
+                $mod1:data/person
+            };
+            
+            declare
+                %rest:GET
+                %rest:path("/media-type-xml1")
+                %output:media-type("application/xml")
+                %output:method("xml")
+                %output:indent("no")
+            function mod1:media-type-xml1() {
+                $mod1:data
+            };
+            
+            declare
+                %rest:GET
+                %rest:path("/media-type-xml2")
+                %output:media-type("application/xml")
+                %output:method("xml")
+                %output:indent("no")
+            function mod1:media-type-xml2() {
+                $mod1:data/person
+            };
+            """;
     private static String XQUERY1_FILENAME = "restxq-tests1.xqm";
 
     @BeforeClass

@@ -80,8 +80,8 @@ public class NamedFunctionReference extends AbstractExpression {
             }
             case Function function -> {
                 final InternalFunctionCall funcCall;
-                if (fun instanceof InternalFunctionCall) {
-                    funcCall = (InternalFunctionCall) fun;
+                if (fun instanceof InternalFunctionCall call) {
+                    funcCall = call;
                 } else {
                     funcCall = new InternalFunctionCall((Function) fun);
                 }

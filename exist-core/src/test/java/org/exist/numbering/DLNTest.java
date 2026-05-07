@@ -103,7 +103,7 @@ public class DLNTest {
 
     @Test
     public void levelIds() {
-        DLN dln = new DLN("1.33.56.2.98.1.27");;
+        DLN dln = new DLN("1.33.56.2.98.1.27");
         assertEquals("1.33.56.2.98.1.27", dln.toString());
         
         dln = new DLN("1.56.4.33.30.11.9.40.3.2");

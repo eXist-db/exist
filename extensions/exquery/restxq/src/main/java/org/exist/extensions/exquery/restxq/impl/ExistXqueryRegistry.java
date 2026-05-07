@@ -383,19 +383,19 @@ public class ExistXqueryRegistry {
                 if(errorVals != null && errorVals.getItemCount() > 0){
                     
                     final Item errorVal1 = errorVals.itemAt(0);
-                    if(errorVal1 instanceof StringValue) {
+                    if(errorVal1 instanceof StringValue value) {
                         missingModuleHint = new MissingModuleHint();
-                        missingModuleHint.moduleHint = ((StringValue)errorVal1).getStringValue();
+                        missingModuleHint.moduleHint = value.getStringValue();
                     }
                     
                     if(errorVals.getItemCount() == 2) {
                         final Item errorVal2 = errorVals.itemAt(1);
-                        if(errorVal2 instanceof StringValue) {
+                        if(errorVal2 instanceof StringValue value) {
                             if(missingModuleHint == null) {
                                 missingModuleHint = new MissingModuleHint();
                             }
                             
-                            final String dependantModuleUri = ((StringValue)errorVal2).getStringValue();
+                            final String dependantModuleUri = value.getStringValue();
                             
                             //path will be of xmldb:exist:///db/a/c/1.xqm form so change it to /db/a/c/1.xqm form
                             missingModuleHint.dependantModule = makeDbAbsolutePath(dependantModuleUri);

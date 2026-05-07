@@ -49,29 +49,43 @@ public class FunReplace extends BasicFunction {
 	private static final QName FS_REPLACE_NAME = new QName("replace", Function.BUILTIN_FUNCTION_NS);
 
 	private static final String FS_REPLACE_DESCRIPTION =
-        "The function returns the xs:string that is obtained by replacing each non-overlapping substring " +
-        "of $input that matches the given $pattern with an occurrence of the $replacement string.\n\n" + 
-        "The $flags argument is interpreted in the same manner as for the fn:matches() function.\n\n" +
-        "Calling the four argument version with the $flags argument set to a " +
-        "zero-length string gives the same effect as using the three argument version.\n\n" +
-        "If $input is the empty sequence, it is interpreted as the zero-length string.\n\nIf two overlapping " +
-        "substrings of $input both match the $pattern, then only the first one (that is, the one whose first " +
-        "character comes first in the $input string) is replaced.\n\nWithin the $replacement string, a variable " +
-        "$N may be used to refer to the substring captured by the Nth parenthesized sub-expression in the " +
-        "regular expression. For each match of the pattern, these variables are assigned the value of the " +
-        "content matched by the relevant sub-expression, and the modified replacement string is then " +
-        "substituted for the characters in $input that matched the pattern. $0 refers to the substring " +
-        "captured by the regular expression as a whole.\n\nMore specifically, the rules are as follows, " +
-        "where S is the number of parenthesized sub-expressions in the regular expression, and N is the " +
-        "decimal number formed by taking all the digits that consecutively follow the $ character:\n\n" +
-        "1.  If N=0, then the variable is replaced by the substring matched by the regular expression as a whole.\n\n" +
-        "2.  If 1<=N<=S, then the variable is replaced by the substring captured by the Nth parenthesized " +
-        "sub-expression. If the Nth parenthesized sub-expression was not matched, then the variable " +
-        "is replaced by the zero-length string.\n\n" +
-        "3.  If S<N<=9, then the variable is replaced by the zero-length string.\n\n" +
-        "4.  Otherwise (if N>S and N>9), the last digit of N is taken to be a literal character to be " +
-        "included \"as is\" in the replacement string, and the rules are reapplied using the number N " +
-        "formed by stripping off this last digit.";
+        """
+        The function returns the xs:string that is obtained by replacing each non-overlapping substring \
+        of $input that matches the given $pattern with an occurrence of the $replacement string.
+        
+        The $flags argument is interpreted in the same manner as for the fn:matches() function.
+        
+        Calling the four argument version with the $flags argument set to a \
+        zero-length string gives the same effect as using the three argument version.
+        
+        If $input is the empty sequence, it is interpreted as the zero-length string.
+        
+        If two overlapping \
+        substrings of $input both match the $pattern, then only the first one (that is, the one whose first \
+        character comes first in the $input string) is replaced.
+        
+        Within the $replacement string, a variable \
+        $N may be used to refer to the substring captured by the Nth parenthesized sub-expression in the \
+        regular expression. For each match of the pattern, these variables are assigned the value of the \
+        content matched by the relevant sub-expression, and the modified replacement string is then \
+        substituted for the characters in $input that matched the pattern. $0 refers to the substring \
+        captured by the regular expression as a whole.
+        
+        More specifically, the rules are as follows, \
+        where S is the number of parenthesized sub-expressions in the regular expression, and N is the \
+        decimal number formed by taking all the digits that consecutively follow the $ character:
+        
+        1.  If N=0, then the variable is replaced by the substring matched by the regular expression as a whole.
+        
+        2.  If 1<=N<=S, then the variable is replaced by the substring captured by the Nth parenthesized \
+        sub-expression. If the Nth parenthesized sub-expression was not matched, then the variable \
+        is replaced by the zero-length string.
+        
+        3.  If S<N<=9, then the variable is replaced by the zero-length string.
+        
+        4.  Otherwise (if N>S and N>9), the last digit of N is taken to be a literal character to be \
+        included "as is" in the replacement string, and the rules are reapplied using the number N \
+        formed by stripping off this last digit.""";
 
 	private static final FunctionParameterSequenceType FS_TOKENIZE_PARAM_INPUT = optParam("input", Type.STRING, "The input string");
 	private static final FunctionParameterSequenceType FS_TOKENIZE_PARAM_PATTERN = param("pattern", Type.STRING, "The pattern to match");

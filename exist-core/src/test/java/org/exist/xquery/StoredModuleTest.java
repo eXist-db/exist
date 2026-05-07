@@ -57,14 +57,16 @@ public class StoredModuleTest {
     public static final TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     private final static String MODULE =
-            "module namespace itg-modules = \"http://localhost:80/itg/xquery\";\n" +
-            "declare variable $itg-modules:colls as xs:string+ external;\n" +
-            "declare variable $itg-modules:coll as xs:string external;\n" +
-            "declare variable $itg-modules:ordinal as xs:integer external;\n" +
-            "declare function itg-modules:check-coll() as xs:boolean {\n" +
-            "   if (fn:empty($itg-modules:coll)) then fn:false()\n" +
-            "   else fn:true()\n" +
-            "};";
+            """
+            module namespace itg-modules = "http://localhost:80/itg/xquery";
+            declare variable $itg-modules:colls as xs:string+ external;
+            declare variable $itg-modules:coll as xs:string external;
+            declare variable $itg-modules:ordinal as xs:integer external;
+            declare function itg-modules:check-coll() as xs:boolean {
+               if (fn:empty($itg-modules:coll)) then fn:false()
+               else fn:true()
+            };\
+            """;
 
     private Collection createCollection(String collectionName) throws XMLDBException {
         Collection collection = existEmbeddedServer.getRoot().getChildCollection(collectionName);

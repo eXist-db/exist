@@ -24,10 +24,10 @@ package org.exist.webstart;
 
 import java.io.EOFException;
 import java.io.IOException;
+import java.io.Serial;
 import java.net.SocketException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.function.Supplier;
 import jakarta.servlet.ServletException;
@@ -45,6 +45,7 @@ import static com.evolvedbinary.j8fu.OptionalUtil.or;
  */
 public class JnlpServlet extends HttpServlet {
 
+    @Serial
     private static final long serialVersionUID = 1238966115449192258L;
 
     private static final Logger LOGGER = LogManager.getLogger(JnlpServlet.class);
@@ -59,17 +60,17 @@ public class JnlpServlet extends HttpServlet {
         LOGGER.info("Initializing JNLP servlet");
 
         final Optional<Path> libDir = or(
-            Optional.ofNullable(System.getProperty("app.repo")).map(Paths::get).filter(Files::exists),
+            Optional.ofNullable(System.getProperty("app.repo")).map(Path::of).filter(Files::exists),
             (Supplier<Optional<Path>>) () -> or ( // using explicit type declaration in order to circumvent AspectJ compiler bug, see https://bugs.eclipse.org/bugs/show_bug.cgi?id=553623
-                    Optional.ofNullable(System.getProperty("app.home")).map(Paths::get).map(p -> p.resolve("lib")).filter(Files::exists),
+                    Optional.ofNullable(System.getProperty("app.home")).map(Path::of).map(p -> p.resolve("lib")).filter(Files::exists),
                     (Supplier<Optional<Path>>) () -> or ( // using explicit type declaration in order to circumvent AspectJ compiler bug, see https://bugs.eclipse.org/bugs/show_bug.cgi?id=553623
-                            Optional.ofNullable(System.getProperty("exist.home")).map(Paths::get).map(p -> p.resolve("lib")).filter(Files::exists),
-                            () -> Optional.ofNullable(getServletContext().getRealPath("/")).map(Paths::get).map(p -> p.resolve("lib")).filter(Files::exists)
+                            Optional.ofNullable(System.getProperty("exist.home")).map(Path::of).map(p -> p.resolve("lib")).filter(Files::exists),
+                            () -> Optional.ofNullable(getServletContext().getRealPath("/")).map(Path::of).map(p -> p.resolve("lib")).filter(Files::exists)
                     )
             )
         );
 
-        if (!libDir.isPresent()) {
+        if (libDir.isEmpty()) {
             final String txt = "Could not locate lib directory. Webstart is not available.";
             LOGGER.error(txt);
             throw new ServletException(txt);

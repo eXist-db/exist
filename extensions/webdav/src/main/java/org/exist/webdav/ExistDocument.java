@@ -178,7 +178,7 @@ public class ExistDocument extends ExistResource {
                         os.flush();
                     } catch (SAXException e) {
                         LOG.error(e);
-                        throw new IOException(String.format("Error while serializing XML document: %s", e.getMessage()), e);
+                        throw new IOException("Error while serializing XML document: %s".formatted(e.getMessage()), e);
                     }
 
                 } else {
@@ -465,7 +465,7 @@ public class ExistDocument extends ExistResource {
 
             final DocumentImpl document = lockedDocument.getDocument();
             if (document == null) {
-                final String msg = String.format("No resource found for path: %s", xmldbUri);
+                final String msg = "No resource found for path: %s".formatted(xmldbUri);
                 LOG.debug(msg);
                 throw new EXistException(msg);
             }
@@ -650,7 +650,7 @@ public class ExistDocument extends ExistResource {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Token does not match");
                 }
-                throw new PermissionDeniedException(String.format("Token %s does not match %s", token, lockToken.getOpaqueLockToken()));
+                throw new PermissionDeniedException("Token %s does not match %s".formatted(token, lockToken.getOpaqueLockToken()));
             }
 
             lockToken.setTimeOut(LockToken.LOCK_TIMEOUT_INFINITE);

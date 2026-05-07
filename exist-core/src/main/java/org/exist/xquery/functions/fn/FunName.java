@@ -47,27 +47,33 @@ import org.w3c.dom.Node;
 public class FunName extends Function {
 
     private static final String FUNCTION_DESCRIPTION_0_PARAM =
-            "Returns the name of the context item as an xs:string that is either " +
-                    "the zero-length string, or has the lexical form of an xs:QName.\n\n";
+            """
+            Returns the name of the context item as an xs:string that is either \
+            the zero-length string, or has the lexical form of an xs:QName.
+            
+            """;
     private static final String FUNCTION_DESCRIPTION_1_PARAM =
-            "Returns the name of $arg as an xs:string that is either " +
-                    "the zero-length string, or has the lexical form of an xs:QName.\n\n" +
-                    "If the argument is omitted, it defaults to the context item (.). ";
+            """
+            Returns the name of $arg as an xs:string that is either \
+            the zero-length string, or has the lexical form of an xs:QName.
+            
+            If the argument is omitted, it defaults to the context item (.). """;
     private static final String FUNCTION_DESCRIPTION_COMMON =
-            "The behavior of the function if the argument is omitted is exactly " +
-                    "the same as if the context item had been passed as the argument.\n\n" +
+            """
+The behavior of the function if the argument is omitted is exactly \
+the same as if the context item had been passed as the argument.
 
-                    "The following errors may be raised: if the context item is undefined " +
-                    "[err:XPDY0002]XP; if the context item is not a node [err:XPTY0004]XP.\n\n" +
+The following errors may be raised: if the context item is undefined \
+[err:XPDY0002]XP; if the context item is not a node [err:XPTY0004]XP.
 
-                    "If the argument is supplied and is the empty sequence, the function " +
-                    "returns the zero-length string.\n\n" +
+If the argument is supplied and is the empty sequence, the function \
+returns the zero-length string.
 
-                    "If the target node has no name (that is, if it is a document node, a comment, " +
-                    "a text node, or a namespace binding having no name), the function returns " +
-                    "the zero-length string.\n\n" +
+If the target node has no name (that is, if it is a document node, a comment, \
+a text node, or a namespace binding having no name), the function returns \
+the zero-length string.
 
-                    "Otherwise, the value returned is fn:string(fn:node-name($arg)).";
+Otherwise, the value returned is fn:string(fn:node-name($arg)).""";
 
     public final static FunctionSignature[] signatures = {
             new FunctionSignature(
@@ -132,8 +138,8 @@ public class FunName extends Function {
 
             //TODO : how to improve performance ?
             final Node n = ((NodeValue) item).getNode();
-            if (n instanceof INode) {
-                result = new StringValue(this, ((INode) n).getQName().getStringValue());
+            if (n instanceof INode node) {
+                result = new StringValue(this, node.getQName().getStringValue());
             } else {
                 result = StringValue.EMPTY_STRING;
             }

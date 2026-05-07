@@ -130,7 +130,7 @@ public class FunctionTypeInElementContentTest extends XQueryCompilationTest {
         final String query = "element test { [map {}] }";
         final String error = "Enclosed expression contains function item";
         assertXQDynamicError(ErrorCodes.XQTY0105, 1, 16, error, executeQuery(query));
-    };
+    }
 
     // TODO(JL): add (sub-expression) location
     // TODO(JL): This should throw at compile time, but does not

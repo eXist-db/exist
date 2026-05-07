@@ -36,7 +36,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -91,8 +90,7 @@ public class FileSystemBackupDescriptor extends AbstractBackupDescriptor {
                             return Optional.<BackupDescriptor>empty();
                         }
                     })
-                    .filter(Optional::isPresent)
-                    .map(Optional::get)) {
+                    .flatMap(Optional::stream)) {
                 return entries.collect(Collectors.toList());
             }
         } catch (final IOException e) {
@@ -108,7 +106,7 @@ public class FileSystemBackupDescriptor extends AbstractBackupDescriptor {
         BackupDescriptor bd = null;
 
         try {
-            bd = new FileSystemBackupDescriptor(root, Paths.get(desc));
+            bd = new FileSystemBackupDescriptor(root, Path.of(desc));
         } catch (final FileNotFoundException fnfe) {
             // DoNothing(R)
         }

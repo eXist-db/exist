@@ -26,7 +26,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -57,7 +56,7 @@ public class RecoverBinary2Test {
     private static Path getBinaryResourcesDir() {
         try {
             final URI uri = RecoverBinary2Test.class.getResource("/binary-resources/sample.bin").toURI();
-            return Paths.get(uri).getParent();
+            return Path.of(uri).getParent();
         } catch (final URISyntaxException e) {
             throw new RuntimeException("Cannot resolve binary-resources path", e);
         }

@@ -52,13 +52,12 @@ public class TristateCheckBox extends JCheckBox implements Icon, ActionListener 
         super(text, state == TristateState.SELECTED);
 
         switch (state) {
-            case SELECTED: setSelected(true);
-            case INDETERMINATE:
-            case DESELECTED:
+            case SELECTED -> {
+                setSelected(true);
                 putClientProperty("SelectionState", state);
-                break;
-            default:
-                throw new IllegalArgumentException();
+            }
+            case INDETERMINATE, DESELECTED -> putClientProperty("SelectionState", state);
+            default -> throw new IllegalArgumentException();
         }
         addActionListener(this);
         setIcon(this);
@@ -80,13 +79,9 @@ public class TristateCheckBox extends JCheckBox implements Icon, ActionListener 
 
     public void setSelectionState(final TristateState state) {
         switch (state) {
-            case SELECTED: setSelected(true);
-                break;
-            case INDETERMINATE:
-            case DESELECTED: setSelected(false);
-                break;
-            default:
-                throw new IllegalArgumentException();
+            case SELECTED -> setSelected(true);
+            case INDETERMINATE, DESELECTED -> setSelected(false);
+            default -> throw new IllegalArgumentException();
         }
         putClientProperty("SelectionState", state);
     }

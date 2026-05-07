@@ -65,7 +65,7 @@ public class GetCookieValue extends RequestFunction {
 	@Override
 	public Sequence eval(final Sequence[] args, final Optional<RequestWrapper> request)
 			throws XPathException {
-		if(!request.isPresent()) {
+		if(request.isEmpty()) {
 			return Sequence.EMPTY_SEQUENCE;
 		} else {
 			return getCookieValue(args, request.get());

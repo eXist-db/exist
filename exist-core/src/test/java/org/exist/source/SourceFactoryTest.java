@@ -35,7 +35,7 @@ import org.junit.runner.RunWith;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 
 import static org.easymock.EasyMock.*;
 import static org.junit.Assert.*;
@@ -59,9 +59,9 @@ public class SourceFactoryTest {
     @Test
     public void getSourceFromFile_contextAbsoluteFile_locationAbsoluteFile() throws IOException, PermissionDeniedException, URISyntaxException {
         final URL mainUrl = getClass().getResource("main.xq");
-        final String contextPath = Paths.get(mainUrl.toURI()).toAbsolutePath().toString();
+        final String contextPath = Path.of(mainUrl.toURI()).toAbsolutePath().toString();
         final URL libraryUrl = getClass().getResource("library.xqm");
-        final String location = Paths.get(libraryUrl.toURI()).toAbsolutePath().toString();
+        final String location = Path.of(libraryUrl.toURI()).toAbsolutePath().toString();
 
         final Source source = SourceFactory.getSource(null, contextPath, location, false);
 
@@ -84,7 +84,7 @@ public class SourceFactoryTest {
     @Test
     public void getSourceFromFile_contextAbsoluteFile_locationRelative() throws IOException, PermissionDeniedException, URISyntaxException {
         final URL mainUrl = getClass().getResource("main.xq");
-        final String contextPath = Paths.get(mainUrl.toURI()).toAbsolutePath().toString();
+        final String contextPath = Path.of(mainUrl.toURI()).toAbsolutePath().toString();
         final String location = "library.xqm";
 
         final Source source = SourceFactory.getSource(null, contextPath, location, false);
@@ -96,14 +96,14 @@ public class SourceFactoryTest {
     @Test
     public void getSourceFromFile_contextAbsoluteDir_locationRelative() throws IOException, PermissionDeniedException, URISyntaxException {
         final URL mainUrl = getClass().getResource("main.xq");
-        final String contextPath = Paths.get(mainUrl.toURI()).getParent().toString();
+        final String contextPath = Path.of(mainUrl.toURI()).getParent().toString();
         //final String contextPath = mainParent.substring(0, mainParent.lastIndexOf('/'));
         final String location = "library.xqm";
 
         final Source source = SourceFactory.getSource(null, contextPath, location, false);
 
         assertTrue(source instanceof FileSource);
-        assertEquals(Paths.get(getClass().getResource("library.xqm").toURI()).toString(), source.path());
+        assertEquals(Path.of(getClass().getResource("library.xqm").toURI()).toString(), source.path());
     }
 
     @Test

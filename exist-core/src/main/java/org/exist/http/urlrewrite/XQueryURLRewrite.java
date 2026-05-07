@@ -79,7 +79,6 @@ import java.io.*;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
@@ -577,7 +576,7 @@ public class XQueryURLRewrite extends HttpServlet {
         }
         try {
             final Class<?> driver = Class.forName(DRIVER);
-            final Database database = (Database) driver.newInstance();
+            final Database database = (Database) driver.getDeclaredConstructor().newInstance();
             database.setProperty("create-database", "true");
             DatabaseManager.registerDatabase(database);
             if (LOG.isDebugEnabled()) {
@@ -835,7 +834,7 @@ public class XQueryURLRewrite extends HttpServlet {
 
     private SourceInfo findSourceFromFs(final String basePath, final String[] components) {
         final String realPath = config.getServletContext().getRealPath(basePath);
-        final Path baseDir = Paths.get(realPath);
+        final Path baseDir = Path.of(realPath);
         if (!Files.isDirectory(baseDir)) {
             LOG.warn("Base path for XQueryURLRewrite does not point to a directory");
             return null;

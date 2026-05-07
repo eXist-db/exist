@@ -94,8 +94,8 @@ class Convert {
                     throw new XPathException(ErrorCodes.XPTY0004,
                             "net.sf.saxon.value.AtomicValue " + atomicValue + COULD_NOT_BE_CONVERTED + "atomic value");
                 }
-            } else if (xdmItem instanceof XdmNode) {
-                return ToExist.ofNode((XdmNode)xdmItem);
+            } else if (xdmItem instanceof XdmNode node) {
+                return ToExist.ofNode(node);
             }
 
             throw new XPathException(ErrorCodes.XPTY0004,

@@ -36,7 +36,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -60,7 +59,7 @@ public class RetrieveBackup extends BasicFunction
         }
 
         final String exportDir = args[0].getStringValue();
-        Path dir       = Paths.get( exportDir );
+        Path dir       = Path.of( exportDir );
 
         if( !dir.isAbsolute() ) {
             dir = ((Path)context.getBroker().getConfiguration().getProperty(BrokerPool.PROPERTY_DATA_DIR)).resolve(exportDir);
@@ -92,7 +91,7 @@ public class RetrieveBackup extends BasicFunction
         final Optional<ResponseWrapper> maybeResponse = Optional.ofNullable(context.getHttpContext())
                 .map(XQueryContext.HttpContext::getResponse);
 
-        if(!maybeResponse.isPresent()) {
+        if(maybeResponse.isEmpty()) {
             throw( new XPathException( this, "No response object found in the current XQuery context." ) );
         }
 

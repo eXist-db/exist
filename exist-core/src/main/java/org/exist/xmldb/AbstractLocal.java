@@ -68,8 +68,8 @@ public abstract class AbstractLocal {
 
     protected XmldbURI getCollectionUri(final DBBroker broker, final Txn transaction, final Collection collection) throws XMLDBException {
         final String name;
-        if(collection instanceof LocalCollection) {
-            name = ((LocalCollection)collection).getName(broker, transaction);
+        if(collection instanceof LocalCollection localCollection) {
+            name = localCollection.getName(broker, transaction);
         } else {
             name = collection.getName();
         }

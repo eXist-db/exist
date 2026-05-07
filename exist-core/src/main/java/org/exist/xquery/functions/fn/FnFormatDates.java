@@ -1397,7 +1397,6 @@ public class FnFormatDates extends BasicFunction {
             {throw new XPathException(this, ErrorCodes.FOFD1340,"Minimum width > maximum width in component");}
         return new int[] { min, max };
     }
-
     /**
      * Validate a calendar argument. Returns the original calendar name if it is
      * recognised-but-unsupported (so callers prepend the W3C-mandated

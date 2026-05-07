@@ -204,8 +204,8 @@ public class JavaCall extends Function {
 //		LOG.debug("calling method " + bestMethod.toString());
 		Class<?> paramTypes[] = null;
 		boolean isStatic = true;
-		if (bestMethod instanceof Constructor<?>)
-			{paramTypes = ((Constructor<?>) bestMethod).getParameterTypes();}
+		if (bestMethod instanceof Constructor<?> constructor)
+			{paramTypes = constructor.getParameterTypes();}
 		else {
 			paramTypes = ((Method) bestMethod).getParameterTypes();
 			isStatic = Modifier.isStatic(((Method) bestMethod).getModifiers());
@@ -223,9 +223,9 @@ public class JavaCall extends Function {
 		}
         
         Sequence result;
-		if (bestMethod instanceof Constructor<?>) {
+		if (bestMethod instanceof Constructor<?> constructor) {
 			try {
-				final Object object = ((Constructor<?>) bestMethod).newInstance(params);
+				final Object object = constructor.newInstance(params);
                 result = new JavaObjectValue(this, object);
 			} catch (final IllegalArgumentException e) {
 				throw new XPathException(this,
@@ -235,15 +235,13 @@ public class JavaCall extends Function {
 						+ e.getMessage(),
 					e);
 			} catch (final Exception e) {
-				if (e instanceof XPathException)
-					{throw (XPathException) e;}
-				else
-					{throw new XPathException(this,
+				throwIfXPathException(e);
+				throw new XPathException(this,
 						"exception while calling constructor "
 							+ bestMethod
 							+ ": "
 							+ e.getMessage(),
-						e);}
+						e);
 			}
 		} else {
 			try {
@@ -265,15 +263,13 @@ public class JavaCall extends Function {
 						+ e.getMessage(),
 					e);
 			} catch (final Exception e) {
-				if (e instanceof XPathException)
-					{throw (XPathException) e;}
-				else
-					{throw new XPathException(this,
+				throwIfXPathException(e);
+				throw new XPathException(this,
 						"exception while calling method "
 							+ bestMethod
 							+ ": "
 							+ e.getMessage(),
-						e);}
+						e);
 			}
 		}
 
@@ -292,13 +288,19 @@ public class JavaCall extends Function {
 	public int returnsType() {
 		return Type.ITEM;
 	}
+
+	private static void throwIfXPathException(final Exception e) throws XPathException {
+		if (e instanceof XPathException xpe) {
+			throw xpe;
+		}
+	}
 	
 	private int[] getConversionPreferences(AccessibleObject method, Sequence[] args) {
 		final int prefs[] = new int[args.length];
 		Class<?> paramTypes[] = null;
 		boolean isStatic = true;
-		if (method instanceof Constructor<?>)
-			{paramTypes = ((Constructor<?>) method).getParameterTypes();}
+		if (method instanceof Constructor<?> constructor)
+			{paramTypes = constructor.getParameterTypes();}
 		else {
 			paramTypes = ((Method) method).getParameterTypes();
 			isStatic = Modifier.isStatic(((Method) method).getModifiers());

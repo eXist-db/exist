@@ -104,8 +104,8 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
     public void addPredicate(final Predicate predicate) {
         if (!steps.isEmpty()) {
             final Expression e = steps.getLast();
-            if (e instanceof Step) {
-                ((Step) e).addPredicate(predicate);
+            if (e instanceof Step step) {
+                step.addPredicate(predicate);
             }
         }
     }
@@ -224,8 +224,8 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
             Sequence currentContext = contextSequence;
             DocumentSet contextDocs = null;
             Expression expr = steps.getFirst();
-            if (expr instanceof VariableReference) {
-                final Variable var = ((VariableReference) expr).getVariable(new AnalyzeContextInfo(parent, 0));
+            if (expr instanceof VariableReference reference) {
+                final Variable var = reference.getVariable(new AnalyzeContextInfo(parent, 0));
                 //TOUNDERSTAND : how null could be possible here ? -pb
                 if (var != null) {
                     contextDocs = var.getContextDocs();
@@ -520,15 +520,15 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
             return "";
         }
         final Expression next = steps.getFirst();
-        if (next instanceof LiteralValue) {
+        if (next instanceof LiteralValue value) {
             try {
-                return ((LiteralValue) next).getValue().getStringValue();
+                return value.getValue().getStringValue();
             } catch (final XPathException e) {
                 //TODO : is there anything to do here ?
             }
         }
-        if (next instanceof PathExpr) {
-            return ((PathExpr) next).getLiteralValue();
+        if (next instanceof PathExpr expr) {
+            return expr.getLiteralValue();
         }
         return "";
     }

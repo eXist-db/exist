@@ -34,7 +34,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -67,7 +66,7 @@ public class ServerTaskTest extends AbstractTaskTest {
     public void restore() throws URISyntaxException, XMLDBException {
         final URL backupContentsUrl = getClass().getResource("backup-test/db/__contents__.xml");
         assertNotNull(backupContentsUrl);
-        final Path backupDir = Paths.get(backupContentsUrl.toURI()).getParent().getParent();
+        final Path backupDir = Path.of(backupContentsUrl.toURI()).getParent().getParent();
 
         final Project project = buildFileRule.getProject();
         project.setProperty(PROP_ANT_TEST_DATA_BACKUP_DIR, backupDir.toAbsolutePath().toString());

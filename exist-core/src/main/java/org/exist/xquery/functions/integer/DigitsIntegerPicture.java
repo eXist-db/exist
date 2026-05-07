@@ -182,7 +182,7 @@ class DigitsIntegerPicture extends IntegerPicture {
         for (int i = 1; i < groups.size(); i++) {
             final Group group = groups.get(i);
 
-            if (!group.separator.isPresent()) group.separator = prev.separator;
+            if (group.separator.isEmpty()) group.separator = prev.separator;
             if (i > 1 && (group.total() != prev.total())) return;
             if (i == 1 && prev.total() > group.total()) return;
             if (!group.separator.equals(prev.separator)) return;

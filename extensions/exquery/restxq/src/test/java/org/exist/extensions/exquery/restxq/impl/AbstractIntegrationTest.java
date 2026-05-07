@@ -58,12 +58,13 @@ import static org.junit.Assert.assertNotNull;
 public abstract class AbstractIntegrationTest {
 
     private static String COLLECTION_CONFIG =
-            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                    "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">\n" +
-                    "    <triggers>\n" +
-                    "        <trigger class=\"org.exist.extensions.exquery.restxq.impl.RestXqTrigger\"/>\n" +
-                    "    </triggers>\n" +
-                    "</collection>";
+            """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <collection xmlns="http://exist-db.org/collection-config/1.0">
+                <triggers>
+                    <trigger class="org.exist.extensions.exquery.restxq.impl.RestXqTrigger"/>
+                </triggers>
+            </collection>""";
 
     private static ContentType XQUERY_CONTENT_TYPE = ContentType.create("application/xquery", UTF_8);
 

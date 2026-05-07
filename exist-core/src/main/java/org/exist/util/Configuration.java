@@ -71,7 +71,6 @@ import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -271,7 +270,7 @@ public class Configuration implements ErrorHandler {
 
                 if (is != null) {
                     LOG.info("Reading configuration from classloader");
-                    configFilePath = Optional.of(Paths.get(Configuration.class.getClassLoader().getResource(configFilename).toURI()));
+                    configFilePath = Optional.of(Path.of(Configuration.class.getClassLoader().getResource(configFilename).toURI()));
                 }
             } catch (final Exception e) {
                 // EB: ignore and go forward, e.g. in case there is an absolute
@@ -291,7 +290,7 @@ public class Configuration implements ErrorHandler {
 
                     // EB: try to create existHome based on location of config file
                     // when config file points to absolute file location
-                    final Path absoluteConfigFile = Paths.get(configFilename);
+                    final Path absoluteConfigFile = Path.of(configFilename);
 
                     if (absoluteConfigFile.isAbsolute() && Files.exists(absoluteConfigFile) && Files.isReadable(absoluteConfigFile)) {
                         existHome = Optional.of(absoluteConfigFile.getParent());
@@ -299,7 +298,7 @@ public class Configuration implements ErrorHandler {
                     }
                 }
 
-                Path configFile = Paths.get(configFilename);
+                Path configFile = Path.of(configFilename);
 
                 if (!configFile.isAbsolute() && existHome.isPresent()) {
 
@@ -1276,7 +1275,7 @@ public class Configuration implements ErrorHandler {
                 return h.getParent().toAbsolutePath();
             }
             return h.resolve("webapp").toAbsolutePath();
-        }).orElse(Paths.get("webapp").toAbsolutePath());
+        }).orElse(Path.of("webapp").toAbsolutePath());
 
         if (LOG.isDebugEnabled()) {
             LOG.debug("Found {} catalog uri entries.", catalogElements.getLength());

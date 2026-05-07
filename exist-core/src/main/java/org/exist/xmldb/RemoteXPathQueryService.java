@@ -269,7 +269,7 @@ public class RemoteXPathQueryService extends AbstractRemoteService implements EX
             return query((XMLResource) res, query);
         }
         finally {
-            if (res!=null && res instanceof AbstractRemoteResource) ((AbstractRemoteResource)res).freeResources();
+            if (res!=null && res instanceof AbstractRemoteResource remoteResource) remoteResource.freeResources();
         }
     }
 

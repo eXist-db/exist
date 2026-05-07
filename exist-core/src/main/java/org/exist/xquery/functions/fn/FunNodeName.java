@@ -116,8 +116,8 @@ public class FunNodeName extends Function {
             //TODO : how to improve performance ?
             final Node n = ((NodeValue) item).getNode();
             //Returns an expanded-QName for node kinds that can have names.
-            if (n instanceof INode) {
-                final QName qn = ((INode) n).getQName();
+            if (n instanceof INode node) {
+                final QName qn = node.getQName();
                 if (qn.equals(QName.EMPTY_QNAME)) {
                     result = Sequence.EMPTY_SEQUENCE;
                 } else {

@@ -21,9 +21,12 @@
  */
 package org.exist.util;
 
+import java.io.Serial;
+
 public class DatabaseConfigurationException extends Exception {
 
-	private static final long serialVersionUID = 5583749487314182182L;
+    @Serial
+    private static final long serialVersionUID = 5583749487314182182L;
 
 	public DatabaseConfigurationException() {
 		super();

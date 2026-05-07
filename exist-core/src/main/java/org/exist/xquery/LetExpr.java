@@ -141,8 +141,8 @@ public class LetExpr extends BindingExpression {
                                 // it's a document... we need to get the document element's name
                                 final NodeValue nvItem = (NodeValue) value.itemAt(0);
                                 final Document doc;
-                                if (nvItem instanceof Document) {
-                                    doc = (Document) nvItem;
+                                if (nvItem instanceof Document document) {
+                                    doc = document;
                                 } else {
                                     doc = nvItem.getOwnerDocument();
                                 }
@@ -162,7 +162,7 @@ public class LetExpr extends BindingExpression {
                             throw new XPathException(
                                     this,
                                     ErrorCodes.XPTY0004,
-                                    String.format("Invalid type for variable $%s. Expected %s, got %s", varName, sequenceType.toString(), valueType), in);
+                                    "Invalid type for variable $%s. Expected %s, got %s".formatted(varName, sequenceType.toString(), valueType), in);
                         }
                     }
                 }

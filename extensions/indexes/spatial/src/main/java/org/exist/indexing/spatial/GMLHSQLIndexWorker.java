@@ -170,19 +170,16 @@ public class GMLHSQLIndexWorker extends AbstractGMLJDBCIndexWorker {
 //            System.out.println(new DLN(units, data, 0).toString());
 //        }
 
-        final PreparedStatement ps = conn.prepareStatement(
-                "DELETE FROM " + GMLHSQLIndex.TABLE_NAME + 
+        try (final PreparedStatement ps = conn.prepareStatement(
+                "DELETE FROM " + GMLHSQLIndex.TABLE_NAME +
                 " WHERE DOCUMENT_URI = ? AND NODE_ID_UNITS = ? AND NODE_ID = ?;"
-            ); 
-        ps.setString(1, doc.getURI().toString());
-        ps.setInt(2, nodeId.units());
-        final byte[] bytes = new byte[nodeId.size()];
-        nodeId.serialize(bytes, 0);
-        ps.setBytes(3, bytes);
-        try {
+        )) {
+            ps.setString(1, doc.getURI().toString());
+            ps.setInt(2, nodeId.units());
+            final byte[] bytes = new byte[nodeId.size()];
+            nodeId.serialize(bytes, 0);
+            ps.setBytes(3, bytes);
             return (ps.executeUpdate() == 1);
-        } finally {
-            ps.close();
         }
     }
 

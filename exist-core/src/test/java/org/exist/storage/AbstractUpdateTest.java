@@ -40,7 +40,6 @@ import org.exist.util.StringInputSource;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
-import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.junit.AfterClass;
@@ -94,12 +93,12 @@ public abstract class AbstractUpdateTest {
 
     private void read(final BrokerPool pool) throws EXistException, PermissionDeniedException, SAXException, XPathException {
 
-        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));) {
+        try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             final Serializer serializer = broker.borrowSerializer();
             try(final LockedDocument lockedDoc = broker.getXMLResource(TEST_COLLECTION_URI.append("test2/test.xml"), LockMode.READ_LOCK)) {
 
                 assertNotNull("Document '" + TEST_COLLECTION_URI.append("test2/test.xml") + "' should not be null", lockedDoc);
-                final String data = serializer.serialize(lockedDoc.getDocument());
+                serializer.serialize(lockedDoc.getDocument());
             } finally {
                 broker.returnSerializer(serializer);
             }
@@ -107,7 +106,7 @@ public abstract class AbstractUpdateTest {
             final XQuery xquery = pool.getXQueryService();
             final Sequence seq = xquery.execute(broker, "/products/product[last()]", null);
             for (final SequenceIterator i = seq.iterate(); i.hasNext(); ) {
-                Item next = i.nextItem();
+                i.nextItem();
             }
         }
     }

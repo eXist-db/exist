@@ -185,7 +185,7 @@ public class Profiler {
 
     public final void traceFunctionStart(Function function) {
         if (isLogEnabled()) {
-            log.trace(String.format("ENTER %-25s", function.getSignature().getName()));
+            log.trace("ENTER %-25s".formatted(function.getSignature().getName()));
         }
     }
 
@@ -194,15 +194,15 @@ public class Profiler {
             final Source source = function.getContext().getSource();
             final String sourceMsg;
             if (source == null) {
-                sourceMsg = String.format("[unknown source] [%d:%d]", function.getLine(), function.getColumn());
+                sourceMsg = "[unknown source] [%d:%d]".formatted(function.getLine(), function.getColumn());
             } else {
-                sourceMsg = String.format("%s [%d:%d]", function.getContext().getSource().pathOrShortIdentifier(),
+                sourceMsg = "%s [%d:%d]".formatted(function.getContext().getSource().pathOrShortIdentifier(),
                         function.getLine(), function.getColumn());
             }
             stats.recordFunctionCall(function.getSignature().getName(), sourceMsg, elapsed);
         }
         if (isLogEnabled()) {
-            log.trace(String.format("EXIT  %-25s %10d ms", function.getSignature().getName(), elapsed));
+            log.trace("EXIT  %-25s %10d ms".formatted(function.getSignature().getName(), elapsed));
         }
     }
 

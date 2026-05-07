@@ -213,8 +213,8 @@ public class FunInScopePrefixes extends BasicFunction {
             prefixes.put(prefix == null ? XMLConstants.DEFAULT_NS_PREFIX : prefix, namespaceURI);
         }
 
-        if (element instanceof org.exist.dom.memtree.ElementImpl) {
-            ((org.exist.dom.memtree.ElementImpl) element).getNamespaceMap(prefixes);
+        if (element instanceof org.exist.dom.memtree.ElementImpl impl) {
+            impl.getNamespaceMap(prefixes);
 
         } else {
             final ElementImpl elementImpl = (org.exist.dom.persistent.ElementImpl) element;

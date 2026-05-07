@@ -299,15 +299,14 @@ public class AccessControlEntryDialog extends javax.swing.JFrame implements Dial
     private void cmbTargetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbTargetActionPerformed
         final ACE_TARGET aceTarget = ACE_TARGET.valueOf((String)cmbTarget.getSelectedItem());
         switch(aceTarget) {
-            case USER:
+            case USER -> {
                 cmbGroupName.setEnabled(false);
                 cmbUsername.setEnabled(true);
-                break;
-                
-            case GROUP:
+            }
+            case GROUP -> {
                 cmbUsername.setEnabled(false);
                 cmbGroupName.setEnabled(true);
-                break;
+            }
         }
     }//GEN-LAST:event_cmbTargetActionPerformed
 

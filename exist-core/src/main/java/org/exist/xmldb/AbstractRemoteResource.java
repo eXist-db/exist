@@ -170,32 +170,40 @@ public abstract class AbstractRemoteResource extends AbstractRemote
         boolean wasSet = false;
         try {
             freeResources();
-            if (value instanceof ContentFile) {
-                contentFile = (ContentFile)value;
-                setExtendendContentLength(contentFile.size());
-                wasSet = true;
-            } else  if (value instanceof Path) {
-                file = (Path) value;
-                setExtendendContentLength(Files.size(file));
-                wasSet = true;
-            } else if (value instanceof java.io.File) {
-                file = ((java.io.File) value).toPath();
-                setExtendendContentLength(Files.size(file));
-                wasSet = true;
-            } else if (value instanceof InputSource) {
-                inputSource = (InputSource) value;
-                if (inputSource instanceof EXistInputSource) {
-                    setExtendendContentLength(((EXistInputSource) inputSource).getByteStreamLength());
+            switch (value) {
+                case ContentFile contentFile1 -> {
+                    contentFile = contentFile1;
+                    setExtendendContentLength(contentFile.size());
+                    wasSet = true;
                 }
-                wasSet = true;
-            } else if (value instanceof byte[]) {
-                contentFile = ByteArrayContent.of((byte[]) value);
-                setExtendendContentLength(contentFile.size());
-                wasSet = true;
-            } else if (value instanceof String) {
-                contentFile = ByteArrayContent.of((String) value);
-                setExtendendContentLength(contentFile.size());
-                wasSet = true;
+                case Path path1 -> {
+                    file = path1;
+                    setExtendendContentLength(Files.size(file));
+                    wasSet = true;
+                }
+                case java.io.File file1 -> {
+                    file = file1.toPath();
+                    setExtendendContentLength(Files.size(file));
+                    wasSet = true;
+                }
+                case InputSource source1 -> {
+                    inputSource = source1;
+                    if (inputSource instanceof EXistInputSource source) {
+                        setExtendendContentLength(source.getByteStreamLength());
+                    }
+                    wasSet = true;
+                }
+                case byte[] bytes -> {
+                    contentFile = ByteArrayContent.of(bytes);
+                    setExtendendContentLength(contentFile.size());
+                    wasSet = true;
+                }
+                case String string -> {
+                    contentFile = ByteArrayContent.of(string);
+                    setExtendendContentLength(contentFile.size());
+                    wasSet = true;
+                }
+                case null, default -> {}
             }
         } catch (final IOException e) {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, e);
@@ -344,10 +352,10 @@ public abstract class AbstractRemoteResource extends AbstractRemote
 
     protected static InputStream getAnyStream(final Object obj)
             throws XMLDBException {
-        if (obj instanceof String) {
-            return new UnsynchronizedByteArrayInputStream(((String) obj).getBytes(UTF_8));
-        } else if (obj instanceof byte[]) {
-            return new UnsynchronizedByteArrayInputStream((byte[]) obj);
+        if (obj instanceof String string) {
+            return new UnsynchronizedByteArrayInputStream(string.getBytes(UTF_8));
+        } else if (obj instanceof byte[] bytes) {
+            return new UnsynchronizedByteArrayInputStream(bytes);
         } else {
             throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "don't know how to handle value of type " + obj.getClass().getName());
         }
@@ -446,15 +454,13 @@ public abstract class AbstractRemoteResource extends AbstractRemote
         final long retval;
         if (file != null) {
             retval = FileUtils.sizeQuietly(file);
-        } else if (inputSource != null && inputSource instanceof EXistInputSource) {
-            retval = ((EXistInputSource) inputSource).getByteStreamLength();
+        } else if (inputSource != null && inputSource instanceof EXistInputSource source) {
+            retval = source.getByteStreamLength();
         } else if (obj != null) {
-            if (obj instanceof String) {
-                retval = ((String) obj).getBytes(UTF_8).length;
-            } else if (obj instanceof byte[]) {
-                retval = ((byte[]) obj).length;
-            } else {
-                throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "don't know how to handle value of type " + obj.getClass().getName());
+            switch (obj) {
+                case String string -> retval = string.getBytes(UTF_8).length;
+                case byte[] bytes -> retval = bytes.length;
+                case null, default -> throw new XMLDBException(ErrorCodes.VENDOR_ERROR, "don't know how to handle value of type " + obj.getClass().getName());
             }
         } else if (contentFile != null) {
             retval = contentFile.size();
@@ -465,8 +471,8 @@ public abstract class AbstractRemoteResource extends AbstractRemote
             final Map<?, ?> table = (Map<?, ?>) collection.execute("describeResource", params);
             if (table.containsKey("content-length-64bit")) {
                 final Object o = table.get("content-length-64bit");
-                if (o instanceof Long) {
-                    retval = ((Long) o);
+                if (o instanceof Long long1) {
+                    retval = long1;
                 } else {
                     retval = Long.parseLong((String) o);
                 }

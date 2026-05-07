@@ -163,8 +163,8 @@ public class RangeQueryRewriter extends QueryRewriter {
             }
             if (argCount == 3) {
                 final Expression flagsExpr = funMatches.getArgument(2);
-                if (flagsExpr instanceof LiteralValue) {
-                    final String flags = ((LiteralValue) flagsExpr).getValue().getStringValue();
+                if (flagsExpr instanceof LiteralValue value) {
+                    final String flags = value.getValue().getStringValue();
                     for (int i = 0; i < flags.length(); i++) {
                         if (flags.charAt(i) != 'i') {
                             return null;
@@ -206,11 +206,11 @@ public class RangeQueryRewriter extends QueryRewriter {
             if (function instanceof org.exist.xquery.functions.fn.FunMatches funMatches) {
                 return BasicExpressionVisitor.findLocationSteps(funMatches.getArgument(0));
             }
-            if (function instanceof Lookup) {
+            if (function instanceof Lookup lookup) {
                 if (function.isCalledAs("matches")) {
                     return BasicExpressionVisitor.findLocationSteps(function.getArgument(0));
                 } else {
-                    Expression original = ((Lookup)function).getFallback();
+                    Expression original = lookup.getFallback();
                     return getStepsToOptimize(original);
                 }
             }

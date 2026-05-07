@@ -169,8 +169,8 @@ public class XQueryPool implements BrokerPoolService {
         }
 
         //check execution permission
-        if (source instanceof DBSource) {
-            ((DBSource) source).validate(Permission.EXECUTE);
+        if (source instanceof DBSource bSource) {
+            bSource.validate(Permission.EXECUTE);
         }
 
         return borrowedCompiledQuery.value;

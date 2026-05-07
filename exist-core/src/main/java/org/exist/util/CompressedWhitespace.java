@@ -190,8 +190,8 @@ public class CompressedWhitespace implements CharSequence {
      * Indicates whether some other object is "equal to" this one.
      */
     public boolean equals(Object obj) {
-        if (obj instanceof CompressedWhitespace) {
-            return value == ((CompressedWhitespace)obj).value;
+        if (obj instanceof CompressedWhitespace whitespace) {
+            return value == whitespace.value;
         }
         return uncompress(null).equals(obj);
     }

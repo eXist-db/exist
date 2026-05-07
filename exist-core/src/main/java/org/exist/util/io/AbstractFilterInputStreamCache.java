@@ -43,8 +43,8 @@ public abstract class AbstractFilterInputStreamCache extends FilterInputStream i
         incrementSharedReferences();
 
         //if src is CachingFilterInputStream also register there so it can keep track of stream which rely on cache
-        if(src instanceof CachingFilterInputStream) {
-            final FilterInputStreamCache otherCache = ((CachingFilterInputStream) src).getCache();
+        if(src instanceof CachingFilterInputStream stream) {
+            final FilterInputStreamCache otherCache = stream.getCache();
             otherCache.incrementSharedReferences();
         }
     }

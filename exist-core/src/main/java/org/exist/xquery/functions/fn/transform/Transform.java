@@ -224,8 +224,9 @@ public class Transform {
                     if (options.resolvedStylesheetBaseURI.isEmpty() && !hrefURI.isAbsolute() && StringUtils.isEmpty(base)) {
                         final XPathException resolutionException = new XPathException(fnTransform,
                             ErrorCodes.XTSE0165,
-                            "transform using a relative href, \n" +
-                                "using option stylesheet-text, but without stylesheet-base-uri");
+                            """
+                            transform using a relative href,\s
+                            using option stylesheet-text, but without stylesheet-base-uri""");
                         throw new TransformerException(resolutionException);
                     }
                 } catch (final IllegalArgumentException e) {
@@ -257,8 +258,8 @@ public class Transform {
     private XPathException originalXPathException(final String prefix, @Nonnull final Throwable e, final ErrorCodes.ErrorCode defaultErrorCode) {
         Throwable cause = e;
         while (cause != null) {
-            if (cause instanceof XPathException) {
-                return new XPathException(fnTransform, ((XPathException) cause).getErrorCode(), prefix + cause.getMessage());
+            if (cause instanceof XPathException exception) {
+                return new XPathException(fnTransform, exception.getErrorCode(), prefix + cause.getMessage());
             }
             cause = cause.getCause();
         }
@@ -364,8 +365,8 @@ public class Transform {
             if (options.initialMatchSelection.isPresent()) {
                 final Sequence initialMatchSelection = options.initialMatchSelection.get();
                 final Item item = initialMatchSelection.itemAt(0);
-                if (item instanceof Document) {
-                    final Source sourceIMS = new DOMSource((Document)item, context.getBaseURI().getStringValue());
+                if (item instanceof Document document) {
+                    final Source sourceIMS = new DOMSource(document, context.getBaseURI().getStringValue());
                     xslt30Transformer.applyTemplates(sourceIMS, destination);
                 } else {
                     final XdmValue selection = toSaxon.of(initialMatchSelection);

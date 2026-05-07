@@ -56,15 +56,22 @@ public class HighlightMatches extends BasicFunction {
 
     public final static FunctionSignature signature = new FunctionSignature(
             new QName("filter-matches", NGramModule.NAMESPACE_URI, NGramModule.PREFIX),
-            "Highlight matching strings within text nodes that resulted from a ngram search. " +
-            "The function takes a sequence of nodes as first argument $nodes and a callback function (defined with " +
-            "util:function) as second parameter $function-reference. Each node in $nodes will be copied into a new document fragment. " +
-            "For each ngram match found while copying a node, the callback function in $function-reference will be called once. The " +
-            "callback function should take 2 arguments:\n\n1) the matching text string as xs:string,\n2) the node to which this " +
-            "text string belongs.\n\nThe callback function should return zero or more nodes, which will be inserted into the " +
-            "resulting node set at the place where the matching text sequence occurred.\n\n" +
-            "Note: a ngram match on mixed content may span multiple nodes. In this case, the callback function is called " +
-            "once for every text node which is part of the matching text sequence.",
+            """
+            Highlight matching strings within text nodes that resulted from a ngram search. \
+            The function takes a sequence of nodes as first argument $nodes and a callback function (defined with \
+            util:function) as second parameter $function-reference. Each node in $nodes will be copied into a new document fragment. \
+            For each ngram match found while copying a node, the callback function in $function-reference will be called once. The \
+            callback function should take 2 arguments:
+            
+            1) the matching text string as xs:string,
+            2) the node to which this \
+            text string belongs.
+            
+            The callback function should return zero or more nodes, which will be inserted into the \
+            resulting node set at the place where the matching text sequence occurred.
+            
+            Note: a ngram match on mixed content may span multiple nodes. In this case, the callback function is called \
+            once for every text node which is part of the matching text sequence.""",
             new SequenceType[] {
                     new FunctionParameterSequenceType("nodes", Type.NODE, Cardinality.ZERO_OR_MORE, "The sequence of nodes"),
                     new FunctionParameterSequenceType("function-reference", Type.FUNCTION, Cardinality.EXACTLY_ONE, "The callback function")

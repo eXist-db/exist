@@ -136,10 +136,10 @@ public class SetPrincipalMetadataFunction extends BasicFunction {
         principal.setMetadataValue(schemaType, value);
         
         try {
-            if(principal instanceof Account) {
-                securityManager.updateAccount((Account)principal);
-            } else if(principal instanceof Group) {
-                securityManager.updateGroup((Group)principal);
+            if(principal instanceof Account account) {
+                securityManager.updateAccount(account);
+            } else if(principal instanceof Group group) {
+                securityManager.updateGroup(group);
             }
         } catch(final PermissionDeniedException | EXistException pde) {
             throw new XPathException(this, pde);

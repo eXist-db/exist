@@ -509,8 +509,8 @@ public class LocationStep extends Step {
 
         if (hasPreloadedData()) {
             @Nullable final NodeSet ns;
-            if (contextSequence instanceof NodeSet) {
-                ns = (NodeSet) contextSequence;
+            if (contextSequence instanceof NodeSet set) {
+                ns = set;
             } else {
                 ns = null;
             }
@@ -553,10 +553,10 @@ public class LocationStep extends Step {
 
             if (Type.subTypeOf(nodeTestType, Type.NODE)) {
                 if (Expression.NO_CONTEXT_ID != contextId) {
-                    if (contextSet instanceof VirtualNodeSet) {
-                        ((VirtualNodeSet) contextSet).setInPredicate(true);
-                        ((VirtualNodeSet) contextSet).setContextId(contextId);
-                        ((VirtualNodeSet) contextSet).setSelfIsContext();
+                    if (contextSet instanceof VirtualNodeSet set) {
+                        set.setInPredicate(true);
+                        set.setContextId(contextId);
+                        set.setSelfIsContext();
                     } else if (Type.subTypeOf(contextSet.getItemType(), Type.NODE)) {
                         for (final NodeProxy p : contextSet) {
                             if (test.matches(p)) {

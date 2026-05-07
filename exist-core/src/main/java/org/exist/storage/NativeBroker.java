@@ -87,7 +87,6 @@ import java.io.*;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.NumberFormat;
 import java.util.*;
 import java.util.function.Function;
@@ -227,7 +226,7 @@ public class NativeBroker implements DBBroker {
         this.lockManager = pool.getLockManager();
         LOG.debug("Initializing broker {}", hashCode());
 
-        this.dataDir = config.getProperty(BrokerPool.PROPERTY_DATA_DIR, Paths.get(DEFAULT_DATA_DIR));
+        this.dataDir = config.getProperty(BrokerPool.PROPERTY_DATA_DIR, Path.of(DEFAULT_DATA_DIR));
 
         nodesCountThreshold = config.getInteger(BrokerPool.PROPERTY_NODES_BUFFER);
         if(nodesCountThreshold > 0) {
@@ -724,7 +723,7 @@ public class NativeBroker implements DBBroker {
             // 1) try and load from etc/ dir
             final Path fInitCollectionConfig = pool.getConfiguration().getExistHome()
                     .map(h -> h.resolve("etc").resolve(INIT_COLLECTION_CONFIG))
-                    .orElse(Paths.get("etc").resolve(INIT_COLLECTION_CONFIG));
+                    .orElse(Path.of("etc").resolve(INIT_COLLECTION_CONFIG));
             if (Files.exists(fInitCollectionConfig)) {
                 return Files.readString(fInitCollectionConfig, UTF_8);
             }
@@ -842,7 +841,7 @@ public class NativeBroker implements DBBroker {
             //TODO(AR) below, should we just fall back to recursive descent creating the collection hierarchy in the same manner that getOrCreateCollection used to do?
 
             // 3) No parent collection was previously found in cache so we need to call this function for the parent Collection and then ourselves
-            final Tuple2<Boolean, Collection> newOrExistingParentCollection = getOrCreateCollectionExplicit(transaction, parentCollectionUri, creationAttributes, fireTrigger);
+            getOrCreateCollectionExplicit(transaction, parentCollectionUri, creationAttributes, fireTrigger);
             return getOrCreateCollectionExplicit(transaction, collectionUri, creationAttributes, fireTrigger);
 
         } catch(final ReadOnlyException e) {
@@ -1178,7 +1177,7 @@ public class NativeBroker implements DBBroker {
         } else {
 
             if(!collection.getURI().equalsInternal(uri)) {
-                throw new IOException(String.format("readCollectionEntry: The Collection received from the cache: %s is not the requested: %s", collection.getURI(), uri));
+                throw new IOException("readCollectionEntry: The Collection received from the cache: %s is not the requested: %s".formatted(collection.getURI(), uri));
             }
 
             entry.read(collection);
@@ -1430,7 +1429,6 @@ public class NativeBroker implements DBBroker {
             }
 
             final XmldbURI newDocName = sourceDocument.getFileURI();
-            final XmldbURI targetCollectionUri = targetCollection.getURI();
 
             try(final LockedDocument oldLockedDoc = targetCollection.getDocumentWithLock(this, newDocName, LockMode.WRITE_LOCK)) {
                 final DocumentImpl oldDoc = oldLockedDoc == null ? null : oldLockedDoc.getDocument();
@@ -1899,8 +1897,8 @@ public class NativeBroker implements DBBroker {
             }.run();
 
             // if it is a binary document remove the content from disk
-            if (doc instanceof BinaryDocument) {
-                removeCollectionBinary(transaction, (BinaryDocument)doc);
+            if (doc instanceof BinaryDocument document) {
+                removeCollectionBinary(transaction, document);
             }
 
             docTrigger.afterDeleteDocument(this, transaction, doc.getURI());
@@ -2452,7 +2450,6 @@ public class NativeBroker implements DBBroker {
                 }
                 //if (!doc.getMode().validate(getUser(), Permission.READ))
                 //throw new PermissionDeniedException("not allowed to read document");
-                final DocumentImpl doc = lockedDocument.getDocument();
                 return lockedDocument;
             } catch (final LockException e) {
                 LOG.error("Could not acquire lock on document {}", fileName, e);
@@ -2479,8 +2476,8 @@ public class NativeBroker implements DBBroker {
         final BlobStore blobStore = pool.getBlobStore();
         try (final InputStream is = blobStore.get(transaction, blob.getBlobId())) {
             if (is != null) {
-                if (os instanceof UnsynchronizedByteArrayOutputStream) {
-                    ((UnsynchronizedByteArrayOutputStream)os).write(is);
+                if (os instanceof UnsynchronizedByteArrayOutputStream stream) {
+                    stream.write(is);
                 } else {
                     copy(is, os);
                 }
@@ -2826,9 +2823,9 @@ public class NativeBroker implements DBBroker {
      */
     private static void copyModeAcl(final DBBroker broker, final Permission srcPermissions, final Permission destPermissions) throws PermissionDeniedException {
         PermissionFactory.chmod(broker, destPermissions, Optional.of(srcPermissions.getMode()), Optional.empty());
-        if (srcPermissions instanceof SimpleACLPermission && destPermissions instanceof SimpleACLPermission) {
+        if (srcPermissions instanceof SimpleACLPermission permission && destPermissions instanceof SimpleACLPermission) {
             PermissionFactory.chacl(destPermissions, newAcl ->
-                ((SimpleACLPermission)newAcl).copyAclOf((SimpleACLPermission)srcPermissions)
+                ((SimpleACLPermission)newAcl).copyAclOf(permission)
             );
         }
     }
@@ -3097,8 +3094,8 @@ public class NativeBroker implements DBBroker {
 
     @Override
     public void removeResource(final Txn tx, final DocumentImpl doc) throws IOException, PermissionDeniedException {
-        if (doc instanceof BinaryDocument) {
-            removeBinaryResource(tx, (BinaryDocument) doc);
+        if (doc instanceof BinaryDocument document) {
+            removeBinaryResource(tx, document);
         } else {
             removeXMLResource(tx, doc);
         }
@@ -4370,7 +4367,6 @@ public class NativeBroker implements DBBroker {
         public boolean indexInfo(final Value key, final long pointer) throws TerminatedException {
 
             try {
-                final int docId = CollectionStore.DocumentKey.getDocumentId(key);
                 final byte type = key.data()[key.start() + Collection.LENGTH_COLLECTION_ID + DocumentImpl.LENGTH_DOCUMENT_TYPE];
                 final VariableByteInput is = collectionsDb.getAsStream(pointer);
 

@@ -25,7 +25,6 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -43,7 +42,7 @@ public class ZipWriter implements BackupWriter
 
     public ZipWriter(final String zipFile, final String collection) throws IOException
     {
-        this(Paths.get(zipFile), collection);
+        this(Path.of(zipFile), collection);
     }
 
 

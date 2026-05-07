@@ -52,7 +52,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -135,7 +134,7 @@ public class Launcher extends Observable implements Observer {
         captureConsole();
 
         // try and figure out exist home dir
-        final Optional<Path> existHomeDir = getFromSysPropOrEnv(Main.PROP_EXIST_HOME, Main.ENV_EXIST_HOME).map(Paths::get);
+        final Optional<Path> existHomeDir = getFromSysPropOrEnv(Main.PROP_EXIST_HOME, Main.ENV_EXIST_HOME).map(Path::of);
 
         this.jettyConfig = getJettyConfig(existHomeDir);
 
@@ -184,7 +183,7 @@ public class Launcher extends Observable implements Observer {
         final Runnable runnable = () -> {
             serviceLock.lock();
             try {
-                if (!jetty.isPresent()) {
+                if (jetty.isEmpty()) {
                     jetty = Optional.of(new JettyStart());
 
                     final String[] args;
@@ -635,9 +634,13 @@ public class Launcher extends Observable implements Observer {
                 SwingUtilities.invokeLater(() -> {
                     final int installServiceResult = JOptionPane.showOptionDialog(
                             splash,
-                            "It is recommended to run eXist-db as a service on " +
-                                    "Windows.\nNot doing so may lead to data loss if you shutdown the computer before " +
-                                    "eXist-db.\n\nWould you like to install the service?",
+                            """
+                            It is recommended to run eXist-db as a service on \
+                            Windows.
+                            Not doing so may lead to data loss if you shutdown the computer before \
+                            eXist-db.
+                            
+                            Would you like to install the service?""",
                             "Install as Service?",
                             JOptionPane.YES_NO_CANCEL_OPTION,
                             JOptionPane.QUESTION_MESSAGE,
@@ -731,9 +734,9 @@ public class Launcher extends Observable implements Observer {
 
     private Path getJettyConfig(final Optional<Path> existHomeDir) {
 
-        Optional<Path> existJettyConfigFile = getFromSysPropOrEnv(Main.PROP_EXIST_JETTY_CONFIG, Main.ENV_EXIST_JETTY_CONFIG).map(Paths::get);
-        if (!existJettyConfigFile.isPresent()) {
-            final Optional<Path> jettyHomeDir = getFromSysPropOrEnv(Main.PROP_JETTY_HOME, Main.ENV_JETTY_HOME).map(Paths::get);
+        Optional<Path> existJettyConfigFile = getFromSysPropOrEnv(Main.PROP_EXIST_JETTY_CONFIG, Main.ENV_EXIST_JETTY_CONFIG).map(Path::of);
+        if (existJettyConfigFile.isEmpty()) {
+            final Optional<Path> jettyHomeDir = getFromSysPropOrEnv(Main.PROP_JETTY_HOME, Main.ENV_JETTY_HOME).map(Path::of);
 
             if (jettyHomeDir.isPresent() && Files.exists(jettyHomeDir.get().resolve(Main.CONFIG_DIR_NAME))) {
                 existJettyConfigFile = jettyHomeDir.map(f -> f.resolve(Main.CONFIG_DIR_NAME).resolve(Main.STANDARD_ENABLED_JETTY_CONFIGS));
@@ -743,7 +746,7 @@ public class Launcher extends Observable implements Observer {
                 existJettyConfigFile = existHomeDir.map(f -> f.resolve(Main.CONFIG_DIR_NAME).resolve(Main.STANDARD_ENABLED_JETTY_CONFIGS));
             }
 
-            if (!existJettyConfigFile.isPresent()) {
+            if (existJettyConfigFile.isEmpty()) {
                 showMessageAndExit("Error Occurred", "ERROR: jetty config file could not be found! Make sure to set exist.jetty.config or EXIST_JETTY_CONFIG.", true);
                 System.exit(SystemExitCodes.CATCH_ALL_GENERAL_ERROR_EXIT_CODE);
             }
@@ -754,7 +757,7 @@ public class Launcher extends Observable implements Observer {
 
     private Optional<String> getFromSysPropOrEnv(final String sysPropName, final String envVarName) {
         Optional<String> value = Optional.ofNullable(System.getProperty(sysPropName));
-        if (!value.isPresent()) {
+        if (value.isEmpty()) {
             value = Optional.ofNullable(System.getenv().get(envVarName));
             // if we managed to detect from environment, store it in a system property
             value.ifPresent(s -> System.setProperty(sysPropName, s));

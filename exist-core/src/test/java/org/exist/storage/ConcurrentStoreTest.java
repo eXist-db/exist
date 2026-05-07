@@ -94,7 +94,7 @@ public class ConcurrentStoreTest {
             test2 = broker.getCollection(TEST_COLLECTION_URI.append("test2"));
             assertNotNull(test2);
             for (Iterator<DocumentImpl> i = test.iterator(broker); i.hasNext(); ) {
-                DocumentImpl next = i.next();
+                i.next();
             }
         }
     }
@@ -102,7 +102,7 @@ public class ConcurrentStoreTest {
     protected void setupCollections(final BrokerPool pool) throws EXistException, PermissionDeniedException, IOException, TriggerException {
         final TransactionManager transact = pool.getTransactionManager();
         try(final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
-                final Txn transaction = transact.beginTransaction();) {
+                final Txn transaction = transact.beginTransaction()) {
 
             Collection root = broker.getOrCreateCollection(transaction, TEST_COLLECTION_URI);
             broker.saveCollection(transaction, root);

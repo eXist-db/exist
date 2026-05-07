@@ -25,7 +25,6 @@ import java.awt.Graphics;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -70,7 +69,7 @@ public class ConnectionDialog extends javax.swing.JDialog implements DialogWithR
     public ConnectionDialog(final java.awt.Frame parent, final boolean modal, final DefaultConnectionSettings defaultConnectionSettings, final boolean embeddedByDefault, final boolean disableEmbeddedConnectionType) {
         super(parent, modal);
         this.defaultConnectionSettings = defaultConnectionSettings;
-        this.config = Paths.get(defaultConnectionSettings.getConfiguration());
+        this.config = Path.of(defaultConnectionSettings.getConfiguration());
         this.disableEmbeddedConnectionType = disableEmbeddedConnectionType;
         this.setIconImage(InteractiveClient.getExistIcon(getClass()).getImage());
         initComponents();
@@ -587,7 +586,7 @@ public class ConnectionDialog extends javax.swing.JDialog implements DialogWithR
     }//GEN-LAST:event_lstFavouritesMouseClicked
 
     private void miImportFavouritesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miImportFavouritesActionPerformed
-        final Path file = Paths.get("favourites.xml"); //$NON-NLS-1$
+        final Path file = Path.of("favourites.xml"); //$NON-NLS-1$
         final JFileChooser chooser = new JFileChooser();
         chooser.setSelectedFile(file.toFile());
         chooser.showOpenDialog(this);
@@ -619,7 +618,7 @@ public class ConnectionDialog extends javax.swing.JDialog implements DialogWithR
     }//GEN-LAST:event_miImportFavouritesActionPerformed
 
     private void miExportFavouritesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miExportFavouritesActionPerformed
-        final Path file = Paths.get(Messages.getString("LoginPanel.25")); //$NON-NLS-1$
+        final Path file = Path.of(Messages.getString("LoginPanel.25")); //$NON-NLS-1$
         final JFileChooser chooser = new JFileChooser();
         chooser.setSelectedFile(file.toFile());
         chooser.showSaveDialog(this);

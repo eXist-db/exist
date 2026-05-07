@@ -48,7 +48,6 @@ import javax.xml.transform.OutputKeys;
 import java.awt.*;
 import java.io.*;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.List;
 import java.util.HashSet;
@@ -150,10 +149,10 @@ public class Backup {
             CompatibleJavaVersionCheck.checkForCompatibleJavaVersion();
 
             final Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
-            final Database database = (Database) cl.newInstance();
+            final Database database = (Database) cl.getDeclaredConstructor().newInstance();
             database.setProperty("create-database", "true");
             DatabaseManager.registerDatabase(database);
-            final Backup backup = new Backup("admin", null, Paths.get("backup"), URIUtils.encodeXmldbUriFor(args[0]));
+            final Backup backup = new Backup("admin", null, Path.of("backup"), URIUtils.encodeXmldbUriFor(args[0]));
             backup.backup(false, null);
         } catch (final StartException e) {
             if (e.getMessage() != null && !e.getMessage().isEmpty()) {
@@ -313,8 +312,8 @@ public class Backup {
 
             serializer.startElement(Namespaces.EXIST_NS, "collection", "collection", attr);
 
-            if (currentPerms instanceof ACLPermission) {
-                writeACLPermission(serializer, (ACLPermission) currentPerms);
+            if (currentPerms instanceof ACLPermission permission) {
+                writeACLPermission(serializer, permission);
             }
 
             // scan through resources
@@ -369,9 +368,9 @@ public class Backup {
 
                     final OutputStream os;
                     if (resource instanceof ExtendedResource) {
-                        if (deduplicateBlobs && resource instanceof EXistBinaryResource) {
+                        if (deduplicateBlobs && resource instanceof EXistBinaryResource binaryResource) {
                             // only add distinct blobs to the Blob Store once!
-                            final String blobId = ((EXistBinaryResource) resource).getBlobId().toString();
+                            final String blobId = binaryResource.getBlobId().toString();
                             if (!seenBlobIds.contains(blobId)) {
                                 os = output.newBlobEntry(blobId);
                                 ((ExtendedResource) resource).getContentIntoAStream(os);
@@ -444,8 +443,8 @@ public class Backup {
                     }
 
                     serializer.startElement(Namespaces.EXIST_NS, "resource", "resource", attr);
-                    if (perms[i] instanceof ACLPermission) {
-                        writeACLPermission(serializer, (ACLPermission) perms[i]);
+                    if (perms[i] instanceof ACLPermission permission) {
+                        writeACLPermission(serializer, permission);
                     }
                     serializer.endElement(Namespaces.EXIST_NS, "resource", "resource");
                 } catch (final XMLDBException e) {

@@ -58,14 +58,14 @@ public class GetAttribute extends SessionFunction {
 
     @Override
     public Sequence eval(final Sequence[] args, final Optional<SessionWrapper> session) throws XPathException {
-        if (!session.isPresent()) {
+        if (session.isEmpty()) {
             return Sequence.EMPTY_SEQUENCE;
         }
 
         final String attributeName = args[0].getStringValue();
 
         final Optional<Object> maybeAttributeValue = withValidSession(session.get(), s -> Optional.ofNullable(s.getAttribute(attributeName))).orElse(Optional.empty());
-        if (!maybeAttributeValue.isPresent()) {
+        if (maybeAttributeValue.isEmpty()) {
             return Sequence.EMPTY_SEQUENCE;
         }
 

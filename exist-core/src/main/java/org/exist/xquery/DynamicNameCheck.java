@@ -76,11 +76,11 @@ public class DynamicNameCheck extends AbstractExpression {
                 if (itemType == Type.NODE) 
                     {itemType = seq.getItemType();}
                 //Last chance...
-                if (item instanceof NodeProxy) {
+                if (item instanceof NodeProxy proxy) {
                     itemType = item.getType();
                     if (itemType == NodeProxy.UNKNOWN_NODE_TYPE) {
                         //Retrieve the actual node
-                        itemType = Type.fromDomNodeType(((NodeProxy) item).getNode().getNodeType());
+                        itemType = Type.fromDomNodeType(proxy.getNode().getNodeType());
                     }
                 }
                 if (!Type.subTypeOf(itemType, test.getType())) {
@@ -105,8 +105,8 @@ public class DynamicNameCheck extends AbstractExpression {
     }
 
     private String getPrefixedNodeName(final INode iNode) {
-        if (iNode instanceof Document) {
-            final Element documentElement = ((Document) iNode).getDocumentElement();
+        if (iNode instanceof Document document) {
+            final Element documentElement = document.getDocumentElement();
             if (documentElement != null) {
                 return getPrefixedNodeName(true, ((INode) documentElement).getQName());
             }

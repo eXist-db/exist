@@ -122,7 +122,7 @@ public class PermissionsFunctionChmodTest {
     }
 
     @Test
-    public void changeDocumentModeAsDBA_preservesSetGid() throws AuthenticationException, EXistException, PermissionDeniedException, XPathException { ;
+    public void changeDocumentModeAsDbaPreservesSetGid() throws AuthenticationException, EXistException, PermissionDeniedException, XPathException {
         final Subject adminUser = existWebServer.getBrokerPool().getSecurityManager().authenticate(TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
 
         // check the setGid bit is set before we begin
@@ -136,7 +136,7 @@ public class PermissionsFunctionChmodTest {
     }
 
     @Test
-    public void changeCollectionModeAsDBA_preservesSetGid() throws AuthenticationException, EXistException, PermissionDeniedException, XPathException {
+    public void changeCollectionModeAsDbaPreservesSetGid() throws AuthenticationException, EXistException, PermissionDeniedException, XPathException {
         final Subject adminUser = existWebServer.getBrokerPool().getSecurityManager().authenticate(TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
 
         // check the setGid bit is set before we begin
@@ -150,7 +150,7 @@ public class PermissionsFunctionChmodTest {
     }
 
     @Test
-    public void changeDocumentModeAsNonDBAOwner_preservesSetGid() throws AuthenticationException, EXistException, PermissionDeniedException, XPathException {
+    public void changeDocumentModeAsNonDbaOwnerPreservesSetGid() throws AuthenticationException, EXistException, PermissionDeniedException, XPathException {
         final Subject user1 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER1_NAME, USER1_PWD);
 
         // check the setGid bit is set before we begin
@@ -164,7 +164,7 @@ public class PermissionsFunctionChmodTest {
     }
 
     @Test
-    public void changeCollectionModeAsNonDBAOwner_preservesSetGid() throws AuthenticationException, EXistException, PermissionDeniedException, XPathException {
+    public void changeCollectionModeAsNonDbaOwnerPreservesSetGid() throws AuthenticationException, EXistException, PermissionDeniedException, XPathException {
         final Subject user1 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER1_NAME, USER1_PWD);
 
         // check the setGid bit is set before we begin
@@ -178,7 +178,7 @@ public class PermissionsFunctionChmodTest {
     }
 
     @Test(expected=PermissionDeniedException.class)
-    public void changeDocumentModeAsNonOwner_clearsSetGid() throws AuthenticationException, EXistException, PermissionDeniedException, XPathException {
+    public void changeDocumentModeAsNonOwnerClearsSetGid() throws AuthenticationException, EXistException, PermissionDeniedException, XPathException {
         final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
 
         // check the setGid bit is set before we begin
@@ -194,7 +194,7 @@ public class PermissionsFunctionChmodTest {
     }
 
     @Test(expected=PermissionDeniedException.class)
-    public void changeCollectionModeAsNonOwner_clearsSetGid() throws AuthenticationException, EXistException, PermissionDeniedException, XPathException {
+    public void changeCollectionModeAsNonOwnerClearsSetGid() throws AuthenticationException, EXistException, PermissionDeniedException, XPathException {
         final Subject user2 = existWebServer.getBrokerPool().getSecurityManager().authenticate(USER2_NAME, USER2_PWD);
 
         // check the setGid bit is set before we begin
@@ -274,8 +274,9 @@ public class PermissionsFunctionChmodTest {
             broker.storeDocument(transaction, USER1_DOC1, new StringInputSource(xml1), MimeType.XML_TYPE, collection);
 
             final String xquery1 =
-                    "import module namespace sm = 'http://exist-db.org/xquery/securitymanager';\n" +
-                            "sm:id()";
+                    """
+                    import module namespace sm = 'http://exist-db.org/xquery/securitymanager';
+                    sm:id()""";
             broker.storeDocument(transaction, USER1_XQUERY1, new StringInputSource(xquery1.getBytes(UTF_8)), MimeType.XQUERY_TYPE, collection);
             PermissionFactory.chmod_str(broker, transaction, collection.getURI().append(USER1_XQUERY1), Optional.of("u+s,g+s"), Optional.empty());
 

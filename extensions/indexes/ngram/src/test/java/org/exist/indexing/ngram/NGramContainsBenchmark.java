@@ -76,7 +76,7 @@ public class NGramContainsBenchmark {
         final StringBuilder sb = new StringBuilder("<test>\n");
         for (int i = 1; i <= 100; i++) {
             sb.append("  <item id='").append(i).append("'><description>")
-              .append("Item").append(String.format("%03d", i))
+              .append("Item").append("%03d".formatted(i))
               .append("</description></item>\n");
         }
         sb.append("</test>");

@@ -88,7 +88,7 @@ public class GetParameter extends RequestFunction {
 			failOnError = true;
 		}
 
-		if (!request.isPresent()) {
+		if (request.isEmpty()) {
 			if (failOnError) {
 				throw new XPathException(this, ErrorCodes.XPDY0002, "Variable $request is not bound to an Java object.");
 			} else {

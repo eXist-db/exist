@@ -21,9 +21,12 @@
  */
 package org.exist.xquery;
 
+import java.io.Serial;
+
 public class StaticXQueryException extends XPathException
 {
-	private static final long serialVersionUID = -8229758099980343418L;
+    @Serial
+    private static final long serialVersionUID = -8229758099980343418L;
 
 	public StaticXQueryException(String message) {
         this(null, message);

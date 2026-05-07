@@ -343,7 +343,7 @@ public class XMLDBRestoreTest {
         col1Contents.append("</collection>");
 
         final Path dbContentsFile = Files.write(db.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), dbContents.getBytes(UTF_8));
-        final Path col1ContentsFile = Files.write(col1.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), col1Contents.toString().getBytes(UTF_8));
+        Files.write(col1.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), col1Contents.toString().getBytes(UTF_8));
         for (final DocInfo backupDocInfo : BACKUP_DOCS) {
             Files.write(col1.resolve(backupDocInfo.name), backupDocInfo.content.getBytes(UTF_8));
         }
@@ -362,18 +362,19 @@ public class XMLDBRestoreTest {
         final Path col1 = Files.createDirectories(backupDir.resolve("db").resolve("col1"));
 
         final String contents =
-                "<collection xmlns=\"http://exist.sourceforge.net/NS/exist\" name=\"/db/col1\" owner=\"admin\" group=\"dba\" mode=\"755\" created=\"2019-05-15T15:58:39.385+04:00\" deduplicate-blobs=\"false\" version=\"2\">\n" +
-                        "    <acl entries=\"0\" version=\"1\"/>\n" +
-                        "    <resource type=\"XMLResource\" name=\"doc1.xml\" owner=\"admin\" group=\"dba\" mode=\"644\" created=\"2019-05-15T15:58:48.638+04:00\" modified=\"2019-05-15T15:58:48.638+04:00\" filename=\"doc1.xml\" mimetype=\"application/xml\">\n" +
-                        "        <acl entries=\"0\" version=\"1\"/>\n" +
-                        "    </resource>\n" +
-                        "    <resource type=\"XMLResource\" name=\"doc2.xml\" owner=\"admin\" group=\"dba\" mode=\"644\" created=\"2019-05-15T15:58:48.638+04:00\" modified=\"2019-05-15T15:58:48.638+04:00\" filename=\"doc2.xml\" mimetype=\"application/xml\">\n" +
-                        "        <acl entries=\"0\" version=\"1\"/>\n" +
-                        "    </resource>\n" +
-                        "    <resource type=\"XMLResource\" name=\"doc3.xml\" owner=\"admin\" group=\"dba\" mode=\"644\" created=\"2019-05-15T15:58:49.618+04:00\" modified=\"2019-05-15T15:58:49.618+04:00\" filename=\"doc3.xml\" mimetype=\"application/xml\">\n" +
-                        "        <acl entries=\"0\" version=\"1\"/>\n" +
-                        "    </resource>\n" +
-                        "</collection>";
+                """
+                <collection xmlns="http://exist.sourceforge.net/NS/exist" name="/db/col1" owner="admin" group="dba" mode="755" created="2019-05-15T15:58:39.385+04:00" deduplicate-blobs="false" version="2">
+                    <acl entries="0" version="1"/>
+                    <resource type="XMLResource" name="doc1.xml" owner="admin" group="dba" mode="644" created="2019-05-15T15:58:48.638+04:00" modified="2019-05-15T15:58:48.638+04:00" filename="doc1.xml" mimetype="application/xml">
+                        <acl entries="0" version="1"/>
+                    </resource>
+                    <resource type="XMLResource" name="doc2.xml" owner="admin" group="dba" mode="644" created="2019-05-15T15:58:48.638+04:00" modified="2019-05-15T15:58:48.638+04:00" filename="doc2.xml" mimetype="application/xml">
+                        <acl entries="0" version="1"/>
+                    </resource>
+                    <resource type="XMLResource" name="doc3.xml" owner="admin" group="dba" mode="644" created="2019-05-15T15:58:49.618+04:00" modified="2019-05-15T15:58:49.618+04:00" filename="doc3.xml" mimetype="application/xml">
+                        <acl entries="0" version="1"/>
+                    </resource>
+                </collection>""";
 
         final String doc1 = "<doc1/>";
         final String doc2 = "<doc2>invalid";
@@ -398,15 +399,16 @@ public class XMLDBRestoreTest {
         final Path accountsCol = Files.createDirectories(backupDir.resolve("db").resolve("system").resolve("security").resolve("exist").resolve("accounts"));
 
         final String contents =
-                "<collection xmlns=\"http://exist.sourceforge.net/NS/exist\" name=\"/db/system/security/exist/accounts\" owner=\"SYSTEM\" group=\"dba\" mode=\"770\" created=\"2019-05-15T19:51:06.258+04:00\" deduplicate-blobs=\"false\" version=\"2\">\n" +
-                        "    <acl entries=\"0\" version=\"1\"/>\n" +
-                        "    <resource type=\"XMLResource\" name=\"admin.xml\" owner=\"SYSTEM\" group=\"dba\" mode=\"770\" created=\"2019-05-15T19:51:06.319+04:00\" modified=\"2019-05-15T20:49:40.153+04:00\" filename=\"admin.xml\" mimetype=\"application/xml\">\n" +
-                        "        <acl entries=\"0\" version=\"1\"/>\n" +
-                        "    </resource>\n" +
-                        "    <resource type=\"XMLResource\" name=\"guest.xml\" owner=\"SYSTEM\" group=\"dba\" mode=\"770\" created=\"2019-05-15T19:51:06.512+04:00\" modified=\"2019-05-15T19:51:06.566+04:00\" filename=\"guest.xml\" mimetype=\"application/xml\">\n" +
-                        "        <acl entries=\"0\" version=\"1\"/>\n" +
-                        "    </resource>" +
-                        "</collection>";
+                """
+                <collection xmlns="http://exist.sourceforge.net/NS/exist" name="/db/system/security/exist/accounts" owner="SYSTEM" group="dba" mode="770" created="2019-05-15T19:51:06.258+04:00" deduplicate-blobs="false" version="2">
+                    <acl entries="0" version="1"/>
+                    <resource type="XMLResource" name="admin.xml" owner="SYSTEM" group="dba" mode="770" created="2019-05-15T19:51:06.319+04:00" modified="2019-05-15T20:49:40.153+04:00" filename="admin.xml" mimetype="application/xml">
+                        <acl entries="0" version="1"/>
+                    </resource>
+                    <resource type="XMLResource" name="guest.xml" owner="SYSTEM" group="dba" mode="770" created="2019-05-15T19:51:06.512+04:00" modified="2019-05-15T19:51:06.566+04:00" filename="guest.xml" mimetype="application/xml">
+                        <acl entries="0" version="1"/>
+                    </resource>\
+                </collection>""";
 
         // password for `admin`
         final String backupPasswordHash = Base64.encodeBase64String(ripemd160(backupPassword));
@@ -494,33 +496,39 @@ public class XMLDBRestoreTest {
         final Path accountsCol = Files.createDirectories(existRealmCol.resolve("accounts"));
 
         final String dbContents =
-                "<collection xmlns=\"http://exist.sourceforge.net/NS/exist\" name=\"/db\" version=\"1\" owner=\"SYSTEM\" group=\"dba\" mode=\"770\" created=\"2021-01-28T04:06:13.166Z\">\n" +
-                        "    <acl entries=\"0\" version=\"1\"/>\n" +
-                        "    <subcollection name=\"system\" filename=\"system\"/>\n" +
-                        "</collection>";
+                """
+                <collection xmlns="http://exist.sourceforge.net/NS/exist" name="/db" version="1" owner="SYSTEM" group="dba" mode="770" created="2021-01-28T04:06:13.166Z">
+                    <acl entries="0" version="1"/>
+                    <subcollection name="system" filename="system"/>
+                </collection>""";
 
         final String systemContents =
-                "<collection xmlns=\"http://exist.sourceforge.net/NS/exist\" name=\"/db/system\" version=\"1\" owner=\"SYSTEM\" group=\"dba\" mode=\"770\" created=\"2021-01-28T04:06:13.166Z\">\n" +
-                        "    <acl entries=\"0\" version=\"1\"/>\n" +
-                        "    <subcollection name=\"security\" filename=\"security\"/>\n" +
-                        "</collection>";
+                """
+                <collection xmlns="http://exist.sourceforge.net/NS/exist" name="/db/system" version="1" owner="SYSTEM" group="dba" mode="770" created="2021-01-28T04:06:13.166Z">
+                    <acl entries="0" version="1"/>
+                    <subcollection name="security" filename="security"/>
+                </collection>""";
 
         final String securityContents =
-                "<collection xmlns=\"http://exist.sourceforge.net/NS/exist\" name=\"/db/system/security\" version=\"1\" owner=\"SYSTEM\" group=\"dba\" mode=\"770\" created=\"2021-01-28T04:06:13.166Z\">\n" +
-                        "    <acl entries=\"0\" version=\"1\"/>\n" +
-                        "    <subcollection name=\"exist\" filename=\"exist\"/>\n" +
-                        "</collection>";
+                """
+                <collection xmlns="http://exist.sourceforge.net/NS/exist" name="/db/system/security" version="1" owner="SYSTEM" group="dba" mode="770" created="2021-01-28T04:06:13.166Z">
+                    <acl entries="0" version="1"/>
+                    <subcollection name="exist" filename="exist"/>
+                </collection>""";
 
         final String existRealmContents =
-                "<collection xmlns=\"http://exist.sourceforge.net/NS/exist\" name=\"/db/system/security/exist\" version=\"1\" owner=\"SYSTEM\" group=\"dba\" mode=\"770\" created=\"2021-01-28T04:06:13.166Z\">\n" +
-                        "    <acl entries=\"0\" version=\"1\"/>\n" +
-                        "    <subcollection name=\"accounts\" filename=\"accounts\"/>\n" +
-                        "    <subcollection name=\"groups\" filename=\"groups\"/>\n" +
-                        "</collection>";
+                """
+                <collection xmlns="http://exist.sourceforge.net/NS/exist" name="/db/system/security/exist" version="1" owner="SYSTEM" group="dba" mode="770" created="2021-01-28T04:06:13.166Z">
+                    <acl entries="0" version="1"/>
+                    <subcollection name="accounts" filename="accounts"/>
+                    <subcollection name="groups" filename="groups"/>
+                </collection>""";
 
         final StringBuilder groupsContents = new StringBuilder(
-                "<collection xmlns=\"http://exist.sourceforge.net/NS/exist\" name=\"/db/system/security/exist/groups\" version=\"1\" owner=\"SYSTEM\" group=\"dba\" mode=\"770\" created=\"2021-01-28T04:06:13.172Z\">\n" +
-                        "    <acl entries=\"0\" version=\"1\"/>\n");
+                """
+                <collection xmlns="http://exist.sourceforge.net/NS/exist" name="/db/system/security/exist/groups" version="1" owner="SYSTEM" group="dba" mode="770" created="2021-01-28T04:06:13.172Z">
+                    <acl entries="0" version="1"/>
+                """);
 
         for (final String groupName : groupNames) {
             groupsContents.append(
@@ -557,12 +565,12 @@ public class XMLDBRestoreTest {
                         "<name>" + username + "</name>\n" +
                         "</account>\n");
 
-        final Path dbContentsFile = Files.write(dbCol.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), dbContents.getBytes(UTF_8));
-        final Path systemContentsFile = Files.write(systemCol.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), systemContents.getBytes(UTF_8));
-        final Path securityContentsFile = Files.write(securityCol.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), securityContents.getBytes(UTF_8));
-        final Path existRealmContentsFile = Files.write(existRealmCol.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), existRealmContents.getBytes(UTF_8));
-        final Path groupsContentsFile = Files.write(groupsCol.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), groupsContents.toString().getBytes(UTF_8));
-        final Path accountsContentsFile = Files.write(accountsCol.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), accountsContents.getBytes(UTF_8));
+        Files.write(dbCol.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), dbContents.getBytes(UTF_8));
+        Files.write(systemCol.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), systemContents.getBytes(UTF_8));
+        Files.write(securityCol.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), securityContents.getBytes(UTF_8));
+        Files.write(existRealmCol.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), existRealmContents.getBytes(UTF_8));
+        Files.write(groupsCol.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), groupsContents.toString().getBytes(UTF_8));
+        Files.write(accountsCol.resolve(BackupDescriptor.COLLECTION_DESCRIPTOR), accountsContents.getBytes(UTF_8));
 
         int groupId = 123;
         for (final String groupName : groupNames) {

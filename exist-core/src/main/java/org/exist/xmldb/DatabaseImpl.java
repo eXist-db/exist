@@ -45,7 +45,7 @@ import org.xmldb.api.base.XMLDBException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -116,10 +116,10 @@ public class DatabaseImpl implements Database {
         try {
             final Configuration config = new Configuration(configuration, Optional.empty());
             if (dataDir != null) {
-                config.setProperty(BrokerPool.PROPERTY_DATA_DIR, Paths.get(dataDir));
+                config.setProperty(BrokerPool.PROPERTY_DATA_DIR, Path.of(dataDir));
             }
             if (journalDir != null) {
-                config.setProperty(Journal.PROPERTY_RECOVERY_JOURNAL_DIR, Paths.get(journalDir));
+                config.setProperty(Journal.PROPERTY_RECOVERY_JOURNAL_DIR, Path.of(journalDir));
             }
 
             BrokerPool.configure(instanceName, 1, 5, config);

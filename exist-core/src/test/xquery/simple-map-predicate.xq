@@ -25,7 +25,7 @@ xquery version "3.1";
   Tests for simple map operator inside predicates.
   https://github.com/eXist-db/exist/issues/3289
 
-  The expression @*[name() ! contains(., 'DateTime')] crashes with
+  The expression attribute::*[name() ! contains(., 'DateTime')] crashes with
   "Type error: the sequence cannot be converted into a node set.
   Item type is xs:boolean" when used on persistent (stored) documents.
 ~:)
@@ -57,7 +57,7 @@ function smp:teardown() {
 };
 
 (:~
-  #3289 — @*[name() ! contains(., 'DateTime')] on stored doc crashes with
+  #3289 — attribute::*[name() ! contains(., 'DateTime')] on stored doc crashes with
   "Type error: the sequence cannot be converted into a node set."
 ~:)
 declare
@@ -78,7 +78,7 @@ function smp:persistent-contains-name-dot() {
 };
 
 (:~
-  Another workaround from #3289: @* ! name()[contains(., ...)]
+  Another workaround from #3289: attribute::* ! name()[contains(., ...)]
 ~:)
 declare
     %test:assertEquals(2)
@@ -89,7 +89,7 @@ function smp:persistent-attr-map-name-predicate() {
 };
 
 (:~
-  Workaround from #3289 comment: @*[name()[contains(., ...)]]
+  Workaround from #3289 comment: attribute::*[name()[contains(., ...)]]
 ~:)
 declare
     %test:assertEquals(1)
@@ -99,7 +99,7 @@ function smp:persistent-nested-name-predicate() {
 };
 
 (:~
-  Workaround from #3289 comment: //@*[name() ! contains(., ...)]/..
+  Workaround from #3289 comment: //attribute::*[name() ! contains(., ...)]/..
 ~:)
 declare
     %test:assertEquals(1)
@@ -109,7 +109,7 @@ function smp:persistent-deref-attr-parent() {
 };
 
 (:~
-  #3289 comment pattern 1: @* ! name() ! contains(., ...) is expected to fail
+  #3289 comment pattern 1: attribute::* ! name() ! contains(., ...) is expected to fail
   per spec when multiple attributes produce multiple booleans, since EBV is
   undefined for a sequence of two or more booleans.
 ~:)

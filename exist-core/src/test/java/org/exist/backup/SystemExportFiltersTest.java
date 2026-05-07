@@ -77,13 +77,15 @@ public class SystemExportFiltersTest {
     private static final String XML1 = "<test attr=\"test\"/>";
     private static final String XML1_BACKUP = "<test attr=\"test\">test</test>";
     private static final String XML2 =
-        "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"\n" +
-        "\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n" +
-        "<html xmlns=\"http://www.w3.org/1999/xhtml\"></html>";
+        """
+        <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+        <html xmlns="http://www.w3.org/1999/xhtml"></html>""";
     private static final String XML2_PROPER =
-        "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" " +
-        "\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n" +
-        "<html xmlns=\"http://www.w3.org/1999/xhtml\"/>";
+        """
+        <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" \
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+        <html xmlns="http://www.w3.org/1999/xhtml"/>""";
 
 
     private static final String XML3 = "<!DOCTYPE html><html></html>";

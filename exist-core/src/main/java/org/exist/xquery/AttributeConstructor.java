@@ -22,7 +22,6 @@
 package org.exist.xquery;
 
 import org.exist.xquery.util.ExpressionDumper;
-import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
@@ -76,8 +75,8 @@ public class AttributeConstructor extends NodeConstructor {
         super.analyze(contextInfo);
         contextInfo.setParent(this);
         for(final Object next : contents) {
-			if(next instanceof Expression)
-				{((Expression)next).analyze(contextInfo);}
+			if(next instanceof Expression expression)
+				{expression.analyze(contextInfo);}
 		}
     }
     
@@ -91,8 +90,8 @@ public class AttributeConstructor extends NodeConstructor {
 		final StringBuilder buf = new StringBuilder();
 
 		for(final Object next : contents) {
-			if(next instanceof Expression)
-				{evalEnclosedExpr(((Expression)next).eval(contextSequence, contextItem), buf);}
+			if(next instanceof Expression expression)
+				{evalEnclosedExpr(expression.eval(contextSequence, contextItem), buf);}
 			else
 				{buf.append(next);}
 		}
@@ -106,7 +105,6 @@ public class AttributeConstructor extends NodeConstructor {
 
 	private void evalEnclosedExpr(Sequence seq, StringBuilder buf) throws XPathException {
 		Item item;
-		AtomicValue atomic;
 		for(final SequenceIterator i = Atomize.atomize(seq).iterate(); i.hasNext();) {
 			item = i.nextItem();
 			buf.append(item.getStringValue());
@@ -140,8 +138,8 @@ public class AttributeConstructor extends NodeConstructor {
         dumper.startIndent();
 
 		for(final Object next : contents) {
-			if(next instanceof Expression)
-				{((Expression)next).dump(dumper);}
+			if(next instanceof Expression expression)
+				{expression.dump(dumper);}
 			else
 				{dumper.display(next);}
 		}
@@ -173,8 +171,8 @@ public class AttributeConstructor extends NodeConstructor {
 		super.resetState(postOptimization);
 
 		for(final Object object : contents) {
-			if(object instanceof Expression)
-				{((Expression)object).resetState(postOptimization);}
+			if(object instanceof Expression expression)
+				{expression.resetState(postOptimization);}
 		}
 	}
 

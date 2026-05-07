@@ -40,7 +40,7 @@ public abstract class ComparatorChecker extends SortMethodChecker {
 
 	enum SortOrder {
 		ASCENDING, DESCENDING, UNSTABLE, RANDOM
-	};
+	}
 
 	ComparatorChecker(SortingAlgorithmTester sorter) {
 		super(sorter);

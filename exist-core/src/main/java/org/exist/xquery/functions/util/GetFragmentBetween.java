@@ -428,8 +428,8 @@ public class GetFragmentBetween extends BasicFunction {
     private Node getParent(final Node n) {
         if (n == null) {
             return null;
-        } else if (n instanceof Attr) {
-            return ((Attr) n).getOwnerElement();
+        } else if (n instanceof Attr attr) {
+            return attr.getOwnerElement();
         } else {
             return n.getParentNode();
         }

@@ -65,10 +65,12 @@ public class TestDataGenerator {
     }
 
     private final static String IMPORT =
-            "import module namespace pt='http://exist-db.org/xquery/test/performance' " +
-            "at 'java:org.exist.performance.xquery.PerfTestModule';\n" +
-            "declare variable $filename external;\n" +
-            "declare variable $count external;\n";
+            """
+            import module namespace pt='http://exist-db.org/xquery/test/performance' \
+            at 'java:org.exist.performance.xquery.PerfTestModule';
+            declare variable $filename external;
+            declare variable $count external;
+            """;
 
     private String prefix;
     private int count;

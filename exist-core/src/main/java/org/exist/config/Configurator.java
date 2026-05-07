@@ -37,6 +37,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -432,15 +433,15 @@ public class Configurator {
                                 list.remove(i); //TODO Surely we should log a problem here or throw an exception?
                                 continue;
 
-                            } else if (obj instanceof Reference) {
+                            } else if (obj instanceof Reference reference) {
 
-                                if (!referenceBy.isPresent()) {
+                                if (referenceBy.isEmpty()) {
                                     LOG.error("illegal design '{}' [{}]", configuration.getName(), field);
                                     list.remove(i);
                                     continue;
                                 } else {
 
-                                    final String name = ((Reference) obj).getName();
+                                    final String name = reference.getName();
 
                                     //Lookup for new configuration, update if found
                                     final List<Configuration> applicableConfs = filter(confs, conf ->
@@ -515,7 +516,7 @@ public class Configurator {
                                 if(value != null) {
                                     final Optional<ConsumerE<String, ReflectiveOperationException>> updateFn = updateListFn(instance, confName, removed, value);
 
-                                    if(!updateFn.isPresent()) {
+                                    if(updateFn.isEmpty()) {
                                         LOG.error("Could not insert configured object");
                                     } else {
                                         try {
@@ -535,7 +536,7 @@ public class Configurator {
                                         if (value != null) {
                                             final Optional<ConsumerE<String, ReflectiveOperationException>> updateFn = updateListFn(instance, confName, removed, value);
 
-                                            if(!updateFn.isPresent()) {
+                                            if(updateFn.isEmpty()) {
                                                 LOG.error("Could not insert configured object");
                                             } else {
                                                 try {
@@ -579,7 +580,7 @@ public class Configurator {
                                 objs = new Object[]{id.toLowerCase(), id};
                             }
                             
-                            final String clazzName = String.format(annotation.value(), objs);
+                            final String clazzName = annotation.value().formatted(objs);
                             final Configurable obj = create(conf, instance, clazzName);
                             
                             if (obj != null) {
@@ -663,7 +664,7 @@ public class Configurator {
      * @return The Configurable or null
      */
     private static Configurable create(final Configuration conf, final Configurable instance, final Class<?> clazz) {
-        boolean interrupted = false;
+        final AtomicBoolean interrupted = new AtomicBoolean(false);
         try {
             final MethodHandles.Lookup lookup = MethodHandles.lookup();
             Configurable obj = null;
@@ -676,38 +677,27 @@ public class Configurator {
                                         methodHandle.type().erase(), methodHandle, methodHandle.type()).getTarget().invokeExact();
 
                 obj = constructor.apply(instance, conf);
-            } catch (final Throwable e) {
-                if (e instanceof InterruptedException) {
-                    interrupted = true;
-                }
+            } catch (final InterruptedException e) {
+                interrupted.set(true);
 
                 if(LOG.isDebugEnabled()) {
                     LOG.debug("Unable to invoke Constructor on Configurable instance '{}', so creating new Constructor...", e.getMessage());
                 }
 
-                try {
-                    final MethodHandle methodHandle = lookup.findConstructor(clazz, methodType(void.class, Configuration.class));
-                    final Function<Configuration, Configurable> constructor =
-                            (Function<Configuration, Configurable>)
-                                    LambdaMetafactory.metafactory(
-                                            lookup, "apply", methodType(Function.class),
-                                            methodHandle.type().erase(), methodHandle, methodHandle.type()).getTarget().invokeExact();
-                    obj = constructor.apply(conf);
-                } catch (final Throwable ee) {
-                    if (ee instanceof InterruptedException) {
-                        interrupted = true;
-                    }
-
-                    LOG.warn("Instantiation exception on {} creation '{}', skipping instance creation.", clazz, ee.getMessage());
-                    LOG.debug(e.getMessage(), ee);
+                obj = tryConfigurationOnlyConstructor(lookup, clazz, conf, e, interrupted);
+            } catch (final Throwable e) {
+                if(LOG.isDebugEnabled()) {
+                    LOG.debug("Unable to invoke Constructor on Configurable instance '{}', so creating new Constructor...", e.getMessage());
                 }
+
+                obj = tryConfigurationOnlyConstructor(lookup, clazz, conf, e, interrupted);
             }
             
             if (obj == null) {
                 return null;
             }
 
-            if (obj instanceof LifeCycle) {
+            if (obj instanceof LifeCycle cycle) {
                 BrokerPool db = null;
                 
                 try {
@@ -721,7 +711,7 @@ public class Configurator {
                 if (db != null) {
                     try(final DBBroker broker = db.getBroker();
                         final Txn transaction = broker.continueOrBeginTransaction()) {
-                        ((LifeCycle) obj).start(broker, transaction);
+                        cycle.start(broker, transaction);
                         transaction.commit();
                     }
                 }
@@ -735,10 +725,37 @@ public class Configurator {
 
             return null;
         } finally {
-            if (interrupted) {
+            if (interrupted.get()) {
                 // NOTE: must set interrupted flag
                 Thread.currentThread().interrupt();
             }
+        }
+    }
+
+    private static Configurable tryConfigurationOnlyConstructor(
+            final MethodHandles.Lookup lookup,
+            final Class<?> clazz,
+            final Configuration conf,
+            final Throwable outerFailure,
+            final AtomicBoolean interrupted) {
+        try {
+            final MethodHandle methodHandle = lookup.findConstructor(clazz, methodType(void.class, Configuration.class));
+            final Function<Configuration, Configurable> constructor =
+                    (Function<Configuration, Configurable>)
+                            LambdaMetafactory.metafactory(
+                                    lookup, "apply", methodType(Function.class),
+                                    methodHandle.type().erase(), methodHandle, methodHandle.type()).getTarget().invokeExact();
+            return constructor.apply(conf);
+        } catch (final InterruptedException ee) {
+            interrupted.set(true);
+
+            LOG.warn("Instantiation exception on {} creation '{}', skipping instance creation.", clazz, ee.getMessage());
+            LOG.debug(outerFailure.getMessage(), ee);
+            return null;
+        } catch (final Throwable ee) {
+            LOG.warn("Instantiation exception on {} creation '{}', skipping instance creation.", clazz, ee.getMessage());
+            LOG.debug(outerFailure.getMessage(), ee);
+            return null;
         }
     }
 
@@ -1068,8 +1085,8 @@ public class Configurator {
         
         //determine the list entries type from its generic type
         final Type fieldGenericType = field.getGenericType();
-        if (fieldGenericType instanceof ParameterizedType) {
-            final Type genericTypeArgs[] = ((ParameterizedType) fieldGenericType).getActualTypeArguments();
+        if (fieldGenericType instanceof ParameterizedType type) {
+            final Type genericTypeArgs[] = type.getActualTypeArguments();
             if (genericTypeArgs != null && genericTypeArgs.length == 1) {
                 final Type genericListType = genericTypeArgs[0];
                 if (genericListType.equals(String.class)) {
@@ -1136,8 +1153,8 @@ public class Configurator {
     }
 
     public static FullXmldbURI getFullURI(final BrokerPool pool, final XmldbURI uri) {
-        if (uri instanceof FullXmldbURI) {
-            return (FullXmldbURI) uri;
+        if (uri instanceof FullXmldbURI rI) {
+            return rI;
         }
 
         final StringBuilder accessor = new StringBuilder(XmldbURI.XMLDB_URI_PREFIX);
@@ -1347,8 +1364,8 @@ public class Configurator {
             final FullXmldbURI uri = entry.getKey();
             if (uri.getInstanceName().equals(db.getId())) {
                 final Configuration conf = entry.getValue();
-                if (conf instanceof ConfigurationImpl) {
-                    ((ConfigurationImpl) conf).configuredObjectReference = null;
+                if (conf instanceof ConfigurationImpl impl) {
+                    impl.configuredObjectReference = null;
                 }
             }
             hotConfigs.remove(uri);

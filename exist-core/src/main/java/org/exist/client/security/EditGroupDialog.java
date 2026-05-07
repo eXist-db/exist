@@ -21,6 +21,13 @@
  */
 package org.exist.client.security;
 
+import static org.exist.security.SecurityManager.DBA_GROUP;
+import static org.exist.security.SecurityManager.DBA_USER;
+import static org.exist.security.SecurityManager.GUEST_GROUP;
+import static org.exist.security.SecurityManager.GUEST_USER;
+import static org.exist.security.SecurityManager.SYSTEM;
+
+import java.io.Serial;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -38,7 +45,8 @@ import org.xmldb.api.base.XMLDBException;
  * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 public class EditGroupDialog extends GroupDialog {
-    
+
+    @Serial
     private static final long serialVersionUID = -9092253443709031810L;
 	
     private final Group group;
@@ -167,8 +175,8 @@ public class EditGroupDialog extends GroupDialog {
         
         return
             groupMemberSelected
-            && (!(group.getName().equals(org.exist.security.SecurityManager.DBA_GROUP) && (getSelectedMember().equals(org.exist.security.SecurityManager.DBA_USER) || getSelectedMember().equals(org.exist.security.SecurityManager.SYSTEM))))
-            && (!(group.getName().equals(org.exist.security.SecurityManager.GUEST_GROUP) && getSelectedMember().equals(org.exist.security.SecurityManager.GUEST_USER)));
+            && (!(group.getName().equals(DBA_GROUP) && (getSelectedMember().equals(DBA_USER) || getSelectedMember().equals(SYSTEM))))
+            && (!(group.getName().equals(GUEST_GROUP) && getSelectedMember().equals(GUEST_USER)));
     }
     
     

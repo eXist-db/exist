@@ -126,7 +126,7 @@ public class FunctionFactory {
             throw new XPathException(ast.getLine(), ast.getColumn(),
         		ErrorCodes.XPST0017, "Function starts-with() requires two or three arguments");
         }
-        final PathExpr p0 = (PathExpr) params.get(0);
+        final PathExpr p0 = (PathExpr) params.getFirst();
         final PathExpr p1 = (PathExpr) params.get(1);
         if (p1.getLength() == 0) {
             throw new XPathException(ast.getLine(), ast.getColumn(),
@@ -157,7 +157,7 @@ public class FunctionFactory {
             throw new XPathException(ast.getLine(), ast.getColumn(),
         		ErrorCodes.XPST0017, "Function ends-with() requires two or three arguments");
         }
-        final PathExpr p0 = (PathExpr) params.get(0);
+        final PathExpr p0 = (PathExpr) params.getFirst();
         final PathExpr p1 = (PathExpr) params.get(1);
         if (p1.getLength() == 0) {
             throw new XPathException(ast.getLine(), ast.getColumn(),
@@ -187,7 +187,7 @@ public class FunctionFactory {
             throw new XPathException(ast.getLine(), ast.getColumn(),
         		ErrorCodes.XPST0017, "Function contains() requires two or three arguments");
         }
-        final PathExpr p0 = (PathExpr) params.get(0);
+        final PathExpr p0 = (PathExpr) params.getFirst();
         final PathExpr p1 = (PathExpr) params.get(1);
         if (p1.getLength() == 0) {
             throw new XPathException(ast.getLine(), ast.getColumn(),
@@ -218,7 +218,7 @@ public class FunctionFactory {
             throw new XPathException(ast.getLine(), ast.getColumn(),
         		ErrorCodes.XPST0017, "Function equals() requires two or three arguments");
         }
-        final PathExpr p0 = (PathExpr) params.get(0);
+        final PathExpr p0 = (PathExpr) params.getFirst();
         final PathExpr p1 = (PathExpr) params.get(1);
         if (p1.getLength() == 0) {
             throw new XPathException(ast.getLine(), ast.getColumn(),
@@ -412,8 +412,8 @@ public class FunctionFactory {
                 final StringBuilder msg = new StringBuilder("Function ")
                         .append(qname.getStringValue()).append('#').append(params.size())
                         .append(" is not defined in namespace '").append(qname.getNamespaceURI()).append('\'');
-                if (module instanceof ExternalModule) {
-                    final Source moduleSource = ((ExternalModule) module).getSource();
+                if (module instanceof ExternalModule externalModule) {
+                    final Source moduleSource = externalModule.getSource();
                     msg.append(" for module: ").append(moduleSource.pathOrShortIdentifier());
                 }
                 if (throwOnNotFound) {

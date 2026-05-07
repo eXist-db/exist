@@ -30,7 +30,6 @@ import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.function.Predicate;
 import javax.management.*;
@@ -132,7 +131,7 @@ public class JMXServlet extends HttpServlet {
 
             final long responseTime = client.ping(BrokerPool.DEFAULT_INSTANCE_NAME, timeout);
             if (responseTime == JMXtoXML.PING_TIMEOUT) {
-                root = client.generateXMLReport(String.format("no response on ping after %sms", timeout),
+                root = client.generateXMLReport("no response on ping after %sms".formatted(timeout),
                         new String[]{"sanity", "locking", "processes", "instances", "memory"});
             } else {
                 root = client.generateXMLReport(null, new String[]{"sanity"});
@@ -194,9 +193,9 @@ public class JMXServlet extends HttpServlet {
         // Get directory for token file
         final String jmxDataDir = client.getDataDir();
         if (jmxDataDir == null) {
-            dataDir = Paths.get(config.getServletContext().getRealPath(WEBINF_DATA_DIR)).normalize();
+            dataDir = Path.of(config.getServletContext().getRealPath(WEBINF_DATA_DIR)).normalize();
         } else {
-            dataDir = Paths.get(jmxDataDir).normalize();
+            dataDir = Path.of(jmxDataDir).normalize();
         }
         if (!Files.isDirectory(dataDir) || !Files.isWritable(dataDir)) {
             LOG.error("Cannot access directory {}", WEBINF_DATA_DIR);

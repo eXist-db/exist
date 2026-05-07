@@ -80,7 +80,7 @@ public class JnlpWriter {
         for (final Path jar : jnlpFiles.getAllWebstartJars()) {
             counter++; // debugging
             if (jar == null || !Files.exists(jar)) {
-                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, String.format("Missing Jar file! (%s)", counter));
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Missing Jar file! (%s)".formatted(counter));
                 return;
             }
         }
@@ -275,7 +275,7 @@ public class JnlpWriter {
       
         try(final InputStream imageInputStream = this.getClass().getResourceAsStream("resources/"+filename)) {
             if (imageInputStream == null) {
-                response.sendError(HttpServletResponse.SC_NOT_FOUND, String.format("Image file '%s' not found.", filename));
+                response.sendError(HttpServletResponse.SC_NOT_FOUND, "Image file '%s' not found.".formatted(filename));
                 return;
             }
 

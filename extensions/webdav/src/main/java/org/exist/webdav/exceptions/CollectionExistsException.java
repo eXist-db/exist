@@ -21,6 +21,8 @@
  */
 package org.exist.webdav.exceptions;
 
+import java.io.Serial;
+
 /**
  * Class that represents a situation that a collection cannot be created because the
  * collection already exists.
@@ -29,6 +31,7 @@ package org.exist.webdav.exceptions;
  */
 public class CollectionExistsException extends EXistWebdavException {
 
+    @Serial
     private static final long serialVersionUID = 9147649778466124318L;
 
     public CollectionExistsException() {

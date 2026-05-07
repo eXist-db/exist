@@ -48,7 +48,6 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -70,7 +69,7 @@ public class PackageTriggerIT {
             return () -> PackageTriggerIT.class.getResourceAsStream("/" + xarFile);
         }
         // 2) Try from sibling module build output
-        final Path relPath = Paths.get("extensions/modules/expathrepo/expathrepo-trigger-test/target", xarFile);
+        final Path relPath = Path.of("extensions/modules/expathrepo/expathrepo-trigger-test/target", xarFile);
         if (Files.exists(relPath)) {
             return () -> {
                 try {
@@ -81,7 +80,7 @@ public class PackageTriggerIT {
             };
         }
         // 3) Try from current module generated-test-resources (in case direct run already copied it)
-        final Path generated = Paths.get("extensions/modules/expathrepo/target/generated-test-resources", xarFile);
+        final Path generated = Path.of("extensions/modules/expathrepo/target/generated-test-resources", xarFile);
         if (Files.exists(generated)) {
             return () -> {
                 try {

@@ -44,7 +44,6 @@ import org.exist.util.ReadOnlyException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -71,7 +70,7 @@ public class FileLockService implements BrokerPoolService {
     @Override
     public void configure(final Configuration configuration) throws BrokerPoolServiceException {
         dataDir = Optional.ofNullable((Path) configuration.getProperty(confDirPropName))
-                .orElse(Paths.get(defaultDirName));
+                .orElse(Path.of(defaultDirName));
 
         if(!Files.exists(dataDir)) {
             try {

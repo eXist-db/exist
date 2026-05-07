@@ -146,99 +146,10 @@ public class TryCatchExpression extends AbstractExpression {
             final Sequence tryTargetSeq = tryTargetExpr.eval(contextSequence, contextItem);
             return tryTargetSeq;
 
-        } catch (final Throwable throwable) { 
-
-            final ErrorCode errorCode;
-
-            // fn:error throws an XPathException
-            if(throwable instanceof XPathException xpe){
-                // Get errorcode from nicely thrown xpathexception
-
-                if(xpe.getErrorCode() != null) {
-                    if(xpe.getErrorCode() == ErrorCodes.ERROR) {
-                        errorCode = extractErrorCode(xpe);
-                    } else {
-                        errorCode = xpe.getErrorCode();
-                    }
-                } else {
-                    // if no errorcode is found, reconstruct by parsing the error text.
-                    errorCode = extractErrorCode(xpe);
-                }
-            } else {
-                // Get errorcode from all other errors and exceptions
-                errorCode = new JavaErrorCode(throwable);
-            }
-
-            // We need the qname in the end
-            final QName errorCodeQname = errorCode.getErrorQName();
-
-            // Exception in thrown, catch expression will be evaluated.
-            // catchvars (CatchErrorCode (, CatchErrorDesc (, CatchErrorVal)?)? )
-            // need to be retrieved as variables
-            Sequence catchResultSeq = null;
-            final LocalVariable mark0 = context.markLocalVariables(false); // DWES: what does this do?
-
-            // DWES: should I use popLocalVariables
-            context.declareInScopeNamespace(Namespaces.W3C_XQUERY_XPATH_ERROR_PREFIX, Namespaces.W3C_XQUERY_XPATH_ERROR_NS);
-            context.declareInScopeNamespace(Namespaces.EXIST_XQUERY_XPATH_ERROR_PREFIX, Namespaces.EXIST_XQUERY_XPATH_ERROR_NS);
-            
-            //context.declareInScopeNamespace(null, null);
-
-            try {
-                // flag used to escape loop when errorcode has matched
-                boolean errorMatched = false;
-
-                // Iterate on all catch clauses
-                for (final CatchClause catchClause : catchClauses) {
-                    
-                    if (isErrorInList(errorCodeQname, catchClause.getCatchErrorList()) && !errorMatched) {
-
-                        errorMatched = true;
-
-                        // Get catch variables
-                        final LocalVariable mark1 = context.markLocalVariables(false); // DWES: what does this do?
-                        
-                        try {  
-                            // Add std errors
-                            addErrCode(errorCodeQname);                          
-                            addErrDescription(throwable, errorCode);
-                            addErrValue(throwable);
-                            addErrModule(throwable);
-                            addErrLineNumber(throwable);
-                            addErrColumnNumber(throwable);
-                            addErrAdditional(throwable);
-                            addFunctionTrace(throwable);
-                            addJavaTrace(throwable);
-
-                            // Evaluate catch expression
-                            catchResultSeq = ((Expression) catchClause.getCatchExpr()).eval(contextSequence, contextItem);
-                            
-                            
-                        } finally {
-                            context.popLocalVariables(mark1, catchResultSeq);
-                        }
-
-                    } else {
-                        // if in the end nothing is set, rethrow after loop
-                    }
-                } // for catch clauses
-
-                // If an error hasn't been caught, throw new one
-                if (!errorMatched) {
-                    if (throwable instanceof XPathException) {
-                        throw throwable;
-                    } else {
-                        LOG.error(throwable);
-                        throw new XPathException(this, throwable);
-                    }
-                }
-
-            } finally {
-                context.popLocalVariables(mark0, catchResultSeq);
-            }
-
-            return catchResultSeq;
-
+        } catch (final XPathException xpe) {
+            return evalCatchClauses(contextSequence, contextItem, xpe, errorCodeForCaughtXPathException(xpe));
+        } catch (final Throwable throwable) {
+            return evalCatchClauses(contextSequence, contextItem, throwable, new JavaErrorCode(throwable));
         } finally {
             context.expressionEnd(this);
         }
@@ -267,8 +178,8 @@ public class TryCatchExpression extends AbstractExpression {
         err_column_nr.setSequenceType(new SequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE));
 
         final Sequence colNum;
-        if (t != null && t instanceof XPathException) {
-            colNum = new IntegerValue(this, ((XPathException)t).getColumn());
+        if (t != null && t instanceof XPathException exception) {
+            colNum = new IntegerValue(this, exception.getColumn());
         } else {
             colNum = Sequence.EMPTY_SEQUENCE;
         }
@@ -286,8 +197,8 @@ public class TryCatchExpression extends AbstractExpression {
         err_line_nr.setSequenceType(new SequenceType(Type.INTEGER, Cardinality.ZERO_OR_ONE));
 
         final Sequence lineNum;
-        if (t != null && t instanceof XPathException) {
-            lineNum = new IntegerValue(this, ((XPathException)t).getLine());
+        if (t != null && t instanceof XPathException exception) {
+            lineNum = new IntegerValue(this, exception.getLine());
         } else {
             lineNum = Sequence.EMPTY_SEQUENCE;
         }
@@ -305,8 +216,8 @@ public class TryCatchExpression extends AbstractExpression {
         err_module.setSequenceType(new SequenceType(Type.STRING, Cardinality.ZERO_OR_ONE));
 
         final Sequence module;
-        if (t != null && t instanceof XPathException && ((XPathException)t).getSource() != null) {
-            module = new StringValue(this, ((XPathException)t).getSource().pathOrShortIdentifier());
+        if (t != null && t instanceof XPathException exception && exception.getSource() != null) {
+            module = new StringValue(this, exception.getSource().pathOrShortIdentifier());
         } else {
             module = Sequence.EMPTY_SEQUENCE;
         }
@@ -326,8 +237,8 @@ public class TryCatchExpression extends AbstractExpression {
         final Sequence errorValue;
         if (t != null) {
             // Get error value from exception
-            if(t instanceof XPathException && ((XPathException)t).getErrorVal() != null) {
-                errorValue = ((XPathException)t).getErrorVal();
+            if(t instanceof XPathException exception && exception.getErrorVal() != null) {
+                errorValue = exception.getErrorVal();
             } else {
                 errorValue = Sequence.EMPTY_SEQUENCE;
             }
@@ -346,7 +257,7 @@ public class TryCatchExpression extends AbstractExpression {
     // was called with one argument).
     private void addErrDescription(final Throwable t, final ErrorCode errorCode) throws XPathException {
         final Optional<String> errorDesc = Optional.ofNullable(errorCode.getDescription());
-        final Optional<String> throwableDesc = Optional.ofNullable(t instanceof XPathException ? ((XPathException) t).getDetailMessage() : t.getMessage());
+        final Optional<String> throwableDesc = Optional.ofNullable(t instanceof XPathException xpe ? xpe.getDetailMessage() : t.getMessage());
         final Expression expression = this;
         final Sequence description = errorDesc
                 .<Sequence>map(
@@ -384,6 +295,96 @@ public class TryCatchExpression extends AbstractExpression {
             dumper.nl().display("}");
             dumper.endIndent();
         }
+    }
+
+    private ErrorCode errorCodeForCaughtXPathException(final XPathException xpe) throws XPathException {
+        // fn:error throws an XPathException — get error code from a well-formed XPathException
+        if (xpe.getErrorCode() != null) {
+            if (xpe.getErrorCode() == ErrorCodes.ERROR) {
+                return extractErrorCode(xpe);
+            }
+            return xpe.getErrorCode();
+        }
+
+        // if no errorcode is found, reconstruct by parsing the error text.
+        return extractErrorCode(xpe);
+    }
+
+    private Sequence evalCatchClauses(
+            final Sequence contextSequence,
+            final Item contextItem,
+            final Throwable throwable,
+            final ErrorCode errorCode) throws XPathException {
+
+        // We need the qname in the end
+        final QName errorCodeQname = errorCode.getErrorQName();
+
+        // Exception in thrown, catch expression will be evaluated.
+        // catchvars (CatchErrorCode (, CatchErrorDesc (, CatchErrorVal)?)? )
+        // need to be retrieved as variables
+        Sequence catchResultSeq = null;
+        final LocalVariable mark0 = context.markLocalVariables(false); // DWES: what does this do?
+
+        // DWES: should I use popLocalVariables
+        context.declareInScopeNamespace(Namespaces.W3C_XQUERY_XPATH_ERROR_PREFIX, Namespaces.W3C_XQUERY_XPATH_ERROR_NS);
+        context.declareInScopeNamespace(Namespaces.EXIST_XQUERY_XPATH_ERROR_PREFIX, Namespaces.EXIST_XQUERY_XPATH_ERROR_NS);
+
+        //context.declareInScopeNamespace(null, null);
+
+        try {
+            // flag used to escape loop when errorcode has matched
+            boolean errorMatched = false;
+
+            // Iterate on all catch clauses
+            for (final CatchClause catchClause : catchClauses) {
+
+                if (isErrorInList(errorCodeQname, catchClause.getCatchErrorList()) && !errorMatched) {
+
+                    errorMatched = true;
+
+                    // Get catch variables
+                    final LocalVariable mark1 = context.markLocalVariables(false); // DWES: what does this do?
+
+                    try {
+                        // Add std errors
+                        addErrCode(errorCodeQname);
+                        addErrDescription(throwable, errorCode);
+                        addErrValue(throwable);
+                        addErrModule(throwable);
+                        addErrLineNumber(throwable);
+                        addErrColumnNumber(throwable);
+                        addErrAdditional(throwable);
+                        addFunctionTrace(throwable);
+                        addJavaTrace(throwable);
+
+                        // Evaluate catch expression
+                        catchResultSeq = ((Expression) catchClause.getCatchExpr()).eval(contextSequence, contextItem);
+
+
+                    } finally {
+                        context.popLocalVariables(mark1, catchResultSeq);
+                    }
+
+                } else {
+                    // if in the end nothing is set, rethrow after loop
+                }
+            } // for catch clauses
+
+            // If an error hasn't been caught, throw new one
+            if (!errorMatched) {
+                if (throwable instanceof XPathException xpe) {
+                    throw xpe;
+                }
+
+                LOG.error(throwable);
+                throw new XPathException(this, throwable);
+            }
+
+        } finally {
+            context.popLocalVariables(mark0, catchResultSeq);
+        }
+
+        return catchResultSeq;
     }
 
     /**
@@ -505,8 +506,8 @@ public class TryCatchExpression extends AbstractExpression {
         localVar.setSequenceType(new SequenceType(Type.STRING, Cardinality.ZERO_OR_MORE));
 
         final Sequence trace;
-		if(t != null && t instanceof XPathException) {
-			final List<XPathException.FunctionStackElement> callStack = ((XPathException)t).getCallStack();
+		if(t != null && t instanceof XPathException exception) {
+			final List<XPathException.FunctionStackElement> callStack = exception.getCallStack();
 			if(callStack == null){
 				trace = Sequence.EMPTY_SEQUENCE;
 			} else {

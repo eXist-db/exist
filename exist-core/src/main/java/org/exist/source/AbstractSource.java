@@ -69,8 +69,8 @@ public abstract class AbstractSource implements Source {
 
     @Override
     public boolean equals(final Object obj) {
-    	if (obj != null && obj instanceof Source) {
-            return key == (((Source)obj).getKey());
+    	if (obj != null && obj instanceof Source source) {
+            return key == (source.getKey());
 		}
     	return false;
     }

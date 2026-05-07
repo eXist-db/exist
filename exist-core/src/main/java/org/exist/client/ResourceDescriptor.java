@@ -80,7 +80,7 @@ public abstract class ResourceDescriptor {
 
         @Override
         public String getPermissionsDescription() {
-            return "-" + ((permissions instanceof ACLPermission && ((ACLPermission) permissions).getACECount() > 0) ? permissions.toString() + '+' : permissions.toString());
+            return "-" + ((permissions instanceof ACLPermission aclp && aclp.getACECount() > 0) ? permissions.toString() + '+' : permissions.toString());
         }
     }
     
@@ -100,7 +100,7 @@ public abstract class ResourceDescriptor {
 
         @Override
         public String getPermissionsDescription() {
-            return "c" + ((permissions instanceof ACLPermission && ((ACLPermission) permissions).getACECount() > 0) ? permissions.toString() + '+' : permissions.toString());
+            return "c" + ((permissions instanceof ACLPermission aclp && aclp.getACECount() > 0) ? permissions.toString() + '+' : permissions.toString());
         }
     }
     

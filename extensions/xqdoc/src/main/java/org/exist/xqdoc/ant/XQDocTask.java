@@ -45,22 +45,24 @@ import org.xmldb.api.base.XMLDBException;
 public class XQDocTask extends AbstractXMLDBTask {
 
     private final static String XQUERY =
-        "import module namespace xqdm=\"http://exist-db.org/xquery/xqdoc\";\n" +
-        "import module namespace xdb=\"http://exist-db.org/xquery/xmldb\";\n" +
-        "declare namespace xqdoc=\"http://www.xqdoc.org/1.0\"\n;" +
-        "declare variable $uri external;\n" +
-        "declare variable $name external;\n" +
-        "declare variable $collection external;\n" +
-        "declare variable $data external;\n" +
-        "let $xml :=\n" +
-            "if ($uri) then\n" +
-            "   xqdm:scan(xs:anyURI($uri))\n" +
-            "else\n" +
-            "   xqdm:scan($data, $name)\n" +
-        "let $moduleURI := $xml//xqdoc:module/xqdoc:uri\n" +
-        "let $docName := concat(util:hash($moduleURI, 'MD5'), '.xml')\n" +
-        "return\n" +
-        "   xdb:store($collection, $docName, $xml, 'application/xml')";
+        """
+        import module namespace xqdm="http://exist-db.org/xquery/xqdoc";
+        import module namespace xdb="http://exist-db.org/xquery/xmldb";
+        declare namespace xqdoc="http://www.xqdoc.org/1.0"
+        ;\
+        declare variable $uri external;
+        declare variable $name external;
+        declare variable $collection external;
+        declare variable $data external;
+        let $xml :=
+        if ($uri) then
+           xqdm:scan(xs:anyURI($uri))
+        else
+           xqdm:scan($data, $name)
+        let $moduleURI := $xml//xqdoc:module/xqdoc:uri
+        let $docName := concat(util:hash($moduleURI, 'MD5'), '.xml')
+        return
+           xdb:store($collection, $docName, $xml, 'application/xml')""";
 
     private String moduleURI = null;
     private boolean createCollection = false;

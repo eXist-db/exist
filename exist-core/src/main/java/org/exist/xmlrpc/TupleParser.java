@@ -119,11 +119,11 @@ class TupleParser extends RecursiveTypeParserImpl {
 
     private Tuple toTuple(final List list) throws SAXException {
         return switch (list.size()) {
-            case 2 -> new Tuple2<>(list.get(0), list.get(1));
-            case 3 -> new Tuple3<>(list.get(0), list.get(1), list.get(2));
-            case 4 -> new Tuple4<>(list.get(0), list.get(1), list.get(2), list.get(3));
-            case 5 -> new Tuple5<>(list.get(0), list.get(1), list.get(2), list.get(3), list.get(4));
-            case 6 -> new Tuple6<>(list.get(0), list.get(1), list.get(2), list.get(3), list.get(4), list.get(5));
+            case 2 -> new Tuple2<>(list.getFirst(), list.get(1));
+            case 3 -> new Tuple3<>(list.getFirst(), list.get(1), list.get(2));
+            case 4 -> new Tuple4<>(list.getFirst(), list.get(1), list.get(2), list.get(3));
+            case 5 -> new Tuple5<>(list.getFirst(), list.get(1), list.get(2), list.get(3), list.get(4));
+            case 6 -> new Tuple6<>(list.getFirst(), list.get(1), list.get(2), list.get(3), list.get(4), list.get(5));
             default -> throw new SAXException("Unsupported Tuple arity: " + list.size());
         };
     }

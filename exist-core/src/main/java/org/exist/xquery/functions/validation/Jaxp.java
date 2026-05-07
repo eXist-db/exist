@@ -293,9 +293,9 @@ public class Jaxp extends BasicFunction {
             LOG.debug("Stopped parsing document");
 
             // Distill namespace from document
-            if (contenthandler instanceof ValidationContentHandler) {
+            if (contenthandler instanceof ValidationContentHandler handler) {
                 report.setNamespaceUri(
-                        ((ValidationContentHandler) contenthandler).getNamespaceUri());
+                        handler.getNamespaceUri());
             }
 
 

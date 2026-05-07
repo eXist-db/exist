@@ -135,9 +135,9 @@ public class LocalXPathQueryService extends AbstractLocalService implements EXis
         final Node n = ((LocalXMLResource) res).root;
 
         return withDb((broker, transaction) -> {
-            if (n != null && n instanceof org.exist.dom.memtree.NodeImpl) {
+            if (n != null && n instanceof org.exist.dom.memtree.NodeImpl impl) {
                 final XmldbURI[] docs = new XmldbURI[]{ getCollectionUri(broker, transaction, res.getParentCollection()) };
-                return doQuery(broker, transaction, query, docs, (org.exist.dom.memtree.NodeImpl) n, sortBy);
+                return doQuery(broker, transaction, query, docs, impl, sortBy);
             }
             final NodeProxy node = ((LocalXMLResource) res).getNode(broker, transaction);
             if (node == null) {
@@ -367,10 +367,10 @@ public class LocalXPathQueryService extends AbstractLocalService implements EXis
             context.setModuleLoadPath(moduleLoadPath);
         } else if (source != null) {
             String modulePath = null;
-            if (source instanceof DBSource) {
-                modulePath = ((DBSource) source).getDocumentPath().removeLastSegment().toString();
-            } else if (source instanceof FileSource) {
-                modulePath = ((FileSource) source).getPath().getParent().toString();
+            if (source instanceof DBSource bSource) {
+                modulePath = bSource.getDocumentPath().removeLastSegment().toString();
+            } else if (source instanceof FileSource fileSource) {
+                modulePath = fileSource.getPath().getParent().toString();
             }
 
             if (modulePath != null) {

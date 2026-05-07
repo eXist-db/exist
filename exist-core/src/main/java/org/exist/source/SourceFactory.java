@@ -29,7 +29,6 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -112,8 +111,8 @@ public class SourceFactory {
 
         /* /db */
         if (source == null
-                && ((location.startsWith("/db") && !Files.exists(Paths.get(firstPathSegment(location))))
-                || (contextPath != null && contextPath.startsWith("/db") && !Files.exists(Paths.get(firstPathSegment(contextPath)))))) {
+                && ((location.startsWith("/db") && !Files.exists(Path.of(firstPathSegment(location))))
+                || (contextPath != null && contextPath.startsWith("/db") && !Files.exists(Path.of(firstPathSegment(contextPath)))))) {
             final XmldbURI pathUri;
             if (contextPath == null || ".".equals(contextPath)) {
                 pathUri = XmldbURI.create(location);
@@ -164,7 +163,7 @@ public class SourceFactory {
             return new ClassLoaderSource(location);
         }
 
-        final Path rootPath = Paths.get(contextPath.substring(ClassLoaderSource.PROTOCOL.length()));
+        final Path rootPath = Path.of(contextPath.substring(ClassLoaderSource.PROTOCOL.length()));
 
         // 1) try resolving location as child
         final Path childLocation = rootPath.resolve(location);
@@ -231,9 +230,9 @@ public class SourceFactory {
         try {
             final Path p;
             if (contextPath == null) {
-                p = Paths.get(locationPath);
+                p = Path.of(locationPath);
             } else {
-                p = Paths.get(contextPath, locationPath);
+                p = Path.of(contextPath, locationPath);
             }
 
             if (Files.isReadable(p)) {
@@ -250,7 +249,7 @@ public class SourceFactory {
 
         if (source == null) {
             try {
-                final Path p2 = Paths.get(locationPath);
+                final Path p2 = Path.of(locationPath);
                 if (Files.isReadable(p2)) {
                     locationPath = p2.toUri().toASCIIString();
                     source = new FileSource(p2, checkXQEncoding);
@@ -266,7 +265,7 @@ public class SourceFactory {
 
         if (source == null && contextPath != null) {
             try {
-                final Path p3 = Paths.get(contextPath).toAbsolutePath().resolve(locationPath);
+                final Path p3 = Path.of(contextPath).toAbsolutePath().resolve(locationPath);
                 if (Files.isReadable(p3)) {
                     locationPath = p3.toUri().toASCIIString();
                     source = new FileSource(p3, checkXQEncoding);
@@ -285,7 +284,7 @@ public class SourceFactory {
              * Try to load as an absolute path
              */
             try {
-                final Path p4 = Paths.get("/" + locationPath);
+                final Path p4 = Path.of("/" + locationPath);
                 if (Files.isReadable(p4)) {
                     locationPath = p4.toUri().toASCIIString();
                     source = new FileSource(p4, checkXQEncoding);
@@ -304,7 +303,7 @@ public class SourceFactory {
              * Try to load from the folder of the contextPath
              */
             try {
-                final Path p5 = Paths.get(contextPath).resolveSibling(locationPath);
+                final Path p5 = Path.of(contextPath).resolveSibling(locationPath);
                 if (Files.isReadable(p5)) {
                     locationPath = p5.toUri().toASCIIString();
                     source = new FileSource(p5, checkXQEncoding);
@@ -326,7 +325,7 @@ public class SourceFactory {
                 Path p6 = null;
                 if(contextPath.startsWith("file:/")) {
                     try {
-                        p6 = Paths.get(new URI(contextPath)).resolveSibling(locationPath);
+                        p6 = Path.of(new URI(contextPath)).resolveSibling(locationPath);
                     } catch (final URISyntaxException e) {
                         // contextPath is not a parseable URI; fall through to plain-path handling
                         if (LOG.isTraceEnabled()) {
@@ -337,7 +336,7 @@ public class SourceFactory {
                 }
 
                 if(p6 == null) {
-                    p6 = Paths.get(contextPath.replaceFirst("^file:/*(/.*)$", "$1")).resolveSibling(locationPath);
+                    p6 = Path.of(contextPath.replaceFirst("^file:/*(/.*)$", "$1")).resolveSibling(locationPath);
                 }
 
                 if (Files.isReadable(p6)) {
@@ -361,7 +360,7 @@ public class SourceFactory {
                 Path p7 = null;
                 if(contextPath.startsWith("file:/")) {
                     try {
-                        p7 = Paths.get(new URI(contextPath)).resolve(locationPath);
+                        p7 = Path.of(new URI(contextPath)).resolve(locationPath);
                     } catch (final URISyntaxException e) {
                         // contextPath is not a parseable URI; fall through to plain-path handling
                         if (LOG.isTraceEnabled()) {
@@ -372,7 +371,7 @@ public class SourceFactory {
                 }
 
                 if(p7 == null) {
-                    p7 = Paths.get(contextPath.replaceFirst("^file:/*(/.*)$", "$1")).resolve(locationPath);
+                    p7 = Path.of(contextPath.replaceFirst("^file:/*(/.*)$", "$1")).resolve(locationPath);
                 }
 
                 if (Files.isReadable(p7)) {

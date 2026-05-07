@@ -51,9 +51,9 @@ public class WildcardedExpressionSequence implements EvaluatableExpression {
         WildcardedExpression currentExpression = expressions.removeFirst();
 
         for (WildcardedExpression expression : expressions) {
-            if (currentExpression instanceof MergeableExpression
-                && ((MergeableExpression) currentExpression).mergeableWith(expression)) {
-                currentExpression = ((MergeableExpression) currentExpression).mergeWith(expression);
+            if (currentExpression instanceof MergeableExpression mergeableExpression
+                && mergeableExpression.mergeableWith(expression)) {
+                currentExpression = mergeableExpression.mergeWith(expression);
             } else {
                 this.expressions.add(currentExpression);
                 currentExpression = expression;
@@ -143,14 +143,14 @@ public class WildcardedExpressionSequence implements EvaluatableExpression {
      *
      */
     private void formEvaluatableTriples(final int expressionId) {
-        WildcardedExpression first = expressions.get(0);
+        WildcardedExpression first = expressions.getFirst();
         WildcardedExpression second = expressions.get(1);
         WildcardedExpression third = expressions.get(2);
 
-        if (first instanceof EvaluatableExpression && second instanceof Wildcard
-            && third instanceof EvaluatableExpression) {
-            WildcardedExpressionTriple triple = new WildcardedExpressionTriple((EvaluatableExpression) first,
-                (Wildcard) second, (EvaluatableExpression) third);
+        if (first instanceof EvaluatableExpression expression && second instanceof Wildcard wildcard
+            && third instanceof EvaluatableExpression expression1) {
+            WildcardedExpressionTriple triple = new WildcardedExpressionTriple(expression,
+                wildcard, expression1);
             expressions.subList(0, 3).clear();
             expressions.addFirst(triple);
         } else {

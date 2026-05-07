@@ -156,18 +156,20 @@ public class XPathQueryTest {
     private final static String siblings_attr = "<a b='c' bb='cc'/>";
 
     private final static String siblings_named1 =
-            "<x>\n" +
-            "    <y n=\"1\"/>\n" +
-            "    <y n=\"2\"/>\n" +
-            "    <y n=\"3\"/>\n" +
-            "</x>";
+            """
+            <x>
+                <y n="1"/>
+                <y n="2"/>
+                <y n="3"/>
+            </x>""";
 
     private final static String siblings_named2 =
-            "<y>\n" +
-            "    <y n=\"1\"/>\n" +
-            "    <y n=\"2\"/>\n" +
-            "    <y n=\"3\"/>\n" +
-            "</y>";
+            """
+            <y>
+                <y n="1"/>
+                <y n="2"/>
+                <y n="3"/>
+            </y>""";
 
     private final static String ids_content =
             "<test xml:space=\"preserve\">" +
@@ -206,17 +208,18 @@ public class XPathQueryTest {
             "<test-self><a>Hello</a><b>World!</b></test-self>";
 
     private final static String predicates =
-        "<elem1>\n" +
-        " <elem2>\n" +
-        "    <elem3/>\n" +
-        " </elem2>\n" +
-        " <elem2>\n" +
-        "    <elem3>val1</elem3>\n" +
-        " </elem2>\n" +
-        " <elem2>\n" +
-        "    <elem3>val2</elem3>\n" +
-        " </elem2>\n" +
-        "</elem1>";
+        """
+        <elem1>
+         <elem2>
+            <elem3/>
+         </elem2>
+         <elem2>
+            <elem3>val1</elem3>
+         </elem2>
+         <elem2>
+            <elem3>val2</elem3>
+         </elem2>
+        </elem1>""";
     
     // Added by Geoff Shuetrim (geoff@galexy.net) to highlight problems with XPath queries of elements called 'xpointer'.
     private final static String xpointerElementName =
@@ -231,7 +234,7 @@ public class XPathQueryTest {
     public void setUp() throws Exception {
         // initialize driver
         Class<?> cl = Class.forName("org.exist.xmldb.DatabaseImpl");
-        Database database = (Database) cl.newInstance();
+        Database database = (Database) cl.getDeclaredConstructor().newInstance();
         database.setProperty("create-database", "true");
         DatabaseManager.registerDatabase(database);
 
@@ -1963,8 +1966,8 @@ public class XPathQueryTest {
         final Resource r = result.getMembersAsResource();
         final Object rawContent = r.getContent();
         String content = null;
-        if(rawContent instanceof File) {
-            final Path p = ((File) rawContent).toPath();
+        if(rawContent instanceof File file) {
+            final Path p = file.toPath();
             content = new String(Files.readAllBytes(p), UTF_8);
         } else {
             content = (String)r.getContent();
@@ -2125,10 +2128,14 @@ public class XPathQueryTest {
     public void compile() throws XMLDBException {
         final String invalidQuery = "for $i in (1 to 10)\n return $b";
         final String validQuery = "for $i in (1 to 10) return $i";
-        final String validModule = "module namespace foo=\"urn:foo\";\n" +
-                "declare function foo:test() { \"Hello World!\" };";
-        final String invalidModule = "module namespace foo=\"urn:foo\";\n" +
-                "declare function foo:test() { \"Hello World! };";
+        final String validModule = """
+                module namespace foo="urn:foo";
+                declare function foo:test() { "Hello World!" };\
+                """;
+        final String invalidModule = """
+                module namespace foo="urn:foo";
+                declare function foo:test() { "Hello World! };\
+                """;
         
         final EXistXQueryService service = (EXistXQueryService) getQueryService();
         boolean exceptionOccurred = false;
@@ -2175,14 +2182,15 @@ public class XPathQueryTest {
     @Test
     public void atomization() throws XMLDBException, IOException, SAXException {
         final String query =
-                "declare namespace ex = \"http://example.org\";\n" +
-                "declare function ex:elementName() as xs:QName {\n" +
-                "   QName(\"http://test.org\", \"test:name\")\n" +
-                "};\n" +
-                "<test>{\n" +
-                "   element {QName(\"http://test.org\", \"test:name\") }{},\n" +
-                "   element {ex:elementName()} {}\n" +
-                "}</test>";
+                """
+                declare namespace ex = "http://example.org";
+                declare function ex:elementName() as xs:QName {
+                   QName("http://test.org", "test:name")
+                };
+                <test>{
+                   element {QName("http://test.org", "test:name") }{},
+                   element {ex:elementName()} {}
+                }</test>""";
 
         final EXistXQueryService service = (EXistXQueryService)getQueryService();
         service.setProperty(OutputKeys.INDENT, "no");
@@ -2223,9 +2231,11 @@ public class XPathQueryTest {
         assertEquals(expected, result.getResource(0).getContent().toString());
 
         query =
-                "declare namespace output = \"http://www.w3.org/2010/xslt-xquery-serialization\";\n" +
-                "declare option output:cdata-section-elements \"elem1\";\n" +
-                "/elem1\n";
+                """
+                declare namespace output = "http://www.w3.org/2010/xslt-xquery-serialization";
+                declare option output:cdata-section-elements "elem1";
+                /elem1
+                """;
         result = queryResource(service, docName, query, 1);
         assertEquals(cdata_xml, result.getResource(0).getContent().toString());
 

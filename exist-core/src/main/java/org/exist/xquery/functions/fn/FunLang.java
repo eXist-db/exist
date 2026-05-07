@@ -57,20 +57,21 @@ public class FunLang extends Function {
 
 		"Tests whether the language of $node ";
 	protected static final String FUNCTION_DESCRIPTION_BOTH =
-        "as specified by xml:lang attributes is the " +
-		"same as, or is a sublanguage of, the language specified by $lang. The " +
-		"behavior of the function if the second argument is omitted is exactly the " +
-		"same as if the context item (.) had been passed as the second argument. The " +
-		"language of the argument node, or the context item if the second argument is " +
-		"omitted, is determined by the value of the xml:lang attribute on the node, " + 
-		"or, if the node has no such attribute, by the value of the xml:lang attribute " +
-		"on the nearest ancestor of the node that has an xml:lang attribute. If there " +
-		"is no such ancestor, then the function returns false().\n\n" +
-		
-		"The following errors may be raised: if the context item is undefined [err:XPDY0002]XP; " +
-		"if the context item is not a node [err:XPTY0004]XP.\n\n" +
+        """
+as specified by xml:lang attributes is the \
+same as, or is a sublanguage of, the language specified by $lang. The \
+behavior of the function if the second argument is omitted is exactly the \
+same as if the context item (.) had been passed as the second argument. The \
+language of the argument node, or the context item if the second argument is \
+omitted, is determined by the value of the xml:lang attribute on the node, \
+or, if the node has no such attribute, by the value of the xml:lang attribute \
+on the nearest ancestor of the node that has an xml:lang attribute. If there \
+is no such ancestor, then the function returns false().
 
-		"If $lang is the empty sequence it is interpreted as the zero-length string.";
+The following errors may be raised: if the context item is undefined [err:XPDY0002]XP; \
+if the context item is not a node [err:XPTY0004]XP.
+
+If $lang is the empty sequence it is interpreted as the zero-length string.""";
 
 	public final static FunctionSignature[] signatures = {
 		new FunctionSignature(

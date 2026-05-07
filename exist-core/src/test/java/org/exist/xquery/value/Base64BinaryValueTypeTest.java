@@ -26,7 +26,6 @@ import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Optional;
 
 import org.apache.commons.codec.binary.Base64InputStream;
@@ -76,7 +75,7 @@ public class Base64BinaryValueTypeTest {
     @Test
     public void verify_validBase64_passes_large_string() throws XPathException, IOException, URISyntaxException {
         Optional<Path> home = ConfigurationHelper.getExistHome();
-        Path binaryFile = Paths.get(getClass().getResource("logo.jpg").toURI());
+        Path binaryFile = Path.of(getClass().getResource("logo.jpg").toURI());
 
         final String base64data;
         try(final InputStream is = new Base64InputStream(Files.newInputStream(binaryFile), true, -1, null);

@@ -36,7 +36,9 @@ import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.io.Serial;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Dialog for viewing and editing Indexes in the Admin Client 
@@ -47,7 +49,8 @@ import java.util.ArrayList;
  */
 class IndexDialog extends JFrame {
 
-	private static final long serialVersionUID = 1L;
+    @Serial
+    private static final long serialVersionUID = 1L;
 
 	private static final String[] CONFIG_TYPE = {
         "qname",
@@ -269,26 +272,33 @@ class IndexDialog extends JFrame {
 					if(result == JOptionPane.YES_OPTION)
 					{
 						//reindex collection
-						final Runnable reindexThread = () -> {
-                            try
-                            {
-                                IndexQueryService service = client.current.getService(IndexQueryService.class);
+                        final SwingWorker<Void, Void> reindexWorker = new SwingWorker<>() {
+                            @Override
+                            protected Void doInBackground() throws Exception {
+                                final IndexQueryService service = client.current.getService(IndexQueryService.class);
+                                final ArrayList subCollections = getCollections(client.getCollection((String) cmbCollections.getSelectedItem()), new ArrayList());
 
-                                ArrayList subCollections = getCollections(client.getCollection((String)cmbCollections.getSelectedItem()), new ArrayList());
-
-                                for (Object subCollection : subCollections) {
+                                for (final Object subCollection : subCollections) {
                                     service.reindexCollection(((ResourceDescriptor) subCollection).getName());
                                 }
 
-                                //reindex done
-                                JOptionPane.showMessageDialog(getContentPane(), "Reindex Complete");
+                                return null;
                             }
-                            catch(XMLDBException e)
-                            {
-                                //reindex failed
-                                JOptionPane.showMessageDialog(getContentPane(), "Reindex failed!");
+
+                            @Override
+                            protected void done() {
+                                try {
+                                    get();
+                                    JOptionPane.showMessageDialog(getContentPane(), "Reindex Complete");
+                                } catch (final InterruptedException e) {
+                                    Thread.currentThread().interrupt();
+                                    JOptionPane.showMessageDialog(getContentPane(), "Reindex failed!");
+                                } catch (final ExecutionException e) {
+                                    JOptionPane.showMessageDialog(getContentPane(), "Reindex failed!");
+                                }
                             }
                         };
+                        reindexWorker.execute();
 					}
 				}
 				else
@@ -346,7 +356,8 @@ class IndexDialog extends JFrame {
 	
 	public static class ComboBoxCellRenderer extends JComboBox implements TableCellRenderer
 	{
-		private static final long serialVersionUID = 1L;
+        @Serial
+        private static final long serialVersionUID = 1L;
 
 		public ComboBoxCellRenderer(String[] items)
         {
@@ -375,7 +386,8 @@ class IndexDialog extends JFrame {
 	
     public static class ComboBoxCellEditor extends DefaultCellEditor
     {
-		private static final long serialVersionUID = 1L;
+        @Serial
+        private static final long serialVersionUID = 1L;
 
 		public ComboBoxCellEditor(String[] items)
         {
@@ -384,8 +396,9 @@ class IndexDialog extends JFrame {
     }
 
 	class RangeIndexTableModel extends AbstractTableModel
-	{	
-		private static final long serialVersionUID = 1L;
+	{
+        @Serial
+        private static final long serialVersionUID = 1L;
 
 		private final String[] columnNames = new String[] { "Type", "XPath", "xsType" };
 
@@ -402,17 +415,14 @@ class IndexDialog extends JFrame {
 		{
 			switch (columnIndex)
 			{
-                case 0:
+                case 0 -> 
                     cx.updateRangeIndex(rowIndex, aValue.toString(), null, null);
-                    break;
-                case 1:		/* XPath */
+                case 1 ->		/* XPath */
 					cx.updateRangeIndex(rowIndex, null, aValue.toString(), null);
-					break;
-				case 2 :	/* xsType */
+				case 2 ->	/* xsType */
 					cx.updateRangeIndex(rowIndex, null, null, aValue.toString());
-					break;
-				default :
-					break;
+				default -> {
+				}
 			}
 			
 			fireTableCellUpdated(rowIndex, columnIndex);

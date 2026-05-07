@@ -28,7 +28,6 @@ import org.exist.util.FileUtils;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -75,7 +74,7 @@ public class LatestFileResolver {
         // Directory that should contain our jar.
         final String containerDirName = uptoToken.substring(0, uptoToken.lastIndexOf(File.separatorChar));
 
-        final Path containerDir = Paths.get(containerDirName);
+        final Path containerDir = Path.of(containerDirName);
 
         final String artifactId = Pattern.quote(uptoToken.substring(uptoToken.lastIndexOf(File.separatorChar) + 1));
         final String suffix = Pattern.quote(fileinfo[1]);

@@ -179,8 +179,8 @@ public class Value implements Comparable<Object> {
         if (this == obj) {
             return true;
         }
-        if (obj instanceof Value) {
-            return equals((Value) obj);
+        if (obj instanceof Value value) {
+            return equals(value);
         } else {
             return equals(new Value(obj.toString()));
         }
@@ -206,8 +206,8 @@ public class Value implements Comparable<Object> {
 
     @Override
     public final int compareTo(final Object obj) {
-        if (obj instanceof Value) {
-            return compareTo((Value) obj);
+        if (obj instanceof Value value) {
+            return compareTo(value);
         } else {
             return compareTo(new Value(obj.toString()));
         }

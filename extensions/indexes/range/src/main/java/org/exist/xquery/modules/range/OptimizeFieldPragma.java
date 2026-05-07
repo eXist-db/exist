@@ -259,7 +259,7 @@ public class OptimizeFieldPragma extends AbstractPragma {
                     final SequenceConstructor arg1 = new SequenceConstructor(context);
                     mergedArgs.add(arg1);
                     for (final List<Expression> args : predicateArgs.values()) {
-                        arg0.add(args.get(0));
+                        arg0.add(args.getFirst());
                         arg1.add(args.get(1));
                         mergedArgs.addAll(args.subList(2, args.size()));
                     }
@@ -283,8 +283,8 @@ public class OptimizeFieldPragma extends AbstractPragma {
     }
 
     private @Nullable Expression getKeyArg(final Expression expression) {
-        if (expression instanceof GeneralComparison) {
-            return ((GeneralComparison) expression).getRight();
+        if (expression instanceof GeneralComparison comparison) {
+            return comparison.getRight();
         } else if (expression instanceof InternalFunctionCall fcall) {
             final Function function = fcall.getFunction();
             if (function instanceof Lookup) {

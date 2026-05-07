@@ -57,7 +57,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -89,7 +88,7 @@ public class ExistRepository extends Observable implements BrokerPoolService {
     @Override
     public void configure(final Configuration configuration) throws BrokerPoolServiceException {
         final Path dataDir = Optional.ofNullable((Path) configuration.getProperty(BrokerPool.PROPERTY_DATA_DIR))
-                .orElse(Paths.get(NativeBroker.DEFAULT_DATA_DIR));
+                .orElse(Path.of(NativeBroker.DEFAULT_DATA_DIR));
         this.expathDir = dataDir.resolve(EXPATH_REPO_DIR_NAME);
     }
 
@@ -207,10 +206,7 @@ public class ExistRepository extends Observable implements BrokerPoolService {
                 return clazz.newInstance();
             }
         } catch (final Throwable e) {
-            if (e instanceof InterruptedException) {
-                // NOTE: must set interrupted flag
-                Thread.currentThread().interrupt();
-            }
+            restoreInterruptIfInterruptedException(e);
 
             final String msg = "Unable to instantiate module from EXPath" +
                     "repository: " + clazz.getName();
@@ -219,6 +215,13 @@ public class ExistRepository extends Observable implements BrokerPoolService {
             LOG.error(e.getMessage(), e);
 
             throw new XPathException((Expression) null, msg, e);
+        }
+    }
+
+    private static void restoreInterruptIfInterruptedException(final Throwable t) {
+        if (t instanceof InterruptedException) {
+            // NOTE: must set interrupted flag
+            Thread.currentThread().interrupt();
         }
     }
 
@@ -256,7 +259,7 @@ public class ExistRepository extends Observable implements BrokerPoolService {
                 src = pkg.resolve(namespace, URISpace.XQUERY);
                 if (src != null) {
                     sysid = src.getSystemId();
-                    return Paths.get(new URI(sysid));
+                    return Path.of(new URI(sysid));
                 }
             } catch (final URISyntaxException ex) {
                 throw new XPathException((Expression) null, ErrorCodes.XQST0046, "Error parsing the URI of the query library: " + sysid, ex);
@@ -297,15 +300,15 @@ public class ExistRepository extends Observable implements BrokerPoolService {
         // 1. attempt to locate it within a library
         XmldbURI xqueryDbPath = XmldbURI.create("xmldb:exist:///db/system/repo/" + relXQueryPath);
         @Nullable Document doc = broker.getXMLResource(xqueryDbPath);
-        if (doc != null && doc instanceof BinaryDocument) {
-            return new DBSource(broker.getBrokerPool(), (BinaryDocument) doc, false);
+        if (doc != null && doc instanceof BinaryDocument document) {
+            return new DBSource(broker.getBrokerPool(), document, false);
         }
 
         // 2. attempt to locate it within an app
         xqueryDbPath = XmldbURI.create("xmldb:exist:///db/apps/" + relXQueryPath);
         doc = broker.getXMLResource(xqueryDbPath);
-        if (doc != null && doc instanceof BinaryDocument) {
-            return new DBSource(broker.getBrokerPool(), (BinaryDocument) doc, false);
+        if (doc != null && doc instanceof BinaryDocument document) {
+            return new DBSource(broker.getBrokerPool(), document, false);
         }
 
         return null;
@@ -336,7 +339,7 @@ public class ExistRepository extends Observable implements BrokerPoolService {
 
     public static Path getRepositoryDir(final Configuration config) throws IOException {
         final Path dataDir = Optional.ofNullable((Path) config.getProperty(BrokerPool.PROPERTY_DATA_DIR))
-                        .orElse(Paths.get(NativeBroker.DEFAULT_DATA_DIR));
+                        .orElse(Path.of(NativeBroker.DEFAULT_DATA_DIR));
         final Path expathDir = dataDir.resolve(EXPATH_REPO_DIR_NAME);
 
         if(!Files.exists(expathDir)) {
@@ -353,7 +356,7 @@ public class ExistRepository extends Observable implements BrokerPoolService {
             } else {
                 return h.resolve(LEGACY_DEFAULT_EXPATH_REPO_DIR);
             }
-        }).orElse(Paths.get(System.getProperty("java.io.tmpdir")).resolve(EXPATH_REPO_DIR_NAME));
+        }).orElse(Path.of(System.getProperty("java.io.tmpdir")).resolve(EXPATH_REPO_DIR_NAME));
 
         if (Files.isReadable(repo_dir)) {
             LOG.info("Found old expathrepo directory. Moving to new default location: {}", newRepo.toAbsolutePath().toString());

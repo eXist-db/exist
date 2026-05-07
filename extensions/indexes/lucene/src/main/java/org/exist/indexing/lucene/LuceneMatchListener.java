@@ -272,9 +272,9 @@ public class LuceneMatchListener extends AbstractMatchListener {
 
         final String str = extractor.getText().toString();
         try (final Reader reader = new StringReader(str);
-                final TokenStream tokenStream = analyzer.tokenStream(null, reader)) {
-            tokenStream.reset();
-            final MarkableTokenFilter stream = new MarkableTokenFilter(tokenStream);
+             final TokenStream tokenStream = analyzer.tokenStream(null, reader);
+             final MarkableTokenFilter stream = new MarkableTokenFilter(tokenStream)) {
+            stream.reset();
             while (stream.incrementToken()) {
                 String text = stream.getAttribute(CharTermAttribute.class).toString();
                 final Query query = termMap.get(text);
@@ -309,7 +309,7 @@ public class LuceneMatchListener extends AbstractMatchListener {
 
                             if (stateList.size() == terms.length) {
                                 // Phrase match: add one span from first to last term (may cross text nodes, #4584).
-                                stream.restoreState(stateList.get(0));
+                                stream.restoreState(stateList.getFirst());
                                 final int start = stream.getAttribute(OffsetAttribute.class).startOffset();
                                 stream.restoreState(stateList.get(terms.length - 1));
                                 final int end = stream.getAttribute(OffsetAttribute.class).endOffset();

@@ -237,8 +237,8 @@ public class Predicate extends PathExpr {
                     // Hack : GeneralComparison lies on its dependencies
                     // TODO : try to remove this since our dependency
                     // computation should now be better
-                    !((inner instanceof GeneralComparison) &&
-                            ((GeneralComparison) inner).invalidNodeEvaluation)) {
+                    !(inner instanceof GeneralComparison comparison &&
+                            comparison.invalidNodeEvaluation)) {
                 innerSeq = inner.eval(contextSequence, null);
                 // Only if we have an actual *singleton* of numeric items
                 if (innerSeq.hasOne()
@@ -287,8 +287,8 @@ public class Predicate extends PathExpr {
             throws XPathException {
         final Sequence result = new ValueSequence();
         int p;
-        if (contextSequence instanceof NodeSet
-                && ((NodeSet) contextSequence).getProcessInReverseOrder()) {
+        if (contextSequence instanceof NodeSet set
+                && set.getProcessInReverseOrder()) {
             // This one may be expensive...
             p = contextSequence.getItemCount();
             for (final SequenceIterator i = contextSequence.iterate(); i.hasNext(); p--) {

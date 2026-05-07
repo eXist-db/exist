@@ -142,7 +142,7 @@ public class RestXqServiceRegistryPersistence implements RestXqServiceRegistryLi
         
         final Optional<Path> optTmpNewRegistry = getRegistryFile(true);
         
-        if(!optTmpNewRegistry.isPresent()) {
+        if(optTmpNewRegistry.isEmpty()) {
             log.error("Could not save RESTXQ Registry to disk!");
         } else {
             final Path tmpNewRegistry = optTmpNewRegistry.get();

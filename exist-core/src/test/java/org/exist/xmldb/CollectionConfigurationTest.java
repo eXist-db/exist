@@ -146,15 +146,16 @@ public class CollectionConfigurationTest {
         + "  </index>"
         + "</collection>";
 
-    private final static String INVALID_CONFIG1 = "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">\n"
-        + " <triggers>\n"
-        + "     <trigger event=\"store,update,remove\" class=\"org.exist.NonExistingTrigger\">\n"
-        + "     </trigger>\n"
-        + " </triggers>\n"
-        + " <index>\n"
-        + "     <create foo=\"a\" type=\"xs:integer\"/>\n"
-        + " </index>\n"
-        + "</collection>";
+    private final static String INVALID_CONFIG1 = """
+        <collection xmlns="http://exist-db.org/collection-config/1.0">
+         <triggers>
+             <trigger event="store,update,remove" class="org.exist.NonExistingTrigger">
+             </trigger>
+         </triggers>
+         <index>
+             <create foo="a" type="xs:integer"/>
+         </index>
+        </collection>""";
 
     @Before
     public void setUp() throws Exception {

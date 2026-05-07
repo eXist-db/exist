@@ -21,6 +21,7 @@
  */
 package org.exist.client.security;
 
+import java.io.Serial;
 import java.util.*;
 import javax.swing.JOptionPane;
 import org.exist.client.DialogCompleteWithResponse;
@@ -38,7 +39,8 @@ import org.xmldb.api.base.XMLDBException;
  * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 public class EditUserDialog extends UserDialog implements DialogWithResponse<String> {
-    
+
+    @Serial
     private static final long serialVersionUID = 9097018734007436201L;
 
     private final static String HIDDEN_PASSWORD_CONST = "password";

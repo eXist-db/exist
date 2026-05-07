@@ -45,27 +45,35 @@ import org.exist.xquery.value.Type;
 public class FunNumber extends Function {
 
     protected static final String FUNCTION_DESCRIPTION_0_PARAM =    
-        "Returns the value of the context item after atomization, " + 
-        "converted to an xs:double.\n\n" +
-        "If the context item cannot be " +
-                "converted to an xs:double, the xs:double value NaN is returned. " +
-        "If the context item is undefined an error is raised: " + 
-        "[err:XPDY0002]XP.\n\n";	
+        """
+        Returns the value of the context item after atomization, \
+        converted to an xs:double.
+        
+        If the context item cannot be \
+        converted to an xs:double, the xs:double value NaN is returned. \
+        If the context item is undefined an error is raised: \
+        [err:XPDY0002]XP.
+        
+        """;	
 	
     protected static final String FUNCTION_DESCRIPTION_1_PARAM =
-        "Returns the value indicated by $arg or, if $arg is not specified, " +
-        "the context item after atomization, converted to an xs:double.\n\n" +
-        "Calling the zero-argument version of the function is defined to " +
-        "give the same result as calling the single-argument version with " +
-        "the context item (.). That is, fn:number() is equivalent to fn:number(.).\n\n" +
-        "If $arg is the empty sequence or if $arg or the context item cannot be " +
-        "converted to an xs:double, the xs:double value NaN is returned. " +
-        "If the " +
-        "context item is undefined an error is raised: [err:XPDY0002]XP.\n\n" +
-        "If $arg is the empty sequence, NaN is returned. Otherwise, $arg, or " +
-        "the context item after atomization, is converted to an xs:double " +
-        "following the rules of 17.1.3.2 Casting to xs:double. If the conversion " +
-        "to xs:double fails, the xs:double value NaN is returned.";
+        """
+        Returns the value indicated by $arg or, if $arg is not specified, \
+        the context item after atomization, converted to an xs:double.
+        
+        Calling the zero-argument version of the function is defined to \
+        give the same result as calling the single-argument version with \
+        the context item (.). That is, fn:number() is equivalent to fn:number(.).
+        
+        If $arg is the empty sequence or if $arg or the context item cannot be \
+        converted to an xs:double, the xs:double value NaN is returned. \
+        If the \
+        context item is undefined an error is raised: [err:XPDY0002]XP.
+        
+        If $arg is the empty sequence, NaN is returned. Otherwise, $arg, or \
+        the context item after atomization, is converted to an xs:double \
+        following the rules of 17.1.3.2 Casting to xs:double. If the conversion \
+        to xs:double fails, the xs:double value NaN is returned.""";
 
     protected static final FunctionParameterSequenceType ARG_PARAM = new FunctionParameterSequenceType("arg", Type.ANY_ATOMIC_TYPE, Cardinality.ZERO_OR_ONE, "The input item");
     protected static final FunctionReturnSequenceType RETURN_TYPE = new FunctionReturnSequenceType(Type.DOUBLE, Cardinality.EXACTLY_ONE, "the numerical value");

@@ -41,11 +41,12 @@ public class MemtreeInXQueryTest {
 
     @Test
     public void pi_attributes() throws XMLDBException {
-        final String xquery = "let $doc := document{\n" +
-                "    processing-instruction{\"ok\"}{\"ok\"},\n" +
-                "    <root/>\n" +
-                "}\n" +
-                "return count($doc//processing-instruction()/@*)";
+        final String xquery = """
+                let $doc := document{
+                    processing-instruction{"ok"}{"ok"},
+                    <root/>
+                }
+                return count($doc//processing-instruction()/@*)""";
 
         final ResourceSet result = existEmbeddedServer.executeQuery(xquery);
 
@@ -57,11 +58,12 @@ public class MemtreeInXQueryTest {
 
     @Test
     public void pi_children() throws XMLDBException {
-        final String xquery = "let $doc := document{\n" +
-                "    processing-instruction{\"ok\"}{\"ok\"},\n" +
-                "    <root/>\n" +
-                "}\n" +
-                "return count($doc//processing-instruction()/node())";
+        final String xquery = """
+                let $doc := document{
+                    processing-instruction{"ok"}{"ok"},
+                    <root/>
+                }
+                return count($doc//processing-instruction()/node())""";
 
         final ResourceSet result = existEmbeddedServer.executeQuery(xquery);
 
@@ -73,11 +75,12 @@ public class MemtreeInXQueryTest {
 
     @Test
     public void pi_descendantAttributes() throws XMLDBException {
-        final String xquery = "let $doc := document{\n" +
-                "    processing-instruction{\"ok\"}{\"ok\"},\n" +
-                "    <root/>\n" +
-                "}\n" +
-                "return count($doc//processing-instruction()//@*)";
+        final String xquery = """
+                let $doc := document{
+                    processing-instruction{"ok"}{"ok"},
+                    <root/>
+                }
+                return count($doc//processing-instruction()//@*)""";
 
         final ResourceSet result = existEmbeddedServer.executeQuery(xquery);
 
@@ -89,12 +92,13 @@ public class MemtreeInXQueryTest {
 
     @Test
     public void attr_attributes() throws XMLDBException {
-        final String xquery = "let $doc := document {\n" +
-                "    element a {\n" +
-                "        attribute x { \"y\" }\n" +
-                "    }\n" +
-                "} return\n" +
-                "    count($doc/a/@x/@y)";
+        final String xquery = """
+                let $doc := document {
+                    element a {
+                        attribute x { "y" }
+                    }
+                } return
+                    count($doc/a/@x/@y)""";
 
         final ResourceSet result = existEmbeddedServer.executeQuery(xquery);
 
@@ -106,12 +110,13 @@ public class MemtreeInXQueryTest {
 
     @Test
     public void attr_children() throws XMLDBException {
-        final String xquery = "let $doc := document {\n" +
-                "    element a {\n" +
-                "        attribute x { \"y\" }\n" +
-                "    }\n" +
-                "} return\n" +
-                "    count($doc/a/@x/node())";
+        final String xquery = """
+                let $doc := document {
+                    element a {
+                        attribute x { "y" }
+                    }
+                } return
+                    count($doc/a/@x/node())""";
 
         final ResourceSet result = existEmbeddedServer.executeQuery(xquery);
 

@@ -37,18 +37,19 @@ public abstract class AbstractDescendantOrSelfNodeKindTest {
     @ClassRule
     public final static ExistXmldbEmbeddedServer existEmbeddedServer = new ExistXmldbEmbeddedServer(false, true, true);
 
-    protected final static String TEST_DOCUMENT = "<doc xml:id=\"x\">\n"+
-        "<?xml-stylesheet type=\"text/xsl\" href=\"test\"?>\n"+
-        "    <a>\n"+
-        "        <b x=\"1\">text<e>text</e>text</b>\n"+
-        "        </a>\n"+
-        "    <a>\n"+
-        "        <c><!--comment-->\n"+
-        "            <d xmlns=\"x\" y=\"2\" z=\"3\">text</d>\n"+
-        "            </c>\n"+
-        "    </a>\n"+
-        "    <d><![CDATA[ & ]]></d>\n"+
-        "</doc>";
+    protected final static String TEST_DOCUMENT = """
+        <doc xml:id="x">
+        <?xml-stylesheet type="text/xsl" href="test"?>
+            <a>
+                <b x="1">text<e>text</e>text</b>
+                </a>
+            <a>
+                <c><!--comment-->
+                    <d xmlns="x" y="2" z="3">text</d>
+                    </c>
+            </a>
+            <d><![CDATA[ & ]]></d>
+        </doc>""";
 
 
     protected abstract ResourceSet executeQueryOnDoc(final String docQuery) throws XMLDBException;

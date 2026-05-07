@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -224,7 +223,7 @@ public class MimeTable {
     }
     
     private String getExtension(String fileName) {
-        final Path path = Paths.get(fileName);
+        final Path path = Path.of(fileName);
         fileName = FileUtils.fileName(path);
         final int p = fileName.lastIndexOf('.');
         if(p < 0 || p + 1 == fileName.length()) {
