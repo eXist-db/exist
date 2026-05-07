@@ -1,0 +1,25 @@
+exist-core/src/test/java/org/exist/util/CollationsTest.java
+  s_66d4dce90f3454::t_238842fa351b30 32,46-55
+exist-core/src/test/java/org/exist/util/TestJavaCollator.java
+  s_66d4dce90f3454::t_2b9cbc677f1ad1 1-24,30-33,35,117-119
+  s_66d4dce90f3454::t_a62ce5e5d329a6 25-26,28-29,34,36-45,51-116
+  s_66d4dce90f3454::t_2a30390839f780 27,46-50
+exist-core/src/main/java/org/exist/util/Collations.java
+  s_66d4dce90f3454::t_94c4e0919a47fe 290-301
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.1",
+  "base_commit_sha": "535acb1c06cd7eb4f6641c6c313f6134884bc049",
+  "prompts": {},
+  "sessions": {
+    "s_66d4dce90f3454": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "ae600e59-ac05-4793-9e7b-db876b5fd073",
+        "model": "composer-2-fast"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
