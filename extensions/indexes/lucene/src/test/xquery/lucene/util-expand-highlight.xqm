@@ -364,6 +364,12 @@ declare %private function ueh:issue2283-hits-with-additional-predicate() as elem
     return $x
 };
 
+declare %private function ueh:issue2283-hits-with-nested-and() as element(test)* {
+    for $x in collection($ueh:COLL_2170)//test
+    where ($x//p[ft:query(., "sleep")] and contains(string-join($x//p ! string(.), " "), "Colorless")) and true()
+    return $x
+};
+
 (:~
  : #2283 baseline: util:expand should expose match tags for full-text hits.
  : @see https://github.com/eXist-db/exist/issues/2283
@@ -380,10 +386,20 @@ function ueh:issue2283-expand-baseline-match-count() {
  : @see https://github.com/eXist-db/exist/pull/6300
  :)
 declare
-    %test:pending("Blocked pending cherry-pick/merge of PR #6300 (WhereClause visitor fix).")
     %test:assertEquals(6)
 function ueh:issue2283-expand-with-additional-predicate-match-count() {
     count(util:expand(ueh:issue2283-hits-with-additional-predicate())//exist:match)
+};
+
+(:~
+ : #2283 nested-and regression: nested boolean shape must preserve match tags too.
+ : @see https://github.com/eXist-db/exist/issues/2283
+ : @see https://github.com/eXist-db/exist/pull/6300
+ :)
+declare
+    %test:assertEquals(6)
+function ueh:issue2283-expand-with-nested-and-match-count() {
+    count(util:expand(ueh:issue2283-hits-with-nested-and())//exist:match)
 };
 
 (: #2755 tests ---------------------------------------------------------- :)
@@ -414,4 +430,3 @@ declare
 function ueh:issue2755-expand-has-match-swapped() {
     ueh:issue2755-match-count($ueh:COLL_2755_SWAPPED)
 };
-
