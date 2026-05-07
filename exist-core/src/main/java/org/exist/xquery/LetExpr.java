@@ -52,6 +52,10 @@ public class LetExpr extends BindingExpression {
         this.scoreBinding = scoreBinding;
     }
 
+    public boolean isScoreBinding() {
+        return scoreBinding;
+    }
+
     @Override
     public ClauseType getType() {
         return ClauseType.LET;
@@ -111,6 +115,13 @@ public class LetExpr extends BindingExpression {
                 && (inputSequence instanceof LiteralValue)
                 && (unwrap(returnExpr) instanceof LiteralValue)) {
             result = cc.replaceWith(this, returnExpr, "unused let-binding $" + varName);
+        }
+
+        // Inline a node-typed path binding referenced exactly once at the
+        // source of a FilteredExpression with an Optimizable predicate
+        // (closes GH-873). Skip if the literal-drop above already fired.
+        if (result == this) {
+            result = LetInliner.tryInline(this, cc);
         }
 
         if (enteredScope) {
