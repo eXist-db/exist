@@ -350,6 +350,42 @@ function ueh:issue2170-query2-no-duplicate-fragment() {
     count(ueh:issue2170-query2-expanded()//p[contains(., "sleepsleep")])
 };
 
+(: #2283 tests ---------------------------------------------------------- :)
+
+declare %private function ueh:issue2283-hits-baseline() as element(test)* {
+    for $x in collection($ueh:COLL_2170)//test
+    where $x//p[ft:query(., "sleep")]
+    return $x
+};
+
+declare %private function ueh:issue2283-hits-with-additional-predicate() as element(test)* {
+    for $x in collection($ueh:COLL_2170)//test
+    where $x//p[ft:query(., "sleep")] and contains(string-join($x//p ! string(.), " "), "Colorless")
+    return $x
+};
+
+(:~
+ : #2283 baseline: util:expand should expose match tags for full-text hits.
+ : @see https://github.com/eXist-db/exist/issues/2283
+ :)
+declare
+    %test:assertEquals(6)
+function ueh:issue2283-expand-baseline-match-count() {
+    count(util:expand(ueh:issue2283-hits-baseline())//exist:match)
+};
+
+(:~
+ : #2283 regression: adding a non-full-text predicate must not drop match tags.
+ : @see https://github.com/eXist-db/exist/issues/2283
+ : @see https://github.com/eXist-db/exist/pull/6300
+ :)
+declare
+    %test:pending("Blocked pending cherry-pick/merge of PR #6300 (WhereClause visitor fix).")
+    %test:assertEquals(6)
+function ueh:issue2283-expand-with-additional-predicate-match-count() {
+    count(util:expand(ueh:issue2283-hits-with-additional-predicate())//exist:match)
+};
+
 (: #2755 tests ---------------------------------------------------------- :)
 
 declare %private function ueh:issue2755-match-count($collection as xs:string) as xs:integer {
