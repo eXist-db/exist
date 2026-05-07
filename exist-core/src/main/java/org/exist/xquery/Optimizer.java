@@ -24,6 +24,7 @@ package org.exist.xquery;
 import org.exist.storage.DBBroker;
 import org.exist.xquery.functions.array.ArrayConstructor;
 import org.exist.xquery.pragmas.Optimize;
+import org.exist.xquery.value.Sequence;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.xquery.util.ExpressionDumper;
@@ -93,25 +94,8 @@ public class Optimizer extends DefaultExpressionVisitor {
             LOG.warn("Exception called while rewriting location step: {}", e.getMessage(), e);
         }
 
-        boolean optimize = false;
-        // only location steps with predicates can be optimized:
         @Nullable final Predicate[] preds = locationStep.getPredicates();
-        if (preds != null) {
-            // walk through the predicates attached to the current location step.
-            // try to find a predicate containing an expression which is an instance
-            // of Optimizable.
-            for (final Predicate pred : preds) {
-                pred.accept(findOptimizable);
-                @Nullable final Optimizable[] list = findOptimizable.getOptimizables();
-                if (canOptimize(list)) {
-                    optimize = true;
-                }
-                findOptimizable.reset();
-                if (optimize) {
-                    break;
-                }
-            }
-        }
+        final boolean optimize = shouldWrapWithOptimizePragma(preds);
 
         final Expression parent = locationStep.getParentExpression();
 
@@ -135,7 +119,7 @@ public class Optimizer extends DefaultExpressionVisitor {
                 }
                 extension.addPragma(new Optimize(extension, context, Optimize.OPTIMIZE_PRAGMA, null, false));
                 extension.setExpression(locationStep);
-                
+
                 // Replace the old expression with the pragma
                 path.replace(locationStep, extension);
 
@@ -234,7 +218,7 @@ public class Optimizer extends DefaultExpressionVisitor {
 
         // check if there are any predicates which could be optimized
         final List<Predicate> preds = filtered.getPredicates();
-        final boolean optimize = hasOptimizable(preds);
+        final boolean optimize = hasOptimizable(preds) && !hasConstantFalsePredicate(preds);
         if (optimize) {
             // we found at least one Optimizable. Rewrite the whole expression and
             // enclose it in an (#exist:optimize#) pragma.
@@ -281,6 +265,138 @@ public class Optimizer extends DefaultExpressionVisitor {
             }
         }
         return optimizable;
+    }
+
+    /**
+     * Decide whether to wrap a LocationStep's predicates in
+     * {@code (#exist:optimize#)}. Returns {@code true} only when at least one
+     * predicate is index-eligible AND no predicate folds to compile-time
+     * false (see GH-3918).
+     */
+    private boolean shouldWrapWithOptimizePragma(@Nullable final Predicate[] preds) {
+        if (preds == null) {
+            return false;
+        }
+        boolean optimizable = false;
+        for (final Predicate pred : preds) {
+            pred.accept(findOptimizable);
+            @Nullable final Optimizable[] list = findOptimizable.getOptimizables();
+            if (canOptimize(list)) {
+                optimizable = true;
+            }
+            findOptimizable.reset();
+            if (optimizable) {
+                break;
+            }
+        }
+        return optimizable && !hasConstantFalsePredicate(preds);
+    }
+
+    /**
+     * Returns true if {@code preds} contains a predicate that is structurally
+     * independent of the context node and folds to effective-boolean
+     * {@code false} at compile time. When this happens the surrounding step
+     * yields the empty sequence regardless of any other predicates, so
+     * wrapping the step in {@code (#exist:optimize#)} just adds a per-node
+     * index pre-select that the result will discard. See GH-3918.
+     */
+    private boolean hasConstantFalsePredicate(@Nullable final Predicate[] preds) {
+        return preds != null && hasConstantFalsePredicate(Arrays.asList(preds));
+    }
+
+    private boolean hasConstantFalsePredicate(final List<Predicate> preds) {
+        for (final Predicate pred : preds) {
+            if (foldsToFalse(pred)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean foldsToFalse(final Predicate pred) {
+        // Structural check first: the predicate's expression tree must not
+        // touch the context node (LocationStep), bound variables, or
+        // user-defined functions / FLWOR bindings. The conservative default
+        // in Function.getDependencies() makes the dependency bitmask itself
+        // unreliable for builtin functions on literal arguments
+        // (see GH-3918), so we walk the tree explicitly.
+        final ContextFreeChecker checker = new ContextFreeChecker();
+        pred.accept(checker);
+        if (checker.contextDependent) {
+            return false;
+        }
+        // Compile-time-evaluate the predicate. Builtin functions are
+        // assumed deterministic for the arguments we accept (literals,
+        // operators, other builtins). Any failure means we cannot fold.
+        try {
+            final Sequence result = pred.preprocess();
+            return result != null && !result.effectiveBooleanValue();
+        } catch (final XPathException e) {
+            return false;
+        }
+    }
+
+    /**
+     * Marks an expression tree as context-dependent if it references the
+     * context node, a variable, a user-defined function, or a FLWOR binding.
+     * Walks builtin function arguments and operator operands so that nested
+     * occurrences are caught.
+     */
+    private static final class ContextFreeChecker extends DefaultExpressionVisitor {
+        private boolean contextDependent;
+
+        @Override
+        public void visitLocationStep(final LocationStep locationStep) {
+            contextDependent = true;
+        }
+
+        @Override
+        public void visitVariableReference(final VariableReference ref) {
+            contextDependent = true;
+        }
+
+        @Override
+        public void visitFunctionCall(final FunctionCall call) {
+            contextDependent = true;
+        }
+
+        @Override
+        public void visitUserFunction(final UserDefinedFunction function) {
+            contextDependent = true;
+        }
+
+        @Override
+        public void visitForExpression(final ForExpr forExpr) {
+            contextDependent = true;
+        }
+
+        @Override
+        public void visitLetExpression(final LetExpr letExpr) {
+            contextDependent = true;
+        }
+
+        @Override
+        public void visitWindowExpression(final WindowExpr windowExpr) {
+            contextDependent = true;
+        }
+
+        @Override
+        public void visitBuiltinFunction(final Function function) {
+            if (contextDependent) {
+                return;
+            }
+            // Optimizable builtins (range:eq, ft:query-field, lucene:query-field,
+            // etc.) rely on the (#exist:optimize#) wrap to drive their index
+            // pre-select. Their argument lists may look literal-only, but
+            // dropping the wrap changes their evaluation path and results.
+            // Treat them as context-dependent so the gate never strips a wrap
+            // whose whole purpose is to feed an Optimizable predicate.
+            if (function instanceof Optimizable) {
+                contextDependent = true;
+                return;
+            }
+            super.visitBuiltinFunction(function);
+        }
     }
 
     @Override
