@@ -1,0 +1,19 @@
+exist-core/src/test/java/org/exist/util/CollationsTest.java
+  s_66d4dce90f3454::t_c0410608d7bfbb 48
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.1",
+  "base_commit_sha": "a873717bd78f9df559fcce94fe51a16c83bfc9e6",
+  "prompts": {},
+  "sessions": {
+    "s_66d4dce90f3454": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "ae600e59-ac05-4793-9e7b-db876b5fd073",
+        "model": "composer-2-fast"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
