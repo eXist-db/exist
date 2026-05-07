@@ -135,7 +135,8 @@ public class ReindexBenchmark {
         final Properties configProperties = new Properties();
         // Keep JMH forks clean: request immediate BrokerPool shutdown so Quartz
         // workers do not linger past benchmark completion.
-        configProperties.setProperty("wait-before-shutdown", "0");
+        // BrokerPool expects a Long for this property (see BrokerPool.PROPERTY_SHUTDOWN_DELAY).
+        configProperties.put("wait-before-shutdown", 0L);
         server = new ExistEmbeddedServer(configProperties, true, true);
         server.startDb();
         pool = server.getBrokerPool();

@@ -31,12 +31,12 @@ import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.FieldExistsQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.index.Term;
 import org.apache.lucene.search.TermInSetQuery;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.store.ByteBuffersDirectory;
@@ -44,6 +44,7 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.util.BytesRef;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
+import org.openjdk.jmh.annotations.Fork;
 import org.openjdk.jmh.annotations.Measurement;
 import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.annotations.OutputTimeUnit;
@@ -60,11 +61,27 @@ import java.util.concurrent.TimeUnit;
 /**
  * Benchmarks reindex-time Lucene delete strategies for mixed document shapes:
  * node-backed entries and named-field entries sharing the same docId.
+ *
+ * <h2>Build &amp; run (from project root)</h2>
+ * <pre>{@code
+ * mvn install -pl exist-core-jmh -am -DskipTests \
+ *     -Ddependency-check.skip=true -Ddocker=false
+ * java -jar exist-core-jmh/target/exist-core-jmh-7.0.0-SNAPSHOT-benchmarks.jar \
+ *     ReindexDeleteStrategyBenchmark -f 1 -wi 3 -i 5
+ * }</pre>
+ *
+ * <h2>Common variants</h2>
+ * <pre>{@code
+ * # Batch-size sweep (TermInSet and Boolean SHOULD variants)
+ * java -jar exist-core-jmh/target/exist-core-jmh-7.0.0-SNAPSHOT-benchmarks.jar \
+ *     ReindexDeleteStrategyBenchmark.deleteInBatches*Sweep -f 1 -wi 2 -i 3 -p batchSize=64,128,256,512,1024
+ * }</pre>
  */
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 @Warmup(iterations = 3, time = 1, timeUnit = TimeUnit.SECONDS)
 @Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Fork(1)
 public class ReindexDeleteStrategyBenchmark {
 
     private static final String FIELD_DOC_ID = "docId";
@@ -107,7 +124,7 @@ public class ReindexDeleteStrategyBenchmark {
             while (nextDocId <= state.docCount) {
                 final BooleanQuery.Builder batchedDocIdQuery = new BooleanQuery.Builder();
                 int clauses = 0;
-                final int maxClausesPerBatch = Math.min(DELETE_BATCH_SIZE, IndexSearcher.getMaxClauseCount());
+                final int maxClausesPerBatch = boundedBatchSize(DELETE_BATCH_SIZE);
                 while (nextDocId <= state.docCount && clauses < maxClausesPerBatch) {
                     batchedDocIdQuery.add(IntField.newExactQuery(FIELD_DOC_ID, nextDocId++), BooleanClause.Occur.SHOULD);
                     clauses++;
