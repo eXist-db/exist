@@ -45,7 +45,7 @@ public class CollationsTest {
     }
 
     @Test
-    public void javaUri_customCollator_canBeLoaded() throws XPathException {
+    public void javaUriCustomCollatorCanBeLoaded() throws XPathException {
         final Collator collator = Collations.getCollationFromURI(
                 "java:org.exist.util.TestJavaCollator",
                 (Expression) null
