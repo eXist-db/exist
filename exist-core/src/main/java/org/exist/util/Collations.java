@@ -287,7 +287,18 @@ public class Collations {
             // com.ibm.icu.text.RuleBasedCollator
             final String uriClassName = uri.substring("java:".length());
             try {
-                final Class<?> collatorClass = Class.forName(uriClassName);
+                Class<?> collatorClass = null;
+                final ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
+                if (contextClassLoader != null) {
+                    try {
+                        collatorClass = Class.forName(uriClassName, true, contextClassLoader);
+                    } catch (final ClassNotFoundException e) {
+                        // Fall back to the defining class loader below.
+                    }
+                }
+                if (collatorClass == null) {
+                    collatorClass = Class.forName(uriClassName);
+                }
                 if (!Collator.class.isAssignableFrom(collatorClass)) {
                     final String msg = "The specified collator class '" + collatorClass.getName() + "' is not a subclass of com.ibm.icu.text.Collator";
                     logger.error(msg);

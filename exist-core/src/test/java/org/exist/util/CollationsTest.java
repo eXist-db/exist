@@ -29,6 +29,7 @@ import org.junit.Test;
 
 import static junit.framework.TestCase.assertFalse;
 import static org.exist.util.Collations.HTML_ASCII_CASE_INSENSITIVE_COLLATION_URI;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 public class CollationsTest {
@@ -41,5 +42,16 @@ public class CollationsTest {
         assertTrue(Collations.contains(collator, "iNPut", "PU"));
         assertTrue(Collations.contains(collator,"h&#244;tel", "h&#244;t"));
         assertFalse(Collations.contains(collator, "h&#244;tel", "H&#212;T"));
+    }
+
+    @Test
+    public void javaUri_customCollator_canBeLoaded() throws XPathException {
+        final Collator collator = Collations.getCollationFromURI(
+                "java:org.exist.util.TestJavaCollator",
+                (Expression) null
+        );
+
+        assertNotNull(collator);
+        assertTrue(Collations.compare(collator, "a", "b") < 0);
     }
 }
