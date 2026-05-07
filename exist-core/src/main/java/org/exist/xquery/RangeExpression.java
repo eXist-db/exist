@@ -156,7 +156,11 @@ public class RangeExpression extends PathExpr {
         dumper.display(" to ");
         dumper.display(end);
     }
-    
+
+	public String toString() {
+		return "(" + start + " to " + end + ")";
+	}
+
     public int returnsType() {
         return Type.INTEGER;
     }    
