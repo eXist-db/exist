@@ -1,0 +1,14 @@
+.github/workflows/prethink.yml
+  h_058c4ed50bd6c9 20
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.1",
+  "base_commit_sha": "d5b300eed865479ed8b1ad8c8f63f03cf26399f8",
+  "prompts": {},
+  "humans": {
+    "h_058c4ed50bd6c9": {
+      "author": "duncdrum"
+    }
+  }
+}
