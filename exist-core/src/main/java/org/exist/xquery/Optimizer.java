@@ -320,7 +320,7 @@ public class Optimizer extends DefaultExpressionVisitor {
         // in Function.getDependencies() makes the dependency bitmask itself
         // unreliable for builtin functions on literal arguments
         // (see GH-3918), so we walk the tree explicitly.
-        final ContextFreeChecker checker = new ContextFreeChecker();
+        final ContextDependencyChecker checker = new ContextDependencyChecker();
         pred.accept(checker);
         if (checker.contextDependent) {
             return false;
@@ -342,7 +342,11 @@ public class Optimizer extends DefaultExpressionVisitor {
      * Walks builtin function arguments and operator operands so that nested
      * occurrences are caught.
      */
-    private static final class ContextFreeChecker extends DefaultExpressionVisitor {
+    private static final class ContextDependencyChecker extends DefaultExpressionVisitor {
+        private static final int CONTEXT_BITS = Dependency.CONTEXT_ITEM
+                | Dependency.CONTEXT_SET
+                | Dependency.CONTEXT_POSITION;
+
         private boolean contextDependent;
 
         @Override
@@ -392,6 +396,21 @@ public class Optimizer extends DefaultExpressionVisitor {
             // Treat them as context-dependent so the gate never strips a wrap
             // whose whole purpose is to feed an Optimizable predicate.
             if (function instanceof Optimizable) {
+                contextDependent = true;
+                return;
+            }
+            // No-arg builtins have no input besides the dynamic context, so
+            // any context dependency they declare is real (not the conservative
+            // Function default applied to literal arguments). Trust the
+            // declared dependencies here. Builtins like fn:true(), fn:false(),
+            // and fn:current-dateTime() declare NO_DEPENDENCY and remain
+            // context-free; fn:position(), fn:last(), fn:name(), and
+            // fn:local-name() declare CONTEXT_* and are correctly flagged.
+            // The runtime safety net (preprocess() throws XPDY0002 on null
+            // context) still backs this path for any future builtin that
+            // does not declare its dependencies accurately.
+            if (function.getArgumentCount() == 0
+                    && (function.getDependencies() & CONTEXT_BITS) != 0) {
                 contextDependent = true;
                 return;
             }

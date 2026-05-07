@@ -64,7 +64,7 @@ import static org.junit.Assert.assertEquals;
  *
  * @see <a href="https://github.com/eXist-db/exist/issues/3918">GH-3918</a>
  */
-public class ContextFreePredicateRegressionTest {
+public class ContextDependencyRegressionTest {
 
     private static final String COLLECTION_CONFIG =
             """
@@ -159,7 +159,7 @@ public class ContextFreePredicateRegressionTest {
     /**
      * A compile-time-false comparison ({@code 1 = 0}) must short-circuit
      * the wrap via the operator-recursion path in
-     * {@code ContextFreeChecker}.
+     * {@code ContextDependencyChecker}.
      */
     @Test
     public void constantFalseComparisonReturnsEmpty() throws XMLDBException {
@@ -205,5 +205,46 @@ public class ContextFreePredicateRegressionTest {
                 "let $needle := 'no-match-anywhere' "
                         + "return //foo[bar = '5'][contains($needle, 'x')]");
         assertEquals(0, result.getSize());
+    }
+
+    // GH-3918 follow-up: no-arg context-dependent builtins like fn:position(),
+    // fn:last(), fn:name(), fn:local-name() are classified context-free by the
+    // structural ContextDependencyChecker because they have no flagged
+    // sub-expressions. The runtime safety net is that their eval() methods
+    // throw XPDY0002 when called with a null context, which Predicate.foldsToFalse
+    // catches and treats as "cannot fold". These tests confirm that catch path:
+    // the predicate must produce per-context-item results (true for position 1,
+    // false for position 9999), and a positive match must still return a node.
+
+    @Test
+    public void positionPredicateBehavesPerContext() throws XMLDBException {
+        final ResourceSet first = execute("//foo[bar = '5'][position() = 1]");
+        assertEquals(1, first.getSize());
+
+        final ResourceSet none = execute("//foo[bar = '5'][position() = 9999]");
+        assertEquals(0, none.getSize());
+    }
+
+    @Test
+    public void lastPredicateBehavesPerContext() throws XMLDBException {
+        // The single result is at last() = 1.
+        final ResourceSet match = execute("//foo[bar = '5'][position() = last()]");
+        assertEquals(1, match.getSize());
+    }
+
+    @Test
+    public void noArgNamePredicateBehavesPerContext() throws XMLDBException {
+        // name() on each <foo> returns 'foo'; never matches 'never'.
+        final ResourceSet none = execute("//foo[bar = '5'][name() = 'never']");
+        assertEquals(0, none.getSize());
+
+        final ResourceSet match = execute("//foo[bar = '5'][name() = 'foo']");
+        assertEquals(1, match.getSize());
+    }
+
+    @Test
+    public void noArgLocalNamePredicateBehavesPerContext() throws XMLDBException {
+        final ResourceSet match = execute("//foo[bar = '5'][local-name() = 'foo']");
+        assertEquals(1, match.getSize());
     }
 }
