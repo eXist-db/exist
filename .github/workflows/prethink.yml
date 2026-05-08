@@ -20,9 +20,19 @@ jobs:
           distribution: 'liberica'
 
       - name: Install Moderne CLI
+        env:
+          # Pinned to avoid the Maven Central propagation race observed on 2026-05-08, where
+          # the parent moderne-cli metadata advertised a release before the platform-specific
+          # moderne-cli-linux binary had CDN-synced. Bump intentionally as new releases stabilize.
+          MODERNE_CLI_VERSION: '4.2.3'
         run: |
           curl -sSL https://app.moderne.io/cli | bash
           echo "$HOME/.moderne/cli/bin" >> $GITHUB_PATH
+          # The installer writes 'version=RELEASE' so every `mod` invocation re-resolves to whatever
+          # is currently latest on Maven Central. Replace with the pinned version so subsequent
+          # `mod` calls reuse the dist downloaded once and never race a fresh release.
+          sed -i "s/^version=RELEASE$/version=${MODERNE_CLI_VERSION}/" \
+            "$HOME/.moderne/cli/dist/moderne-wrapper.properties"
 
       - name: Configure Moderne
         run: |
@@ -47,5 +57,20 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add .moderne/context/ AGENTS.md
-          git diff --staged --quiet || git commit -m "[ci] Update Prethink context"
-          git push
+          if git diff --staged --quiet; then
+            echo "No Prethink context changes to commit."
+            exit 0
+          fi
+          git commit -m "[ci] Update Prethink context"
+          # Concurrent commits to develop between checkout and push caused the 2026-05-04
+          # scheduled run to fail with a non-fast-forward rejection. Rebase + bounded retry
+          # handles that without forcing or losing the new context updates.
+          for attempt in 1 2 3; do
+            if git pull --rebase --autostash origin develop && git push origin HEAD:develop; then
+              exit 0
+            fi
+            echo "Push attempt $attempt failed; retrying after backoff..."
+            sleep $((attempt * 10))
+          done
+          echo "Push failed after 3 attempts" >&2
+          exit 1
