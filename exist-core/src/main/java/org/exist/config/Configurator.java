@@ -1380,11 +1380,10 @@ public class Configurator {
         // Reference equality (==) is intentional: do NOT precheck with
         // hotConfigs.containsValue(), which calls ConfigurationImpl.equals()
         // on every entry and turns realm load into O(N^2).
-        for (final Iterator<Entry<FullXmldbURI, Configuration>> it = hotConfigs.entrySet().iterator(); it.hasNext();) {
-            final Entry<FullXmldbURI, Configuration> entry = it.next();
-            if (entry.getValue() == configuration) {
+        for (final Iterator<Configuration> it = hotConfigs.values().iterator(); it.hasNext();) {
+            if (it.next() == configuration) {
                 it.remove();
-                return;
+                break;
             }
         }
     }
