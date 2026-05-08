@@ -435,7 +435,7 @@ public class DateTimeTest extends AbstractTimeRelatedTestCase {
 	// The pre-validation guard must reject them with FODT0001 fast.
 
 	@Test
-	public void plus_hugeDayTimeDuration_rejectsFast() throws XPathException {
+	public void plusHugeDayTimeDurationRejectsFast() throws XPathException {
 		final AbstractDateTimeValue t = new DateTimeValue("2026-05-05T12:00:00Z");
 		final DurationValue d = new DayTimeDurationValue("P1712073600000D");
 		final long start = System.nanoTime();
@@ -450,7 +450,7 @@ public class DateTimeTest extends AbstractTimeRelatedTestCase {
 	}
 
 	@Test
-	public void minus_hugeDayTimeDuration_rejectsFast() throws XPathException {
+	public void minusHugeDayTimeDurationRejectsFast() throws XPathException {
 		final AbstractDateTimeValue t = new DateTimeValue("2026-05-05T12:00:00Z");
 		final DurationValue d = new DayTimeDurationValue("P1712073600000D");
 		final long start = System.nanoTime();
@@ -465,7 +465,7 @@ public class DateTimeTest extends AbstractTimeRelatedTestCase {
 	}
 
 	@Test
-	public void plus_largeButPermittedDayTimeDuration_works() throws XPathException {
+	public void plusLargeButPermittedDayTimeDurationWorks() throws XPathException {
 		// 100,000 years -- well under the 1,000,000-year guard, must succeed.
 		final AbstractDateTimeValue t = new DateTimeValue("2026-05-05T12:00:00Z");
 		final DurationValue d = new DayTimeDurationValue("P36524250D");
