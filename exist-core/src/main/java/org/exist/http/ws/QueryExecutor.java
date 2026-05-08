@@ -73,8 +73,8 @@ public final class QueryExecutor {
 
         try (final DBBroker broker = pool.get(Optional.of(evalSession.getSubject()))) {
             // Parse phase
-            sendProgress(wsSession, msg.id, EvalProtocol.PHASE_PARSING, 0, 0);
-            QueryMonitorBroadcaster.broadcastEvent("started", msg.id, user, msg.query,
+            sendProgress(wsSession, msg.id(), EvalProtocol.PHASE_PARSING, 0, 0);
+            QueryMonitorBroadcaster.broadcastEvent("started", msg.id(), user, msg.query(),
                     EvalProtocol.PHASE_PARSING, 0, 0);
             final long parseStart = System.currentTimeMillis();
 
@@ -86,7 +86,7 @@ public final class QueryExecutor {
 
             // Compile phase
             try {
-                compiled = xquery.compile(context, new StringSource(msg.query));
+                compiled = xquery.compile(context, new StringSource(msg.query()));
             } catch (final XPathException e) {
                 timing.parse = System.currentTimeMillis() - parseStart;
                 reportError(wsSession, evalSession, msg, timing, startTime, ErrorInfo.of(e));
@@ -100,21 +100,21 @@ public final class QueryExecutor {
             final long compileEnd = System.currentTimeMillis();
             timing.compile = compileEnd - parseStart - timing.parse;
 
-            sendProgress(wsSession, msg.id, EvalProtocol.PHASE_COMPILING, 0,
+            sendProgress(wsSession, msg.id(), EvalProtocol.PHASE_COMPILING, 0,
                     System.currentTimeMillis() - startTime);
 
             // Set timeout via watchdog
             final XQueryWatchDog watchDog = context.getWatchDog();
-            if (msg.maxExecutionTime > 0) {
-                watchDog.setTimeout(msg.maxExecutionTime);
+            if (msg.maxExecutionTime() > 0) {
+                watchDog.setTimeout(msg.maxExecutionTime());
             }
-            evalSession.registerQuery(msg.id, watchDog);
+            evalSession.registerQuery(msg.id(), watchDog);
 
             try {
                 // Evaluate phase
-                sendProgress(wsSession, msg.id, EvalProtocol.PHASE_EVALUATING, 0,
+                sendProgress(wsSession, msg.id(), EvalProtocol.PHASE_EVALUATING, 0,
                         System.currentTimeMillis() - startTime);
-                QueryMonitorBroadcaster.broadcastEvent("progress", msg.id, user, msg.query,
+                QueryMonitorBroadcaster.broadcastEvent("progress", msg.id(), user, msg.query(),
                         EvalProtocol.PHASE_EVALUATING, 0, System.currentTimeMillis() - startTime);
                 final long evalStart = System.currentTimeMillis();
 
@@ -136,33 +136,33 @@ public final class QueryExecutor {
                 timing.evaluate = System.currentTimeMillis() - evalStart;
 
                 // Serialize phase
-                sendProgress(wsSession, msg.id, EvalProtocol.PHASE_SERIALIZING, 0,
+                sendProgress(wsSession, msg.id(), EvalProtocol.PHASE_SERIALIZING, 0,
                         System.currentTimeMillis() - startTime);
                 final long serStart = System.currentTimeMillis();
 
                 final long itemCount = result.getItemCount();
-                final Properties outputProperties = msg.serialization != null
-                        ? msg.serialization : new Properties();
+                final Properties outputProperties = msg.serialization() != null
+                        ? msg.serialization() : new Properties();
 
                 try {
-                    if (msg.stream.enabled() && itemCount > msg.stream.chunkSize()) {
-                        streamResults(wsSession, msg.id, broker, result, outputProperties,
-                                msg.stream.chunkSize(), timing, startTime, watchDog);
+                    if (msg.stream().enabled() && itemCount > msg.stream().chunkSize()) {
+                        streamResults(wsSession, msg.id(), broker, result, outputProperties,
+                                msg.stream().chunkSize(), timing, startTime, watchDog);
                     } else {
                         final String serialized = serializeAll(broker, result, outputProperties);
                         timing.serialize = System.currentTimeMillis() - serStart;
                         timing.total = System.currentTimeMillis() - startTime;
 
-                        sendResult(wsSession, msg.id, 1, serialized, false, timing, itemCount);
+                        sendResult(wsSession, msg.id(), 1, serialized, false, timing, itemCount);
                     }
-                    QueryMonitorBroadcaster.broadcastEvent("completed", msg.id, user, msg.query,
+                    QueryMonitorBroadcaster.broadcastEvent("completed", msg.id(), user, msg.query(),
                             null, itemCount, System.currentTimeMillis() - startTime);
                 } catch (final SAXException | XPathException e) {
                     timing.serialize = System.currentTimeMillis() - serStart;
                     reportError(wsSession, evalSession, msg, timing, startTime, ErrorInfo.of(e.getMessage()));
                 }
             } finally {
-                evalSession.unregisterQuery(msg.id);
+                evalSession.unregisterQuery(msg.id());
                 context.runCleanupTasks();
             }
 
@@ -194,12 +194,12 @@ public final class QueryExecutor {
                              final long startTime, final ErrorInfo error) {
         timing.total = System.currentTimeMillis() - startTime;
         if (error.xpe() != null) {
-            sendError(wsSession, msg.id, error.xpe(), timing);
+            sendError(wsSession, msg.id(), error.xpe(), timing);
         } else {
-            sendError(wsSession, msg.id, null, error.message(), error.line(), error.column(), timing);
+            sendError(wsSession, msg.id(), null, error.message(), error.line(), error.column(), timing);
         }
-        QueryMonitorBroadcaster.broadcastEvent("error", msg.id,
-                evalSession.getSubject().getName(), msg.query, null, 0, timing.total);
+        QueryMonitorBroadcaster.broadcastEvent("error", msg.id(),
+                evalSession.getSubject().getName(), msg.query(), null, 0, timing.total);
     }
 
     private void reportTerminationOrError(final Session wsSession, final EvalSession evalSession,
@@ -209,9 +209,9 @@ public final class QueryExecutor {
                                           final ErrorInfo error) {
         if (watchDog.isTerminating()) {
             timing.total = System.currentTimeMillis() - startTime;
-            sendCancelled(wsSession, msg.id, 0, timing);
-            QueryMonitorBroadcaster.broadcastEvent("cancelled", msg.id,
-                    evalSession.getSubject().getName(), msg.query, null, 0, timing.total);
+            sendCancelled(wsSession, msg.id(), 0, timing);
+            QueryMonitorBroadcaster.broadcastEvent("cancelled", msg.id(),
+                    evalSession.getSubject().getName(), msg.query(), null, 0, timing.total);
         } else {
             reportError(wsSession, evalSession, msg, timing, startTime, error);
         }
@@ -228,38 +228,38 @@ public final class QueryExecutor {
 
             final XQuery xquery = pool.getXQueryService();
             try {
-                xquery.compile(context, new StringSource(msg.query));
-                sendCompileResult(wsSession, msg.id, true, null, null, 0, 0);
+                xquery.compile(context, new StringSource(msg.query()));
+                sendCompileResult(wsSession, msg.id(), true, null, null, 0, 0);
             } catch (final XPathException e) {
-                sendCompileResult(wsSession, msg.id, false,
+                sendCompileResult(wsSession, msg.id(), false,
                         e.getErrorCode() != null ? e.getErrorCode().toString() : null,
                         e.getDetailMessage(), e.getLine(), e.getColumn());
             } catch (final IOException e) {
-                sendCompileResult(wsSession, msg.id, false, null, e.getMessage(), 0, 0);
+                sendCompileResult(wsSession, msg.id(), false, null, e.getMessage(), 0, 0);
             } finally {
                 context.runCleanupTasks();
             }
         } catch (final EXistException | PermissionDeniedException e) {
-            sendError(wsSession, msg.id, null, e.getMessage(), 0, 0, null);
+            sendError(wsSession, msg.id(), null, e.getMessage(), 0, 0, null);
         }
     }
 
     private void configureContext(final XQueryContext context,
                                   final EvalProtocol.ClientMessage msg) {
-        if (msg.moduleLoadPath != null) {
-            context.setModuleLoadPath(msg.moduleLoadPath);
+        if (msg.moduleLoadPath() != null) {
+            context.setModuleLoadPath(msg.moduleLoadPath());
         }
-        if (msg.context != null) {
+        if (msg.context() != null) {
             try {
-                final XmldbURI baseUri = XmldbURI.create(msg.context);
+                final XmldbURI baseUri = XmldbURI.create(msg.context());
                 context.setStaticallyKnownDocuments(new XmldbURI[]{baseUri});
-                context.setBaseURI(new AnyURIValue(msg.context));
+                context.setBaseURI(new AnyURIValue(msg.context()));
             } catch (final XPathException e) {
-                LOG.warn("Invalid context URI: {}", msg.context, e);
+                LOG.warn("Invalid context URI: {}", msg.context(), e);
             }
         }
-        if (msg.variables != null) {
-            for (final Map.Entry<String, String> entry : msg.variables.entrySet()) {
+        if (msg.variables() != null) {
+            for (final Map.Entry<String, String> entry : msg.variables().entrySet()) {
                 try {
                     context.declareVariable(entry.getKey(), entry.getValue());
                 } catch (final XPathException e) {

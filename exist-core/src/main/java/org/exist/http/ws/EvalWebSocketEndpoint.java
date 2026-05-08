@@ -188,7 +188,7 @@ public class EvalWebSocketEndpoint {
             return;
         }
 
-        switch (msg.action) {
+        switch (msg.action()) {
             case EvalProtocol.ACTION_EVAL -> handleEval(session, evalSession, msg);
             case EvalProtocol.ACTION_CANCEL -> handleCancel(evalSession, msg);
             case EvalProtocol.ACTION_COMPILE -> handleCompile(session, evalSession, msg);
@@ -196,8 +196,8 @@ public class EvalWebSocketEndpoint {
             default -> {
                 try {
                     session.getBasicRemote().sendText(
-                            EvalProtocol.errorMessage(msg.id, null,
-                                    "Unknown action: " + msg.action, 0, 0, null));
+                            EvalProtocol.errorMessage(msg.id(), null,
+                                    "Unknown action: " + msg.action(), 0, 0, null));
                 } catch (final IOException e) {
                     LOG.debug("Failed to send unknown action error: {}", e.getMessage());
                 }
@@ -229,10 +229,10 @@ public class EvalWebSocketEndpoint {
 
     private void handleEval(final Session session, final EvalSession evalSession,
                              final EvalProtocol.ClientMessage msg) {
-        if (msg.query == null || msg.query.isEmpty()) {
+        if (msg.query() == null || msg.query().isEmpty()) {
             try {
                 session.getBasicRemote().sendText(
-                        EvalProtocol.errorMessage(msg.id, null,
+                        EvalProtocol.errorMessage(msg.id(), null,
                                 "Missing required field: query", 0, 0, null));
             } catch (final IOException e) {
                 LOG.debug("Failed to send missing query error: {}", e.getMessage());
@@ -249,7 +249,7 @@ public class EvalWebSocketEndpoint {
             } catch (final EXistException e) {
                 try {
                     session.getBasicRemote().sendText(
-                            EvalProtocol.errorMessage(msg.id, null,
+                            EvalProtocol.errorMessage(msg.id(), null,
                                     "Database unavailable: " + e.getMessage(), 0, 0, null));
                 } catch (final IOException ex) {
                     LOG.debug("Failed to send database error: {}", ex.getMessage());
@@ -260,9 +260,9 @@ public class EvalWebSocketEndpoint {
 
     private void handleCancel(final EvalSession evalSession,
                                final EvalProtocol.ClientMessage msg) {
-        final boolean cancelled = evalSession.cancelQuery(msg.id);
+        final boolean cancelled = evalSession.cancelQuery(msg.id());
         if (!cancelled) {
-            LOG.debug("Cancel requested for unknown query: {}", msg.id);
+            LOG.debug("Cancel requested for unknown query: {}", msg.id());
         }
     }
 
@@ -275,7 +275,7 @@ public class EvalWebSocketEndpoint {
         if (!evalSession.getSubject().hasDbaRole()) {
             try {
                 session.getBasicRemote().sendText(
-                        EvalProtocol.errorMessage(msg.id, null,
+                        EvalProtocol.errorMessage(msg.id(), null,
                                 "Permission denied: admin-cancel requires DBA role", 0, 0, null));
             } catch (final IOException e) {
                 LOG.debug("Failed to send permission error: {}", e.getMessage());
@@ -286,7 +286,7 @@ public class EvalWebSocketEndpoint {
         try {
             final BrokerPool pool = BrokerPool.getInstance();
             final ProcessMonitor monitor = pool.getProcessMonitor();
-            final int targetId = Integer.parseInt(msg.id);
+            final int targetId = Integer.parseInt(msg.id());
 
             boolean found = false;
             for (final org.exist.xquery.XQueryWatchDog wd : monitor.getRunningXQueries()) {
@@ -298,7 +298,7 @@ public class EvalWebSocketEndpoint {
             }
 
             if (!found) {
-                LOG.debug("Admin cancel: query {} not found", msg.id);
+                LOG.debug("Admin cancel: query {} not found", msg.id());
             }
         } catch (final Exception e) {
             LOG.warn("Admin cancel failed: {}", e.getMessage());
@@ -307,10 +307,10 @@ public class EvalWebSocketEndpoint {
 
     private void handleCompile(final Session session, final EvalSession evalSession,
                                 final EvalProtocol.ClientMessage msg) {
-        if (msg.query == null || msg.query.isEmpty()) {
+        if (msg.query() == null || msg.query().isEmpty()) {
             try {
                 session.getBasicRemote().sendText(
-                        EvalProtocol.errorMessage(msg.id, null,
+                        EvalProtocol.errorMessage(msg.id(), null,
                                 "Missing required field: query", 0, 0, null));
             } catch (final IOException e) {
                 LOG.debug("Failed to send missing query error: {}", e.getMessage());
@@ -326,7 +326,7 @@ public class EvalWebSocketEndpoint {
             } catch (final EXistException e) {
                 try {
                     session.getBasicRemote().sendText(
-                            EvalProtocol.errorMessage(msg.id, null,
+                            EvalProtocol.errorMessage(msg.id(), null,
                                     "Database unavailable: " + e.getMessage(), 0, 0, null));
                 } catch (final IOException ex) {
                     LOG.debug("Failed to send database error: {}", ex.getMessage());

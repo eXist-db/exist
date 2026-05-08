@@ -80,34 +80,13 @@ public final class EvalProtocol {
     /**
      * Parsed client request message.
      */
-    public static final class ClientMessage {
-        public final String action;
-        public final String id;
-        @Nullable public final String query;
-        @Nullable public final Properties serialization;
-        @Nullable public final Map<String, String> variables;
-        @Nullable public final String context;
-        @Nullable public final String moduleLoadPath;
-        public final long maxExecutionTime;
-        public final StreamConfig stream;
-
-        ClientMessage(final String action, final String id, @Nullable final String query,
-                      @Nullable final Properties serialization,
-                      @Nullable final Map<String, String> variables,
-                      @Nullable final String context,
-                      @Nullable final String moduleLoadPath,
-                      final long maxExecutionTime,
-                      final StreamConfig stream) {
-            this.action = action;
-            this.id = id;
-            this.query = query;
-            this.serialization = serialization;
-            this.variables = variables;
-            this.context = context;
-            this.moduleLoadPath = moduleLoadPath;
-            this.maxExecutionTime = maxExecutionTime;
-            this.stream = stream;
-        }
+    public record ClientMessage(String action, String id, @Nullable String query,
+                                @Nullable Properties serialization,
+                                @Nullable Map<String, String> variables,
+                                @Nullable String context,
+                                @Nullable String moduleLoadPath,
+                                long maxExecutionTime,
+                                StreamConfig stream) {
     }
 
     /**
@@ -144,39 +123,17 @@ public final class EvalProtocol {
                 final String field = parser.currentName();
                 parser.nextToken();
                 switch (field) {
-                    case "action":
-                        action = parser.getValueAsString();
-                        break;
-                    case "id":
-                        id = parser.getValueAsString();
-                        break;
-                    case "query":
-                        query = parser.getValueAsString();
-                        break;
-                    case "context":
-                        context = parser.getValueAsString();
-                        break;
-                    case "module-load-path":
-                        moduleLoadPath = parser.getValueAsString();
-                        break;
-                    case "max-execution-time":
-                        maxExecutionTime = parser.getValueAsLong();
-                        break;
-                    case "streaming":
-                        streaming = parser.getValueAsBoolean();
-                        break;
-                    case "chunk-size":
-                        chunkSize = parser.getValueAsInt();
-                        break;
-                    case "serialization":
-                        serialization = parseObject(parser);
-                        break;
-                    case "variables":
-                        variables = parseStringMap(parser);
-                        break;
-                    default:
-                        parser.skipChildren();
-                        break;
+                    case "action" -> action = parser.getValueAsString();
+                    case "id" -> id = parser.getValueAsString();
+                    case "query" -> query = parser.getValueAsString();
+                    case "context" -> context = parser.getValueAsString();
+                    case "module-load-path" -> moduleLoadPath = parser.getValueAsString();
+                    case "max-execution-time" -> maxExecutionTime = parser.getValueAsLong();
+                    case "streaming" -> streaming = parser.getValueAsBoolean();
+                    case "chunk-size" -> chunkSize = parser.getValueAsInt();
+                    case "serialization" -> serialization = parseObject(parser);
+                    case "variables" -> variables = parseStringMap(parser);
+                    default -> parser.skipChildren();
                 }
             }
         }
