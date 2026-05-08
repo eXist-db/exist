@@ -143,6 +143,35 @@ public class FunIndexOfPerformanceTest {
                 elapsedMs < 10_000);
     }
 
+    /**
+     * Length-preserving mutation across calls — the source sequence differs
+     * from the previous call at exactly one position, sized so it exceeds the
+     * cache threshold. Without the post-lookup verification (PR #6315
+     * follow-up) the fingerprint matched on the unchanged sample positions
+     * and returned stale cached indexes; this test pins correctness against
+     * that regression.
+     */
+    @Test
+    public void lengthPreservingMutationReturnsCorrectPositions() throws XMLDBException {
+        final String query = """
+                let $seq := (1 to 1000)
+                return string-join(
+                  for $i in 1 to 50
+                  let $modified := for $j in 1 to 1000 return if ($j = $i) then 999 else $seq[$j]
+                  return string-join(index-of($modified, 999), ','),
+                  '|')""";
+        // For each iteration, 999 occurs at position $i (the mutation) and at
+        // position 999 (unchanged $seq[999] = 999).
+        final StringBuilder expected = new StringBuilder();
+        for (int i = 1; i <= 50; i++) {
+            if (i > 1) {
+                expected.append('|');
+            }
+            expected.append(i).append(",999");
+        }
+        assertEquals(expected.toString(), executeOne(query));
+    }
+
     /** Issue #3682 variant 3 (predicate filter using count(index-of)). */
     @Test
     public void issue3682PredicateVariantCompletesQuickly() throws XMLDBException {

@@ -124,11 +124,19 @@ The result sequence is in ascending numeric order.""";
 
     /**
      * Fingerprint of the source sequence from the most recent call. eXist
-     * routinely re-wraps `args[0]` between calls (atomization, type checks),
-     * so reference identity is unreliable. Instead we sample size plus five
-     * positions' string values — collisions are exceedingly rare for the
-     * atomic-value sequences this caching targets, and the lookup falls
-     * back to a linear scan if any sampled call disagrees.
+     * routinely re-wraps {@code args[0]} between calls (atomization, type
+     * checks), so reference identity is unreliable -- empirical measurement
+     * (PR #6315 follow-up) showed reference identity hits 0% of the calls
+     * the fingerprint serves, even within a tight FLWOR over a single
+     * {@code let}-bound sequence. We instead sample size plus five positions'
+     * string values to recognise the source.
+     *
+     * <p>The fingerprint is a heuristic, not a correctness invariant: a
+     * length-preserving content mutation that doesn't touch any sampled
+     * position will pass the check. To bound the consequences, every
+     * cache hit that returns a non-empty result is verified at lookup time
+     * (see {@link #lookupInIndex}); if the cached position no longer holds
+     * the search value, the cache is invalidated and a linear scan runs.
      */
     private long cachedSize = -1;
     private String cachedSample0;
@@ -212,7 +220,19 @@ The result sequence is in ascending numeric order.""";
                 return linearScan(source, srch, collator);
             }
         }
-        return lookupInIndex(srch);
+        final Sequence cached = lookupInIndex(srch, source, collator);
+        if (cached != null) {
+            return cached;
+        }
+        // Cache verification failed: fingerprint matched but the cached
+        // position no longer holds the search value, so the source content
+        // has mutated at a non-sampled position. Invalidate, refresh the
+        // fingerprint, and fall back to a fresh linear scan; the next call
+        // will rebuild the index.
+        updateFingerprint(source, sourceSize);
+        cachedIndex = null;
+        cachedSourceUnindexable = false;
+        return linearScan(source, srch, collator);
     }
 
     private boolean fingerprintMatches(final Sequence source, final int size) throws XPathException {
@@ -286,7 +306,24 @@ The result sequence is in ascending numeric order.""";
         return index;
     }
 
-    private Sequence lookupInIndex(final AtomicValue srch) throws XPathException {
+    /**
+     * Look up {@code srch} in the cached positional index, with a defensive
+     * verification that the cached position still holds {@code srch} in the
+     * current {@code source}. Returns {@code null} when verification fails,
+     * signalling the caller must invalidate the cache and rebuild.
+     *
+     * <p>The verification handles the scenario where the fingerprint hits
+     * but the source content has mutated at a non-sampled position, which
+     * would otherwise cause a stale cached entry to be returned (see PR
+     * #6315 follow-up for the empirical investigation).
+     *
+     * <p>Residual gap: a length-preserving mutation that introduces
+     * {@code srch} at a non-sampled position when the cache previously
+     * recorded "not found" cannot be detected at O(1) and would yield a
+     * false-empty result. This is bounded but not eliminated; the
+     * documented heuristic permits it.
+     */
+    private Sequence lookupInIndex(final AtomicValue srch, final Sequence source, final Collator collator) throws XPathException {
         if (Type.subTypeOfUnion(srch.getType(), Type.NUMERIC) && ((NumericValue) srch).isNaN()) {
             return Sequence.EMPTY_SEQUENCE;
         }
@@ -299,6 +336,16 @@ The result sequence is in ascending numeric order.""";
         }
         if (list == null || list.size == 0) {
             return Sequence.EMPTY_SEQUENCE;
+        }
+        // Defensive verification: the first cached position must still hold
+        // srch in the current source. O(1) per call.
+        final AtomicValue head = source.itemAt(list.data[0] - 1).atomize();
+        try {
+            if (!ValueComparison.compareAtomic(collator, head, srch, StringTruncationOperator.NONE, Comparison.EQ)) {
+                return null;
+            }
+        } catch (final XPathException e) {
+            return null;
         }
         final ValueSequence result = new ValueSequence();
         for (int k = 0; k < list.size; k++) {
