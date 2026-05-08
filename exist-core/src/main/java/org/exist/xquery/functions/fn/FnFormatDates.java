@@ -236,6 +236,20 @@ public class FnFormatDates extends BasicFunction {
     private static final int[] ROMAN_VALUES = {1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1};
     private static final String[] ROMAN_SYMBOLS = {"M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"};
 
+    /** Matches alphabetic-only timezone abbreviations (e.g., "EST", "GMT"). */
+    private static final Pattern TZ_NAME_ALPHA_PATTERN = Pattern.compile("[A-Za-z]+");
+
+    /** Well-known legacy timezone abbreviation IDs that java.time does not recognize as ZoneIds. */
+    private static final java.util.Set<String> KNOWN_TZ_ABBREVIATIONS = java.util.Set.of(
+            "EST", "CST", "MST", "PST", "HST", "AST",     // North America
+            "GMT", "UTC", "UCT", "WET", "CET", "EET",     // Europe / Universal
+            "IST", "JST", "KST", "SST",                    // Asia / Pacific
+            "CAT", "EAT", "WAT"                            // Africa
+    );
+
+    private static final java.time.format.DateTimeFormatter TZ_ABBREV_FORMATTER =
+            java.time.format.DateTimeFormatter.ofPattern("z");
+
     public FnFormatDates(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
     }
@@ -313,16 +327,17 @@ public class FnFormatDates extends BasicFunction {
         return SUPPORTED_LANGUAGES.contains(base);
     }
 
-    private String formatDate(String pic, AbstractDateTimeValue dt, final String language,
+    private String formatDate(final String pic, final AbstractDateTimeValue dt, final String language,
             final Optional<String> place) throws XPathException {
 
         // Per W3C XPath Functions 3.1 spec: when $place is a recognized IANA timezone,
         // adjust the datetime to the offset applicable in that timezone (DST-aware via
         // java.time.ZoneRules) before formatting any component.
+        AbstractDateTimeValue effectiveDt = dt;
         if (place.isPresent()) {
             try {
                 final java.time.ZoneId placeZone = java.time.ZoneId.of(place.get());
-                dt = adjustToPlaceTimezone(dt, placeZone);
+                effectiveDt = adjustToPlaceTimezone(dt, placeZone);
             } catch (final java.time.DateTimeException ignored) {
                 // Not an IANA timezone (e.g. country code "us") — leave dt unadjusted
             }
@@ -357,7 +372,7 @@ public class FnFormatDates extends BasicFunction {
                     throw new XPathException(this, ErrorCodes.FOFD1340, "Date format contains a '[' with no matching ']'");
                 }
                 final String component = pic.substring(i, close);
-                formatComponent(component, dt, language, place, tzHMZNPictureHint, sb);
+                formatComponent(component, effectiveDt, language, place, tzHMZNPictureHint, sb);
                 i = close + 1;
             }
         }
@@ -614,10 +629,8 @@ public class FnFormatDates extends BasicFunction {
             final int totalMinutes = (int) Math.abs(totalSeconds / 60);
             final int absHour = totalMinutes / 60;
             final int absMinute = totalMinutes % 60;
-            final TimeZone javaTz = dt.toJavaObject(Calendar.class).getTimeZone();
 
-            sb.append(formatTimeZone(picture,
-                    absHour, absMinute, isNegative, javaTz, language, place));
+            sb.append(formatTimeZone(picture, absHour, absMinute, isNegative, language, place));
         } else if (specifier == 'Z' && !pictureWasEmpty && isMilitaryTimezonePicture(picture)) {
             // [ZZ] on a value with no timezone → 'J' (military-time local)
             sb.append('J');
@@ -634,8 +647,7 @@ public class FnFormatDates extends BasicFunction {
      * Special pictures: "N" (named), "Z" (military), pictures ending in 't' (UTC → "Z").
      */
     private String formatTimeZone(final String timezonePicture, final int absHour, final int absMinute,
-            final boolean isNegative, final TimeZone timeZone, final String language,
-            final Optional<String> place) {
+            final boolean isNegative, final String language, final Optional<String> place) {
         // [ZN] / [Zn] / [ZNn] - timezone name with optional case modifier
         // (W3C XPath Functions 3.1 §9.8.4.7: second-position modifier selects letter case)
         if ("N".equals(timezonePicture) || "n".equals(timezonePicture) || "Nn".equals(timezonePicture)) {
@@ -679,19 +691,6 @@ public class FnFormatDates extends BasicFunction {
         return formatNumericTimeZone(parts, absHour, absMinute, isNegative);
     }
 
-    private static final Pattern TZ_NAME_ALPHA_PATTERN = Pattern.compile("[A-Za-z]+");
-
-    /** Well-known legacy timezone abbreviation IDs that java.time does not recognize as ZoneIds. */
-    private static final java.util.Set<String> KNOWN_TZ_ABBREVIATIONS = java.util.Set.of(
-            "EST", "CST", "MST", "PST", "HST", "AST",     // North America
-            "GMT", "UTC", "UCT", "WET", "CET", "EET",     // Europe / Universal
-            "IST", "JST", "KST", "SST",                    // Asia / Pacific
-            "CAT", "EAT", "WAT"                            // Africa
-    );
-
-    private static final java.time.format.DateTimeFormatter TZ_ABBREV_FORMATTER =
-            java.time.format.DateTimeFormatter.ofPattern("z");
-
     /**
      * Adjust a datetime to the timezone offset applicable at the given IANA place,
      * accounting for daylight savings via {@link java.time.zone.ZoneRules}.
@@ -722,64 +721,93 @@ public class FnFormatDates extends BasicFunction {
         final int offsetMs = (signedHour * 60 + signedMinute) * 60 * 1000;
 
         if (place.isPresent()) {
-            try {
-                final java.time.ZoneId placeZone = java.time.ZoneId.of(place.get());
-                final java.time.zone.ZoneRules rules = placeZone.getRules();
-                final int standardOffsetMs = rules.getStandardOffset(java.time.Instant.EPOCH)
-                        .getTotalSeconds() * 1000;
-
-                if (offsetMs == standardOffsetMs) {
-                    final java.time.ZonedDateTime stdTime =
-                            java.time.ZonedDateTime.of(2020, 1, 15, 12, 0, 0, 0, placeZone);
-                    final String name = stdTime.format(TZ_ABBREV_FORMATTER.withLocale(locale));
-                    if (TZ_NAME_ALPHA_PATTERN.matcher(name).matches()) {
-                        return name;
-                    }
-                } else if (!rules.isFixedOffset()) {
-                    final java.time.Instant summerInstant =
-                            java.time.ZonedDateTime.of(2020, 7, 15, 12, 0, 0, 0, placeZone).toInstant();
-                    final int dstOffsetMs = rules.getOffset(summerInstant).getTotalSeconds() * 1000;
-                    if (offsetMs == dstOffsetMs && rules.isDaylightSavings(summerInstant)) {
-                        final java.time.ZonedDateTime dstTime =
-                                java.time.ZonedDateTime.of(2020, 7, 15, 12, 0, 0, 0, placeZone);
-                        final String name = dstTime.format(TZ_ABBREV_FORMATTER.withLocale(locale));
-                        if (TZ_NAME_ALPHA_PATTERN.matcher(name).matches()) {
-                            return name;
-                        }
-                    }
-                }
-            } catch (final java.time.DateTimeException ignored) {
-                // Not a valid IANA ZoneId (e.g. country code "us") — fall through to generic lookup
+            final String placeName = lookupPlaceZoneAbbreviation(place.get(), offsetMs, locale);
+            if (placeName != null) {
+                return placeName;
             }
         }
 
+        final String offsetName = findShortestOffsetAbbreviation(offsetMs, locale);
+        if (offsetName != null) {
+            return offsetName;
+        }
+        return defaultTimezoneFormat(absHour, absMinute, isNegative);
+    }
+
+    /**
+     * Look up the timezone abbreviation for a specific IANA place at the given offset.
+     * Returns the abbreviation if the place matches its standard or DST offset, else null
+     * (the caller falls back to a generic offset-based lookup).
+     */
+    private static String lookupPlaceZoneAbbreviation(final String placeId, final int offsetMs,
+            final Locale locale) {
+        final java.time.ZoneId placeZone;
+        try {
+            placeZone = java.time.ZoneId.of(placeId);
+        } catch (final java.time.DateTimeException ignored) {
+            // Not a valid IANA ZoneId (e.g. country code "us") — fall through to generic lookup
+            return null;
+        }
+        final java.time.zone.ZoneRules rules = placeZone.getRules();
+        final int standardOffsetMs = rules.getStandardOffset(java.time.Instant.EPOCH)
+                .getTotalSeconds() * 1000;
+        if (offsetMs == standardOffsetMs) {
+            return formatPlaceAbbreviation(placeZone, 1, locale);
+        }
+        if (rules.isFixedOffset()) {
+            return null;
+        }
+        final java.time.Instant summerInstant =
+                java.time.ZonedDateTime.of(2020, 7, 15, 12, 0, 0, 0, placeZone).toInstant();
+        final int dstOffsetMs = rules.getOffset(summerInstant).getTotalSeconds() * 1000;
+        if (offsetMs == dstOffsetMs && rules.isDaylightSavings(summerInstant)) {
+            return formatPlaceAbbreviation(placeZone, 7, locale);
+        }
+        return null;
+    }
+
+    /** Format a place's abbreviation at a given month (1 = January / standard time, 7 = July / DST). */
+    private static String formatPlaceAbbreviation(final java.time.ZoneId placeZone, final int month,
+            final Locale locale) {
+        final java.time.ZonedDateTime zdt =
+                java.time.ZonedDateTime.of(2020, month, 15, 12, 0, 0, 0, placeZone);
+        final String name = zdt.format(TZ_ABBREV_FORMATTER.withLocale(locale));
+        return TZ_NAME_ALPHA_PATTERN.matcher(name).matches() ? name : null;
+    }
+
+    /**
+     * Scan all available IDs at this UTC offset and return the shortest alphabetic
+     * abbreviation. Falls back to {@link #KNOWN_TZ_ABBREVIATIONS} for legacy IDs
+     * that {@code java.time} doesn't recognize as ZoneIds. Returns null if no
+     * alphabetic abbreviation is available.
+     */
+    private static String findShortestOffsetAbbreviation(final int offsetMs, final Locale locale) {
         final String[] ids = TimeZone.getAvailableIDs(offsetMs);
         String bestName = null;
         String bestAbbrevId = null;
         for (final String id : ids) {
-            try {
-                final java.time.ZoneId zid = java.time.ZoneId.of(id);
-                final java.time.ZonedDateTime zdt =
-                        java.time.ZonedDateTime.of(2020, 1, 15, 12, 0, 0, 0, zid);
-                final String name = zdt.format(TZ_ABBREV_FORMATTER.withLocale(locale));
-                if (TZ_NAME_ALPHA_PATTERN.matcher(name).matches()
-                        && (bestName == null || name.length() < bestName.length())) {
-                    bestName = name;
-                }
-            } catch (final java.time.DateTimeException ignored) {
-                if (KNOWN_TZ_ABBREVIATIONS.contains(id)
-                        && (bestAbbrevId == null || id.length() < bestAbbrevId.length())) {
-                    bestAbbrevId = id;
-                }
+            final String name = formatIdAbbreviation(id, locale);
+            if (name != null && (bestName == null || name.length() < bestName.length())) {
+                bestName = name;
+            } else if (name == null && KNOWN_TZ_ABBREVIATIONS.contains(id)
+                    && (bestAbbrevId == null || id.length() < bestAbbrevId.length())) {
+                bestAbbrevId = id;
             }
         }
-        if (bestName != null) {
-            return bestName;
+        return bestName != null ? bestName : bestAbbrevId;
+    }
+
+    /** Format the abbreviation for a TimeZone ID, or null if the ID is not a valid ZoneId. */
+    private static String formatIdAbbreviation(final String id, final Locale locale) {
+        try {
+            final java.time.ZoneId zid = java.time.ZoneId.of(id);
+            final java.time.ZonedDateTime zdt =
+                    java.time.ZonedDateTime.of(2020, 1, 15, 12, 0, 0, 0, zid);
+            final String name = zdt.format(TZ_ABBREV_FORMATTER.withLocale(locale));
+            return TZ_NAME_ALPHA_PATTERN.matcher(name).matches() ? name : null;
+        } catch (final java.time.DateTimeException ignored) {
+            return null;
         }
-        if (bestAbbrevId != null) {
-            return bestAbbrevId;
-        }
-        return defaultTimezoneFormat(absHour, absMinute, isNegative);
     }
 
     private static String formatNumericTimeZone(final TimezonePictureParts parts, final int absHour,
