@@ -231,7 +231,7 @@ public class ExecuteFunction extends BasicFunction {
                     sql = stmtWithSQL.getSql();
                     statement = stmtWithSQL.getStmt();
 
-                    if (statement.getConnection() != connection) {
+                    if (statement.getConnection() != connection) { //NOPMD
                         throw new XPathException(this, "SQL Connection does not match that used for creating the PreparedStatement");
                     }
 
