@@ -21,6 +21,8 @@
  */
 package org.exist.indexing.lucene;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import org.exist.dom.persistent.IStoredNode;
 import org.exist.dom.QName;
 import org.exist.dom.persistent.NodeHandle;
@@ -77,13 +79,9 @@ public class LuceneMatchListener extends AbstractMatchListener {
      * queries share an entry) and is bounded to avoid unbounded growth across long-lived
      * brokers. */
     private static final int QUERY_TERM_CACHE_MAX = 32;
-    private final LinkedHashMap<Query, Map<Object, Query>> queryTermCache =
-            new LinkedHashMap<>(QUERY_TERM_CACHE_MAX, 0.75f, true) {
-                @Override
-                protected boolean removeEldestEntry(final Map.Entry<Query, Map<Object, Query>> eldest) {
-                    return size() > QUERY_TERM_CACHE_MAX;
-                }
-            };
+    private final Cache<Query, Map<Object, Query>> queryTermCache = Caffeine.newBuilder()
+            .maximumSize(QUERY_TERM_CACHE_MAX)
+            .build();
 
     public LuceneMatchListener(final LuceneIndex index, final DBBroker broker, final NodeProxy proxy) {
         this.index = index;
@@ -396,7 +394,7 @@ public class LuceneMatchListener extends AbstractMatchListener {
                 : config.getConfiguredFieldNames();
         final List<Query> uncachedQueries = new ArrayList<>();
         for (final Query q : uniqueQueries) {
-            if (!queryTermCache.containsKey(q)) {
+            if (queryTermCache.getIfPresent(q) == null) {
                 uncachedQueries.add(q);
             }
         }
@@ -442,7 +440,7 @@ public class LuceneMatchListener extends AbstractMatchListener {
     private Map<Object, Query> buildTermMap(final Set<Query> queries, final Set<String> excludedFields) {
         final Map<Object, Query> result = new TreeMap<>();
         for (final Query q : queries) {
-            final Map<Object, Query> rawTerms = queryTermCache.get(q);
+            final Map<Object, Query> rawTerms = queryTermCache.getIfPresent(q);
             if (rawTerms == null) {
                 // Race against eviction is impossible here (single-threaded reset()), but be
                 // defensive in case the cache size becomes 0 in some future revision.
