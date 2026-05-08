@@ -129,7 +129,7 @@
         <jaxb.impl.version>4.0.2</jaxb.impl.version>
         <eclipse.angus-activation.version>2.0.3</eclipse.angus-activation.version>
         <jetty.version>11.0.25</jetty.version>
-        <log4j.version>2.25.4</log4j.version>
+        <log4j.version>2.26.0</log4j.version>
         <lucene.version>10.4.0</lucene.version>
         <milton.version>1.8.1.3</milton.version>
         <milton.servlet.version>1.8.1.3-jakarta5</milton.servlet.version>
