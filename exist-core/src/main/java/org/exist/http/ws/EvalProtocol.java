@@ -71,6 +71,13 @@ public final class EvalProtocol {
     }
 
     /**
+     * Streaming configuration for a query response.
+     */
+    public record StreamConfig(boolean enabled, int chunkSize) {
+        public static final StreamConfig DEFAULT = new StreamConfig(true, DEFAULT_CHUNK_SIZE);
+    }
+
+    /**
      * Parsed client request message.
      */
     public static final class ClientMessage {
@@ -82,8 +89,7 @@ public final class EvalProtocol {
         @Nullable public final String context;
         @Nullable public final String moduleLoadPath;
         public final long maxExecutionTime;
-        public final boolean streaming;
-        public final int chunkSize;
+        public final StreamConfig stream;
 
         ClientMessage(final String action, final String id, @Nullable final String query,
                       @Nullable final Properties serialization,
@@ -91,8 +97,7 @@ public final class EvalProtocol {
                       @Nullable final String context,
                       @Nullable final String moduleLoadPath,
                       final long maxExecutionTime,
-                      final boolean streaming,
-                      final int chunkSize) {
+                      final StreamConfig stream) {
             this.action = action;
             this.id = id;
             this.query = query;
@@ -101,8 +106,7 @@ public final class EvalProtocol {
             this.context = context;
             this.moduleLoadPath = moduleLoadPath;
             this.maxExecutionTime = maxExecutionTime;
-            this.streaming = streaming;
-            this.chunkSize = chunkSize;
+            this.stream = stream;
         }
     }
 
@@ -185,7 +189,8 @@ public final class EvalProtocol {
         }
 
         return new ClientMessage(action, id, query, serialization, variables,
-                context, moduleLoadPath, maxExecutionTime, streaming, chunkSize);
+                context, moduleLoadPath, maxExecutionTime,
+                new StreamConfig(streaming, chunkSize));
     }
 
     private static Properties parseObject(final JsonParser parser) throws IOException {

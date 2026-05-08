@@ -47,6 +47,7 @@ import org.junit.Test;
 
 import jakarta.websocket.*;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -198,7 +199,7 @@ public class EvalWebSocketEndpointTest {
                                 resultLatch.countDown();
                             }
                         } catch (final IOException e) {
-                            throw new RuntimeException(e);
+                            throw new UncheckedIOException(e);
                         }
                     }
                 });
@@ -243,7 +244,7 @@ public class EvalWebSocketEndpointTest {
                                 doneLatch.countDown();
                             }
                         } catch (final IOException e) {
-                            throw new RuntimeException(e);
+                            throw new UncheckedIOException(e);
                         }
                     }
                 });
@@ -283,7 +284,7 @@ public class EvalWebSocketEndpointTest {
                                 errorLatch.countDown();
                             }
                         } catch (final IOException e) {
-                            throw new RuntimeException(e);
+                            throw new UncheckedIOException(e);
                         }
                     }
                 });
@@ -322,7 +323,7 @@ public class EvalWebSocketEndpointTest {
                                 compileLatch.countDown();
                             }
                         } catch (final IOException e) {
-                            throw new RuntimeException(e);
+                            throw new UncheckedIOException(e);
                         }
                     }
                 });
@@ -361,7 +362,7 @@ public class EvalWebSocketEndpointTest {
                                 compileLatch.countDown();
                             }
                         } catch (final IOException e) {
-                            throw new RuntimeException(e);
+                            throw new UncheckedIOException(e);
                         }
                     }
                 });
@@ -402,7 +403,7 @@ public class EvalWebSocketEndpointTest {
                                 }
                             }
                         } catch (final IOException e) {
-                            throw new RuntimeException(e);
+                            throw new UncheckedIOException(e);
                         }
                     }
                 });
@@ -464,7 +465,7 @@ public class EvalWebSocketEndpointTest {
                                 cancelledLatch.countDown();
                             }
                         } catch (final IOException e) {
-                            throw new RuntimeException(e);
+                            throw new UncheckedIOException(e);
                         }
                     }
                 });
@@ -511,7 +512,7 @@ public class EvalWebSocketEndpointTest {
                                 resultLatch.countDown();
                             }
                         } catch (final IOException e) {
-                            throw new RuntimeException(e);
+                            throw new UncheckedIOException(e);
                         }
                     }
                 });
@@ -550,7 +551,7 @@ public class EvalWebSocketEndpointTest {
                                 doneLatch.countDown();
                             }
                         } catch (final IOException e) {
-                            throw new RuntimeException(e);
+                            throw new UncheckedIOException(e);
                         }
                     }
                 });
@@ -593,7 +594,7 @@ public class EvalWebSocketEndpointTest {
                                 resultLatch.countDown();
                             }
                         } catch (final IOException e) {
-                            throw new RuntimeException(e);
+                            throw new UncheckedIOException(e);
                         }
                     }
                 });
@@ -635,7 +636,7 @@ public class EvalWebSocketEndpointTest {
                                 errorLatch.countDown();
                             }
                         } catch (final IOException e) {
-                            throw new RuntimeException(e);
+                            throw new UncheckedIOException(e);
                         }
                     }
                 });
@@ -674,7 +675,7 @@ public class EvalWebSocketEndpointTest {
                                 errorLatch.countDown();
                             }
                         } catch (final IOException e) {
-                            throw new RuntimeException(e);
+                            throw new UncheckedIOException(e);
                         }
                     }
                 });
@@ -707,7 +708,7 @@ public class EvalWebSocketEndpointTest {
                                 errorLatch.countDown();
                             }
                         } catch (final IOException e) {
-                            throw new RuntimeException(e);
+                            throw new UncheckedIOException(e);
                         }
                     }
                 });
@@ -750,7 +751,7 @@ public class EvalWebSocketEndpointTest {
                                 doneLatch.countDown();
                             }
                         } catch (final IOException e) {
-                            throw new RuntimeException(e);
+                            throw new UncheckedIOException(e);
                         }
                     }
                 });
@@ -800,7 +801,7 @@ public class EvalWebSocketEndpointTest {
                                 }
                             }
                         } catch (final IOException e) {
-                            throw new RuntimeException(e);
+                            throw new UncheckedIOException(e);
                         }
                     }
                 });
@@ -857,7 +858,7 @@ public class EvalWebSocketEndpointTest {
                                 doneLatch.countDown();
                             }
                         } catch (final IOException e) {
-                            throw new RuntimeException(e);
+                            throw new UncheckedIOException(e);
                         }
                     }
                 });
@@ -907,7 +908,7 @@ public class EvalWebSocketEndpointTest {
                                 doneLatch.countDown();
                             }
                         } catch (final IOException e) {
-                            throw new RuntimeException(e);
+                            throw new UncheckedIOException(e);
                         }
                     }
                 });
@@ -958,7 +959,7 @@ public class EvalWebSocketEndpointTest {
                                 doneLatch.countDown();
                             }
                         } catch (final IOException e) {
-                            throw new RuntimeException(e);
+                            throw new UncheckedIOException(e);
                         }
                     }
                 });
@@ -1006,7 +1007,7 @@ public class EvalWebSocketEndpointTest {
                                 errorLatch.countDown();
                             }
                         } catch (final IOException e) {
-                            throw new RuntimeException(e);
+                            throw new UncheckedIOException(e);
                         }
                     }
                 });
@@ -1054,7 +1055,7 @@ public class EvalWebSocketEndpointTest {
                                 subscribed = true;
                                 subscribedLatch.countDown();
                             } catch (IOException e) {
-                                throw new RuntimeException(e);
+                                throw new UncheckedIOException(e);
                             }
                         } else if (subscribed && !"ping".equals(message)) {
                             try {
@@ -1090,7 +1091,7 @@ public class EvalWebSocketEndpointTest {
                                     evalDoneLatch.countDown();
                                 }
                             } catch (final IOException e) {
-                                throw new RuntimeException(e);
+                                throw new UncheckedIOException(e);
                             }
                         }
                     });
@@ -1141,7 +1142,7 @@ public class EvalWebSocketEndpointTest {
                                 progressLatch.countDown();
                             }
                         } catch (final IOException e) {
-                            throw new RuntimeException(e);
+                            throw new UncheckedIOException(e);
                         }
                     }
                 });
@@ -1192,7 +1193,7 @@ public class EvalWebSocketEndpointTest {
                                 resultLatch.countDown();
                             }
                         } catch (final IOException e) {
-                            throw new RuntimeException(e);
+                            throw new UncheckedIOException(e);
                         }
                     }
                 });
@@ -1240,7 +1241,7 @@ public class EvalWebSocketEndpointTest {
                                 doneLatch.countDown();
                             }
                         } catch (final IOException e) {
-                            throw new RuntimeException(e);
+                            throw new UncheckedIOException(e);
                         }
                     }
                 });

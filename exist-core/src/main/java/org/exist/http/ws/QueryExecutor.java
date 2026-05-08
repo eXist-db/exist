@@ -89,10 +89,10 @@ public final class QueryExecutor {
                 compiled = xquery.compile(context, new StringSource(msg.query));
             } catch (final XPathException e) {
                 timing.parse = System.currentTimeMillis() - parseStart;
-                reportError(wsSession, evalSession, msg, timing, startTime, e, null, 0, 0);
+                reportError(wsSession, evalSession, msg, timing, startTime, ErrorInfo.of(e));
                 return;
             } catch (final IOException e) {
-                reportError(wsSession, evalSession, msg, timing, startTime, null, e.getMessage(), 0, 0);
+                reportError(wsSession, evalSession, msg, timing, startTime, ErrorInfo.of(e.getMessage()));
                 return;
             }
 
@@ -124,12 +124,12 @@ public final class QueryExecutor {
                 } catch (final TerminatedException e) {
                     timing.evaluate = System.currentTimeMillis() - evalStart;
                     reportTerminationOrError(wsSession, evalSession, msg, timing, startTime,
-                            watchDog, null, e.getMessage(), e.getLine(), e.getColumn());
+                            watchDog, ErrorInfo.of(e.getMessage(), e.getLine(), e.getColumn()));
                     return;
                 } catch (final XPathException e) {
                     timing.evaluate = System.currentTimeMillis() - evalStart;
                     reportTerminationOrError(wsSession, evalSession, msg, timing, startTime,
-                            watchDog, e, null, 0, 0);
+                            watchDog, ErrorInfo.of(e));
                     return;
                 }
 
@@ -145,9 +145,9 @@ public final class QueryExecutor {
                         ? msg.serialization : new Properties();
 
                 try {
-                    if (msg.streaming && itemCount > msg.chunkSize) {
+                    if (msg.stream.enabled() && itemCount > msg.stream.chunkSize()) {
                         streamResults(wsSession, msg.id, broker, result, outputProperties,
-                                msg.chunkSize, timing, startTime, watchDog);
+                                msg.stream.chunkSize(), timing, startTime, watchDog);
                     } else {
                         final String serialized = serializeAll(broker, result, outputProperties);
                         timing.serialize = System.currentTimeMillis() - serStart;
@@ -159,7 +159,7 @@ public final class QueryExecutor {
                             null, itemCount, System.currentTimeMillis() - startTime);
                 } catch (final SAXException | XPathException e) {
                     timing.serialize = System.currentTimeMillis() - serStart;
-                    reportError(wsSession, evalSession, msg, timing, startTime, null, e.getMessage(), 0, 0);
+                    reportError(wsSession, evalSession, msg, timing, startTime, ErrorInfo.of(e.getMessage()));
                 }
             } finally {
                 evalSession.unregisterQuery(msg.id);
@@ -167,19 +167,36 @@ public final class QueryExecutor {
             }
 
         } catch (final EXistException | PermissionDeniedException e) {
-            reportError(wsSession, evalSession, msg, timing, startTime, null, e.getMessage(), 0, 0);
+            reportError(wsSession, evalSession, msg, timing, startTime, ErrorInfo.of(e.getMessage()));
+        }
+    }
+
+    /**
+     * Bundle describing a query failure (either a typed XPathException
+     * or a free-form message + source location).
+     */
+    private record ErrorInfo(@Nullable XPathException xpe,
+                             @Nullable String message,
+                             int line, int column) {
+        static ErrorInfo of(final XPathException xpe) {
+            return new ErrorInfo(xpe, null, 0, 0);
+        }
+        static ErrorInfo of(final String message, final int line, final int column) {
+            return new ErrorInfo(null, message, line, column);
+        }
+        static ErrorInfo of(final String message) {
+            return new ErrorInfo(null, message, 0, 0);
         }
     }
 
     private void reportError(final Session wsSession, final EvalSession evalSession,
                              final EvalProtocol.ClientMessage msg, final EvalProtocol.Timing timing,
-                             final long startTime, @Nullable final XPathException xpe,
-                             @Nullable final String message, final int line, final int column) {
+                             final long startTime, final ErrorInfo error) {
         timing.total = System.currentTimeMillis() - startTime;
-        if (xpe != null) {
-            sendError(wsSession, msg.id, xpe, timing);
+        if (error.xpe() != null) {
+            sendError(wsSession, msg.id, error.xpe(), timing);
         } else {
-            sendError(wsSession, msg.id, null, message, line, column, timing);
+            sendError(wsSession, msg.id, null, error.message(), error.line(), error.column(), timing);
         }
         QueryMonitorBroadcaster.broadcastEvent("error", msg.id,
                 evalSession.getSubject().getName(), msg.query, null, 0, timing.total);
@@ -189,16 +206,14 @@ public final class QueryExecutor {
                                           final EvalProtocol.ClientMessage msg,
                                           final EvalProtocol.Timing timing, final long startTime,
                                           final XQueryWatchDog watchDog,
-                                          @Nullable final XPathException xpe,
-                                          @Nullable final String message,
-                                          final int line, final int column) {
+                                          final ErrorInfo error) {
         if (watchDog.isTerminating()) {
             timing.total = System.currentTimeMillis() - startTime;
             sendCancelled(wsSession, msg.id, 0, timing);
             QueryMonitorBroadcaster.broadcastEvent("cancelled", msg.id,
                     evalSession.getSubject().getName(), msg.query, null, 0, timing.total);
         } else {
-            reportError(wsSession, evalSession, msg, timing, startTime, xpe, message, line, column);
+            reportError(wsSession, evalSession, msg, timing, startTime, error);
         }
     }
 
