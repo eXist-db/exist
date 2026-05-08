@@ -128,110 +128,130 @@ public class UnionStepDistributionOptimizerTest {
         assertEquals("Optimized size: " + body, expected, optimized.getSize());
     }
 
+    /** {@code //(book | journal)} should match all books and journals. */
     @Test
     public void binaryUnionUnderDescendant() throws XMLDBException {
-        // //(book | journal) should match all books and journals
         assertCount(3, "$d//(book | journal)");
     }
 
+    /** {@code /library/(book | article)} reaches one of each at the top level. */
     @Test
     public void binaryUnionUnderChild() throws XMLDBException {
-        // /library/(book | article) reaches one of each at the top level
         assertCount(3, "$d/library/(book | article)");
     }
 
+    /**
+     * {@code //(book | journal | article)} — the n-ary case parses as
+     * {@code Union(Union(book, journal), article)}; distribution must produce
+     * three independent paths. Fixture: 2 books + 1 journal + 2 articles
+     * (one nested inside the journal, one top-level) = 5.
+     */
     @Test
     public void naryUnionThreeBranches() throws XMLDBException {
-        // //(book | journal | article) -- the n-ary case parses as
-        // Union(Union(book, journal), article); distribution must produce
-        // three independent paths. Fixture: 2 books + 1 journal +
-        // 2 articles (one nested inside the journal, one top-level) = 5.
         assertCount(5, "$d//(book | journal | article)");
     }
 
+    /**
+     * Four-branch union to exercise deeper recursion in the distribution
+     * helper. Fixture: 4 titles + 4 authors + 5 paras + 3 chapters = 16.
+     */
     @Test
     public void naryUnionFourBranches() throws XMLDBException {
-        // four-branch union to exercise deeper recursion in the
-        // distribution helper. Fixture: 4 titles + 4 authors + 5 paras +
-        // 3 chapters = 16.
         assertCount(16, "$d//(title | author | para | chapter)");
     }
 
+    /**
+     * {@code outer//(A | B)/c} shape — the optimizer must preserve the
+     * trailing step on every distributed branch. Fixture: 4 elements with
+     * a direct child {@code <title>} (b1, b2, j1, a1).
+     */
     @Test
     public void unionWithSuffixStep() throws XMLDBException {
-        // outer//(A | B)/c shape -- the optimizer must preserve the
-        // trailing step on every distributed branch. Fixture: 4 elements
-        // with a direct child <title> (b1, b2, j1, a1).
         assertCount(4, "$d//(book | journal | article)/title");
     }
 
+    /** {@code /library/(book | journal)/title} — prefix and trailing step. */
     @Test
     public void unionWithPrefixAndSuffix() throws XMLDBException {
-        // /library/(book | journal)/title -- prefix and trailing step
         assertCount(3, "$d/library/(book | journal)/title");
     }
 
+    /**
+     * A predicate that contains a union step expression should still
+     * produce the correct count — the rewrite needs to leave inner path
+     * expressions inside predicates evaluable.
+     */
     @Test
     public void unionInsidePredicate() throws XMLDBException {
-        // a predicate that contains a union step expression should still
-        // produce the correct count -- the rewrite needs to leave inner
-        // path expressions inside predicates evaluable
         assertOptimizerParity("$d//book[(title | author)]");
     }
 
+    /**
+     * Regression for {@code UnionTest.unionInPredicate_*}: the union step
+     * lives INSIDE a predicate's path expression. The predicate engine
+     * tracks candidate-to-result mapping via per-step contextId (see
+     * {@code Predicate.selectByNodeSet}). Rewriting the predicate's inner
+     * path into a Union loses the contextId thread, so distribution must
+     * be suppressed when {@code predicates > 0}.
+     *
+     * <p>Uses {@code exists()} to keep the predicate body a node-set
+     * expression (avoids an unrelated pre-existing GeneralComparison cast
+     * issue when the right-hand side is a sequence literal).
+     */
     @Test
     public void unionStepInsidePredicatePath() throws XMLDBException {
-        // Regression for UnionTest.unionInPredicate_*: the union step lives
-        // INSIDE a predicate's path expression. The predicate engine tracks
-        // candidate-to-result mapping via per-step contextId (see
-        // Predicate.selectByNodeSet). Rewriting the predicate's inner path
-        // into a Union loses the contextId thread, so distribution must be
-        // suppressed when predicates > 0.
-        // Use exists() to keep the predicate body a node-set expression
-        // (avoids an unrelated pre-existing GeneralComparison cast issue
-        // when the right-hand side is a sequence literal).
         assertCount(2, "$d//book[exists(chapter/(para | title))]");
     }
 
+    /**
+     * Each branch carries its own predicate — distribution must preserve
+     * per-branch filtering.
+     */
     @Test
     public void unionWithFilteredBranches() throws XMLDBException {
-        // each branch carries its own predicate -- distribution must
-        // preserve per-branch filtering
         assertCount(2, "$d//(book[@id='b1'] | journal[@id='j1'])");
     }
 
+    /** Attribute axis branches: {@code //(@id | @n)}. */
     @Test
     public void attributeUnionUnderDescendant() throws XMLDBException {
-        // attribute axis branches: //(@id | @n)
         assertCount(7, "$d//(@id | @n)");
     }
 
+    /**
+     * A variable-bound context followed by {@code //(A|B)} — the outer
+     * prefix includes a variable reference and a descendant-or-self step.
+     */
     @Test
     public void unionUnderVariableContextPath() throws XMLDBException {
-        // a variable-bound context followed by //(A|B) -- the outer prefix
-        // includes a variable reference and a descendant-or-self step
         assertOptimizerParity("$d/library//(book | journal)");
     }
 
+    /**
+     * A name that doesn't exist in the fixture — distribution must still
+     * return the existing branch's matches (just b1).
+     */
     @Test
     public void emptyUnionBranchProducesNoMatch() throws XMLDBException {
-        // a name that doesn't exist in the fixture -- distribution must
-        // still return the existing branch's matches (just b1)
         assertCount(1, "$d//(book[@id='b1'] | nonexistent)");
     }
 
+    /**
+     * {@code //(book/title | journal/title)} — each branch is a multi-step
+     * path; both steps in each branch are LocationSteps so the rewrite
+     * applies and each branch gets the outer descendant prefix.
+     */
     @Test
     public void nestedPathInsideUnionBranch() throws XMLDBException {
-        // //(book/title | journal/title) -- each branch is a multi-step
-        // path; both steps in each branch are LocationSteps so the rewrite
-        // applies and each branch gets the outer descendant prefix
         assertCount(3, "$d//(book/title | journal/title)");
     }
 
+    /**
+     * {@code |} is a set union with document-order sort and dedup. The
+     * distributed form must preserve this ordering.
+     */
     @Test
     public void unionPreservesDocumentOrder() throws XMLDBException {
-        // | is a set union with document-order sort and dedup. The
-        // distributed form must preserve this ordering.
         final XQueryService svc = server.getRoot().getService(XQueryService.class);
         final String body = "let $d := doc('/db/" + COLLECTION_NAME + "/" + DOC_NAME + "') "
                 + "return string-join($d//(book | journal | article)/@id, ',')";
@@ -240,35 +260,45 @@ public class UnionStepDistributionOptimizerTest {
         assertEquals(baseline, optimized);
     }
 
+    /**
+     * A FLWOR body containing a union-step path — the optimizer visits
+     * FLWOR-internal expressions; the rewrite must work when the outer
+     * path's parent is not a {@code RewritableExpression}.
+     */
     @Test
     public void unionInsideForLoopBody() throws XMLDBException {
-        // a FLWOR body containing a union-step path -- the optimizer
-        // visits FLWOR-internal expressions; the rewrite must work when
-        // the outer path's parent is not a RewritableExpression
         assertOptimizerParity(
                 "for $b in $d//book return $b//(title | chapter/para)");
     }
 
+    /**
+     * {@code count()} argument is the union path; the parent of the
+     * rewrite target is a {@code FunctionCall}, not a
+     * {@code RewritableExpression}.
+     */
     @Test
     public void unionInsideFunctionCallArgument() throws XMLDBException {
-        // count() argument is the union path; the parent of the rewrite
-        // target is a FunctionCall, not a RewritableExpression
         assertOptimizerParity("count($d//(book | journal | article))");
     }
 
+    /**
+     * {@code //(book | book)} — both branches match the same nodes; the
+     * distributed Union still dedups (per {@code CombiningExpression} eval).
+     */
     @Test
     public void redundantUnionDeduped() throws XMLDBException {
-        // //(book | book) -- both branches match the same nodes; the
-        // distributed Union still dedups (per CombiningExpression eval)
         assertCount(2, "$d//(book | book)");
     }
 
+    /**
+     * Replicates the search-everywhere shape from the function-documentation
+     * app: an outer {@code //(...)} over branches that mix single predicated
+     * LocationSteps with multi-step paths. line-o reported on PR #6310 that
+     * this query takes 9s and {@code PathExpr.replaceAllSteps} is never
+     * called.
+     */
     @Test
     public void fundocsShapeMixedBranches() throws XMLDBException {
-        // Replicates the search-everywhere shape from the function-documentation
-        // app: an outer //(...) over branches that mix single predicated
-        // LocationSteps with multi-step paths. line-o reported on PR #6310 that
-        // this query takes 9s and PathExpr.replaceAllSteps is never called.
         final String body = """
                 let $d := doc('/db/%s/%s')
                 return $d//(
@@ -441,14 +471,17 @@ public class UnionStepDistributionOptimizerTest {
         }
     }
 
+    /**
+     * {@code outer/(A|B)/string()} — the suffix returns strings, not nodes.
+     * Distribution would push {@code /string()} into each branch, making the
+     * resulting Union try to combine string sequences and fail
+     * {@code CombiningExpression}'s node-only invariant. The optimizer must
+     * detect this and skip distribution for this shape.
+     *
+     * <p>(Mirrors a regression caught by xmlts {@code UnionInPath} tests.)
+     */
     @Test
     public void unionWithNonNodeReturningSuffix() throws XMLDBException {
-        // outer/(A|B)/string() -- the suffix returns strings, not nodes.
-        // Distribution would push /string() into each branch, making the
-        // resulting Union try to combine string sequences and fail
-        // CombiningExpression's node-only invariant. The optimizer must
-        // detect this and skip distribution for this shape.
-        // (Mirrors a regression caught by xmlts UnionInPath tests.)
         assertOptimizerParity(
                 "let $a := <el><el1/><el2 att='val'/><el3/></el> "
                         + "return $a/el2/(@*[1]|@*[1])/string()");
