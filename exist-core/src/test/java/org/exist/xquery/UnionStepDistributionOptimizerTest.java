@@ -22,11 +22,13 @@
 package org.exist.xquery;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
+import org.exist.xmldb.EXistXQueryService;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.xmldb.api.base.Collection;
+import org.xmldb.api.base.CompiledExpression;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.CollectionManagementService;
@@ -34,6 +36,9 @@ import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XQueryService;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Tests for the union-step distribution rewrite in
@@ -277,6 +282,163 @@ public class UnionStepDistributionOptimizerTest {
         final ResourceSet baseline = svc.query(NO_OPTIMIZE + body);
         final ResourceSet optimized = svc.query(OPTIMIZE + body);
         assertEquals("Optimized must match baseline", baseline.getSize(), optimized.getSize());
+    }
+
+    /**
+     * AST-shape regression: assert that after the optimizer runs on a
+     * parenthesised-union path expression like {@code $d//(A[pred] | B[pred])},
+     * the resulting AST has been distributed -- the {@code Union} now sits
+     * in step position with one fully-formed PathExpr branch per original
+     * union arm, and the parser-produced parens-PathExpr wrapper that
+     * previously contained the union is gone from the tree.
+     *
+     * <p>This test guards three concrete regressions:
+     * <ol>
+     *   <li>The optimization stops firing entirely (parens-PathExpr wrapper
+     *       remains in the tree, no Union appears at the path level).</li>
+     *   <li>The optimization fires but produces a Union with the wrong
+     *       number of branches (e.g. nested-Union flattening breaks).</li>
+     *   <li>A distributed branch loses its leading prefix steps -- a
+     *       regression where {@link Optimizer#distributeBranch} stops
+     *       copying outer prefix into each branch and the rewritten
+     *       query no longer reaches the same nodes.</li>
+     * </ol>
+     *
+     * <p>This test exists because the prior test {@code fundocsShapeMixedBranches}
+     * passed on a broken intermediate fix (commit 1621fbafbf, which ran
+     * union distribution AFTER super.visitPathExpr descended) where the
+     * rewrite fired but the rewritten form ran no faster than the original
+     * 9s parens form. Result-set equivalence held either way. Stronger
+     * AST-shape assertions catch shape regressions at unit-test time
+     * even when result-set parity is preserved.
+     *
+     * <p>Caveat: this test does NOT catch the specific 1621fbafbf bug
+     * (post-descent ordering wrapped predicated steps against the
+     * parens-context before distribution moved them; the resulting
+     * structural tree is identical to the working form). Catching that
+     * regression structurally requires either a perf-bound assertion
+     * or wiring through visitor-call-order instrumentation -- both more
+     * brittle than this shape check. The shape check covers the broader
+     * class of "did distribution happen at all and produce a well-formed
+     * Union" regressions.
+     */
+    @Test
+    public void parensFormDistributesToUnionShape() throws XMLDBException {
+        final EXistXQueryService svc = server.getRoot().getService(EXistXQueryService.class);
+        final String prefix = "let $d := doc('/db/" + COLLECTION_NAME + "/" + DOC_NAME + "') return ";
+        final String parens = OPTIMIZE + prefix
+                + "$d//(book[contains(title, 'O')] | journal[contains(title, 'T')])";
+
+        final CompiledExpression compiled = svc.compile(parens);
+        // execute() triggers analyze + optimize on the compiled tree.
+        svc.execute(compiled);
+        final PathExpr root = (PathExpr) compiled;
+
+        final Union union = findUnion(root);
+        assertNotNull("After optimization, the parens form must contain a Union -- "
+                + "distribution did not fire. AST: " + ExpressionDumperHelper.dump(root), union);
+
+        // Distribution must produce one branch per original union arm
+        // (binary case here: 2 branches).
+        final java.util.List<PathExpr> branches = flattenUnionBranches(union);
+        assertEquals("Distributed Union should have 2 branches (one per original union arm). AST: "
+                + ExpressionDumperHelper.dump(union), 2, branches.size());
+
+        // Each branch must contain the original element name (book or journal).
+        // The branch's last LocationStep is whichever was the original union
+        // arm; assert the qnames cover the expected set so we catch regressions
+        // where distribution drops or duplicates branches.
+        final java.util.Set<String> branchNames = new java.util.HashSet<>();
+        for (final PathExpr branch : branches) {
+            for (int i = 0; i < branch.getLength(); i++) {
+                final Expression step = branch.getExpression(i);
+                final LocationStep ls;
+                if (step instanceof final LocationStep loc) {
+                    ls = loc;
+                } else if (step instanceof final ExtensionExpression ext
+                        && ext.getExpression() instanceof final LocationStep loc) {
+                    ls = loc;
+                } else {
+                    continue;
+                }
+                if (ls.getTest().getName() != null) {
+                    branchNames.add(ls.getTest().getName().getLocalPart());
+                }
+            }
+        }
+        assertTrue("Distributed branch must reference 'book': " + branchNames
+                        + " | AST: " + ExpressionDumperHelper.dump(union),
+                branchNames.contains("book"));
+        assertTrue("Distributed branch must reference 'journal': " + branchNames
+                        + " | AST: " + ExpressionDumperHelper.dump(union),
+                branchNames.contains("journal"));
+
+        // Each distributed branch must include the outer prefix steps (the
+        // VarRef $d and the descendant-or-self step from `//`). A regression
+        // in distributeBranch that drops the prefix would still produce a
+        // Union but the branches would only have the original union arm,
+        // and the result set would change.
+        for (final PathExpr branch : branches) {
+            assertTrue("Distributed branch is missing outer prefix steps "
+                            + "(expected at least 2 steps: VarRef + LocationStep + the branch arm). "
+                            + "Branch length=" + branch.getLength()
+                            + " | AST: " + ExpressionDumperHelper.dump(branch),
+                    branch.getLength() >= 2);
+            assertTrue("First step of distributed branch must be the outer VarRef $d "
+                            + "or a fused descendant LocationStep -- not the inner union arm directly. "
+                            + "Branch AST: " + ExpressionDumperHelper.dump(branch),
+                    branch.getExpression(0) instanceof VariableReference
+                            || branch.getExpression(0) instanceof LocationStep);
+        }
+    }
+
+    /**
+     * Walk an expression tree returning the first Union found, or null if
+     * none. Uses DefaultExpressionVisitor's visitor-driven descent so
+     * wrapper types (LetExpr, FilteredExpression, ...) are handled by their
+     * canonical visit methods rather than the inherited getSubExpression
+     * default, which returns 0 for many of them.
+     */
+    private static Union findUnion(final Expression e) {
+        if (e == null) {
+            return null;
+        }
+        final Union[] found = new Union[1];
+        e.accept(new DefaultExpressionVisitor() {
+            @Override
+            public void visitUnionExpr(final Union union) {
+                if (found[0] == null) {
+                    found[0] = union;
+                }
+            }
+        });
+        return found[0];
+    }
+
+    private static java.util.List<PathExpr> flattenUnionBranches(final Union u) {
+        final java.util.List<PathExpr> out = new java.util.ArrayList<>();
+        flattenBranchInto(u.getLeft(), out);
+        flattenBranchInto(u.getRight(), out);
+        return out;
+    }
+
+    private static void flattenBranchInto(final PathExpr branch, final java.util.List<PathExpr> out) {
+        if (branch.getLength() == 1 && branch.getExpression(0) instanceof final Union nested) {
+            flattenBranchInto(nested.getLeft(), out);
+            flattenBranchInto(nested.getRight(), out);
+            return;
+        }
+        out.add(branch);
+    }
+
+    /**
+     * Wrapper to keep the test file's static imports tidy. Calls the
+     * {@link org.exist.xquery.util.ExpressionDumper#dump(Expression)} helper.
+     */
+    private static final class ExpressionDumperHelper {
+        static String dump(final Expression e) {
+            return org.exist.xquery.util.ExpressionDumper.dump(e);
+        }
     }
 
     @Test

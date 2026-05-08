@@ -390,15 +390,34 @@ public class Optimizer extends DefaultExpressionVisitor {
         final PathExpr distributed = new PathExpr(context);
         distributed.setLocation(branch.getLine(), branch.getColumn());
         for (int j = 0; j < unionStepIndex; j++) {
-            distributed.add(cloneLocationStepIfPossible(outer.getExpression(j)));
+            addStepWithParent(distributed, cloneLocationStepIfPossible(outer.getExpression(j)));
         }
         for (int j = 0; j < branch.getLength(); j++) {
-            distributed.add(branch.getExpression(j));
+            addStepWithParent(distributed, branch.getExpression(j));
         }
         for (int j = unionStepIndex + 1; j < outer.getLength(); j++) {
-            distributed.add(cloneLocationStepIfPossible(outer.getExpression(j)));
+            addStepWithParent(distributed, cloneLocationStepIfPossible(outer.getExpression(j)));
         }
         return distributed;
+    }
+
+    /**
+     * Add {@code step} to {@code branch} and update its {@code parent}
+     * pointer. Setting the parent matters BEFORE the post-distribution
+     * super-descent: visitLocationStep reads {@code locationStep.getParentExpression()}
+     * to find the {@code RewritableExpression} it should call replace() on
+     * when wrapping a predicated step in {@code (#exist:optimize#)}. Without
+     * this, the LocationStep's parent still points at the original
+     * pre-distribution branch PathExpr (or is null for cloned prefix steps),
+     * so the wrap is inserted into a dead branch and the new branches end
+     * up unwrapped -- a 5x perf miss observed empirically against the
+     * manually-rewritten form.
+     */
+    private void addStepWithParent(final PathExpr branch, final Expression step) {
+        branch.add(step);
+        if (step instanceof final LocationStep ls) {
+            ls.setParent(branch);
+        }
     }
 
     /**
