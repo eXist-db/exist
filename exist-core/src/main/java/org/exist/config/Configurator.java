@@ -1376,13 +1376,14 @@ public class Configurator {
         if (configuration == null) {
             return;
         }
-        
-        if (hotConfigs.containsValue(configuration)) {
-            for (final Entry<FullXmldbURI, Configuration> entry : hotConfigs.entrySet()) {
-                if (entry.getValue() == configuration) {
-                    hotConfigs.remove(entry.getKey());
-                    return;
-                }
+
+        // Reference equality (==) is intentional: do NOT precheck with
+        // hotConfigs.containsValue(), which calls ConfigurationImpl.equals()
+        // on every entry and turns realm load into O(N^2).
+        for (final Iterator<Configuration> it = hotConfigs.values().iterator(); it.hasNext();) {
+            if (it.next() == configuration) {
+                it.remove();
+                break;
             }
         }
     }
