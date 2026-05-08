@@ -85,10 +85,10 @@ function wat:user-defined-wrong-arity-message-mentions-function() {
 declare %test:assertTrue
 function wat:user-defined-wrong-arity-message-mentions-signature() {
     try {
-        util:eval(
-            "declare function local:f($a as xs:integer) as xs:integer { $a };" ||
-            " local:f()"
-        )
+        util:eval("
+            declare function local:f($a as xs:integer) as xs:integer { $a };
+            local:f()
+        ")
     } catch * {
         contains($err:description, "local:f")
     }
