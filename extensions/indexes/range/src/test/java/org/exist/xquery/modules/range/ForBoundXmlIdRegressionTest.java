@@ -37,6 +37,8 @@ import org.exist.xquery.XPathException;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.Sequence;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
@@ -83,16 +85,35 @@ public class ForBoundXmlIdRegressionTest {
     private static final int N_ITEMS = 100;
     private static final int N_KEYS = 5;
 
+    private static final XmldbURI COL_LEGACY = XmldbURI.ROOT_COLLECTION_URI.append("forbound-xmlid-L");
+    private static final XmldbURI COL_RANGE = XmldbURI.ROOT_COLLECTION_URI.append("forbound-xmlid-N");
+
+    @BeforeClass
+    public static void setupCollections() throws Exception {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+            createCollectionAndStore(pool, broker, COL_LEGACY, CONFIG_LEGACY_ONLY);
+            createCollectionAndStore(pool, broker, COL_RANGE, CONFIG_RANGE_INDEX);
+        }
+    }
+
+    @AfterClass
+    public static void teardownCollections() {
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        cleanup(pool, COL_LEGACY);
+        cleanup(pool, COL_RANGE);
+    }
+
     @Test
     public void legacyAutoIndexOnlyReturnsExpectedHits() throws Exception {
-        final long[] hits = runScenario("L", CONFIG_LEGACY_ONLY, N_KEYS);
+        final long[] hits = runScenario(COL_LEGACY, N_KEYS);
         assertEquals("L literal expected 1 hit", 1, hits[0]);
         assertEquals("L for-bound expected " + N_KEYS + " hits", N_KEYS, hits[1]);
     }
 
     @Test
     public void rangeIndexConfiguredReturnsCorrectHits() throws Exception {
-        final long[] hits = runScenario("N", CONFIG_RANGE_INDEX, N_KEYS);
+        final long[] hits = runScenario(COL_RANGE, N_KEYS);
         assertEquals("N literal expected 1 hit", 1, hits[0]);
         assertEquals("N for-bound expected " + N_KEYS + " hits", N_KEYS, hits[1]);
     }
@@ -100,25 +121,17 @@ public class ForBoundXmlIdRegressionTest {
     /**
      * @return {@code [literalHits, forBoundHits]}
      */
-    private long[] runScenario(final String tag, final String configXml, final int nKeys) throws Exception {
+    private long[] runScenario(final XmldbURI col, final int nKeys) throws Exception {
+        final String keysExpr = "(for $i in 0 to %d return \"id\" || $i)".formatted(nKeys - 1);
+        final String literal = """
+                collection("%s")//*[@xml:id = "id0"]""".formatted(col);
+        final String forBound = """
+                for $v in %s
+                return collection("%s")//*[@xml:id = $v]""".formatted(keysExpr, col);
+
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
-        final XmldbURI col = XmldbURI.ROOT_COLLECTION_URI.append("forbound-xmlid-" + tag);
-        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
-            createCollectionAndStore(pool, broker, col, configXml);
-        }
-
-        final String keysExpr = IntStream.range(0, nKeys)
-                .mapToObj(i -> "\"id" + i + "\"")
-                .collect(Collectors.joining(",", "(", ")"));
-
-        final String literal = "collection(\"" + col + "\")//*[@xml:id = \"id0\"]";
-        final String forBound = "for $v in " + keysExpr
-                + " return collection(\"" + col + "\")//*[@xml:id = $v]";
-
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
             return new long[] { run(broker, literal), run(broker, forBound) };
-        } finally {
-            cleanup(pool, col);
         }
     }
 
@@ -131,8 +144,8 @@ public class ForBoundXmlIdRegressionTest {
         return r.getItemCount();
     }
 
-    private void createCollectionAndStore(final BrokerPool pool, final DBBroker broker,
-                                          final XmldbURI col, final String configXml) throws Exception {
+    private static void createCollectionAndStore(final BrokerPool pool, final DBBroker broker,
+                                                 final XmldbURI col, final String configXml) throws Exception {
         final TransactionManager tm = pool.getTransactionManager();
         try (final Txn txn = tm.beginTransaction()) {
             final Collection collection = broker.getOrCreateCollection(txn, col);
@@ -154,7 +167,7 @@ public class ForBoundXmlIdRegressionTest {
         }
     }
 
-    private void cleanup(final BrokerPool pool, final XmldbURI col) {
+    private static void cleanup(final BrokerPool pool, final XmldbURI col) {
         final TransactionManager tm = pool.getTransactionManager();
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()));
              final Txn txn = tm.beginTransaction();
