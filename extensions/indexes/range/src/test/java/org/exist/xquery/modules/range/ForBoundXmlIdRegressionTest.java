@@ -122,12 +122,11 @@ public class ForBoundXmlIdRegressionTest {
      * @return {@code [literalHits, forBoundHits]}
      */
     private long[] runScenario(final XmldbURI col, final int nKeys) throws Exception {
-        final String keysExpr = "(for $i in 0 to %d return \"id\" || $i)".formatted(nKeys - 1);
         final String literal = """
                 collection("%s")//*[@xml:id = "id0"]""".formatted(col);
         final String forBound = """
-                for $v in %s
-                return collection("%s")//*[@xml:id = $v]""".formatted(keysExpr, col);
+                for $v in (for $i in 0 to %d return "id" || $i)
+                return collection("%s")//*[@xml:id = $v]""".formatted(nKeys - 1, col);
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {

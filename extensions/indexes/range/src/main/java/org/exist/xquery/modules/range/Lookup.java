@@ -442,11 +442,10 @@ public class Lookup extends Function implements Optimizable, IndexUseReporter {
 //            LOG.info("eval plain took " + (System.currentTimeMillis() - start));
         } else {
             contextStep.setPreloadedData(preselectResult.getDocumentSet(), preselectResult);
-            // Use effectiveContextSequence (the per-item context when contextItem is set) so
-            // BOOLEAN-mode per-item predicate evaluation actually checks the per-item node.
-            // With contextSequence (the full preloaded set), every per-item call returned the
-            // same non-empty NodeSet, silently dropping the value comparison from a for-bound
-            // variable: //x[@indexed = $v] over-returned by ~scale factor for each outer iter.
+            // Use effectiveContextSequence instead of contextSequence here. With contextSequence
+            // (the full preloaded set), a lookup inside a predicate would "see" the entire nodeSet
+            // for each iteration in a query like //x[@indexed-attribute = $v] and return duplicate
+            // hits.
             result = getArgument(0).eval(effectiveContextSequence, contextItem).toNodeSet();
         }
         return result;
