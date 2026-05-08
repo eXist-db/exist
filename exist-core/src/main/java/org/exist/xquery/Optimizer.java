@@ -156,84 +156,83 @@ public class Optimizer extends DefaultExpressionVisitor {
         }
     }
 
+    /**
+     * Two related rewrites for parenthesised step expressions. The parser
+     * produces a wrapping PathExpr for any parenthesised step expression
+     * without outer predicates. At runtime the engine treats such wrapped
+     * steps as generic expressions and materialises the descendant axis
+     * instead of dispatching by qname through the structural index -- a
+     * ~50x slowdown at scale, since the generic path walks every descendant
+     * node while an indexed step looks the qname up directly.
+     *
+     * <p>Case A -- {@code //(name)} -> {@code //name}: the wrapping PathExpr
+     * contains a single LocationStep; lift it out.
+     *
+     * <p>Case B -- {@code outer//(A | B [| C ...])} ->
+     * {@code outer//A | outer//B [| outer//C ...]}: the wrapping PathExpr
+     * contains a single Union (a tree of Unions for n-ary cases). Distribute
+     * the outer path over each branch so each branch dispatches through the
+     * structural index by qname. Equivalent to the manual user-land rewrite
+     * applications have to do today.
+     *
+     * <p>The wrapping PathExpr by definition has no predicates of its own
+     * (predicates would have produced a FilteredExpression, handled by
+     * visitFilteredExpr) so both rewrites are semantics-preserving.
+     *
+     * <p>Case B safety guards (see method body):
+     * <ul>
+     *   <li><em>predicates == 0</em>: a Union built here doesn't propagate
+     *       the enclosing predicate's contextId through its branches, so the
+     *       per-step candidate-to-result mapping is lost and the predicate
+     *       engine throws "context is missing for node" (see
+     *       {@code Predicate.selectByNodeSet}).</li>
+     *   <li><em>{@link #hasOnlyLocationStepSuffix}</em>: distribution moves
+     *       suffix steps INTO each branch. A non-node-returning suffix like
+     *       {@code /string()} would fail the surrounding Union's
+     *       operand-must-be-a-node-sequence invariant.</li>
+     *   <li><em>{@link #isDistributableUnion}</em>: every leaf branch must
+     *       consist only of step-like node expressions (see
+     *       {@link #isStepLikeNodeExpr}).</li>
+     * </ul>
+     *
+     * <p>Note: super.visitPathExpr has already descended into the wrapping
+     * PathExpr's children before this loop runs. {@link #visitLocationStep}
+     * may have wrapped predicate-bearing LocationSteps inside union branches
+     * in {@code ExtensionExpression(#exist:optimize#)} pragmas. Branch
+     * recognition therefore accepts both raw LocationSteps and those
+     * pragma-wrapped steps; the wrapper preserves node-yielding semantics
+     * so distribution remains safe.
+     */
     @Override
     public void visitPathExpr(final PathExpr pathExpr) {
         super.visitPathExpr(pathExpr);
 
-        // Two related rewrites for parenthesised step expressions. The parser
-        // produces a wrapping PathExpr for any parenthesised step expression
-        // without outer predicates. At runtime the engine treats such wrapped
-        // steps as generic expressions and materialises the descendant axis
-        // instead of dispatching by qname through the structural index. The
-        // performance gap is large (~50x at scale) because a generic
-        // descendant-axis materialisation walks every descendant node and
-        // applies the inner expression as a node-predicate, while an indexed
-        // step looks the qname up directly.
-        //
-        // Case A: `//(name)` -> `//name`. The wrapping PathExpr contains a
-        // single LocationStep; lift it out so it dispatches through the
-        // structural index like the unparenthesised form.
-        //
-        // Case B: `outer//(A | B [| C ...])` -> `outer//A | outer//B [| outer//C ...]`.
-        // The wrapping PathExpr contains a single Union (a tree of Unions for
-        // n-ary cases). Distribute the outer path over each branch so each
-        // branch dispatches through the structural index by qname. This is
-        // the AST-level equivalent of the manual user-land rewrite that
-        // applications have to do today.
-        //
-        // The wrapping PathExpr by definition has no predicates of its own
-        // (predicates would have produced a FilteredExpression, handled by
-        // visitFilteredExpr below) so both rewrites are semantics-preserving.
         boolean rewroteAny = true;
         while (rewroteAny) {
             rewroteAny = false;
             for (int i = 0; i < pathExpr.getLength(); i++) {
                 final Expression step = pathExpr.getExpression(i);
-                // Exact class check: PathExpr has many semantically-loaded
-                // subclasses (UnaryExpr, BinaryOp, OpNumeric, ConcatExpr,
-                // EnclosedExpr, LogicalOp, RangeExpression, ...) that we must
-                // never unwrap. Only the parser's generic PathExpr-as-parens
-                // wrapper has class == PathExpr.class.
+                // Exact-class check: many PathExpr subclasses (UnaryExpr,
+                // BinaryOp, OpNumeric, EnclosedExpr, LogicalOp, RangeExpression, ...)
+                // are semantically loaded and must never be unwrapped. Only
+                // the parser's generic parens-wrapper has class == PathExpr.class.
                 if (step.getClass() != PathExpr.class || !(step instanceof final PathExpr inner)
                         || inner.getLength() != 1) {
                     continue;
                 }
                 final Expression innerStep = inner.getExpression(0);
 
-                // Case A: parenthesised single LocationStep
+                // Case A
                 if (innerStep instanceof final LocationStep innerLocationStep) {
                     pathExpr.replace(inner, innerLocationStep);
                     innerLocationStep.setParent(pathExpr);
                     hasOptimized = true;
-                    // Re-visit the unwrapped step so it gets the same optimiser
-                    // treatment as if the user had written it without parens.
                     visitLocationStep(innerLocationStep);
                     rewroteAny = true;
-                    // Restart the loop because the step at index i changed.
                     break;
                 }
 
-                // Case B: parenthesised Union of step expressions. Distribute
-                // outer path over each branch.
-                //
-                // Skip inside predicates: a predicate result tracks each
-                // matched node back to its candidate via per-step contextId
-                // bookkeeping (see Predicate.selectByNodeSet). A Union built
-                // here doesn't propagate the predicate's contextId through
-                // its branches, so the candidate-mapping is lost and the
-                // predicate engine throws "context is missing for node".
-                // The unparenthesised form `Author/ForeName | Author/LastName`
-                // would have the same issue, so we leave the parenthesised
-                // shape alone here as the safe choice.
-                //
-                // Skip when any suffix step (steps after the union) is not a
-                // LocationStep. Distribution moves the suffix INTO each
-                // branch, so the branch's last step becomes whatever was at
-                // the end of the original path. If that's a non-node-returning
-                // step like {@code /string()} or {@code /count(.)} the new
-                // Union fails its operand-must-be-a-node-sequence invariant
-                // (see CombiningExpression). LocationSteps preserve nodes;
-                // arbitrary expressions in step position generally don't.
+                // Case B
                 if (innerStep instanceof final Union innerUnion
                         && predicates == 0
                         && hasOnlyLocationStepSuffix(pathExpr, i)
@@ -242,12 +241,11 @@ public class Optimizer extends DefaultExpressionVisitor {
                     distributed.setLocation(inner.getLine(), inner.getColumn());
                     pathExpr.replaceAllSteps(distributed);
                     hasOptimized = true;
-                    // Visit the new branches so any further optimisations
-                    // (Case A inside a distributed branch, predicate
-                    // optimisation, etc.) fire on the rewritten tree.
+                    // Re-visit so any further optimisations (Case A in a
+                    // distributed branch, predicate optimisation, ...) fire
+                    // on the rewritten tree.
                     distributed.accept(this);
                     rewroteAny = true;
-                    // Restart the loop because the path's structure changed.
                     break;
                 }
             }
@@ -263,7 +261,7 @@ public class Optimizer extends DefaultExpressionVisitor {
      */
     private boolean hasOnlyLocationStepSuffix(final PathExpr outer, final int unionStepIndex) {
         for (int j = unionStepIndex + 1; j < outer.getLength(); j++) {
-            if (!(outer.getExpression(j) instanceof LocationStep)) {
+            if (!isStepLikeNodeExpr(outer.getExpression(j))) {
                 return false;
             }
         }
@@ -271,9 +269,28 @@ public class Optimizer extends DefaultExpressionVisitor {
     }
 
     /**
+     * True if {@code e} returns nodes from a step-like position: either a
+     * raw LocationStep, or an ExtensionExpression introduced by
+     * {@link #visitLocationStep(LocationStep)} to wrap an optimizable
+     * LocationStep in a {@code #exist:optimize#} pragma. The pragma wrapper
+     * preserves the wrapped step's node-yielding semantics, so distribution
+     * over a union remains valid.
+     */
+    private boolean isStepLikeNodeExpr(final Expression e) {
+        if (e instanceof LocationStep) {
+            return true;
+        }
+        return e instanceof final ExtensionExpression ext
+                && ext.getExpression() instanceof LocationStep;
+    }
+
+    /**
      * A Union is distributable over an outer path if every leaf branch is a
-     * non-empty PathExpr consisting only of LocationSteps. Nested Unions on
-     * either side recurse: an n-ary union {@code A | B | C} parses as
+     * non-empty PathExpr consisting only of step-like node expressions
+     * (raw LocationSteps, or LocationSteps wrapped in the optimizer's
+     * {@code #exist:optimize#} ExtensionExpression -- see
+     * {@link #isStepLikeNodeExpr(Expression)}). Nested Unions on either side
+     * recurse: an n-ary union {@code A | B | C} parses as
      * {@code Union(Union(A, B), C)} where one branch wraps a Union.
      *
      * <p>This conservative check rules out branches that depend on the outer
@@ -297,7 +314,7 @@ public class Optimizer extends DefaultExpressionVisitor {
             return isDistributableUnion(nested);
         }
         for (int i = 0; i < branch.getLength(); i++) {
-            if (!(branch.getExpression(i) instanceof LocationStep)) {
+            if (!isStepLikeNodeExpr(branch.getExpression(i))) {
                 return false;
             }
         }

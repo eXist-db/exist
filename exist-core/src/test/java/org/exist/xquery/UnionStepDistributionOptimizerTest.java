@@ -259,6 +259,27 @@ public class UnionStepDistributionOptimizerTest {
     }
 
     @Test
+    public void fundocsShapeMixedBranches() throws XMLDBException {
+        // Replicates the search-everywhere shape from the function-documentation
+        // app: an outer //(...) over branches that mix single predicated
+        // LocationSteps with multi-step paths. line-o reported on PR #6310 that
+        // this query takes 9s and PathExpr.replaceAllSteps is never called.
+        final String body = """
+                let $d := doc('/db/%s/%s')
+                return $d//(
+                    book[contains(title, 'One')]
+                    | book[contains(author, 'Bob')]
+                    | journal[contains(title, 'Three')]
+                    | article[@id='a1']
+                )
+                """.formatted(COLLECTION_NAME, DOC_NAME);
+        final XQueryService svc = server.getRoot().getService(XQueryService.class);
+        final ResourceSet baseline = svc.query(NO_OPTIMIZE + body);
+        final ResourceSet optimized = svc.query(OPTIMIZE + body);
+        assertEquals("Optimized must match baseline", baseline.getSize(), optimized.getSize());
+    }
+
+    @Test
     public void unionWithNonNodeReturningSuffix() throws XMLDBException {
         // outer/(A|B)/string() -- the suffix returns strings, not nodes.
         // Distribution would push /string() into each branch, making the
