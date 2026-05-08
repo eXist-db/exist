@@ -41,7 +41,7 @@ import java.util.StringTokenizer;
 
 
 /**
- * DOCUMENT ME!
+ * Abstract base class for Ant tasks interacting with an XMLDB database.
  *
  * @author  wolf
  * @author  andrzej@chaeron.com

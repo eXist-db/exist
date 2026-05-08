@@ -32,7 +32,7 @@ import org.w3c.dom.Node;
 
 
 /**
- * DOCUMENT ME!
+ * A node in an in-memory document that references a node in another document.
  *
  * @author wolf
  */

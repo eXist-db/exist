@@ -652,7 +652,7 @@ public class Configuration implements ErrorHandler {
     }
 
     /**
-     * DOCUMENT ME!
+     * Reads the XUpdate configuration.
      *
      * @param xupdate configuration element
      * @throws NumberFormatException if one of the settings is not parseable
@@ -750,7 +750,7 @@ public class Configuration implements ErrorHandler {
     }
 
     /**
-     * DOCUMENT ME!
+     * Reads the serializer configuration.
      *
      * @param serializer element with serializer settings
      */
@@ -808,7 +808,7 @@ public class Configuration implements ErrorHandler {
     /**
      * Reads the scheduler configuration.
      *
-     * @param scheduler DOCUMENT ME!
+     * @param scheduler the configuration element for the scheduler.
      */
     private void configureScheduler(final Element scheduler) {
         final NodeList nlJobs = scheduler.getElementsByTagName(JobConfig.CONFIGURATION_JOB_ELEMENT_NAME);
@@ -898,11 +898,11 @@ public class Configuration implements ErrorHandler {
     }
 
     /**
-     * DOCUMENT ME!
+     * Reads the backend configuration.
      *
-     * @param dbHome
-     * @param con
-     * @throws DatabaseConfigurationException
+     * @param dbHome the database home directory.
+     * @param con the configuration element for the backend.
+     * @throws DatabaseConfigurationException if a configuration error occurs.
      */
     private void configureBackend(final Optional<Path> dbHome, Element con) throws DatabaseConfigurationException {
         configureProperty(con, PROPERTY_DATABASE, PROPERTY_DATABASE);
@@ -1064,7 +1064,7 @@ public class Configuration implements ErrorHandler {
     }
 
     /**
-     * DOCUMENT ME!
+     * Reads the watchDog configuration.
      *
      * @param watchDog element with watchDog settings
      */
@@ -1074,7 +1074,7 @@ public class Configuration implements ErrorHandler {
     }
 
     /**
-     * DOCUMENT ME!
+     * Reads the queryPool configuration.
      *
      * @param queryPool element with queryPool settings
      */
@@ -1437,10 +1437,10 @@ public class Configuration implements ErrorHandler {
     }
 
     /**
-     * (non-Javadoc).
+     * Reports a configuration error.
      *
-     * @param exception DOCUMENT ME!
-     * @throws SAXException DOCUMENT ME!
+     * @param exception the exception that occurred.
+     * @throws SAXException if a SAX error occurs.
      * @see org.xml.sax.ErrorHandler#error(org.xml.sax.SAXParseException)
      */
     @Override
@@ -1449,10 +1449,10 @@ public class Configuration implements ErrorHandler {
     }
 
     /**
-     * (non-Javadoc).
+     * Reports a fatal configuration error.
      *
-     * @param exception DOCUMENT ME!
-     * @throws SAXException DOCUMENT ME!
+     * @param exception the exception that occurred.
+     * @throws SAXException if a SAX error occurs.
      * @see org.xml.sax.ErrorHandler#fatalError(org.xml.sax.SAXParseException)
      */
     @Override
@@ -1461,10 +1461,10 @@ public class Configuration implements ErrorHandler {
     }
 
     /**
-     * (non-Javadoc).
+     * Reports a configuration warning.
      *
-     * @param exception DOCUMENT ME!
-     * @throws SAXException DOCUMENT ME!
+     * @param exception the exception that occurred.
+     * @throws SAXException if a SAX error occurs.
      * @see org.xml.sax.ErrorHandler#warning(org.xml.sax.SAXParseException)
      */
     @Override

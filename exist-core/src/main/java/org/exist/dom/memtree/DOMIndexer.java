@@ -28,14 +28,11 @@ import org.exist.Namespaces;
 import org.exist.collections.CollectionConfiguration;
 import org.exist.dom.QName;
 import org.exist.dom.persistent.AttrImpl;
-import org.exist.dom.persistent.CDATASectionImpl;
 import org.exist.dom.persistent.CommentImpl;
-import org.exist.dom.persistent.DocumentTypeImpl;
 import org.exist.dom.persistent.ElementImpl;
-import org.exist.dom.persistent.NodeHandle;
 import org.exist.dom.persistent.ProcessingInstructionImpl;
-import org.exist.dom.persistent.StoredNode;
 import org.exist.dom.persistent.TextImpl;
+import org.exist.dom.persistent.*;
 import org.exist.numbering.NodeId;
 import org.exist.storage.DBBroker;
 import org.exist.storage.IndexSpec;
@@ -66,8 +63,6 @@ import java.util.Map;
 public class DOMIndexer {
 
     private static final Logger LOG = LogManager.getLogger(DOMIndexer.class);
-    private static final int NO_NODE = -1;
-    private static final int FIRST_CHILD_NODE = 1;
     private static final QName ROOT_QNAME = new QName("temp", Namespaces.EXIST_NS, Namespaces.EXIST_NS_PREFIX);
 
     private final DBBroker broker;
@@ -99,11 +94,12 @@ public class DOMIndexer {
 
     /**
      * Scan the DOM tree once to determine its structure.
+     *
+     * @throws EXistException DOCUMENT ME
      */
     public void scan() throws EXistException {
-        // Creates a dummy DOCTYPE for the temporary persistent wrapper document.
-        final Expression expression = doc == null ? null : doc.getExpression();
-        final DocumentTypeImpl dt = new DocumentTypeImpl(expression, "temp", null, "");
+        //Creates a dummy DOCTYPE
+        final DocumentTypeImpl dt = new DocumentTypeImpl((doc != null) ? doc.getExpression() : null, "temp", null, "");
         targetDoc.setDocumentType(dt);
     }
 
@@ -123,52 +119,52 @@ public class DOMIndexer {
         broker.storeNode(transaction, elem, path, indexSpec);
         targetDoc.appendChild((NodeHandle) elem);
         elem.setChildCount(0);
-        // Store the source document nodes beneath the wrapper.
-        int rootNodeNr = doc.size > FIRST_CHILD_NODE ? FIRST_CHILD_NODE : NO_NODE;
-        while(rootNodeNr > 0) {
-            storeSubtree(rootNodeNr, path);
-            rootNodeNr = doc.getNextSiblingFor(rootNodeNr);
+        // store the document nodes
+        int top = (doc.size > 1) ? 1 : -1;
+        while(top > 0) {
+            store(top, path);
+            top = doc.getNextSiblingFor(top);
         }
-        // Close the wrapper element.
+        //Close the wrapper element
         stack.pop();
         broker.endElement(elem, path, null);
         path.removeLastComponent();
     }
 
-    /**
-     * Stores a subtree rooted at {@code rootNodeNr} using depth-first traversal.
-     */
-    private void storeSubtree(final int rootNodeNr, final NodePath currentPath) {
-        int currentNodeNr = rootNodeNr;
+    private void store(final int top, final NodePath currentPath) {
+        int nodeNr = top;
 
-        while(currentNodeNr > 0) {
-            startNode(currentNodeNr, currentPath);
-            int nextNodeNr = doc.getFirstChildFor(currentNodeNr);
+        while(nodeNr > 0) {
+            startNode(nodeNr, currentPath);
+            int nextNode = doc.getFirstChildFor(nodeNr);
 
-            while(nextNodeNr == NO_NODE) {
-                endNode(currentNodeNr, currentPath);
+            while(nextNode == -1) {
+                endNode(nodeNr, currentPath);
 
-                if(rootNodeNr == currentNodeNr) {
+                if(top == nodeNr) {
                     break;
                 }
-                nextNodeNr = doc.getNextSiblingFor(currentNodeNr);
+                nextNode = doc.getNextSiblingFor(nodeNr);
 
-                if(nextNodeNr == NO_NODE) {
-                    currentNodeNr = doc.getParentNodeFor(currentNodeNr);
+                if(nextNode == -1) {
+                    nodeNr = doc.getParentNodeFor(nodeNr);
 
-                    if((currentNodeNr == NO_NODE) || (rootNodeNr == currentNodeNr)) {
-                        endNode(currentNodeNr, currentPath);
-                        nextNodeNr = NO_NODE;
+                    if((nodeNr == -1) || (top == nodeNr)) {
+                        endNode(nodeNr, currentPath);
+                        nextNode = -1;
                         break;
                     }
                 }
             }
-            currentNodeNr = nextNodeNr;
+            nodeNr = nextNode;
         }
     }
 
     /**
-     * Handles storing a node when first encountered during traversal.
+     * Starts processing a node.
+     *
+     * @param nodeNr the node number in the in-memory document.
+     * @param currentPath the current path in the document tree.
      */
     private void startNode(final int nodeNr, final NodePath currentPath) {
         switch(doc.nodeKind[nodeNr]) {
@@ -211,7 +207,7 @@ public class DOMIndexer {
 
             case Node.CDATA_SECTION_NODE: {
                 final ElementImpl last = stack.peek();
-                final CDATASectionImpl cdata = (CDATASectionImpl) NodePool.getInstance().borrowNode(Node.CDATA_SECTION_NODE);
+                final org.exist.dom.persistent.CDATASectionImpl cdata = (org.exist.dom.persistent.CDATASectionImpl) NodePool.getInstance().borrowNode(Node.CDATA_SECTION_NODE);
                 cdata.setData(doc.characters, doc.alpha[nodeNr], doc.alphaLen[nodeNr]);
                 cdata.setOwnerDocument(targetDoc);
                 last.appendChildInternal(prevNode, cdata);
@@ -260,7 +256,10 @@ public class DOMIndexer {
     }
 
     /**
-     * Initializes a persistent element from the in-memory node metadata.
+     * Initializes an element node.
+     *
+     * @param nodeNr the node number in the in-memory document.
+     * @param elem the persistent element node to initialize.
      */
     private void initElement(final int nodeNr, final ElementImpl elem) {
         final short attribs = (short) doc.getAttributesCountFor(nodeNr);
@@ -298,7 +297,12 @@ public class DOMIndexer {
     }
 
     /**
-     * Stores all attributes belonging to the given in-memory element node.
+     * Stores the attributes of an element.
+     *
+     * @param nodeNr the node number of the element.
+     * @param elem the persistent element node.
+     * @param path the current path in the document tree.
+     * @throws DOMException if a DOM error occurs.
      */
     private void storeAttributes(final int nodeNr, final ElementImpl elem, final NodePath path) throws DOMException {
         int attr = doc.alpha[nodeNr];
@@ -318,7 +322,10 @@ public class DOMIndexer {
     }
 
     /**
-     * Handles closing logic for a node when traversal moves back up.
+     * Ends processing a node.
+     *
+     * @param nodeNr the node number in the in-memory document.
+     * @param currentPath the current path in the document tree.
      */
     private void endNode(final int nodeNr, final NodePath currentPath) {
         if(doc.nodeKind[nodeNr] == Node.ELEMENT_NODE) {
@@ -330,17 +337,11 @@ public class DOMIndexer {
     }
 
     private void setPrevious(final StoredNode previous) {
-        if(prevNode != null && isReusableInlineNodeType(prevNode.getNodeType())) {
+        if(prevNode != null && (prevNode.getNodeType() == Node.TEXT_NODE || prevNode.getNodeType() == Node.COMMENT_NODE || prevNode.getNodeType() == Node.PROCESSING_INSTRUCTION_NODE)) {
             if(previous == null || prevNode.getNodeType() != previous.getNodeType()) {
                 prevNode.clear();
             }
         }
         prevNode = previous;
-    }
-
-    private boolean isReusableInlineNodeType(final short nodeType) {
-        return nodeType == Node.TEXT_NODE
-                || nodeType == Node.COMMENT_NODE
-                || nodeType == Node.PROCESSING_INSTRUCTION_NODE;
     }
 }

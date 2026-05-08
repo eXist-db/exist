@@ -57,7 +57,7 @@ public class JobException extends Exception {
      *
      * Jobs may be removed, re-fired immediately or left for their next execution
      *
-     * @throws  JobExecutionException  DOCUMENT ME!
+     * @throws  JobExecutionException if an error occurs while cleaning up the job.
      */
     public void cleanupJob() throws JobExecutionException {
         switch(jobExceptionAction) {

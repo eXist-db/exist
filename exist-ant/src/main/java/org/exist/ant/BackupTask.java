@@ -30,7 +30,7 @@ import java.nio.file.Path;
 
 
 /**
- * DOCUMENT ME!
+ * Ant task for creating a backup of a database collection.
  *
  * @author  wolf
  */
