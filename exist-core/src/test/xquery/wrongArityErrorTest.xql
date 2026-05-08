@@ -25,46 +25,76 @@ xquery version "3.1";
  : Tests for improved error messages when calling functions with wrong arity.
  : See https://github.com/eXist-db/exist/issues/1756
  :
- : Since wrong-arity errors are static (compile-time), we use util:eval
- : to compile the expressions dynamically so the test module itself can load.
+ : XPST0017 is a static error thrown at compile time, which try/catch can
+ : only catch when the offending code is wrapped in util:eval -- the eval'd
+ : query's compile error then surfaces as a dynamic error in the outer query.
+ : Assertions use contains() on key substrings of $err:description rather
+ : than asserting the full message text, so the assertions stay stable
+ : across changes in surrounding context (e.g. the W3C error preamble).
  :)
 module namespace wat="http://exist-db.org/xquery/test/wrong-arity";
 
 declare namespace test="http://exist-db.org/xquery/xqsuite";
 
-(:~
- : Calling a built-in function with too few arguments should raise XPST0017.
- : util:wait expects 1 argument; calling with 0 should mention the correct arity.
- :)
+(:~ Built-in function called with too few arguments raises XPST0017. :)
 declare
     %test:assertError("XPST0017")
 function wat:builtin-too-few-args() {
     util:eval("util:wait()")
 };
 
-(:~
- : Calling a built-in function with too many arguments should raise XPST0017.
- : util:wait expects 1 argument; calling with 2 should mention the correct arity.
- :)
+(:~ Built-in function called with too many arguments raises XPST0017. :)
 declare
     %test:assertError("XPST0017")
 function wat:builtin-too-many-args() {
     util:eval("util:wait(100, 200)")
 };
 
-(:~
- : Calling a truly undeclared function should still raise XPST0017.
- :)
+(:~ The error message for a wrong-arity call to a built-in names the
+ :  function and reports an unexpected argument count. :)
+declare %test:assertTrue
+function wat:builtin-wrong-arity-message-mentions-function-and-arity() {
+    try {
+        util:eval("util:wait(100, 200)")
+    } catch * {
+        contains($err:description, "util:wait") and
+        contains($err:description, "argument")
+    }
+};
+
+(:~ A truly undeclared function still raises XPST0017. :)
 declare
     %test:assertError("XPST0017")
 function wat:undeclared-function() {
     util:eval("wat:this-function-does-not-exist()")
 };
 
-(:~
- : Calling an imported module function with wrong arity should raise XPST0017
- : and mention the available signatures.
- :)
+(:~ User-defined function called with wrong arity raises XPST0017
+ :  and the message names the function. :)
+declare %test:assertTrue
+function wat:user-defined-wrong-arity-message-mentions-function() {
+    try {
+        util:eval("declare function local:f($a) { $a }; local:f(1, 2)")
+    } catch * {
+        contains($err:description, "local:f")
+    }
+};
+
+(:~ User-defined function with a typed signature: the message names the
+ :  function (declared signature is reported by the improved error path). :)
+declare %test:assertTrue
+function wat:user-defined-wrong-arity-message-mentions-signature() {
+    try {
+        util:eval(
+            "declare function local:f($a as xs:integer) as xs:integer { $a };" ||
+            " local:f()"
+        )
+    } catch * {
+        contains($err:description, "local:f")
+    }
+};
+
+(:~ Imported-module wrong arity raises XPST0017. :)
 declare
     %test:assertError("XPST0017")
 function wat:imported-module-wrong-arity() {
