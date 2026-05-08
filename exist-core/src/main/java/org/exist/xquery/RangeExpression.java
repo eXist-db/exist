@@ -21,135 +21,107 @@
  */
 package org.exist.xquery;
 
-import java.util.List;
-
 import org.exist.xquery.util.ExpressionDumper;
+import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.IntegerValue;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.NumericValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 
+import javax.annotation.Nullable;
+
 /**
  * An XQuery range expression, like "1 to 10".
- * 
- * @author wolf
+ * Has a XQuery 1.0 compatibility mode when parsing boundaries.
  */
 public class RangeExpression extends PathExpr {
-	
-	Expression start;
-	Expression end;
 
-	//TODO : RangeExpression(XQueryContext context, Expressoin start, Expression end)
-	//Needs parser refactoring
-	public RangeExpression(XQueryContext context) {
-		super(context);
-	}
-	
-	//TODO : remove and use the other constructor
-	public void setArguments(List<Expression> arguments) throws XPathException {
-		start = arguments.getFirst();
-		end = arguments.get(1);        
-	}
-	
-    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
-    	//TODO : static checks ?
-    	/*
-    	if (!Cardinality.checkCardinality(Cardinality.ZERO_OR_ONE, start.getCardinality()))
-		    throw new XPathException(this, "Invalid cardinality for 1st argument");
-    	if (!Cardinality.checkCardinality(Cardinality.ZERO_OR_ONE, end.getCardinality()))
-		    throw new XPathException(this, "Invalid cardinality for 2nd argument");
-    	if (start.returnsType() != Type.INTEGER)
-		    throw new XPathException(this, "Invalid type for 1st argument");
-    	if (end.returnsType() != Type.INTEGER)
-		    throw new XPathException(this, "Invalid type for 2nd argument");
-        */
-    	inPredicate = (contextInfo.getFlags() & IN_PREDICATE) > 0;
-    	contextId = contextInfo.getContextId();
-    	contextInfo.setParent(this);
-    	start.analyze(contextInfo);
-    	end.analyze(contextInfo);
+    final Expression start;
+    final Expression end;
+
+    public RangeExpression(final XQueryContext context, final Expression startExpr, final Expression endExpr) {
+        super(context);
+        start = startExpr;
+        end = endExpr;
     }
-    
-   
-    /* (non-Javadoc)
-	 * @see org.exist.xquery.Expression#eval(org.exist.dom.persistent.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
-	 */
-	public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {		
-    	Sequence result = null;
-		final Sequence startSeq = start.eval(contextSequence, contextItem);
-		final Sequence endSeq = end.eval(contextSequence, contextItem);
-		if (startSeq.isEmpty())
-		    {result = Sequence.EMPTY_SEQUENCE;}
-		else if (endSeq.isEmpty())
-			{result = Sequence.EMPTY_SEQUENCE;}
-		else if (startSeq.hasMany())
-			{throw new XPathException(this, ErrorCodes.XPTY0004, "The first operand must have at most one item", startSeq);}
-		else if (endSeq.hasMany())
-			{throw new XPathException(this, ErrorCodes.XPTY0004, "The second operand must have at most one item", endSeq);}
-        else {
-        	if (context.isBackwardsCompatible()) {
-	        	NumericValue valueStart;
-	        	try {
-	        		//Currently breaks 1e3 to 3
-	        		valueStart = (NumericValue)startSeq.itemAt(0).convertTo(Type.NUMERIC);
-	        	} catch (final XPathException e) {
-					throw new XPathException(this, ErrorCodes.FORG0006, "Required type is " +
-							Type.getTypeName(Type.INTEGER) + " but got '" + Type.getTypeName(startSeq.itemAt(0).getType()) + "(" +
-							startSeq.itemAt(0).getStringValue() + ")'", startSeq);
-	        	}
-	        	NumericValue valueEnd;
-	        	try {
-	        		//Currently breaks 3 to 1e3
-	        		valueEnd = (NumericValue)endSeq.itemAt(0).convertTo(Type.NUMERIC);
-	        	} catch (final XPathException e) {
-					throw new XPathException(this, ErrorCodes.FORG0006, "Required type is " +
-							Type.getTypeName(Type.INTEGER) + " but got '" + Type.getTypeName(endSeq.itemAt(0).getType()) + "(" +
-							endSeq.itemAt(0).getStringValue() + ")'", endSeq);
-	        	}
-	        	//Implied by previous conversion
-	        	if (valueStart.hasFractionalPart()) {
-					throw new XPathException(this, ErrorCodes.FORG0006, "Required type is " +
-							Type.getTypeName(Type.INTEGER) + " but got '" + Type.getTypeName(startSeq.itemAt(0).getType()) + "(" +
-							startSeq.itemAt(0).getStringValue() + ")'", startSeq);
-				}
-	        	//Implied by previous conversion
-	        	if (valueEnd.hasFractionalPart()) {
-					throw new XPathException(this, ErrorCodes.FORG0006, "Required type is " +
-							Type.getTypeName(Type.INTEGER) + " but got '" + Type.getTypeName(endSeq.itemAt(0).getType()) + "(" +
-							startSeq.itemAt(0).getStringValue() + ")'", endSeq);
-	        	}        	
-//	        	result = new ValueSequence();
-//				for(long i = ((IntegerValue)valueStart.convertTo(Type.INTEGER)).getLong(); 
-//					i <= ((IntegerValue)valueEnd.convertTo(Type.INTEGER)).getLong(); i++) {
-//					result.add(new IntegerValue(i));
-//				}
-				result = new RangeSequence((IntegerValue)valueStart.convertTo(Type.INTEGER), 
-							(IntegerValue)valueEnd.convertTo(Type.INTEGER));
-	        } else {
-	        	//Quite unusual test : we accept integers but no other *typed* type 
-	        	if (!Type.subTypeOf(startSeq.itemAt(0).atomize().getType(), Type.INTEGER) &&
-	        		!Type.subTypeOf(startSeq.itemAt(0).atomize().getType(), Type.UNTYPED_ATOMIC))
-					{throw new XPathException(this, ErrorCodes.FORG0006, "Required type is " +
-							Type.getTypeName(Type.INTEGER) + " but got '" + Type.getTypeName(startSeq.itemAt(0).getType()) + "(" +
-							startSeq.itemAt(0).getStringValue() + ")'", startSeq);}
-	        	//Quite unusual test : we accept integers but no other *typed* type 
-	        	if (!Type.subTypeOf(endSeq.itemAt(0).atomize().getType(), Type.INTEGER) &&
-	        		!Type.subTypeOf(endSeq.itemAt(0).atomize().getType(), Type.UNTYPED_ATOMIC))
-					{throw new XPathException(this, ErrorCodes.FORG0006, "Required type is " +
-							Type.getTypeName(Type.INTEGER) + " but got '" + Type.getTypeName(endSeq.itemAt(0).getType()) + "(" +
-							endSeq.itemAt(0).getStringValue() + ")'", endSeq);}
-	        	final IntegerValue valueStart = (IntegerValue)startSeq.itemAt(0).convertTo(Type.INTEGER);
-	        	final IntegerValue valueEnd = (IntegerValue)endSeq.itemAt(0).convertTo(Type.INTEGER);
-//	       		result = new ValueSequence();
-//				for (long i = valueStart.getLong();	i <= valueEnd.getLong(); i++) {
-//					result.add(new IntegerValue(i));
-//				}
-	        	result = new RangeSequence(valueStart, valueEnd);
-	        }
+
+    public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
+        inPredicate = (contextInfo.getFlags() & IN_PREDICATE) > 0;
+        contextId = contextInfo.getContextId();
+        contextInfo.setParent(this);
+        start.analyze(contextInfo);
+        end.analyze(contextInfo);
+    }
+
+    /**
+     * Evaluate range boundary expressions and return the resulting RangeSequence
+     * @param contextSequence the current context sequence, or null if there is no context sequence.
+     * @param contextItem a single item, taken from context, or null if there is no context item.
+     *                    This defines the item, the expression should work on.
+     *
+     * @return A sequence of integer values between start and end or an empty sequence when either start or end is empty
+     * @throws XPathException raises XPTY0004 or FORG0006 if start or end have the wrong cardinality or type
+     */
+    public Sequence eval(final Sequence contextSequence, final Item contextItem) throws XPathException {
+        final Sequence startSeq = start.eval(contextSequence, contextItem);
+        final Sequence endSeq = end.eval(contextSequence, contextItem);
+
+        if (startSeq.isEmpty() || endSeq.isEmpty()) {
+            return Sequence.EMPTY_SEQUENCE;
         }
-		return result;
-	}
+        if (startSeq.hasMany()) {
+            throw new XPathException(this, ErrorCodes.XPTY0004, "The first operand must have at most one item", startSeq);
+        }
+        if (endSeq.hasMany()) {
+            throw new XPathException(this, ErrorCodes.XPTY0004, "The second operand must have at most one item", endSeq);
+        }
+
+        final IntegerValue valueStart;
+        final IntegerValue valueEnd;
+
+		if (context.isBackwardsCompatible()) {
+            valueStart = getLegacyBoundaryValue(startSeq);
+            valueEnd = getLegacyBoundaryValue(endSeq);
+            return new RangeSequence(valueStart, valueEnd);
+        }
+
+		valueStart = getBoundaryValue(startSeq);
+		valueEnd = getBoundaryValue(endSeq);
+		return new RangeSequence(valueStart, valueEnd);
+    }
+
+    private IntegerValue getBoundaryValue(final Sequence boundarySeq) throws XPathException {
+        final Item boundaryItem = boundarySeq.itemAt(0);
+        final AtomicValue atomizedBoundary = boundaryItem.atomize();
+        if (!(Type.subTypeOf(atomizedBoundary.getType(), Type.INTEGER)
+			|| Type.subTypeOf(atomizedBoundary.getType(), Type.UNTYPED_ATOMIC))) {
+            throw new XPathException(this, ErrorCodes.FORG0006, "Required type is " +
+                    Type.getTypeName(Type.INTEGER) + " but got '" + Type.getTypeName(boundaryItem.getType()) + "(" +
+                    boundaryItem.getStringValue() + ")'", boundarySeq);
+        }
+        return (IntegerValue) boundaryItem.convertTo(Type.INTEGER);
+    }
+
+    @Nullable
+    private IntegerValue getLegacyBoundaryValue(Sequence startSeq) throws XPathException {
+        final NumericValue valueStart;
+        try {
+            // Currently breaks 1e3 to 3
+            valueStart = (NumericValue) startSeq.itemAt(0).convertTo(Type.NUMERIC);
+        } catch (final XPathException e) {
+            throw new XPathException(this, ErrorCodes.FORG0006, "Required type is " +
+                    Type.getTypeName(Type.INTEGER) + " but got '" + Type.getTypeName(startSeq.itemAt(0).getType()) + "(" +
+                    startSeq.itemAt(0).getStringValue() + ")'", startSeq);
+        }
+        // Implied by previous conversion
+        if (valueStart.hasFractionalPart()) {
+            throw new XPathException(this, ErrorCodes.FORG0006, "Required type is " +
+                    Type.getTypeName(Type.INTEGER) + " but got '" + Type.getTypeName(startSeq.itemAt(0).getType()) + "(" +
+                    startSeq.itemAt(0).getStringValue() + ")'", startSeq);
+        }
+        return (IntegerValue) valueStart.convertTo(Type.INTEGER);
+    }
 
     public void dump(ExpressionDumper dumper) {
         dumper.display(start);
@@ -157,15 +129,15 @@ public class RangeExpression extends PathExpr {
         dumper.display(end);
     }
 
-	public String toString() {
-		return "(" + start + " to " + end + ")";
-	}
+    public String toString() {
+        return "(" + start + " to " + end + ")";
+    }
 
     public int returnsType() {
         return Type.INTEGER;
-    }    
-	
+    }
+
     public Expression simplify() {
-    	return this;
+        return this;
     }
 }

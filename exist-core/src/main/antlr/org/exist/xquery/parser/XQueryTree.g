@@ -2421,9 +2421,8 @@ throws PermissionDeniedException, EXistException, XPathException
         step=expr [start]
         step=expr [end]
         {
-            RangeExpression range= new RangeExpression(context);
+            RangeExpression range = new RangeExpression(context, start, end);
             range.setASTNode(expr_AST_in);
-            range.setArguments(args);
             path.addPath(range);
             step = range;
         }
