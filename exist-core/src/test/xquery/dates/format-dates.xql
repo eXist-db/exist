@@ -440,7 +440,6 @@ function fd:format-dateTime-ZZ-positive-double-digit($date as xs:dateTime) {
 };
 
 declare
-    %test:pending("[ZN] is not yet supported")
     %test:args("2012-06-26T12:00:00.000-10:00")
     %test:assertEquals("HST")
 function fd:format-dateTime-ZN-negative-double-digit($date as xs:dateTime) {
@@ -448,7 +447,6 @@ function fd:format-dateTime-ZN-negative-double-digit($date as xs:dateTime) {
 };
 
 declare
-    %test:pending("[ZN] is not yet supported")
     %test:args("2012-06-26T12:00:00.000-05:00")
     %test:assertEquals("EST")
 function fd:format-dateTime-ZN-negative-single-digit($date as xs:dateTime) {
@@ -463,7 +461,6 @@ function fd:format-dateTime-ZN-zero($date as xs:dateTime) {
 };
 
 declare
-    %test:pending("[ZN] is not yet supported")
     %test:args("2012-06-26T12:00:00.000+05:30")
     %test:assertEquals("IST")
 function fd:format-dateTime-ZN-positive-single-digit($date as xs:dateTime) {
@@ -471,7 +468,6 @@ function fd:format-dateTime-ZN-positive-single-digit($date as xs:dateTime) {
 };
 
 declare
-    %test:pending("[ZN] is not yet supported")
     %test:args("2012-06-26T12:00:00.000+13:00")
     %test:assertEquals("+13:00")
 function fd:format-dateTime-ZN-positive-double-digit($date as xs:dateTime) {
@@ -479,40 +475,36 @@ function fd:format-dateTime-ZN-positive-double-digit($date as xs:dateTime) {
 };
 
 declare
-    %test:pending("[ZN] is not yet supported")
     %test:args("2012-06-26T12:00:00.000-10:00")
-    %test:assertEquals("06:00 EST")
+    %test:assertEquals("18:00 EDT")
 function fd:format-dateTime-ZN-NY-negative-double-digit($date as xs:dateTime) {
     format-dateTime($date, "[H00]:[M00] [ZN]", (), (), "America/New_York")
 };
 
 declare
     %test:args("2012-06-26T12:00:00.000-05:00")
-    %test:assertEquals("12:00 EST")
+    %test:assertEquals("13:00 EDT")
 function fd:format-dateTime-ZN-NY-negative-single-digit($date as xs:dateTime) {
     format-dateTime($date, "[H00]:[M00] [ZN]", (), (), "America/New_York")
 };
 
 declare
-    %test:pending("[ZN] is not yet supported")
     %test:args("2012-06-26T12:00:00.000+00:00")
-    %test:assertEquals("07:00 EST")
+    %test:assertEquals("08:00 EDT")
 function fd:format-dateTime-ZN-NY-zero($date as xs:dateTime) {
     format-dateTime($date, "[H00]:[M00] [ZN]", (), (), "America/New_York")
 };
 
 declare
-    %test:pending("[ZN] is not yet supported")
     %test:args("2012-06-26T12:00:00.000+05:30")
-    %test:assertEquals("01:30 EST")
+    %test:assertEquals("02:30 EDT")
 function fd:format-dateTime-ZN-NY-positive-single-digit($date as xs:dateTime) {
     format-dateTime($date, "[H00]:[M00] [ZN]", (), (), "America/New_York")
 };
 
 declare
-    %test:pending("[ZN] is not yet supported")
     %test:args("2012-06-26T12:00:00.000+13:00")
-    %test:assertEquals("18:00 EST")
+    %test:assertEquals("19:00 EDT")
 function fd:format-dateTime-ZN-NY-positive-double-digit($date as xs:dateTime) {
     format-dateTime($date, "[H00]:[M00] [ZN]", (), (), "America/New_York")
 };
