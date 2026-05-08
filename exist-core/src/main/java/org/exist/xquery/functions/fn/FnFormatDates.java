@@ -27,11 +27,19 @@ import org.exist.xquery.*;
 import org.exist.xquery.util.NumberFormatter;
 import org.exist.xquery.value.*;
 
+import java.time.DateTimeException;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.WeekFields;
+import java.time.zone.ZoneRules;
 import java.util.Calendar;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.Set;
 import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -182,8 +190,8 @@ public class FnFormatDates extends BasicFunction {
     private static final Pattern WIDTH_MODIFIER_PATTERN =
             Pattern.compile(",\\s*([0-9]+|\\*)(?:\\s*-\\s*([0-9]+|\\*))?\\s*$");
 
-    private static final java.util.Set<String> SUPPORTED_LANGUAGES =
-            java.util.Set.of("en", "de", "fr", "nl", "ru", "sv");
+    private static final Set<String> SUPPORTED_LANGUAGES =
+            Set.of("en", "de", "fr", "nl", "ru", "sv");
 
     /**
      * Military time zone letter assignments, indexed by hour offset + 12.
@@ -223,7 +231,7 @@ public class FnFormatDates extends BasicFunction {
      * the AD/ISO Gregorian calendar; recognised-but-unsupported codes produce a
      * fallback marker. Unrecognised codes raise FOFD1340.
      */
-    private static final java.util.Set<String> KNOWN_CALENDARS = java.util.Set.of(
+    private static final Set<String> KNOWN_CALENDARS = Set.of(
             "AD", "AH", "AM", "AME", "AP", "AS", "BE", "CB", "CE", "CL", "CS",
             "EE", "FE", "ISO", "JE", "KE", "KY", "ME", "MS", "NS", "OS", "RS",
             "SE", "SH", "SS", "TE", "VE", "VS", "Y",
@@ -231,7 +239,7 @@ public class FnFormatDates extends BasicFunction {
             "AE", "BS", "HE", "JP", "KO", "TH");
 
     /** Calendars we implement directly (no fallback marker needed). */
-    private static final java.util.Set<String> SUPPORTED_CALENDARS = java.util.Set.of("AD", "ISO");
+    private static final Set<String> SUPPORTED_CALENDARS = Set.of("AD", "ISO");
 
     private static final int[] ROMAN_VALUES = {1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1};
     private static final String[] ROMAN_SYMBOLS = {"M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"};
@@ -240,15 +248,15 @@ public class FnFormatDates extends BasicFunction {
     private static final Pattern TZ_NAME_ALPHA_PATTERN = Pattern.compile("[A-Za-z]+");
 
     /** Well-known legacy timezone abbreviation IDs that java.time does not recognize as ZoneIds. */
-    private static final java.util.Set<String> KNOWN_TZ_ABBREVIATIONS = java.util.Set.of(
+    private static final Set<String> KNOWN_TZ_ABBREVIATIONS = Set.of(
             "EST", "CST", "MST", "PST", "HST", "AST",     // North America
             "GMT", "UTC", "UCT", "WET", "CET", "EET",     // Europe / Universal
             "IST", "JST", "KST", "SST",                    // Asia / Pacific
             "CAT", "EAT", "WAT"                            // Africa
     );
 
-    private static final java.time.format.DateTimeFormatter TZ_ABBREV_FORMATTER =
-            java.time.format.DateTimeFormatter.ofPattern("z");
+    private static final DateTimeFormatter TZ_ABBREV_FORMATTER =
+            DateTimeFormatter.ofPattern("z");
 
     public FnFormatDates(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
@@ -330,19 +338,7 @@ public class FnFormatDates extends BasicFunction {
     private String formatDate(final String pic, final AbstractDateTimeValue dt, final String language,
             final Optional<String> place) throws XPathException {
 
-        // Per W3C XPath Functions 3.1 spec: when $place is a recognized IANA timezone,
-        // adjust the datetime to the offset applicable in that timezone (DST-aware via
-        // java.time.ZoneRules) before formatting any component.
-        AbstractDateTimeValue effectiveDt = dt;
-        if (place.isPresent()) {
-            try {
-                final java.time.ZoneId placeZone = java.time.ZoneId.of(place.get());
-                effectiveDt = adjustToPlaceTimezone(dt, placeZone);
-            } catch (final java.time.DateTimeException ignored) {
-                // Not an IANA timezone (e.g. country code "us") — leave dt unadjusted
-            }
-        }
-
+        final AbstractDateTimeValue effectiveDt = adjustForPlaceTimezone(dt, place);
         final boolean tzHMZNPictureHint = "[H00]:[M00] [ZN]".equals(pic);
 
         final StringBuilder sb = new StringBuilder();
@@ -692,14 +688,34 @@ public class FnFormatDates extends BasicFunction {
     }
 
     /**
+     * Per W3C XPath Functions 3.1 spec: when {@code $place} is a recognized
+     * IANA timezone, adjust {@code dt} to the offset applicable in that
+     * timezone (DST-aware via {@link ZoneRules}) before formatting any
+     * component. Returns {@code dt} unchanged if {@code place} is empty or
+     * not a recognized IANA zone (e.g. a country code).
+     */
+    private AbstractDateTimeValue adjustForPlaceTimezone(final AbstractDateTimeValue dt,
+            final Optional<String> place) throws XPathException {
+        if (!place.isPresent()) {
+            return dt;
+        }
+        try {
+            final ZoneId placeZone = ZoneId.of(place.get());
+            return adjustToPlaceTimezone(dt, placeZone);
+        } catch (final DateTimeException ignored) {
+            return dt;
+        }
+    }
+
+    /**
      * Adjust a datetime to the timezone offset applicable at the given IANA place,
-     * accounting for daylight savings via {@link java.time.zone.ZoneRules}.
+     * accounting for daylight savings via {@link ZoneRules}.
      */
     private AbstractDateTimeValue adjustToPlaceTimezone(final AbstractDateTimeValue dt,
-            final java.time.ZoneId placeZone) throws XPathException {
+            final ZoneId placeZone) throws XPathException {
         final Calendar cal = dt.toJavaObject(Calendar.class);
-        final java.time.Instant instant = cal.toInstant();
-        final java.time.ZoneOffset applicableOffset = placeZone.getRules().getOffset(instant);
+        final Instant instant = cal.toInstant();
+        final ZoneOffset applicableOffset = placeZone.getRules().getOffset(instant);
         final int offsetMinutes = applicableOffset.getTotalSeconds() / 60;
         final DayTimeDurationValue offset = new DayTimeDurationValue(dt.getExpression(), offsetMinutes * 60000L);
         return dt.adjustedToTimezone(offset);
@@ -741,15 +757,15 @@ public class FnFormatDates extends BasicFunction {
      */
     private static String lookupPlaceZoneAbbreviation(final String placeId, final int offsetMs,
             final Locale locale) {
-        final java.time.ZoneId placeZone;
+        final ZoneId placeZone;
         try {
-            placeZone = java.time.ZoneId.of(placeId);
-        } catch (final java.time.DateTimeException ignored) {
+            placeZone = ZoneId.of(placeId);
+        } catch (final DateTimeException ignored) {
             // Not a valid IANA ZoneId (e.g. country code "us") — fall through to generic lookup
             return null;
         }
-        final java.time.zone.ZoneRules rules = placeZone.getRules();
-        final int standardOffsetMs = rules.getStandardOffset(java.time.Instant.EPOCH)
+        final ZoneRules rules = placeZone.getRules();
+        final int standardOffsetMs = rules.getStandardOffset(Instant.EPOCH)
                 .getTotalSeconds() * 1000;
         if (offsetMs == standardOffsetMs) {
             return formatPlaceAbbreviation(placeZone, 1, locale);
@@ -757,8 +773,8 @@ public class FnFormatDates extends BasicFunction {
         if (rules.isFixedOffset()) {
             return null;
         }
-        final java.time.Instant summerInstant =
-                java.time.ZonedDateTime.of(2020, 7, 15, 12, 0, 0, 0, placeZone).toInstant();
+        final Instant summerInstant =
+                ZonedDateTime.of(2020, 7, 15, 12, 0, 0, 0, placeZone).toInstant();
         final int dstOffsetMs = rules.getOffset(summerInstant).getTotalSeconds() * 1000;
         if (offsetMs == dstOffsetMs && rules.isDaylightSavings(summerInstant)) {
             return formatPlaceAbbreviation(placeZone, 7, locale);
@@ -767,10 +783,10 @@ public class FnFormatDates extends BasicFunction {
     }
 
     /** Format a place's abbreviation at a given month (1 = January / standard time, 7 = July / DST). */
-    private static String formatPlaceAbbreviation(final java.time.ZoneId placeZone, final int month,
+    private static String formatPlaceAbbreviation(final ZoneId placeZone, final int month,
             final Locale locale) {
-        final java.time.ZonedDateTime zdt =
-                java.time.ZonedDateTime.of(2020, month, 15, 12, 0, 0, 0, placeZone);
+        final ZonedDateTime zdt =
+                ZonedDateTime.of(2020, month, 15, 12, 0, 0, 0, placeZone);
         final String name = zdt.format(TZ_ABBREV_FORMATTER.withLocale(locale));
         return TZ_NAME_ALPHA_PATTERN.matcher(name).matches() ? name : null;
     }
@@ -800,12 +816,12 @@ public class FnFormatDates extends BasicFunction {
     /** Format the abbreviation for a TimeZone ID, or null if the ID is not a valid ZoneId. */
     private static String formatIdAbbreviation(final String id, final Locale locale) {
         try {
-            final java.time.ZoneId zid = java.time.ZoneId.of(id);
-            final java.time.ZonedDateTime zdt =
-                    java.time.ZonedDateTime.of(2020, 1, 15, 12, 0, 0, 0, zid);
+            final ZoneId zid = ZoneId.of(id);
+            final ZonedDateTime zdt =
+                    ZonedDateTime.of(2020, 1, 15, 12, 0, 0, 0, zid);
             final String name = zdt.format(TZ_ABBREV_FORMATTER.withLocale(locale));
             return TZ_NAME_ALPHA_PATTERN.matcher(name).matches() ? name : null;
-        } catch (final java.time.DateTimeException ignored) {
+        } catch (final DateTimeException ignored) {
             return null;
         }
     }
@@ -1368,7 +1384,7 @@ public class FnFormatDates extends BasicFunction {
         int groupingChar = ',';
         // Positions where grouping separators appear, counted from the LEFT in the digit-only string
         // (used for fractional seconds).
-        java.util.Set<Integer> groupings = new java.util.HashSet<>();
+        Set<Integer> groupings = new java.util.HashSet<>();
         // Picture template for variable-width grouping: "9,99-9" → ["9","99","9"]
         // groupingChars holds the separator character at each junction from the right.
         java.util.List<Integer> rightGroupingPositions = new java.util.ArrayList<>();
