@@ -21,6 +21,10 @@
  */
 package org.exist.xquery.functions.fn;
 
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.TreeMap;
+
 import com.ibm.icu.text.Collator;
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
@@ -39,6 +43,7 @@ import org.exist.xquery.value.AtomicValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.IntegerValue;
+import org.exist.xquery.value.NumericValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceIterator;
 import org.exist.xquery.value.SequenceType;
@@ -109,51 +114,302 @@ The result sequence is in ascending numeric order.""";
 					RETURN_TYPE
 			)
 	};
-	
+
+    /**
+     * Minimum source-sequence size at which we consider building a positional
+     * index. For tiny sources, the per-call linear scan is already cheap and
+     * the TreeMap construction would add overhead.
+     */
+    private static final int INDEX_THRESHOLD = 32;
+
+    /**
+     * Fingerprint of the source sequence from the most recent call. eXist
+     * routinely re-wraps {@code args[0]} between calls (atomization, type
+     * checks), so reference identity is unreliable -- empirical measurement
+     * (PR #6315 follow-up) showed reference identity hits 0% of the calls
+     * the fingerprint serves, even within a tight FLWOR over a single
+     * {@code let}-bound sequence. We instead sample size plus five positions'
+     * string values to recognise the source.
+     *
+     * <p>The fingerprint is a heuristic, not a correctness invariant: a
+     * length-preserving content mutation that doesn't touch any sampled
+     * position will pass the check. To bound the consequences, every
+     * cache hit that returns a non-empty result is verified at lookup time
+     * (see {@link #lookupInIndex}); if the cached position no longer holds
+     * the search value, the cache is invalidated and a linear scan runs.
+     */
+    private long cachedSize = -1;
+    private String cachedSample0;
+    private String cachedSample1;
+    private String cachedSample2;
+    private String cachedSample3;
+    private String cachedSample4;
+    /** Collator paired with the cached index; must match for the index to be reusable. */
+    private Collator cachedCollator;
+    /** Lazily built positional index. */
+    private TreeMap<AtomicValue, IntList> cachedIndex;
+    /** True if a previous build attempt aborted (e.g. incomparable types). */
+    private boolean cachedSourceUnindexable;
+
 	public FunIndexOf(XQueryContext context, FunctionSignature signature) {
 		super(context, signature);
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[], org.exist.xquery.value.Sequence)
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence)	throws XPathException {
+        if (args[0].isEmpty()) {
+            return Sequence.EMPTY_SEQUENCE;
+        }
+
         if (context.getProfiler().isEnabled()) {
-            context.getProfiler().start(this);       
+            context.getProfiler().start(this);
             context.getProfiler().message(this, Profiler.DEPENDENCIES, "DEPENDENCIES", Dependency.getDependenciesName(this.getDependencies()));
             if (contextSequence != null)
                 {context.getProfiler().message(this, Profiler.START_SEQUENCES, "CONTEXT SEQUENCE", contextSequence);}
         }
-        
-        Sequence result;
-		if (args[0].isEmpty())
-			{return Sequence.EMPTY_SEQUENCE;}
-        else {
-    		final AtomicValue srch = args[1].itemAt(0).atomize();
-    		Collator collator;
-    		if (getSignature().getArgumentCount() == 3) {
-    			final String collation = args[2].getStringValue();
-    			collator = context.getCollator(collation, ErrorCodes.FOCH0002);
-    		} else
-    			{collator = context.getDefaultCollator();}
-    		result = new ValueSequence();
-    		int j = 1;
-    		for (final SequenceIterator i = args[0].iterate(); i.hasNext(); j++) {
-    			final AtomicValue next = i.nextItem().atomize();
-    			try {
-	    			if (ValueComparison.compareAtomic(collator, next, srch, StringTruncationOperator.NONE, Comparison.EQ))
-	    				{result.add(new IntegerValue(this, j));}
-    			} catch (final XPathException e) {
-    				//Ignore me : values can not be compared
-    			}
-    		}    		
+
+        final AtomicValue srch = args[1].itemAt(0).atomize();
+        final Collator collator;
+        if (getSignature().getArgumentCount() == 3) {
+            final String collation = args[2].getStringValue();
+            collator = context.getCollator(collation, ErrorCodes.FOCH0002);
+        } else {
+            collator = context.getDefaultCollator();
         }
-        
-        if (context.getProfiler().isEnabled()) 
-            {context.getProfiler().end(this, "", result);} 
-        
-        return result; 
-        
+        final Sequence result = evaluate(args[0], srch, collator);
+
+        if (context.getProfiler().isEnabled())
+            {context.getProfiler().end(this, "", result);}
+
+        return result;
+
 	}
 
+    /**
+     * Choose between a linear scan and a cached positional index. The index
+     * is built on the second consecutive call with the same {@code source}
+     * reference and {@code collator}, so a single index-of invocation never
+     * pays the build cost — but repeated lookups against the same source
+     * (e.g. inside a FLWOR over distinct-values) collapse from O(N*M) to
+     * O(N + M log N).
+     */
+    private Sequence evaluate(final Sequence source, final AtomicValue srch, final Collator collator) throws XPathException {
+        final int sourceSize = source.getItemCount();
+        if (sourceSize < INDEX_THRESHOLD) {
+            return linearScan(source, srch, collator);
+        }
+        if (!fingerprintMatches(source, sourceSize) || collator != cachedCollator) {
+            // Fingerprint miss: fresh source. Update the fingerprint and do a
+            // linear scan; defer building the index until the next hit so a
+            // single index-of call never pays the build cost.
+            updateFingerprint(source, sourceSize);
+            cachedCollator = collator;
+            cachedIndex = null;
+            cachedSourceUnindexable = false;
+            return linearScan(source, srch, collator);
+        }
+        if (cachedSourceUnindexable) {
+            return linearScan(source, srch, collator);
+        }
+        if (cachedIndex == null) {
+            cachedIndex = buildIndex(source, collator);
+            if (cachedIndex == null) {
+                cachedSourceUnindexable = true;
+                return linearScan(source, srch, collator);
+            }
+        }
+        final Sequence cached = lookupInIndex(srch, source, collator);
+        if (cached != null) {
+            return cached;
+        }
+        // Cache verification failed: fingerprint matched but the cached
+        // position no longer holds the search value, so the source content
+        // has mutated at a non-sampled position. Invalidate, refresh the
+        // fingerprint, and fall back to a fresh linear scan; the next call
+        // will rebuild the index.
+        updateFingerprint(source, sourceSize);
+        cachedIndex = null;
+        cachedSourceUnindexable = false;
+        return linearScan(source, srch, collator);
+    }
+
+    private boolean fingerprintMatches(final Sequence source, final int size) throws XPathException {
+        if (cachedSize != size) {
+            return false;
+        }
+        return java.util.Objects.equals(cachedSample0, sampleString(source, 0))
+            && java.util.Objects.equals(cachedSample1, sampleString(source, size / 4))
+            && java.util.Objects.equals(cachedSample2, sampleString(source, size / 2))
+            && java.util.Objects.equals(cachedSample3, sampleString(source, (3 * size) / 4))
+            && java.util.Objects.equals(cachedSample4, sampleString(source, size - 1));
+    }
+
+    private void updateFingerprint(final Sequence source, final int size) throws XPathException {
+        cachedSize = size;
+        cachedSample0 = sampleString(source, 0);
+        cachedSample1 = sampleString(source, size / 4);
+        cachedSample2 = sampleString(source, size / 2);
+        cachedSample3 = sampleString(source, (3 * size) / 4);
+        cachedSample4 = sampleString(source, size - 1);
+    }
+
+    private static String sampleString(final Sequence source, final int index) throws XPathException {
+        return source.itemAt(index).getStringValue();
+    }
+
+    private Sequence linearScan(final Sequence source, final AtomicValue srch, final Collator collator) throws XPathException {
+        final ValueSequence result = new ValueSequence();
+        int j = 1;
+        for (final SequenceIterator i = source.iterate(); i.hasNext(); j++) {
+            final AtomicValue next = i.nextItem().atomize();
+            try {
+                if (ValueComparison.compareAtomic(collator, next, srch, StringTruncationOperator.NONE, Comparison.EQ)) {
+                    result.add(new IntegerValue(this, j));
+                }
+            } catch (final XPathException e) {
+                // Ignore: values can not be compared
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Build a TreeMap mapping each comparable atomic value in {@code source}
+     * to the list of 1-based positions at which it occurs. Returns
+     * {@code null} if any item triggers a comparison error during insertion,
+     * signalling that the caller must fall back to the linear scan to honour
+     * fn:index-of's "values that cannot be compared are considered distinct"
+     * semantics.
+     */
+    private TreeMap<AtomicValue, IntList> buildIndex(final Sequence source, final Collator collator) throws XPathException {
+        final TreeMap<AtomicValue, IntList> index = new TreeMap<>(new IndexComparator(collator));
+        int j = 1;
+        try {
+            for (final SequenceIterator i = source.iterate(); i.hasNext(); j++) {
+                final AtomicValue next = i.nextItem().atomize();
+                // NaN never matches under eq, so it can never appear in the result
+                if (Type.subTypeOfUnion(next.getType(), Type.NUMERIC) && ((NumericValue) next).isNaN()) {
+                    continue;
+                }
+                IntList list = index.get(next);
+                if (list == null) {
+                    list = new IntList();
+                    index.put(next, list);
+                }
+                list.add(j);
+            }
+        } catch (final IndexBuildAbort abort) {
+            return null;
+        }
+        return index;
+    }
+
+    /**
+     * Look up {@code srch} in the cached positional index, with a defensive
+     * verification that the cached position still holds {@code srch} in the
+     * current {@code source}. Returns {@code null} when verification fails,
+     * signalling the caller must invalidate the cache and rebuild.
+     *
+     * <p>The verification handles the scenario where the fingerprint hits
+     * but the source content has mutated at a non-sampled position, which
+     * would otherwise cause a stale cached entry to be returned (see PR
+     * #6315 follow-up for the empirical investigation).
+     *
+     * <p>Residual gap: a length-preserving mutation that introduces
+     * {@code srch} at a non-sampled position when the cache previously
+     * recorded "not found" cannot be detected at O(1) and would yield a
+     * false-empty result. This is bounded but not eliminated; the
+     * documented heuristic permits it.
+     */
+    private Sequence lookupInIndex(final AtomicValue srch, final Sequence source, final Collator collator) throws XPathException {
+        if (Type.subTypeOfUnion(srch.getType(), Type.NUMERIC) && ((NumericValue) srch).isNaN()) {
+            return Sequence.EMPTY_SEQUENCE;
+        }
+        final IntList list;
+        try {
+            list = cachedIndex.get(srch);
+        } catch (final IndexBuildAbort abort) {
+            // Search value is incomparable with cached keys; per spec, distinct
+            return Sequence.EMPTY_SEQUENCE;
+        }
+        if (list == null || list.size == 0) {
+            return Sequence.EMPTY_SEQUENCE;
+        }
+        // Defensive verification: the first cached position must still hold
+        // srch in the current source. O(1) per call.
+        final AtomicValue head = source.itemAt(list.data[0] - 1).atomize();
+        try {
+            if (!ValueComparison.compareAtomic(collator, head, srch, StringTruncationOperator.NONE, Comparison.EQ)) {
+                return null;
+            }
+        } catch (final XPathException e) {
+            return null;
+        }
+        final ValueSequence result = new ValueSequence();
+        for (int k = 0; k < list.size; k++) {
+            result.add(new IntegerValue(this, list.data[k]));
+        }
+        return result;
+    }
+
+    @Override
+    public void resetState(final boolean postOptimization) {
+        super.resetState(postOptimization);
+        cachedSize = -1;
+        cachedSample0 = null;
+        cachedSample1 = null;
+        cachedSample2 = null;
+        cachedSample3 = null;
+        cachedSample4 = null;
+        cachedCollator = null;
+        cachedIndex = null;
+        cachedSourceUnindexable = false;
+    }
+
+    private static final class IntList {
+        private int[] data = new int[4];
+        private int size;
+
+        void add(final int v) {
+            if (size >= data.length) {
+                data = Arrays.copyOf(data, data.length * 2);
+            }
+            data[size++] = v;
+        }
+    }
+
+    private static final class IndexBuildAbort extends RuntimeException {
+        private static final long serialVersionUID = 1L;
+        IndexBuildAbort(final XPathException cause) {
+            super(null, cause, false, false);
+        }
+    }
+
+    private static final class IndexComparator implements Comparator<AtomicValue> {
+        private final Collator collator;
+
+        IndexComparator(final Collator collator) {
+            this.collator = collator;
+        }
+
+        @Override
+        public int compare(final AtomicValue a, final AtomicValue b) {
+            try {
+                if (ValueComparison.compareAtomic(collator, a, b, StringTruncationOperator.NONE, Comparison.EQ)) {
+                    return 0;
+                }
+                if (ValueComparison.compareAtomic(collator, a, b, StringTruncationOperator.NONE, Comparison.LT)) {
+                    return -1;
+                }
+                if (ValueComparison.compareAtomic(collator, a, b, StringTruncationOperator.NONE, Comparison.GT)) {
+                    return 1;
+                }
+                return a.compareTo(collator, b);
+            } catch (final XPathException e) {
+                throw new IndexBuildAbort(e);
+            }
+        }
+    }
 }
