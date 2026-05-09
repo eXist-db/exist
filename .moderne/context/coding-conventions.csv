@@ -37,15 +37,16 @@ imports,Static imports from org.exist.xquery.functions.fn,org.exist.xquery.funct
 naming,init* method naming pattern,initMap,,project-wide
 naming,parse* method naming pattern,parseTimezoneName,,project-wide
 imports,Static imports from com.evolvedbinary.j8fu.tuple,com.evolvedbinary.j8fu.tuple.Tuple.Tuple,,project-wide
+naming,validate* method naming pattern,validateMapProperties,,project-wide
 naming,find* method naming pattern,findAncestorOrSelf,,project-wide
 imports,Static imports from org.exist.xquery.functions.map,org.exist.xquery.functions.map.MapType.newLinearMap,,project-wide
 naming,format* method naming pattern,formatDate,,project-wide
 naming,Error suffix for classes,FunError,,project-wide
 imports,Static imports from org.exist.xquery.regex,org.exist.xquery.regex.RegexUtil.*,,project-wide
+imports,Static imports from java.nio.file,java.nio.file.Files.isReadable,,project-wide
 imports,Static imports from org.exist.dom.QName,org.exist.dom.QName.Validity.VALID,,project-wide
 imports,Static imports from org.exist,org.exist.Namespaces.XSLT_XQUERY_SERIALIZATION_NS,,project-wide
 imports,Static imports from org.exist.xquery.functions.fn.transform.Options,org.exist.xquery.functions.fn.transform.Options.Option.*,,project-wide
-naming,validate* method naming pattern,validateRequestedProperties,,project-wide
 naming,can* method naming pattern,canOptimizeSequence,,project-wide
 naming,build* method naming pattern,buildResult,,project-wide
 imports,Static imports from org.exist.xquery.functions.xmldb,org.exist.xquery.functions.xmldb.XMLDBModule.functionSignature,,project-wide
@@ -56,6 +57,7 @@ imports,Static imports from org.exist.xquery.functions.system,org.exist.xquery.f
 imports,Static imports from org.exist.xquery.functions.util,org.exist.xquery.functions.util.UtilModule.functionSignatures,,project-wide
 naming,Base prefix for base classes,BaseConverter,,project-wide
 naming,process* method naming pattern,processWrappers,,project-wide
+naming,should* method naming pattern,shouldWrapWithOptimizePragma,,project-wide
 naming,Impl suffix for classes,PerformanceStatsImpl,,project-wide
 naming,Spec suffix for classes,GroupSpec,,project-wide
 imports,Static imports from org.exist.xquery.Cardinality,org.exist.xquery.Cardinality.InternalValue.*,,project-wide
@@ -68,7 +70,6 @@ naming,Service suffix for classes,PerformanceStatsService,,project-wide
 naming,Manager suffix for classes,BinaryValueManager,,project-wide
 naming,Config suffix for classes,FilteredServletConfig,,project-wide
 imports,Static imports from org.exist.xmldb,org.exist.xmldb.EXistXPathQueryService.BEGIN_PROTECTED_MAX_LOCKING_RETRIES,,project-wide
-imports,Static imports from java.nio.file,java.nio.file.StandardOpenOption.*,,project-wide
 imports,Static imports from org.quartz,org.quartz.CronScheduleBuilder.cronSchedule,,project-wide
 imports,Static imports from org.exist.scheduler,org.exist.scheduler.JobDescription.*,,project-wide
 imports,Static imports from org.quartz.impl,org.quartz.impl.StdSchedulerFactory.*,,project-wide
@@ -134,7 +135,6 @@ imports,Static imports from org.expath.httpclient,org.expath.httpclient.HttpClie
 imports,Static imports from org.exist.xquery.modules.vector,org.exist.xquery.modules.vector.VectorModule.functionSignature,,project-wide
 imports,Static imports from org.exist.xquery.modules.lucene,org.exist.xquery.modules.lucene.LuceneModule.functionSignatures,,project-wide
 imports,Static imports from org.exist.xquery.modules.lucene.QueryOptions,org.exist.xquery.modules.lucene.QueryOptions.DefaultOperator.OR,,project-wide
-naming,should* method naming pattern,shouldReindexOnAttributeChange,,project-wide
 imports,Static imports from org.exist.indexing.lucene,org.exist.indexing.lucene.LuceneIndexConfig.MATCH_ATTR,,project-wide
 imports,Static imports from java.util.regex,java.util.regex.Pattern.CASE_INSENSITIVE,,project-wide
 imports,Static imports from org.exist.xquery.modules.cache,org.exist.xquery.modules.cache.CacheModule.*,,project-wide
