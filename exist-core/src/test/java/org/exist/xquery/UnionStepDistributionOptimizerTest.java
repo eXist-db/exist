@@ -23,6 +23,7 @@ package org.exist.xquery;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
 import org.exist.xmldb.EXistXQueryService;
+import org.exist.xquery.util.ExpressionDumper;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -467,7 +468,7 @@ public class UnionStepDistributionOptimizerTest {
      */
     private static final class ExpressionDumperHelper {
         static String dump(final Expression e) {
-            return org.exist.xquery.util.ExpressionDumper.dump(e);
+            return ExpressionDumper.dump(e);
         }
     }
 
