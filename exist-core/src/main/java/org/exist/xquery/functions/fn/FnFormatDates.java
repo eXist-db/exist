@@ -36,7 +36,10 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.WeekFields;
 import java.time.zone.ZoneRules;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
@@ -1384,11 +1387,11 @@ public class FnFormatDates extends BasicFunction {
         int groupingChar = ',';
         // Positions where grouping separators appear, counted from the LEFT in the digit-only string
         // (used for fractional seconds).
-        Set<Integer> groupings = new java.util.HashSet<>();
+        Set<Integer> groupings = new HashSet<>();
         // Picture template for variable-width grouping: "9,99-9" → ["9","99","9"]
         // groupingChars holds the separator character at each junction from the right.
-        java.util.List<Integer> rightGroupingPositions = new java.util.ArrayList<>();
-        java.util.List<Integer> rightGroupingChars = new java.util.ArrayList<>();
+        List<Integer> rightGroupingPositions = new ArrayList<>();
+        List<Integer> rightGroupingChars = new ArrayList<>();
     }
 
     /**
