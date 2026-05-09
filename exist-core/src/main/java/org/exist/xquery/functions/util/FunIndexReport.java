@@ -117,8 +117,8 @@ public class FunIndexReport extends BasicFunction {
             context.pushDocumentContext();
             try {
                 final MemTreeBuilder builder = context.getDocumentBuilder();
-                if (stats instanceof PerformanceStatsImpl) {
-                    ((PerformanceStatsImpl) stats).serialize(builder);
+                if (stats instanceof final PerformanceStatsImpl statsImpl) {
+                    statsImpl.serialize(builder);
                 } else {
                     builder.startElement("", "index-report", "index-report", null);
                     builder.endElement();

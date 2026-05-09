@@ -964,6 +964,19 @@ public class XQueryContext implements BinaryValueManager, Context {
         return inScopePrefixes;
     }
 
+    /**
+     * Returns the prefix-to-URI map of namespaces declared in the prolog
+     * (via {@code declare namespace}, {@code declare default element namespace},
+     * etc.) along with the built-in defaults registered by
+     * {@link #loadDefaultNS()}. Intended for diagnostics such as
+     * {@code util:explain}; callers should not mutate the returned map.
+     *
+     * @return the static namespace prefix-to-URI map
+     */
+    public Map<String, String> getStaticNamespaces() {
+        return staticNamespaces;
+    }
+
     @Override
     public String getInheritedNamespace(final String prefix) {
         return inheritedInScopeNamespaces == null ? null : inheritedInScopeNamespaces.get(prefix);

@@ -33,6 +33,8 @@ import org.exist.xquery.value.*;
  *
  * <p>Inspired by BaseX's prof:track().</p>
  *
+ * <p>The argument expression is evaluated lazily inside the measurement block.</p>
+ *
  * <pre>
  * let $r := util:track(collection("/db/data")//title)
  * return (
@@ -42,7 +44,7 @@ import org.exist.xquery.value.*;
  * )
  * </pre>
  */
-public class FunTrack extends BasicFunction {
+public class FunTrack extends Function {
 
     public static final FunctionSignature[] signatures = {
             new FunctionSignature(
@@ -76,38 +78,34 @@ public class FunTrack extends BasicFunction {
     }
 
     @Override
-    public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
+    public Sequence eval(final Sequence contextSequence, final Item contextItem) throws XPathException {
+        final String label = getArgumentCount() == 2
+                ? getArgument(1).eval(contextSequence, contextItem).getStringValue()
+                : null;
+
         final Runtime runtime = Runtime.getRuntime();
         final long memBefore = runtime.totalMemory() - runtime.freeMemory();
         final long startNanos = System.nanoTime();
 
-        // The expression has already been evaluated — args[0] contains the result
-        final Sequence result = args[0];
+        final Sequence result = getArgument(0).eval(contextSequence, contextItem);
 
         final long elapsedNanos = System.nanoTime() - startNanos;
         final long memAfter = runtime.totalMemory() - runtime.freeMemory();
         final long memDelta = memAfter - memBefore;
 
-        // Build the result map
         final MapType map = new MapType(this, context);
 
-        // time as xs:dayTimeDuration (millisecond precision)
         try {
             map.add(new StringValue("time"), new DayTimeDurationValue(this, elapsedNanos / 1_000_000));
         } catch (final XPathException e) {
-            // Fallback: store milliseconds as integer
             map.add(new StringValue("time"), new IntegerValue(this, elapsedNanos / 1_000_000));
         }
 
-        // memory as xs:integer (bytes)
         map.add(new StringValue("memory"), new IntegerValue(this, memDelta));
-
-        // value: the expression result
         map.add(new StringValue("value"), result);
 
-        // optional label
-        if (getArgumentCount() == 2) {
-            map.add(new StringValue("label"), new StringValue(args[1].getStringValue()));
+        if (label != null) {
+            map.add(new StringValue("label"), new StringValue(label));
         }
 
         return map;

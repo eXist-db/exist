@@ -186,6 +186,66 @@ function prof:explain-conditional() {
     return exists($result//if)
 };
 
+declare
+    %test:assertTrue
+function prof:explain-has-prolog() {
+    let $result := util:explain('1 + 1')
+    return exists($result/prolog)
+};
+
+declare
+    %test:assertTrue
+function prof:explain-has-body() {
+    let $result := util:explain('1 + 1')
+    return exists($result/body)
+};
+
+declare
+    %test:assertTrue
+function prof:explain-prolog-namespace() {
+    let $result := util:explain(
+        'declare namespace foo = "http://example.com/foo"; 1 + 1'
+    )
+    return exists($result/prolog/namespace[@prefix = "foo"][@uri = "http://example.com/foo"])
+};
+
+declare
+    %test:assertEquals(0)
+function prof:explain-prolog-no-builtins() {
+    (: Built-in prefixes (xs, fn, xsi, xml, local) must not appear in the prolog :)
+    let $result := util:explain('1 + 1')
+    return count($result/prolog/namespace[@prefix = ("xs", "fn", "xsi", "xml", "local", "err", "exist")])
+};
+
+declare
+    %test:assertError("err:XPST0003")
+function prof:explain-parse-error-clear() {
+    (: An unparseable query must surface XPST0003, not a wrapped runtime error :)
+    util:explain('for $x ')
+};
+
+(: === composition tests (point 1 from line-o's review) === :)
+
+declare
+    %test:assertEquals(2)
+function prof:time-memory-compose() {
+    (: util:time(util:memory(...)) must return the inner expression's result :)
+    util:time(util:memory(1 + 1))
+};
+
+declare
+    %test:assertEquals(5)
+function prof:time-memory-compose-sequence() {
+    count(util:time(util:memory(1 to 5, "inner"), "outer"))
+};
+
+declare
+    %test:assertEquals(2)
+function prof:track-of-time() {
+    let $r := util:track(util:time(1 + 1))
+    return $r?value
+};
+
 (: === util:profile tests === :)
 
 declare

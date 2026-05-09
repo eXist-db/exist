@@ -33,12 +33,15 @@ import org.exist.xquery.value.*;
  *
  * <p>Inspired by BaseX's prof:memory().</p>
  *
+ * <p>The argument expression is evaluated lazily inside the measurement block so
+ * that util:time and util:memory compose naturally.</p>
+ *
  * <pre>
  * util:memory(parse-json(unparsed-text("/db/large.json")))
  * util:memory(parse-json(unparsed-text("/db/large.json")), "JSON parse")
  * </pre>
  */
-public class FunMemory extends BasicFunction {
+public class FunMemory extends Function {
 
     private static final Logger LOG = LogManager.getLogger(FunMemory.class);
 
@@ -72,23 +75,30 @@ public class FunMemory extends BasicFunction {
     }
 
     @Override
-    public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
+    public Sequence eval(final Sequence contextSequence, final Item contextItem) throws XPathException {
+        final String label = getArgumentCount() == 2
+                ? getArgument(1).eval(contextSequence, contextItem).getStringValue()
+                : "util:memory()";
+
         final Runtime runtime = Runtime.getRuntime();
         final long memBefore = runtime.totalMemory() - runtime.freeMemory();
-
-        // The expression has already been evaluated — args[0] contains the result
-        final Sequence result = args[0];
-
+        final Sequence result = getArgument(0).eval(contextSequence, contextItem);
         final long memAfter = runtime.totalMemory() - runtime.freeMemory();
         final long memDelta = memAfter - memBefore;
 
-        final String label = getArgumentCount() == 2
-                ? args[1].getStringValue()
-                : "util:memory()";
-
-        LOG.info("{} \u2014 {}", label, formatBytes(memDelta));
+        LOG.info("{} — {}", label, formatBytes(memDelta));
 
         return result;
+    }
+
+    @Override
+    public int returnsType() {
+        return getArgument(0).returnsType();
+    }
+
+    @Override
+    public Cardinality getCardinality() {
+        return getArgument(0).getCardinality();
     }
 
     static String formatBytes(final long bytes) {

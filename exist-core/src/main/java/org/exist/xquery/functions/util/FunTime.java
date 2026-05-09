@@ -33,12 +33,16 @@ import org.exist.xquery.value.*;
  *
  * <p>Inspired by BaseX's prof:time().</p>
  *
+ * <p>The argument expression is evaluated lazily inside the timing block so that
+ * util:time and util:memory compose: util:time(util:memory($expr)) measures the
+ * full evaluation cost of $expr.</p>
+ *
  * <pre>
  * util:time(collection("/db/data")//title)
  * util:time(collection("/db/data")//title, "title lookup")
  * </pre>
  */
-public class FunTime extends BasicFunction {
+public class FunTime extends Function {
 
     private static final Logger LOG = LogManager.getLogger(FunTime.class);
 
@@ -72,28 +76,34 @@ public class FunTime extends BasicFunction {
     }
 
     @Override
-    public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
-        final long startNanos = System.nanoTime();
-
-        // The expression has already been evaluated by the function call mechanism —
-        // args[0] contains the result
-        final Sequence result = args[0];
-
-        final long elapsedNanos = System.nanoTime() - startNanos;
-        final double elapsedMs = elapsedNanos / 1_000_000.0;
-
+    public Sequence eval(final Sequence contextSequence, final Item contextItem) throws XPathException {
+        // Evaluate the label first (eager) so that timing covers only the expression of interest.
         final String label = getArgumentCount() == 2
-                ? args[1].getStringValue()
+                ? getArgument(1).eval(contextSequence, contextItem).getStringValue()
                 : "util:time()";
 
-        LOG.info("{} \u2014 {}", label, formatDuration(elapsedMs));
+        final long startNanos = System.nanoTime();
+        final Sequence result = getArgument(0).eval(contextSequence, contextItem);
+        final long elapsedNanos = System.nanoTime() - startNanos;
+
+        LOG.info("{} — {}", label, formatDuration(elapsedNanos / 1_000_000.0));
 
         return result;
     }
 
+    @Override
+    public int returnsType() {
+        return getArgument(0).returnsType();
+    }
+
+    @Override
+    public Cardinality getCardinality() {
+        return getArgument(0).getCardinality();
+    }
+
     static String formatDuration(final double ms) {
         if (ms < 1.0) {
-            return String.format("%.1f\u00B5s", ms * 1000);
+            return String.format("%.1fµs", ms * 1000);
         } else if (ms < 1000.0) {
             return String.format("%.1fms", ms);
         } else {

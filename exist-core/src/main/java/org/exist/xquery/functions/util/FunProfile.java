@@ -202,8 +202,8 @@ public class FunProfile extends BasicFunction {
         context.pushDocumentContext();
         try {
             final MemTreeBuilder builder = context.getDocumentBuilder();
-            if (stats instanceof PerformanceStatsImpl) {
-                ((PerformanceStatsImpl) stats).serialize(builder);
+            if (stats instanceof final PerformanceStatsImpl statsImpl) {
+                statsImpl.serialize(builder);
             } else {
                 builder.startElement("", "stats", "stats", null);
                 builder.endElement();
