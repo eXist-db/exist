@@ -89,6 +89,12 @@ import java.util.Set;
  * @author <a href="mailto:ljo@exist-db.org">Leif-Jöran Olsson</a>
  */
 public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
+    /**
+     * Tunable upper bound for docId clauses per delete batch during reindex.
+     * Can be overridden via -Dexist.lucene.reindex.delete.batchClauses=N.
+     */
+    private static final String REINDEX_DELETE_BATCH_PROPERTY = "exist.lucene.reindex.delete.batchClauses";
+    private static final int DEFAULT_REINDEX_DELETE_DOCID_BATCH_SIZE = 256;
 
     public static final org.apache.lucene.document.FieldType TYPE_NODE_ID = new org.apache.lucene.document.FieldType();
     static {
@@ -126,6 +132,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     private Analyzer analyzer;
 
     public static final String FIELD_DOC_ID = "docId";
+    public static final String FIELD_DOC_ID_KEYWORD = "docIdKeyword";
     public static final String FIELD_DOC_URI = "docUri";
 
     private final StreamListener listener = new LuceneStreamListener();
@@ -357,7 +364,13 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         try {
             writer = index.getWriter();
             final Query docIdQuery = IntField.newExactQuery(FIELD_DOC_ID, docId);
-            writer.deleteDocuments(docIdQuery);
+            if (broker.getIndexController().isReindexing()) {
+                // During reindex, remove only node-based Lucene entries and keep
+                // non-node entries created via ft:index for this document.
+                writer.deleteDocuments(nodeScopedDeleteQuery(docIdQuery));
+            } else {
+                writer.deleteDocuments(docIdQuery);
+            }
         } catch (IOException e) {
             LOG.warn("Error while removing lucene index: {}", e.getMessage(), e);
         } finally {
@@ -401,6 +414,12 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
     }
 
     protected void removePlainTextIndexes() {
+        if (broker.getIndexController().isReindexing()) {
+            // Collection/document reindex should rebuild XML/node index entries but must
+            // preserve named-field entries created via ft:index for existing documents.
+            mode = ReindexMode.STORE;
+            return;
+        }
     	IndexWriter writer = null;
         try {
             writer = index.getWriter();
@@ -434,9 +453,43 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         IndexWriter writer = null;
         try {
             writer = index.getWriter();
+            final boolean preserveNamedFieldEntries = reindex || broker.getIndexController().isReindexing();
+            final int maxBatchClauses = resolveReindexDeleteBatchClauses();
+            final long reindexDeleteStartNanos = preserveNamedFieldEntries ? System.nanoTime() : 0L;
+            // Reused across batches to keep transient allocations down on large collections.
+            final List<BytesRef> batchedDocIdTerms = preserveNamedFieldEntries ? new ArrayList<>(maxBatchClauses) : null;
+            int reindexDeleteBatchCount = 0;
+            int reindexDeleteDocCount = 0;
             for (Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
                 DocumentImpl doc = i.next();
-                writer.deleteDocuments(IntField.newExactQuery(FIELD_DOC_ID, doc.getDocId()));
+                if (preserveNamedFieldEntries) {
+                    batchedDocIdTerms.add(new BytesRef(Integer.toString(doc.getDocId())));
+                    reindexDeleteDocCount++;
+                    if (batchedDocIdTerms.size() >= maxBatchClauses) {
+                        writer.deleteDocuments(reindexNodeDeleteQueryForDocIds(batchedDocIdTerms));
+                        reindexDeleteBatchCount++;
+                        batchedDocIdTerms.clear();
+                    }
+                } else {
+                    writer.deleteDocuments(IntField.newExactQuery(FIELD_DOC_ID, doc.getDocId()));
+                }
+            }
+            final int trailingBatchSize = preserveNamedFieldEntries ? batchedDocIdTerms.size() : 0;
+            if (preserveNamedFieldEntries && trailingBatchSize > 0) {
+                writer.deleteDocuments(reindexNodeDeleteQueryForDocIds(batchedDocIdTerms));
+                reindexDeleteBatchCount++;
+            }
+            if (preserveNamedFieldEntries && LOG.isDebugEnabled()) {
+                final long elapsedMillis = (System.nanoTime() - reindexDeleteStartNanos) / 1_000_000L;
+                LOG.debug(
+                        "Reindex node-delete phase=removeCollection collection={} docsSeen={} batchDeletes={} effectiveBatchSize={} trailingBatchSize={} elapsedMs={}",
+                        collection.getURI(),
+                        reindexDeleteDocCount,
+                        reindexDeleteBatchCount,
+                        maxBatchClauses,
+                        trailingBatchSize,
+                        elapsedMillis
+                );
             }
         } catch (IOException | PermissionDeniedException | LockException e) {
             LOG.error("Error while removing lucene index: {}", e.getMessage(), e);
@@ -453,6 +506,51 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         }
         if (LOG.isDebugEnabled())
             LOG.debug("Collection removed.");
+    }
+
+    /**
+     * Restricts deletion to node-backed Lucene records for the supplied doc-id query.
+     * Named-field records created via ft:index do not carry FIELD_NODE_ID_DV and are
+     * preserved during xmldb:reindex operations.
+     */
+    private static Query nodeScopedDeleteQuery(final Query docIdQuery) {
+        return new BooleanQuery.Builder()
+                .add(docIdQuery, BooleanClause.Occur.MUST)
+                .add(new FieldExistsQuery(LuceneUtil.FIELD_NODE_ID_DV), BooleanClause.Occur.MUST)
+                .build();
+    }
+
+    private static Query docIdKeywordBatchQuery(final List<BytesRef> docIdTerms) {
+        return new TermInSetQuery(FIELD_DOC_ID_KEYWORD, docIdTerms);
+    }
+
+    /**
+     * Builds the reindex-aware delete query: keyword docId batch ANDed with the
+     * node-scope guard so named-field records survive xmldb:reindex. Package-private
+     * so the canary unit test can pin the query shape.
+     */
+    static Query reindexNodeDeleteQueryForDocIds(final List<BytesRef> docIdTerms) {
+        return nodeScopedDeleteQuery(docIdKeywordBatchQuery(docIdTerms));
+    }
+
+    private static int resolveReindexDeleteBatchClauses() {
+        final int maxClauses = IndexSearcher.getMaxClauseCount();
+        final int configured = Integer.getInteger(REINDEX_DELETE_BATCH_PROPERTY, DEFAULT_REINDEX_DELETE_DOCID_BATCH_SIZE);
+        final int effective = clampReindexDeleteBatchClauses(configured, maxClauses);
+        if (effective != configured && LOG.isDebugEnabled()) {
+            LOG.debug(
+                    "Clamped {} from {} to {} (allowed range: 1..{})",
+                    REINDEX_DELETE_BATCH_PROPERTY,
+                    configured,
+                    effective,
+                    maxClauses
+            );
+        }
+        return effective;
+    }
+
+    static int clampReindexDeleteBatchClauses(final int configured, final int maxClauses) {
+        return Math.max(1, Math.min(configured, maxClauses));
     }
 
     /**
@@ -970,6 +1068,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
             // Set DocId. IntField (Points) for querying; SortedNumericDocValuesField for collectors (Lucene 10 consistency).
             final IntField fDocIdIdx = new IntField(FIELD_DOC_ID, currentDoc.getDocId(), Field.Store.NO);
             pendingDoc.add(fDocIdIdx);
+            pendingDoc.add(new StringField(FIELD_DOC_ID_KEYWORD, Integer.toString(currentDoc.getDocId()), Field.Store.NO));
             pendingDoc.add(new SortedNumericDocValuesField(FIELD_DOC_ID, currentDoc.getDocId()));
             pendingDoc.add(new FloatDocValuesField(LuceneUtil.FIELD_BOOST, 1.0f));
 
@@ -1182,11 +1281,17 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         try {
             return index.withSearcher(searcher -> {
                 final Query docIdQuery = IntField.newExactQuery(FIELD_DOC_ID, docId);
-                final TopDocs topDocs = searcher.searcher().search(docIdQuery, 1);
+                final Query fieldExistsQuery = new FieldExistsQuery(field);
+                final Query query = new BooleanQuery.Builder()
+                        .add(docIdQuery, BooleanClause.Occur.MUST)
+                        .add(fieldExistsQuery, BooleanClause.Occur.MUST)
+                        .build();
+                final TopDocs topDocs = searcher.searcher().search(query, 1);
                 if (topDocs.totalHits.value() == 0) {
                     return null;
                 }
-                final Document doc = searcher.searcher().storedFields().document(topDocs.scoreDocs[0].doc);
+                final Set<String> fields = Collections.singleton(field);
+                final Document doc = searcher.searcher().storedFields().document(topDocs.scoreDocs[0].doc, fields);
                 return doc.get(field);
             });
         } catch (XPathException e) {
@@ -1979,6 +2084,7 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                 doc.add(new StringField(LuceneUtil.FIELD_INDEX_TYPE, contentField, Field.Store.NO));
 
                 doc.add(new IntField(FIELD_DOC_ID, currentDoc.getDocId(), Field.Store.NO));
+                doc.add(new StringField(FIELD_DOC_ID_KEYWORD, Integer.toString(currentDoc.getDocId()), Field.Store.NO));
                 doc.add(new SortedNumericDocValuesField(FIELD_DOC_ID, currentDoc.getDocId()));
                 doc.add(new StoredField(FIELD_DOC_ID, currentDoc.getDocId()));
 

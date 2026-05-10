@@ -3235,7 +3235,7 @@ public class RpcConnection implements RpcAPI {
         final org.exist.indexing.ReindexScope scope = org.exist.indexing.ReindexScope.fromString(mode);
         withDb((broker, transaction) -> {
             try(final LockedDocument lockedDoc = broker.getXMLResource(XmldbURI.create(docUri), LockMode.READ_LOCK)) {
-                broker.reindexXMLResource(transaction, lockedDoc.getDocument(), DBBroker.IndexMode.STORE, scope);
+                broker.reindexXMLResource(transaction, lockedDoc.getDocument(), DBBroker.IndexMode.REINDEX, scope);
                 if(LOG.isDebugEnabled()) {
                     LOG.debug("document {} reindexed (scope={})", docUri, scope);
                 }

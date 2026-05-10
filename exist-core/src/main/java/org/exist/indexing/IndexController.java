@@ -51,6 +51,10 @@ import org.exist.security.PermissionDeniedException;
  * retrieved via {@link org.exist.storage.DBBroker#getIndexController()}.
  */
 public class IndexController {
+    public enum CollectionIndexRemovalMode {
+        FULL_DROP,
+        CONFIG_ONLY_REINDEX
+    }
 
     private final Map<String, IndexWorker> indexWorkers = new HashMap<>();
 
@@ -201,14 +205,32 @@ public class IndexController {
      *
      * @param collection the collection to remove
      * @param broker the broker that will perform the operation
-     * @param reindex enable or disable reindexing after removal
+     * @param mode removal semantics, either full drop or config-only reindex
+     *
+     * Caller lock contract: at least a collection READ lock must be held while
+     * invoking workers. WRITE lock callers are also valid.
      * @throws PermissionDeniedException in case user does not have sufficient rights
      */
+    public void removeCollection(final Collection collection, final DBBroker broker, final CollectionIndexRemovalMode mode)
+            throws PermissionDeniedException {
+        final boolean configOnlyReindex = mode == CollectionIndexRemovalMode.CONFIG_ONLY_REINDEX;
+        for (final IndexWorker indexWorker : indexWorkers.values()) {
+            // Keep worker interface stable: explicit mode at call sites, boolean
+            // only at the final API boundary.
+            indexWorker.removeCollection(collection, broker, configOnlyReindex);
+        }
+    }
+
+    /**
+     * @deprecated use {@link #removeCollection(Collection, DBBroker, CollectionIndexRemovalMode)}
+     * with explicit semantics.
+     */
+    @Deprecated
     public void removeCollection(final Collection collection, final DBBroker broker, final boolean reindex)
             throws PermissionDeniedException {
-        for (final IndexWorker indexWorker : indexWorkers.values()) {
-            indexWorker.removeCollection(collection, broker, reindex);
-        }
+        removeCollection(collection, broker, reindex
+                ? CollectionIndexRemovalMode.CONFIG_ONLY_REINDEX
+                : CollectionIndexRemovalMode.FULL_DROP);
     }
 
     /**

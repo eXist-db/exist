@@ -565,6 +565,14 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
 
     @Override
     public void removeCollection(Collection collection, DBBroker broker, boolean reindex) throws PermissionDeniedException {
+        if (reindex) {
+            // Structural index entries are derived entirely from document
+            // content (QName, type, docId, nodeId) and do not depend on
+            // collection.xconf.  During a config-only reindex the
+            // StreamListener will re-add the same entries via BTree upsert,
+            // so removing them first is unnecessary work.
+            return;
+        }
         try {
             for (final Iterator<DocumentImpl> i = collection.iterator(broker); i.hasNext(); ) {
                 final DocumentImpl doc = i.next();

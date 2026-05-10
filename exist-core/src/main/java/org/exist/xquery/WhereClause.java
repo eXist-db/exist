@@ -22,13 +22,20 @@
 package org.exist.xquery;
 
 import org.exist.dom.QName;
-import org.exist.dom.persistent.*;
+import org.exist.dom.persistent.ContextItem;
+import org.exist.dom.persistent.DocumentImpl;
+import org.exist.dom.persistent.ExtArrayNodeSet;
+import org.exist.dom.persistent.NodeProxy;
+import org.exist.dom.persistent.NodeSet;
+import org.exist.dom.persistent.VirtualNodeSet;
 import org.exist.xquery.util.ExpressionDumper;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -128,7 +135,10 @@ public class WhereClause extends AbstractFLWORClause {
 
     @Override
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
-        if (applyWhereExpression()) {
+        final List<NodeSet> carriers = new ArrayList<>();
+        final boolean passesWhere = applyWhereExpression(carriers);
+        if (passesWhere) {
+            propagateMatchCarriersForCurrentTuple(carriers);
             return returnExpr.eval(null, null);
         }
         return Sequence.EMPTY_SEQUENCE;
@@ -143,12 +153,106 @@ public class WhereClause extends AbstractFLWORClause {
         return super.postEval(seq);
     }
 
-    private boolean applyWhereExpression() throws XPathException {
+    private boolean applyWhereExpression(final List<NodeSet> carriers) throws XPathException {
         if (fastTrack) {
             return true;
         }
+
+        final Expression unwrappedWhereExpr = unwrapBooleanExpression(whereExpr);
+        if (unwrappedWhereExpr instanceof OpAnd opAnd) {
+            return evalExpressionWithCarriers(opAnd, carriers);
+        }
+
         final Sequence innerSeq = whereExpr.eval(null, null);
+        captureCarrierFromSequence(whereExpr, innerSeq, carriers);
         return innerSeq.effectiveBooleanValue();
+    }
+
+    private boolean evalExpressionWithCarriers(final Expression expr, final List<NodeSet> carriers) throws XPathException {
+        final Expression unwrappedExpr = unwrapBooleanExpression(expr);
+        if (unwrappedExpr instanceof OpAnd opAnd) {
+            if (!evalExpressionWithCarriers(opAnd.getLeft(), carriers)) {
+                return false;
+            }
+            return evalExpressionWithCarriers(opAnd.getRight(), carriers);
+        }
+
+        final Sequence seq = expr.eval(null, null);
+        captureCarrierFromSequence(expr, seq, carriers);
+        return seq.effectiveBooleanValue();
+    }
+
+    private void captureCarrierFromSequence(final Expression expr, final Sequence seq, final List<NodeSet> carriers) throws XPathException {
+        if (seq.isEmpty() || !seq.isPersistentSet() || !Type.subTypeOf(seq.getItemType(), Type.NODE)) {
+            return;
+        }
+        final Expression unwrappedExpr = unwrapBooleanExpression(expr);
+        if (!Type.subTypeOf(unwrappedExpr.returnsType(), Type.NODE) ||
+                Dependency.dependsOn(unwrappedExpr, Dependency.CONTEXT_ITEM)) {
+            return;
+        }
+
+        carriers.add(seq.toNodeSet());
+    }
+
+    private void propagateMatchCarriersForCurrentTuple(final List<NodeSet> carriers) throws XPathException {
+        if (fastTrack || carriers.isEmpty()) {
+            return;
+        }
+
+        LocalVariable startVar = getStartVariable();
+        if (startVar == null) {
+            final FLWORClause prev = getPreviousClause();
+            if (prev != null) {
+                // In some wrapped FLWOR shapes (e.g. XQSuite + debug wrappers), the
+                // tuple variable is attached to the previous clause, not this where.
+                startVar = prev.getStartVariable();
+            }
+        }
+        if (startVar == null) {
+            return;
+        }
+        final Sequence tupleSeq = startVar.getValue();
+        if (tupleSeq == null || tupleSeq.isEmpty() || !tupleSeq.isPersistentSet() ||
+                !Type.subTypeOf(tupleSeq.getItemType(), Type.NODE)) {
+            return;
+        }
+
+        final NodeSet contextSet = tupleSeq.toNodeSet();
+        for (final NodeSet carrier : carriers) {
+            propagateToContext(carrier, contextSet);
+        }
+    }
+
+    private void propagateToContext(final NodeSet carrierNodes, final NodeSet contextSet) {
+        final boolean contextIsVirtual = contextSet instanceof VirtualNodeSet;
+        for (final NodeProxy current : carrierNodes) {
+            ContextItem context = current.getContext();
+            while (context != null) {
+                final NodeProxy contextNode = context.getNode();
+                if (contextIsVirtual || contextSet.contains(contextNode)) {
+                    contextNode.addMatches(current);
+                }
+                context = context.getNextDirect();
+            }
+        }
+    }
+
+    private static Expression unwrapBooleanExpression(final Expression expr) {
+        Expression current = expr;
+        boolean changed = true;
+        while (changed) {
+            changed = false;
+            if (current instanceof DebuggableExpression debugExpr) {
+                current = debugExpr.getFirst();
+                changed = true;
+            }
+            if (current instanceof PathExpr pathExpr && pathExpr.getSubExpressionCount() == 1) {
+                current = pathExpr.getSubExpression(0);
+                changed = true;
+            }
+        }
+        return current;
     }
 
     @Override

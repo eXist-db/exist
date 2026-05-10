@@ -63,6 +63,8 @@ declare variable $ot:COLLECTION_CONFIG :=
                 </create>
                 <create match="/test/address/city/@code" type="xs:integer"/>
                 <create qname="@id" type="xs:string"/>
+                <create qname="foo" type="xs:string"/>
+                <create qname="bar" type="xs:string"/>
                 <!-- Extra indices for remaining range optimizer issues -->
                 <create qname="@bar" type="xs:string"/>
                 <create qname="@lemma" type="xs:string"/>
@@ -138,6 +140,11 @@ declare variable $ot:DATA :=
         <foo bar="bat"/>
         <foo bar="Baz"/>
         <foo bar="qux"/>
+        <!-- GitHub #2363: equivalent union formulations for contains() -->
+        <foo>hello</foo>
+        <foo>goodbye</foo>
+        <bar>say hello</bar>
+        <bar>say good day</bar>
         <!-- GitHub #4942: exists:force-index-use on range-indexed attribute qname(@ID) -->
         <root><a ID="123"/></root>
     </test>;
@@ -175,7 +182,7 @@ declare variable $ot:DATA_SR_WITH_DIACRITICS :=
             </body>
         </text>
     </TEI>;
-    
+
 declare variable $ot:COLLECTION_NAME := "optimizertest";
 declare variable $ot:COLLECTION := "/db/" || $ot:COLLECTION_NAME;
 
@@ -652,39 +659,39 @@ function ot:optimize-field-self($type as xs:string, $subtype as xs:string, $name
     collection($ot:COLLECTION)//tei:placeName[@type = $type][@subtype = $subtype][. = $name]/text()
 };
 
-declare 
+declare
     %test:assertEquals("Rudi Rüssel")
 function ot:parent-attr-equals() {
     collection($ot:COLLECTION)//name[parent::address/@id = "rüssel"]/text()
 };
 
-declare 
+declare
     %test:stats
     %test:assertXPath("$result//stats:index[@type eq 'range'][@optimization-level eq 'NONE']")
 function ot:optimize-parent-attr-equals() {
     collection($ot:COLLECTION)//name[parent::address/@id = "rüssel"]/text()
 };
 
-declare 
+declare
     %test:assertEquals("Rudi Rüssel")
 function ot:parent-nested-attr-equals() {
     collection($ot:COLLECTION)//name[parent::address[@id = "rüssel"]]/text()
 };
 
-declare 
+declare
     %test:stats
     %test:assertXPath("$result//stats:index[@type eq 'range'][@optimization-level eq 'NONE']")
 function ot:optimize-parent-nested-attr-equals() {
     collection($ot:COLLECTION)//name[parent::address[@id = "rüssel"]]/text()
 };
 
-declare 
+declare
     %test:assertEquals("Rudi Rüssel")
 function ot:self-parent-attr-equals() {
     collection($ot:COLLECTION)//name[./parent::address/@id = "rüssel"]/text()
 };
 
-declare 
+declare
     %test:assertEquals("Rudi Rüssel")
 function ot:self-parent-nested-attr-equals() {
     collection($ot:COLLECTION)//name[./parent::address[@id = "rüssel"]]/text()
@@ -914,6 +921,50 @@ declare
     %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
 function ot:issue5043-wildcard-path-uses-index($term as xs:string) {
     collection($ot:COLLECTION)//*/tei:w[@lemma eq $term]
+};
+
+(:~
+ : GitHub #2363 baseline: explicit branch-wise contains() predicates should optimize.
+ : @see https://github.com/eXist-db/exist/issues/2363
+ :)
+declare
+    %test:stats
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
+function ot:issue2363-formulation1-optimized() {
+    let $s := "hello"
+    return
+        collection($ot:COLLECTION)//foo[contains(., $s)] | collection($ot:COLLECTION)//bar[contains(., $s)]
+};
+
+(:~
+ : GitHub #2363 reproducer: predicate over a parenthesized union currently misses optimization.
+ : Marked pending while optimizer rewrite support for (A | B)[P] is implemented.
+ : @see https://github.com/eXist-db/exist/issues/2363
+ :)
+declare
+    %test:pending("Issue #2363: union predicate form is not optimized yet")
+    %test:stats
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
+function ot:issue2363-formulation2-optimized() {
+    let $s := "hello"
+    return
+        (collection($ot:COLLECTION)//foo | collection($ot:COLLECTION)//bar)[contains(., $s)]
+};
+
+(:~
+ : GitHub #2363 reproducer: path union step form currently misses optimization.
+ : Marked pending while optimizer rewrite support for //(foo|bar)[contains(...)] lands.
+ : @see https://github.com/eXist-db/exist/issues/2363
+ : @see https://github.com/eXist-db/exist/pull/6310
+ :)
+declare
+    %test:pending("Pull #6310: Distribute outer path over union-step branches")
+    %test:stats
+    %test:assertXPath("$result//stats:index[@type eq 'new-range'][@optimization-level eq 'OPTIMIZED']")
+function ot:issue2363-formulation3-optimized() {
+    let $s := "hello"
+    return
+        collection($ot:COLLECTION)//(foo|bar)[contains(., $s)]
 };
 
 (: GitHub #4942: exist:force-index-use on range-index expressions :)
