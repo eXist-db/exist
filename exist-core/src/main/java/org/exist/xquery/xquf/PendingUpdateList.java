@@ -707,7 +707,7 @@ public class PendingUpdateList {
 
         // Apply in-memory updates (for copy-modify)
         if (!inMemoryPrimitives.isEmpty()) {
-            applyInMemory(context, inMemoryPrimitives);
+            applyInMemory(inMemoryPrimitives);
         }
 
         // Apply persistent updates
@@ -719,7 +719,7 @@ public class PendingUpdateList {
     /**
      * Apply updates to in-memory nodes (used in copy-modify expressions).
      */
-    private void applyInMemory(final XQueryContext context, final List<UpdatePrimitive> prims) throws XPathException {
+    private void applyInMemory(final List<UpdatePrimitive> prims) throws XPathException {
         // W3C XQuery Update Facility 3.0, Section 3.3.3 — Application order:
         // Phase 1: upd:insertInto, upd:insertAttributes, upd:replaceValue (non-element), upd:rename
         // Phase 2: upd:insertBefore, upd:insertAfter, upd:insertIntoAsFirst, upd:insertIntoAsLast
@@ -820,8 +820,8 @@ public class PendingUpdateList {
         // the removed position, which we've already processed.
 
         // Separate attribute and non-attribute replaceNodes
-        final List<UpdatePrimitive> attrReplaceNodes = new java.util.ArrayList<>();
-        final List<UpdatePrimitive> nonAttrReplaceNodes = new java.util.ArrayList<>();
+        final List<UpdatePrimitive> attrReplaceNodes = new ArrayList<>();
+        final List<UpdatePrimitive> nonAttrReplaceNodes = new ArrayList<>();
         for (final UpdatePrimitive p : replaceNodes) {
             if (!replaceElementContentTargets.isEmpty()) {
                 final Node replTarget = p.getTargetNode();
@@ -1513,6 +1513,7 @@ public class PendingUpdateList {
         }
     }
 
+    @SuppressWarnings("PMD.UnusedFormalParameter") // TODO: context+transaction will be used once fn:put for persistent storage is implemented; keep signature aligned with sibling applyPersistent* methods
     private void applyPersistentPut(final XQueryContext context, final Txn transaction,
                                      final UpdatePrimitive p) throws XPathException {
         // fn:put implementation - store a document at the given URI

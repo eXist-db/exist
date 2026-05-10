@@ -797,8 +797,6 @@ public class XQUFBasicTest {
 
     @Test
     public void deleteAttributesTwoElements() throws XMLDBException {
-        final XQueryService service = testCollection.getService(XQueryService.class);
-
         // Delete one attr from each of two elements
         final String query =
                 "let $doc := <root><a x='1' y='2' z='3'/><b p='4' q='5' r='6'/></root> " +
@@ -1675,13 +1673,6 @@ public class XQUFBasicTest {
      */
     @Test
     public void deleteDocumentCommentsFollowsOperator() throws XMLDBException {
-        // Simulates the structure: document has root element, then comments after it
-        final String query =
-                "let $doc := <root/>\n" +
-                "return\n" +
-                "copy $c := $doc\n" +
-                "modify ()\n" +
-                "return $c";
         // Basic test: just make sure >> operator works
         final String followsTest =
                 "let $doc := parse-xml('<root><a/><b/></root>')\n" +

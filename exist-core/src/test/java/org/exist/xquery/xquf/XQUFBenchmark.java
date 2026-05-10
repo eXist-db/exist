@@ -51,6 +51,7 @@ import org.xmldb.api.modules.XQueryService;
  *       -Dexist.run.benchmarks=true -Ddependency-check.skip=true
  * </pre>
  */
+@SuppressWarnings("PMD.ClassNamingConventions") // benchmark, not a test class; gated by -Dexist.run.benchmarks=true
 public class XQUFBenchmark {
 
     @ClassRule

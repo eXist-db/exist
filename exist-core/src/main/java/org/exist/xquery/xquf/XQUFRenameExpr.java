@@ -130,11 +130,10 @@ public class XQUFRenameExpr extends AbstractExpression {
         }
 
         // XQDY0064: PI target name must not be "xml" (case-insensitive)
-        if (nodeType == Node.PROCESSING_INSTRUCTION_NODE) {
-            if ("xml".equalsIgnoreCase(qname.getLocalPart())) {
-                throw new XPathException(this, ErrorCodes.XQDY0064,
-                        "Processing instruction target name cannot be 'xml'.");
-            }
+        if (nodeType == Node.PROCESSING_INSTRUCTION_NODE
+                && "xml".equalsIgnoreCase(qname.getLocalPart())) {
+            throw new XPathException(this, ErrorCodes.XQDY0064,
+                    "Processing instruction target name cannot be 'xml'.");
         }
 
         final PendingUpdateList pul = context.getPendingUpdateList();
