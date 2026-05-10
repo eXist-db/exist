@@ -64,15 +64,21 @@ public class ElementImpl extends NodeImpl implements Element {
 
     @Override
     public boolean hasChildNodes() {
-        return (nodeNumber + 1) < document.size && document.treeLevel[nodeNumber + 1] > document.treeLevel[nodeNumber];
+        return getFirstChild() != null;
     }
 
     @Override
     public Node getFirstChild() {
-        final short level = document.treeLevel[nodeNumber];
-        final int nextNode = nodeNumber + 1;
-        if(nextNode < document.size && document.treeLevel[nextNode] > level) {
-            return document.getNode(nextNode);
+        int firstChild = document.getFirstChildFor(nodeNumber);
+        // Skip deleted nodes (nodeKind == -1) after in-memory mutations
+        while (firstChild >= 0 && document.nodeKind[firstChild] == -1) {
+            firstChild = document.next[firstChild];
+            if (firstChild < 0 || firstChild <= nodeNumber) {
+                return null;
+            }
+        }
+        if (firstChild >= 0) {
+            return document.getNode(firstChild);
         }
         return null;
     }
@@ -83,9 +89,11 @@ public class ElementImpl extends NodeImpl implements Element {
         final NodeListImpl nl = new NodeListImpl(1);  // nil elements are rare, so we use 1 here
         int nextNode = document.getFirstChildFor(nodeNumber);
         while(nextNode > nodeNumber) {
-            final Node n = document.getNode(nextNode);
-            if(n.getNodeType() != Node.ATTRIBUTE_NODE) {
-                nl.add(n);
+            if (document.nodeKind[nextNode] != -1) {
+                final Node n = document.getNode(nextNode);
+                if(n.getNodeType() != ATTRIBUTE_NODE) {
+                    nl.add(n);
+                }
             }
             nextNode = document.next[nextNode];
         }
@@ -300,15 +308,22 @@ public class ElementImpl extends NodeImpl implements Element {
 
     @Override
     public void selectDescendantAttributes(final NodeTest test, final Sequence result) throws XPathException {
-        final int treeLevel = document.treeLevel[nodeNumber];
-        int nextNode = nodeNumber;
-        NodeImpl n = document.getNode(nextNode);
-        n.selectAttributes(test, result);
-        while(++nextNode < document.size && document.treeLevel[nextNode] > treeLevel) {
-            n = document.getNode(nextNode);
-            if(n.getNodeType() == Node.ELEMENT_NODE) {
+        // Use chain-based traversal to find descendant attributes,
+        // including nodes appended by in-memory mutations.
+        selectAttributes(test, result);
+        selectDescendantAttributesWalk(nodeNumber, test, result);
+    }
+
+    private void selectDescendantAttributesWalk(final int parentNum, final NodeTest test, final Sequence result)
+        throws XPathException {
+        int child = document.getFirstChildFor(parentNum);
+        while (child >= 0) {
+            if (document.nodeKind[child] != -1 && document.nodeKind[child] == ELEMENT_NODE) {
+                final NodeImpl n = document.getNode(child);
                 n.selectAttributes(test, result);
+                selectDescendantAttributesWalk(child, test, result);
             }
+            child = document.getNextSiblingFor(child);
         }
     }
 
@@ -316,9 +331,11 @@ public class ElementImpl extends NodeImpl implements Element {
     public void selectChildren(final NodeTest test, final Sequence result) throws XPathException {
         int nextNode = document.getFirstChildFor(nodeNumber);
         while(nextNode > nodeNumber) {
-            final NodeImpl n = document.getNode(nextNode);
-            if(test.matches(n)) {
-                result.add(n);
+            if (document.nodeKind[nextNode] != -1) {
+                final NodeImpl n = document.getNode(nextNode);
+                if(test.matches(n)) {
+                    result.add(n);
+                }
             }
             nextNode = document.next[nextNode];
         }
@@ -333,21 +350,34 @@ public class ElementImpl extends NodeImpl implements Element {
     @Override
     public void selectDescendants(final boolean includeSelf, final NodeTest test, final Sequence result)
         throws XPathException {
-        final int treeLevel = document.treeLevel[nodeNumber];
-        int nextNode = nodeNumber;
-
-        if(includeSelf) {
-            final NodeImpl n = document.getNode(nextNode);
-            if(test.matches(n)) {
+        if (includeSelf) {
+            final NodeImpl n = document.getNode(nodeNumber);
+            if (test.matches(n)) {
                 result.add(n);
             }
         }
+        // Use chain-based tree walking instead of flat array scanning.
+        // Flat scanning from nodeNumber+1 misses nodes appended by in-memory
+        // mutations (insert as first, insert before, etc.) since those are placed
+        // at positions beyond the original tree.
+        selectDescendantsWalk(nodeNumber, test, result);
+    }
 
-        while(++nextNode < document.size && document.treeLevel[nextNode] > treeLevel) {
-            final NodeImpl n = document.getNode(nextNode);
-            if(test.matches(n)) {
-                result.add(n);
+    private void selectDescendantsWalk(final int parentNum, final NodeTest test, final Sequence result)
+        throws XPathException {
+        int child = document.getFirstChildFor(parentNum);
+        while (child >= 0) {
+            if (document.nodeKind[child] != -1) {
+                final NodeImpl n = document.getNode(child);
+                if (test.matches(n)) {
+                    result.add(n);
+                }
+                // Recurse into element children
+                if (document.nodeKind[child] == ELEMENT_NODE) {
+                    selectDescendantsWalk(child, test, result);
+                }
             }
+            child = document.getNextSiblingFor(child);
         }
     }
 

@@ -53,6 +53,7 @@ header {
     import org.exist.xquery.value.*;
     import org.exist.xquery.functions.fn.*;
     import org.exist.xquery.update.*;
+    import org.exist.xquery.xquf.*;
     import org.exist.storage.ElementValue;
     import org.exist.xquery.functions.map.MapExpr;
     import org.exist.xquery.functions.array.ArrayConstructor;
@@ -148,7 +149,7 @@ options {
         String ns = qname.getNamespaceURI();
         if (ns.equals(Namespaces.XPATH_FUNCTIONS_NS)) {
             String ln = qname.getLocalPart();
-            return ("private".equals(ln) || "public".equals(ln));
+            return ("private".equals(ln) || "public".equals(ln) || "updating".equals(ln));
         } else {
             return !(ns.equals(Namespaces.XML_NS)
                      || ns.equals(Namespaces.SCHEMA_NS)
@@ -211,6 +212,15 @@ options {
 
         //set the Annotations on the Function Signature
         signature.setAnnotations(anns);
+
+        // W3C XQuery Update Facility 3.0: %updating annotation
+        for (Annotation a : anns) {
+            if ("updating".equals(a.getName().getLocalPart())
+                    && Namespaces.XPATH_FUNCTIONS_NS.equals(a.getName().getNamespaceURI())) {
+                signature.setUpdating(true);
+                break;
+            }
+        }
     }
 
     private static void processParams(List varList, UserDefinedFunction func, FunctionSignature signature)
@@ -857,6 +867,9 @@ throws PermissionDeniedException, EXistException, XPathException
             }
             FunctionSignature signature= new FunctionSignature(qn);
             signature.setDescription(name.getDoc());
+            if (name instanceof XQueryFunctionAST && ((XQueryFunctionAST) name).isUpdating()) {
+                signature.setUpdating(true);
+            }
             UserDefinedFunction func= new UserDefinedFunction(context, signature);
             func.setASTNode(name);
             List varList= new ArrayList(3);
@@ -882,7 +895,14 @@ throws PermissionDeniedException, EXistException, XPathException
                 "as"
                 { SequenceType type= new SequenceType(); }
                 sequenceType [type]
-                { signature.setReturnType(type); }
+                {
+                    signature.setReturnType(type);
+                    // XUST0028: updating functions must not declare a return type
+                    if (signature.isUpdating()) {
+                        throw new XPathException(name.getLine(), name.getColumn(),
+                            ErrorCodes.XUST0028, "An updating function must not declare a return type.");
+                    }
+                }
             )
         )?
         (
@@ -2443,7 +2463,19 @@ throws PermissionDeniedException, EXistException, XPathException
     |
     step=numericExpr [path]
     |
+    // Legacy update (DEPRECATED)
     step=updateExpr [path]
+    |
+    // W3C XQuery Update Facility 3.0
+    step=xqufInsertExpr [path]
+    |
+    step=xqufDeleteExpr [path]
+    |
+    step=xqufReplaceExpr [path]
+    |
+    step=xqufRenameExpr [path]
+    |
+    step=xqufTransformExpr [path]
     ;
 
 /**
@@ -3978,6 +4010,10 @@ throws XPathException, PermissionDeniedException, EXistException
     }
     ;
 
+// === Legacy update (DEPRECATED - use W3C XQuery Update Facility 3.0 syntax instead) ===
+// To remove legacy update support, delete this rule and the updateExpr
+// alternative in the expr dispatch above.
+
 updateExpr [PathExpr path]
 returns [Expression step]
 throws XPathException, PermissionDeniedException, EXistException
@@ -3985,6 +4021,8 @@ throws XPathException, PermissionDeniedException, EXistException
 }:
     #( updateAST:"update"
         {
+            context.markLegacyUpdate(updateAST);
+
             PathExpr p1 = new PathExpr(context);
             p1.setASTNode(updateExpr_AST_in);
 
@@ -4029,6 +4067,179 @@ throws XPathException, PermissionDeniedException, EXistException
             mod.setASTNode(updateAST);
             path.add(mod);
             step = mod;
+        }
+    )
+    ;
+
+// === W3C XQuery Update Facility 3.0 tree walker rules ===
+
+xqufInsertExpr [PathExpr path]
+returns [Expression step]
+throws XPathException, PermissionDeniedException, EXistException
+{
+}:
+    #( insertAST:"insert"
+        {
+            context.markXQUFUpdate(insertAST);
+
+            PathExpr sourceExpr = new PathExpr(context);
+            sourceExpr.setASTNode(xqufInsertExpr_AST_in);
+
+            PathExpr targetExpr = new PathExpr(context);
+            targetExpr.setASTNode(xqufInsertExpr_AST_in);
+
+            int mode = XQUFInsertExpr.INSERT_INTO;
+        }
+        step=expr [sourceExpr]
+        (
+            "first" { mode = XQUFInsertExpr.INSERT_INTO_AS_FIRST; }
+            |
+            "last" { mode = XQUFInsertExpr.INSERT_INTO_AS_LAST; }
+            |
+            "into" { mode = XQUFInsertExpr.INSERT_INTO; }
+            |
+            "before" { mode = XQUFInsertExpr.INSERT_BEFORE; }
+            |
+            "after" { mode = XQUFInsertExpr.INSERT_AFTER; }
+        )
+        step=expr [targetExpr]
+        {
+            XQUFInsertExpr ins = new XQUFInsertExpr(context, sourceExpr, targetExpr, mode);
+            ins.setASTNode(insertAST);
+            path.add(ins);
+            step = ins;
+        }
+    )
+    ;
+
+xqufDeleteExpr [PathExpr path]
+returns [Expression step]
+throws XPathException, PermissionDeniedException, EXistException
+{
+}:
+    #( deleteAST:"delete"
+        {
+            context.markXQUFUpdate(deleteAST);
+
+            PathExpr targetExpr = new PathExpr(context);
+            targetExpr.setASTNode(xqufDeleteExpr_AST_in);
+        }
+        step=expr [targetExpr]
+        {
+            XQUFDeleteExpr del = new XQUFDeleteExpr(context, targetExpr);
+            del.setASTNode(deleteAST);
+            path.add(del);
+            step = del;
+        }
+    )
+    ;
+
+xqufReplaceExpr [PathExpr path]
+returns [Expression step]
+throws XPathException, PermissionDeniedException, EXistException
+{
+}:
+    #( replaceAST:"replace"
+        {
+            context.markXQUFUpdate(replaceAST);
+
+            PathExpr targetExpr = new PathExpr(context);
+            targetExpr.setASTNode(xqufReplaceExpr_AST_in);
+
+            PathExpr withExpr = new PathExpr(context);
+            withExpr.setASTNode(xqufReplaceExpr_AST_in);
+
+            boolean isValueOf = false;
+        }
+        (
+            "value" { isValueOf = true; }
+        )?
+        step=expr [targetExpr]
+        step=expr [withExpr]
+        {
+            Expression replExpr;
+            if (isValueOf) {
+                replExpr = new XQUFReplaceValueExpr(context, targetExpr, withExpr);
+            } else {
+                replExpr = new XQUFReplaceNodeExpr(context, targetExpr, withExpr);
+            }
+            replExpr.setASTNode(replaceAST);
+            path.add(replExpr);
+            step = replExpr;
+        }
+    )
+    ;
+
+xqufRenameExpr [PathExpr path]
+returns [Expression step]
+throws XPathException, PermissionDeniedException, EXistException
+{
+}:
+    #( renameAST:"rename"
+        {
+            context.markXQUFUpdate(renameAST);
+
+            PathExpr targetExpr = new PathExpr(context);
+            targetExpr.setASTNode(xqufRenameExpr_AST_in);
+
+            PathExpr nameExpr = new PathExpr(context);
+            nameExpr.setASTNode(xqufRenameExpr_AST_in);
+        }
+        step=expr [targetExpr]
+        step=expr [nameExpr]
+        {
+            XQUFRenameExpr ren = new XQUFRenameExpr(context, targetExpr, nameExpr);
+            ren.setASTNode(renameAST);
+            path.add(ren);
+            step = ren;
+        }
+    )
+    ;
+
+xqufTransformExpr [PathExpr path]
+returns [Expression step]
+throws XPathException, PermissionDeniedException, EXistException
+{
+}:
+    #( copyAST:"copy"
+        {
+            context.markXQUFUpdate(copyAST);
+
+            java.util.List copyBindings = new java.util.ArrayList();
+
+            PathExpr modifyExpr = new PathExpr(context);
+            modifyExpr.setASTNode(xqufTransformExpr_AST_in);
+
+            PathExpr returnExpr = new PathExpr(context);
+            returnExpr.setASTNode(xqufTransformExpr_AST_in);
+        }
+        (
+            #( VARIABLE_BINDING
+                {
+                    PathExpr bindingExpr = new PathExpr(context);
+                    bindingExpr.setASTNode(xqufTransformExpr_AST_in);
+                    String varName = #VARIABLE_BINDING.getText();
+                }
+                step=expr [bindingExpr]
+                {
+                    final org.exist.dom.QName copyVarQName;
+                    try {
+                        copyVarQName = org.exist.dom.QName.parse(context, varName, null);
+                    } catch (final org.exist.dom.QName.IllegalQNameException e) {
+                        throw new XPathException(xqufTransformExpr_AST_in, ErrorCodes.XPST0081,
+                            "Invalid variable name in copy binding: " + varName);
+                    }
+                    copyBindings.add(new XQUFTransformExpr.CopyBinding(copyVarQName, bindingExpr));
+                }
+            )
+        )+
+        step=expr [modifyExpr]
+        step=expr [returnExpr]
+        {
+            XQUFTransformExpr trans = new XQUFTransformExpr(context, copyBindings, modifyExpr, returnExpr);
+            trans.setASTNode(copyAST);
+            path.add(trans);
+            step = trans;
         }
     )
     ;

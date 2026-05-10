@@ -59,7 +59,7 @@ public class WhereClause extends AbstractFLWORClause {
     public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
         contextInfo.setParent(this);
         AnalyzeContextInfo newContextInfo = new AnalyzeContextInfo(contextInfo);
-        newContextInfo.setFlags(contextInfo.getFlags() | IN_PREDICATE | IN_WHERE_CLAUSE);
+        newContextInfo.setFlags(contextInfo.getFlags() | IN_PREDICATE | IN_WHERE_CLAUSE | NON_UPDATING_CONTEXT);
         newContextInfo.setContextId(getExpressionId());
         whereExpr.analyze(newContextInfo);
 

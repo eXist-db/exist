@@ -92,6 +92,7 @@ import org.exist.xquery.parser.*;
 import org.exist.xquery.pragmas.*;
 import org.exist.xquery.update.Modification;
 import org.exist.xquery.util.SerializerUtils;
+import org.exist.xquery.xquf.PendingUpdateList;
 import org.exist.xquery.value.*;
 import org.jgrapht.Graph;
 import org.jgrapht.alg.interfaces.ShortestPathAlgorithm;
@@ -287,6 +288,25 @@ public class XQueryContext implements BinaryValueManager, Context {
     protected MutableDocumentSet modifiedDocuments = null;
 
     /**
+     * W3C XQuery Update Facility 3.0 Pending Update List.
+     * Accumulates update primitives during query evaluation and is applied
+     * at snapshot boundaries.
+     */
+    private PendingUpdateList pendingUpdateList = new PendingUpdateList();
+
+    /**
+     * Tracks whether the current module uses the legacy eXist-db update syntax
+     * (update insert/delete/replace/rename/value). Set during tree walking.
+     */
+    private boolean hasLegacyUpdate = false;
+
+    /**
+     * Tracks whether the current module uses W3C XQuery Update Facility 3.0 syntax
+     * (insert node, delete node, replace node, etc.). Set during tree walking.
+     */
+    private boolean hasXQUFUpdate = false;
+
+    /**
      * A general-purpose map to set attributes in the current query context.
      */
     protected Map<String, Object> attributes = new HashMap<>();
@@ -369,6 +389,12 @@ public class XQueryContext implements BinaryValueManager, Context {
     private int expressionCounter = 0;
 
     private LockedDocumentMap protectedDocuments = null;
+
+    // --- Preclaiming lock targets (BaseX-style two-phase locking) ---
+    private Set<XmldbURI> preclaimDocumentTargets;
+    private Set<XmldbURI> preclaimCollectionTargets;
+    private boolean preclaimRequiresGlobalLock = false;
+    private final List<AutoCloseable> preclaimedLocks = new ArrayList<>();
 
     /**
      * The profiler instance used by this context.
@@ -1389,6 +1415,90 @@ public class XQueryContext implements BinaryValueManager, Context {
         return false;
     }
 
+    /**
+     * Collect lock targets from the compiled expression tree using
+     * a {@link org.exist.xquery.lock.LockTargetCollector}.
+     *
+     * @param root the compiled expression tree root
+     */
+    public void collectLockTargets(final Expression root) {
+        if (root == null) {
+            return;
+        }
+        final org.exist.xquery.lock.LockTargetCollector collector =
+                new org.exist.xquery.lock.LockTargetCollector();
+        collector.collect(root);
+        this.preclaimDocumentTargets = collector.getDocumentTargets();
+        this.preclaimCollectionTargets = collector.getCollectionTargets();
+        this.preclaimRequiresGlobalLock = collector.requiresGlobalLock();
+    }
+
+    /**
+     * Returns true if lock targets have been collected and preclaiming
+     * should be performed before evaluation.
+     */
+    public boolean hasPreclaimTargets() {
+        return preclaimDocumentTargets != null &&
+                (preclaimRequiresGlobalLock ||
+                 !preclaimDocumentTargets.isEmpty() ||
+                 !preclaimCollectionTargets.isEmpty());
+    }
+
+    /**
+     * Acquire preclaimed locks on all collected document and collection
+     * targets. If static analysis could not determine all targets,
+     * acquires a global collection write lock on /db as a safe fallback.
+     *
+     * <p>Locks are acquired in a consistent order (TreeSet natural ordering)
+     * to prevent deadlocks.</p>
+     *
+     * @throws LockException if lock acquisition fails
+     */
+    public void preclaimLocks() throws LockException {
+        if (preclaimDocumentTargets == null) {
+            return;
+        }
+        final org.exist.storage.lock.LockManager lockManager =
+                getBroker().getBrokerPool().getLockManager();
+
+        if (preclaimRequiresGlobalLock) {
+            // Fall back to global collection write lock on /db
+            preclaimedLocks.add(lockManager.acquireCollectionWriteLock(XmldbURI.ROOT_COLLECTION_URI));
+        } else {
+            // Acquire collection write locks first (sorted order)
+            for (final XmldbURI collectionUri : preclaimCollectionTargets) {
+                preclaimedLocks.add(lockManager.acquireCollectionWriteLock(collectionUri));
+            }
+            // Then acquire document write locks (sorted order)
+            for (final XmldbURI docUri : preclaimDocumentTargets) {
+                preclaimedLocks.add(lockManager.acquireDocumentWriteLock(docUri));
+            }
+        }
+    }
+
+    /**
+     * Release all preclaimed locks. Should be called in a finally block
+     * after query evaluation completes.
+     */
+    public void releasePreclaimedLocks() {
+        // Release in reverse order of acquisition
+        for (int i = preclaimedLocks.size() - 1; i >= 0; i--) {
+            try {
+                preclaimedLocks.get(i).close();
+            } catch (final Exception e) {
+                LOG.warn("Error releasing preclaimed lock", e);
+            }
+        }
+        preclaimedLocks.clear();
+    }
+
+    /**
+     * Returns true if preclaimed locks are currently held.
+     */
+    public boolean hasPreclaimedLocks() {
+        return !preclaimedLocks.isEmpty();
+    }
+
     @Override
     public void setShared(final boolean shared) {
         isShared = shared;
@@ -1405,6 +1515,59 @@ public class XQueryContext implements BinaryValueManager, Context {
             modifiedDocuments = new DefaultDocumentSet();
         }
         modifiedDocuments.add(document);
+    }
+
+    /**
+     * Get the W3C XQuery Update Facility 3.0 Pending Update List for this context.
+     *
+     * @return the current pending update list
+     */
+    public PendingUpdateList getPendingUpdateList() {
+        return pendingUpdateList;
+    }
+
+    /**
+     * Set the Pending Update List. Used by copy-modify expressions to create
+     * a nested PUL scope.
+     *
+     * @param pul the new pending update list
+     */
+    public void setPendingUpdateList(final PendingUpdateList pul) {
+        this.pendingUpdateList = pul;
+    }
+
+    /**
+     * Mark that the current module uses the legacy eXist-db update syntax.
+     * Called during tree walking when a legacy update expression is encountered.
+     *
+     * @param ast the AST node for error reporting
+     * @throws XPathException if this module already uses W3C XQUF syntax
+     */
+    public void markLegacyUpdate(final XQueryAST ast) throws XPathException {
+        if (hasXQUFUpdate) {
+            throw new XPathException(ast, ErrorCodes.XPST0003,
+                    "Cannot mix legacy 'update' syntax with W3C XQuery Update Facility expressions " +
+                    "in the same module. Migrate all updates to W3C syntax " +
+                    "(insert node, delete node, replace node, replace value of node, rename node).");
+        }
+        hasLegacyUpdate = true;
+    }
+
+    /**
+     * Mark that the current module uses W3C XQuery Update Facility 3.0 syntax.
+     * Called during tree walking when a XQUF expression is encountered.
+     *
+     * @param ast the AST node for error reporting
+     * @throws XPathException if this module already uses legacy update syntax
+     */
+    public void markXQUFUpdate(final XQueryAST ast) throws XPathException {
+        if (hasLegacyUpdate) {
+            throw new XPathException(ast, ErrorCodes.XPST0003,
+                    "Cannot mix W3C XQuery Update Facility expressions with legacy 'update' syntax " +
+                    "in the same module. Migrate all updates to W3C syntax " +
+                    "(insert node, delete node, replace node, replace value of node, rename node).");
+        }
+        hasXQUFUpdate = true;
     }
 
     @Override
@@ -1439,6 +1602,13 @@ public class XQueryContext implements BinaryValueManager, Context {
             }
             modifiedDocuments = null;
         }
+
+        // Reset the W3C XQuery Update Facility PUL
+        pendingUpdateList = new PendingUpdateList();
+
+        // Reset update syntax tracking flags
+        hasLegacyUpdate = false;
+        hasXQUFUpdate = false;
 
         calendar = null;
         implicitTimeZone = null;
