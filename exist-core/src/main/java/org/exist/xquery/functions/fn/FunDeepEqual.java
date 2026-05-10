@@ -30,6 +30,7 @@ import org.exist.dom.persistent.NodeProxy;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.NodeImpl;
 import org.exist.dom.memtree.ReferenceNode;
+import org.exist.storage.DBBroker;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.Constants;
 import org.exist.xquery.Dependency;
@@ -55,6 +56,8 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
 import javax.annotation.Nullable;
+import javax.xml.stream.XMLStreamException;
+import java.io.IOException;
 
 /**
  * Implements the fn:deep-equal library function.
@@ -123,7 +126,8 @@ public class FunDeepEqual extends CollatingFunction {
         }
         final Sequence[] args = getArguments(contextSequence, contextItem);
         final Collator collator = getCollator(contextSequence, contextItem, 3);
-        final Sequence result = BooleanValue.valueOf(deepEqualsSeq(args[0], args[1], collator));
+        final Sequence result = BooleanValue.valueOf(
+                deepEqualsSeq(args[0], args[1], collator, context.getBroker()));
         if (context.getProfiler().isEnabled()) 
             {context.getProfiler().end(this, "", result);} 
         return result;
@@ -139,6 +143,26 @@ public class FunDeepEqual extends CollatingFunction {
      * @return a negative integer, zero, or a positive integer, if the first argument is less than, equal to, or greater than the second.
      */
     public static int deepCompareSeq(final Sequence sequence1, final Sequence sequence2, @Nullable final Collator collator) {
+        return deepCompareSeq(sequence1, sequence2, collator, null);
+    }
+
+    /**
+     * Broker-aware variant of {@link #deepCompareSeq(Sequence, Sequence, Collator)}.
+     *
+     * <p>When a non-null {@code broker} is supplied and an item pair is
+     * a persistent {@code DOCUMENT} or {@code ELEMENT}, the comparison
+     * uses {@link FunDeepEqualStreamingComparator} as a fast path. Other
+     * shapes (atomic, memtree, attribute, text, map, array) fall through
+     * to the legacy recursive path.
+     *
+     * @param sequence1 first sequence.
+     * @param sequence2 second sequence.
+     * @param collator collation, or {@code null} for code-point.
+     * @param broker active broker, or {@code null} to disable the fast path.
+     * @return {@link Constants#EQUAL} / {@link Constants#INFERIOR} / {@link Constants#SUPERIOR}.
+     */
+    public static int deepCompareSeq(final Sequence sequence1, final Sequence sequence2,
+            @Nullable final Collator collator, @Nullable final DBBroker broker) {
         if (sequence1 == sequence2) {
             return Constants.EQUAL;
         }
@@ -150,7 +174,7 @@ public class FunDeepEqual extends CollatingFunction {
                 final Item item1 = sequence1.itemAt(i);
                 final Item item2 = sequence2.itemAt(i);
 
-                final int comparison = deepCompare(item1, item2, collator);
+                final int comparison = deepCompare(item1, item2, collator, broker);
                 if (comparison != Constants.EQUAL) {
                     return comparison;
                 }
@@ -173,6 +197,26 @@ public class FunDeepEqual extends CollatingFunction {
      * @throws UnexpectedItemTypeException if an item has an unknown type.
      */
     public static int deepCompare(final Item item1, final Item item2, @Nullable final Collator collator) {
+        return deepCompare(item1, item2, collator, null);
+    }
+
+    /**
+     * Broker-aware variant of {@link #deepCompare(Item, Item, Collator)}.
+     *
+     * <p>When a non-null {@code broker} is supplied and the item pair is
+     * a persistent {@code DOCUMENT} or {@code ELEMENT}, the comparison
+     * uses {@link FunDeepEqualStreamingComparator} as a fast path. On
+     * stream / IO failure the call falls through to the legacy recursive
+     * path so correctness is preserved.
+     *
+     * @param item1 first item.
+     * @param item2 second item.
+     * @param collator collation, or {@code null} for code-point.
+     * @param broker active broker, or {@code null} to disable the fast path.
+     * @return {@link Constants#EQUAL} / {@link Constants#INFERIOR} / {@link Constants#SUPERIOR}.
+     */
+    public static int deepCompare(final Item item1, final Item item2,
+            @Nullable final Collator collator, @Nullable final DBBroker broker) {
         if (item1 == item2) {
             return Constants.EQUAL;
         }
@@ -188,7 +232,7 @@ public class FunDeepEqual extends CollatingFunction {
                 final int array2Size = array2.getSize();
                 if (array1Size == array2Size) {
                     for (int i = 0; i < array1.getSize(); i++) {
-                        final int comparison = deepCompareSeq(array1.get(i), array2.get(i), collator);
+                        final int comparison = deepCompareSeq(array1.get(i), array2.get(i), collator, broker);
                         if (comparison != Constants.EQUAL) {
                             return comparison;
                         }
@@ -214,7 +258,7 @@ public class FunDeepEqual extends CollatingFunction {
                             return Constants.SUPERIOR;
                         }
 
-                        final int comparison = deepCompareSeq(entry1.value(), map2.get(entry1.key()), collator);
+                        final int comparison = deepCompareSeq(entry1.value(), map2.get(entry1.key()), collator, broker);
                         if (comparison != Constants.EQUAL) {
                             return comparison;
                         }
@@ -281,11 +325,43 @@ public class FunDeepEqual extends CollatingFunction {
             final Node node2;
             switch (item1.getType()) {
                 case Type.DOCUMENT:
+                    // GH-4050 fast path: persistent-DOM streaming comparator.
+                    // Falls through to legacy on stream/IO failure to preserve correctness.
+                    if (broker != null
+                            && nva instanceof NodeProxy npa
+                            && nvb instanceof NodeProxy npb
+                            && nva.getImplementationType() == NodeValue.PERSISTENT_NODE
+                            && nvb.getImplementationType() == NodeValue.PERSISTENT_NODE) {
+                        try {
+                            return FunDeepEqualStreamingComparator.compare(
+                                    broker, npa, npb, /*subtree=*/false, collator);
+                        } catch (final XMLStreamException | IOException | RuntimeException e) {
+                            if (logger.isDebugEnabled()) {
+                                logger.debug("Streaming deep-equal fast path failed, falling back: "
+                                        + e.getMessage());
+                            }
+                        }
+                    }
                     node1 = nva instanceof Node nnva ? nnva : ((NodeProxy) nva).getOwnerDocument();
                     node2 = nvb instanceof Node nnvb ? nnvb : ((NodeProxy) nvb).getOwnerDocument();
                     return compareContents(node1, node2, collator);
 
                 case Type.ELEMENT:
+                    if (broker != null
+                            && nva instanceof NodeProxy npea
+                            && nvb instanceof NodeProxy npeb
+                            && nva.getImplementationType() == NodeValue.PERSISTENT_NODE
+                            && nvb.getImplementationType() == NodeValue.PERSISTENT_NODE) {
+                        try {
+                            return FunDeepEqualStreamingComparator.compare(
+                                    broker, npea, npeb, /*subtree=*/true, collator);
+                        } catch (final XMLStreamException | IOException | RuntimeException e) {
+                            if (logger.isDebugEnabled()) {
+                                logger.debug("Streaming deep-equal fast path failed, falling back: "
+                                        + e.getMessage());
+                            }
+                        }
+                    }
                     node1 = nva.getNode();
                     node2 = nvb.getNode();
                     return compareElements(node1, node2, collator);
@@ -340,6 +416,21 @@ public class FunDeepEqual extends CollatingFunction {
      */
     public static boolean deepEqualsSeq(final Sequence sequence1, final Sequence sequence2, @Nullable final Collator collator) {
         return deepCompareSeq(sequence1, sequence2, collator) == Constants.EQUAL;
+    }
+
+    /**
+     * Broker-aware variant of {@link #deepEqualsSeq(Sequence, Sequence, Collator)}.
+     *
+     * @param sequence1 first sequence.
+     * @param sequence2 second sequence.
+     * @param collator collation, or {@code null} for code-point.
+     * @param broker active broker, or {@code null} to disable the streaming
+     * fast path on persistent-DOM nodes.
+     * @return true iff the sequences are deep-equal.
+     */
+    public static boolean deepEqualsSeq(final Sequence sequence1, final Sequence sequence2,
+            @Nullable final Collator collator, @Nullable final DBBroker broker) {
+        return deepCompareSeq(sequence1, sequence2, collator, broker) == Constants.EQUAL;
     }
 
     /**
