@@ -524,11 +524,8 @@ public class XQueryContext implements BinaryValueManager, Context {
             }
         }
 
-        // Copy in-scope namespaces too. Hosts (e.g. the XQTS runner) register
-        // environment-supplied prefixes via declareInScopeNamespace before
-        // compilation, and the tree parser's QName.parse() consults this map
-        // when resolving path-step names. Dropping it produced spurious
-        // XPST0081 errors during compile.
+        // Copy in-scope namespaces registered via declareInScopeNamespace. Otherwise QName.parse()
+        // will raise error XPST0081 when resolving path-step names in any of those.
         for (final Map.Entry<String, String> entry : copyFrom.inScopeNamespaces.entrySet()) {
             inScopeNamespaces.put(entry.getKey(), entry.getValue());
             inScopePrefixes.put(entry.getValue(), entry.getKey());
