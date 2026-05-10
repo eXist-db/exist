@@ -25,7 +25,8 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
     xmlns:cr="http://exist-db.org/exist-xqts/compare-results"
-    exclude-result-prefixes="xs"
+    xmlns:ri="http://exist-db.org/exist-xqts-runner/runner-info"
+    exclude-result-prefixes="xs ri"
     version="2.0">
 
     <xsl:param name="xqts.previous.junit-data-path" as="xs:string" required="yes"/>
@@ -43,8 +44,16 @@
                 <xsl:sequence select="cr:new-changes($previous-summary/cr:results, $current-summary/cr:results, .)"/>
             </xsl:for-each>
         </xsl:variable>
+        <xsl:variable name="previous-runner-info" as="document-node()?" select="cr:load-runner-info($xqts.previous.junit-data-path)"/>
+        <xsl:variable name="current-runner-info" as="document-node()?" select="cr:load-runner-info($xqts.current.junit-data-path)"/>
         <xsl:document>
             <cr:comparison>
+                <xsl:variable name="warnings" as="element(cr:warning)*" select="cr:drift-warnings($previous-runner-info, $current-runner-info)"/>
+                <xsl:if test="exists($warnings)">
+                    <cr:warnings>
+                        <xsl:sequence select="$warnings"/>
+                    </cr:warnings>
+                </xsl:if>
                 <cr:previous>
                     <xsl:copy select="$previous-summary/cr:results">
                         <xsl:copy-of select="@*"/>
@@ -106,10 +115,10 @@
         <xsl:param name="previous-results" as="element(cr:results)" required="yes"/>
         <xsl:param name="current-results" as="element(cr:results)" required="yes"/>
         <xsl:param name="attr-name" as="xs:string" required="yes"/>
-        
+
         <xsl:variable name="previous-attr" select="$previous-results/@*[local-name(.) eq $attr-name]"/>
         <xsl:variable name="current-attr" select="$current-results/@*[local-name(.) eq $attr-name]"/>
-        
+
         <xsl:attribute name="{$attr-name}" select="$current-attr - $previous-attr"/>
         <xsl:choose>
             <xsl:when test="$attr-name eq 'pass'">
@@ -138,5 +147,72 @@
             <xsl:copy-of select="failure|error"/>
         </xsl:copy>
     </xsl:template>
+
+    <!--
+        Locate `runner-info.xml` next to the run's output dir. The junit data
+        path is `<output>/junit/data`, so the metadata file sits two levels up.
+        Returns the empty sequence if the file is missing or unparseable, so
+        the warning step degrades to a no-op rather than failing the comparison.
+    -->
+    <xsl:function name="cr:load-runner-info" as="document-node()?">
+        <xsl:param name="junit-data-path" as="xs:string"/>
+        <xsl:variable name="uri" select="concat($junit-data-path, '/../../runner-info.xml')"/>
+        <xsl:choose>
+            <xsl:when test="doc-available($uri)">
+                <xsl:sequence select="doc($uri)"/>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:sequence select="()"/>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:function>
+
+    <!--
+        Emit a `cr:warning` per drift kind detected. The two kinds:
+          - runner-drift: runner-JAR git-sha or sha256 differs between the runs
+          - embedded-exist-core-drift: embedded `exist-core` version differs
+            even when the runner JAR git-sha matches
+        See https://github.com/eXist-db/exist/issues/6326.
+    -->
+    <xsl:function name="cr:drift-warnings" as="element(cr:warning)*">
+        <xsl:param name="previous" as="document-node()?"/>
+        <xsl:param name="current" as="document-node()?"/>
+        <xsl:if test="exists($previous) and exists($current)">
+            <xsl:variable name="prev-jar-sha" select="string($previous//ri:runner-jar/ri:git-sha[not(@unknown='true')])"/>
+            <xsl:variable name="curr-jar-sha" select="string($current//ri:runner-jar/ri:git-sha[not(@unknown='true')])"/>
+            <xsl:variable name="prev-jar-hash" select="string($previous//ri:runner-jar/ri:sha256[not(@unknown='true')])"/>
+            <xsl:variable name="curr-jar-hash" select="string($current//ri:runner-jar/ri:sha256[not(@unknown='true')])"/>
+            <xsl:variable name="prev-core-ver" select="string($previous//ri:embedded-exist-core/ri:version[not(@unknown='true')])"/>
+            <xsl:variable name="curr-core-ver" select="string($current//ri:embedded-exist-core/ri:version[not(@unknown='true')])"/>
+
+            <xsl:variable name="runner-drift" as="xs:boolean" select="
+                ($prev-jar-sha ne '' and $curr-jar-sha ne '' and $prev-jar-sha ne $curr-jar-sha)
+                or ($prev-jar-hash ne '' and $curr-jar-hash ne '' and $prev-jar-hash ne $curr-jar-hash)"/>
+
+            <xsl:if test="$runner-drift">
+                <cr:warning kind="runner-drift">
+                    <cr:summary>Runner JAR build SHA or sha256 differs between the previous and current XQTS runs. Test deltas may include runner-side effects unrelated to this PR. See https://github.com/eXist-db/exist/issues/6326.</cr:summary>
+                    <cr:previous>
+                        <xsl:copy-of select="$previous//ri:runner-jar"/>
+                    </cr:previous>
+                    <cr:current>
+                        <xsl:copy-of select="$current//ri:runner-jar"/>
+                    </cr:current>
+                </cr:warning>
+            </xsl:if>
+
+            <xsl:if test="not($runner-drift) and $prev-core-ver ne '' and $curr-core-ver ne '' and $prev-core-ver ne $curr-core-ver">
+                <cr:warning kind="embedded-exist-core-drift">
+                    <cr:summary>The runner JAR appears identical, but the embedded `exist-core` version differs between the runs. Test deltas may include `exist-core` shading effects rather than the eXist source under test.</cr:summary>
+                    <cr:previous>
+                        <xsl:copy-of select="$previous//ri:embedded-exist-core"/>
+                    </cr:previous>
+                    <cr:current>
+                        <xsl:copy-of select="$current//ri:embedded-exist-core"/>
+                    </cr:current>
+                </cr:warning>
+            </xsl:if>
+        </xsl:if>
+    </xsl:function>
 
 </xsl:stylesheet>
