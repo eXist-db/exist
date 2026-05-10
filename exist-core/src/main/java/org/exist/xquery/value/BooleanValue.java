@@ -226,4 +226,9 @@ public class BooleanValue extends AtomicValue {
         }
         return false;
     }
+
+    @Override
+    public int hashCode() {
+        return Boolean.hashCode(value);
+    }
 }

@@ -490,11 +490,6 @@ public class DoubleValue extends NumericValue {
         return getType() < other.getType() ? Constants.INFERIOR : Constants.SUPERIOR;
     }
 
-    @Override
-    public int hashCode() {
-        return Double.valueOf(value).hashCode();
-    }
-
     /**
      * Serializes to a ByteBuffer.
      * 8 bytes.

@@ -562,11 +562,6 @@ public class IntegerValue extends NumericValue {
         }
     }
 
-    @Override
-    public int hashCode() {
-        return value.hashCode();
-    }
-
     //TODO(AR) this is not a very good serialization method, the size of the IntegerValue is unbounded and may not fit in 8 bytes.
     /**
      * Serializes to a byte array.

@@ -496,11 +496,6 @@ public class DecimalValue extends NumericValue {
         }
     }
 
-    @Override
-    public int hashCode() {
-        return value.hashCode();
-    }
-
     //Copied from Saxon 8.8
 
     /* (non-Javadoc)

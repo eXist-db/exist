@@ -529,11 +529,6 @@ public class FloatValue extends NumericValue {
         }
     }
 
-    @Override
-    public int hashCode() {
-        return Float.valueOf(value).hashCode();
-    }
-
     /**
      * Serializes to a ByteBuffer.
      *
