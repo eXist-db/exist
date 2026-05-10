@@ -455,7 +455,10 @@ public class IntegerValue extends NumericValue {
 
     @Override
     public NumericValue abs() throws XPathException {
-        return new IntegerValue(getExpression(), value.abs(), type);
+        // Per XPath F&O fn:abs: if $arg is derived from xs:integer, the result is
+        // xs:integer, not the derived subtype. Preserving the subtype caused
+        // FORG0001 for abs(xs:int(-2147483648)) and abs(xs:negativeInteger(...)).
+        return new IntegerValue(getExpression(), value.abs());
     }
 
     @Override
