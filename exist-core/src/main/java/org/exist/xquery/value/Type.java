@@ -531,21 +531,15 @@ public class Type {
             return false;
         }
 
-        // Skip both union-type lookups when no union types are registered.
-        // The static initialiser registers NUMERIC and ERROR so the guarded
-        // branch is taken in current builds; the isEmpty() check protects
-        // against future evolution where union registration becomes optional.
-        if (!unionTypes.isEmpty()) {
-            // Single get() rather than containsKey() + a redundant get() inside
-            // subTypeOfUnion: halves map traversals on the union dispatch path.
-            final IntArraySet supertypeMembers = unionTypes.get(supertype);
-            if (supertypeMembers != null) {
-                return subTypeOfUnion(subtype, supertype, supertypeMembers);
-            }
-            final IntArraySet subtypeMembers = unionTypes.get(subtype);
-            if (subtypeMembers != null) {
-                return unionMembersHaveSuperType(subtype, supertype, subtypeMembers);
-            }
+        // Single get() rather than containsKey() + a redundant get() inside
+        // subTypeOfUnion: halves map traversals on the union dispatch path.
+        final IntArraySet supertypeMembers = unionTypes.get(supertype);
+        if (supertypeMembers != null) {
+            return subTypeOfUnion(subtype, supertype, supertypeMembers);
+        }
+        final IntArraySet subtypeMembers = unionTypes.get(subtype);
+        if (subtypeMembers != null) {
+            return unionMembersHaveSuperType(subtype, supertype, subtypeMembers);
         }
 
         subtype = superTypes[subtype];
