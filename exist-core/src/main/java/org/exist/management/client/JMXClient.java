@@ -51,16 +51,35 @@ import static org.exist.util.ArgumentUtil.getBool;
 import static se.softhouse.jargo.Arguments.*;
 
 /**
+ * Command-line JMX client for monitoring a running eXist-db instance.
+ * <p>
+ * Connects to an eXist-db JMX endpoint via RMI and prints statistics about
+ * memory usage, cache state, lock contention, sanity reports, and running jobs.
+ * Intended to be invoked via {@code bin/jmxclient.sh}.
+ * </p>
  */
 public class JMXClient {
 
     private MBeanServerConnection connection;
     private String instance;
 
+    /**
+     * Creates a new JMXClient targeting the named eXist-db database instance.
+     *
+     * @param instanceName the JMX instance name used in MBean object names
+     *                     (e.g. {@code "exist"} for {@code org.exist.management.exist:…})
+     */
     public JMXClient(String instanceName) {
         this.instance = instanceName;
     }
 
+    /**
+     * Opens a JMX/RMI connection to the specified server.
+     *
+     * @param address hostname or IP address of the eXist-db server
+     * @param port    RMI registry port (typically {@code 1099})
+     * @throws IOException if the connection cannot be established
+     */
     public void connect(String address,int port) throws IOException {
         final JMXServiceURL url =
                 new JMXServiceURL("service:jmx:rmi:///jndi/rmi://"+address+":" + port + "/jmxrmi");
@@ -73,6 +92,10 @@ public class JMXClient {
         echo("Connected to MBean server.");
     }
 
+    /**
+     * Prints JVM heap memory statistics (used, committed, and max heap) to stdout.
+     * Reads the {@code java.lang:type=Memory} MBean.
+     */
     public void memoryStats() {
         try {
             final ObjectName name = new ObjectName("java.lang:type=Memory");
@@ -88,30 +111,42 @@ public class JMXClient {
         }
     }
 
+    /**
+     * Prints eXist-db instance statistics to stdout, including reserved/cache memory,
+     * broker pool counts, and any currently active broker threads.
+     * Reads the {@code org.exist.management.&lt;instance&gt;:type=Database} MBean.
+     */
     public void instanceStats() {
         try {
             echo("\nINSTANCE:");
             final ObjectName name = new ObjectName("org.exist.management." + instance + ":type=Database");
             final Long memReserved = (Long) connection.getAttribute(name, "ReservedMem");
-            echo("%25s: %10d k".formatted("Reserved memory", memReserved / 1024));
+            echo("%25s: %10d k".formatted("Reserved memory", memReserved != null ? memReserved / 1024 : 0L));
             final Long memCache = (Long) connection.getAttribute(name, "CacheMem");
-            echo("%25s: %10d k".formatted("Cache memory", memCache / 1024));
+            echo("%25s: %10d k".formatted("Cache memory", memCache != null ? memCache / 1024 : 0L));
             final Long memCollCache = (Long) connection.getAttribute(name, "CollectionCacheMem");
-            echo("%25s: %10d k".formatted("Collection cache memory", memCollCache / 1024));
+            echo("%25s: %10d k".formatted("Collection cache memory", memCollCache != null ? memCollCache / 1024 : 0L));
 
             final String cols[] = { "MaxBrokers", "AvailableBrokers", "ActiveBrokers" };
             echo("\n%17s %17s %17s".formatted(cols[0], cols[1], cols[2]));
             final AttributeList attrs = connection.getAttributes(name, cols);
-            final Object values[] = getValues(attrs);
-            echo("%17d %17d %17d".formatted(values[0], values[1], values[2]));
+            final Object values[] = getValues(attrs, cols);
+            echo("%17d %17d %17d".formatted(
+                    values[0] != null ? values[0] : 0,
+                    values[1] != null ? values[1] : 0,
+                    values[2] != null ? values[2] : 0));
 
-            final TabularData table = (TabularData) connection.getAttribute(name, "ActiveBrokersMap");
-            if (!table.isEmpty()) {
+            final Object activeBrokersRaw = connection.getAttribute(name, "ActiveBrokersMap");
+            final CompositeData[] activeBrokers = activeBrokersRaw instanceof CompositeData[]
+                    ? (CompositeData[]) activeBrokersRaw
+                    : activeBrokersRaw instanceof TabularData
+                        ? ((TabularData) activeBrokersRaw).values().toArray(new CompositeData[0])
+                        : new CompositeData[0];
+            if (activeBrokers.length > 0) {
                 echo("\nCurrently active threads:");
             }
 
-            for (Object o : table.values()) {
-                final CompositeData data = (CompositeData) o;
+            for (final CompositeData data : activeBrokers) {
                 echo("\t%20s: %3d".formatted(data.get("owner"), data.get("referenceCount")));
             }
         } catch (final Exception e) {
@@ -119,55 +154,81 @@ public class JMXClient {
         }
     }
 
+    /**
+     * Prints cache statistics to stdout, including per-cache type, file name, size,
+     * usage, hits, and failures, as well as collection-cache totals.
+     * Reads the {@code CacheManager} and {@code CollectionCacheManager} MBeans.
+     */
     public void cacheStats() {
         try {
             ObjectName name = new ObjectName("org.exist.management." + instance + ":type=CacheManager");
             String cols[] = { "MaxTotal", "CurrentSize" };
             AttributeList attrs = connection.getAttributes(name, cols);
-            Object values[] = getValues(attrs);
-            echo("\nCACHE [%8d pages max. / %8d pages allocated]".formatted(values[0], values[1]));
+            Object values[] = getValues(attrs, cols);
+            echo("\nCACHE [%8d pages max. / %8d pages allocated]".formatted(
+                    values[0] != null ? values[0] : 0,
+                    values[1] != null ? values[1] : 0));
 
             final Set<ObjectName> beans = connection.queryNames(new ObjectName("org.exist.management." + instance + ":type=CacheManager.Cache,*"), null);
-            cols = new String[] {"Type", "FileName", "Size", "Used", "Hits", "Fails"};
-            echo("%10s %20s %10s %10s %10s %10s".formatted(cols[0], cols[1], cols[2], cols[3], cols[4], cols[5]));
+            cols = new String[] {"Type", "CacheName", "Size", "Used", "Hits", "Fails"};
+            echo("%10s %20s %10s %10s %10s %10s".formatted(cols[0], "FileName", cols[2], cols[3], cols[4], cols[5]));
+            final List<Object[]> cacheRows = new ArrayList<>();
             for (ObjectName bean : beans) {
-                name = bean;
-                attrs = connection.getAttributes(name, cols);
-                values = getValues(attrs);
-                echo("%10s %20s %,10d %,10d %,10d %,10d".formatted(values[0], values[1], values[2], values[3], values[4], values[5]));
+                attrs = connection.getAttributes(bean, cols);
+                cacheRows.add(getValues(attrs, cols));
+            }
+            cacheRows.sort(Comparator
+                    .comparing((Object[] r) -> r[1] != null ? r[1].toString() : "")
+                    .thenComparing(r -> r[0] != null ? r[0].toString() : ""));
+            for (final Object[] row : cacheRows) {
+                echo("%10s %20s %,10d %,10d %,10d %,10d".formatted(
+                        row[0] != null ? row[0] : "N/A",
+                        row[1] != null ? row[1] : "N/A",
+                        row[2] != null ? row[2] : 0L,
+                        row[3] != null ? row[3] : 0L,
+                        row[4] != null ? row[4] : 0L,
+                        row[5] != null ? row[5] : 0L));
             }
             
             echo("");
-           name = new ObjectName("org.exist.management." + instance + ":type=CollectionCacheManager");
-            cols = new String[] { "MaxTotal", "CurrentSize" };
+            name = new ObjectName("org.exist.management." + instance + ":type=CollectionCache");
+            cols = new String[] { "MaxCacheSize" };
             attrs = connection.getAttributes(name, cols);
-            values = getValues(attrs);
-           echo("Collection Cache: %10d k max / %10d k allocated".formatted(
-                   ((Long)values[0] / 1024), ((Long)values[1] / 1024)));
+            values = getValues(attrs, cols);
+            echo("Collection Cache: %10d k max".formatted(
+                    values[0] != null ? (Long)values[0] / 1024 : 0L));
         } catch (final Exception e) {
             error(e);
         }
     }
 
+    /**
+     * Prints the list of threads currently waiting for a lock to stdout.
+     * Useful for diagnosing deadlocks. During normal operation the list is empty.
+     * Reads the {@code org.exist.management.&lt;instance&gt;:type=LockTable} MBean.
+     */
     public void lockTable() {
         echo("\nList of threads currently waiting for a lock:");
         echo("-----------------------------------------------");
         try {
-            final TabularData table = (TabularData) connection.getAttribute(new ObjectName("org.exist.management:type=LockManager"), "WaitingThreads");
-            for (Object o : table.values()) {
-                final CompositeData data = (CompositeData) o;
-                echo("Thread " + data.get("waitingThread"));
-                echo("%20s: %s".formatted("Lock type", data.get("lockType")));
-                echo("%20s: %s".formatted("Lock mode", data.get("lockMode")));
-                echo("%20s: %s".formatted("Lock id", data.get("id")));
-                echo("%20s: %s".formatted("Held by", Arrays.toString((String[])data.get("owner"))));
-                final String[] readers = (String[]) data.get("waitingForRead");
-                if (readers.length > 0) {
-                    echo("%20s: %s".formatted("Wait for read", Arrays.toString(readers)));
-                }
-                final String[] writers = (String[]) data.get("waitingForWrite");
-                if (writers.length > 0) {
-                    echo("%20s: %s".formatted("Wait for write", Arrays.toString(writers)));
+            final ObjectName name = new ObjectName("org.exist.management." + instance + ":type=LockTable");
+            @SuppressWarnings("unchecked")
+            final Map<String, Map<String, List<Map<String, ?>>>> attempting =
+                    (Map<String, Map<String, List<Map<String, ?>>>>) connection.getAttribute(name, "Attempting");
+            if (attempting == null || attempting.isEmpty()) {
+                echo("(none)");
+                return;
+            }
+            for (final Map.Entry<String, Map<String, List<Map<String, ?>>>> lockEntry : attempting.entrySet()) {
+                final String lockId = lockEntry.getKey();
+                for (final Map.Entry<String, List<Map<String, ?>>> typeEntry : lockEntry.getValue().entrySet()) {
+                    final String lockType = typeEntry.getKey();
+                    for (final Map<String, ?> modeOwner : typeEntry.getValue()) {
+                        echo("%20s: %s".formatted("Lock id", lockId));
+                        echo("%20s: %s".formatted("Lock type", lockType));
+                        echo("%20s: %s".formatted("Lock mode", modeOwner.get("lockMode")));
+                        echo("%20s: %s".formatted("Waiting thread", modeOwner.get("ownerThread")));
+                    }
                 }
             }
         } catch (final MBeanException | AttributeNotFoundException | InstanceNotFoundException | ReflectionException | IOException | MalformedObjectNameException e) {
@@ -175,6 +236,11 @@ public class JMXClient {
         }
     }
 
+    /**
+     * Prints the latest sanity-check report to stdout, including status,
+     * start/end timestamps, duration, and any reported errors.
+     * Reads the {@code org.exist.management.&lt;instance&gt;.tasks:type=SanityReport} MBean.
+     */
     public void sanityReport() {
         echo("\nSanity report");
         echo("-----------------------------------------------");
@@ -184,23 +250,28 @@ public class JMXClient {
             final Date lastCheckStart = (Date) connection.getAttribute(name, "LastCheckStart");
             final Date lastCheckEnd = (Date) connection.getAttribute(name, "LastCheckEnd");
             echo("%22s: %s".formatted("Status", status));
-            echo("%22s: %s".formatted("Last check start", lastCheckStart));
-            echo("%22s: %s".formatted("Last check end", lastCheckEnd));
+            echo("%22s: %s".formatted("Last check start", lastCheckStart != null ? lastCheckStart : "N/A"));
+            echo("%22s: %s".formatted("Last check end", lastCheckEnd != null ? lastCheckEnd : "N/A"));
             if (lastCheckStart != null && lastCheckEnd != null)
                 {echo("%22s: %dms".formatted("Check took", (lastCheckEnd.getTime() - lastCheckStart.getTime())));}
 
-            final TabularData table = (TabularData)
+            final CompositeData[] errors = (CompositeData[])
                     connection.getAttribute(name, "Errors");
-            for (Object o : table.values()) {
-                final CompositeData data = (CompositeData) o;
-                echo("%22s: %s".formatted("Error code", data.get("errcode")));
-                echo("%22s: %s".formatted("Description", data.get("description")));
+            if (errors != null) {
+                for (final CompositeData data : errors) {
+                    echo("%22s: %s".formatted("Error code", data.get("errcode")));
+                    echo("%22s: %s".formatted("Description", data.get("description")));
+                }
             }
         } catch (final MBeanException | AttributeNotFoundException | InstanceNotFoundException | ReflectionException | IOException | MalformedObjectNameException e) {
             error(e);
         }
     }
 
+    /**
+     * Prints the currently running jobs and XQuery processes to stdout.
+     * Reads the {@code org.exist.management.&lt;instance&gt;:type=ProcessReport} MBean.
+     */
     public void jobReport() {
         echo("\nRunning jobs report");
         echo("-----------------------------------------------");
@@ -231,6 +302,13 @@ public class JMXClient {
         }
     }
 
+    /**
+     * Extracts attribute values from an {@link AttributeList} in positional order.
+     *
+     * @param attribs the attribute list returned by
+     *                {@link MBeanServerConnection#getAttributes}
+     * @return an array of attribute values in the same order as {@code attribs}
+     */
     private Object[] getValues(AttributeList attribs) {
         final Object[] v = new Object[attribs.size()];
         for (int i = 0; i < attribs.size(); i++) {
@@ -239,10 +317,49 @@ public class JMXClient {
         return v;
     }
 
+    /**
+     * Extracts attribute values from an {@link AttributeList} by name, returning
+     * a result array aligned to {@code cols}.
+     * <p>
+     * If the server did not return a value for a requested attribute name the
+     * corresponding element in the result array will be {@code null} rather than
+     * causing an {@link ArrayIndexOutOfBoundsException}.
+     * </p>
+     *
+     * @param attribs the attribute list returned by
+     *                {@link MBeanServerConnection#getAttributes}
+     * @param cols    the attribute names whose values should be extracted,
+     *                in the desired output order
+     * @return an array of the same length as {@code cols} with each element
+     *         holding the corresponding attribute value, or {@code null} if absent
+     */
+    private Object[] getValues(AttributeList attribs, String[] cols) {
+        final Map<String, Object> byName = new LinkedHashMap<>();
+        for (int i = 0; i < attribs.size(); i++) {
+            final Attribute a = (Attribute) attribs.get(i);
+            byName.put(a.getName(), a.getValue());
+        }
+        final Object[] v = new Object[cols.length];
+        for (int i = 0; i < cols.length; i++) {
+            v[i] = byName.get(cols[i]);
+        }
+        return v;
+    }
+
+    /**
+     * Writes a line of output to {@link System#out}.
+     *
+     * @param msg the message to print
+     */
     private void echo(String msg) {
         System.out.println(msg);
     }
     
+    /**
+     * Writes an error message and stack trace to {@link System#err}.
+     *
+     * @param e the exception to report
+     */
     private void error(Exception e) {
         System.err.println("ERROR: " + e.getMessage());
         e.printStackTrace();
@@ -305,6 +422,12 @@ public class JMXClient {
         LOCKS
     }
 
+    /**
+     * Entry point for the {@code jmxclient.sh} command.
+     * Parses command-line arguments and delegates to {@link #process(ParsedArguments)}.
+     *
+     * @param args command-line arguments
+     */
     @SuppressWarnings("unchecked")
 	public static void main(final String[] args) {
         try {
@@ -331,6 +454,13 @@ public class JMXClient {
 
     }
 
+    /**
+     * Processes parsed command-line arguments: connects to the JMX server and
+     * repeatedly prints the requested statistics until the optional wait interval
+     * expires or a single pass completes.
+     *
+     * @param arguments the parsed command-line arguments
+     */
     private static void process(final ParsedArguments arguments) {
         final String address = arguments.get(addressArg);
         final int port = Optional.ofNullable(arguments.get(portArg)).orElse(DEFAULT_PORT);

@@ -79,7 +79,7 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
     }
 
     public static String getAllInstancesQuery() {
-        return "org.exist.management." + '*' + ":type=SanityReport";
+        return "org.exist.management." + '*' + ".tasks:type=SanityReport";
     }
 
     public static ObjectName getName(final String instanceId) throws MalformedObjectNameException {

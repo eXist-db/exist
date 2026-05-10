@@ -59,6 +59,11 @@ public class CollectionCache implements CollectionCacheMXBean {
     }
 
     @Override
+    public long getMaxCacheSize() {
+        return instance.getCollectionsCache().getMaxCacheSize();
+    }
+
+    @Override
     public org.exist.collections.CollectionCache.Statistics getStatistics() {
         return instance.getCollectionsCache().getStatistics();
     }
