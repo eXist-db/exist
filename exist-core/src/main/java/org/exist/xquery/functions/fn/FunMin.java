@@ -230,6 +230,15 @@ the smallest value is made according to the collation that is used. """;
      */
     static AtomicValue validateAndWrapDuration(final DurationValue value, final AtomicValue accumulator,
             final Function expression) throws XPathException {
+        // Per XPath F&O fn:min/fn:max: duration values must all be xs:yearMonthDuration
+        // or all xs:dayTimeDuration. A plain xs:duration is neither and must raise
+        // FORG0006, even though wrap() can re-classify a P1Y or P1D value into a
+        // subtype -- the spec checks the item type, not the wrappable shape.
+        if (value.getType() == Type.DURATION) {
+            throw new XPathException(expression, ErrorCodes.FORG0006, "Cannot compare " +
+                    Type.getTypeName(Type.DURATION) +
+                    "; values must be xs:yearMonthDuration or xs:dayTimeDuration", value);
+        }
         final AtomicValue wrapped = value.wrap();
         if (wrapped.getType() == Type.YEAR_MONTH_DURATION) {
             if (accumulator != null && accumulator.getType() != Type.YEAR_MONTH_DURATION) {
