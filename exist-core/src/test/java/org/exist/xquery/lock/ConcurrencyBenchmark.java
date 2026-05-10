@@ -57,6 +57,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  *       -Dexist.run.benchmarks=true -Ddependency-check.skip=true
  * </pre>
  */
+@SuppressWarnings("PMD.ClassNamingConventions") // benchmark, not a test class; gated by -Dexist.run.benchmarks=true
 public class ConcurrencyBenchmark {
 
     @ClassRule

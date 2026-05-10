@@ -280,20 +280,21 @@ public class LockTargetCollector extends BasicExpressionVisitor {
     /**
      * Unwrap transparent expression wrappers to get to the underlying value.
      */
-    private Expression unwrap(Expression expr) {
+    private Expression unwrap(final Expression expr) {
+        Expression current = expr;
         while (true) {
-            if (expr instanceof PathExpr pathExpr && pathExpr.getLength() == 1) {
-                expr = pathExpr.getExpression(0);
-            } else if (expr instanceof final DynamicCardinalityCheck check) {
-                expr = check.getSubExpression(0);
-            } else if (expr instanceof final DynamicTypeCheck check) {
-                expr = check.getSubExpression(0);
-            } else if (expr instanceof final UntypedValueCheck check) {
-                expr = check.getSubExpression(0);
-            } else if (expr instanceof final Atomize atomize) {
-                expr = atomize.getExpression();
+            if (current instanceof PathExpr pathExpr && pathExpr.getLength() == 1) {
+                current = pathExpr.getExpression(0);
+            } else if (current instanceof final DynamicCardinalityCheck check) {
+                current = check.getSubExpression(0);
+            } else if (current instanceof final DynamicTypeCheck check) {
+                current = check.getSubExpression(0);
+            } else if (current instanceof final UntypedValueCheck check) {
+                current = check.getSubExpression(0);
+            } else if (current instanceof final Atomize atomize) {
+                current = atomize.getExpression();
             } else {
-                return expr;
+                return current;
             }
         }
     }

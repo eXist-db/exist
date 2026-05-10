@@ -164,6 +164,7 @@ public class LockTargetCollectorTest {
 
     // --- Helper ---
 
+    @SuppressWarnings("PMD.UnusedLocalVariable") // broker acquired for thread-local lifecycle (XQuery.compile depends on it); not referenced explicitly
     private LockTargetCollector collectTargets(final String xquery)
             throws EXistException, PermissionDeniedException, XPathException, IOException, URISyntaxException {
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
