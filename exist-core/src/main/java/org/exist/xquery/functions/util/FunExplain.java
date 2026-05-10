@@ -27,6 +27,7 @@ import org.exist.dom.memtree.DocumentImpl;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.source.Source;
 import org.exist.xquery.*;
+import org.exist.xquery.Module;
 import org.exist.xquery.parser.XQueryLexer;
 import org.exist.xquery.parser.XQueryParser;
 import org.exist.xquery.parser.XQueryTreeParser;
@@ -199,8 +200,8 @@ public class FunExplain extends BasicFunction {
             builder.endElement();
         }
 
-        for (final Iterator<org.exist.xquery.Module> it = pContext.getRootModules(); it.hasNext(); ) {
-            final org.exist.xquery.Module module = it.next();
+        for (final Iterator<Module> it = pContext.getRootModules(); it.hasNext(); ) {
+            final Module module = it.next();
             if (module == null || module.isInternalModule()) {
                 continue;
             }
