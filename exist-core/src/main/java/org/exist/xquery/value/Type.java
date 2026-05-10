@@ -139,7 +139,7 @@ public class Type {
     static {
         typeCodes.defaultReturnValue(NO_SUCH_VALUE);
     }
-    private final static Int2ObjectMap<IntArraySet> unionTypes = new Int2ObjectArrayMap<>(2);
+    private final static Int2ObjectOpenHashMap<IntArraySet> unionTypes = new Int2ObjectOpenHashMap<>(4, Hash.FAST_LOAD_FACTOR);
     private final static Int2IntOpenHashMap primitiveTypes = new Int2IntOpenHashMap(45, Hash.FAST_LOAD_FACTOR);
     static {
         primitiveTypes.defaultReturnValue(NO_SUCH_VALUE);
@@ -531,11 +531,21 @@ public class Type {
             return false;
         }
 
-        if (unionTypes.containsKey(supertype)) {
-            return subTypeOfUnion(subtype, supertype);
-        }
-        if (unionTypes.containsKey(subtype)) {
-            return unionMembersHaveSuperType(subtype, supertype);
+        // Skip both union-type lookups when no union types are registered.
+        // The static initialiser registers NUMERIC and ERROR so the guarded
+        // branch is taken in current builds; the isEmpty() check protects
+        // against future evolution where union registration becomes optional.
+        if (!unionTypes.isEmpty()) {
+            // Single get() rather than containsKey() + a redundant get() inside
+            // subTypeOfUnion: halves map traversals on the union dispatch path.
+            final IntArraySet supertypeMembers = unionTypes.get(supertype);
+            if (supertypeMembers != null) {
+                return subTypeOfUnion(subtype, supertype, supertypeMembers);
+            }
+            final IntArraySet subtypeMembers = unionTypes.get(subtype);
+            if (subtypeMembers != null) {
+                return unionMembersHaveSuperType(subtype, supertype, subtypeMembers);
+            }
         }
 
         subtype = superTypes[subtype];
@@ -657,7 +667,10 @@ public class Type {
         if (members == null) {
             return false;
         }
+        return subTypeOfUnion(subtype, unionType, members);
+    }
 
+    private static boolean subTypeOfUnion(final int subtype, final int unionType, final IntArraySet members) {
         // inherited behaviour from {@link #subTypeOf(int, int)}
         // where type is considered a subtype of itself.
         if (subtype == unionType) {
@@ -680,6 +693,13 @@ public class Type {
     public static boolean unionMembersHaveSuperType(final int unionType, final int supertype) {
         final IntArraySet members = unionTypes.get(unionType);
         if (members == null || members.isEmpty()) {
+            return false;
+        }
+        return unionMembersHaveSuperType(unionType, supertype, members);
+    }
+
+    private static boolean unionMembersHaveSuperType(final int unionType, final int supertype, final IntArraySet members) {
+        if (members.isEmpty()) {
             return false;
         }
 
