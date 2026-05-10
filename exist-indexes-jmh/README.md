@@ -29,7 +29,7 @@ Shape A reads should be flat (literal vs. let-bound shouldn't differ measurably)
 
 ## Running
 
-Build the module (the `micro-benchmarks` profile is active by default; the install step puts a fresh `exist-core` into the local Maven repo so the benchmark picks up your branch's code):
+Build the module. The `package` phase runs `maven-shade-plugin` to produce a fat uber-jar (`target/exist-indexes-jmh-${version}-benchmarks.jar`) with `org.openjdk.jmh.Main` as its entry point and `META-INF/services` entries merged via `ServicesResourceTransformer`. The `install` step also puts a fresh `exist-core` into the local Maven repo so the benchmark picks up your branch's code:
 
 ```bash
 JAVA_HOME=/path/to/java-21 \
@@ -37,22 +37,25 @@ JAVA_HOME=/path/to/java-21 \
   -Ddependency-check.skip=true -Ddocker=false
 ```
 
-Then run via the wrapper script:
+Then run via `exec-maven-plugin`. The default `benchmark.args` runs `NgramWhereClauseBenchmark` with JMH's `GCProfiler` enabled:
 
 ```bash
-cd exist-indexes-jmh
-./bin/run-bench.sh NgramWhereClauseBenchmark
+mvn exec:exec -pl exist-indexes-jmh
 ```
 
-The script materialises the runtime classpath from `target/classpath.txt` (emitted at package time) and invokes `org.openjdk.jmh.Main`. Any extra arguments are passed through to JMH:
+Override `benchmark.args` with `-D` to pass anything `org.openjdk.jmh.Main` accepts:
 
-- `./bin/run-bench.sh NgramWhereClauseBenchmark -wi 1 -i 2 -f 1` — quick smoke check (~1 minute)
-- `./bin/run-bench.sh NgramWhereClauseBenchmark -wi 5 -i 10 -f 3` — publishable numbers
-- `./bin/run-bench.sh NgramWhereClauseBenchmark -prof gc` — add GC pressure stats
-- `./bin/run-bench.sh NgramWhereClauseBenchmark -rf json -rff result.json` — machine-readable output
-- `./bin/run-bench.sh "NgramWhereClauseBenchmark.shapeA_.*"` — filter by regex
+- `mvn exec:exec -pl exist-indexes-jmh -Dbenchmark.args="NgramWhereClauseBenchmark -wi 1 -i 2 -f 1"` — quick smoke check (~1 minute)
+- `mvn exec:exec -pl exist-indexes-jmh -Dbenchmark.args="NgramWhereClauseBenchmark -wi 5 -i 10 -f 3 -prof gc"` — publishable numbers, GC profile
+- `mvn exec:exec -pl exist-indexes-jmh -Dbenchmark.args="NgramWhereClauseBenchmark -prof stack"` — sampler stack profile (one benchmark at a time)
+- `mvn exec:exec -pl exist-indexes-jmh -Dbenchmark.args="NgramWhereClauseBenchmark -rf json -rff target/result.json"` — machine-readable output
+- `mvn exec:exec -pl exist-indexes-jmh -Dbenchmark.args="NgramWhereClauseBenchmark.shapeA.*"` — filter by regex
 
-> **Why a wrapper script and not a shaded jar?** Embedding eXist's `BrokerPool` inside a shade-plugin uberjar collides with Saxon's `ServiceLoader` and similar libraries — running off the dependency-plugin classpath sidesteps that entirely.
+Or invoke the uber-jar directly with `java -jar` (no Maven required once it's built):
+
+```bash
+java -jar exist-indexes-jmh/target/exist-indexes-jmh-*-benchmarks.jar NgramWhereClauseBenchmark -prof gc
+```
 
 ## Baseline numbers (2026-05-05)
 
@@ -136,22 +139,24 @@ If a future optimizer collapses `shapeBForVarWhere` to `shapeBForVarPredicate` f
 exist-indexes-jmh/
 ├── pom.xml
 ├── README.md
-├── bin/
-│   └── run-bench.sh
 └── src/main/
     ├── java/org/exist/indexing/jmh/
     │   ├── NgramWhereClauseBenchmark.java
     │   ├── RangeEqWhereClauseBenchmark.java
     │   ├── RangeFieldEqWhereClauseBenchmark.java
-    │   └── LuceneWhereClauseBenchmark.java
+    │   ├── LuceneWhereClauseBenchmark.java
+    │   └── GeneralComparisonWhereClauseBenchmark.java
+    ├── xslt/
+    │   └── conf-jmh.xslt                         (transforms indexes-integration-tests conf.xml: adds plain range index module)
     └── resources/
-        ├── conf.xml                              (extended from ngram test resources to register all three indexes)
         └── org/exist/indexing/jmh/
             ├── hamlet.xml                        (vendored from exist-samples/.../shakespeare/)
             ├── macbeth.xml                       (vendored from exist-samples/.../shakespeare/)
             ├── r_and_j.xml                       (vendored from exist-samples/.../shakespeare/)
             └── collection.xconf                  (ngram + range + range field + lucene)
 ```
+
+`conf.xml` is generated at build time by `xml-maven-plugin` from `extensions/indexes/indexes-integration-tests/src/test/resources-filtered/conf.xml` plus the XSLT in `src/main/xslt/conf-jmh.xslt`. Mirroring the `exist-docker` pattern keeps the conf in sync with upstream rather than vendored as a literal copy.
 
 ## Roadmap
 
