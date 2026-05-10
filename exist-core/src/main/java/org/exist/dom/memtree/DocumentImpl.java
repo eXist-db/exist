@@ -48,6 +48,7 @@ import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
 import javax.xml.XMLConstants;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -634,7 +635,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
             if (i > rootNodeNum && treeLevel[i] <= rootLevel) {
                 break; // past the subtree
             }
-            if (nodeKind[i] != Node.ELEMENT_NODE) {
+            if (nodeKind[i] != ELEMENT_NODE) {
                 continue;
             }
             stripUnusedNamespacesForElement(i);
@@ -663,7 +664,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
         }
 
         // Collect used namespace declarations (to re-add later)
-        final java.util.List<QName> usedNs = new java.util.ArrayList<>();
+        final java.util.List<QName> usedNs = new ArrayList<>();
         while (ns < nextNamespace && namespaceParent[ns] == nodeNum) {
             final QName nsQName = namespaceCode[ns];
             if (usedPrefixes.contains(nsQName.getLocalPart())) {
@@ -1785,8 +1786,8 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
     public void renameNode(final int nodeNum, final QName newName) {
         final short kind = nodeKind[nodeNum];
         switch (kind) {
-            case Node.ELEMENT_NODE:
-            case Node.PROCESSING_INSTRUCTION_NODE:
+            case ELEMENT_NODE:
+            case PROCESSING_INSTRUCTION_NODE:
                 nodeName[nodeNum] = namePool.getSharedName(newName);
                 break;
             default:
@@ -1815,10 +1816,10 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
     public void replaceValue(final int nodeNum, final String value) {
         final short kind = nodeKind[nodeNum];
         switch (kind) {
-            case Node.TEXT_NODE:
-            case Node.COMMENT_NODE:
-            case Node.CDATA_SECTION_NODE:
-            case Node.PROCESSING_INSTRUCTION_NODE: {
+            case TEXT_NODE:
+            case COMMENT_NODE:
+            case CDATA_SECTION_NODE:
+            case PROCESSING_INSTRUCTION_NODE: {
                 // Replace the character content
                 final char[] chars = value.toCharArray();
                 if (characters == null) {
@@ -1838,7 +1839,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
                 nextChar += chars.length;
                 break;
             }
-            case Node.ELEMENT_NODE: {
+            case ELEMENT_NODE: {
                 // W3C replaceElementContent: replace all children with a single text node.
                 // We must be careful to only modify THIS element's children, not nodes
                 // belonging to sibling elements that happen to be adjacent in the array.
@@ -1856,7 +1857,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
                 int firstTextChild = -1;
                 for (int c = nodeNum + 1; c < subtreeEnd; c++) {
                     if (firstTextChild == -1 && treeLevel[c] == childLevel
-                            && nodeKind[c] == Node.TEXT_NODE) {
+                            && nodeKind[c] == TEXT_NODE) {
                         firstTextChild = c;
                     } else if (c != firstTextChild) {
                         nodeKind[c] = -1;  // delete other children
@@ -1896,7 +1897,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
                 } else if (nodeNum + 1 < subtreeEnd) {
                     // No text child but has positional children — convert first to text
                     final int firstChild = nodeNum + 1;
-                    nodeKind[firstChild] = Node.TEXT_NODE;
+                    nodeKind[firstChild] = TEXT_NODE;
                     nodeName[firstChild] = null;
                     final char[] chars = value.toCharArray();
                     if ((nextChar + chars.length) >= characters.length) {
@@ -1996,7 +1997,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
         // for each element. If the removed attribute index is <= the element's
         // first attribute, we need to adjust.
         for (int i = 0; i < size; i++) {
-            if (nodeKind[i] == Node.ELEMENT_NODE && alpha[i] >= 0) {
+            if (nodeKind[i] == ELEMENT_NODE && alpha[i] >= 0) {
                 if (alpha[i] > attrNum) {
                     alpha[i]--;
                 } else if (alpha[i] == attrNum) {
@@ -2102,7 +2103,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
             if (nodeKind[parent] == -1) {
                 continue;
             }
-            if (nodeKind[parent] != Node.DOCUMENT_NODE && nodeKind[parent] != Node.ELEMENT_NODE) {
+            if (nodeKind[parent] != DOCUMENT_NODE && nodeKind[parent] != ELEMENT_NODE) {
                 continue;
             }
 
@@ -2129,7 +2130,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
                 }
 
                 // Direct child at childLevel
-                if (nodeKind[child] == Node.TEXT_NODE) {
+                if (nodeKind[child] == TEXT_NODE) {
                     if (prevTextNode >= 0) {
                         // Merge this text node into prevTextNode
                         final String prevText = new String(characters, alpha[prevTextNode], alphaLen[prevTextNode]);
@@ -2373,12 +2374,12 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
         }
 
         // Collect new attributes to insert
-        final java.util.List<Object[]> newAttrs = new java.util.ArrayList<>();
+        final java.util.List<Object[]> newAttrs = new ArrayList<>();
         for (final org.exist.xquery.value.SequenceIterator i = content.iterate(); i.hasNext(); ) {
             final org.exist.xquery.value.Item item = i.nextItem();
             if (org.exist.xquery.value.Type.subTypeOf(item.getType(), org.exist.xquery.value.Type.NODE)) {
                 final Node node = ((org.exist.xquery.value.NodeValue) item).getNode();
-                if (node.getNodeType() == Node.ATTRIBUTE_NODE) {
+                if (node.getNodeType() == ATTRIBUTE_NODE) {
                     final Attr attr = (Attr) node;
                     final QName qname = new QName(
                             attr.getLocalName() != null ? attr.getLocalName() : attr.getName(),
@@ -2447,7 +2448,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
 
             // Update alpha pointers for elements whose attrs shifted
             for (int n = 0; n < size; n++) {
-                if (nodeKind[n] == Node.ELEMENT_NODE && alpha[n] >= insertPos && n != elementNodeNum) {
+                if (nodeKind[n] == ELEMENT_NODE && alpha[n] >= insertPos && n != elementNodeNum) {
                     alpha[n] += count;
                 }
             }
@@ -2570,14 +2571,14 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
             throws XPathException {
         // When no-inherit is active, pass an empty scope map to materialize namespaces
         // within inserted subtrees (so FunInScopePrefixes self-only mode still finds them)
-        final java.util.Map<String, String> scopeNs =
+        final Map<String, String> scopeNs =
                 (context != null && !context.inheritNamespaces())
                         ? new java.util.LinkedHashMap<>() : null;
 
-        final java.util.List<Integer> result = new java.util.ArrayList<>();
+        final java.util.List<Integer> result = new ArrayList<>();
         if (org.exist.xquery.value.Type.subTypeOf(item.getType(), org.exist.xquery.value.Type.NODE)) {
             final Node node = ((org.exist.xquery.value.NodeValue) item).getNode();
-            if (node.getNodeType() == Node.DOCUMENT_NODE) {
+            if (node.getNodeType() == DOCUMENT_NODE) {
                 // For document nodes: insert the document's children, not the document itself
                 Node child = node.getFirstChild();
                 while (child != null) {
@@ -2591,17 +2592,13 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
             // Atomic value: convert to text node per W3C spec
             final String text = item.getStringValue();
             if (!text.isEmpty()) {
-                final int nodeNum = addNode(Node.TEXT_NODE, level, null);
+                final int nodeNum = addNode(TEXT_NODE, level, null);
                 addChars(nodeNum, text.toCharArray(), 0, text.length());
                 next[nodeNum] = parentNodeNum;
                 result.add(nodeNum);
             }
         }
         return result;
-    }
-
-    private int copyNodeIntoDocument(final Node node, final int parentNodeNum, final short level) {
-        return copyNodeIntoDocument(node, parentNodeNum, level, null);
     }
 
     /**
@@ -2616,14 +2613,14 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
      *        Pass null to skip materialization (normal copy behavior).
      */
     private int copyNodeIntoDocument(final Node node, final int parentNodeNum, final short level,
-                                      final java.util.Map<String, String> scopeNamespaces) {
+                                      final Map<String, String> scopeNamespaces) {
         switch (node.getNodeType()) {
-            case Node.ELEMENT_NODE: {
+            case ELEMENT_NODE: {
                 final String localName = node.getLocalName() != null ? node.getLocalName() : node.getNodeName();
                 final String nsUri = node.getNamespaceURI() != null ? node.getNamespaceURI() : "";
                 final String prefix = node.getPrefix() != null ? node.getPrefix() : "";
                 final QName qname = new QName(localName, nsUri, prefix);
-                final int nodeNum = addNode(Node.ELEMENT_NODE, level, qname);
+                final int nodeNum = addNode(ELEMENT_NODE, level, qname);
                 next[nodeNum] = parentNodeNum;
 
                 // Collect attribute prefixes (needed for no-preserve filtering)
@@ -2636,7 +2633,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
                     for (int i = 0; i < attrs.getLength(); i++) {
                         final Attr attr = (Attr) attrs.item(i);
                         // Skip namespace declarations
-                        if (javax.xml.XMLConstants.XMLNS_ATTRIBUTE_NS_URI.equals(attr.getNamespaceURI())) {
+                        if (XMLConstants.XMLNS_ATTRIBUTE_NS_URI.equals(attr.getNamespaceURI())) {
                             continue;
                         }
                         final String attrLocal = attr.getLocalName() != null ? attr.getLocalName() : attr.getName();
@@ -2652,35 +2649,35 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
                 final boolean noPreserve = context != null && !context.preserveNamespaces();
 
                 // Collect this element's own namespace declarations
-                final java.util.Map<String, String> selfNsDecls = new java.util.LinkedHashMap<>();
+                final Map<String, String> selfNsDecls = new java.util.LinkedHashMap<>();
 
                 // Copy namespace declarations (filtered by no-preserve if applicable)
                 if (node instanceof ElementImpl memElement) {
                     // Memtree element: copy from namespace arrays
-                    final java.util.Map<String, String> nsMap = memElement.getNamespaceMap();
-                    for (final java.util.Map.Entry<String, String> e : nsMap.entrySet()) {
+                    final Map<String, String> nsMap = memElement.getNamespaceMap();
+                    for (final Map.Entry<String, String> e : nsMap.entrySet()) {
                         if (noPreserve && !usedPrefixes.contains(e.getKey())) {
                             continue; // strip unused namespace declaration
                         }
                         selfNsDecls.put(e.getKey(), e.getValue());
                         final QName nsQName = new QName(e.getKey(), e.getValue(),
-                                javax.xml.XMLConstants.XMLNS_ATTRIBUTE);
+                                XMLConstants.XMLNS_ATTRIBUTE);
                         addNamespace(nodeNum, nsQName);
                     }
                 } else if (attrs != null) {
                     // DOM element: extract xmlns attributes
                     for (int i = 0; i < attrs.getLength(); i++) {
                         final Attr attr = (Attr) attrs.item(i);
-                        if (javax.xml.XMLConstants.XMLNS_ATTRIBUTE_NS_URI.equals(attr.getNamespaceURI())) {
+                        if (XMLConstants.XMLNS_ATTRIBUTE_NS_URI.equals(attr.getNamespaceURI())) {
                             final String nsPrefix = attr.getLocalName() != null
-                                    && !javax.xml.XMLConstants.XMLNS_ATTRIBUTE.equals(attr.getLocalName())
+                                    && !XMLConstants.XMLNS_ATTRIBUTE.equals(attr.getLocalName())
                                     ? attr.getLocalName() : "";
                             if (noPreserve && !usedPrefixes.contains(nsPrefix)) {
                                 continue; // strip unused namespace declaration
                             }
                             selfNsDecls.put(nsPrefix, attr.getValue());
                             final QName nsQName = new QName(nsPrefix, attr.getValue(),
-                                    javax.xml.XMLConstants.XMLNS_ATTRIBUTE);
+                                    XMLConstants.XMLNS_ATTRIBUTE);
                             addNamespace(nodeNum, nsQName);
                         }
                     }
@@ -2689,20 +2686,19 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
                 // No-inherit materialization: add ancestor namespace bindings from within
                 // the subtree that are not already declared on this element
                 if (scopeNamespaces != null) {
-                    for (final java.util.Map.Entry<String, String> e : scopeNamespaces.entrySet()) {
-                        if (!selfNsDecls.containsKey(e.getKey())) {
-                            if (!noPreserve || usedPrefixes.contains(e.getKey())) {
-                                final QName nsQName = new QName(e.getKey(), e.getValue(),
-                                        javax.xml.XMLConstants.XMLNS_ATTRIBUTE);
-                                addNamespace(nodeNum, nsQName);
-                                selfNsDecls.put(e.getKey(), e.getValue());
-                            }
+                    for (final Map.Entry<String, String> e : scopeNamespaces.entrySet()) {
+                        if (!selfNsDecls.containsKey(e.getKey())
+                                && (!noPreserve || usedPrefixes.contains(e.getKey()))) {
+                            final QName nsQName = new QName(e.getKey(), e.getValue(),
+                                    XMLConstants.XMLNS_ATTRIBUTE);
+                            addNamespace(nodeNum, nsQName);
+                            selfNsDecls.put(e.getKey(), e.getValue());
                         }
                     }
                 }
 
                 // Build effective namespace scope for children
-                final java.util.Map<String, String> childScope;
+                final Map<String, String> childScope;
                 if (scopeNamespaces != null) {
                     childScope = new java.util.LinkedHashMap<>(scopeNamespaces);
                     childScope.putAll(selfNsDecls);
@@ -2723,32 +2719,32 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
                 }
                 return nodeNum;
             }
-            case Node.TEXT_NODE: {
+            case TEXT_NODE: {
                 final String text = node.getTextContent();
-                final int nodeNum = addNode(Node.TEXT_NODE, level, null);
+                final int nodeNum = addNode(TEXT_NODE, level, null);
                 addChars(nodeNum, text.toCharArray(), 0, text.length());
                 next[nodeNum] = parentNodeNum;
                 return nodeNum;
             }
-            case Node.COMMENT_NODE: {
+            case COMMENT_NODE: {
                 final String text = node.getTextContent();
-                final int nodeNum = addNode(Node.COMMENT_NODE, level, null);
+                final int nodeNum = addNode(COMMENT_NODE, level, null);
                 addChars(nodeNum, text.toCharArray(), 0, text.length());
                 next[nodeNum] = parentNodeNum;
                 return nodeNum;
             }
-            case Node.PROCESSING_INSTRUCTION_NODE: {
+            case PROCESSING_INSTRUCTION_NODE: {
                 final String target = node.getNodeName();
                 final String data = node.getNodeValue() != null ? node.getNodeValue() : "";
                 final QName qname = new QName(target, "", "");
-                final int nodeNum = addNode(Node.PROCESSING_INSTRUCTION_NODE, level, qname);
+                final int nodeNum = addNode(PROCESSING_INSTRUCTION_NODE, level, qname);
                 addChars(nodeNum, data.toCharArray(), 0, data.length());
                 next[nodeNum] = parentNodeNum;
                 return nodeNum;
             }
-            case Node.CDATA_SECTION_NODE: {
+            case CDATA_SECTION_NODE: {
                 final String text = node.getTextContent();
-                final int nodeNum = addNode(Node.CDATA_SECTION_NODE, level, null);
+                final int nodeNum = addNode(CDATA_SECTION_NODE, level, null);
                 addChars(nodeNum, text.toCharArray(), 0, text.length());
                 next[nodeNum] = parentNodeNum;
                 return nodeNum;
@@ -2812,7 +2808,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
             this.nextReferenceIdx = newDoc.nextReferenceIdx;
             this.firstChildOverride = null;
         } catch (final SAXException e) {
-            throw new RuntimeException("Failed to compact document after mutations", e);
+            throw new IllegalStateException("Failed to compact document after mutations", e);
         }
     }
 }

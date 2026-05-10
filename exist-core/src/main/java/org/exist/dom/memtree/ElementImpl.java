@@ -91,7 +91,7 @@ public class ElementImpl extends NodeImpl implements Element {
         while(nextNode > nodeNumber) {
             if (document.nodeKind[nextNode] != -1) {
                 final Node n = document.getNode(nextNode);
-                if(n.getNodeType() != Node.ATTRIBUTE_NODE) {
+                if(n.getNodeType() != ATTRIBUTE_NODE) {
                     nl.add(n);
                 }
             }
@@ -318,7 +318,7 @@ public class ElementImpl extends NodeImpl implements Element {
         throws XPathException {
         int child = document.getFirstChildFor(parentNum);
         while (child >= 0) {
-            if (document.nodeKind[child] != -1 && document.nodeKind[child] == Node.ELEMENT_NODE) {
+            if (document.nodeKind[child] != -1 && document.nodeKind[child] == ELEMENT_NODE) {
                 final NodeImpl n = document.getNode(child);
                 n.selectAttributes(test, result);
                 selectDescendantAttributesWalk(child, test, result);
@@ -373,7 +373,7 @@ public class ElementImpl extends NodeImpl implements Element {
                     result.add(n);
                 }
                 // Recurse into element children
-                if (document.nodeKind[child] == Node.ELEMENT_NODE) {
+                if (document.nodeKind[child] == ELEMENT_NODE) {
                     selectDescendantsWalk(child, test, result);
                 }
             }
