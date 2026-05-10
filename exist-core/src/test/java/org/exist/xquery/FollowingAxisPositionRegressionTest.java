@@ -55,7 +55,6 @@ public class FollowingAxisPositionRegressionTest {
     public static final ExistXmldbEmbeddedServer existEmbeddedServer =
             new ExistXmldbEmbeddedServer(false, true, true);
 
-    private static final String SMALL_DOC = "/db/words-small.xml";
     private static final String LARGE_DOC = "/db/words-large.xml";
 
     @BeforeClass
