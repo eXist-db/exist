@@ -187,6 +187,17 @@ public class XQueryContext implements BinaryValueManager, Context {
     // The last element in the linked list of local in-scope variables
     private LocalVariable lastVar = null;
 
+    /**
+     * O(1) lookup table from QName to the most-recently-declared LocalVariable
+     * with that name. Maintained alongside the {@link #lastVar} linked list:
+     * declareVariableBinding adds, popLocalVariables restores the prevSameName
+     * chain. Visibility is enforced in resolveLocalVariable by comparing
+     * {@link LocalVariable#markedUnder} to {@code contextStack.peek()}.
+     */
+    // Shared by reference with copies of this context (see copyFields,
+    // updateContext) just like {@link #contextStack} and {@link #lastVar}.
+    private Map<QName, LocalVariable> localVariableLookup = new HashMap<>();
+
     private Deque<LocalVariable> contextStack = new ArrayDeque<>();
 
     private final Deque<FunctionSignature> callStack = new ArrayDeque<>();
@@ -657,6 +668,7 @@ public class XQueryContext implements BinaryValueManager, Context {
         this.watchdog = from.watchdog;
         this.lastVar = from.lastVar;
         this.contextStack = from.contextStack;
+        this.localVariableLookup = from.localVariableLookup;
         this.inScopeNamespaces = from.inScopeNamespaces;
         this.inScopePrefixes = from.inScopePrefixes;
         this.inheritedInScopeNamespaces = from.inheritedInScopeNamespaces;
@@ -727,6 +739,7 @@ public class XQueryContext implements BinaryValueManager, Context {
         ctx.lastVar = this.lastVar;
         ctx.variableStackSize = getCurrentStackSize();
         ctx.contextStack = this.contextStack;
+        ctx.localVariableLookup = this.localVariableLookup;
         ctx.staticNamespaces = new HashMap<>(this.staticNamespaces);
         ctx.staticPrefixes = new HashMap<>(this.staticPrefixes);
 
@@ -1459,6 +1472,7 @@ public class XQueryContext implements BinaryValueManager, Context {
 
         if (!isShared) {
             lastVar = null;
+            localVariableLookup.clear();
         }
 
         // clear inline functions using closures
@@ -1924,6 +1938,8 @@ public class XQueryContext implements BinaryValueManager, Context {
         }
         lastVar = var;
         var.setStackPosition(getCurrentStackSize());
+        var.markedUnder = contextStack.peek();
+        var.prevSameName = localVariableLookup.put(var.getQName(), var);
         return var;
     }
 
@@ -2057,16 +2073,19 @@ public class XQueryContext implements BinaryValueManager, Context {
     }
 
     protected Variable resolveLocalVariable(final QName qname) throws XPathException {
-        final LocalVariable end = contextStack.peek();
-        for (LocalVariable var = lastVar; var != null; var = var.before) {
-            if (var == end) {
-                return null;
-            }
-            if (qname.equals(var.getQName())) {
-                return var;
-            }
+        // O(1) fast path. The linked-list walk previously here is O(N) per
+        // call and O(N²) when a body of N variables is analyzed.
+        final LocalVariable var = localVariableLookup.get(qname);
+        if (var == null) {
+            return null;
         }
-        return null;
+        // Visibility: var is visible if it was declared under the current
+        // contextStack mark — the same boundary the linked-list walk used to
+        // express by stopping at {@code contextStack.peek()}.
+        if (var.markedUnder != contextStack.peek()) {
+            return null;
+        }
+        return var;
     }
 
     /**
@@ -2513,10 +2532,27 @@ public class XQueryContext implements BinaryValueManager, Context {
     /**
      * Restore the local variable stack to the position marked by variable var.
      *
+     * <p>Walks {@link #lastVar} backward to {@code var} (or to the start when
+     * {@code var} is {@code null}), unwinding each variable's
+     * {@code prevSameName} chain into {@link #localVariableLookup} in
+     * REVERSE-of-declaration order so that names with multiple bindings in the
+     * popped scope settle on the still-visible binding, not on a popped one.
+     *
      * @param var       only clear variables after this variable, or null
      * @param resultSeq the result sequence
      */
     public void popLocalVariables(@Nullable final LocalVariable var, @Nullable final Sequence resultSeq) {
+        for (LocalVariable cursor = lastVar; cursor != null && cursor != var; cursor = cursor.before) {
+            if (localVariableLookup.get(cursor.getQName()) == cursor) {
+                if (cursor.prevSameName != null) {
+                    localVariableLookup.put(cursor.getQName(), cursor.prevSameName);
+                } else {
+                    localVariableLookup.remove(cursor.getQName());
+                }
+            }
+            cursor.prevSameName = null;
+        }
+
         if (var != null) {
             // clear all variables registered after var. they should be out of scope.
             LocalVariable outOfScope = var.after;

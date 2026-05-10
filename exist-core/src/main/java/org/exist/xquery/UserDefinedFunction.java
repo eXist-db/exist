@@ -28,7 +28,9 @@ import org.exist.xquery.value.Item;
 import org.exist.xquery.value.Sequence;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author wolf
@@ -36,6 +38,7 @@ import java.util.List;
 public class UserDefinedFunction extends Function implements Cloneable {
 
     private final List<QName> parameters = new ArrayList<>(5);
+    private final Set<QName> parameterNames = new HashSet<>();
     protected boolean visited = false;
     private Expression body;
     private Sequence[] currentArguments = null;
@@ -67,7 +70,7 @@ public class UserDefinedFunction extends Function implements Cloneable {
     }
 
     public void addVariable(QName varName) throws XPathException {
-        if (parameters.contains(varName)) {
+        if (!parameterNames.add(varName)) {
             throw new XPathException(this, ErrorCodes.XQST0039, "function " + getName() + " already has a parameter with the name " + varName);
         }
 
