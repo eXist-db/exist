@@ -175,6 +175,7 @@ exist-core/src/main/java/org/exist/xquery/FunctionFactory.java,org.exist.xquery.
 exist-core/src/main/java/org/exist/xquery/FunctionFactory.java,org.exist.xquery.FunctionFactory,contains,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/FunctionFactory.java,org.exist.xquery.FunctionFactory,equals,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/FunctionFactory.java,org.exist.xquery.FunctionFactory,castExpression,throws-declaration,XPathException,propagate,,
+exist-core/src/main/java/org/exist/xquery/FunctionFactory.java,org.exist.xquery.FunctionFactory,castExpression,try-catch,XPathException,wrap,,
 exist-core/src/main/java/org/exist/xquery/FunctionFactory.java,org.exist.xquery.FunctionFactory,javaFunctionBinding,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/FunctionFactory.java,org.exist.xquery.FunctionFactory,functionCall,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/FunctionFactory.java,org.exist.xquery.FunctionFactory,getInternalModuleFunction,throws-declaration,XPathException,propagate,,
@@ -204,6 +205,7 @@ exist-core/src/main/java/org/exist/xquery/functions/inspect/InspectFunctionHelpe
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunRoundBase.java,org.exist.xquery.functions.fn.FunRoundBase,eval,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunRoundBase.java,org.exist.xquery.functions.fn.FunRoundBase,convertValue,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunSum.java,org.exist.xquery.functions.fn.FunSum,eval,throws-declaration,XPathException,propagate,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/FunSum.java,org.exist.xquery.functions.fn.FunSum,eval,try-catch,XPathException,rethrow,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunSum.java,org.exist.xquery.functions.fn.FunSum,check,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/FnInnerMost.java,org.exist.xquery.functions.fn.FnInnerMost,eval,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/FnInnerMost.java,org.exist.xquery.functions.fn.FnInnerMost,getNodeIds,throws-declaration,XPathException,propagate,,
@@ -229,7 +231,6 @@ exist-core/src/main/java/org/exist/xquery/functions/fn/FunParseIetfDate.java,org
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunParseIetfDate.java,org.exist.xquery.functions.fn.FunParseIetfDate$Parser,dsep,throws-declaration,IllegalArgumentException,propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunParseIetfDate.java,org.exist.xquery.functions.fn.FunParseIetfDate$Parser,skipWS,throws-declaration,IllegalArgumentException,propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunParseIetfDate.java,org.exist.xquery.functions.fn.FunParseIetfDate$Parser,read,throws-declaration,IllegalArgumentException,propagate,,
-exist-core/src/main/java/org/exist/xquery/functions/fn/FunParseIetfDate.java,org.exist.xquery.functions.fn.FunParseIetfDate$Parser,skipTo,throws-declaration,IllegalArgumentException,propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunParseIetfDate.java,org.exist.xquery.functions.fn.FunParseIetfDate$Parser,skip,throws-declaration,IllegalArgumentException,propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunParseIetfDate.java,org.exist.xquery.functions.fn.FunParseIetfDate$Parser,parseInt,throws-declaration,IllegalArgumentException,propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunParseIetfDate.java,org.exist.xquery.functions.fn.FunParseIetfDate$Parser,parseBigDecimal,throws-declaration,IllegalArgumentException,propagate,,
@@ -284,7 +285,15 @@ exist-core/src/main/java/org/exist/xquery/functions/fn/FunSubSequence.java,org.e
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunPath.java,org.exist.xquery.functions.fn.FunPath,eval,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunEndsWith.java,org.exist.xquery.functions.fn.FunEndsWith,eval,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatNumbers.java,org.exist.xquery.functions.fn.FnFormatNumbers,eval,throws-declaration,XPathException,propagate,,
-exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatNumbers.java,org.exist.xquery.functions.fn.FnFormatNumbers,eval,try-catch,QName.IllegalQNameException,wrap,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatNumbers.java,org.exist.xquery.functions.fn.FnFormatNumbers,resolveDecimalFormat,throws-declaration,XPathException,propagate,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatNumbers.java,org.exist.xquery.functions.fn.FnFormatNumbers,resolveFormatNameQName,throws-declaration,XPathException,propagate,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatNumbers.java,org.exist.xquery.functions.fn.FnFormatNumbers,resolveFormatNameQName,try-catch,QName.IllegalQNameException,wrap,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatNumbers.java,org.exist.xquery.functions.fn.FnFormatNumbers,resolveDecimalFormatFromMap,throws-declaration,XPathException,propagate,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatNumbers.java,org.exist.xquery.functions.fn.FnFormatNumbers,validateMapProperties,throws-declaration,XPathException,propagate,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatNumbers.java,org.exist.xquery.functions.fn.FnFormatNumbers$CharRendition,atomizeMapValue,throws-declaration,XPathException,propagate,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatNumbers.java,org.exist.xquery.functions.fn.FnFormatNumbers$CharRendition,getCharRenditionProperty,throws-declaration,XPathException,propagate,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatNumbers.java,org.exist.xquery.functions.fn.FnFormatNumbers$CharRendition,getCharProperty,throws-declaration,XPathException,propagate,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatNumbers.java,org.exist.xquery.functions.fn.FnFormatNumbers$CharRendition,getStringProperty,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatNumbers.java,org.exist.xquery.functions.fn.FnFormatNumbers$AnalyzeState,analyzePictureString,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatNumbers.java,org.exist.xquery.functions.fn.FnFormatNumbers$AnalyzeState,analyzePassiveChar,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatNumbers.java,org.exist.xquery.functions.fn.FnFormatNumbers$AnalyzeState,format,throws-declaration,XPathException,propagate,,
@@ -294,7 +303,8 @@ exist-core/src/main/java/org/exist/xquery/functions/fn/FunIndexOf.java,org.exist
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunIndexOf.java,org.exist.xquery.functions.fn.FunIndexOf,eval,try-catch,XPathException,ignore,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunOnFunctions.java,org.exist.xquery.functions.fn.FunOnFunctions,analyze,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunOnFunctions.java,org.exist.xquery.functions.fn.FunOnFunctions,eval,throws-declaration,XPathException,propagate,,
-exist-core/src/main/java/org/exist/xquery/functions/fn/FunOnFunctions.java,org.exist.xquery.functions.fn.FunOnFunctions,eval,try-catch,Exception,custom,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/FunOnFunctions.java,org.exist.xquery.functions.fn.FunOnFunctions,eval,try-catch,XPathException,rethrow,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/FunOnFunctions.java,org.exist.xquery.functions.fn.FunOnFunctions,eval,try-catch,Exception,wrap,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunOnFunctions.java,org.exist.xquery.functions.fn.FunOnFunctions,eval,try-catch,XPathException,rethrow,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunOnFunctions.java,org.exist.xquery.functions.fn.FunOnFunctions,lookupFunction,try-catch,XPathException,recover,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunContainsToken.java,org.exist.xquery.functions.fn.FunContainsToken,eval,throws-declaration,XPathException,propagate,,
@@ -321,6 +331,7 @@ exist-core/src/main/java/org/exist/xquery/functions/fn/LoadXQueryModule.java,org
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunInsertBefore.java,org.exist.xquery.functions.fn.FunInsertBefore,eval,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunGetDurationComponent.java,org.exist.xquery.functions.fn.FunGetDurationComponent,eval,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunMin.java,org.exist.xquery.functions.fn.FunMin,eval,throws-declaration,XPathException,propagate,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/FunMin.java,org.exist.xquery.functions.fn.FunMin,validateAndWrapDuration,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunAbs.java,org.exist.xquery.functions.fn.FunAbs,eval,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunBaseURI.java,org.exist.xquery.functions.fn.FunBaseURI,eval,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunBaseURI.java,org.exist.xquery.functions.fn.FunBaseURI,eval,try-catch,URISyntaxException,log,,DEBUG
@@ -335,11 +346,33 @@ exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatIntegers.java,org
 exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatDates.java,org.exist.xquery.functions.fn.FnFormatDates,eval,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatDates.java,org.exist.xquery.functions.fn.FnFormatDates,formatDate,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatDates.java,org.exist.xquery.functions.fn.FnFormatDates,formatComponent,throws-declaration,XPathException,propagate,,
-exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatDates.java,org.exist.xquery.functions.fn.FnFormatDates,formatNumber,throws-declaration,XPathException,propagate,,
-exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatDates.java,org.exist.xquery.functions.fn.FnFormatDates,formatNumber,try-catch,XPathException,wrap,,
-exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatDates.java,org.exist.xquery.functions.fn.FnFormatDates,getWidths,throws-declaration,XPathException,propagate,,
-exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatDates.java,org.exist.xquery.functions.fn.FnFormatDates,getWidths,try-catch,NumberFormatException,ignore,,
-exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatDates.java,org.exist.xquery.functions.fn.FnFormatDates,getWidths,try-catch,NumberFormatException,ignore,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatDates.java,org.exist.xquery.functions.fn.FnFormatDates,formatYear,throws-declaration,XPathException,propagate,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatDates.java,org.exist.xquery.functions.fn.FnFormatDates,formatMonthOrMinute,throws-declaration,XPathException,propagate,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatDates.java,org.exist.xquery.functions.fn.FnFormatDates,formatDayOfMonth,throws-declaration,XPathException,propagate,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatDates.java,org.exist.xquery.functions.fn.FnFormatDates,formatDayOfYear,throws-declaration,XPathException,propagate,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatDates.java,org.exist.xquery.functions.fn.FnFormatDates,formatWeekOfYear,throws-declaration,XPathException,propagate,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatDates.java,org.exist.xquery.functions.fn.FnFormatDates,formatWeekOfMonth,throws-declaration,XPathException,propagate,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatDates.java,org.exist.xquery.functions.fn.FnFormatDates,formatDayOfWeek,throws-declaration,XPathException,propagate,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatDates.java,org.exist.xquery.functions.fn.FnFormatDates,formatHour24,throws-declaration,XPathException,propagate,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatDates.java,org.exist.xquery.functions.fn.FnFormatDates,formatHour12,throws-declaration,XPathException,propagate,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatDates.java,org.exist.xquery.functions.fn.FnFormatDates,formatMinute,throws-declaration,XPathException,propagate,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatDates.java,org.exist.xquery.functions.fn.FnFormatDates,formatSecond,throws-declaration,XPathException,propagate,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatDates.java,org.exist.xquery.functions.fn.FnFormatDates,formatFractionComponent,throws-declaration,XPathException,propagate,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatDates.java,org.exist.xquery.functions.fn.FnFormatDates,formatAmPmComponent,throws-declaration,XPathException,propagate,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatDates.java,org.exist.xquery.functions.fn.FnFormatDates,formatEra,throws-declaration,XPathException,propagate,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatDates.java,org.exist.xquery.functions.fn.FnFormatDates,formatTimezoneComponent,throws-declaration,XPathException,propagate,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatDates.java,org.exist.xquery.functions.fn.FnFormatDates$TimezonePictureParts,formatNumber,throws-declaration,XPathException,propagate,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatDates.java,org.exist.xquery.functions.fn.FnFormatDates$TimezonePictureParts,applyMinWidthOnly,throws-declaration,XPathException,propagate,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatDates.java,org.exist.xquery.functions.fn.FnFormatDates$TimezonePictureParts,applyWidthToText,throws-declaration,XPathException,propagate,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatDates.java,org.exist.xquery.functions.fn.FnFormatDates$TimezonePictureParts,formatFractionalSeconds,throws-declaration,XPathException,propagate,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatDates.java,org.exist.xquery.functions.fn.FnFormatDates$NumericPicture,parseNumericPicture,throws-declaration,XPathException,propagate,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatDates.java,org.exist.xquery.functions.fn.FnFormatDates$NumericPicture,parseFractionPicture,throws-declaration,XPathException,propagate,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatDates.java,org.exist.xquery.functions.fn.FnFormatDates$NumericPicture,getWidths,throws-declaration,XPathException,propagate,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatDates.java,org.exist.xquery.functions.fn.FnFormatDates$NumericPicture,getWidths,try-catch,NumberFormatException,ignore,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatDates.java,org.exist.xquery.functions.fn.FnFormatDates$NumericPicture,getWidths,try-catch,NumberFormatException,ignore,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatDates.java,org.exist.xquery.functions.fn.FnFormatDates$NumericPicture,validateCalendar,throws-declaration,XPathException,propagate,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatDates.java,org.exist.xquery.functions.fn.FnFormatDates$NumericPicture,isoWeekOfYear,try-catch,Exception,recover,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatDates.java,org.exist.xquery.functions.fn.FnFormatDates$NumericPicture,isoWeekOfMonth,try-catch,Exception,recover,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunString.java,org.exist.xquery.functions.fn.FunString,eval,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunError.java,org.exist.xquery.functions.fn.FunError,eval,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/FnHasChildren.java,org.exist.xquery.functions.fn.FnHasChildren,eval,throws-declaration,XPathException,propagate,,
@@ -366,6 +399,7 @@ exist-core/src/main/java/org/exist/xquery/functions/fn/FunCeiling.java,org.exist
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunCurrentDateTime.java,org.exist.xquery.functions.fn.FunCurrentDateTime,eval,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunReplace.java,org.exist.xquery.functions.fn.FunReplace,eval,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunReplace.java,org.exist.xquery.functions.fn.FunReplace,eval,try-catch,XPathException,custom,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/FunReplace.java,org.exist.xquery.functions.fn.FunReplace,eval,try-catch,PatternSyntaxException,ignore,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunPosition.java,org.exist.xquery.functions.fn.FunPosition,eval,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunNumber.java,org.exist.xquery.functions.fn.FunNumber,eval,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunNumber.java,org.exist.xquery.functions.fn.FunNumber,eval,try-catch,XPathException,custom,,
@@ -374,6 +408,8 @@ exist-core/src/main/java/org/exist/xquery/functions/fn/FunMax.java,org.exist.xqu
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunAnalyzeString.java,org.exist.xquery.functions.fn.FunAnalyzeString,eval,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunAnalyzeString.java,org.exist.xquery.functions.fn.FunAnalyzeString,analyzeString,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunAnalyzeString.java,org.exist.xquery.functions.fn.FunAnalyzeString,analyzeString,try-catch,XPathException,custom,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/FunAnalyzeString.java,org.exist.xquery.functions.fn.FunAnalyzeString,analyzeString,try-catch,PatternSyntaxException,ignore,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/FunAnalyzeString.java,org.exist.xquery.functions.fn.FunAnalyzeString,analyzeStringJavaRegex,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunAnalyzeString.java,org.exist.xquery.functions.fn.FunAnalyzeString,match,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunAnalyzeString.java,org.exist.xquery.functions.fn.FunAnalyzeString,onGroupStart,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunAnalyzeString.java,org.exist.xquery.functions.fn.FunAnalyzeString,onGroupEnd,throws-declaration,XPathException,propagate,,
@@ -383,6 +419,7 @@ exist-core/src/main/java/org/exist/xquery/functions/fn/FunRemove.java,org.exist.
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunStringToCodepoints.java,org.exist.xquery.functions.fn.FunStringToCodepoints,eval,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunStringToCodepoints.java,org.exist.xquery.functions.fn.FunStringToCodepoints,subSequence,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/JSON.java,org.exist.xquery.functions.fn.JSON,eval,throws-declaration,XPathException,propagate,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/JSON.java,org.exist.xquery.functions.fn.JSON,eval,try-catch,XPathException,wrap,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/JSON.java,org.exist.xquery.functions.fn.JSON,parse,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/JSON.java,org.exist.xquery.functions.fn.JSON,parse,try-catch,IOException,wrap,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/JSON.java,org.exist.xquery.functions.fn.JSON,parse,try-catch,XPathException,rethrow,,
@@ -391,6 +428,10 @@ exist-core/src/main/java/org/exist/xquery/functions/fn/JSON.java,org.exist.xquer
 exist-core/src/main/java/org/exist/xquery/functions/fn/JSON.java,org.exist.xquery.functions.fn.JSON,toxml,try-catch,XPathException,rethrow,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/JSON.java,org.exist.xquery.functions.fn.JSON,parseResource,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/JSON.java,org.exist.xquery.functions.fn.JSON,parseResource,try-catch,IOException | PermissionDeniedException,wrap,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/JSON.java,org.exist.xquery.functions.fn.JSON,parseResource,try-catch,IOException,ignore,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/JSON.java,org.exist.xquery.functions.fn.JSON,parseResource,try-catch,IOException,wrap,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/JSON.java,org.exist.xquery.functions.fn.JSON,parseResource,try-catch,IOException,wrap,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/JSON.java,org.exist.xquery.functions.fn.JSON,parseResource,try-catch,IOException,wrap,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/JSON.java,org.exist.xquery.functions.fn.JSON,readValue,throws-declaration,"IOException, XPathException",propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/JSON.java,org.exist.xquery.functions.fn.JSON,readValue,throws-declaration,"IOException, XPathException",propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/JSON.java,org.exist.xquery.functions.fn.JSON,jsonToXml,throws-declaration,IOException,propagate,,
@@ -501,6 +542,7 @@ exist-core/src/main/java/org/exist/xquery/functions/fn/FunMatches.java,org.exist
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunMatches.java,org.exist.xquery.functions.fn.FunMatches,evalGeneric,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunMatches.java,org.exist.xquery.functions.fn.FunMatches,matchXmlRegex,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunMatches.java,org.exist.xquery.functions.fn.FunMatches,matchXmlRegex,try-catch,XPathException,custom,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/FunMatches.java,org.exist.xquery.functions.fn.FunMatches,matchXmlRegex,try-catch,XPathException | PatternSyntaxException,ignore,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunMatches.java,org.exist.xquery.functions.fn.FunMatches,match,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunMatches.java,org.exist.xquery.functions.fn.FunMatches,match,try-catch,PatternSyntaxException,wrap,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunStartsWith.java,org.exist.xquery.functions.fn.FunStartsWith,eval,throws-declaration,XPathException,propagate,,
@@ -562,6 +604,7 @@ exist-core/src/main/java/org/exist/xquery/functions/fn/FunUnparsedText.java,org.
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunUnparsedText.java,org.exist.xquery.functions.fn.FunUnparsedText,getCharset,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunUnparsedText.java,org.exist.xquery.functions.fn.FunUnparsedText,getCharset,try-catch,IOException,wrap,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunUnparsedText.java,org.exist.xquery.functions.fn.FunUnparsedText,getCharset,try-catch,IllegalArgumentException,wrap,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/FunUnparsedText.java,org.exist.xquery.functions.fn.FunUnparsedText,resolveCharset,try-catch,UnsupportedCharsetException,rethrow,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunUnparsedText.java,org.exist.xquery.functions.fn.FunUnparsedText,getSource,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunUnparsedText.java,org.exist.xquery.functions.fn.FunUnparsedText,getSource,try-catch,IOException | PermissionDeniedException | URISyntaxException,wrap,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunUnparsedText.java,org.exist.xquery.functions.fn.FunUnparsedText,toUri,throws-declaration,XPathException,propagate,,
@@ -1037,6 +1080,7 @@ exist-core/src/main/java/org/exist/xquery/functions/transform/Transform.java,org
 exist-core/src/main/java/org/exist/xquery/functions/transform/Transform.java,org.exist.xquery.functions.transform.Transform,raiseError,try-catch,IOException,wrap,Log4j,
 exist-core/src/main/java/org/exist/xquery/functions/transform/Transform.java,org.exist.xquery.functions.transform.Transform,raiseError,try-catch,Exception,wrap,Log4j,
 exist-core/src/main/java/org/exist/xquery/functions/transform/Transform.java,org.exist.xquery.functions.transform.Transform,createHandler,throws-declaration,"TransformerFactoryConfigurationError, XPathException",propagate,,
+exist-core/src/main/java/org/exist/xquery/functions/transform/Transform.java,org.exist.xquery.functions.transform.Transform,createHandler,try-catch,XPathException,rethrow,Log4j,
 exist-core/src/main/java/org/exist/xquery/functions/transform/Transform.java,org.exist.xquery.functions.transform.Transform,createHandler,try-catch,Exception,wrap,Log4j,
 exist-core/src/main/java/org/exist/xquery/functions/transform/Transform.java,org.exist.xquery.functions.transform.Transform,extractSerializationProperties,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/transform/Transform.java,org.exist.xquery.functions.transform.Transform,extractAttributes,throws-declaration,XPathException,propagate,,
@@ -1055,7 +1099,7 @@ exist-core/src/main/java/org/exist/xquery/functions/response/SetHeader.java,org.
 exist-core/src/main/java/org/exist/xquery/functions/response/Stream.java,org.exist.xquery.functions.response.Stream,eval,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/response/Stream.java,org.exist.xquery.functions.response.Stream,eval,try-catch,IOException,wrap,Log4j,
 exist-core/src/main/java/org/exist/xquery/functions/response/Stream.java,org.exist.xquery.functions.response.Stream,eval,try-catch,EXistException,wrap,Log4j,
-exist-core/src/main/java/org/exist/xquery/functions/response/Stream.java,org.exist.xquery.functions.response.Stream,eval,try-catch,SAXException,printStackTrace+wrap,Log4j,
+exist-core/src/main/java/org/exist/xquery/functions/response/Stream.java,org.exist.xquery.functions.response.Stream,eval,try-catch,SAXException,log+wrap,Log4j,ERROR
 exist-core/src/main/java/org/exist/xquery/functions/response/GetExists.java,org.exist.xquery.functions.response.GetExists,eval,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/response/SetCookie.java,org.exist.xquery.functions.response.SetCookie,eval,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/response/SetStatusCode.java,org.exist.xquery.functions.response.SetStatusCode,eval,throws-declaration,XPathException,propagate,,
@@ -1171,6 +1215,7 @@ exist-core/src/main/java/org/exist/xquery/InternalModule.java,org.exist.xquery.I
 exist-core/src/main/java/org/exist/xquery/Optimizer.java,org.exist.xquery.Optimizer,visitLocationStep,try-catch,XPathException,log,Log4j,WARN
 exist-core/src/main/java/org/exist/xquery/Optimizer.java,org.exist.xquery.Optimizer,visitLocationStep,try-catch,XPathException,log,Log4j,WARN
 exist-core/src/main/java/org/exist/xquery/Optimizer.java,org.exist.xquery.Optimizer,visitFilteredExpr,try-catch,XPathException,log,Log4j,WARN
+exist-core/src/main/java/org/exist/xquery/Optimizer.java,org.exist.xquery.Optimizer,foldsToFalse,try-catch,XPathException,recover,Log4j,
 exist-core/src/main/java/org/exist/xquery/BinaryOp.java,org.exist.xquery.BinaryOp,analyze,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/BinaryOp.java,org.exist.xquery.BinaryOp,eval,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/Atomize.java,org.exist.xquery.Atomize,analyze,throws-declaration,XPathException,propagate,,
@@ -1186,6 +1231,12 @@ exist-core/src/main/java/org/exist/xquery/EnclosedExpr.java,org.exist.xquery.Enc
 exist-core/src/main/java/org/exist/xquery/EnclosedExpr.java,org.exist.xquery.EnclosedExpr,eval,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/EnclosedExpr.java,org.exist.xquery.EnclosedExpr,eval,try-catch,SAXException,log+wrap,,WARN
 exist-core/src/main/java/org/exist/xquery/EnclosedExpr.java,org.exist.xquery.EnclosedExpr,eval,try-catch,DOMException,custom,,
+exist-core/src/main/java/org/exist/xquery/EnclosedExpr.java,org.exist.xquery.EnclosedExpr$NoInheritCopyReceiver,addNamespaceNode,throws-declaration,SAXException,propagate,,
+exist-core/src/main/java/org/exist/xquery/EnclosedExpr.java,org.exist.xquery.EnclosedExpr$NoInheritCopyReceiver,characters,throws-declaration,SAXException,propagate,,
+exist-core/src/main/java/org/exist/xquery/EnclosedExpr.java,org.exist.xquery.EnclosedExpr$NoInheritCopyReceiver,characters,throws-declaration,SAXException,propagate,,
+exist-core/src/main/java/org/exist/xquery/EnclosedExpr.java,org.exist.xquery.EnclosedExpr$NoInheritCopyReceiver,endElement,throws-declaration,SAXException,propagate,,
+exist-core/src/main/java/org/exist/xquery/EnclosedExpr.java,org.exist.xquery.EnclosedExpr$NoInheritCopyReceiver,endElement,throws-declaration,SAXException,propagate,,
+exist-core/src/main/java/org/exist/xquery/EnclosedExpr.java,org.exist.xquery.EnclosedExpr$NoInheritCopyReceiver,maybeFlushUndeclarations,try-catch,SAXException,ignore,,
 exist-core/src/main/java/org/exist/xquery/LetExpr.java,org.exist.xquery.LetExpr,analyze,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/LetExpr.java,org.exist.xquery.LetExpr,eval,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/AtomicToString.java,org.exist.xquery.AtomicToString,analyze,throws-declaration,XPathException,propagate,,
@@ -1354,7 +1405,8 @@ exist-core/src/main/java/org/exist/xquery/QuantifiedExpression.java,org.exist.xq
 exist-core/src/main/java/org/exist/xquery/QuantifiedExpression.java,org.exist.xquery.QuantifiedExpression,eval,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/TryCatchExpression.java,org.exist.xquery.TryCatchExpression,analyze,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/TryCatchExpression.java,org.exist.xquery.TryCatchExpression,eval,throws-declaration,XPathException,propagate,,
-exist-core/src/main/java/org/exist/xquery/TryCatchExpression.java,org.exist.xquery.TryCatchExpression,eval,try-catch,Throwable,log+recover,Log4j,ERROR
+exist-core/src/main/java/org/exist/xquery/TryCatchExpression.java,org.exist.xquery.TryCatchExpression,eval,try-catch,XPathException,recover,Log4j,
+exist-core/src/main/java/org/exist/xquery/TryCatchExpression.java,org.exist.xquery.TryCatchExpression,eval,try-catch,Throwable,recover,Log4j,
 exist-core/src/main/java/org/exist/xquery/TryCatchExpression.java,org.exist.xquery.TryCatchExpression,addErrAdditional,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/TryCatchExpression.java,org.exist.xquery.TryCatchExpression,addErrColumnNumber,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/TryCatchExpression.java,org.exist.xquery.TryCatchExpression,addErrLineNumber,throws-declaration,XPathException,propagate,,
@@ -1362,6 +1414,8 @@ exist-core/src/main/java/org/exist/xquery/TryCatchExpression.java,org.exist.xque
 exist-core/src/main/java/org/exist/xquery/TryCatchExpression.java,org.exist.xquery.TryCatchExpression,addErrValue,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/TryCatchExpression.java,org.exist.xquery.TryCatchExpression,addErrDescription,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/TryCatchExpression.java,org.exist.xquery.TryCatchExpression,addErrCode,throws-declaration,XPathException,propagate,,
+exist-core/src/main/java/org/exist/xquery/TryCatchExpression.java,org.exist.xquery.TryCatchExpression,errorCodeForCaughtXPathException,throws-declaration,XPathException,propagate,,
+exist-core/src/main/java/org/exist/xquery/TryCatchExpression.java,org.exist.xquery.TryCatchExpression,evalCatchClauses,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/TryCatchExpression.java,org.exist.xquery.TryCatchExpression,extractLocalName,throws-declaration,IllegalArgumentException,propagate,,
 exist-core/src/main/java/org/exist/xquery/TryCatchExpression.java,org.exist.xquery.TryCatchExpression,getStackTrace,throws-declaration,IOException,propagate,,
 exist-core/src/main/java/org/exist/xquery/TryCatchExpression.java,org.exist.xquery.TryCatchExpression,addFunctionTrace,throws-declaration,XPathException,propagate,,
@@ -1407,16 +1461,13 @@ exist-core/src/main/java/org/exist/xquery/util/DocUtils.java,org.exist.xquery.ut
 exist-core/src/main/java/org/exist/xquery/util/DocUtils.java,org.exist.xquery.util.DocUtils,isDocumentAvailable,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/util/DocUtils.java,org.exist.xquery.util.DocUtils,isDocumentAvailable,try-catch,PermissionDeniedException,recover,,
 exist-core/src/main/java/org/exist/xquery/util/DocUtils.java,org.exist.xquery.util.DocUtils,getDocumentByPath,throws-declaration,"XPathException, PermissionDeniedException",propagate,,
-exist-core/src/main/java/org/exist/xquery/util/DocUtils.java,org.exist.xquery.util.DocUtils,getDocumentByPath,throws-declaration,"XPathException, PermissionDeniedException",propagate,,
-exist-core/src/main/java/org/exist/xquery/util/DocUtils.java,org.exist.xquery.util.DocUtils,getFromDynamicallyAvailableDocuments,throws-declaration,XPathException,propagate,,
+exist-core/src/main/java/org/exist/xquery/util/DocUtils.java,org.exist.xquery.util.DocUtils,resolveAgainstBaseUri,try-catch,URISyntaxException | XPathException,ignore,,
 exist-core/src/main/java/org/exist/xquery/util/DocUtils.java,org.exist.xquery.util.DocUtils,getFromDynamicallyAvailableDocuments,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/util/DocUtils.java,org.exist.xquery.util.DocUtils,getFromDynamicallyAvailableDocuments,try-catch,URISyntaxException,wrap,,
-exist-core/src/main/java/org/exist/xquery/util/DocUtils.java,org.exist.xquery.util.DocUtils,getDocumentByPathFromURL,throws-declaration,"XPathException, PermissionDeniedException",propagate,,
 exist-core/src/main/java/org/exist/xquery/util/DocUtils.java,org.exist.xquery.util.DocUtils,getDocumentByPathFromURL,throws-declaration,"XPathException, PermissionDeniedException",propagate,,
 exist-core/src/main/java/org/exist/xquery/util/DocUtils.java,org.exist.xquery.util.DocUtils,getDocumentByPathFromURL,try-catch,ConnectException,wrap,,
 exist-core/src/main/java/org/exist/xquery/util/DocUtils.java,org.exist.xquery.util.DocUtils,getDocumentByPathFromURL,try-catch,MalformedURLException,wrap,,
 exist-core/src/main/java/org/exist/xquery/util/DocUtils.java,org.exist.xquery.util.DocUtils,getDocumentByPathFromURL,try-catch,IOException,wrap,,
-exist-core/src/main/java/org/exist/xquery/util/DocUtils.java,org.exist.xquery.util.DocUtils,getDocumentByPathFromDB,throws-declaration,"XPathException, PermissionDeniedException",propagate,,
 exist-core/src/main/java/org/exist/xquery/util/DocUtils.java,org.exist.xquery.util.DocUtils,getDocumentByPathFromDB,throws-declaration,"XPathException, PermissionDeniedException",propagate,,
 exist-core/src/main/java/org/exist/xquery/util/DocUtils.java,org.exist.xquery.util.DocUtils,getDocumentByPathFromDB,try-catch,URISyntaxException,wrap,,
 exist-core/src/main/java/org/exist/xquery/util/DocUtils.java,org.exist.xquery.util.DocUtils,parse,throws-declaration,XPathException,propagate,,
@@ -1445,7 +1496,7 @@ exist-core/src/main/java/org/exist/xquery/VariableDeclaration.java,org.exist.xqu
 exist-core/src/main/java/org/exist/xquery/VariableDeclaration.java,org.exist.xquery.VariableDeclaration,remove,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/FunctionTypeCheck.java,org.exist.xquery.FunctionTypeCheck,analyze,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/FunctionTypeCheck.java,org.exist.xquery.FunctionTypeCheck,eval,throws-declaration,XPathException,propagate,,
-exist-core/src/main/java/org/exist/xquery/XQueryContext.java,org.exist.xquery.XQueryContext,XQueryContext,try-catch,XPathException,printStackTrace,Log4j,
+exist-core/src/main/java/org/exist/xquery/XQueryContext.java,org.exist.xquery.XQueryContext,XQueryContext,try-catch,XPathException,log,Log4j,WARN
 exist-core/src/main/java/org/exist/xquery/XQueryContext.java,org.exist.xquery.XQueryContext,resolveInEXPathRepository,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/XQueryContext.java,org.exist.xquery.XQueryContext,resolveInEXPathRepository,try-catch,PermissionDeniedException | IllegalArgumentException,wrap,Log4j,
 exist-core/src/main/java/org/exist/xquery/XQueryContext.java,org.exist.xquery.XQueryContext,prepareForReuse,throws-declaration,XPathException,propagate,,
@@ -1531,9 +1582,10 @@ exist-core/src/main/java/org/exist/xquery/JavaCall.java,org.exist.xquery.JavaCal
 exist-core/src/main/java/org/exist/xquery/JavaCall.java,org.exist.xquery.JavaCall,analyze,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/JavaCall.java,org.exist.xquery.JavaCall,eval,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/JavaCall.java,org.exist.xquery.JavaCall,eval,try-catch,IllegalArgumentException,wrap,,
-exist-core/src/main/java/org/exist/xquery/JavaCall.java,org.exist.xquery.JavaCall,eval,try-catch,Exception,custom,,
+exist-core/src/main/java/org/exist/xquery/JavaCall.java,org.exist.xquery.JavaCall,eval,try-catch,Exception,wrap,,
 exist-core/src/main/java/org/exist/xquery/JavaCall.java,org.exist.xquery.JavaCall,eval,try-catch,IllegalArgumentException,wrap,,
-exist-core/src/main/java/org/exist/xquery/JavaCall.java,org.exist.xquery.JavaCall,eval,try-catch,Exception,custom,,
+exist-core/src/main/java/org/exist/xquery/JavaCall.java,org.exist.xquery.JavaCall,eval,try-catch,Exception,wrap,,
+exist-core/src/main/java/org/exist/xquery/JavaCall.java,org.exist.xquery.JavaCall,throwIfXPathException,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/Predicate.java,org.exist.xquery.Predicate$ExecutionMode,analyze,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/Predicate.java,org.exist.xquery.Predicate$ExecutionMode,preprocess,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/Predicate.java,org.exist.xquery.Predicate$ExecutionMode,evalPredicate,throws-declaration,XPathException,propagate,,
@@ -1552,7 +1604,7 @@ exist-core/src/main/java/org/exist/xquery/regex/RegexUtil.java,org.exist.xquery.
 exist-core/src/main/java/org/exist/xquery/regex/RegexUtil.java,org.exist.xquery.regex.RegexUtil,translateRegexp,try-catch,RegexSyntaxException,wrap,,
 exist-core/src/main/java/org/exist/xquery/ModuleContext.java,org.exist.xquery.ModuleContext,importModule,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/ModuleContext.java,org.exist.xquery.ModuleContext,importModuleFromLocation,throws-declaration,XPathException,propagate,,
-exist-core/src/main/java/org/exist/xquery/ModuleContext.java,org.exist.xquery.ModuleContext,setParentContext,try-catch,URISyntaxException,printStackTrace,Log4j,
+exist-core/src/main/java/org/exist/xquery/ModuleContext.java,org.exist.xquery.ModuleContext,setParentContext,try-catch,URISyntaxException,log,Log4j,WARN
 exist-core/src/main/java/org/exist/xquery/ModuleContext.java,org.exist.xquery.ModuleContext,setParentContext,try-catch,URISyntaxException,custom,Log4j,
 exist-core/src/main/java/org/exist/xquery/ModuleContext.java,org.exist.xquery.ModuleContext,copyContext,try-catch,XPathException,log,Log4j,ERROR
 exist-core/src/main/java/org/exist/xquery/ModuleContext.java,org.exist.xquery.ModuleContext,addDynamicOption,throws-declaration,XPathException,propagate,,
@@ -1695,6 +1747,7 @@ exist-core/src/main/java/org/exist/xquery/xqdoc/XQDocHelper.java,org.exist.xquer
 exist-core/src/main/java/org/exist/xquery/DynamicNameCheck.java,org.exist.xquery.DynamicNameCheck,eval,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/DynamicNameCheck.java,org.exist.xquery.DynamicNameCheck,eval,try-catch,IllegalArgumentException,wrap,,
 exist-core/src/main/java/org/exist/xquery/DynamicNameCheck.java,org.exist.xquery.DynamicNameCheck,analyze,throws-declaration,XPathException,propagate,,
+exist-core/src/main/java/org/exist/xquery/ExternalModule.java,org.exist.xquery.ExternalModule,declareFunction,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/ExternalModule.java,org.exist.xquery.ExternalModule,getFunction,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/ExternalModule.java,org.exist.xquery.ExternalModule,declareVariable,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/ExternalModule.java,org.exist.xquery.ExternalModule,analyzeGlobalVars,throws-declaration,XPathException,propagate,,
@@ -1713,6 +1766,7 @@ exist-core/src/main/java/org/exist/xquery/ConditionalExpression.java,org.exist.x
 exist-core/src/main/java/org/exist/xquery/ConditionalExpression.java,org.exist.xquery.ConditionalExpression,preselect,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/ConditionalExpression.java,org.exist.xquery.ConditionalExpression,remove,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/ExternalModuleImpl.java,org.exist.xquery.ExternalModuleImpl,getFunction,throws-declaration,XPathException,propagate,,
+exist-core/src/main/java/org/exist/xquery/ExternalModuleImpl.java,org.exist.xquery.ExternalModuleImpl,declareFunction,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/ExternalModuleImpl.java,org.exist.xquery.ExternalModuleImpl,declareVariable,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/ExternalModuleImpl.java,org.exist.xquery.ExternalModuleImpl,declareVariable,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/ExternalModuleImpl.java,org.exist.xquery.ExternalModuleImpl,resolveVariable,throws-declaration,XPathException,propagate,,
@@ -1721,6 +1775,7 @@ exist-core/src/main/java/org/exist/xquery/ExternalModuleImpl.java,org.exist.xque
 exist-core/src/main/java/org/exist/xquery/DynamicAttributeConstructor.java,org.exist.xquery.DynamicAttributeConstructor,analyze,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/DynamicAttributeConstructor.java,org.exist.xquery.DynamicAttributeConstructor,eval,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/DynamicAttributeConstructor.java,org.exist.xquery.DynamicAttributeConstructor,eval,try-catch,QName.IllegalQNameException,wrap,,
+exist-core/src/main/java/org/exist/xquery/DynamicAttributeConstructor.java,org.exist.xquery.DynamicAttributeConstructor,eval,try-catch,XPathException,rethrow,,
 exist-core/src/main/java/org/exist/xquery/DynamicAttributeConstructor.java,org.exist.xquery.DynamicAttributeConstructor,eval,try-catch,DOMException,wrap,,
 exist-core/src/main/java/org/exist/xquery/DynamicAttributeConstructor.java,org.exist.xquery.DynamicAttributeConstructor,normalize,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/QueryRewriter.java,org.exist.xquery.QueryRewriter,rewriteLocationStep,throws-declaration,XPathException,propagate,,
@@ -1812,6 +1867,7 @@ exist-core/src/main/java/org/exist/xquery/value/OrderedDurationValue.java,org.ex
 exist-core/src/main/java/org/exist/xquery/value/OrderedDurationValue.java,org.exist.xquery.value.OrderedDurationValue,max,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/value/OrderedDurationValue.java,org.exist.xquery.value.OrderedDurationValue,min,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/value/OrderedDurationValue.java,org.exist.xquery.value.OrderedDurationValue,plus,throws-declaration,XPathException,propagate,,
+exist-core/src/main/java/org/exist/xquery/value/OrderedDurationValue.java,org.exist.xquery.value.OrderedDurationValue,addDurationToDate,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/value/OrderedDurationValue.java,org.exist.xquery.value.OrderedDurationValue,minus,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/value/OrderedDurationValue.java,org.exist.xquery.value.OrderedDurationValue,numberToBigDecimal,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/value/Sequence.java,org.exist.xquery.value.Sequence,add,throws-declaration,XPathException,propagate,,
@@ -1928,6 +1984,7 @@ exist-core/src/main/java/org/exist/xquery/value/MemoryNodeSet.java,org.exist.xqu
 exist-core/src/main/java/org/exist/xquery/value/MemoryNodeSet.java,org.exist.xquery.value.MemoryNodeSet,matchSelf,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/value/BooleanValue.java,org.exist.xquery.value.BooleanValue,getStringValue,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/value/BooleanValue.java,org.exist.xquery.value.BooleanValue,convertTo,throws-declaration,XPathException,propagate,,
+exist-core/src/main/java/org/exist/xquery/value/BooleanValue.java,org.exist.xquery.value.BooleanValue,convertToSubtype,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/value/BooleanValue.java,org.exist.xquery.value.BooleanValue,compareTo,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/value/BooleanValue.java,org.exist.xquery.value.BooleanValue,compareTo,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/value/BooleanValue.java,org.exist.xquery.value.BooleanValue,effectiveBooleanValue,throws-declaration,XPathException,propagate,,
@@ -1941,6 +1998,8 @@ exist-core/src/main/java/org/exist/xquery/value/DurationValue.java,org.exist.xqu
 exist-core/src/main/java/org/exist/xquery/value/DurationValue.java,org.exist.xquery.value.DurationValue,wrap,try-catch,XPathException,recover,,
 exist-core/src/main/java/org/exist/xquery/value/DurationValue.java,org.exist.xquery.value.DurationValue,createSameKind,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/value/DurationValue.java,org.exist.xquery.value.DurationValue,negate,throws-declaration,XPathException,propagate,,
+exist-core/src/main/java/org/exist/xquery/value/DurationValue.java,org.exist.xquery.value.DurationValue,checkDayTimeOverflow,throws-declaration,XPathException,propagate,,
+exist-core/src/main/java/org/exist/xquery/value/DurationValue.java,org.exist.xquery.value.DurationValue,checkYearMonthOverflow,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/value/DurationValue.java,org.exist.xquery.value.DurationValue,convertTo,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/value/DurationValue.java,org.exist.xquery.value.DurationValue,compareTo,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/value/DurationValue.java,org.exist.xquery.value.DurationValue,compareTo,throws-declaration,XPathException,propagate,,
@@ -2012,7 +2071,6 @@ exist-core/src/main/java/org/exist/xquery/value/BinaryValue.java,org.exist.xquer
 exist-core/src/main/java/org/exist/xquery/value/BinaryValue.java,org.exist.xquery.value.BinaryValue,effectiveBooleanValue,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/value/BinaryValue.java,org.exist.xquery.value.BinaryValue,getStringValue,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/value/BinaryValue.java,org.exist.xquery.value.BinaryValue,getStringValue,try-catch,IOException,wrap,Log4j,
-exist-core/src/main/java/org/exist/xquery/value/BinaryValue.java,org.exist.xquery.value.BinaryValue,getStringValue,try-catch,IOException,log,Log4j,ERROR
 exist-core/src/main/java/org/exist/xquery/value/BinaryValue.java,org.exist.xquery.value.BinaryValue,streamBinaryTo,throws-declaration,IOException,propagate,,
 exist-core/src/main/java/org/exist/xquery/value/BinaryValue.java,org.exist.xquery.value.BinaryValue,streamTo,throws-declaration,IOException,propagate,,
 exist-core/src/main/java/org/exist/xquery/value/BinaryValue.java,org.exist.xquery.value.BinaryValue,streamTo,try-catch,IOException,log,Log4j,ERROR
@@ -2102,9 +2160,11 @@ exist-core/src/main/java/org/exist/xquery/value/JavaObjectValue.java,org.exist.x
 exist-core/src/main/java/org/exist/xquery/value/Type.java,org.exist.xquery.value.Type,getType,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/value/Type.java,org.exist.xquery.value.Type,getType,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/value/Type.java,org.exist.xquery.value.Type,primitiveTypeOf,throws-declaration,IllegalArgumentException,propagate,,
+exist-core/src/main/java/org/exist/xquery/value/Type.java,org.exist.xquery.value.Type,isCastable,try-catch,IllegalArgumentException,recover,Log4j,
 exist-core/src/main/java/org/exist/xquery/value/DecimalValue.java,org.exist.xquery.value.DecimalValue,DecimalValue,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/value/DecimalValue.java,org.exist.xquery.value.DecimalValue,DecimalValue,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/value/DecimalValue.java,org.exist.xquery.value.DecimalValue,DecimalValue,try-catch,NumberFormatException,wrap,,
+exist-core/src/main/java/org/exist/xquery/value/DecimalValue.java,org.exist.xquery.value.DecimalValue,DecimalValue,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/value/DecimalValue.java,org.exist.xquery.value.DecimalValue,stripTrailingZeros,try-catch,NoSuchMethodException | InvocationTargetException | IllegalAccessException,recover,,
 exist-core/src/main/java/org/exist/xquery/value/DecimalValue.java,org.exist.xquery.value.DecimalValue,getStringValue,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/value/DecimalValue.java,org.exist.xquery.value.DecimalValue,convertTo,throws-declaration,XPathException,propagate,,
@@ -2199,6 +2259,7 @@ exist-core/src/main/java/org/exist/xquery/value/AbstractDateTimeValue.java,org.e
 exist-core/src/main/java/org/exist/xquery/value/AbstractDateTimeValue.java,org.exist.xquery.value.AbstractDateTimeValue,getStringValue,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/value/AbstractDateTimeValue.java,org.exist.xquery.value.AbstractDateTimeValue,effectiveBooleanValue,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/value/AbstractDateTimeValue.java,org.exist.xquery.value.AbstractDateTimeValue,convertTo,throws-declaration,XPathException,propagate,,
+exist-core/src/main/java/org/exist/xquery/value/AbstractDateTimeValue.java,org.exist.xquery.value.AbstractDateTimeValue,checkYearOverflow,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/value/AbstractDateTimeValue.java,org.exist.xquery.value.AbstractDateTimeValue,validateTimezone,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/value/AbstractDateTimeValue.java,org.exist.xquery.value.AbstractDateTimeValue,adjustedToTimezone,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/value/AbstractDateTimeValue.java,org.exist.xquery.value.AbstractDateTimeValue,adjustedToTimezone,try-catch,IllegalArgumentException,wrap,Log4j,
@@ -2481,7 +2542,7 @@ exist-core/src/main/java/org/exist/xmlrpc/RpcAPI.java,org.exist.xmlrpc.RpcAPI,ge
 exist-core/src/main/java/org/exist/xmlrpc/RpcServlet.java,org.exist.xmlrpc.RpcServlet,init,throws-declaration,ServletException,propagate,,
 exist-core/src/main/java/org/exist/xmlrpc/RpcServlet.java,org.exist.xmlrpc.RpcServlet,doPost,throws-declaration,"IOException, ServletException",propagate,,
 exist-core/src/main/java/org/exist/xmlrpc/RpcServlet.java,org.exist.xmlrpc.RpcServlet,doPost,try-catch,EXistException,wrap,Log4j,
-exist-core/src/main/java/org/exist/xmlrpc/RpcServlet.java,org.exist.xmlrpc.RpcServlet,doPost,try-catch,Throwable,log+log+wrap,Log4j,ERROR
+exist-core/src/main/java/org/exist/xmlrpc/RpcServlet.java,org.exist.xmlrpc.RpcServlet,doPost,try-catch,Throwable,log+wrap,Log4j,ERROR
 exist-core/src/main/java/org/exist/xmlrpc/RpcServlet.java,org.exist.xmlrpc.RpcServlet,newXmlRpcServer,throws-declaration,XmlRpcException,propagate,,
 exist-core/src/main/java/org/exist/xmlrpc/RpcServlet.java,org.exist.xmlrpc.RpcServlet,newXmlRpcHandlerMapping,throws-declaration,XmlRpcException,propagate,,
 exist-core/src/main/java/org/exist/xmlrpc/RpcServlet.java,org.exist.xmlrpc.RpcServlet$XmldbRequestProcessorFactoryFactory,XmldbRequestProcessorFactoryFactory,try-catch,EXistException,recover,Log4j,
@@ -2795,6 +2856,10 @@ exist-core/src/main/java/org/exist/scheduler/impl/QuartzSchedulerImpl.java,org.e
 exist-core/src/main/java/org/exist/scheduler/impl/QuartzSchedulerImpl.java,org.exist.scheduler.impl.QuartzSchedulerImpl,getQuartzProperties,try-catch,IOException,log,Log4j,WARN
 exist-core/src/main/java/org/exist/scheduler/impl/QuartzSchedulerImpl.java,org.exist.scheduler.impl.QuartzSchedulerImpl,run,try-catch,SchedulerException,log,Log4j,ERROR
 exist-core/src/main/java/org/exist/scheduler/impl/QuartzSchedulerImpl.java,org.exist.scheduler.impl.QuartzSchedulerImpl,shutdown,try-catch,SchedulerException,log,Log4j,WARN
+exist-core/src/main/java/org/exist/scheduler/impl/QuartzSchedulerImpl.java,org.exist.scheduler.impl.QuartzSchedulerImpl,shutdown,try-catch,SchedulerException,log,Log4j,WARN
+exist-core/src/main/java/org/exist/scheduler/impl/QuartzSchedulerImpl.java,org.exist.scheduler.impl.QuartzSchedulerImpl,shutdown,try-catch,InterruptedException,log,Log4j,WARN
+exist-core/src/main/java/org/exist/scheduler/impl/QuartzSchedulerImpl.java,org.exist.scheduler.impl.QuartzSchedulerImpl,shutdown,try-catch,SchedulerException,log,Log4j,WARN
+exist-core/src/main/java/org/exist/scheduler/impl/QuartzSchedulerImpl.java,org.exist.scheduler.impl.QuartzSchedulerImpl,shutdown,try-catch,UnableToInterruptJobException,log,Log4j,WARN
 exist-core/src/main/java/org/exist/scheduler/impl/QuartzSchedulerImpl.java,org.exist.scheduler.impl.QuartzSchedulerImpl,isShutdown,try-catch,SchedulerException,log,Log4j,WARN
 exist-core/src/main/java/org/exist/scheduler/impl/QuartzSchedulerImpl.java,org.exist.scheduler.impl.QuartzSchedulerImpl,createPeriodicJob,try-catch,SchedulerException,log+recover,Log4j,ERROR
 exist-core/src/main/java/org/exist/scheduler/impl/QuartzSchedulerImpl.java,org.exist.scheduler.impl.QuartzSchedulerImpl,createCronJob,try-catch,SchedulerException,log+recover,Log4j,ERROR
@@ -2923,6 +2988,7 @@ exist-core/src/main/java/org/exist/http/Response.java,org.exist.http.Response,ge
 exist-core/src/main/java/org/exist/http/Response.java,org.exist.http.Response,write,throws-declaration,IOException,propagate,,
 exist-core/src/main/java/org/exist/http/RESTServer.java,org.exist.http.RESTServer,RESTServer,try-catch,Throwable,log,Log4j,DEBUG
 exist-core/src/main/java/org/exist/http/RESTServer.java,org.exist.http.RESTServer,doGet,throws-declaration,"BadRequestException, PermissionDeniedException, NotFoundException, IOException",propagate,,
+exist-core/src/main/java/org/exist/http/RESTServer.java,org.exist.http.RESTServer,doGet,try-catch,NumberFormatException,wrap,Log4j,
 exist-core/src/main/java/org/exist/http/RESTServer.java,org.exist.http.RESTServer,doGet,try-catch,SAXException,custom,Log4j,
 exist-core/src/main/java/org/exist/http/RESTServer.java,org.exist.http.RESTServer,doGet,try-catch,NumberFormatException,wrap,Log4j,
 exist-core/src/main/java/org/exist/http/RESTServer.java,org.exist.http.RESTServer,doGet,try-catch,NumberFormatException,wrap,Log4j,
@@ -3016,8 +3082,8 @@ exist-core/src/main/java/org/exist/http/servlets/HttpRequestWrapper.java,org.exi
 exist-core/src/main/java/org/exist/http/servlets/HttpRequestWrapper.java,org.exist.http.servlets.HttpRequestWrapper,getParameter,try-catch,IOException,log+recover,Log4j,WARN
 exist-core/src/main/java/org/exist/http/servlets/HttpRequestWrapper.java,org.exist.http.servlets.HttpRequestWrapper,getPartContentAsString,throws-declaration,IOException,propagate,,
 exist-core/src/main/java/org/exist/http/servlets/HttpRequestWrapper.java,org.exist.http.servlets.HttpRequestWrapper,getFileUploadParam,try-catch,IOException,log,Log4j,WARN
-exist-core/src/main/java/org/exist/http/servlets/HttpRequestWrapper.java,org.exist.http.servlets.HttpRequestWrapper,getParameterValues,try-catch,IOException,log+printStackTrace,Log4j,WARN
-exist-core/src/main/java/org/exist/http/servlets/HttpRequestWrapper.java,org.exist.http.servlets.HttpRequestWrapper,getParameterValues,try-catch,IOException,log+printStackTrace,Log4j,WARN
+exist-core/src/main/java/org/exist/http/servlets/HttpRequestWrapper.java,org.exist.http.servlets.HttpRequestWrapper,getParameterValues,try-catch,IOException,log,Log4j,WARN
+exist-core/src/main/java/org/exist/http/servlets/HttpRequestWrapper.java,org.exist.http.servlets.HttpRequestWrapper,getParameterValues,try-catch,IOException,log,Log4j,WARN
 exist-core/src/main/java/org/exist/http/servlets/HttpRequestWrapper.java,org.exist.http.servlets.HttpRequestWrapper,setCharacterEncoding,throws-declaration,UnsupportedEncodingException,propagate,,
 exist-core/src/main/java/org/exist/http/servlets/HttpRequestWrapper.java,org.exist.http.servlets.HttpRequestWrapper,finalize,try-catch,IOException,log,Log4j,ERROR
 exist-core/src/main/java/org/exist/http/servlets/EXistServlet.java,org.exist.http.servlets.EXistServlet$FeatureEnabled,init,throws-declaration,ServletException,propagate,,
@@ -3222,7 +3288,7 @@ exist-core/src/main/java/org/exist/storage/lock/LockManager.java,org.exist.stora
 exist-core/src/main/java/org/exist/storage/lock/LockManager.java,org.exist.storage.lock.LockManager,acquireBtreeWriteLock,throws-declaration,LockException,propagate,,
 exist-core/src/main/java/org/exist/storage/lock/LockManager.java,org.exist.storage.lock.LockManager,acquireBtreeWriteLock,try-catch,InterruptedException,wrap,Log4j,
 exist-core/src/main/java/org/exist/storage/lock/FileLock.java,org.exist.storage.lock.FileLock,tryLock,throws-declaration,ReadOnlyException,propagate,,
-exist-core/src/main/java/org/exist/storage/lock/FileLock.java,org.exist.storage.lock.FileLock,tryLock,try-catch,IOException,printStackTrace,Log4j,
+exist-core/src/main/java/org/exist/storage/lock/FileLock.java,org.exist.storage.lock.FileLock,tryLock,try-catch,IOException,custom,Log4j,
 exist-core/src/main/java/org/exist/storage/lock/FileLock.java,org.exist.storage.lock.FileLock,tryLock,try-catch,InterruptedException,ignore,Log4j,
 exist-core/src/main/java/org/exist/storage/lock/FileLock.java,org.exist.storage.lock.FileLock,tryLock,try-catch,IOException,ignore,Log4j,
 exist-core/src/main/java/org/exist/storage/lock/FileLock.java,org.exist.storage.lock.FileLock,tryLock,try-catch,IOException,wrap,Log4j,
@@ -3325,9 +3391,9 @@ exist-core/src/main/java/org/exist/storage/index/BFile.java,org.exist.storage.in
 exist-core/src/main/java/org/exist/storage/index/BFile.java,org.exist.storage.index.BFile$RemoveCallback,getKeys,throws-declaration,"IOException, BTreeException, TerminatedException",propagate,,
 exist-core/src/main/java/org/exist/storage/index/BFile.java,org.exist.storage.index.BFile$RemoveCallback,getValues,throws-declaration,"IOException, BTreeException, TerminatedException",propagate,,
 exist-core/src/main/java/org/exist/storage/index/BFile.java,org.exist.storage.index.BFile$RemoveCallback,put,throws-declaration,ReadOnlyException,propagate,,
-exist-core/src/main/java/org/exist/storage/index/BFile.java,org.exist.storage.index.BFile$RemoveCallback,put,try-catch,BTreeException | IOException,printStackTrace+log+recover,Log4j,WARN
+exist-core/src/main/java/org/exist/storage/index/BFile.java,org.exist.storage.index.BFile$RemoveCallback,put,try-catch,BTreeException | IOException,log+recover,Log4j,WARN
 exist-core/src/main/java/org/exist/storage/index/BFile.java,org.exist.storage.index.BFile$RemoveCallback,put,try-catch,BTreeException,recover,Log4j,
-exist-core/src/main/java/org/exist/storage/index/BFile.java,org.exist.storage.index.BFile$RemoveCallback,put,try-catch,IOException,printStackTrace+log+recover,Log4j,WARN
+exist-core/src/main/java/org/exist/storage/index/BFile.java,org.exist.storage.index.BFile$RemoveCallback,put,try-catch,IOException,log+recover,Log4j,WARN
 exist-core/src/main/java/org/exist/storage/index/BFile.java,org.exist.storage.index.BFile$RemoveCallback,remove,try-catch,BTreeException | IOException,log,Log4j,ERROR
 exist-core/src/main/java/org/exist/storage/index/BFile.java,org.exist.storage.index.BFile$RemoveCallback,remove,try-catch,IOException,log,Log4j,ERROR
 exist-core/src/main/java/org/exist/storage/index/BFile.java,org.exist.storage.index.BFile$RemoveCallback,remove,throws-declaration,IOException,propagate,,
@@ -3558,7 +3624,7 @@ exist-core/src/main/java/org/exist/storage/dom/DOMFile.java,org.exist.storage.do
 exist-core/src/main/java/org/exist/storage/dom/DOMFile.java,org.exist.storage.dom.DOMFile,removePage,try-catch,IOException,log,Log4j,ERROR
 exist-core/src/main/java/org/exist/storage/dom/DOMFile.java,org.exist.storage.dom.DOMFile,removeAll,try-catch,IOException,log,Log4j,ERROR
 exist-core/src/main/java/org/exist/storage/dom/DOMFile.java,org.exist.storage.dom.DOMFile,update,throws-declaration,ReadOnlyException,propagate,,
-exist-core/src/main/java/org/exist/storage/dom/DOMFile.java,org.exist.storage.dom.DOMFile,update,try-catch,BTreeException | IOException,log+printStackTrace+recover,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/dom/DOMFile.java,org.exist.storage.dom.DOMFile,update,try-catch,BTreeException | IOException,log+recover,Log4j,ERROR
 exist-core/src/main/java/org/exist/storage/dom/DOMFile.java,org.exist.storage.dom.DOMFile,update,throws-declaration,ReadOnlyException,propagate,,
 exist-core/src/main/java/org/exist/storage/dom/DOMFile.java,org.exist.storage.dom.DOMFile,getNodeValue,try-catch,BTreeException,log,Log4j,ERROR
 exist-core/src/main/java/org/exist/storage/dom/DOMFile.java,org.exist.storage.dom.DOMFile,getNodeValue,try-catch,Exception,log,Log4j,ERROR
@@ -3580,9 +3646,9 @@ exist-core/src/main/java/org/exist/storage/dom/DOMFile.java,org.exist.storage.do
 exist-core/src/main/java/org/exist/storage/dom/DOMFile.java,org.exist.storage.dom.DOMFile$DOMFilePageHeader,DOMFilePageHeader,throws-declaration,IOException,propagate,,
 exist-core/src/main/java/org/exist/storage/dom/DOMFile.java,org.exist.storage.dom.DOMFile$DOMFilePageHeader,read,throws-declaration,IOException,propagate,,
 exist-core/src/main/java/org/exist/storage/dom/DOMFile.java,org.exist.storage.dom.DOMFile$DOMFilePageHeader,write,throws-declaration,IOException,propagate,,
-exist-core/src/main/java/org/exist/storage/dom/DOMFile.java,org.exist.storage.dom.DOMFile$DOMPage,DOMPage,try-catch,IOException,log+printStackTrace,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/dom/DOMFile.java,org.exist.storage.dom.DOMFile$DOMPage,DOMPage,try-catch,IOException,log,Log4j,ERROR
 exist-core/src/main/java/org/exist/storage/dom/DOMFile.java,org.exist.storage.dom.DOMFile$DOMPage,createNewPage,try-catch,IOException,log+recover,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/dom/DOMFile.java,org.exist.storage.dom.DOMFile$DOMPage,load,try-catch,IOException,log+printStackTrace,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/dom/DOMFile.java,org.exist.storage.dom.DOMFile$DOMPage,load,try-catch,IOException,log,Log4j,ERROR
 exist-core/src/main/java/org/exist/storage/dom/DOMFile.java,org.exist.storage.dom.DOMFile$DOMPage,write,try-catch,IOException,log,Log4j,ERROR
 exist-core/src/main/java/org/exist/storage/dom/DOMFile.java,org.exist.storage.dom.DOMFile$OverflowDOMPage,OverflowDOMPage,throws-declaration,IOException,propagate,,
 exist-core/src/main/java/org/exist/storage/dom/DOMFile.java,org.exist.storage.dom.DOMFile$OverflowDOMPage,createNewPage,try-catch,IOException,log+recover,Log4j,ERROR
@@ -3638,7 +3704,7 @@ exist-core/src/main/java/org/exist/storage/BrokerPool.java,org.exist.storage.Bro
 exist-core/src/main/java/org/exist/storage/BrokerPool.java,org.exist.storage.BrokerPool$Event,_initialize,try-catch,PermissionDeniedException,log,Log4j,ERROR
 exist-core/src/main/java/org/exist/storage/BrokerPool.java,org.exist.storage.BrokerPool$Event,_initialize,try-catch,BrokerPoolServiceException,wrap,Log4j,
 exist-core/src/main/java/org/exist/storage/BrokerPool.java,org.exist.storage.BrokerPool$Event,initialiseSystemCollection,throws-declaration,"EXistException, PermissionDeniedException",propagate,,
-exist-core/src/main/java/org/exist/storage/BrokerPool.java,org.exist.storage.BrokerPool$Event,initialiseSystemCollection,try-catch,Exception,printStackTrace+log+wrap,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/BrokerPool.java,org.exist.storage.BrokerPool$Event,initialiseSystemCollection,try-catch,Exception,log+wrap,Log4j,ERROR
 exist-core/src/main/java/org/exist/storage/BrokerPool.java,org.exist.storage.BrokerPool$Event,initialiseSystemCollections,throws-declaration,"EXistException, PermissionDeniedException",propagate,,
 exist-core/src/main/java/org/exist/storage/BrokerPool.java,org.exist.storage.BrokerPool$Event,initialiseTriggersForCollections,throws-declaration,"EXistException, PermissionDeniedException",propagate,,
 exist-core/src/main/java/org/exist/storage/BrokerPool.java,org.exist.storage.BrokerPool$Event,runRecovery,throws-declaration,EXistException,propagate,,
@@ -3665,6 +3731,7 @@ exist-core/src/main/java/org/exist/storage/BrokerPool.java,org.exist.storage.Bro
 exist-core/src/main/java/org/exist/storage/BrokerPool.java,org.exist.storage.BrokerPool$Event,cleanThreadLocalsForThread,throws-declaration,EXistException,propagate,,
 exist-core/src/main/java/org/exist/storage/BrokerPool.java,org.exist.storage.BrokerPool$Event,cleanThreadLocalsForThread,try-catch,Exception,wrap,Log4j,
 exist-core/src/main/java/org/exist/storage/BrokerPool.java,org.exist.storage.BrokerPool$Event,printSystemInfo,try-catch,IOException,log,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/BrokerPool.java,org.exist.storage.BrokerPool$Event,logSurvivingInstanceThreads,try-catch,SecurityException,log,Log4j,WARN
 exist-core/src/main/java/org/exist/storage/BrokerPool.java,org.exist.storage.BrokerPool$StatusReporter,run,try-catch,InterruptedException,ignore,Log4j,
 exist-core/src/main/java/org/exist/storage/BrokerPoolService.java,org.exist.storage.BrokerPoolService,configure,throws-declaration,BrokerPoolServiceException,propagate,,
 exist-core/src/main/java/org/exist/storage/BrokerPoolService.java,org.exist.storage.BrokerPoolService,prepare,throws-declaration,BrokerPoolServiceException,propagate,,
@@ -3855,7 +3922,7 @@ exist-core/src/main/java/org/exist/storage/btree/BTree.java,org.exist.storage.bt
 exist-core/src/main/java/org/exist/storage/btree/BTree.java,org.exist.storage.btree.BTree$TreeInfo,scanSequential,throws-declaration,"TerminatedException, IOException, DBException",propagate,,
 exist-core/src/main/java/org/exist/storage/btree/BTree.java,org.exist.storage.btree.BTree$TreeInfo,rebuild,throws-declaration,"TerminatedException, IOException, DBException",propagate,,
 exist-core/src/main/java/org/exist/storage/btree/BTree.java,org.exist.storage.btree.BTree$TreeInfo,findParent,throws-declaration,IOException,propagate,,
-exist-core/src/main/java/org/exist/storage/btree/BTree.java,org.exist.storage.btree.BTree$TreeInfo,findParent,try-catch,Exception,printStackTrace+wrap,Log4j,
+exist-core/src/main/java/org/exist/storage/btree/BTree.java,org.exist.storage.btree.BTree$TreeInfo,findParent,try-catch,Exception,log+wrap,Log4j,ERROR
 exist-core/src/main/java/org/exist/storage/btree/BTree.java,org.exist.storage.btree.BTree$TreeInfo,writeToLog,try-catch,JournalException,log,Log4j,WARN
 exist-core/src/main/java/org/exist/storage/btree/BTree.java,org.exist.storage.btree.BTree$TreeInfo,redoCreateBTNode,throws-declaration,LogException,propagate,,
 exist-core/src/main/java/org/exist/storage/btree/BTree.java,org.exist.storage.btree.BTree$TreeInfo,redoCreateBTNode,try-catch,IOException,wrap,Log4j,
@@ -3863,7 +3930,7 @@ exist-core/src/main/java/org/exist/storage/btree/BTree.java,org.exist.storage.bt
 exist-core/src/main/java/org/exist/storage/btree/BTree.java,org.exist.storage.btree.BTree$TreeInfo,undoInsertValue,throws-declaration,LogException,propagate,,
 exist-core/src/main/java/org/exist/storage/btree/BTree.java,org.exist.storage.btree.BTree$TreeInfo,undoInsertValue,try-catch,BTreeException | IOException,log,Log4j,ERROR
 exist-core/src/main/java/org/exist/storage/btree/BTree.java,org.exist.storage.btree.BTree$TreeInfo,redoUpdateValue,throws-declaration,LogException,propagate,,
-exist-core/src/main/java/org/exist/storage/btree/BTree.java,org.exist.storage.btree.BTree$TreeInfo,redoUpdateValue,try-catch,Exception,log+printStackTrace,Log4j,WARN
+exist-core/src/main/java/org/exist/storage/btree/BTree.java,org.exist.storage.btree.BTree$TreeInfo,redoUpdateValue,try-catch,Exception,log,Log4j,WARN
 exist-core/src/main/java/org/exist/storage/btree/BTree.java,org.exist.storage.btree.BTree$TreeInfo,undoUpdateValue,throws-declaration,LogException,propagate,,
 exist-core/src/main/java/org/exist/storage/btree/BTree.java,org.exist.storage.btree.BTree$TreeInfo,undoUpdateValue,try-catch,BTreeException | IOException,log,Log4j,ERROR
 exist-core/src/main/java/org/exist/storage/btree/BTree.java,org.exist.storage.btree.BTree$TreeInfo,redoRemoveValue,throws-declaration,LogException,propagate,,
@@ -3874,7 +3941,7 @@ exist-core/src/main/java/org/exist/storage/btree/BTree.java,org.exist.storage.bt
 exist-core/src/main/java/org/exist/storage/btree/BTree.java,org.exist.storage.btree.BTree$TreeInfo,redoSetPageLink,throws-declaration,LogException,propagate,,
 exist-core/src/main/java/org/exist/storage/btree/BTree.java,org.exist.storage.btree.BTree$BTreeNode,sync,try-catch,IOException,log,Log4j,ERROR
 exist-core/src/main/java/org/exist/storage/btree/BTree.java,org.exist.storage.btree.BTree$BTreeNode,read,throws-declaration,IOException,propagate,,
-exist-core/src/main/java/org/exist/storage/btree/BTree.java,org.exist.storage.btree.BTree$BTreeNode,read,try-catch,Exception,printStackTrace+log+wrap,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/btree/BTree.java,org.exist.storage.btree.BTree$BTreeNode,read,try-catch,Exception,log+wrap,Log4j,ERROR
 exist-core/src/main/java/org/exist/storage/btree/BTree.java,org.exist.storage.btree.BTree$BTreeNode,write,throws-declaration,IOException,propagate,,
 exist-core/src/main/java/org/exist/storage/btree/BTree.java,org.exist.storage.btree.BTree$BTreeNode,getChildNode,throws-declaration,IOException,propagate,,
 exist-core/src/main/java/org/exist/storage/btree/BTree.java,org.exist.storage.btree.BTree$BTreeNode,removeValue,throws-declaration,"IOException, BTreeException",propagate,,
@@ -3904,7 +3971,7 @@ exist-core/src/main/java/org/exist/storage/btree/Paged.java,org.exist.storage.bt
 exist-core/src/main/java/org/exist/storage/btree/Paged.java,org.exist.storage.btree.Paged,close,try-catch,IOException,wrap,Log4j,
 exist-core/src/main/java/org/exist/storage/btree/Paged.java,org.exist.storage.btree.Paged,closeAndRemove,throws-declaration,DBException,propagate,,
 exist-core/src/main/java/org/exist/storage/btree/Paged.java,org.exist.storage.btree.Paged,create,throws-declaration,DBException,propagate,,
-exist-core/src/main/java/org/exist/storage/btree/Paged.java,org.exist.storage.btree.Paged,create,try-catch,Exception,printStackTrace+wrap,Log4j,
+exist-core/src/main/java/org/exist/storage/btree/Paged.java,org.exist.storage.btree.Paged,create,try-catch,Exception,log+wrap,Log4j,ERROR
 exist-core/src/main/java/org/exist/storage/btree/Paged.java,org.exist.storage.btree.Paged,flush,throws-declaration,DBException,propagate,,
 exist-core/src/main/java/org/exist/storage/btree/Paged.java,org.exist.storage.btree.Paged,flush,try-catch,IOException,log,Log4j,WARN
 exist-core/src/main/java/org/exist/storage/btree/Paged.java,org.exist.storage.btree.Paged,backupToStream,throws-declaration,IOException,propagate,,
@@ -3912,7 +3979,7 @@ exist-core/src/main/java/org/exist/storage/btree/Paged.java,org.exist.storage.bt
 exist-core/src/main/java/org/exist/storage/btree/Paged.java,org.exist.storage.btree.Paged,getFreePage,throws-declaration,IOException,propagate,,
 exist-core/src/main/java/org/exist/storage/btree/Paged.java,org.exist.storage.btree.Paged,getPage,throws-declaration,IOException,propagate,,
 exist-core/src/main/java/org/exist/storage/btree/Paged.java,org.exist.storage.btree.Paged,open,throws-declaration,DBException,propagate,,
-exist-core/src/main/java/org/exist/storage/btree/Paged.java,org.exist.storage.btree.Paged,open,try-catch,Exception,printStackTrace+wrap,Log4j,
+exist-core/src/main/java/org/exist/storage/btree/Paged.java,org.exist.storage.btree.Paged,open,try-catch,Exception,log+wrap,Log4j,ERROR
 exist-core/src/main/java/org/exist/storage/btree/Paged.java,org.exist.storage.btree.Paged,printFreeSpaceList,throws-declaration,IOException,propagate,,
 exist-core/src/main/java/org/exist/storage/btree/Paged.java,org.exist.storage.btree.Paged,setFile,throws-declaration,DBException,propagate,,
 exist-core/src/main/java/org/exist/storage/btree/Paged.java,org.exist.storage.btree.Paged,setFile,try-catch,IOException,log,Log4j,WARN
@@ -4099,11 +4166,13 @@ exist-core/src/main/java/org/exist/storage/BrokerFactory.java,org.exist.storage.
 exist-core/src/main/java/org/exist/storage/IndexSpec.java,org.exist.storage.IndexSpec,IndexSpec,throws-declaration,DatabaseConfigurationException,propagate,,
 exist-core/src/main/java/org/exist/storage/IndexSpec.java,org.exist.storage.IndexSpec,read,throws-declaration,DatabaseConfigurationException,propagate,,
 exist-core/src/main/java/org/exist/storage/BrokerPools.java,org.exist.storage.BrokerPools,,try-catch,IllegalArgumentException,log,Log4j,WARN
+exist-core/src/main/java/org/exist/storage/BrokerPools.java,org.exist.storage.BrokerPools,deregisterDefaultShutdownHook,try-catch,IllegalStateException,log,Log4j,DEBUG
 exist-core/src/main/java/org/exist/storage/BrokerPools.java,org.exist.storage.BrokerPools,configure,throws-declaration,"EXistException, DatabaseConfigurationException",propagate,,
 exist-core/src/main/java/org/exist/storage/BrokerPools.java,org.exist.storage.BrokerPools,configure,throws-declaration,"EXistException, DatabaseConfigurationException",propagate,,
 exist-core/src/main/java/org/exist/storage/BrokerPools.java,org.exist.storage.BrokerPools,configure,throws-declaration,EXistException,propagate,,
 exist-core/src/main/java/org/exist/storage/BrokerPools.java,org.exist.storage.BrokerPools,configure,throws-declaration,EXistException,propagate,,
-exist-core/src/main/java/org/exist/storage/BrokerPools.java,org.exist.storage.BrokerPools,configure,try-catch,Throwable,log+rethrow,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/BrokerPools.java,org.exist.storage.BrokerPools,configure,try-catch,EXistException,log+rethrow,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/BrokerPools.java,org.exist.storage.BrokerPools,configure,try-catch,Throwable,log+wrap,Log4j,ERROR
 exist-core/src/main/java/org/exist/storage/BrokerPools.java,org.exist.storage.BrokerPools,getInstance,throws-declaration,EXistException,propagate,,
 exist-core/src/main/java/org/exist/storage/BrokerPools.java,org.exist.storage.BrokerPools,getInstance,throws-declaration,EXistException,propagate,,
 exist-core/src/main/java/org/exist/storage/BrokerPools.java,org.exist.storage.BrokerPools,readInstances,throws-declaration,E,propagate,,
@@ -4121,29 +4190,51 @@ exist-core/src/main/java/org/exist/storage/recovery/RecoveryManager.java,org.exi
 exist-core/src/main/java/org/exist/storage/ContentLoadingObserver.java,org.exist.storage.ContentLoadingObserver,flush,throws-declaration,DBException,propagate,,
 exist-core/src/main/java/org/exist/storage/ContentLoadingObserver.java,org.exist.storage.ContentLoadingObserver,close,throws-declaration,DBException,propagate,,
 exist-core/src/main/java/org/exist/storage/ContentLoadingObserver.java,org.exist.storage.ContentLoadingObserver,closeAndRemove,throws-declaration,DBException,propagate,,
-exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$ResourceError,characters,throws-declaration,SAXException,propagate,,
-exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$ResourceError,comment,throws-declaration,SAXException,propagate,,
-exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$ResourceError,endDocument,throws-declaration,SAXException,propagate,,
-exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$ResourceError,endElement,throws-declaration,SAXException,propagate,,
-exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$ResourceError,endPrefixMapping,throws-declaration,SAXException,propagate,,
-exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$ResourceError,processingInstruction,throws-declaration,SAXException,propagate,,
-exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$ResourceError,cdataSection,throws-declaration,SAXException,propagate,,
-exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$ResourceError,startDocument,throws-declaration,SAXException,propagate,,
-exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$ResourceError,declaration,throws-declaration,SAXException,propagate,,
-exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$ResourceError,attribute,throws-declaration,SAXException,propagate,,
-exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$ResourceError,startElement,throws-declaration,SAXException,propagate,,
-exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$ResourceError,documentType,throws-declaration,SAXException,propagate,,
-exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$ResourceError,processXInclude,throws-declaration,SAXException,propagate,,
-exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$ResourceError,processXInclude,try-catch,URISyntaxException,ignore,Log4j,
-exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$ResourceError,processXInclude,try-catch,PermissionDeniedException,recover,Log4j,
-exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$ResourceError,processXInclude,try-catch,PermissionDeniedException,recover,Log4j,
-exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$ResourceError,processXInclude,try-catch,ParserConfigurationException | URISyntaxException,wrap,Log4j,
-exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$ResourceError,processXInclude,try-catch,XPathException | PermissionDeniedException,log+wrap,Log4j,WARN
-exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$ResourceError,processXInclude,try-catch,IOException,wrap,Log4j,
-exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$ResourceError,parseExternal,throws-declaration,"ParserConfigurationException, SAXException",propagate,,
-exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$ResourceError,parseExternal,try-catch,IOException,recover,Log4j,
-exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$ResourceError,startPrefixMapping,throws-declaration,SAXException,propagate,,
-exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$ResourceError,checkNamespaces,throws-declaration,XPathException,propagate,,
+exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$IncludeResolution,characters,throws-declaration,SAXException,propagate,,
+exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$IncludeResolution,comment,throws-declaration,SAXException,propagate,,
+exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$IncludeResolution,endDocument,throws-declaration,SAXException,propagate,,
+exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$IncludeResolution,endElement,throws-declaration,SAXException,propagate,,
+exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$IncludeResolution,endPrefixMapping,throws-declaration,SAXException,propagate,,
+exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$IncludeResolution,processingInstruction,throws-declaration,SAXException,propagate,,
+exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$IncludeResolution,cdataSection,throws-declaration,SAXException,propagate,,
+exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$IncludeResolution,startDocument,throws-declaration,SAXException,propagate,,
+exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$IncludeResolution,declaration,throws-declaration,SAXException,propagate,,
+exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$IncludeResolution,attribute,throws-declaration,SAXException,propagate,,
+exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$IncludeResolution,startElement,throws-declaration,SAXException,propagate,,
+exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$IncludeResolution,validateAcceptAttributes,throws-declaration,SAXException,propagate,,
+exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$IncludeResolution,validateAcceptAttribute,throws-declaration,SAXException,propagate,,
+exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$IncludeResolution,documentType,throws-declaration,SAXException,propagate,,
+exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$IncludeResolution,processXInclude,throws-declaration,SAXException,propagate,,
+exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$IncludeResolution,processHrefXInclude,throws-declaration,SAXException,propagate,,
+exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$IncludeResolution,resolveResource,throws-declaration,SAXException,propagate,,
+exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$IncludeResolution,resolveResource,try-catch,URISyntaxException,ignore,Log4j,
+exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$IncludeResolution,serializeDocument,throws-declaration,SAXException,propagate,,
+exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$IncludeResolution,resolveFromDatabase,throws-declaration,SAXException,propagate,,
+exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$IncludeResolution,resolveFromDatabase,try-catch,PermissionDeniedException,recover,Log4j,
+exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$IncludeResolution,resolveExternalResource,throws-declaration,SAXException,propagate,,
+exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$IncludeResolution,resolveExternalResource,try-catch,PermissionDeniedException,custom,Log4j,
+exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$IncludeResolution,resolveExternalResource,try-catch,ParserConfigurationException | URISyntaxException,wrap,Log4j,
+exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$IncludeResolution,processTextInclude,throws-declaration,SAXException,propagate,,
+exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$PreparedSource,processXPointerOrXQuery,throws-declaration,SAXException,propagate,,
+exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$PreparedSource,processXPointerOrXQuery,try-catch,XPathException | PermissionDeniedException,log+recover,Log4j,WARN
+exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$PreparedSource,prepareXPointerSource,throws-declaration,XPathException,propagate,,
+exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$PreparedSource,setupXPointerContext,throws-declaration,XPathException,propagate,,
+exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$PreparedSource,compileXPointerQuery,throws-declaration,"SAXException, XPathException, PermissionDeniedException",propagate,,
+exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$PreparedSource,compileXPointerQuery,try-catch,IOException,wrap,Log4j,
+exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$PreparedSource,serializeQueryResults,throws-declaration,"SAXException, XPathException",propagate,,
+exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$PreparedSource,processIntraDocumentXPointer,throws-declaration,SAXException,propagate,,
+exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$PreparedSource,evaluateIntraDocumentXQuery,throws-declaration,SAXException,propagate,,
+exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$PreparedSource,evaluateIntraDocumentXQuery,try-catch,XPathException | PermissionDeniedException,log+recover,Log4j,WARN
+exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$PreparedSource,evaluateIntraDocumentXQuery,try-catch,IOException,wrap,Log4j,
+exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$PreparedSource,resolveCharset,try-catch,UnsupportedCharsetException,log,Log4j,WARN
+exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$PreparedSource,readBinaryAsText,try-catch,IOException,log+recover,Log4j,WARN
+exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$PreparedSource,serializeDocumentAsText,try-catch,Exception,log+recover,Log4j,WARN
+exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$PreparedSource,serializeMemtreeAsText,try-catch,Exception,log+recover,Log4j,WARN
+exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$PreparedSource,readExternalAsText,try-catch,Exception,log+recover,Log4j,WARN
+exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$PreparedSource,parseExternal,throws-declaration,"ParserConfigurationException, SAXException",propagate,,
+exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$PreparedSource,parseExternal,try-catch,IOException,recover,Log4j,
+exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$PreparedSource,startPrefixMapping,throws-declaration,SAXException,propagate,,
+exist-core/src/main/java/org/exist/storage/serializers/XIncludeFilter.java,org.exist.storage.serializers.XIncludeFilter$PreparedSource,checkNamespaces,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/storage/serializers/NativeSerializer.java,org.exist.storage.serializers.NativeSerializer,serializeToReceiver,throws-declaration,SAXException,propagate,,
 exist-core/src/main/java/org/exist/storage/serializers/NativeSerializer.java,org.exist.storage.serializers.NativeSerializer,serializeToReceiver,try-catch,IOException,log,,WARN
 exist-core/src/main/java/org/exist/storage/serializers/NativeSerializer.java,org.exist.storage.serializers.NativeSerializer,serializeToReceiver,throws-declaration,SAXException,propagate,,
@@ -4393,7 +4484,7 @@ exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.N
 exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,repair,try-catch,DatabaseConfigurationException,log,Log4j,ERROR
 exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,rebuildIndex,try-catch,LockException | IOException | TerminatedException | DBException,log,Log4j,ERROR
 exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,flush,try-catch,EXistException,log,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,sync,try-catch,DBException,printStackTrace+log,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,sync,try-catch,DBException,log,Log4j,ERROR
 exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,start,try-catch,DBException,log,Log4j,ERROR
 exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,start,try-catch,LockException,log,Log4j,ERROR
 exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,shutdown,try-catch,Exception,log,Log4j,ERROR
@@ -4407,10 +4498,10 @@ exist-core/src/main/java/org/exist/storage/statistics/DataGuide.java,org.exist.s
 exist-core/src/main/java/org/exist/storage/statistics/DataGuide.java,org.exist.storage.statistics.DataGuide,write,throws-declaration,IOException,propagate,,
 exist-core/src/main/java/org/exist/storage/statistics/DataGuide.java,org.exist.storage.statistics.DataGuide,read,throws-declaration,IOException,propagate,,
 exist-core/src/main/java/org/exist/storage/statistics/DataGuide.java,org.exist.storage.statistics.DataGuide$NodeStatsRoot,toSAX,throws-declaration,SAXException,propagate,,
-exist-core/src/main/java/org/exist/storage/statistics/IndexStatisticsWorker.java,org.exist.storage.statistics.IndexStatisticsWorker,updateIndex,try-catch,TerminatedException,ignore,,
-exist-core/src/main/java/org/exist/storage/statistics/IndexStatisticsWorker.java,org.exist.storage.statistics.IndexStatisticsWorker,updateDocument,try-catch,IOException | XMLStreamException,printStackTrace,,
+exist-core/src/main/java/org/exist/storage/statistics/IndexStatisticsWorker.java,org.exist.storage.statistics.IndexStatisticsWorker,updateIndex,try-catch,TerminatedException,ignore,Log4j,
+exist-core/src/main/java/org/exist/storage/statistics/IndexStatisticsWorker.java,org.exist.storage.statistics.IndexStatisticsWorker,updateDocument,try-catch,IOException | XMLStreamException,log,Log4j,WARN
 exist-core/src/main/java/org/exist/storage/statistics/IndexStatisticsWorker.java,org.exist.storage.statistics.IndexStatisticsWorker$DocumentCallback,indexInfo,throws-declaration,TerminatedException,propagate,,
-exist-core/src/main/java/org/exist/storage/statistics/IndexStatisticsWorker.java,org.exist.storage.statistics.IndexStatisticsWorker$DocumentCallback,indexInfo,try-catch,Exception,log,,WARN
+exist-core/src/main/java/org/exist/storage/statistics/IndexStatisticsWorker.java,org.exist.storage.statistics.IndexStatisticsWorker$DocumentCallback,indexInfo,try-catch,Exception,log,Log4j,WARN
 exist-core/src/main/java/org/exist/storage/statistics/IndexStatistics.java,org.exist.storage.statistics.IndexStatistics,configure,throws-declaration,DatabaseConfigurationException,propagate,,
 exist-core/src/main/java/org/exist/storage/statistics/IndexStatistics.java,org.exist.storage.statistics.IndexStatistics,open,throws-declaration,DatabaseConfigurationException,propagate,,
 exist-core/src/main/java/org/exist/storage/statistics/IndexStatistics.java,org.exist.storage.statistics.IndexStatistics,open,try-catch,IOException,log+wrap,Log4j,ERROR
@@ -6044,23 +6135,23 @@ exist-core/src/main/java/org/exist/source/DBSource.java,org.exist.source.DBSourc
 exist-core/src/main/java/org/exist/source/DBSource.java,org.exist.source.DBSource,validate,throws-declaration,PermissionDeniedException,propagate,,
 exist-core/src/main/java/org/exist/source/DBSource.java,org.exist.source.DBSource,doValidation,throws-declaration,PermissionDeniedException,propagate,,
 exist-core/src/main/java/org/exist/source/SourceFactory.java,org.exist.source.SourceFactory,getSource,throws-declaration,"IOException, PermissionDeniedException",propagate,,
-exist-core/src/main/java/org/exist/source/SourceFactory.java,org.exist.source.SourceFactory,getSource,try-catch,IllegalArgumentException,custom,Log4j,
-exist-core/src/main/java/org/exist/source/SourceFactory.java,org.exist.source.SourceFactory,getSource,try-catch,MalformedURLException,recover,Log4j,
+exist-core/src/main/java/org/exist/source/SourceFactory.java,org.exist.source.SourceFactory,getSource,try-catch,IllegalArgumentException,log,Log4j,DEBUG
+exist-core/src/main/java/org/exist/source/SourceFactory.java,org.exist.source.SourceFactory,getSource,try-catch,MalformedURLException,log+recover,Log4j,DEBUG
 exist-core/src/main/java/org/exist/source/SourceFactory.java,org.exist.source.SourceFactory,getSource_fromClasspath,throws-declaration,IOException,propagate,,
-exist-core/src/main/java/org/exist/source/SourceFactory.java,org.exist.source.SourceFactory,getSource_fromClasspath,try-catch,IOException,ignore,Log4j,
+exist-core/src/main/java/org/exist/source/SourceFactory.java,org.exist.source.SourceFactory,getSource_fromClasspath,try-catch,IOException,log,Log4j,DEBUG
 exist-core/src/main/java/org/exist/source/SourceFactory.java,org.exist.source.SourceFactory,getSource_fromDb,throws-declaration,"PermissionDeniedException, IOException",propagate,,
 exist-core/src/main/java/org/exist/source/SourceFactory.java,org.exist.source.SourceFactory,getSource_fromDb,try-catch,SAXException,wrap,Log4j,
-exist-core/src/main/java/org/exist/source/SourceFactory.java,org.exist.source.SourceFactory,getSource_fromFile,try-catch,InvalidPathException,ignore,Log4j,
-exist-core/src/main/java/org/exist/source/SourceFactory.java,org.exist.source.SourceFactory,getSource_fromFile,try-catch,InvalidPathException,ignore,Log4j,
-exist-core/src/main/java/org/exist/source/SourceFactory.java,org.exist.source.SourceFactory,getSource_fromFile,try-catch,InvalidPathException,ignore,Log4j,
-exist-core/src/main/java/org/exist/source/SourceFactory.java,org.exist.source.SourceFactory,getSource_fromFile,try-catch,InvalidPathException,ignore,Log4j,
-exist-core/src/main/java/org/exist/source/SourceFactory.java,org.exist.source.SourceFactory,getSource_fromFile,try-catch,InvalidPathException,ignore,Log4j,
-exist-core/src/main/java/org/exist/source/SourceFactory.java,org.exist.source.SourceFactory,getSource_fromFile,try-catch,InvalidPathException,ignore,Log4j,
-exist-core/src/main/java/org/exist/source/SourceFactory.java,org.exist.source.SourceFactory,getSource_fromFile,try-catch,URISyntaxException,ignore,Log4j,
-exist-core/src/main/java/org/exist/source/SourceFactory.java,org.exist.source.SourceFactory,getSource_fromFile,try-catch,InvalidPathException,ignore,Log4j,
-exist-core/src/main/java/org/exist/source/SourceFactory.java,org.exist.source.SourceFactory,getSource_fromFile,try-catch,URISyntaxException,ignore,Log4j,
+exist-core/src/main/java/org/exist/source/SourceFactory.java,org.exist.source.SourceFactory,getSource_fromFile,try-catch,InvalidPathException,log,Log4j,TRACE
+exist-core/src/main/java/org/exist/source/SourceFactory.java,org.exist.source.SourceFactory,getSource_fromFile,try-catch,InvalidPathException,log,Log4j,TRACE
+exist-core/src/main/java/org/exist/source/SourceFactory.java,org.exist.source.SourceFactory,getSource_fromFile,try-catch,InvalidPathException,log,Log4j,TRACE
+exist-core/src/main/java/org/exist/source/SourceFactory.java,org.exist.source.SourceFactory,getSource_fromFile,try-catch,InvalidPathException,log,Log4j,TRACE
+exist-core/src/main/java/org/exist/source/SourceFactory.java,org.exist.source.SourceFactory,getSource_fromFile,try-catch,InvalidPathException,log,Log4j,TRACE
+exist-core/src/main/java/org/exist/source/SourceFactory.java,org.exist.source.SourceFactory,getSource_fromFile,try-catch,InvalidPathException,log,Log4j,TRACE
+exist-core/src/main/java/org/exist/source/SourceFactory.java,org.exist.source.SourceFactory,getSource_fromFile,try-catch,URISyntaxException,log,Log4j,TRACE
+exist-core/src/main/java/org/exist/source/SourceFactory.java,org.exist.source.SourceFactory,getSource_fromFile,try-catch,InvalidPathException,log,Log4j,TRACE
+exist-core/src/main/java/org/exist/source/SourceFactory.java,org.exist.source.SourceFactory,getSource_fromFile,try-catch,URISyntaxException,log,Log4j,TRACE
 exist-core/src/main/java/org/exist/source/SourceFactory.java,org.exist.source.SourceFactory,getSource_fromFile,try-catch,EXistException,log,Log4j,WARN
-exist-core/src/main/java/org/exist/source/SourceFactory.java,org.exist.source.SourceFactory,getSource_fromFile,try-catch,InvalidPathException,ignore,Log4j,
+exist-core/src/main/java/org/exist/source/SourceFactory.java,org.exist.source.SourceFactory,getSource_fromFile,try-catch,InvalidPathException,log,Log4j,DEBUG
 exist-core/src/main/java/org/exist/source/BinarySource.java,org.exist.source.BinarySource,getReader,throws-declaration,IOException,propagate,,
 exist-core/src/main/java/org/exist/source/BinarySource.java,org.exist.source.BinarySource,getContent,throws-declaration,IOException,propagate,,
 exist-core/src/main/java/org/exist/source/BinarySource.java,org.exist.source.BinarySource,checkEncoding,throws-declaration,IOException,propagate,,
@@ -6083,9 +6174,11 @@ exist-core/src/main/java/org/exist/config/Configurator.java,org.exist.config.Con
 exist-core/src/main/java/org/exist/config/Configurator.java,org.exist.config.Configurator,configureByCurrent,try-catch,ReflectiveOperationException,log,Log4j,WARN
 exist-core/src/main/java/org/exist/config/Configurator.java,org.exist.config.Configurator,create,try-catch,ClassNotFoundException,log,Log4j,ERROR
 exist-core/src/main/java/org/exist/config/Configurator.java,org.exist.config.Configurator,create,try-catch,EXistException,log+log+recover,Log4j,WARN
-exist-core/src/main/java/org/exist/config/Configurator.java,org.exist.config.Configurator,create,try-catch,Throwable,log+log,Log4j,DEBUG
-exist-core/src/main/java/org/exist/config/Configurator.java,org.exist.config.Configurator,create,try-catch,Throwable,log+log,Log4j,WARN
+exist-core/src/main/java/org/exist/config/Configurator.java,org.exist.config.Configurator,create,try-catch,InterruptedException,log,Log4j,DEBUG
+exist-core/src/main/java/org/exist/config/Configurator.java,org.exist.config.Configurator,create,try-catch,Throwable,log,Log4j,DEBUG
 exist-core/src/main/java/org/exist/config/Configurator.java,org.exist.config.Configurator,create,try-catch,EXistException,log,Log4j,WARN
+exist-core/src/main/java/org/exist/config/Configurator.java,org.exist.config.Configurator,tryConfigurationOnlyConstructor,try-catch,InterruptedException,log+log+recover,Log4j,WARN
+exist-core/src/main/java/org/exist/config/Configurator.java,org.exist.config.Configurator,tryConfigurationOnlyConstructor,try-catch,Throwable,log+log+recover,Log4j,WARN
 exist-core/src/main/java/org/exist/config/Configurator.java,org.exist.config.Configurator,parse,throws-declaration,ConfigurationException,propagate,,
 exist-core/src/main/java/org/exist/config/Configurator.java,org.exist.config.Configurator,parse,try-catch,ParserConfigurationException | SAXException | IOException,wrap,Log4j,
 exist-core/src/main/java/org/exist/config/Configurator.java,org.exist.config.Configurator,serializeByReference,throws-declaration,SAXException,propagate,,
@@ -6227,7 +6320,6 @@ exist-core/src/main/java/org/exist/util/Collations.java,org.exist.util.Collation
 exist-core/src/main/java/org/exist/util/Collations.java,org.exist.util.Collations,getCollationFromURI,try-catch,Exception,wrap,Log4j,
 exist-core/src/main/java/org/exist/util/Collations.java,org.exist.util.Collations,getCollationFromURI,try-catch,Exception,wrap,Log4j,
 exist-core/src/main/java/org/exist/util/Collations.java,org.exist.util.Collations,getCollationFromURI,try-catch,Exception,log+wrap,Log4j,ERROR
-exist-core/src/main/java/org/exist/util/Collations.java,org.exist.util.Collations,getCollationFromParams,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/util/Collations.java,org.exist.util.Collations,getCollationFromParams,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/util/Collations.java,org.exist.util.Collations,getCollationFromParams,try-catch,Exception,log+recover,Log4j,ERROR
 exist-core/src/main/java/org/exist/util/Collations.java,org.exist.util.Collations,getCollationFromParams,try-catch,IllegalArgumentException,log+wrap,Log4j,ERROR
@@ -6819,19 +6911,24 @@ exist-core/src/main/java/org/exist/launcher/LauncherWrapper.java,org.exist.launc
 exist-core/src/main/java/org/exist/launcher/LauncherWrapper.java,org.exist.launcher.LauncherWrapper,launch,try-catch,IOException,custom,,
 exist-core/src/main/java/org/exist/launcher/LauncherWrapper.java,org.exist.launcher.LauncherWrapper,run,throws-declaration,IOException,propagate,,
 exist-core/src/main/java/org/exist/launcher/WindowsServiceManager.java,org.exist.launcher.WindowsServiceManager$WindowsServiceState,install,throws-declaration,ServiceManagerException,propagate,,
-exist-core/src/main/java/org/exist/launcher/WindowsServiceManager.java,org.exist.launcher.WindowsServiceManager$WindowsServiceState,install,try-catch,IOException | InterruptedException,log+wrap,Log4j,ERROR
+exist-core/src/main/java/org/exist/launcher/WindowsServiceManager.java,org.exist.launcher.WindowsServiceManager$WindowsServiceState,install,try-catch,InterruptedException,log+wrap,Log4j,ERROR
+exist-core/src/main/java/org/exist/launcher/WindowsServiceManager.java,org.exist.launcher.WindowsServiceManager$WindowsServiceState,install,try-catch,IOException,log+wrap,Log4j,ERROR
 exist-core/src/main/java/org/exist/launcher/WindowsServiceManager.java,org.exist.launcher.WindowsServiceManager$WindowsServiceState,isInstalled,try-catch,ServiceManagerException,log+recover,Log4j,ERROR
 exist-core/src/main/java/org/exist/launcher/WindowsServiceManager.java,org.exist.launcher.WindowsServiceManager$WindowsServiceState,uninstall,throws-declaration,ServiceManagerException,propagate,,
-exist-core/src/main/java/org/exist/launcher/WindowsServiceManager.java,org.exist.launcher.WindowsServiceManager$WindowsServiceState,uninstall,try-catch,IOException | InterruptedException,log+wrap,Log4j,ERROR
+exist-core/src/main/java/org/exist/launcher/WindowsServiceManager.java,org.exist.launcher.WindowsServiceManager$WindowsServiceState,uninstall,try-catch,InterruptedException,log+wrap,Log4j,ERROR
+exist-core/src/main/java/org/exist/launcher/WindowsServiceManager.java,org.exist.launcher.WindowsServiceManager$WindowsServiceState,uninstall,try-catch,IOException,log+wrap,Log4j,ERROR
 exist-core/src/main/java/org/exist/launcher/WindowsServiceManager.java,org.exist.launcher.WindowsServiceManager$WindowsServiceState,start,throws-declaration,ServiceManagerException,propagate,,
-exist-core/src/main/java/org/exist/launcher/WindowsServiceManager.java,org.exist.launcher.WindowsServiceManager$WindowsServiceState,start,try-catch,IOException | InterruptedException,log+wrap,Log4j,ERROR
+exist-core/src/main/java/org/exist/launcher/WindowsServiceManager.java,org.exist.launcher.WindowsServiceManager$WindowsServiceState,start,try-catch,InterruptedException,log+wrap,Log4j,ERROR
+exist-core/src/main/java/org/exist/launcher/WindowsServiceManager.java,org.exist.launcher.WindowsServiceManager$WindowsServiceState,start,try-catch,IOException,log+wrap,Log4j,ERROR
 exist-core/src/main/java/org/exist/launcher/WindowsServiceManager.java,org.exist.launcher.WindowsServiceManager$WindowsServiceState,isRunning,try-catch,ServiceManagerException,log+recover,Log4j,ERROR
 exist-core/src/main/java/org/exist/launcher/WindowsServiceManager.java,org.exist.launcher.WindowsServiceManager$WindowsServiceState,stop,throws-declaration,ServiceManagerException,propagate,,
-exist-core/src/main/java/org/exist/launcher/WindowsServiceManager.java,org.exist.launcher.WindowsServiceManager$WindowsServiceState,stop,try-catch,IOException | InterruptedException,log+wrap,Log4j,ERROR
+exist-core/src/main/java/org/exist/launcher/WindowsServiceManager.java,org.exist.launcher.WindowsServiceManager$WindowsServiceState,stop,try-catch,InterruptedException,log+wrap,Log4j,ERROR
+exist-core/src/main/java/org/exist/launcher/WindowsServiceManager.java,org.exist.launcher.WindowsServiceManager$WindowsServiceState,stop,try-catch,IOException,log+wrap,Log4j,ERROR
 exist-core/src/main/java/org/exist/launcher/WindowsServiceManager.java,org.exist.launcher.WindowsServiceManager$WindowsServiceState,showNativeServiceManagementConsole,throws-declaration,"UnsupportedOperationException, ServiceManagerException",propagate,,
 exist-core/src/main/java/org/exist/launcher/WindowsServiceManager.java,org.exist.launcher.WindowsServiceManager$WindowsServiceState,showNativeServiceManagementConsole,try-catch,IOException,wrap,Log4j,
 exist-core/src/main/java/org/exist/launcher/WindowsServiceManager.java,org.exist.launcher.WindowsServiceManager$WindowsServiceState,getState,throws-declaration,ServiceManagerException,propagate,,
-exist-core/src/main/java/org/exist/launcher/WindowsServiceManager.java,org.exist.launcher.WindowsServiceManager$WindowsServiceState,getState,try-catch,IOException | InterruptedException,wrap,Log4j,
+exist-core/src/main/java/org/exist/launcher/WindowsServiceManager.java,org.exist.launcher.WindowsServiceManager$WindowsServiceState,getState,try-catch,InterruptedException,wrap,Log4j,
+exist-core/src/main/java/org/exist/launcher/WindowsServiceManager.java,org.exist.launcher.WindowsServiceManager$WindowsServiceState,getState,try-catch,IOException,wrap,Log4j,
 exist-core/src/main/java/org/exist/launcher/WindowsServiceManager.java,org.exist.launcher.WindowsServiceManager$WindowsServiceState,run,throws-declaration,"IOException, InterruptedException",propagate,,
 exist-core/src/main/java/org/exist/launcher/Launcher.java,org.exist.launcher.Launcher,main,try-catch,StartException,custom,,
 exist-core/src/main/java/org/exist/launcher/Launcher.java,org.exist.launcher.Launcher,main,try-catch,Exception,ignore,,
@@ -6941,7 +7038,9 @@ exist-core/src/main/java/org/exist/client/FavouriteConnections.java,org.exist.cl
 exist-core/src/main/java/org/exist/client/FavouriteConnections.java,org.exist.client.FavouriteConnections,importFromFile,throws-declaration,"IOException, InvalidPreferencesFormatException",propagate,,
 exist-core/src/main/java/org/exist/client/FavouriteConnections.java,org.exist.client.FavouriteConnections,exportToFile,throws-declaration,"IOException, BackingStoreException",propagate,,
 exist-core/src/main/java/org/exist/client/IndexDialog.java,org.exist.client.IndexDialog,setupComponents,try-catch,XMLDBException,recover,,
-exist-core/src/main/java/org/exist/client/IndexDialog.java,org.exist.client.IndexDialog,saveChanges,try-catch,XMLDBException,custom,,
+exist-core/src/main/java/org/exist/client/IndexDialog.java,org.exist.client.IndexDialog,doInBackground,throws-declaration,Exception,propagate,,
+exist-core/src/main/java/org/exist/client/IndexDialog.java,org.exist.client.IndexDialog,done,try-catch,InterruptedException,custom,,
+exist-core/src/main/java/org/exist/client/IndexDialog.java,org.exist.client.IndexDialog,done,try-catch,ExecutionException,custom,,
 exist-core/src/main/java/org/exist/client/IndexDialog.java,org.exist.client.IndexDialog,getCollections,throws-declaration,XMLDBException,propagate,,
 exist-core/src/main/java/org/exist/client/IndexDialog.java,org.exist.client.IndexDialog,actionGetIndexes,try-catch,XMLDBException,ignore,,
 exist-core/src/main/java/org/exist/client/Messages.java,org.exist.client.Messages,getString,try-catch,MissingResourceException,recover,,
@@ -7231,9 +7330,9 @@ exist-core/src/main/java/org/exist/collections/MutableCollection.java,org.exist.
 exist-core/src/main/java/org/exist/collections/MutableCollection.java,org.exist.collections.MutableCollection,getDescendants,try-catch,LockException,log+recover,Log4j,ERROR
 exist-core/src/main/java/org/exist/collections/MutableCollection.java,org.exist.collections.MutableCollection,allDocs,throws-declaration,"PermissionDeniedException, LockException",propagate,,
 exist-core/src/main/java/org/exist/collections/MutableCollection.java,org.exist.collections.MutableCollection,allDocs,throws-declaration,"PermissionDeniedException, LockException",propagate,,
-exist-core/src/main/java/org/exist/collections/MutableCollection.java,org.exist.collections.MutableCollection,allDocs,try-catch,PermissionDeniedException,ignore,Log4j,
+exist-core/src/main/java/org/exist/collections/MutableCollection.java,org.exist.collections.MutableCollection,allDocs,try-catch,PermissionDeniedException,log,Log4j,DEBUG
 exist-core/src/main/java/org/exist/collections/MutableCollection.java,org.exist.collections.MutableCollection,allDocs,throws-declaration,"LockException, PermissionDeniedException",propagate,,
-exist-core/src/main/java/org/exist/collections/MutableCollection.java,org.exist.collections.MutableCollection,allDocs,try-catch,PermissionDeniedException,ignore,Log4j,
+exist-core/src/main/java/org/exist/collections/MutableCollection.java,org.exist.collections.MutableCollection,allDocs,try-catch,PermissionDeniedException,log,Log4j,DEBUG
 exist-core/src/main/java/org/exist/collections/MutableCollection.java,org.exist.collections.MutableCollection,getDocuments,throws-declaration,"PermissionDeniedException, LockException",propagate,,
 exist-core/src/main/java/org/exist/collections/MutableCollection.java,org.exist.collections.MutableCollection,getDocuments,throws-declaration,"LockException, PermissionDeniedException",propagate,,
 exist-core/src/main/java/org/exist/collections/MutableCollection.java,org.exist.collections.MutableCollection,addDocumentsToSet,throws-declaration,LockException,propagate,,
@@ -8143,6 +8242,7 @@ exist-core/src/main/java/org/exist/security/internal/AccountImpl.java,org.exist.
 exist-core/src/main/java/org/exist/security/internal/RealmImpl.java,org.exist.security.internal.RealmImpl,RealmImpl,throws-declaration,ConfigurationException,propagate,,
 exist-core/src/main/java/org/exist/security/internal/RealmImpl.java,org.exist.security.internal.RealmImpl,start,throws-declaration,EXistException,propagate,,
 exist-core/src/main/java/org/exist/security/internal/RealmImpl.java,org.exist.security.internal.RealmImpl,start,try-catch,PermissionDeniedException,custom,Log4j,
+exist-core/src/main/java/org/exist/security/internal/RealmImpl.java,org.exist.security.internal.RealmImpl,warnIfAdminPasswordIsEmpty,try-catch,AuthenticationException,ignore,Log4j,
 exist-core/src/main/java/org/exist/security/internal/RealmImpl.java,org.exist.security.internal.RealmImpl,createAdminAndGuestIfNotExist,throws-declaration,"EXistException, PermissionDeniedException",propagate,,
 exist-core/src/main/java/org/exist/security/internal/RealmImpl.java,org.exist.security.internal.RealmImpl,deleteAccount,throws-declaration,"PermissionDeniedException, EXistException",propagate,,
 exist-core/src/main/java/org/exist/security/internal/RealmImpl.java,org.exist.security.internal.RealmImpl,deleteAccount,try-catch,Exception,log,Log4j,WARN
@@ -8252,6 +8352,15 @@ exist-core/src/test/java/org/exist/test/runner/XMLTestRunnerTest.java,org.exist.
 exist-core/src/test/java/org/exist/test/runner/XQueryTestRunnerTest.java,org.exist.test.runner.XQueryTestRunnerTest,testGetDescription,throws-declaration,"URISyntaxException, InitializationError",propagate,,
 exist-core/src/test/java/org/exist/test/runner/XQueryTestRunnerTest.java,org.exist.test.runner.XQueryTestRunnerTest,testGetDescriptionWhenNoTests,throws-declaration,"URISyntaxException, InitializationError",propagate,,
 exist-core/src/test/java/org/exist/test/runner/InspectLineSourceTest.java,org.exist.test.runner.InspectLineSourceTest,inspectFunctionReturnsLineAndSourceForUDF,throws-declaration,"EXistException, PermissionDeniedException, XPathException, IOException, DatabaseConfigurationException",propagate,,
+exist-core/src/test/java/org/exist/xquery/XQueryWatchDogTest.java,org.exist.xquery.XQueryWatchDogTest,getTimeout,throws-declaration,Exception,propagate,,
+exist-core/src/test/java/org/exist/xquery/XQueryWatchDogTest.java,org.exist.xquery.XQueryWatchDogTest,timeoutOption,throws-declaration,XPathException,propagate,,
+exist-core/src/test/java/org/exist/xquery/XQueryWatchDogTest.java,org.exist.xquery.XQueryWatchDogTest,setTimeoutFromOptionNegativeOneDisablesTimeout,throws-declaration,Exception,propagate,,
+exist-core/src/test/java/org/exist/xquery/XQueryWatchDogTest.java,org.exist.xquery.XQueryWatchDogTest,setTimeoutFromOptionZeroDisablesTimeout,throws-declaration,Exception,propagate,,
+exist-core/src/test/java/org/exist/xquery/XQueryWatchDogTest.java,org.exist.xquery.XQueryWatchDogTest,setTimeoutFromOptionPositiveValueSetsTimeout,throws-declaration,Exception,propagate,,
+exist-core/src/test/java/org/exist/xquery/XQueryWatchDogTest.java,org.exist.xquery.XQueryWatchDogTest,setTimeoutFromOptionNegativeValueDisablesTimeout,throws-declaration,Exception,propagate,,
+exist-core/src/test/java/org/exist/xquery/XQueryWatchDogTest.java,org.exist.xquery.XQueryWatchDogTest,setTimeoutFromOptionNonNumericThrowsException,throws-declaration,Exception,propagate,,
+exist-core/src/test/java/org/exist/xquery/XQueryWatchDogTest.java,org.exist.xquery.XQueryWatchDogTest,setTimeoutFromOptionMultipleValuesThrowsException,throws-declaration,Exception,propagate,,
+exist-core/src/test/java/org/exist/xquery/XQueryWatchDogTest.java,org.exist.xquery.XQueryWatchDogTest,proceedDoesNotThrowWhenTimeoutDisabledViaOption,throws-declaration,Exception,propagate,,
 exist-core/src/test/java/org/exist/xquery/PersistentDescendantOrSelfNodeKindTest.java,org.exist.xquery.PersistentDescendantOrSelfNodeKindTest,executeQueryOnDoc,throws-declaration,XMLDBException,propagate,,
 exist-core/src/test/java/org/exist/xquery/PersistentDescendantOrSelfNodeKindTest.java,org.exist.xquery.PersistentDescendantOrSelfNodeKindTest,storeTestDoc,throws-declaration,XMLDBException,propagate,,
 exist-core/src/test/java/org/exist/xquery/PersistentDescendantOrSelfNodeKindTest.java,org.exist.xquery.PersistentDescendantOrSelfNodeKindTest,removeTestDoc,throws-declaration,XMLDBException,propagate,,
@@ -8279,10 +8388,24 @@ exist-core/src/test/java/org/exist/xquery/functions/inspect/InspectModuleTest.ja
 exist-core/src/test/java/org/exist/xquery/functions/inspect/InspectModuleTest.java,org.exist.xquery.functions.inspect.InspectModuleTest,teardown,throws-declaration,"EXistException, PermissionDeniedException, IOException, TriggerException",propagate,,
 exist-core/src/test/java/org/exist/xquery/functions/fn/ExtDocTest.java,org.exist.xquery.functions.fn.ExtDocTest,storeExtDoc,throws-declaration,IOException,propagate,,
 exist-core/src/test/java/org/exist/xquery/functions/fn/ExtDocTest.java,org.exist.xquery.functions.fn.ExtDocTest,parse,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/functions/fn/FunNotBenchmark.java,org.exist.xquery.functions.fn.FunNotBenchmark,setUp,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/functions/fn/FunNotBenchmark.java,org.exist.xquery.functions.fn.FunNotBenchmark,tearDown,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/functions/fn/FunNotBenchmark.java,org.exist.xquery.functions.fn.FunNotBenchmark,tearDown,try-catch,XMLDBException,ignore,,
+exist-core/src/test/java/org/exist/xquery/functions/fn/FunNotBenchmark.java,org.exist.xquery.functions.fn.FunNotBenchmark,notChild,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/functions/fn/FunNotBenchmark.java,org.exist.xquery.functions.fn.FunNotBenchmark,notAttribute,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/functions/fn/FunNotBenchmark.java,org.exist.xquery.functions.fn.FunNotBenchmark,notDescendant,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/functions/fn/FunNotBenchmark.java,org.exist.xquery.functions.fn.FunNotBenchmark,notComparison,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/functions/fn/FunNotBenchmark.java,org.exist.xquery.functions.fn.FunNotBenchmark,notDotOnNodes,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/functions/fn/FunNotBenchmark.java,org.exist.xquery.functions.fn.FunNotBenchmark,runBenchmark,throws-declaration,XMLDBException,propagate,,
 exist-core/src/test/java/org/exist/xquery/functions/fn/CollectionTest.java,org.exist.xquery.functions.fn.CollectionTest,doc_dynamicallyAvailableCollection_absoluteUri,throws-declaration,"XPathException, EXistException, PermissionDeniedException",propagate,,
 exist-core/src/test/java/org/exist/xquery/functions/fn/CollectionTest.java,org.exist.xquery.functions.fn.CollectionTest,doc_dynamicallyAvailableCollection_relativeUri,throws-declaration,"XPathException, EXistException, PermissionDeniedException, URISyntaxException",propagate,,
 exist-core/src/test/java/org/exist/xquery/functions/fn/CollectionTest.java,org.exist.xquery.functions.fn.CollectionTest,asInMemoryDocument,throws-declaration,XPathException,propagate,,
 exist-core/src/test/java/org/exist/xquery/functions/fn/CollectionTest.java,org.exist.xquery.functions.fn.CollectionTest,asInMemoryDocument,try-catch,ParserConfigurationException | SAXException | IOException,wrap,,
+exist-core/src/test/java/org/exist/xquery/functions/fn/FunLangTest.java,org.exist.xquery.functions.fn.FunLangTest,setUp,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/functions/fn/FunLangTest.java,org.exist.xquery.functions.fn.FunLangTest,tearDown,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/functions/fn/FunLangTest.java,org.exist.xquery.functions.fn.FunLangTest,createCollection,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/functions/fn/FunLangTest.java,org.exist.xquery.functions.fn.FunLangTest,writeModule,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/functions/fn/FunLangTest.java,org.exist.xquery.functions.fn.FunLangTest,fnLangInLibraryModuleWithVariable,throws-declaration,XMLDBException,propagate,,
 exist-core/src/test/java/org/exist/xquery/functions/fn/FunLangTest.java,org.exist.xquery.functions.fn.FunLangTest,testFnLangWithContext,throws-declaration,XMLDBException,propagate,,
 exist-core/src/test/java/org/exist/xquery/functions/fn/FunLangTest.java,org.exist.xquery.functions.fn.FunLangTest,testFnLangWithArgument,throws-declaration,XMLDBException,propagate,,
 exist-core/src/test/java/org/exist/xquery/functions/fn/FunLangTest.java,org.exist.xquery.functions.fn.FunLangTest,testFnLangWithAttributeArgument,throws-declaration,XMLDBException,propagate,,
@@ -8685,12 +8808,12 @@ exist-core/src/test/java/org/exist/xquery/functions/securitymanager/PermissionsF
 exist-core/src/test/java/org/exist/xquery/functions/securitymanager/PermissionsFunctionChmodTest.java,org.exist.xquery.functions.securitymanager.PermissionsFunctionChmodTest,changeCollectionModeAsNonDBAOwner,throws-declaration,"AuthenticationException, XPathException, PermissionDeniedException, EXistException",propagate,,
 exist-core/src/test/java/org/exist/xquery/functions/securitymanager/PermissionsFunctionChmodTest.java,org.exist.xquery.functions.securitymanager.PermissionsFunctionChmodTest,changeDocumentModeAsNonOwner,throws-declaration,"AuthenticationException, XPathException, PermissionDeniedException, EXistException",propagate,,
 exist-core/src/test/java/org/exist/xquery/functions/securitymanager/PermissionsFunctionChmodTest.java,org.exist.xquery.functions.securitymanager.PermissionsFunctionChmodTest,changeCollectionModeAsNonOwner,throws-declaration,"AuthenticationException, XPathException, PermissionDeniedException, EXistException",propagate,,
-exist-core/src/test/java/org/exist/xquery/functions/securitymanager/PermissionsFunctionChmodTest.java,org.exist.xquery.functions.securitymanager.PermissionsFunctionChmodTest,changeDocumentModeAsDBA_preservesSetGid,throws-declaration,"AuthenticationException, EXistException, PermissionDeniedException, XPathException",propagate,,
-exist-core/src/test/java/org/exist/xquery/functions/securitymanager/PermissionsFunctionChmodTest.java,org.exist.xquery.functions.securitymanager.PermissionsFunctionChmodTest,changeCollectionModeAsDBA_preservesSetGid,throws-declaration,"AuthenticationException, EXistException, PermissionDeniedException, XPathException",propagate,,
-exist-core/src/test/java/org/exist/xquery/functions/securitymanager/PermissionsFunctionChmodTest.java,org.exist.xquery.functions.securitymanager.PermissionsFunctionChmodTest,changeDocumentModeAsNonDBAOwner_preservesSetGid,throws-declaration,"AuthenticationException, EXistException, PermissionDeniedException, XPathException",propagate,,
-exist-core/src/test/java/org/exist/xquery/functions/securitymanager/PermissionsFunctionChmodTest.java,org.exist.xquery.functions.securitymanager.PermissionsFunctionChmodTest,changeCollectionModeAsNonDBAOwner_preservesSetGid,throws-declaration,"AuthenticationException, EXistException, PermissionDeniedException, XPathException",propagate,,
-exist-core/src/test/java/org/exist/xquery/functions/securitymanager/PermissionsFunctionChmodTest.java,org.exist.xquery.functions.securitymanager.PermissionsFunctionChmodTest,changeDocumentModeAsNonOwner_clearsSetGid,throws-declaration,"AuthenticationException, EXistException, PermissionDeniedException, XPathException",propagate,,
-exist-core/src/test/java/org/exist/xquery/functions/securitymanager/PermissionsFunctionChmodTest.java,org.exist.xquery.functions.securitymanager.PermissionsFunctionChmodTest,changeCollectionModeAsNonOwner_clearsSetGid,throws-declaration,"AuthenticationException, EXistException, PermissionDeniedException, XPathException",propagate,,
+exist-core/src/test/java/org/exist/xquery/functions/securitymanager/PermissionsFunctionChmodTest.java,org.exist.xquery.functions.securitymanager.PermissionsFunctionChmodTest,changeDocumentModeAsDbaPreservesSetGid,throws-declaration,"AuthenticationException, EXistException, PermissionDeniedException, XPathException",propagate,,
+exist-core/src/test/java/org/exist/xquery/functions/securitymanager/PermissionsFunctionChmodTest.java,org.exist.xquery.functions.securitymanager.PermissionsFunctionChmodTest,changeCollectionModeAsDbaPreservesSetGid,throws-declaration,"AuthenticationException, EXistException, PermissionDeniedException, XPathException",propagate,,
+exist-core/src/test/java/org/exist/xquery/functions/securitymanager/PermissionsFunctionChmodTest.java,org.exist.xquery.functions.securitymanager.PermissionsFunctionChmodTest,changeDocumentModeAsNonDbaOwnerPreservesSetGid,throws-declaration,"AuthenticationException, EXistException, PermissionDeniedException, XPathException",propagate,,
+exist-core/src/test/java/org/exist/xquery/functions/securitymanager/PermissionsFunctionChmodTest.java,org.exist.xquery.functions.securitymanager.PermissionsFunctionChmodTest,changeCollectionModeAsNonDbaOwnerPreservesSetGid,throws-declaration,"AuthenticationException, EXistException, PermissionDeniedException, XPathException",propagate,,
+exist-core/src/test/java/org/exist/xquery/functions/securitymanager/PermissionsFunctionChmodTest.java,org.exist.xquery.functions.securitymanager.PermissionsFunctionChmodTest,changeDocumentModeAsNonOwnerClearsSetGid,throws-declaration,"AuthenticationException, EXistException, PermissionDeniedException, XPathException",propagate,,
+exist-core/src/test/java/org/exist/xquery/functions/securitymanager/PermissionsFunctionChmodTest.java,org.exist.xquery.functions.securitymanager.PermissionsFunctionChmodTest,changeCollectionModeAsNonOwnerClearsSetGid,throws-declaration,"AuthenticationException, EXistException, PermissionDeniedException, XPathException",propagate,,
 exist-core/src/test/java/org/exist/xquery/functions/securitymanager/PermissionsFunctionChmodTest.java,org.exist.xquery.functions.securitymanager.PermissionsFunctionChmodTest,changeMode,throws-declaration,"EXistException, PermissionDeniedException, XPathException",propagate,,
 exist-core/src/test/java/org/exist/xquery/functions/securitymanager/PermissionsFunctionChmodTest.java,org.exist.xquery.functions.securitymanager.PermissionsFunctionChmodTest,prepareDb,throws-declaration,"EXistException, PermissionDeniedException, IOException, TriggerException",propagate,,
 exist-core/src/test/java/org/exist/xquery/functions/securitymanager/PermissionsFunctionChmodTest.java,org.exist.xquery.functions.securitymanager.PermissionsFunctionChmodTest,setup,throws-declaration,"EXistException, PermissionDeniedException, LockException, SAXException, IOException, AuthenticationException",propagate,,
@@ -8946,6 +9069,7 @@ exist-core/src/test/java/org/exist/xquery/OptimizerTest.java,org.exist.xquery.Op
 exist-core/src/test/java/org/exist/xquery/OptimizerTest.java,org.exist.xquery.OptimizerTest,reversePaths,throws-declaration,XMLDBException,propagate,,
 exist-core/src/test/java/org/exist/xquery/OptimizerTest.java,org.exist.xquery.OptimizerTest,reversePathsWithWildcard,throws-declaration,XMLDBException,propagate,,
 exist-core/src/test/java/org/exist/xquery/OptimizerTest.java,org.exist.xquery.OptimizerTest,booleanOperator,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/OptimizerTest.java,org.exist.xquery.OptimizerTest,nestedComparisonPreservedIssue4958,throws-declaration,XMLDBException,propagate,,
 exist-core/src/test/java/org/exist/xquery/OptimizerTest.java,org.exist.xquery.OptimizerTest,execute,throws-declaration,XMLDBException,propagate,,
 exist-core/src/test/java/org/exist/xquery/OptimizerTest.java,org.exist.xquery.OptimizerTest,execute,throws-declaration,XMLDBException,propagate,,
 exist-core/src/test/java/org/exist/xquery/OptimizerTest.java,org.exist.xquery.OptimizerTest,initDatabase,throws-declaration,"ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException, IOException, URISyntaxException",propagate,,
@@ -8965,6 +9089,21 @@ exist-core/src/test/java/org/exist/xquery/FunctionTypeInElementContentTest.java,
 exist-core/src/test/java/org/exist/xquery/FunctionTypeInElementContentTest.java,org.exist.xquery.FunctionTypeInElementContentTest,mapConstructorInSubExpression,throws-declaration,"EXistException, PermissionDeniedException",propagate,,
 exist-core/src/test/java/org/exist/xquery/LexerTest.java,org.exist.xquery.LexerTest,query,throws-declaration,"EXistException, PermissionDeniedException, IOException, SAXException, LockException, RecognitionException, XPathException, TokenStreamException",propagate,,
 exist-core/src/test/java/org/exist/xquery/MemtreeDescendantOrSelfNodeKindTest.java,org.exist.xquery.MemtreeDescendantOrSelfNodeKindTest,executeQueryOnDoc,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/ExpressionVisitorTraversalTest.java,org.exist.xquery.ExpressionVisitorTraversalTest,generalComparison,throws-declaration,Exception,propagate,,
+exist-core/src/test/java/org/exist/xquery/ExpressionVisitorTraversalTest.java,org.exist.xquery.ExpressionVisitorTraversalTest,andExpr,throws-declaration,Exception,propagate,,
+exist-core/src/test/java/org/exist/xquery/ExpressionVisitorTraversalTest.java,org.exist.xquery.ExpressionVisitorTraversalTest,orExpr,throws-declaration,Exception,propagate,,
+exist-core/src/test/java/org/exist/xquery/ExpressionVisitorTraversalTest.java,org.exist.xquery.ExpressionVisitorTraversalTest,castExpr,throws-declaration,Exception,propagate,,
+exist-core/src/test/java/org/exist/xquery/ExpressionVisitorTraversalTest.java,org.exist.xquery.ExpressionVisitorTraversalTest,filterExpr,throws-declaration,Exception,propagate,,
+exist-core/src/test/java/org/exist/xquery/ExpressionVisitorTraversalTest.java,org.exist.xquery.ExpressionVisitorTraversalTest,assertFindsFunction,throws-declaration,Exception,propagate,,
+exist-core/src/test/java/org/exist/xquery/ExpressionVisitorTraversalTest.java,org.exist.xquery.ExpressionVisitorTraversalTest,assertFindsFunction,try-catch,Exception,ignore,,
+exist-core/src/test/java/org/exist/xquery/PathExprDedupTest.java,org.exist.xquery.PathExprDedupTest,query,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/PathExprDedupTest.java,org.exist.xquery.PathExprDedupTest,functionCallInPathDedup,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/PathExprDedupTest.java,org.exist.xquery.PathExprDedupTest,functionReturnsConstantNodeDedup,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/PathExprDedupTest.java,org.exist.xquery.PathExprDedupTest,forLoopPreservesDuplicates,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/PathExprDedupTest.java,org.exist.xquery.PathExprDedupTest,globalVarForLoopPreservesDuplicates,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/PathExprDedupTest.java,org.exist.xquery.PathExprDedupTest,pathEndingWithIntegerLiteral,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/PathExprDedupTest.java,org.exist.xquery.PathExprDedupTest,pathEndingWithNumberFunction,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/PathExprDedupTest.java,org.exist.xquery.PathExprDedupTest,axisStepThenFunctionCallDedup,throws-declaration,XMLDBException,propagate,,
 exist-core/src/test/java/org/exist/xquery/RangeSequenceTest.java,org.exist.xquery.RangeSequenceTest,itemAt_last,throws-declaration,XPathException,propagate,,
 exist-core/src/test/java/org/exist/xquery/ValueIndexByQNameTest.java,org.exist.xquery.ValueIndexByQNameTest,strings,throws-declaration,"XMLDBException, URISyntaxException",propagate,,
 exist-core/src/test/java/org/exist/xquery/ConstructedNodesTest.java,org.exist.xquery.ConstructedNodesTest,iterateConstructNodes,throws-declaration,"XPathException, XMLDBException",propagate,,
@@ -9006,6 +9145,12 @@ exist-core/src/test/java/org/exist/xquery/OrderByCountClauseTest.java,org.exist.
 exist-core/src/test/java/org/exist/xquery/OrderByCountClauseTest.java,org.exist.xquery.OrderByCountClauseTest,countAfterTumblingWindowWithNestedOrderBy,throws-declaration,XMLDBException,propagate,,
 exist-core/src/test/java/org/exist/xquery/OrderByCountClauseTest.java,org.exist.xquery.OrderByCountClauseTest,twoOrderByClausesWithCountLetWhere,throws-declaration,XMLDBException,propagate,,
 exist-core/src/test/java/org/exist/xquery/OrderByCountClauseTest.java,org.exist.xquery.OrderByCountClauseTest,countAfterSlidingWindowWithNestedOrderBy,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/CompAttrConstructorErrorCodeTest.java,org.exist.xquery.CompAttrConstructorErrorCodeTest,eqnameNamespaceWithWhitespace,throws-declaration,Exception,propagate,,
+exist-core/src/test/java/org/exist/xquery/CompAttrConstructorErrorCodeTest.java,org.exist.xquery.CompAttrConstructorErrorCodeTest,prefixedQNameWithSurroundingWhitespace,throws-declaration,Exception,propagate,,
+exist-core/src/test/java/org/exist/xquery/CompAttrConstructorErrorCodeTest.java,org.exist.xquery.CompAttrConstructorErrorCodeTest,assertErrorCode,try-catch,XPathException,custom,,
+exist-core/src/test/java/org/exist/xquery/CompAttrConstructorErrorCodeTest.java,org.exist.xquery.CompAttrConstructorErrorCodeTest,assertErrorCode,try-catch,Exception,custom,,
+exist-core/src/test/java/org/exist/xquery/CompAttrConstructorErrorCodeTest.java,org.exist.xquery.CompAttrConstructorErrorCodeTest,executeStringValue,throws-declaration,Exception,propagate,,
+exist-core/src/test/java/org/exist/xquery/CompAttrConstructorErrorCodeTest.java,org.exist.xquery.CompAttrConstructorErrorCodeTest,executeXQuery,throws-declaration,Exception,propagate,,
 exist-core/src/test/java/org/exist/xquery/XPathQueryTest.java,org.exist.xquery.XPathQueryTest,setUp,throws-declaration,Exception,propagate,,
 exist-core/src/test/java/org/exist/xquery/XPathQueryTest.java,org.exist.xquery.XPathQueryTest,childWildcards,throws-declaration,XMLDBException,propagate,,
 exist-core/src/test/java/org/exist/xquery/XPathQueryTest.java,org.exist.xquery.XPathQueryTest,pathExpression,throws-declaration,XMLDBException,propagate,,
@@ -9030,6 +9175,7 @@ exist-core/src/test/java/org/exist/xquery/XPathQueryTest.java,org.exist.xquery.X
 exist-core/src/test/java/org/exist/xquery/XPathQueryTest.java,org.exist.xquery.XPathQueryTest,followingSiblingAxis_memtree,throws-declaration,"XMLDBException, IOException, SAXException",propagate,,
 exist-core/src/test/java/org/exist/xquery/XPathQueryTest.java,org.exist.xquery.XPathQueryTest,followingAxis,throws-declaration,"XMLDBException, IOException, SAXException",propagate,,
 exist-core/src/test/java/org/exist/xquery/XPathQueryTest.java,org.exist.xquery.XPathQueryTest,precedingAxis,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/XPathQueryTest.java,org.exist.xquery.XPathQueryTest,dslashWithReverseAxis,throws-declaration,XMLDBException,propagate,,
 exist-core/src/test/java/org/exist/xquery/XPathQueryTest.java,org.exist.xquery.XPathQueryTest,position,throws-declaration,"XMLDBException, IOException, SAXException",propagate,,
 exist-core/src/test/java/org/exist/xquery/XPathQueryTest.java,org.exist.xquery.XPathQueryTest,last,throws-declaration,XMLDBException,propagate,,
 exist-core/src/test/java/org/exist/xquery/XPathQueryTest.java,org.exist.xquery.XPathQueryTest,numbers,throws-declaration,XMLDBException,propagate,,
@@ -9311,6 +9457,11 @@ exist-core/src/test/java/org/exist/xquery/OpNumericTest.java,org.exist.xquery.Op
 exist-core/src/test/java/org/exist/xquery/OpNumericTest.java,org.exist.xquery.OpNumericTest,idiv1,throws-declaration,XPathException,propagate,,
 exist-core/src/test/java/org/exist/xquery/OpNumericTest.java,org.exist.xquery.OpNumericTest,idiv2,throws-declaration,XPathException,propagate,,
 exist-core/src/test/java/org/exist/xquery/OpNumericTest.java,org.exist.xquery.OpNumericTest,idiv3,throws-declaration,XPathException,propagate,,
+exist-core/src/test/java/org/exist/xquery/AxisPerformanceRegressionTest.java,org.exist.xquery.AxisPerformanceRegressionTest,storeTestDocument,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/AxisPerformanceRegressionTest.java,org.exist.xquery.AxisPerformanceRegressionTest,removeTestDocument,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/AxisPerformanceRegressionTest.java,org.exist.xquery.AxisPerformanceRegressionTest,execute,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/AxisPerformanceRegressionTest.java,org.exist.xquery.AxisPerformanceRegressionTest,followingSiblingMatchesPrecedingSiblingCount,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/AxisPerformanceRegressionTest.java,org.exist.xquery.AxisPerformanceRegressionTest,followingSiblingPerformanceCloseToPrecedingSibling,throws-declaration,XMLDBException,propagate,,
 exist-core/src/test/java/org/exist/xquery/CleanupTest.java,org.exist.xquery.CleanupTest,setup,throws-declaration,XMLDBException,propagate,,
 exist-core/src/test/java/org/exist/xquery/CleanupTest.java,org.exist.xquery.CleanupTest,tearDown,throws-declaration,XMLDBException,propagate,,
 exist-core/src/test/java/org/exist/xquery/CleanupTest.java,org.exist.xquery.CleanupTest,resetStateOfModuleVars,throws-declaration,"XMLDBException, XPathException",propagate,,
@@ -9401,6 +9552,13 @@ exist-core/src/test/java/org/exist/xquery/XQueryFunctionsTest.java,org.exist.xqu
 exist-core/src/test/java/org/exist/xquery/XQueryFunctionsTest.java,org.exist.xquery.XQueryFunctionsTest,base64BinaryCast,throws-declaration,"XMLDBException, URISyntaxException",propagate,,
 exist-core/src/test/java/org/exist/xquery/XQueryFunctionsTest.java,org.exist.xquery.XQueryFunctionsTest,defaultLanguage,throws-declaration,XMLDBException,propagate,,
 exist-core/src/test/java/org/exist/xquery/XQueryFunctionsTest.java,org.exist.xquery.XQueryFunctionsTest,enclosedExpression,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/GeneralComparisonBenchmark.java,org.exist.xquery.GeneralComparisonBenchmark,setUp,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/GeneralComparisonBenchmark.java,org.exist.xquery.GeneralComparisonBenchmark,tearDown,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/GeneralComparisonBenchmark.java,org.exist.xquery.GeneralComparisonBenchmark,predicateAttrEqLiteral,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/GeneralComparisonBenchmark.java,org.exist.xquery.GeneralComparisonBenchmark,predicateAttrEqVar,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/GeneralComparisonBenchmark.java,org.exist.xquery.GeneralComparisonBenchmark,predicateMapGetCtxAttr,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/GeneralComparisonBenchmark.java,org.exist.xquery.GeneralComparisonBenchmark,predicateLocalFnCtxAttr,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/GeneralComparisonBenchmark.java,org.exist.xquery.GeneralComparisonBenchmark,runBenchmark,throws-declaration,XMLDBException,propagate,,
 exist-core/src/test/java/org/exist/xquery/RestBinariesTest.java,org.exist.xquery.RestBinariesTest,streamBinarySax,throws-declaration,"JAXBException, IOException",propagate,,
 exist-core/src/test/java/org/exist/xquery/RestBinariesTest.java,org.exist.xquery.RestBinariesTest,streamBinaryRaw,throws-declaration,"JAXBException, IOException",propagate,,
 exist-core/src/test/java/org/exist/xquery/RestBinariesTest.java,org.exist.xquery.RestBinariesTest,storeBinaryFile,throws-declaration,Exception,propagate,,
@@ -9523,6 +9681,10 @@ exist-core/src/test/java/org/exist/xquery/XQueryContextTest.java,org.exist.xquer
 exist-core/src/test/java/org/exist/xquery/XQueryContextTest.java,org.exist.xquery.XQueryContextTest,testReDeclareNamespaceForbiddenEmpty,try-catch,XPathException,custom,,
 exist-core/src/test/java/org/exist/xquery/XQueryContextTest.java,org.exist.xquery.XQueryContextTest,testReDeclareNamespaceForbiddenNull,try-catch,XPathException,custom,,
 exist-core/src/test/java/org/exist/xquery/XQueryContextTest.java,org.exist.xquery.XQueryContextTest,testXmlNsProtected,try-catch,XPathException,custom,,
+exist-core/src/test/java/org/exist/xquery/XQueryContextTest.java,org.exist.xquery.XQueryContextTest,testSetDefaultFunctionNamespaceRejectsXmlNs,try-catch,XPathException,custom,,
+exist-core/src/test/java/org/exist/xquery/XQueryContextTest.java,org.exist.xquery.XQueryContextTest,testSetDefaultFunctionNamespaceRejectsXmlnsNs,try-catch,XPathException,custom,,
+exist-core/src/test/java/org/exist/xquery/XQueryContextTest.java,org.exist.xquery.XQueryContextTest,testSetDefaultElementNamespaceRejectsXmlNs,try-catch,XPathException,custom,,
+exist-core/src/test/java/org/exist/xquery/XQueryContextTest.java,org.exist.xquery.XQueryContextTest,testSetDefaultElementNamespaceRejectsXmlnsNs,try-catch,XPathException,custom,,
 exist-core/src/test/java/org/exist/xquery/XQueryDeclareContextItemTest.java,org.exist.xquery.XQueryDeclareContextItemTest,setup,throws-declaration,"EXistException, PermissionDeniedException, IOException, SAXException, LockException",propagate,,
 exist-core/src/test/java/org/exist/xquery/XQueryDeclareContextItemTest.java,org.exist.xquery.XQueryDeclareContextItemTest,cleanup,throws-declaration,"EXistException, PermissionDeniedException, IOException, TriggerException",propagate,,
 exist-core/src/test/java/org/exist/xquery/XQueryDeclareContextItemTest.java,org.exist.xquery.XQueryDeclareContextItemTest,declareContextItem,throws-declaration,"EXistException, PermissionDeniedException, XPathException",propagate,,
@@ -9630,6 +9792,20 @@ exist-core/src/test/java/org/exist/xquery/XmldbBinariesTest.java,org.exist.xquer
 exist-core/src/test/java/org/exist/xquery/XmldbBinariesTest.java,org.exist.xquery.XmldbBinariesTest,getBoolean,throws-declaration,XMLDBException,propagate,,
 exist-core/src/test/java/org/exist/xquery/TestModule.java,org.exist.xquery.TestModule,TestModule,throws-declaration,XPathException,propagate,,
 exist-core/src/test/java/org/exist/xquery/TestModule.java,org.exist.xquery.TestModule$TestFunction,eval,throws-declaration,XPathException,propagate,,
+exist-core/src/test/java/org/exist/xquery/ContextDependencyRegressionTest.java,org.exist.xquery.ContextDependencyRegressionTest,initDatabase,throws-declaration,"ClassNotFoundException, IllegalAccessException, InstantiationException, XMLDBException",propagate,,
+exist-core/src/test/java/org/exist/xquery/ContextDependencyRegressionTest.java,org.exist.xquery.ContextDependencyRegressionTest,cleanupDb,throws-declaration,"LockException, TriggerException, PermissionDeniedException, EXistException, IOException",propagate,,
+exist-core/src/test/java/org/exist/xquery/ContextDependencyRegressionTest.java,org.exist.xquery.ContextDependencyRegressionTest,execute,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/ContextDependencyRegressionTest.java,org.exist.xquery.ContextDependencyRegressionTest,compoundPredicateWithConstantContainsReturnsEmpty,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/ContextDependencyRegressionTest.java,org.exist.xquery.ContextDependencyRegressionTest,noIndexPragmaReturnsSameResult,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/ContextDependencyRegressionTest.java,org.exist.xquery.ContextDependencyRegressionTest,constantFalsePredicateReturnsEmpty,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/ContextDependencyRegressionTest.java,org.exist.xquery.ContextDependencyRegressionTest,constantFalseComparisonReturnsEmpty,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/ContextDependencyRegressionTest.java,org.exist.xquery.ContextDependencyRegressionTest,constantTruePredicateDoesNotInterfereWithIndex,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/ContextDependencyRegressionTest.java,org.exist.xquery.ContextDependencyRegressionTest,singleIndexedPredicateStillReturnsExpectedResults,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/ContextDependencyRegressionTest.java,org.exist.xquery.ContextDependencyRegressionTest,predicateReferencingVariableDoesNotTriggerGate,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/ContextDependencyRegressionTest.java,org.exist.xquery.ContextDependencyRegressionTest,positionPredicateBehavesPerContext,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/ContextDependencyRegressionTest.java,org.exist.xquery.ContextDependencyRegressionTest,lastPredicateBehavesPerContext,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/ContextDependencyRegressionTest.java,org.exist.xquery.ContextDependencyRegressionTest,noArgNamePredicateBehavesPerContext,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/ContextDependencyRegressionTest.java,org.exist.xquery.ContextDependencyRegressionTest,noArgLocalNamePredicateBehavesPerContext,throws-declaration,XMLDBException,propagate,,
 exist-core/src/test/java/org/exist/xquery/AnnotationsTest.java,org.exist.xquery.AnnotationsTest,setUp,throws-declaration,"XMLDBException, ClassNotFoundException, InstantiationException, IllegalAccessException",propagate,,
 exist-core/src/test/java/org/exist/xquery/AnnotationsTest.java,org.exist.xquery.AnnotationsTest,tearDown,throws-declaration,"LockException, TriggerException, PermissionDeniedException, EXistException, IOException",propagate,,
 exist-core/src/test/java/org/exist/xquery/AnnotationsTest.java,org.exist.xquery.AnnotationsTest,getTestCollection,throws-declaration,XMLDBException,propagate,,
@@ -10315,7 +10491,13 @@ exist-core/src/test/java/org/exist/storage/ShutdownTest.java,org.exist.storage.S
 exist-core/src/test/java/org/exist/storage/ShutdownTest.java,org.exist.storage.ShutdownTest,storeAndShutdown,throws-declaration,"EXistException, PermissionDeniedException, IOException, SAXException, LockException, XPathException",propagate,,
 exist-core/src/test/java/org/exist/storage/RangeIndexUpdateTest.java,org.exist.storage.RangeIndexUpdateTest,updates,throws-declaration,"EXistException, PermissionDeniedException, XPathException, ParserConfigurationException, IOException, SAXException, LockException",propagate,,
 exist-core/src/test/java/org/exist/storage/RangeIndexUpdateTest.java,org.exist.storage.RangeIndexUpdateTest,startDB,throws-declaration,"EXistException, PermissionDeniedException, IOException, SAXException, CollectionConfigurationException, LockException",propagate,,
+exist-core/src/test/java/org/exist/storage/ValueIndexFactoryTest.java,org.exist.storage.ValueIndexFactoryTest,negativeNumbersComparison,throws-declaration,EXistException,propagate,,
+exist-core/src/test/java/org/exist/storage/ValueIndexFactoryTest.java,org.exist.storage.ValueIndexFactoryTest,numbersComparison,throws-declaration,EXistException,propagate,,
+exist-core/src/test/java/org/exist/storage/ValueIndexFactoryTest.java,org.exist.storage.ValueIndexFactoryTest,negativeNumbersComparison2,throws-declaration,EXistException,propagate,,
 exist-core/src/test/java/org/exist/storage/ValueIndexFactoryTest.java,org.exist.storage.ValueIndexFactoryTest,roundTripDecimal,throws-declaration,EXistException,propagate,,
+exist-core/src/test/java/org/exist/storage/ValueIndexFactoryTest.java,org.exist.storage.ValueIndexFactoryTest,roundTripDouble,throws-declaration,EXistException,propagate,,
+exist-core/src/test/java/org/exist/storage/ValueIndexFactoryTest.java,org.exist.storage.ValueIndexFactoryTest,doubleOrderingComprehensive,throws-declaration,EXistException,propagate,,
+exist-core/src/test/java/org/exist/storage/ValueIndexFactoryTest.java,org.exist.storage.ValueIndexFactoryTest,encodeDouble,throws-declaration,EXistException,propagate,,
 exist-core/src/test/java/org/exist/storage/Recovery3Test.java,org.exist.storage.Recovery3Test,storeThenRecoverRemoveAndReadd,throws-declaration,"DatabaseConfigurationException, EXistException, PermissionDeniedException, IOException, TriggerException, LockException",propagate,,
 exist-core/src/test/java/org/exist/storage/Recovery3Test.java,org.exist.storage.Recovery3Test,storeThenRecoverRemoveAndReadd,try-catch,SAXException,custom,,
 exist-core/src/test/java/org/exist/storage/Recovery3Test.java,org.exist.storage.Recovery3Test,storeThenRecoverRemoveAndReadd,try-catch,SAXException,custom,,
@@ -10498,6 +10680,7 @@ exist-core/src/test/java/org/exist/storage/XIncludeSerializerTest.java,org.exist
 exist-core/src/test/java/org/exist/storage/XIncludeSerializerTest.java,org.exist.storage.XIncludeSerializerTest,xpointerREST3,throws-declaration,"IOException, SAXException",propagate,,
 exist-core/src/test/java/org/exist/storage/XIncludeSerializerTest.java,org.exist.storage.XIncludeSerializerTest,xpointerREST4,throws-declaration,"IOException, SAXException",propagate,,
 exist-core/src/test/java/org/exist/storage/XIncludeSerializerTest.java,org.exist.storage.XIncludeSerializerTest,fallback1,throws-declaration,"IOException, SAXException",propagate,,
+exist-core/src/test/java/org/exist/storage/XIncludeSerializerTest.java,org.exist.storage.XIncludeSerializerTest,relParentPathFromSubcollectionXML,throws-declaration,"IOException, SAXException",propagate,,
 exist-core/src/test/java/org/exist/storage/XIncludeSerializerTest.java,org.exist.storage.XIncludeSerializerTest,fallback2,throws-declaration,IOException,propagate,,
 exist-core/src/test/java/org/exist/storage/XIncludeSerializerTest.java,org.exist.storage.XIncludeSerializerTest,getConnection,throws-declaration,IOException,propagate,,
 exist-core/src/test/java/org/exist/storage/XIncludeSerializerTest.java,org.exist.storage.XIncludeSerializerTest,getClient,throws-declaration,MalformedURLException,propagate,,
@@ -11700,6 +11883,15 @@ exist-core/src/test/java/org/exist/validation/DatabaseInsertResourcesNoValidatio
 exist-core/src/test/java/org/exist/validation/CollectionConfigurationTest.java,org.exist.validation.CollectionConfigurationTest,createCollection,throws-declaration,XMLDBException,propagate,,
 exist-core/src/test/java/org/exist/validation/CollectionConfigurationTest.java,org.exist.validation.CollectionConfigurationTest,storeCollectionXconf,throws-declaration,XMLDBException,propagate,,
 exist-core/src/test/java/org/exist/validation/CollectionConfigurationTest.java,org.exist.validation.CollectionConfigurationTest,insertInvalidCollectionXconf,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/validation/DatabaseInsertResourcesWithValidationTest.java,org.exist.validation.DatabaseInsertResourcesWithValidationTest,startup,throws-declaration,Exception,propagate,,
+exist-core/src/test/java/org/exist/validation/DatabaseInsertResourcesWithValidationTest.java,org.exist.validation.DatabaseInsertResourcesWithValidationTest,shutdown,throws-declaration,Exception,propagate,,
+exist-core/src/test/java/org/exist/validation/DatabaseInsertResourcesWithValidationTest.java,org.exist.validation.DatabaseInsertResourcesWithValidationTest,createTestCollections,throws-declaration,Exception,propagate,,
+exist-core/src/test/java/org/exist/validation/DatabaseInsertResourcesWithValidationTest.java,org.exist.validation.DatabaseInsertResourcesWithValidationTest,removeTestCollections,throws-declaration,Exception,propagate,,
+exist-core/src/test/java/org/exist/validation/DatabaseInsertResourcesWithValidationTest.java,org.exist.validation.DatabaseInsertResourcesWithValidationTest,validDocumentSystemCatalog,throws-declaration,IOException,propagate,,
+exist-core/src/test/java/org/exist/validation/DatabaseInsertResourcesWithValidationTest.java,org.exist.validation.DatabaseInsertResourcesWithValidationTest,getHamletXml,throws-declaration,IOException,propagate,,
+exist-core/src/test/java/org/exist/validation/DatabaseInsertResourcesWithValidationTest.java,org.exist.validation.DatabaseInsertResourcesWithValidationTest,invalidDocumentSystemCatalog,throws-declaration,IOException,propagate,,
+exist-core/src/test/java/org/exist/validation/DatabaseInsertResourcesWithValidationTest.java,org.exist.validation.DatabaseInsertResourcesWithValidationTest,invalidDocumentSystemCatalog,try-catch,IOException,custom,,
+exist-core/src/test/java/org/exist/validation/internal/DatabaseResourcesTest.java,org.exist.validation.internal.DatabaseResourcesTest,cleanupRunsOnSuccessPath,throws-declaration,Exception,propagate,,
 exist-core/src/test/java/org/exist/validation/TestTools.java,org.exist.validation.TestTools,insertDocumentToURL,throws-declaration,IOException,propagate,,
 exist-core/src/test/java/org/exist/validation/TestTools.java,org.exist.validation.TestTools,executeQuery,throws-declaration,"EXistException, PermissionDeniedException, XPathException",propagate,,
 exist-core/src/test/java/org/exist/validation/CollectionConfigSchema6000Test.java,org.exist.validation.CollectionConfigSchema6000Test,xsdAcceptsFieldWithoutType,throws-declaration,Exception,propagate,,
@@ -11929,6 +12121,15 @@ exist-core/src/test/java/org/exist/xupdate/RemoveAppendTest.java,org.exist.xupda
 exist-core/src/test/java/org/exist/xupdate/RemoveAppendTest.java,org.exist.xupdate.RemoveAppendTest,tearDown,throws-declaration,"LockException, TriggerException, PermissionDeniedException, EXistException, IOException",propagate,,
 exist-core/src/test/java/org/exist/xupdate/RemoveAppendTest.java,org.exist.xupdate.RemoveAppendTest,createItem,throws-declaration,IOException,propagate,,
 exist-core/src/test/java/org/exist/xupdate/RemoveAppendTest.java,org.exist.xupdate.RemoveAppendTest,addAttributes,throws-declaration,IOException,propagate,,
+exist-core/src/test/java/org/exist/xinclude/W3CXIncludeTestSuite.java,org.exist.xinclude.W3CXIncludeTestSuite,data,throws-declaration,Exception,propagate,,
+exist-core/src/test/java/org/exist/xinclude/W3CXIncludeTestSuite.java,org.exist.xinclude.W3CXIncludeTestSuite,runTestCase,throws-declaration,Exception,propagate,,
+exist-core/src/test/java/org/exist/xinclude/W3CXIncludeTestSuite.java,org.exist.xinclude.W3CXIncludeTestSuite,runTestCase,try-catch,XPathException | StackOverflowError | OutOfMemoryError,ignore,,
+exist-core/src/test/java/org/exist/xinclude/W3CXIncludeTestSuite.java,org.exist.xinclude.W3CXIncludeTestSuite,ensureContributorStored,throws-declaration,Exception,propagate,,
+exist-core/src/test/java/org/exist/xinclude/W3CXIncludeTestSuite.java,org.exist.xinclude.W3CXIncludeTestSuite,storeDirectoryTree,throws-declaration,Exception,propagate,,
+exist-core/src/test/java/org/exist/xinclude/W3CXIncludeTestSuite.java,org.exist.xinclude.W3CXIncludeTestSuite,storeDirectoryTree,try-catch,Exception,custom,,
+exist-core/src/test/java/org/exist/xinclude/W3CXIncludeTestSuite.java,org.exist.xinclude.W3CXIncludeTestSuite,storeDirectoryTree,try-catch,Exception,ignore,,
+exist-core/src/test/java/org/exist/xinclude/W3CXIncludeTestSuite.java,org.exist.xinclude.W3CXIncludeTestSuite,executeXQuery,throws-declaration,Exception,propagate,,
+exist-core/src/test/java/org/exist/xinclude/W3CXIncludeTestSuite.java,org.exist.xinclude.W3CXIncludeTestSuite,getTestSuitePath,try-catch,Exception,ignore,,
 exist-core/src/test/java/org/exist/security/RestApiSecurityTest.java,org.exist.security.RestApiSecurityTest,createCol,throws-declaration,ApiException,propagate,,
 exist-core/src/test/java/org/exist/security/RestApiSecurityTest.java,org.exist.security.RestApiSecurityTest,removeCol,throws-declaration,ApiException,propagate,,
 exist-core/src/test/java/org/exist/security/RestApiSecurityTest.java,org.exist.security.RestApiSecurityTest,removeCol,try-catch,IOException,wrap,,
@@ -12858,7 +13059,6 @@ extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/MultiFieldQuer
 extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/MultiFieldQueryParserWrapper.java,org.exist.indexing.lucene.MultiFieldQueryParserWrapper,parse,try-catch,ParseException,wrap,,
 extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/PlainTextHighlighter.java,org.exist.indexing.lucene.PlainTextHighlighter,PlainTextHighlighter,throws-declaration,IOException,propagate,,
 extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/PlainTextHighlighter.java,org.exist.indexing.lucene.PlainTextHighlighter,getOffsets,throws-declaration,IOException,propagate,,
-extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/PlainTextHighlighter.java,org.exist.indexing.lucene.PlainTextHighlighter,getOffsets,try-catch,IOException,printStackTrace,,
 extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/AbstractFieldConfig.java,org.exist.indexing.lucene.AbstractFieldConfig,processResult,throws-declaration,XPathException,propagate,,
 extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/AbstractFieldConfig.java,org.exist.indexing.lucene.AbstractFieldConfig,doBuild,throws-declaration,"PermissionDeniedException, XPathException",propagate,,
 extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/AbstractFieldConfig.java,org.exist.indexing.lucene.AbstractFieldConfig,doBuild,try-catch,PermissionDeniedException | XPathException,rethrow,Log4j,
@@ -12955,7 +13155,7 @@ extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndexWor
 extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndexWorker.java,org.exist.indexing.lucene.LuceneIndexWorker$BinarySearchCollector,getLeafCollector,throws-declaration,IOException,propagate,,
 extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndexWorker.java,org.exist.indexing.lucene.LuceneIndexWorker$BinarySearchCollector$BinarySearchLeafCollector,setScorer,throws-declaration,IOException,propagate,,
 extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndexWorker.java,org.exist.indexing.lucene.LuceneIndexWorker$BinarySearchCollector$BinarySearchLeafCollector,collect,throws-declaration,IOException,propagate,,
-extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndexWorker.java,org.exist.indexing.lucene.LuceneIndexWorker$BinarySearchCollector$BinarySearchLeafCollector,collect,try-catch,PermissionDeniedException,ignore,Log4j,
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndexWorker.java,org.exist.indexing.lucene.LuceneIndexWorker$BinarySearchCollector$BinarySearchLeafCollector,collect,try-catch,PermissionDeniedException,log,Log4j,DEBUG
 extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndexWorker.java,org.exist.indexing.lucene.LuceneIndexWorker$BinarySearchCollector$BinarySearchLeafCollector,getFieldContent,throws-declaration,IOException,propagate,,
 extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndexWorker.java,org.exist.indexing.lucene.LuceneIndexWorker$BinarySearchCollector$BinarySearchLeafCollector,getFieldContent,try-catch,XPathException,wrap,Log4j,
 extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndexWorker.java,org.exist.indexing.lucene.LuceneIndexWorker$BinarySearchCollector$BinarySearchLeafCollector,getFieldByExistDocId,throws-declaration,IOException,propagate,,
@@ -13262,9 +13462,10 @@ extensions/indexes/range/src/main/java/org/exist/indexing/range/RangeIndexConfig
 extensions/indexes/range/src/main/java/org/exist/indexing/range/RangeIndexConfigElement.java,org.exist.indexing.range.RangeIndexConfigElement,convertToField,try-catch,NumberFormatException | XPathException,ignore,,
 extensions/indexes/range/src/main/java/org/exist/indexing/range/RangeIndexConfigElement.java,org.exist.indexing.range.RangeIndexConfigElement,convertToBytes,throws-declaration,XPathException,propagate,,
 extensions/indexes/range/src/main/java/org/exist/indexing/range/RangeIndexConfigAttributeCondition.java,org.exist.indexing.range.RangeIndexConfigAttributeCondition,RangeIndexConfigAttributeCondition,throws-declaration,DatabaseConfigurationException,propagate,,
-extensions/indexes/range/src/main/java/org/exist/indexing/range/RangeIndexConfigAttributeCondition.java,org.exist.indexing.range.RangeIndexConfigAttributeCondition,RangeIndexConfigAttributeCondition,try-catch,QName.IllegalQNameException,wrap,,
 extensions/indexes/range/src/main/java/org/exist/indexing/range/RangeIndexConfigAttributeCondition.java,org.exist.indexing.range.RangeIndexConfigAttributeCondition,RangeIndexConfigAttributeCondition,try-catch,PatternSyntaxException,log+wrap,,ERROR
 extensions/indexes/range/src/main/java/org/exist/indexing/range/RangeIndexConfigAttributeCondition.java,org.exist.indexing.range.RangeIndexConfigAttributeCondition,RangeIndexConfigAttributeCondition,try-catch,NumberFormatException,wrap,,
+extensions/indexes/range/src/main/java/org/exist/indexing/range/RangeIndexConfigAttributeCondition.java,org.exist.indexing.range.RangeIndexConfigAttributeCondition,resolveAttributeQName,throws-declaration,DatabaseConfigurationException,propagate,,
+extensions/indexes/range/src/main/java/org/exist/indexing/range/RangeIndexConfigAttributeCondition.java,org.exist.indexing.range.RangeIndexConfigAttributeCondition,resolveAttributeQName,try-catch,QName.IllegalQNameException,wrap,,
 extensions/indexes/range/src/main/java/org/exist/indexing/range/RangeIndexConfigAttributeCondition.java,org.exist.indexing.range.RangeIndexConfigAttributeCondition,toDouble,try-catch,NumberFormatException,log+recover,,DEBUG
 extensions/indexes/range/src/main/java/org/exist/indexing/range/RangeIndexConfigAttributeCondition.java,org.exist.indexing.range.RangeIndexConfigAttributeCondition,find,try-catch,XPathException,log+log,,ERROR
 extensions/indexes/range/src/main/java/org/exist/indexing/range/RangeIndexConfigAttributeCondition.java,org.exist.indexing.range.RangeIndexConfigAttributeCondition,findAtomicValue,try-catch,XPathException,log+recover,,ERROR
@@ -13609,6 +13810,9 @@ extensions/modules/expathrepo/src/main/java/org/exist/xquery/modules/expathrepo/
 extensions/modules/expathrepo/src/main/java/org/exist/xquery/modules/expathrepo/RemoveFunction.java,org.exist.xquery.modules.expathrepo.RemoveFunction,eval,try-catch,PackageException | XPathException,recover,Log4j,
 extensions/modules/expathrepo/src/main/java/org/exist/xquery/modules/expathrepo/GetAppRoot.java,org.exist.xquery.modules.expathrepo.GetAppRoot,eval,throws-declaration,XPathException,propagate,,
 extensions/modules/expathrepo/src/main/java/org/exist/xquery/modules/expathrepo/ExpathPackageModule.java,org.exist.xquery.modules.expathrepo.ExpathPackageModule,ExpathPackageModule,throws-declaration,XPathException,propagate,,
+extensions/modules/expathrepo/src/main/java/org/exist/xquery/modules/expathrepo/ResourceAvailable.java,org.exist.xquery.modules.expathrepo.ResourceAvailable,eval,throws-declaration,XPathException,propagate,,
+extensions/modules/expathrepo/src/main/java/org/exist/xquery/modules/expathrepo/ResourceAvailable.java,org.exist.xquery.modules.expathrepo.ResourceAvailable,eval,try-catch,PackageException,wrap,,
+extensions/modules/expathrepo/src/main/java/org/exist/xquery/modules/expathrepo/ResourceAvailable.java,org.exist.xquery.modules.expathrepo.ResourceAvailable,eval,try-catch,Storage.NotExistException | IOException,recover,,
 extensions/modules/expathrepo/src/main/java/org/exist/xquery/modules/expathrepo/Deploy.java,org.exist.xquery.modules.expathrepo.Deploy,eval,throws-declaration,XPathException,propagate,,
 extensions/modules/expathrepo/src/main/java/org/exist/xquery/modules/expathrepo/Deploy.java,org.exist.xquery.modules.expathrepo.Deploy,eval,try-catch,PackageException,wrap,Log4j,
 extensions/modules/expathrepo/src/main/java/org/exist/xquery/modules/expathrepo/Deploy.java,org.exist.xquery.modules.expathrepo.Deploy,eval,try-catch,IOException,wrap,Log4j,
