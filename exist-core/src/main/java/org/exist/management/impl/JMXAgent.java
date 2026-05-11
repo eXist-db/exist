@@ -108,6 +108,9 @@ public final class JMXAgent implements Agent {
     @Override
     public synchronized void closeDBInstance(final BrokerPool instance) {
         final Deque<ObjectName> stack = registeredMBeans.get(instance.getId());
+        if (stack == null) {
+            return;
+        }
         while (!stack.isEmpty()) {
             final ObjectName on = stack.pop();
             if (LOG.isDebugEnabled()) {

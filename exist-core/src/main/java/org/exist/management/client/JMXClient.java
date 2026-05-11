@@ -349,11 +349,15 @@ public class JMXClient {
 
             echo("");
             name = new ObjectName("org.exist.management." + instance + ":type=CollectionCache");
-            cols = new String[]{"MaxCacheSize"};
-            attrs = connection.getAttributes(name, cols);
-            values = getValues(attrs, cols);
-            echo("Collection Cache: %10d k max".formatted(
-                    values[0] != null ? (Long) values[0] / 1024 : 0L));
+            try {
+                cols = new String[]{"MaxCacheSize"};
+                attrs = connection.getAttributes(name, cols);
+                values = getValues(attrs, cols);
+                echo("Collection Cache: %10d k max".formatted(
+                        values[0] != null ? (Long) values[0] / 1024 : 0L));
+            } catch (final InstanceNotFoundException e) {
+                echo("Collection Cache: (not available)");
+            }
         } catch (final Exception e) {
             error(e);
         }
