@@ -21,12 +21,26 @@
  */
 package org.exist.xquery;
 
+import org.exist.xquery.ErrorCodes.ErrorCode;
+
 import java.io.Serial;
 
 public class StaticXQueryException extends XPathException
 {
     @Serial
     private static final long serialVersionUID = -8229758099980343418L;
+
+    /**
+     * Static-error exceptions default to XPST0003 (static syntax error) per
+     * the W3C XQuery 3.1 spec, rather than the generic {@link ErrorCodes#ERROR}
+     * inherited from {@link XPathException}. If a more specific error code was
+     * propagated from the cause (via {@link XPathErrorProvider}), it is preserved.
+     */
+    @Override
+    public ErrorCode getErrorCode() {
+        final ErrorCode code = super.getErrorCode();
+        return code == ErrorCodes.ERROR ? ErrorCodes.XPST0003 : code;
+    }
 
 	public StaticXQueryException(String message) {
         this(null, message);
