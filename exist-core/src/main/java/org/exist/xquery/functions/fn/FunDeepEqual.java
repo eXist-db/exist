@@ -223,178 +223,189 @@ public class FunDeepEqual extends CollatingFunction {
 
         try {
             if (item1.getType() == Type.ARRAY_ITEM || item2.getType() == Type.ARRAY_ITEM) {
-                if (item1.getType() != item2.getType()) {
-                    return Constants.INFERIOR;
-                }
-                final ArrayType array1 = (ArrayType) item1;
-                final ArrayType array2 = (ArrayType) item2;
-                final int array1Size = array1.getSize();
-                final int array2Size = array2.getSize();
-                if (array1Size == array2Size) {
-                    for (int i = 0; i < array1.getSize(); i++) {
-                        final int comparison = deepCompareSeq(array1.get(i), array2.get(i), collator, broker);
-                        if (comparison != Constants.EQUAL) {
-                            return comparison;
-                        }
-                    }
-                    return Constants.EQUAL;
-                } else {
-                    return array1Size < array2Size ? Constants.INFERIOR : Constants.SUPERIOR;
-                }
+                return compareArrayItems(item1, item2, collator, broker);
             }
-
             if (item1.getType() == Type.MAP_ITEM || item2.getType() == Type.MAP_ITEM) {
-                if (item1.getType() != item2.getType()) {
-                    return Constants.INFERIOR;
-                }
-                final AbstractMapType map1 = (AbstractMapType) item1;
-                final AbstractMapType map2 = (AbstractMapType) item2;
-                final int map1Size = map1.size();
-                final int map2Size = map2.size();
-
-                if (map1Size == map2Size) {
-                    for (final IEntry<AtomicValue, Sequence> entry1 : map1) {
-                        if (!map2.contains(entry1.key())) {
-                            return Constants.SUPERIOR;
-                        }
-
-                        final int comparison = deepCompareSeq(entry1.value(), map2.get(entry1.key()), collator, broker);
-                        if (comparison != Constants.EQUAL) {
-                            return comparison;
-                        }
-                    }
-                    return Constants.EQUAL;
-                } else {
-                    return map1Size < map2Size ? Constants.INFERIOR : Constants.SUPERIOR;
-                }
+                return compareMapItems(item1, item2, collator, broker);
             }
 
             final boolean item1IsAtomic = Type.subTypeOf(item1.getType(), Type.ANY_ATOMIC_TYPE);
             final boolean item2IsAtomic = Type.subTypeOf(item2.getType(), Type.ANY_ATOMIC_TYPE);
             if (item1IsAtomic || item2IsAtomic) {
-                if (!item1IsAtomic) {
-                    return Constants.SUPERIOR;
-                }
-
-                if (!item2IsAtomic) {
-                    return Constants.INFERIOR;
-                }
-
-                try {
-                    final AtomicValue av = (AtomicValue) item1;
-                    final AtomicValue bv = (AtomicValue) item2;
-                    if (Type.subTypeOfUnion(av.getType(), Type.NUMERIC) &&
-                            Type.subTypeOfUnion(bv.getType(), Type.NUMERIC)) {
-                        //or if both values are NaN
-                        if (((NumericValue) item1).isNaN() && ((NumericValue) item2).isNaN()) {
-                            return Constants.EQUAL;
-                        }
-                    }
-
-                    return ValueComparison.compareAtomic(collator, av, bv);
-                } catch (final XPathException e) {
-                    if (logger.isTraceEnabled()) {
-                        logger.trace(e.getMessage());
-                    }
-                    return Constants.INFERIOR;
-                }
+                return compareAtomicItems(item1, item2, item1IsAtomic, item2IsAtomic, collator);
             }
 
-            if (item1.getType() != item2.getType()) {
-                return Constants.INFERIOR;
-            }
-            final NodeValue nva = (NodeValue) item1;
-            final NodeValue nvb = (NodeValue) item2;
-            // NOTE(AR): intentional reference equality check
-            if (nva == nvb) {
-                return Constants.EQUAL;
-            }
-
-            try {
-                //Don't use this shortcut for in-memory nodes
-                //since the symbol table is ignored.
-                if (nva.getImplementationType() != NodeValue.IN_MEMORY_NODE &&
-                        nva.equals(nvb)) {
-                    return Constants.EQUAL;  // shortcut!
-                }
-            } catch (final XPathException e) {
-                // apparently incompatible values, do manual comparison
-            }
-
-            final Node node1;
-            final Node node2;
-            switch (item1.getType()) {
-                case Type.DOCUMENT:
-                    // GH-4050 fast path: persistent-DOM streaming comparator.
-                    // Falls through to legacy on stream/IO failure to preserve correctness.
-                    if (broker != null
-                            && nva instanceof NodeProxy npa
-                            && nvb instanceof NodeProxy npb
-                            && nva.getImplementationType() == NodeValue.PERSISTENT_NODE
-                            && nvb.getImplementationType() == NodeValue.PERSISTENT_NODE) {
-                        try {
-                            return FunDeepEqualStreamingComparator.compare(
-                                    broker, npa, npb, /*subtree=*/false, collator);
-                        } catch (final XMLStreamException | IOException | RuntimeException e) {
-                            if (logger.isDebugEnabled()) {
-                                logger.debug("Streaming deep-equal fast path failed, falling back: "
-                                        + e.getMessage());
-                            }
-                        }
-                    }
-                    node1 = nva instanceof Node nnva ? nnva : ((NodeProxy) nva).getOwnerDocument();
-                    node2 = nvb instanceof Node nnvb ? nnvb : ((NodeProxy) nvb).getOwnerDocument();
-                    return compareContents(node1, node2, collator);
-
-                case Type.ELEMENT:
-                    if (broker != null
-                            && nva instanceof NodeProxy npea
-                            && nvb instanceof NodeProxy npeb
-                            && nva.getImplementationType() == NodeValue.PERSISTENT_NODE
-                            && nvb.getImplementationType() == NodeValue.PERSISTENT_NODE) {
-                        try {
-                            return FunDeepEqualStreamingComparator.compare(
-                                    broker, npea, npeb, /*subtree=*/true, collator);
-                        } catch (final XMLStreamException | IOException | RuntimeException e) {
-                            if (logger.isDebugEnabled()) {
-                                logger.debug("Streaming deep-equal fast path failed, falling back: "
-                                        + e.getMessage());
-                            }
-                        }
-                    }
-                    node1 = nva.getNode();
-                    node2 = nvb.getNode();
-                    return compareElements(node1, node2, collator);
-
-                case Type.ATTRIBUTE:
-                    node1 = nva.getNode();
-                    node2 = nvb.getNode();
-                    final int attributeNameComparison = compareNames(node1, node2);
-                    if (attributeNameComparison != Constants.EQUAL) {
-                        return attributeNameComparison;
-                    }
-                    return safeCompare(node1.getNodeValue(), node2.getNodeValue(), collator);
-
-                case Type.PROCESSING_INSTRUCTION:
-                case Type.NAMESPACE:
-                    node1 = nva.getNode();
-                    node2 = nvb.getNode();
-                    final int nameComparison = safeCompare(node1.getNodeName(), node2.getNodeName(), null);
-                    if (nameComparison != Constants.EQUAL) {
-                        return nameComparison;
-                    }
-                    return safeCompare(nva.getStringValue(), nvb.getStringValue(), collator);
-
-                case Type.TEXT:
-                case Type.COMMENT:
-                    return safeCompare(nva.getStringValue(), nvb.getStringValue(), collator);
-
-                default:
-                    throw new UnexpectedItemTypeException(item1);
-            }
+            return compareNodeItems(item1, item2, collator, broker);
         } catch (final XPathException e) {
             logger.error(e.getMessage(), e);
             return Constants.INFERIOR;
+        }
+    }
+
+    private static int compareArrayItems(final Item item1, final Item item2,
+            @Nullable final Collator collator, @Nullable final DBBroker broker) throws XPathException {
+        if (item1.getType() != item2.getType()) {
+            return Constants.INFERIOR;
+        }
+        final ArrayType array1 = (ArrayType) item1;
+        final ArrayType array2 = (ArrayType) item2;
+        final int array1Size = array1.getSize();
+        final int array2Size = array2.getSize();
+        if (array1Size != array2Size) {
+            return array1Size < array2Size ? Constants.INFERIOR : Constants.SUPERIOR;
+        }
+        for (int i = 0; i < array1Size; i++) {
+            final int comparison = deepCompareSeq(array1.get(i), array2.get(i), collator, broker);
+            if (comparison != Constants.EQUAL) {
+                return comparison;
+            }
+        }
+        return Constants.EQUAL;
+    }
+
+    private static int compareMapItems(final Item item1, final Item item2,
+            @Nullable final Collator collator, @Nullable final DBBroker broker) throws XPathException {
+        if (item1.getType() != item2.getType()) {
+            return Constants.INFERIOR;
+        }
+        final AbstractMapType map1 = (AbstractMapType) item1;
+        final AbstractMapType map2 = (AbstractMapType) item2;
+        final int map1Size = map1.size();
+        final int map2Size = map2.size();
+        if (map1Size != map2Size) {
+            return map1Size < map2Size ? Constants.INFERIOR : Constants.SUPERIOR;
+        }
+        for (final IEntry<AtomicValue, Sequence> entry1 : map1) {
+            if (!map2.contains(entry1.key())) {
+                return Constants.SUPERIOR;
+            }
+            final int comparison = deepCompareSeq(entry1.value(), map2.get(entry1.key()), collator, broker);
+            if (comparison != Constants.EQUAL) {
+                return comparison;
+            }
+        }
+        return Constants.EQUAL;
+    }
+
+    private static int compareAtomicItems(final Item item1, final Item item2,
+            final boolean item1IsAtomic, final boolean item2IsAtomic, @Nullable final Collator collator) {
+        if (!item1IsAtomic) {
+            return Constants.SUPERIOR;
+        }
+        if (!item2IsAtomic) {
+            return Constants.INFERIOR;
+        }
+        try {
+            final AtomicValue av = (AtomicValue) item1;
+            final AtomicValue bv = (AtomicValue) item2;
+            if (Type.subTypeOfUnion(av.getType(), Type.NUMERIC)
+                    && Type.subTypeOfUnion(bv.getType(), Type.NUMERIC)
+                    && ((NumericValue) item1).isNaN()
+                    && ((NumericValue) item2).isNaN()) {
+                return Constants.EQUAL;
+            }
+            return ValueComparison.compareAtomic(collator, av, bv);
+        } catch (final XPathException e) {
+            if (logger.isTraceEnabled()) {
+                logger.trace(e.getMessage());
+            }
+            return Constants.INFERIOR;
+        }
+    }
+
+    private static int compareNodeItems(final Item item1, final Item item2,
+            @Nullable final Collator collator, @Nullable final DBBroker broker) throws XPathException {
+        if (item1.getType() != item2.getType()) {
+            return Constants.INFERIOR;
+        }
+        final NodeValue nva = (NodeValue) item1;
+        final NodeValue nvb = (NodeValue) item2;
+        // NOTE(AR): intentional reference equality check
+        if (nva == nvb) {
+            return Constants.EQUAL;
+        }
+
+        try {
+            //Don't use this shortcut for in-memory nodes
+            //since the symbol table is ignored.
+            if (nva.getImplementationType() != NodeValue.IN_MEMORY_NODE && nva.equals(nvb)) {
+                return Constants.EQUAL;  // shortcut!
+            }
+        } catch (final XPathException e) {
+            // apparently incompatible values, do manual comparison
+        }
+
+        return switch (item1.getType()) {
+            case Type.DOCUMENT -> compareDocumentItems(nva, nvb, collator, broker);
+            case Type.ELEMENT -> compareElementItems(nva, nvb, collator, broker);
+            case Type.ATTRIBUTE -> compareAttributeItems(nva, nvb, collator);
+            case Type.PROCESSING_INSTRUCTION, Type.NAMESPACE -> comparePiOrNamespaceItems(nva, nvb, collator);
+            case Type.TEXT, Type.COMMENT -> safeCompare(nva.getStringValue(), nvb.getStringValue(), collator);
+            default -> throw new UnexpectedItemTypeException(item1);
+        };
+    }
+
+    private static int compareDocumentItems(final NodeValue nva, final NodeValue nvb,
+            @Nullable final Collator collator, @Nullable final DBBroker broker) {
+        // GH-4050 fast path: persistent-DOM streaming comparator.
+        // Falls through to legacy on stream/IO failure to preserve correctness.
+        final Integer streamed = tryStreamingCompare(nva, nvb, collator, broker, /*subtree=*/false);
+        if (streamed != null) {
+            return streamed;
+        }
+        final Node node1 = nva instanceof Node nnva ? nnva : ((NodeProxy) nva).getOwnerDocument();
+        final Node node2 = nvb instanceof Node nnvb ? nnvb : ((NodeProxy) nvb).getOwnerDocument();
+        return compareContents(node1, node2, collator);
+    }
+
+    private static int compareElementItems(final NodeValue nva, final NodeValue nvb,
+            @Nullable final Collator collator, @Nullable final DBBroker broker) {
+        final Integer streamed = tryStreamingCompare(nva, nvb, collator, broker, /*subtree=*/true);
+        if (streamed != null) {
+            return streamed;
+        }
+        return compareElements(nva.getNode(), nvb.getNode(), collator);
+    }
+
+    private static int compareAttributeItems(final NodeValue nva, final NodeValue nvb,
+            @Nullable final Collator collator) {
+        final Node node1 = nva.getNode();
+        final Node node2 = nvb.getNode();
+        final int attributeNameComparison = compareNames(node1, node2);
+        if (attributeNameComparison != Constants.EQUAL) {
+            return attributeNameComparison;
+        }
+        return safeCompare(node1.getNodeValue(), node2.getNodeValue(), collator);
+    }
+
+    private static int comparePiOrNamespaceItems(final NodeValue nva, final NodeValue nvb,
+            @Nullable final Collator collator) throws XPathException {
+        final Node node1 = nva.getNode();
+        final Node node2 = nvb.getNode();
+        final int nameComparison = safeCompare(node1.getNodeName(), node2.getNodeName(), null);
+        if (nameComparison != Constants.EQUAL) {
+            return nameComparison;
+        }
+        return safeCompare(nva.getStringValue(), nvb.getStringValue(), collator);
+    }
+
+    @Nullable
+    private static Integer tryStreamingCompare(final NodeValue nva, final NodeValue nvb,
+            @Nullable final Collator collator, @Nullable final DBBroker broker, final boolean subtree) {
+        if (broker == null
+                || !(nva instanceof NodeProxy npa)
+                || !(nvb instanceof NodeProxy npb)
+                || nva.getImplementationType() != NodeValue.PERSISTENT_NODE
+                || nvb.getImplementationType() != NodeValue.PERSISTENT_NODE) {
+            return null;
+        }
+        try {
+            return FunDeepEqualStreamingComparator.compare(broker, npa, npb, subtree, collator);
+        } catch (final XMLStreamException | IOException | RuntimeException e) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("Streaming deep-equal fast path failed, falling back: " + e.getMessage());
+            }
+            return null;
         }
     }
 
