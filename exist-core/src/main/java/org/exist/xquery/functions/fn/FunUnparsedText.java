@@ -248,7 +248,7 @@ public class FunUnparsedText extends BasicFunction {
                 if (dynamicTextResource != null) {
                     return readLinesFromReader(new BufferedReader(dynamicTextResource));
                 }
-            } catch (final IOException e) {
+            } catch (final IOException | RuntimeException e) {
                 throw new XPathException(this, ErrorCodes.FOUT1170, "Cannot read text resource");
             }
         } else {
@@ -256,14 +256,14 @@ public class FunUnparsedText extends BasicFunction {
                 if (dynamicTextResource != null) {
                     return readLinesFromReader(new BufferedReader(dynamicTextResource));
                 }
-            } catch (final IOException e) {
+            } catch (final IOException | RuntimeException e) {
                 throw new XPathException(this, ErrorCodes.FOUT1170, "Cannot read text resource");
             }
             try (final Reader dynamicTextResource = context.getDynamicallyAvailableTextResource(resolvedUri, UTF_8)) {
                 if (dynamicTextResource != null) {
                     return readLinesFromReader(new BufferedReader(dynamicTextResource));
                 }
-            } catch (final IOException e) {
+            } catch (final IOException | RuntimeException e) {
                 throw new XPathException(this, ErrorCodes.FOUT1170, "Cannot read text resource");
             }
         }
