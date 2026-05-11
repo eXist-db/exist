@@ -58,7 +58,7 @@ function jsonxml:json-to-xml-error-1() {
 
 
 declare
-    %test:assertError("err:FOJS0005")
+    %test:assertError("err:XPTY0004")
 function jsonxml:json-to-xml-error-2() {
     json-to-xml('{"x": "\\", "y": "\u0025"}', map{'escape': 'invalid-value'})
 };
@@ -67,3 +67,61 @@ function jsonxml:json-to-xml-error-2() {
 
 
 
+
+(: F&O 3.1 section 2.4 option-parameter conventions: wrong-typed option value -> XPTY0004. :)
+
+declare
+    %test:assertError("err:XPTY0004")
+function jsonxml:json-to-xml-liberal-wrong-type() {
+    json-to-xml('[1]', map{'liberal': 'x'})
+};
+
+declare
+    %test:assertError("err:XPTY0004")
+function jsonxml:json-to-xml-validate-empty-seq() {
+    json-to-xml('[1]', map{'validate': ()})
+};
+
+declare
+    %test:assertError("err:XPTY0004")
+function jsonxml:json-to-xml-validate-wrong-type() {
+    json-to-xml('[1]', map{'validate': 'EMCA-262'})
+};
+
+declare
+    %test:assertError("err:XPTY0004")
+function jsonxml:json-to-xml-escape-empty-seq() {
+    json-to-xml('[1]', map{'escape': ()})
+};
+
+declare
+    %test:assertError("err:XPTY0004")
+function jsonxml:json-to-xml-fallback-not-function() {
+    json-to-xml('[1]', map{'fallback': 'dummy'})
+};
+
+declare
+    %test:assertError("err:XPTY0004")
+function jsonxml:json-to-xml-fallback-wrong-arity() {
+    json-to-xml('[1]', map{'fallback': concat#2})
+};
+
+(: F&O 3.1 section 17.5.3: permitted-value and consistency checks -> FOJS0005. :)
+
+declare
+    %test:assertError("err:FOJS0005")
+function jsonxml:json-to-xml-duplicates-bad-value() {
+    json-to-xml('{"a":1,"a":2}', map{'duplicates': 'use-fish'})
+};
+
+declare
+    %test:assertError("err:FOJS0005")
+function jsonxml:json-to-xml-validate-retain-incompat() {
+    json-to-xml('{}', map{'validate': true(), 'duplicates': 'retain'})
+};
+
+declare
+    %test:assertError("err:FOJS0005")
+function jsonxml:json-to-xml-unknown-option() {
+    json-to-xml('[1]', map{'unknown-opt': 'x'})
+};
