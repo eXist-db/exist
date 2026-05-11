@@ -42,8 +42,8 @@ public class SequenceType {
     private int primaryType = Type.ITEM;
     private Cardinality cardinality = Cardinality.EXACTLY_ONE;
     private QName nodeName = null;
-    private SequenceType[] functionParamTypes = null;
-    private SequenceType functionReturnType = null;
+    private SequenceType[] functionParamTypes;
+    private SequenceType functionReturnType;
 
     public SequenceType() {
     }
@@ -178,10 +178,9 @@ public class SequenceType {
         }
 
         // For function types, check parameter and return type compatibility
-        if (Type.subTypeOf(primaryType, Type.FUNCTION) && item instanceof FunctionReference) {
-            if (!checkFunctionType((FunctionReference) item)) {
-                return false;
-            }
+        if (Type.subTypeOf(primaryType, Type.FUNCTION) && item instanceof FunctionReference
+                && !checkFunctionType((FunctionReference) item)) {
+            return false;
         }
 
         if (nodeName == null) {
@@ -217,10 +216,8 @@ public class SequenceType {
         final FunctionSignature sig = funcRef.getSignature();
 
         // Check arity: if we have typed parameter info, check against it
-        if (functionParamTypes != null) {
-            if (sig.getArgumentCount() != functionParamTypes.length) {
-                return false;
-            }
+        if (functionParamTypes != null && sig.getArgumentCount() != functionParamTypes.length) {
+            return false;
         }
 
         // Check return type: function's return type must be a subtype of required return type (covariant)

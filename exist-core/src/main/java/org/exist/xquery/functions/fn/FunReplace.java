@@ -139,8 +139,8 @@ public class FunReplace extends BasicFunction {
 			final boolean isXQuery40 = context.getXQueryVersion() >= 40;
 
 			// XQ4: translate (*positive_lookahead:...) etc. to Java regex (?=...) syntax
-			if (isXQuery40 && org.exist.xquery.regex.RegexUtil.hasXPath4Lookaround(pattern)) {
-				pattern = org.exist.xquery.regex.RegexUtil.translateXPath4Lookaround(pattern);
+			if (isXQuery40 && hasXPath4Lookaround(pattern)) {
+				pattern = translateXPath4Lookaround(pattern);
 			}
 
 			// Pre-validate: reject constructs not valid in XPath regex
