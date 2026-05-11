@@ -29,6 +29,7 @@ import org.junit.runner.RunWith;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 
 /**
  * @author <a href="mailto:piotr@ideanest.com">Piotr Kaminski</a>
@@ -221,15 +222,15 @@ public class DurationTest extends AbstractTimeRelatedTestCase {
         // sanity: unequal durations should generally hash differently
         final DurationValue p1y = new YearMonthDurationValue("P1Y");
         final DurationValue p2y = new YearMonthDurationValue("P2Y");
-        org.junit.Assert.assertNotEquals(p1y.hashCode(), p2y.hashCode());
+        assertNotEquals(p1y.hashCode(), p2y.hashCode());
     }
 
     @Test
     public void equalsCommutativeAcrossDurationSubtypes() throws XPathException {
         final DurationValue d = new DurationValue("P1Y");
         final YearMonthDurationValue ymd = new YearMonthDurationValue("P12M");
-        org.junit.Assert.assertEquals(d, ymd);
-        org.junit.Assert.assertEquals(ymd, d);
+        assertEquals(d, ymd);
+        assertEquals(ymd, d);
     }
 
     @Test
