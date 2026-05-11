@@ -23,6 +23,7 @@
 package org.exist.dom.persistent;
 
 import org.exist.numbering.NodeId;
+import org.exist.xquery.Expression;
 import org.exist.xquery.value.SequenceIterator;
 import org.junit.Test;
 import org.w3c.dom.Node;
@@ -34,7 +35,7 @@ import static org.junit.Assert.assertNull;
 public class NodeProxyTest {
 
     @Test
-    public void iterate_loop() {
+    public void iterateLoop() {
         final NodeProxy mockNodeProxy = new NodeProxy(null, null, null, Node.ELEMENT_NODE, -1);
 
         final SequenceIterator it = mockNodeProxy.iterate();
@@ -48,7 +49,7 @@ public class NodeProxyTest {
     }
 
     @Test
-    public void iterate_skip_loop() {
+    public void iterateSkipLoop() {
         final NodeProxy mockNodeProxy = new NodeProxy(null, null, null, Node.ELEMENT_NODE, -1);
         final SequenceIterator it = mockNodeProxy.iterate();
 
@@ -68,7 +69,7 @@ public class NodeProxyTest {
     }
 
     @Test
-    public void iterate_loop_skip_loop() {
+    public void iterateLoopSkipLoop() {
         final NodeProxy mockNodeProxy = new NodeProxy(null, null, null, Node.ELEMENT_NODE, -1);
         final SequenceIterator it = mockNodeProxy.iterate();
 
@@ -96,7 +97,7 @@ public class NodeProxyTest {
     }
 
     @Test
-    public void deepCopyContext_clearsExistingContextWhenSourceHasNone() {
+    public void deepCopyContextClearsExistingContextWhenSourceHasNone() {
         final NodeProxy target = new NodeProxy(null, null, NodeId.DOCUMENT_NODE, Node.ELEMENT_NODE, -1);
         final NodeProxy existingContextNode = new NodeProxy(null, null, NodeId.ROOT_NODE, Node.ELEMENT_NODE, -1);
         target.addContextNode(42, existingContextNode);
@@ -108,7 +109,7 @@ public class NodeProxyTest {
     }
 
     @Test
-    public void deepCopyContextWithContextId_addsContextIdEvenWhenSourceHasNoContext() {
+    public void deepCopyContextWithContextIdAddsContextIdEvenWhenSourceHasNoContext() {
         final NodeProxy target = new NodeProxy(null, null, NodeId.DOCUMENT_NODE, Node.ELEMENT_NODE, -1);
         final NodeProxy existingContextNode = new NodeProxy(null, null, NodeId.ROOT_NODE, Node.ELEMENT_NODE, -1);
         target.addContextNode(7, existingContextNode);
@@ -123,7 +124,19 @@ public class NodeProxyTest {
     }
 
     @Test
-    public void deepCopyContext_selfCopyIsNoOp() {
+    public void propagatePredicateContextFromNoContextIdSkipsWhenSourceHasNoContext() {
+        final NodeProxy target = new NodeProxy(null, null, NodeId.DOCUMENT_NODE, Node.ELEMENT_NODE, -1);
+        final NodeProxy existingContextNode = new NodeProxy(null, null, NodeId.ROOT_NODE, Node.ELEMENT_NODE, -1);
+        target.addContextNode(42, existingContextNode);
+
+        final NodeProxy sourceWithoutContext = new NodeProxy(null, null, NodeId.END_OF_DOCUMENT, Node.ELEMENT_NODE, -1);
+        NodeProxy.propagatePredicateContextFrom(target, sourceWithoutContext, Expression.NO_CONTEXT_ID);
+
+        assertEquals(42, target.getContext().getContextId());
+    }
+
+    @Test
+    public void deepCopyContextSelfCopyIsNoOp() {
         final NodeProxy node = new NodeProxy(null, null, NodeId.DOCUMENT_NODE, Node.ELEMENT_NODE, -1);
         final NodeProxy existingContextNode = new NodeProxy(null, null, NodeId.ROOT_NODE, Node.ELEMENT_NODE, -1);
         node.addContextNode(42, existingContextNode);

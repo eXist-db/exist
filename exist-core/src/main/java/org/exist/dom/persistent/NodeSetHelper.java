@@ -78,11 +78,7 @@ public final class NodeSetHelper {
                     final NodeProxy parent = al.parentWithChild(child, true, false,
                         NodeProxy.UNKNOWN_NODE_LEVEL);
                     if(parent != null) {
-                        if(Expression.NO_CONTEXT_ID != contextId) {
-                            child.deepCopyContext(parent, contextId);
-                        } else {
-                            child.copyContext(parent);
-                        }
+                        NodeProxy.propagatePredicateContextFrom(child, parent, contextId);
                         result.add(child, sizeHint);
                     }
                 }
@@ -98,11 +94,7 @@ public final class NodeSetHelper {
                     final NodeProxy parent = al.parentWithChild(child, true, false,
                         NodeProxy.UNKNOWN_NODE_LEVEL);
                     if(parent != null) {
-                        if(Expression.NO_CONTEXT_ID != contextId) {
-                            parent.deepCopyContext(child, contextId);
-                        } else {
-                            parent.copyContext(child);
-                        }
+                        NodeProxy.propagatePredicateContextFrom(parent, child, contextId);
                         parent.addMatches(child);
                         result.add(parent, sizeHint);
                     }
@@ -197,7 +189,7 @@ public final class NodeSetHelper {
                         if(Expression.NO_CONTEXT_ID != contextId) {
                             descendant.addContextNode(contextId, ancestor);
                         } else {
-                            descendant.copyContext(ancestor);
+                            NodeProxy.propagatePredicateContextFrom(descendant, ancestor, contextId);
                         }
                         result.add(descendant, sizeHint);
                     }
@@ -218,7 +210,7 @@ public final class NodeSetHelper {
                         if(Expression.NO_CONTEXT_ID != contextId) {
                             ancestor.addContextNode(contextId, descendant);
                         } else {
-                            ancestor.copyContext(descendant);
+                            NodeProxy.propagatePredicateContextFrom(ancestor, descendant, contextId);
                         }
                         result.add(ancestor, sizeHint);
                     }
@@ -251,7 +243,7 @@ public final class NodeSetHelper {
                         if(Expression.NO_CONTEXT_ID != contextId) {
                             descendant.addContextNode(contextId, ancestor);
                         } else {
-                            descendant.copyContext(ancestor);
+                            NodeProxy.propagatePredicateContextFrom(descendant, ancestor, contextId);
                         }
                         result.add(descendant, sizeHint);
                         return true;
@@ -273,7 +265,7 @@ public final class NodeSetHelper {
                         if(Expression.NO_CONTEXT_ID != contextId) {
                             ancestor.addContextNode(contextId, descendant);
                         } else {
-                            ancestor.copyContext(descendant);
+                            NodeProxy.propagatePredicateContextFrom(ancestor, descendant, contextId);
                         }
                         result.add(ancestor, sizeHint);
                         return true;
@@ -315,7 +307,7 @@ public final class NodeSetHelper {
                             if(Expression.NO_CONTEXT_ID != contextId) {
                                 ancestor.addContextNode(contextId, descendant);
                             } else {
-                                ancestor.copyContext(descendant);
+                                NodeProxy.propagatePredicateContextFrom(ancestor, descendant, contextId);
                             }
                         }
                         ancestor.addMatches(descendant);
@@ -342,7 +334,7 @@ public final class NodeSetHelper {
                             if(Expression.NO_CONTEXT_ID != contextId) {
                                 ancestor.addContextNode(contextId, descendant);
                             } else {
-                                ancestor.copyContext(descendant);
+                                NodeProxy.propagatePredicateContextFrom(ancestor, descendant, contextId);
                             }
                         }
                         ancestor.addMatches(descendant);
@@ -455,7 +447,7 @@ public final class NodeSetHelper {
                         if(t == null) {
                             if(Expression.IGNORE_CONTEXT != contextId) {
                                 if(Expression.NO_CONTEXT_ID == contextId) {
-                                    candidate.copyContext(reference);
+                                    NodeProxy.propagatePredicateContextFrom(candidate, reference, contextId);
                                 } else {
                                     candidate.addContextNode(contextId, reference);
                                 }
@@ -574,7 +566,7 @@ public final class NodeSetHelper {
                         if(t == null) {
                             if(Expression.IGNORE_CONTEXT != contextId) {
                                 if(Expression.NO_CONTEXT_ID == contextId) {
-                                    candidate.copyContext(reference);
+                                    NodeProxy.propagatePredicateContextFrom(candidate, reference, contextId);
                                 } else {
                                     candidate.addContextNode(contextId, reference);
                                 }

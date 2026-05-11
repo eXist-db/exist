@@ -847,13 +847,7 @@ public class RangeIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                         getAddress(doc, storedNode);
                         if (axis == NodeSet.ANCESTOR) {
                             resultSet.add(parentNode, sizeHint);
-                            if (Expression.NO_CONTEXT_ID != contextId) {
-                                // Keep contextId propagation for predicate tracking even when the
-                                // hit node has no pre-existing context chain.
-                                parentNode.deepCopyContext(storedNode, contextId);
-                            } else if (storedNode.getContext() != null) {
-                                parentNode.copyContext(storedNode);
-                            }
+                            NodeProxy.propagatePredicateContextFrom(parentNode, storedNode, contextId);
                         } else {
                             resultSet.add(storedNode, sizeHint);
                         }

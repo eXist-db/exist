@@ -240,10 +240,7 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
                         final NodeProxy storedNode = new NodeProxy(null, doc, parentId,
                             type == ElementValue.ATTRIBUTE ? Node.ATTRIBUTE_NODE : Node.ELEMENT_NODE, address);
                         result.add(storedNode);
-                        if (Expression.NO_CONTEXT_ID != contextId) {
-                            storedNode.deepCopyContext(descendant, contextId);
-                        } else
-                            {storedNode.copyContext(descendant);}
+                        NodeProxy.propagatePredicateContextFrom(storedNode, descendant, contextId);
                         if (contextSet.getTrackMatches())
                         	{storedNode.addMatches(descendant);}
                     }
@@ -408,9 +405,9 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
                 	if (selfAsContext)
                 		{storedNode.addContextNode(contextId, storedNode);}
                 	else
-                		{storedNode.deepCopyContext(ancestor, contextId);}
+                		{NodeProxy.propagatePredicateContextFrom(storedNode, ancestor, contextId);}
                 } else {
-            		storedNode.copyContext(ancestor);
+            		NodeProxy.propagatePredicateContextFrom(storedNode, ancestor, contextId);
                 }
                 storedNode.addMatches(ancestor);
             }

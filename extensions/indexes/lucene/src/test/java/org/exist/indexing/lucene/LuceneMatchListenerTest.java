@@ -480,7 +480,7 @@ public class LuceneMatchListenerTest {
     }
 
     @Test
-    public void inlineMatchNodesWhenIndenting_withAdditionalPredicate() throws EXistException, PermissionDeniedException, XPathException, SAXException, CollectionConfigurationException, LockException, IOException, XpathException {
+    public void inlineMatchNodesWhenIndentingWithAdditionalPredicate() throws EXistException, PermissionDeniedException, XPathException, SAXException, CollectionConfigurationException, LockException, IOException, XpathException {
         configureAndStore(CONF5, XML2);
 
         final BrokerPool pool = existEmbeddedServer.getBrokerPool();
