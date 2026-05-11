@@ -48,69 +48,69 @@ public class StaticXQueryExceptionErrorCodeTest {
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
     @Test
-    public void unterminatedStringLiteral_Literals006() {
+    public void unterminatedStringLiteralLiterals006() {
         // "test  -- closing quote missing
         assertStaticError("\"test");
     }
 
     @Test
-    public void mismatchedStringDelimiters_Literals008() {
+    public void mismatchedStringDelimitersLiterals008() {
         // 'test"  -- opens with apostrophe, closes with double-quote
         assertStaticError("'test\"");
     }
 
     @Test
-    public void invalidDoubleLiteralExponent_Literals051() {
+    public void invalidDoubleLiteralExponentLiterals051() {
         assertStaticError("1ee2");
     }
 
     @Test
-    public void invalidDoubleLiteralUppercaseE_Literals052() {
+    public void invalidDoubleLiteralUppercaseELiterals052() {
         assertStaticError("1EE2");
     }
 
     @Test
-    public void invalidEntityReferenceMissingSemicolon_KLiterals31() {
+    public void invalidEntityReferenceMissingSemicolonKLiterals31() {
         // "a string &;"  -- empty / invalid entity reference
         assertStaticError("\"a string &;\"");
     }
 
     @Test
-    public void invalidDecimalCharRef_KLiterals32() {
+    public void invalidDecimalCharRefKLiterals32() {
         // "a string &#;"  -- decimal char ref with no digits
         assertStaticError("\"a string &#;\"");
     }
 
     @Test
-    public void invalidHexCharRef_KLiterals38() {
+    public void invalidHexCharRefKLiterals38() {
         // "a string &#x;"  -- hex char ref with no digits
         assertStaticError("\"a string &#x;\"");
     }
 
     @Test
-    public void unknownNamedEntity_KLiterals41() {
+    public void unknownNamedEntityKLiterals41() {
         // "a string &unknown;"  -- not one of the five predefined entities
         assertStaticError("\"a string &unknown;\"");
     }
 
     @Test
-    public void charRefOutsideStringLiteral_KLiterals50() {
+    public void charRefOutsideStringLiteralKLiterals50() {
         // Character references are only allowed inside string literals
         assertStaticError("1 &lt;= 3");
     }
 
     @Test
-    public void minusInHexCharRef_K2Literals22() {
+    public void minusInHexCharRefK2Literals22() {
         assertStaticError("\"&#x-20;\"");
     }
 
     @Test
-    public void plusInDecimalCharRef_K2Literals25() {
+    public void plusInDecimalCharRefK2Literals25() {
         assertStaticError("\"&#+20;\"");
     }
 
     @Test
-    public void trailingQuoteJunk_KLiterals24() {
+    public void trailingQuoteJunkKLiterals24() {
         // 33"  -- trailing unmatched double-quote
         assertStaticError("33\"");
     }
