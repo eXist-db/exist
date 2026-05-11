@@ -70,7 +70,7 @@ public class SingleKeyMapType extends AbstractMapType {
         if (sameKey(collator, this.key, key)) {
             return this.value;
         }
-        return null;
+        return Sequence.EMPTY_SEQUENCE;
     }
 
     @Override
