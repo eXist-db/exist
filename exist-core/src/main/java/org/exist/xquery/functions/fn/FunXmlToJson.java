@@ -331,7 +331,7 @@ public class FunXmlToJson extends BasicFunction {
                                 mapkeyArrayList.add(stackSeparator);
                                 jsonGenerator.writeStartObject();
                             }
-                            default -> { }
+                            default -> { /* other valid JSON element kinds emit only at END_ELEMENT */ }
                         }
                         break;
                     case XMLStreamReader.CHARACTERS:
