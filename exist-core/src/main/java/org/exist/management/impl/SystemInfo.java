@@ -21,17 +21,16 @@
  */
 package org.exist.management.impl;
 
-import java.nio.charset.Charset;
-import java.util.Locale;
-
 import org.exist.SystemProperties;
 
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
+import java.nio.charset.Charset;
+import java.util.Locale;
 
 /**
  * Class SystemInfo
- * 
+ *
  * @author wessels
  * @author ljo
  */
@@ -46,17 +45,17 @@ public class SystemInfo implements SystemInfoMXBean {
 
     @Override
     public String getProductName() {
-        return SystemProperties.getInstance().getSystemProperty("product-name","eXist");
+        return SystemProperties.getInstance().getSystemProperty("product-name", "eXist");
     }
 
     @Override
     public String getProductVersion() {
-        return SystemProperties.getInstance().getSystemProperty("product-version","unknown");
+        return SystemProperties.getInstance().getSystemProperty("product-version", "unknown");
     }
 
     @Override
     public String getProductBuild() {
-        return SystemProperties.getInstance().getSystemProperty("product-build","unknown");
+        return SystemProperties.getInstance().getSystemProperty("product-build", "unknown");
     }
 
     @Override
@@ -76,6 +75,6 @@ public class SystemInfo implements SystemInfoMXBean {
 
     @Override
     public String getOperatingSystem() {
-         return System.getProperty("os.name") + " " + System.getProperty("os.version") + " " + System.getProperty("os.arch");
+        return System.getProperty("os.name") + " " + System.getProperty("os.version") + " " + System.getProperty("os.arch");
     }
 }

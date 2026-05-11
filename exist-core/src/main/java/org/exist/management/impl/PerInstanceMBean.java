@@ -23,5 +23,5 @@
 package org.exist.management.impl;
 
 public interface PerInstanceMBean extends ExistMBean {
-    String getInstanceId();
+    String instanceId();
 }

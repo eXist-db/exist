@@ -21,15 +21,15 @@
  */
 package org.exist.management.impl;
 
+import org.exist.storage.BrokerPool;
+import org.exist.storage.DBBroker;
+
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
-
-import org.exist.storage.BrokerPool;
-import org.exist.storage.DBBroker;
 
 public class Database implements DatabaseMXBean {
 
@@ -53,7 +53,7 @@ public class Database implements DatabaseMXBean {
     }
 
     @Override
-    public String getInstanceId() {
+    public String instanceId() {
         return pool.getId();
     }
 

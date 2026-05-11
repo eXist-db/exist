@@ -47,6 +47,8 @@ ProcessReportMXBean extends PerInstanceMBean {
      */
     void configure(long minTimeRecorded, long historyTimespan, boolean trackURI);
 
+    long getHistoryTimespan();
+
     /**
      * Sets the time span (in milliseconds) for which the stats for an executed query should
      * be kept in the recent query history.
@@ -55,7 +57,7 @@ ProcessReportMXBean extends PerInstanceMBean {
      */
     void setHistoryTimespan(long time);
 
-    long getHistoryTimespan();
+    long getMinTime();
 
     /**
      * Sets the minimum execution time of queries recorded in the recent query history.
@@ -65,7 +67,7 @@ ProcessReportMXBean extends PerInstanceMBean {
      */
     void setMinTime(long time);
 
-    long getMinTime();
+    boolean getTrackRequestURI();
 
     /**
      * Enable request tracking: for every executed query, try to figure out which HTTP
@@ -76,57 +78,33 @@ ProcessReportMXBean extends PerInstanceMBean {
      */
     void setTrackRequestURI(boolean track);
 
-    boolean getTrackRequestURI();
-
-    class QueryKey implements Comparable<QueryKey> {
-        private final int id;
-        private final String key;
-
-        public QueryKey(final int id, final String key) {
-            this.id = id;
-            this.key = key;
-        }
-
-        public int getId() {
-            return id;
-        }
-
-        public String getKey() {
-            return key;
-        }
+    record QueryKey(int id, String key) implements Comparable<QueryKey> {
 
         @Override
-        public boolean equals(final Object other) {
-            if (this == other) {
-                return true;
-            }
-            if (other == null || getClass() != other.getClass()) {
-                return false;
-            }
+            public boolean equals(final Object other) {
+                if (this == other) {
+                    return true;
+                }
+                if (other == null || getClass() != other.getClass()) {
+                    return false;
+                }
 
-            QueryKey queryKey = (QueryKey) other;
-            if (id != queryKey.id) {
-                return false;
+                final QueryKey queryKey = (QueryKey) other;
+                if (id != queryKey.id) {
+                    return false;
+                }
+                return key.equals(queryKey.key);
             }
-            return key.equals(queryKey.key);
-        }
-
-        @Override
-        public int hashCode() {
-            int result = id;
-            result = 31 * result + key.hashCode();
-            return result;
-        }
 
         @Override
-        public int compareTo(final QueryKey other) {
-            if (other == null) {
-                return 1;
+            public int compareTo(final QueryKey other) {
+                if (other == null) {
+                    return 1;
+                }
+                if (id != other.id) {
+                    return Integer.compare(id, other.id);
+                }
+                return key.compareTo(other.key);
             }
-            if (id != other.id) {
-              return Integer.compare(id,  other.id);
-            }
-            return key.compareTo(other.key);
         }
-    }
 }

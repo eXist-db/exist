@@ -36,7 +36,7 @@ public interface DatabaseMXBean extends PerInstanceMBean {
     int getActiveBrokers();
 
     int getTotalBrokers();
-    
+
     long getReservedMem();
 
     long getCacheMem();
@@ -45,7 +45,7 @@ public interface DatabaseMXBean extends PerInstanceMBean {
 
     List<ActiveBroker> getActiveBrokersMap();
 
-    public long getUptime();
+    long getUptime();
 
-    public String getExistHome();
+    String getExistHome();
 }

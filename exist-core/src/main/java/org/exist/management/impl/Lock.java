@@ -37,7 +37,7 @@ public class Lock {
     private final String[] waitingForRead;
     private final String[] waitingForWrite;
 
-    public Lock(String waitingThread, LockInfo info) {
+    public Lock(final String waitingThread, final LockInfo info) {
 
         this.waitingThread = waitingThread;
         this.lockType = info.getLockType();

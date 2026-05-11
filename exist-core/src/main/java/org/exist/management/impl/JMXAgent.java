@@ -36,12 +36,18 @@ import javax.management.MBeanServerFactory;
 import javax.management.MalformedObjectNameException;
 import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Real implementation of interface {@link org.exist.management.Agent}
  * which registers MBeans with the MBeanServer.
- *
+ * <p>
  * Note that the agent will be constructed via reflection by the
  * {@link org.exist.management.AgentFactory}
  */
@@ -93,7 +99,7 @@ public final class JMXAgent implements Agent {
             try {
                 addMBean(perInstanceMBean);
             } catch (final DatabaseConfigurationException e) {
-                LOG.warn("Exception while registering JMX MBean: {}, for database: {}.", 
+                LOG.warn("Exception while registering JMX MBean: {}, for database: {}.",
                         perInstanceMBean.getClass().getName(), instance.getId(), e);
             }
         }
@@ -116,8 +122,8 @@ public final class JMXAgent implements Agent {
     public synchronized void addMBean(final PerInstanceMBean mbean) throws DatabaseConfigurationException {
         try {
             addMBean(mbean.getName(), mbean);
-            if (mbean.getInstanceId() != null) {
-                Deque<ObjectName> stack = registeredMBeans.computeIfAbsent(mbean.getInstanceId(), k -> new ArrayDeque<>());
+            if (mbean.instanceId() != null) {
+                final Deque<ObjectName> stack = registeredMBeans.computeIfAbsent(mbean.instanceId(), k -> new ArrayDeque<>());
                 stack.push(mbean.getName());
             }
             beanInstances.put(mbean.getName(), mbean);
@@ -144,7 +150,7 @@ public final class JMXAgent implements Agent {
             if (server.isRegistered(name)) {
                 server.unregisterMBean(name);
             }
-        } catch (final InstanceNotFoundException | MBeanRegistrationException  e) {
+        } catch (final InstanceNotFoundException | MBeanRegistrationException e) {
             LOG.warn("Problem unregistering mbean: {}", e.getMessage(), e);
         }
     }

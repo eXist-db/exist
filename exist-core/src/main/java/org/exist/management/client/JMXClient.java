@@ -45,10 +45,21 @@ import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 import static org.exist.util.ArgumentUtil.getBool;
-import static se.softhouse.jargo.Arguments.*;
+import static se.softhouse.jargo.Arguments.helpArgument;
+import static se.softhouse.jargo.Arguments.integerArgument;
+import static se.softhouse.jargo.Arguments.optionArgument;
+import static se.softhouse.jargo.Arguments.stringArgument;
 
 /**
  * Command-line JMX client for monitoring a running eXist-db instance.
@@ -60,17 +71,163 @@ import static se.softhouse.jargo.Arguments.*;
  */
 public class JMXClient {
 
+    private static final int DEFAULT_PORT = 1099;
+    private static final int DEFAULT_WAIT_TIME = 0;
+    /* general arguments */
+    private static final Argument<?> helpArg = helpArgument("-h", "--help");
+    /* connection arguments */
+    private static final Argument<String> addressArg = stringArgument("-a", "--address")
+            .description("RMI address of the server")
+            .defaultValue("localhost")
+            .build();
+    private static final Argument<Integer> portArg = integerArgument("-p", "--port")
+            .description("RMI port of the server")
+            .defaultValue(DEFAULT_PORT)
+            .build();
+    private static final Argument<String> instanceArg = stringArgument("-i", "--instance")
+            .description("The ID of the database instance to connect to")
+            .defaultValue("exist")
+            .build();
+    private static final Argument<Integer> waitArg = integerArgument("-w", "--wait")
+            .description("while displaying server statistics: keep retrieving statistics, but wait the specified number of seconds between calls.")
+            .defaultValue(DEFAULT_WAIT_TIME)
+            .build();
+    /* display mode options */
+    private static final Argument<Boolean> cacheDisplayArg = optionArgument("-c", "--cache")
+            .description("displays server statistics on cache and memory usage.")
+            .defaultValue(false)
+            .build();
+    private static final Argument<Boolean> locksDisplayArg = optionArgument("-l", "--locks")
+            .description("lock manager: display locking information on all threads currently waiting for a lock on a resource or collection. Useful to debug deadlocks. During normal operation, the list will usually be empty (means: no blocked threads).")
+            .defaultValue(false)
+            .build();
+    /* display info options */
+    private static final Argument<Boolean> dbInfoArg = optionArgument("-d", "--db")
+            .description("display general info about the db instance.")
+            .defaultValue(false)
+            .build();
+    private static final Argument<Boolean> memoryInfoArg = optionArgument("-m", "--memory")
+            .description("display info on free and total memory. Can be combined with other parameters.")
+            .defaultValue(false)
+            .build();
+    private static final Argument<Boolean> sanityCheckInfoArg = optionArgument("-s", "--report")
+            .description("retrieve sanity check report from the db")
+            .defaultValue(false)
+            .build();
+    private static final Argument<Boolean> jobsInfoArg = optionArgument("-j", "--jobs")
+            .description("retrieve sanity check report from the db")
+            .defaultValue(false)
+            .build();
     private MBeanServerConnection connection;
-    private String instance;
-
+    private final String instance;
     /**
      * Creates a new JMXClient targeting the named eXist-db database instance.
      *
      * @param instanceName the JMX instance name used in MBean object names
      *                     (e.g. {@code "exist"} for {@code org.exist.management.exist:…})
      */
-    public JMXClient(String instanceName) {
+    public JMXClient(final String instanceName) {
         this.instance = instanceName;
+    }
+
+    /**
+     * Entry point for the {@code jmxclient.sh} command.
+     * Parses command-line arguments and delegates to {@link #process(ParsedArguments)}.
+     *
+     * @param args command-line arguments
+     */
+    @SuppressWarnings("unchecked")
+    public static void main(final String[] args) {
+        try {
+            CompatibleJavaVersionCheck.checkForCompatibleJavaVersion();
+
+            final ParsedArguments arguments = CommandLineParser
+                    .withArguments(addressArg, portArg, instanceArg, waitArg)
+                    .andArguments(cacheDisplayArg, locksDisplayArg)
+                    .andArguments(dbInfoArg, memoryInfoArg, sanityCheckInfoArg, jobsInfoArg)
+                    .andArguments(helpArg)
+                    .programName("jmxclient" + (OSUtil.isWindows() ? ".bat" : ".sh"))
+                    .parse(args);
+
+            process(arguments);
+        } catch (final StartException e) {
+            if (e.getMessage() != null && !e.getMessage().isEmpty()) {
+                System.err.println(e.getMessage());
+            }
+            System.exit(e.getErrorCode());
+        } catch (final ArgumentException e) {
+            System.out.println(e.getMessageAndUsage());
+            System.exit(SystemExitCodes.INVALID_ARGUMENT_EXIT_CODE);
+        }
+
+    }
+
+    /**
+     * Processes parsed command-line arguments: connects to the JMX server and
+     * repeatedly prints the requested statistics until the optional wait interval
+     * expires or a single pass completes.
+     *
+     * @param arguments the parsed command-line arguments
+     */
+    private static void process(final ParsedArguments arguments) {
+        final String address = arguments.get(addressArg);
+        final int port = Optional.ofNullable(arguments.get(portArg)).orElse(DEFAULT_PORT);
+        final String dbInstance = arguments.get(instanceArg);
+        final long waitTime = Optional.ofNullable(arguments.get(waitArg)).orElse(DEFAULT_WAIT_TIME);
+
+        Mode mode = Mode.STATS;
+        if (getBool(arguments, cacheDisplayArg)) {
+            mode = Mode.STATS;
+        }
+        if (getBool(arguments, locksDisplayArg)) {
+            mode = Mode.LOCKS;
+        }
+
+        final boolean displayInstance = getBool(arguments, dbInfoArg);
+        final boolean displayMem = getBool(arguments, memoryInfoArg);
+        final boolean displayReport = getBool(arguments, sanityCheckInfoArg);
+        final boolean jobReport = getBool(arguments, jobsInfoArg);
+
+        try {
+            final JMXClient stats = new JMXClient(dbInstance);
+            stats.connect(address, port);
+            stats.memoryStats();
+            while (true) {
+                switch (mode) {
+                    case STATS:
+                        stats.cacheStats();
+                        break;
+                    case LOCKS:
+                        stats.lockTable();
+                        break;
+                }
+                if (displayInstance) {
+                    stats.instanceStats();
+                }
+                if (displayMem) {
+                    stats.memoryStats();
+                }
+                if (displayReport) {
+                    stats.sanityReport();
+                }
+                if (jobReport) {
+                    stats.jobReport();
+                }
+                if (waitTime > 0) {
+                    synchronized (stats) {
+                        try {
+                            stats.wait(waitTime);
+                        } catch (final InterruptedException e) {
+                            System.err.println("INTERRUPTED: " + e.getMessage());
+                        }
+                    }
+                } else {
+                    return;
+                }
+            }
+        } catch (final IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -80,9 +237,9 @@ public class JMXClient {
      * @param port    RMI registry port (typically {@code 1099})
      * @throws IOException if the connection cannot be established
      */
-    public void connect(String address,int port) throws IOException {
+    public void connect(final String address, final int port) throws IOException {
         final JMXServiceURL url =
-                new JMXServiceURL("service:jmx:rmi:///jndi/rmi://"+address+":" + port + "/jmxrmi");
+                new JMXServiceURL("service:jmx:rmi:///jndi/rmi://" + address + ":" + port + "/jmxrmi");
         final Map<String, String[]> env = new HashMap<>();
         final String[] creds = {"guest", "guest"};
         env.put(JMXConnector.CREDENTIALS, creds);
@@ -103,8 +260,8 @@ public class JMXClient {
             if (composite != null) {
                 echo("\nMEMORY:");
                 echo("Current heap: %,12d k        Committed memory:  %,12d k".formatted(
-                        ((Long)composite.get("used")) / 1024, ((Long)composite.get("committed")) / 1024));
-                echo("Max memory:   %,12d k".formatted(((Long)composite.get("max")) / 1024));
+                        ((Long) composite.get("used")) / 1024, ((Long) composite.get("committed")) / 1024));
+                echo("Max memory:   %,12d k".formatted(((Long) composite.get("max")) / 1024));
             }
         } catch (final Exception e) {
             error(e);
@@ -127,10 +284,10 @@ public class JMXClient {
             final Long memCollCache = (Long) connection.getAttribute(name, "CollectionCacheMem");
             echo("%25s: %10d k".formatted("Collection cache memory", memCollCache != null ? memCollCache / 1024 : 0L));
 
-            final String cols[] = { "MaxBrokers", "AvailableBrokers", "ActiveBrokers" };
+            final String[] cols = {"MaxBrokers", "AvailableBrokers", "ActiveBrokers"};
             echo("\n%17s %17s %17s".formatted(cols[0], cols[1], cols[2]));
             final AttributeList attrs = connection.getAttributes(name, cols);
-            final Object values[] = getValues(attrs, cols);
+            final Object[] values = getValues(attrs, cols);
             echo("%17d %17d %17d".formatted(
                     values[0] != null ? values[0] : 0,
                     values[1] != null ? values[1] : 0,
@@ -140,8 +297,8 @@ public class JMXClient {
             final CompositeData[] activeBrokers = activeBrokersRaw instanceof CompositeData[]
                     ? (CompositeData[]) activeBrokersRaw
                     : activeBrokersRaw instanceof TabularData
-                        ? ((TabularData) activeBrokersRaw).values().toArray(new CompositeData[0])
-                        : new CompositeData[0];
+                      ? ((TabularData) activeBrokersRaw).values().toArray(new CompositeData[0])
+                      : new CompositeData[0];
             if (activeBrokers.length > 0) {
                 echo("\nCurrently active threads:");
             }
@@ -162,18 +319,18 @@ public class JMXClient {
     public void cacheStats() {
         try {
             ObjectName name = new ObjectName("org.exist.management." + instance + ":type=CacheManager");
-            String cols[] = { "MaxTotal", "CurrentSize" };
+            String[] cols = {"MaxTotal", "CurrentSize"};
             AttributeList attrs = connection.getAttributes(name, cols);
-            Object values[] = getValues(attrs, cols);
+            Object[] values = getValues(attrs, cols);
             echo("\nCACHE [%8d pages max. / %8d pages allocated]".formatted(
                     values[0] != null ? values[0] : 0,
                     values[1] != null ? values[1] : 0));
 
             final Set<ObjectName> beans = connection.queryNames(new ObjectName("org.exist.management." + instance + ":type=CacheManager.Cache,*"), null);
-            cols = new String[] {"Type", "CacheName", "Size", "Used", "Hits", "Fails"};
+            cols = new String[]{"Type", "CacheName", "Size", "Used", "Hits", "Fails"};
             echo("%10s %20s %10s %10s %10s %10s".formatted(cols[0], "FileName", cols[2], cols[3], cols[4], cols[5]));
             final List<Object[]> cacheRows = new ArrayList<>();
-            for (ObjectName bean : beans) {
+            for (final ObjectName bean : beans) {
                 attrs = connection.getAttributes(bean, cols);
                 cacheRows.add(getValues(attrs, cols));
             }
@@ -189,14 +346,14 @@ public class JMXClient {
                         row[4] != null ? row[4] : 0L,
                         row[5] != null ? row[5] : 0L));
             }
-            
+
             echo("");
             name = new ObjectName("org.exist.management." + instance + ":type=CollectionCache");
-            cols = new String[] { "MaxCacheSize" };
+            cols = new String[]{"MaxCacheSize"};
             attrs = connection.getAttributes(name, cols);
             values = getValues(attrs, cols);
             echo("Collection Cache: %10d k max".formatted(
-                    values[0] != null ? (Long)values[0] / 1024 : 0L));
+                    values[0] != null ? (Long) values[0] / 1024 : 0L));
         } catch (final Exception e) {
             error(e);
         }
@@ -238,7 +395,8 @@ public class JMXClient {
                     }
                 }
             }
-        } catch (final MBeanException | AttributeNotFoundException | InstanceNotFoundException | ReflectionException | IOException | MalformedObjectNameException e) {
+        } catch (final MBeanException | AttributeNotFoundException | InstanceNotFoundException | ReflectionException |
+                       IOException | MalformedObjectNameException e) {
             error(e);
         }
     }
@@ -259,8 +417,9 @@ public class JMXClient {
             echo("%22s: %s".formatted("Status", status));
             echo("%22s: %s".formatted("Last check start", lastCheckStart != null ? lastCheckStart : "N/A"));
             echo("%22s: %s".formatted("Last check end", lastCheckEnd != null ? lastCheckEnd : "N/A"));
-            if (lastCheckStart != null && lastCheckEnd != null)
-                {echo("%22s: %dms".formatted("Check took", (lastCheckEnd.getTime() - lastCheckStart.getTime())));}
+            if (lastCheckStart != null && lastCheckEnd != null) {
+                echo("%22s: %dms".formatted("Check took", (lastCheckEnd.getTime() - lastCheckStart.getTime())));
+            }
 
             final CompositeData[] errors = (CompositeData[])
                     connection.getAttribute(name, "Errors");
@@ -270,7 +429,8 @@ public class JMXClient {
                     echo("%22s: %s".formatted("Description", data.get("description")));
                 }
             }
-        } catch (final MBeanException | AttributeNotFoundException | InstanceNotFoundException | ReflectionException | IOException | MalformedObjectNameException e) {
+        } catch (final MBeanException | AttributeNotFoundException | InstanceNotFoundException | ReflectionException |
+                       IOException | MalformedObjectNameException e) {
             error(e);
         }
     }
@@ -287,12 +447,12 @@ public class JMXClient {
 
             TabularData table = (TabularData)
                     connection.getAttribute(name, "RunningJobs");
-            String[] cols = new String[] { "ID", "Action", "Info" };
+            String[] cols = new String[]{"ID", "Action", "Info"};
             echo("%15s %30s %30s".formatted(cols[0], cols[1], cols[2]));
             if (table.isEmpty()) {
                 echo("(none)");
             } else {
-                for (Object value : table.values()) {
+                for (final Object value : table.values()) {
                     final CompositeData row = (CompositeData) value;
                     final CompositeData data = (CompositeData) row.get("value");
                     echo("%15s %30s %30s".formatted(data.get("id"), data.get("action"), data.get("info")));
@@ -303,18 +463,19 @@ public class JMXClient {
             echo("-----------------------------------------------");
             table = (TabularData)
                     connection.getAttribute(name, "RunningQueries");
-            cols = new String[] { "ID", "Type", "Key", "Terminating" };
+            cols = new String[]{"ID", "Type", "Key", "Terminating"};
             echo("%10s %10s %30s %s".formatted(cols[0], cols[1], cols[2], cols[3]));
             if (table.isEmpty()) {
                 echo("(none)");
             } else {
-                for (Object o : table.values()) {
+                for (final Object o : table.values()) {
                     final CompositeData row = (CompositeData) o;
                     final CompositeData data = (CompositeData) row.get("value");
                     echo("%15s %15s %30s %6s".formatted(data.get("id"), data.get("sourceType"), data.get("sourceKey"), data.get("terminating")));
                 }
             }
-        } catch (final MBeanException | AttributeNotFoundException | InstanceNotFoundException | ReflectionException | IOException | MalformedObjectNameException e) {
+        } catch (final MBeanException | AttributeNotFoundException | InstanceNotFoundException | ReflectionException |
+                       IOException | MalformedObjectNameException e) {
             error(e);
         }
     }
@@ -326,10 +487,10 @@ public class JMXClient {
      *                {@link MBeanServerConnection#getAttributes}
      * @return an array of attribute values in the same order as {@code attribs}
      */
-    private Object[] getValues(AttributeList attribs) {
+    private Object[] getValues(final AttributeList attribs) {
         final Object[] v = new Object[attribs.size()];
         for (int i = 0; i < attribs.size(); i++) {
-            v[i] = ((Attribute)attribs.get(i)).getValue();
+            v[i] = ((Attribute) attribs.get(i)).getValue();
         }
         return v;
     }
@@ -348,9 +509,9 @@ public class JMXClient {
      * @param cols    the attribute names whose values should be extracted,
      *                in the desired output order
      * @return an array of the same length as {@code cols} with each element
-     *         holding the corresponding attribute value, or {@code null} if absent
+     * holding the corresponding attribute value, or {@code null} if absent
      */
-    private Object[] getValues(AttributeList attribs, String[] cols) {
+    private Object[] getValues(final AttributeList attribs, final String[] cols) {
         final Map<String, Object> byName = new LinkedHashMap<>();
         for (int i = 0; i < attribs.size(); i++) {
             final Attribute a = (Attribute) attribs.get(i);
@@ -368,165 +529,22 @@ public class JMXClient {
      *
      * @param msg the message to print
      */
-    private void echo(String msg) {
+    private void echo(final String msg) {
         System.out.println(msg);
     }
-    
+
     /**
      * Writes an error message and stack trace to {@link System#err}.
      *
      * @param e the exception to report
      */
-    private void error(Exception e) {
+    private void error(final Exception e) {
         System.err.println("ERROR: " + e.getMessage());
         e.printStackTrace();
     }
 
-    private static final int DEFAULT_PORT = 1099;
-    private static final int DEFAULT_WAIT_TIME = 0;
-
-    /* general arguments */
-    private static final Argument<?> helpArg = helpArgument("-h", "--help");
-
-    /* connection arguments */
-    private static final Argument<String> addressArg = stringArgument("-a", "--address")
-            .description("RMI address of the server")
-            .defaultValue("localhost")
-            .build();
-    private static final Argument<Integer> portArg = integerArgument("-p", "--port")
-            .description("RMI port of the server")
-            .defaultValue(DEFAULT_PORT)
-            .build();
-    private static final Argument<String> instanceArg = stringArgument("-i", "--instance")
-            .description("The ID of the database instance to connect to")
-            .defaultValue("exist")
-            .build();
-    private static final Argument<Integer> waitArg = integerArgument("-w", "--wait")
-            .description("while displaying server statistics: keep retrieving statistics, but wait the specified number of seconds between calls.")
-            .defaultValue(DEFAULT_WAIT_TIME)
-            .build();
-
-    /* display mode options */
-    private static final Argument<Boolean> cacheDisplayArg = optionArgument("-c", "--cache")
-            .description("displays server statistics on cache and memory usage.")
-            .defaultValue(false)
-            .build();
-    private static final Argument<Boolean> locksDisplayArg = optionArgument("-l", "--locks")
-            .description("lock manager: display locking information on all threads currently waiting for a lock on a resource or collection. Useful to debug deadlocks. During normal operation, the list will usually be empty (means: no blocked threads).")
-            .defaultValue(false)
-            .build();
-
-    /* display info options */
-    private static final Argument<Boolean> dbInfoArg = optionArgument("-d", "--db")
-            .description("display general info about the db instance.")
-            .defaultValue(false)
-            .build();
-    private static final Argument<Boolean> memoryInfoArg = optionArgument("-m", "--memory")
-            .description("display info on free and total memory. Can be combined with other parameters.")
-            .defaultValue(false)
-            .build();
-    private static final Argument<Boolean> sanityCheckInfoArg = optionArgument("-s", "--report")
-            .description("retrieve sanity check report from the db")
-            .defaultValue(false)
-            .build();
-    private static final Argument<Boolean> jobsInfoArg = optionArgument("-j", "--jobs")
-            .description("retrieve sanity check report from the db")
-            .defaultValue(false)
-            .build();
-
     private enum Mode {
         STATS,
         LOCKS
-    }
-
-    /**
-     * Entry point for the {@code jmxclient.sh} command.
-     * Parses command-line arguments and delegates to {@link #process(ParsedArguments)}.
-     *
-     * @param args command-line arguments
-     */
-    @SuppressWarnings("unchecked")
-	public static void main(final String[] args) {
-        try {
-            CompatibleJavaVersionCheck.checkForCompatibleJavaVersion();
-
-            final ParsedArguments arguments = CommandLineParser
-                    .withArguments(addressArg, portArg, instanceArg, waitArg)
-                    .andArguments(cacheDisplayArg, locksDisplayArg)
-                    .andArguments(dbInfoArg, memoryInfoArg, sanityCheckInfoArg, jobsInfoArg)
-                    .andArguments(helpArg)
-                    .programName("jmxclient" + (OSUtil.isWindows() ? ".bat" : ".sh"))
-                    .parse(args);
-
-            process(arguments);
-        } catch (final StartException e) {
-            if (e.getMessage() != null && !e.getMessage().isEmpty()) {
-                System.err.println(e.getMessage());
-            }
-            System.exit(e.getErrorCode());
-        } catch (final ArgumentException e) {
-            System.out.println(e.getMessageAndUsage());
-            System.exit(SystemExitCodes.INVALID_ARGUMENT_EXIT_CODE);
-        }
-
-    }
-
-    /**
-     * Processes parsed command-line arguments: connects to the JMX server and
-     * repeatedly prints the requested statistics until the optional wait interval
-     * expires or a single pass completes.
-     *
-     * @param arguments the parsed command-line arguments
-     */
-    private static void process(final ParsedArguments arguments) {
-        final String address = arguments.get(addressArg);
-        final int port = Optional.ofNullable(arguments.get(portArg)).orElse(DEFAULT_PORT);
-        final String dbInstance = arguments.get(instanceArg);
-        final long waitTime = Optional.ofNullable(arguments.get(waitArg)).orElse(DEFAULT_WAIT_TIME);
-
-        Mode mode = Mode.STATS;
-        if(getBool(arguments, cacheDisplayArg)) {
-            mode = Mode.STATS;
-        }
-        if(getBool(arguments, locksDisplayArg)) {
-            mode = Mode.LOCKS;
-        }
-
-        final boolean displayInstance = getBool(arguments, dbInfoArg);
-        final boolean displayMem = getBool(arguments, memoryInfoArg);
-        final boolean displayReport = getBool(arguments, sanityCheckInfoArg);
-        final boolean jobReport = getBool(arguments, jobsInfoArg);
-
-        try {
-            final JMXClient stats = new JMXClient(dbInstance);
-            stats.connect(address,port);
-            stats.memoryStats();
-            while (true) {
-                switch (mode) {
-                    case STATS :
-                        stats.cacheStats();
-                        break;
-                    case LOCKS :
-                        stats.lockTable();
-                        break;
-                }
-                if (displayInstance) {stats.instanceStats();}
-                if (displayMem) {stats.memoryStats();}
-                if (displayReport) {stats.sanityReport();}
-                if (jobReport) {stats.jobReport();}
-                if (waitTime > 0) {
-                    synchronized (stats) {
-                        try {
-                            stats.wait(waitTime);
-                        } catch (final InterruptedException e) {
-                            System.err.println("INTERRUPTED: " + e.getMessage());
-                        }
-                    }
-                } else
-                    {return;}
-            }
-        } catch (final IOException e) {
-            e.printStackTrace(); 
-        } 
     }
 }

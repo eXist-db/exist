@@ -47,7 +47,7 @@ public class CacheManager implements CacheManagerMXBean {
     }
 
     @Override
-    public String getInstanceId() {
+    public String instanceId() {
         return instanceId;
     }
 

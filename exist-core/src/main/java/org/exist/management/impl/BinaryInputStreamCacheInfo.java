@@ -38,7 +38,7 @@ public class BinaryInputStreamCacheInfo {
     private final long size;
 
     public BinaryInputStreamCacheInfo(final CacheType cacheType, final long created, final Optional<Path> file,
-            final long size) {
+                                      final long size) {
         this.created = created;
         this.cacheType = cacheType;
         this.file = file;

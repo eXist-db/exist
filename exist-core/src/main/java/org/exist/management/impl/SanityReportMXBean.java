@@ -37,10 +37,10 @@ public interface SanityReportMXBean extends PerInstanceMBean {
     String getStatus();
 
     long getPingTime();
-    
+
     List<Error> getErrors();
 
     void triggerCheck(String output, String backup, String incremental);
-    
+
     long ping(boolean checkQueryEngine);
 }
