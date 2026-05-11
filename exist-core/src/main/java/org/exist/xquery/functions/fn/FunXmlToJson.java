@@ -451,7 +451,7 @@ public class FunXmlToJson extends BasicFunction {
     }
 
     /**
-     * Validate the current START_ELEMENT against the F&amp;O 3.1 §17.4.2 / §17.5.4 structural rules
+     * Validate the current START_ELEMENT against the F&O 3.1 §17.4.2 / §17.5.4 structural rules
      * and, on success, push the element's local name onto the parent-tracking stack.
      */
     private void validateStartElement(final XMLStreamReader reader, final Deque<String> elementStack) throws XPathException {
@@ -472,7 +472,7 @@ public class FunXmlToJson extends BasicFunction {
     }
 
     /**
-     * Reject non-whitespace text node children of {@code map} and {@code array} per F&amp;O 3.1 §17.4.2.
+     * Reject non-whitespace text node children of {@code map} and {@code array} per F&O 3.1 §17.4.2.
      */
     private void validateTextInContext(final String text, final String parentLocalName) throws XPathException {
         if (parentLocalName == null) {
@@ -513,7 +513,7 @@ public class FunXmlToJson extends BasicFunction {
     }
 
     /**
-     * Validate that the attributes on the current element conform to F&amp;O 3.1 §17.4.2 (the schema for JSON).
+     * Validate that the attributes on the current element conform to F&O 3.1 §17.4.2 (the schema for JSON).
      * <p>
      * Per the schema (Appendix C.2), the only allowed no-namespace attributes are:
      * <ul>
