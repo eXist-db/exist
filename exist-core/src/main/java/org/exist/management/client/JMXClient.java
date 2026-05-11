@@ -212,18 +212,25 @@ public class JMXClient {
         echo("-----------------------------------------------");
         try {
             final ObjectName name = new ObjectName("org.exist.management." + instance + ":type=LockTable");
-            @SuppressWarnings("unchecked")
-            final Map<String, Map<String, List<Map<String, ?>>>> attempting =
-                    (Map<String, Map<String, List<Map<String, ?>>>>) connection.getAttribute(name, "Attempting");
+            // Over JMX remote, Map<String, Map<LockType, List<LockModeOwner>>> is serialized as nested TabularData:
+            //   outer TabularData: key=lockId (String), value=TabularData
+            //     inner TabularData: key=LockType name (String), value=CompositeData[]
+            //       each CompositeData: fields lockMode, ownerThread, trace
+            final TabularData attempting = (TabularData) connection.getAttribute(name, "Attempting");
             if (attempting == null || attempting.isEmpty()) {
                 echo("(none)");
                 return;
             }
-            for (final Map.Entry<String, Map<String, List<Map<String, ?>>>> lockEntry : attempting.entrySet()) {
-                final String lockId = lockEntry.getKey();
-                for (final Map.Entry<String, List<Map<String, ?>>> typeEntry : lockEntry.getValue().entrySet()) {
-                    final String lockType = typeEntry.getKey();
-                    for (final Map<String, ?> modeOwner : typeEntry.getValue()) {
+            for (final Object outerObj : attempting.values()) {
+                final CompositeData outerRow = (CompositeData) outerObj;
+                final String lockId = (String) outerRow.get("key");
+                final TabularData innerTable = (TabularData) outerRow.get("value");
+                for (final Object innerObj : innerTable.values()) {
+                    final CompositeData innerRow = (CompositeData) innerObj;
+                    final String lockType = (String) innerRow.get("key");
+                    final Object[] modeOwners = (Object[]) innerRow.get("value");
+                    for (final Object modeOwnerObj : modeOwners) {
+                        final CompositeData modeOwner = (CompositeData) modeOwnerObj;
                         echo("%20s: %s".formatted("Lock id", lockId));
                         echo("%20s: %s".formatted("Lock type", lockType));
                         echo("%20s: %s".formatted("Lock mode", modeOwner.get("lockMode")));
