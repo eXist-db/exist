@@ -31,13 +31,41 @@ import org.exist.util.DatabaseConfigurationException;
  */
 public interface Agent {
 
+    /**
+     * Initialise JMX MBeans for a new database instance.
+     *
+     * @param instance the broker pool representing the database instance
+     */
     void initDBInstance(BrokerPool instance);
 
+    /**
+     * Deregister all JMX MBeans associated with a database instance that is being closed.
+     *
+     * @param instance the broker pool representing the database instance
+     */
     void closeDBInstance(BrokerPool instance);
 
+    /**
+     * Register an additional MBean with the MBean server.
+     *
+     * @param mbean the MBean to register
+     * @throws DatabaseConfigurationException if the MBean cannot be registered
+     */
     void addMBean(PerInstanceMBean mbean) throws DatabaseConfigurationException;
 
+    /**
+     * Notify the agent that the status of a background task has changed.
+     *
+     * @param instance     the broker pool representing the database instance
+     * @param actualStatus the new task status
+     */
     void changeStatus(BrokerPool instance, TaskStatus actualStatus);
 
+    /**
+     * Update the percentage-complete of a running background task.
+     *
+     * @param instance   the broker pool representing the database instance
+     * @param percentage the percentage of work completed (0–100)
+     */
     void updateStatus(BrokerPool instance, int percentage);
 }

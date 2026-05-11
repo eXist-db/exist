@@ -22,6 +22,15 @@
 
 package org.exist.management.impl;
 
+/**
+ * Extension of {@link ExistMBean} for MBeans that are scoped to a specific
+ * database instance.
+ */
 public interface PerInstanceMBean extends ExistMBean {
+    /**
+     * Get the identifier of the database instance this MBean belongs to.
+     *
+     * @return the database instance identifier
+     */
     String instanceId();
 }

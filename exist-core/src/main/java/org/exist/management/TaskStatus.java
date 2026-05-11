@@ -30,16 +30,32 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Represents the current status of a background task, including its state,
+ * the time the state last changed, an optional reason object, and a
+ * percentage-complete indicator.
+ */
 public class TaskStatus {
 
     private Status status = Status.NA;
     private Date _statusChangeTime = Calendar.getInstance().getTime();
     private Object _reason = null;
     private int _percentageDone = 0;
+    /**
+     * Create a new TaskStatus with the given initial status.
+     *
+     * @param newStatus the initial status
+     */
     public TaskStatus(final Status newStatus) {
         setStatus(newStatus);
     }
 
+    /**
+     * Reconstruct a TaskStatus from JMX composite data.
+     *
+     * @param compositeData the composite data previously produced by {@link #getCompositeData()}
+     * @return the reconstructed TaskStatus
+     */
     public static TaskStatus getTaskStatus(final CompositeDataSupport compositeData) {
 
         final TaskStatus status = new TaskStatus((Status) compositeData.get("status"));
@@ -49,24 +65,50 @@ public class TaskStatus {
         return status;
     }
 
+    /**
+     * Get the reason object associated with the current status.
+     *
+     * @return the reason, or {@code null} if none has been set
+     */
     public Object getReason() {
         return _reason;
     }
 
+    /**
+     * Set the reason object associated with the current status.
+     *
+     * @param reason the reason object (ignored if {@code null})
+     */
     public void setReason(final Object reason) {
         if (reason != null) {
             _reason = reason;
         }
     }
 
+    /**
+     * Get the current status.
+     *
+     * @return the current status
+     */
     public Status getStatus() {
         return status;
     }
 
+    /**
+     * Set the current status.
+     *
+     * @param newStatus the new status
+     */
     public void setStatus(final Status newStatus) {
         status = newStatus;
     }
 
+    /**
+     * Get a human-readable representation of the current status, including
+     * the percentage done when applicable.
+     *
+     * @return the status string
+     */
     public String getStatusString() {
         String percentageInfo = "";
         switch (status) {
@@ -85,24 +127,48 @@ public class TaskStatus {
         return this + percentageInfo;
     }
 
+    /**
+     * Get the time at which the status last changed.
+     *
+     * @return the status-change timestamp
+     */
     public Date getStatusChangeTime() {
         return _statusChangeTime;
     }
 
+    /**
+     * Record the current time as the status-change timestamp.
+     */
     public void setStatusChangeTime() {
         _statusChangeTime = Calendar.getInstance().getTime();
     }
 
+    /**
+     * Get the percentage of work completed.
+     *
+     * @return percentage done (0–100)
+     */
     public int getPercentage() {
         return _percentageDone;
     }
 
+    /**
+     * Set the percentage of work completed.
+     * Values outside the range 1–100 are silently ignored.
+     *
+     * @param percentage the percentage done (1–100)
+     */
     public void setPercentage(final int percentage) {
         if (percentage > 0 && percentage < 101) {
             _percentageDone = percentage;
         }
     }
 
+    /**
+     * Serialise this TaskStatus as JMX {@link CompositeDataSupport}.
+     *
+     * @return the composite data representation, or {@code null} if serialisation fails
+     */
     public CompositeDataSupport getCompositeData() {
         final Map<String, Object> data = new HashMap<>();
         CompositeDataSupport compositeData = null;

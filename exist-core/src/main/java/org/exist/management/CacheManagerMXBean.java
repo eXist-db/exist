@@ -23,11 +23,29 @@ package org.exist.management;
 
 import org.exist.management.impl.PerInstanceMBean;
 
+/**
+ * JMX MXBean interface exposing aggregate statistics for the eXist-db cache manager.
+ */
 public interface CacheManagerMXBean extends PerInstanceMBean {
 
+    /**
+     * Get the maximum total memory (in bytes) that may be used across all caches.
+     *
+     * @return maximum total cache memory in bytes
+     */
     long getMaxTotal();
 
+    /**
+     * Get the maximum memory (in bytes) that a single cache may use.
+     *
+     * @return maximum per-cache memory in bytes
+     */
     long getMaxSingle();
 
+    /**
+     * Get the total memory (in bytes) currently used by all caches.
+     *
+     * @return current total cache memory in bytes
+     */
     long getCurrentSize();
 }

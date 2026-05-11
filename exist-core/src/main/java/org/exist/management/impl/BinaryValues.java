@@ -36,11 +36,25 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * JMX MBean exposing information about active binary value input-stream caches
+ * for a specific database instance.
+ */
 public record BinaryValues(String instanceId) implements BinaryValuesMXBean {
+    /**
+     * Create a new BinaryValues MBean for the given broker pool.
+     *
+     * @param instanceId the broker pool representing the database instance
+     */
     public BinaryValues(final BrokerPool instanceId) {
         this(instanceId.getId());
     }
 
+    /**
+     * Return a JMX object-name query that matches all BinaryValues MBeans across all instances.
+     *
+     * @return the wildcard query string
+     */
     public static String getAllInstancesQuery() {
         return getName("*");
     }
@@ -73,7 +87,7 @@ public record BinaryValues(String instanceId) implements BinaryValuesMXBean {
                                 Optional.of(streamCache.getFilePath()), cache.getLength());
                 case null, default ->
                         result = new BinaryInputStreamCacheInfo(CacheType.MEMORY, cacheInstance.getRegistered(),
-                                Optional.empty(), cache.getLength());
+                                Optional.empty(), cache.getLength()); // DW: This might be a null cache
             }
 
             results.add(result);

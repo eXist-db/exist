@@ -30,15 +30,45 @@ import org.exist.storage.cache.Cache;
  */
 public interface CacheMXBean extends PerInstanceMBean {
 
+    /**
+     * Get the type of this cache.
+     *
+     * @return the cache type
+     */
     Cache.CacheType getType();
 
+    /**
+     * Get the total number of buffers allocated to this cache.
+     *
+     * @return total buffer count
+     */
     int getSize();
 
+    /**
+     * Get the number of buffers currently in use.
+     *
+     * @return used buffer count
+     */
     int getUsed();
 
+    /**
+     * Get the number of cache hits since the last reset.
+     *
+     * @return cache hit count
+     */
     int getHits();
 
+    /**
+     * Get the number of cache misses since the last reset.
+     *
+     * @return cache miss count
+     */
     int getFails();
 
+    /**
+     * Get the name of this cache.
+     *
+     * @return the cache name
+     */
     String getCacheName();
 }

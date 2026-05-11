@@ -24,6 +24,14 @@ package org.exist.management.impl;
 
 import java.util.List;
 
+/**
+ * JMX MXBean interface for monitoring active binary value input-stream caches.
+ */
 public interface BinaryValuesMXBean extends PerInstanceMBean {
+    /**
+     * Get information about all currently active binary input-stream cache instances.
+     *
+     * @return list of cache instance information
+     */
     List<BinaryInputStreamCacheInfo> getCacheInstances();
 }
