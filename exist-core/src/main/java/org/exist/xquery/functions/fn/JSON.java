@@ -239,13 +239,13 @@ public class JSON extends BasicFunction {
             throw new XPathException(this, ErrorCodes.XPTY0004,
                     "Option '" + key + "' must be a single xs:boolean, got cardinality " + value.getItemCount());
         }
-        final Item item = value.itemAt(0);
-        final int t = item.getType();
+        final AtomicValue atom = value.itemAt(0).atomize();
+        final int t = atom.getType();
         if (Type.subTypeOf(t, Type.BOOLEAN)) {
-            return ((BooleanValue) item).getValue();
+            return ((BooleanValue) atom).getValue();
         }
         if (t == Type.UNTYPED_ATOMIC) {
-            return ((AtomicValue) item).convertTo(Type.BOOLEAN).effectiveBooleanValue();
+            return atom.convertTo(Type.BOOLEAN).effectiveBooleanValue();
         }
         throw new XPathException(this, ErrorCodes.XPTY0004,
                 "Option '" + key + "' must be an xs:boolean, got " + Type.getTypeName(t));
@@ -272,10 +272,10 @@ public class JSON extends BasicFunction {
             throw new XPathException(this, ErrorCodes.XPTY0004,
                     "Option '" + key + "' must be a single xs:string, got cardinality " + value.getItemCount());
         }
-        final Item item = value.itemAt(0);
-        final int t = item.getType();
+        final AtomicValue atom = value.itemAt(0).atomize();
+        final int t = atom.getType();
         if (Type.subTypeOf(t, Type.STRING) || t == Type.UNTYPED_ATOMIC) {
-            return item.getStringValue();
+            return atom.getStringValue();
         }
         throw new XPathException(this, ErrorCodes.XPTY0004,
                 "Option '" + key + "' must be an xs:string, got " + Type.getTypeName(t));
