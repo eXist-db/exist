@@ -236,6 +236,117 @@ options {
             return variableName;
         }
     }
+
+    private static String dfRequireSingleChar(final AST node, final String propName, final String value) throws XPathException {
+        if (value.codePointCount(0, value.length()) != 1) {
+            throw new XPathException(node.getLine(), node.getColumn(), ErrorCodes.XQST0098,
+                "The value of decimal-format property '" + propName + "' must be a single character, but got: \"" + value + "\"");
+        }
+        return value;
+    }
+
+    private static void dfValidateZeroDigit(final AST node, final String value) throws XPathException {
+        final int cp = value.codePointAt(0);
+        if (Character.getType(cp) != Character.DECIMAL_DIGIT_NUMBER || Character.getNumericValue(cp) != 0) {
+            throw new XPathException(node.getLine(), node.getColumn(), ErrorCodes.XQST0098,
+                "The value of decimal-format property 'zero-digit' must be a Unicode digit with numeric value zero, but got: \"" + value + "\"");
+        }
+    }
+
+    private static void dfValidateDistinctPictureChars(final AST node, final DecimalFormat df) throws XPathException {
+        // The 8 single-character picture-string properties must all have distinct values
+        final int[] chars = { df.decimalSeparator, df.groupingSeparator, df.percent, df.perMille,
+                              df.zeroDigit, df.digit, df.patternSeparator, df.exponentSeparator };
+        final String[] names = { "decimal-separator", "grouping-separator", "percent", "per-mille",
+                                 "zero-digit", "digit", "pattern-separator", "exponent-separator" };
+        for (int i = 0; i < chars.length; i++) {
+            for (int j = i + 1; j < chars.length; j++) {
+                if (chars[i] == chars[j]) {
+                    throw new XPathException(node.getLine(), node.getColumn(), ErrorCodes.XQST0098,
+                        "Decimal-format properties '" + names[i] + "' and '" + names[j] +
+                        "' must have distinct values, but both are: '" + new String(Character.toChars(chars[i])) + "'");
+                }
+            }
+        }
+    }
+
+    private DecimalFormat processDecimalFormatProperties(final AST parentNode) throws XPathException {
+        // Start with UNNAMED defaults
+        int decimalSeparator = DecimalFormat.UNNAMED.decimalSeparator;
+        int exponentSeparator = DecimalFormat.UNNAMED.exponentSeparator;
+        int groupingSeparator = DecimalFormat.UNNAMED.groupingSeparator;
+        int percent = DecimalFormat.UNNAMED.percent;
+        int perMille = DecimalFormat.UNNAMED.perMille;
+        int zeroDigit = DecimalFormat.UNNAMED.zeroDigit;
+        int digit = DecimalFormat.UNNAMED.digit;
+        int patternSeparator = DecimalFormat.UNNAMED.patternSeparator;
+        String infinity = DecimalFormat.UNNAMED.infinity;
+        String nan = DecimalFormat.UNNAMED.NaN;
+        int minusSign = DecimalFormat.UNNAMED.minusSign;
+
+        AST child = parentNode.getFirstChild();
+        while (child != null) {
+            final String propName = child.getText();
+            final AST valueNode = child.getFirstChild();
+            if (valueNode == null) {
+                child = child.getNextSibling();
+                continue;
+            }
+            final String value = valueNode.getText();
+
+            switch (propName) {
+                case "decimal-separator" -> {
+                    dfRequireSingleChar(child, propName, value);
+                    decimalSeparator = value.codePointAt(0);
+                }
+                case "grouping-separator" -> {
+                    dfRequireSingleChar(child, propName, value);
+                    groupingSeparator = value.codePointAt(0);
+                }
+                case "infinity" -> infinity = value;
+                case "minus-sign" -> {
+                    dfRequireSingleChar(child, propName, value);
+                    minusSign = value.codePointAt(0);
+                }
+                case "NaN" -> nan = value;
+                case "percent" -> {
+                    dfRequireSingleChar(child, propName, value);
+                    percent = value.codePointAt(0);
+                }
+                case "per-mille" -> {
+                    dfRequireSingleChar(child, propName, value);
+                    perMille = value.codePointAt(0);
+                }
+                case "zero-digit" -> {
+                    dfRequireSingleChar(child, propName, value);
+                    dfValidateZeroDigit(child, value);
+                    zeroDigit = value.codePointAt(0);
+                }
+                case "digit" -> {
+                    dfRequireSingleChar(child, propName, value);
+                    digit = value.codePointAt(0);
+                }
+                case "pattern-separator" -> {
+                    dfRequireSingleChar(child, propName, value);
+                    patternSeparator = value.codePointAt(0);
+                }
+                case "exponent-separator" -> {
+                    dfRequireSingleChar(child, propName, value);
+                    exponentSeparator = value.codePointAt(0);
+                }
+                default -> { }
+            }
+            child = child.getNextSibling();
+        }
+
+        final DecimalFormat df = new DecimalFormat(
+            decimalSeparator, exponentSeparator, groupingSeparator,
+            percent, perMille, zeroDigit, digit,
+            patternSeparator, infinity, nan, minusSign
+        );
+        dfValidateDistinctPictureChars(parentNode, df);
+        return df;
+    }
 }
 
 xpointer [PathExpr path]
@@ -367,6 +478,8 @@ throws PermissionDeniedException, EXistException, XPathException
   boolean baseuri = false;
   boolean ordering = false;
   boolean construction = false;
+  Set declaredDecimalFormats = new HashSet();
+  boolean defaultDecimalFormatDeclared = false;
 
 }:
     (
@@ -663,6 +776,35 @@ throws PermissionDeniedException, EXistException, XPathException
                     }
                 }
             )
+        )
+        |
+        #(
+            dfDecl:DECIMAL_FORMAT_DECL (.)*
+            {
+                final QName dfQName;
+                try {
+                    dfQName = QName.parse(staticContext, dfDecl.getText(), null);
+                } catch (final IllegalQNameException iqe) {
+                    throw new XPathException(dfDecl.getLine(), dfDecl.getColumn(), ErrorCodes.XPST0081, "No namespace defined for prefix in decimal format name: " + dfDecl.getText());
+                }
+                final String dfKey = dfQName.getNamespaceURI() + ":" + dfQName.getLocalPart();
+                if (declaredDecimalFormats.contains(dfKey))
+                    throw new XPathException(dfDecl, ErrorCodes.XQST0097, "Duplicate decimal format declaration: " + dfDecl.getText());
+                declaredDecimalFormats.add(dfKey);
+                final DecimalFormat df = processDecimalFormatProperties(dfDecl);
+                context.setStaticDecimalFormat(dfQName, df);
+            }
+        )
+        |
+        #(
+            defDfDecl:DEF_DECIMAL_FORMAT_DECL (.)*
+            {
+                if (defaultDecimalFormatDeclared)
+                    throw new XPathException(defDfDecl, ErrorCodes.XQST0097, "Duplicate default decimal format declaration.");
+                defaultDecimalFormatDeclared = true;
+                final DecimalFormat df = processDecimalFormatProperties(defDfDecl);
+                context.setDefaultStaticDecimalFormat(df);
+            }
         )
         |
         functionDecl [path]

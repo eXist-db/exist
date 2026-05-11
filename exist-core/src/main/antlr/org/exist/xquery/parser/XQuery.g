@@ -219,6 +219,8 @@ imaginaryTokenDefinitions
 	PREVIOUS_ITEM
 	NEXT_ITEM
 	WINDOW_VARS
+	DECIMAL_FORMAT_DECL
+	DEF_DECIMAL_FORMAT_DECL
 	;
 
 // === XPointer ===
@@ -283,7 +285,7 @@ prolog throws XPathException
 		(
 			importDecl
 			|
-			( "declare" ( "default" | "boundary-space" | "ordering" | "construction" | "base-uri" | "copy-namespaces" | "namespace" ) ) =>
+			( "declare" ( "default" | "boundary-space" | "ordering" | "construction" | "base-uri" | "copy-namespaces" | "namespace" | "decimal-format" ) ) =>
 			s:setter
 			{
 				if(!inSetters)
@@ -338,6 +340,9 @@ setter
 			{ #setter= #(#[DEF_FUNCTION_NS_DECL, "defaultFunctionNSDecl"], deff); }
 			|
 			"order"^ "empty"! ( "greatest" | "least" )
+			|
+			"decimal-format"! ( dfDefProperty )*
+			{ #setter = #(#[DEF_DECIMAL_FORMAT_DECL, "defaultDecimalFormatDecl"], #setter); }
 		)
 		|
 		( "declare" "boundary-space" ) =>
@@ -357,7 +362,28 @@ setter
 		|
 		( "declare" "namespace" ) =>
         namespaceDecl
+		|
+		( "declare" "decimal-format" ) =>
+		decimalFormatDecl
 	)
+	;
+
+decimalFormatDecl
+{ String eq = null; }
+:
+	decl:"declare"! "decimal-format"! eq=eqName! ( dfDefProperty )*
+	{
+		#decimalFormatDecl = #(#[DECIMAL_FORMAT_DECL, eq], #decimalFormatDecl);
+		#decimalFormatDecl.copyLexInfo(#decl);
+	}
+	;
+
+dfDefProperty
+:
+	( "decimal-separator"^ | "grouping-separator"^ | "infinity"^ | "minus-sign"^
+	| "NaN"^ | "percent"^ | "per-mille"^ | "zero-digit"^ | "digit"^
+	| "pattern-separator"^ | "exponent-separator"^ )
+	EQ! STRING_LITERAL
 	;
 
 preserveMode
@@ -2367,6 +2393,30 @@ reservedKeywords returns [String name]
 	"next" { name = "next"; }
 	|
 	"when" { name = "when"; }
+	|
+	"decimal-format" { name = "decimal-format"; }
+	|
+	"decimal-separator" { name = "decimal-separator"; }
+	|
+	"grouping-separator" { name = "grouping-separator"; }
+	|
+	"infinity" { name = "infinity"; }
+	|
+	"minus-sign" { name = "minus-sign"; }
+	|
+	"NaN" { name = "NaN"; }
+	|
+	"percent" { name = "percent"; }
+	|
+	"per-mille" { name = "per-mille"; }
+	|
+	"zero-digit" { name = "zero-digit"; }
+	|
+	"digit" { name = "digit"; }
+	|
+	"pattern-separator" { name = "pattern-separator"; }
+	|
+	"exponent-separator" { name = "exponent-separator"; }
 	;
 
 

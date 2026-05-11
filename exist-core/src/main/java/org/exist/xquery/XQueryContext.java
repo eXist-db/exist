@@ -430,6 +430,9 @@ public class XQueryContext implements BinaryValueManager, Context {
      * HTTP context.
      */
     private @Nullable HttpContext httpContext = null;
+    /**
+     * Sentinel QName for the default (unnamed) decimal format per XQuery 3.1 §4.10.
+     */
     private static final QName UNNAMED_DECIMAL_FORMAT = new QName("__UNNAMED__", Function.BUILTIN_FUNCTION_NS);
 
     private final Map<QName, DecimalFormat> staticDecimalFormats = hashMap(Tuple(UNNAMED_DECIMAL_FORMAT, DecimalFormat.UNNAMED));
@@ -3027,6 +3030,10 @@ public class XQueryContext implements BinaryValueManager, Context {
      */
     public void setStaticDecimalFormat(final QName qnDecimalFormat, final DecimalFormat decimalFormat) {
         staticDecimalFormats.put(qnDecimalFormat, decimalFormat);
+    }
+
+    public void setDefaultStaticDecimalFormat(final DecimalFormat decimalFormat) {
+        staticDecimalFormats.put(UNNAMED_DECIMAL_FORMAT, decimalFormat);
     }
 
     public Map<String, Sequence> getCachedUriCollectionResults() {

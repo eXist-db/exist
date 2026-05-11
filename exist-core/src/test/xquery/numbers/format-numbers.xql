@@ -317,3 +317,103 @@ declare
 function fd:exponent-fails($number as xs:double, $picture as xs:string) {
     format-number($number, $picture)
 };
+
+(:~
+ : Named decimal-format with European conventions (comma as decimal separator, dot as grouping separator).
+ :)
+declare
+    %test:assertEquals("1.234,50")
+function fd:named-decimal-format-eu() {
+    util:eval('
+        declare namespace local = "http://local";
+        declare decimal-format local:eu decimal-separator = "," grouping-separator = ".";
+        format-number(1234.5, "#.##0,00", "local:eu")
+    ')
+};
+
+(:~
+ : Default decimal-format with European conventions.
+ :)
+declare
+    %test:assertEquals("1.234,50")
+function fd:default-decimal-format-eu() {
+    util:eval('
+        declare default decimal-format decimal-separator = "," grouping-separator = ".";
+        format-number(1234.5, "#.##0,00")
+    ')
+};
+
+(:~
+ : Custom NaN property.
+ :)
+declare
+    %test:assertEquals("not a number")
+function fd:custom-nan() {
+    util:eval('
+        declare default decimal-format NaN = "not a number";
+        format-number(number(''NaN''), "#.00")
+    ')
+};
+
+(:~
+ : Custom infinity property.
+ :)
+declare
+    %test:assertEquals("INFINITY")
+function fd:custom-infinity() {
+    util:eval('
+        declare default decimal-format infinity = "INFINITY";
+        format-number(1 div 0e0, "#.00")
+    ')
+};
+
+(:~
+ : Error: duplicate named decimal-format declaration.
+ :)
+declare
+    %test:assertError("XQST0097")
+function fd:error-duplicate-named-decimal-format() {
+    util:eval('
+        declare namespace local = "http://local";
+        declare decimal-format local:eu decimal-separator = "," grouping-separator = ".";
+        declare decimal-format local:eu decimal-separator = "," grouping-separator = ".";
+        format-number(1234.5, "#.##0,00", "local:eu")
+    ')
+};
+
+(:~
+ : Error: duplicate default decimal-format declaration.
+ :)
+declare
+    %test:assertError("XQST0097")
+function fd:error-duplicate-default-decimal-format() {
+    util:eval('
+        declare default decimal-format decimal-separator = "," grouping-separator = ".";
+        declare default decimal-format decimal-separator = "," grouping-separator = ".";
+        format-number(1234.5, "#.##0,00")
+    ')
+};
+
+(:~
+ : Error: non-distinct property values (decimal-separator and grouping-separator are the same).
+ :)
+declare
+    %test:assertError("XQST0098")
+function fd:error-non-distinct-properties() {
+    util:eval('
+        declare default decimal-format decimal-separator = "." grouping-separator = ".";
+        format-number(1234.5, "#.##0.00")
+    ')
+};
+
+(:~
+ : Error: invalid zero-digit value.
+ :)
+declare
+    %test:assertError("XQST0098")
+function fd:error-invalid-zero-digit() {
+    util:eval('
+        declare default decimal-format zero-digit = "A";
+        format-number(1234.5, "#,##0.00")
+    ')
+};
