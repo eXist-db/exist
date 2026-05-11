@@ -1,0 +1,57 @@
+extensions/indexes/lucene/src/test/java/xquery/lucene/LuceneIndexingTests.java
+  s_b371cd7261149b::t_f7639db270125a 35-36
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/AbstractFieldConfig.java
+  s_b371cd7261149b::t_1f3b030d36444e 233-235,238-243,245-259
+  s_b371cd7261149b::t_f0590227cf0818 86
+  s_b371cd7261149b::t_fbcaf29605b888 153-215,218-231,236-237
+  s_b371cd7261149b::t_b24dd302d7cb49 244
+  s_b371cd7261149b::t_50f76c61e39f82 28
+  s_b371cd7261149b::t_35923e17898ef7 260-279,281-282,285
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneConfig.java
+  s_b371cd7261149b::t_6ef5ed43fb0393 117-118
+  s_b371cd7261149b::t_1fd4357e2872f7 24-25
+  s_b371cd7261149b::t_a300bbb7f49db0 39
+  s_b371cd7261149b::t_ed498ef939868b 643-655
+extensions/indexes/lucene/src/test/xquery/lucene/self-axis-index.xqm
+  s_b371cd7261149b::t_305d02bd7185f4 71,73
+  s_b371cd7261149b::t_23719039c2ced1 218
+  s_b371cd7261149b::t_650b771af13324 36,65,69,107,110-111
+  s_b371cd7261149b::t_c30473b702b216 74
+  s_b371cd7261149b::t_714660f6155c80 44
+  s_b371cd7261149b::t_c82776a6ca9ad7 66
+  s_b371cd7261149b::t_d869e6f454b6c9 72
+  s_b371cd7261149b::t_1c53c9a7687ea2 38-42,45-49,52,55,83,87,171,221
+  s_b371cd7261149b::t_52d81c4e5aa1b5 43
+  s_b371cd7261149b::t_19f37eabc04010 101-106,108-109,112-119,121-133,135-139,141-147,149-153,155-161,163,165-169,173-179,184-185,209-211,217,222-225,228
+  s_b371cd7261149b::t_51ed0b0f78a0aa 189-196,198-208
+  s_b371cd7261149b::t_8605ca35deb4f9 1-21,30-35,37,51,53-54,56-59,61,64,68,70,75-78,86,88,90-91,181-183
+  s_b371cd7261149b::t_bb7595b01c90e1 60
+  s_b371cd7261149b::t_bc0254d8aba5f8 24-25,29
+  s_b371cd7261149b::t_626d3379cdd531 140,154,170,220
+  s_b371cd7261149b::t_dc42e256516d38 62-63
+  s_b371cd7261149b::t_471584c1fa10d5 197
+  s_b371cd7261149b::t_5f8e8b2b4eccad 26-28
+  s_b371cd7261149b::t_7787037af0aff4 134,148,162,180,186,219
+  s_b371cd7261149b::t_f0fcb622396c05 212-216
+  s_b371cd7261149b::t_7a9ca98a8780d9 164,172
+  s_b371cd7261149b::t_ab3d02e4c4b73d 226
+  s_b371cd7261149b::t_da9e9d4edf3b92 89
+  s_b371cd7261149b::t_dca0bb8fa949fa 227
+  s_b371cd7261149b::t_0e08168398d002 120
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "b0f767bfdee86eab6687292b534df42816b9abcf",
+  "prompts": {},
+  "sessions": {
+    "s_b371cd7261149b": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "6972b017-56e3-4c37-af24-6e90cb4988df",
+        "model": "composer-2"
+      },
+      "human_author": null
+    }
+  }
+}
