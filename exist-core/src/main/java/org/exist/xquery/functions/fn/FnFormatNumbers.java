@@ -844,7 +844,8 @@ public class FnFormatNumbers extends BasicFunction {
             }
         }
 
-        adjustedNumber = new DecimalValue(this, adjustedNumber.convertTo(Type.DECIMAL).toJavaObject(BigDecimal.class).multiply(BigDecimal.ONE, MathContext.DECIMAL64)).round(new IntegerValue(this, subPicture.getMaximumFractionalPartSize())).abs();
+        // Preserve full BigDecimal precision (XQTS numberformat63/64 require >16 sig digits for xs:decimal/xs:integer inputs); a previous MathContext.DECIMAL64 cap truncated to 16. xs:double inputs already arrive via BigDecimal.valueOf, so the canonical representation is preserved.
+        adjustedNumber = new DecimalValue(this, adjustedNumber.convertTo(Type.DECIMAL).toJavaObject(BigDecimal.class)).round(new IntegerValue(this, subPicture.getMaximumFractionalPartSize())).abs();
 
         /* we can now start formatting for display */
 
