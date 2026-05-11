@@ -29,6 +29,7 @@ import org.junit.runner.RunWith;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 
 /**
  * @author <a href="mailto:piotr@ideanest.com">Piotr Kaminski</a>
@@ -177,5 +178,70 @@ public class DurationTest extends AbstractTimeRelatedTestCase {
         checkMinMaxFails(dv3, dv1);
         checkMinMaxFails(dv2, dv3);
         checkMinMaxFails(dv3, dv2);
+    }
+
+    // --- Cross-type canonicalisation (issue #6327) ---
+    // op:same-key requires equal hashCodes for equal-value durations across xs:duration
+    // family subtypes; the bifurcan map in MapType keys on AtomicValue::hashCode and the
+    // map-contains-017 XQTS test exercises this path.
+
+    @Test
+    public void hashCodeEqualForDurationAndYearMonthDuration() throws XPathException {
+        final DurationValue d = new DurationValue("P1Y");
+        final YearMonthDurationValue ymd = new YearMonthDurationValue("P12M");
+        assertEquals(d.hashCode(), ymd.hashCode());
+        assertEquals(ymd.hashCode(), d.hashCode());
+    }
+
+    @Test
+    public void hashCodeEqualForDurationAndDayTimeDuration() throws XPathException {
+        final DurationValue d = new DurationValue("P1D");
+        final DayTimeDurationValue dtd = new DayTimeDurationValue("PT24H");
+        assertEquals(d.hashCode(), dtd.hashCode());
+    }
+
+    @Test
+    public void hashCodeEqualForZeroDurations() throws XPathException {
+        final DurationValue d = new DurationValue("P0D");
+        final YearMonthDurationValue ymd = new YearMonthDurationValue("P0M");
+        final DayTimeDurationValue dtd = new DayTimeDurationValue("PT0S");
+        assertEquals(d.hashCode(), ymd.hashCode());
+        assertEquals(d.hashCode(), dtd.hashCode());
+        assertEquals(ymd.hashCode(), dtd.hashCode());
+    }
+
+    @Test
+    public void hashCodeEqualForNegativeDurations() throws XPathException {
+        final DurationValue d = new DurationValue("-P1Y");
+        final YearMonthDurationValue ymd = new YearMonthDurationValue("-P12M");
+        assertEquals(d.hashCode(), ymd.hashCode());
+    }
+
+    @Test
+    public void hashCodeDifferentForUnequalDurations() throws XPathException {
+        // sanity: unequal durations should generally hash differently
+        final DurationValue p1y = new YearMonthDurationValue("P1Y");
+        final DurationValue p2y = new YearMonthDurationValue("P2Y");
+        assertNotEquals(p1y.hashCode(), p2y.hashCode());
+    }
+
+    @Test
+    public void equalsCommutativeAcrossDurationSubtypes() throws XPathException {
+        final DurationValue d = new DurationValue("P1Y");
+        final YearMonthDurationValue ymd = new YearMonthDurationValue("P12M");
+        assertEquals(d, ymd);
+        assertEquals(ymd, d);
+    }
+
+    @Test
+    public void hashCodeDeterministicAcrossInstances() throws XPathException {
+        // 100-iter loop exposes any non-determinism (e.g., identity-hash leaks)
+        final int expected = new DurationValue("P1Y").hashCode();
+        for (int i = 0; i < 100; i++) {
+            final DurationValue d = new DurationValue("P1Y");
+            final YearMonthDurationValue ymd = new YearMonthDurationValue("P12M");
+            assertEquals("iter " + i + ": DurationValue", expected, d.hashCode());
+            assertEquals("iter " + i + ": YearMonthDurationValue", expected, ymd.hashCode());
+        }
     }
 }

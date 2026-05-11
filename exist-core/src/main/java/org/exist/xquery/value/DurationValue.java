@@ -33,6 +33,7 @@ import javax.xml.datatype.Duration;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
+import java.util.Objects;
 
 /**
  * @author <a href="mailto:piotr@ideanest.com">Piotr Kaminski</a>
@@ -455,9 +456,21 @@ public class DurationValue extends ComputableValue {
         if (this == obj) {
             return true;
         }
-        if (DurationValue.class.isAssignableFrom(obj.getClass())) {
-            return duration.equals(((DurationValue) obj).duration);
+        if (obj == null || !DurationValue.class.isAssignableFrom(obj.getClass())) {
+            return false;
         }
-        return false;
+        final DurationValue other = (DurationValue) obj;
+        return monthsValueSigned().equals(other.monthsValueSigned())
+                && secondsValueSigned().compareTo(other.secondsValueSigned()) == 0;
+    }
+
+    // Hash on canonical (signed total months, signed total seconds) so equal-value instances
+    // across xs:duration / xs:yearMonthDuration / xs:dayTimeDuration share an op:same-key bucket.
+    @Override
+    public int hashCode() {
+        final BigInteger months = monthsValueSigned();
+        BigDecimal seconds = secondsValueSigned();
+        seconds = seconds.signum() == 0 ? BigDecimal.ZERO : seconds.stripTrailingZeros();
+        return Objects.hash(months, seconds);
     }
 }

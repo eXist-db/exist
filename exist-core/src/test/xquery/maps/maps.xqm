@@ -994,6 +994,38 @@ function mt:map-merge-2-empty-options-map() {
     return $expected?Su eq $actual?Su
 };
 
+(: test for issue https://github.com/eXist-db/exist/issues/6327 -
+   xs:duration vs xs:yearMonthDuration must compare equal under op:same-key
+   regardless of which subtype is used as the search key. :)
+declare
+    %test:assertTrue
+function mt:duration-vs-yearMonthDuration-contains() {
+    map:contains(map{xs:duration('P1Y'):"x"}, xs:yearMonthDuration('P12M'))
+};
+
+declare
+    %test:assertTrue
+function mt:yearMonthDuration-vs-duration-contains() {
+    map:contains(map{xs:yearMonthDuration('P12M'):"x"}, xs:duration('P1Y'))
+};
+
+declare
+    %test:assertTrue
+function mt:duration-vs-dayTimeDuration-contains() {
+    map:contains(map{xs:duration('P1D'):"x"}, xs:dayTimeDuration('PT24H'))
+};
+
+declare
+    %test:assertEquals("Wednesday")
+function mt:duration-key-lookup-mirrors-XQTS-map-contains-017() {
+    let $m := map{
+        1:"Sunday",2:"Monday",3:"Tuesday",
+        xs:duration('P1Y'):"Wednesday",
+        5:"Thursday",6:"Friday",7:"Saturday"
+    }
+    return $m(xs:yearMonthDuration('P12M'))
+};
+
 (: test for issue https://github.com/eXist-db/exist/issues/5685 :)
 declare
     %test:assertEquals("<ul><li>Scotland<ul><li>Highlands<ul><li>Fort William</li><li>Inverness</li></ul></li><li>Lowlands<ul><li>Glasgow</li></ul></li></ul></li></ul>")
