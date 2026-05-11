@@ -485,21 +485,6 @@ public class JMXClient {
     }
 
     /**
-     * Extracts attribute values from an {@link AttributeList} in positional order.
-     *
-     * @param attribs the attribute list returned by
-     *                {@link MBeanServerConnection#getAttributes}
-     * @return an array of attribute values in the same order as {@code attribs}
-     */
-    private Object[] getValues(final AttributeList attribs) {
-        final Object[] v = new Object[attribs.size()];
-        for (int i = 0; i < attribs.size(); i++) {
-            v[i] = ((Attribute) attribs.get(i)).getValue();
-        }
-        return v;
-    }
-
-    /**
      * Extracts attribute values from an {@link AttributeList} by name, returning
      * a result array aligned to {@code cols}.
      * <p>
