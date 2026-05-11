@@ -1080,7 +1080,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
      *
      * @param node node to provide document fragment
      * @param receiver document builder
-     * @throws SAXException DOCUMENT ME!
+     * @throws SAXException if a SAX error occurs.
      */
     public void copyTo(final NodeImpl node, final DocumentBuilderReceiver receiver) throws SAXException {
         copyTo(node, receiver, false);
@@ -1201,7 +1201,7 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
      *
      * This method creates a new copy of the document contents and expands all reference nodes.
      *
-     * @throws DOMException DOCUMENT ME!
+     * @throws DOMException if a DOM error occurs.
      */
     @Override
     public void expand() throws DOMException {
@@ -1291,9 +1291,9 @@ public class DocumentImpl extends NodeImpl<DocumentImpl> implements Document {
     }
 
     /**
-     * DOCUMENT ME!
+     * Copies the contents of another document to this document.
      *
-     * @param newDoc
+     * @param newDoc the document to copy from.
      */
     private void copyDocContents(final DocumentImpl newDoc) {
         namePool = newDoc.namePool;

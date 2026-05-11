@@ -353,7 +353,7 @@ public class XmldbURI implements Comparable<Object>, Serializable, Cloneable {
      * This returns a proper hierarchical URI - the xmldb scheme is trimmed from the beginning. The scheme will be the
      * instance name, and all other fields will be populated as would be expected from a hierarchical URI.
      *
-     * @return DOCUMENT ME!
+     * @return a hierarchical {@link URI} representation.
      * @see #getXmldbURI
      */
     public URI getURI() {
@@ -363,7 +363,7 @@ public class XmldbURI implements Comparable<Object>, Serializable, Cloneable {
     /**
      * This returns an xmldb uri. This is the most generic sort of uri - the only fields set in the uri are scheme and schemeSpecificPart
      *
-     * @return DOCUMENT ME!
+     * @return an xmldb {@link URI} representation.
      */
     public URI getXmldbURI() {
         return URI.create(encodedCollectionPath);

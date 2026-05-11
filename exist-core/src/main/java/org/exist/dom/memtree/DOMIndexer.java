@@ -83,6 +83,14 @@ public class DOMIndexer {
     private final CommentImpl comment = new CommentImpl((Expression) null);
     private final ProcessingInstructionImpl pi = new ProcessingInstructionImpl(null);
 
+    /**
+     * Constructs a new DOMIndexer.
+     *
+     * @param broker      the database broker used for storage operations
+     * @param transaction the current transaction
+     * @param doc         the in-memory source document to be persisted
+     * @param targetDoc   the persistent target document to store nodes into
+     */
     public DOMIndexer(final DBBroker broker, final Txn transaction, final DocumentImpl doc,
                       final org.exist.dom.persistent.DocumentImpl targetDoc) {
         this.broker = broker;
@@ -98,7 +106,9 @@ public class DOMIndexer {
     }
 
     /**
-     * Scan the DOM tree once to determine its structure.
+     * Scans the DOM tree once to determine its structure and sets up the target document type.
+     *
+     * @throws EXistException if an error occurs during scanning
      */
     public void scan() throws EXistException {
         // Creates a dummy DOCTYPE for the temporary persistent wrapper document.
@@ -108,7 +118,8 @@ public class DOMIndexer {
     }
 
     /**
-     * Store the nodes.
+     * Stores all nodes from the in-memory document into the persistent target document,
+     * wrapping them in a temporary root element.
      */
     public void store() {
         //Create a wrapper element as root node
@@ -137,6 +148,9 @@ public class DOMIndexer {
 
     /**
      * Stores a subtree rooted at {@code rootNodeNr} using depth-first traversal.
+     *
+     * @param rootNodeNr  the node number of the subtree root in the in-memory document
+     * @param currentPath the current node path, updated as the traversal descends and ascends
      */
     private void storeSubtree(final int rootNodeNr, final NodePath currentPath) {
         int currentNodeNr = rootNodeNr;
@@ -169,6 +183,9 @@ public class DOMIndexer {
 
     /**
      * Handles storing a node when first encountered during traversal.
+     *
+     * @param nodeNr      the index of the in-memory node to store
+     * @param currentPath the current node path, updated when descending into element nodes
      */
     private void startNode(final int nodeNr, final NodePath currentPath) {
         switch(doc.nodeKind[nodeNr]) {
@@ -261,6 +278,9 @@ public class DOMIndexer {
 
     /**
      * Initializes a persistent element from the in-memory node metadata.
+     *
+     * @param nodeNr the index of the in-memory element node
+     * @param elem   the persistent element to initialize
      */
     private void initElement(final int nodeNr, final ElementImpl elem) {
         final short attribs = (short) doc.getAttributesCountFor(nodeNr);
@@ -274,6 +294,12 @@ public class DOMIndexer {
         }
     }
 
+    /**
+     * Collects namespace declarations associated with the given in-memory element node.
+     *
+     * @param nodeNr the index of the in-memory element node
+     * @return a map of namespace prefix to namespace URI, or {@code null} if the node has no namespace declarations
+     */
     private Map<String, String> getNamespaces(final int nodeNr) {
         int ns = doc.alphaLen[nodeNr];
 
@@ -299,6 +325,11 @@ public class DOMIndexer {
 
     /**
      * Stores all attributes belonging to the given in-memory element node.
+     *
+     * @param nodeNr the index of the in-memory element node whose attributes are to be stored
+     * @param elem   the persistent element to which the attributes are appended
+     * @param path   the current node path of the element
+     * @throws DOMException if an error occurs while appending an attribute to the element
      */
     private void storeAttributes(final int nodeNr, final ElementImpl elem, final NodePath path) throws DOMException {
         int attr = doc.alpha[nodeNr];
@@ -319,6 +350,9 @@ public class DOMIndexer {
 
     /**
      * Handles closing logic for a node when traversal moves back up.
+     *
+     * @param nodeNr      the index of the in-memory node being closed
+     * @param currentPath the current node path, updated when closing element nodes
      */
     private void endNode(final int nodeNr, final NodePath currentPath) {
         if(doc.nodeKind[nodeNr] == Node.ELEMENT_NODE) {
@@ -329,6 +363,11 @@ public class DOMIndexer {
         }
     }
 
+    /**
+     * Updates the reference to the previously stored node, releasing reusable inline nodes when appropriate.
+     *
+     * @param previous the node that was most recently stored, or {@code null} if there is no previous node
+     */
     private void setPrevious(final StoredNode previous) {
         if(prevNode != null && isReusableInlineNodeType(prevNode.getNodeType())) {
             if(previous == null || prevNode.getNodeType() != previous.getNodeType()) {
@@ -338,6 +377,12 @@ public class DOMIndexer {
         prevNode = previous;
     }
 
+    /**
+     * Returns whether the given node type is a reusable inline node type that can be cleared and reused.
+     *
+     * @param nodeType the DOM node type constant
+     * @return {@code true} if the node type is text, comment, or processing instruction; {@code false} otherwise
+     */
     private boolean isReusableInlineNodeType(final short nodeType) {
         return nodeType == Node.TEXT_NODE
                 || nodeType == Node.COMMENT_NODE

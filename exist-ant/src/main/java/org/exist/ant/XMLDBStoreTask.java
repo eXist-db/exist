@@ -324,7 +324,7 @@ public class XMLDBStoreTask extends AbstractXMLDBTask {
     /**
      * This method allows more than one Fileset per store task!
      *
-     * @param set DOCUMENT ME!
+     * @param set the file set to add.
      */
     public void addFileset(final FileSet set) {
         if (fileSetList == null) {

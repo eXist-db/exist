@@ -162,11 +162,11 @@ public class SystemExport {
      *
      * @param targetDir   the output directory or file to which data will be written. Output will be written to a zip file if target ends with
      *                    .zip.
-     * @param incremental DOCUMENT ME!
-     * @param maxInc      DOCUMENT ME!
-     * @param zip         DOCUMENT ME!
+     * @param incremental if {@code true}, perform an incremental backup based on the last backup found in the target directory.
+     * @param maxInc      the maximum number of incremental backups in a sequence before a full backup is triggered.
+     * @param zip         if {@code true}, the backup will be compressed into a ZIP file.
      * @param errorList   a list of {@link ErrorReport} objects as returned by methods in {@link ConsistencyCheck}.
-     * @return DOCUMENT ME!
+     * @return the path to the created backup file or directory, or {@code null} if an error occurred.
      */
     public Path export(final String targetDir, boolean incremental, final int maxInc, final boolean zip, final List<ErrorReport> errorList) {
         Path backupFile = null;
@@ -262,6 +262,13 @@ public class SystemExport {
     }
 
 
+    /**
+     * Checks if a document is reported as damaged in the error list.
+     *
+     * @param doc the document to check.
+     * @param errorList the list of error reports.
+     * @return {@code true} if the document is damaged, {@code false} otherwise.
+     */
     private static boolean isDamaged(final DocumentImpl doc, final List<ErrorReport> errorList) {
         if (errorList == null) {
             return (false);
@@ -277,6 +284,13 @@ public class SystemExport {
     }
 
 
+    /**
+     * Checks if a collection is reported as damaged in the error list.
+     *
+     * @param collection the collection to check.
+     * @param errorList the list of error reports.
+     * @return {@code true} if the collection is damaged, {@code false} otherwise.
+     */
     @SuppressWarnings("unused")
     private static boolean isDamaged(final Collection collection, final List<ErrorReport> errorList) {
         if (errorList == null) {
@@ -293,6 +307,13 @@ public class SystemExport {
     }
 
 
+    /**
+     * Checks if a child collection is reported as damaged in the error list.
+     *
+     * @param uri the URI of the child collection to check.
+     * @param errorList the list of error reports.
+     * @return {@code true} if the child collection is damaged, {@code false} otherwise.
+     */
     private static boolean isDamagedChild(final XmldbURI uri, final List<ErrorReport> errorList) {
         if (errorList == null) {
             return (false);
@@ -358,13 +379,14 @@ public class SystemExport {
      *
      * @param current    the collection
      * @param output     the output writer
-     * @param date
-     * @param prevBackup DOCUMENT ME!
+     * @param date       if not null, only resources modified after this date will be exported (used for incremental backups).
+     * @param prevBackup the descriptor of the previous backup (used for incremental backups).
      * @param errorList  a list of {@link org.exist.backup.ErrorReport} objects as returned by methods in {@link org.exist.backup.ConsistencyCheck}
      * @param docs       a document set to keep track of all written documents.
-     * @throws IOException
-     * @throws SAXException
-     * @throws TerminatedException DOCUMENT ME!
+     * @throws IOException if a write error occurs.
+     * @throws SAXException if a SAX error occurs.
+     * @throws TerminatedException if the export process is terminated.
+     * @throws PermissionDeniedException if access to the collection is denied.
      */
     private void export(final Collection current, final BackupWriter output, final Date date, final BackupDescriptor prevBackup, final List<ErrorReport> errorList, final MutableDocumentSet docs) throws IOException, SAXException, TerminatedException, PermissionDeniedException {
 //        if( callback != null ) {
@@ -471,6 +493,20 @@ public class SystemExport {
     }
 
 
+    /**
+     * Exports a single document.
+     *
+     * @param output the backup writer.
+     * @param date if not null, only export the document if it was modified after this date.
+     * @param prevBackup the previous backup descriptor.
+     * @param serializer the SAX serializer to write metadata.
+     * @param docsCount the total number of documents in the collection.
+     * @param count the current document index.
+     * @param doc the document to export.
+     * @throws IOException if a write error occurs.
+     * @throws SAXException if a SAX error occurs.
+     * @throws TerminatedException if the export process is terminated.
+     */
     private void exportDocument(final BackupWriter output, final Date date, final BackupDescriptor prevBackup, final SAXSerializer serializer, final int docsCount, final int count, final DocumentImpl doc) throws IOException, SAXException, TerminatedException {
         if (callback != null) {
             callback.startDocument(doc.getFileURI().toString(), count, docsCount);
@@ -667,6 +703,14 @@ public class SystemExport {
         }
     }
 
+    /**
+     * Generates a unique filename in the given directory by appending a timestamp and, if necessary, a version number.
+     *
+     * @param base the base filename.
+     * @param extension the file extension.
+     * @param dir the directory where the file should be created.
+     * @return the unique path.
+     */
     public static Path getUniqueFile(final String base, final String extension, final String dir) {
         final SimpleDateFormat creationDateFormat = new SimpleDateFormat(DataBackup.DATE_FORMAT_PICTURE);
         final String filename = base + '-' + creationDateFormat.format(Calendar.getInstance().getTime());
@@ -680,6 +724,12 @@ public class SystemExport {
     }
 
 
+    /**
+     * Returns the total number of collections in the database.
+     *
+     * @return the collection count.
+     * @throws TerminatedException if the process is terminated.
+     */
     public int getCollectionCount() throws TerminatedException {
         if (collectionCount == -1) {
             AccountImpl.getSecurityProperties().enableCheckPasswords(false);
@@ -695,13 +745,36 @@ public class SystemExport {
         return (collectionCount);
     }
 
+    /**
+     * Callback interface to report the status of the export process.
+     */
     public interface StatusCallback {
+        /**
+         * Called when the export of a collection starts.
+         *
+         * @param path the path of the collection.
+         * @throws TerminatedException if the process should be terminated.
+         */
         void startCollection(String path) throws TerminatedException;
 
 
+        /**
+         * Called when the export of a document starts.
+         *
+         * @param name the name of the document.
+         * @param current the current document index.
+         * @param count the total number of documents.
+         * @throws TerminatedException if the process should be terminated.
+         */
         void startDocument(String name, int current, int count) throws TerminatedException;
 
 
+        /**
+         * Called when an error occurs during export.
+         *
+         * @param message the error message.
+         * @param exception the exception that occurred, or {@code null}.
+         */
         void error(String message, Throwable exception);
     }
 

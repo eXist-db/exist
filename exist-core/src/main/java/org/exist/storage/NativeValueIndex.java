@@ -684,13 +684,13 @@ public class NativeValueIndex implements ContentLoadingObserver {
      *
      * @param comparison The type of comparison the search is performing
      * @param docs       The documents to search for matches within
-     * @param contextSet DOCUMENT ME!
-     * @param axis       DOCUMENT ME!
-     * @param qnames     DOCUMENT ME!
+     * @param contextSet the current context node set.
+     * @param axis       the axis to search on (e.g. child, descendant).
+     * @param qnames     a list of qualified names to search for.
      * @param value      right hand comparison value
-     * @param result     DOCUMENT ME!
-     * @return DOCUMENT ME!
-     * @throws TerminatedException DOCUMENT ME!
+     * @param result     the node set to store the search results in.
+     * @return the result node set.
+     * @throws TerminatedException if the process is terminated.
      */
     private NodeSet findAll(final XQueryWatchDog watchDog, final Comparison comparison, final DocumentSet docs, final NodeSet contextSet, final int axis, final List<QName> qnames, final Indexable value, final NodeSet result) throws TerminatedException {
         final SearchCallback cb = new SearchCallback(docs, contextSet, result, axis == NodeSet.ANCESTOR);
@@ -780,21 +780,21 @@ public class NativeValueIndex implements ContentLoadingObserver {
     /**
      * Regular expression search.
      *
-     * @param docs               DOCUMENT ME!
-     * @param contextSet         DOCUMENT ME!
-     * @param axis               DOCUMENT ME!
-     * @param expr               DOCUMENT ME!
-     * @param qnames             DOCUMENT ME!
+     * @param docs               the documents to search in.
+     * @param contextSet         the current context node set.
+     * @param axis               the axis to search on.
+     * @param expr               the regular expression to match.
+     * @param qnames             the qualified names to search for.
      * @param type               like type argument for {@link org.exist.storage.RegexMatcher} constructor
      * @param flags              like flags argument for {@link org.exist.storage.RegexMatcher} constructor
-     * @param caseSensitiveQuery DOCUMENT ME!
-     * @param result             DOCUMENT ME!
-     * @param collator           DOCUMENT ME!
+     * @param caseSensitiveQuery whether the query is case sensitive.
+     * @param result             the node set to store results in.
+     * @param collator           the collator to use for comparisons.
      * @param truncation         The type of string truncation to apply
-     * @param watchDog  the watchdog
-     * @return DOCUMENT ME!
-     * @throws TerminatedException DOCUMENT ME!
-     * @throws EXistException      DOCUMENT ME!
+     * @param watchDog           the watchdog
+     * @return the result node set.
+     * @throws TerminatedException if the process is terminated.
+     * @throws EXistException      if a database error occurs.
      */
     public NodeSet matchAll(final XQueryWatchDog watchDog, final DocumentSet docs, final NodeSet contextSet, final int axis, final String expr, final List<QName> qnames, final int type, final int flags, final boolean caseSensitiveQuery, final NodeSet result, final Collator collator, final StringTruncationOperator truncation) throws TerminatedException, EXistException {
         // if the match expression starts with a char sequence, we restrict the index scan to entries starting with

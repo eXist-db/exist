@@ -54,8 +54,8 @@ public class SystemTaskJobImpl implements SystemTaskJob, StatefulJob {
     /**
      * Constructor for Creating a new SystemTask Job.
      *
-     * @param  jobName  DOCUMENT ME!
-     * @param  task     DOCUMENT ME!
+     * @param  jobName the name of the job.
+     * @param  task the system task to schedule.
      */
     public SystemTaskJobImpl(final String jobName, final SystemTask task) {
         this.task = task;

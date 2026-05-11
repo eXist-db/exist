@@ -594,12 +594,12 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
      * Optimized implementation, which can be applied if the left operand returns a node set. In this case, the left expression is executed first. All
      * matching context nodes are then passed to the right expression.
      *
-     * @param   nodes            DOCUMENT ME!
-     * @param   contextSequence  DOCUMENT ME!
+     * @param   nodes            the node set to compare.
+     * @param   contextSequence  the current context sequence.
      *
-     * @return  DOCUMENT ME!
+     * @return  the result of the comparison.
      *
-     * @throws  XPathException  DOCUMENT ME!
+     * @throws  XPathException  if an error occurs.
      */
     protected Sequence nodeSetCompare( NodeSet nodes, Sequence contextSequence ) throws XPathException
     {
@@ -680,11 +680,11 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
      * Optimized implementation: first checks if a range index is defined on the nodes in the left argument.
      * Otherwise, fall back to {@link #nodeSetCompare(NodeSet, Sequence)}.
      *
-     * @param   contextSequence  DOCUMENT ME!
+     * @param   contextSequence  the current context sequence.
      *
-     * @return  DOCUMENT ME!
+     * @return  the result of the comparison.
      *
-     * @throws  XPathException  DOCUMENT ME!
+     * @throws  XPathException  if an error occurs.
      */
     protected Sequence quickNodeSetCompare( Sequence contextSequence ) throws XPathException
     {
@@ -1145,13 +1145,13 @@ public class GeneralComparison extends BinaryOp implements Optimizable, IndexUse
 
 
     /**
-     * DOCUMENT ME!
+     * Checks if an atomic value is an empty string.
      *
-     * @param   lv
+     * @param   lv the atomic value to check.
      *
-     * @return  Whether or not <code>lv</code> is an empty string
+     * @return  Whether or not {@code lv} is an empty string
      *
-     * @throws  XPathException
+     * @throws  XPathException if an error occurs.
      */
     @SuppressWarnings( "unused" )
     private static boolean isEmptyString( AtomicValue lv ) throws XPathException

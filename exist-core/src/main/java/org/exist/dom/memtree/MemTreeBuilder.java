@@ -88,7 +88,7 @@ public class MemTreeBuilder {
     /**
      * Returns the created document object.
      *
-     * @return DOCUMENT ME!
+     * @return the created document.
      */
     public DocumentImpl getDocument() {
         return doc;
@@ -116,7 +116,7 @@ public class MemTreeBuilder {
     /**
      * Start building the document.
      *
-     * @param explicitCreation DOCUMENT ME!
+     * @param explicitCreation if {@code true}, an explicit document node will be created.
      */
     public void startDocument(final boolean explicitCreation) {
         this.doc = new DocumentImpl(expression, context, explicitCreation);
@@ -133,11 +133,11 @@ public class MemTreeBuilder {
     /**
      * Create a new element.
      *
-     * @param namespaceURI DOCUMENT ME!
-     * @param localName    DOCUMENT ME!
-     * @param qname        DOCUMENT ME!
-     * @param attributes   DOCUMENT ME!
-     * @return the node number of the created element
+     * @param namespaceURI the namespace URI of the element.
+     * @param localName    the local name of the element.
+     * @param qname        the qualified name of the element.
+     * @param attributes   the attributes of the element.
+     * @return the node number of the created element.
      */
     public int startElement(final String namespaceURI, String localName, final String qname, final Attributes attributes) {
         final int prefixIdx = qname.indexOf(':');
@@ -167,9 +167,9 @@ public class MemTreeBuilder {
     /**
      * Create a new element.
      *
-     * @param qname      DOCUMENT ME!
-     * @param attributes DOCUMENT ME!
-     * @return the node number of the created element
+     * @param qname      the qualified name of the element.
+     * @param attributes the attributes of the element.
+     * @return the node number of the created element.
      */
     public int startElement(final QName qname, final Attributes attributes) {
         final int nodeNr = doc.addNode(Node.ELEMENT_NODE, level, qname);
@@ -297,10 +297,10 @@ public class MemTreeBuilder {
     /**
      * Create a new text node.
      *
-     * @param ch    DOCUMENT ME!
-     * @param start DOCUMENT ME!
-     * @param len   DOCUMENT ME!
-     * @return the node number of the created node
+     * @param ch    the character array containing the text.
+     * @param start the start position in the array.
+     * @param len   the number of characters to use.
+     * @return the node number of the created node.
      */
     public int characters(final char[] ch, final int start, final int len) {
         final int lastNode = doc.getLastNode();
@@ -342,8 +342,8 @@ public class MemTreeBuilder {
     /**
      * Create a new text node.
      *
-     * @param s DOCUMENT ME!
-     * @return the node number of the created node, -1 if no node was created
+     * @param s the character sequence containing the text.
+     * @return the node number of the created node, -1 if no node was created.
      */
     public int characters(final CharSequence s) {
         if(s == null) {

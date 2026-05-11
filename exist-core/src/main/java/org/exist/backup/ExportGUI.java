@@ -56,7 +56,7 @@ import static se.softhouse.jargo.Arguments.helpArgument;
 
 
 /**
- * DOCUMENT ME!
+ * GUI for database consistency check and export tool.
  *
  * @author wolf
  */

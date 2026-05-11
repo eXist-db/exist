@@ -32,7 +32,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * DOCUMENT ME!
+ * A sequence of in-memory nodes.
  */
 public class InMemoryNodeSet extends ValueSequence {
 
