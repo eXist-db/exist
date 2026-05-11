@@ -750,6 +750,63 @@ return
         <expected>1 2 3 4 5 6 7 8 9 10</expected>
     </test>
     <test output="text">
+        <task>fn:function-lookup captures focus: fn:node-name#0</task>
+        <code><![CDATA[xquery version "3.0";
+let $doc := document { <root/> }
+return
+    $doc/root/function-lookup(xs:QName('fn:node-name'), 0)()]]></code>
+        <expected>root</expected>
+    </test>
+    <test output="text">
+        <task>fn:function-lookup captures focus: xqts-002 shape</task>
+        <code><![CDATA[xquery version "3.0";
+let $doc := document { <root/> }
+return
+    ($doc/root)/function-lookup(xs:QName('fn:node-name'), 0)()]]></code>
+        <expected>root</expected>
+    </test>
+    <test output="text">
+        <task>fn:function-lookup captures focus: fn:string#0</task>
+        <code><![CDATA[xquery version "3.0";
+let $doc := document { <root><child>hello</child></root> }
+return
+    $doc/root/child/function-lookup(xs:QName('fn:string'), 0)()]]></code>
+        <expected>hello</expected>
+    </test>
+    <test output="text">
+        <task>fn:function-lookup captures focus: fn:lang#1</task>
+        <code><![CDATA[xquery version "3.0";
+let $doc := document { <root xml:lang="en"/> }
+return
+    $doc/root/function-lookup(xs:QName('fn:lang'), 1)('en')]]></code>
+        <expected>true</expected>
+    </test>
+    <test output="text">
+        <task>fn:function-lookup captures focus: fn:has-children#0</task>
+        <code><![CDATA[xquery version "3.0";
+let $doc := document { <root><child/></root> }
+return
+    $doc/function-lookup(xs:QName('fn:has-children'), 0)()]]></code>
+        <expected>true</expected>
+    </test>
+    <test output="text">
+        <task>fn:function-lookup: 1-arg fn:id captures focus, returns empty when no match</task>
+        <code><![CDATA[xquery version "3.0";
+let $doc := document { <root/> }
+return
+    count($doc/function-lookup(xs:QName('fn:id'), 1)('nope'))]]></code>
+        <expected>0</expected>
+    </test>
+    <test output="text">
+        <task>fn:function-lookup: named function reference still has no captured focus</task>
+        <code><![CDATA[xquery version "3.0";
+declare namespace ex="http://exist-db.org/xquery/ex";
+declare function ex:add($a, $b) { $a + $b };
+let $f := function-lookup(xs:QName('ex:add'), 2)
+return $f(2, 3)]]></code>
+        <expected>5</expected>
+    </test>
+    <test output="text">
         <task>Closure test: redefined variable</task>
         <code><![CDATA[xquery version "3.0";
 

@@ -94,7 +94,21 @@ public class FunOnFunctions extends BasicFunction {
                     }
                     throw e;
                 }
-			    return call == null ? Sequence.EMPTY_SEQUENCE : new FunctionReference(this, call);
+			    if (call == null) {
+			        return Sequence.EMPTY_SEQUENCE;
+			    }
+			    final FunctionReference ref = new FunctionReference(this, call);
+			    // F&O 3.1 section 16.1.1: the static and dynamic context of the
+			    // call to fn:function-lookup forms part of the closure of the
+			    // returned function. Capture the focus so that context-dependent
+			    // built-ins (fn:position#0, fn:node-name#0, fn:lang#1, ...) run
+			    // against the focus that was in scope at the lookup site.
+			    final org.exist.xquery.value.Item capturedItem =
+			            (contextSequence != null && !contextSequence.isEmpty())
+			                    ? contextSequence.itemAt(0)
+			                    : null;
+			    ref.setCapturedContext(contextSequence, capturedItem);
+			    return ref;
 			} else if (isCalledAs("function-name")) {
 				final FunctionReference ref = (FunctionReference) args[0].itemAt(0);
 				final QName qname = ref.getSignature().getName();

@@ -508,6 +508,13 @@ public class FunctionFactory {
                 newSignature.setArgumentTypes(newParamArray);
 
 		final UserDefinedFunction func = new UserDefinedFunction(context, newSignature);
+		// This wrapper exists to lift a built-in Function into a FunctionCall
+		// so that it can be used as a function item. Built-ins may be
+		// context-dependent (fn:node-name#0, fn:position#0, fn:lang#1, ...),
+		// so let the wrapped body see the caller's focus. See F&O 3.1
+		// section 16.1.1 for the closure-of-context rule that motivates this
+		// for fn:function-lookup and named function references.
+		func.setPropagateContextToBody(true);
 		for (final QName varName: variables) {
 			func.addVariable(varName);
 		}

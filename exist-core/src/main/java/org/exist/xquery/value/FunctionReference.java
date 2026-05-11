@@ -43,6 +43,15 @@ public class FunctionReference extends AtomicValue implements AutoCloseable {
 
     protected final FunctionCall functionCall;
 
+    // Focus captured at the time of fn:function-lookup. When non-null, this
+    // focus is substituted for the function body's evaluation, while the
+    // function's argument expressions are still evaluated in the outer focus.
+    // See F&O 3.1 section 16.1.1 (fn:function-lookup), which states that the
+    // implementation of a returned context-dependent built-in is associated
+    // with the dynamic context of the call to fn:function-lookup.
+    private Sequence capturedContextSequence;
+    private Item capturedContextItem;
+
     public FunctionReference(final FunctionCall functionCall) {
         this(null, functionCall);
     }
@@ -50,6 +59,15 @@ public class FunctionReference extends AtomicValue implements AutoCloseable {
     public FunctionReference(final Expression expression, final FunctionCall functionCall) {
         super(expression);
         this.functionCall = functionCall;
+    }
+
+    public void setCapturedContext(final Sequence contextSequence, final Item contextItem) {
+        this.capturedContextSequence = contextSequence;
+        this.capturedContextItem = contextItem;
+    }
+
+    private boolean hasCapturedContext() {
+        return capturedContextSequence != null || capturedContextItem != null;
     }
 
     public FunctionCall getCall() {
@@ -110,7 +128,7 @@ public class FunctionReference extends AtomicValue implements AutoCloseable {
      * @throws XPathException in case of dynamic error
      */
     public Sequence eval(Sequence contextSequence) throws XPathException {
-        return functionCall.eval(contextSequence, null);
+        return eval(contextSequence, null);
     }
 
     /**
@@ -122,6 +140,18 @@ public class FunctionReference extends AtomicValue implements AutoCloseable {
      * @throws XPathException in case of dynamic error
      */
     public Sequence eval(final Sequence contextSequence, final Item contextItem) throws XPathException {
+        if (hasCapturedContext()) {
+            // Per F&O 3.1 section 16.1.1, when fn:function-lookup returns a
+            // context-dependent built-in, the function body must see the focus
+            // captured at lookup time. Argument expressions, however, still
+            // evaluate against the outer focus of the dynamic call site.
+            final int n = functionCall.getArgumentCount();
+            final Sequence[] seq = new Sequence[n];
+            for (int i = 0; i < n; i++) {
+                seq[i] = functionCall.getArgument(i).eval(contextSequence, contextItem);
+            }
+            return functionCall.evalFunction(capturedContextSequence, capturedContextItem, seq);
+        }
         return functionCall.eval(contextSequence, contextItem);
     }
 
@@ -135,6 +165,9 @@ public class FunctionReference extends AtomicValue implements AutoCloseable {
      * @throws XPathException in case of dynamic error
      */
     public Sequence evalFunction(Sequence contextSequence, Item contextItem, Sequence[] seq) throws XPathException {
+        if (hasCapturedContext()) {
+            return functionCall.evalFunction(capturedContextSequence, capturedContextItem, seq);
+        }
         return functionCall.evalFunction(contextSequence, contextItem, seq);
     }
 
