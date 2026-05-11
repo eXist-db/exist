@@ -1,0 +1,38 @@
+exist-core/src/main/java/org/exist/dom/persistent/NodeProxy.java
+  s_1962010ff61c1b::t_f770c1d7d34a08 589
+  s_1962010ff61c1b::t_536e058a97f57a 594-596
+extensions/indexes/lucene/src/test/xquery/lucene/ft-attr-context.xql
+  s_1962010ff61c1b::t_a2dc8e61565b18 162,165,170,173
+extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/LuceneMatchListenerTest.java
+  s_1962010ff61c1b::t_46e5c0ec90db23 75-88,116-149
+  s_1962010ff61c1b::t_629a6233e9d4e9 452-476
+  s_1962010ff61c1b::t_a2308024ffbbb3 490-494
+  s_1962010ff61c1b::t_342ca070dc9190 482-489,495-503
+extensions/indexes/range/src/main/java/org/exist/indexing/range/RangeIndexWorker.java
+  s_1962010ff61c1b::t_fd410683ecafec 851-852,854
+  s_1962010ff61c1b::t_5b61d69a4fd26e 856
+exist-core/src/test/java/org/exist/dom/persistent/NodeProxyTest.java
+  s_1962010ff61c1b::t_7141e560231527 25,97-98,100-106,108-117,137-146
+  s_1962010ff61c1b::t_a9ac98c3c075db 120
+  s_1962010ff61c1b::t_d7639edc246fb8 32,99,107,118-119,123-136
+  s_1962010ff61c1b::t_fc82bcd8ae2943 121-122,147-157
+  s_1962010ff61c1b::t_d8866a04f33a30 31
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndexWorker.java
+  s_1962010ff61c1b::t_6de47d70d001c0 1551-1552,1554
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "e827602230aaf6f43f714c5918334de933171cde",
+  "prompts": {},
+  "sessions": {
+    "s_1962010ff61c1b": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "00ae7258-3d6b-4fca-abba-b081bffabf37",
+        "model": "composer-2-fast"
+      },
+      "human_author": null
+    }
+  }
+}
