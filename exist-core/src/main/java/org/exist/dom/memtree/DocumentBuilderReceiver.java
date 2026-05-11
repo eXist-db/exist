@@ -206,10 +206,96 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
     @Override
     public void attribute(final QName qname, final String value) throws SAXException {
         try {
-            builder.addAttribute(checkNS(false, qname), value);
+            // Attribute namespace handling must be independent of the checkNS
+            // flag: when an attribute is copied into a new element constructor
+            // (XQuery 3.1 §3.9.1.3, default copy-namespaces preserve), the
+            // attribute's prefix MUST be rebound if it conflicts with an
+            // in-scope binding on the new element, and its (prefix, URI)
+            // mapping MUST be reflected as a namespace node on that element.
+            final QName resolved = qname.hasNamespace()
+                    ? resolveAttributeQName(qname)
+                    : qname;
+            builder.addAttribute(resolved, value);
         } catch(final DOMException e) {
             throw new SAXException(e.getMessage(), e);
         }
+    }
+
+    /**
+     * Resolves a namespaced attribute QName against the current in-scope
+     * namespaces, rebinding to a freshly generated prefix on prefix-to-URI
+     * conflict, and emitting a namespace node on the parent element to make
+     * the binding visible to the serializer.
+     */
+    private QName resolveAttributeQName(final QName qname) {
+        final XQueryContext context = builder.getContext();
+        final String uri = qname.getNamespaceURI();
+        String prefix = qname.getPrefix();
+        if (prefix == null || prefix.isEmpty()) {
+            // Attribute with namespace but no prefix: pick an existing prefix
+            // mapped to this URI, or generate a fresh one.
+            final String existing = context == null ? null : context.getInScopePrefix(uri);
+            if (existing != null && !existing.isEmpty()) {
+                prefix = existing;
+            } else {
+                prefix = generatePrefix(context, null);
+                if (context != null) {
+                    context.declareInScopeNamespace(prefix, uri);
+                }
+                emitNamespaceNode(prefix, uri);
+                return new QName(qname.getLocalPart(), uri, prefix);
+            }
+        } else if (context != null) {
+            final String boundUri = context.getInScopeNamespace(prefix);
+            if (boundUri == null) {
+                // Prefix is not in scope -> declare it
+                context.declareInScopeNamespace(prefix, uri);
+            } else if (!boundUri.equals(uri)) {
+                // Prefix is bound to a different URI -> generate a fresh prefix
+                String reuse = context.getInScopePrefix(uri);
+                if (reuse == null || reuse.isEmpty()) {
+                    prefix = generatePrefix(context, null);
+                    context.declareInScopeNamespace(prefix, uri);
+                } else {
+                    prefix = reuse;
+                }
+            }
+        }
+        emitNamespaceNode(prefix, uri);
+        return new QName(qname.getLocalPart(), uri, prefix);
+    }
+
+    /**
+     * Adds an xmlns:prefix=uri namespace node to the current element when not
+     * already declared there. No-op for the {@code xml} prefix or when the
+     * parent node is not an element.
+     */
+    private void emitNamespaceNode(final String prefix, final String uri) {
+        if (prefix == null || prefix.isEmpty() || XMLConstants.XML_NS_PREFIX.equals(prefix)) {
+            return;
+        }
+        final DocumentImpl doc = builder.getDocument();
+        final int parent = doc.getLastNode();
+        if (parent < 0 || doc.getNodeType(parent) != org.w3c.dom.Node.ELEMENT_NODE) {
+            return;
+        }
+        final QName parentName = doc.nodeName[parent];
+        if (parentName != null && prefix.equals(parentName.getPrefix())
+                && uri.equals(parentName.getNamespaceURI())) {
+            return;
+        }
+        final int firstNs = doc.alphaLen[parent];
+        if (firstNs >= 0) {
+            for (int ns = firstNs;
+                 ns < doc.nextNamespace && doc.namespaceParent[ns] == parent;
+                 ns++) {
+                final QName nsName = doc.namespaceCode[ns];
+                if (nsName != null && prefix.equals(nsName.getLocalPart())) {
+                    return;
+                }
+            }
+        }
+        builder.namespaceNode(prefix, uri);
     }
 
     @Override
