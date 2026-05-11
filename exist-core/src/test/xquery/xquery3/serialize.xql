@@ -876,7 +876,7 @@ function ser:serialize-html-5-raw-text-elements-body() {
 };
 
 declare
-    %test:assertEquals('<!DOCTYPE html> <html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><style>ul > li { color:red; }</style><script>if (a < b) foo()</script></head><body></body></html>')
+    %test:assertEquals('<!DOCTYPE html> <html><head><meta charset="UTF-8"><style>ul > li { color:red; }</style><script>if (a < b) foo()</script></head><body></body></html>')
 function ser:serialize-html-5-raw-text-elements-head() {
     <html>
         <head>
@@ -890,7 +890,7 @@ function ser:serialize-html-5-raw-text-elements-head() {
 };
 
 declare
-    %test:assertEquals('<!DOCTYPE html> <html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>XML &amp;gt; JSON</title></head><body><textarea>if (a &amp;lt; b) foo()</textarea></body></html>')
+    %test:assertEquals('<!DOCTYPE html> <html><head><meta charset="UTF-8"><title>XML &amp;gt; JSON</title></head><body><textarea>if (a &amp;lt; b) foo()</textarea></body></html>')
 function ser:serialize-html-5-needs-escape-elements() {
     <html>
         <head>
