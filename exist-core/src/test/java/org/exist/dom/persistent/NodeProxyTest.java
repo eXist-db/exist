@@ -22,16 +22,20 @@
 
 package org.exist.dom.persistent;
 
+import org.exist.numbering.NodeId;
+import org.exist.xquery.Expression;
 import org.exist.xquery.value.SequenceIterator;
 import org.junit.Test;
 import org.w3c.dom.Node;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 public class NodeProxyTest {
 
     @Test
-    public void iterate_loop() {
+    public void iterateLoop() {
         final NodeProxy mockNodeProxy = new NodeProxy(null, null, null, Node.ELEMENT_NODE, -1);
 
         final SequenceIterator it = mockNodeProxy.iterate();
@@ -45,7 +49,7 @@ public class NodeProxyTest {
     }
 
     @Test
-    public void iterate_skip_loop() {
+    public void iterateSkipLoop() {
         final NodeProxy mockNodeProxy = new NodeProxy(null, null, null, Node.ELEMENT_NODE, -1);
         final SequenceIterator it = mockNodeProxy.iterate();
 
@@ -65,7 +69,7 @@ public class NodeProxyTest {
     }
 
     @Test
-    public void iterate_loop_skip_loop() {
+    public void iterateLoopSkipLoop() {
         final NodeProxy mockNodeProxy = new NodeProxy(null, null, null, Node.ELEMENT_NODE, -1);
         final SequenceIterator it = mockNodeProxy.iterate();
 
@@ -90,5 +94,79 @@ public class NodeProxyTest {
         }
 
         assertEquals(0, count);
+    }
+
+    @Test
+    public void deepCopyContextClearsExistingContextWhenSourceHasNone() {
+        final NodeProxy target = new NodeProxy(null, null, NodeId.DOCUMENT_NODE, Node.ELEMENT_NODE, -1);
+        final NodeProxy existingContextNode = new NodeProxy(null, null, NodeId.ROOT_NODE, Node.ELEMENT_NODE, -1);
+        target.addContextNode(42, existingContextNode);
+
+        final NodeProxy sourceWithoutContext = new NodeProxy(null, null, NodeId.ROOT_NODE, Node.ELEMENT_NODE, -1);
+        target.deepCopyContext(sourceWithoutContext);
+
+        assertNull(target.getContext());
+    }
+
+    @Test
+    public void deepCopyContextWithContextIdAddsContextIdEvenWhenSourceHasNoContext() {
+        final NodeProxy target = new NodeProxy(null, null, NodeId.DOCUMENT_NODE, Node.ELEMENT_NODE, -1);
+        final NodeProxy existingContextNode = new NodeProxy(null, null, NodeId.ROOT_NODE, Node.ELEMENT_NODE, -1);
+        target.addContextNode(7, existingContextNode);
+
+        final NodeProxy sourceWithoutContext = new NodeProxy(null, null, NodeId.END_OF_DOCUMENT, Node.ELEMENT_NODE, -1);
+        target.deepCopyContext(sourceWithoutContext, 99);
+
+        final ContextItem context = target.getContext();
+        assertEquals(2, countContextItems(context));
+        assertNotNull(findContextItem(context, 99));
+        assertEquals(NodeId.END_OF_DOCUMENT, findContextItem(context, 99).getNode().getNodeId());
+    }
+
+    @Test
+    public void propagatePredicateContextFromNoContextIdSkipsWhenSourceHasNoContext() {
+        final NodeProxy target = new NodeProxy(null, null, NodeId.DOCUMENT_NODE, Node.ELEMENT_NODE, -1);
+        final NodeProxy existingContextNode = new NodeProxy(null, null, NodeId.ROOT_NODE, Node.ELEMENT_NODE, -1);
+        target.addContextNode(42, existingContextNode);
+
+        final NodeProxy sourceWithoutContext = new NodeProxy(null, null, NodeId.END_OF_DOCUMENT, Node.ELEMENT_NODE, -1);
+        NodeProxy.propagatePredicateContextFrom(target, sourceWithoutContext, Expression.NO_CONTEXT_ID);
+
+        assertEquals(42, target.getContext().getContextId());
+    }
+
+    @Test
+    public void deepCopyContextSelfCopyIsNoOp() {
+        final NodeProxy node = new NodeProxy(null, null, NodeId.DOCUMENT_NODE, Node.ELEMENT_NODE, -1);
+        final NodeProxy existingContextNode = new NodeProxy(null, null, NodeId.ROOT_NODE, Node.ELEMENT_NODE, -1);
+        node.addContextNode(42, existingContextNode);
+
+        node.deepCopyContext(node);
+
+        final ContextItem context = node.getContext();
+        assertEquals(1, countContextItems(context));
+        assertEquals(42, context.getContextId());
+        assertEquals(NodeId.ROOT_NODE, context.getNode().getNodeId());
+    }
+
+    private int countContextItems(final ContextItem contextItem) {
+        int count = 0;
+        ContextItem current = contextItem;
+        while (current != null) {
+            count++;
+            current = current.getNextDirect();
+        }
+        return count;
+    }
+
+    private ContextItem findContextItem(final ContextItem contextItem, final int contextId) {
+        ContextItem current = contextItem;
+        while (current != null) {
+            if (current.getContextId() == contextId) {
+                return current;
+            }
+            current = current.getNextDirect();
+        }
+        return null;
     }
 }

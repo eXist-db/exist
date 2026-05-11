@@ -45,10 +45,7 @@ public class ChildSelector implements NodeSelector {
         if (contextNode == null)
            {return null;}
         final NodeProxy p = new NodeProxy(contextNode.getExpression(), doc, nodeId);
-        if (Expression.NO_CONTEXT_ID != contextId) {
-            p.deepCopyContext(contextNode, contextId);
-        } else
-            {p.copyContext(contextNode);}
+        NodeProxy.propagatePredicateContextFrom(p, contextNode, contextId);
         return p;
     }
 }

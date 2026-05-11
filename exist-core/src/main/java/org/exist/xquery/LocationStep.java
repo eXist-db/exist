@@ -1026,7 +1026,7 @@ public class LocationStep extends Step {
                         if (Expression.NO_CONTEXT_ID != contextId) {
                             ancestor.addContextNode(contextId, current);
                         } else {
-                            ancestor.copyContext(current);
+                            NodeProxy.propagatePredicateContextFrom(ancestor, current, contextId);
                         }
                         ancestor.addMatches(current);
                         result.add(ancestor);
@@ -1047,7 +1047,7 @@ public class LocationStep extends Step {
                                 if (Expression.NO_CONTEXT_ID != contextId) {
                                     ancestor.addContextNode(contextId, current);
                                 } else {
-                                    ancestor.copyContext(current);
+                                    NodeProxy.propagatePredicateContextFrom(ancestor, current, contextId);
                                 }
                                 ancestor.addMatches(current);
                                 result.add(ancestor);
@@ -1294,7 +1294,7 @@ public class LocationStep extends Step {
 
                     if (Expression.IGNORE_CONTEXT != contextId) {
                         if (Expression.NO_CONTEXT_ID == contextId) {
-                            sibling.copyContext(start);
+                            NodeProxy.propagatePredicateContextFrom(sibling, start, contextId);
                         } else {
                             sibling.addContextNode(contextId, start);
                         }
@@ -1349,7 +1349,7 @@ public class LocationStep extends Step {
                             StaXUtil.streamType2DOM(reader.getEventType()), ((EmbeddedXMLStreamReader) reader).getCurrentPosition());
                     if (Expression.IGNORE_CONTEXT != contextId) {
                         if (Expression.NO_CONTEXT_ID == contextId) {
-                            sibling.copyContext(referenceNode);
+                            NodeProxy.propagatePredicateContextFrom(sibling, referenceNode, contextId);
                         } else {
                             sibling.addContextNode(contextId, referenceNode);
                         }
@@ -1399,7 +1399,7 @@ public class LocationStep extends Step {
                         StaXUtil.streamType2DOM(reader.getEventType()), ((EmbeddedXMLStreamReader) reader).getCurrentPosition());
                 if (Expression.IGNORE_CONTEXT != contextId) {
                     if (Expression.NO_CONTEXT_ID == contextId) {
-                        proxy.copyContext(referenceNode);
+                        NodeProxy.propagatePredicateContextFrom(proxy, referenceNode, contextId);
                     } else {
                         proxy.addContextNode(contextId, referenceNode);
                     }
@@ -1444,7 +1444,7 @@ public class LocationStep extends Step {
                         StaXUtil.streamType2DOM(reader.getEventType()), ((EmbeddedXMLStreamReader) reader).getCurrentPosition());
                 if (Expression.IGNORE_CONTEXT != contextId) {
                     if (Expression.NO_CONTEXT_ID == contextId) {
-                        proxy.copyContext(referenceNode);
+                        NodeProxy.propagatePredicateContextFrom(proxy, referenceNode, contextId);
                     } else {
                         proxy.addContextNode(contextId, referenceNode);
                     }

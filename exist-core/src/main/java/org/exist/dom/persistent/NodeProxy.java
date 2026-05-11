@@ -586,10 +586,15 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
     /**
      * Copy the context items from the given node into this node.
      * Context items are used to keep track of context nodes inside predicates.
+     * This node's existing context chain is always cleared first; if the source
+     * has no context, the result is an empty context ({@code null}).
      *
      * @param node a <code>NodeProxy</code> value
      */
     public void deepCopyContext(final NodeProxy node) {
+        if (node == this) {
+            return;
+        }
         context = null;
         if(node.context == null) {
             return;
@@ -618,6 +623,33 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
             deepCopyContext(node);
         }
         addContextNode(addContextId, node);
+    }
+
+    /**
+     * Merge predicate context from {@code source} onto {@code target} when an index
+     * (Lucene, range, structural, …) materializes or re-parents {@link NodeProxy} instances.
+     * <ul>
+     *   <li>If {@code contextId != Expression.NO_CONTEXT_ID}, always delegates to
+     *       {@link #deepCopyContext(NodeProxy, int)} so predicate tracking is preserved even when
+     *       {@code source} has no prior {@link ContextItem} chain.</li>
+     *   <li>Otherwise delegates to {@link #copyContext(NodeProxy)} only when
+     *       {@code source.getContext() != null}, avoiding a spurious clear of {@code target}'s
+     *       chain when {@code source} is synthetic.</li>
+     * </ul>
+     *
+     * @param target    node receiving context (often newly promoted, e.g. an ancestor)
+     * @param source    node whose context is copied from (hit or context-set member)
+     * @param contextId active predicate context id, or {@link Expression#NO_CONTEXT_ID}
+     */
+    public static void propagatePredicateContextFrom(
+            final NodeProxy target,
+            final NodeProxy source,
+            final int contextId) {
+        if (Expression.NO_CONTEXT_ID != contextId) {
+            target.deepCopyContext(source, contextId);
+        } else if (source.getContext() != null) {
+            target.copyContext(source);
+        }
     }
 
     /**

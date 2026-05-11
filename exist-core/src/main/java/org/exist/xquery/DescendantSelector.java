@@ -45,10 +45,7 @@ public class DescendantSelector implements NodeSelector {
         final NodeProxy contextNode = context.parentWithChild(doc, nodeId, false, false);
         if (contextNode == null)
             {return null;}
-        if (Expression.NO_CONTEXT_ID != contextId) {
-            p.deepCopyContext(contextNode, contextId);
-        } else
-            {p.copyContext(contextNode);}
+        NodeProxy.propagatePredicateContextFrom(p, contextNode, contextId);
         return p;
     }
 }

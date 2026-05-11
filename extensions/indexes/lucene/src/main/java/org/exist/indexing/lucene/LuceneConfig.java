@@ -21,6 +21,8 @@
  */
 package org.exist.indexing.lucene;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.*;
 
 import org.apache.logging.log4j.LogManager;
@@ -34,6 +36,7 @@ import org.exist.storage.NodePath;
 import org.exist.storage.NodePath2;
 import org.exist.util.Configuration;
 import org.exist.util.DatabaseConfigurationException;
+import org.exist.xmldb.XmldbURI;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -111,6 +114,8 @@ public class LuceneConfig {
     	this.vectorStore = other.vectorStore;
     	this.analyzers = other.analyzers;
     	this.facetsConfig = other.facetsConfig;
+    	this.imports = other.imports;
+    	this.queryParser = other.queryParser;
     }
 
     /**
@@ -635,7 +640,19 @@ public class LuceneConfig {
                 throw new DatabaseConfigurationException("Attribute prefix for <module> required");
             }
 
-            this.at = config.getAttribute(ATTR_MODULE_AT);
+            final String rawAt = config.getAttribute(ATTR_MODULE_AT);
+            if (rawAt.isEmpty()) {
+                throw new DatabaseConfigurationException("Attribute at for <module> required");
+            }
+            this.at = AbstractFieldConfig.resolveModuleImportAt(config, rawAt);
+            try {
+                if (!new URI(rawAt).isAbsolute() && !this.at.startsWith(XmldbURI.XMLDB_URI_PREFIX)) {
+                    throw new DatabaseConfigurationException(
+                            "Could not resolve relative module at=\"" + rawAt + "\" for Lucene index (no config collection context)");
+                }
+            } catch (final URISyntaxException e) {
+                throw new DatabaseConfigurationException("Invalid module at value: " + rawAt, e);
+            }
         }
     }
 }

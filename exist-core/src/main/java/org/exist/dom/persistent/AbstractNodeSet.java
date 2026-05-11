@@ -358,7 +358,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
                 if (Expression.NO_CONTEXT_ID != contextId) {
                     parent.addContextNode(contextId, current);
                 } else {
-                    parent.copyContext(current);
+                    NodeProxy.propagatePredicateContextFrom(parent, current, contextId);
                 }
                 parent.addMatches(current);
                 parents.add(parent);
@@ -393,7 +393,7 @@ public abstract class AbstractNodeSet extends AbstractSequence implements NodeSe
                     if (Expression.NO_CONTEXT_ID != contextId) {
                         parent.addContextNode(contextId, current);
                     } else {
-                        parent.copyContext(current);
+                        NodeProxy.propagatePredicateContextFrom(parent, current, contextId);
                     }
                     ancestors.add(parent);
                 }

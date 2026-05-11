@@ -57,7 +57,6 @@ import org.junit.AfterClass;
 import static org.junit.Assert.*;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
@@ -73,20 +72,20 @@ public class LuceneMatchListenerTest {
     @ClassRule
     public static final ExistEmbeddedServer existEmbeddedServer = new ExistEmbeddedServer(true, true);
 
-    private static String XML =
-            "<root>" +
-            "   <para>some paragraph with <hi>mixed</hi> content.</para>" +
-            "   <para>another paragraph with <note><hi>nested</hi> inner</note> elements.</para>" +
-            "   <para>a third paragraph with <term>term</term>.</para>" +
-            "   <para>double match double match</para>" +
-            "</root>";
+    private static String XML = """
+            <root>
+               <para>some paragraph with <hi>mixed</hi> content.</para>
+               <para>another paragraph with <note><hi>nested</hi> inner</note> elements.</para>
+               <para>a third paragraph with <term>term</term>.</para>
+               <para>double match double match</para>
+            </root>""";
 
-    private static String XML1 =
-            "<article>" +
-            "   <head>The <b>title</b>of it</head>" +
-            "   <p>A simple<note>sic</note> paragraph with <hi>highlighted</hi> text <note>and a note</note> to be ignored.</p>" +
-            "   <p>Paragraphs with <s>mix</s><s>ed</s> content are <s>danger</s>ous.</p>" +
-            "</article>";
+    private static String XML1 = """
+            <article>
+               <head>The <b>title</b>of it</head>
+               <p>A simple<note>sic</note> paragraph with <hi>highlighted</hi> text <note>and a note</note> to be ignored.</p>
+               <p>Paragraphs with <s>mix</s><s>ed</s> content are <s>danger</s>ous.</p>
+            </article>""";
 
     private static String XML2 =
             """
@@ -114,40 +113,40 @@ public class LuceneMatchListenerTest {
                     <w>љуте</w>.</s>
             </p>""";
 
-    private static String CONF1 =
-        "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
-        "   <index>" +
-        "       <text qname=\"para\"/>" +
-        "   </index>" +
-        "</collection>";
+    private static String CONF1 = """
+            <collection xmlns="http://exist-db.org/collection-config/1.0">
+               <index>
+                   <text qname="para"/>
+               </index>
+            </collection>""";
 
-    private static String CONF2 =
-        "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
-        "   <index>" +
-        "       <text qname=\"para\"/>" +
-        "       <text qname=\"term\"/>" +
-        "   </index>" +
-        "</collection>";
+    private static String CONF2 = """
+            <collection xmlns="http://exist-db.org/collection-config/1.0">
+               <index>
+                   <text qname="para"/>
+                   <text qname="term"/>
+               </index>
+            </collection>""";
 
-    private static String CONF3 =
-        "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
-        "   <index>" +
-        "       <text qname=\"hi\"/>" +
-        "   </index>" +
-        "</collection>";
+    private static String CONF3 = """
+            <collection xmlns="http://exist-db.org/collection-config/1.0">
+               <index>
+                   <text qname="hi"/>
+               </index>
+            </collection>""";
 
-    private static String CONF4 =
-        "<collection xmlns=\"http://exist-db.org/collection-config/1.0\">" +
-        "   <index xmlns:tei=\"http://www.tei-c.org/ns/1.0\">" +
-        "       <lucene>" +
-        "           <text qname=\"p\">" +
-        "               <ignore qname=\"note\"/>" +
-        "           </text>" +
-        "           <text qname=\"head\"/>" +
-        "           <inline qname=\"s\"/>" +
-        "       </lucene>" +
-        "   </index>" +
-        "</collection>";
+    private static String CONF4 = """
+            <collection xmlns="http://exist-db.org/collection-config/1.0">
+               <index xmlns:tei="http://www.tei-c.org/ns/1.0">
+                   <lucene>
+                       <text qname="p">
+                           <ignore qname="note"/>
+                       </text>
+                       <text qname="head"/>
+                       <inline qname="s"/>
+                   </lucene>
+               </index>
+            </collection>""";
 
 
     private static String CONF5 =
@@ -436,7 +435,6 @@ public class LuceneMatchListenerTest {
     }
 
     @Test
-    @Ignore("FIXME: context is missing for node in predicate; //tei:p[.//tei:w[ft:query(.,...)]] ! util:expand(.) — LuceneHitCollector returnAncestor copies null context from storedNode onto parentNode")
     public void inlineMatchNodesWhenIndenting() throws EXistException, PermissionDeniedException, XPathException, SAXException, CollectionConfigurationException, LockException, IOException {
         configureAndStore(CONF5, XML2);
 
@@ -451,33 +449,55 @@ public class LuceneMatchListenerTest {
             assertEquals(1, seq.getItemCount());
             final String result = queryResult2String(broker, seq, true);
 
-            final String expected =
-            "<p xmlns=\"http://www.tei-c.org/ns/1.0\">\n" +
-            "    <s type=\"combo\">\n" +
-            "        <w lemma=\"из\">из</w>\n" +
-            "        <w>новина</w>\n" +
-            "        <w lemma=\"и\">и</w>\n" +
-            "        <w lemma=\"од\">од</w>\n" +
-            "        <lb/>\n" +
-            "        <pb n=\"32\"/>\n" +
-            "        <w>других</w>\n" +
-            "        <w lemma=\"човек\">људи</w>\n" +
-            "        <w>" + MATCH_START + "дознајем" + MATCH_END + "</w>, <w xml:id=\"VSK.P13.t1.p4.w205\" lemma=\"ма\">ма</w>\n" +
-            "        <w>се</w>\n" +
-            "        <w lemma=\"не\">не</w>\n" +
-            "        <w>прорезује</w>\n" +
-            "        <w>право</w>\n" +
-            "        <w lemma=\"по\">по</w>\n" +
-            "        <w>имућству</w>, <w xml:id=\"VSK.P13.t1.p4.w219\" lemma=\"те\">те</w>\n" +
-            "        <w>се</w>\n" +
-            "        <w>на</w>\n" +
-            "        <w lemma=\"то\">то</w>\n" +
-            "        <w>видим</w>\n" +
-            "        <w>многи</w>\n" +
-            "        <w>љуте</w>.</s>\n" +
-            "</p>";
+            final String expected = """
+                    <p xmlns="http://www.tei-c.org/ns/1.0">
+                        <s type="combo">
+                            <w lemma="из">из</w>
+                            <w>новина</w>
+                            <w lemma="и">и</w>
+                            <w lemma="од">од</w>
+                            <lb/>
+                            <pb n="32"/>
+                            <w>других</w>
+                            <w lemma="човек">људи</w>
+                            <w>%sдознајем%s</w>, <w xml:id="VSK.P13.t1.p4.w205" lemma="ма">ма</w>
+                            <w>се</w>
+                            <w lemma="не">не</w>
+                            <w>прорезује</w>
+                            <w>право</w>
+                            <w lemma="по">по</w>
+                            <w>имућству</w>, <w xml:id="VSK.P13.t1.p4.w219" lemma="те">те</w>
+                            <w>се</w>
+                            <w>на</w>
+                            <w lemma="то">то</w>
+                            <w>видим</w>
+                            <w>многи</w>
+                            <w>љуте</w>.</s>
+                    </p>""".formatted(MATCH_START, MATCH_END);
 
             XMLAssert.assertEquals(expected, result);
+        }
+    }
+
+    @Test
+    public void inlineMatchNodesWhenIndentingWithAdditionalPredicate() throws EXistException, PermissionDeniedException, XPathException, SAXException, CollectionConfigurationException, LockException, IOException, XpathException {
+        configureAndStore(CONF5, XML2);
+
+        final BrokerPool pool = existEmbeddedServer.getBrokerPool();
+        try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
+            final XQuery xquery = pool.getXQueryService();
+            assertNotNull(xquery);
+            final String query = """
+                    declare namespace tei="http://www.tei-c.org/ns/1.0";
+                    //tei:p[.//tei:w[ft:query(., <query><bool><term>дознајем</term></bool></query>)]]
+                    [.//tei:w[@lemma='ма']] ! util:expand(.)
+                    """;
+            final Sequence seq = xquery.execute(broker, query, null);
+            assertNotNull(seq);
+            assertEquals(1, seq.getItemCount());
+
+            final String result = queryResult2String(broker, seq, true);
+            XMLAssert.assertXpathEvaluatesTo("1", "count(//exist:match)", result);
         }
     }
 
