@@ -22,11 +22,14 @@
 
 package org.exist.dom.persistent;
 
+import org.exist.numbering.NodeId;
 import org.exist.xquery.value.SequenceIterator;
 import org.junit.Test;
 import org.w3c.dom.Node;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 public class NodeProxyTest {
 
@@ -90,5 +93,67 @@ public class NodeProxyTest {
         }
 
         assertEquals(0, count);
+    }
+
+    @Test
+    public void deepCopyContext_clearsExistingContextWhenSourceHasNone() {
+        final NodeProxy target = new NodeProxy(null, null, NodeId.DOCUMENT_NODE, Node.ELEMENT_NODE, -1);
+        final NodeProxy existingContextNode = new NodeProxy(null, null, NodeId.ROOT_NODE, Node.ELEMENT_NODE, -1);
+        target.addContextNode(42, existingContextNode);
+
+        final NodeProxy sourceWithoutContext = new NodeProxy(null, null, NodeId.ROOT_NODE, Node.ELEMENT_NODE, -1);
+        target.deepCopyContext(sourceWithoutContext);
+
+        assertNull(target.getContext());
+    }
+
+    @Test
+    public void deepCopyContextWithContextId_addsContextIdEvenWhenSourceHasNoContext() {
+        final NodeProxy target = new NodeProxy(null, null, NodeId.DOCUMENT_NODE, Node.ELEMENT_NODE, -1);
+        final NodeProxy existingContextNode = new NodeProxy(null, null, NodeId.ROOT_NODE, Node.ELEMENT_NODE, -1);
+        target.addContextNode(7, existingContextNode);
+
+        final NodeProxy sourceWithoutContext = new NodeProxy(null, null, NodeId.END_OF_DOCUMENT, Node.ELEMENT_NODE, -1);
+        target.deepCopyContext(sourceWithoutContext, 99);
+
+        final ContextItem context = target.getContext();
+        assertEquals(2, countContextItems(context));
+        assertNotNull(findContextItem(context, 99));
+        assertEquals(NodeId.END_OF_DOCUMENT, findContextItem(context, 99).getNode().getNodeId());
+    }
+
+    @Test
+    public void deepCopyContext_selfCopyIsNoOp() {
+        final NodeProxy node = new NodeProxy(null, null, NodeId.DOCUMENT_NODE, Node.ELEMENT_NODE, -1);
+        final NodeProxy existingContextNode = new NodeProxy(null, null, NodeId.ROOT_NODE, Node.ELEMENT_NODE, -1);
+        node.addContextNode(42, existingContextNode);
+
+        node.deepCopyContext(node);
+
+        final ContextItem context = node.getContext();
+        assertEquals(1, countContextItems(context));
+        assertEquals(42, context.getContextId());
+        assertEquals(NodeId.ROOT_NODE, context.getNode().getNodeId());
+    }
+
+    private int countContextItems(final ContextItem contextItem) {
+        int count = 0;
+        ContextItem current = contextItem;
+        while (current != null) {
+            count++;
+            current = current.getNextDirect();
+        }
+        return count;
+    }
+
+    private ContextItem findContextItem(final ContextItem contextItem, final int contextId) {
+        ContextItem current = contextItem;
+        while (current != null) {
+            if (current.getContextId() == contextId) {
+                return current;
+            }
+            current = current.getNextDirect();
+        }
+        return null;
     }
 }

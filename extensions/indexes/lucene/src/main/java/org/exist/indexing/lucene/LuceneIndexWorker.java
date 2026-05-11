@@ -1548,8 +1548,10 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
                     parentNode.addMatch(match);
                     resultSet.add(parentNode, sizeHint);
                     if (Expression.NO_CONTEXT_ID != contextId) {
+                        // Keep contextId propagation for predicate tracking even when the hit node
+                        // has no pre-existing context chain.
                         parentNode.deepCopyContext(storedNode, contextId);
-                    } else {
+                    } else if (storedNode.getContext() != null) {
                         parentNode.copyContext(storedNode);
                     }
                     chainCollect(doc);

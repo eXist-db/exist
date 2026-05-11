@@ -586,10 +586,15 @@ public class NodeProxy implements NodeSet, NodeValue, NodeHandle, DocumentSet, C
     /**
      * Copy the context items from the given node into this node.
      * Context items are used to keep track of context nodes inside predicates.
+     * This node's existing context chain is always cleared first; if the source
+     * has no context, the result is an empty context ({@code null}).
      *
      * @param node a <code>NodeProxy</code> value
      */
     public void deepCopyContext(final NodeProxy node) {
+        if (node == this) {
+            return;
+        }
         context = null;
         if(node.context == null) {
             return;
