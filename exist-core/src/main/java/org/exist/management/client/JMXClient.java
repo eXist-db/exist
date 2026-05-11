@@ -282,9 +282,14 @@ public class JMXClient {
                     connection.getAttribute(name, "RunningJobs");
             String[] cols = new String[] { "ID", "Action", "Info" };
             echo("%15s %30s %30s".formatted(cols[0], cols[1], cols[2]));
-            for (Object value : table.values()) {
-                final CompositeData data = (CompositeData) value;
-                echo("%15s %30s %30s".formatted(data.get("id"), data.get("action"), data.get("info")));
+            if (table.isEmpty()) {
+                echo("(none)");
+            } else {
+                for (Object value : table.values()) {
+                    final CompositeData row = (CompositeData) value;
+                    final CompositeData data = (CompositeData) row.get("value");
+                    echo("%15s %30s %30s".formatted(data.get("id"), data.get("action"), data.get("info")));
+                }
             }
 
             echo("\nRunning queries");
@@ -293,9 +298,14 @@ public class JMXClient {
                     connection.getAttribute(name, "RunningQueries");
             cols = new String[] { "ID", "Type", "Key", "Terminating" };
             echo("%10s %10s %30s %s".formatted(cols[0], cols[1], cols[2], cols[3]));
-            for (Object o : table.values()) {
-                final CompositeData data = (CompositeData) o;
-                echo("%15s %15s %30s %6s".formatted(data.get("id"), data.get("sourceType"), data.get("sourceKey"), data.get("terminating")));
+            if (table.isEmpty()) {
+                echo("(none)");
+            } else {
+                for (Object o : table.values()) {
+                    final CompositeData row = (CompositeData) o;
+                    final CompositeData data = (CompositeData) row.get("value");
+                    echo("%15s %15s %30s %6s".formatted(data.get("id"), data.get("sourceType"), data.get("sourceKey"), data.get("terminating")));
+                }
             }
         } catch (final MBeanException | AttributeNotFoundException | InstanceNotFoundException | ReflectionException | IOException | MalformedObjectNameException e) {
             error(e);
