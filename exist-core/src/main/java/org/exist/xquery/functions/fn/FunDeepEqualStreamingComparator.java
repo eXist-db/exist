@@ -163,76 +163,97 @@ final class FunDeepEqualStreamingComparator {
     private static int walk(final IEmbeddedXMLStreamReader ra,
             final IEmbeddedXMLStreamReader rb, final boolean subtree,
             @Nullable final Collator collator) throws XMLStreamException {
-        int depth = 0;
-        boolean rootSeen = false;
+        final WalkState state = new WalkState();
         while (true) {
             final int evA = nextRelevantEvent(ra);
             final int evB = nextRelevantEvent(rb);
-            if (evA == EOF && evB == EOF) {
-                return Constants.EQUAL;
-            }
-            if (evA == EOF) {
-                return Constants.INFERIOR;
-            }
-            if (evB == EOF) {
-                return Constants.SUPERIOR;
+            final int eofCmp = compareEofs(evA, evB);
+            if (eofCmp != WalkState.CONTINUE) {
+                return eofCmp;
             }
             if (evA != evB) {
                 return evA < evB ? Constants.INFERIOR : Constants.SUPERIOR;
             }
-            switch (evA) {
-                case XMLStreamConstants.START_ELEMENT -> {
-                    final int nameCmp = compareElementName(ra, rb);
-                    if (nameCmp != Constants.EQUAL) {
-                        return nameCmp;
-                    }
-                    final int attrCmp = compareAttributes(ra, rb, collator);
-                    if (attrCmp != Constants.EQUAL) {
-                        return attrCmp;
-                    }
-                    depth++;
-                    rootSeen = true;
-                }
-                case XMLStreamConstants.END_ELEMENT -> {
-                    depth--;
-                    if (subtree && depth == 0 && rootSeen) {
-                        return Constants.EQUAL;
-                    }
-                }
-                case XMLStreamConstants.CHARACTERS, XMLStreamConstants.CDATA -> {
-                    final int textCmp = safeCompare(ra.getText(), rb.getText(), collator);
-                    if (textCmp != Constants.EQUAL) {
-                        return textCmp;
-                    }
-                }
-                case XMLStreamConstants.SPACE -> {
-                    final int textCmp = safeCompare(ra.getText(), rb.getText(), collator);
-                    if (textCmp != Constants.EQUAL) {
-                        return textCmp;
-                    }
-                }
-                default -> {
-                    // Stream produced an event we did not anticipate; fall back
-                    // to caller's slow path by signalling INFERIOR. This is the
-                    // safety valve for edge cases in the stored-DOM stream.
-                    throw new XMLStreamException(
-                            "Streaming comparator: unexpected event type " + evA);
-                }
+            final int stepCmp = walkStep(evA, ra, rb, subtree, collator, state);
+            if (stepCmp != WalkState.CONTINUE) {
+                return stepCmp;
             }
         }
     }
 
+    private static int compareEofs(final int evA, final int evB) {
+        if (evA == EOF && evB == EOF) {
+            return Constants.EQUAL;
+        }
+        if (evA == EOF) {
+            return Constants.INFERIOR;
+        }
+        if (evB == EOF) {
+            return Constants.SUPERIOR;
+        }
+        return WalkState.CONTINUE;
+    }
+
+    private static int walkStep(final int event, final IEmbeddedXMLStreamReader ra,
+            final IEmbeddedXMLStreamReader rb, final boolean subtree,
+            @Nullable final Collator collator, final WalkState state)
+            throws XMLStreamException {
+        return switch (event) {
+            case XMLStreamConstants.START_ELEMENT -> compareStartElements(ra, rb, collator, state);
+            case XMLStreamConstants.END_ELEMENT -> compareEndElements(subtree, state);
+            case XMLStreamConstants.CHARACTERS, XMLStreamConstants.CDATA,
+                 XMLStreamConstants.SPACE -> {
+                final int textCmp = safeCompare(ra.getText(), rb.getText(), collator);
+                yield textCmp != Constants.EQUAL ? textCmp : WalkState.CONTINUE;
+            }
+            default -> throw new XMLStreamException(
+                    "Streaming comparator: unexpected event type " + event);
+        };
+    }
+
+    private static int compareStartElements(final IEmbeddedXMLStreamReader ra,
+            final IEmbeddedXMLStreamReader rb, @Nullable final Collator collator,
+            final WalkState state) throws XMLStreamException {
+        final int nameCmp = compareElementName(ra, rb);
+        if (nameCmp != Constants.EQUAL) {
+            return nameCmp;
+        }
+        final int attrCmp = compareAttributes(ra, rb, collator);
+        if (attrCmp != Constants.EQUAL) {
+            return attrCmp;
+        }
+        state.depth++;
+        state.rootSeen = true;
+        return WalkState.CONTINUE;
+    }
+
+    private static int compareEndElements(final boolean subtree, final WalkState state) {
+        state.depth--;
+        if (subtree && state.depth == 0 && state.rootSeen) {
+            return Constants.EQUAL;
+        }
+        return WalkState.CONTINUE;
+    }
+
+    private static final class WalkState {
+        static final int CONTINUE = Integer.MIN_VALUE;
+        int depth;
+        boolean rootSeen;
+    }
+
     private static int nextRelevantEvent(final IEmbeddedXMLStreamReader r)
             throws XMLStreamException {
-        while (r.hasNext()) {
-            final int ev = r.next();
-            if (ev == XMLStreamConstants.COMMENT
-                    || ev == XMLStreamConstants.PROCESSING_INSTRUCTION) {
-                continue;
+        int ev = EOF;
+        boolean done = false;
+        while (!done && r.hasNext()) {
+            final int candidate = r.next();
+            if (candidate != XMLStreamConstants.COMMENT
+                    && candidate != XMLStreamConstants.PROCESSING_INSTRUCTION) {
+                ev = candidate;
+                done = true;
             }
-            return ev;
         }
-        return EOF;
+        return ev;
     }
 
     private static int compareElementName(final IEmbeddedXMLStreamReader ra,

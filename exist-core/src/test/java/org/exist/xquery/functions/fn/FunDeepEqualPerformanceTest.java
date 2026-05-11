@@ -50,57 +50,9 @@ public class FunDeepEqualPerformanceTest {
     public static final ExistXmldbEmbeddedServer existEmbeddedServer =
             new ExistXmldbEmbeddedServer(false, true, true);
 
-    /**
-     * Two stored documents with structurally-identical large trees (~10,000
-     * elements, attribute-heavy). Mirrors the GH-4050 reporter's scenario:
-     * stored XML, where each persistent-DOM accessor traverses the storage
-     * layer rather than running on a fast in-memory linked list. With many
-     * attributes per element, compareAttributes' O(attrs^2) NamedNodeMap
-     * lookup also bites.
-     */
-    @BeforeClass
-    public static void storeLargeDocs() throws XMLDBException {
-        final XQueryService xqs =
-                existEmbeddedServer.getRoot().getService(XQueryService.class);
-        // breadth 10, depth 4 -> ~10,000 elements; 6 attributes per element.
-        // Attribute count chosen large enough to expose compareAttributes'
-        // quadratic behaviour without making document storage prohibitively
-        // slow for a unit test.
-        xqs.query("""
-                declare function local:tree($depth, $breadth) {
-                    if ($depth eq 0) then
-                        <leaf id="x" type="t" a="1" b="2" c="3" d="4">value</leaf>
-                    else
-                        <branch id="b" depth="{$depth}" a="1" b="2" c="3" d="4">{
-                            for $i in 1 to $breadth
-                            return local:tree($depth - 1, $breadth)
-                        }</branch>
-                };
-                xmldb:store("/db", "deep-equal-perf-a.xml", local:tree(5, 8)),
-                xmldb:store("/db", "deep-equal-perf-b.xml", local:tree(5, 8))
-                """);
-    }
-
-    @AfterClass
-    public static void removeStoredDocs() throws XMLDBException {
-        final XQueryService xqs =
-                existEmbeddedServer.getRoot().getService(XQueryService.class);
-        xqs.query("""
-                xmldb:remove("/db", "deep-equal-perf-a.xml"),
-                xmldb:remove("/db", "deep-equal-perf-b.xml")
-                """);
-    }
-
     private static final String STORED_EQUAL_TREES =
             "fn:deep-equal(doc('/db/deep-equal-perf-a.xml'), doc('/db/deep-equal-perf-b.xml'))";
 
-    /**
-     * XQuery that builds two structurally-identical large in-memory trees
-     * (~10,000 elements: 4 levels deep, breadth 10 at each level, with
-     * attributes and text values) and runs fn:deep-equal on them. The
-     * memtree path is unchanged by the GH-4050 fix; this test guards
-     * against unrelated regressions on in-memory comparison.
-     */
     private static final String LARGE_EQUAL_TREES = """
             declare function local:tree($depth, $breadth) {
                 if ($depth eq 0) then
@@ -145,6 +97,47 @@ public class FunDeepEqualPerformanceTest {
             let $b := <rootB>{local:tree(4, 10)}</rootB>
             return fn:deep-equal($a, $b)
             """;
+
+    /**
+     * Two stored documents with structurally-identical large trees (~10,000
+     * elements, attribute-heavy). Mirrors the GH-4050 reporter's scenario:
+     * stored XML, where each persistent-DOM accessor traverses the storage
+     * layer rather than running on a fast in-memory linked list. With many
+     * attributes per element, compareAttributes' O(attrs^2) NamedNodeMap
+     * lookup also bites.
+     */
+    @BeforeClass
+    public static void storeLargeDocs() throws XMLDBException {
+        final XQueryService xqs =
+                existEmbeddedServer.getRoot().getService(XQueryService.class);
+        // breadth 10, depth 4 -> ~10,000 elements; 6 attributes per element.
+        // Attribute count chosen large enough to expose compareAttributes'
+        // quadratic behaviour without making document storage prohibitively
+        // slow for a unit test.
+        xqs.query("""
+                declare function local:tree($depth, $breadth) {
+                    if ($depth eq 0) then
+                        <leaf id="x" type="t" a="1" b="2" c="3" d="4">value</leaf>
+                    else
+                        <branch id="b" depth="{$depth}" a="1" b="2" c="3" d="4">{
+                            for $i in 1 to $breadth
+                            return local:tree($depth - 1, $breadth)
+                        }</branch>
+                };
+                xmldb:store("/db", "deep-equal-perf-a.xml", local:tree(5, 8)),
+                xmldb:store("/db", "deep-equal-perf-b.xml", local:tree(5, 8))
+                """);
+    }
+
+    @AfterClass
+    public static void removeStoredDocs() throws XMLDBException {
+        final XQueryService xqs =
+                existEmbeddedServer.getRoot().getService(XQueryService.class);
+        xqs.query("""
+                xmldb:remove("/db", "deep-equal-perf-a.xml"),
+                xmldb:remove("/db", "deep-equal-perf-b.xml")
+                """);
+    }
 
     private long timeQuery(final String xquery) throws XMLDBException {
         final XQueryService xqs =
