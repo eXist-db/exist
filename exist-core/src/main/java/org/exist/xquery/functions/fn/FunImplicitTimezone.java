@@ -54,6 +54,11 @@ public class FunImplicitTimezone extends Function {
 		super(context, signature);
 	}
 
+    @Override
+    public boolean isContextDependent() {
+        return true;
+    }
+
 	public Sequence eval(Sequence contextSequence, Item contextItem)
         throws XPathException {
         if (context.getProfiler().isEnabled()) {

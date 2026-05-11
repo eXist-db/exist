@@ -52,6 +52,11 @@ public class FnHasChildren extends Function {
     }
 
     @Override
+    public boolean isContextDependent() {
+        return getArgumentCount() == 0;
+    }
+
+    @Override
     public Sequence eval(Sequence contextSequence, final Item contextItem) throws XPathException {
         final NodeValue node;
 

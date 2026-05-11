@@ -84,6 +84,11 @@ public class InternalFunctionCall extends Function {
     }
 
     @Override
+    public boolean isContextDependent() {
+        return function.isContextDependent();
+    }
+
+    @Override
     public QName getName() {
         return function.getName();
     }

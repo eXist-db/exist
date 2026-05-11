@@ -77,6 +77,15 @@ public class FunBaseURI extends BasicFunction {
         super(context, signature);
     }
 
+    @Override
+    public boolean isContextDependent() {
+        // 0-arg base-uri() reads the focus; static-base-uri() reads the
+        // call-site's static base URI from the XQueryContext. Both forms
+        // must close over the lookup-site context when wrapped via
+        // fn:function-lookup or a named function reference.
+        return isCalledAs(FS_STATIC_BASE_URI) || getArgumentCount() == 0;
+    }
+
     /* (non-Javadoc)
      * @see org.exist.xquery.BasicFunction#eval(org.exist.xquery.value.Sequence[],
      * org.exist.xquery.value.Sequence)

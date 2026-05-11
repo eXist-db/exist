@@ -798,6 +798,68 @@ return
         <expected>0</expected>
     </test>
     <test output="text">
+        <task>fn:function-lookup captures focus: fn:name#0 (not in original lookup-site set)</task>
+        <code><![CDATA[xquery version "3.0";
+declare namespace ex="http://exist-db.org/xquery/ex";
+let $doc := document { <ex:greeting xmlns:ex="http://exist-db.org/xquery/ex"/> }
+return
+    $doc/*/function-lookup(xs:QName('fn:name'), 0)()]]></code>
+        <expected>ex:greeting</expected>
+    </test>
+    <test output="text">
+        <task>fn:function-lookup captures focus: fn:local-name#0 (not in original lookup-site set)</task>
+        <code><![CDATA[xquery version "3.0";
+let $doc := document { <root><child/></root> }
+return
+    $doc/root/child/function-lookup(xs:QName('fn:local-name'), 0)()]]></code>
+        <expected>child</expected>
+    </test>
+    <test output="text">
+        <task>fn:function-lookup captures focus: fn:base-uri#0 matches direct call (not in original lookup-site set)</task>
+        <code><![CDATA[xquery version "3.0";
+let $doc := document { <root/> }
+let $direct := $doc/root/fn:base-uri()
+let $viaLookup := $doc/root/function-lookup(xs:QName('fn:base-uri'), 0)()
+return
+    ($direct = $viaLookup) or (empty($direct) and empty($viaLookup))]]></code>
+        <expected>true</expected>
+    </test>
+    <test output="text">
+        <task>fn:function-lookup captures focus: fn:path#0 (not in original lookup-site set)</task>
+        <code><![CDATA[xquery version "3.0";
+let $doc := document { <root><child/></root> }
+return
+    $doc/root/child/function-lookup(xs:QName('fn:path'), 0)()]]></code>
+        <expected>/Q{}root[1]/Q{}child[1]</expected>
+    </test>
+    <test output="text">
+        <task>fn:function-lookup: fn:default-collation closes over lookup-site static context</task>
+        <code><![CDATA[xquery version "3.0";
+function-lookup(xs:QName('fn:default-collation'), 0)()]]></code>
+        <expected>http://www.w3.org/2005/xpath-functions/collation/codepoint</expected>
+    </test>
+    <test output="text">
+        <task>fn:function-lookup: fn:static-base-uri via lookup matches direct call (closes over lookup-site static context)</task>
+        <code><![CDATA[xquery version "3.0";
+let $direct := fn:static-base-uri()
+let $viaLookup := function-lookup(xs:QName('fn:static-base-uri'), 0)()
+return
+    ($direct = $viaLookup) or (empty($direct) and empty($viaLookup))]]></code>
+        <expected>true</expected>
+    </test>
+    <test output="text">
+        <task>fn:function-lookup: fn:concat is not context-dependent and still works via lookup</task>
+        <code><![CDATA[xquery version "3.0";
+function-lookup(xs:QName('fn:concat'), 2)('hello', ' world')]]></code>
+        <expected>hello world</expected>
+    </test>
+    <test output="text">
+        <task>fn:function-lookup: 1-arg fn:string-length is not context-dependent and still works via lookup</task>
+        <code><![CDATA[xquery version "3.0";
+function-lookup(xs:QName('fn:string-length'), 1)('hello')]]></code>
+        <expected>5</expected>
+    </test>
+    <test output="text">
         <task>fn:function-lookup: named function reference still has no captured focus</task>
         <code><![CDATA[xquery version "3.0";
 declare namespace ex="http://exist-db.org/xquery/ex";

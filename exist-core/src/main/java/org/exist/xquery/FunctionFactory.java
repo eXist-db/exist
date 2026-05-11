@@ -509,12 +509,19 @@ public class FunctionFactory {
 
 		final UserDefinedFunction func = new UserDefinedFunction(context, newSignature);
 		// This wrapper exists to lift a built-in Function into a FunctionCall
-		// so that it can be used as a function item. Built-ins may be
-		// context-dependent (fn:node-name#0, fn:position#0, fn:lang#1, ...),
-		// so let the wrapped body see the caller's focus. See F&O 3.1
-		// section 16.1.1 for the closure-of-context rule that motivates this
-		// for fn:function-lookup and named function references.
-		func.setPropagateContextToBody(true);
+		// so that it can be used as a function item. Per F&O 3.1 section
+		// 16.1.1, the static and dynamic context of the call to
+		// fn:function-lookup -- and of named function references -- forms
+		// part of the closure of the returned function. When the wrapped
+		// built-in is itself context-dependent (fn:position#0,
+		// fn:node-name#0, fn:lang#1, fn:default-collation,
+		// fn:static-base-uri, ...), the wrapper must forward that captured
+		// focus into the body. Each Function subclass declares its own
+		// context-dependency via Function.isContextDependent(); the default
+		// is false, so non-context-dependent built-ins (fn:concat,
+		// fn:string-length#1, ...) and user-defined functions do not pay
+		// the propagation cost.
+		func.setPropagateContextToBody(call.isContextDependent());
 		for (final QName varName: variables) {
 			func.addVariable(varName);
 		}

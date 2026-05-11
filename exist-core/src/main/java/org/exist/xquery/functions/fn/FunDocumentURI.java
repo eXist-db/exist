@@ -61,6 +61,11 @@ public class FunDocumentURI extends Function {
     }
 
     @Override
+    public boolean isContextDependent() {
+        return getArgumentCount() == 0;
+    }
+
+    @Override
     public Sequence eval(final Sequence contextSequence, final Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);

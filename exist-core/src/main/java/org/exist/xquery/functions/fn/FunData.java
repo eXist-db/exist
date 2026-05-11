@@ -68,6 +68,11 @@ public class FunData extends Function {
         super(context, signature);
     }
 
+    @Override
+    public boolean isContextDependent() {
+        return getArgumentCount() == 0;
+    }
+
     /* (non-Javadoc)
      * @see org.exist.xquery.Expression#eval(org.exist.xquery.value.Sequence,
      * org.exist.xquery.value.Item)

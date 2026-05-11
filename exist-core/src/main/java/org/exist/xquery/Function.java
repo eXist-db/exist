@@ -517,6 +517,37 @@ public abstract class Function extends PathExpr {
         return localName.equals(mySignature.getName().getLocalPart());
     }
 
+    /**
+     * Indicates whether this function's behaviour depends on the dynamic
+     * context (focus, current dateTime, default collation, static base URI,
+     * implicit timezone, ...).
+     * <p>
+     * Used by {@link FunctionFactory#wrap(XQueryContext, Function)} to decide
+     * whether the lifted wrapper around a built-in must forward the caller's
+     * focus into the wrapped body when the built-in is used as a function
+     * item -- e.g. when retrieved via {@code fn:function-lookup} or as a
+     * named function reference. F&amp;O 3.1 section 16.1.1 requires the
+     * static and dynamic context of the lookup site to form part of the
+     * closure of the returned function.
+     * <p>
+     * Default is {@code false}. Overridden to {@code true} in each
+     * context-dependent built-in (the 0-arg forms of {@code fn:position},
+     * {@code fn:last}, {@code fn:node-name}, {@code fn:string},
+     * {@code fn:data}, {@code fn:base-uri}, {@code fn:string-length},
+     * {@code fn:normalize-space}, {@code fn:has-children},
+     * {@code fn:document-uri}, {@code fn:nilled}; the focus-using forms of
+     * {@code fn:lang}, {@code fn:id}, {@code fn:idref},
+     * {@code fn:element-with-id}; and {@code fn:current-dateTime},
+     * {@code fn:current-date}, {@code fn:current-time},
+     * {@code fn:implicit-timezone}, {@code fn:default-collation},
+     * {@code fn:default-language}, {@code fn:static-base-uri}).
+     *
+     * @return {@code true} if this function depends on the dynamic context
+     */
+    public boolean isContextDependent() {
+        return false;
+    }
+
     @Override
     public int getDependencies() {
         return Dependency.CONTEXT_ITEM | Dependency.CONTEXT_SET;

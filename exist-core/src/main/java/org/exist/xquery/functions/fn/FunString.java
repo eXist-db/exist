@@ -67,6 +67,11 @@ public class FunString extends Function {
 		super(context, signature);
 	}
 
+    @Override
+    public boolean isContextDependent() {
+        return getArgumentCount() == 0;
+    }
+
 	@Override
 	public Sequence eval(Sequence contextSequence, final Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {
