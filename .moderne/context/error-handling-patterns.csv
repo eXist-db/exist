@@ -300,7 +300,18 @@ exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatNumbers.java,org.
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunContains.java,org.exist.xquery.functions.fn.FunContains,eval,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunStrLength.java,org.exist.xquery.functions.fn.FunStrLength,eval,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunIndexOf.java,org.exist.xquery.functions.fn.FunIndexOf,eval,throws-declaration,XPathException,propagate,,
-exist-core/src/main/java/org/exist/xquery/functions/fn/FunIndexOf.java,org.exist.xquery.functions.fn.FunIndexOf,eval,try-catch,XPathException,ignore,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/FunIndexOf.java,org.exist.xquery.functions.fn.FunIndexOf,evaluate,throws-declaration,XPathException,propagate,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/FunIndexOf.java,org.exist.xquery.functions.fn.FunIndexOf,fingerprintMatches,throws-declaration,XPathException,propagate,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/FunIndexOf.java,org.exist.xquery.functions.fn.FunIndexOf,updateFingerprint,throws-declaration,XPathException,propagate,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/FunIndexOf.java,org.exist.xquery.functions.fn.FunIndexOf,sampleString,throws-declaration,XPathException,propagate,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/FunIndexOf.java,org.exist.xquery.functions.fn.FunIndexOf,linearScan,throws-declaration,XPathException,propagate,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/FunIndexOf.java,org.exist.xquery.functions.fn.FunIndexOf,linearScan,try-catch,XPathException,ignore,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/FunIndexOf.java,org.exist.xquery.functions.fn.FunIndexOf,buildIndex,throws-declaration,XPathException,propagate,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/FunIndexOf.java,org.exist.xquery.functions.fn.FunIndexOf,buildIndex,try-catch,FunIndexOf.IndexBuildAbort,recover,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/FunIndexOf.java,org.exist.xquery.functions.fn.FunIndexOf,lookupInIndex,throws-declaration,XPathException,propagate,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/FunIndexOf.java,org.exist.xquery.functions.fn.FunIndexOf,lookupInIndex,try-catch,FunIndexOf.IndexBuildAbort,recover,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/FunIndexOf.java,org.exist.xquery.functions.fn.FunIndexOf,lookupInIndex,try-catch,XPathException,recover,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/FunIndexOf.java,org.exist.xquery.functions.fn.FunIndexOf$IndexComparator,compare,try-catch,XPathException,wrap,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunOnFunctions.java,org.exist.xquery.functions.fn.FunOnFunctions,analyze,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunOnFunctions.java,org.exist.xquery.functions.fn.FunOnFunctions,eval,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunOnFunctions.java,org.exist.xquery.functions.fn.FunOnFunctions,eval,try-catch,XPathException,rethrow,,
@@ -361,6 +372,11 @@ exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatDates.java,org.ex
 exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatDates.java,org.exist.xquery.functions.fn.FnFormatDates,formatAmPmComponent,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatDates.java,org.exist.xquery.functions.fn.FnFormatDates,formatEra,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatDates.java,org.exist.xquery.functions.fn.FnFormatDates,formatTimezoneComponent,throws-declaration,XPathException,propagate,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatDates.java,org.exist.xquery.functions.fn.FnFormatDates,adjustForPlaceTimezone,throws-declaration,XPathException,propagate,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatDates.java,org.exist.xquery.functions.fn.FnFormatDates,adjustForPlaceTimezone,try-catch,DateTimeException,recover,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatDates.java,org.exist.xquery.functions.fn.FnFormatDates,adjustToPlaceTimezone,throws-declaration,XPathException,propagate,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatDates.java,org.exist.xquery.functions.fn.FnFormatDates,lookupPlaceZoneAbbreviation,try-catch,DateTimeException,recover,,
+exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatDates.java,org.exist.xquery.functions.fn.FnFormatDates,formatIdAbbreviation,try-catch,DateTimeException,recover,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatDates.java,org.exist.xquery.functions.fn.FnFormatDates$TimezonePictureParts,formatNumber,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatDates.java,org.exist.xquery.functions.fn.FnFormatDates$TimezonePictureParts,applyMinWidthOnly,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatDates.java,org.exist.xquery.functions.fn.FnFormatDates$TimezonePictureParts,applyWidthToText,throws-declaration,XPathException,propagate,,
@@ -1275,6 +1291,9 @@ exist-core/src/main/java/org/exist/xquery/WhereClause.java,org.exist.xquery.Wher
 exist-core/src/main/java/org/exist/xquery/WhereClause.java,org.exist.xquery.WhereClause,eval,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/WhereClause.java,org.exist.xquery.WhereClause,postEval,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/WhereClause.java,org.exist.xquery.WhereClause,applyWhereExpression,throws-declaration,XPathException,propagate,,
+exist-core/src/main/java/org/exist/xquery/WhereClause.java,org.exist.xquery.WhereClause,evalExpressionWithCarriers,throws-declaration,XPathException,propagate,,
+exist-core/src/main/java/org/exist/xquery/WhereClause.java,org.exist.xquery.WhereClause,captureCarrierFromSequence,throws-declaration,XPathException,propagate,,
+exist-core/src/main/java/org/exist/xquery/WhereClause.java,org.exist.xquery.WhereClause,propagateMatchCarriersForCurrentTuple,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/DynamicCardinalityCheck.java,org.exist.xquery.DynamicCardinalityCheck,analyze,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/DynamicCardinalityCheck.java,org.exist.xquery.DynamicCardinalityCheck,eval,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/PerformanceStatsImpl.java,org.exist.xquery.PerformanceStatsImpl$Enabler,toString,try-catch,IOException,recover,,
@@ -1728,11 +1747,11 @@ exist-core/src/main/java/org/exist/xquery/ValueComparison.java,org.exist.xquery.
 exist-core/src/main/java/org/exist/xquery/ValueComparison.java,org.exist.xquery.ValueComparison,makeComparable,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/ConcatExpr.java,org.exist.xquery.ConcatExpr,analyze,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/ConcatExpr.java,org.exist.xquery.ConcatExpr,eval,throws-declaration,XPathException,propagate,,
-exist-core/src/main/java/org/exist/xquery/RangeExpression.java,org.exist.xquery.RangeExpression,setArguments,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/RangeExpression.java,org.exist.xquery.RangeExpression,analyze,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/RangeExpression.java,org.exist.xquery.RangeExpression,eval,throws-declaration,XPathException,propagate,,
-exist-core/src/main/java/org/exist/xquery/RangeExpression.java,org.exist.xquery.RangeExpression,eval,try-catch,XPathException,wrap,,
-exist-core/src/main/java/org/exist/xquery/RangeExpression.java,org.exist.xquery.RangeExpression,eval,try-catch,XPathException,wrap,,
+exist-core/src/main/java/org/exist/xquery/RangeExpression.java,org.exist.xquery.RangeExpression,getBoundaryValue,throws-declaration,XPathException,propagate,,
+exist-core/src/main/java/org/exist/xquery/RangeExpression.java,org.exist.xquery.RangeExpression,getLegacyBoundaryValue,throws-declaration,XPathException,propagate,,
+exist-core/src/main/java/org/exist/xquery/RangeExpression.java,org.exist.xquery.RangeExpression,getLegacyBoundaryValue,try-catch,XPathException,wrap,,
 exist-core/src/main/java/org/exist/xquery/VariableReference.java,org.exist.xquery.VariableReference,analyze,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/xquery/VariableReference.java,org.exist.xquery.VariableReference,analyze,try-catch,XPathException,recover,,
 exist-core/src/main/java/org/exist/xquery/VariableReference.java,org.exist.xquery.VariableReference,eval,throws-declaration,XPathException,propagate,,
@@ -4329,166 +4348,166 @@ exist-core/src/main/java/org/exist/storage/serializers/XmlSerializerPool.java,or
 exist-core/src/main/java/org/exist/storage/serializers/XmlSerializerPool.java,org.exist.storage.serializers.XmlSerializerPool,returnObject,try-catch,Exception,wrap,,
 exist-core/src/main/java/org/exist/storage/serializers/ChainOfReceiversFactory.java,org.exist.storage.serializers.ChainOfReceiversFactory,ChainOfReceiversFactory,try-catch,Exception,log,Log4j,ERROR
 exist-core/src/main/java/org/exist/storage/serializers/CustomMatchListenerFactory.java,org.exist.storage.serializers.CustomMatchListenerFactory,CustomMatchListenerFactory,try-catch,Exception,log,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,NativeBroker,throws-declaration,EXistException,propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,NativeBroker,try-catch,DBException,log+wrap,Log4j,DEBUG
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,notifyFlush,try-catch,DBException,log,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,notifyClose,throws-declaration,DBException,propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,notifyCloseAndRemove,throws-declaration,DBException,propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,backupToArchive,throws-declaration,"IOException, EXistException",propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,getXMLStreamReader,throws-declaration,"IOException, XMLStreamException",propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,newXMLStreamReader,throws-declaration,"IOException, XMLStreamException",propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,getNodeIterator,try-catch,BTreeException | IOException,log,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,getOrCreateTempCollection,throws-declaration,"LockException, PermissionDeniedException, IOException, TriggerException",propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,readInitCollectionConfig,try-catch,IOException,log,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,getOrCreateCollection,throws-declaration,"PermissionDeniedException, IOException, TriggerException",propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,getOrCreateCollection,throws-declaration,"PermissionDeniedException, IOException, TriggerException",propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,getOrCreateCollectionExplicit,throws-declaration,"PermissionDeniedException, IOException, TriggerException",propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,getOrCreateCollectionExplicit,try-catch,ReadOnlyException,wrap,Log4j,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,getOrCreateCollectionExplicit,try-catch,LockException,wrap,Log4j,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,getOrCreateCollectionExplicit_rootCollection,throws-declaration,"PermissionDeniedException, IOException, LockException, ReadOnlyException, TriggerException",propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,getOrCreateCollectionExplicit_rootCollection,try-catch,CollectionConfigurationException,log,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,createCollection,throws-declaration,"TriggerException, ReadOnlyException, PermissionDeniedException, LockException, IOException",propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,createCollectionObject,throws-declaration,"ReadOnlyException, PermissionDeniedException, LockException",propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,loadCollection,throws-declaration,"PermissionDeniedException, LockException, IOException",propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,getCollection,throws-declaration,PermissionDeniedException,propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,openCollection,throws-declaration,PermissionDeniedException,propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,openCollection,try-catch,LockException,log+recover,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,openCollection,try-catch,IllegalStateException | PermissionDeniedException,rethrow,Log4j,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,openCollection,try-catch,IllegalStateException | PermissionDeniedException,rethrow,Log4j,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,openCollection,try-catch,LockException,log+recover,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,getCollectionForOpen,throws-declaration,"IllegalStateException, PermissionDeniedException",propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,getCollectionForOpen,try-catch,IOException,log+recover,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,getCollectionForOpen,try-catch,LockException,log+recover,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,checkCollectionAncestorPermissions,throws-declaration,"IllegalStateException, PermissionDeniedException, LockException",propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,findCollectionsMatching,try-catch,UnsupportedEncodingException,ignore,Log4j,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,findCollectionsMatching,try-catch,LockException,log,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,findCollectionsMatching,try-catch,TerminatedException | IOException | BTreeException,log,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,readCollectionEntry,throws-declaration,"IOException, LockException",propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,copyCollection,throws-declaration,"PermissionDeniedException, LockException, IOException, TriggerException, EXistException",propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,copyCollection,throws-declaration,"PermissionDeniedException, LockException, IOException, TriggerException, EXistException",propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,checkPermissionsForCopy,throws-declaration,"PermissionDeniedException, LockException",propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,doCopyCollection,throws-declaration,"PermissionDeniedException, IOException, EXistException, TriggerException, LockException",propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,doCopyCollectionDocuments,throws-declaration,"LockException, PermissionDeniedException, IOException, TriggerException, EXistException",propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,copyModeAndAcl,throws-declaration,PermissionDeniedException,propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,moveCollection,throws-declaration,"PermissionDeniedException, LockException, IOException, TriggerException",propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,lockDescendantDocuments,throws-declaration,"LockException, PermissionDeniedException",propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,lockDescendantDocuments,try-catch,PermissionDeniedException | LockException,log+rethrow,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,lockDescendantDocuments,try-catch,RuntimeException,log,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,lockTargetDocuments,throws-declaration,LockException,propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,lockTargetDocuments,try-catch,LockException,log+rethrow,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,lockTargetDocuments,try-catch,RuntimeException,log,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,moveCollectionRecursive,throws-declaration,"PermissionDeniedException, IOException, LockException, TriggerException",propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,removeCollection,throws-declaration,"PermissionDeniedException, IOException, TriggerException",propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,removeCollection,try-catch,LockException,log+recover,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,_removeCollection,throws-declaration,"PermissionDeniedException, TriggerException, IOException",propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,_removeCollection,try-catch,LockException,log+recover,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,_removeCollection,try-catch,BTreeException | IOException,log,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,removeCollectionsDocumentNodes,throws-declaration,"TriggerException, PermissionDeniedException, LockException, IOException",propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,start,try-catch,BTreeException,log,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,start,try-catch,IOException,log,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,start,try-catch,TerminatedException,log,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,removeCollectionBinary,throws-declaration,IOException,propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,checkRemoveCollectionPermissions,throws-declaration,PermissionDeniedException,propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,writeLockCollection,throws-declaration,LockException,propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,readLockCollection,throws-declaration,LockException,propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,saveCollection,throws-declaration,IOException,propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,saveCollection,try-catch,LockException,wrap,Log4j,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,getNextCollectionId,throws-declaration,"ReadOnlyException, LockException",propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,reindexCollection,throws-declaration,"PermissionDeniedException, IOException, LockException",propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,reindexCollection,throws-declaration,"PermissionDeniedException, IOException, LockException",propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,reindexCollection,try-catch,PermissionDeniedException | IOException,log,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,reindexCollection,throws-declaration,"PermissionDeniedException, IOException, LockException",propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,reindexCollection,throws-declaration,"PermissionDeniedException, IOException, LockException",propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,reindexCollection,try-catch,LockException,log,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,reindexCollection,try-catch,LockException,log,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,dropCollectionIndex,throws-declaration,"PermissionDeniedException, IOException, LockException",propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,dropCollectionIndex,throws-declaration,"PermissionDeniedException, IOException, LockException",propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,start,try-catch,TerminatedException | IOException | DBException,log,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,storeTempResource,throws-declaration,"EXistException, PermissionDeniedException, LockException",propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,storeTempResource,try-catch,Exception,log,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,cleanUpTempResources,throws-declaration,PermissionDeniedException,propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,cleanUpTempResources,try-catch,Exception,log,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,getResourceById,throws-declaration,PermissionDeniedException,propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,getResourceById,try-catch,TerminatedException,log+recover,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,getResourceById,try-catch,BTreeException,log+recover,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,getResourceById,try-catch,LockException,log+recover,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,getResourceById,try-catch,IOException,log+recover,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,storeDocument,throws-declaration,"EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException",propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,storeDocument,throws-declaration,"EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException",propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,storeDocument,throws-declaration,"EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException",propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,storeDocument,throws-declaration,"EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException",propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,storeXMLResource,try-catch,LockException,log,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,storeXMLResource,try-catch,IOException,log,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,storeMetadata,throws-declaration,TriggerException,propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,storeBinaryResource,throws-declaration,IOException,propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,storeBinaryResource,throws-declaration,IOException,propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,getXMLResource,throws-declaration,PermissionDeniedException,propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,getResource,throws-declaration,PermissionDeniedException,propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,getResource,try-catch,LockException,wrap,Log4j,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,getXMLResource,throws-declaration,PermissionDeniedException,propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,getXMLResource,try-catch,LockException,log,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,readBinaryResource,throws-declaration,IOException,propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,readBinaryResource,try-catch,TransactionException,wrap,Log4j,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,readBinaryResource,throws-declaration,IOException,propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,getBinaryResourceSize,throws-declaration,IOException,propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,getBinaryResourceContentDigest,throws-declaration,IOException,propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,withBinaryFile,throws-declaration,IOException,propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,getBinaryResource,throws-declaration,IOException,propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,getBinaryResource,try-catch,TransactionException,wrap,Log4j,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,getBinaryResource,throws-declaration,IOException,propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,getCollectionResources,try-catch,LockException,log,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,getCollectionResources,try-catch,IOException | BTreeException | TerminatedException,log,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,getResourcesFailsafe,throws-declaration,TerminatedException,propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,getResourcesFailsafe,try-catch,LockException,log,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,getResourcesFailsafe,try-catch,IOException | BTreeException,log,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,getCollectionsFailsafe,throws-declaration,TerminatedException,propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,getCollectionsFailsafe,try-catch,LockException,log,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,getCollectionsFailsafe,try-catch,IOException | BTreeException,log,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,getXMLResourcesByDoctype,throws-declaration,"PermissionDeniedException, LockException",propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,getAllXMLResources,throws-declaration,"PermissionDeniedException, LockException",propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,copyResource,throws-declaration,"PermissionDeniedException, LockException, IOException, TriggerException, EXistException",propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,copyResource,throws-declaration,"PermissionDeniedException, LockException, IOException, TriggerException, EXistException",propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,doCopyDocument,throws-declaration,"TriggerException, LockException, PermissionDeniedException, IOException, EXistException",propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,copyResource_preserve,throws-declaration,PermissionDeniedException,propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,copyModeAcl,throws-declaration,PermissionDeniedException,propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,copyXMLResource,throws-declaration,IOException,propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,copyBinaryResource,throws-declaration,IOException,propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,moveResource,throws-declaration,"PermissionDeniedException, LockException, IOException, TriggerException",propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,removeXMLResource,throws-declaration,"PermissionDeniedException, IOException",propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,removeXMLResource,try-catch,TriggerException,log,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,dropIndex,try-catch,IOException,log,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,dropDomNodes,try-catch,NullPointerException,log,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,start,try-catch,BTreeException | IOException,log,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,start,try-catch,TerminatedException,log,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,removeBinaryResource,throws-declaration,"PermissionDeniedException, IOException",propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,removeResourceMetadata,try-catch,LockException,log,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,removeResource,throws-declaration,"IOException, PermissionDeniedException",propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,removeXMLResource,throws-declaration,"PermissionDeniedException, IOException",propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,getNextResourceId,throws-declaration,"EXistException, LockException",propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,reindexXMLResource,try-catch,IOException,log,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,defragXMLResource,try-catch,IOException,log,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,start,try-catch,IOException | DBException,log,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,start,try-catch,TerminatedException,log,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,start,try-catch,DBException,log,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,checkXMLResourceConsistency,throws-declaration,EXistException,propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,start,throws-declaration,ReadOnlyException,propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,start,try-catch,IOException,log,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,start,try-catch,BTreeException | IOException,log,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,start,throws-declaration,ReadOnlyException,propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,updateNode,try-catch,Exception,log,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,start,throws-declaration,ReadOnlyException,propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,removeAllNodes,try-catch,IOException,log,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,repair,throws-declaration,"PermissionDeniedException, IOException, LockException",propagate,,
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,repair,try-catch,DBException,log,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,repair,try-catch,DBException,log,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,repair,try-catch,DatabaseConfigurationException,log,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,rebuildIndex,try-catch,LockException | IOException | TerminatedException | DBException,log,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,flush,try-catch,EXistException,log,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,sync,try-catch,DBException,log,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,start,try-catch,DBException,log,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,start,try-catch,LockException,log,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,shutdown,try-catch,Exception,log,Log4j,ERROR
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,start,try-catch,DBException,log,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,NativeBroker,throws-declaration,EXistException,propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,NativeBroker,try-catch,DBException,log+wrap,Log4j,DEBUG
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,notifyFlush,try-catch,DBException,log,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,notifyClose,throws-declaration,DBException,propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,notifyCloseAndRemove,throws-declaration,DBException,propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,backupToArchive,throws-declaration,"IOException, EXistException",propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,getXMLStreamReader,throws-declaration,"IOException, XMLStreamException",propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,newXMLStreamReader,throws-declaration,"IOException, XMLStreamException",propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,getNodeIterator,try-catch,BTreeException | IOException,log,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,getOrCreateTempCollection,throws-declaration,"LockException, PermissionDeniedException, IOException, TriggerException",propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,readInitCollectionConfig,try-catch,IOException,log,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,getOrCreateCollection,throws-declaration,"PermissionDeniedException, IOException, TriggerException",propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,getOrCreateCollection,throws-declaration,"PermissionDeniedException, IOException, TriggerException",propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,getOrCreateCollectionExplicit,throws-declaration,"PermissionDeniedException, IOException, TriggerException",propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,getOrCreateCollectionExplicit,try-catch,ReadOnlyException,wrap,Log4j,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,getOrCreateCollectionExplicit,try-catch,LockException,wrap,Log4j,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,getOrCreateCollectionExplicit_rootCollection,throws-declaration,"PermissionDeniedException, IOException, LockException, ReadOnlyException, TriggerException",propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,getOrCreateCollectionExplicit_rootCollection,try-catch,CollectionConfigurationException,log,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,createCollection,throws-declaration,"TriggerException, ReadOnlyException, PermissionDeniedException, LockException, IOException",propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,createCollectionObject,throws-declaration,"ReadOnlyException, PermissionDeniedException, LockException",propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,loadCollection,throws-declaration,"PermissionDeniedException, LockException, IOException",propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,getCollection,throws-declaration,PermissionDeniedException,propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,openCollection,throws-declaration,PermissionDeniedException,propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,openCollection,try-catch,LockException,log+recover,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,openCollection,try-catch,IllegalStateException | PermissionDeniedException,rethrow,Log4j,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,openCollection,try-catch,IllegalStateException | PermissionDeniedException,rethrow,Log4j,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,openCollection,try-catch,LockException,log+recover,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,getCollectionForOpen,throws-declaration,"IllegalStateException, PermissionDeniedException",propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,getCollectionForOpen,try-catch,IOException,log+recover,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,getCollectionForOpen,try-catch,LockException,log+recover,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,checkCollectionAncestorPermissions,throws-declaration,"IllegalStateException, PermissionDeniedException, LockException",propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,findCollectionsMatching,try-catch,UnsupportedEncodingException,ignore,Log4j,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,findCollectionsMatching,try-catch,LockException,log,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,findCollectionsMatching,try-catch,TerminatedException | IOException | BTreeException,log,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,readCollectionEntry,throws-declaration,"IOException, LockException",propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,copyCollection,throws-declaration,"PermissionDeniedException, LockException, IOException, TriggerException, EXistException",propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,copyCollection,throws-declaration,"PermissionDeniedException, LockException, IOException, TriggerException, EXistException",propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,checkPermissionsForCopy,throws-declaration,"PermissionDeniedException, LockException",propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,doCopyCollection,throws-declaration,"PermissionDeniedException, IOException, EXistException, TriggerException, LockException",propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,doCopyCollectionDocuments,throws-declaration,"LockException, PermissionDeniedException, IOException, TriggerException, EXistException",propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,copyModeAndAcl,throws-declaration,PermissionDeniedException,propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,moveCollection,throws-declaration,"PermissionDeniedException, LockException, IOException, TriggerException",propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,lockDescendantDocuments,throws-declaration,"LockException, PermissionDeniedException",propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,lockDescendantDocuments,try-catch,PermissionDeniedException | LockException,log+rethrow,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,lockDescendantDocuments,try-catch,RuntimeException,log,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,lockTargetDocuments,throws-declaration,LockException,propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,lockTargetDocuments,try-catch,LockException,log+rethrow,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,lockTargetDocuments,try-catch,RuntimeException,log,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,moveCollectionRecursive,throws-declaration,"PermissionDeniedException, IOException, LockException, TriggerException",propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,removeCollection,throws-declaration,"PermissionDeniedException, IOException, TriggerException",propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,removeCollection,try-catch,LockException,log+recover,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,_removeCollection,throws-declaration,"PermissionDeniedException, TriggerException, IOException",propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,_removeCollection,try-catch,LockException,log+recover,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,_removeCollection,try-catch,BTreeException | IOException,log,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,removeCollectionsDocumentNodes,throws-declaration,"TriggerException, PermissionDeniedException, LockException, IOException",propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,start,try-catch,BTreeException,log,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,start,try-catch,IOException,log,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,start,try-catch,TerminatedException,log,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,removeCollectionBinary,throws-declaration,IOException,propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,checkRemoveCollectionPermissions,throws-declaration,PermissionDeniedException,propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,writeLockCollection,throws-declaration,LockException,propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,readLockCollection,throws-declaration,LockException,propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,saveCollection,throws-declaration,IOException,propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,saveCollection,try-catch,LockException,wrap,Log4j,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,getNextCollectionId,throws-declaration,"ReadOnlyException, LockException",propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,reindexCollection,throws-declaration,"PermissionDeniedException, IOException, LockException",propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,reindexCollection,throws-declaration,"PermissionDeniedException, IOException, LockException",propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,reindexCollection,try-catch,PermissionDeniedException | IOException,log,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,reindexCollection,throws-declaration,"PermissionDeniedException, IOException, LockException",propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,reindexCollection,throws-declaration,"PermissionDeniedException, IOException, LockException",propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,reindexCollection,try-catch,LockException,log,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,reindexCollection,try-catch,LockException,log,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,dropCollectionIndex,throws-declaration,"PermissionDeniedException, IOException, LockException",propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,dropCollectionIndex,throws-declaration,"PermissionDeniedException, IOException, LockException",propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,start,try-catch,TerminatedException | IOException | DBException,log,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,storeTempResource,throws-declaration,"EXistException, PermissionDeniedException, LockException",propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,storeTempResource,try-catch,Exception,log,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,cleanUpTempResources,throws-declaration,PermissionDeniedException,propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,cleanUpTempResources,try-catch,Exception,log,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,getResourceById,throws-declaration,PermissionDeniedException,propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,getResourceById,try-catch,TerminatedException,log+recover,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,getResourceById,try-catch,BTreeException,log+recover,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,getResourceById,try-catch,LockException,log+recover,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,getResourceById,try-catch,IOException,log+recover,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,storeDocument,throws-declaration,"EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException",propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,storeDocument,throws-declaration,"EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException",propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,storeDocument,throws-declaration,"EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException",propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,storeDocument,throws-declaration,"EXistException, PermissionDeniedException, TriggerException, SAXException, LockException, IOException",propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,storeXMLResource,try-catch,LockException,log,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,storeXMLResource,try-catch,IOException,log,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,storeMetadata,throws-declaration,TriggerException,propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,storeBinaryResource,throws-declaration,IOException,propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,storeBinaryResource,throws-declaration,IOException,propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,getXMLResource,throws-declaration,PermissionDeniedException,propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,getResource,throws-declaration,PermissionDeniedException,propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,getResource,try-catch,LockException,wrap,Log4j,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,getXMLResource,throws-declaration,PermissionDeniedException,propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,getXMLResource,try-catch,LockException,log,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,readBinaryResource,throws-declaration,IOException,propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,readBinaryResource,try-catch,TransactionException,wrap,Log4j,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,readBinaryResource,throws-declaration,IOException,propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,getBinaryResourceSize,throws-declaration,IOException,propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,getBinaryResourceContentDigest,throws-declaration,IOException,propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,withBinaryFile,throws-declaration,IOException,propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,getBinaryResource,throws-declaration,IOException,propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,getBinaryResource,try-catch,TransactionException,wrap,Log4j,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,getBinaryResource,throws-declaration,IOException,propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,getCollectionResources,try-catch,LockException,log,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,getCollectionResources,try-catch,IOException | BTreeException | TerminatedException,log,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,getResourcesFailsafe,throws-declaration,TerminatedException,propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,getResourcesFailsafe,try-catch,LockException,log,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,getResourcesFailsafe,try-catch,IOException | BTreeException,log,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,getCollectionsFailsafe,throws-declaration,TerminatedException,propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,getCollectionsFailsafe,try-catch,LockException,log,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,getCollectionsFailsafe,try-catch,IOException | BTreeException,log,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,getXMLResourcesByDoctype,throws-declaration,"PermissionDeniedException, LockException",propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,getAllXMLResources,throws-declaration,"PermissionDeniedException, LockException",propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,copyResource,throws-declaration,"PermissionDeniedException, LockException, IOException, TriggerException, EXistException",propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,copyResource,throws-declaration,"PermissionDeniedException, LockException, IOException, TriggerException, EXistException",propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,doCopyDocument,throws-declaration,"TriggerException, LockException, PermissionDeniedException, IOException, EXistException",propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,copyResource_preserve,throws-declaration,PermissionDeniedException,propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,copyModeAcl,throws-declaration,PermissionDeniedException,propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,copyXMLResource,throws-declaration,IOException,propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,copyBinaryResource,throws-declaration,IOException,propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,moveResource,throws-declaration,"PermissionDeniedException, LockException, IOException, TriggerException",propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,removeXMLResource,throws-declaration,"PermissionDeniedException, IOException",propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,removeXMLResource,try-catch,TriggerException,log,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,dropIndex,try-catch,IOException,log,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,dropDomNodes,try-catch,NullPointerException,log,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,start,try-catch,BTreeException | IOException,log,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,start,try-catch,TerminatedException,log,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,removeBinaryResource,throws-declaration,"PermissionDeniedException, IOException",propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,removeResourceMetadata,try-catch,LockException,log,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,removeResource,throws-declaration,"IOException, PermissionDeniedException",propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,removeXMLResource,throws-declaration,"PermissionDeniedException, IOException",propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,getNextResourceId,throws-declaration,"EXistException, LockException",propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,reindexXMLResource,try-catch,IOException,log,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,defragXMLResource,try-catch,IOException,log,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,start,try-catch,IOException | DBException,log,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,start,try-catch,TerminatedException,log,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,start,try-catch,DBException,log,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,checkXMLResourceConsistency,throws-declaration,EXistException,propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,start,throws-declaration,ReadOnlyException,propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,start,try-catch,IOException,log,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,start,try-catch,BTreeException | IOException,log,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,start,throws-declaration,ReadOnlyException,propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,updateNode,try-catch,Exception,log,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,start,throws-declaration,ReadOnlyException,propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,removeAllNodes,try-catch,IOException,log,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,repair,throws-declaration,"PermissionDeniedException, IOException, LockException",propagate,,
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,repair,try-catch,DBException,log,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,repair,try-catch,DBException,log,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,repair,try-catch,DatabaseConfigurationException,log,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,rebuildIndex,try-catch,LockException | IOException | TerminatedException | DBException,log,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,flush,try-catch,EXistException,log,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,sync,try-catch,DBException,log,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,start,try-catch,DBException,log,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,start,try-catch,LockException,log,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,shutdown,try-catch,Exception,log,Log4j,ERROR
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$CollectionIndexDropMode,start,try-catch,DBException,log,Log4j,ERROR
 exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$NodeProcessor,start,throws-declaration,ReadOnlyException,propagate,,
 exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$NodeProcessor,start,try-catch,BTreeException | IOException,log,Log4j,ERROR
 exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker$DocumentCallback,indexInfo,throws-declaration,TerminatedException,propagate,,
@@ -6320,6 +6339,7 @@ exist-core/src/main/java/org/exist/util/Collations.java,org.exist.util.Collation
 exist-core/src/main/java/org/exist/util/Collations.java,org.exist.util.Collations,getCollationFromURI,try-catch,Exception,wrap,Log4j,
 exist-core/src/main/java/org/exist/util/Collations.java,org.exist.util.Collations,getCollationFromURI,try-catch,Exception,wrap,Log4j,
 exist-core/src/main/java/org/exist/util/Collations.java,org.exist.util.Collations,getCollationFromURI,try-catch,Exception,log+wrap,Log4j,ERROR
+exist-core/src/main/java/org/exist/util/Collations.java,org.exist.util.Collations,getCollationFromURI,try-catch,ClassNotFoundException,ignore,Log4j,
 exist-core/src/main/java/org/exist/util/Collations.java,org.exist.util.Collations,getCollationFromParams,throws-declaration,XPathException,propagate,,
 exist-core/src/main/java/org/exist/util/Collations.java,org.exist.util.Collations,getCollationFromParams,try-catch,Exception,log+recover,Log4j,ERROR
 exist-core/src/main/java/org/exist/util/Collations.java,org.exist.util.Collations,getCollationFromParams,try-catch,IllegalArgumentException,log+wrap,Log4j,ERROR
@@ -7774,8 +7794,9 @@ exist-core/src/main/java/org/exist/collections/Collection.java,org.exist.collect
 exist-core/src/main/java/org/exist/collections/Collection.java,org.exist.collections.Collection$CollectionEntry,read,throws-declaration,IOException,propagate,,
 exist-core/src/main/java/org/exist/collections/Collection.java,org.exist.collections.Collection$SubCollectionEntry,readMetadata,throws-declaration,"IOException, LockException",propagate,,
 exist-core/src/main/java/org/exist/collections/Collection.java,org.exist.collections.Collection$SubCollectionEntry,read,throws-declaration,IOException,propagate,,
-exist-core/src/main/java/org/exist/indexing/IndexController.java,org.exist.indexing.IndexController,configure,throws-declaration,DatabaseConfigurationException,propagate,,
-exist-core/src/main/java/org/exist/indexing/IndexController.java,org.exist.indexing.IndexController,removeCollection,throws-declaration,PermissionDeniedException,propagate,,
+exist-core/src/main/java/org/exist/indexing/IndexController.java,org.exist.indexing.IndexController$CollectionIndexRemovalMode,configure,throws-declaration,DatabaseConfigurationException,propagate,,
+exist-core/src/main/java/org/exist/indexing/IndexController.java,org.exist.indexing.IndexController$CollectionIndexRemovalMode,removeCollection,throws-declaration,PermissionDeniedException,propagate,,
+exist-core/src/main/java/org/exist/indexing/IndexController.java,org.exist.indexing.IndexController$CollectionIndexRemovalMode,removeCollection,throws-declaration,PermissionDeniedException,propagate,,
 exist-core/src/main/java/org/exist/indexing/AbstractIndex.java,org.exist.indexing.AbstractIndex,configure,throws-declaration,DatabaseConfigurationException,propagate,,
 exist-core/src/main/java/org/exist/indexing/IndexUtils.java,org.exist.indexing.IndexUtils,scanNode,try-catch,IOException,log,Log4j,WARN
 exist-core/src/main/java/org/exist/indexing/AbstractMatchListener.java,org.exist.indexing.AbstractMatchListener,startDocument,throws-declaration,SAXException,propagate,,
@@ -8458,6 +8479,18 @@ exist-core/src/test/java/org/exist/xquery/functions/fn/DocTest.java,org.exist.xq
 exist-core/src/test/java/org/exist/xquery/functions/fn/DocTest.java,org.exist.xquery.functions.fn.DocTest,asInMemoryDocument,throws-declaration,XPathException,propagate,,
 exist-core/src/test/java/org/exist/xquery/functions/fn/DocTest.java,org.exist.xquery.functions.fn.DocTest,asInMemoryDocument,try-catch,ParserConfigurationException | SAXException | IOException,wrap,,
 exist-core/src/test/java/org/exist/xquery/functions/fn/FunStrLengthTest.java,org.exist.xquery.functions.fn.FunStrLengthTest,contextItemWithinPredicate,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/functions/fn/FunIndexOfPerformanceTest.java,org.exist.xquery.functions.fn.FunIndexOfPerformanceTest,executeOne,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/functions/fn/FunIndexOfPerformanceTest.java,org.exist.xquery.functions.fn.FunIndexOfPerformanceTest,smallSequenceStrings,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/functions/fn/FunIndexOfPerformanceTest.java,org.exist.xquery.functions.fn.FunIndexOfPerformanceTest,smallSequenceIntegers,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/functions/fn/FunIndexOfPerformanceTest.java,org.exist.xquery.functions.fn.FunIndexOfPerformanceTest,emptySource,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/functions/fn/FunIndexOfPerformanceTest.java,org.exist.xquery.functions.fn.FunIndexOfPerformanceTest,noMatch,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/functions/fn/FunIndexOfPerformanceTest.java,org.exist.xquery.functions.fn.FunIndexOfPerformanceTest,repeatedLookupsAgainstStableSource,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/functions/fn/FunIndexOfPerformanceTest.java,org.exist.xquery.functions.fn.FunIndexOfPerformanceTest,crossNumericTypeEquality,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/functions/fn/FunIndexOfPerformanceTest.java,org.exist.xquery.functions.fn.FunIndexOfPerformanceTest,nanNeverMatches,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/functions/fn/FunIndexOfPerformanceTest.java,org.exist.xquery.functions.fn.FunIndexOfPerformanceTest,duplicatesReportAllPositions,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/functions/fn/FunIndexOfPerformanceTest.java,org.exist.xquery.functions.fn.FunIndexOfPerformanceTest,issue3682FlworVariantCompletesQuickly,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/functions/fn/FunIndexOfPerformanceTest.java,org.exist.xquery.functions.fn.FunIndexOfPerformanceTest,lengthPreservingMutationReturnsCorrectPositions,throws-declaration,XMLDBException,propagate,,
+exist-core/src/test/java/org/exist/xquery/functions/fn/FunIndexOfPerformanceTest.java,org.exist.xquery.functions.fn.FunIndexOfPerformanceTest,issue3682PredicateVariantCompletesQuickly,throws-declaration,XMLDBException,propagate,,
 exist-core/src/test/java/org/exist/xquery/functions/xquery3/TryCatchTest.java,org.exist.xquery.functions.xquery3.TryCatchTest,encapsulated_1,throws-declaration,XMLDBException,propagate,,
 exist-core/src/test/java/org/exist/xquery/functions/xquery3/TryCatchTest.java,org.exist.xquery.functions.xquery3.TryCatchTest,encapsulated_2,throws-declaration,XMLDBException,propagate,,
 exist-core/src/test/java/org/exist/xquery/functions/xquery3/TryCatchTest.java,org.exist.xquery.functions.xquery3.TryCatchTest,encapsulated_3,throws-declaration,"XMLDBException, IOException, SAXException",propagate,,
@@ -11773,6 +11806,7 @@ exist-core/src/test/java/org/exist/util/ConfigurationTest.java,org.exist.util.Co
 exist-core/src/test/java/org/exist/util/ConfigurationTest.java,org.exist.util.ConfigurationTest,parseBooleanAttributeMissingUsesDefault,throws-declaration,Exception,propagate,,
 exist-core/src/test/java/org/exist/util/ConfigurationTest.java,org.exist.util.ConfigurationTest,parseBooleanAttributeInvalidTreatsAsFalse,throws-declaration,Exception,propagate,,
 exist-core/src/test/java/org/exist/util/CollationsTest.java,org.exist.util.CollationsTest,htmlAscii_contains,throws-declaration,XPathException,propagate,,
+exist-core/src/test/java/org/exist/util/CollationsTest.java,org.exist.util.CollationsTest,javaUriCustomCollatorCanBeLoaded,throws-declaration,XPathException,propagate,,
 exist-core/src/test/java/org/exist/util/CollectionOfArrayIteratorTest.java,org.exist.util.CollectionOfArrayIteratorTest,nullCollection,try-catch,NoSuchElementException,ignore,,
 exist-core/src/test/java/org/exist/util/CollectionOfArrayIteratorTest.java,org.exist.util.CollectionOfArrayIteratorTest,emptyCollection,try-catch,NoSuchElementException,ignore,,
 exist-core/src/test/java/org/exist/util/CollectionOfArrayIteratorTest.java,org.exist.util.CollectionOfArrayIteratorTest,oneEmptyArray,try-catch,NoSuchElementException,ignore,,
@@ -14298,3 +14332,47 @@ extensions/security/iprange/src/main/java/org/exist/security/realm/iprange/IPRan
 extensions/security/iprange/src/main/java/org/exist/security/realm/iprange/IPRangeRealm.java,org.exist.security.realm.iprange.IPRangeRealm,deleteGroup,throws-declaration,"PermissionDeniedException, EXistException, ConfigurationException",propagate,,
 extensions/security/iprange/src/main/java/org/exist/security/realm/iprange/IPRangeRealm.java,org.exist.security.realm.iprange.IPRangeRealm,authenticate,throws-declaration,AuthenticationException,propagate,,
 extensions/security/iprange/src/main/java/org/exist/security/realm/iprange/IPRangeRealm.java,org.exist.security.realm.iprange.IPRangeRealm,authenticate,try-catch,EXistException | UnknownHostException | XPathException | PermissionDeniedException,wrap,Log4j,
+exist-core-jmh/src/main/java/org/exist/storage/ReindexBenchmark.java,org.exist.storage.ReindexBenchmark,setUp,throws-declaration,"EXistException, DatabaseConfigurationException, IOException, PermissionDeniedException, CollectionConfigurationException, LockException, SAXException, TriggerException",propagate,,
+exist-core-jmh/src/main/java/org/exist/storage/ReindexBenchmark.java,org.exist.storage.ReindexBenchmark,reindex,throws-declaration,"EXistException, PermissionDeniedException, IOException, LockException, XPathException",propagate,,
+exist-core-jmh/src/main/java/org/exist/storage/ReindexBenchmark.java,org.exist.storage.ReindexBenchmark,storeDocuments,throws-declaration,"EXistException, PermissionDeniedException, IOException, CollectionConfigurationException, LockException, SAXException, TriggerException",propagate,,
+exist-core-jmh/src/main/java/org/exist/storage/ReindexBenchmark.java,org.exist.storage.ReindexBenchmark,verifyIndex,throws-declaration,"EXistException, PermissionDeniedException, XPathException, IOException",propagate,,
+exist-core-jmh/src/main/java/org/exist/indexing/lucene/LucenePhraseQueryBenchmark.java,org.exist.indexing.lucene.LucenePhraseQueryBenchmark,setUp,throws-declaration,"EXistException, DatabaseConfigurationException, IOException, PermissionDeniedException, CollectionConfigurationException, LockException, SAXException, TriggerException, XPathException",propagate,,
+exist-core-jmh/src/main/java/org/exist/indexing/lucene/LucenePhraseQueryBenchmark.java,org.exist.indexing.lucene.LucenePhraseQueryBenchmark,phraseQuery,throws-declaration,"EXistException, PermissionDeniedException, XPathException, IOException",propagate,,
+exist-core-jmh/src/main/java/org/exist/indexing/lucene/LucenePhraseQueryBenchmark.java,org.exist.indexing.lucene.LucenePhraseQueryBenchmark,storeDocuments,throws-declaration,"EXistException, PermissionDeniedException, IOException, CollectionConfigurationException, LockException, SAXException, TriggerException",propagate,,
+exist-core-jmh/src/main/java/org/exist/indexing/lucene/ReindexDeleteStrategyBenchmark.java,org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark$BenchmarkState,deletePerDoc,throws-declaration,IOException,propagate,,
+exist-core-jmh/src/main/java/org/exist/indexing/lucene/ReindexDeleteStrategyBenchmark.java,org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark$BenchmarkState,deleteInBatches,throws-declaration,IOException,propagate,,
+exist-core-jmh/src/main/java/org/exist/indexing/lucene/ReindexDeleteStrategyBenchmark.java,org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark$BenchmarkState,deleteInBatchesWithNoopCheck,throws-declaration,IOException,propagate,,
+exist-core-jmh/src/main/java/org/exist/indexing/lucene/ReindexDeleteStrategyBenchmark.java,org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark$BenchmarkState,deleteInBatchesBooleanShouldSweep,throws-declaration,IOException,propagate,,
+exist-core-jmh/src/main/java/org/exist/indexing/lucene/ReindexDeleteStrategyBenchmark.java,org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark$BenchmarkState,deleteInBatchesTermInSetSweep,throws-declaration,IOException,propagate,,
+exist-core-jmh/src/main/java/org/exist/indexing/lucene/ReindexDeleteStrategyBenchmark.java,org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark$BenchmarkState,buildIndex,throws-declaration,IOException,propagate,,
+exist-core-jmh/src/main/java/org/exist/indexing/lucene/ReindexDeleteStrategyBenchmark.java,org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark$BenchmarkState,assertNamedFieldSurvivors,throws-declaration,IOException,propagate,,
+exist-indexes-jmh/src/main/java/org/exist/indexing/jmh/NgramWhereClauseBenchmark.java,org.exist.indexing.jmh.NgramWhereClauseBenchmark,setUp,throws-declaration,Exception,propagate,,
+exist-indexes-jmh/src/main/java/org/exist/indexing/jmh/NgramWhereClauseBenchmark.java,org.exist.indexing.jmh.NgramWhereClauseBenchmark,run,throws-declaration,Exception,propagate,,
+exist-indexes-jmh/src/main/java/org/exist/indexing/jmh/NgramWhereClauseBenchmark.java,org.exist.indexing.jmh.NgramWhereClauseBenchmark,shapeALiteral,throws-declaration,Exception,propagate,,
+exist-indexes-jmh/src/main/java/org/exist/indexing/jmh/NgramWhereClauseBenchmark.java,org.exist.indexing.jmh.NgramWhereClauseBenchmark,shapeALetVar,throws-declaration,Exception,propagate,,
+exist-indexes-jmh/src/main/java/org/exist/indexing/jmh/NgramWhereClauseBenchmark.java,org.exist.indexing.jmh.NgramWhereClauseBenchmark,shapeBForVarPredicate,throws-declaration,Exception,propagate,,
+exist-indexes-jmh/src/main/java/org/exist/indexing/jmh/NgramWhereClauseBenchmark.java,org.exist.indexing.jmh.NgramWhereClauseBenchmark,shapeBForVarWhere,throws-declaration,Exception,propagate,,
+exist-indexes-jmh/src/main/java/org/exist/indexing/jmh/RangeFieldEqWhereClauseBenchmark.java,org.exist.indexing.jmh.RangeFieldEqWhereClauseBenchmark,setUp,throws-declaration,Exception,propagate,,
+exist-indexes-jmh/src/main/java/org/exist/indexing/jmh/RangeFieldEqWhereClauseBenchmark.java,org.exist.indexing.jmh.RangeFieldEqWhereClauseBenchmark,run,throws-declaration,Exception,propagate,,
+exist-indexes-jmh/src/main/java/org/exist/indexing/jmh/RangeFieldEqWhereClauseBenchmark.java,org.exist.indexing.jmh.RangeFieldEqWhereClauseBenchmark,shapeALiteral,throws-declaration,Exception,propagate,,
+exist-indexes-jmh/src/main/java/org/exist/indexing/jmh/RangeFieldEqWhereClauseBenchmark.java,org.exist.indexing.jmh.RangeFieldEqWhereClauseBenchmark,shapeALetVar,throws-declaration,Exception,propagate,,
+exist-indexes-jmh/src/main/java/org/exist/indexing/jmh/RangeFieldEqWhereClauseBenchmark.java,org.exist.indexing.jmh.RangeFieldEqWhereClauseBenchmark,shapeBForVarPredicate,throws-declaration,Exception,propagate,,
+exist-indexes-jmh/src/main/java/org/exist/indexing/jmh/RangeFieldEqWhereClauseBenchmark.java,org.exist.indexing.jmh.RangeFieldEqWhereClauseBenchmark,shapeBForVarWhere,throws-declaration,Exception,propagate,,
+exist-indexes-jmh/src/main/java/org/exist/indexing/jmh/RangeEqWhereClauseBenchmark.java,org.exist.indexing.jmh.RangeEqWhereClauseBenchmark,setUp,throws-declaration,Exception,propagate,,
+exist-indexes-jmh/src/main/java/org/exist/indexing/jmh/RangeEqWhereClauseBenchmark.java,org.exist.indexing.jmh.RangeEqWhereClauseBenchmark,run,throws-declaration,Exception,propagate,,
+exist-indexes-jmh/src/main/java/org/exist/indexing/jmh/RangeEqWhereClauseBenchmark.java,org.exist.indexing.jmh.RangeEqWhereClauseBenchmark,shapeALiteral,throws-declaration,Exception,propagate,,
+exist-indexes-jmh/src/main/java/org/exist/indexing/jmh/RangeEqWhereClauseBenchmark.java,org.exist.indexing.jmh.RangeEqWhereClauseBenchmark,shapeALetVar,throws-declaration,Exception,propagate,,
+exist-indexes-jmh/src/main/java/org/exist/indexing/jmh/RangeEqWhereClauseBenchmark.java,org.exist.indexing.jmh.RangeEqWhereClauseBenchmark,shapeBForVarPredicate,throws-declaration,Exception,propagate,,
+exist-indexes-jmh/src/main/java/org/exist/indexing/jmh/RangeEqWhereClauseBenchmark.java,org.exist.indexing.jmh.RangeEqWhereClauseBenchmark,shapeBForVarWhere,throws-declaration,Exception,propagate,,
+exist-indexes-jmh/src/main/java/org/exist/indexing/jmh/GeneralComparisonWhereClauseBenchmark.java,org.exist.indexing.jmh.GeneralComparisonWhereClauseBenchmark,setUp,throws-declaration,Exception,propagate,,
+exist-indexes-jmh/src/main/java/org/exist/indexing/jmh/GeneralComparisonWhereClauseBenchmark.java,org.exist.indexing.jmh.GeneralComparisonWhereClauseBenchmark,run,throws-declaration,Exception,propagate,,
+exist-indexes-jmh/src/main/java/org/exist/indexing/jmh/GeneralComparisonWhereClauseBenchmark.java,org.exist.indexing.jmh.GeneralComparisonWhereClauseBenchmark,shapeALiteral,throws-declaration,Exception,propagate,,
+exist-indexes-jmh/src/main/java/org/exist/indexing/jmh/GeneralComparisonWhereClauseBenchmark.java,org.exist.indexing.jmh.GeneralComparisonWhereClauseBenchmark,shapeALetVar,throws-declaration,Exception,propagate,,
+exist-indexes-jmh/src/main/java/org/exist/indexing/jmh/GeneralComparisonWhereClauseBenchmark.java,org.exist.indexing.jmh.GeneralComparisonWhereClauseBenchmark,shapeBForVarPredicate,throws-declaration,Exception,propagate,,
+exist-indexes-jmh/src/main/java/org/exist/indexing/jmh/GeneralComparisonWhereClauseBenchmark.java,org.exist.indexing.jmh.GeneralComparisonWhereClauseBenchmark,shapeBForVarWhere,throws-declaration,Exception,propagate,,
+exist-indexes-jmh/src/main/java/org/exist/indexing/jmh/LuceneWhereClauseBenchmark.java,org.exist.indexing.jmh.LuceneWhereClauseBenchmark,setUp,throws-declaration,Exception,propagate,,
+exist-indexes-jmh/src/main/java/org/exist/indexing/jmh/LuceneWhereClauseBenchmark.java,org.exist.indexing.jmh.LuceneWhereClauseBenchmark,run,throws-declaration,Exception,propagate,,
+exist-indexes-jmh/src/main/java/org/exist/indexing/jmh/LuceneWhereClauseBenchmark.java,org.exist.indexing.jmh.LuceneWhereClauseBenchmark,shapeALiteral,throws-declaration,Exception,propagate,,
+exist-indexes-jmh/src/main/java/org/exist/indexing/jmh/LuceneWhereClauseBenchmark.java,org.exist.indexing.jmh.LuceneWhereClauseBenchmark,shapeALetVar,throws-declaration,Exception,propagate,,
+exist-indexes-jmh/src/main/java/org/exist/indexing/jmh/LuceneWhereClauseBenchmark.java,org.exist.indexing.jmh.LuceneWhereClauseBenchmark,shapeBForVarPredicate,throws-declaration,Exception,propagate,,
+exist-indexes-jmh/src/main/java/org/exist/indexing/jmh/LuceneWhereClauseBenchmark.java,org.exist.indexing.jmh.LuceneWhereClauseBenchmark,shapeBForVarWhere,throws-declaration,Exception,propagate,,

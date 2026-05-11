@@ -38,6 +38,7 @@ naming,init* method naming pattern,initMap,,project-wide
 naming,parse* method naming pattern,parseTimezoneName,,project-wide
 imports,Static imports from com.evolvedbinary.j8fu.tuple,com.evolvedbinary.j8fu.tuple.Tuple.Tuple,,project-wide
 naming,validate* method naming pattern,validateMapProperties,,project-wide
+naming,build* method naming pattern,buildIndex,,project-wide
 naming,find* method naming pattern,findAncestorOrSelf,,project-wide
 imports,Static imports from org.exist.xquery.functions.map,org.exist.xquery.functions.map.MapType.newLinearMap,,project-wide
 naming,format* method naming pattern,formatDate,,project-wide
@@ -48,7 +49,6 @@ imports,Static imports from org.exist.dom.QName,org.exist.dom.QName.Validity.VAL
 imports,Static imports from org.exist,org.exist.Namespaces.XSLT_XQUERY_SERIALIZATION_NS,,project-wide
 imports,Static imports from org.exist.xquery.functions.fn.transform.Options,org.exist.xquery.functions.fn.transform.Options.Option.*,,project-wide
 naming,can* method naming pattern,canOptimizeSequence,,project-wide
-naming,build* method naming pattern,buildResult,,project-wide
 imports,Static imports from org.exist.xquery.functions.xmldb,org.exist.xquery.functions.xmldb.XMLDBModule.functionSignature,,project-wide
 naming,load* method naming pattern,loadFromURI,,project-wide
 imports,Static imports from com.ibm.icu.text,com.ibm.icu.text.UnicodeMatcher.U_MATCH,,project-wide

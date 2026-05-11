@@ -95,7 +95,7 @@ exist-core/src/main/java/org/exist/xquery/functions/fn/FunEndsWith.java,org.exis
 exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatNumbers.java,org.exist.xquery.functions.fn.FnFormatNumbers,1200,16,4,174,2,0.0,34,36.77053953126269
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunContains.java,org.exist.xquery.functions.fn.FunContains,78,3,1,11,3,0.0,12,51.670704540689066
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunStrLength.java,org.exist.xquery.functions.fn.FunStrLength,87,3,1,13,3,0.0,16,50.44767166231235
-exist-core/src/main/java/org/exist/xquery/functions/fn/FunIndexOf.java,org.exist.xquery.functions.fn.FunIndexOf,113,2,6,10,2,0.0,15,42.46194819523826
+exist-core/src/main/java/org/exist/xquery/functions/fn/FunIndexOf.java,org.exist.xquery.functions.fn.FunIndexOf,364,10,16,43,2,0.13333333333333333,23,48.09890035140598
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunOnFunctions.java,org.exist.xquery.functions.fn.FunOnFunctions,114,4,1,21,4,0.0,20,50.0799083675991
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunContainsToken.java,org.exist.xquery.functions.fn.FunContainsToken,71,2,5,9,2,0.0,13,48.25226823515742
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunEquals.java,org.exist.xquery.functions.fn.FunEquals,88,3,1,14,3,0.0,13,49.84302026030795
@@ -107,14 +107,14 @@ exist-core/src/main/java/org/exist/xquery/functions/fn/FunDeepEqual.java,org.exi
 exist-core/src/main/java/org/exist/xquery/functions/fn/LoadXQueryModule.java,org.exist.xquery.functions.fn.LoadXQueryModule,251,7,9,34,2,0.0,42,45.84109921039852
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunInsertBefore.java,org.exist.xquery.functions.fn.FunInsertBefore,88,2,2,12,2,0.0,10,44.31404063319013
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunGetDurationComponent.java,org.exist.xquery.functions.fn.FunGetDurationComponent,124,2,10,15,2,0.0,15,40.08036715241278
-exist-core/src/main/java/org/exist/xquery/functions/fn/FunMin.java,org.exist.xquery.functions.fn.FunMin,203,3,4,31,2,0.0,18,37.52806699841408
+exist-core/src/main/java/org/exist/xquery/functions/fn/FunMin.java,org.exist.xquery.functions.fn.FunMin,212,3,4,32,2,0.0,18,36.96644452960133
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunAbs.java,org.exist.xquery.functions.fn.FunAbs,58,2,1,8,2,0.0,9,49.88071946966284
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunBaseURI.java,org.exist.xquery.functions.fn.FunBaseURI,142,2,7,19,2,0.0,17,38.75853252703925
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunStringJoin.java,org.exist.xquery.functions.fn.FunStringJoin,76,2,1,10,2,0.0,11,46.897124979028554
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunGenerateId.java,org.exist.xquery.functions.fn.FunGenerateId,86,2,2,14,2,0.0,18,44.10581216926484
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunSubstring.java,org.exist.xquery.functions.fn.FunSubstring,229,7,1,28,3,0.0,13,49.40350016983111
 exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatIntegers.java,org.exist.xquery.functions.fn.FnFormatIntegers,63,2,4,5,2,0.0,9,51.00454440451122
-exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatDates.java,org.exist.xquery.functions.fn.FnFormatDates,1480,44,25,314,2,0.0,32,47.22830194504142
+exist-core/src/main/java/org/exist/xquery/functions/fn/FnFormatDates.java,org.exist.xquery.functions.fn.FnFormatDates,1637,50,28,349,2,8.163265306122449E-4,39,47.60975935239577
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunString.java,org.exist.xquery.functions.fn.FunString,71,2,1,11,2,0.0,11,47.52043890333968
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunError.java,org.exist.xquery.functions.fn.FunError,104,3,4,9,3,0.0,10,49.909975002034464
 exist-core/src/main/java/org/exist/xquery/functions/fn/FunRound.java,org.exist.xquery.functions.fn.FunRound,64,3,4,4,3,0.0,4,63.10608084899737
@@ -385,7 +385,7 @@ exist-core/src/main/java/org/exist/xquery/ArrowOperator.java,org.exist.xquery.Ar
 exist-core/src/main/java/org/exist/xquery/DynamicCommentConstructor.java,org.exist.xquery.DynamicCommentConstructor,96,6,1,17,1,1.0,20,56.726172909278446
 exist-core/src/main/java/org/exist/xquery/Expression.java,org.exist.xquery.Expression,189,27,14,27,26,0.0,0,81.43055882181517
 exist-core/src/main/java/org/exist/xquery/CountClause.java,org.exist.xquery.CountClause,165,11,4,18,4,0.2909090909090909,21,59.10955735464107
-exist-core/src/main/java/org/exist/xquery/UserDefinedFunction.java,org.exist.xquery.UserDefinedFunction,261,20,9,46,4,0.18421052631578946,23,60.645962080364164
+exist-core/src/main/java/org/exist/xquery/UserDefinedFunction.java,org.exist.xquery.UserDefinedFunction,262,20,10,46,4,0.18421052631578946,24,60.60491386640291
 exist-core/src/main/java/org/exist/xquery/AnnotationTriggerOnResult.java,org.exist.xquery.AnnotationTriggerOnResult,10,1,0,1,1,1.0,0,78.05153303713244
 exist-core/src/main/java/org/exist/xquery/PartialFunctionApplication.java,org.exist.xquery.PartialFunctionApplication,140,7,3,13,3,0.3333333333333333,19,55.230307845532444
 exist-core/src/main/java/org/exist/xquery/WindowExpr.java,org.exist.xquery.WindowExpr,640,21,4,95,4,0.10952380952380952,31,49.03509336911167
@@ -411,12 +411,12 @@ exist-core/src/main/java/org/exist/xquery/GroupByClause.java,org.exist.xquery.Gr
 exist-core/src/main/java/org/exist/xquery/EnclosedExpr.java,org.exist.xquery.EnclosedExpr,330,9,0,54,9,0.0,30,46.49775591068217
 exist-core/src/main/java/org/exist/xquery/LetExpr.java,org.exist.xquery.LetExpr,219,9,0,38,9,0.0,29,50.68876579570246
 exist-core/src/main/java/org/exist/xquery/AtomicToString.java,org.exist.xquery.AtomicToString,79,9,1,11,3,0.5833333333333334,11,68.06015090980998
-exist-core/src/main/java/org/exist/xquery/LocationStep.java,org.exist.xquery.LocationStep,1450,29,11,267,6,0.17980295566502463,55,41.952297499165496
+exist-core/src/main/java/org/exist/xquery/LocationStep.java,org.exist.xquery.LocationStep,1418,29,10,267,6,0.1748768472906404,54,42.1798955872409
 exist-core/src/main/java/org/exist/xquery/NamespaceConstructor.java,org.exist.xquery.NamespaceConstructor,142,8,2,31,2,0.7142857142857143,25,54.968786530663415
 exist-core/src/main/java/org/exist/xquery/FunctionSignature.java,org.exist.xquery.FunctionSignature,276,32,11,61,1,0.17540322580645162,11,67.14227730485453
 exist-core/src/main/java/org/exist/xquery/OrderByClause.java,org.exist.xquery.OrderByClause,471,15,5,73,4,0.37142857142857144,35,48.81027687195531
 exist-core/src/main/java/org/exist/xquery/ContextItemDeclaration.java,org.exist.xquery.ContextItemDeclaration,103,10,4,20,4,0.4666666666666667,12,63.927769174807565
-exist-core/src/main/java/org/exist/xquery/WhereClause.java,org.exist.xquery.WhereClause,153,12,2,33,4,0.3484848484848485,22,60.40175402841066
+exist-core/src/main/java/org/exist/xquery/WhereClause.java,org.exist.xquery.WhereClause,250,17,2,64,4,0.19117647058823528,27,58.30474142588928
 exist-core/src/main/java/org/exist/xquery/DynamicCardinalityCheck.java,org.exist.xquery.DynamicCardinalityCheck,127,13,3,23,1,0.8461538461538461,14,64.59366753682325
 exist-core/src/main/java/org/exist/xquery/PerformanceStatsImpl.java,org.exist.xquery.PerformanceStatsImpl,368,13,14,37,1,0.28205128205128205,22,51.12010572538423
 exist-core/src/main/java/org/exist/xquery/PerformanceStats.java,org.exist.xquery.PerformanceStats,93,9,6,9,9,0.0,1,77.74089261038833
@@ -481,7 +481,7 @@ exist-core/src/main/java/org/exist/xquery/util/ExpressionDumper.java,org.exist.x
 exist-core/src/main/java/org/exist/xquery/VariableDeclaration.java,org.exist.xquery.VariableDeclaration,248,21,4,44,6,0.29523809523809524,23,62.31790588900554
 exist-core/src/main/java/org/exist/xquery/AnalyzeContextInfo.java,org.exist.xquery.AnalyzeContextInfo,169,21,7,26,3,0.23809523809523808,3,69.67049847052196
 exist-core/src/main/java/org/exist/xquery/FunctionTypeCheck.java,org.exist.xquery.FunctionTypeCheck,114,14,2,18,1,0.7582417582417582,9,69.65206772272415
-exist-core/src/main/java/org/exist/xquery/XQueryContext.java,org.exist.xquery.XQueryContext,3691,232,103,629,13,0.038289296909986566,151,58.44756270268338
+exist-core/src/main/java/org/exist/xquery/XQueryContext.java,org.exist.xquery.XQueryContext,3727,232,104,632,13,0.038289296909986566,151,58.31732163971663
 exist-core/src/main/java/org/exist/xquery/JavaCall.java,org.exist.xquery.JavaCall,284,9,4,50,4,0.19444444444444445,25,47.9125097062027
 exist-core/src/main/java/org/exist/xquery/Predicate.java,org.exist.xquery.Predicate,620,22,4,164,9,0.03896103896103896,36,48.714182342352814
 exist-core/src/main/java/org/exist/xquery/CombiningExpression.java,org.exist.xquery.CombiningExpression,127,15,2,19,2,0.6095238095238096,10,67.48233750733067
@@ -495,7 +495,7 @@ exist-core/src/main/java/org/exist/xquery/SequenceConstructor.java,org.exist.xqu
 exist-core/src/main/java/org/exist/xquery/CastableExpression.java,org.exist.xquery.CastableExpression,151,10,3,29,3,0.4666666666666667,16,58.25247603258752
 exist-core/src/main/java/org/exist/xquery/VariableImpl.java,org.exist.xquery.VariableImpl,247,22,7,53,3,0.23809523809523808,19,62.312288319789594
 exist-core/src/main/java/org/exist/xquery/AbstractInternalModule.java,org.exist.xquery.AbstractInternalModule,209,19,4,31,5,0.18128654970760233,11,65.1718886231328
-exist-core/src/main/java/org/exist/xquery/LocalVariable.java,org.exist.xquery.LocalVariable,30,4,2,4,4,0.0,1,74.64112767966417
+exist-core/src/main/java/org/exist/xquery/LocalVariable.java,org.exist.xquery.LocalVariable,46,4,4,4,4,0.0,1,70.59165806551422
 exist-core/src/main/java/org/exist/xquery/Function.java,org.exist.xquery.Function,557,28,5,86,7,0.17989417989417988,40,55.50576762545712
 exist-core/src/main/java/org/exist/xquery/LogicalOp.java,org.exist.xquery.LogicalOp,87,7,3,17,3,0.23809523809523808,5,62.70129366447502
 exist-core/src/main/java/org/exist/xquery/pragmas/Optimize.java,org.exist.xquery.pragmas.Optimize,329,15,13,90,6,0.1619047619047619,36,52.1591451861431
@@ -525,7 +525,7 @@ exist-core/src/main/java/org/exist/xquery/modules/ModuleUtils.java,org.exist.xqu
 exist-core/src/main/java/org/exist/xquery/ContextItemExpression.java,org.exist.xquery.ContextItemExpression,51,5,0,11,5,0.0,9,65.27703618347988
 exist-core/src/main/java/org/exist/xquery/ValueComparison.java,org.exist.xquery.ValueComparison,205,9,0,41,5,0.0,22,52.4674187608714
 exist-core/src/main/java/org/exist/xquery/ConcatExpr.java,org.exist.xquery.ConcatExpr,70,7,0,16,7,0.0,18,62.863933297662406
-exist-core/src/main/java/org/exist/xquery/RangeExpression.java,org.exist.xquery.RangeExpression,136,7,2,20,4,0.2857142857142857,17,53.47066949633672
+exist-core/src/main/java/org/exist/xquery/RangeExpression.java,org.exist.xquery.RangeExpression,111,9,2,18,3,0.2777777777777778,16,60.47190824840369
 exist-core/src/main/java/org/exist/xquery/VariableReference.java,org.exist.xquery.VariableReference,161,15,2,33,5,0.44761904761904764,14,63.47401407031598
 exist-core/src/main/java/org/exist/xquery/OpSimpleMap.java,org.exist.xquery.OpSimpleMap,100,12,2,15,3,0.6212121212121212,14,67.91676378518947
 exist-core/src/main/java/org/exist/xquery/xqdoc/XQDocHelper.java,org.exist.xquery.xqdoc.XQDocHelper,124,9,4,34,1,0.3055555555555556,14,58.58536665556051
@@ -592,7 +592,7 @@ exist-core/src/main/java/org/exist/xquery/value/SubSequence.java,org.exist.xquer
 exist-core/src/main/java/org/exist/xquery/value/PreorderedValueSequence.java,org.exist.xquery.value.PreorderedValueSequence,218,17,2,27,7,0.16176470588235295,12,64.22954791604698
 exist-core/src/main/java/org/exist/xquery/value/NodeValue.java,org.exist.xquery.value.NodeValue,74,9,2,9,9,0.0,0,79.90595534674807
 exist-core/src/main/java/org/exist/xquery/value/AbstractDateTimeValue.java,org.exist.xquery.value.AbstractDateTimeValue,833,42,17,139,9,0.17770034843205576,35,55.76605346272714
-exist-core/src/main/java/org/exist/xquery/value/IntegerValue.java,org.exist.xquery.value.IntegerValue,567,52,18,159,9,0.31447963800904977,29,62.33459021745156
+exist-core/src/main/java/org/exist/xquery/value/IntegerValue.java,org.exist.xquery.value.IntegerValue,570,52,18,159,9,0.3137254901960784,29,62.28676056882999
 exist-core/src/main/java/org/exist/xquery/value/NumericValue.java,org.exist.xquery.value.NumericValue,172,28,0,50,17,0.0,13,71.35238054844304
 exist-core/src/main/java/org/exist/xquery/value/Item.java,org.exist.xquery.value.Item,80,12,0,12,12,0.0,0,81.8927814297361
 exist-core/src/main/java/org/exist/xquery/value/AtomicValueComparator.java,org.exist.xquery.value.AtomicValueComparator,37,3,2,8,1,0.3333333333333333,4,63.34970050642274
@@ -725,7 +725,7 @@ exist-core/src/main/java/org/exist/storage/lock/EnsureLocked.java,org.exist.stor
 exist-core/src/main/java/org/exist/storage/lock/LockTable.java,org.exist.storage.lock.LockTable,898,18,15,68,4,0.08496732026143791,25,45.82445118279449
 exist-core/src/main/java/org/exist/storage/lock/ManagedDocumentLock.java,org.exist.storage.lock.ManagedDocumentLock,17,2,1,2,1,1.0,1,71.97715599885586
 exist-core/src/main/java/org/exist/storage/structural/NativeStructuralIndex.java,org.exist.storage.structural.NativeStructuralIndex,90,9,8,13,4,0.3055555555555556,13,65.43226548332788
-exist-core/src/main/java/org/exist/storage/structural/NativeStructuralIndexWorker.java,org.exist.storage.structural.NativeStructuralIndexWorker,762,42,6,109,12,0.1997677119628339,40,55.78147565864855
+exist-core/src/main/java/org/exist/storage/structural/NativeStructuralIndexWorker.java,org.exist.storage.structural.NativeStructuralIndexWorker,770,42,6,110,12,0.1997677119628339,40,55.675315341677305
 exist-core/src/main/java/org/exist/storage/BrokerWatchdog.java,org.exist.storage.BrokerWatchdog,84,5,4,10,1,1.0,9,58.746016137350836
 exist-core/src/main/java/org/exist/storage/ProcessMonitor.java,org.exist.storage.ProcessMonitor,357,20,21,37,2,0.13157894736842105,24,59.15074470567612
 exist-core/src/main/java/org/exist/storage/StorageAddress.java,org.exist.storage.StorageAddress,105,13,0,13,6,0.0,3,70.12302543062218
@@ -749,7 +749,7 @@ exist-core/src/main/java/org/exist/storage/index/OverflowRemoveLoggable.java,org
 exist-core/src/main/java/org/exist/storage/index/OverflowCreateLoggable.java,org.exist.storage.index.OverflowCreateLoggable,59,8,1,8,5,0.21428571428571427,3,72.01558979285944
 exist-core/src/main/java/org/exist/storage/index/FreeList.java,org.exist.storage.index.FreeList,178,7,4,22,1,0.7142857142857143,3,53.72178959329651
 exist-core/src/main/java/org/exist/storage/GeneralRangeIndexSpec.java,org.exist.storage.GeneralRangeIndexSpec,49,4,1,6,1,1.0,5,62.45433931871564
-exist-core/src/main/java/org/exist/storage/DBBroker.java,org.exist.storage.DBBroker,1175,115,15,115,104,0.0,5,77.84779004030224
+exist-core/src/main/java/org/exist/storage/DBBroker.java,org.exist.storage.DBBroker,1186,115,15,115,104,0.0,5,77.75951280154993
 exist-core/src/main/java/org/exist/storage/XQueryPool.java,org.exist.storage.XQueryPool,156,5,11,14,1,0.6,16,51.242487404506456
 exist-core/src/main/java/org/exist/storage/BrokerPoolServicesManagerException.java,org.exist.storage.BrokerPoolServicesManagerException,17,2,1,2,1,1.0,0,75.24903993530238
 exist-core/src/main/java/org/exist/storage/vector/VectorStoreServiceImpl.java,org.exist.storage.vector.VectorStoreServiceImpl,51,5,3,9,1,0.7,8,65.86830269398662
@@ -842,7 +842,7 @@ exist-core/src/main/java/org/exist/storage/QNameRangeIndexSpec.java,org.exist.st
 exist-core/src/main/java/org/exist/storage/BrokerFactory.java,org.exist.storage.BrokerFactory,112,5,4,10,1,0.1,20,55.03296113775513
 exist-core/src/main/java/org/exist/storage/UpdateListener.java,org.exist.storage.UpdateListener,41,4,3,4,4,0.0,0,77.81760302311838
 exist-core/src/main/java/org/exist/storage/OccurrenceList.java,org.exist.storage.OccurrenceList,71,9,3,16,1,0.8055555555555556,3,68.46150030487165
-exist-core/src/main/java/org/exist/storage/IndexSpec.java,org.exist.storage.IndexSpec,186,12,7,35,1,0.25757575757575757,20,58.445559400379345
+exist-core/src/main/java/org/exist/storage/IndexSpec.java,org.exist.storage.IndexSpec,190,13,7,37,1,0.24358974358974358,20,59.20929103452573
 exist-core/src/main/java/org/exist/storage/BrokerPools.java,org.exist.storage.BrokerPools,279,13,7,25,1,0.358974358974359,12,56.848972280114346
 exist-core/src/main/java/org/exist/storage/IndexStats.java,org.exist.storage.IndexStats,26,4,2,4,1,0.8333333333333334,3,73.70137039681134
 exist-core/src/main/java/org/exist/storage/recovery/RecoveryManager.java,org.exist.storage.recovery.RecoveryManager,321,4,5,56,1,0.5,30,35.024083719802405
@@ -860,7 +860,7 @@ exist-core/src/main/java/org/exist/storage/serializers/XmlSerializerPoolObjectFa
 exist-core/src/main/java/org/exist/storage/serializers/ChainOfReceiversFactory.java,org.exist.storage.serializers.ChainOfReceiversFactory,43,3,3,7,1,0.6666666666666666,5,60.51920362770978
 exist-core/src/main/java/org/exist/storage/serializers/CustomMatchListenerFactory.java,org.exist.storage.serializers.CustomMatchListenerFactory,74,4,6,12,1,0.3333333333333333,10,56.752959770033875
 exist-core/src/main/java/org/exist/storage/CacheManager.java,org.exist.storage.CacheManager,64,9,0,9,9,0.0,1,81.28136386106438
-exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,4322,196,45,663,10,0.20266875981161694,174,53.04151990271434
+exist-core/src/main/java/org/exist/storage/NativeBroker.java,org.exist.storage.NativeBroker,4400,197,45,679,10,0.20061120895058532,176,52.885283069467846
 exist-core/src/main/java/org/exist/storage/statistics/NodeStats.java,org.exist.storage.statistics.NodeStats,174,15,6,43,1,0.5714285714285714,15,61.646453418680345
 exist-core/src/main/java/org/exist/storage/statistics/DataGuide.java,org.exist.storage.statistics.DataGuide,151,9,2,13,1,0.7777777777777778,8,60.25441188064944
 exist-core/src/main/java/org/exist/storage/statistics/IndexStatisticsWorker.java,org.exist.storage.statistics.IndexStatisticsWorker,217,19,6,28,8,0.14619883040935672,17,65.16351230162114
@@ -1122,7 +1122,7 @@ exist-core/src/main/java/org/exist/util/RingBuffer.java,org.exist.util.RingBuffe
 exist-core/src/main/java/org/exist/util/WeakLazyStripes.java,org.exist.util.WeakLazyStripes,382,8,13,46,1,0.5357142857142857,11,45.47484476630946
 exist-core/src/main/java/org/exist/util/DatabaseConfigurationException.java,org.exist.util.DatabaseConfigurationException,18,3,1,3,3,0.0,1,78.04683842274385
 exist-core/src/main/java/org/exist/util/pool/NodePool.java,org.exist.util.pool.NodePool,89,6,4,14,4,0.2,13,61.34596606791261
-exist-core/src/main/java/org/exist/util/Collations.java,org.exist.util.Collations,781,17,10,125,7,0.022058823529411766,24,44.265664505915225
+exist-core/src/main/java/org/exist/util/Collations.java,org.exist.util.Collations,792,17,10,128,7,0.022058823529411766,25,44.02272497851787
 exist-core/src/main/java/org/exist/util/HSort.java,org.exist.util.HSort,519,12,0,96,6,0.0,6,43.71975471327845
 exist-core/src/main/java/org/exist/util/Stacktrace.java,org.exist.util.Stacktrace,71,4,1,7,2,0.0,2,59.79606925856544
 exist-core/src/main/java/org/exist/util/CodePointString.java,org.exist.util.CodePointString,362,21,1,52,2,0.8142857142857143,6,58.9292864824382
@@ -1450,7 +1450,7 @@ exist-core/src/main/java/org/exist/collections/CollectionURI.java,org.exist.coll
 exist-core/src/main/java/org/exist/indexing/ReindexScope.java,org.exist.indexing.ReindexScope,41,1,0,6,1,1.0,1,50.537944541172514
 exist-core/src/main/java/org/exist/indexing/MatchListener.java,org.exist.indexing.MatchListener,35,3,0,3,3,0.0,0,76.59115817561104
 exist-core/src/main/java/org/exist/indexing/AbstractStreamListener.java,org.exist.indexing.AbstractStreamListener,78,10,2,18,1,1.0,1,71.33786660095407
-exist-core/src/main/java/org/exist/indexing/IndexController.java,org.exist.indexing.IndexController,473,31,7,70,8,0.16129032258064516,22,61.223355333083745
+exist-core/src/main/java/org/exist/indexing/IndexController.java,org.exist.indexing.IndexController,495,32,7,72,8,0.15120967741935484,23,61.11355516323905
 exist-core/src/main/java/org/exist/indexing/AbstractIndex.java,org.exist.indexing.AbstractIndex,56,8,4,10,3,0.17857142857142858,1,73.57214446650535
 exist-core/src/main/java/org/exist/indexing/IndexUtils.java,org.exist.indexing.IndexUtils,55,2,1,15,1,0.0,11,49.84002873212846
 exist-core/src/main/java/org/exist/indexing/StructuralIndex.java,org.exist.indexing.StructuralIndex,45,8,2,8,8,0.0,0,83.5023512520083
@@ -1459,7 +1459,7 @@ exist-core/src/main/java/org/exist/indexing/StreamListener.java,org.exist.indexi
 exist-core/src/main/java/org/exist/indexing/IndexManager.java,org.exist.indexing.IndexManager,263,18,11,39,1,0.21568627450980393,22,60.53863173881939
 exist-core/src/main/java/org/exist/indexing/RawBackupSupport.java,org.exist.indexing.RawBackupSupport,10,1,0,1,1,1.0,0,78.05153303713244
 exist-core/src/main/java/org/exist/indexing/Index.java,org.exist.indexing.Index,105,11,0,11,11,0.0,0,78.49224897472615
-exist-core/src/main/java/org/exist/indexing/IndexWorker.java,org.exist.indexing.IndexWorker,185,16,1,16,16,0.0,0,76.67612452281614
+exist-core/src/main/java/org/exist/indexing/IndexWorker.java,org.exist.indexing.IndexWorker,186,16,1,16,16,0.0,0,76.62505332522257
 exist-core/src/main/java/org/exist/ResourceMetadata.java,org.exist.ResourceMetadata,23,1,0,1,1,1.0,0,70.16081503037883
 exist-core/src/main/java/org/exist/backup/xquery/BackupModule.java,org.exist.backup.xquery.BackupModule,50,5,5,5,5,0.0,1,73.89584084540189
 exist-core/src/main/java/org/exist/backup/xquery/ListBackups.java,org.exist.backup.xquery.ListBackups,87,2,4,13,2,0.0,25,43.3379972588654
@@ -1594,6 +1594,7 @@ exist-core/src/test/java/org/exist/xquery/functions/fn/transform/FunTransformTes
 exist-core/src/test/java/org/exist/xquery/functions/fn/FunUnparsedTextTest.java,org.exist.xquery.functions.fn.FunUnparsedTextTest,120,5,1,5,5,0.0,18,50.11934560367102
 exist-core/src/test/java/org/exist/xquery/functions/fn/DocTest.java,org.exist.xquery.functions.fn.DocTest,212,9,3,11,2,0.08333333333333333,36,51.33814235605487
 exist-core/src/test/java/org/exist/xquery/functions/fn/FunStrLengthTest.java,org.exist.xquery.functions.fn.FunStrLengthTest,38,1,1,1,1,1.0,6,45.7516233498882
+exist-core/src/test/java/org/exist/xquery/functions/fn/FunIndexOfPerformanceTest.java,org.exist.xquery.functions.fn.FunIndexOfPerformanceTest,164,12,1,14,1,0.0,7,61.94065325803161
 exist-core/src/test/java/org/exist/xquery/functions/xquery3/TryCatchTest.java,org.exist.xquery.functions.xquery3.TryCatchTest,280,13,1,15,1,1.0,13,53.44630210463007
 exist-core/src/test/java/org/exist/xquery/functions/xquery3/DeclareVariableTest.java,org.exist.xquery.functions.xquery3.DeclareVariableTest,24,1,1,1,1,1.0,5,56.0765497514892
 exist-core/src/test/java/org/exist/xquery/functions/xquery3/SwitchTest.java,org.exist.xquery.functions.xquery3.SwitchTest,53,3,1,3,1,1.0,5,57.45324172657081
@@ -1990,11 +1991,12 @@ exist-core/src/test/java/org/exist/util/sorters/SortComparatorTest.java,org.exis
 exist-core/src/test/java/org/exist/util/sorters/SortTest.java,org.exist.util.sorters.SortTest,183,13,3,38,2,0.3974358974358974,7,59.59656205389996
 exist-core/src/test/java/org/exist/util/DOMSerializerTest.java,org.exist.util.DOMSerializerTest,24,1,0,1,1,1.0,8,52.82106277477305
 exist-core/src/test/java/org/exist/util/ConfigurationTest.java,org.exist.util.ConfigurationTest,78,11,0,13,4,0.0,13,67.08072813984391
-exist-core/src/test/java/org/exist/util/CollationsTest.java,org.exist.util.CollationsTest,13,1,0,1,1,1.0,4,59.897309250765055
+exist-core/src/test/java/org/exist/util/CollationsTest.java,org.exist.util.CollationsTest,24,2,0,2,2,0.0,4,61.51721039823552
 exist-core/src/test/java/org/exist/util/WeakLazyStripesTest.java,org.exist.util.WeakLazyStripesTest,19,1,0,3,1,1.0,5,55.512890304920845
 exist-core/src/test/java/org/exist/util/LeasableTest.java,org.exist.util.LeasableTest,30,1,0,1,1,1.0,6,49.6869234401212
 exist-core/src/test/java/org/exist/util/CollectionOfArrayIteratorTest.java,org.exist.util.CollectionOfArrayIteratorTest,455,16,0,31,16,0.0,5,49.39890644698014
 exist-core/src/test/java/org/exist/util/CodePointStringTest.java,org.exist.util.CodePointStringTest,517,14,2,20,9,0.16483516483516483,4,45.172481638189865
+exist-core/src/test/java/org/exist/util/TestJavaCollator.java,org.exist.util.TestJavaCollator,89,16,1,16,1,1.0,1,76.72541228166168
 exist-core/src/test/java/org/exist/util/serializer/HTML5WriterTest.java,org.exist.util.serializer.HTML5WriterTest,62,5,2,5,1,1.0,5,61.28528524207877
 exist-core/src/test/java/org/exist/util/serializer/EXISerializerTest.java,org.exist.util.serializer.EXISerializerTest,83,8,3,8,1,1.0,12,63.0905938017851
 exist-core/src/test/java/org/exist/util/serializer/SerializerPoolTest.java,org.exist.util.serializer.SerializerPoolTest,76,1,0,1,1,1.0,5,37.11234663294052
@@ -2251,7 +2253,7 @@ extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/FieldType.java
 extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneMatch.java,org.exist.indexing.lucene.LuceneMatch,79,11,4,15,4,0.2545454545454545,6,71.40802244870342
 extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/SearchCallback.java,org.exist.indexing.lucene.SearchCallback,10,1,0,1,1,1.0,0,78.05153303713244
 extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/PlainTextIndexConfig.java,org.exist.indexing.lucene.PlainTextIndexConfig,177,4,2,15,1,0.16666666666666666,14,45.805735703797296
-extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndexWorker.java,org.exist.indexing.lucene.LuceneIndexWorker,2145,76,20,345,5,0.23298245614035087,128,50.366325926404485
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndexWorker.java,org.exist.indexing.lucene.LuceneIndexWorker,2251,81,23,364,5,0.21358024691358024,133,50.50435563233647
 extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/AnalyzingQueryRewriter.java,org.exist.indexing.lucene.AnalyzingQueryRewriter,91,7,0,23,2,0.0,15,59.469594182197675
 extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/NodePathPattern.java,org.exist.indexing.lucene.NodePathPattern,247,13,3,47,1,0.7051282051282052,13,55.24146240654475
 extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneUtil.java,org.exist.indexing.lucene.LuceneUtil,234,19,7,39,8,0.0,26,62.07367332575279
@@ -2266,6 +2268,7 @@ extensions/indexes/lucene/src/test/java/org/exist/xquery/modules/lucene/FieldTes
 extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/OptimizerTest.java,org.exist.indexing.lucene.OptimizerTest,153,6,9,9,1,0.4,12,52.22207776837347
 extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/LuceneIndexTest.java,org.exist.indexing.lucene.LuceneIndexTest,1318,23,22,32,2,0.8300395256916996,46,39.731612285104354
 extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/LuceneMatchListenerTest.java,org.exist.indexing.lucene.LuceneMatchListenerTest,473,12,11,27,2,0.5454545454545454,33,44.82402387135636
+extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/LuceneIndexWorkerBatchSizeTest.java,org.exist.indexing.lucene.LuceneIndexWorkerBatchSizeTest,42,5,0,5,5,0.0,11,65.33237262191903
 extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/ConcurrencyTest.java,org.exist.indexing.lucene.ConcurrencyTest,162,9,5,18,2,0.3055555555555556,21,56.187902414413884
 extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/FacetPollutionJavaReproducerTest.java,org.exist.indexing.lucene.FacetPollutionJavaReproducerTest,412,11,5,44,1,0.05454545454545454,37,44.792568571288655
 extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/AnalyzerConfigTest.java,org.exist.indexing.lucene.AnalyzerConfigTest,531,22,1,22,13,0.0,20,53.123516707163354
@@ -2496,3 +2499,12 @@ extensions/security/iprange/src/main/java/org/exist/security/realm/iprange/IPRan
 exist-core-jmh/src/main/java/org/exist/xquery/utils/URIUtilsBenchmark.java,org.exist.xquery.utils.URIUtilsBenchmark,21,2,1,2,1,0.0,1,69.57900726973108
 exist-core-jmh/src/main/java/org/exist/xquery/utils/StringJoinBenchmark.java,org.exist.xquery.utils.StringJoinBenchmark,112,7,3,14,1,0.7142857142857143,7,59.84470040160081
 exist-core-jmh/src/main/java/org/exist/storage/lock/LockTableBenchmark.java,org.exist.storage.lock.LockTableBenchmark,162,2,6,20,1,0.0,7,34.190602652212334
+exist-core-jmh/src/main/java/org/exist/storage/ReindexBenchmark.java,org.exist.storage.ReindexBenchmark,186,7,6,12,1,0.3333333333333333,18,52.807291863409446
+exist-core-jmh/src/main/java/org/exist/indexing/lucene/LucenePhraseQueryBenchmark.java,org.exist.indexing.lucene.LucenePhraseQueryBenchmark,208,8,13,19,1,0.21428571428571427,21,52.07518927258164
+exist-core-jmh/src/main/java/org/exist/indexing/lucene/ReindexDeleteStrategyBenchmark.java,org.exist.indexing.lucene.ReindexDeleteStrategyBenchmark,203,11,5,28,1,0.34545454545454546,28,55.039237720949224
+exist-core-jmh/src/test/java/org/exist/storage/ReindexBenchmarkTest.java,org.exist.storage.ReindexBenchmarkTest,15,2,0,2,2,0.0,2,70.08151712648305
+exist-indexes-jmh/src/main/java/org/exist/indexing/jmh/NgramWhereClauseBenchmark.java,org.exist.indexing.jmh.NgramWhereClauseBenchmark,177,8,13,16,1,0.17857142857142858,23,53.91064325996208
+exist-indexes-jmh/src/main/java/org/exist/indexing/jmh/RangeFieldEqWhereClauseBenchmark.java,org.exist.indexing.jmh.RangeFieldEqWhereClauseBenchmark,156,7,13,13,1,0.23809523809523808,23,53.78697734980646
+exist-indexes-jmh/src/main/java/org/exist/indexing/jmh/RangeEqWhereClauseBenchmark.java,org.exist.indexing.jmh.RangeEqWhereClauseBenchmark,155,7,13,13,1,0.23809523809523808,23,53.81727335225069
+exist-indexes-jmh/src/main/java/org/exist/indexing/jmh/GeneralComparisonWhereClauseBenchmark.java,org.exist.indexing.jmh.GeneralComparisonWhereClauseBenchmark,159,7,13,13,1,0.23809523809523808,23,53.57589254413609
+exist-indexes-jmh/src/main/java/org/exist/indexing/jmh/LuceneWhereClauseBenchmark.java,org.exist.indexing.jmh.LuceneWhereClauseBenchmark,154,7,13,13,1,0.23809523809523808,23,53.87859191072496
