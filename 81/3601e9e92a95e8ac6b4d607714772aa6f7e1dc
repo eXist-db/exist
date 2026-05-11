@@ -1,0 +1,84 @@
+exist-core/src/main/java/org/exist/dom/persistent/AbstractNodeSet.java
+  s_1962010ff61c1b::t_5212c8da90d7c1 396
+  s_1962010ff61c1b::t_1821477ed0be8b 361
+exist-core/src/main/java/org/exist/dom/persistent/NewArrayNodeSet.java
+  s_1962010ff61c1b::t_d8c04140374917 463
+  s_1962010ff61c1b::t_6a27f9007c08ed 659,743
+  s_1962010ff61c1b::t_b5829ce99cc0a4 793,847
+  s_1962010ff61c1b::t_6a1344ca659b93 323
+  s_1962010ff61c1b::t_c131fdaeaf61d6 330
+  s_1962010ff61c1b::t_8adc2b39498a0e 387
+  s_1962010ff61c1b::t_e5f31796c13716 380
+exist-core/src/main/java/org/exist/xquery/DescendantOrSelfSelector.java
+  s_1962010ff61c1b::t_d99f2b4e8a9f6f 44
+extensions/indexes/range/src/main/java/org/exist/indexing/range/RangeIndexWorker.java
+  s_1962010ff61c1b::t_4ac6e5795b1b54 850
+exist-core/src/test/java/org/exist/dom/persistent/NodeProxyTest.java
+  s_1962010ff61c1b::t_68b120ed3b24e9 128-137
+  s_1962010ff61c1b::t_921b524fec2ebb 127
+  s_1962010ff61c1b::t_8e606b743232f8 52
+  s_1962010ff61c1b::t_8089d5df993681 26
+  s_1962010ff61c1b::t_f485cae435d84d 100
+  s_1962010ff61c1b::t_ad529994f81e97 139
+  s_1962010ff61c1b::t_d1cfad3c98ddc6 72
+  s_1962010ff61c1b::t_d7639edc246fb8 138
+  s_1962010ff61c1b::t_76a208360e5187 112
+  s_1962010ff61c1b::t_2429eba028557f 38
+exist-core/src/main/java/org/exist/dom/persistent/ExtArrayNodeSet.java
+  s_1962010ff61c1b::t_b7804cc00ad39e 898
+  s_1962010ff61c1b::t_1bcc13803dfb02 630
+  s_1962010ff61c1b::t_d004b9290f9e6e 948
+  s_1962010ff61c1b::t_f935f05ba48605 890
+  s_1962010ff61c1b::t_faebc77832d0ab 954-955
+  s_1962010ff61c1b::t_ba095af492d766 623
+  s_1962010ff61c1b::t_58022546909908 849
+exist-core/src/main/java/org/exist/dom/persistent/NodeProxy.java
+  s_1962010ff61c1b::t_2d54b6e53c9a4b 629-654
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndexWorker.java
+  s_1962010ff61c1b::t_9a9a7f4265fae7 1562
+  s_1962010ff61c1b::t_169d0d6f11723f 1550
+exist-core/src/main/java/org/exist/dom/persistent/NodeSetHelper.java
+  s_1962010ff61c1b::t_82ee8ab2331e0c 81
+  s_1962010ff61c1b::t_692c80779b265f 310
+  s_1962010ff61c1b::t_cd072ec6996319 569
+  s_1962010ff61c1b::t_0cfc52fd83e332 192
+  s_1962010ff61c1b::t_6e9b02cc067fa5 450
+  s_1962010ff61c1b::t_2f1555ca15bdf1 97
+  s_1962010ff61c1b::t_74daf065d49e24 213
+  s_1962010ff61c1b::t_be91e6c0c60874 246
+  s_1962010ff61c1b::t_2252aab3e42c80 268
+  s_1962010ff61c1b::t_0727a171313214 337
+exist-core/src/main/java/org/exist/xquery/LocationStep.java
+  s_1962010ff61c1b::t_41401d1b460680 1029
+  s_1962010ff61c1b::t_9e2cdcc6a7e529 1447
+  s_1962010ff61c1b::t_a7b4000bce8377 1352
+  s_1962010ff61c1b::t_a7b9c2cdb689a7 1050
+  s_1962010ff61c1b::t_c363d813446ffe 1402
+  s_1962010ff61c1b::t_39cdbabef17a45 1297
+exist-core/src/main/java/org/exist/xquery/ChildSelector.java
+  s_1962010ff61c1b::t_4cea5e6eb04dae 48
+exist-core/src/main/java/org/exist/xquery/DescendantSelector.java
+  s_1962010ff61c1b::t_dfbc7a35f8a16d 48
+extensions/indexes/lucene/src/test/java/org/exist/indexing/lucene/LuceneMatchListenerTest.java
+  s_1962010ff61c1b::t_663f29bb51079b 483
+exist-core/src/main/java/org/exist/storage/structural/NativeStructuralIndexWorker.java
+  s_1962010ff61c1b::t_93f242d85e0ba8 243
+  s_1962010ff61c1b::t_09bc5815f0270e 408
+  s_1962010ff61c1b::t_e3316ba1cbe9f6 410
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "813601e9e92a95e8ac6b4d607714772aa6f7e1dc",
+  "prompts": {},
+  "sessions": {
+    "s_1962010ff61c1b": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "00ae7258-3d6b-4fca-abba-b081bffabf37",
+        "model": "composer-2-fast"
+      },
+      "human_author": null
+    }
+  }
+}
