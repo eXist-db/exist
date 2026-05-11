@@ -38,7 +38,7 @@ import java.util.Optional;
 
 public record BinaryValues(String instanceId) implements BinaryValuesMXBean {
     public BinaryValues(final BrokerPool instanceId) {
-        this.instanceId = instanceId.getId();
+        this(instanceId.getId());
     }
 
     public static String getAllInstancesQuery() {
