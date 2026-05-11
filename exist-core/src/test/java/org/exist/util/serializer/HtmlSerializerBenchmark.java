@@ -86,10 +86,10 @@ public class HtmlSerializerBenchmark {
         }
 
         @Override
-        public void flush() {}
+        public void flush() { /* no-op: metrics live in fields, nothing to flush */ }
 
         @Override
-        public void close() {}
+        public void close() { /* no-op: counting writer holds no resources */ }
     }
 
     /**
@@ -114,8 +114,8 @@ public class HtmlSerializerBenchmark {
 
     /** Discards bytes — simulates a network sink with no I/O cost. */
     private static final class NullOutputStream extends java.io.OutputStream {
-        @Override public void write(int b) {}
-        @Override public void write(byte[] b, int off, int len) {}
+        @Override public void write(int b) { /* no-op sink: byte intentionally discarded */ }
+        @Override public void write(byte[] b, int off, int len) { /* no-op sink: bytes intentionally discarded */ }
     }
 
     private static java.io.OutputStreamWriter newProductionLikeWriter() {
