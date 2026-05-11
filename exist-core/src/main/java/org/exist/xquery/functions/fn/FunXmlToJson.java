@@ -155,84 +155,89 @@ public class FunXmlToJson extends BasicFunction {
         }
 
         switch (localName) {
-            case "map":
-                gen.writeStartObject();
-                final org.w3c.dom.NodeList mapChildren = element.getChildNodes();
-                final Set<String> seenKeys = new java.util.HashSet<>();
-                for (int i = 0; i < mapChildren.getLength(); i++) {
-                    final org.w3c.dom.Node child = mapChildren.item(i);
-                    if (child.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
-                        final org.w3c.dom.Element childElem = (org.w3c.dom.Element) child;
-                        final String keyValue = getKeyAttribute(childElem);
-                        if (keyValue == null) {
-                            throw new XPathException(this, ErrorCodes.FOJS0006,
-                                    "Invalid XML representation of JSON. Map entry missing 'key' attribute.");
-                        }
-                        if (!seenKeys.add(keyValue)) {
-                            throw new XPathException(this, ErrorCodes.FOJS0006,
-                                    "Invalid XML representation of JSON. Duplicate key '" + keyValue + "' in map.");
-                        }
-                        gen.writeFieldName(keyValue);
-                        writeJsonElement(childElem, gen);
-                    }
-                }
-                gen.writeEndObject();
-                break;
-
-            case "array":
-                gen.writeStartArray();
-                final org.w3c.dom.NodeList arrayChildren = element.getChildNodes();
-                for (int i = 0; i < arrayChildren.getLength(); i++) {
-                    final org.w3c.dom.Node child = arrayChildren.item(i);
-                    if (child.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
-                        writeJsonElement((org.w3c.dom.Element) child, gen);
-                    }
-                }
-                gen.writeEndArray();
-                break;
-
-            case "string":
-                final String strContent = getTextContent(element);
-                final boolean escaped = "true".equals(element.getAttribute("escaped"));
-                if (escaped) {
-                    try {
-                        gen.writeString(unescapeEscapedJsonString(strContent));
-                    } catch (final IOException e) {
-                        throw new XPathException(this, ErrorCodes.FOJS0007, "Bad JSON escape sequence.");
-                    }
-                } else {
-                    gen.writeString(strContent);
-                }
-                break;
-
-            case "number":
-                final String numStr = getTextContent(element);
-                try {
-                    gen.writeNumber(new BigDecimal(numStr));
-                } catch (final NumberFormatException e) {
-                    throw new XPathException(this, ErrorCodes.FOJS0006, "Cannot convert '" + numStr + "' to a number.");
-                }
-                break;
-
-            case "boolean":
-                final String boolStr = getTextContent(element);
-                final boolean boolVal = !("0".equals(boolStr) || "false".equals(boolStr) || boolStr.isEmpty());
-                gen.writeBoolean(boolVal);
-                break;
-
-            case "null":
-                final String nullContent = getTextContent(element);
-                if (!nullContent.isEmpty()) {
-                    throw new XPathException(this, ErrorCodes.FOJS0006,
-                            "Invalid XML representation of JSON. Found non-empty XML null element.");
-                }
-                gen.writeNull();
-                break;
-
-            default:
-                throw new XPathException(this, ErrorCodes.FOJS0006,
-                        "Invalid XML representation of JSON. Found XML element which is not one of [map, array, null, boolean, number, string].");
+            case "map" -> writeJsonMap(element, gen);
+            case "array" -> writeJsonArray(element, gen);
+            case "string" -> writeJsonString(element, gen);
+            case "number" -> writeJsonNumber(element, gen);
+            case "boolean" -> writeJsonBoolean(element, gen);
+            case "null" -> writeJsonNull(element, gen);
+            default -> throw new XPathException(this, ErrorCodes.FOJS0006,
+                    "Invalid XML representation of JSON. Found XML element which is not one of [map, array, null, boolean, number, string].");
         }
+    }
+
+    private void writeJsonMap(final org.w3c.dom.Element element, final JsonGenerator gen) throws XPathException, IOException {
+        gen.writeStartObject();
+        final org.w3c.dom.NodeList mapChildren = element.getChildNodes();
+        final Set<String> seenKeys = new java.util.HashSet<>();
+        for (int i = 0; i < mapChildren.getLength(); i++) {
+            final org.w3c.dom.Node child = mapChildren.item(i);
+            if (child.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
+                final org.w3c.dom.Element childElem = (org.w3c.dom.Element) child;
+                final String keyValue = getKeyAttribute(childElem);
+                if (keyValue == null) {
+                    throw new XPathException(this, ErrorCodes.FOJS0006,
+                            "Invalid XML representation of JSON. Map entry missing 'key' attribute.");
+                }
+                if (!seenKeys.add(keyValue)) {
+                    throw new XPathException(this, ErrorCodes.FOJS0006,
+                            "Invalid XML representation of JSON. Duplicate key '" + keyValue + "' in map.");
+                }
+                gen.writeFieldName(keyValue);
+                writeJsonElement(childElem, gen);
+            }
+        }
+        gen.writeEndObject();
+    }
+
+    private void writeJsonArray(final org.w3c.dom.Element element, final JsonGenerator gen) throws XPathException, IOException {
+        gen.writeStartArray();
+        final org.w3c.dom.NodeList arrayChildren = element.getChildNodes();
+        for (int i = 0; i < arrayChildren.getLength(); i++) {
+            final org.w3c.dom.Node child = arrayChildren.item(i);
+            if (child.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
+                writeJsonElement((org.w3c.dom.Element) child, gen);
+            }
+        }
+        gen.writeEndArray();
+    }
+
+    private void writeJsonString(final org.w3c.dom.Element element, final JsonGenerator gen) throws XPathException, IOException {
+        final String strContent = getTextContent(element);
+        final boolean escaped = "true".equals(element.getAttribute("escaped"));
+        if (escaped) {
+            try {
+                gen.writeString(unescapeEscapedJsonString(strContent));
+            } catch (final IOException e) {
+                throw new XPathException(this, ErrorCodes.FOJS0007, "Bad JSON escape sequence.");
+            }
+        } else {
+            gen.writeString(strContent);
+        }
+    }
+
+    private void writeJsonNumber(final org.w3c.dom.Element element, final JsonGenerator gen) throws XPathException, IOException {
+        final String numStr = getTextContent(element);
+        try {
+            gen.writeNumber(new BigDecimal(numStr));
+        } catch (final NumberFormatException e) {
+            throw new XPathException(this, ErrorCodes.FOJS0006, "Cannot convert '" + numStr + "' to a number.");
+        }
+    }
+
+    private void writeJsonBoolean(final org.w3c.dom.Element element, final JsonGenerator gen) throws IOException {
+        final String boolStr = getTextContent(element);
+        final boolean boolVal = !("0".equals(boolStr) || "false".equals(boolStr) || boolStr.isEmpty());
+        gen.writeBoolean(boolVal);
+    }
+
+    private void writeJsonNull(final org.w3c.dom.Element element, final JsonGenerator gen) throws XPathException, IOException {
+        final String nullContent = getTextContent(element);
+        if (!nullContent.isEmpty()) {
+            throw new XPathException(this, ErrorCodes.FOJS0006,
+                    "Invalid XML representation of JSON. Found non-empty XML null element.");
+        }
+        gen.writeNull();
     }
 
     private String getKeyAttribute(final org.w3c.dom.Element element) throws XPathException {
@@ -316,15 +321,12 @@ public class FunXmlToJson extends BasicFunction {
                             }
                         }
                         switch (reader.getLocalName()) {
-                            case "array":
-                                jsonGenerator.writeStartArray();
-                                break;
-                            case "map":
+                            case "array" -> jsonGenerator.writeStartArray();
+                            case "map" -> {
                                 mapkeyArrayList.add(stackSeparator);
                                 jsonGenerator.writeStartObject();
-                                break;
-                            default:
-                                break;
+                            }
+                            default -> { }
                         }
                         break;
                     case XMLStreamReader.CHARACTERS:
