@@ -38,7 +38,7 @@ import java.util.concurrent.TimeUnit;
  * wildcard preceding axis on a 50,000-element flat document: a query at
  * {@code @xml:id='45000'} took roughly twice as long as the same query at
  * {@code @xml:id='25000'}. The K-bounded sliding window in
- * {@link LocationStep.PrecedingFilter} caps the retained match set at K,
+ * {@code LocationStep.PrecedingFilter} caps the retained match set at K,
  * eliminating the unbounded accumulation that produced the late-position
  * tax.</p>
  *
@@ -66,6 +66,17 @@ public class PrecedingAxisBenchmark {
     private Collection root;
     private XQueryService xqs;
 
+    /** Default constructor for JMH harness. */
+    public PrecedingAxisBenchmark() {
+    }
+
+    /**
+     * Boots an embedded eXist server, registers the XML:DB driver, and stores
+     * a 50,000-element flat words document used by the benchmark queries.
+     *
+     * @throws Exception if the embedded server fails to start, the database
+     *     driver cannot be registered, or the corpus document cannot be stored
+     */
     @Setup(Level.Trial)
     public void setUp() throws Exception {
         existServer = new ExistEmbeddedServer(true, true);
@@ -85,6 +96,13 @@ public class PrecedingAxisBenchmark {
                 """);
     }
 
+    /**
+     * Removes the corpus document, closes the test collection, and shuts down
+     * the embedded server.
+     *
+     * @throws Exception if removing the corpus document, closing the
+     *     collection, or stopping the embedded server fails
+     */
     @TearDown(Level.Trial)
     public void tearDown() throws Exception {
         try {
@@ -100,6 +118,10 @@ public class PrecedingAxisBenchmark {
      * Wildcard preceding axis with a positional predicate gated by a self::w
      * filter. Pre-fix this accumulated every preceding match from doc start;
      * post-fix the sliding window caps retention at K=5.
+     *
+     * @return the result-set size, returned so JMH's blackhole prevents the
+     *     call being optimized away
+     * @throws Exception if the embedded query fails
      */
     @Benchmark
     public long wildcardPrecedingWithPositionalPredicate() throws Exception {
@@ -116,6 +138,10 @@ public class PrecedingAxisBenchmark {
      * preceding-sibling::w[K] baseline: walks the persistent sibling chain
      * directly rather than the full preceding axis. Used as a relative
      * lower-bound to interpret the wildcard preceding number.
+     *
+     * @return the result-set size, returned so JMH's blackhole prevents the
+     *     call being optimized away
+     * @throws Exception if the embedded query fails
      */
     @Benchmark
     public long precedingSiblingBaseline() throws Exception {
