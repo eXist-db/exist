@@ -124,7 +124,14 @@ public class JSON extends BasicFunction {
     public static final String OPTION_FALLBACK = "fallback";
     public static final QName KEY = new QName("key",null);
 
-    private static final Set<String> PERMITTED_DUPLICATES = Set.of(
+    // Per F&O 3.1 §17.4.1 (fn:parse-json) and §17.5.1 (fn:json-to-xml): the permitted
+    // 'duplicates' values differ between the two functions. parse-json permits use-last
+    // (preserving the last value); json-to-xml permits retain (keeping all duplicates in
+    // the XML output, which is incompatible with validate=true).
+    private static final Set<String> PERMITTED_DUPLICATES_PARSE_JSON = Set.of(
+            OPTION_DUPLICATES_REJECT, OPTION_DUPLICATES_USE_FIRST, OPTION_DUPLICATES_USE_LAST);
+
+    private static final Set<String> PERMITTED_DUPLICATES_JSON_TO_XML = Set.of(
             OPTION_DUPLICATES_REJECT, OPTION_DUPLICATES_USE_FIRST, OPTION_DUPLICATES_RETAIN);
 
     private static final Set<String> JSON_TO_XML_KNOWN_OPTIONS = Set.of(
@@ -185,7 +192,10 @@ public class JSON extends BasicFunction {
 
         String handleDuplicates = OPTION_DUPLICATES_USE_LAST;
         if (duplicatesOpt != null) {
-            if (!PERMITTED_DUPLICATES.contains(duplicatesOpt)) {
+            final Set<String> permitted = isJsonToXml
+                    ? PERMITTED_DUPLICATES_JSON_TO_XML
+                    : PERMITTED_DUPLICATES_PARSE_JSON;
+            if (!permitted.contains(duplicatesOpt)) {
                 throw new XPathException(this, ErrorCodes.FOJS0005,
                         "Value of option 'duplicates' is not permitted: " + duplicatesOpt);
             }
