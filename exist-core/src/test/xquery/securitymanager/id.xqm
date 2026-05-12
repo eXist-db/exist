@@ -35,7 +35,7 @@ declare
     %test:setUp
 function id:setup() {
     xmldb:create-collection("/db", $id:TEST_COLLECTION_NAME),
-    xmldb:store($id:TEST_COLLECTION_PATH, $id:TEST_MODULE_NAME, 'xquery version "3.0";
+    xmldb:store($id:TEST_COLLECTION_PATH, $id:TEST_MODULE_NAME, 'xquery version "3.1";
 
 module namespace mod1 = "http://module1";
 

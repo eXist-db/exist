@@ -177,8 +177,14 @@ public class SequenceType {
             return false;
         }
 
-        // For function types, check parameter and return type compatibility
-        if (Type.subTypeOf(primaryType, Type.FUNCTION) && item instanceof FunctionReference
+        // For typed function() tests, check parameter and return type compatibility.
+        // MAP_ITEM and ARRAY_ITEM are subtypes of FUNCTION but use distinct typed-test
+        // syntax (map(K,V), array(T)) whose parameter counts do not match the
+        // underlying function signature's argument count (a map's accessor signature
+        // takes 1 arg, the key; map(K,V) carries 2 type parameters). Restrict the
+        // function-arity/return check to plain function() tests so map and array
+        // values continue to satisfy their typed tests.
+        if (primaryType == Type.FUNCTION && item instanceof FunctionReference
                 && !checkFunctionType((FunctionReference) item)) {
             return false;
         }
