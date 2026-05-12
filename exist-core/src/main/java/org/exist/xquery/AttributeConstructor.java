@@ -115,14 +115,27 @@ public class AttributeConstructor extends NodeConstructor {
 	
 	/**
 	 * If this is a namespace declaration attribute, return
-	 * the single string value of the attribute.
+	 * the concatenated string value of all literal segments.
+	 *
+	 * Namespace declaration attribute values may be split across
+	 * multiple content segments by the parser when they contain
+	 * escaped characters (EscapeQuot "", EscapeApos '', doubled
+	 * braces {{ }}). Per XQuery 3.1 §3.9.1.2, an EnclosedExpr in
+	 * an xmlns value is rejected with XQST0022, so contents here
+	 * are always strings.
 	 *
 	 * @return the string value
 	 */
 	public String getLiteralValue() {
 		if(contents.isEmpty())
 			{return "";}
-		return (String)contents.getFirst();
+		if(contents.size() == 1)
+			{return (String)contents.getFirst();}
+		final StringBuilder buf = new StringBuilder();
+		for(final Object next : contents) {
+			buf.append((String)next);
+		}
+		return buf.toString();
 	}
 	
 	/* (non-Javadoc)
