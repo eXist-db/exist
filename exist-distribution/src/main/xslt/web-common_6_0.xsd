@@ -5,11 +5,11 @@
             xmlns:xsd="http://www.w3.org/2001/XMLSchema"
             elementFormDefault="qualified"
             attributeFormDefault="unqualified"
-            version="5.0">
+            version="6.0">
   <xsd:annotation>
     <xsd:documentation>
 
-      Copyright (c) 2009, 2020 Oracle and/or its affiliates. All rights reserved.
+      Copyright (c) 2009, 2021 Oracle and/or its affiliates. All rights reserved.
       
       This program and the accompanying materials are made available under the
       terms of the Eclipse Public License v. 2.0, which is available at
@@ -29,7 +29,7 @@
   <xsd:annotation>
     <xsd:documentation>
       <![CDATA[
-      This is the common XML Schema for the Servlet 5.0 deployment descriptor.
+      This is the common XML Schema for the Servlet 6.0 deployment descriptor.
       This file is in turn used by web.xml and web-fragment.xml
       web application's war file.  All Servlet deployment descriptors
       must indicate the web common schema by using the Jakarta EE
@@ -43,7 +43,7 @@
       <web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:schemaLocation="..."
-      version="5.0">
+      version="6.0">
       ...
       </web-app>
       
@@ -51,7 +51,7 @@
       the schema using the xsi:schemaLocation attribute for Jakarta EE
       namespace with the following location:
       
-      https://jakarta.ee/xml/ns/jakartaee/web-common_5_0.xsd
+      https://jakarta.ee/xml/ns/jakartaee/web-common_6_0.xsd
       
       ]]>
     </xsd:documentation>
@@ -75,9 +75,9 @@
     </xsd:documentation>
   </xsd:annotation>
 
-  <xsd:include schemaLocation="jakartaee_9.xsd"/>
+  <xsd:include schemaLocation="jakartaee_10.xsd"/>
 
-  <xsd:include schemaLocation="jsp_3_0.xsd"/>
+  <xsd:include schemaLocation="jsp_3_1.xsd"/>
 
   <xsd:group name="web-commonType">
     <xsd:choice>
@@ -163,6 +163,50 @@
       </xsd:annotation>
     </xsd:attribute>
   </xsd:attributeGroup>
+
+
+<!-- **************************************************** -->
+
+  <xsd:complexType name="attribute-valueType">
+    <xsd:annotation>
+      <xsd:documentation>
+
+        This type is a general type that can be used to declare
+        attribute/value lists.
+        
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="description"
+                   type="jakartaee:descriptionType"
+                   minOccurs="0"
+                   maxOccurs="unbounded"/>
+      <xsd:element name="attribute-name"
+                   type="jakartaee:string">
+        <xsd:annotation>
+          <xsd:documentation>
+
+            The attribute-name element contains the name of an
+            attribute.
+            
+          </xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="attribute-value"
+                   type="jakartaee:xsdStringType">
+        <xsd:annotation>
+          <xsd:documentation>
+
+            The attribute-value element contains the value of a
+            attribute.
+            
+          </xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+    <xsd:attribute name="id"
+                   type="xsd:ID"/>
+  </xsd:complexType>
 
 
 <!-- **************************************************** -->
@@ -985,6 +1029,19 @@
           </xsd:documentation>
         </xsd:annotation>
       </xsd:element>
+      <xsd:element name="attribute"
+                   type="jakartaee:attribute-valueType"
+                   minOccurs="0"
+                   maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>
+
+            The attribute-param element contains a name/value pair to
+            be added as an attribute to every session cookie.
+            
+          </xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
     </xsd:sequence>
     <xsd:attribute name="id"
                    type="xsd:ID"/>
@@ -1181,7 +1238,7 @@
       </xsd:documentation>
     </xsd:annotation>
     <xsd:restriction base="xsd:token">
-      <xsd:enumeration value="5.0"/>
+      <xsd:enumeration value="6.0"/>
     </xsd:restriction>
   </xsd:simpleType>
 

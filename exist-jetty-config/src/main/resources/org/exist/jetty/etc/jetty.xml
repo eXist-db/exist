@@ -24,7 +24,7 @@
 <!-- configuration that may be set here.                             -->
 <!-- =============================================================== -->
 <Configure id="Server" class="org.eclipse.jetty.server.Server">
-    <Arg name="threadpool"><Ref refid="threadPool"/></Arg>
+    <Arg name="threadPool"><Ref refid="threadPool"/></Arg>
 
     <Call name="addBean">
       <Arg><Ref refid="byteBufferPool"/></Arg>
@@ -73,9 +73,9 @@
       <Set name="persistentConnectionsEnabled"><Property name="jetty.httpConfig.persistentConnectionsEnabled" default="true"/></Set>
       <Set name="requestCookieCompliance"><Call class="org.eclipse.jetty.http.CookieCompliance" name="valueOf"><Arg><Property name="jetty.httpConfig.requestCookieCompliance" deprecated="jetty.httpConfig.cookieCompliance" default="RFC6265"/></Arg></Call></Set>
       <Set name="responseCookieCompliance"><Call class="org.eclipse.jetty.http.CookieCompliance" name="valueOf"><Arg><Property name="jetty.httpConfig.responseCookieCompliance" default="RFC6265"/></Arg></Call></Set>
-      <Set name="multiPartFormDataCompliance"><Call class="org.eclipse.jetty.server.MultiPartFormDataCompliance" name="valueOf"><Arg><Property name="jetty.httpConfig.multiPartFormDataCompliance" default="RFC7578"/></Arg></Call></Set>
+      <Set name="multiPartCompliance"><Call class="org.eclipse.jetty.http.MultiPartCompliance" name="valueOf"><Arg><Property name="jetty.httpConfig.multiPartCompliance" default="RFC7578"/></Arg></Call></Set>
       <Set name="httpCompliance"><Call class="org.eclipse.jetty.http.HttpCompliance" name="valueOf"><Arg><Property name="jetty.http.compliance" default="RFC7230_LEGACY"/></Arg></Call></Set>
-      <Set name="uriCompliance"><Call class="org.eclipse.jetty.http.UriCompliance" name="valueOf"><Arg><Property name="jetty.uri.compliance" default="LEGACY"/></Arg></Call></Set>
+      <Set name="uriCompliance"><Call class="org.eclipse.jetty.http.UriCompliance" name="valueOf"><Arg><Property name="jetty.uri.compliance" default="UNSAFE"/></Arg></Call></Set>
     </New>
 
     <!-- =========================================================== -->
@@ -90,8 +90,8 @@
     <!-- RequestLogHandler after the default handler                 -->
     <!-- =========================================================== -->
     <Set name="handler">
-      <New id="Handlers" class="org.eclipse.jetty.server.handler.HandlerCollection">
-        <Set name="handlers">
+      <New id="Handlers" class="org.eclipse.jetty.server.Handler$Sequence">
+        <Arg>
          <Array type="org.eclipse.jetty.server.Handler">
            <Item>
              <New id="Contexts" class="org.eclipse.jetty.server.handler.ContextHandlerCollection"/>
@@ -100,7 +100,7 @@
              <New id="DefaultHandler" class="org.eclipse.jetty.server.handler.DefaultHandler"/>
            </Item>
          </Array>
-        </Set>
+        </Arg>
       </New>
     </Set>
 

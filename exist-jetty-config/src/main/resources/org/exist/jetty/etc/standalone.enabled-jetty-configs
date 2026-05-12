@@ -8,8 +8,9 @@
 
 
 
-### Jetty log redirection
-# jetty-logging.xml		# enable to redirect stdout and stderr to jetty.home/logs
+### Logging
+# Jetty internal logging and request logs are routed through SLF4J/log4j2.
+# See etc/log4j2.xml (loggers: org.eclipse.jetty, org.eclipse.jetty.server.RequestLog).
 
 
 ### Main Server Config
@@ -41,9 +42,9 @@ jetty-ssl-context.xml
 jetty-https.xml
 
 
+### Annotation support
+jetty-annotations.xml
+
+
 ### Webapp deployment
 standalone-jetty-deploy.xml
-
-
-### Annotation support 
-jetty-annotations.xml

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Container-friendly log4j2 configuration for eXist-db.
+
+  Routes all output (eXist core, Jetty internals, request log) to stdout/stderr
+  so that container runtimes (Docker, Kubernetes) can collect logs via their
+  logging drivers. No rolling files are created inside the container.
+
+  Activate by setting -Dlog4j.configurationFile=/exist/etc/log4j2-container.xml
+  (the eXist Docker image does this by default).
+
+  GDPR: access logging is OFF by default in the container — the Docker
+  HEALTHCHECK polls /exist/xmlrpc continuously, and logging client IPs
+  by default raises GDPR concerns. Set EXIST_REQUEST_LOG_LEVEL=info to
+  re-enable.
+-->
+<Configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+    <Properties>
+        <Property name="exist.console.pattern">%d{DATE} [%t] %-5p (%F [%M]:%L) - %m %n</Property>
+        <Property name="exist.request.log.level">${env:EXIST_REQUEST_LOG_LEVEL:-off}</Property>
+    </Properties>
+
+    <Appenders>
+
+        <Console name="STDOUT" target="SYSTEM_OUT">
+            <PatternLayout pattern="${exist.console.pattern}"/>
+        </Console>
+
+        <!-- Access log lines are pre-formatted (NCSA) by Jetty's CustomRequestLog. -->
+        <Console name="REQUESTLOG" target="SYSTEM_OUT">
+            <PatternLayout pattern="%m%n"/>
+        </Console>
+
+        <Console name="STDERR" target="SYSTEM_ERR">
+            <PatternLayout pattern="${exist.console.pattern}"/>
+        </Console>
+
+    </Appenders>
+
+    <Loggers>
+
+        <!-- eXist subsystems: keep names visible but collapse all output to stdout. -->
+        <Logger name="xquery.profiling" additivity="false" level="info">
+            <AppenderRef ref="STDOUT"/>
+        </Logger>
+
+        <Logger name="org.exist.jetty" additivity="false" level="info">
+            <AppenderRef ref="STDOUT"/>
+        </Logger>
+
+        <Logger name="org.exist.launcher" additivity="false" level="warn">
+            <AppenderRef ref="STDOUT"/>
+        </Logger>
+
+        <!-- Jetty internal logging (SLF4J -> log4j2). -->
+        <Logger name="org.eclipse.jetty" additivity="false" level="warn">
+            <AppenderRef ref="STDOUT"/>
+        </Logger>
+
+        <!-- Jetty access/request log. OFF by default in the container (GDPR);
+             set EXIST_REQUEST_LOG_LEVEL=info to re-enable. -->
+        <Logger name="org.eclipse.jetty.server.RequestLog" additivity="false" level="${exist.request.log.level}">
+            <AppenderRef ref="REQUESTLOG"/>
+        </Logger>
+
+        <Root level="info">
+            <AppenderRef ref="STDOUT"/>
+        </Root>
+
+    </Loggers>
+
+</Configuration>

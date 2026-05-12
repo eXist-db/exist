@@ -3,14 +3,22 @@
 
 <!-- =============================================================== -->
 <!-- Configure the Jetty Request Log                                 -->
+<!--                                                                 -->
+<!-- Request logs are routed through SLF4J (and thus log4j2 — see    -->
+<!-- etc/log4j2.xml). The "org.eclipse.jetty.server.RequestLog"      -->
+<!-- logger controls request-log output, including suppression for   -->
+<!-- GDPR compliance (set EXIST_REQUEST_LOG_LEVEL=OFF).              -->
 <!-- =============================================================== -->
 <Configure id="Server" class="org.eclipse.jetty.server.Server">
 
-  <!-- =========================================================== -->
-  <!-- Configure Request Log for Server                            -->
-  <!-- (Use RequestLogHandler for a context specific RequestLog    -->
-  <!-- =========================================================== -->
   <Set name="RequestLog">
-    <New id="RequestLog" class="org.eclipse.jetty.server.CustomRequestLog"/>
+    <New id="RequestLog" class="org.eclipse.jetty.server.CustomRequestLog">
+      <Arg>
+        <New class="org.eclipse.jetty.server.Slf4jRequestLogWriter">
+          <Set name="loggerName">org.eclipse.jetty.server.RequestLog</Set>
+        </New>
+      </Arg>
+      <Arg><Get class="org.eclipse.jetty.server.CustomRequestLog" name="EXTENDED_NCSA_FORMAT"/></Arg>
+    </New>
   </Set>
 </Configure>
