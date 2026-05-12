@@ -9,8 +9,8 @@
         <Property name="rollover.file.pattern">%d{yyyyMMddHHmmss}</Property>
         <Property name="exist.file.pattern">%d [%t] %-5p (%F [%M]:%L) - %m %n</Property>
         <Property name="jetty.file.pattern">%d{ISO8601} [%t] %-5p %logger{36} - %m%n</Property>
-        <!-- GDPR: set EXIST_REQUEST_LOG_LEVEL=OFF to disable client IP logging -->
-        <Property name="exist.request.log.level">${env:EXIST_REQUEST_LOG_LEVEL:-info}</Property>
+        <!-- GDPR: off by default to avoid logging client IPs; set EXIST_REQUEST_LOG_LEVEL=info to enable -->
+        <Property name="exist.request.log.level">${env:EXIST_REQUEST_LOG_LEVEL:-off}</Property>
     </Properties>
 
     <Appenders>

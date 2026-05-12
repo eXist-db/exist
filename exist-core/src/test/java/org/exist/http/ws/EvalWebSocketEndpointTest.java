@@ -68,10 +68,12 @@ public class EvalWebSocketEndpointTest {
     private static final JsonFactory JSON_FACTORY = new JsonFactory();
 
     private static final String TEST_COLLECTION = "/db/ws-eval-test";
-    private static final String TEST_MODULE = "module namespace test = 'http://exist-db.org/test';\n" +
-            "declare function test:hello($name as xs:string) as xs:string {\n" +
-            "    concat('Hello, ', $name, '!')\n" +
-            "};\n";
+    private static final String TEST_MODULE = """
+            module namespace test = 'http://exist-db.org/test';
+            declare function test:hello($name as xs:string) as xs:string {
+                concat('Hello, ', $name, '!')
+            };
+            """;
 
     @ClassRule
     public static final ExistWebServer existWebServer =
