@@ -126,6 +126,53 @@ options {
         throw new XPathException(ast, message);
     }
 
+    /**
+     * Pre-scan a direct element constructor's AST for namespace declaration
+     * attributes (xmlns and xmlns:prefix) and push them onto the static
+     * context's in-scope namespaces before the rest of the constructor's
+     * children (attribute values and content) are walked.
+     *
+     * Per XQuery 3.1 section 3.9.1, namespace declarations on a direct
+     * element constructor are added to the statically known namespaces
+     * in the static context of the constructor, including its content
+     * and attribute values. Without this pre-scan, prefixed QNames inside
+     * enclosed expressions in attribute values or element content (e.g.
+     * "{1 cast as p:string}") fail QName resolution with XPST0081.
+     *
+     * The caller is responsible for having already issued a matching
+     * pushInScopeNamespaces() so that these declarations are popped at
+     * end of element.
+     */
+    private void prescanElementNamespaceDecls(XQueryAST elementAST) throws XPathException {
+        XQueryAST child = (XQueryAST) elementAST.getFirstChild();
+        while (child != null) {
+            if (child.getType() == ATTRIBUTE) {
+                final String attrName = child.getText();
+                String nsPrefix = null;
+                if (XMLConstants.XMLNS_ATTRIBUTE.equals(attrName)) {
+                    nsPrefix = "";
+                } else if (attrName != null && attrName.startsWith(XMLConstants.XMLNS_ATTRIBUTE + ":")) {
+                    nsPrefix = attrName.substring(XMLConstants.XMLNS_ATTRIBUTE.length() + 1);
+                }
+                if (nsPrefix != null) {
+                    final StringBuilder value = new StringBuilder();
+                    XQueryAST contentChild = (XQueryAST) child.getFirstChild();
+                    while (contentChild != null) {
+                        if (contentChild.getType() == ATTRIBUTE_CONTENT) {
+                            value.append(StringValue.expand(contentChild.getText()));
+                        }
+                        // LCURLY (enclosed expr) inside an xmlns value is a
+                        // separate spec violation; the existing post-walk
+                        // logic raises the appropriate error.
+                        contentChild = (XQueryAST) contentChild.getNextSibling();
+                    }
+                    staticContext.declareInScopeNamespace(nsPrefix, value.toString());
+                }
+            }
+            child = (XQueryAST) child.getNextSibling();
+        }
+    }
+
     private static class ForLetClause {
         XQueryAST ast;
         QName varName;
@@ -3832,6 +3879,11 @@ throws PermissionDeniedException, EXistException, XPathException
             c.setASTNode(e);
             step= c;
             staticContext.pushInScopeNamespaces();
+            // XQuery 3.1 section 3.9.1: namespace declaration attributes on a
+            // direct element constructor extend the static context for the
+            // constructor's content and attribute values. Push them now so
+            // that prefixed QNames inside enclosed expressions resolve.
+            prescanElementNamespaceDecls(e);
         }
         (
             #(
