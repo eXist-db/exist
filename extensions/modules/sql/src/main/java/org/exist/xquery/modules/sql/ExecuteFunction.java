@@ -185,8 +185,8 @@ public class ExecuteFunction extends BasicFunction {
 
         // get the Connection
         final long connectionUID = ((IntegerValue) args[0].itemAt(0)).getLong();
-        final Connection con = SQLModule.retrieveConnection(context, connectionUID);
-        if (con == null) {
+        final Connection connection = SQLModule.retrieveConnection(context, connectionUID);
+        if (connection == null) {
             throw new XPathException(this, "No such SQL Connection");
         }
 
@@ -194,7 +194,7 @@ public class ExecuteFunction extends BasicFunction {
 
         //setup the SQL statement
         String sql = null;
-        Statement stmt = null;
+        Statement statement = null;
 
         try {
             final boolean makeNodeFromColumnName;
@@ -207,7 +207,7 @@ public class ExecuteFunction extends BasicFunction {
 
                 // get the static SQL statement
                 sql = args[1].getStringValue();
-                stmt = con.createStatement();
+                statement = connection.createStatement();
                 makeNodeFromColumnName = ((BooleanValue) args[2].itemAt(0)).effectiveBooleanValue();
                 if (args.length == 5) {
                     namespaceUri = args[3].itemAt(0).getStringValue();
@@ -219,43 +219,46 @@ public class ExecuteFunction extends BasicFunction {
                 }
 
                 //execute the static SQL statement
-                executeResult = stmt.execute(sql);
+                executeResult = statement.execute(sql);
 
             } else if (args.length == 4 || args.length == 6) {
-                //get the prepared statement
-                final long statementUID = ((IntegerValue) args[1].itemAt(0)).getLong();
-                final PreparedStatementWithSQL stmtWithSQL = SQLModule.retrievePreparedStatement(context, statementUID);
-                sql = stmtWithSQL.getSql();
-                stmt = stmtWithSQL.getStmt();
+                    //get the prepared statement
+                    final long statementUID = ((IntegerValue) args[1].itemAt(0)).getLong();
+                    final PreparedStatementWithSQL stmtWithSQL = SQLModule.retrievePreparedStatement(context, statementUID);
+                    if (stmtWithSQL == null) {
+                        throw new XPathException(this, "No such SQL PreparedStatement");
+                    }
+                    sql = stmtWithSQL.getSql();
+                    statement = stmtWithSQL.getStmt();
 
-                if (stmt.getConnection() != con) {
-                    throw new XPathException(this, "SQL Connection does not match that used for creating the PreparedStatement");
-                }
+                    if (statement.getConnection() != connection) { //NOPMD
+                        throw new XPathException(this, "SQL Connection does not match that used for creating the PreparedStatement");
+                    }
 
-                makeNodeFromColumnName = ((BooleanValue) args[3].itemAt(0)).effectiveBooleanValue();
-                if (args.length == 6) {
-                    namespaceUri = args[4].itemAt(0).getStringValue();
-                    namespacePrefix = args[5].itemAt(0).getStringValue();
-                } else {
-                    // The default namespace for result elements.
-                    namespaceUri = NAMESPACE_URI;
-                    namespacePrefix = PREFIX;
-                }
+                    makeNodeFromColumnName = ((BooleanValue) args[3].itemAt(0)).effectiveBooleanValue();
+                    if (args.length == 6) {
+                        namespaceUri = args[4].itemAt(0).getStringValue();
+                        namespacePrefix = args[5].itemAt(0).getStringValue();
+                    } else {
+                        // The default namespace for result elements.
+                        namespaceUri = NAMESPACE_URI;
+                        namespacePrefix = PREFIX;
+                    }
 
-                if (!args[2].isEmpty()) {
-                    parametersElement = (Element) args[2].itemAt(0);
-                    setParametersOnPreparedStatement(stmt, parametersElement);
-                }
+                    if (!args[2].isEmpty()) {
+                        parametersElement = (Element) args[2].itemAt(0);
+                        setParametersOnPreparedStatement(statement, parametersElement);
+                    }
 
-                //execute the PreparedStatement
-                executeResult = ((PreparedStatement) stmt).execute();
+                    //execute the PreparedStatement
+                    executeResult = ((PreparedStatement) statement).execute();
 
             } else {
                 throw new XPathException(this, "Unknown function call: " + getSignature());
             }
 
             // return the XML result set
-            return resultAsElement(makeNodeFromColumnName, namespacePrefix, namespaceUri, executeResult, stmt, this);
+            return resultAsElement(makeNodeFromColumnName, namespacePrefix, namespaceUri, executeResult, statement, this);
 
         } catch (final SQLException sqle) {
             LOG.error("sql:execute() Caught SQLException \"{}\" for SQL: \"{}\"", sqle.getMessage(), sql, sqle);
@@ -263,9 +266,9 @@ public class ExecuteFunction extends BasicFunction {
 
         } finally {
             // if it's not a prepared statement then close it
-            if (stmt != null && !(stmt instanceof PreparedStatement)) {
+            if (statement != null && !(statement instanceof PreparedStatement)) {
                 try {
-                    stmt.close();
+                    statement.close();
                 } catch (final SQLException se) {
                     LOG.warn("Unable to close JDBC PreparedStatement: {}", se.getMessage(), se);
                 }
@@ -409,9 +412,8 @@ public class ExecuteFunction extends BasicFunction {
                                 //get the content
                                 if (rsmd.getColumnType(i + 1) == Types.SQLXML) {
                                     //parse sqlxml value
+                                    final SQLXML sqlXml = rs.getSQLXML(i + 1);
                                     try {
-                                        final SQLXML sqlXml = rs.getSQLXML(i + 1);
-
                                         if (rs.wasNull()) {
                                             // Add a null indicator attribute if the value was SQL Null
                                             builder.addAttribute(new QName("null", namespaceUri, namespacePrefix), "true");
@@ -436,6 +438,10 @@ public class ExecuteFunction extends BasicFunction {
                                         }
                                     } catch (final Exception e) {
                                         throw new XPathException(this, "Could not parse column of type SQLXML: " + e.getMessage(), e);
+                                    } finally {
+                                        if (sqlXml != null) {
+                                            sqlXml.free();
+                                        }
                                     }
                                 } else {
                                     //otherwise assume string value

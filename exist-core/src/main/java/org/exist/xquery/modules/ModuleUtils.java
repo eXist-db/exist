@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.math.BigInteger;
+import java.security.SecureRandom;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -61,7 +62,7 @@ import org.xml.sax.*;
 public class ModuleUtils {
     private static final Logger LOG = LogManager.getLogger(ModuleUtils.class);
     private static final ContextMapLocks contextMapLocks = new ContextMapLocks();
-    private static final Random random = new Random();
+    private static final Random random = new SecureRandom();
 
 	/**
 	 * Takes a String of XML and Creates an XML Node from it using SAX in the

@@ -182,7 +182,7 @@ public class GetConnectionFunction extends BasicFunction {
                 return pool.getConnection();
             }
         } catch (final SQLException sqle) {
-            LOGGER.error("sql:get-connection-from-pool() Cannot retrieve connection from pool: " + poolName, sqle);
+            LOGGER.error("sql:get-connection-from-pool() Cannot retrieve connection from pool: {}", poolName, sqle);
             throw new XPathException(this, "sql:get-connection-from-pool() Cannot retrieve connection from pool: " + poolName, sqle);
         }
     }

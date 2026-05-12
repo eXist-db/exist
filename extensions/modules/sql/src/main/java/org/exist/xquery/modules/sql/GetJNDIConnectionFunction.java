@@ -23,7 +23,6 @@ package org.exist.xquery.modules.sql;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import org.exist.dom.QName;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
@@ -36,12 +35,9 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
 
-import java.sql.Connection;
-
-import javax.naming.Context;
 import javax.naming.InitialContext;
-
 import javax.sql.DataSource;
+import java.sql.Connection;
 
 
 /**
@@ -109,24 +105,21 @@ public class GetJNDIConnectionFunction extends BasicFunction {
             Connection con = null;
 
             // get the JNDI source
-            String jndiName = args[0].getStringValue();
-            Context ctx = new InitialContext();
-            DataSource ds = (DataSource) ctx.lookup(jndiName);
+            final String jndiName = args[0].getStringValue();
+            final DataSource ds = (DataSource) new InitialContext().lookup(jndiName);
 
             // try and get the connection
             if (args.length == 1) {
                 con = ds.getConnection();
-            }
-
-            if (args.length == 3) {
-                String jndiUser = args[1].getStringValue();
-                String jndiPassword = args[2].getStringValue();
+            } else if (args.length == 3) {
+                final String jndiUser = args[1].getStringValue();
+                final String jndiPassword = args[2].getStringValue();
 
                 con = ds.getConnection(jndiUser, jndiPassword);
             }
 
-            // store the connection and return the uid handle of the connection
-            return (new IntegerValue(this, SQLModule.storeConnection(context, con), Type.LONG));
+                // store the connection and return the uid handle of the connection
+                return (new IntegerValue(this, SQLModule.storeConnection(context, con), Type.LONG));
         } catch (Exception e) {
             throw (new XPathException(this, e.getMessage()));
         }
