@@ -75,6 +75,7 @@ imports,Static imports from org.exist.scheduler,org.exist.scheduler.JobDescripti
 imports,Static imports from org.quartz.impl,org.quartz.impl.StdSchedulerFactory.*,,project-wide
 imports,Static imports from java.lang.invoke,java.lang.invoke.MethodType.methodType,,project-wide
 imports,Static imports from org.exist.http,org.exist.http.RESTServerParameter.*,,project-wide
+naming,handle* method naming pattern,handleEval,,project-wide
 imports,Static imports from com.evolvedbinary.j8fu.fsm,com.evolvedbinary.j8fu.fsm.TransitionTable.transitionTable,,project-wide
 imports,Static imports from org.exist.security,org.exist.security.UnixStylePermission.LOG,,project-wide
 imports,Static imports from org.exist.storage.lock.LockTable,org.exist.storage.lock.LockTable.LockEventType.*,,project-wide
@@ -85,7 +86,6 @@ imports,Static imports from org.exist.storage.blob,org.exist.storage.blob.BlobSt
 imports,Static imports from se.softhouse.jargo,se.softhouse.jargo.Arguments.enumArgument,,project-wide
 imports,Static imports from org.exist.storage.blob.BlobStoreImpl,org.exist.storage.blob.BlobStoreImpl.BlobReference.*,,project-wide
 imports,Static imports from org.exist.util.io,org.exist.util.io.InputStreamUtil.copy,,project-wide
-naming,handle* method naming pattern,handleElement,,project-wide
 naming,Repository suffix for classes,ExistRepository,,project-wide
 naming,Handler suffix for classes,Handler,,project-wide
 imports,Static imports from org.xmldb.api.base,org.xmldb.api.base.ResourceType.BINARY_RESOURCE,,project-wide

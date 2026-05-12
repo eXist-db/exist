@@ -11,6 +11,9 @@ exist-core/src/main/java/org/exist/xmlrpc/RpcAPI.java,org.exist.xmlrpc.RpcAPI$Re
 exist-core/src/main/java/org/exist/debugger/Response.java,org.exist.debugger.Response,Response,DTO,DTO response,
 exist-core/src/main/java/org/exist/http/Response.java,org.exist.http.Response,Response,DTO,"DTO response with fields: stdHeaders, code, statusDesc, content, binaryContent and 2 more","stdHeaders, code, statusDesc, content, binaryContent, encoding, contentType"
 exist-core/src/main/java/org/exist/http/jaxb/Query.java,org.exist.http.jaxb.Query,Query,DTO,"DTO query with fields: text, variables, properties, start, max and 7 more","text, variables, properties, start, max, enclose, wrap, method, typed, mime, cache, session"
+exist-core/src/main/java/org/exist/http/ws/QueryExecutor.java,org.exist.http.ws.QueryExecutor$ErrorInfo,ErrorInfo,Record,"Record error info with fields: xpe, message, line, column","xpe, message, line, column"
+exist-core/src/main/java/org/exist/http/ws/EvalProtocol.java,org.exist.http.ws.EvalProtocol$StreamConfig,StreamConfig,Record,"Record stream config with fields: DEFAULT, enabled, chunkSize","DEFAULT, enabled, chunkSize"
+exist-core/src/main/java/org/exist/http/ws/EvalProtocol.java,org.exist.http.ws.EvalProtocol$ClientMessage,ClientMessage,Record,"Record client message with fields: action, id, query, serialization, variables and 4 more","action, id, query, serialization, variables, context, moduleLoadPath, maxExecutionTime, stream"
 exist-core/src/main/java/org/exist/storage/BrokerPoolServicesManager.java,org.exist.storage.BrokerPoolServicesManager$ManagerEvent,ManagerEvent,DTO,DTO manager event,
 exist-core/src/main/java/org/exist/storage/BrokerPool.java,org.exist.storage.BrokerPool$Event,Event,DTO,DTO event,
 exist-core/src/main/java/org/exist/storage/btree/IndexQuery.java,org.exist.storage.btree.IndexQuery,IndexQuery,DTO,"DTO index query with fields: ANY, EQ, NEQ, GT, LEQ and 14 more","ANY, EQ, NEQ, GT, LEQ, LT, GEQ, BW, NBW, BWX, NBWX, IN, NIN, TRUNC_RIGHT, TRUNC_LEFT, REGEXP, RANGE, op, vals"
@@ -22,7 +25,13 @@ exist-core/src/main/java/org/exist/util/sax/event/contenthandler/ContentHandlerE
 exist-core/src/main/java/org/exist/util/sax/event/SAXEvent.java,org.exist.util.sax.event.SAXEvent,SAXEvent,DTO,DTO s a x event,
 exist-core/src/main/java/org/exist/util/Configuration.java,org.exist.util.Configuration$StartupTriggerConfig,StartupTriggerConfig,Record,"Record startup trigger config with fields: clazz, params","clazz, params"
 exist-core/src/main/java/org/exist/util/Configuration.java,org.exist.util.Configuration$IndexModuleConfig,IndexModuleConfig,Record,"Record index module config with fields: id, className, config","id, className, config"
+exist-core/src/main/java/org/exist/management/impl/Error.java,org.exist.management.impl.Error,Error,Record,"Record error with fields: errcode, description","errcode, description"
+exist-core/src/main/java/org/exist/management/impl/ActiveBroker.java,org.exist.management.impl.ActiveBroker,ActiveBroker,Record,"Record active broker with fields: owner, referenceCount, stack, stackAcquired","owner, referenceCount, stack, stackAcquired"
+exist-core/src/main/java/org/exist/management/impl/BinaryValues.java,org.exist.management.impl.BinaryValues,BinaryValues,Record,Record binary values with fields: instanceId,instanceId
+exist-core/src/main/java/org/exist/management/impl/Job.java,org.exist.management.impl.Job,Job,Record,"Record job with fields: id, action, info","id, action, info"
+exist-core/src/main/java/org/exist/management/impl/ProcessReportMXBean.java,org.exist.management.impl.ProcessReportMXBean$QueryKey,QueryKey,Record,"Record query key with fields: id, key","id, key"
 exist-core/src/main/java/org/exist/management/impl/RunningQuery.java,org.exist.management.impl.RunningQuery,RunningQuery,DTO,"DTO running query with fields: id, sourceType, sourceKey, terminating, requestURI and 2 more","id, sourceType, sourceKey, terminating, requestURI, thread, startTime"
+exist-core/src/main/java/org/exist/management/client/JMXtoXML.java,org.exist.management.client.JMXtoXML$Ping,Ping,Record,"Record ping with fields: instance, connection","instance, connection"
 exist-core/src/main/java/org/exist/client/DialogWithResponse.java,org.exist.client.DialogWithResponse,DialogWithResponse,DTO,DTO dialog with response,
 exist-core/src/main/java/org/exist/client/DialogCompleteWithResponse.java,org.exist.client.DialogCompleteWithResponse,DialogCompleteWithResponse,DTO,DTO dialog complete with response,
 exist-core/src/main/java/org/exist/collections/triggers/TriggerEvent.java,org.exist.collections.triggers.TriggerEvent,TriggerEvent,DTO,DTO trigger event with fields: LOG,LOG
