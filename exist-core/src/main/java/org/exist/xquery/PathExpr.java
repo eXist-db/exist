@@ -515,6 +515,20 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
         steps.set(steps.size() - 1, s);
     }
 
+    /**
+     * Replace this PathExpr's entire step list with a single expression.
+     * Used by the optimizer when collapsing a multi-step path into a single
+     * compound expression (e.g. distributing a union of steps into a Union
+     * of full paths). Unlike {@link #replace(Expression, Expression)}, which
+     * swaps one step at a time, this method replaces all steps atomically.
+     *
+     * @param newSingleStep the expression that becomes this path's only step
+     */
+    public void replaceAllSteps(final Expression newSingleStep) {
+        steps.clear();
+        steps.add(newSingleStep);
+    }
+
     public String getLiteralValue() {
         if (steps.isEmpty()) {
             return "";

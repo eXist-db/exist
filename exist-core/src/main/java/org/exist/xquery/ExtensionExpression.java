@@ -49,6 +49,10 @@ public class ExtensionExpression extends AbstractExpression {
         this.innerExpression = inner;
     }
 
+    public Expression getExpression() {
+        return innerExpression;
+    }
+
     public void addPragma(final Pragma pragma) {
         if (pragmas == null) {
             pragmas = new Pragma[1];
