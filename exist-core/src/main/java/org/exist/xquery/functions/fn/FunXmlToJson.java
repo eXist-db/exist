@@ -26,6 +26,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.Namespaces;
 import org.exist.dom.QName;
+import org.exist.dom.memtree.DocumentImpl;
+import org.exist.dom.memtree.InMemoryXMLStreamReader;
+import org.exist.dom.memtree.NodeImpl;
 import org.exist.xquery.*;
 import org.exist.xquery.functions.map.MapType;
 import org.exist.xquery.value.*;
@@ -112,7 +115,7 @@ public class FunXmlToJson extends BasicFunction {
         try (
                 final JsonGenerator jsonGenerator = jsonFactory.createGenerator(writer)
         ) {
-            reader = context.getXMLStreamReader(nodeValue);
+            reader = streamReaderFor(nodeValue);
             int previous = XMLStreamReader.START_DOCUMENT;
             int status = XMLStreamReader.START_DOCUMENT;
             while (reader.hasNext()) {
@@ -223,6 +226,24 @@ public class FunXmlToJson extends BasicFunction {
                 }
             }
         }
+    }
+
+    /**
+     * Construct a stream reader scoped to the input node's subtree.
+     * For in-memory element nodes, XQueryContext.getXMLStreamReader walks from the
+     * owner-document root, so when the input is an element nested inside a larger
+     * document (e.g. selected by XPath from a host XML file), traversal visits
+     * ancestor elements and the namespace check fires on them rather than on the
+     * actual JSON wrapper element. Scoping the reader to the input element fixes that.
+     */
+    private XMLStreamReader streamReaderFor(final NodeValue nodeValue) throws IOException, XMLStreamException {
+        if (nodeValue.getImplementationType() == NodeValue.IN_MEMORY_NODE
+                && nodeValue.getType() == Type.ELEMENT) {
+            final NodeImpl node = (NodeImpl) nodeValue;
+            final DocumentImpl ownerDoc = node.getOwnerDocument();
+            return new InMemoryXMLStreamReader(ownerDoc, node);
+        }
+        return context.getXMLStreamReader(nodeValue);
     }
 
     /**
