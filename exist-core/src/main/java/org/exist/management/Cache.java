@@ -24,15 +24,30 @@ package org.exist.management;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
+/**
+ * JMX MBean exposing statistics for a single internal page cache
+ * ({@link org.exist.storage.cache.Cache}).
+ */
 public class Cache implements CacheMXBean {
     private final String instanceId;
     private final org.exist.storage.cache.Cache cache;
 
+    /**
+     * Create a new Cache MBean wrapper.
+     *
+     * @param instanceId the identifier of the database instance
+     * @param cache      the underlying cache to expose
+     */
     public Cache(final String instanceId, final org.exist.storage.cache.Cache cache) {
         this.instanceId = instanceId;
         this.cache = cache;
     }
 
+    /**
+     * Return a JMX object-name query that matches all Cache MBeans across all instances.
+     *
+     * @return the wildcard query string
+     */
     public static String getAllInstancesQuery() {
         return "org.exist.management." + '*' + ":type=CacheManager.Cache," + '*';
     }
@@ -47,7 +62,7 @@ public class Cache implements CacheMXBean {
     }
 
     @Override
-    public String getInstanceId() {
+    public String instanceId() {
         return instanceId;
     }
 

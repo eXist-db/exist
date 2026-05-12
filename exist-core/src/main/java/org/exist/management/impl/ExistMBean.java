@@ -33,7 +33,6 @@ public interface ExistMBean {
      * Get the name of the MBean.
      *
      * @return the name of the mbean.
-     *
      * @throws MalformedObjectNameException if the name cannot be constructed.
      */
     ObjectName getName() throws MalformedObjectNameException;

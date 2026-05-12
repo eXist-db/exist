@@ -25,34 +25,6 @@ package org.exist.management.impl;
 /**
  * Owner and process information on a broker.
  */
-public class ActiveBroker {
+public record ActiveBroker(String owner, int referenceCount, String stack, String stackAcquired) {
 
-    private final String owner;
-    private final int referenceCount;
-    private final String stack;
-    private final String stackAcquired;
-
-    public ActiveBroker(final String owner, final int referenceCount, final String stack, final String stackAcquired) {
-
-        this.owner = owner;
-        this.referenceCount = referenceCount;
-        this.stack = stack;
-        this.stackAcquired = stackAcquired;
-    }
-
-    public String getOwner() {
-        return owner;
-    }
-
-    public int getReferenceCount() {
-        return referenceCount;
-    }
-
-    public String getStack() {
-        return stack;
-    }
-
-    public String getStackAcquired() {
-        return stackAcquired;
-    }
 }

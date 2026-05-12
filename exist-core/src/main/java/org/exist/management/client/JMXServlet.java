@@ -21,26 +21,11 @@
  */
 package org.exist.management.client;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.net.*;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.*;
-import java.util.function.Predicate;
-import javax.management.*;
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.TransformerException;
-
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -48,6 +33,29 @@ import org.exist.storage.BrokerPool;
 import org.exist.util.UUIDGenerator;
 import org.exist.util.serializer.DOMSerializer;
 import org.w3c.dom.Element;
+
+import javax.management.InstanceNotFoundException;
+import javax.management.IntrospectionException;
+import javax.management.MBeanException;
+import javax.management.MalformedObjectNameException;
+import javax.management.ReflectionException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.TransformerException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.HashSet;
+import java.util.Properties;
+import java.util.Set;
+import java.util.function.Predicate;
 
 /**
  * A servlet to monitor the database. It returns status information for the database based on the JMX interface. For
@@ -69,6 +77,7 @@ import org.w3c.dom.Element;
  * If the ping takes longer than the timeout, you'll instead find an element &lt;jmx:error&gt; in the returned XML. In
  * this case, additional information on running queries, memory consumption and database locks will be provided.
  * <p>
+ *
  * @author wolf
  */
 public class JMXServlet extends HttpServlet {
@@ -86,9 +95,8 @@ public class JMXServlet extends HttpServlet {
         defaultProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
     }
 
-    private JMXtoXML client;
     private final Set<String> localhostAddresses = new HashSet<>();
-
+    private JMXtoXML client;
     private Path dataDir;
     private Path tokenFile;
 
@@ -149,7 +157,8 @@ public class JMXServlet extends HttpServlet {
                 }
             } catch (final InstanceNotFoundException e) {
                 throw new ServletException("mbean " + mbean + " not found: " + e.getMessage(), e);
-            } catch (final MalformedObjectNameException | IntrospectionException | ReflectionException | MBeanException e) {
+            } catch (final MalformedObjectNameException | IntrospectionException | ReflectionException |
+                           MBeanException e) {
                 throw new ServletException(e.getMessage(), e);
             }
         } else {

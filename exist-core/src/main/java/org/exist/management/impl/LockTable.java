@@ -21,6 +21,7 @@
  */
 package org.exist.management.impl;
 
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.storage.BrokerPool;
@@ -29,7 +30,6 @@ import org.exist.storage.lock.Lock.LockType;
 import org.exist.storage.lock.LockTable.LockCountTraces;
 import org.exist.storage.lock.LockTable.LockModeOwner;
 import org.exist.storage.lock.LockTableUtils;
-import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
@@ -49,6 +49,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class LockTable implements LockTableMXBean {
 
+    private final static Logger LOCK_LOG = LogManager.getLogger(org.exist.storage.lock.LockTable.class);
     private final BrokerPool pool;
 
     public LockTable(final BrokerPool brokerPool) {
@@ -69,7 +70,7 @@ public class LockTable implements LockTableMXBean {
     }
 
     @Override
-    public String getInstanceId() {
+    public String instanceId() {
         return pool.getId();
     }
 
@@ -111,8 +112,6 @@ public class LockTable implements LockTableMXBean {
         }
     }
 
-    private final static Logger LOCK_LOG = LogManager.getLogger(org.exist.storage.lock.LockTable.class);
-
     @Override
     public void dumpToLog() {
         LOCK_LOG.info(LockTableUtils.stateToString(pool.getLockManager().getLockTable(), false));
@@ -126,7 +125,7 @@ public class LockTable implements LockTableMXBean {
     @Override
     public void xmlDumpToLog() {
         try (final UnsynchronizedByteArrayOutputStream bos = new UnsynchronizedByteArrayOutputStream();
-                final Writer writer = new OutputStreamWriter(bos)) {
+             final Writer writer = new OutputStreamWriter(bos)) {
             LockTableUtils.stateToXml(pool.getLockManager().getLockTable(), false, writer);
             LOCK_LOG.info(new String(bos.toByteArray(), UTF_8));
         } catch (final IOException | XMLStreamException e) {

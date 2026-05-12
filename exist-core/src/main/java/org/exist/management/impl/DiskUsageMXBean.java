@@ -39,21 +39,66 @@ public interface DiskUsageMXBean extends PerInstanceMBean {
      */
     String NOT_CONFIGURED = "NOT_CONFIGURED";
 
+    /**
+     * Get the absolute path of the data directory.
+     *
+     * @return the data directory path, or {@link #NOT_CONFIGURED} if not set
+     */
     String getDataDirectory();
 
+    /**
+     * Get the usable space (in bytes) on the file store containing the data directory.
+     *
+     * @return usable space in bytes, or {@link #NO_VALUE} if unavailable
+     */
     long getDataDirectoryUsableSpace();
 
+    /**
+     * Get the total space (in bytes) on the file store containing the data directory.
+     *
+     * @return total space in bytes, or {@link #NO_VALUE} if unavailable
+     */
     long getDataDirectoryTotalSpace();
 
+    /**
+     * Get the space (in bytes) used by database data files in the data directory.
+     *
+     * @return used space in bytes, or {@link #NO_VALUE} if unavailable
+     */
     long getDataDirectoryUsedSpace();
 
+    /**
+     * Get the absolute path of the journal directory.
+     *
+     * @return the journal directory path, or {@link #NOT_CONFIGURED} if not set
+     */
     String getJournalDirectory();
 
+    /**
+     * Get the usable space (in bytes) on the file store containing the journal directory.
+     *
+     * @return usable space in bytes, or {@link #NO_VALUE} if unavailable
+     */
     long getJournalDirectoryUsableSpace();
 
+    /**
+     * Get the total space (in bytes) on the file store containing the journal directory.
+     *
+     * @return total space in bytes, or {@link #NO_VALUE} if unavailable
+     */
     long getJournalDirectoryTotalSpace();
 
+    /**
+     * Get the space (in bytes) used by journal files in the journal directory.
+     *
+     * @return used space in bytes, or {@link #NO_VALUE} if unavailable
+     */
     long getJournalDirectoryUsedSpace();
 
+    /**
+     * Get the number of journal files present in the journal directory.
+     *
+     * @return journal file count, or {@link #NO_VALUE} if unavailable
+     */
     long getJournalDirectoryNumberOfFiles();
 }

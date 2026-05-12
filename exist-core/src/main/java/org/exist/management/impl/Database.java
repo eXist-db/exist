@@ -21,24 +21,38 @@
  */
 package org.exist.management.impl;
 
+import org.exist.storage.BrokerPool;
+import org.exist.storage.DBBroker;
+
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
 
-import org.exist.storage.BrokerPool;
-import org.exist.storage.DBBroker;
-
+/**
+ * JMX MBean exposing runtime information about a database instance
+ * (broker pool status, memory usage, uptime, etc.).
+ */
 public class Database implements DatabaseMXBean {
 
     private final BrokerPool pool;
 
+    /**
+     * Create a new Database MBean wrapper.
+     *
+     * @param pool the broker pool representing the database instance
+     */
     public Database(final BrokerPool pool) {
         this.pool = pool;
     }
 
+    /**
+     * Return a JMX object-name query that matches all Database MBeans across all instances.
+     *
+     * @return the wildcard query string
+     */
     public static String getAllInstancesQuery() {
         return getName("*");
     }
@@ -53,7 +67,7 @@ public class Database implements DatabaseMXBean {
     }
 
     @Override
-    public String getInstanceId() {
+    public String instanceId() {
         return pool.getId();
     }
 
@@ -126,6 +140,12 @@ public class Database implements DatabaseMXBean {
         return pool.getConfiguration().getExistHome().map(p -> p.toAbsolutePath().toString()).orElse(null);
     }
 
+    /**
+     * Produce a partial stack trace (up to 20 frames) for the given thread.
+     *
+     * @param thread the thread whose stack trace should be captured
+     * @return a string containing the stack trace frames
+     */
     public String printStackTrace(final Thread thread) {
         final StackTraceElement[] stackElements = thread.getStackTrace();
         final StringWriter writer = new StringWriter();

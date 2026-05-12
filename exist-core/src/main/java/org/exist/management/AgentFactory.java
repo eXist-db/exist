@@ -30,6 +30,13 @@ import java.lang.invoke.MethodHandles;
 
 import static java.lang.invoke.MethodType.methodType;
 
+/**
+ * Factory for obtaining the singleton {@link Agent} instance.
+ * <p>
+ * The concrete agent class can be overridden via the system property
+ * {@code exist.jmxagent}. If no suitable class is found a {@link DummyAgent}
+ * is used as a fallback.
+ */
 @ThreadSafe
 public class AgentFactory {
 
@@ -37,6 +44,11 @@ public class AgentFactory {
 
     private static Agent instance = null;
 
+    /**
+     * Return the singleton {@link Agent} instance, creating it on first call.
+     *
+     * @return the agent instance (never {@code null})
+     */
     public static synchronized Agent getInstance() {
         if (instance == null) {
             final String className = System.getProperty("exist.jmxagent", "org.exist.management.impl.JMXAgent");

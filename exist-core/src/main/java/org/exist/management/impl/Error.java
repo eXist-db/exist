@@ -25,22 +25,6 @@ package org.exist.management.impl;
 /**
  * Represents a sanity check error
  */
-public class Error {
+public record Error(String errcode, String description) {
 
-    private final String errcode;
-    private final String description;
-
-    public Error(final String errcode, final String description) {
-
-        this.errcode = errcode;
-        this.description = description;
-    }
-
-    public String getErrcode() {
-        return errcode;
-    }
-
-    public String getDescription() {
-        return description;
-    }
 }

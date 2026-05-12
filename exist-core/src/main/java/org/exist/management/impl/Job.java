@@ -25,27 +25,6 @@ package org.exist.management.impl;
 /**
  * Detail information on a job.
  */
-public class Job {
+public record Job(String id, String action, String info) {
 
-    private final String id;
-    private final String action;
-    private final String info;
-
-    public Job(final String id, final String action, final String info) {
-        this.id = id;
-        this.action = action;
-        this.info = info;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public String getAction() {
-        return action;
-    }
-
-    public String getInfo() {
-        return info;
-    }
 }

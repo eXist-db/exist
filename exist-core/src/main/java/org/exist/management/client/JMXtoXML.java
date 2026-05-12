@@ -21,20 +21,42 @@
  */
 package org.exist.management.client;
 
-import java.io.IOException;
-import java.io.StringWriter;
-import java.lang.management.ManagementFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.exist.dom.QName;
+import org.exist.dom.memtree.MemTreeBuilder;
+import org.exist.management.Cache;
+import org.exist.management.CacheManager;
+import org.exist.management.impl.BinaryValues;
+import org.exist.management.impl.CollectionCache;
+import org.exist.management.impl.Database;
+import org.exist.management.impl.DiskUsage;
+import org.exist.management.impl.LockTable;
+import org.exist.management.impl.ProcessReport;
+import org.exist.management.impl.SanityReport;
+import org.exist.management.impl.SystemInfo;
+import org.exist.start.CompatibleJavaVersionCheck;
+import org.exist.start.StartException;
+import org.exist.util.NamedThreadFactory;
+import org.exist.util.serializer.DOMSerializer;
+import org.exist.xquery.Expression;
+import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
 
-import static java.lang.management.ManagementFactory.CLASS_LOADING_MXBEAN_NAME;
-import static java.lang.management.ManagementFactory.MEMORY_MXBEAN_NAME;
-import static java.lang.management.ManagementFactory.OPERATING_SYSTEM_MXBEAN_NAME;
-import static java.lang.management.ManagementFactory.RUNTIME_MXBEAN_NAME;
-import static java.lang.management.ManagementFactory.THREAD_MXBEAN_NAME;
-
-import java.net.MalformedURLException;
-import java.util.*;
-import java.util.concurrent.*;
-import javax.management.*;
+import javax.management.AttributeNotFoundException;
+import javax.management.InstanceNotFoundException;
+import javax.management.IntrospectionException;
+import javax.management.MBeanAttributeInfo;
+import javax.management.MBeanException;
+import javax.management.MBeanInfo;
+import javax.management.MBeanOperationInfo;
+import javax.management.MBeanParameterInfo;
+import javax.management.MBeanServer;
+import javax.management.MBeanServerConnection;
+import javax.management.MBeanServerFactory;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
+import javax.management.ReflectionException;
 import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.CompositeType;
 import javax.management.openmbean.TabularData;
@@ -44,21 +66,30 @@ import javax.management.remote.JMXServiceURL;
 import javax.xml.XMLConstants;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerException;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.lang.management.ManagementFactory;
+import java.net.MalformedURLException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.exist.dom.QName;
-import org.exist.management.Cache;
-import org.exist.management.CacheManager;
-import org.exist.management.impl.*;
-import org.exist.dom.memtree.MemTreeBuilder;
-import org.exist.start.CompatibleJavaVersionCheck;
-import org.exist.start.StartException;
-import org.exist.util.NamedThreadFactory;
-import org.exist.util.serializer.DOMSerializer;
-import org.exist.xquery.Expression;
-import org.w3c.dom.Element;
-import org.xml.sax.SAXException;
+import static java.lang.management.ManagementFactory.CLASS_LOADING_MXBEAN_NAME;
+import static java.lang.management.ManagementFactory.MEMORY_MXBEAN_NAME;
+import static java.lang.management.ManagementFactory.OPERATING_SYSTEM_MXBEAN_NAME;
+import static java.lang.management.ManagementFactory.RUNTIME_MXBEAN_NAME;
+import static java.lang.management.ManagementFactory.THREAD_MXBEAN_NAME;
 
 /**
  * Utility class to output database status information from eXist's JMX interface as XML.
@@ -67,22 +98,21 @@ import org.xml.sax.SAXException;
  */
 public class JMXtoXML {
 
+    public static final String JMX_NAMESPACE = "http://exist-db.org/jmx";
+    public static final String JMX_PREFIX = "jmx";
+    public static final long PING_TIMEOUT = -99;
+    public static final int VERSION = 1;
     private final static Logger LOG = LogManager.getLogger(JMXtoXML.class);
-
     private final static Map<String, ObjectName[]> CATEGORIES = new TreeMap<>();
+    private static final Properties defaultProperties = new Properties();
+    private static final QName ROW_ELEMENT = new QName("row", JMX_NAMESPACE, JMX_PREFIX);
+    private static final QName JMX_ELEMENT = new QName("jmx", JMX_NAMESPACE, JMX_PREFIX);
+    private static final QName JMX_RESULT = new QName("result", JMX_NAMESPACE, JMX_PREFIX);
+    private static final QName JMX_RESULT_TYPE_ATTR = new QName("class", JMX_NAMESPACE, JMX_PREFIX);
+    private static final QName JMX_CONNECTION_ATTR = new QName("connection", XMLConstants.NULL_NS_URI);
+    private static final QName JMX_ERROR = new QName("error", JMX_NAMESPACE, JMX_PREFIX);
+    private static final QName VERSION_ATTR = new QName("version", XMLConstants.NULL_NS_URI);
 
-    private static void putCategory(final String categoryName, final String... objectNames) {
-        final ObjectName[] aryObjectNames = new ObjectName[objectNames.length];
-        try {
-            for (int i = 0; i < aryObjectNames.length; i++) {
-                aryObjectNames[i] = new ObjectName(objectNames[i]);
-            }
-        } catch (final MalformedObjectNameException | NullPointerException e) {
-            LOG.warn("Error in initialization: {}", e.getMessage(), e);
-        }
-
-        CATEGORIES.put(categoryName, aryObjectNames);
-    }
     static {
         // Java
         putCategory("memory", MEMORY_MXBEAN_NAME);
@@ -115,31 +145,49 @@ public class JMXtoXML {
         putCategory("all", "org.exist.*:*", "java.lang:*");
     }
 
-    private static final Properties defaultProperties = new Properties();
-
     static {
         defaultProperties.setProperty(OutputKeys.INDENT, "yes");
         defaultProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
     }
 
-    public static final String JMX_NAMESPACE = "http://exist-db.org/jmx";
-    public static final String JMX_PREFIX = "jmx";
-
-    private static final QName ROW_ELEMENT = new QName("row", JMX_NAMESPACE, JMX_PREFIX);
-    private static final QName JMX_ELEMENT = new QName("jmx", JMX_NAMESPACE, JMX_PREFIX);
-    private static final QName JMX_RESULT = new QName("result", JMX_NAMESPACE, JMX_PREFIX);
-    private static final QName JMX_RESULT_TYPE_ATTR = new QName("class", JMX_NAMESPACE, JMX_PREFIX);
-    private static final QName JMX_CONNECTION_ATTR = new QName("connection", XMLConstants.NULL_NS_URI);
-    private static final QName JMX_ERROR = new QName("error", JMX_NAMESPACE, JMX_PREFIX);
-    private static final QName VERSION_ATTR = new QName("version", XMLConstants.NULL_NS_URI);
-
-    public static final long PING_TIMEOUT = -99;
-
-    public static final int VERSION = 1;
-
     private final MBeanServerConnection platformConnection = ManagementFactory.getPlatformMBeanServer();
     private MBeanServerConnection connection;
     private JMXServiceURL url;
+
+    private static void putCategory(final String categoryName, final String... objectNames) {
+        final ObjectName[] aryObjectNames = new ObjectName[objectNames.length];
+        try {
+            for (int i = 0; i < aryObjectNames.length; i++) {
+                aryObjectNames[i] = new ObjectName(objectNames[i]);
+            }
+        } catch (final MalformedObjectNameException | NullPointerException e) {
+            LOG.warn("Error in initialization: {}", e.getMessage(), e);
+        }
+
+        CATEGORIES.put(categoryName, aryObjectNames);
+    }
+
+    /**
+     * @param args program arguments
+     */
+    public static void main(final String[] args) {
+        try {
+            CompatibleJavaVersionCheck.checkForCompatibleJavaVersion();
+        } catch (final StartException e) {
+            if (e.getMessage() != null && !e.getMessage().isEmpty()) {
+                System.err.println(e.getMessage());
+            }
+            System.exit(e.getErrorCode());
+        }
+
+        final JMXtoXML client = new JMXtoXML();
+        try {
+            client.connect("localhost", 1099);
+            System.out.println(client.generateReport(args));
+        } catch (final IOException | TransformerException e) {
+            e.printStackTrace();
+        }
+    }
 
     /**
      * Connect to the local JMX instance.
@@ -178,10 +226,10 @@ public class JMXtoXML {
      * "instances", "disk", "system", "caches", "locking", "processes", "sanity", "all".
      *
      * @param categories array of categories to include in the report
-     * @throws TransformerException in case of serialization errors
      * @return string containing an XML report
+     * @throws TransformerException in case of serialization errors
      */
-    public String generateReport(final String categories[]) throws TransformerException {
+    public String generateReport(final String[] categories) throws TransformerException {
         final Element root = generateXMLReport(null, categories);
         final StringWriter writer = new StringWriter();
         final DOMSerializer streamer = new DOMSerializer(writer, defaultProperties);
@@ -223,27 +271,6 @@ public class JMXtoXML {
         }
     }
 
-    private static class Ping implements Callable<Long> {
-        private final String instance;
-        private final MBeanServerConnection connection;
-
-        public Ping(final String instance, final MBeanServerConnection connection) {
-            this.instance = instance;
-            this.connection = connection;
-        }
-
-        @Override
-        public Long call() {
-            try {
-                final ObjectName name = SanityReport.getName(instance);
-                return (Long) connection.invoke(name, "ping", new Object[]{Boolean.TRUE}, new String[]{boolean.class.getName()});
-            } catch (final Exception e) {
-                LOG.warn(e.getMessage(), e);
-                return (long) SanityReport.PING_ERROR;
-            }
-        }
-    }
-
     /**
      * Retrieve JMX output for the given categories and return it as an XML DOM. Valid categories are "memory",
      * "instances", "disk", "system", "caches", "locking", "processes", "sanity", "all".
@@ -252,7 +279,7 @@ public class JMXtoXML {
      * @param categories the categories to generate the report for
      * @return xml report
      */
-    public Element generateXMLReport(final String errcode, final String categories[]) {
+    public Element generateXMLReport(final String errcode, final String[] categories) {
         final MemTreeBuilder builder = new MemTreeBuilder((Expression) null);
 
         try {
@@ -292,18 +319,19 @@ public class JMXtoXML {
         try {
             final Object dir = connection.getAttribute(new ObjectName("org.exist.management.exist:type=DiskUsage"), "DataDirectory");
             return dir == null ? null : dir.toString();
-        } catch (final MBeanException | AttributeNotFoundException | InstanceNotFoundException | ReflectionException | IOException | MalformedObjectNameException e) {
+        } catch (final MBeanException | AttributeNotFoundException | InstanceNotFoundException | ReflectionException |
+                       IOException | MalformedObjectNameException e) {
             return null;
         }
     }
 
-    public Element invoke(final String objectName, final String operation, String[] args) throws InstanceNotFoundException, MalformedObjectNameException, MBeanException, IOException, ReflectionException, IntrospectionException {
+    public Element invoke(final String objectName, final String operation, final String[] args) throws InstanceNotFoundException, MalformedObjectNameException, MBeanException, IOException, ReflectionException, IntrospectionException {
         final ObjectName name = new ObjectName(objectName);
         MBeanServerConnection conn = connection;
         MBeanInfo info;
         try {
             info = conn.getMBeanInfo(name);
-        } catch (InstanceNotFoundException e) {
+        } catch (final InstanceNotFoundException e) {
             conn = platformConnection;
             info = conn.getMBeanInfo(name);
         }
@@ -314,7 +342,7 @@ public class JMXtoXML {
                 final Object[] params = new Object[sig.length];
                 final String[] types = new String[sig.length];
                 for (int i = 0; i < sig.length; i++) {
-                    String type = sig[i].getType();
+                    final String type = sig[i].getType();
                     types[i] = type;
                     params[i] = mapParameter(type, args[i]);
                 }
@@ -375,7 +403,7 @@ public class JMXtoXML {
             builder.addAttribute(new QName("name", XMLConstants.NULL_NS_URI), name.toString());
 
             final MBeanAttributeInfo[] beanAttribs = info.getAttributes();
-            for (MBeanAttributeInfo beanAttrib : beanAttribs) {
+            for (final MBeanAttributeInfo beanAttrib : beanAttribs) {
                 if (beanAttrib.isReadable()) {
                     try {
                         final QName attrQName = new QName(beanAttrib.getName(), JMX_NAMESPACE, JMX_PREFIX);
@@ -396,12 +424,11 @@ public class JMXtoXML {
     private void serializeObject(final MemTreeBuilder builder, final Object object) throws SAXException {
         switch (object) {
             case null -> {
-                return;
             }
-            case TabularData tabularData -> serialize(builder, tabularData);
-            case CompositeData[] compositeData -> serialize(builder, compositeData);
-            case CompositeData compositeData -> serialize(builder, compositeData);
-            case Object[] objects -> serialize(builder, objects);
+            case final TabularData tabularData -> serialize(builder, tabularData);
+            case final CompositeData[] compositeData -> serialize(builder, compositeData);
+            case final CompositeData compositeData -> serialize(builder, compositeData);
+            case final Object[] objects -> serialize(builder, objects);
             default -> builder.characters(object.toString());
         }
 
@@ -458,25 +485,17 @@ public class JMXtoXML {
         };
     }
 
-    /**
-     * @param args program arguments
-     */
-    public static void main(final String[] args) {
-        try {
-            CompatibleJavaVersionCheck.checkForCompatibleJavaVersion();
-        } catch (final StartException e) {
-            if (e.getMessage() != null && !e.getMessage().isEmpty()) {
-                System.err.println(e.getMessage());
-            }
-            System.exit(e.getErrorCode());
-        }
+    private record Ping(String instance, MBeanServerConnection connection) implements Callable<Long> {
 
-        final JMXtoXML client = new JMXtoXML();
-        try {
-            client.connect("localhost", 1099);
-            System.out.println(client.generateReport(args));
-        } catch (final IOException | TransformerException e) {
-            e.printStackTrace();
+        @Override
+            public Long call() {
+                try {
+                    final ObjectName name = SanityReport.getName(instance);
+                    return (Long) connection.invoke(name, "ping", new Object[]{Boolean.TRUE}, new String[]{boolean.class.getName()});
+                } catch (final Exception e) {
+                    LOG.warn(e.getMessage(), e);
+                    return (long) SanityReport.PING_ERROR;
+                }
+            }
         }
-    }
 }

@@ -21,10 +21,6 @@
  */
 package org.exist.management.impl;
 
-import java.util.*;
-
-import javax.management.*;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
@@ -40,19 +36,28 @@ import org.exist.xquery.CompiledXQuery;
 import org.exist.xquery.XQuery;
 import org.exist.xquery.XQueryContext;
 
-public class SanityReport extends NotificationBroadcasterSupport implements SanityReportMXBean {
+import javax.management.AttributeChangeNotification;
+import javax.management.MBeanNotificationInfo;
+import javax.management.MalformedObjectNameException;
+import javax.management.Notification;
+import javax.management.NotificationBroadcasterSupport;
+import javax.management.ObjectName;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
 
-    private final static Logger LOG = LogManager.getLogger(SanityReport.class.getName());
+public class SanityReport extends NotificationBroadcasterSupport implements SanityReportMXBean {
 
     public final static String STATUS_OK = "OK";
     public final static String STATUS_FAIL = "FAIL";
-
     public final static StringSource TEST_XQUERY = new StringSource("<r>{current-dateTime()}</r>");
-
     public final static int PING_WAITING = -1;
     public final static int PING_ERROR = -2;
-
-    private static List<ErrorReport> NO_ERRORS = new LinkedList<>();
+    private final static Logger LOG = LogManager.getLogger(SanityReport.class.getName());
+    private static final List<ErrorReport> NO_ERRORS = new LinkedList<>();
 
     private int seqNum = 0;
 
@@ -72,14 +77,14 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
 
     private List<ErrorReport> errors = NO_ERRORS;
 
-    private BrokerPool pool;
+    private final BrokerPool pool;
 
-    public SanityReport(BrokerPool pool) {
+    public SanityReport(final BrokerPool pool) {
         this.pool = pool;
     }
 
     public static String getAllInstancesQuery() {
-        return "org.exist.management." + '*' + ":type=SanityReport";
+        return "org.exist.management." + '*' + ".tasks:type=SanityReport";
     }
 
     public static ObjectName getName(final String instanceId) throws MalformedObjectNameException {
@@ -92,7 +97,7 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
     }
 
     @Override
-    public String getInstanceId() {
+    public String instanceId() {
         return pool.getId();
     }
 
@@ -145,7 +150,7 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
     }
 
     @Override
-    public void triggerCheck(String output, String backup, String incremental) {
+    public void triggerCheck(final String output, final String backup, final String incremental) {
         try {
             this.output = output;
             final SystemTask task = new ConsistencyCheckTask();
@@ -171,7 +176,7 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
     }
 
     @Override
-    public long ping(boolean checkQueryEngine) {
+    public long ping(final boolean checkQueryEngine) {
         final long start = System.currentTimeMillis();
         lastPingRespTime = -1;
         lastActionInfo = "Ping";
@@ -216,7 +221,7 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
         return lastPingRespTime;
     }
 
-    private Properties parseParameter(String output, String backup, String incremental) {
+    private Properties parseParameter(final String output, final String backup, final String incremental) {
         final Properties properties = new Properties();
         final boolean doBackup = "YES".equalsIgnoreCase(backup);
 
@@ -225,7 +230,7 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
             properties.put("backup", backup);
         }
 
-        if (incremental != null && ("YES".equalsIgnoreCase(incremental) || "no".equalsIgnoreCase(incremental))) {
+        if (("YES".equalsIgnoreCase(incremental) || "no".equalsIgnoreCase(incremental))) {
             properties.put("incremental", incremental);
         }
 
@@ -238,7 +243,7 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
         return properties;
     }
 
-    protected void updateErrors(List<ErrorReport> errorList) {
+    protected void updateErrors(final List<ErrorReport> errorList) {
         try {
             if (errorList == null || errorList.isEmpty()) {
                 taskstatus.setStatus(TaskStatus.Status.STOPPED_OK);
@@ -253,7 +258,7 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
 
     }
 
-    protected void changeStatus(TaskStatus status) {
+    protected void changeStatus(final TaskStatus status) {
         status.setStatusChangeTime();
         switch (status.getStatus()) {
             case INIT:
@@ -285,7 +290,7 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
         }
     }
 
-    protected void updateStatus(int percentage) {
+    protected void updateStatus(final int percentage) {
         try {
             final int oldPercentage = taskstatus.getPercentage();
             taskstatus.setPercentage(percentage);

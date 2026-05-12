@@ -24,15 +24,29 @@ package org.exist.management;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
+/**
+ * JMX MBean exposing aggregate statistics for the eXist-db cache manager.
+ */
 public class CacheManager implements CacheManagerMXBean {
     private final String instanceId;
     private final org.exist.storage.CacheManager manager;
 
+    /**
+     * Create a new CacheManager MBean wrapper.
+     *
+     * @param instanceId the identifier of the database instance
+     * @param manager    the underlying cache manager to expose
+     */
     public CacheManager(final String instanceId, final org.exist.storage.CacheManager manager) {
         this.instanceId = instanceId;
         this.manager = manager;
     }
 
+    /**
+     * Return a JMX object-name query that matches all CacheManager MBeans across all instances.
+     *
+     * @return the wildcard query string
+     */
     public static String getAllInstancesQuery() {
         return "org.exist.management." + '*' + ":type=CacheManager";
     }
@@ -47,7 +61,7 @@ public class CacheManager implements CacheManagerMXBean {
     }
 
     @Override
-    public String getInstanceId() {
+    public String instanceId() {
         return instanceId;
     }
 

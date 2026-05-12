@@ -50,19 +50,43 @@ public interface LockTableMXBean extends PerInstanceMBean {
      */
     Map<String, Map<Lock.LockType, List<LockModeOwner>>> getAttempting();
 
+    /**
+     * Dump a summary of the current lock table state to the system console.
+     */
     void dumpToConsole();
 
+    /**
+     * Dump a summary of the current lock table state to the log.
+     */
     void dumpToLog();
 
+    /**
+     * Dump an XML representation of the current lock table state to the system console.
+     */
     void xmlDumpToConsole();
 
+    /**
+     * Dump an XML representation of the current lock table state to the log.
+     */
     void xmlDumpToLog();
 
+    /**
+     * Dump a full (verbose) representation of the current lock table state to the system console.
+     */
     void fullDumpToConsole();
 
+    /**
+     * Dump a full (verbose) representation of the current lock table state to the log.
+     */
     void fullDumpToLog();
 
+    /**
+     * Dump a full (verbose) XML representation of the current lock table state to the system console.
+     */
     void xmlFullDumpToConsole();
 
+    /**
+     * Dump a full (verbose) XML representation of the current lock table state to the log.
+     */
     void xmlFullDumpToLog();
 }

@@ -21,22 +21,20 @@
  */
 package org.exist.management.impl;
 
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.TreeMap;
-
 import org.exist.scheduler.ScheduledJobInfo;
 import org.exist.scheduler.Scheduler;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.ProcessMonitor;
+import org.exist.storage.ProcessMonitor.QueryHistory;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.XQueryWatchDog;
 
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
-
-import org.exist.storage.ProcessMonitor.QueryHistory;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 public class ProcessReport implements ProcessReportMXBean {
     private final String instanceId;
@@ -63,7 +61,7 @@ public class ProcessReport implements ProcessReportMXBean {
     }
 
     @Override
-    public String getInstanceId() {
+    public String instanceId() {
         return instanceId;
     }
 
@@ -109,7 +107,7 @@ public class ProcessReport implements ProcessReportMXBean {
     @Override
     public void killQuery(final int id) {
         final XQueryWatchDog[] watchdogs = processMonitor.getRunningXQueries();
-        for (XQueryWatchDog watchdog : watchdogs) {
+        for (final XQueryWatchDog watchdog : watchdogs) {
             final XQueryContext context = watchdog.getContext();
 
             if (id == context.hashCode()) {
@@ -132,6 +130,11 @@ public class ProcessReport implements ProcessReportMXBean {
         return history;
     }
 
+    @Override
+    public long getHistoryTimespan() {
+        return processMonitor.getHistoryTimespan();
+    }
+
     /**
      * Sets the time span (in milliseconds) for which the stats for an executed query should
      * be kept in the recent query history.
@@ -144,8 +147,8 @@ public class ProcessReport implements ProcessReportMXBean {
     }
 
     @Override
-    public long getHistoryTimespan() {
-        return processMonitor.getHistoryTimespan();
+    public long getMinTime() {
+        return processMonitor.getMinTime();
     }
 
     /**
@@ -160,8 +163,8 @@ public class ProcessReport implements ProcessReportMXBean {
     }
 
     @Override
-    public long getMinTime() {
-        return processMonitor.getMinTime();
+    public boolean getTrackRequestURI() {
+        return processMonitor.getTrackRequestURI();
     }
 
     /**
@@ -174,11 +177,6 @@ public class ProcessReport implements ProcessReportMXBean {
     @Override
     public void setTrackRequestURI(final boolean track) {
         processMonitor.setTrackRequestURI(track);
-    }
-
-    @Override
-    public boolean getTrackRequestURI() {
-        return processMonitor.getTrackRequestURI();
     }
 
     /**
