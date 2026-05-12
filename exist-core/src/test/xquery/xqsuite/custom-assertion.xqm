@@ -101,7 +101,7 @@ function ca:map-assertion-wrong-value() as item()* {
 };
 
 declare
-    %test:assertEquals("Additional keys found: (o, 23)", "{""a"":1,""o"":""o"",""23"":3}", "map-assertion-failure")
+    %test:assertEquals("Additional keys found: (23, o)", "{""23"":3,""a"":1,""o"":""o""}", "map-assertion-failure")
 function ca:map-assertion-additional-key() as item()* {
     try {
         ca:map-assertion($ca:var, map {"a": 1, 23: 3, "o": "o"})
@@ -143,8 +143,12 @@ function ca:map-assertion ($expected as map(*), $actual as item()*) as item()* {
     else if (not(empty(
         map:keys(map:remove($actual, map:keys($expected))))))
     then test:fail(
+             (: sort additional keys so the diagnostic is deterministic;
+                map:keys order is implementation-defined :)
              "Additional keys found: (" || string-join(
-                map:keys(map:remove($actual, map:keys($expected))), ', ') || ")",
+                for $k in map:keys(map:remove($actual, map:keys($expected)))
+                order by xs:string($k)
+                return xs:string($k), ', ') || ")",
              $expected,
              $actual,
              $ca:MAP_ASSERTION_TYPE

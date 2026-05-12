@@ -177,11 +177,13 @@ function mt:size() {
 };
 
 declare
-    %test:assertEquals("Sunday", "Tuesday", "Thursday", "Saturday")
+    %test:assertEquals("Saturday", "Sunday", "Thursday", "Tuesday")
 function mt:for-each() {
-    map:for-each($mt:integerKeys, function($key, $value) {
+    (: map:for-each iteration order is implementation-defined; sort the
+       result so this test guards the selection, not Bifurcan bucket layout :)
+    sort(map:for-each($mt:integerKeys, function($key, $value) {
         if ($key mod 2) then ($value) else ()
-    })
+    }))
 };
 
 declare
@@ -1050,4 +1052,70 @@ function mt:nested-map-for-each() {
         })
     }</ul>
     => serialize(map{'indent':false()})
+};
+
+(:
+ : Regression guards for the equals/hashCode contract on AtomicValue subclasses
+ : that participate in op:same-key.
+ :
+ : Pre-fix symptom: when two spec-equal but different-XDM-type keys hashed to
+ : different Bifurcan buckets, map:contains and map:get returned false/() even
+ : though sameKey reported equality. Matches the PR #6333 / map-contains-017
+ : diagnostic signature for the numeric and xs:boolean clusters.
+ :)
+declare
+    %test:assertTrue
+function mt:map-contains-integer-decimal-cross-type() {
+    map:contains(map { 1: "one" }, xs:decimal(1.0))
+};
+
+declare
+    %test:assertTrue
+function mt:map-contains-integer-double-cross-type() {
+    map:contains(map { 1: "one" }, xs:double(1.0))
+};
+
+declare
+    %test:assertTrue
+function mt:map-contains-integer-float-cross-type() {
+    map:contains(map { 1: "one" }, xs:float(1.0))
+};
+
+declare
+    %test:assertTrue
+function mt:map-contains-decimal-double-cross-type() {
+    map:contains(map { xs:decimal(1.5): "x" }, xs:double(1.5))
+};
+
+declare
+    %test:assertTrue
+function mt:map-contains-decimal-trailing-zeros() {
+    map:contains(map { xs:decimal("1.0"): "x" }, xs:decimal("1.00"))
+};
+
+declare
+    %test:assertEquals("one")
+function mt:map-get-integer-via-double-key() {
+    map:get(map { 1: "one" }, xs:double(1.0))
+};
+
+declare
+    %test:assertTrue
+function mt:map-contains-nan-key() {
+    map:contains(map { xs:double('NaN'): "x" }, xs:double('NaN'))
+};
+
+declare
+    %test:assertTrue
+function mt:map-contains-positive-infinity-cross-type() {
+    map:contains(map { xs:double('INF'): "x" }, xs:float('INF'))
+};
+
+declare
+    %test:assertTrue
+function mt:map-contains-boolean-non-singleton() {
+    (: BooleanValue inherits identity hashCode without the fix; new instances would mis-bucket :)
+    let $key1 := xs:boolean("true")
+    let $key2 := xs:boolean("true")
+    return map:contains(map { $key1: "yes" }, $key2)
 };

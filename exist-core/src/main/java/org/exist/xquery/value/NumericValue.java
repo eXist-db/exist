@@ -34,6 +34,11 @@ import java.util.function.IntSupplier;
 
 public abstract class NumericValue extends ComputableValue {
 
+    /** Sentinel hashes for NaN and the infinities in the numeric same-key cluster. */
+    private static final int NAN_HASH = 0x7FC00000;
+    private static final int POSITIVE_INFINITY_HASH = 0x7F800000;
+    private static final int NEGATIVE_INFINITY_HASH = 0xFF800000;
+
     protected NumericValue() {
         this(null);
     }
@@ -182,6 +187,37 @@ public abstract class NumericValue extends ComputableValue {
                 // should not be possible due to type check
             }
         return false;
+    }
+
+    /**
+     * Canonical hash for the numeric same-key cluster ({@code xs:decimal}, {@code xs:double},
+     * {@code xs:float} and their derived types).
+     *
+     * Returns the same value for any two NumericValues whose op:numeric-equal comparison
+     * over their canonical {@code xs:decimal} form is true, plus dedicated sentinels for
+     * NaN and the infinities. This preserves the equals/hashCode contract under
+     * {@link NumericValue#equals(Object)} (which compares via op:numeric-equal) and ensures
+     * that cross-type spec-equal pairs (e.g. {@code xs:integer(1)} / {@code xs:double(1.0)})
+     * land in the same Bifurcan bucket under {@code op:same-key}.
+     */
+    @Override
+    public int hashCode() {
+        if (isNaN()) {
+            return NAN_HASH;
+        }
+        if (isPositiveInfinity()) {
+            return POSITIVE_INFINITY_HASH;
+        }
+        if (isNegativeInfinity()) {
+            return NEGATIVE_INFINITY_HASH;
+        }
+        try {
+            // canonical decimal form: trailing zeros stripped at DecimalValue construction
+            return ((DecimalValue) convertTo(Type.DECIMAL)).getValue().hashCode();
+        } catch (final XPathException e) {
+            // unreachable for valid numeric values
+            return 0;
+        }
     }
 
     public abstract NumericValue negate() throws XPathException;
