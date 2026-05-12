@@ -441,10 +441,12 @@ public class Lookup extends Function implements Optimizable, IndexUseReporter {
             }
 //            LOG.info("eval plain took " + (System.currentTimeMillis() - start));
         } else {
-//            long start = System.currentTimeMillis();
             contextStep.setPreloadedData(preselectResult.getDocumentSet(), preselectResult);
-            result = getArgument(0).eval(contextSequence, null).toNodeSet();
-            //LOG.info("eval took " + (System.currentTimeMillis() - start));
+            // Use effectiveContextSequence instead of contextSequence here. With contextSequence
+            // (the full preloaded set), a lookup inside a predicate would "see" the entire nodeSet
+            // for each iteration in a query like //x[@indexed-attribute = $v] and return duplicate
+            // hits.
+            result = getArgument(0).eval(effectiveContextSequence, contextItem).toNodeSet();
         }
         return result;
     }
