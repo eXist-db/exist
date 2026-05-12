@@ -526,34 +526,20 @@ public final class FunMatches extends Function implements Optimizable, IndexUseR
     }
 
 
-    private boolean matchXmlRegex(String string, String pattern, final String flags) throws XPathException {
-        final boolean isXQuery40 = context.getXQueryVersion() >= 40;
-
-
-        // XQ4: translate (*positive_lookahead:...) etc. to Java regex (?=...) syntax
-        if (isXQuery40 && org.exist.xquery.regex.RegexUtil.hasXPath4Lookaround(pattern)) {
-            pattern = org.exist.xquery.regex.RegexUtil.translateXPath4Lookaround(pattern);
+    private boolean matchXmlRegex(String string, final String pattern, final String flags) throws XPathException {
+        // XPath 4.0 lookaround syntax is not yet implemented in eXist's XQuery 3.1 runtime.
+        // When XQuery 4.0 lands (v2/xq4-core-functions), replace this guard with the
+        // translateXPath4Lookaround / Java-regex dispatch path.
+        if (org.exist.xquery.regex.RegexUtil.hasXPath4Lookaround(pattern)) {
+            throw new XPathException(this, ErrorCodes.XPST0017,
+                    "XPath 4.0 lookaround syntax in regex patterns (e.g. (*positive_lookahead:...)) "
+                            + "is not yet implemented in this XQuery 3.1 build. Rewrite the regex without lookaround.");
         }
 
-        // Pre-validate: reject constructs that are not valid in XPath regex
+        // Pre-validate: reject constructs that are not valid in XPath 3.1 regex
         // but that Saxon's XP30 mode accepts (Java/Perl extensions)
         if (!hasLiteral(flags)) {
-            org.exist.xquery.regex.RegexUtil.validateXPathRegex(this, pattern, isXQuery40);
-        }
-
-        // XQ4: patterns with \b, \B, or lookaround need Java regex since
-        // Saxon's XP30 mode doesn't support these XPath 4.0 extensions
-        if (isXQuery40 && org.exist.xquery.regex.RegexUtil.needsXQuery40JavaRegex(pattern)) {
-            try {
-                final String javaPattern = org.exist.xquery.regex.RegexUtil.translateRegexp(
-                        this, pattern, flags.contains("x"), flags.contains("i"));
-                final int javaFlags = org.exist.xquery.regex.RegexUtil.parseFlags(this, flags);
-                return Pattern.compile(javaPattern, javaFlags).matcher(string).find();
-            } catch (final PatternSyntaxException e) {
-                throw new XPathException(this, ErrorCodes.FORX0002,
-                        "Invalid regular expression: " + e.getMessage(),
-                        new StringValue(this, pattern), e);
-            }
+            org.exist.xquery.regex.RegexUtil.validateXPathRegex(this, pattern, false);
         }
 
         try {
