@@ -324,13 +324,13 @@ final class FunDeepEqualStreamingComparator {
     private static int compareNullable(@Nullable final String a, @Nullable final String b) {
         // NOTE: intentional reference equality short-circuit (mirrors safeCompare).
         if (a == b) {
-            return 0;
+            return Constants.EQUAL;
         }
         if (a == null) {
-            return -1;
+            return Constants.INFERIOR;
         }
         if (b == null) {
-            return 1;
+            return Constants.SUPERIOR;
         }
         return a.compareTo(b);
     }
