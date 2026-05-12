@@ -509,28 +509,11 @@ public class FileManipulation extends BasicFunction {
         for (int i = 0; i < glob.length(); i++) {
             final char c = glob.charAt(i);
             switch (c) {
-                case '*':
-                    regex.append(".*");
-                    break;
-                case '?':
-                    regex.append('.');
-                    break;
-                case '.':
-                case '(':
-                case ')':
-                case '[':
-                case ']':
-                case '{':
-                case '}':
-                case '\\':
-                case '^':
-                case '$':
-                case '|':
-                case '+':
-                    regex.append('\\').append(c);
-                    break;
-                default:
-                    regex.append(c);
+                case '*' -> regex.append(".*");
+                case '?' -> regex.append('.');
+                case '.', '(', ')', '[', ']', '{', '}', '\\', '^', '$', '|', '+' ->
+                        regex.append('\\').append(c);
+                default -> regex.append(c);
             }
         }
         return Pattern.compile(regex.toString());
