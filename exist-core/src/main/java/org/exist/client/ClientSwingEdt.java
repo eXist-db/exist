@@ -54,7 +54,10 @@ final class ClientSwingEdt {
                 if (cause instanceof Error error) {
                     throw error;
                 }
-                throw new RuntimeException(cause);
+                if (cause != null) {
+                    throw new IllegalStateException("EDT task failed", cause);
+                }
+                throw new IllegalStateException("EDT task failed", e);
             }
         }
     }

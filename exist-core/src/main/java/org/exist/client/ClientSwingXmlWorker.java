@@ -43,8 +43,10 @@ public abstract class ClientSwingXmlWorker<T> extends SwingWorker<T, Void> {
 
     /**
      * Runs on the EDT after {@link #loadInBackground()} completed successfully.
+     * Default implementation is intentionally empty; subclasses override to update the UI.
      */
     protected void onSuccess(final T result) {
+        // no-op — override in subclasses
     }
 
     /**
