@@ -600,7 +600,7 @@ public class InteractiveClient {
                         errorln("could not parse resource name into a valid URI: " + e.getMessage());
                         return false;
                     }
-                    runOnFrameEdt(() -> editResource(resource));
+                    scheduleEditResource(resource);
                 } else {
                     messageln("Please specify a resource.");
                 }
@@ -1113,18 +1113,38 @@ public class InteractiveClient {
     }
 
     /**
-     * @param name
+     * Loads the resource off the EDT, then opens {@link DocumentView} on the EDT (#4355).
      */
-    private void editResource(final XmldbURI name) {
-        try {
-            final Resource doc = retrieve(name, properties.getProperty(OutputKeys.INDENT, "yes")); //$NON-NLS-1$
-            final DocumentView view = new DocumentView(this, name, doc, properties);
-            view.setSize(new Dimension(640, 400));
-            view.viewDocument();
-        } catch (final XMLDBException ex) {
-            errorln("XMLDB error: " + ex.getMessage());
-            ex.printStackTrace();
-        }
+    private void scheduleEditResource(final XmldbURI name) {
+        final String indent = properties.getProperty(OutputKeys.INDENT, "yes"); //$NON-NLS-1$
+        new ClientSwingXmlWorker<ClientDocumentEditSupport.DocumentEditPayload>() {
+            @Override
+            protected ClientDocumentEditSupport.DocumentEditPayload loadInBackground() throws Exception {
+                return ClientDocumentEditSupport.load(name, () -> retrieve(name, indent));
+            }
+
+            @Override
+            protected void onSuccess(final ClientDocumentEditSupport.DocumentEditPayload loaded) {
+                try {
+                    final DocumentView view = new DocumentView(InteractiveClient.this, loaded.name(), loaded.resource(), InteractiveClient.this.properties);
+                    view.setSize(new Dimension(640, 400));
+                    view.viewDocument();
+                } catch (final XMLDBException ex) {
+                    errorln("XMLDB error: " + ex.getMessage());
+                    ex.printStackTrace();
+                }
+            }
+
+            @Override
+            protected void onFailure(final Throwable t) {
+                if (t instanceof XMLDBException xe) {
+                    errorln("XMLDB error: " + xe.getMessage());
+                    xe.printStackTrace();
+                } else {
+                    super.onFailure(t);
+                }
+            }
+        }.execute();
     }
 
     private Optional<Writer> getTraceWriter() {

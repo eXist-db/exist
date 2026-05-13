@@ -26,6 +26,9 @@ import org.junit.jupiter.api.Test;
 
 import javax.swing.SwingUtilities;
 import java.awt.GraphicsEnvironment;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -94,5 +97,67 @@ class ClientSwingEdtTest {
         SwingUtilities.invokeAndWait(() -> ClientSwingEdt.invokeAndWaitIfNeeded(() -> runThread.set(Thread.currentThread())));
 
         assertThat(runThread.get()).isSameAs(edtThread.get());
+    }
+
+    @Test
+    void invokeAndWaitIfNeededPropagatesRuntimeExceptionFromBackground() throws Exception {
+        Assumptions.assumeFalse(GraphicsEnvironment.isHeadless());
+
+        final AtomicReference<Throwable> uncaught = new AtomicReference<>();
+        final CountDownLatch finished = new CountDownLatch(1);
+        final Thread background = new Thread(() -> {
+            try {
+                ClientSwingEdt.invokeAndWaitIfNeeded(() -> {
+                    throw new IllegalStateException("boom");
+                });
+            } finally {
+                finished.countDown();
+            }
+        });
+        background.setUncaughtExceptionHandler((t, ex) -> uncaught.set(ex));
+        background.start();
+        assertThat(finished.await(5, TimeUnit.SECONDS)).isTrue();
+        background.join();
+        assertThat(uncaught.get()).isInstanceOf(IllegalStateException.class).hasMessage("boom");
+    }
+
+    @Test
+    void invokeAndWaitIfNeededPropagatesErrorFromBackground() throws Exception {
+        Assumptions.assumeFalse(GraphicsEnvironment.isHeadless());
+
+        final AtomicReference<Throwable> uncaught = new AtomicReference<>();
+        final CountDownLatch finished = new CountDownLatch(1);
+        final Thread background = new Thread(() -> {
+            try {
+                ClientSwingEdt.invokeAndWaitIfNeeded(() -> {
+                    throw new AssertionError("fatal");
+                });
+            } finally {
+                finished.countDown();
+            }
+        });
+        background.setUncaughtExceptionHandler((t, ex) -> uncaught.set(ex));
+        background.start();
+        assertThat(finished.await(5, TimeUnit.SECONDS)).isTrue();
+        background.join();
+        assertThat(uncaught.get()).isInstanceOf(AssertionError.class).hasMessage("fatal");
+    }
+
+    @Test
+    void invokeLaterIfNeededPreservesOrderFromBackground() throws Exception {
+        Assumptions.assumeFalse(GraphicsEnvironment.isHeadless());
+
+        final List<Integer> order = Collections.synchronizedList(new ArrayList<>());
+        final Thread background = new Thread(() -> {
+            for (int i = 1; i <= 3; i++) {
+                final int n = i;
+                ClientSwingEdt.invokeLaterIfNeeded(() -> order.add(n));
+            }
+        });
+        background.start();
+        background.join();
+        SwingUtilities.invokeAndWait(() -> {
+        });
+        assertThat(order).containsExactly(1, 2, 3);
     }
 }
