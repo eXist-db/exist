@@ -1,0 +1,31 @@
+exist-core/src/test/java/org/exist/client/ClientDocumentEditSupportTest.java
+  s_b371cd7261149b::t_c11bfb79559540 1-49
+exist-core/src/test/java/org/exist/client/ClientSwingEdtTest.java
+  s_b371cd7261149b::t_1986bf3e9d2486 101-162
+  s_b371cd7261149b::t_3f4ad59392e6d1 29-31
+exist-core/src/main/java/org/exist/client/ClientSwingXmlWorker.java
+  s_b371cd7261149b::t_8bc725bc568732 1-46,48-63,65-72
+  s_b371cd7261149b::t_2303f67817a3ea 47
+  s_b371cd7261149b::t_4eea98e15e42ab 64
+exist-core/src/main/java/org/exist/client/ClientDocumentEditSupport.java
+  s_b371cd7261149b::t_86903f5127a644 1-57
+exist-core/src/main/java/org/exist/client/InteractiveClient.java
+  s_b371cd7261149b::t_ef182eb0056af1 603
+  s_b371cd7261149b::t_b556f07b102617 1116,1118-1147
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "bf0b19d8e6d439a893b189788930e1e75f12ffb7",
+  "prompts": {},
+  "sessions": {
+    "s_b371cd7261149b": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "6972b017-56e3-4c37-af24-6e90cb4988df",
+        "model": "default"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
