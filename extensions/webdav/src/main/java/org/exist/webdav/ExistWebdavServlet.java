@@ -22,6 +22,8 @@
 package org.exist.webdav;
 
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.jackrabbit.webdav.*;
 import org.apache.jackrabbit.webdav.lock.ActiveLock;
 import org.apache.jackrabbit.webdav.lock.LockInfo;
@@ -29,14 +31,16 @@ import org.apache.jackrabbit.webdav.server.AbstractWebdavServlet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
+import org.exist.security.AuthenticationException;
 import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 
+import java.io.IOException;
+import java.security.Principal;
+import java.util.Base64;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * WebDAV servlet based on Apache Jackrabbit WebDAV library.
@@ -84,9 +88,8 @@ public class ExistWebdavServlet extends AbstractWebdavServlet {
     }
 
     @Override
-    protected void service(final jakarta.servlet.http.HttpServletRequest request,
-            final jakarta.servlet.http.HttpServletResponse response)
-            throws jakarta.servlet.ServletException, java.io.IOException {
+    protected void service(final HttpServletRequest request, final HttpServletResponse response)
+            throws ServletException, IOException {
         if (LOG.isDebugEnabled()) {
             LOG.debug("WebDAV {} {} (servletPath={}, pathInfo={})",
                     request.getMethod(), request.getRequestURI(),
@@ -257,14 +260,13 @@ public class ExistWebdavServlet extends AbstractWebdavServlet {
                 while (back >= 0 && Character.isWhitespace(ifHeader.charAt(back))) {
                     back--;
                 }
+                // "Not" must be a separate token, not part of a larger word
                 if (back >= 2
                         && ifHeader.charAt(back - 2) == 'N'
                         && ifHeader.charAt(back - 1) == 'o'
-                        && ifHeader.charAt(back) == 't') {
-                    // Ensure "Not" is a separate token, not part of a larger word
-                    if (back - 2 == 0 || !Character.isLetterOrDigit(ifHeader.charAt(back - 3))) {
-                        negated = true;
-                    }
+                        && ifHeader.charAt(back) == 't'
+                        && (back - 2 == 0 || !Character.isLetterOrDigit(ifHeader.charAt(back - 3)))) {
+                    negated = true;
                 }
                 final int end = ifHeader.indexOf('>', i);
                 if (end < 0) {
@@ -326,7 +328,7 @@ public class ExistWebdavServlet extends AbstractWebdavServlet {
 
     @Override
     protected void doPropPatch(final WebdavRequest request, final WebdavResponse response,
-            final DavResource resource) throws java.io.IOException, DavException {
+            final DavResource resource) throws IOException, DavException {
         requireLockTokenForWrite(request, resource);
         requireParentLockToken(request, resource);
         validateIfHeaderLockTokens(request, resource);
@@ -335,7 +337,7 @@ public class ExistWebdavServlet extends AbstractWebdavServlet {
 
     @Override
     protected void doPut(final WebdavRequest request, final WebdavResponse response,
-            final DavResource resource) throws java.io.IOException, DavException {
+            final DavResource resource) throws IOException, DavException {
         requireLockTokenForWrite(request, resource);
         validateIfHeaderLockTokens(request, resource);
         requireParentLockToken(request, resource);
@@ -344,7 +346,7 @@ public class ExistWebdavServlet extends AbstractWebdavServlet {
 
     @Override
     protected void doDelete(final WebdavRequest request, final WebdavResponse response,
-            final DavResource resource) throws java.io.IOException, DavException {
+            final DavResource resource) throws IOException, DavException {
         requireLockTokenForWrite(request, resource);
         requireParentLockToken(request, resource);
         validateIfHeaderLockTokens(request, resource);
@@ -353,7 +355,7 @@ public class ExistWebdavServlet extends AbstractWebdavServlet {
 
     @Override
     protected void doCopy(final WebdavRequest request, final WebdavResponse response,
-            final DavResource resource) throws java.io.IOException, DavException {
+            final DavResource resource) throws IOException, DavException {
         // Check destination lock — COPY onto a locked resource requires the token
         final DavResource dest = getResourceFactory().createResource(
                 request.getDestinationLocator(), request, response);
@@ -365,7 +367,7 @@ public class ExistWebdavServlet extends AbstractWebdavServlet {
 
     @Override
     protected void doMove(final WebdavRequest request, final WebdavResponse response,
-            final DavResource resource) throws java.io.IOException, DavException {
+            final DavResource resource) throws IOException, DavException {
         requireLockTokenForWrite(request, resource);
         requireParentLockToken(request, resource);
         validateIfHeaderLockTokens(request, resource);
@@ -573,6 +575,9 @@ public class ExistWebdavServlet extends AbstractWebdavServlet {
      */
     static class ExistDavSessionProvider implements DavSessionProvider {
 
+        private static final Set<String> WRITE_METHODS =
+                Set.of("PUT", "DELETE", "MKCOL", "MOVE", "COPY", "LOCK");
+
         private final BrokerPool pool;
 
         ExistDavSessionProvider(final BrokerPool pool) {
@@ -582,52 +587,47 @@ public class ExistWebdavServlet extends AbstractWebdavServlet {
         @Override
         public boolean attachSession(final WebdavRequest request) throws DavException {
             final SecurityManager securityManager = pool.getSecurityManager();
-            Subject subject = null;
-
-            // Try Basic Auth from the Authorization header
-            final String authHeader = request.getHeader("Authorization");
-            if (authHeader != null && authHeader.startsWith("Basic ")) {
-                final String encoded = authHeader.substring(6);
-                final String decoded = new String(java.util.Base64.getDecoder().decode(encoded));
-                final int colon = decoded.indexOf(':');
-                if (colon >= 0) {
-                    final String username = decoded.substring(0, colon);
-                    final String password = decoded.substring(colon + 1);
-                    try {
-                        subject = securityManager.authenticate(username, password);
-                    } catch (final org.exist.security.AuthenticationException e) {
-                        LOG.debug("Authentication failed for user '{}': {}", username, e.getMessage());
-                    }
-                }
-            }
-
-            // Fall back to container principal
+            Subject subject = tryBasicAuth(request, securityManager);
             if (subject == null) {
-                final java.security.Principal principal = request.getUserPrincipal();
-                if (principal != null && securityManager.hasAccount(principal.getName())) {
-                    subject = securityManager.getSystemSubject();
-                }
+                subject = tryContainerPrincipal(request, securityManager);
             }
-
-            // Fall back to guest
             if (subject == null) {
                 subject = securityManager.getGuestSubject();
             }
-
-            // Reject guest access for write operations
-            if (subject.equals(securityManager.getGuestSubject())) {
-                // Allow read operations (PROPFIND, GET, OPTIONS) for guest
-                final String method = request.getMethod();
-                if ("PUT".equals(method) || "DELETE".equals(method) || "MKCOL".equals(method)
-                        || "MOVE".equals(method) || "COPY".equals(method) || "LOCK".equals(method)) {
-                    // Return 401 to trigger auth challenge
-                    throw new DavException(DavServletResponse.SC_UNAUTHORIZED, "Authentication required");
-                }
+            if (subject.equals(securityManager.getGuestSubject())
+                    && WRITE_METHODS.contains(request.getMethod())) {
+                throw new DavException(DavServletResponse.SC_UNAUTHORIZED, "Authentication required");
             }
-
-            final ExistDavSession session = new ExistDavSession(subject);
-            request.setDavSession(session);
+            request.setDavSession(new ExistDavSession(subject));
             return true;
+        }
+
+        private static Subject tryBasicAuth(final WebdavRequest request, final SecurityManager securityManager) {
+            final String authHeader = request.getHeader("Authorization");
+            if (authHeader == null || !authHeader.startsWith("Basic ")) {
+                return null;
+            }
+            final String decoded = new String(Base64.getDecoder().decode(authHeader.substring(6)));
+            final int colon = decoded.indexOf(':');
+            if (colon < 0) {
+                return null;
+            }
+            final String username = decoded.substring(0, colon);
+            final String password = decoded.substring(colon + 1);
+            try {
+                return securityManager.authenticate(username, password);
+            } catch (final AuthenticationException e) {
+                LOG.debug("Authentication failed for user '{}': {}", username, e.getMessage());
+                return null;
+            }
+        }
+
+        private static Subject tryContainerPrincipal(final WebdavRequest request, final SecurityManager securityManager) {
+            final Principal principal = request.getUserPrincipal();
+            if (principal != null && securityManager.hasAccount(principal.getName())) {
+                return securityManager.getSystemSubject();
+            }
+            return null;
         }
 
         @Override
