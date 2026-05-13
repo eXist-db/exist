@@ -1,0 +1,21 @@
+exist-core/src/main/java/org/exist/client/ClientSwingXmlWorker.java
+  s_b371cd7261149b::t_f6f9d5a46c6ca2 46,49
+exist-core/src/main/java/org/exist/client/ClientSwingEdt.java
+  s_b371cd7261149b::t_b5449fd7e6f7f8 57-60
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "56df611a5e3adeddb01deac1699ecf658b192848",
+  "prompts": {},
+  "sessions": {
+    "s_b371cd7261149b": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "6972b017-56e3-4c37-af24-6e90cb4988df",
+        "model": "default"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
