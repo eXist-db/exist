@@ -96,9 +96,9 @@ public class QueryDialog extends JFrame {
 
     private static final AtomicInteger QUERY_THREAD_ID = new AtomicInteger();
 
-    private InteractiveClient client;
+    private final InteractiveClient client;
     private Collection collection;
-    private Properties properties;
+    private final Properties properties;
     private RSyntaxTextArea query;
     private JTabbedPane resultTabs;
     private RSyntaxTextArea resultDisplay;
@@ -107,7 +107,7 @@ public class QueryDialog extends JFrame {
     private RTextScrollPane exprDisplayScrollPane;
     private JComboBox<String> collections = null;
     private SpinnerNumberModel count;
-    private DefaultComboBoxModel<String> history = new DefaultComboBoxModel<>();
+    private final DefaultComboBoxModel<String> history = new DefaultComboBoxModel<>();
     private JTextField statusMessage;
     private JProgressBar progress;
     private JButton submitButton;
@@ -120,7 +120,7 @@ public class QueryDialog extends JFrame {
         this.collection = collection;
         this.properties = properties;
         this.client = client;
-        this.setIconImage(InteractiveClient.getExistIcon(getClass()).getImage());
+        InteractiveClient.setExistImage(getClass(), this::setIconImage);
         setupComponents(loadedFromDb);
         pack();
     }
@@ -484,8 +484,7 @@ public class QueryDialog extends JFrame {
         resultDisplay.setText("");
 
         final QueryRunnable queryTask = new QueryRunnable(xpath);
-        final Thread queryThread = client.newClientThread("query-" + QUERY_THREAD_ID.getAndIncrement(), queryTask);
-        queryThread.start();
+        new Thread(queryTask).start();
         return queryTask;
     }
 
@@ -576,8 +575,8 @@ public class QueryDialog extends JFrame {
                 final CompiledExpression compiled = service.compile(xpath);
                 final long t1 = System.currentTimeMillis();
                 // Check could also be collection instanceof LocalCollection
-                if (compiled instanceof CompiledXQuery xQuery) {
-                    context = xQuery.getContext();
+                if (compiled instanceof CompiledXQuery compiledXQuery) {
+                    context = compiledXQuery.getContext();
                     runningContext.set(context);
                 }
                 tCompiled = t1 - t0;

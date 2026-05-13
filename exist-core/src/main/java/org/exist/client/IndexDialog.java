@@ -27,146 +27,153 @@ import org.exist.xmldb.XmldbURI;
 import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.XMLDBException;
 
-import javax.swing.*;
+import javax.swing.Box;
+import javax.swing.DefaultCellEditor;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
-import java.awt.*;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.Serial;
 import java.util.ArrayList;
-import java.util.concurrent.ExecutionException;
 
 /**
- * Dialog for viewing and editing Indexes in the Admin Client 
- * 
+ * Dialog for viewing and editing Indexes in the Admin Client
+ *
  * @author <a href="mailto:adam.retter@devon.gov.uk">Adam Retter</a>
- * @serial 2006-03-12
  * @version 1.0
+ * @serial 2006-03-12
  */
 class IndexDialog extends JFrame {
 
     @Serial
     private static final long serialVersionUID = 1L;
 
-	private static final String[] CONFIG_TYPE = {
-        "qname",
-        "path"
+    private static final String[] CONFIG_TYPE = {
+            "qname",
+            "path"
     };
-    
-	private static final String[] INDEX_TYPES = {
-		"xs:boolean",
-		"xs:integer",
-		"xs:dateTime",
-		"xs:string"
-	};
-	
-	private CollectionXConf cx = null;
-	
-	private JComboBox cmbCollections;
-	
-	private JTable tblRangeIndexes;
-	private RangeIndexTableModel rangeIndexModel;
-	
-	private InteractiveClient client;
-	
-	
-	public IndexDialog(String title, InteractiveClient client) 
-	{
-		super(title);
-		this.client = client;
-        this.setIconImage(InteractiveClient.getExistIcon(getClass()).getImage());		
-		//capture the frame's close event
-		final WindowListener windowListener = new WindowAdapter()
-		{
-			public void windowClosing (WindowEvent e)
-			{
+
+    private static final String[] INDEX_TYPES = {
+            "xs:boolean",
+            "xs:integer",
+            "xs:dateTime",
+            "xs:string"
+    };
+
+    private CollectionXConf cx = null;
+
+    private JComboBox<PrettyXmldbURI> cmbCollections;
+
+    private JTable tblRangeIndexes;
+    private RangeIndexTableModel rangeIndexModel;
+
+    private final InteractiveClient client;
+
+
+    public IndexDialog(String title, InteractiveClient client) {
+        super(title);
+        this.client = client;
+        InteractiveClient.setExistImage(getClass(), this::setIconImage);
+        //capture the frame's close event
+        final WindowListener windowListener = new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
                 saveChanges(true);
-				
-				IndexDialog.this.setVisible(false);
-				IndexDialog.this.dispose();
-			}
-		};
-		this.addWindowListener(windowListener);
-		
-		//draw the GUI
-		setupComponents();
-		
-		//Get the indexes for the root collection
-		actionGetIndexes(XmldbURI.ROOT_COLLECTION);
-	}
 
-	private void setupComponents()
-	{
-		//Dialog Content Panel
-		final GridBagLayout grid = new GridBagLayout();
-		getContentPane().setLayout(grid);
-		
-		//Constraints for Layout
-		final GridBagConstraints c = new GridBagConstraints();
-		c.insets = new Insets(2, 2, 2, 2);
+                IndexDialog.this.setVisible(false);
+                IndexDialog.this.dispose();
+            }
+        };
+        this.addWindowListener(windowListener);
 
-		//collection label
-		final JLabel label = new JLabel("Collection");
-		c.gridx = 0;
-		c.gridy = 0;
-		c.gridwidth = 1;
-		c.anchor = GridBagConstraints.WEST;
-		c.fill = GridBagConstraints.NONE;
-		c.weightx = 0;
-		c.weighty = 0;
-		grid.setConstraints(label, c);
-		getContentPane().add(label);
-		
-		//get the collections but not system collections
-		final ArrayList alCollections = new ArrayList();
-        try
-        {
+        //draw the GUI
+        setupComponents();
+
+        //Get the indexes for the root collection
+        actionGetIndexes(XmldbURI.ROOT_COLLECTION);
+    }
+
+    private void setupComponents() {
+        //Dialog Content Panel
+        final GridBagLayout grid = new GridBagLayout();
+        getContentPane().setLayout(grid);
+
+        //Constraints for Layout
+        final GridBagConstraints c = new GridBagConstraints();
+        c.insets = new Insets(2, 2, 2, 2);
+
+        //collection label
+        final JLabel label = new JLabel("Collection");
+        c.gridx = 0;
+        c.gridy = 0;
+        c.gridwidth = 1;
+        c.anchor = GridBagConstraints.WEST;
+        c.fill = GridBagConstraints.NONE;
+        c.weightx = 0;
+        c.weighty = 0;
+        grid.setConstraints(label, c);
+        getContentPane().add(label);
+
+        //get the collections but not system collections
+        final ArrayList<PrettyXmldbURI> alCollections = new ArrayList<>();
+        try {
             final Collection root = client.getCollection(XmldbURI.ROOT_COLLECTION);
-            final ArrayList alAllCollections = getCollections(root, new ArrayList());
-            for (Object alAllCollection : alAllCollections) {
+            final ArrayList<PrettyXmldbURI> alAllCollections = getCollections(root, new ArrayList<>());
+            for (PrettyXmldbURI alAllCollection : alAllCollections) {
                 //TODO : use XmldbURIs !
                 if (alAllCollection.toString().contains(CollectionConfigurationManager.CONFIG_COLLECTION)) {
                     alCollections.add(alAllCollection);
                 }
             }
-        }
-        catch (final XMLDBException e)
-        {
+        } catch (final XMLDBException e) {
             //showErrorMessage(e.getMessage(), e);
             return;
         }
-        
+
         //Create a combobox listing the collections
-        cmbCollections = new JComboBox(alCollections.toArray());
+        cmbCollections = new JComboBox<>(alCollections.toArray(PrettyXmldbURI[]::new));
         cmbCollections.addActionListener(e -> {
 
             saveChanges(true);
 
-            final JComboBox cb = (JComboBox)e.getSource();
-               actionGetIndexes(cb.getSelectedItem().toString());
+            final JComboBox<PrettyXmldbURI> cb = (JComboBox<PrettyXmldbURI>) e.getSource();
+            actionGetIndexes(String.valueOf(cb.getSelectedItem()));
         });
         c.gridx = 1;
-		c.gridy = 0;
-		c.gridwidth = 1;
-		c.anchor = GridBagConstraints.WEST;
+        c.gridy = 0;
+        c.gridwidth = 1;
+        c.anchor = GridBagConstraints.WEST;
         c.fill = GridBagConstraints.HORIZONTAL;
-		c.weightx = 1;
-		c.weighty = 0;
+        c.weightx = 1;
+        c.weighty = 0;
         grid.setConstraints(cmbCollections, c);
         getContentPane().add(cmbCollections);
 
         //Panel to hold controls relating to the Range Indexes
-		final JPanel panelRangeIndexes = new JPanel();
-		panelRangeIndexes.setBorder(new TitledBorder("Range Indexes"));
-		final GridBagLayout panelRangeIndexesGrid = new GridBagLayout();
-		panelRangeIndexes.setLayout(panelRangeIndexesGrid);
-        
+        final JPanel panelRangeIndexes = new JPanel();
+        panelRangeIndexes.setBorder(new TitledBorder("Range Indexes"));
+        final GridBagLayout panelRangeIndexesGrid = new GridBagLayout();
+        panelRangeIndexes.setLayout(panelRangeIndexesGrid);
+
         //Table to hold the Range Indexes with Sroll bar
-		rangeIndexModel = new RangeIndexTableModel();
+        rangeIndexModel = new RangeIndexTableModel();
         tblRangeIndexes = new JTable(rangeIndexModel);
         tblRangeIndexes.setAutoResizeMode(JTable.AUTO_RESIZE_NEXT_COLUMN);
         tblRangeIndexes.setRowHeight(20);
@@ -178,47 +185,47 @@ class IndexDialog extends JFrame {
         colxsType.setCellEditor(new ComboBoxCellEditor(CONFIG_TYPE));
         colxsType.setCellRenderer(new ComboBoxCellRenderer(CONFIG_TYPE));
         final JScrollPane scrollRangeIndexes = new JScrollPane(tblRangeIndexes);
-		scrollRangeIndexes.setPreferredSize(new Dimension(350, 150));
-		c.gridx = 0;
-		c.gridy = 0;
-		c.gridwidth = 2;
-		c.anchor = GridBagConstraints.WEST;
-		c.fill = GridBagConstraints.BOTH;
-		c.weightx = 1;
-		c.weighty = 1;
-		panelRangeIndexesGrid.setConstraints(scrollRangeIndexes, c);
-		panelRangeIndexes.add(scrollRangeIndexes);
-        
-		//Toolbar with add/delete buttons for Range Index
-		final Box rangeIndexToolbarBox = Box.createHorizontalBox();
-		//add button
-		final JButton btnAddRangeIndex = new JButton("Add");
-		btnAddRangeIndex.addActionListener(e -> actionAddRangeIndex());
-		rangeIndexToolbarBox.add(btnAddRangeIndex);
-		//delete button
-		final JButton btnDeleteRangeIndex = new JButton("Delete");
-		btnDeleteRangeIndex.addActionListener(e -> actionDeleteRangeIndex());
-		rangeIndexToolbarBox.add(btnDeleteRangeIndex);
-		c.gridx = 0;
-		c.gridy = 1;
-		c.gridwidth = 2;
-		c.anchor = GridBagConstraints.CENTER;
-		c.fill = GridBagConstraints.BOTH;
-		c.weightx = 0;
-		c.weighty = 0;
-		panelRangeIndexesGrid.setConstraints(rangeIndexToolbarBox, c);
-		panelRangeIndexes.add(rangeIndexToolbarBox);
+        scrollRangeIndexes.setPreferredSize(new Dimension(350, 150));
+        c.gridx = 0;
+        c.gridy = 0;
+        c.gridwidth = 2;
+        c.anchor = GridBagConstraints.WEST;
+        c.fill = GridBagConstraints.BOTH;
+        c.weightx = 1;
+        c.weighty = 1;
+        panelRangeIndexesGrid.setConstraints(scrollRangeIndexes, c);
+        panelRangeIndexes.add(scrollRangeIndexes);
 
-		//add range index panel to content frame
-		c.gridx = 0;
-		c.gridy = 2;
-		c.gridwidth = 2;
-		c.anchor = GridBagConstraints.WEST;
-	    c.fill = GridBagConstraints.BOTH;
-		c.weightx = 1;
-		c.weighty = 1F / 3F;
-	    grid.setConstraints(panelRangeIndexes, c);
-		getContentPane().add(panelRangeIndexes);
+        //Toolbar with add/delete buttons for Range Index
+        final Box rangeIndexToolbarBox = Box.createHorizontalBox();
+        //add button
+        final JButton btnAddRangeIndex = new JButton("Add");
+        btnAddRangeIndex.addActionListener(e -> actionAddRangeIndex());
+        rangeIndexToolbarBox.add(btnAddRangeIndex);
+        //delete button
+        final JButton btnDeleteRangeIndex = new JButton("Delete");
+        btnDeleteRangeIndex.addActionListener(e -> actionDeleteRangeIndex());
+        rangeIndexToolbarBox.add(btnDeleteRangeIndex);
+        c.gridx = 0;
+        c.gridy = 1;
+        c.gridwidth = 2;
+        c.anchor = GridBagConstraints.CENTER;
+        c.fill = GridBagConstraints.BOTH;
+        c.weightx = 0;
+        c.weighty = 0;
+        panelRangeIndexesGrid.setConstraints(rangeIndexToolbarBox, c);
+        panelRangeIndexes.add(rangeIndexToolbarBox);
+
+        //add range index panel to content frame
+        c.gridx = 0;
+        c.gridy = 2;
+        c.gridwidth = 2;
+        c.anchor = GridBagConstraints.WEST;
+        c.fill = GridBagConstraints.BOTH;
+        c.weightx = 1;
+        c.weighty = 1F / 3F;
+        grid.setConstraints(panelRangeIndexes, c);
+        getContentPane().add(panelRangeIndexes);
 
         final Box mainBtnBox = Box.createHorizontalBox();
         final JButton cancelBtn = new JButton("Cancel");
@@ -234,257 +241,187 @@ class IndexDialog extends JFrame {
         });
         mainBtnBox.add(saveBtn);
         mainBtnBox.add(cancelBtn);
-        
+
         c.gridx = 0;
-		c.gridy = 3;
-		c.gridwidth = 2;
-		c.anchor = GridBagConstraints.WEST;
-	    c.fill = GridBagConstraints.BOTH;
-		c.weightx = 0;
-		c.weighty = 0;
-	    grid.setConstraints(mainBtnBox, c);
-		getContentPane().add(mainBtnBox);
+        c.gridy = 3;
+        c.gridwidth = 2;
+        c.anchor = GridBagConstraints.WEST;
+        c.fill = GridBagConstraints.BOTH;
+        c.weightx = 0;
+        c.weighty = 0;
+        grid.setConstraints(mainBtnBox, c);
+        getContentPane().add(mainBtnBox);
 
         pack();
-	}
+    }
 
-	//if changes have been made, allows the user to save them
-	private void saveChanges(boolean ask)
-	{
+    //if changes have been made, allows the user to save them
+    private void saveChanges(boolean ask) {
         //the collection has been changed
-		if(cx.hasChanged())
-		{
+        if (cx.hasChanged()) {
             boolean doSave = true;
             if (ask) {
                 //ask the user if they would like to save the changes
                 final int result = JOptionPane.showConfirmDialog(getContentPane(), "The configuration for the collection has changed, would you like to save the changes?", "Save Changes", JOptionPane.YES_NO_OPTION);
                 doSave = result == JOptionPane.YES_OPTION;
             }
-			
-            if(doSave)
-			{
-				//save the collection.xconf changes
-				if(cx.Save())
-				{
-					//save ok, reindex?
-					final int result = JOptionPane.showConfirmDialog(getContentPane(), "Your changes have been saved, but will not take effect until the collection is reindexed!\n Would you like to reindex " + cmbCollections.getSelectedItem() + " and sub-collections now?", "Reindex", JOptionPane.YES_NO_OPTION);
-					
-					if(result == JOptionPane.YES_OPTION)
-					{
-						//reindex collection
-                        final SwingWorker<Void, Void> reindexWorker = new SwingWorker<>() {
-                            @Override
-                            protected Void doInBackground() throws Exception {
-                                final IndexQueryService service = client.current.getService(IndexQueryService.class);
-                                final ArrayList subCollections = getCollections(client.getCollection((String) cmbCollections.getSelectedItem()), new ArrayList());
 
-                                for (final Object subCollection : subCollections) {
-                                    service.reindexCollection(((ResourceDescriptor) subCollection).getName());
-                                }
+            if (doSave) {
+                //save the collection.xconf changes
+                if (cx.Save()) {
+                    //save ok, reindex?
+                    final int result = JOptionPane.showConfirmDialog(getContentPane(), "Your changes have been saved, but will not take effect until the collection is reindexed!\n Would you like to reindex " + cmbCollections.getSelectedItem() + " and sub-collections now?", "Reindex", JOptionPane.YES_NO_OPTION);
 
-                                return null;
-                            }
+                    if (result == JOptionPane.YES_OPTION) {
+                        ClientTask.execute(() -> {
+                                    final IndexQueryService service = client.current.getService(IndexQueryService.class);
+                                    final ArrayList<PrettyXmldbURI> subCollections = getCollections(client.getCollection((String) cmbCollections.getSelectedItem()), new ArrayList<>());
+                                    for (final PrettyXmldbURI subCollection : subCollections) {
+                                        service.reindexCollection(subCollection.getTargetURI());
+                                    }
+                                },
+                                () -> JOptionPane.showMessageDialog(getContentPane(), "Reindex Complete"),
+                                e -> JOptionPane.showMessageDialog(getContentPane(), "Reindex failed!"));
+                    }
+                } else {
+                    //save failed
+                    JOptionPane.showMessageDialog(getContentPane(), "Unable to save changes!");
+                }
+            }
+        }
+    }
 
-                            @Override
-                            protected void done() {
-                                try {
-                                    get();
-                                    JOptionPane.showMessageDialog(getContentPane(), "Reindex Complete");
-                                } catch (final InterruptedException e) {
-                                    Thread.currentThread().interrupt();
-                                    JOptionPane.showMessageDialog(getContentPane(), "Reindex failed!");
-                                } catch (final ExecutionException e) {
-                                    JOptionPane.showMessageDialog(getContentPane(), "Reindex failed!");
-                                }
-                            }
-                        };
-                        reindexWorker.execute();
-					}
-				}
-				else
-				{
-					//save failed
-					JOptionPane.showMessageDialog(getContentPane(), "Unable to save changes!");
-				}
-			}
-		}
-	}
-	
-	
-	//THIS IS A COPY FROM ClientFrame
-	//TODO: share this code between the two classes
-	private ArrayList getCollections(Collection root, ArrayList collectionsList) throws XMLDBException
-    {
+
+    //THIS IS A COPY FROM ClientFrame
+    //TODO: share this code between the two classes
+    private ArrayList<PrettyXmldbURI> getCollections(Collection root, ArrayList<PrettyXmldbURI> collectionsList) throws XMLDBException {
         collectionsList.add(new PrettyXmldbURI(XmldbURI.create(root.getName())));
         Collection child;
-		for (String childCollection : root.listChildCollections()) {
-			child = root.getChildCollection(childCollection);
-			getCollections(child, collectionsList);
-		}
+        for (String childCollection : root.listChildCollections()) {
+            child = root.getChildCollection(childCollection);
+            getCollections(child, collectionsList);
+        }
         return collectionsList;
     }
 
-	private void actionAddRangeIndex()
-	{
-		rangeIndexModel.addRow();
-	}
-	
-	private void actionDeleteRangeIndex()
-	{
-		final int iSelectedRow = tblRangeIndexes.getSelectedRow();
-		if(iSelectedRow > -1 )
-		{
-			rangeIndexModel.removeRow(iSelectedRow);
-		}
-	}
-	
-	//Displays the indexes when a collection is selection
-	private void actionGetIndexes(String collectionName)
-	{
-		try
-		{
-			cx = new CollectionXConf(collectionName, client);
-			
-			rangeIndexModel.fireTableDataChanged();
-		}
-		catch(final XMLDBException xe)
-		{
-			//TODO: CONSIDER whether CollectionXConf Should throw xmldb exception at all?
-		}
-		
-	}
-	
-	public static class ComboBoxCellRenderer extends JComboBox implements TableCellRenderer
-	{
+    private void actionAddRangeIndex() {
+        rangeIndexModel.addRow();
+    }
+
+    private void actionDeleteRangeIndex() {
+        final int iSelectedRow = tblRangeIndexes.getSelectedRow();
+        if (iSelectedRow > -1) {
+            rangeIndexModel.removeRow(iSelectedRow);
+        }
+    }
+
+    //Displays the indexes when a collection is selection
+    private void actionGetIndexes(String collectionName) {
+        try {
+            cx = new CollectionXConf(collectionName, client);
+            rangeIndexModel.fireTableDataChanged();
+        } catch (final XMLDBException xe) {
+            //TODO: CONSIDER whether CollectionXConf Should throw xmldb exception at all?
+        }
+    }
+
+    public static class ComboBoxCellRenderer extends JComboBox<String> implements TableCellRenderer {
         @Serial
         private static final long serialVersionUID = 1L;
 
-		public ComboBoxCellRenderer(String[] items)
-        {
+        public ComboBoxCellRenderer(String[] items) {
             super(items);
         }
-    
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column)
-        {
-            if(isSelected)
-            {
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            if (isSelected) {
                 setForeground(table.getSelectionForeground());
                 super.setBackground(table.getSelectionBackground());
-            }
-            else
-            {
+            } else {
                 setForeground(table.getForeground());
                 setBackground(table.getBackground());
             }
-    
+
             // Select the current value
             setSelectedItem(value);
             return this;
         }
     }
-    
-	
-    public static class ComboBoxCellEditor extends DefaultCellEditor
-    {
+
+
+    public static class ComboBoxCellEditor extends DefaultCellEditor {
         @Serial
         private static final long serialVersionUID = 1L;
 
-		public ComboBoxCellEditor(String[] items)
-        {
-            super(new JComboBox(items));
+        public ComboBoxCellEditor(String[] items) {
+            super(new JComboBox<>(items));
         }
     }
 
-	class RangeIndexTableModel extends AbstractTableModel
-	{
+    class RangeIndexTableModel extends AbstractTableModel {
         @Serial
         private static final long serialVersionUID = 1L;
 
-		private final String[] columnNames = new String[] { "Type", "XPath", "xsType" };
+        private final String[] columnNames = new String[]{"Type", "XPath", "xsType"};
 
-		public RangeIndexTableModel()
-		{
-			super();
-			fireTableDataChanged();
-		}
-		
-		/* (non-Javadoc)
-		* @see javax.swing.table.TableModel#isCellEditable()
-		*/
-		public void setValueAt(Object aValue, int rowIndex, int columnIndex)
-		{
-			switch (columnIndex)
-			{
-                case 0 -> 
-                    cx.updateRangeIndex(rowIndex, aValue.toString(), null, null);
-                case 1 ->		/* XPath */
-					cx.updateRangeIndex(rowIndex, null, aValue.toString(), null);
-				case 2 ->	/* xsType */
-					cx.updateRangeIndex(rowIndex, null, null, aValue.toString());
-				default -> {
-				}
-			}
-			
-			fireTableCellUpdated(rowIndex, columnIndex);
-		}
-		
-		public void removeRow(int rowIndex)
-		{
-			cx.deleteRangeIndex(rowIndex);
-			fireTableRowsDeleted(rowIndex, rowIndex);
-		}
-		
-		public void addRow()
-		{			
-			cx.addRangeIndex(CollectionXConf.TYPE_QNAME, "", "xs:string");
-			fireTableRowsInserted(getRowCount(), getRowCount() + 1);
-		}
-		
-		/* (non-Javadoc)
-		* @see javax.swing.table.TableModel#isCellEditable()
-		*/
-		public boolean isCellEditable(int rowIndex, int columnIndex)
-		{
-			return true;
-		}
-		
-		/* (non-Javadoc)
-		* @see javax.swing.table.TableModel#getColumnCount()
-		*/
-		public int getColumnCount()
-		{
-			return columnNames.length;
-		}
+        public RangeIndexTableModel() {
+            super();
+            fireTableDataChanged();
+        }
 
-		/* (non-Javadoc)
-		 * @see javax.swing.table.TableModel#getColumnName(int)
-		 */
-		public String getColumnName(int column)
-		{
-			return columnNames[column];
-		}
+        @Override
+        public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+            switch (columnIndex) {
+                case 0 -> cx.updateRangeIndex(rowIndex, aValue.toString(), null, null);
+                case 1 -> cx.updateRangeIndex(rowIndex, null, aValue.toString(), null); /* XPath */
+                case 2 -> cx.updateRangeIndex(rowIndex, null, null, aValue.toString()); /* xsType */
+                default -> {
+                    // no action
+                }
+            }
 
-		/* (non-Javadoc)
-		 * @see javax.swing.table.TableModel#getRowCount()
-		 */
-		public int getRowCount()
-		{
-			return cx != null ? cx.getRangeIndexCount() : 0;
-		}
+            fireTableCellUpdated(rowIndex, columnIndex);
+        }
 
-		/* (non-Javadoc)
-		 * @see javax.swing.table.TableModel#getValueAt(int, int)
-		 */
-		public Object getValueAt(int rowIndex, int columnIndex)
-		{
+        public void removeRow(int rowIndex) {
+            cx.deleteRangeIndex(rowIndex);
+            fireTableRowsDeleted(rowIndex, rowIndex);
+        }
+
+        public void addRow() {
+            cx.addRangeIndex(CollectionXConf.TYPE_QNAME, "", "xs:string");
+            fireTableRowsInserted(getRowCount(), getRowCount() + 1);
+        }
+
+        @Override
+        public boolean isCellEditable(int rowIndex, int columnIndex) {
+            return true;
+        }
+
+        @Override
+        public int getColumnCount() {
+            return columnNames.length;
+        }
+
+        @Override
+        public String getColumnName(int column) {
+            return columnNames[column];
+        }
+
+        @Override
+        public int getRowCount() {
+            return cx != null ? cx.getRangeIndexCount() : 0;
+        }
+
+        @Override
+        public Object getValueAt(int rowIndex, int columnIndex) {
             return switch (columnIndex) {
                 case 0 -> cx.getRangeIndex(rowIndex).getType();
-                case 1 ->    /* XPath */
-                        cx.getRangeIndex(rowIndex).getXPath();
-                case 2 ->    /* xsType */
-                        cx.getRangeIndex(rowIndex).getxsType();
+                case 1 -> cx.getRangeIndex(rowIndex).getXPath(); /* XPath */
+                case 2 -> cx.getRangeIndex(rowIndex).getxsType(); /* xsType */
                 default -> null;
             };
-		}
-	}
+        }
+    }
 }
