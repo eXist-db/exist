@@ -1,0 +1,54 @@
+exist-core/src/main/java/org/exist/client/TriggersDialog.java
+  s_b371cd7261149b::t_acaf0594408d59 77
+exist-core/src/main/java/org/exist/client/IndexDialog.java
+  s_b371cd7261149b::t_c11cf4750d4cf9 81
+exist-core/src/main/java/org/exist/client/security/EditPropertiesDialog.java
+  s_b371cd7261149b::t_d78bde587607fe 93
+exist-core/src/main/java/org/exist/client/security/UserDialog.java
+  s_b371cd7261149b::t_253c21204b4a84 59
+exist-core/src/main/java/org/exist/client/ConnectionDialog.java
+  s_b371cd7261149b::t_dc4f6ba880bcbe 242
+  s_b371cd7261149b::t_54e016a2b1ee79 74
+exist-core/src/main/java/org/exist/client/ClientFrame.java
+  s_b371cd7261149b::t_8edc270fc04b57 1960
+  s_b371cd7261149b::t_f18f11b03c5b4d 149
+exist-core/src/main/java/org/exist/client/UploadDialog.java
+  s_b371cd7261149b::t_8d46090b01392a 66
+exist-core/src/main/java/org/exist/client/QueryDialog.java
+  s_b371cd7261149b::t_09ed502a1510e7 120
+exist-core/src/main/java/org/exist/client/InteractiveClient.java
+  s_b371cd7261149b::t_d05027cc97c8fd 1133,1140
+  s_b371cd7261149b::t_89e01e3f4aac24 2663,2672-2684
+  s_b371cd7261149b::t_1c22e0d4f74856 621-625,640
+  s_b371cd7261149b::t_5121dca46a521b 260,269
+  s_b371cd7261149b::t_956085f008c070 1160
+  s_b371cd7261149b::t_62c9157f4491b5 39
+  s_b371cd7261149b::t_16393dc89eaabc 480
+  s_b371cd7261149b::t_1c5b96be77b128 2523-2529,2533-2537,2542-2548,2550-2552
+  s_b371cd7261149b::t_1ab207a84cec97 926
+  s_b371cd7261149b::t_1ff2d5ca51816c 1109
+  s_b371cd7261149b::t_0bdaff68428bc0 877
+  s_b371cd7261149b::t_f11e8015f0b66c 25
+exist-core/src/main/java/org/exist/client/DocumentView.java
+  s_b371cd7261149b::t_e10a1c831026e4 104
+exist-core/src/main/java/org/exist/client/security/AccessControlEntryDialog.java
+  s_b371cd7261149b::t_bdced3f5a49886 56
+exist-core/src/main/java/org/exist/client/security/UserManagerDialog.java
+  s_b371cd7261149b::t_4694f5d90c0aee 70
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "2865ab89894445d97816da998fd827c364be3339",
+  "prompts": {},
+  "sessions": {
+    "s_b371cd7261149b": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "6972b017-56e3-4c37-af24-6e90cb4988df",
+        "model": "default"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
