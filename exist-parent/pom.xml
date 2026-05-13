@@ -679,6 +679,17 @@
             </snapshots>
         </repository>
         <repository>
+            <id>github-jackrabbit-webdav-jakarta</id>
+            <name>GitHub Registry - jackrabbit-webdav-jakarta</name>
+            <url>https://maven.pkg.github.com/eXist-db/jackrabbit-webdav-jakarta</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
             <id>exist-db-snapshots</id>
             <name>eXist-db Snapshots</name>
             <url>https://repo.exist-db.org/repository/exist-db-snapshots/</url>
