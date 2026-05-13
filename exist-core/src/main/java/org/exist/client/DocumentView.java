@@ -56,6 +56,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
+import javax.swing.SwingWorker;
 import javax.swing.border.BevelBorder;
 import javax.xml.transform.OutputKeys;
 
@@ -341,65 +342,94 @@ class DocumentView extends JFrame {
     }
 
     private void save() {
-        final Runnable saveTask = () -> {
-            try {
-                statusMessage.setText(Messages.getString("DocumentView.36") + URIUtils.urlDecodeUtf8(resource.getId())); //$NON-NLS-1$
+        final String content = text.getText();
+        statusMessage.setText(Messages.getString("DocumentView.36") + URIUtils.urlDecodeUtf8(resourceName.lastSegment())); //$NON-NLS-1$
+        progress.setIndeterminate(true);
+        progress.setVisible(true);
+        new SwingWorker<Void, Void>() {
+            @Override
+            protected Void doInBackground() throws Exception {
                 if (collection instanceof Observable observable) {
-                    observable
-                            .addObserver(new ProgressObserver());
+                    observable.addObserver(new ProgressObserver());
                 }
-                progress.setIndeterminate(true);
-                progress.setVisible(true);
-                resource.setContent(text.getText());
-                collection.storeResource(resource);
-                if (collection instanceof Observable observable) {
-                    observable.deleteObservers();
-                }
-            } catch (final XMLDBException e) {
-                ClientFrame.showErrorMessage(Messages.getString("DocumentView.37") //$NON-NLS-1$
-                        + e.getMessage(), e);
-            } finally {
-                progress.setVisible(false);
-            }
-        };
-        client.newClientThread("save", saveTask).start();
-    }
-
-    private void saveAs() {
-        final Runnable saveAsTask = () -> {
-
-            //Get the name to save the resource as
-            final String nameres = JOptionPane.showInputDialog(null, Messages.getString("DocumentView.38")); //$NON-NLS-1$
-            if (nameres != null) {
                 try {
-                    //Change status message and display a progress dialog
-                    statusMessage.setText(Messages.getString("DocumentView.39") + nameres); //$NON-NLS-1$
-                    if (collection instanceof Observable observable) {
-                        observable.addObserver(new ProgressObserver());
-                    }
-                    progress.setIndeterminate(true);
-                    progress.setVisible(true);
-
-                    //Create a new resource as named, set the content, store the resource
-                    XMLResource result = null;
-                    result = collection.createResource(URIUtils.encodeXmldbUriFor(nameres).toString(), XMLResource.class);
-                    result.setContent(text.getText());
-                    collection.storeResource(result);
-                    client.reloadCollection();    //reload the client collection
+                    resource.setContent(content);
+                    collection.storeResource(resource);
+                } finally {
                     if (collection instanceof Observable observable) {
                         observable.deleteObservers();
                     }
-                } catch (final XMLDBException e) {
-                    ClientFrame.showErrorMessage(Messages.getString("DocumentView.40") + e.getMessage(), e); //$NON-NLS-1$
-                } catch (final URISyntaxException e) {
-                    ClientFrame.showErrorMessage(Messages.getString("DocumentView.41") + e.getMessage(), e); //$NON-NLS-1$
-                } finally {
-                    //hide the progress dialog
-                    progress.setVisible(false);
+                }
+                return null;
+            }
+
+            @Override
+            protected void done() {
+                progress.setVisible(false);
+                try {
+                    get();
+                } catch (final InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                } catch (final java.util.concurrent.ExecutionException e) {
+                    final Throwable t = e.getCause() != null ? e.getCause() : e;
+                    if (t instanceof XMLDBException xe) {
+                        ClientFrame.showErrorMessage(Messages.getString("DocumentView.37") + xe.getMessage(), xe); //$NON-NLS-1$
+                    } else {
+                        ClientFrame.showErrorMessage(t.getMessage(), t);
+                    }
                 }
             }
-        };
-        client.newClientThread("save-as", saveAsTask).start();
+        }.execute();
+    }
+
+    private void saveAs() {
+        final String nameres = JOptionPane.showInputDialog(this, Messages.getString("DocumentView.38")); //$NON-NLS-1$
+        if (nameres == null) {
+            return;
+        }
+        final String content = text.getText();
+        statusMessage.setText(Messages.getString("DocumentView.39") + nameres); //$NON-NLS-1$
+        progress.setIndeterminate(true);
+        progress.setVisible(true);
+        new SwingWorker<Void, Void>() {
+            @Override
+            protected Void doInBackground() throws Exception {
+                if (collection instanceof Observable observable) {
+                    observable.addObserver(new ProgressObserver());
+                }
+                try {
+                    final XMLResource result = collection.createResource(
+                            URIUtils.encodeXmldbUriFor(nameres).toString(), XMLResource.class);
+                    result.setContent(content);
+                    collection.storeResource(result);
+                    client.reloadCollection();
+                } finally {
+                    if (collection instanceof Observable observable) {
+                        observable.deleteObservers();
+                    }
+                }
+                return null;
+            }
+
+            @Override
+            protected void done() {
+                progress.setVisible(false);
+                try {
+                    get();
+                } catch (final InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                } catch (final java.util.concurrent.ExecutionException e) {
+                    final Throwable t = e.getCause() != null ? e.getCause() : e;
+                    if (t instanceof XMLDBException xe) {
+                        ClientFrame.showErrorMessage(Messages.getString("DocumentView.40") + xe.getMessage(), xe); //$NON-NLS-1$
+                    } else if (t instanceof URISyntaxException urie) {
+                        ClientFrame.showErrorMessage(Messages.getString("DocumentView.41") + urie.getMessage(), urie); //$NON-NLS-1$
+                    } else {
+                        ClientFrame.showErrorMessage(t.getMessage(), t);
+                    }
+                }
+            }
+        }.execute();
     }
 
     private void export() throws XMLDBException {
@@ -449,7 +479,11 @@ class DocumentView extends JFrame {
     }
 
     class ProgressObserver implements Observer {
-        public void update(Observable o, Object arg) {
+        public void update(final Observable o, final Object arg) {
+            ClientSwingEdt.invokeLaterIfNeeded(() -> updateProgressOnEdt(o, arg));
+        }
+
+        private void updateProgressOnEdt(final Observable o, final Object arg) {
             progress.setIndeterminate(false);
             final ProgressIndicator ind = (ProgressIndicator) arg;
             progress.setValue(ind.getPercentage());

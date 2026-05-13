@@ -75,6 +75,7 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.prefs.Preferences;
@@ -536,6 +537,10 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
     }
 
     protected void displayPrompt() {
+        ClientSwingEdt.invokeAndWaitIfNeeded(this::displayPromptOnEdt);
+    }
+
+    private void displayPromptOnEdt() {
         final String pathString = path.getCollectionPath();
         try {
             commandStart = doc.getLength();
@@ -551,6 +556,10 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
     }
 
     protected void display(final String message) {
+        ClientSwingEdt.invokeAndWaitIfNeeded(() -> displayOnEdt(message));
+    }
+
+    private void displayOnEdt(final String message) {
         try {
             commandStart = doc.getLength();
             if (commandStart > MAX_DISPLAY_LENGTH) {
@@ -567,11 +576,11 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
     }
 
     protected void setResources(final List<ResourceDescriptor> rows) {
-        resources.setData(rows);
+        ClientSwingEdt.invokeAndWaitIfNeeded(() -> resources.setData(rows));
     }
 
     protected void setStatus(final String message) {
-        statusbar.setText(message);
+        ClientSwingEdt.invokeLaterIfNeeded(() -> statusbar.setText(message));
     }
 
     protected void setEditable(final boolean enabled) {
@@ -1709,6 +1718,10 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
     }
 
     public static void showErrorMessage(final String message, final Throwable t) {
+        ClientSwingEdt.invokeAndWaitIfNeeded(() -> showErrorMessageOnEdt(message, t));
+    }
+
+    private static void showErrorMessageOnEdt(final String message, final Throwable t) {
         JScrollPane scroll = null;
         final JTextArea msgArea = new JTextArea(message);
         msgArea.setBorder(BorderFactory.createTitledBorder(Messages.getString("ClientFrame.214"))); //$NON-NLS-1$
@@ -1736,6 +1749,15 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
     }
 
     public static int showErrorMessageQuery(final String message, final Throwable t) {
+        if (SwingUtilities.isEventDispatchThread()) {
+            return showErrorMessageQueryOnEdt(message, t);
+        }
+        final AtomicInteger result = new AtomicInteger();
+        ClientSwingEdt.invokeAndWaitIfNeeded(() -> result.set(showErrorMessageQueryOnEdt(message, t)));
+        return result.get();
+    }
+
+    private static int showErrorMessageQueryOnEdt(final String message, final Throwable t) {
         final JTextArea msgArea = new JTextArea(message);
         msgArea.setLineWrap(true);
         msgArea.setWrapStyleWord(true);
