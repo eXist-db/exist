@@ -25,8 +25,6 @@ import org.apache.jackrabbit.webdav.DavException;
 import org.apache.jackrabbit.webdav.DavResource;
 import org.apache.jackrabbit.webdav.DavServletResponse;
 import org.apache.jackrabbit.webdav.lock.*;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.exist.EXistException;
 import org.exist.storage.BrokerPool;
 import org.exist.xmldb.XmldbURI;
@@ -41,8 +39,6 @@ import java.util.List;
  * @author Joe Wicentowski
  */
 public class ExistLockManager implements LockManager {
-
-    private static final Logger LOG = LogManager.getLogger(ExistLockManager.class);
 
     private final WebDavLockStore lockStore;
 

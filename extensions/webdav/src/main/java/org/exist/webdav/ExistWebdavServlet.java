@@ -118,10 +118,7 @@ public class ExistWebdavServlet extends AbstractWebdavServlet {
         }
         // No matching lock found — if no If header was sent, this is OK
         final String ifHeader = request.getHeader("If");
-        if (ifHeader == null || ifHeader.isEmpty()) {
-            return true;
-        }
-        return false;
+        return ifHeader == null || ifHeader.isEmpty();
     }
 
     /**
@@ -310,17 +307,15 @@ public class ExistWebdavServlet extends AbstractWebdavServlet {
             return createLocator(hrefPrefix, path);
         }
 
-        private DavResourceLocator createLocator(final String hrefPrefix, String dbPath) {
-            if (dbPath == null || dbPath.isEmpty()) {
-                dbPath = "/db";
+        private DavResourceLocator createLocator(final String hrefPrefix, final String dbPath) {
+            String normalized = (dbPath == null || dbPath.isEmpty()) ? "/db" : dbPath;
+            if (!normalized.startsWith("/db")) {
+                normalized = "/db" + normalized;
             }
-            if (!dbPath.startsWith("/db")) {
-                dbPath = "/db" + dbPath;
+            if (normalized.length() > 1 && normalized.endsWith("/")) {
+                normalized = normalized.substring(0, normalized.length() - 1);
             }
-            if (dbPath.length() > 1 && dbPath.endsWith("/")) {
-                dbPath = dbPath.substring(0, dbPath.length() - 1);
-            }
-            return new ExistDavLocator(hrefPrefix, webdavPath, dbPath, this);
+            return new ExistDavLocator(hrefPrefix, webdavPath, normalized, this);
         }
     }
 
@@ -420,13 +415,9 @@ public class ExistWebdavServlet extends AbstractWebdavServlet {
 
         @Override
         public boolean equals(final Object obj) {
-            if (this == obj) {
-                return true;
-            }
-            if (obj instanceof ExistDavLocator other) {
-                return resourcePath.equals(other.resourcePath);
-            }
-            return false;
+            return this == obj
+                    || (obj instanceof ExistDavLocator other
+                            && resourcePath.equals(other.resourcePath));
         }
     }
 
