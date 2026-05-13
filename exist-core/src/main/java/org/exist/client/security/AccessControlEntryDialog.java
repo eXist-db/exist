@@ -53,7 +53,7 @@ public class AccessControlEntryDialog extends javax.swing.JFrame implements Dial
 
     public AccessControlEntryDialog(final UserManagementService userManagementService, final String title) throws XMLDBException {
         this.userManagementService = userManagementService;
-        this.setIconImage(InteractiveClient.getExistIcon(getClass()).getImage());        
+        InteractiveClient.setExistImage(getClass(), this::setIconImage);
         allUsernames = new HashSet<>();
         for(final Account account : userManagementService.getAccounts()) {
             allUsernames.add(account.getName());

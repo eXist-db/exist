@@ -22,6 +22,7 @@
 package org.exist.client;
 
 import java.awt.Dimension;
+import java.awt.Image;
 import java.io.*;
 import java.lang.reflect.Field;
 import java.net.URISyntaxException;
@@ -35,6 +36,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BinaryOperator;
+import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -255,7 +257,7 @@ public class InteractiveClient {
 
         } catch (final StartException e) {
             if (e.getMessage() != null && !e.getMessage().isEmpty()) {
-                consoleErr(e.getMessage());
+                consoleErr(e.getMessage(), e);
             }
             System.exit(e.getErrorCode());
 
@@ -264,7 +266,7 @@ public class InteractiveClient {
             System.exit(SystemExitCodes.INVALID_ARGUMENT_EXIT_CODE);
 
         } catch (final Exception e) {
-            e.printStackTrace();
+            consoleErr(e.getMessage() != null ? e.getMessage() : e.toString(), e);
             System.exit(SystemExitCodes.CATCH_ALL_GENERAL_ERROR_EXIT_CODE); // return non-zero exit status on exception
         }
     }
@@ -475,7 +477,7 @@ public class InteractiveClient {
                 consoleOut(line);
             }
         } catch (final IOException ioe) {
-            consoleErr("IOException: " + ioe);
+            consoleErr("IOException: " + ioe, ioe);
         }
     }
 
@@ -616,9 +618,11 @@ public class InteractiveClient {
                     errorln("could not parse resource name into a valid URI: " + e.getMessage());
                     return false;
                 }
-                final Resource res = retrieve(resource);
-                // display document
-                if (res != null) {
+                final Resource retrieved = retrieve(resource);
+                if (retrieved == null) {
+                    return true;
+                }
+                try (final EXistResource res = (EXistResource) retrieved) {
                     final String data;
                     if (XML_RESOURCE.equals(res.getResourceType())) {
                         data = (String) res.getContent();
@@ -633,8 +637,7 @@ public class InteractiveClient {
                             frame.setEditable(true);
                         });
                     } else {
-                        final String content = data;
-                        more(content);
+                        more(data);
                     }
                 }
                 return true;
@@ -871,8 +874,7 @@ public class InteractiveClient {
                     mgtService.addAccount(user);
                     messageln("User '" + user.getName() + "' created.");
                 } catch (final Exception e) {
-                    errorln("ERROR: " + e.getMessage());
-                    e.printStackTrace();
+                    errorln("ERROR: " + e.getMessage(), e);
                 }
             } else if ("users".equalsIgnoreCase(args[0])) {
                 final UserManagementService mgtService = current.getService(UserManagementService.class);
@@ -921,8 +923,7 @@ public class InteractiveClient {
                     mgtService.updateAccount(user);
                     properties.setProperty(PASSWORD, p1);
                 } catch (final Exception e) {
-                    errorln("ERROR: " + e.getMessage());
-                    e.printStackTrace();
+                    errorln("ERROR: " + e.getMessage(), e);
                 }
             } else if ("chmod".equalsIgnoreCase(args[0])) {
                 if (args.length < 2) {
@@ -1105,8 +1106,7 @@ public class InteractiveClient {
             if (options.startGUI) {
                 ClientFrame.showErrorMessage(getExceptionMessage(e), e);
             } else {
-                errorln(getExceptionMessage(e));
-                e.printStackTrace();
+                errorln(getExceptionMessage(e), e);
             }
             return true;
         }
@@ -1130,16 +1130,14 @@ public class InteractiveClient {
                     view.setSize(new Dimension(640, 400));
                     view.viewDocument();
                 } catch (final XMLDBException ex) {
-                    errorln("XMLDB error: " + ex.getMessage());
-                    ex.printStackTrace();
+                    errorln("XMLDB error: " + ex.getMessage(), ex);
                 }
             }
 
             @Override
             protected void onFailure(final Throwable t) {
                 if (t instanceof XMLDBException xe) {
-                    errorln("XMLDB error: " + xe.getMessage());
-                    xe.printStackTrace();
+                    errorln("XMLDB error: " + xe.getMessage(), xe);
                 } else {
                     super.onFailure(t);
                 }
@@ -1159,7 +1157,7 @@ public class InteractiveClient {
                     traceWriter.write("<query-log>" + EOL);
                     this.lazyTraceWriter = Optional.of(traceWriter);
                 } catch (final IOException ioe) {
-                    errorln("Cannot open file " + options.traceQueriesFile.get());
+                    errorln("Cannot open file " + options.traceQueriesFile.get(), ioe);
                     return Optional.empty();
                 }
             }
@@ -2522,15 +2520,36 @@ public class InteractiveClient {
     }
 
     final void errorln(final String msg) {
+        errorln(msg, null);
+    }
+
+    /**
+     * Log an error line to the shell or admin frame; optional {@code t} is traced to stderr when non-null.
+     */
+    final void errorln(final String msg, final Throwable t) {
         if (options.startGUI && frame != null) {
             frame.display(msg + EOL);
         } else {
-            consoleErr(msg);
+            consoleErr(msg, t);
+            return;
+        }
+        if (t != null) {
+            t.printStackTrace(System.err);
         }
     }
 
     static final void consoleErr(final String msg) {
+        consoleErr(msg, null);
+    }
+
+    /**
+     * Write to stderr; optional {@code t} is printed after the message.
+     */
+    static final void consoleErr(final String msg, final Throwable t) {
         System.err.println(msg); //NOSONAR this has to go to the console
+        if (t != null) {
+            t.printStackTrace(System.err);
+        }
     }
 
     private Collection resolveCollection(final XmldbURI path) throws XMLDBException {
@@ -2641,7 +2660,7 @@ public class InteractiveClient {
         try {
             sysProperties.load(InteractiveClient.class.getClassLoader().getResourceAsStream("org/exist/system.properties"));
         } catch (final IOException e) {
-            consoleErr("Unable to load system.properties from class loader");
+            consoleErr("Unable to load system.properties from class loader", e);
         }
 
         return sysProperties;
@@ -2649,5 +2668,19 @@ public class InteractiveClient {
 
     public static ImageIcon getExistIcon(final Class clazz) {
         return new javax.swing.ImageIcon(clazz.getResource("/org/exist/client/icons/x.png"));
+    }
+
+    /**
+     * Loads the eXist icon and applies the frame/window image (e.g. {@link javax.swing.JFrame#setIconImage}).
+     */
+    public static void setExistImage(final Class<?> clazz, final Consumer<Image> setter) {
+        setter.accept(getExistIcon(clazz).getImage());
+    }
+
+    /**
+     * Loads the eXist icon for a label or button (e.g. {@link javax.swing.JLabel#setIcon}).
+     */
+    public static void setExistImageIcon(final Class<?> clazz, final Consumer<ImageIcon> setter) {
+        setter.accept(getExistIcon(clazz));
     }
 }

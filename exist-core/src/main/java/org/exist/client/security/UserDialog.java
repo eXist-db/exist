@@ -56,7 +56,7 @@ public class UserDialog extends javax.swing.JFrame {
     
     public UserDialog(final UserManagementService userManagementService) {
         this.userManagementService = userManagementService;
-        this.setIconImage(InteractiveClient.getExistIcon(getClass()).getImage());
+        InteractiveClient.setExistImage(getClass(), this::setIconImage);
         initComponents();
     }
 

@@ -117,7 +117,7 @@ public class QueryDialog extends JFrame {
         this.collection = collection;
         this.properties = properties;
         this.client = client;
-        this.setIconImage(InteractiveClient.getExistIcon(getClass()).getImage());
+        InteractiveClient.setExistImage(getClass(), this::setIconImage);
         setupComponents(loadedFromDb);
         pack();
     }

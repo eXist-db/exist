@@ -90,7 +90,7 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
         this.mode = mode;
         this.acl = acl;
         this.applyTo = applyTo;
-        this.setIconImage(InteractiveClient.getExistIcon(getClass()).getImage());        
+        InteractiveClient.setExistImage(getClass(), this::setIconImage);
         initComponents();
         setFormProperties();
     }

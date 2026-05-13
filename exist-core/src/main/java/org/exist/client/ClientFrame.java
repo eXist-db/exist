@@ -146,7 +146,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         this.processRunnable = new ProcessRunnable();
         this.processThread = Thread.ofVirtual().name("java-admin-client.process").unstarted(processRunnable);
 
-        this.setIconImage(InteractiveClient.getExistIcon(getClass()).getImage());
+        InteractiveClient.setExistImage(getClass(), this::setIconImage);
 
         setupComponents();
         addWindowListener(new WindowAdapter() {
@@ -1957,24 +1957,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         }
     }
 
-    private class FileListDropTargetListener implements DropTargetListener {
-
-        @Override
-        public void dragEnter(final DropTargetDragEvent dtde) {
-        }
-
-        @Override
-        public void dragOver(final DropTargetDragEvent dtde) {
-        }
-
-        @Override
-        public void dropActionChanged(final DropTargetDragEvent dtde) {
-        }
-
-        @Override
-        public void dragExit(final DropTargetEvent dte) {
-
-        }
+    private class FileListDropTargetListener extends DropTargetAdapter {
 
         @Override
         public void drop(final DropTargetDropEvent dtde) {
