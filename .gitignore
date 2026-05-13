@@ -19,6 +19,8 @@ work/
 !/.idea/runConfigurations
 *.iml
 .vscode
+.cursor
+.zed
 
 # OS specific files
 .DS_Store
