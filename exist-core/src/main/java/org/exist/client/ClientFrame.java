@@ -144,7 +144,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         this.properties = properties;
         this.client = client;
         this.processRunnable = new ProcessRunnable();
-        this.processThread = client.newClientThread("process", processRunnable);
+        this.processThread = Thread.ofVirtual().name("java-admin-client.process").unstarted(processRunnable);
 
         this.setIconImage(InteractiveClient.getExistIcon(getClass()).getImage());
 

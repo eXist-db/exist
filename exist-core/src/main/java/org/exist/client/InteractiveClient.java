@@ -270,14 +270,14 @@ public class InteractiveClient {
     }
 
     /**
-     * Create a new thread for this client instance.
-     *
-     * @param threadName the name of the thread
-     * @param runnable   the function to execute on the thread
-     * @return the thread
+     * Run {@code task} on the Swing EDT when the admin GUI is active.
+     * Used from background workers (e.g. shell {@link ClientFrame.ProcessRunnable}) so
+     * {@link ClientFrame} updates stay EDT-owned (<a href="https://github.com/eXist-db/exist/issues/4355">#4355</a>).
      */
-    Thread newClientThread(final String threadName, final Runnable runnable) {
-        return new Thread(runnable, "java-admin-client." + threadName);
+    private void runOnFrameEdt(final Runnable task) {
+        if (options.startGUI && frame != null) {
+            ClientSwingEdt.invokeAndWaitIfNeeded(task);
+        }
     }
 
     /**
@@ -290,7 +290,7 @@ public class InteractiveClient {
 
         final String uri = properties.getProperty(InteractiveClient.URI);
         if (options.startGUI && frame != null) {
-            frame.setStatus("connecting to " + uri);
+            runOnFrameEdt(() -> frame.setStatus("connecting to " + uri));
         }
 
         // Create database
@@ -313,7 +313,7 @@ public class InteractiveClient {
         final String collectionUri = uri + path;
         current = DatabaseManager.getCollection(collectionUri, properties.getProperty(USER), properties.getProperty(PASSWORD));
         if (options.startGUI && frame != null) {
-            frame.setStatus("connected to " + uri + " as user " + properties.getProperty(USER));
+            runOnFrameEdt(() -> frame.setStatus("connected to " + uri + " as user " + properties.getProperty(USER)));
         }
 
         if (database.getProperty(CONFIGURATION) != null) {
@@ -486,9 +486,7 @@ public class InteractiveClient {
      * @return true if command != quit
      */
     protected boolean process(final String line) {
-        if (options.startGUI) {
-            frame.setPath(path);
-        }
+        runOnFrameEdt(() -> frame.setPath(path));
         final String args[];
         if (line.startsWith("find")) {
             args = new String[2];
@@ -570,9 +568,8 @@ public class InteractiveClient {
                     current.close();
                     current = temp;
                     newPath = collectionPath.toCollectionPathURI();
-                    if (options.startGUI) {
-                        frame.setPath(collectionPath.toCollectionPathURI());
-                    }
+                    final XmldbURI pathForFrame = collectionPath.toCollectionPathURI();
+                    runOnFrameEdt(() -> frame.setPath(pathForFrame));
                 } else {
                     messageln("no such collection.");
                 }
@@ -603,7 +600,7 @@ public class InteractiveClient {
                         errorln("could not parse resource name into a valid URI: " + e.getMessage());
                         return false;
                     }
-                    editResource(resource);
+                    runOnFrameEdt(() -> editResource(resource));
                 } else {
                     messageln("Please specify a resource.");
                 }
@@ -629,9 +626,12 @@ public class InteractiveClient {
                         data = new String((byte[]) res.getContent());
                     }
                     if (options.startGUI) {
-                        frame.setEditable(false);
-                        frame.display(data);
-                        frame.setEditable(true);
+                        final String contentForShell = data;
+                        runOnFrameEdt(() -> {
+                            frame.setEditable(false);
+                            frame.display(contentForShell);
+                            frame.setEditable(true);
+                        });
                     } else {
                         final String content = data;
                         more(content);
@@ -713,7 +713,8 @@ public class InteractiveClient {
                     for (int i = start; i < start + count; i++) {
                         final Resource r = result.getResource(i);
                         if (options.startGUI) {
-                            frame.display((String) r.getContent());
+                            final String lineContent = (String) r.getContent();
+                            runOnFrameEdt(() -> frame.display(lineContent));
                         } else {
                             more((String) r.getContent());
                         }
@@ -2057,7 +2058,7 @@ public class InteractiveClient {
             connect();
         } catch (final Exception cnf) {
             if (options.startGUI && frame != null) {
-                frame.setStatus("Connection to database failed; message: " + cnf.getMessage());
+                runOnFrameEdt(() -> frame.setStatus("Connection to database failed; message: " + cnf.getMessage()));
             } else {
                 consoleErr("Connection to database failed; message: " + cnf.getMessage());
             }
@@ -2122,7 +2123,7 @@ public class InteractiveClient {
 
         if (current == null) {
             if (options.startGUI && frame != null) {
-                frame.setStatus("Could not retrieve collection " + path);
+                runOnFrameEdt(() -> frame.setStatus("Could not retrieve collection " + path));
             } else {
                 consoleErr("Could not retrieve collection " + path);
             }
@@ -2233,7 +2234,7 @@ public class InteractiveClient {
 
                 } else if (!errorMessage.isEmpty()) {
                     // No pattern match, but we have an error. stop here
-                    frame.dispose();
+                    runOnFrameEdt(frame::dispose);
                     return true;
                 } else {
                     // No error message, continue startup.
