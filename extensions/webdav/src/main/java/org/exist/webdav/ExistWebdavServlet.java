@@ -33,6 +33,11 @@ import org.exist.security.SecurityManager;
 import org.exist.security.Subject;
 import org.exist.storage.BrokerPool;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * WebDAV servlet based on Apache Jackrabbit WebDAV library.
  * Extends {@link AbstractWebdavServlet} which handles all HTTP method
@@ -157,6 +162,140 @@ public class ExistWebdavServlet extends AbstractWebdavServlet {
         }
     }
 
+    // Parsing of the If-header grammar (RFC 4918 §10.4) is done by
+    // extractStateTokens — see that method for the structural rules.
+
+    /**
+     * Validate the {@code If} header's state-token assertions against the actual
+     * lock tokens held on the resource (and its ancestor collections via deep
+     * locks). Per RFC 4918 §10.4, every state-token in an unTagged-list / Tagged-list
+     * must currently be held; otherwise the request fails with 412.
+     *
+     * <p>This complements {@link #requireLockTokenForWrite}: that method handles
+     * the "resource is locked but no If header" case (returns 423 Locked); this
+     * method handles the "If header is present but its state-tokens don't match
+     * any held lock" case (returns 412 Precondition Failed). Both cases are
+     * required for litmus locks compliance (cond_put_corrupt_token,
+     * fail_cond_put_unlocked).</p>
+     *
+     * <p>All state-tokens in {@code <...>} brackets are validated against the
+     * resource's actual held lock tokens. This includes the special
+     * {@code <DAV:no-lock>} guaranteed-no-match URI defined in RFC 4918 §10.4.8
+     * (nothing ever holds it, so any assertion involving it must fail).
+     * ETag-form preconditions use the {@code [...]} bracket form and are left
+     * to {@link AbstractWebdavServlet}'s {@link #isPreconditionValid} path.</p>
+     */
+    private void validateIfHeaderLockTokens(final WebdavRequest request, final DavResource resource)
+            throws DavException {
+        final String ifHeader = request.getHeader("If");
+        if (ifHeader == null || ifHeader.isEmpty()) {
+            return;
+        }
+        final Set<String> assertedTokens = extractStateTokens(ifHeader);
+        if (assertedTokens.isEmpty()) {
+            return;  // Only ETag assertions, no lock-token assertions
+        }
+        // Collect every lock-token actually held on this resource and its
+        // ancestor collections.
+        final Set<String> heldTokens = new HashSet<>();
+        addHeldTokens(heldTokens, resource);
+        DavResource parent = resource.getCollection();
+        while (parent != null) {
+            addHeldTokens(heldTokens, parent);
+            parent = parent.getCollection();
+        }
+        // Every asserted lock-token must be currently held.
+        for (final String token : assertedTokens) {
+            if (!heldTokens.contains(token)) {
+                throw new DavException(DavServletResponse.SC_PRECONDITION_FAILED,
+                        "If header asserts lock-token '" + token
+                                + "' which is not held on this resource or any ancestor");
+            }
+        }
+    }
+
+    /**
+     * Parse an If-header value and return the set of positively-asserted
+     * state-tokens (Coded-URLs that the request asserts the resource holds).
+     *
+     * <p>RFC 4918 §10.4 grammar:</p>
+     * <pre>
+     *   If           = "If" ":" ( 1*No-tag-list | 1*Tagged-list )
+     *   No-tag-list  = List
+     *   Tagged-list  = Resource-Tag 1*List
+     *   Resource-Tag = "&lt;" Simple-ref "&gt;"               (outside parens)
+     *   List         = "(" 1*Condition ")"
+     *   Condition    = ["Not"] ( State-token | "[" entity-tag "]" )
+     *   State-token  = Coded-URL = "&lt;" absolute-URI "&gt;"  (inside parens)
+     * </pre>
+     *
+     * <p>The parser tracks paren depth: {@code &lt;URI&gt;} OUTSIDE parens is
+     * a Resource-Tag (addressing scope, NOT an assertion); {@code &lt;URI&gt;}
+     * INSIDE parens is a state-token assertion. Negated assertions
+     * ({@code Not &lt;URI&gt;}) are skipped — they require the token to NOT be
+     * held, which is the opposite of our validation logic, so we leave their
+     * handling to Jackrabbit's precondition path. ETags use {@code [...]}
+     * brackets and never match.</p>
+     */
+    private static Set<String> extractStateTokens(final String ifHeader) {
+        final Set<String> tokens = new HashSet<>();
+        int depth = 0;
+        int i = 0;
+        while (i < ifHeader.length()) {
+            final char c = ifHeader.charAt(i);
+            if (c == '(') {
+                depth++;
+                i++;
+            } else if (c == ')') {
+                depth--;
+                i++;
+            } else if (c == '<' && depth > 0) {
+                // State-token candidate: <URI> inside a Condition list.
+                // Check for "Not" prefix (with whitespace) immediately before.
+                boolean negated = false;
+                int back = i - 1;
+                while (back >= 0 && Character.isWhitespace(ifHeader.charAt(back))) {
+                    back--;
+                }
+                if (back >= 2
+                        && ifHeader.charAt(back - 2) == 'N'
+                        && ifHeader.charAt(back - 1) == 'o'
+                        && ifHeader.charAt(back) == 't') {
+                    // Ensure "Not" is a separate token, not part of a larger word
+                    if (back - 2 == 0 || !Character.isLetterOrDigit(ifHeader.charAt(back - 3))) {
+                        negated = true;
+                    }
+                }
+                final int end = ifHeader.indexOf('>', i);
+                if (end < 0) {
+                    break;  // malformed; bail
+                }
+                if (!negated) {
+                    tokens.add(ifHeader.substring(i + 1, end));
+                }
+                i = end + 1;
+            } else {
+                i++;
+            }
+        }
+        return tokens;
+    }
+
+    private static void addHeldTokens(final Set<String> heldTokens, final DavResource resource) {
+        ActiveLock lock = resource.getLock(
+                org.apache.jackrabbit.webdav.lock.Type.WRITE,
+                org.apache.jackrabbit.webdav.lock.Scope.EXCLUSIVE);
+        if (lock != null && lock.getToken() != null) {
+            heldTokens.add(lock.getToken());
+        }
+        lock = resource.getLock(
+                org.apache.jackrabbit.webdav.lock.Type.WRITE,
+                org.apache.jackrabbit.webdav.lock.Scope.SHARED);
+        if (lock != null && lock.getToken() != null) {
+            heldTokens.add(lock.getToken());
+        }
+    }
+
     /**
      * Check if any ancestor collection is locked (deep lock).
      * If so, the If header must contain the ancestor's lock token.
@@ -190,6 +329,7 @@ public class ExistWebdavServlet extends AbstractWebdavServlet {
             final DavResource resource) throws java.io.IOException, DavException {
         requireLockTokenForWrite(request, resource);
         requireParentLockToken(request, resource);
+        validateIfHeaderLockTokens(request, resource);
         super.doPropPatch(request, response, resource);
     }
 
@@ -197,6 +337,7 @@ public class ExistWebdavServlet extends AbstractWebdavServlet {
     protected void doPut(final WebdavRequest request, final WebdavResponse response,
             final DavResource resource) throws java.io.IOException, DavException {
         requireLockTokenForWrite(request, resource);
+        validateIfHeaderLockTokens(request, resource);
         requireParentLockToken(request, resource);
         super.doPut(request, response, resource);
     }
@@ -206,6 +347,7 @@ public class ExistWebdavServlet extends AbstractWebdavServlet {
             final DavResource resource) throws java.io.IOException, DavException {
         requireLockTokenForWrite(request, resource);
         requireParentLockToken(request, resource);
+        validateIfHeaderLockTokens(request, resource);
         super.doDelete(request, response, resource);
     }
 
@@ -217,6 +359,7 @@ public class ExistWebdavServlet extends AbstractWebdavServlet {
                 request.getDestinationLocator(), request, response);
         requireLockTokenForWrite(request, dest);
         requireParentLockToken(request, dest);
+        validateIfHeaderLockTokens(request, dest);
         super.doCopy(request, response, resource);
     }
 
@@ -225,6 +368,7 @@ public class ExistWebdavServlet extends AbstractWebdavServlet {
             final DavResource resource) throws java.io.IOException, DavException {
         requireLockTokenForWrite(request, resource);
         requireParentLockToken(request, resource);
+        validateIfHeaderLockTokens(request, resource);
         super.doMove(request, response, resource);
     }
 
