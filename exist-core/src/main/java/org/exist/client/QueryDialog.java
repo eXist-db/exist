@@ -34,7 +34,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -94,8 +93,6 @@ public class QueryDialog extends JFrame {
     private static final String QUERY_DIALOG_COMPILATION = "QueryDialog.Compilation";
     private static final String QUERY_DIALOG_EXECUTION = "QueryDialog.Execution";
 
-    private static final AtomicInteger QUERY_THREAD_ID = new AtomicInteger();
-
     private InteractiveClient client;
     private Collection collection;
     private Properties properties;
@@ -112,7 +109,7 @@ public class QueryDialog extends JFrame {
     private JProgressBar progress;
     private JButton submitButton;
     private JButton killButton;
-    private QueryRunnable queryRunnable = null;
+    private QuerySwingWorker queryWorker = null;
     private Resource resource = null;
 
     private QueryDialog(final InteractiveClient client, final Collection collection, final Properties properties, boolean loadedFromDb) {
@@ -226,7 +223,10 @@ public class QueryDialog extends JFrame {
             if (collection instanceof LocalCollection) {
                 killButton.setEnabled(true);
             }
-            queryRunnable = doQuery();
+            queryWorker = doQuery();
+            if (queryWorker == null) {
+                submitButton.setEnabled(true);
+            }
         });
 
         toolbar.addSeparator();
@@ -236,11 +236,11 @@ public class QueryDialog extends JFrame {
         toolbar.add(killButton);
         killButton.setEnabled(false);
         killButton.addActionListener(e -> {
-            if (queryRunnable != null) {
-                queryRunnable.killQuery();
+            if (queryWorker != null) {
+                queryWorker.killQuery();
                 killButton.setEnabled(false);
 
-                queryRunnable = null;
+                queryWorker = null;
             }
         });
 
@@ -476,17 +476,16 @@ public class QueryDialog extends JFrame {
         }
     }
 
-    private QueryRunnable doQuery() {
+    private QuerySwingWorker doQuery() {
         final String xpath = query.getText();
         if (xpath.isEmpty()) {
             return null;
         }
         resultDisplay.setText("");
 
-        final QueryRunnable queryTask = new QueryRunnable(xpath);
-        final Thread queryThread = client.newClientThread("query-" + QUERY_THREAD_ID.getAndIncrement(), queryTask);
-        queryThread.start();
-        return queryTask;
+        final QuerySwingWorker worker = new QuerySwingWorker(xpath);
+        worker.execute();
+        return worker;
     }
 
 
@@ -530,15 +529,15 @@ public class QueryDialog extends JFrame {
         setCursor(Cursor.getDefaultCursor());
     }
 
-    private class QueryRunnable implements Runnable {
+    private final class QuerySwingWorker extends SwingWorker<Void, Runnable> {
         private final String xpath;
         private final AtomicReference<XQueryContext> runningContext = new AtomicReference<>();
 
-        public QueryRunnable(final String query) {
+        QuerySwingWorker(final String query) {
             this.xpath = query;
         }
 
-        public boolean killQuery() {
+        boolean killQuery() {
             final XQueryContext contextRef = runningContext.get();
             if (contextRef != null) {
                 final XQueryWatchDog xwd = contextRef.getWatchDog();
@@ -555,11 +554,13 @@ public class QueryDialog extends JFrame {
         }
 
         @Override
-        public void run() {
-            statusMessage.setText(Messages.getString("QueryDialog.processingquerymessage"));
-            progress.setVisible(true);
-            progress.setIndeterminate(true);
-            setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        protected Void doInBackground() throws Exception {
+            publish(() -> {
+                statusMessage.setText(Messages.getString("QueryDialog.processingquerymessage"));
+                progress.setVisible(true);
+                progress.setIndeterminate(true);
+                setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            });
             long tResult = 0;
             long tCompiled = 0;
             ResourceSet result = null;
@@ -575,17 +576,16 @@ public class QueryDialog extends JFrame {
 
                 final CompiledExpression compiled = service.compile(xpath);
                 final long t1 = System.currentTimeMillis();
-                // Check could also be collection instanceof LocalCollection
                 if (compiled instanceof CompiledXQuery xQuery) {
                     context = xQuery.getContext();
                     runningContext.set(context);
                 }
                 tCompiled = t1 - t0;
 
-                // In this way we can see the parsed structure meanwhile the query is
                 StringWriter writer = new StringWriter();
                 service.dump(compiled, writer);
-                exprDisplay.setText(writer.toString());
+                final String exprAfterCompile = writer.toString();
+                publish(() -> exprDisplay.setText(exprAfterCompile));
 
                 result = service.execute(compiled);
                 tResult = System.currentTimeMillis() - t1;
@@ -595,22 +595,25 @@ public class QueryDialog extends JFrame {
                     throw new XMLDBException(ErrorCodes.UNKNOWN_ERROR, "Query returned 'null' which it should never do, this is likely a bug that should be reported");
                 }
 
-                // jmfg: Is this still needed? I don't think so
                 writer = new StringWriter();
                 service.dump(compiled, writer);
-                exprDisplay.setText(writer.toString());
+                final String exprAfterExecute = writer.toString();
+                publish(() -> exprDisplay.setText(exprAfterExecute));
 
-                statusMessage.setText(Messages.getString("QueryDialog.retrievingmessage"));
+                publish(() -> statusMessage.setText(Messages.getString("QueryDialog.retrievingmessage")));
                 final int howmany = count.getNumber().intValue();
-                progress.setIndeterminate(false);
-                progress.setMinimum(1);
-                progress.setMaximum(howmany);
+                publish(() -> {
+                    progress.setIndeterminate(false);
+                    progress.setMinimum(1);
+                    progress.setMaximum(howmany);
+                });
                 int j = 0;
                 int select = -1;
                 final StringBuilder contents = new StringBuilder();
                 for (final ResourceIterator i = result.getIterator(); i.hasMoreResources() && j < howmany; j++) {
+                    final int row = j;
                     try (Resource processedResource = i.nextResource()) {
-                        progress.setValue(j);
+                        publish(() -> progress.setValue(row));
                         if (XML_RESOURCE.equals(processedResource.getResourceType())) {
                             contents.append((String) processedResource.getContent());
                         } else {
@@ -626,15 +629,24 @@ public class QueryDialog extends JFrame {
                         }
                     }
                 }
-                resultTabs.setSelectedComponent(resultDisplayScrollPane);
-                resultDisplay.setText(contents.toString());
-                resultDisplay.setCaretPosition(0);
-                statusMessage.setText(Messages.getString("QueryDialog.Found") + " " + result.getSize() + " " + Messages.getString("QueryDialog.items") + "." +
-                        " " + Messages.getString(QUERY_DIALOG_COMPILATION) + ": " + tCompiled + "ms, " + Messages.getString(QUERY_DIALOG_EXECUTION) + ": " + tResult + "ms");
+                final String resultText = contents.toString();
+                final long tCompiledFinal = tCompiled;
+                final long tResultFinal = tResult;
+                final long resultSize = result.getSize();
+                publish(() -> {
+                    resultTabs.setSelectedComponent(resultDisplayScrollPane);
+                    resultDisplay.setText(resultText);
+                    resultDisplay.setCaretPosition(0);
+                    statusMessage.setText(Messages.getString("QueryDialog.Found") + " " + resultSize + " " + Messages.getString("QueryDialog.items") + "." +
+                            " " + Messages.getString(QUERY_DIALOG_COMPILATION) + ": " + tCompiledFinal + "ms, " + Messages.getString(QUERY_DIALOG_EXECUTION) + ": " + tResultFinal + "ms");
+                });
             } catch (final XMLDBException e) {
-                statusMessage.setText(Messages.getString(QUERY_DIALOG_ERROR) + ": " + InteractiveClient.getExceptionMessage(e) + ". " + Messages.getString(QUERY_DIALOG_COMPILATION) + ": " + tCompiled + "ms, " + Messages.getString(QUERY_DIALOG_EXECUTION) + ": " + tResult + "ms");
-                progress.setVisible(false);
-
+                final long tCompiledFinal = tCompiled;
+                final long tResultFinal = tResult;
+                publish(() -> {
+                    statusMessage.setText(Messages.getString(QUERY_DIALOG_ERROR) + ": " + InteractiveClient.getExceptionMessage(e) + ". " + Messages.getString(QUERY_DIALOG_COMPILATION) + ": " + tCompiledFinal + "ms, " + Messages.getString(QUERY_DIALOG_EXECUTION) + ": " + tResultFinal + "ms");
+                    progress.setVisible(false);
+                });
 
                 ClientFrame.showErrorMessageQuery(
                         Messages.getString("QueryDialog.queryrunerrormessage") + ": "
@@ -643,23 +655,44 @@ public class QueryDialog extends JFrame {
                 if (context != null) {
                     context.runCleanupTasks();
                 }
-                context = null;
-                if (result != null)
+                if (result != null) {
                     try {
                         result.clear();
                     } catch (final XMLDBException e) {
                         // ignore error
                     }
+                }
             }
-            if (client.queryHistory.isEmpty() || !client.queryHistory.getLast().equals(xpath)) {
-                client.addToHistory(xpath);
-                client.writeQueryHistory();
-                addQuery(xpath);
+            return null;
+        }
+
+        @Override
+        protected void process(final List<Runnable> chunks) {
+            for (final Runnable chunk : chunks) {
+                chunk.run();
             }
-            setCursor(Cursor.getDefaultCursor());
-            progress.setVisible(false);
-            killButton.setEnabled(false);
-            submitButton.setEnabled(true);
+        }
+
+        @Override
+        protected void done() {
+            try {
+                get();
+            } catch (final InterruptedException e) {
+                Thread.currentThread().interrupt();
+            } catch (final java.util.concurrent.ExecutionException e) {
+                // surfaced via dialogs in doInBackground
+            } finally {
+                if (client.queryHistory.isEmpty() || !client.queryHistory.getLast().equals(xpath)) {
+                    client.addToHistory(xpath);
+                    client.writeQueryHistory();
+                    addQuery(xpath);
+                }
+                setCursor(Cursor.getDefaultCursor());
+                progress.setVisible(false);
+                killButton.setEnabled(false);
+                submitButton.setEnabled(true);
+                queryWorker = null;
+            }
         }
     }
 
