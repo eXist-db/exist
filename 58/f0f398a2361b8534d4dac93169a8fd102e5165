@@ -1,0 +1,36 @@
+exist-core/src/main/java/org/exist/client/ClientFrame.java
+  s_b371cd7261149b::t_a0b88bf75d8e21 1015-1025
+  s_b371cd7261149b::t_8a06c80bc15991 1132-1134,1136-1142,1144-1146,1150,1153,1159-1160,1162,1164-1166,1173-1178,1180,1182
+  s_b371cd7261149b::t_28c0c546e1bea9 838-852,855-859,861-862,864
+  s_b371cd7261149b::t_09eb4d3f8885c2 78
+  s_b371cd7261149b::t_b6a3e273ec37ca 891-912,914-916,918-919,921
+  s_b371cd7261149b::t_c03e9c8c04b1f2 794-805,807-809,811-812,814
+  s_b371cd7261149b::t_cc1d88a1a6a8ce 971,973-985,987,994
+  s_b371cd7261149b::t_046e22e3e9a6a4 1148-1149,1151-1152,1154-1158
+  s_b371cd7261149b::t_5a7350267e4145 972,988-992
+  s_b371cd7261149b::t_7d2e5b428020c1 722-730,732-748,750,752-754,757-767
+exist-core/src/main/java/org/exist/client/QueryDialog.java
+  s_b371cd7261149b::t_4dfef3787581de 479,486-488
+  s_b371cd7261149b::t_1ecf0741a72710 532,536,540,557-563,587-588,600-601,603,605-609,614,616,632-634,636-639,641-642,644-649,658,664,666-694
+  s_b371cd7261149b::t_3ecc952c8dcc37 635
+  s_b371cd7261149b::t_c9ccd9379c3791 640
+  s_b371cd7261149b::t_2c8b21c72d4270 239-240,243
+  s_b371cd7261149b::t_492c377de245ce 112
+  s_b371cd7261149b::t_123dfa284e24bf 226-229
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "58f0f398a2361b8534d4dac93169a8fd102e5165",
+  "prompts": {},
+  "sessions": {
+    "s_b371cd7261149b": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "6972b017-56e3-4c37-af24-6e90cb4988df",
+        "model": "default"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
