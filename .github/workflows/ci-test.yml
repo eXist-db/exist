@@ -79,6 +79,9 @@ jobs:
       - uses: ./.github/actions/maven-cache
         with:
           java-version: ${{ matrix.java-version }}
+      - uses: ./.github/actions/maven-github-settings
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
       - name: Install Maven Daemon
         id: install-mvnd
         uses: ./.github/actions/install-mvnd

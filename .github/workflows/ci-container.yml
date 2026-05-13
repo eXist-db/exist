@@ -30,6 +30,9 @@ jobs:
         uses: docker/setup-buildx-action@v4
         id: buildx
       - uses: ./.github/actions/maven-cache
+      - uses: ./.github/actions/maven-github-settings
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
       - name: Install bats
         run: sudo apt-get install bats
         # Hack around #5450
