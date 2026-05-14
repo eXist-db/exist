@@ -171,6 +171,7 @@ public class RestBinariesTest extends AbstractBinariesTest<Result, Result.Value,
         try(final UnsynchronizedByteArrayOutputStream baos = UnsynchronizedByteArrayOutputStream.builder().get()) {
             marshaller.marshal(query, baos);
             response = executor.execute(Request.Post(getRestUrl() + "/db/")
+                    .connectTimeout(10000).socketTimeout(10000)
                     .bodyByteArray(baos.toByteArray(), ContentType.APPLICATION_XML)
             ).returnResponse();
         }
