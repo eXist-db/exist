@@ -1,0 +1,23 @@
+exist-core/src/main/java/org/exist/test/ExistWebServer.java
+  s_b371cd7261149b::t_5cc13f5aaa8232 168,172
+  s_b371cd7261149b::t_5cf28e507d5d28 142-144,147-149
+  s_b371cd7261149b::t_89fbd495173c8d 214-220
+exist-core/src/test/java/org/exist/security/AbstractSecurityManagerRoundtripTest.java
+  s_b371cd7261149b::t_c57a17a31727d4 251-252
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "8c8b57fe543b63f7f1dfc5840b3e00ae0c1f0004",
+  "prompts": {},
+  "sessions": {
+    "s_b371cd7261149b": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "6972b017-56e3-4c37-af24-6e90cb4988df",
+        "model": "default"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
