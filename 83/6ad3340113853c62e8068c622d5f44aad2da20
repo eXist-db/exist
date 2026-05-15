@@ -1,0 +1,19 @@
+exist-core/src/main/java/org/exist/TestUtils.java
+  s_b371cd7261149b::t_d8f753f7a26440 226,228-230,232-233,237-238,240-243,245,247-249,251-252,258-260
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "836ad3340113853c62e8068c622d5f44aad2da20",
+  "prompts": {},
+  "sessions": {
+    "s_b371cd7261149b": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "6972b017-56e3-4c37-af24-6e90cb4988df",
+        "model": "default"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
