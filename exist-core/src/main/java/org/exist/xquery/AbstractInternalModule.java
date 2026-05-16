@@ -23,6 +23,8 @@ package org.exist.xquery;
 
 import java.util.*;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
 import org.exist.xquery.value.Sequence;
 
@@ -41,6 +43,13 @@ import javax.annotation.Nullable;
  */
 public abstract class AbstractInternalModule implements InternalModule {
 
+    private static final Logger LOG = LogManager.getLogger(AbstractInternalModule.class);
+
+    protected final FunctionDef[] mFunctions;
+    protected final boolean ordered;
+    protected final Map<QName, Variable> mGlobalVariables = new HashMap<>();
+    private final Map<String, List<?>> parameters;
+
     public static class FunctionComparator implements Comparator<FunctionDef> {
         @Override
         public int compare(final FunctionDef o1, final FunctionDef o2) {
@@ -48,21 +57,42 @@ public abstract class AbstractInternalModule implements InternalModule {
         }
     }
 
-    protected final FunctionDef[] mFunctions;
-    protected final boolean ordered;
-    private final Map<String, List<?>> parameters;
-
-    protected final Map<QName, Variable> mGlobalVariables = new HashMap<>();
-
     public AbstractInternalModule(final FunctionDef[] functions, final Map<String, List<?>> parameters) {
         this(functions, parameters, false);
     }
 
     public AbstractInternalModule(final FunctionDef[] functions, final Map<String, List<?>> parameters,
                                   final boolean functionsOrdered) {
-        this.mFunctions = functions;
         this.ordered = functionsOrdered;
+        // When the module declares its function table is ordered, getFunctionDef() uses
+        // a binary search keyed on FunctionId (qname, arity). If the caller's array is
+        // not actually sorted in that order, the search silently fails to find some
+        // functions — they are inspectable via util:registered-functions and
+        // inspect:inspect-module-uri (which scan linearly) but unreachable via direct
+        // call and fn:function-lookup. Defensive-copy and sort here so the invariant
+        // is enforced rather than trusted; log a warning so the module author notices.
+        if (functionsOrdered && functions != null && functions.length > 1 && !isSorted(functions)) {
+            final FunctionDef[] sorted = functions.clone();
+            Arrays.sort(sorted, new FunctionComparator());
+            LOG.warn("Module {} declared functionsOrdered=true but its FunctionDef[] was not sorted by "
+                    + "FunctionId; sorted defensively. Functions would otherwise be silently unreachable "
+                    + "via binary search (see {}).",
+                    getClass().getName(), "https://github.com/eXist-db/exist/issues/6376");
+            this.mFunctions = sorted;
+        } else {
+            this.mFunctions = functions;
+        }
         this.parameters = parameters;
+    }
+
+    private static boolean isSorted(final FunctionDef[] functions) {
+        final FunctionComparator cmp = new FunctionComparator();
+        for (int i = 1; i < functions.length; i++) {
+            if (cmp.compare(functions[i - 1], functions[i]) > 0) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override
