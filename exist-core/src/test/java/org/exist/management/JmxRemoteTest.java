@@ -86,6 +86,18 @@ public class JmxRemoteTest {
         assertThat(jmxXml, hasXPath("//jmx:LockTable").withNamespaceContext(prefix2Uri));
         assertThat(jmxXml, hasXPath("//jmx:SanityReport").withNamespaceContext(prefix2Uri));
         assertThat(jmxXml, hasXPath("//jmx:Database").withNamespaceContext(prefix2Uri));
+
+        // Regression guard for https://github.com/eXist-db/exist/issues/6379:
+        // PerInstanceMBean must expose InstanceId as a JMX attribute, which depends on the
+        // getInstanceId() JavaBean naming convention. Renaming the interface method (or any
+        // concrete implementation) to a bare name like instanceId() silently drops the
+        // attribute from MBeanInfo. Verify a representative sample of MXBeans that extend
+        // PerInstanceMBean still publish InstanceId.
+        assertThat(jmxXml, hasXPath("//jmx:Database/jmx:InstanceId").withNamespaceContext(prefix2Uri));
+        assertThat(jmxXml, hasXPath("//jmx:ProcessReport/jmx:InstanceId").withNamespaceContext(prefix2Uri));
+        assertThat(jmxXml, hasXPath("//jmx:CollectionCache/jmx:InstanceId").withNamespaceContext(prefix2Uri));
+        assertThat(jmxXml, hasXPath("//jmx:LockTable/jmx:InstanceId").withNamespaceContext(prefix2Uri));
+        assertThat(jmxXml, hasXPath("//jmx:SanityReport/jmx:InstanceId").withNamespaceContext(prefix2Uri));
     }
 
     @Test
