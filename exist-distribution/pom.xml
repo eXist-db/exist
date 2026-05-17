@@ -796,6 +796,9 @@
                                     <abbrev>eXide</abbrev>
                                 </package>
                                 <package>
+                                    <abbrev>existdb-openapi</abbrev>
+                                </package>
+                                <package>
                                     <abbrev>exist-documentation</abbrev>
                                 </package>
                                 <package>
@@ -809,6 +812,9 @@
                                 </package>
                                 <package>
                                     <abbrev>packageservice</abbrev>
+                                </package>
+                                <package>
+                                    <abbrev>roaster</abbrev>
                                 </package>
                                 <package>
                                     <abbrev>semver-xq</abbrev>
