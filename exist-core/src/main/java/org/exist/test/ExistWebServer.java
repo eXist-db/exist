@@ -33,8 +33,13 @@ import org.exist.util.LockException;
 import org.junit.rules.ExternalResource;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.Optional;
 
 import static org.exist.util.IPUtil.nextFreePort;
@@ -58,6 +63,9 @@ public class ExistWebServer extends ExternalResource {
     private static final int MIN_RANDOM_PORT = 49152;
     private static final int MAX_RANDOM_PORT = 65535;
     private static final int MAX_RANDOM_PORT_ATTEMPTS = 10;
+
+    private static final int SERVER_PROBE_MAX_RETRIES = 30;
+    private static final int SERVER_PROBE_MAX_WAIT_SECONDS = 120;
 
     private JettyStart server = null;
     private String prevAutoDeploy = "off";
@@ -112,76 +120,134 @@ public class ExistWebServer extends ExternalResource {
             System.setProperty(AUTODEPLOY_PROPERTY, "off");
         }
 
-        if (server == null) {
-            if(useTemporaryStorage) {
-                this.temporaryStorage = Optional.of(Files.createTempDirectory("org.exist.test.ExistWebServer"));
-                final String absTemporaryStorage = temporaryStorage.get().toAbsolutePath().toString();
-                System.setProperty(CONFIG_PROP_FILES, absTemporaryStorage);
-                System.setProperty(CONFIG_PROP_JOURNAL_DIR, absTemporaryStorage);
-                LOG.info("Using temporary storage location: {}", absTemporaryStorage);
-            }
+        synchronized(ExistWebServer.class) {
+            if (server == null) {
+                if(useTemporaryStorage) {
+                    this.temporaryStorage = Optional.of(Files.createTempDirectory("org.exist.test.ExistWebServer"));
+                    final String absTemporaryStorage = temporaryStorage.get().toAbsolutePath().toString();
+                    System.setProperty(CONFIG_PROP_FILES, absTemporaryStorage);
+                    System.setProperty(CONFIG_PROP_JOURNAL_DIR, absTemporaryStorage);
+                    LOG.info("Using temporary storage location: {}", absTemporaryStorage);
+                }
 
-            if(useRandomPort) {
-                synchronized(ExistWebServer.class) {
+                if(useRandomPort) {
                     System.setProperty(PROP_JETTY_PORT, Integer.toString(nextFreePort(MIN_RANDOM_PORT, MAX_RANDOM_PORT, MAX_RANDOM_PORT_ATTEMPTS)));
                     System.setProperty(PROP_JETTY_SECURE_PORT, Integer.toString(nextFreePort(MIN_RANDOM_PORT, MAX_RANDOM_PORT, MAX_RANDOM_PORT_ATTEMPTS)));
                     System.setProperty(PROP_JETTY_SSL_PORT, Integer.toString(nextFreePort(MIN_RANDOM_PORT, MAX_RANDOM_PORT, MAX_RANDOM_PORT_ATTEMPTS)));
-
-                    server = new JettyStart();
-                    server.run(jettyStandaloneMode);
                 }
-            } else {
+
                 server = new JettyStart();
-                server.run();
+                server.run(jettyStandaloneMode);
+            } else {
+                throw new IllegalStateException("ExistWebServer already running");
             }
-        } else {
-            throw new IllegalStateException("ExistWebServer already running");
         }
+
+        final String probeUrl = "http://localhost:" + getPort() + "/exist/rest/db";
+        waitForServer(probeUrl, SERVER_PROBE_MAX_RETRIES, SERVER_PROBE_MAX_WAIT_SECONDS);
         super.before();
     }
 
-    public void restart() {
-        if(server != null) {
+    /**
+     * Probes the given URL until it responds with HTTP 200,
+     * giving up after {@code maxRetries} attempts or {@code maxWaitSeconds} total seconds.
+     * Uses exponential backoff between retries (starting at 500 ms, doubling each time).
+     *
+     * @param url            the URL to probe
+     * @param maxRetries     maximum number of HTTP probe attempts
+     * @param maxWaitSeconds maximum total time to wait in seconds
+     * @throws IllegalStateException if the server does not become available in time
+     */
+    private void waitForServer(final String url, final int maxRetries, final int maxWaitSeconds) {
+        final HttpClient client = HttpClient.newBuilder()
+                .connectTimeout(Duration.ofSeconds(2))
+                .build();
+        final HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .timeout(Duration.ofSeconds(2))
+                .GET()
+                .build();
+
+        final long deadline = System.currentTimeMillis() + (maxWaitSeconds * 1000L);
+        int attempt = 0;
+        long sleepMs = 500;
+        while (attempt < maxRetries && System.currentTimeMillis() < deadline) {
+            attempt++;
             try {
-                server.shutdown();
-                server.run();
-            } catch (final Throwable t) {
-                throw new RuntimeException(t);
+                final HttpResponse<Void> response = client.send(request, HttpResponse.BodyHandlers.discarding());
+                if (response.statusCode() == 200 || response.statusCode() == 401) {
+                    LOG.info("Server available at {} after {} attempt(s)", url, attempt);
+                    return;
+                }
+                LOG.debug("Server probe attempt {}/{} returned HTTP {}", attempt, maxRetries, response.statusCode());
+            } catch (final IOException | InterruptedException e) {
+                LOG.debug("Server probe attempt {}/{} failed: {}", attempt, maxRetries, e.getMessage());
+                if (e instanceof InterruptedException) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
             }
-        } else {
-            throw new IllegalStateException("ExistWebServer already stopped");
+            if (attempt < maxRetries && System.currentTimeMillis() < deadline) {
+                try {
+                    Thread.sleep(sleepMs);
+                    sleepMs = Math.min(sleepMs * 2, 5_000);
+                } catch (final InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
         }
+        throw new IllegalStateException(
+                "Server at " + url + " did not become available within " + maxRetries + " retries / " + maxWaitSeconds + " seconds");
+    }
+
+    public void restart() {
+        synchronized(ExistWebServer.class) {
+            if(server != null) {
+                try {
+                    server.shutdown();
+                    server.run(jettyStandaloneMode);
+                } catch (final Throwable t) {
+                    throw new RuntimeException(t);
+                }
+            } else {
+                throw new IllegalStateException("ExistWebServer already stopped");
+            }
+        }
+
+        final String probeUrl = "http://localhost:" + getPort() + "/exist/rest/db";
+        waitForServer(probeUrl, SERVER_PROBE_MAX_RETRIES, SERVER_PROBE_MAX_WAIT_SECONDS);
     }
 
     @Override
     protected void after() {
-        if(server != null) {
-            if(cleanupDbOnShutdown) {
-                try {
-                    TestUtils.cleanupDB();
-                } catch (final EXistException | PermissionDeniedException | LockException | IOException | TriggerException e) {
-                    fail(e.getMessage());
+        synchronized(ExistWebServer.class) {
+            if(server != null) {
+                if(cleanupDbOnShutdown) {
+                    try {
+                        TestUtils.cleanupDB();
+                    } catch (final EXistException | PermissionDeniedException | LockException | IOException | TriggerException e) {
+                        fail(e.getMessage());
+                    }
                 }
-            }
-            server.shutdown();
-            server = null;
+                server.shutdown();
+                server = null;
 
-            if(useTemporaryStorage && temporaryStorage.isPresent()) {
-                FileUtils.deleteQuietly(temporaryStorage.get());
-                temporaryStorage = Optional.empty();
-                System.clearProperty(CONFIG_PROP_JOURNAL_DIR);
-                System.clearProperty(CONFIG_PROP_FILES);
-            }
+                if(useTemporaryStorage && temporaryStorage.isPresent()) {
+                    FileUtils.deleteQuietly(temporaryStorage.get());
+                    temporaryStorage = Optional.empty();
+                    System.clearProperty(CONFIG_PROP_JOURNAL_DIR);
+                    System.clearProperty(CONFIG_PROP_FILES);
+                }
 
-            if(useRandomPort) {
-                synchronized (ExistWebServer.class) {
+                if(useRandomPort) {
                     System.clearProperty(PROP_JETTY_SSL_PORT);
                     System.clearProperty(PROP_JETTY_SECURE_PORT);
                     System.clearProperty(PROP_JETTY_PORT);
                 }
+            } else {
+                throw new IllegalStateException("ExistWebServer already stopped");
             }
-        } else {
-            throw new IllegalStateException("ExistWebServer already stopped");
         }
 
         if(disableAutoDeploy) {

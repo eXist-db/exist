@@ -1602,6 +1602,8 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
         } catch(final IllegalStateException e) {
             // we are not operational!
             LOG.warn(e);
+            // still remove from the instances map so stopAll's assert does not fire
+            shutdownInstanceConsumer.accept(instanceName);
             return;
         }
 
@@ -1620,6 +1622,8 @@ public class BrokerPool extends BrokerPools implements BrokerPoolConstants, Data
         } catch(final IllegalStateException e) {
             // we are not in SHUTTING_DOWN_MULTI_USER_MODE!
             LOG.warn(e);
+            // still remove from the instances map so stopAll's assert does not fire
+            shutdownInstanceConsumer.accept(instanceName);
             return;
         }
 
