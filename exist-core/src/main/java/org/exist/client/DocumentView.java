@@ -479,6 +479,7 @@ class DocumentView extends JFrame {
     }
 
     class ProgressObserver implements Observer {
+        @Override
         public void update(final Observable o, final Object arg) {
             ClientSwingEdt.invokeLaterIfNeeded(() -> updateProgressOnEdt(o, arg));
         }
