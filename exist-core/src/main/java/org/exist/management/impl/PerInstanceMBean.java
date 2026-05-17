@@ -32,5 +32,5 @@ public interface PerInstanceMBean extends ExistMBean {
      *
      * @return the database instance identifier
      */
-    String instanceId();
+    String getInstanceId();
 }

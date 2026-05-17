@@ -125,8 +125,8 @@ public final class JMXAgent implements Agent {
     public synchronized void addMBean(final PerInstanceMBean mbean) throws DatabaseConfigurationException {
         try {
             addMBean(mbean.getName(), mbean);
-            if (mbean.instanceId() != null) {
-                final Deque<ObjectName> stack = registeredMBeans.computeIfAbsent(mbean.instanceId(), k -> new ArrayDeque<>());
+            if (mbean.getInstanceId() != null) {
+                final Deque<ObjectName> stack = registeredMBeans.computeIfAbsent(mbean.getInstanceId(), k -> new ArrayDeque<>());
                 stack.push(mbean.getName());
             }
             beanInstances.put(mbean.getName(), mbean);

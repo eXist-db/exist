@@ -54,7 +54,7 @@ public class CollectionCache implements CollectionCacheMXBean {
     }
 
     @Override
-    public String instanceId() {
+    public String getInstanceId() {
         return instance.getId();
     }
 

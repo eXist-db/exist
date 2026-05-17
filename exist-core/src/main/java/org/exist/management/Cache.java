@@ -62,7 +62,7 @@ public class Cache implements CacheMXBean {
     }
 
     @Override
-    public String instanceId() {
+    public String getInstanceId() {
         return instanceId;
     }
 

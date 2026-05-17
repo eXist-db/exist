@@ -77,7 +77,7 @@ public class DiskUsage implements DiskUsageMXBean {
     }
 
     @Override
-    public String instanceId() {
+    public String getInstanceId() {
         return instanceId;
     }
 
