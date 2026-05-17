@@ -97,7 +97,7 @@ public class SanityReport extends NotificationBroadcasterSupport implements Sani
     }
 
     @Override
-    public String instanceId() {
+    public String getInstanceId() {
         return pool.getId();
     }
 
