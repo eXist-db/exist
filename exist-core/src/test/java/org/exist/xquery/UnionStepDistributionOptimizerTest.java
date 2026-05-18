@@ -22,6 +22,7 @@
 package org.exist.xquery;
 
 import org.exist.test.ExistXmldbEmbeddedServer;
+import org.exist.xmldb.EXistResource;
 import org.exist.xmldb.EXistXQueryService;
 import org.exist.xquery.util.ExpressionDumper;
 import org.junit.AfterClass;
@@ -32,6 +33,7 @@ import org.xmldb.api.base.Collection;
 import org.xmldb.api.base.CompiledExpression;
 import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
+import org.xmldb.api.modules.BinaryResource;
 import org.xmldb.api.modules.CollectionManagementService;
 import org.xmldb.api.modules.XMLResource;
 import org.xmldb.api.modules.XQueryService;
@@ -486,5 +488,61 @@ public class UnionStepDistributionOptimizerTest {
         assertOptimizerParity(
                 "let $a := <el><el1/><el2 att='val'/><el3/></el> "
                         + "return $a/el2/(@*[1]|@*[1])/string()");
+    }
+
+    /**
+     * Regression test for a static-context leak in union-step distribution.
+     *
+     * <p>When the path with the parenthesised union step lives inside a
+     * library module that declares its own namespace prefix, and is called
+     * from an importing query that does <em>not</em> declare that prefix,
+     * the distribution rewrite previously built the new branches against the
+     * Optimizer's own {@code context} field rather than the originating
+     * expression's static context. Re-analysis then raised a spurious
+     * {@code XPST0081 "undeclared prefix"} — sometimes naming a prefix that
+     * isn't even used in the failing path. See bug #TBD.
+     *
+     * <p>The bug only surfaced with imported modules because the engine's
+     * existing single-module tests share one static context throughout.
+     */
+    @Test
+    public void unionDistributionPreservesImportedModuleStaticContext() throws XMLDBException {
+        final String moduleCollName = COLLECTION_NAME + "-mod";
+        final Collection root = server.getRoot();
+        final CollectionManagementService cms = root.getService(CollectionManagementService.class);
+        Collection modColl = null;
+        try {
+            modColl = cms.createCollection(moduleCollName);
+            final String moduleSource = """
+                    xquery version "3.1";
+                    module namespace cb="http://example.com/cb";
+                    declare namespace nsx="http://example.com/x";
+
+                    declare function cb:make() {
+                        <nsx:wrap><nsx:item><nsx:name>hi</nsx:name></nsx:item></nsx:wrap>
+                    };
+
+                    declare function cb:filter() {
+                        cb:make()/nsx:item/(nsx:name | nsx:other)
+                    };
+                    """;
+            final BinaryResource res = modColl.createResource("cb.xqm", BinaryResource.class);
+            ((EXistResource) res).setMimeType("application/xquery");
+            res.setContent(moduleSource.getBytes());
+            modColl.storeResource(res);
+
+            final XQueryService svc = root.getService(XQueryService.class);
+            final String caller = OPTIMIZE
+                    + "import module namespace cb=\"http://example.com/cb\" "
+                    + "at \"xmldb:exist:///db/" + moduleCollName + "/cb.xqm\";"
+                    + "cb:filter()";
+            final ResourceSet result = svc.query(caller);
+            assertEquals("cb:filter() should return one <nsx:name> element", 1, result.getSize());
+        } finally {
+            if (modColl != null) {
+                modColl.close();
+            }
+            cms.removeCollection(moduleCollName);
+        }
     }
 }

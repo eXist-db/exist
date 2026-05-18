@@ -335,7 +335,16 @@ public class Optimizer extends DefaultExpressionVisitor {
                                        final Union innerUnion) {
         final PathExpr distributedLeft = distributeBranch(outer, unionStepIndex, innerUnion.getLeft());
         final PathExpr distributedRight = distributeBranch(outer, unionStepIndex, innerUnion.getRight());
-        final Union result = new Union(context, distributedLeft, distributedRight);
+        // Use the original outer PathExpr's static context, not the Optimizer's
+        // own context field. When the Optimizer is invoked over an imported
+        // module's AST, the two share the same module context — but when the
+        // outer PathExpr was constructed in a different module from the one
+        // currently driving the optimizer pass (e.g. a path inside a user
+        // function called by a higher-level query), `this.context` is the
+        // caller's context and lacks the namespace declarations needed to
+        // resolve the prefixed names baked into the inner steps. Re-analysis
+        // after the rewrite then raises a spurious XPST0081. See bug #TBD.
+        final Union result = new Union(outer.getContext(), distributedLeft, distributedRight);
         result.setLocation(innerUnion.getLine(), innerUnion.getColumn());
         return result;
     }
@@ -364,14 +373,17 @@ public class Optimizer extends DefaultExpressionVisitor {
      */
     private PathExpr distributeBranch(final PathExpr outer, final int unionStepIndex,
                                        final PathExpr branch) {
+        // See note in distributeOverUnion: take the static context from the
+        // outer path being rewritten, not the Optimizer's own context.
+        final XQueryContext outerContext = outer.getContext();
         if (branch.getLength() == 1 && branch.getExpression(0) instanceof final Union nested) {
             final Union distributedNested = distributeOverUnion(outer, unionStepIndex, nested);
-            final PathExpr wrap = new PathExpr(context);
+            final PathExpr wrap = new PathExpr(outerContext);
             wrap.setLocation(branch.getLine(), branch.getColumn());
             wrap.add(distributedNested);
             return wrap;
         }
-        final PathExpr distributed = new PathExpr(context);
+        final PathExpr distributed = new PathExpr(outerContext);
         distributed.setLocation(branch.getLine(), branch.getColumn());
         for (int j = 0; j < unionStepIndex; j++) {
             addStepWithParent(distributed, cloneLocationStepIfPossible(outer.getExpression(j)));
@@ -421,7 +433,8 @@ public class Optimizer extends DefaultExpressionVisitor {
     private Expression cloneLocationStepIfPossible(final Expression e) {
         if (e instanceof final LocationStep ls
                 && (ls.getPredicates() == null || ls.getPredicates().length == 0)) {
-            final LocationStep clone = new LocationStep(context, ls.getAxis(), ls.getTest());
+            // Preserve the step's own static context — see note in distributeOverUnion.
+            final LocationStep clone = new LocationStep(ls.getContext(), ls.getAxis(), ls.getTest());
             clone.setAbbreviated(ls.isAbbreviated());
             clone.setLocation(ls.getLine(), ls.getColumn());
             return clone;
