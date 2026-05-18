@@ -70,7 +70,7 @@ public class LockTable implements LockTableMXBean {
     }
 
     @Override
-    public String instanceId() {
+    public String getInstanceId() {
         return pool.getId();
     }
 

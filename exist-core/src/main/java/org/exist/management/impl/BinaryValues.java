@@ -51,6 +51,17 @@ public record BinaryValues(String instanceId) implements BinaryValuesMXBean {
     }
 
     /**
+     * Explicit JavaBean-style accessor required by the MBean attribute discovery,
+     * which relies on the {@code getXxx()} naming convention. The record's
+     * auto-generated {@link #instanceId()} accessor does not satisfy that convention,
+     * so we delegate to it here. See <a href="https://github.com/eXist-db/exist/issues/6379">#6379</a>.
+     */
+    @Override
+    public String getInstanceId() {
+        return instanceId;
+    }
+
+    /**
      * Return a JMX object-name query that matches all BinaryValues MBeans across all instances.
      *
      * @return the wildcard query string

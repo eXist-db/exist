@@ -61,7 +61,7 @@ public class ProcessReport implements ProcessReportMXBean {
     }
 
     @Override
-    public String instanceId() {
+    public String getInstanceId() {
         return instanceId;
     }
 

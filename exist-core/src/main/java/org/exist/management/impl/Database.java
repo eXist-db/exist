@@ -67,7 +67,7 @@ public class Database implements DatabaseMXBean {
     }
 
     @Override
-    public String instanceId() {
+    public String getInstanceId() {
         return pool.getId();
     }
 
