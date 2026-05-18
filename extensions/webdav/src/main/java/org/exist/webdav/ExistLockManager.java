@@ -49,62 +49,75 @@ public class ExistLockManager implements LockManager {
     @Override
     public ActiveLock createLock(final LockInfo reqLockInfo, final DavResource resource)
             throws DavException {
+        final ExistDavResource davResource = validateLockRequest(reqLockInfo, resource);
+        final Scope scope = reqLockInfo.getScope();
+        final String resourceUri = davResource.getXmldbUri().toString();
+        checkExistingLockCompatibility(resourceUri, scope);
+        final String token = storeLockEntry(reqLockInfo, resourceUri, scope);
+        return buildActiveLock(token, reqLockInfo.getOwner(), reqLockInfo.isDeep(),
+                reqLockInfo.getTimeout(), scope, resource);
+    }
 
+    /**
+     * Verifies the request can be honored by this lock manager — resource type,
+     * lock type, and scope must all be supported. Returns the narrowed resource.
+     */
+    private static ExistDavResource validateLockRequest(final LockInfo reqLockInfo, final DavResource resource)
+            throws DavException {
         if (!(resource instanceof ExistDavResource davResource)) {
             throw new DavException(DavServletResponse.SC_PRECONDITION_FAILED,
                     "Locking is only supported for eXist resources");
         }
-
         if (!Type.WRITE.equals(reqLockInfo.getType())) {
             throw new DavException(DavServletResponse.SC_PRECONDITION_FAILED,
                     "Only write locks are supported");
         }
-
-        final boolean requestedShared = Scope.SHARED.equals(reqLockInfo.getScope());
-        final boolean requestedExclusive = Scope.EXCLUSIVE.equals(reqLockInfo.getScope());
-
-        if (!requestedShared && !requestedExclusive) {
+        final Scope scope = reqLockInfo.getScope();
+        if (!Scope.SHARED.equals(scope) && !Scope.EXCLUSIVE.equals(scope)) {
             throw new DavException(DavServletResponse.SC_PRECONDITION_FAILED,
                     "Only exclusive or shared locks are supported");
         }
+        return davResource;
+    }
 
-        final String resourceUri = davResource.getXmldbUri().toString();
+    /**
+     * Throws SC_LOCKED if the requested scope is incompatible with locks already
+     * held on the resource (RFC 4918 §6.2): exclusive vs. anything is denied; a
+     * new exclusive on a shared-locked resource is denied; shared + shared is
+     * permitted.
+     */
+    private void checkExistingLockCompatibility(final String resourceUri, final Scope requestedScope)
+            throws DavException {
         final List<WebDavLockStore.LockInfo> existing = lockStore.getLocks(resourceUri);
-
-        if (!existing.isEmpty()) {
-            final boolean existingIsExclusive = existing.stream()
-                    .anyMatch(l -> "exclusive".equals(l.scope));
-
-            // Exclusive + anything = denied
-            if (existingIsExclusive) {
-                throw new DavException(DavServletResponse.SC_LOCKED,
-                        "Resource has an exclusive lock");
-            }
-            // Shared existing + exclusive request = denied
-            if (requestedExclusive) {
-                throw new DavException(DavServletResponse.SC_LOCKED,
-                        "Resource has shared locks; cannot add exclusive lock");
-            }
-            // Shared existing + shared request = allowed (fall through)
+        if (existing.isEmpty()) {
+            return;
         }
+        final boolean existingIsExclusive = existing.stream().anyMatch(l -> "exclusive".equals(l.scope));
+        if (existingIsExclusive) {
+            throw new DavException(DavServletResponse.SC_LOCKED, "Resource has an exclusive lock");
+        }
+        if (Scope.EXCLUSIVE.equals(requestedScope)) {
+            throw new DavException(DavServletResponse.SC_LOCKED,
+                    "Resource has shared locks; cannot add exclusive lock");
+        }
+    }
 
-        final String scopeStr = requestedShared ? "shared" : "exclusive";
-
+    /**
+     * Persists the lock and returns its newly-allocated token.
+     */
+    private String storeLockEntry(final LockInfo reqLockInfo, final String resourceUri, final Scope scope)
+            throws DavException {
+        final String owner = reqLockInfo.getOwner();
+        final long timeout = reqLockInfo.getTimeout();
         try {
-            final String owner = reqLockInfo.getOwner();
-            final long timeout = reqLockInfo.getTimeout();
-            final String token = lockStore.storeLock(
+            return lockStore.storeLock(
                     resourceUri,
                     owner != null ? owner : "unknown",
-                    scopeStr,
+                    Scope.SHARED.equals(scope) ? "shared" : "exclusive",
                     "write",
                     reqLockInfo.isDeep(),
                     timeout > 0 ? timeout : 3600
             );
-
-            return buildActiveLock(token, owner, reqLockInfo.isDeep(), timeout,
-                    requestedShared ? Scope.SHARED : Scope.EXCLUSIVE, resource);
-
         } catch (final EXistException e) {
             throw new DavException(DavServletResponse.SC_INTERNAL_SERVER_ERROR,
                     "Failed to create lock: " + e.getMessage());
