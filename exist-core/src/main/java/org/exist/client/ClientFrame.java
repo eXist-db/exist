@@ -75,6 +75,8 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.prefs.Preferences;
@@ -142,9 +144,9 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         this.properties = properties;
         this.client = client;
         this.processRunnable = new ProcessRunnable();
-        this.processThread = client.newClientThread("process", processRunnable);
+        this.processThread = Thread.ofVirtual().name("java-admin-client.process").unstarted(processRunnable);
 
-        this.setIconImage(InteractiveClient.getExistIcon(getClass()).getImage());
+        InteractiveClient.setExistImage(getClass(), this::setIconImage);
 
         setupComponents();
         addWindowListener(new WindowAdapter() {
@@ -536,6 +538,10 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
     }
 
     protected void displayPrompt() {
+        ClientSwingEdt.invokeAndWaitIfNeeded(this::displayPromptOnEdt);
+    }
+
+    private void displayPromptOnEdt() {
         final String pathString = path.getCollectionPath();
         try {
             commandStart = doc.getLength();
@@ -551,6 +557,10 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
     }
 
     protected void display(final String message) {
+        ClientSwingEdt.invokeAndWaitIfNeeded(() -> displayOnEdt(message));
+    }
+
+    private void displayOnEdt(final String message) {
         try {
             commandStart = doc.getLength();
             if (commandStart > MAX_DISPLAY_LENGTH) {
@@ -567,11 +577,11 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
     }
 
     protected void setResources(final List<ResourceDescriptor> rows) {
-        resources.setData(rows);
+        ClientSwingEdt.invokeAndWaitIfNeeded(() -> resources.setData(rows));
     }
 
     protected void setStatus(final String message) {
-        statusbar.setText(message);
+        ClientSwingEdt.invokeLaterIfNeeded(() -> statusbar.setText(message));
     }
 
     protected void setEditable(final boolean enabled) {
@@ -709,39 +719,52 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         if (JOptionPane.showConfirmDialog(this,
                 Messages.getString("ClientFrame.104") + Messages.getString("ClientFrame.105"), //$NON-NLS-1$ //$NON-NLS-2$
                 Messages.getString("ClientFrame.106"), JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) { //$NON-NLS-1$
-            final Runnable removeTask = () -> {
-                final ProgressMonitor monitor = new ProgressMonitor(ClientFrame.this, Messages.getString("ClientFrame.107"), Messages.getString("ClientFrame.108"), 1, res.length); //$NON-NLS-1$ //$NON-NLS-2$
-                monitor.setMillisToDecideToPopup(500);
-                monitor.setMillisToPopup(500);
-                for (int i = 0; i < res.length; i++) {
-                    final ResourceDescriptor resource = res[i];
-                    if (resource.isCollection()) {
-                        try {
-                            final EXistCollectionManagementService mgtService = removeRootCollection
-                                    .getService(EXistCollectionManagementService.class);
-                            mgtService
-                                    .removeCollection(resource.getName());
-                        } catch (final XMLDBException e) {
-                            showErrorMessage(e.getMessage(), e);
+            final ProgressMonitor monitor = new ProgressMonitor(ClientFrame.this, Messages.getString("ClientFrame.107"), Messages.getString("ClientFrame.108"), 1, res.length); //$NON-NLS-1$ //$NON-NLS-2$
+            monitor.setMillisToDecideToPopup(500);
+            monitor.setMillisToPopup(500);
+            new SwingWorker<Void, Integer>() {
+                @Override
+                protected Void doInBackground() throws Exception {
+                    for (int i = 0; i < res.length; i++) {
+                        if (isCancelled()) {
+                            break;
                         }
-                    } else {
-                        try {
-                            final Resource res1 = removeRootCollection
-                                    .getResource(resource.getName().toString());
-                            removeRootCollection.removeResource(res1);
-                        } catch (final XMLDBException e) {
-                            showErrorMessage(e.getMessage(), e);
+                        final ResourceDescriptor resource = res[i];
+                        if (resource.isCollection()) {
+                            try {
+                                final EXistCollectionManagementService mgtService = removeRootCollection
+                                        .getService(EXistCollectionManagementService.class);
+                                mgtService.removeCollection(resource.getName());
+                            } catch (final XMLDBException e) {
+                                showErrorMessage(e.getMessage(), e);
+                            }
+                        } else {
+                            try {
+                                final Resource res1 = removeRootCollection
+                                        .getResource(resource.getName().toString());
+                                removeRootCollection.removeResource(res1);
+                            } catch (final XMLDBException e) {
+                                showErrorMessage(e.getMessage(), e);
+                            }
                         }
+                        publish(i + 1);
                     }
-                    monitor.setProgress(i + 1);
-                    if (monitor.isCanceled()) {
-                        return;
-                    }
+
+                    ClientAction.call(client::getResources, e -> showErrorMessage(e.getMessage(), e));
+                    return null;
                 }
 
-                ClientAction.call(client::getResources, e -> showErrorMessage(e.getMessage(), e));
-            };
-            client.newClientThread("remove", removeTask).start();
+                @Override
+                protected void process(final List<Integer> chunks) {
+                    for (final Integer p : chunks) {
+                        monitor.setProgress(p);
+                        if (monitor.isCanceled()) {
+                            cancel(false);
+                            break;
+                        }
+                    }
+                }
+            }.execute();
         }
     }
 
@@ -768,24 +791,27 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         }
 
         final XmldbURI destinationPath = ((PrettyXmldbURI) val).getTargetURI();
-        final Runnable moveTask = () -> {
-            try {
-                final EXistCollectionManagementService service = client.current.getService(EXistCollectionManagementService.class);
-                for (ResourceDescriptor re : res) {
-                    setStatus(Messages.getString("ClientFrame.115") + re.getName() + Messages.getString("ClientFrame.116") + destinationPath + Messages.getString("ClientFrame.117")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                    if (re.isCollection()) {
-                        service.move(re.getName(), destinationPath, null);
-                    } else {
-                        service.moveResource(re.getName(), destinationPath, null);
+        new SwingWorker<Void, Void>() {
+            @Override
+            protected Void doInBackground() throws Exception {
+                try {
+                    final EXistCollectionManagementService service = client.current.getService(EXistCollectionManagementService.class);
+                    for (ResourceDescriptor re : res) {
+                        setStatus(Messages.getString("ClientFrame.115") + re.getName() + Messages.getString("ClientFrame.116") + destinationPath + Messages.getString("ClientFrame.117")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                        if (re.isCollection()) {
+                            service.move(re.getName(), destinationPath, null);
+                        } else {
+                            service.moveResource(re.getName(), destinationPath, null);
+                        }
                     }
+                    client.reloadCollection();
+                } catch (final XMLDBException e) {
+                    showErrorMessage(e.getMessage(), e);
                 }
-                client.reloadCollection();
-            } catch (final XMLDBException e) {
-                showErrorMessage(e.getMessage(), e);
+                setStatus(Messages.getString("ClientFrame.118")); //$NON-NLS-1$
+                return null;
             }
-            setStatus(Messages.getString("ClientFrame.118")); //$NON-NLS-1$
-        };
-        client.newClientThread("move", moveTask).start();
+        }.execute();
     }
 
     private void renameAction(final ActionEvent ev) {
@@ -809,30 +835,33 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
             return;
         }
         final XmldbURI destinationFilename = parseIt;
-        final Runnable renameTask = () -> {
-            try {
-                final EXistCollectionManagementService service = client.current.getService(EXistCollectionManagementService.class);
-                boolean changed = false;
-                for (final ResourceDescriptor re : res) {
-                    if (!re.getName().equals(destinationFilename)) {
-                        setStatus(Messages.getString("ClientFrame.124") + re.getName() + Messages.getString("ClientFrame.125") + destinationFilename + Messages.getString("ClientFrame.126")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                        if (re.isCollection()) {
-                            service.move(re.getName(), null, destinationFilename);
-                        } else {
-                            service.moveResource(re.getName(), null, destinationFilename);
+        new SwingWorker<Void, Void>() {
+            @Override
+            protected Void doInBackground() throws Exception {
+                try {
+                    final EXistCollectionManagementService service = client.current.getService(EXistCollectionManagementService.class);
+                    boolean changed = false;
+                    for (final ResourceDescriptor re : res) {
+                        if (!re.getName().equals(destinationFilename)) {
+                            setStatus(Messages.getString("ClientFrame.124") + re.getName() + Messages.getString("ClientFrame.125") + destinationFilename + Messages.getString("ClientFrame.126")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                            if (re.isCollection()) {
+                                service.move(re.getName(), null, destinationFilename);
+                            } else {
+                                service.moveResource(re.getName(), null, destinationFilename);
+                            }
+                            changed = true;
                         }
-                        changed = true;
                     }
+                    if (changed) {
+                        client.reloadCollection();
+                    }
+                } catch (final XMLDBException e) {
+                    showErrorMessage(e.getMessage(), e);
                 }
-                if (changed) {
-                    client.reloadCollection();
-                }
-            } catch (final XMLDBException e) {
-                showErrorMessage(e.getMessage(), e);
+                setStatus(Messages.getString("ClientFrame.127")); //$NON-NLS-1$
+                return null;
             }
-            setStatus(Messages.getString("ClientFrame.127")); //$NON-NLS-1$
-        };
-        client.newClientThread("rename", renameTask).start();
+        }.execute();
     }
 
     private void copyAction(final ActionEvent ev) {
@@ -859,34 +888,37 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
 
         final XmldbURI destinationPath = ((PrettyXmldbURI) val).getTargetURI();
 
-        final Runnable moveTask = () -> {
-            try {
-                final EXistCollectionManagementService service = client.current.getService(EXistCollectionManagementService.class);
-                for (ResourceDescriptor re : res) {
+        new SwingWorker<Void, Void>() {
+            @Override
+            protected Void doInBackground() throws Exception {
+                try {
+                    final EXistCollectionManagementService service = client.current.getService(EXistCollectionManagementService.class);
+                    for (ResourceDescriptor re : res) {
 
-                    //TODO
-                    //what happens if the source and destination paths are the same?
-                    //we need to check and prompt the user to either skip or choose a new name
-                    //this function can copy multiple resources/collections selected by the user,
-                    //so may need to prompt the user multiple times? is in this thread the correct
-                    //place to do it? also need to do something similar for moveAction()
-                    //
-                    //Its too late and brain hurts - deliriumsky
+                        //TODO
+                        //what happens if the source and destination paths are the same?
+                        //we need to check and prompt the user to either skip or choose a new name
+                        //this function can copy multiple resources/collections selected by the user,
+                        //so may need to prompt the user multiple times? is in this thread the correct
+                        //place to do it? also need to do something similar for moveAction()
+                        //
+                        //Its too late and brain hurts - deliriumsky
 
-                    setStatus(Messages.getString("ClientFrame.132") + re.getName() + Messages.getString("ClientFrame.133") + destinationPath + Messages.getString("ClientFrame.134")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                    if (re.isCollection()) {
-                        service.copy(re.getName(), destinationPath, null);
-                    } else {
-                        service.copyResource(re.getName(), destinationPath, null);
+                        setStatus(Messages.getString("ClientFrame.132") + re.getName() + Messages.getString("ClientFrame.133") + destinationPath + Messages.getString("ClientFrame.134")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                        if (re.isCollection()) {
+                            service.copy(re.getName(), destinationPath, null);
+                        } else {
+                            service.copyResource(re.getName(), destinationPath, null);
+                        }
                     }
+                    client.reloadCollection();
+                } catch (final XMLDBException e) {
+                    showErrorMessage(e.getMessage(), e);
                 }
-                client.reloadCollection();
-            } catch (final XMLDBException e) {
-                showErrorMessage(e.getMessage(), e);
+                setStatus(Messages.getString("ClientFrame.135")); //$NON-NLS-1$
+                return null;
             }
-            setStatus(Messages.getString("ClientFrame.135")); //$NON-NLS-1$
-        };
-        client.newClientThread("move", moveTask).start();
+        }.execute();
     }
 
     private ArrayList<PrettyXmldbURI> getCollections(final Collection root, final ArrayList<PrettyXmldbURI> collectionsList) throws XMLDBException {
@@ -936,23 +968,30 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         if (JOptionPane.showConfirmDialog(this,
                 Messages.getString("ClientFrame.138"), //$NON-NLS-1$
                 Messages.getString("ClientFrame.139"), JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) { //$NON-NLS-1$
-            final ResourceDescriptor collections[] = res;
-            final Runnable reindexThread = () -> {
-                ClientFrame.this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                final IndexQueryService service;
-                try {
-                    service = client.current.getService(IndexQueryService.class);
-                    for (final ResourceDescriptor next : collections) {
-                        setStatus(Messages.getString("ClientFrame.142") + next.getName() + Messages.getString("ClientFrame.143")); //$NON-NLS-1$ //$NON-NLS-2$
-                        service.reindexCollection(next.getName());
+            final ResourceDescriptor[] collections = res;
+            setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            new SwingWorker<Void, Void>() {
+                @Override
+                protected Void doInBackground() throws Exception {
+                    final IndexQueryService service;
+                    try {
+                        service = client.current.getService(IndexQueryService.class);
+                        for (final ResourceDescriptor next : collections) {
+                            setStatus(Messages.getString("ClientFrame.142") + next.getName() + Messages.getString("ClientFrame.143")); //$NON-NLS-1$ //$NON-NLS-2$
+                            service.reindexCollection(next.getName());
+                        }
+                        setStatus(Messages.getString("ClientFrame.144")); //$NON-NLS-1$
+                    } catch (final XMLDBException e) {
+                        showErrorMessage(e.getMessage(), e);
                     }
-                    setStatus(Messages.getString("ClientFrame.144")); //$NON-NLS-1$
-                } catch (final XMLDBException e) {
-                    showErrorMessage(e.getMessage(), e);
+                    return null;
                 }
-                ClientFrame.this.setCursor(Cursor.getDefaultCursor());
-            };
-            client.newClientThread("reindex", reindexThread).start();
+
+                @Override
+                protected void done() {
+                    setCursor(Cursor.getDefaultCursor());
+                }
+            }.execute();
         }
     }
 
@@ -973,14 +1012,17 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
 
     private void uploadFiles(final List<Path> files) {
         if (files != null && !files.isEmpty()) {
-            final Runnable uploadTask = () -> {
-                final UploadDialog upload = new UploadDialog();
-                final Consumer<XMLDBException> failureAction = e ->
-                        showErrorMessage(Messages.getString("ClientFrame.147") + e.getMessage(), e);
-                ClientAction.call(() -> client.parse(files, upload), failureAction);
-                ClientAction.call(client::getResources, failureAction);
-            };
-            client.newClientThread("upload", uploadTask).start();
+            new SwingWorker<Void, Void>() {
+                @Override
+                protected Void doInBackground() throws Exception {
+                    final UploadDialog upload = new UploadDialog();
+                    final Consumer<XMLDBException> failureAction = e ->
+                            showErrorMessage(Messages.getString("ClientFrame.147") + e.getMessage(), e);
+                    ClientAction.call(() -> client.parse(files, upload), failureAction);
+                    ClientAction.call(client::getResources, failureAction);
+                    return null;
+                }
+            }.execute();
         }
     }
 
@@ -1087,50 +1129,57 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
     private void doRestore(final GuiRestoreServiceTaskListener listener, final String username, final String password,
                            final String dbaPassword, final Path f, final String uri, final boolean overwriteApps) {
 
-        final Runnable restoreTask = () -> {
+        new SwingWorker<Void, Void>() {
+            @Override
+            protected Void doInBackground() throws Exception {
 
-            try {
-                final XmldbURI dbUri;
-                if(!uri.endsWith(XmldbURI.ROOT_COLLECTION)) {
-                    dbUri = XmldbURI.xmldbUriFor(uri + XmldbURI.ROOT_COLLECTION);
-                } else {
-                    dbUri = XmldbURI.xmldbUriFor(uri);
-                }
+                try {
+                    final XmldbURI dbUri;
+                    if (!uri.endsWith(XmldbURI.ROOT_COLLECTION)) {
+                        dbUri = XmldbURI.xmldbUriFor(uri + XmldbURI.ROOT_COLLECTION);
+                    } else {
+                        dbUri = XmldbURI.xmldbUriFor(uri);
+                    }
 
-                final Collection collection = DatabaseManager.getCollection(dbUri.toString(), username, password);
-                final EXistRestoreService service = collection.getService(EXistRestoreService.class);
-                service.restore(f.toAbsolutePath().toString(), dbaPassword, listener, overwriteApps);
+                    final Collection collection = DatabaseManager.getCollection(dbUri.toString(), username, password);
+                    final EXistRestoreService service = collection.getService(EXistRestoreService.class);
+                    service.restore(f.toAbsolutePath().toString(), dbaPassword, listener, overwriteApps);
 
-                if (JOptionPane.showConfirmDialog(null, Messages.getString("ClientFrame.223"), Messages.getString("ClientFrame.224"),
-                        JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-                    setStatus(Messages.getString("ClientFrame.225"));
-                    repairRepository(client.getCollection());
-                    setStatus(Messages.getString("ClientFrame.226"));
-                }
+                    final AtomicBoolean repairChoice = new AtomicBoolean(false);
+                    ClientSwingEdt.invokeAndWaitIfNeeded(() -> repairChoice.set(
+                            JOptionPane.showConfirmDialog(null, Messages.getString("ClientFrame.223"), Messages.getString("ClientFrame.224"),
+                                    JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION));
+                    if (repairChoice.get()) {
+                        setStatus(Messages.getString("ClientFrame.225"));
+                        try {
+                            repairRepository(client.getCollection());
+                        } catch (final XMLDBException xe) {
+                            xe.printStackTrace();
+                        }
+                        setStatus(Messages.getString("ClientFrame.226"));
+                    }
 
-                listener.enableDismissDialogButton();
+                    ClientSwingEdt.invokeLaterIfNeeded(listener::enableDismissDialogButton);
 
-                if (properties.getProperty(InteractiveClient.USER, DBA_USER).equals(DBA_USER) && dbaPassword != null) {
-                    properties.setProperty(InteractiveClient.PASSWORD, dbaPassword);
-                }
+                    if (properties.getProperty(InteractiveClient.USER, DBA_USER).equals(DBA_USER) && dbaPassword != null) {
+                        properties.setProperty(InteractiveClient.PASSWORD, dbaPassword);
+                    }
 
-                SwingUtilities.invokeAndWait(() -> {
                     try {
                         client.reloadCollection();
                     } catch (final XMLDBException xe) {
                         xe.printStackTrace();
                     }
-                });
-            } catch (final Exception e) {
-                showErrorMessage(Messages.getString("ClientFrame.181") + e.getMessage(), e); //$NON-NLS-1$
-            } finally {
-                if (listener.hasProblems()) {
-                    showErrorMessage(Messages.getString("ClientFrame.181") + listener.getAllProblems(), null);
+                } catch (final Exception e) {
+                    showErrorMessage(Messages.getString("ClientFrame.181") + e.getMessage(), e); //$NON-NLS-1$
+                } finally {
+                    if (listener.hasProblems()) {
+                        showErrorMessage(Messages.getString("ClientFrame.181") + listener.getAllProblems(), null);
+                    }
                 }
+                return null;
             }
-        };
-
-        client.newClientThread("restore", restoreTask).start();
+        }.execute();
     }
 
     public static void repairRepository(Collection collection) throws XMLDBException {
@@ -1709,6 +1758,10 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
     }
 
     public static void showErrorMessage(final String message, final Throwable t) {
+        ClientSwingEdt.invokeAndWaitIfNeeded(() -> showErrorMessageOnEdt(message, t));
+    }
+
+    private static void showErrorMessageOnEdt(final String message, final Throwable t) {
         JScrollPane scroll = null;
         final JTextArea msgArea = new JTextArea(message);
         msgArea.setBorder(BorderFactory.createTitledBorder(Messages.getString("ClientFrame.214"))); //$NON-NLS-1$
@@ -1736,6 +1789,15 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
     }
 
     public static int showErrorMessageQuery(final String message, final Throwable t) {
+        if (SwingUtilities.isEventDispatchThread()) {
+            return showErrorMessageQueryOnEdt(message, t);
+        }
+        final AtomicInteger result = new AtomicInteger();
+        ClientSwingEdt.invokeAndWaitIfNeeded(() -> result.set(showErrorMessageQueryOnEdt(message, t)));
+        return result.get();
+    }
+
+    private static int showErrorMessageQueryOnEdt(final String message, final Throwable t) {
         final JTextArea msgArea = new JTextArea(message);
         msgArea.setLineWrap(true);
         msgArea.setWrapStyleWord(true);
@@ -1895,24 +1957,7 @@ public class ClientFrame extends JFrame implements WindowFocusListener, KeyListe
         }
     }
 
-    private class FileListDropTargetListener implements DropTargetListener {
-
-        @Override
-        public void dragEnter(final DropTargetDragEvent dtde) {
-        }
-
-        @Override
-        public void dragOver(final DropTargetDragEvent dtde) {
-        }
-
-        @Override
-        public void dropActionChanged(final DropTargetDragEvent dtde) {
-        }
-
-        @Override
-        public void dragExit(final DropTargetEvent dte) {
-
-        }
+    private class FileListDropTargetListener extends DropTargetAdapter {
 
         @Override
         public void drop(final DropTargetDropEvent dtde) {

@@ -71,7 +71,7 @@ public class ConnectionDialog extends javax.swing.JDialog implements DialogWithR
         this.defaultConnectionSettings = defaultConnectionSettings;
         this.config = Path.of(defaultConnectionSettings.getConfiguration());
         this.disableEmbeddedConnectionType = disableEmbeddedConnectionType;
-        this.setIconImage(InteractiveClient.getExistIcon(getClass()).getImage());
+        InteractiveClient.setExistImage(getClass(), this::setIconImage);
         initComponents();
 
         if (disableEmbeddedConnectionType) {
@@ -239,7 +239,7 @@ public class ConnectionDialog extends javax.swing.JDialog implements DialogWithR
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Database Connection");
 
-        lblExistLogo.setIcon(InteractiveClient.getExistIcon(getClass()));
+        InteractiveClient.setExistImageIcon(getClass(), lblExistLogo::setIcon);
 
         lblUsername.setText(getLabelText("LoginPanel.2"));
 

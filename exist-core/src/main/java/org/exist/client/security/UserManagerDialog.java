@@ -67,7 +67,7 @@ public class UserManagerDialog extends javax.swing.JFrame {
         this.userManagementService = userManagementService;
         this.currentUser = currentUser;
         this.client = client;
-        this.setIconImage(InteractiveClient.getExistIcon(getClass()).getImage());
+        InteractiveClient.setExistImage(getClass(), this::setIconImage);
         initComponents();
         tblUsers.setDefaultRenderer(Object.class, new HighlightedTableCellRenderer());
         tblGroups.setDefaultRenderer(Object.class, new HighlightedTableCellRenderer());
