@@ -24,12 +24,11 @@ package org.exist.client;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import javax.swing.AbstractButton;
-import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.JComboBox;
 
 /**
- * The class EnterKeyAdapter listens for VK_ENTER key events 
+ * The class EnterKeyAdapter listens for VK_ENTER key events
  * for buttons, JPasswordFields, JTextFields and JComboBoxes,
  * whereby it sends doClick() to the affected or specified source.
  *
@@ -40,7 +39,6 @@ public class EnterKeyAdapter extends KeyAdapter {
 
     /**
      * Creates a new <code>EnterKeyAdapter</code> instance.
-     *
      */
     public EnterKeyAdapter() {
         super();
@@ -55,14 +53,15 @@ public class EnterKeyAdapter extends KeyAdapter {
         super();
         this.button = button;
     }
-    
+
+    @Override
     public void keyPressed(KeyEvent e) {
-        if (e.getKeyCode() == KeyEvent.VK_ENTER && e.getSource() instanceof AbstractButton) {
-            ((AbstractButton) e.getSource()).doClick();
-        } else if (e.getKeyCode() == KeyEvent.VK_ENTER && (e.getSource() instanceof JPasswordField || e.getSource() instanceof JTextField || e.getSource() instanceof JComboBox)) {
-            if (button != null) {
-                button.doClick();
-            }
+        final int keyCode = e.getKeyCode();
+        final Object source = e.getSource();
+        if (keyCode == KeyEvent.VK_ENTER && source instanceof AbstractButton abstractButton) {
+            abstractButton.doClick();
+        } else if (keyCode == KeyEvent.VK_ENTER && (source instanceof JTextField || source instanceof JComboBox)) {
+            button.doClick();
         }
     }
 }

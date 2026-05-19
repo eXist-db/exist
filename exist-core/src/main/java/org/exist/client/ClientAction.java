@@ -31,10 +31,10 @@ public interface ClientAction {
     /**
      * Calls the given action and invokes failureAction if an exception occurs.
      *
-     * @param action the action to be executed
+     * @param action        the action to be executed
      * @param failureAction the action being called in case of an failure
      */
-    public static void call(ClientAction action, Consumer<XMLDBException> failureAction) {
+    static void call(ClientAction action, Consumer<XMLDBException> failureAction) {
         try {
             action.run();
         } catch (XMLDBException e) {

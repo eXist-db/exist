@@ -49,10 +49,11 @@ import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
 import static org.exist.client.ClientFrame.MULTIPLE_INDICATOR;
 
 /**
- *
  * @author <a href="mailto:adam.retter@googlemail.com">Adam Retter</a>
  */
 public class EditPropertiesDialog extends javax.swing.JFrame {
+    private static final String ERROR_TITLE = "Edit Properties Error";
+
     private final UserManagementService userManagementService;
     private final String currentUser;
     private final Collection parent;
@@ -60,19 +61,19 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
     private final String internetMediaType;
     private final String created;
     private final String lastModified;
-    private String size;
     private final String messageDigestType;
     private final String messageDigestValue;
     private final String owner;
     private final String group;
     private final ModeDisplay mode;
-    @Nullable private final SimpleACLPermissionAider acl;
+    @Nullable
+    private final SimpleACLPermissionAider acl;
     private final List<ResourceDescriptor> applyTo;
-    
-    private BasicPermissionsTableModel basicPermissionsTableModel = null;
-    private DefaultTableModel aclTableModel = null;
 
-    private final static String ERROR_TITLE = "Edit Properties Error";
+    private String size;
+    private BasicPermissionsTableModel basicPermissionsTableModel;
+    private DefaultTableModel aclTableModel;
+
 
     public EditPropertiesDialog(final UserManagementService userManagementService, final String currentUser, final Collection parent, final String uri, final String internetMediaType, final String created, final String lastModified, final String size, final String messageDigestType, final String messageDigestValue, final String owner, final String group, final ModeDisplay mode, @Nullable final SimpleACLPermissionAider acl, final List<ResourceDescriptor> applyTo) {
         this.userManagementService = userManagementService;
@@ -90,7 +91,7 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
         this.mode = mode;
         this.acl = acl;
         this.applyTo = applyTo;
-        this.setIconImage(InteractiveClient.getExistIcon(getClass()).getImage());        
+        InteractiveClient.setExistImage(getClass(), this::setIconImage);
         initComponents();
         setFormProperties();
     }
@@ -107,42 +108,42 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
         spDigest.setVisible(true);
         lblOwnerValue.setText(owner);
         lblGroupValue.setText(group);
-        
+
         try {
             final boolean canModify = canModifyPermissions();
-        
+
             btnChangeOwner.setEnabled(isDba());
             btnChangeGroup.setEnabled(isDba());
-            
+
             tblBasePermissions.setEnabled(canModify);
 
             final boolean canModifyAcl = acl != null && canModify;
 
             tblAcl.setEnabled(canModifyAcl);
-            
+
             miInsertAceBefore.setEnabled(canModifyAcl);
             miInsertAceAfter.setEnabled(canModifyAcl);
             btnAddAce.setEnabled(canModifyAcl);
-        
+
             miMoveUp.setEnabled(false);
             miMoveDown.setEnabled(false);
-        
+
             miRemoveAce.setEnabled(false);
-        } catch(final XMLDBException xmldbe) {
+        } catch (final XMLDBException xmldbe) {
             JOptionPane.showMessageDialog(this, "Could not get dba group members: " + xmldbe.getMessage(), ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
         }
     }
 
     private BasicPermissionsTableModel getBasicPermissionsTableModel() {
-        if(basicPermissionsTableModel == null) {
+        if (basicPermissionsTableModel == null) {
             basicPermissionsTableModel = new BasicPermissionsTableModel(mode);
         }
-        
+
         return basicPermissionsTableModel;
     }
-    
+
     private DefaultTableModel getAclTableModel() {
-        if(aclTableModel == null) {
+        if (aclTableModel == null) {
             aclTableModel = new AclTableModel(acl);
         }
         return aclTableModel;
@@ -151,8 +152,8 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
     private UserManagementService getUserManagementService() {
         return userManagementService;
     }
-            
-    
+
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -316,124 +317,124 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(jSeparator1))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(25, 25, 25)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(lblAccessControlList)
-                            .addComponent(btnAddAce)
-                            .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 404, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 404, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(lblBasePermissions)
-                            .addComponent(spDigest, javax.swing.GroupLayout.PREFERRED_SIZE, 404, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(lblResource)
-                                    .addComponent(lblInternetMediaType)
-                                    .addComponent(lblOwner)
-                                    .addComponent(lblLastModified)
-                                    .addComponent(lblCreated)
-                                    .addComponent(lblGroup)
-                                    .addComponent(lblSize)
-                                    .addComponent(lblDigest))
-                                .addGap(28, 28, 28)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(lblDigestAlgorithmValue, javax.swing.GroupLayout.PREFERRED_SIZE, 159, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(lblSizeValue)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addComponent(lblGroupValue, javax.swing.GroupLayout.PREFERRED_SIZE, 216, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(btnChangeGroup, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addComponent(lblOwnerValue, javax.swing.GroupLayout.PREFERRED_SIZE, 216, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(btnChangeOwner, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                        .addComponent(lblResourceValue, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(lblInternetMediaTypeValue, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(lblCreatedValue, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(lblLastModifiedValue, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))))))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 432, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(btnClose)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnSave)))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                                .addContainerGap()
+                                                .addComponent(jSeparator1))
+                                        .addGroup(layout.createSequentialGroup()
+                                                .addGap(25, 25, 25)
+                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                        .addComponent(lblAccessControlList)
+                                                        .addComponent(btnAddAce)
+                                                        .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 404, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 404, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                        .addComponent(lblBasePermissions)
+                                                        .addComponent(spDigest, javax.swing.GroupLayout.PREFERRED_SIZE, 404, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                        .addGroup(layout.createSequentialGroup()
+                                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                                        .addComponent(lblResource)
+                                                                        .addComponent(lblInternetMediaType)
+                                                                        .addComponent(lblOwner)
+                                                                        .addComponent(lblLastModified)
+                                                                        .addComponent(lblCreated)
+                                                                        .addComponent(lblGroup)
+                                                                        .addComponent(lblSize)
+                                                                        .addComponent(lblDigest))
+                                                                .addGap(28, 28, 28)
+                                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                                        .addComponent(lblDigestAlgorithmValue, javax.swing.GroupLayout.PREFERRED_SIZE, 159, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                                        .addComponent(lblSizeValue)
+                                                                        .addGroup(layout.createSequentialGroup()
+                                                                                .addComponent(lblGroupValue, javax.swing.GroupLayout.PREFERRED_SIZE, 216, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                                                .addComponent(btnChangeGroup, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                                                        .addGroup(layout.createSequentialGroup()
+                                                                                .addComponent(lblOwnerValue, javax.swing.GroupLayout.PREFERRED_SIZE, 216, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                                                .addComponent(btnChangeOwner, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                                                                .addComponent(lblResourceValue, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                                                .addComponent(lblInternetMediaTypeValue, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                                                .addComponent(lblCreatedValue, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                                                .addComponent(lblLastModifiedValue, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))))))
+                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGroup(layout.createSequentialGroup()
+                                .addContainerGap()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                        .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 432, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGroup(layout.createSequentialGroup()
+                                                .addComponent(btnClose)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addComponent(btnSave)))
+                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGap(17, 17, 17)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lblResource)
-                    .addComponent(lblResourceValue))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lblInternetMediaType)
-                    .addComponent(lblInternetMediaTypeValue))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lblCreated)
-                    .addComponent(lblCreatedValue))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lblLastModified)
-                    .addComponent(lblLastModifiedValue))
-                .addGap(12, 12, 12)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lblSize)
-                    .addComponent(lblSizeValue))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lblDigest)
-                    .addComponent(lblDigestAlgorithmValue))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(spDigest, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lblOwner)
-                    .addComponent(lblOwnerValue)
-                    .addComponent(btnChangeOwner, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lblGroup)
-                    .addComponent(lblGroupValue)
-                    .addComponent(btnChangeGroup, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
-                .addComponent(lblBasePermissions)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(lblAccessControlList)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnAddAce)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnClose)
-                    .addComponent(btnSave))
-                .addContainerGap())
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createSequentialGroup()
+                                .addGap(17, 17, 17)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                        .addComponent(lblResource)
+                                        .addComponent(lblResourceValue))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                        .addComponent(lblInternetMediaType)
+                                        .addComponent(lblInternetMediaTypeValue))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                        .addComponent(lblCreated)
+                                        .addComponent(lblCreatedValue))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                        .addComponent(lblLastModified)
+                                        .addComponent(lblLastModifiedValue))
+                                .addGap(12, 12, 12)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                        .addComponent(lblSize)
+                                        .addComponent(lblSizeValue))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                        .addComponent(lblDigest)
+                                        .addComponent(lblDigestAlgorithmValue))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(spDigest, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                        .addComponent(lblOwner)
+                                        .addComponent(lblOwnerValue)
+                                        .addComponent(btnChangeOwner, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                        .addComponent(lblGroup)
+                                        .addComponent(lblGroupValue)
+                                        .addComponent(btnChangeGroup, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGap(18, 18, 18)
+                                .addComponent(lblBasePermissions)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(lblAccessControlList)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(btnAddAce)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                        .addComponent(btnClose)
+                                        .addComponent(btnSave))
+                                .addContainerGap())
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
-        
+
         try {
 
             for (final ResourceDescriptor desc : applyTo) {
@@ -494,7 +495,7 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
 
             setVisible(false);
             dispose();
-        } catch(final PermissionDeniedException | XMLDBException e) {
+        } catch (final PermissionDeniedException | XMLDBException e) {
             JOptionPane.showMessageDialog(this, "Could not update properties: " + e.getMessage(), ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_btnSaveActionPerformed
@@ -506,26 +507,26 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
 
     private void btnChangeOwnerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnChangeOwnerActionPerformed
         final DialogCompleteWithResponse<String> callback = username -> lblOwnerValue.setText(username);
-        
+
         try {
             final FindUserForm findUserForm = new FindUserForm(getUserManagementService());
             findUserForm.addDialogCompleteWithResponseCallback(callback);
             findUserForm.setTitle("Change Owner...");
             findUserForm.setVisible(true);
-        } catch(final XMLDBException xmldbe) {
+        } catch (final XMLDBException xmldbe) {
             JOptionPane.showMessageDialog(this, "Could not retrieve list of users: " + xmldbe.getMessage(), ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_btnChangeOwnerActionPerformed
 
     private void btnChangeGroupActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnChangeGroupActionPerformed
         final DialogCompleteWithResponse<String> callback = groupName -> lblGroupValue.setText(groupName);
-        
+
         try {
             final FindGroupForm findGroupForm = new FindGroupForm(getUserManagementService());
             findGroupForm.addDialogCompleteWithResponseCallback(callback);
             findGroupForm.setTitle("Change Group...");
             findGroupForm.setVisible(true);
-        } catch(final XMLDBException xmldbe) {
+        } catch (final XMLDBException xmldbe) {
             JOptionPane.showMessageDialog(this, "Could not retrieve list of groups: " + xmldbe.getMessage(), ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_btnChangeGroupActionPerformed
@@ -535,33 +536,33 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
     }//GEN-LAST:event_miRemoveAceActionPerformed
 
     private void miMoveUpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miMoveUpActionPerformed
-        if(tblAcl.getSelectedRow() > 0) {
+        if (tblAcl.getSelectedRow() > 0) {
             getAclTableModel().moveRow(tblAcl.getSelectedRow(), tblAcl.getSelectedRow(), tblAcl.getSelectedRow() - 1);
         }
     }//GEN-LAST:event_miMoveUpActionPerformed
 
     private void miMoveDownActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miMoveDownActionPerformed
-        if(tblAcl.getSelectedRow() < getAclTableModel().getRowCount() - 1) {
+        if (tblAcl.getSelectedRow() < getAclTableModel().getRowCount() - 1) {
             getAclTableModel().moveRow(tblAcl.getSelectedRow(), tblAcl.getSelectedRow(), tblAcl.getSelectedRow() + 1);
         }
     }//GEN-LAST:event_miMoveDownActionPerformed
 
     private void btnAddAceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddAceActionPerformed
-        
+
         final DialogCompleteWithResponse<ACEAider> callback = ace -> getAclTableModel().addRow(new Object[]{
-            ace.getTarget().toString(),
-            ace.getWho(),
-            ace.getAccessType().toString(),
-            (ace.getMode() & Permission.READ) == Permission.READ,
-            (ace.getMode() & Permission.WRITE) == Permission.WRITE,
-            (ace.getMode() & Permission.EXECUTE) == Permission.EXECUTE,
+                ace.getTarget().toString(),
+                ace.getWho(),
+                ace.getAccessType().toString(),
+                (ace.getMode() & Permission.READ) == Permission.READ,
+                (ace.getMode() & Permission.WRITE) == Permission.WRITE,
+                (ace.getMode() & Permission.EXECUTE) == Permission.EXECUTE,
         });
-        
+
         try {
             final AccessControlEntryDialog aceDialog = new AccessControlEntryDialog(getUserManagementService(), "Create Access Control Entry");
             aceDialog.addDialogCompleteWithResponseCallback(callback);
             aceDialog.setVisible(true);
-        } catch(final XMLDBException xmldbe) {
+        } catch (final XMLDBException xmldbe) {
             JOptionPane.showMessageDialog(this, "Could not get user/group members: " + xmldbe.getMessage(), ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_btnAddAceActionPerformed
@@ -570,20 +571,20 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
         final DialogCompleteWithResponse<ACEAider> callback = ace -> {
             final int insertAt = tblAcl.getSelectedRow();
             getAclTableModel().insertRow(insertAt, new Object[]{
-                ace.getTarget().toString(),
-                ace.getWho(),
-                ace.getAccessType().toString(),
-                (ace.getMode() & Permission.READ) == Permission.READ,
-                (ace.getMode() & Permission.WRITE) == Permission.WRITE,
-                (ace.getMode() & Permission.EXECUTE) == Permission.EXECUTE,
+                    ace.getTarget().toString(),
+                    ace.getWho(),
+                    ace.getAccessType().toString(),
+                    (ace.getMode() & Permission.READ) == Permission.READ,
+                    (ace.getMode() & Permission.WRITE) == Permission.WRITE,
+                    (ace.getMode() & Permission.EXECUTE) == Permission.EXECUTE,
             });
         };
-        
+
         try {
             final AccessControlEntryDialog aceDialog = new AccessControlEntryDialog(getUserManagementService(), "Insert Access Control Entry (before...)");
             aceDialog.addDialogCompleteWithResponseCallback(callback);
             aceDialog.setVisible(true);
-        } catch(final XMLDBException xmldbe) {
+        } catch (final XMLDBException xmldbe) {
             JOptionPane.showMessageDialog(this, "Could not get user/group members: " + xmldbe.getMessage(), ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_miInsertAceBeforeActionPerformed
@@ -592,20 +593,20 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
         final DialogCompleteWithResponse<ACEAider> callback = ace -> {
             final int insertAt = tblAcl.getSelectedRow() < getAclTableModel().getRowCount() - 1 ? tblAcl.getSelectedRow() + 1 : getAclTableModel().getRowCount();
             getAclTableModel().insertRow(insertAt, new Object[]{
-                ace.getTarget().toString(),
-                ace.getWho(),
-                ace.getAccessType().toString(),
-                (ace.getMode() & Permission.READ) == Permission.READ,
-                (ace.getMode() & Permission.WRITE) == Permission.WRITE,
-                (ace.getMode() & Permission.EXECUTE) == Permission.EXECUTE,
+                    ace.getTarget().toString(),
+                    ace.getWho(),
+                    ace.getAccessType().toString(),
+                    (ace.getMode() & Permission.READ) == Permission.READ,
+                    (ace.getMode() & Permission.WRITE) == Permission.WRITE,
+                    (ace.getMode() & Permission.EXECUTE) == Permission.EXECUTE,
             });
         };
-        
+
         try {
             final AccessControlEntryDialog aceDialog = new AccessControlEntryDialog(getUserManagementService(), "Insert Access Control Entry (after...)");
             aceDialog.addDialogCompleteWithResponseCallback(callback);
             aceDialog.setVisible(true);
-        } catch(final XMLDBException xmldbe) {
+        } catch (final XMLDBException xmldbe) {
             JOptionPane.showMessageDialog(this, "Could not get user/group members: " + xmldbe.getMessage(), ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_miInsertAceAfterActionPerformed
@@ -620,24 +621,24 @@ public class EditPropertiesDialog extends javax.swing.JFrame {
         final Set<String> dbaMembers = new HashSet<>(Arrays.asList(getUserManagementService().getGroupMembers(SecurityManager.DBA_GROUP)));
         return dbaMembers.contains(currentUser);
     }
-    
+
     private boolean canModifyPermissions() throws XMLDBException {
         return isDba() || owner.equals(currentUser);
     }
-    
+
     private void tblAclMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblAclMouseClicked
         final boolean aclSelected = tblAcl.getSelectedRow() > -1;
         try {
             final boolean canModify = canModifyPermissions();
-        
+
             miInsertAceBefore.setEnabled(canModify);
             miInsertAceAfter.setEnabled(canModify);
-        
+
             miMoveUp.setEnabled(canModify && aclSelected);
             miMoveDown.setEnabled(canModify && aclSelected);
-        
+
             miRemoveAce.setEnabled(canModify && aclSelected);
-        } catch(final XMLDBException xmldbe) {
+        } catch (final XMLDBException xmldbe) {
             JOptionPane.showMessageDialog(this, "Could not get dba group members: " + xmldbe.getMessage(), ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
         }
     }//GEN-LAST:event_tblAclMouseClicked

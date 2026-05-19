@@ -57,8 +57,8 @@ import static org.exist.client.InteractiveClient.PERMISSIONS;
 
 @ExtendWith(EasyMockExtension.class)
 class InteractiveClientTest {
-    private final static String EOL = System.getProperty("line.separator");
-    private final static String FILE_SEPARATOR = System.getProperty("file.separator");
+    private static final String EOL = System.getProperty("line.separator");
+    private static final String FILE_SEPARATOR = System.getProperty("file.separator");
 
     @Mock
     Collection collection;
@@ -81,7 +81,7 @@ class InteractiveClientTest {
     void setUp() throws URISyntaxException {
         client = new InteractiveClient(CommandlineOptions.parse(new String[0])) {
             @Override
-            protected void connect() throws Exception {
+            protected void connect() {
                 current = collection;
             }
         };
@@ -262,9 +262,9 @@ class InteractiveClientTest {
     void errorln() {
         clientFrame.display("message1" + EOL);
         replay(collection, mgtService, perm, resource, clientFrame, account, group);
-        assertThatNoException().isThrownBy(() -> client.errorln("message1"));
+        assertThatNoException().isThrownBy(() -> client.errorln("message1", null));
         client.frame = null;
-        assertThatNoException().isThrownBy(() -> client.errorln("message2"));
+        assertThatNoException().isThrownBy(() -> client.errorln("message2", null));
     }
 
     @ParameterizedTest
@@ -282,7 +282,7 @@ class InteractiveClientTest {
             }
 
             @Override
-            protected void connect() throws Exception {
+            protected void connect() {
                 current = collection;
             }
 
