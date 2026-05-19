@@ -21,6 +21,8 @@
  */
 package org.exist.indexing.lucene;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import org.exist.dom.persistent.IStoredNode;
 import org.exist.dom.QName;
 import org.exist.dom.persistent.NodeHandle;
@@ -71,6 +73,16 @@ public class LuceneMatchListener extends AbstractMatchListener {
     /** NodeId we already scanned in reset(); avoid double-scan in startElement. */
     private NodeId scannedInResetForNodeId;
 
+    /* #5738: cache the rewritten terms per Query so that batch util:expand(...) does not
+     * re-rewrite the same wildcard/prefix queries on every input node. The cache is keyed
+     * by Query identity (Lucene Query.equals is content-based, so semantically equal
+     * queries share an entry) and is bounded to avoid unbounded growth across long-lived
+     * brokers. */
+    private static final int QUERY_TERM_CACHE_MAX = 32;
+    private final Cache<Query, Map<Object, Query>> queryTermCache = Caffeine.newBuilder()
+            .maximumSize(QUERY_TERM_CACHE_MAX)
+            .build();
+
     public LuceneMatchListener(final LuceneIndex index, final DBBroker broker, final NodeProxy proxy) {
         this.index = index;
         reset(broker, proxy);
@@ -120,6 +132,14 @@ public class LuceneMatchListener extends AbstractMatchListener {
         }
 
         scannedInResetForNodeId = null;
+        /* #5738: scanMatches is the per-node hot path. When termMap is empty (e.g., every
+         * query term was filtered out by the configured-fields exclusion from PR #3467,
+         * the typical case for `lemma:Aachen` style field queries), no token in the entry
+         * text can match, so nodesWithMatch will stay empty and characters() will pass
+         * through unchanged. Skip the scan entirely in that case. */
+        if (termMap.isEmpty()) {
+            return;
+        }
         if (ancestors != null && !ancestors.isEmpty()) {
             for (final NodeProxy p : ancestors) {
                 scanMatches(p);
@@ -142,6 +162,12 @@ public class LuceneMatchListener extends AbstractMatchListener {
 
     @Override
     public void startElement(final QName qname, final AttrList attribs) throws SAXException {
+        /* #5738: when termMap is empty no token can match, so deep-scanning child elements
+         * to discover match offsets is wasted work; just pass the event through. */
+        if (termMap == null || termMap.isEmpty()) {
+            super.startElement(qname, attribs);
+            return;
+        }
         Match nextMatch = match;
         final NodeHandle current = getCurrentNode();
         // check if there are any matches in the current element
@@ -347,38 +373,86 @@ public class LuceneMatchListener extends AbstractMatchListener {
      * Get all query terms from the original queries.
      * Excludes terms from configured Lucene fields (e.g. pub-year) so that
      * util:expand does not produce superfluous highlights for field-only matches.
+     *
+     * <p>For #5738: the per-Query cache lets batch util:expand($hits) reuse rewritten
+     * terms across hits. Without this cache every reset() reopened the IndexReader and
+     * re-enumerated terms (slow for wildcard/prefix queries on large corpora).
+     *
      * @see <a href="https://github.com/eXist-db/exist/pull/3467">PR #3467</a>
+     * @see <a href="https://github.com/eXist-db/exist/issues/5738">Issue #5738</a>
      */
     private void getTerms() {
-        try {
-            index.withReader(reader -> {
-                final Set<String> excludedFields = (config == null || config == LuceneConfig.DEFAULT_CONFIG)
-                        ? Collections.emptySet()
-                        : config.getConfiguredFieldNames();
-                final Set<Query> queries = new HashSet<>();
-                final Map<Object, Query> rawTerms = new TreeMap<>();
-                Match nextMatch = this.match;
-                while (nextMatch != null) {
-                    if (nextMatch.getIndexId().equals(LuceneIndex.ID)) {
-                        final Query query = ((LuceneMatch) nextMatch).getQuery();
-                        if (!queries.contains(query)) {
-                            queries.add(query);
-                            LuceneUtil.extractTerms(query, rawTerms, reader, true);
-                        }
-                    }
-                    nextMatch = nextMatch.getNextMatch();
-                }
-                termMap = new TreeMap<>();
-                for (final Map.Entry<Object, Query> e : rawTerms.entrySet()) {
-                    if (e.getKey() instanceof Term term && !excludedFields.contains(term.field())) {
-                        termMap.put(term.text(), e.getValue());
-                    }
-                }
-                return null;
-            });
-        } catch (final IOException e) {
-            LOG.warn("Match listener caught IO exception while reading query terms: {}", e.getMessage(), e);
+        // Collect unique queries from the proxy's match list. The cache shortcut applies
+        // when every query is already cached - the common case in batch util:expand calls.
+        final Set<Query> uniqueQueries = collectUniqueLuceneQueries();
+        if (uniqueQueries.isEmpty()) {
+            termMap = Collections.emptyMap();
+            return;
         }
+        final Set<String> excludedFields = (config == null || config == LuceneConfig.DEFAULT_CONFIG)
+                ? Collections.emptySet()
+                : config.getConfiguredFieldNames();
+        final List<Query> uncachedQueries = new ArrayList<>();
+        for (final Query q : uniqueQueries) {
+            if (queryTermCache.getIfPresent(q) == null) {
+                uncachedQueries.add(q);
+            }
+        }
+        if (!uncachedQueries.isEmpty()) {
+            try {
+                index.withReader(reader -> {
+                    for (final Query q : uncachedQueries) {
+                        final Map<Object, Query> rawTerms = new HashMap<>();
+                        LuceneUtil.extractTerms(q, rawTerms, reader, true);
+                        queryTermCache.put(q, rawTerms);
+                    }
+                    return null;
+                });
+            } catch (final IOException e) {
+                LOG.warn("Match listener caught IO exception while reading query terms: {}", e.getMessage(), e);
+                termMap = Collections.emptyMap();
+                return;
+            }
+        }
+        termMap = buildTermMap(uniqueQueries, excludedFields);
+    }
+
+    /**
+     * Walk the match list and collect each unique Lucene query exactly once.
+     */
+    private Set<Query> collectUniqueLuceneQueries() {
+        final Set<Query> uniqueQueries = new HashSet<>();
+        Match nextMatch = this.match;
+        while (nextMatch != null) {
+            if (nextMatch.getIndexId().equals(LuceneIndex.ID)) {
+                uniqueQueries.add(((LuceneMatch) nextMatch).getQuery());
+            }
+            nextMatch = nextMatch.getNextMatch();
+        }
+        return uniqueQueries;
+    }
+
+    /**
+     * Combine per-query cached rawTerms into a single termText -> Query map, applying the
+     * configured-field exclusion at the end so different listener instances with different
+     * configs share the same cached rawTerms.
+     */
+    private Map<Object, Query> buildTermMap(final Set<Query> queries, final Set<String> excludedFields) {
+        final Map<Object, Query> result = new TreeMap<>();
+        for (final Query q : queries) {
+            final Map<Object, Query> rawTerms = queryTermCache.getIfPresent(q);
+            if (rawTerms == null) {
+                // Race against eviction is impossible here (single-threaded reset()), but be
+                // defensive in case the cache size becomes 0 in some future revision.
+                continue;
+            }
+            for (final Map.Entry<Object, Query> e : rawTerms.entrySet()) {
+                if (e.getKey() instanceof Term term && !excludedFields.contains(term.field())) {
+                    result.put(term.text(), e.getValue());
+                }
+            }
+        }
+        return result;
     }
 
     private static class OffsetList {
