@@ -86,7 +86,7 @@ public class LuceneModule extends AbstractInternalModule {
     };
 
     public LuceneModule(Map<String, List<? extends Object>> parameters) {
-        super(functions, parameters, false);
+        super(functions, parameters);
     }
 
     @Override

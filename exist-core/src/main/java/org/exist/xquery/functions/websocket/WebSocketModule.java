@@ -53,7 +53,7 @@ public class WebSocketModule extends AbstractInternalModule {
     private static volatile ConsoleAdapter adapter = null;
 
     public WebSocketModule(final Map<String, List<? extends Object>> parameters) {
-        super(functions, parameters, false);
+        super(functions, parameters);
     }
 
     public static void log(final String channel, final String message) {

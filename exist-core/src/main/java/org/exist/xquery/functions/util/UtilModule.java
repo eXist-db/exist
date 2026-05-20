@@ -21,7 +21,6 @@
  */
 package org.exist.xquery.functions.util;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -154,11 +153,6 @@ public class UtilModule extends AbstractInternalModule {
             new FunctionDef(BaseConversionFunctions.FNS_OCTAL_TO_INT, BaseConversionFunctions.class),
             new FunctionDef(LineNumber.signature, LineNumber.class)
     };
-
-    static {
-        Arrays.sort(functions, new FunctionComparator());
-    }
-
     public final static QName EXCEPTION_QNAME = new QName("exception", UtilModule.NAMESPACE_URI, UtilModule.PREFIX);
 
     public final static QName EXCEPTION_MESSAGE_QNAME = new QName("exception-message", UtilModule.NAMESPACE_URI, UtilModule.PREFIX);
@@ -166,7 +160,7 @@ public class UtilModule extends AbstractInternalModule {
     public final static QName ERROR_CODE_QNAME = new QName("error-code", UtilModule.NAMESPACE_URI, UtilModule.PREFIX);
 
     public UtilModule(final Map<String, List<? extends Object>> parameters) throws XPathException {
-        super(functions, parameters, true);
+        super(functions, parameters);
 
         final List<String> evalDisabledParamList = (List<String>) getParameter("evalDisabled");
         if (evalDisabledParamList != null && !evalDisabledParamList.isEmpty()) {

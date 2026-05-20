@@ -40,7 +40,7 @@ public class XQDocModule extends AbstractInternalModule {
     };
 
     public XQDocModule(Map<String, List<? extends Object>> parameters) {
-        super(functions, parameters, true);
+        super(functions, parameters);
     }
 
     @Override

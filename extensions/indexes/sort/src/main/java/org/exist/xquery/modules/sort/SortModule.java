@@ -45,7 +45,7 @@ public class SortModule extends AbstractInternalModule {
     };
 
     public SortModule(final Map<String, List<?>> parameters) {
-        super(functions, parameters, false);
+        super(functions, parameters);
     }
 
     @Override

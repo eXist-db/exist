@@ -50,7 +50,7 @@ public class ContentExtractionModule extends AbstractInternalModule {
 //            new QName("exception-message", ContentExtractionModule.NAMESPACE_URI, ContentExtractionModule.PREFIX);
 
     public ContentExtractionModule(Map<String, List<? extends Object>> parameters) throws XPathException {
-        super(functions, parameters, true);
+        super(functions, parameters);
 //        declareVariable(EXCEPTION_QNAME, null);
 //        declareVariable(EXCEPTION_MESSAGE_QNAME, null);
     }
