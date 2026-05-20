@@ -49,7 +49,7 @@ public class ConsoleCompatModule extends AbstractInternalModule {
     };
 
     public ConsoleCompatModule(final Map<String, List<? extends Object>> parameters) {
-        super(functions, parameters, false);
+        super(functions, parameters);
     }
 
     @Override

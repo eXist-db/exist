@@ -21,7 +21,6 @@
  */
 package org.exist.xquery.functions.request;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -77,13 +76,8 @@ public class RequestModule extends AbstractInternalModule {
             new FunctionDef(GetPathInfo.signature, GetPathInfo.class),
             new FunctionDef(IsMultiPartContent.signature, IsMultiPartContent.class)
     };
-
-    static {
-        Arrays.sort(functions, new FunctionComparator());
-    }
-
     public RequestModule(final Map<String, List<?>> parameters) {
-        super(functions, parameters, true);
+        super(functions, parameters);
     }
 
     @Override

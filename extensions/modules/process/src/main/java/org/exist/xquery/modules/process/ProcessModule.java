@@ -38,7 +38,7 @@ public class ProcessModule extends AbstractInternalModule {
     };
 
     public ProcessModule(Map<String, List<?>> parameters) {
-        super(functions, parameters, true);
+        super(functions, parameters);
     }
 
     @Override

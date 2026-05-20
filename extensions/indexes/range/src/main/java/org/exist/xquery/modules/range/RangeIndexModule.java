@@ -91,7 +91,7 @@ public class RangeIndexModule extends AbstractInternalModule {
             "supported");
 
     public RangeIndexModule(Map<String, List<? extends Object>> parameters) {
-        super(functions, parameters, false);
+        super(functions, parameters);
     }
 
     @Override

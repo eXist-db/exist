@@ -59,7 +59,7 @@ public class MapModule extends AbstractInternalModule {
     );
 
     public MapModule(Map<String, List<?>> parameters) {
-        super(functions, parameters, false);
+        super(functions, parameters);
     }
 
     public String getNamespaceURI() {

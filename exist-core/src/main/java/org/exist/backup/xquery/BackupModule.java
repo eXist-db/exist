@@ -49,7 +49,7 @@ public class BackupModule extends AbstractInternalModule
 
     public BackupModule(final Map<String, List<?>> parameters)
     {
-        super( functions, parameters, true );
+        super(functions, parameters);
     }
 
     public String getNamespaceURI()

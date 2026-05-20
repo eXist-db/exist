@@ -72,7 +72,7 @@ public class VectorModule extends AbstractInternalModule {
   }
 
   public VectorModule(final Map<String, List<? extends Object>> parameters) {
-    super(functions, parameters, false);
+    super(functions, parameters);
   }
 
   @Override

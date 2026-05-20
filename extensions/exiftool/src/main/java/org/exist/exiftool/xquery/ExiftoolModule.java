@@ -43,7 +43,7 @@ public class ExiftoolModule extends AbstractInternalModule {
     };
 
     public ExiftoolModule(Map<String, List<? extends Object>> parameters) throws XPathException {
-        super(functions, parameters, true);
+        super(functions, parameters);
     }
 
     @Override

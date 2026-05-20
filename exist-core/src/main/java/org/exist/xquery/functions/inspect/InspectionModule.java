@@ -56,7 +56,7 @@ public class InspectionModule extends AbstractInternalModule {
     );
 
     public InspectionModule(final Map<String, List<?>> parameters) {
-        super(functions, parameters, true);
+        super(functions, parameters);
     }
 
     @Override

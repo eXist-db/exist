@@ -68,7 +68,7 @@ public class ArrayModule extends AbstractInternalModule {
     );
 
     public ArrayModule(Map<String, List<?>> parameters) {
-        super(functions, parameters, false);
+        super(functions, parameters);
     }
 
     static FunctionSignature functionSignature(final String name, final String description, final FunctionReturnSequenceType returnType, final FunctionParameterSequenceType... paramTypes) {
