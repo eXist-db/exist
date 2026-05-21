@@ -1,0 +1,27 @@
+exist-core/src/main/java/org/exist/TestUtils.java
+  s_402b1f194ddd18::t_a14db83249bcda 244-245
+  s_402b1f194ddd18::t_98e019e1467e3f 335-337,347-349
+extensions/exquery/restxq/pom.xml
+  s_402b1f194ddd18::t_e06c99bf399299 204-210
+  s_402b1f194ddd18::t_61281cda54ee3e 257
+  s_402b1f194ddd18::t_54df93f0b0e26d 274
+exist-core/src/main/java/org/exist/jetty/JettyStart.java
+  s_402b1f194ddd18::t_09f7ffaa936c97 518-524,546,552,558-590
+  s_402b1f194ddd18::t_af7536a0df01fa 798-799
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.11",
+  "base_commit_sha": "04c1ec170845ec9c41bd8ab220a8b38a601c082c",
+  "prompts": {},
+  "sessions": {
+    "s_402b1f194ddd18": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "54a29463-2e35-41a6-aec3-c4bbb33fe461",
+        "model": "composer-2.5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
