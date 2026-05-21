@@ -40,9 +40,11 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import org.exist.security.PermissionDeniedException;
 
 /**
@@ -56,7 +58,16 @@ public class IndexController {
         CONFIG_ONLY_REINDEX
     }
 
-    private final Map<String, IndexWorker> indexWorkers = new HashMap<>();
+    /**
+     * Stable iteration order for listener chains and {@link #flush()}.
+     * Alphabetical {@link TreeMap} put Lucene first and broke store-time indexing
+     * (see {@code LuceneTests} facet/field-type tests). Core indexes run before Lucene.
+     */
+    private static final Comparator<String> INDEX_WORKER_ORDER = Comparator
+            .comparingInt(IndexController::indexWorkerChainRank)
+            .thenComparing(Comparator.naturalOrder());
+
+    private final Map<String, IndexWorker> indexWorkers = new TreeMap<>(INDEX_WORKER_ORDER);
 
     private final DBBroker broker;
     private StreamListener listener = null;
@@ -71,6 +82,23 @@ public class IndexController {
         for (final IndexWorker worker : workers) {
             indexWorkers.put(worker.getIndexId(), worker);
         }
+    }
+
+    /**
+     * Preferred {@link StreamListener} chain order: structural → statistics → Lucene → others.
+     * Uses index-id substrings so exist-core does not depend on extension modules.
+     */
+    private static int indexWorkerChainRank(final String indexId) {
+        if (indexId.contains("NativeStructuralIndex")) {
+            return 0;
+        }
+        if (indexId.contains("IndexStatistics")) {
+            return 1;
+        }
+        if (indexId.contains("lucene.LuceneIndex")) {
+            return 2;
+        }
+        return 3;
     }
 
     /**
