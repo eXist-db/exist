@@ -1,0 +1,31 @@
+extensions/webdav/src/test/resources/standalone-webapp/WEB-INF/web.xml
+  s_402b1f194ddd18::t_8c2a3097cda585 57
+exist-core/src/main/java/org/exist/TestUtils.java
+  s_402b1f194ddd18::t_a2123729cbe87f 338,350
+  s_402b1f194ddd18::t_a9b21f68bae46c 245-247
+  s_402b1f194ddd18::t_6db021a41eb4c9 85,92-93
+extensions/exquery/restxq/src/test/resources/standalone-webapp/WEB-INF/web.xml
+  s_402b1f194ddd18::t_e44dd646ca438b 53
+exist-core/src/main/java/org/exist/test/ExistWebServer.java
+  s_402b1f194ddd18::t_5991edcc1a023a 153,155
+exist-core/src/main/java/org/exist/jetty/JettyStart.java
+  s_402b1f194ddd18::t_42a5cfc0cbdd3c 520-525,538,548,561-565,569-570,572,576-579,582,588,595,601-604,607
+extensions/modules/file/src/test/resources/standalone-webapp/WEB-INF/web.xml
+  s_402b1f194ddd18::t_46ac6ef956ce3b 57
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.11",
+  "base_commit_sha": "1b1e3736cd95d38d15e4ff02cf1a65a25e772e9c",
+  "prompts": {},
+  "sessions": {
+    "s_402b1f194ddd18": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "54a29463-2e35-41a6-aec3-c4bbb33fe461",
+        "model": "composer-2.5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
