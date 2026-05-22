@@ -68,6 +68,8 @@ import static org.exist.repo.AutoDeploymentTrigger.AUTODEPLOY_PROPERTY;
  * </ul>
  * Startup failures throw {@link IllegalStateException} with detail from {@link org.exist.jetty.JettyStart}
  * ({@code webAppStartupFailureDetail} is included in the exception message).
+ * <p>
+ * Prefer {@link #builder()} over the boolean constructor chain for readable test setup.
  */
 public class ExistWebServer extends ExternalResource {
 
@@ -94,32 +96,100 @@ public class ExistWebServer extends ExternalResource {
     private Optional<Path> temporaryStorage = Optional.empty();
     private final boolean jettyStandaloneMode;
 
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static final class Builder {
+        private boolean useRandomPort;
+        private boolean cleanupDbOnShutdown;
+        private boolean disableAutoDeploy;
+        private boolean useTemporaryStorage;
+        private boolean jettyStandaloneMode = true;
+
+        public Builder useRandomPort() {
+            return useRandomPort(true);
+        }
+
+        public Builder useRandomPort(final boolean useRandomPort) {
+            this.useRandomPort = useRandomPort;
+            return this;
+        }
+
+        public Builder cleanupDbOnShutdown() {
+            return cleanupDbOnShutdown(true);
+        }
+
+        public Builder cleanupDbOnShutdown(final boolean cleanupDbOnShutdown) {
+            this.cleanupDbOnShutdown = cleanupDbOnShutdown;
+            return this;
+        }
+
+        public Builder disableAutoDeploy() {
+            return disableAutoDeploy(true);
+        }
+
+        public Builder disableAutoDeploy(final boolean disableAutoDeploy) {
+            this.disableAutoDeploy = disableAutoDeploy;
+            return this;
+        }
+
+        public Builder useTemporaryStorage() {
+            return useTemporaryStorage(true);
+        }
+
+        public Builder useTemporaryStorage(final boolean useTemporaryStorage) {
+            this.useTemporaryStorage = useTemporaryStorage;
+            return this;
+        }
+
+        public Builder jettyStandaloneMode(final boolean jettyStandaloneMode) {
+            this.jettyStandaloneMode = jettyStandaloneMode;
+            return this;
+        }
+
+        public Builder distributionMode() {
+            return jettyStandaloneMode(false);
+        }
+
+        public ExistWebServer build() {
+            return new ExistWebServer(this);
+        }
+    }
+
+    private ExistWebServer(final Builder builder) {
+        this.useRandomPort = builder.useRandomPort;
+        this.cleanupDbOnShutdown = builder.cleanupDbOnShutdown;
+        this.disableAutoDeploy = builder.disableAutoDeploy;
+        this.useTemporaryStorage = builder.useTemporaryStorage;
+        this.jettyStandaloneMode = builder.jettyStandaloneMode;
+    }
+
     public ExistWebServer() {
-        this(false);
+        this(builder());
     }
 
     public ExistWebServer(final boolean useRandomPort) {
-        this(useRandomPort, false);
+        this(builder().useRandomPort(useRandomPort));
     }
 
     public ExistWebServer(final boolean useRandomPort, final boolean cleanupDbOnShutdown) {
-        this(useRandomPort, cleanupDbOnShutdown, false);
+        this(builder().useRandomPort(useRandomPort).cleanupDbOnShutdown(cleanupDbOnShutdown));
     }
 
     public ExistWebServer(final boolean useRandomPort, final boolean cleanupDbOnShutdown, final boolean disableAutoDeploy) {
-        this(useRandomPort, cleanupDbOnShutdown, disableAutoDeploy, false);
+        this(builder().useRandomPort(useRandomPort).cleanupDbOnShutdown(cleanupDbOnShutdown).disableAutoDeploy(disableAutoDeploy));
     }
 
     public ExistWebServer(final boolean useRandomPort, final boolean cleanupDbOnShutdown, final boolean disableAutoDeploy, final boolean useTemporaryStorage) {
-        this(useRandomPort, cleanupDbOnShutdown, disableAutoDeploy, useTemporaryStorage, true);
+        this(builder().useRandomPort(useRandomPort).cleanupDbOnShutdown(cleanupDbOnShutdown)
+                .disableAutoDeploy(disableAutoDeploy).useTemporaryStorage(useTemporaryStorage));
     }
 
     public ExistWebServer(final boolean useRandomPort, final boolean cleanupDbOnShutdown, final boolean disableAutoDeploy, final boolean useTemporaryStorage, final boolean jettyStandaloneMode) {
-        this.useRandomPort = useRandomPort;
-        this.cleanupDbOnShutdown = cleanupDbOnShutdown;
-        this.disableAutoDeploy = disableAutoDeploy;
-        this.useTemporaryStorage = useTemporaryStorage;
-        this.jettyStandaloneMode = jettyStandaloneMode;
+        this(builder().useRandomPort(useRandomPort).cleanupDbOnShutdown(cleanupDbOnShutdown)
+                .disableAutoDeploy(disableAutoDeploy).useTemporaryStorage(useTemporaryStorage)
+                .jettyStandaloneMode(jettyStandaloneMode));
     }
 
     public final int getPort() {

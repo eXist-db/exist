@@ -143,6 +143,11 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         this.queryTranslator = new XMLToQuery(index);
     }
 
+    @Override
+    public int getChainPriority() {
+        return IndexWorker.CHAIN_PRIORITY_LUCENE;
+    }
+
     public String getIndexId() {
         return LuceneIndex.ID;
     }

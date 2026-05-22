@@ -57,6 +57,10 @@ import java.net.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import static org.exist.util.ThreadUtils.newGlobalThread;
@@ -69,10 +73,14 @@ import static se.softhouse.jargo.Arguments.stringArgument;
  *
  * @author wolf
  */
-public class JettyStart extends Observable implements LifeCycle.Listener {
+public class JettyStart implements LifeCycle.Listener {
 
     public static final String JETTY_HOME_PROP = "jetty.home";
     public static final String JETTY_BASE_PROP = "jetty.base";
+    public static final String STARTUP_TIMEOUT_MS_PROPERTY = "org.exist.jetty.startup.timeout.ms";
+
+    private static final String EXIST_CONTEXT_PATH = "/exist";
+    private static final String PORTAL_CONTEXT_PATH = "/";
 
     private static final String JETTY_PROPETIES_FILENAME = "jetty.properties";
     private static final Logger logger = LogManager.getLogger(JettyStart.class);
@@ -100,6 +108,8 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
     @GuardedBy("this") private int primaryPort = 8080;
     @GuardedBy("this") private boolean webAppStartedSuccessfully = false;
     @GuardedBy("this") private String webAppStartupFailureDetail = null;
+
+    private final CopyOnWriteArrayList<JettyStartListener> jettyStartListeners = new CopyOnWriteArrayList<>();
 
 
     public static void main(final String[] args) {
@@ -168,7 +178,25 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
         run(new String[] { jettyConfig.toAbsolutePath().toString() }, null);
     }
 
-    public synchronized void run(final String[] args, final Observer observer) {
+    public void addJettyStartListener(final JettyStartListener listener) {
+        if (listener != null) {
+            jettyStartListeners.addIfAbsent(listener);
+        }
+    }
+
+    public void removeJettyStartListener(final JettyStartListener listener) {
+        if (listener != null) {
+            jettyStartListeners.remove(listener);
+        }
+    }
+
+    private void notifyJettyStartListeners(final String signal) {
+        for (final JettyStartListener listener : jettyStartListeners) {
+            listener.onJettyStartEvent(signal);
+        }
+    }
+
+    public synchronized void run(final String[] args, final JettyStartListener listener) {
         if (args.length == 0) {
             logger.error("No configuration file specified!");
             return;
@@ -209,8 +237,8 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
                 configProperties.put(JETTY_BASE_PROP, jettyClasspathHome);
             }
 
-            if (observer != null) {
-                addObserver(observer);
+            if (listener != null) {
+                addJettyStartListener(listener);
             }
 
             logger.info("Running with Java {} [{} ({}) in {}]",
@@ -249,7 +277,10 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
                         .map(Path::normalize).map(Path::toAbsolutePath).map(Path::toString)
                         .orElse("<UNKNOWN>"));
 
-            BrokerPool.configure(1, 5, config, Optional.ofNullable(observer));
+            final Optional<Observer> brokerPoolObserver = listener instanceof Observer observer
+                    ? Optional.of(observer)
+                    : Optional.empty();
+            BrokerPool.configure(1, 5, config, brokerPoolObserver);
 
             // register the XMLDB driver
             final Database xmldb = new DatabaseImpl();
@@ -362,13 +393,11 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
             webAppStartedSuccessfully = true;
             webAppStartupFailureDetail = null;
 
-            setChanged();
-            notifyObservers(SIGNAL_STARTED);
+            notifyJettyStartListeners(SIGNAL_STARTED);
 
         } catch (final SocketException e) {
             recordStartupFailure("Could not bind to port: " + e.getMessage(), e);
-            setChanged();
-            notifyObservers(SIGNAL_ERROR);
+            notifyJettyStartListeners(SIGNAL_ERROR);
 
         } catch (final Exception e) {
             if (webAppStartupFailureDetail == null) {
@@ -377,8 +406,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
             } else {
                 recordStartupFailure(webAppStartupFailureDetail, e);
             }
-            setChanged();
-            notifyObservers(SIGNAL_ERROR);
+            notifyJettyStartListeners(SIGNAL_ERROR);
         }
     }
 
@@ -529,9 +557,9 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
     /**
      * Block until deployed webapps reach the readiness level required for tests.
      * <p>
-     * Every context except the distribution portal at {@code /} must be
+     * Every context except the distribution portal at {@link #PORTAL_CONTEXT_PATH} must be
      * {@link org.eclipse.jetty.server.handler.ContextHandler#isAvailable()} — Jetty returns
-     * {@code 503} on all paths while unavailable. The portal coexists with {@code /exist} and is
+     * {@code 503} on all paths while unavailable. The portal coexists with {@link #EXIST_CONTEXT_PATH} and is
      * non-gating.
      */
     private void awaitWebAppContextsStarted(final List<Handler> handlers) throws InterruptedException {
@@ -547,29 +575,87 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
 
         final boolean distributionLayout = isDistributionLayout(webApps);
         final long timeoutMs = slowEnvironmentStartupDeadlineMs();
-        final long deadline = System.currentTimeMillis() + timeoutMs;
-        while (System.currentTimeMillis() < deadline) {
-            boolean allReady = true;
+        final CountDownLatch readyLatch = new CountDownLatch(1);
+        final AtomicReference<IllegalStateException> failure = new AtomicReference<>();
+
+        final LifeCycle.Listener readinessListener = new LifeCycle.Listener() {
+            @Override
+            public void lifeCycleStarted(final LifeCycle event) {
+                evaluateReadiness();
+            }
+
+            @Override
+            public void lifeCycleFailure(final LifeCycle event, final Throwable cause) {
+                if (event instanceof WebAppContext webApp) {
+                    failure.compareAndSet(null, new IllegalStateException(
+                            "Web application failed to start: " + webApp.getContextPath(), cause));
+                } else {
+                    failure.compareAndSet(null, new IllegalStateException("Web application failed to start", cause));
+                }
+                readyLatch.countDown();
+            }
+
+            private void evaluateReadiness() {
+                for (final WebAppContext webApp : webApps) {
+                    if (webApp.isFailed()) {
+                        failure.compareAndSet(null, new IllegalStateException(
+                                "Web application failed to start: " + webApp.getContextPath()));
+                        readyLatch.countDown();
+                        return;
+                    }
+                }
+                if (allWebAppsReady(webApps, distributionLayout)) {
+                    readyLatch.countDown();
+                }
+            }
+        };
+
+        for (final WebAppContext webApp : webApps) {
+            webApp.addEventListener(readinessListener);
+        }
+
+        try {
+            if (allWebAppsReady(webApps, distributionLayout)) {
+                logger.info("All required web application contexts are ready.");
+                return;
+            }
             for (final WebAppContext webApp : webApps) {
                 if (webApp.isFailed()) {
                     throw new IllegalStateException(
                             "Web application failed to start: " + webApp.getContextPath());
                 }
-                if (!isWebAppContextReady(webApp, distributionLayout)) {
-                    allReady = false;
-                    break;
-                }
             }
-            if (allReady) {
-                logger.info("All required web application contexts are ready.");
-                return;
+            if (!readyLatch.await(timeoutMs, TimeUnit.MILLISECONDS)) {
+                throw new IllegalStateException(
+                        "Web application context did not become ready within " + timeoutMs + "ms: "
+                                + describePendingWebApps(webApps, distributionLayout),
+                        firstUnavailableCause(webApps));
             }
-            Thread.sleep(200);
+            final IllegalStateException startupFailure = failure.get();
+            if (startupFailure != null) {
+                throw startupFailure;
+            }
+            if (!allWebAppsReady(webApps, distributionLayout)) {
+                throw new IllegalStateException(
+                        "Web application context did not become ready: "
+                                + describePendingWebApps(webApps, distributionLayout),
+                        firstUnavailableCause(webApps));
+            }
+            logger.info("All required web application contexts are ready.");
+        } finally {
+            for (final WebAppContext webApp : webApps) {
+                webApp.removeEventListener(readinessListener);
+            }
         }
-        throw new IllegalStateException(
-                "Web application context did not become ready within " + timeoutMs + "ms: "
-                        + describePendingWebApps(webApps, distributionLayout),
-                firstUnavailableCause(webApps));
+    }
+
+    private static boolean allWebAppsReady(final List<WebAppContext> webApps, final boolean distributionLayout) {
+        for (final WebAppContext webApp : webApps) {
+            if (!isWebAppContextReady(webApp, distributionLayout)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private static Throwable firstUnavailableCause(final List<WebAppContext> webApps) {
@@ -583,18 +669,18 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
     }
 
     private static boolean isDistributionLayout(final List<WebAppContext> webApps) {
-        return webApps.stream().anyMatch(webApp -> "/exist".equals(webApp.getContextPath()));
+        return webApps.stream().anyMatch(webApp -> EXIST_CONTEXT_PATH.equals(webApp.getContextPath()));
     }
 
     /**
-     * Distribution portal {@code /} only needs {@code isStarted()}. Standalone {@code /} and
-     * {@code /exist} must be {@code isAvailable()} or HTTP clients see {@code 503}.
+     * Distribution portal {@link #PORTAL_CONTEXT_PATH} only needs {@code isStarted()}. Standalone
+     * {@link #PORTAL_CONTEXT_PATH} and {@link #EXIST_CONTEXT_PATH} must be {@code isAvailable()} or HTTP clients see {@code 503}.
      */
     private static boolean isWebAppContextReady(final WebAppContext webApp, final boolean distributionLayout) {
         if (!webApp.isStarted()) {
             return false;
         }
-        if (distributionLayout && "/".equals(webApp.getContextPath())) {
+        if (distributionLayout && PORTAL_CONTEXT_PATH.equals(webApp.getContextPath())) {
             return true;
         }
         return webApp.isAvailable();
@@ -639,10 +725,14 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
     }
 
     private static boolean requiresAvailability(final WebAppContext webApp, final boolean distributionLayout) {
-        return !(distributionLayout && "/".equals(webApp.getContextPath()));
+        return !(distributionLayout && PORTAL_CONTEXT_PATH.equals(webApp.getContextPath()));
     }
 
     private static long slowEnvironmentStartupDeadlineMs() {
+        final String override = System.getProperty(STARTUP_TIMEOUT_MS_PROPERTY);
+        if (override != null && !override.isBlank()) {
+            return Long.parseLong(override);
+        }
         if (System.getenv("CI") != null) {
             return 180_000L;
         }
@@ -799,8 +889,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
     @Override
     public synchronized void lifeCycleStarting(final LifeCycle lifeCycle) {
         logger.info("Jetty server starting...");
-        setChanged();
-        notifyObservers(SIGNAL_STARTING);
+        notifyJettyStartListeners(SIGNAL_STARTING);
         status = STATUS_STARTING;
         notifyAll();
     }
@@ -808,8 +897,7 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
     @Override
     public synchronized void lifeCycleStarted(final LifeCycle lifeCycle) {
         logger.info("Jetty server started.");
-        setChanged();
-        notifyObservers(SIGNAL_STARTED);
+        notifyJettyStartListeners(SIGNAL_STARTED);
         status = STATUS_STARTED;
         notifyAll();
     }

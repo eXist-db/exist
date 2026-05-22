@@ -54,13 +54,18 @@ public class IndexIntegrationTest extends AbstractTestUpdate {
 
         final BrokerPool pool = BrokerPool.getInstance();
 
-        expect(worker.getIndexId()).andReturn("TestIndex").anyTimes();
+        // IndexController sorts workers via Comparator.comparingInt(IndexWorker::getChainPriority)
+        // .thenComparing(IndexWorker::getIndexId), and a fresh IndexController is constructed every
+        // time a broker is leased (NativeBroker.loadIndexModules). Stub both calls for the lifetime
+        // of the test, so that BrokerPool.get(...) below — and any internal broker leases done by
+        // queryResource / setUp / tearDown — do not bark with "Unexpected method call" and corrupt
+        // the BrokerPool singleton.
+        expect(worker.getIndexId()).andStubReturn("TestIndex");
+        expect(worker.getChainPriority()).andStubReturn(Integer.MAX_VALUE);
 
         control.replay();
 
         pool.getIndexManager().registerIndex(index);
-
-        // acquire the broker to reload the Index Manager config so registerIndex is noticed
 
         try (final DBBroker broker = pool.get(Optional.of(pool.getSecurityManager().getSystemSubject()))) {
 
@@ -76,6 +81,11 @@ public class IndexIntegrationTest extends AbstractTestUpdate {
             // on mock is not a void method") under some JVM/test orderings.
             stream.setNextInChain(anyObject()); expectLastCall().asStub();
 
+            // Re-stub the worker identity / sorting calls after resetToStrict so subsequent
+            // broker leases driven by the test body (and by JUnit's @After tearDown) keep
+            // IndexController.<init> happy.
+            expect(worker.getIndexId()).andStubReturn("TestIndex");
+            expect(worker.getChainPriority()).andStubReturn(Integer.MAX_VALUE);
             expect(worker.getQueryRewriter(anyObject(XQueryContext.class))).andStubReturn(null);
             expect(worker.getIndexName()).andStubReturn("TestIndex");
             expect(worker.getListener()).andStubReturn(stream);
@@ -90,8 +100,12 @@ public class IndexIntegrationTest extends AbstractTestUpdate {
             control.resetToStrict();
 
             index.close();
-            pool.getIndexManager().unregisterIndex(index);
         } finally {
+            // Always unregister the test index, even if the body above threw. Otherwise a stale
+            // TestIndex with a strict mock worker stays in the IndexManager, and the next test's
+            // @Before setUp() triggers IndexController.<init> against that stale mock — corrupting
+            // BrokerPool and cascading NPEs into hundreds of unrelated tests.
+            pool.getIndexManager().unregisterIndex(index);
             control.resetToStrict();
         }
 

@@ -78,6 +78,11 @@ public class IndexStatisticsWorker implements IndexWorker {
     }
 
     @Override
+    public int getChainPriority() {
+        return IndexWorker.CHAIN_PRIORITY_STATISTICS;
+    }
+
+    @Override
     public String getIndexId() {
         return index.getIndexId();
     }

@@ -44,6 +44,10 @@ import java.util.Objects;
  * This class extends {@link Resource}, not {@link PathResource}. Jetty internals that use
  * {@code instanceof PathResource} will not treat wrapped resources as path resources; CI and
  * integration tests validate that the exploded-webapp startup path does not depend on that.
+ * <p>
+ * Only {@link #resolve(String)} differs from Jetty 12.1 {@link PathResource} behaviour. Other
+ * {@link Resource} methods delegate to the wrapped resource or rely on inherited defaults that
+ * route through {@link #getPath()}, {@link #getURI()}, {@link #iterator()}, and {@link #resolve(String)}.
  */
 public final class WindowsPathResource extends Resource {
 
