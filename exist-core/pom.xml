@@ -1203,6 +1203,7 @@ The BaseX Team. The original license statement is also included below.]]></pream
                         <jetty.home>${project.basedir}/../exist-jetty-config/target/classes/org/exist/jetty</jetty.home>
                         <exist.configurationFile>${project.build.testOutputDirectory}/conf.xml</exist.configurationFile>
                         <exist.jetty.standalone.webapp.dir>${project.build.testOutputDirectory}/standalone-webapp</exist.jetty.standalone.webapp.dir>
+                        <exist.jetty.portal.dir>${project.basedir}/../exist-jetty-config/src/main/resources/org/exist/jetty/etc/webapps/portal</exist.jetty.portal.dir>
                         <log4j.configurationFile>${project.build.testOutputDirectory}/log4j2.xml</log4j.configurationFile>
                     </systemPropertyVariables>
 
@@ -1229,6 +1230,7 @@ The BaseX Team. The original license statement is also included below.]]></pream
                         <jetty.home>${project.basedir}/../exist-jetty-config/target/classes/org/exist/jetty</jetty.home>
                         <exist.configurationFile>${project.build.testOutputDirectory}/conf.xml</exist.configurationFile>
                         <exist.jetty.standalone.webapp.dir>${project.build.testOutputDirectory}/standalone-webapp</exist.jetty.standalone.webapp.dir>
+                        <exist.jetty.portal.dir>${project.basedir}/../exist-jetty-config/src/main/resources/org/exist/jetty/etc/webapps/portal</exist.jetty.portal.dir>
                         <log4j.configurationFile>${project.build.testOutputDirectory}/log4j2.xml</log4j.configurationFile>
                     </systemPropertyVariables>
                 </configuration>

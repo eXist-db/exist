@@ -24,6 +24,7 @@ package org.exist.jetty;
 import net.jcip.annotations.GuardedBy;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.jetty.ee10.webapp.WebAppContext;
 import org.eclipse.jetty.server.*;
 import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
@@ -97,6 +98,8 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
     @GuardedBy("this") private int status = STATUS_STOPPED;
     @GuardedBy("this") private Optional<Thread> shutdownHookThread = Optional.empty();
     @GuardedBy("this") private int primaryPort = 8080;
+    @GuardedBy("this") private boolean webAppStartedSuccessfully = false;
+    @GuardedBy("this") private String webAppStartupFailureDetail = null;
 
 
     public static void main(final String[] args) {
@@ -130,6 +133,23 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
 
     private static void consoleOut(final String msg) {
         System.out.println(msg); //NOSONAR this has to go to the console
+    }
+
+    private static void consoleErr(final String msg) {
+        System.err.println(msg); //NOSONAR surfaced in Surefire output when test log4j root is OFF
+    }
+
+    private synchronized void recordStartupFailure(final String detail, final Throwable cause) {
+        webAppStartedSuccessfully = false;
+        webAppStartupFailureDetail = detail;
+        if (cause != null) {
+            logger.fatal("Jetty startup failed: {}", detail, cause);
+            consoleErr("Jetty startup failed: " + detail);
+            cause.printStackTrace(System.err); //NOSONAR CI diagnostics when log4j is disabled in tests
+        } else {
+            logger.fatal("Jetty startup failed: {}", detail);
+            consoleErr("Jetty startup failed: " + detail);
+        }
     }
 
     public synchronized void run() {
@@ -244,12 +264,13 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
             DatabaseManager.registerDatabase(xmldb);
 
         } catch (final Exception e) {
-            logger.error("configuration error: {}", e.getMessage(), e);
-            e.printStackTrace();
+            recordStartupFailure("configuration error: " + e.getMessage(), e);
             return;
         }
 
         try {
+            webAppStartupFailureDetail = null;
+            webAppStartedSuccessfully = false;
             // load jetty configurations
             final List<Path> configFiles = getEnabledConfigFiles(jettyConfig);
             final List<Object> configuredObjects = new ArrayList<>();
@@ -344,19 +365,25 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
 
             logger.info("-----------------------------------------------------");
 
+            awaitWebAppContextsStarted(getAllHandlers(server.getHandler()));
+            webAppStartedSuccessfully = true;
+            webAppStartupFailureDetail = null;
+
             setChanged();
             notifyObservers(SIGNAL_STARTED);
 
         } catch (final SocketException e) {
-            logger.error("----------------------------------------------------------");
-            logger.error("ERROR: Could not bind to port because {}", e.getMessage());
-            logger.error(e.toString());
-            logger.error("----------------------------------------------------------");
+            recordStartupFailure("Could not bind to port: " + e.getMessage(), e);
             setChanged();
             notifyObservers(SIGNAL_ERROR);
 
         } catch (final Exception e) {
-            logger.fatal("An unexpected error occurred, web server can not be started: {}", e.getMessage(), e);
+            if (webAppStartupFailureDetail == null) {
+                recordStartupFailure(
+                        e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName(), e);
+            } else {
+                recordStartupFailure(webAppStartupFailureDetail, e);
+            }
             setChanged();
             notifyObservers(SIGNAL_ERROR);
         }
@@ -504,6 +531,129 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
         }
 
         return server;
+    }
+
+    /**
+     * Block until deployed webapps reach the readiness level required for tests.
+     * <p>
+     * Every context except the distribution portal at {@code /} must be
+     * {@link org.eclipse.jetty.server.handler.ContextHandler#isAvailable()} — Jetty returns
+     * {@code 503} on all paths while unavailable. The portal coexists with {@code /exist} and is
+     * non-gating.
+     */
+    private void awaitWebAppContextsStarted(final List<Handler> handlers) throws InterruptedException {
+        final List<WebAppContext> webApps = new ArrayList<>();
+        for (final Handler handler : handlers) {
+            if (handler instanceof WebAppContext webApp) {
+                webApps.add(webApp);
+            }
+        }
+        if (webApps.isEmpty()) {
+            return;
+        }
+
+        final boolean distributionLayout = isDistributionLayout(webApps);
+        final long timeoutMs = slowEnvironmentStartupDeadlineMs();
+        final long deadline = System.currentTimeMillis() + timeoutMs;
+        while (System.currentTimeMillis() < deadline) {
+            boolean allReady = true;
+            for (final WebAppContext webApp : webApps) {
+                if (webApp.isFailed()) {
+                    throw new IllegalStateException(
+                            "Web application failed to start: " + webApp.getContextPath());
+                }
+                if (!isWebAppContextReady(webApp, distributionLayout)) {
+                    allReady = false;
+                    break;
+                }
+            }
+            if (allReady) {
+                logger.info("All required web application contexts are ready.");
+                return;
+            }
+            Thread.sleep(200);
+        }
+        throw new IllegalStateException(
+                "Web application context did not become ready within " + timeoutMs + "ms: "
+                        + describePendingWebApps(webApps, distributionLayout),
+                firstUnavailableCause(webApps));
+    }
+
+    private static Throwable firstUnavailableCause(final List<WebAppContext> webApps) {
+        for (final WebAppContext webApp : webApps) {
+            final Throwable unavailable = webApp.getUnavailableException();
+            if (unavailable != null) {
+                return unavailable;
+            }
+        }
+        return null;
+    }
+
+    private static boolean isDistributionLayout(final List<WebAppContext> webApps) {
+        return webApps.stream().anyMatch(webApp -> "/exist".equals(webApp.getContextPath()));
+    }
+
+    /**
+     * Distribution portal {@code /} only needs {@code isStarted()}. Standalone {@code /} and
+     * {@code /exist} must be {@code isAvailable()} or HTTP clients see {@code 503}.
+     */
+    private static boolean isWebAppContextReady(final WebAppContext webApp, final boolean distributionLayout) {
+        if (!webApp.isStarted()) {
+            return false;
+        }
+        if (distributionLayout && "/".equals(webApp.getContextPath())) {
+            return true;
+        }
+        return webApp.isAvailable();
+    }
+
+    private static String describePendingWebApps(final List<WebAppContext> webApps, final boolean distributionLayout) {
+        final StringBuilder details = new StringBuilder();
+        for (final WebAppContext webApp : webApps) {
+            if (webApp.isFailed()) {
+                continue;
+            }
+            if (!isWebAppContextReady(webApp, distributionLayout)) {
+                if (!details.isEmpty()) {
+                    details.append("; ");
+                }
+                details.append(webApp.getContextPath())
+                        .append(" started=").append(webApp.isStarted())
+                        .append(" available=").append(webApp.isAvailable())
+                        .append(" requireAvailable=").append(requiresAvailability(webApp, distributionLayout))
+                        .append(" war=").append(describeWebAppWar(webApp));
+                final Throwable unavailable = webApp.getUnavailableException();
+                if (unavailable != null) {
+                    details.append(" unavailableCause=").append(unavailable.getClass().getName())
+                            .append(": ").append(unavailable.getMessage());
+                }
+            }
+        }
+        return details.isEmpty() ? "unknown" : details.toString();
+    }
+
+    private static String describeWebAppWar(final WebAppContext webApp) {
+        final String war = webApp.getWar();
+        if (war != null && !war.isBlank()) {
+            return war;
+        }
+        try {
+            final Resource baseResource = webApp.getBaseResource();
+            return baseResource != null ? String.valueOf(baseResource) : "null";
+        } catch (final Exception e) {
+            return "unresolved(" + e.getMessage() + ")";
+        }
+    }
+
+    private static boolean requiresAvailability(final WebAppContext webApp, final boolean distributionLayout) {
+        return !(distributionLayout && "/".equals(webApp.getContextPath()));
+    }
+
+    private static long slowEnvironmentStartupDeadlineMs() {
+        if (System.getenv("CI") != null) {
+            return 180_000L;
+        }
+        return 60_000L;
     }
 
     private Map<String, String> getConfigProperties(final Path configDir) throws IOException {
@@ -694,5 +844,22 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
 
     public synchronized int getPrimaryPort() {
         return primaryPort;
+    }
+
+    /**
+     * {@code true} when all required {@link WebAppContext} instances finished startup. Used by
+     * integration tests to detect swallowed startup failures.
+     */
+    public synchronized boolean isWebAppStartedSuccessfully() {
+        return webAppStartedSuccessfully;
+    }
+
+    /**
+     * When {@link #isWebAppStartedSuccessfully()} is {@code false}, holds the last startup failure
+     * message for test diagnostics (also printed to {@code System.err} because module test log4j
+     * configs often set {@code Root level="OFF"}).
+     */
+    public synchronized Optional<String> getWebAppStartupFailureDetail() {
+        return Optional.ofNullable(webAppStartupFailureDetail);
     }
 }

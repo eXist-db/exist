@@ -67,40 +67,31 @@ public class LoginModuleIT {
     private static Collection root;
     private static HttpClient client;
 
-    /** Wait for server port to accept connections before XML-RPC. Windows CI can be slower to bind. */
-    private static void waitForServerReady(int port, int timeoutMs) throws InterruptedException {
-        final long deadline = System.currentTimeMillis() + timeoutMs;
-        while (System.currentTimeMillis() < deadline) {
-            try (java.net.Socket s = new java.net.Socket()) {
-                s.connect(new java.net.InetSocketAddress("localhost", port), 1000);
-                return;
-            } catch (IOException e) {
-                Thread.sleep(500);
-            }
-        }
-    }
-
     @BeforeClass
-    public static void beforeClass() throws XMLDBException, InterruptedException {
+    public static void beforeClass() throws XMLDBException {
         final int port = existWebServer.getPort();
-        final boolean isWindows = System.getProperty("os.name", "").toLowerCase().contains("win");
-        waitForServerReady(port, isWindows ? 60_000 : 30_000);
-
         final String uri = "xmldb:exist://localhost:" + port + "/xmlrpc" + XmldbURI.ROOT_COLLECTION;
         XMLDBException lastException = null;
         for (int i = 0; i < 20; i++) {
             try {
                 root = DatabaseManager.getCollection(uri, TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
+                lastException = null;
                 break;
-            } catch (XMLDBException e) {
+            } catch (final XMLDBException e) {
                 lastException = e;
                 if (i < 19) {
-                    Thread.sleep(500);
+                    try {
+                        Thread.sleep(500);
+                    } catch (final InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        throw new AssertionError("Interrupted while waiting for XML-RPC", ie);
+                    }
                 }
             }
         }
         if (root == null) {
-            throw new AssertionError("Failed to connect to XML-RPC after 20 retries: " + (lastException != null ? lastException.getMessage() : ""));
+            throw new AssertionError("Failed to connect to XML-RPC: "
+                    + (lastException != null ? lastException.getMessage() : "unknown"));
         }
         final BinaryResource res = root.createResource(XQUERY_FILENAME, BinaryResource.class);
         ((EXistResource) res).setMimeType("application/xquery");
