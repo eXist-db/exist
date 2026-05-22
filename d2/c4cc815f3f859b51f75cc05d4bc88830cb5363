@@ -1,0 +1,61 @@
+exist-core/src/main/java/org/exist/launcher/Launcher.java
+  s_402b1f194ddd18::t_70b919d290fdd3 724-741
+exist-core/src/main/java/org/exist/launcher/SplashScreen.java
+  s_402b1f194ddd18::t_8fa3c6612c3660 25
+  s_402b1f194ddd18::t_c6c39ea410c1df 43
+  s_402b1f194ddd18::t_9c60f5ba9e0315 133-149
+  s_402b1f194ddd18::t_727d69f5cc07f3 115-116,130-132
+  s_402b1f194ddd18::t_d8d02bd7b5b916 117-129
+exist-core/src/main/java/org/exist/launcher/UtilityPanel.java
+  s_402b1f194ddd18::t_52ce9e3387de78 179,181-193
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndexWorker.java
+  s_402b1f194ddd18::t_0195e2b27997eb 146-150
+exist-core/src/main/java/org/exist/indexing/IndexWorker.java
+  s_402b1f194ddd18::t_001331dcffffe8 57-70
+exist-core/src/main/java/org/exist/jetty/JettyStart.java
+  s_402b1f194ddd18::t_5ab51e10544e4f 280-283
+  s_402b1f194ddd18::t_af3c922d833f33 560,562,578-617,628-655,658
+  s_402b1f194ddd18::t_2106a3325c8bd4 618-621
+  s_402b1f194ddd18::t_cb1b339a002fd1 892,900
+  s_402b1f194ddd18::t_e1daa1b89c8c46 76,80-83
+  s_402b1f194ddd18::t_f082206172bf5b 60-63
+  s_402b1f194ddd18::t_45238a44197c88 181-199
+  s_402b1f194ddd18::t_6dc1c9305c1eef 112-113
+  s_402b1f194ddd18::t_828c35aa16b168 396,400,409
+  s_402b1f194ddd18::t_6a515d4457c0c5 240-241
+  s_402b1f194ddd18::t_7f8d225f0dc8dc 728,732-735
+  s_402b1f194ddd18::t_864d3efe496a9a 672,676-677,683
+exist-core/src/main/java/org/exist/storage/structural/NativeStructuralIndexWorker.java
+  s_402b1f194ddd18::t_41bdc5436d962a 418-422
+exist-core/src/main/java/org/exist/indexing/IndexController.java
+  s_402b1f194ddd18::t_f5dc4733cced8a 64-66,68
+  s_402b1f194ddd18::t_14e5e0819e43ba 80-82
+  s_402b1f194ddd18::t_3788f0a476a944 45
+exist-core/src/main/java/org/exist/storage/statistics/IndexStatisticsWorker.java
+  s_402b1f194ddd18::t_171520c0f4a623 81-84
+exist-core/src/test/java/org/exist/xquery/update/IndexIntegrationTest.java
+  s_402b1f194ddd18::t_181b9c1f54e68c 57-64,84-88,104-108
+exist-core/src/main/java/org/exist/jetty/JettyStartListener.java
+  s_402b1f194ddd18::t_0bc17033fc76bc 1-31
+exist-core/src/main/java/org/exist/test/ExistWebServer.java
+  s_402b1f194ddd18::t_c49dbd25586e61 99-167,169,173,177,181,185-186,190-192
+  s_402b1f194ddd18::t_c4bad05920e5d2 71-72
+exist-core/src/main/java/org/exist/jetty/WindowsPathResource.java
+  s_402b1f194ddd18::t_c0a527135ff720 47-50
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "d2c4cc815f3f859b51f75cc05d4bc88830cb5363",
+  "prompts": {},
+  "sessions": {
+    "s_402b1f194ddd18": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "54a29463-2e35-41a6-aec3-c4bbb33fe461",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": null
+    }
+  }
+}
