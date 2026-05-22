@@ -202,203 +202,27 @@ public class JettyStart implements LifeCycle.Listener {
             return;
         }
 
-        Path jettyConfig = Path.of(args[0]).normalize();
-        boolean configFromClasspath = false;
-        if (Files.notExists(jettyConfig)) {
-            logger.warn("Configuration file: {} does not exist!", jettyConfig.toAbsolutePath().toString());
-
-            final String jettyConfigFileName = FileUtils.fileName(jettyConfig.getFileName());
-            logger.warn("Fallback... searching for configuration file on classpath: {}!etc/{}", getClass().getPackage().getName(), jettyConfigFileName);
-
-            final URL jettyConfigUrl = getClass().getResource("etc/" + jettyConfigFileName);
-            if (jettyConfigUrl != null) {
-                try {
-                    jettyConfig = Path.of(jettyConfigUrl.toURI()).normalize();
-                    configFromClasspath = true;
-                } catch (final URISyntaxException e) {
-                    logger.error("Unable to retrieve configuration file from classpath: {}", e.getMessage(), e);
-                    return;
-                }
-            } else {
-                logger.error("Unable to find configuration file on classpath!");
-                return;
-            }
+        final Optional<ResolvedJettyConfig> resolvedConfig = resolveJettyConfigPath(args[0]);
+        if (resolvedConfig.isEmpty()) {
+            return;
         }
 
         final Map<String, String> configProperties;
         try {
-            configProperties = getConfigProperties(jettyConfig.getParent());
-
-            // modify JETTY_HOME and JETTY_BASE properties when running with classpath config
-            if (configFromClasspath) {
-                final String jettyClasspathHome = jettyConfig.getParent().getParent().toAbsolutePath().toString();
-                System.setProperty(JETTY_HOME_PROP, jettyClasspathHome);
-                configProperties.put(JETTY_HOME_PROP, jettyClasspathHome);
-                configProperties.put(JETTY_BASE_PROP, jettyClasspathHome);
-            }
-
-            if (listener != null) {
-                addJettyStartListener(listener);
-            }
-
-            logger.info("Running with Java {} [{} ({}) in {}]",
-                System.getProperty("java.version", "(unknown java.version)"),
-                System.getProperty("java.vendor", "(unknown java.vendor)"),
-                System.getProperty("java.vm.name", "(unknown java.vm.name)"),
-                System.getProperty("java.home", "(unknown java.home)")
-            );
-
-            logger.info("Approximate maximum amount of memory for JVM: {}", FileUtils.humanSize(Runtime.getRuntime().maxMemory()));
-            logger.info("Number of processors available to JVM: {}", Runtime.getRuntime().availableProcessors());
-
-            logger.info("Running as user '{}'", System.getProperty("user.name", "(unknown user.name)"));
-            logger.info("[eXist Home : {}]", System.getProperty("exist.home", "unknown"));
-            logger.info("[eXist Version : {}]", SystemProperties.getInstance().getSystemProperty("product-version", "unknown"));
-            logger.info("[eXist Build : {}]", SystemProperties.getInstance().getSystemProperty("product-build", "unknown"));
-            logger.info("[Git commit : {}]", SystemProperties.getInstance().getSystemProperty("git-commit", "unknown"));
-            logger.info("[Git commit timestamp : {}]", SystemProperties.getInstance().getSystemProperty("git-commit-timestamp", "unknown"));
-
-            logger.info("[Operating System : {} {} {}]", System.getProperty("os.name"), System.getProperty("os.version"), System.getProperty("os.arch"));
-            logger.info("[log4j.configurationFile : {}]", System.getProperty("log4j.configurationFile"));
-            logger.info("[jetty Version: {}]", Jetty.VERSION);
-            logger.info("[{} : {}]", JETTY_HOME_PROP, configProperties.get(JETTY_HOME_PROP));
-            logger.info("[{} : {}]", JETTY_BASE_PROP, configProperties.get(JETTY_BASE_PROP));
-            logger.info("[jetty configuration : {}]", jettyConfig.toAbsolutePath().toString());
-
-            // configure the database instance
-            SingleInstanceConfiguration config;
-            if (args.length == 2) {
-                config = new SingleInstanceConfiguration(args[1]);
-            } else {
-                config = new SingleInstanceConfiguration();
-            }
-            logger.info("Configuring eXist from {}",
-                    config.getConfigFilePath()
-                        .map(Path::normalize).map(Path::toAbsolutePath).map(Path::toString)
-                        .orElse("<UNKNOWN>"));
-
-            final Optional<Observer> brokerPoolObserver = listener instanceof Observer observer
-                    ? Optional.of(observer)
-                    : Optional.empty();
-            BrokerPool.configure(1, 5, config, brokerPoolObserver);
-
-            // register the XMLDB driver
-            final Database xmldb = new DatabaseImpl();
-            xmldb.setProperty("create-database", "false");
-            DatabaseManager.registerDatabase(xmldb);
-
+            configProperties = bootstrapExistDb(args, listener, resolvedConfig.get());
         } catch (final Exception e) {
             recordStartupFailure("configuration error: " + e.getMessage(), e);
             return;
         }
 
         try {
-            webAppStartupFailureDetail = null;
-            webAppStartedSuccessfully = false;
-            // load jetty configurations
-            final List<Path> configFiles = getEnabledConfigFiles(jettyConfig);
-            final List<Object> configuredObjects = new ArrayList<>();
-            XmlConfiguration last = null;
-            for(final Path confFile : configFiles) {
-                logger.info("[loading jetty configuration : {}]", confFile.toString());
-                final Resource resource = ResourceFactory.root().newResource(confFile);
-                final XmlConfiguration configuration = new XmlConfiguration(resource);
-                if (last != null) {
-                    configuration.getIdMap().putAll(last.getIdMap());
-                }
-                configuration.getProperties().putAll(configProperties);
-                configuredObjects.add(configuration.configure());
-                last = configuration;
-            }
-
-            // configure WebSocket on any ServletContextHandler
-            configureWebSocket(configuredObjects);
-
-            // start Jetty
-            final Optional<Server> maybeServer = startJetty(configuredObjects);
-            if(maybeServer.isEmpty()) {
-                logger.error("Unable to find a server to start in jetty configurations");
-                throw new IllegalStateException();
-            }
-
-            final Server server = maybeServer.get();
-
-            final Connector[] connectors = server.getConnectors();
-
-            // Construct description of all ports opened.
-            final StringBuilder allPorts = new StringBuilder();
-
-            if (connectors.length > 1) {
-                // plural s
-                allPorts.append("s");
-            }
-
-            boolean establishedPrimaryPort = false;
-            for(final Connector connector : connectors) {
-                if(connector instanceof NetworkConnector networkConnector) {
-
-                    if(!establishedPrimaryPort) {
-                        this.primaryPort = networkConnector.getLocalPort();
-                        establishedPrimaryPort = true;
-                    }
-
-                    allPorts.append(" ");
-                    allPorts.append(networkConnector.getLocalPort());
-                }
-            }
-
-            //*************************************************************
-            final List<URI> serverUris = getSeverURIs(server);
-            if(!serverUris.isEmpty()) {
-                this.primaryPort = serverUris.getFirst().getPort();
-
-            }
-            logger.info("-----------------------------------------------------");
-            logger.info("Server has started, listening on:");
-            for(final URI serverUri : serverUris) {
-                logger.info("{}", serverUri.resolve("/"));
-            }
-
-            logger.info("Configured contexts:");
-            final List<Handler> handlers = getAllHandlers(server.getHandler());
-            for (final Handler handler: handlers) {
-
-                if (handler instanceof ContextHandler contextHandler) {
-                    logger.info("{} ({})", contextHandler.getContextPath(), contextHandler.getDisplayName());
-                }
-
-                if (handler instanceof ServletContextHandler contextHandler) {
-                    final ServiceLoader<ExistExtensionServlet> services = ServiceLoader.load(ExistExtensionServlet.class);
-
-                    for (ExistExtensionServlet existExtensionServlet : services) {
-                        final String pathSpec = existExtensionServlet.getPathSpec();
-                        final String contextPath = contextHandler.getContextPath();
-
-                        // Avoid "//" as logged prefix
-                        final String normalizedPath = "/".equals(contextPath)
-                                ? pathSpec
-                                : contextPath + pathSpec;
-
-                        logger.info("{} ({})", normalizedPath, existExtensionServlet.getServletInfo());
-
-                        // Register servlet
-                        contextHandler.addServlet(new ServletHolder(existExtensionServlet), pathSpec);
-                    }
-                }
-            }
-
-            logger.info("-----------------------------------------------------");
-
-            awaitWebAppContextsStarted(getAllHandlers(server.getHandler()));
+            launchJettyServer(resolvedConfig.get().path(), configProperties);
             webAppStartedSuccessfully = true;
             webAppStartupFailureDetail = null;
-
             notifyJettyStartListeners(SIGNAL_STARTED);
-
         } catch (final SocketException e) {
             recordStartupFailure("Could not bind to port: " + e.getMessage(), e);
             notifyJettyStartListeners(SIGNAL_ERROR);
-
         } catch (final Exception e) {
             if (webAppStartupFailureDetail == null) {
                 recordStartupFailure(
@@ -407,6 +231,190 @@ public class JettyStart implements LifeCycle.Listener {
                 recordStartupFailure(webAppStartupFailureDetail, e);
             }
             notifyJettyStartListeners(SIGNAL_ERROR);
+        }
+    }
+
+    private record ResolvedJettyConfig(Path path, boolean fromClasspath) {}
+
+    private Optional<ResolvedJettyConfig> resolveJettyConfigPath(final String configArg) {
+        Path jettyConfig = Path.of(configArg).normalize();
+        if (Files.exists(jettyConfig)) {
+            return Optional.of(new ResolvedJettyConfig(jettyConfig, false));
+        }
+
+        logger.warn("Configuration file: {} does not exist!", jettyConfig.toAbsolutePath().toString());
+
+        final String jettyConfigFileName = FileUtils.fileName(jettyConfig.getFileName());
+        logger.warn("Fallback... searching for configuration file on classpath: {}!etc/{}",
+                getClass().getPackage().getName(), jettyConfigFileName);
+
+        final URL jettyConfigUrl = getClass().getResource("etc/" + jettyConfigFileName);
+        if (jettyConfigUrl == null) {
+            logger.error("Unable to find configuration file on classpath!");
+            return Optional.empty();
+        }
+
+        try {
+            jettyConfig = Path.of(jettyConfigUrl.toURI()).normalize();
+            return Optional.of(new ResolvedJettyConfig(jettyConfig, true));
+        } catch (final URISyntaxException e) {
+            logger.error("Unable to retrieve configuration file from classpath: {}", e.getMessage(), e);
+            return Optional.empty();
+        }
+    }
+
+    private Map<String, String> bootstrapExistDb(
+            final String[] args,
+            final JettyStartListener listener,
+            final ResolvedJettyConfig resolvedConfig) throws Exception {
+        final Path jettyConfig = resolvedConfig.path();
+        final Map<String, String> configProperties = getConfigProperties(jettyConfig.getParent());
+
+        if (resolvedConfig.fromClasspath()) {
+            final String jettyClasspathHome = jettyConfig.getParent().getParent().toAbsolutePath().toString();
+            System.setProperty(JETTY_HOME_PROP, jettyClasspathHome);
+            configProperties.put(JETTY_HOME_PROP, jettyClasspathHome);
+            configProperties.put(JETTY_BASE_PROP, jettyClasspathHome);
+        }
+
+        if (listener != null) {
+            addJettyStartListener(listener);
+        }
+
+        logStartupEnvironment(configProperties, jettyConfig);
+
+        final SingleInstanceConfiguration config = args.length == 2
+                ? new SingleInstanceConfiguration(args[1])
+                : new SingleInstanceConfiguration();
+        logger.info("Configuring eXist from {}",
+                config.getConfigFilePath()
+                        .map(Path::normalize).map(Path::toAbsolutePath).map(Path::toString)
+                        .orElse("<UNKNOWN>"));
+
+        final Optional<Observer> brokerPoolObserver = listener instanceof Observer observer
+                ? Optional.of(observer)
+                : Optional.empty();
+        BrokerPool.configure(1, 5, config, brokerPoolObserver);
+
+        final Database xmldb = new DatabaseImpl();
+        xmldb.setProperty("create-database", "false");
+        DatabaseManager.registerDatabase(xmldb);
+
+        return configProperties;
+    }
+
+    private void logStartupEnvironment(final Map<String, String> configProperties, final Path jettyConfig) {
+        logger.info("Running with Java {} [{} ({}) in {}]",
+                System.getProperty("java.version", "(unknown java.version)"),
+                System.getProperty("java.vendor", "(unknown java.vendor)"),
+                System.getProperty("java.vm.name", "(unknown java.vm.name)"),
+                System.getProperty("java.home", "(unknown java.home)"));
+
+        logger.info("Approximate maximum amount of memory for JVM: {}", FileUtils.humanSize(Runtime.getRuntime().maxMemory()));
+        logger.info("Number of processors available to JVM: {}", Runtime.getRuntime().availableProcessors());
+
+        logger.info("Running as user '{}'", System.getProperty("user.name", "(unknown user.name)"));
+        logger.info("[eXist Home : {}]", System.getProperty("exist.home", "unknown"));
+        logger.info("[eXist Version : {}]", SystemProperties.getInstance().getSystemProperty("product-version", "unknown"));
+        logger.info("[eXist Build : {}]", SystemProperties.getInstance().getSystemProperty("product-build", "unknown"));
+        logger.info("[Git commit : {}]", SystemProperties.getInstance().getSystemProperty("git-commit", "unknown"));
+        logger.info("[Git commit timestamp : {}]", SystemProperties.getInstance().getSystemProperty("git-commit-timestamp", "unknown"));
+
+        logger.info("[Operating System : {} {} {}]", System.getProperty("os.name"), System.getProperty("os.version"), System.getProperty("os.arch"));
+        logger.info("[log4j.configurationFile : {}]", System.getProperty("log4j.configurationFile"));
+        logger.info("[jetty Version: {}]", Jetty.VERSION);
+        logger.info("[{} : {}]", JETTY_HOME_PROP, configProperties.get(JETTY_HOME_PROP));
+        logger.info("[{} : {}]", JETTY_BASE_PROP, configProperties.get(JETTY_BASE_PROP));
+        logger.info("[jetty configuration : {}]", jettyConfig.toAbsolutePath().toString());
+    }
+
+    private void launchJettyServer(final Path jettyConfig, final Map<String, String> configProperties) throws Exception {
+        webAppStartupFailureDetail = null;
+        webAppStartedSuccessfully = false;
+
+        final List<Object> configuredObjects = loadConfiguredJettyObjects(jettyConfig, configProperties);
+        configureWebSocket(configuredObjects);
+
+        final Server server = startJetty(configuredObjects)
+                .orElseThrow(() -> {
+                    logger.error("Unable to find a server to start in jetty configurations");
+                    return new IllegalStateException();
+                });
+
+        updatePrimaryPortFromConnectors(server);
+        logServerStarted(server);
+
+        final List<Handler> handlers = getAllHandlers(server.getHandler());
+        registerExtensionServlets(handlers);
+
+        logger.info("-----------------------------------------------------");
+        awaitWebAppContextsStarted(handlers);
+    }
+
+    private List<Object> loadConfiguredJettyObjects(
+            final Path jettyConfig,
+            final Map<String, String> configProperties) throws Exception {
+        final List<Path> configFiles = getEnabledConfigFiles(jettyConfig);
+        final List<Object> configuredObjects = new ArrayList<>();
+        XmlConfiguration last = null;
+        for (final Path confFile : configFiles) {
+            logger.info("[loading jetty configuration : {}]", confFile.toString());
+            final Resource resource = ResourceFactory.root().newResource(confFile);
+            final XmlConfiguration configuration = new XmlConfiguration(resource);
+            if (last != null) {
+                configuration.getIdMap().putAll(last.getIdMap());
+            }
+            configuration.getProperties().putAll(configProperties);
+            configuredObjects.add(configuration.configure());
+            last = configuration;
+        }
+        return configuredObjects;
+    }
+
+    private void updatePrimaryPortFromConnectors(final Server server) {
+        for (final Connector connector : server.getConnectors()) {
+            if (connector instanceof NetworkConnector networkConnector) {
+                this.primaryPort = networkConnector.getLocalPort();
+                return;
+            }
+        }
+    }
+
+    private void logServerStarted(final Server server) {
+        final List<URI> serverUris = getSeverURIs(server);
+        if (!serverUris.isEmpty()) {
+            this.primaryPort = serverUris.getFirst().getPort();
+        }
+
+        logger.info("-----------------------------------------------------");
+        logger.info("Server has started, listening on:");
+        for (final URI serverUri : serverUris) {
+            logger.info("{}", serverUri.resolve("/"));
+        }
+
+        logger.info("Configured contexts:");
+        for (final Handler handler : getAllHandlers(server.getHandler())) {
+            if (handler instanceof ContextHandler contextHandler) {
+                logger.info("{} ({})", contextHandler.getContextPath(), contextHandler.getDisplayName());
+            }
+        }
+    }
+
+    private void registerExtensionServlets(final List<Handler> handlers) {
+        for (final Handler handler : handlers) {
+            if (handler instanceof ServletContextHandler contextHandler) {
+                final ServiceLoader<ExistExtensionServlet> services = ServiceLoader.load(ExistExtensionServlet.class);
+                for (final ExistExtensionServlet existExtensionServlet : services) {
+                    final String pathSpec = existExtensionServlet.getPathSpec();
+                    final String contextPath = contextHandler.getContextPath();
+                    final String normalizedPath = "/".equals(contextPath)
+                            ? pathSpec
+                            : contextPath + pathSpec;
+
+                    logger.info("{} ({})", normalizedPath, existExtensionServlet.getServletInfo());
+                    contextHandler.addServlet(new ServletHolder(existExtensionServlet), pathSpec);
+                }
+            }
         }
     }
 
@@ -563,89 +571,134 @@ public class JettyStart implements LifeCycle.Listener {
      * non-gating.
      */
     private void awaitWebAppContextsStarted(final List<Handler> handlers) throws InterruptedException {
+        final List<WebAppContext> webApps = collectWebAppContexts(handlers);
+        if (webApps.isEmpty()) {
+            return;
+        }
+
+        new WebAppReadinessAwaiter(webApps, isDistributionLayout(webApps))
+                .await(slowEnvironmentStartupDeadlineMs());
+    }
+
+    private static List<WebAppContext> collectWebAppContexts(final List<Handler> handlers) {
         final List<WebAppContext> webApps = new ArrayList<>();
         for (final Handler handler : handlers) {
             if (handler instanceof WebAppContext webApp) {
                 webApps.add(webApp);
             }
         }
-        if (webApps.isEmpty()) {
-            return;
+        return webApps;
+    }
+
+    /**
+     * Polls {@link WebAppContext} lifecycle events until all required contexts are ready or a failure occurs.
+     */
+    private static final class WebAppReadinessAwaiter implements LifeCycle.Listener {
+
+        private final List<WebAppContext> webApps;
+        private final boolean distributionLayout;
+        private final CountDownLatch readyLatch = new CountDownLatch(1);
+        private final AtomicReference<IllegalStateException> failure = new AtomicReference<>();
+
+        WebAppReadinessAwaiter(final List<WebAppContext> webApps, final boolean distributionLayout) {
+            this.webApps = webApps;
+            this.distributionLayout = distributionLayout;
         }
 
-        final boolean distributionLayout = isDistributionLayout(webApps);
-        final long timeoutMs = slowEnvironmentStartupDeadlineMs();
-        final CountDownLatch readyLatch = new CountDownLatch(1);
-        final AtomicReference<IllegalStateException> failure = new AtomicReference<>();
-
-        final LifeCycle.Listener readinessListener = new LifeCycle.Listener() {
-            @Override
-            public void lifeCycleStarted(final LifeCycle event) {
-                evaluateReadiness();
+        void await(final long timeoutMs) throws InterruptedException {
+            for (final WebAppContext webApp : webApps) {
+                webApp.addEventListener(this);
             }
-
-            @Override
-            public void lifeCycleFailure(final LifeCycle event, final Throwable cause) {
-                if (event instanceof WebAppContext webApp) {
-                    failure.compareAndSet(null, new IllegalStateException(
-                            "Web application failed to start: " + webApp.getContextPath(), cause));
-                } else {
-                    failure.compareAndSet(null, new IllegalStateException("Web application failed to start", cause));
-                }
-                readyLatch.countDown();
-            }
-
-            private void evaluateReadiness() {
+            try {
+                awaitReadyOrThrow(timeoutMs);
+            } finally {
                 for (final WebAppContext webApp : webApps) {
-                    if (webApp.isFailed()) {
-                        failure.compareAndSet(null, new IllegalStateException(
-                                "Web application failed to start: " + webApp.getContextPath()));
-                        readyLatch.countDown();
-                        return;
-                    }
-                }
-                if (allWebAppsReady(webApps, distributionLayout)) {
-                    readyLatch.countDown();
+                    webApp.removeEventListener(this);
                 }
             }
-        };
-
-        for (final WebAppContext webApp : webApps) {
-            webApp.addEventListener(readinessListener);
         }
 
-        try {
+        private void awaitReadyOrThrow(final long timeoutMs) throws InterruptedException {
             if (allWebAppsReady(webApps, distributionLayout)) {
                 logger.info("All required web application contexts are ready.");
                 return;
             }
-            for (final WebAppContext webApp : webApps) {
-                if (webApp.isFailed()) {
-                    throw new IllegalStateException(
-                            "Web application failed to start: " + webApp.getContextPath());
-                }
-            }
+            throwIfAnyWebAppFailed();
             if (!readyLatch.await(timeoutMs, TimeUnit.MILLISECONDS)) {
-                throw new IllegalStateException(
-                        "Web application context did not become ready within " + timeoutMs + "ms: "
-                                + describePendingWebApps(webApps, distributionLayout),
-                        firstUnavailableCause(webApps));
+                throw readinessTimeoutException(timeoutMs);
             }
             final IllegalStateException startupFailure = failure.get();
             if (startupFailure != null) {
                 throw startupFailure;
             }
             if (!allWebAppsReady(webApps, distributionLayout)) {
-                throw new IllegalStateException(
-                        "Web application context did not become ready: "
-                                + describePendingWebApps(webApps, distributionLayout),
-                        firstUnavailableCause(webApps));
+                throw readinessIncompleteException();
             }
             logger.info("All required web application contexts are ready.");
-        } finally {
+        }
+
+        private void throwIfAnyWebAppFailed() {
             for (final WebAppContext webApp : webApps) {
-                webApp.removeEventListener(readinessListener);
+                if (webApp.isFailed()) {
+                    throw new IllegalStateException(
+                            "Web application failed to start: " + webApp.getContextPath());
+                }
             }
+        }
+
+        private IllegalStateException readinessTimeoutException(final long timeoutMs) {
+            return new IllegalStateException(
+                    "Web application context did not become ready within " + timeoutMs + "ms: "
+                            + describePendingWebApps(webApps, distributionLayout),
+                    firstUnavailableCause(webApps));
+        }
+
+        private IllegalStateException readinessIncompleteException() {
+            return new IllegalStateException(
+                    "Web application context did not become ready: "
+                            + describePendingWebApps(webApps, distributionLayout),
+                    firstUnavailableCause(webApps));
+        }
+
+        @Override
+        public void lifeCycleStarted(final LifeCycle event) {
+            evaluateReadiness();
+        }
+
+        @Override
+        public void lifeCycleFailure(final LifeCycle event, final Throwable cause) {
+            recordLifecycleFailure(event, cause);
+            readyLatch.countDown();
+        }
+
+        private void recordLifecycleFailure(final LifeCycle event, final Throwable cause) {
+            if (event instanceof WebAppContext webApp) {
+                failure.compareAndSet(null, new IllegalStateException(
+                        "Web application failed to start: " + webApp.getContextPath(), cause));
+            } else {
+                failure.compareAndSet(null, new IllegalStateException("Web application failed to start", cause));
+            }
+        }
+
+        private void evaluateReadiness() {
+            if (recordFirstFailedWebApp()) {
+                return;
+            }
+            if (allWebAppsReady(webApps, distributionLayout)) {
+                readyLatch.countDown();
+            }
+        }
+
+        private boolean recordFirstFailedWebApp() {
+            for (final WebAppContext webApp : webApps) {
+                if (webApp.isFailed()) {
+                    failure.compareAndSet(null, new IllegalStateException(
+                            "Web application failed to start: " + webApp.getContextPath()));
+                    readyLatch.countDown();
+                    return true;
+                }
+            }
+            return false;
         }
     }
 
