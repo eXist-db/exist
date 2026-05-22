@@ -26,11 +26,17 @@
  */
 package org.exist.extensions.exquery.restxq.impl;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.fluent.Executor;
-import org.apache.http.client.fluent.Request;
-import org.apache.http.entity.ContentType;
+import org.apache.hc.client5.http.auth.AuthScope;
+import org.apache.hc.client5.http.auth.UsernamePasswordCredentials;
+import org.apache.hc.client5.http.fluent.Executor;
+import org.apache.hc.client5.http.fluent.Request;
+import org.apache.hc.client5.http.impl.auth.BasicCredentialsProvider;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.HttpHeaders;
+import org.apache.hc.core5.http.HttpHost;
+import org.apache.hc.core5.http.HttpStatus;
 import org.exist.collections.CollectionConfiguration;
 import org.exist.dom.memtree.SAXAdapter;
 import org.exist.test.ExistWebServer;
@@ -50,6 +56,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.Base64;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
@@ -80,27 +87,52 @@ public abstract class AbstractIntegrationTest {
         return getServerUri(existWebServer) + "/restxq";
     }
 
+    protected static Executor createAuthenticatedExecutor(
+            final ExistWebServer existWebServer,
+            final String user,
+            final String password) {
+        final HttpHost host = new HttpHost("http", "localhost", existWebServer.getPort());
+        final UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(user, password.toCharArray());
+        final BasicCredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+        credentialsProvider.setCredentials(new AuthScope(host), credentials);
+        final String authorizationHeader = "Basic " + Base64.getEncoder().encodeToString(
+                (user + ":" + password).getBytes(UTF_8));
+
+        return Executor
+                .newInstance(HttpClients.custom()
+                        .setDefaultCredentialsProvider(credentialsProvider)
+                        .addRequestInterceptorFirst((request, entity, context) -> {
+                            if (!request.containsHeader(HttpHeaders.AUTHORIZATION)) {
+                                request.addHeader(HttpHeaders.AUTHORIZATION, authorizationHeader);
+                            }
+                        })
+                        .disableAutomaticRetries()
+                        .build())
+                .authPreemptive(host)
+                .auth(host, credentials);
+    }
+
     protected static void enableRestXqTrigger(final ExistWebServer existWebServer, final Executor executor, final String collectionPath) throws IOException {
-        final HttpResponse response = executor.execute(Request
-                .Put(getRestUri(existWebServer) + "/db/system/config" + collectionPath + "/" + CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE)
+        final ClassicHttpResponse response = (ClassicHttpResponse) executor.execute(Request
+                .put(getRestUri(existWebServer) + "/db/system/config" + collectionPath + "/" + CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE)
                 .bodyString(COLLECTION_CONFIG, ContentType.APPLICATION_XML.withCharset(UTF_8))
         ).returnResponse();
-        assertEquals(HttpStatus.SC_CREATED, response.getStatusLine().getStatusCode());
+        assertEquals(HttpStatus.SC_CREATED, response.getCode());
     }
 
     protected static void storeXquery(final ExistWebServer existWebServer, final Executor executor, final String collectionPath, final String xqueryFilename, final String xquery) throws IOException {
-        final HttpResponse response = executor.execute(Request
-                .Put(getRestUri(existWebServer) + collectionPath + "/" + xqueryFilename)
+        final ClassicHttpResponse response = (ClassicHttpResponse) executor.execute(Request
+                .put(getRestUri(existWebServer) + collectionPath + "/" + xqueryFilename)
                 .bodyString(xquery, XQUERY_CONTENT_TYPE)
         ).returnResponse();
-        assertEquals(HttpStatus.SC_CREATED, response.getStatusLine().getStatusCode());
+        assertEquals(HttpStatus.SC_CREATED, response.getCode());
     }
 
     protected static void removeXquery(final ExistWebServer existWebServer, final Executor executor, final String collectionPath, final String xqueryFilename) throws IOException {
-        final HttpResponse response = executor.execute(Request
-                .Delete(getRestUri(existWebServer) + collectionPath + "/" + xqueryFilename)
+        final ClassicHttpResponse response = (ClassicHttpResponse) executor.execute(Request
+                .delete(getRestUri(existWebServer) + collectionPath + "/" + xqueryFilename)
         ).returnResponse();
-        assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
+        assertEquals(HttpStatus.SC_OK, response.getCode());
     }
 
     protected static void assertRestXqResourceFunctionsCount(final ExistWebServer existWebServer, final Executor executor, final int expectedCount) throws IOException {
@@ -108,10 +140,10 @@ public abstract class AbstractIntegrationTest {
     }
 
     protected static NodeList getRestXqResourceFunctions(final ExistWebServer existWebServer, final Executor executor) throws IOException {
-        final HttpResponse response = executor.execute(Request
-                .Get(getRestUri(existWebServer) + "/db/?_query=rest:resource-functions()")
+        final ClassicHttpResponse response = (ClassicHttpResponse) executor.execute(Request
+                .get(getRestUri(existWebServer) + "/db/?_query=rest:resource-functions()")
         ).returnResponse();
-        assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
+        assertEquals(HttpStatus.SC_OK, response.getCode());
 
         final Document doc;
         try (final InputStream is = response.getEntity().getContent()) {

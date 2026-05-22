@@ -21,10 +21,10 @@
  */
 package org.exist.xquery.functions.request;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.fluent.Request;
-import org.apache.http.entity.ContentType;
+import org.apache.hc.client5.http.fluent.Request;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.HttpStatus;
 import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 
 import org.exist.xmldb.UserManagementService;
@@ -92,7 +92,7 @@ public class PatchTest extends RESTTest {
     public void patchBinary() throws IOException {
         final byte[] testData = "12345".getBytes(UTF_8);
 
-        final Request patch = Request.Patch(getCollectionRootUri() + "/" + XQUERY_FILENAME)
+        final Request patch = Request.patch(getCollectionRootUri() + "/" + XQUERY_FILENAME)
                 .bodyByteArray(testData, ContentType.APPLICATION_OCTET_STREAM);
 
         assertResponse(patch, encodeBase64String(testData));
@@ -102,7 +102,7 @@ public class PatchTest extends RESTTest {
     public void patchXml() throws IOException {
         final String testData = "<a><b><c>hello</c></b></a>";
 
-        final Request patch = Request.Patch(getCollectionRootUri() + "/" + XQUERY_FILENAME)
+        final Request patch = Request.patch(getCollectionRootUri() + "/" + XQUERY_FILENAME)
                 .bodyByteArray(testData.getBytes(UTF_8), ContentType.TEXT_XML);
 
         assertResponse(patch, testData);
@@ -112,7 +112,7 @@ public class PatchTest extends RESTTest {
     public void patchString() throws IOException {
         final String testData = "12345";
 
-        final Request patch = Request.Patch(getCollectionRootUri() + "/" + XQUERY_FILENAME)
+        final Request patch = Request.patch(getCollectionRootUri() + "/" + XQUERY_FILENAME)
                 .bodyByteArray(testData.getBytes(UTF_8));
 
         assertResponse(patch, testData);
@@ -122,7 +122,7 @@ public class PatchTest extends RESTTest {
     public void patchCollectionNotAllowed() throws IOException {
         final String testData = "<a><b><c>hello</c></b></a>";
 
-        final Request patch = Request.Patch(getCollectionRootUri())
+        final Request patch = Request.patch(getCollectionRootUri())
                 .bodyByteArray(testData.getBytes(UTF_8), ContentType.TEXT_XML);
 
         assertMethodNotAllowed(patch);
@@ -132,14 +132,14 @@ public class PatchTest extends RESTTest {
     public void patchXmlResourceNotAllowed() throws IOException {
         final String testData = "<a><b><c>hello</c></b></a>";
 
-        final Request patch = Request.Patch(getCollectionRootUri() + "/" + XML_FILENAME)
+        final Request patch = Request.patch(getCollectionRootUri() + "/" + XML_FILENAME)
                 .bodyByteArray(testData.getBytes(UTF_8), ContentType.TEXT_XML);
 
         assertMethodNotAllowed(patch);
     }
 
     private void assertResponse(final Request method, String expectedData) throws IOException {
-        final HttpResponse response = method.execute().returnResponse();
+        final ClassicHttpResponse response = (ClassicHttpResponse) method.execute().returnResponse();
         final Matcher<String> valueMatcher = hasSimilarXml(
                 "<request><method>PATCH</method><data>" + expectedData + "</data></request>");
 
@@ -153,12 +153,12 @@ public class PatchTest extends RESTTest {
         }
     }
 
-    private void assertHTTPStatusCode (final int code, final HttpResponse response) {
-        assertEquals(code, response.getStatusLine().getStatusCode());
+    private void assertHTTPStatusCode (final int code, final ClassicHttpResponse response) {
+        assertEquals(code, response.getCode());
     }
 
     private void assertMethodNotAllowed (final Request req) throws IOException {
-        final HttpResponse response = req.execute().returnResponse();
+        final ClassicHttpResponse response = (ClassicHttpResponse) req.execute().returnResponse();
         assertHTTPStatusCode(HttpStatus.SC_METHOD_NOT_ALLOWED, response);
     }
 }

@@ -22,10 +22,10 @@
 
 package org.exist.dom.persistent;
 
-import org.apache.http.HttpHost;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.fluent.Executor;
-import org.apache.http.client.fluent.Request;
+import org.apache.hc.client5.http.fluent.Executor;
+import org.apache.hc.client5.http.fluent.Request;
+import org.exist.http.AbstractHttpTest;
+import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.exist.TestUtils;
 import org.exist.test.ExistWebServer;
 import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
@@ -44,7 +44,7 @@ import org.xmldb.api.modules.XMLResource;
 import java.io.IOException;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.apache.http.HttpStatus.SC_CREATED;
+import static org.apache.hc.core5.http.HttpStatus.SC_CREATED;
 import static org.junit.Assert.*;
 
 /**
@@ -67,24 +67,22 @@ public class CDataIntergationTest {
         final String uri = "http://localhost:" + existWebServer.getPort() + "/exist/rest/db";
         final String docUri = uri + "/rest-cdata-test.xml";
 
-        final Executor executor = Executor
-                .newInstance()
-                .auth(TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD)
-                .authPreemptive(new HttpHost("localhost", existWebServer.getPort()));
+        final Executor executor = AbstractHttpTest.createAuthenticatedExecutor(
+                existWebServer, TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
 
         // store document
-        final HttpResponse storeResponse = executor.execute(
+        final ClassicHttpResponse storeResponse = (ClassicHttpResponse) executor.execute(
                 Request
-                        .Put(docUri)
+                        .put(docUri)
                         .addHeader("Content-Type", "application/xml")
                         .bodyByteArray(cdata_xml.getBytes(UTF_8))
                 ).returnResponse();
-        assertEquals(SC_CREATED, storeResponse.getStatusLine().getStatusCode());
+        assertEquals(SC_CREATED, storeResponse.getCode());
 
         // retrieve document
-        final HttpResponse retrieveResponse = executor.execute(
+        final ClassicHttpResponse retrieveResponse = (ClassicHttpResponse) executor.execute(
                 Request
-                        .Get(docUri)
+                        .get(docUri)
                 ).returnResponse();
         try (final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
             retrieveResponse.getEntity().writeTo(baos);

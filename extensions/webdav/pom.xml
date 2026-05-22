@@ -110,6 +110,11 @@
             <scope>test</scope>
         </dependency>
 
+        <!--
+            HttpClient 4.x retained (test scope) for the milton-client JUnit WebDAV harness,
+            which depends on com.ettrema.httpclient.AbstractHttpClient (HC4-only API).
+            Litmus compliance is tested separately via exist-docker bats tests.
+        -->
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>

@@ -23,17 +23,20 @@
 package org.exist.http;
 
 import com.evolvedbinary.j8fu.function.FunctionE;
-import org.apache.http.HttpHost;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.config.CookieSpecs;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.fluent.Executor;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.hc.client5.http.auth.AuthScope;
+import org.apache.hc.client5.http.auth.UsernamePasswordCredentials;
+import org.apache.hc.client5.http.fluent.Executor;
+import org.apache.hc.client5.http.impl.auth.BasicCredentialsProvider;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.HttpHeaders;
+import org.apache.hc.core5.http.HttpHost;
 import org.exist.TestUtils;
 import org.exist.test.ExistWebServer;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 
 /**
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
@@ -74,6 +77,73 @@ public abstract class AbstractHttpTest {
     }
 
     /**
+     * Create an {@link HttpHost} for the given eXist-db Web Server.
+     *
+     * @param existWebServer the eXist-db Web Server.
+     *
+     * @return the HTTP host.
+     */
+    public static HttpHost getHttpHost(final ExistWebServer existWebServer) {
+        return new HttpHost("http", "localhost", existWebServer.getPort());
+    }
+
+    /**
+     * Create an HTTP client that sends preemptive HTTP Basic authentication.
+     *
+     * <p>HC5's fluent {@link Executor} auth helpers do not always attach credentials to requests
+     * under the {@code /exist/...} context path; the request interceptor ensures the
+     * {@code Authorization} header is present on the first request.</p>
+     *
+     * @param existWebServer the eXist-db Web Server.
+     * @param user the user name.
+     * @param password the password.
+     *
+     * @return a closable HTTP client.
+     */
+    public static CloseableHttpClient createAuthenticatedClient(
+            final ExistWebServer existWebServer,
+            final String user,
+            final String password) {
+        final HttpHost host = getHttpHost(existWebServer);
+        final UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(user, password.toCharArray());
+        final BasicCredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+        credentialsProvider.setCredentials(new AuthScope(host), credentials);
+        final String authorizationHeader = "Basic " + Base64.getEncoder().encodeToString(
+                (user + ":" + password).getBytes(StandardCharsets.UTF_8));
+
+        return HttpClients.custom()
+                .setDefaultCredentialsProvider(credentialsProvider)
+                .addRequestInterceptorFirst((request, entity, context) -> {
+                    if (!request.containsHeader(HttpHeaders.AUTHORIZATION)) {
+                        request.addHeader(HttpHeaders.AUTHORIZATION, authorizationHeader);
+                    }
+                })
+                .disableAutomaticRetries()
+                .build();
+    }
+
+    /**
+     * Create an HTTP executor that sends preemptive HTTP Basic authentication.
+     *
+     * @param existWebServer the eXist-db Web Server.
+     * @param user the user name.
+     * @param password the password.
+     *
+     * @return an executor backed by {@link #createAuthenticatedClient(ExistWebServer, String, String)}.
+     */
+    public static Executor createAuthenticatedExecutor(
+            final ExistWebServer existWebServer,
+            final String user,
+            final String password) {
+        final HttpHost host = getHttpHost(existWebServer);
+        final UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(user, password.toCharArray());
+        return Executor
+                .newInstance(createAuthenticatedClient(existWebServer, user, password))
+                .authPreemptive(host)
+                .auth(host, credentials);
+    }
+
+    /**
      * Execute a function with a HTTP Client.
      *
      * @param <T> the return type of the <code>fn</code> function.
@@ -83,13 +153,9 @@ public abstract class AbstractHttpTest {
      *
      * @throws IOException if an I/O error occurs
      */
-    protected static <T> T withHttpClient(final FunctionE<HttpClient, T, IOException> fn) throws IOException {
-        try (final CloseableHttpClient client = HttpClientBuilder
-                .create()
+    protected static <T> T withHttpClient(final FunctionE<CloseableHttpClient, T, IOException> fn) throws IOException {
+        try (final CloseableHttpClient client = HttpClients.custom()
                 .disableAutomaticRetries()
-                .setDefaultRequestConfig(RequestConfig.custom()
-                        .setCookieSpec(CookieSpecs.STANDARD)
-                        .build())
                 .build()) {
             return fn.apply(client);
         }
@@ -107,12 +173,16 @@ public abstract class AbstractHttpTest {
      * @throws IOException if an I/O error occurs
      */
     protected static <T> T withHttpExecutor(final ExistWebServer existWebServer, final FunctionE<Executor, T, IOException> fn) throws IOException {
-        return withHttpClient(client -> {
+        try (final CloseableHttpClient client = createAuthenticatedClient(
+                existWebServer, TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD)) {
+            final HttpHost host = getHttpHost(existWebServer);
+            final UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(
+                    TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD.toCharArray());
             final Executor executor = Executor
                     .newInstance(client)
-                    .auth(TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD)
-                    .authPreemptive(new HttpHost("localhost", existWebServer.getPort()));
+                    .authPreemptive(host)
+                    .auth(host, credentials);
             return fn.apply(executor);
-        });
+        }
     }
 }

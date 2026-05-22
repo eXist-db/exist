@@ -24,10 +24,10 @@ package org.exist.http.urlrewrite;
 
 import com.evolvedbinary.j8fu.tuple.Tuple2;
 import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.fluent.Request;
-import org.apache.http.entity.ContentType;
+import org.apache.hc.client5.http.fluent.Request;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.HttpStatus;
 import org.exist.http.AbstractHttpTest;
 import org.exist.test.ExistWebServer;
 import org.junit.ClassRule;
@@ -95,20 +95,20 @@ public class ControllerTest extends AbstractHttpTest {
 
     private void store(final String testCollectionName, final String documentMediaType, final String documentName, final String documentContent) throws IOException {
         final Request request = Request
-                .Put(getRestUri(existWebServer) + "/db/apps/" + testCollectionName + "/" + documentName)
+                .put(getRestUri(existWebServer) + "/db/apps/" + testCollectionName + "/" + documentName)
                 .bodyString(documentContent, ContentType.create(documentMediaType));
         int statusCode = withHttpExecutor(existWebServer, executor ->
-                executor.execute(request).returnResponse().getStatusLine().getStatusCode()
+                executor.execute(request).returnResponse().getCode()
         );
         assertEquals(HttpStatus.SC_CREATED, statusCode);
     }
 
     private Tuple2<Integer, String> get(final String testCollectionName, final String documentName) throws IOException {
         final Request request = Request
-                .Get(getAppsUri(existWebServer) + "/" + testCollectionName + "/" + documentName);
+                .get(getAppsUri(existWebServer) + "/" + testCollectionName + "/" + documentName);
         final Tuple2<Integer, String> responseCodeAndBody = withHttpExecutor(existWebServer, executor -> {
-            final HttpResponse response = executor.execute(request).returnResponse();
-            final int sc = response.getStatusLine().getStatusCode();
+            final ClassicHttpResponse response = (ClassicHttpResponse) executor.execute(request).returnResponse();
+            final int sc = response.getCode();
             try (final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
                 response.getEntity().writeTo(baos);
                 return Tuple(sc, baos.toString(UTF_8));

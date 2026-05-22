@@ -28,9 +28,9 @@ import static org.junit.Assert.assertEquals;
 import java.io.IOException;
 import java.net.URLEncoder;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.fluent.Request;
+import org.apache.hc.client5.http.fluent.Request;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.HttpStatus;
 import org.exist.http.RESTTest;
 import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.junit.Test;
@@ -65,7 +65,7 @@ public class GetHeaderTest extends RESTTest {
 	}
 
 	private void testGetHeader(String headerValue) throws IOException, SAXException {
-		Request request = Request.Get(getCollectionRootUri() + "?_query=" + URLEncoder.encode(xquery, "UTF-8") + "&_indent=no&_wrap=no");
+		Request request = Request.get(getCollectionRootUri() + "?_query=" + URLEncoder.encode(xquery, "UTF-8") + "&_indent=no&_wrap=no");
 
 		final StringBuilder xmlExpectedResponse = new StringBuilder("<request-header name=\"" + HTTP_HEADER_NAME + "\">");
 		if (headerValue != null) {
@@ -74,9 +74,9 @@ public class GetHeaderTest extends RESTTest {
 		}
 		xmlExpectedResponse.append("</request-header>");
 
-		final HttpResponse response = request.execute().returnResponse();
+		final ClassicHttpResponse response = (ClassicHttpResponse) request.execute().returnResponse();
 
-		assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
+		assertEquals(HttpStatus.SC_OK, response.getCode());
 
 		try (final UnsynchronizedByteArrayOutputStream os = new UnsynchronizedByteArrayOutputStream()) {
 			response.getEntity().writeTo(os);

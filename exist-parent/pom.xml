@@ -118,6 +118,8 @@
         <ant.version>1.10.17</ant.version>
         <apache.httpcomponents.version>4.5.14</apache.httpcomponents.version>
         <apache.httpcomponents.core.version>4.4.16</apache.httpcomponents.core.version>
+        <apache.httpcomponents.client5.version>5.6.1</apache.httpcomponents.client5.version>
+        <apache.httpcomponents.core5.version>5.4</apache.httpcomponents.core5.version>
         <apache.xmlrpc.version>5.0.0</apache.xmlrpc.version>
         <appassembler.version>2.1.0</appassembler.version>
         <aspectj.version>1.9.25.1</aspectj.version>
@@ -333,6 +335,21 @@
                 <groupId>org.apache.httpcomponents</groupId>
                 <artifactId>fluent-hc</artifactId>
                 <version>${apache.httpcomponents.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents.core5</groupId>
+                <artifactId>httpcore5</artifactId>
+                <version>${apache.httpcomponents.core5.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents.client5</groupId>
+                <artifactId>httpclient5</artifactId>
+                <version>${apache.httpcomponents.client5.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents.client5</groupId>
+                <artifactId>httpclient5-fluent</artifactId>
+                <version>${apache.httpcomponents.client5.version}</version>
             </dependency>
 
             <!-- Jetty 12 core modules -->

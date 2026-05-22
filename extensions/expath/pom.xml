@@ -57,9 +57,15 @@
             <artifactId>commons-io</artifactId>
         </dependency>
 
+        <!-- HC4: EXistTreeBuilder iterates org.apache.http.Header from http-client-java -->
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpcore</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.httpcomponents.core5</groupId>
+            <artifactId>httpcore5</artifactId>
         </dependency>
 
         <dependency>
