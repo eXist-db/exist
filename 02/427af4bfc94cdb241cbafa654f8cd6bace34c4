@@ -1,0 +1,37 @@
+extensions/exquery/restxq/src/test/resources/log4j2.xml
+  s_402b1f194ddd18::t_2902c75a3794fd 9
+extensions/modules/file/src/test/resources/log4j2.xml
+  s_402b1f194ddd18::t_2902c75a3794fd 32
+extensions/webdav/src/test/resources/log4j2.xml
+  s_402b1f194ddd18::t_2902c75a3794fd 32
+exist-core/src/test/java/org/exist/http/urlrewrite/ControllerTest.java
+  s_402b1f194ddd18::t_2902c75a3794fd 33,53-54
+exist-core/src/test/resources/log4j2.xml
+  s_402b1f194ddd18::t_2902c75a3794fd 32
+extensions/webdav/src/test/java/org/exist/jetty/WindowsPathResourceIT.java
+  s_402b1f194ddd18::t_b8ba52333218cd 41
+  s_402b1f194ddd18::t_278e0649c8fa20 1-40,42-77
+exist-core/src/main/java/org/exist/jetty/WindowsPathResource.java
+  s_402b1f194ddd18::t_2902c75a3794fd 44,54
+exist-core/src/main/java/org/exist/test/ExistWebServer.java
+  s_402b1f194ddd18::t_595604322e7713 48
+  s_402b1f194ddd18::t_2902c75a3794fd 45-47,49-70
+extensions/webdav/pom.xml
+  s_402b1f194ddd18::t_66e66216c669c9 158-160
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.11",
+  "base_commit_sha": "02427af4bfc94cdb241cbafa654f8cd6bace34c4",
+  "prompts": {},
+  "sessions": {
+    "s_402b1f194ddd18": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "54a29463-2e35-41a6-aec3-c4bbb33fe461",
+        "model": "composer-2.5"
+      },
+      "human_author": null
+    }
+  }
+}
