@@ -107,7 +107,9 @@ public class LoginModuleIT {
         cookieStore = new BasicCookieStore();
         httpContext = HttpClientContext.create();
         httpContext.setCookieStore(cookieStore);
-        client = HttpClients.custom().build();
+        client = HttpClients.custom()
+                .disableAutomaticRetries()
+                .build();
     }
 
     @AfterClass
@@ -141,16 +143,17 @@ public class LoginModuleIT {
     private void doGet(@Nullable String params, String expected) throws IOException {
         final HttpGet httpGet = new HttpGet("http://localhost:" + existWebServer.getPort() + "/rest" + XmldbURI.ROOT_COLLECTION + '/' + XQUERY_FILENAME +
                 (params == null ? "" : "?" + params));
-        final ClassicHttpResponse response = client.executeOpen(null, httpGet, httpContext);
-        final HttpEntity entity = response.getEntity();
-        final String responseBody;
-        try {
-            responseBody = EntityUtils.toString(entity);
-        } catch (final ParseException e) {
-            throw new IOException(e);
+        try (final ClassicHttpResponse response = client.executeOpen(null, httpGet, httpContext)) {
+            final HttpEntity entity = response.getEntity();
+            final String responseBody;
+            try {
+                responseBody = EntityUtils.toString(entity);
+            } catch (final ParseException e) {
+                throw new IOException(e);
+            }
+            assertEquals(responseBody, SC_OK, response.getCode());
+            assertEquals(expected, responseBody);
         }
-        assertEquals(responseBody, SC_OK, response.getCode());
-        assertEquals(expected, responseBody);
     }
 
 }

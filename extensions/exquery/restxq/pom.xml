@@ -158,6 +158,14 @@
         <!-- test dependencies -->
 
         <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>exist-core</artifactId>
+            <version>${project.version}</version>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
@@ -177,12 +185,6 @@
             <artifactId>httpcore5</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.apache.httpcomponents.client5</groupId>
-            <artifactId>httpclient5</artifactId>
-            <scope>test</scope>
-        </dependency>
-
         <dependency>
             <groupId>org.apache.httpcomponents.client5</groupId>
             <artifactId>httpclient5-fluent</artifactId>

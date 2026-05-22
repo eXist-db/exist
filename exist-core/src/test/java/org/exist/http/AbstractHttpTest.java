@@ -23,10 +23,7 @@
 package org.exist.http;
 
 import com.evolvedbinary.j8fu.function.FunctionE;
-import org.apache.hc.client5.http.auth.AuthScope;
-import org.apache.hc.client5.http.auth.UsernamePasswordCredentials;
 import org.apache.hc.client5.http.fluent.Executor;
-import org.apache.hc.client5.http.impl.auth.BasicCredentialsProvider;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.HttpHeaders;
@@ -87,6 +84,11 @@ public abstract class AbstractHttpTest {
         return new HttpHost("http", "localhost", existWebServer.getPort());
     }
 
+    private static String basicAuthorizationHeader(final String user, final String password) {
+        return "Basic " + Base64.getEncoder().encodeToString(
+                (user + ":" + password).getBytes(StandardCharsets.UTF_8));
+    }
+
     /**
      * Create an HTTP client that sends preemptive HTTP Basic authentication.
      *
@@ -104,15 +106,9 @@ public abstract class AbstractHttpTest {
             final ExistWebServer existWebServer,
             final String user,
             final String password) {
-        final HttpHost host = getHttpHost(existWebServer);
-        final UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(user, password.toCharArray());
-        final BasicCredentialsProvider credentialsProvider = new BasicCredentialsProvider();
-        credentialsProvider.setCredentials(new AuthScope(host), credentials);
-        final String authorizationHeader = "Basic " + Base64.getEncoder().encodeToString(
-                (user + ":" + password).getBytes(StandardCharsets.UTF_8));
+        final String authorizationHeader = basicAuthorizationHeader(user, password);
 
         return HttpClients.custom()
-                .setDefaultCredentialsProvider(credentialsProvider)
                 .addRequestInterceptorFirst((request, entity, context) -> {
                     if (!request.containsHeader(HttpHeaders.AUTHORIZATION)) {
                         request.addHeader(HttpHeaders.AUTHORIZATION, authorizationHeader);
@@ -135,12 +131,7 @@ public abstract class AbstractHttpTest {
             final ExistWebServer existWebServer,
             final String user,
             final String password) {
-        final HttpHost host = getHttpHost(existWebServer);
-        final UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(user, password.toCharArray());
-        return Executor
-                .newInstance(createAuthenticatedClient(existWebServer, user, password))
-                .authPreemptive(host)
-                .auth(host, credentials);
+        return Executor.newInstance(createAuthenticatedClient(existWebServer, user, password));
     }
 
     /**
@@ -175,14 +166,7 @@ public abstract class AbstractHttpTest {
     protected static <T> T withHttpExecutor(final ExistWebServer existWebServer, final FunctionE<Executor, T, IOException> fn) throws IOException {
         try (final CloseableHttpClient client = createAuthenticatedClient(
                 existWebServer, TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD)) {
-            final HttpHost host = getHttpHost(existWebServer);
-            final UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(
-                    TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD.toCharArray());
-            final Executor executor = Executor
-                    .newInstance(client)
-                    .authPreemptive(host)
-                    .auth(host, credentials);
-            return fn.apply(executor);
+            return fn.apply(Executor.newInstance(client));
         }
     }
 }
