@@ -25,8 +25,8 @@ import org.eclipse.jetty.util.URIUtil;
 import org.eclipse.jetty.util.resource.PathResource;
 import org.eclipse.jetty.util.resource.Resource;
 import org.eclipse.jetty.util.resource.ResourceFactory;
+import org.exist.util.OSUtil;
 
-import java.io.File;
 import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -40,6 +40,10 @@ import java.util.Objects;
  * {@code path.resolve(uri.getPath())}, which throws {@link java.nio.file.InvalidPathException}
  * when the URI path is {@code /D:/...}. Exploded test webapps on Windows CI hit this in
  * {@code WebAppContext.getWebInf()}. Remove when upstream Jetty restores safe Windows resolve.
+ * <p>
+ * This class extends {@link Resource}, not {@link PathResource}. Jetty internals that use
+ * {@code instanceof PathResource} will not treat wrapped resources as path resources; CI and
+ * integration tests validate that the exploded-webapp startup path does not depend on that.
  */
 public final class WindowsPathResource extends Resource {
 
@@ -52,10 +56,13 @@ public final class WindowsPathResource extends Resource {
     }
 
     public static Resource wrapIfNeeded(final Resource resource, final ResourceFactory resourceFactory) {
-        if (resource == null || File.separatorChar != '\\' || !(resource instanceof PathResource)) {
+        if (resource == null || !OSUtil.isWindows()) {
             return resource;
         }
         if (resource instanceof WindowsPathResource) {
+            return resource;
+        }
+        if (!(resource instanceof PathResource)) {
             return resource;
         }
         return new WindowsPathResource(resource, resourceFactory);
@@ -114,10 +121,13 @@ public final class WindowsPathResource extends Resource {
         if (this == obj) {
             return true;
         }
-        if (!(obj instanceof WindowsPathResource other)) {
+        if (!(obj instanceof Resource other)) {
             return false;
         }
-        return delegate.equals(other.delegate);
+        if (other instanceof WindowsPathResource wrapped) {
+            other = wrapped.delegate;
+        }
+        return delegate.equals(other);
     }
 
     @Override

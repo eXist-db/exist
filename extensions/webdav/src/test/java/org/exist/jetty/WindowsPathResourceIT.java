@@ -24,9 +24,9 @@ package org.exist.jetty;
 import org.eclipse.jetty.util.resource.PathResource;
 import org.eclipse.jetty.util.resource.Resource;
 import org.eclipse.jetty.util.resource.ResourceFactory;
+import org.exist.util.OSUtil;
 import org.junit.Test;
 
-import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
@@ -44,7 +44,7 @@ public class WindowsPathResourceIT {
 
     @Test
     public void resolveWebInfOnWindowsDriveUri() throws Exception {
-        assumeTrue("Windows-only PathResource URI regression", File.separatorChar == '\\');
+        assumeTrue("Windows-only PathResource URI regression", OSUtil.isWindows());
 
         final ResourceFactory resourceFactory = ResourceFactory.root();
         final Path webapp = Files.createTempDirectory("webapp");

@@ -135,20 +135,13 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
         System.out.println(msg); //NOSONAR this has to go to the console
     }
 
-    private static void consoleErr(final String msg) {
-        System.err.println(msg); //NOSONAR surfaced in Surefire output when test log4j root is OFF
-    }
-
     private synchronized void recordStartupFailure(final String detail, final Throwable cause) {
         webAppStartedSuccessfully = false;
         webAppStartupFailureDetail = detail;
         if (cause != null) {
             logger.fatal("Jetty startup failed: {}", detail, cause);
-            consoleErr("Jetty startup failed: " + detail);
-            cause.printStackTrace(System.err); //NOSONAR CI diagnostics when log4j is disabled in tests
         } else {
             logger.fatal("Jetty startup failed: {}", detail);
-            consoleErr("Jetty startup failed: " + detail);
         }
     }
 
@@ -856,8 +849,8 @@ public class JettyStart extends Observable implements LifeCycle.Listener {
 
     /**
      * When {@link #isWebAppStartedSuccessfully()} is {@code false}, holds the last startup failure
-     * message for test diagnostics (also printed to {@code System.err} because module test log4j
-     * configs often set {@code Root level="OFF"}).
+     * message for test diagnostics (surfaced by {@link org.exist.test.ExistWebServer} in thrown
+     * {@link IllegalStateException}s).
      */
     public synchronized Optional<String> getWebAppStartupFailureDetail() {
         return Optional.ofNullable(webAppStartupFailureDetail);

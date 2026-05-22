@@ -67,7 +67,7 @@ import static org.exist.repo.AutoDeploymentTrigger.AUTODEPLOY_PROPERTY;
  *   <li>{@code jetty.home} — Jetty configuration directory ({@code exist-jetty-config/target/classes/...})</li>
  * </ul>
  * Startup failures throw {@link IllegalStateException} with detail from {@link org.exist.jetty.JettyStart}
- * (also printed to {@code System.err} when test log4j root is OFF).
+ * ({@code webAppStartupFailureDetail} is included in the exception message).
  */
 public class ExistWebServer extends ExternalResource {
 
