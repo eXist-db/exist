@@ -1,0 +1,29 @@
+exist-core/src/main/java/org/exist/jetty/WindowsPathResource.java
+  s_402b1f194ddd18::t_9a8c4562d8f36e 124,127-130
+  s_402b1f194ddd18::t_112ef418beabb2 43-46
+  s_402b1f194ddd18::t_a887dde85682bd 59,65
+  s_402b1f194ddd18::t_1f49cac900ac77 28
+exist-core/src/main/java/org/exist/test/ExistWebServer.java
+  s_402b1f194ddd18::t_ae0b849523b26a 70
+extensions/webdav/src/test/java/org/exist/jetty/WindowsPathResourceIT.java
+  s_402b1f194ddd18::t_07a02ed0d2ebb4 27
+  s_402b1f194ddd18::t_f2f996152facb3 47
+exist-core/src/main/java/org/exist/jetty/JettyStart.java
+  s_402b1f194ddd18::t_999eec3062c303 852-853
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.11",
+  "base_commit_sha": "0dd23685c7d5b41160c4a8f5fdaa82832c276e7f",
+  "prompts": {},
+  "sessions": {
+    "s_402b1f194ddd18": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "54a29463-2e35-41a6-aec3-c4bbb33fe461",
+        "model": "composer-2.5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
