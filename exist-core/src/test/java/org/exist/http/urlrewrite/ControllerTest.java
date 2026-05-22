@@ -30,7 +30,7 @@ import org.apache.http.client.fluent.Request;
 import org.apache.http.entity.ContentType;
 import org.exist.http.AbstractHttpTest;
 import org.exist.test.ExistWebServer;
-import org.junit.Rule;
+import org.junit.ClassRule;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -50,8 +50,8 @@ public class ControllerTest extends AbstractHttpTest {
     private static final String LEGACY_CONTROLLER_XQUERY = "<controller>xql</controller>";
     private static final String TEST_DOCUMENT_NAME = "test.xml";
 
-    @Rule
-    public final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true, false);
+    @ClassRule
+    public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true, false);
 
     @Test
     public void findsLegacyController() throws IOException {
