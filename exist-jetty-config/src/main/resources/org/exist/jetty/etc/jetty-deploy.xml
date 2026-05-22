@@ -14,6 +14,7 @@
       <Arg>
         <New class="org.exist.jetty.WebAppContext">
           <Set name="contextPath">/exist</Set>
+          <Set name="throwUnavailableOnStartupException">true</Set>
           <Set name="war"><SystemProperty name="exist.jetty.webapp.dir"><Default><Property name="jetty.home" default="."/>/../../../webapp/</Default></SystemProperty></Set>
           <Set name="defaultsDescriptor"><Property name="jetty.home" default="."/>/etc/webdefault.xml</Set>
           <Set name="securityHandler">

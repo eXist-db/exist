@@ -21,24 +21,37 @@
  */
 package org.exist.jetty;
 
+import org.eclipse.jetty.util.resource.Resource;
+import org.eclipse.jetty.util.resource.ResourceFactory;
 import org.exist.storage.BrokerPool;
 
 /**
- * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
+ * eXist {@link org.eclipse.jetty.ee10.webapp.WebAppContext} with Windows path handling for
+ * Jetty 12.1 ({@link WindowsPathResource}).
  *
+ * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  */
 public class WebAppContext extends org.eclipse.jetty.ee10.webapp.WebAppContext {
 
     @Override
-	public String toString() {
-		return "eXist-db Open Source Native XML Database";
-	}
+    public String toString() {
+        return "eXist-db Open Source Native XML Database";
+    }
 
     @Override
-	protected void doStop() throws Exception {
-		super.doStop();
+    public void setBaseResource(final Resource baseResource) {
+        super.setBaseResource(WindowsPathResource.wrapIfNeeded(baseResource, ResourceFactory.of(this)));
+    }
 
-		BrokerPool.stopAll(true);
-	}
+    @Override
+    public Resource newResource(final String urlOrPath) {
+        return WindowsPathResource.wrapIfNeeded(super.newResource(urlOrPath), ResourceFactory.of(this));
+    }
 
+    @Override
+    protected void doStop() throws Exception {
+        super.doStop();
+
+        BrokerPool.stopAll(true);
+    }
 }
