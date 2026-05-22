@@ -1,0 +1,23 @@
+exist-core/src/test/java/org/exist/util/MimeTableTest.java
+  s_402b1f194ddd18::t_6242005672378e 25
+  s_402b1f194ddd18::t_b02e2de9200964 158-184
+exist-core/src/main/java/org/exist/util/MimeTable.java
+  s_402b1f194ddd18::t_2bf918503610cd 73,83-88,102-106,122-126,141-149,250,252,261-262,264-271
+  s_402b1f194ddd18::t_304b2cf0ff7146 258-259
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "d942298a33858c24861fa59ba2eb4af2db8bd1aa",
+  "prompts": {},
+  "sessions": {
+    "s_402b1f194ddd18": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "54a29463-2e35-41a6-aec3-c4bbb33fe461",
+        "model": "composer-2.5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
