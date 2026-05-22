@@ -57,7 +57,12 @@
             <artifactId>commons-io</artifactId>
         </dependency>
 
-        <!-- HC4: EXistTreeBuilder iterates org.apache.http.Header from http-client-java -->
+        <!--
+            Hybrid HC4 + HC5 (Phase 5 Gate B): SendRequestFunction uses HC5 (httpcore5);
+            EXistTreeBuilder iterates org.apache.http.Header from http-client-java 1.4.2 (httpcore HC4).
+            Remove HC4 httpcore when Gate B clears: merge PR #6212 (Saxon 12) first, then PR #5346
+            (http-client-java 1.5.2); httpcore5 remains for SendRequestFunction.
+        -->
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpcore</artifactId>

@@ -23,17 +23,12 @@ package org.exist.xquery.modules.file;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
-import org.apache.hc.client5.http.auth.AuthScope;
-import org.apache.hc.client5.http.auth.UsernamePasswordCredentials;
 import org.apache.hc.client5.http.fluent.Executor;
 import org.apache.hc.client5.http.fluent.Request;
-import org.apache.hc.client5.http.impl.auth.BasicCredentialsProvider;
-import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.HttpEntity;
-import org.apache.hc.core5.http.HttpHeaders;
-import org.apache.hc.core5.http.HttpHost;
+import org.exist.http.AbstractHttpTest;
 import org.exist.http.jaxb.Query;
 import org.exist.http.jaxb.Result;
 import org.exist.test.ExistWebServer;
@@ -49,7 +44,6 @@ import jakarta.xml.bind.Marshaller;
 import jakarta.xml.bind.Unmarshaller;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -71,32 +65,7 @@ public class RestBinariesTest extends AbstractBinariesTest<Result, Result.Value,
 
     @BeforeClass
     public static void setupExecutor() {
-        executor = createAuthenticatedExecutor(existWebServer, ADMIN_DB_USER, ADMIN_DB_PWD);
-    }
-
-    private static Executor createAuthenticatedExecutor(
-            final ExistWebServer existWebServer,
-            final String user,
-            final String password) {
-        final HttpHost host = new HttpHost("http", "localhost", existWebServer.getPort());
-        final UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(user, password.toCharArray());
-        final BasicCredentialsProvider credentialsProvider = new BasicCredentialsProvider();
-        credentialsProvider.setCredentials(new AuthScope(host), credentials);
-        final String authorizationHeader = "Basic " + java.util.Base64.getEncoder().encodeToString(
-                (user + ":" + password).getBytes(StandardCharsets.UTF_8));
-
-        return Executor
-                .newInstance(HttpClients.custom()
-                        .setDefaultCredentialsProvider(credentialsProvider)
-                        .addRequestInterceptorFirst((request, entity, context) -> {
-                            if (!request.containsHeader(HttpHeaders.AUTHORIZATION)) {
-                                request.addHeader(HttpHeaders.AUTHORIZATION, authorizationHeader);
-                            }
-                        })
-                        .disableAutomaticRetries()
-                        .build())
-                .authPreemptive(host)
-                .auth(host, credentials);
+        executor = AbstractHttpTest.createAuthenticatedExecutor(existWebServer, ADMIN_DB_USER, ADMIN_DB_PWD);
     }
 
     /**
@@ -162,6 +131,10 @@ public class RestBinariesTest extends AbstractBinariesTest<Result, Result.Value,
         }
     }
 
+    /**
+     * Standalone test webapp is mounted at {@code /} (see {@code exist.jetty.standalone.webapp.dir}),
+     * not at {@code /exist} like {@link AbstractHttpTest#getServerUri(ExistWebServer)} in exist-core tests.
+     */
     private String getRestUrl() {
         return "http://localhost:" + existWebServer.getPort() + "/rest";
     }

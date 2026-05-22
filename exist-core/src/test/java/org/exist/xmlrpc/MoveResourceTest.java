@@ -48,6 +48,7 @@ import java.util.Map;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.junit.AfterClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
@@ -73,6 +74,11 @@ public class MoveResourceTest {
 
     @ClassRule
     public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
+
+    @AfterClass
+    public static void closeHttpConnectionManager() {
+        CheckThread.closeConnectionManager();
+    }
 
     private static String getXmlRpcUri() {
         return "http://localhost:" + existWebServer.getPort() + "/xmlrpc";
@@ -200,6 +206,15 @@ public class MoveResourceTest {
 
     private static class CheckThread implements Callable<Boolean> {
         private static final PoolingHttpClientConnectionManager poolingHttpClientConnectionManager = new PoolingHttpClientConnectionManager();
+
+        static void closeConnectionManager() {
+            try {
+                poolingHttpClientConnectionManager.close();
+            } catch (final Exception ignored) {
+                // idempotent
+            }
+        }
+
         private final int iterations;
 
         public CheckThread(final int iterations) {
