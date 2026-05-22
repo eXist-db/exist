@@ -25,6 +25,8 @@ package org.exist.http;
 import com.evolvedbinary.j8fu.function.FunctionE;
 import org.apache.http.HttpHost;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.CookieSpecs;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.fluent.Executor;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -85,6 +87,9 @@ public abstract class AbstractHttpTest {
         try (final CloseableHttpClient client = HttpClientBuilder
                 .create()
                 .disableAutomaticRetries()
+                .setDefaultRequestConfig(RequestConfig.custom()
+                        .setCookieSpec(CookieSpecs.STANDARD)
+                        .build())
                 .build()) {
             return fn.apply(client);
         }

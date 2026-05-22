@@ -40,6 +40,7 @@ import static org.junit.Assume.assumeTrue;
  * drive URIs ({@code /D:/...}). Lives in {@code exist-webdav} so it runs on Windows CI
  * ({@code verify -DskipUnitTests=true}).
  */
+@SuppressWarnings("PMD.ClassNamingConventions") // Failsafe *IT suffix; not a JUnit *Test class
 public class WindowsPathResourceIT {
 
     @Test

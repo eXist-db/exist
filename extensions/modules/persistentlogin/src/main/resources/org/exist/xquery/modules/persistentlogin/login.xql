@@ -98,6 +98,18 @@ declare function login:set-user($domain as xs:string, $maxAge as xs:dayTimeDurat
     login:set-user($domain, (), $maxAge, $asDba)
 };
 
+declare %private function login:cookie-path($path as xs:string?) as xs:string {
+    if (exists($path) and $path != "") then
+        $path
+    else
+        let $ctx := request:get-context-path()
+        return
+            if ($ctx = "") then
+                "/"
+            else
+                $ctx
+};
+
 declare %private function login:callback($newToken as xs:string?, $user as xs:string, $password as xs:string,
     $expiration as xs:duration, $domain as xs:string, $path as xs:string?, $asDba as xs:boolean) {
     if (not($asDba) or sm:is-dba($user)) then (
@@ -106,7 +118,7 @@ declare %private function login:callback($newToken as xs:string?, $user as xs:st
         request:set-attribute("xquery.password", $password),
         if ($newToken) then
             response:set-cookie($domain, $newToken, $expiration, false(), (),
-                if (exists($path)) then $path else request:get-context-path())
+                login:cookie-path($path))
         else
             ()
     ) else
@@ -128,7 +140,7 @@ declare %private function login:create-login-session($domain as xs:string, $path
 
 declare %private function login:clear-credentials($token as xs:string?, $domain as xs:string, $path as xs:string?) as empty-sequence() {
     response:set-cookie($domain, "deleted", xs:dayTimeDuration("-P1D"), false(), (),
-        if (exists($path)) then $path else request:get-context-path()),
+        login:cookie-path($path)),
     if ($token and $token != "deleted") then
         plogin:invalidate($token)
     else

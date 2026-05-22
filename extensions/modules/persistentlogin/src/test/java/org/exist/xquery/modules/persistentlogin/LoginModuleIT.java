@@ -23,9 +23,12 @@ package org.exist.xquery.modules.persistentlogin;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.CookieSpecs;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.client.BasicCookieStore;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.exist.TestUtils;
@@ -65,7 +68,9 @@ public class LoginModuleIT {
     private final static String XQUERY_FILENAME = "test-login.xql";
 
     private static Collection root;
-    private static HttpClient client;
+    private static CloseableHttpClient client;
+    private static BasicCookieStore cookieStore;
+    private static HttpClientContext httpContext;
 
     @BeforeClass
     public static void beforeClass() throws XMLDBException {
@@ -100,12 +105,23 @@ public class LoginModuleIT {
         final UserManagementService ums = root.getService(UserManagementService.class);
         ums.chmod(res, 0777);
 
-        final BasicCookieStore store = new BasicCookieStore();
-        client = HttpClientBuilder.create().setDefaultCookieStore(store).build();
+        cookieStore = new BasicCookieStore();
+        httpContext = HttpClientContext.create();
+        httpContext.setCookieStore(cookieStore);
+        // Jetty 12 emits RFC 6265 Set-Cookie (RFC1123 Expires). HttpClient 4.x DEFAULT (NetscapeDraftSpec)
+        // rejects that format; STANDARD is required for automatic cookie storage. See jetty/jetty.project#12771.
+        client = HttpClientBuilder.create()
+                .setDefaultRequestConfig(RequestConfig.custom()
+                        .setCookieSpec(CookieSpecs.STANDARD)
+                        .build())
+                .build();
     }
 
     @AfterClass
-    public static void afterClass() throws XMLDBException {
+    public static void afterClass() throws Exception {
+        if (client != null) {
+            client.close();
+        }
         if (root != null) {
             final org.xmldb.api.base.Resource res = root.getResource(XQUERY_FILENAME);
             if (res != null) {
@@ -132,10 +148,11 @@ public class LoginModuleIT {
     private void doGet(@Nullable String params, String expected) throws IOException {
         final HttpGet httpGet = new HttpGet("http://localhost:" + existWebServer.getPort() + "/rest" + XmldbURI.ROOT_COLLECTION + '/' + XQUERY_FILENAME +
                 (params == null ? "" : "?" + params));
-        HttpResponse response = client.execute(httpGet);
+        HttpResponse response = client.execute(httpGet, httpContext);
         HttpEntity entity = response.getEntity();
         final String responseBody = EntityUtils.toString(entity);
         assertEquals(responseBody, SC_OK, response.getStatusLine().getStatusCode());
         assertEquals(expected, responseBody);
     }
+
 }
