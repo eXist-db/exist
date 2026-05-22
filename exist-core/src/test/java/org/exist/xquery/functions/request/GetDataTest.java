@@ -23,11 +23,11 @@ package org.exist.xquery.functions.request;
 
 import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.HttpVersion;
-import org.apache.http.client.fluent.Request;
-import org.apache.http.entity.ContentType;
+import org.apache.hc.client5.http.fluent.Request;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.HttpStatus;
+import org.apache.hc.core5.http.HttpVersion;
 import org.exist.xmldb.UserManagementService;
 import java.io.IOException;
 import java.io.InputStream;
@@ -82,7 +82,7 @@ public class GetDataTest extends RESTTest {
 
     @Test
     public void retrieveEmpty() throws IOException {
-        Request post = Request.Post(getCollectionRootUri() + "/" + XQUERY_FILENAME)
+        Request post = Request.post(getCollectionRootUri() + "/" + XQUERY_FILENAME)
             .addHeader("Content-Type", "application/octet-stream");
 
         testRequest(post, wrapInElement("").getBytes());
@@ -93,12 +93,12 @@ public class GetDataTest extends RESTTest {
     public void retrieveBinaryHttp09() throws IOException {
         final String testData = "12345";
 
-        final Request post = Request.Post(getCollectionRootUri() + "/" + XQUERY_FILENAME)
+        final Request post = Request.post(getCollectionRootUri() + "/" + XQUERY_FILENAME)
                 .version(HttpVersion.HTTP_0_9)
                 .bodyByteArray(testData.getBytes(UTF_8), ContentType.APPLICATION_OCTET_STREAM);
 
-        final HttpResponse response = post.execute().returnResponse();
-        assertEquals(HttpStatus.SC_HTTP_VERSION_NOT_SUPPORTED, response.getStatusLine().getStatusCode());
+        final ClassicHttpResponse response = (ClassicHttpResponse) post.execute().returnResponse();
+        assertEquals(HttpStatus.SC_HTTP_VERSION_NOT_SUPPORTED, response.getCode());
     }
 
     @Ignore("Jetty 12 drops the connection on HTTP/1.0 without a response, causing NoHttpResponseException in Apache HttpClient")
@@ -106,7 +106,7 @@ public class GetDataTest extends RESTTest {
     public void retrieveBinaryHttp10() throws IOException {
         final String testData = "12345";
 
-        final Request post = Request.Post(getCollectionRootUri() + "/" + XQUERY_FILENAME)
+        final Request post = Request.post(getCollectionRootUri() + "/" + XQUERY_FILENAME)
                 .version(HttpVersion.HTTP_1_0)
                 .bodyByteArray(testData.getBytes(UTF_8), ContentType.APPLICATION_OCTET_STREAM);
 
@@ -117,7 +117,7 @@ public class GetDataTest extends RESTTest {
     public void retrieveBinaryHttp11() throws IOException {
         final String testData = "12345";
 
-        final Request post = Request.Post(getCollectionRootUri() + "/" + XQUERY_FILENAME)
+        final Request post = Request.post(getCollectionRootUri() + "/" + XQUERY_FILENAME)
                 .version(HttpVersion.HTTP_1_1)
                 .bodyByteArray(testData.getBytes(UTF_8), ContentType.APPLICATION_OCTET_STREAM);
 
@@ -129,7 +129,7 @@ public class GetDataTest extends RESTTest {
         final String testData = "12345";
 
         try (final InputStream is = new UnsynchronizedByteArrayInputStream(testData.getBytes(UTF_8))) {
-            final Request post = Request.Post(getCollectionRootUri() + "/" + XQUERY_FILENAME)
+            final Request post = Request.post(getCollectionRootUri() + "/" + XQUERY_FILENAME)
                     .version(HttpVersion.HTTP_1_1)
                     .bodyStream(is, ContentType.APPLICATION_OCTET_STREAM);
 
@@ -142,12 +142,12 @@ public class GetDataTest extends RESTTest {
     public void retrieveXmlHttp09() throws IOException {
         final String testData = "<a><b><c>hello</c></b></a>";
 
-        final Request post = Request.Post(getCollectionRootUri() + "/" + XQUERY_FILENAME)
+        final Request post = Request.post(getCollectionRootUri() + "/" + XQUERY_FILENAME)
                 .version(HttpVersion.HTTP_0_9)
                 .bodyByteArray(testData.getBytes(UTF_8), ContentType.TEXT_XML);
 
-        final HttpResponse response = post.execute().returnResponse();
-        assertEquals(HttpStatus.SC_HTTP_VERSION_NOT_SUPPORTED, response.getStatusLine().getStatusCode());
+        final ClassicHttpResponse response = (ClassicHttpResponse) post.execute().returnResponse();
+        assertEquals(HttpStatus.SC_HTTP_VERSION_NOT_SUPPORTED, response.getCode());
     }
 
     @Ignore("Jetty 12 drops the connection on HTTP/1.0 without a response, causing NoHttpResponseException in Apache HttpClient")
@@ -155,7 +155,7 @@ public class GetDataTest extends RESTTest {
     public void retrieveXmlHttp10() throws IOException {
         final String testData = "<a><b><c>hello</c></b></a>";
 
-        final Request post = Request.Post(getCollectionRootUri() + "/" + XQUERY_FILENAME)
+        final Request post = Request.post(getCollectionRootUri() + "/" + XQUERY_FILENAME)
                 .version(HttpVersion.HTTP_1_0)
                 .bodyByteArray(testData.getBytes(UTF_8), ContentType.TEXT_XML);
 
@@ -166,7 +166,7 @@ public class GetDataTest extends RESTTest {
     public void retrieveXmlHttp11() throws IOException {
         final String testData = "<a><b><c>hello</c></b></a>";
 
-        final Request post = Request.Post(getCollectionRootUri() + "/" + XQUERY_FILENAME)
+        final Request post = Request.post(getCollectionRootUri() + "/" + XQUERY_FILENAME)
                 .version(HttpVersion.HTTP_1_1)
                 .bodyByteArray(testData.getBytes(UTF_8), ContentType.TEXT_XML);
 
@@ -178,7 +178,7 @@ public class GetDataTest extends RESTTest {
         final String testData = "<a><b><c>hello</c></b></a>";
 
         try (final InputStream is = new UnsynchronizedByteArrayInputStream(testData.getBytes(UTF_8))) {
-            final Request post = Request.Post(getCollectionRootUri() + "/" + XQUERY_FILENAME)
+            final Request post = Request.post(getCollectionRootUri() + "/" + XQUERY_FILENAME)
                     .version(HttpVersion.HTTP_1_1)
                     .bodyStream(is, ContentType.TEXT_XML);
 
@@ -190,7 +190,7 @@ public class GetDataTest extends RESTTest {
     public void retrieveMalformedXmlFallbackToString() throws IOException {
         final String testData = "<a><b></a>";
 
-        Request post = Request.Post(getCollectionRootUri() + "/" + XQUERY_FILENAME)
+        Request post = Request.post(getCollectionRootUri() + "/" + XQUERY_FILENAME)
             .bodyByteArray(testData.getBytes(UTF_8), ContentType.TEXT_XML);
 
         testRequest(post, wrapInElement(testData.replace("<", "&lt;").replace(">", "&gt;")).getBytes());
@@ -200,7 +200,7 @@ public class GetDataTest extends RESTTest {
     public void retrieveString() throws IOException {
         final String testData = "12345";
 
-        Request post = Request.Post(getCollectionRootUri() + "/" + XQUERY_FILENAME)
+        Request post = Request.post(getCollectionRootUri() + "/" + XQUERY_FILENAME)
                 .bodyByteArray(testData.getBytes(UTF_8));
 
         testRequest(post, wrapInElement(testData).getBytes());
@@ -211,9 +211,9 @@ public class GetDataTest extends RESTTest {
     }
     
     private void testRequest(Request method, byte expectedResponse[], boolean stripWhitespaceAndFormatting) throws IOException {
-        final HttpResponse response = method.execute().returnResponse();
+        final ClassicHttpResponse response = (ClassicHttpResponse) method.execute().returnResponse();
 
-            assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
+            assertEquals(HttpStatus.SC_OK, response.getCode());
 
             try (final UnsynchronizedByteArrayOutputStream os = new UnsynchronizedByteArrayOutputStream()) {
                 response.getEntity().writeTo(os);

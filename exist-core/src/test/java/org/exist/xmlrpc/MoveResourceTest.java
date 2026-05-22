@@ -21,13 +21,13 @@
  */
 package org.exist.xmlrpc;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.fluent.Executor;
-import org.apache.http.client.fluent.Request;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.hc.client5.http.fluent.Executor;
+import org.apache.hc.client5.http.fluent.Request;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
+import org.apache.hc.core5.http.HttpResponse;
+import org.apache.hc.core5.http.HttpStatus;
 import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
@@ -212,26 +212,26 @@ public class MoveResourceTest {
                     .custom()
                     .setConnectionManager(poolingHttpClientConnectionManager)
                     .build();
-            final org.apache.http.client.fluent.Executor executor = Executor.newInstance(client);
+            final Executor executor = Executor.newInstance(client);
 
             final String reqUrl = getRestUri() + "/db?_query=" + URLEncoder.encode("collection('/db')//SPEECH[SPEAKER = 'JULIET']", "UTF-8");
-            final Request request = Request.Get(reqUrl);
+            final Request request = Request.get(reqUrl);
 
             for (int i = 0; i < iterations; i++) {
                 HttpResponse response = null;
                 int lastStatus = -1;
                 for (int r = 0; r <= REST_RETRY_MAX; r++) {
                     response = executor.execute(request).returnResponse();
-                    lastStatus = response.getStatusLine().getStatusCode();
+                    lastStatus = response.getCode();
                     if (lastStatus == HttpStatus.SC_OK) {
                         break;
                     }
                     if (lastStatus < 500 || r == REST_RETRY_MAX) {
-                        fail("REST query failed" + (r > 0 ? " after " + r + " retries" : "") + ": " + response.getStatusLine());
+                        fail("REST query failed" + (r > 0 ? " after " + r + " retries" : "") + ": HTTP " + lastStatus);
                     }
                     Thread.sleep(REST_RETRY_DELAY_MS);
                 }
-                assertEquals(response.getStatusLine().toString(), HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals("HTTP " + lastStatus, HttpStatus.SC_OK, response.getCode());
 
                 Thread.sleep(DELAY);
             }

@@ -28,13 +28,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.fluent.Request;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.http.message.BasicNameValuePair;
+import org.apache.hc.client5.http.entity.mime.MultipartEntityBuilder;
+import org.apache.hc.client5.http.fluent.Request;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.HttpStatus;
+import org.apache.hc.core5.http.NameValuePair;
+import org.apache.hc.core5.http.message.BasicNameValuePair;
 import org.exist.http.RESTTest;
 import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xmldb.EXistResource;
@@ -316,14 +316,14 @@ public class GetParameterTest extends RESTTest {
             }
         }
 
-        Request get = Request.Get(getCollectionRootUri() + "/" + XQUERY_FILENAME + (queryStringParams == null || queryStringParams.length == 0 ? "" : "?" + buf));
+        Request get = Request.get(getCollectionRootUri() + "/" + XQUERY_FILENAME + (queryStringParams == null || queryStringParams.length == 0 ? "" : "?" + buf));
 
         testRequest(get, buf.toString().replaceAll("&", ""));
     }
 
     private void testPost(@Nullable final NameValues[] formParams) throws IOException {
         final StringBuilder buf = new StringBuilder();
-        Request post = Request.Post(getCollectionRootUri() + "/" + XQUERY_FILENAME);
+        Request post = Request.post(getCollectionRootUri() + "/" + XQUERY_FILENAME);
 
         if (formParams != null) {
             final List<NameValuePair> bodyPairs = new ArrayList<>();
@@ -353,7 +353,7 @@ public class GetParameterTest extends RESTTest {
             first = false;
         }
 
-        Request post = Request.Post(getCollectionRootUri() + "/" + XQUERY_FILENAME + (queryStringParams.length == 0 ? "" : "?" + queryStringBuf));
+        Request post = Request.post(getCollectionRootUri() + "/" + XQUERY_FILENAME + (queryStringParams.length == 0 ? "" : "?" + queryStringBuf));
 
         final List<NameValuePair> bodyPairs = new ArrayList<>();
         for (final NameValues formParam : formParams) {
@@ -385,7 +385,7 @@ public class GetParameterTest extends RESTTest {
             }
         }
 
-        Request post = Request.Post(getCollectionRootUri() + "/" + XQUERY_FILENAME)
+        Request post = Request.post(getCollectionRootUri() + "/" + XQUERY_FILENAME)
             .body(multipart.build());
 
         testRequest(post, buf.toString());
@@ -419,15 +419,15 @@ public class GetParameterTest extends RESTTest {
             }
         }
 
-        Request post = Request.Post(getCollectionRootUri() + "/" + XQUERY_FILENAME + (queryStringParams.length == 0 ? "" : "?" + queryStringBuf))
+        Request post = Request.post(getCollectionRootUri() + "/" + XQUERY_FILENAME + (queryStringParams.length == 0 ? "" : "?" + queryStringBuf))
                 .body(multipart.build());
 
         testRequest(post, queryStringBuf.toString().replaceAll("&", "") + bodyBuf);
     }
 
     private void testRequest(final Request request, final String expected) throws IOException {
-        final HttpResponse response = request.execute().returnResponse();
-        assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
+        final ClassicHttpResponse response = (ClassicHttpResponse) request.execute().returnResponse();
+        assertEquals(HttpStatus.SC_OK, response.getCode());
 
         try (final UnsynchronizedByteArrayOutputStream os = new UnsynchronizedByteArrayOutputStream()) {
             response.getEntity().writeTo(os);
