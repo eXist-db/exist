@@ -60,10 +60,35 @@ public class SystemProperties {
     }
 
     public String getSystemProperty(final String propertyName) {
-        return properties.get().getProperty(propertyName);
+        final String value = System.getProperty(propertyName, properties.get().getProperty(propertyName));
+        return resolveProductVersionIfPlaceholder(propertyName, value);
     }
 
     public String getSystemProperty(final String propertyName, final String defaultValue) {
-        return properties.get().getProperty(propertyName, defaultValue);
+        final String value = System.getProperty(propertyName, properties.get().getProperty(propertyName, defaultValue));
+        final String resolved = resolveProductVersionIfPlaceholder(propertyName, value);
+        return resolved == null ? defaultValue : resolved;
+    }
+
+    private String resolveProductVersionIfPlaceholder(final String propertyName, final String value) {
+        if (!"product-version".equals(propertyName) || value == null || !isPlaceholder(value)) {
+            return value;
+        }
+
+        // In packaged runs, fall back to the implementation version from MANIFEST.MF
+        // when CI-friendly placeholders leak through filtered resources.
+        final Package pkg = SystemProperties.class.getPackage();
+        if (pkg != null) {
+            final String implementationVersion = pkg.getImplementationVersion();
+            if (implementationVersion != null && !implementationVersion.isBlank()) {
+                return implementationVersion;
+            }
+        }
+
+        return value;
+    }
+
+    private boolean isPlaceholder(final String value) {
+        return value.startsWith("${") && value.endsWith("}");
     }
 }

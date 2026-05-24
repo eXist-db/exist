@@ -22,27 +22,18 @@
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-
+<project xmlns="http://maven.apache.org/POM/4.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.1.0 http://maven.apache.org/xsd/maven-4.1.0.xsd">
     <parent>
         <groupId>org.exist-db</groupId>
-        <artifactId>exist-parent</artifactId>
-        <version>7.0.0-SNAPSHOT</version>
-        <relativePath>../../exist-parent</relativePath>
-    </parent>
+<artifactId>exist-parent</artifactId>
+        <version>${revision}</version>
+</parent>
 
     <artifactId>exist-security</artifactId>
     <packaging>pom</packaging>
 
     <name>eXist-db Extension Security Modules</name>
     <description>eXist-db Extension Security Modules</description>
-
-    <modules>
-        <module>activedirectory</module>
-        <module>iprange</module>
-        <module>ldap</module>
-    </modules>
 
     <scm>
         <connection>scm:git:https://github.com/exist-db/exist.git</connection>

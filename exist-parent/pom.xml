@@ -22,12 +22,10 @@
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-
+<project xmlns="http://maven.apache.org/POM/4.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.1.0 http://maven.apache.org/xsd/maven-4.1.0.xsd">
     <groupId>org.exist-db</groupId>
     <artifactId>exist-parent</artifactId>
-    <version>7.0.0-SNAPSHOT</version>
+    <version>${revision}</version>
     <packaging>pom</packaging>
 
     <name>eXist-db Parent</name>
@@ -108,7 +106,9 @@
         <maven.compiler.release>21</maven.compiler.release>
         <maven.compiler.source>${maven.compiler.release}</maven.compiler.source>
         <maven.compiler.target>${maven.compiler.release}</maven.compiler.target>
-        <maven.minimum.version>3.9.9</maven.minimum.version>
+        <maven.minimum.version>4.0.0-rc-3</maven.minimum.version>
+        <!-- CI-friendly versions: override with -Drevision=... -->
+        <revision>7.0.0-SNAPSHOT</revision>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <project.copyright.name>The eXist-db Authors</project.copyright.name>
@@ -149,9 +149,6 @@
         <!-- CI: skip unit tests when running integration-only (e.g. -DskipUnitTests=true) -->
         <skipUnitTests>false</skipUnitTests>
 
-        <!-- needed just for the license-maven-plugin in this module! -->
-        <project.parent.relativePath>.</project.parent.relativePath>
-        
         <!-- Sonar cloud-->
         <sonar.projectKey>eXist-db_exist</sonar.projectKey>
         <sonar.organization>exist-db</sonar.organization>
@@ -1220,7 +1217,7 @@
                 <configuration>
                     <licenseSets>
                         <licenseSet>
-                            <header>${project.parent.relativePath}/LGPL-21-license.template.txt</header>
+                            <header>${session.executionRootDirectory}/exist-parent/LGPL-21-license.template.txt</header>
                             <excludes>
                                 <exclude>FDB-backport-LGPL-21-ONLY-license.template.txt</exclude>
                                 <exclude>FDB-backport-LGPL-21-ONLY-license.xml.template.txt</exclude>
@@ -1235,7 +1232,7 @@
                         </licenseSet>
                     </licenseSets>
                     <headerDefinitions>
-                        <headerDefinition>${project.parent.relativePath}/xquery-license-style.xml</headerDefinition>
+                        <headerDefinition>${session.executionRootDirectory}/exist-parent/xquery-license-style.xml</headerDefinition>
                     </headerDefinitions>
                     <mapping>
                         <form>XML_STYLE</form>
@@ -1428,6 +1425,91 @@
     </reporting>
 
     <profiles>
+
+        <!-- Umbrella profiles for build ergonomics (see #3394) -->
+        <profile>
+            <id>local-build</id>
+            <!-- Intentionally empty: this exists so `-Plocal-build` always works,
+                 even when building a subset of modules (e.g. with `-pl`). -->
+        </profile>
+
+        <profile>
+            <id>release-build</id>
+            <properties>
+                <!-- Used to activate release-only profiles in submodules -->
+                <exist.release>true</exist.release>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
+                        <version>0.9.0</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <publishingServerId>central</publishingServerId>
+                            <autoPublish>true</autoPublish>
+                            <waitUntil>published</waitUntil>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>release-preflight</id>
+            <activation>
+                <property>
+                    <name>release.preflight</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-enforcer-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>enforce-release-preconditions</id>
+                                <phase>validate</phase>
+                                <goals>
+                                    <goal>enforce</goal>
+                                </goals>
+                                <configuration>
+                                    <rules>
+                                        <requireProperty>
+                                            <property>env.CENTRAL_TOKEN_USERNAME</property>
+                                            <message>Release preflight failed: env.CENTRAL_TOKEN_USERNAME is required for Sonatype Central Portal publishing.</message>
+                                        </requireProperty>
+                                        <requireProperty>
+                                            <property>env.CENTRAL_TOKEN_PASSWORD</property>
+                                            <message>Release preflight failed: env.CENTRAL_TOKEN_PASSWORD is required for Sonatype Central Portal publishing.</message>
+                                        </requireProperty>
+                                        <requireProperty>
+                                            <property>env.DOCKER_USERNAME</property>
+                                            <message>Release preflight failed: env.DOCKER_USERNAME is required for Docker image publishing.</message>
+                                        </requireProperty>
+                                        <requireProperty>
+                                            <property>env.DOCKER_PASSWORD</property>
+                                            <message>Release preflight failed: env.DOCKER_PASSWORD is required for Docker image publishing.</message>
+                                        </requireProperty>
+                                        <requireProperty>
+                                            <property>existdb.release.key</property>
+                                            <message>Release preflight failed: property existdb.release.key is required for artifact signing.</message>
+                                        </requireProperty>
+                                        <requireProperty>
+                                            <property>existdb.release.key.passphrase</property>
+                                            <message>Release preflight failed: property existdb.release.key.passphrase is required for artifact signing.</message>
+                                        </requireProperty>
+                                    </rules>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
 
         <profile>
             <!-- NOTE: this is used from the maven-release-plugin -->

@@ -23,15 +23,12 @@
 
 -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-
+<project xmlns="http://maven.apache.org/POM/4.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.1.0 http://maven.apache.org/xsd/maven-4.1.0.xsd">
     <parent>
         <groupId>org.exist-db</groupId>
-        <artifactId>exist-parent</artifactId>
-        <version>7.0.0-SNAPSHOT</version>
-        <relativePath>../../../exist-parent</relativePath>
-    </parent>
+<artifactId>exist-parent</artifactId>
+        <version>${revision}</version>
+</parent>
 
     <artifactId>indexes-integration-tests</artifactId>
     <packaging>jar</packaging>
@@ -49,14 +46,11 @@
     <dependencies>
 
         <dependency>
-            <groupId>org.exist-db</groupId>
             <artifactId>exist-core</artifactId>
-            <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
-            <groupId>org.exist-db</groupId>
             <artifactId>exist-index-lucene</artifactId>
             <version>${project.version}</version>
             <scope>runtime</scope>
@@ -116,7 +110,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.exist-db</groupId>
             <artifactId>exist-index-ngram</artifactId>
             <version>${project.version}</version>
             <scope>runtime</scope>

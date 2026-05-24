@@ -23,7 +23,7 @@ jobs:
         timeout-minutes: 25
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: mvn -V -B --no-transfer-progress clean package -DskipTests -Ddependency-check.skip=true --projects exist-xqts --also-make
+        run: ./mvnw -V -B --no-transfer-progress clean package -DskipTests -Ddependency-check.skip=true --projects exist-xqts --also-make
       - name: Run XQTS
         timeout-minutes: 60
         env:

@@ -22,16 +22,15 @@
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+    <modelVersion>4.1.0</modelVersion>
 
     <parent>
         <groupId>org.exist-db</groupId>
-        <artifactId>exist-parent</artifactId>
-        <version>7.0.0-SNAPSHOT</version>
-        <relativePath>../exist-parent</relativePath>
-    </parent>
+<artifactId>exist-parent</artifactId>
+        <version>${revision}</version>
+</parent>
 
     <artifactId>exist-distribution</artifactId>
     <packaging>pom</packaging>
@@ -345,7 +344,7 @@
                             <!--
                                 eXist-db's License
                             -->
-                            <header>${project.parent.relativePath}/LGPL-21-license.template.txt</header>
+                            <header>${session.executionRootDirectory}/exist-parent/LGPL-21-license.template.txt</header>
                             <excludes>
                                 <exclude>LGPL-21-license.txt</exclude>
                                 <exclude>src/app/entitlements.plist</exclude>
@@ -367,7 +366,7 @@
                             <!--
                                 FDB backport to LGPL 2.1-only licensed code
                             -->
-                            <header>${project.parent.relativePath}/FDB-backport-LGPL-21-ONLY-license.template.txt</header>
+                            <header>${session.executionRootDirectory}/exist-parent/FDB-backport-LGPL-21-ONLY-license.template.txt</header>
                             <includes>
                                 <include>src/main/scripts/codesign-jansi-mac.sh</include>
                             </includes>
@@ -377,7 +376,7 @@
                             <!--
                                 FDB backport to LGPL 2.1-only licensed code (XML)
                             -->
-                            <header>${project.parent.relativePath}/FDB-backport-LGPL-21-ONLY-license.xml.template.txt</header>
+                            <header>${session.executionRootDirectory}/exist-parent/FDB-backport-LGPL-21-ONLY-license.xml.template.txt</header>
                             <includes>
                                 <include>src/app/entitlements.plist</include>
                             </includes>
@@ -486,6 +485,13 @@
                             <target>
                                 <delete dir="${assemble.dir}/etc/jetty" failonerror="false" quiet="true"/>
                                 <delete dir="${mac.bundle.resources.dir}/etc/jetty" failonerror="false" quiet="true"/>
+                                <!-- The Jetty config is unpacked from exist-jetty-config by maven-dependency-plugin.
+                                     We later *rename* ${...}/etc/org/exist/jetty/etc -> ${...}/etc/jetty, which removes
+                                     the source directory. If the dependency plugin skips unpack due to marker files
+                                     (incremental builds), the source directory won't exist and downstream steps fail.
+                                     Deleting markers forces the unpack step to re-run. -->
+                                <delete dir="${project.build.directory}/dependency-maven-plugin-markers/appassembler" failonerror="false" quiet="true"/>
+                                <delete dir="${project.build.directory}/dependency-maven-plugin-markers/macbundle" failonerror="false" quiet="true"/>
                             </target>
                         </configuration>
                     </execution>
@@ -891,7 +897,9 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <skipAssembly>false</skipAssembly>  <!-- Can be overridden by profile skip-build-dist-archives -->
+                    <!-- Default to skipping release archives for local/CI builds.
+                         Enable explicitly via profile `build-dist-archives` (or legacy `skip-build-dist-archives` inverse). -->
+                    <skipAssembly>true</skipAssembly>
                     <attach>false</attach>
                     <tarLongFileMode>gnu</tarLongFileMode>
                     <descriptors>
@@ -973,6 +981,27 @@
             </dependencies>
         </profile>
         <profile>
+            <id>build-dist-archives</id>
+            <activation>
+                <property>
+                    <name>exist.release</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-assembly-plugin</artifactId>
+                        <configuration>
+                            <skipAssembly>false</skipAssembly>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
             <id>skip-build-dist-archives</id>
             <build>
                 <plugins>
@@ -980,7 +1009,7 @@
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-assembly-plugin</artifactId>
                         <configuration>
-                            <skipAssembly>true</skipAssembly>  <!-- Override setting in default profile build/plugins for this module -->
+                            <skipAssembly>true</skipAssembly>
                         </configuration>
                     </plugin>
                 </plugins>

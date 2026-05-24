@@ -22,15 +22,12 @@
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-
+<project xmlns="http://maven.apache.org/POM/4.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
         <groupId>org.exist-db</groupId>
-        <artifactId>exist-parent</artifactId>
-        <version>7.0.0-SNAPSHOT</version>
-        <relativePath>../exist-parent</relativePath>
-    </parent>
+<artifactId>exist-parent</artifactId>
+        <version>${revision}</version>
+</parent>
 
     <artifactId>exist-start</artifactId>
     <packaging>jar</packaging>
@@ -64,7 +61,7 @@
                             <!--
                                 eXist-db's License
                             -->
-                            <header>${project.parent.relativePath}/LGPL-21-license.template.txt</header>
+                            <header>${session.executionRootDirectory}/exist-parent/LGPL-21-license.template.txt</header>
 
                             <!--
                                 Derivative work licensed under Apache 2.0 and LGPL 2.1
@@ -83,7 +80,7 @@
                             <multi>
                                 <preamble><![CDATA[NOTE: This file is in part based on code from Mort Bay Consulting.
 The original license statement is also included below.]]></preamble>
-                                <header>${project.parent.relativePath}/LGPL-21-license.template.txt</header>
+                                <header>${session.executionRootDirectory}/exist-parent/LGPL-21-license.template.txt</header>
                                 <header>Mortbay-APACHE-2-license.template.txt</header>
                             </multi>
                             <excludes />
@@ -107,6 +104,10 @@ The original license statement is also included below.]]></preamble>
                         </goals>
                         <configuration>
                             <failOnWarning>true</failOnWarning>
+                            <!-- Used by test sources; dependency analyzer can still flag it as unused. -->
+                            <ignoredUnusedDeclaredDependencies>
+                                <ignoredUnusedDeclaredDependency>junit:junit</ignoredUnusedDeclaredDependency>
+                            </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>
                 </executions>

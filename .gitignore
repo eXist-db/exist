@@ -10,6 +10,8 @@ dependency-reduced-pom.xml
 
 # Maven generated
 effective-pom.xml
+.flattened-pom.xml
+flattened-pom.xml
 
 # XQTS test artefacts
 work/

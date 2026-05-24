@@ -22,15 +22,12 @@
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-
+<project xmlns="http://maven.apache.org/POM/4.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
         <groupId>org.exist-db</groupId>
-        <artifactId>exist-parent</artifactId>
-        <version>7.0.0-SNAPSHOT</version>
-        <relativePath>../exist-parent</relativePath>
-    </parent>
+<artifactId>exist-parent</artifactId>
+        <version>${revision}</version>
+</parent>
 
     <artifactId>exist-core</artifactId>
     <packaging>jar</packaging>
@@ -156,7 +153,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.exist-db</groupId>
             <artifactId>exist-start</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -533,13 +529,11 @@
 
         <!-- test dependencies -->
         <dependency>
-            <groupId>org.exist-db</groupId>
             <artifactId>exist-jetty-config</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.exist-db</groupId>
             <artifactId>exist-samples</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
@@ -707,8 +701,10 @@
                             <!--
                                 eXist-db's License
                             -->
-                            <header>${project.parent.relativePath}/LGPL-21-license.template.txt</header>
+                            <header>${session.executionRootDirectory}/exist-parent/LGPL-21-license.template.txt</header>
                             <excludes>
+                                <!-- OpenRewrite/Moderne analysis artifacts -->
+                                <exclude>.moderne/**</exclude>
                                 <exclude>ARC-BSD-3-license.template.txt</exclude>
                                 <exclude>BX-BSD-3-license.template.txt</exclude>
                                 <exclude>DBXML-10-license.template.txt</exclude>
@@ -853,7 +849,7 @@
                             <multi>
                                 <preamble><![CDATA[NOTE: This file is in part based on code from The dbXML Group.
 The original license statement is also included below.]]></preamble>
-                                <header>${project.parent.relativePath}/LGPL-21-license.template.txt</header>
+                                <header>${session.executionRootDirectory}/exist-parent/LGPL-21-license.template.txt</header>
                                 <header>DBXML-10-license.template.txt</header>
                             </multi>
                             <includes>
@@ -892,7 +888,7 @@ The original license statement is also included below.]]></preamble>
                             <!--
                                 FDB backport to LGPL 2.1-only licensed code
                             -->
-                            <header>${project.parent.relativePath}/FDB-backport-LGPL-21-ONLY-license.template.txt</header>
+                            <header>${session.executionRootDirectory}/exist-parent/FDB-backport-LGPL-21-ONLY-license.template.txt</header>
                             <includes>
                                 <include>src/main/java/org/exist/dom/persistent/XMLDeclarationImpl.java</include>
                                 <include>src/main/java/org/exist/resolver/ResolverFactory.java</include>
@@ -1200,6 +1196,7 @@ The BaseX Team. The original license statement is also included below.]]></pream
                     <skip>${skipUnitTests}</skip>
                     <argLine>@{jacocoArgLine} --add-modules jdk.incubator.vector --enable-native-access=ALL-UNNAMED -Dfile.encoding=${project.build.sourceEncoding} -Dexist.recovery.progressbar.hide=true</argLine>
                     <systemPropertyVariables>
+                        <product-version>${project.version}</product-version>
                         <jetty.home>${project.basedir}/../exist-jetty-config/target/classes/org/exist/jetty</jetty.home>
                         <exist.configurationFile>${project.build.testOutputDirectory}/conf.xml</exist.configurationFile>
                         <exist.jetty.standalone.webapp.dir>${project.build.testOutputDirectory}/standalone-webapp</exist.jetty.standalone.webapp.dir>
@@ -1226,6 +1223,7 @@ The BaseX Team. The original license statement is also included below.]]></pream
                 <configuration>
                     <argLine>@{jacocoArgLine} --add-modules jdk.incubator.vector --enable-native-access=ALL-UNNAMED -Dfile.encoding=${project.build.sourceEncoding} -Dexist.recovery.progressbar.hide=true</argLine>
                     <systemPropertyVariables>
+                        <product-version>${project.version}</product-version>
                         <jetty.home>${project.basedir}/../exist-jetty-config/target/classes/org/exist/jetty</jetty.home>
                         <exist.configurationFile>${project.build.testOutputDirectory}/conf.xml</exist.configurationFile>
                         <exist.jetty.standalone.webapp.dir>${project.build.testOutputDirectory}/standalone-webapp</exist.jetty.standalone.webapp.dir>
