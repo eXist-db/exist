@@ -924,7 +924,11 @@ public class LocationStep extends Step {
                         } else {
                             filter = new FollowingFilter(test, root, next, result, contextId, position);
                         }
-                        final IEmbeddedXMLStreamReader reader = context.getBroker().getXMLStreamReader(root, false);
+                        // See readerStartForWildcardAxis: for FOLLOWING_AXIS we now start the
+                        // reader at the reference node, eliminating the position-dependent
+                        // doc-start walk reported in #2129.
+                        final IEmbeddedXMLStreamReader reader = context.getBroker()
+                                .getXMLStreamReader(readerStartForWildcardAxis(node, root, next), false);
                         reader.filter(filter);
                     }
                 }
@@ -971,6 +975,32 @@ public class LocationStep extends Step {
                 }
             }
         }
+    }
+
+    /**
+     * Decide where the wildcard preceding-or-following StAX reader should start.
+     *
+     * <p>For PRECEDING_AXIS we keep the historical behaviour and walk the document-child's
+     * subtree from its root; the {@link PrecedingFilter} short-circuits as soon as the reader
+     * crosses the reference node.</p>
+     *
+     * <p>For FOLLOWING_AXIS we start the reader at the reference node itself when it lies
+     * inside this document-child's subtree. The {@link FollowingFilter} already skips the
+     * reference node and its descendants (via its isAfter / isDescendantOf checks) and
+     * terminates on END_ELEMENT at the document-child's tree level, so starting later in
+     * document order is safe and removes the O(refPosition) doc-start walk reported in
+     * issue #2129. When the reference node is in some other document-child's subtree, fall
+     * back to walking from this subtree's root - every event in it is by definition after
+     * the reference node.</p>
+     */
+    private NodeHandle readerStartForWildcardAxis(final NodeHandle node, final NodeProxy root,
+            final NodeProxy next) {
+        if (axis != Constants.FOLLOWING_AXIS) {
+            return node;
+        }
+        final NodeId rootId = root.getNodeId();
+        final NodeId refId = next.getNodeId();
+        return refId.equals(rootId) || refId.isDescendantOf(rootId) ? next : node;
     }
 
     /**
