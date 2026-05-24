@@ -1,0 +1,19 @@
+.gitignore
+  s_40014b7ff3566d::t_8f584e8b8f8095 21-23,34,41
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "c118bf8651c88617c7103f1a959ae83e38074ee7",
+  "prompts": {},
+  "sessions": {
+    "s_40014b7ff3566d": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_1a680342bffeaj0BtMHCWSoz3M",
+        "model": "qwen3.6:35b-a3b-coding-mxfp8"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

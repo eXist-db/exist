@@ -1,0 +1,31 @@
+exist-core/src/test/java/org/exist/xquery/TestXPathOpOrSpecialCase.java
+  s_ab1ccad1ee1b46::t_fd3e7d26c110bc 77,80,82,85
+exist-ant/src/test/java/org/exist/ant/ServerTaskTest.java
+  s_ab1ccad1ee1b46::t_fd3e7d26c110bc 80-81
+extensions/exquery/restxq/src/test/java/org/exist/extensions/exquery/restxq/impl/SelfImportCircularDependencyIntegrationTest.java
+  s_c5f898d7a0a66e::t_e2a2bbe8d0111e 38
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "acc31744d0eee6e7536ab19e7233ed78ee2e1ea1",
+  "prompts": {},
+  "sessions": {
+    "s_ab1ccad1ee1b46": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_1ee70bc50ffe4wUTK59eHapURQ",
+        "model": "qwen3.6:35b-a3b-coding-mxfp8"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    },
+    "s_c5f898d7a0a66e": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_1a694c9f5ffemNDFiO5yHumee4",
+        "model": "big-pickle"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
