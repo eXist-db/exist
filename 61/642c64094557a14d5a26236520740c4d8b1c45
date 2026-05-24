@@ -3,7 +3,7 @@ exist-core/src/main/java/org/exist/dom/memtree/DOMIndexer.java
 ---
 {
   "schema_version": "authorship/3.0.0",
-  "git_ai_version": "1.3.0",
+  "git_ai_version": "1.5.0",
   "base_commit_sha": "61642c64094557a14d5a26236520740c4d8b1c45",
   "prompts": {
     "592a7185ccaa0d6b": {
@@ -13,7 +13,6 @@ exist-core/src/main/java/org/exist/dom/memtree/DOMIndexer.java
         "model": "default"
       },
       "human_author": "duncdrum",
-      "messages": [],
       "total_additions": 45,
       "total_deletions": 46,
       "accepted_lines": 44,
