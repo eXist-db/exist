@@ -1,0 +1,19 @@
+extensions/exquery/restxq/src/test/java/org/exist/extensions/exquery/restxq/impl/SelfImportCircularDependencyIntegrationTest.java
+  s_c5f898d7a0a66e::t_e2a2bbe8d0111e 38
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "015c1eeabb125d5812951bd955e12f0f9009bed5",
+  "prompts": {},
+  "sessions": {
+    "s_c5f898d7a0a66e": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_1a694c9f5ffemNDFiO5yHumee4",
+        "model": "big-pickle"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
