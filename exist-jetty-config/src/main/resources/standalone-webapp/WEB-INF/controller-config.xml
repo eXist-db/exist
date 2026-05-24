@@ -14,7 +14,7 @@
     <!-- XMLRPC servlet -->
 	<forward pattern="/xmlrpc" servlet="org.exist.xmlrpc.RpcServlet"/>
     <!-- WebDAV interface -->
-	<forward pattern="/webdav/" servlet="milton"/>
+	<forward pattern="/webdav/" servlet="webdav"/>
     
     <!-- RESTXQ -->
     <forward pattern="/restxq/" servlet="RestXqServlet"/>

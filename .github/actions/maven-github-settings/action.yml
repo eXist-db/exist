@@ -1,7 +1,7 @@
-# Creates Maven settings.xml with auth for github and github-xqts-runner.
-# Required for resolving from maven.pkg.github.com/eXist-db/exist and exist-xqts-runner.
+# Creates Maven settings.xml with auth for the eXist-db org's GitHub Packages repos.
+# Required for resolving artifacts from maven.pkg.github.com/eXist-db/{exist, exist-xqts-runner, jackrabbit-webdav-jakarta}.
 name: Maven GitHub Packages settings
-description: Create settings.xml with github and github-xqts-runner servers
+description: Create settings.xml with github, github-xqts-runner, and github-jackrabbit-webdav-jakarta servers
 inputs:
   token:
     description: 'GitHub token for package authentication'
@@ -24,6 +24,11 @@ runs:
             </server>
             <server>
               <id>github-xqts-runner</id>
+              <username>${OWNER}</username>
+              <password>${{ inputs.token }}</password>
+            </server>
+            <server>
+              <id>github-jackrabbit-webdav-jakarta</id>
               <username>${OWNER}</username>
               <password>${{ inputs.token }}</password>
             </server>
