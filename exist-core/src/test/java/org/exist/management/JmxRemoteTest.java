@@ -104,8 +104,9 @@ public class JmxRemoteTest extends AbstractHttpTest {
                 .addHeader(new BasicHeader("Accept", ContentType.APPLICATION_XML.toString()));
 
          final Tuple2<Integer, String> codeAndMediaType = withHttpExecutor(executor -> {
-            final ClassicHttpResponse response = (ClassicHttpResponse) executor.execute(request).returnResponse();
-            return Tuple(response.getCode(), response.getEntity().getContentType());
+            try (final ClassicHttpResponse response = (ClassicHttpResponse) executor.execute(request).returnResponse()) {
+                return Tuple(response.getCode(), response.getEntity().getContentType());
+            }
         });
 
         assertEquals(Tuple(HttpStatus.SC_OK, "application/xml"), codeAndMediaType);

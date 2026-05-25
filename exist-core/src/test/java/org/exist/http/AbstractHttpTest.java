@@ -24,10 +24,13 @@ package org.exist.http;
 
 import com.evolvedbinary.j8fu.function.FunctionE;
 import org.apache.hc.client5.http.fluent.Executor;
+import org.apache.hc.client5.http.fluent.Request;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.HttpHeaders;
 import org.apache.hc.core5.http.HttpHost;
+import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.TestUtils;
 import org.exist.test.ExistWebServer;
 
@@ -35,10 +38,18 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
+import static org.junit.Assert.assertEquals;
+
 /**
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public abstract class AbstractHttpTest {
+
+    /**
+     * HTTP status and body from a single fluent request execution.
+     */
+    public record HttpResponseResult(int statusCode, String body) {
+    }
 
     /**
      * Get the Server URI.
@@ -168,5 +179,64 @@ public abstract class AbstractHttpTest {
                 existWebServer, TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD)) {
             return fn.apply(Executor.newInstance(client));
         }
+    }
+
+    /**
+     * Execute a request and return its status code, closing the response.
+     */
+    protected static int executeForStatus(final Executor executor, final Request request) throws IOException {
+        try (ClassicHttpResponse response = (ClassicHttpResponse) executor.execute(request).returnResponse()) {
+            return response.getCode();
+        }
+    }
+
+    /**
+     * Execute a request and return its status code, closing the response.
+     */
+    protected static int executeForStatus(final Request request) throws IOException {
+        try (ClassicHttpResponse response = (ClassicHttpResponse) request.execute().returnResponse()) {
+            return response.getCode();
+        }
+    }
+
+    /**
+     * Execute a request and return status code and body, closing the response.
+     */
+    public static HttpResponseResult executeForStatusAndBody(final Executor executor, final Request request)
+            throws IOException {
+        try (ClassicHttpResponse response = (ClassicHttpResponse) executor.execute(request).returnResponse()) {
+            return new HttpResponseResult(response.getCode(), readResponseBody(response));
+        }
+    }
+
+    /**
+     * Execute a request and return status code and body, closing the response.
+     */
+    public static HttpResponseResult executeForStatusAndBody(final Request request) throws IOException {
+        try (ClassicHttpResponse response = (ClassicHttpResponse) request.execute().returnResponse()) {
+            return new HttpResponseResult(response.getCode(), readResponseBody(response));
+        }
+    }
+
+    protected static String readResponseBody(final ClassicHttpResponse response) throws IOException {
+        if (response.getEntity() == null) {
+            return "";
+        }
+        try (UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
+            response.getEntity().writeTo(baos);
+            return baos.toString(StandardCharsets.UTF_8);
+        }
+    }
+
+    /**
+     * Execute a fluent request and assert status and body, closing the response.
+     */
+    public static void assertRequestResponse(
+            final Request request,
+            final int expectedStatus,
+            final String expectedBody) throws IOException {
+        final HttpResponseResult result = executeForStatusAndBody(request);
+        assertEquals(expectedStatus, result.statusCode());
+        assertEquals(expectedBody, result.body());
     }
 }

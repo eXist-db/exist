@@ -426,12 +426,13 @@ public class GetParameterTest extends RESTTest {
     }
 
     private void testRequest(final Request request, final String expected) throws IOException {
-        final ClassicHttpResponse response = (ClassicHttpResponse) request.execute().returnResponse();
-        assertEquals(HttpStatus.SC_OK, response.getCode());
+        try (final ClassicHttpResponse response = (ClassicHttpResponse) request.execute().returnResponse()) {
+            assertEquals(HttpStatus.SC_OK, response.getCode());
 
-        try (final UnsynchronizedByteArrayOutputStream os = new UnsynchronizedByteArrayOutputStream()) {
-            response.getEntity().writeTo(os);
-            assertEquals(expected, new String(os.toByteArray(), UTF_8));
+            try (final UnsynchronizedByteArrayOutputStream os = new UnsynchronizedByteArrayOutputStream()) {
+                response.getEntity().writeTo(os);
+                assertEquals(expected, new String(os.toByteArray(), UTF_8));
+            }
         }
     }
 

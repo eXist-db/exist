@@ -139,17 +139,18 @@ public class PatchTest extends RESTTest {
     }
 
     private void assertResponse(final Request method, String expectedData) throws IOException {
-        final ClassicHttpResponse response = (ClassicHttpResponse) method.execute().returnResponse();
         final Matcher<String> valueMatcher = hasSimilarXml(
                 "<request><method>PATCH</method><data>" + expectedData + "</data></request>");
 
-        assertHTTPStatusCode(HttpStatus.SC_OK, response);
+        try (final ClassicHttpResponse response = (ClassicHttpResponse) method.execute().returnResponse()) {
+            assertHTTPStatusCode(HttpStatus.SC_OK, response);
 
-        try (final UnsynchronizedByteArrayOutputStream os = new UnsynchronizedByteArrayOutputStream()) {
-            response.getEntity().writeTo(os);
+            try (final UnsynchronizedByteArrayOutputStream os = new UnsynchronizedByteArrayOutputStream()) {
+                response.getEntity().writeTo(os);
 
-            final String actualResponse = new String(os.toByteArray());
-            assertThat(actualResponse, valueMatcher);
+                final String actualResponse = new String(os.toByteArray());
+                assertThat(actualResponse, valueMatcher);
+            }
         }
     }
 
@@ -158,7 +159,8 @@ public class PatchTest extends RESTTest {
     }
 
     private void assertMethodNotAllowed (final Request req) throws IOException {
-        final ClassicHttpResponse response = (ClassicHttpResponse) req.execute().returnResponse();
-        assertHTTPStatusCode(HttpStatus.SC_METHOD_NOT_ALLOWED, response);
+        try (final ClassicHttpResponse response = (ClassicHttpResponse) req.execute().returnResponse()) {
+            assertHTTPStatusCode(HttpStatus.SC_METHOD_NOT_ALLOWED, response);
+        }
     }
 }

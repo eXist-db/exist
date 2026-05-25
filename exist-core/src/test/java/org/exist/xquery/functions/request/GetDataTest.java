@@ -97,8 +97,7 @@ public class GetDataTest extends RESTTest {
                 .version(HttpVersion.HTTP_0_9)
                 .bodyByteArray(testData.getBytes(UTF_8), ContentType.APPLICATION_OCTET_STREAM);
 
-        final ClassicHttpResponse response = (ClassicHttpResponse) post.execute().returnResponse();
-        assertEquals(HttpStatus.SC_HTTP_VERSION_NOT_SUPPORTED, response.getCode());
+        assertEquals(HttpStatus.SC_HTTP_VERSION_NOT_SUPPORTED, executeForStatus(post));
     }
 
     @Ignore("Jetty 12 drops the connection on HTTP/1.0 without a response, causing NoHttpResponseException in Apache HttpClient")
@@ -146,8 +145,7 @@ public class GetDataTest extends RESTTest {
                 .version(HttpVersion.HTTP_0_9)
                 .bodyByteArray(testData.getBytes(UTF_8), ContentType.TEXT_XML);
 
-        final ClassicHttpResponse response = (ClassicHttpResponse) post.execute().returnResponse();
-        assertEquals(HttpStatus.SC_HTTP_VERSION_NOT_SUPPORTED, response.getCode());
+        assertEquals(HttpStatus.SC_HTTP_VERSION_NOT_SUPPORTED, executeForStatus(post));
     }
 
     @Ignore("Jetty 12 drops the connection on HTTP/1.0 without a response, causing NoHttpResponseException in Apache HttpClient")
@@ -211,7 +209,7 @@ public class GetDataTest extends RESTTest {
     }
     
     private void testRequest(Request method, byte expectedResponse[], boolean stripWhitespaceAndFormatting) throws IOException {
-        final ClassicHttpResponse response = (ClassicHttpResponse) method.execute().returnResponse();
+        try (final ClassicHttpResponse response = (ClassicHttpResponse) method.execute().returnResponse()) {
 
             assertEquals(HttpStatus.SC_OK, response.getCode());
 
@@ -225,5 +223,6 @@ public class GetDataTest extends RESTTest {
                 }
                 assertArrayEquals(expectedResponse, actualResponse);
             }
+        }
     }
 }

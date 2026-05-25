@@ -52,13 +52,14 @@ public class StreamBinaryTest extends RESTTest {
 
 		final Request get = Request.get(getCollectionRootUri() + "?_query=" + URLEncoder.encode(xquery, "UTF-8") + "&_indent=no");
 
-		final ClassicHttpResponse response = (ClassicHttpResponse) get.execute().returnResponse();
-		assertEquals(HttpStatus.SC_OK, response.getCode());
+		try (ClassicHttpResponse response = (ClassicHttpResponse) get.execute().returnResponse()) {
+			assertEquals(HttpStatus.SC_OK, response.getCode());
 
-		try (final UnsynchronizedByteArrayOutputStream os = new UnsynchronizedByteArrayOutputStream()) {
-			response.getEntity().writeTo(os);
+			try (final UnsynchronizedByteArrayOutputStream os = new UnsynchronizedByteArrayOutputStream()) {
+				response.getEntity().writeTo(os);
 
-			assertArrayEquals(testValue.getBytes(), os.toByteArray());
+				assertArrayEquals(testValue.getBytes(), os.toByteArray());
+			}
 		}
 	}
 }
