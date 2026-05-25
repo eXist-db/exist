@@ -81,6 +81,9 @@ public class ExistRepository extends Observable implements BrokerPoolService {
     private static final String EXPATH_REPO_DIR_NAME = "expathrepo";
     private static final String LEGACY_DEFAULT_EXPATH_REPO_DIR = "webapp/WEB-INF/" + EXPATH_REPO_DIR_NAME;
 
+    /** EXPath Packaging namespace used in {@code expath-pkg.xml}. */
+    private static final String PKG_NAMESPACE = "http://expath.org/ns/pkg";
+
     /** The wrapped EXPath repository. */
     private Path expathDir;
     private Repository myParent;
@@ -347,34 +350,45 @@ public class ExistRepository extends Observable implements BrokerPoolService {
                 modules.addAll(info.getXQueryModules());
             }
             // 2. XQuery modules declared in expath-pkg.xml (standard EXPath components)
-            final FileSystemResolver resolver = (FileSystemResolver) pkg.getResolver();
-            final Path pkgDescriptor = resolver.resolveResourceAsFile("expath-pkg.xml");
-            if (pkgDescriptor != null && Files.exists(pkgDescriptor)) {
-                try {
-                    final javax.xml.parsers.DocumentBuilderFactory dbf = javax.xml.parsers.DocumentBuilderFactory.newInstance();
-                    dbf.setNamespaceAware(true);
-                    final Document doc = dbf.newDocumentBuilder().parse(pkgDescriptor.toFile());
-                    final org.w3c.dom.NodeList xqueryElements = doc.getElementsByTagNameNS(
-                            "http://expath.org/ns/pkg", "xquery");
-                    for (int i = 0; i < xqueryElements.getLength(); i++) {
-                        final org.w3c.dom.Element xquery = (org.w3c.dom.Element) xqueryElements.item(i);
-                        final org.w3c.dom.NodeList nsElements = xquery.getElementsByTagNameNS(
-                                "http://expath.org/ns/pkg", "namespace");
-                        for (int j = 0; j < nsElements.getLength(); j++) {
-                            final String ns = nsElements.item(j).getTextContent().trim();
-                            if (!ns.isEmpty()) {
-                                try {
-                                    modules.add(new URI(ns));
-                                } catch (final URISyntaxException e) {
-                                    LOG.debug("Invalid namespace URI in expath-pkg.xml: {}", ns);
-                                }
-                            }
-                        }
+            modules.addAll(getExpathPkgXQueryModules(pkg));
+        }
+        return modules;
+    }
+
+    /**
+     * Parse {@code expath-pkg.xml} for the given package and return the XQuery
+     * namespace URIs it declares. Returns an empty list if the descriptor is
+     * absent or cannot be parsed.
+     */
+    private List<URI> getExpathPkgXQueryModules(final Package pkg) {
+        final FileSystemResolver resolver = (FileSystemResolver) pkg.getResolver();
+        final Path pkgDescriptor = resolver.resolveResourceAsFile("expath-pkg.xml");
+        if (pkgDescriptor == null || !Files.exists(pkgDescriptor)) {
+            return List.of();
+        }
+        final List<URI> modules = new ArrayList<>();
+        try {
+            final javax.xml.parsers.DocumentBuilderFactory dbf = javax.xml.parsers.DocumentBuilderFactory.newInstance();
+            dbf.setNamespaceAware(true);
+            final Document doc = dbf.newDocumentBuilder().parse(pkgDescriptor.toFile());
+            final org.w3c.dom.NodeList xqueryElements = doc.getElementsByTagNameNS(PKG_NAMESPACE, "xquery");
+            for (int i = 0; i < xqueryElements.getLength(); i++) {
+                final org.w3c.dom.Element xquery = (org.w3c.dom.Element) xqueryElements.item(i);
+                final org.w3c.dom.NodeList nsElements = xquery.getElementsByTagNameNS(PKG_NAMESPACE, "namespace");
+                for (int j = 0; j < nsElements.getLength(); j++) {
+                    final String ns = nsElements.item(j).getTextContent().trim();
+                    if (ns.isEmpty()) {
+                        continue;
                     }
-                } catch (final Exception e) {
-                    LOG.debug("Error parsing expath-pkg.xml for package {}: {}", pkg.getName(), e.getMessage());
+                    try {
+                        modules.add(new URI(ns));
+                    } catch (final URISyntaxException e) {
+                        LOG.debug("Invalid namespace URI in expath-pkg.xml: {}", ns);
+                    }
                 }
             }
+        } catch (final Exception e) {
+            LOG.debug("Error parsing expath-pkg.xml for package {}: {}", pkg.getName(), e.getMessage());
         }
         return modules;
     }

@@ -127,7 +127,7 @@ public class BuiltinFunctions extends BasicFunction {
 				final Set<QName> seen = new HashSet<>();
 				final Iterable<Module> iterableModules = () -> context.getModules();
 				final Module[] modules = StreamSupport.stream(iterableModules.spliterator(), false).toArray(Module[]::new);
-				addFunctionsFromModulesDedup(resultSeq, modules, seen);
+				addDistinctFunctionsFromModules(resultSeq, modules, seen);
 
 				// Java EXPath package modules not yet loaded
 				if (context.getRepository().isPresent()) {
@@ -138,7 +138,7 @@ public class BuiltinFunctions extends BasicFunction {
 							try {
 								final Module resolved = repo.resolveJavaModule(nsUri, context);
 								if (resolved != null) {
-									addFunctionsFromModulesDedup(resultSeq, new Module[]{resolved}, seen);
+									addDistinctFunctionsFromModules(resultSeq, new Module[]{resolved}, seen);
 								}
 							} catch (final XPathException e) {
 								logger.debug("Could not resolve Java module {}: {}", nsUri, e.getMessage());
@@ -175,7 +175,7 @@ public class BuiltinFunctions extends BasicFunction {
 		}
 	}
 
-	private void addFunctionsFromModulesDedup(final ValueSequence resultSeq, final Module[] modules, final Set<QName> seen) {
+	private void addDistinctFunctionsFromModules(final ValueSequence resultSeq, final Module[] modules, final Set<QName> seen) {
 		for (final Module module : modules) {
 			final FunctionSignature[] signatures = module.listFunctions();
 			for (final FunctionSignature signature : signatures) {

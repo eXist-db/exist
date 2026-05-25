@@ -243,51 +243,57 @@ public class ModuleInfo extends BasicFunction {
                 }
             }
             case "registered-modules-info" -> evalRegisteredModulesInfo();
-            case null, default -> {
-                // registered-modules: return the union of all module namespace URIs
-                final ValueSequence resultSeq = new ValueSequence();
-                final Set<String> seen = new HashSet<>();
-                final XQueryContext tempContext = new XQueryContext(context.getBroker().getBrokerPool());
-                try {
-                    // 1. Java built-in modules
-                    for (final Iterator<Module> i = tempContext.getRootModules(); i.hasNext(); ) {
-                        final Module module = i.next();
-                        final String nsUri = module.getNamespaceURI();
-                        if (seen.add(nsUri)) {
-                            resultSeq.add(new StringValue(this, nsUri));
-                        }
-                    }
-                    if (tempContext.getRepository().isPresent()) {
-                        final ExistRepository repo = tempContext.getRepository().get();
-                        // 2. Java EXPath package modules
-                        for (final URI uri : repo.getJavaModules()) {
-                            final String nsUri = uri.toString();
-                            if (seen.add(nsUri)) {
-                                resultSeq.add(new StringValue(this, nsUri));
-                            }
-                        }
-                        // 3. XQuery EXPath package modules
-                        for (final URI uri : repo.getXQueryModules()) {
-                            final String nsUri = uri.toString();
-                            if (seen.add(nsUri)) {
-                                resultSeq.add(new StringValue(this, nsUri));
-                            }
-                        }
-                    }
-                    // 4. Conf.xml-mapped XQuery modules
-                    for (final Iterator<String> i = tempContext.getMappedModuleURIs(); i.hasNext(); ) {
-                        final String nsUri = i.next();
-                        if (seen.add(nsUri)) {
-                            resultSeq.add(new StringValue(this, nsUri));
-                        }
-                    }
-                } finally {
-                    tempContext.reset();
-                    tempContext.runCleanupTasks();
-                }
-                yield resultSeq;
-            }
+            case null, default -> evalRegisteredModules();
         };
+	}
+
+	/**
+	 * Evaluate util:registered-modules(). Returns the union of all module
+	 * namespace URIs visible to the context: Java built-in modules, Java and
+	 * XQuery EXPath package modules, and conf.xml-mapped XQuery modules.
+	 */
+	private Sequence evalRegisteredModules() {
+		final ValueSequence resultSeq = new ValueSequence();
+		final Set<String> seen = new HashSet<>();
+		final XQueryContext tempContext = new XQueryContext(context.getBroker().getBrokerPool());
+		try {
+			// 1. Java built-in modules
+			for (final Iterator<Module> i = tempContext.getRootModules(); i.hasNext(); ) {
+				final Module module = i.next();
+				final String nsUri = module.getNamespaceURI();
+				if (seen.add(nsUri)) {
+					resultSeq.add(new StringValue(this, nsUri));
+				}
+			}
+			if (tempContext.getRepository().isPresent()) {
+				final ExistRepository repo = tempContext.getRepository().get();
+				// 2. Java EXPath package modules
+				for (final URI uri : repo.getJavaModules()) {
+					final String nsUri = uri.toString();
+					if (seen.add(nsUri)) {
+						resultSeq.add(new StringValue(this, nsUri));
+					}
+				}
+				// 3. XQuery EXPath package modules
+				for (final URI uri : repo.getXQueryModules()) {
+					final String nsUri = uri.toString();
+					if (seen.add(nsUri)) {
+						resultSeq.add(new StringValue(this, nsUri));
+					}
+				}
+			}
+			// 4. Conf.xml-mapped XQuery modules
+			for (final Iterator<String> i = tempContext.getMappedModuleURIs(); i.hasNext(); ) {
+				final String nsUri = i.next();
+				if (seen.add(nsUri)) {
+					resultSeq.add(new StringValue(this, nsUri));
+				}
+			}
+		} finally {
+			tempContext.reset();
+			tempContext.runCleanupTasks();
+		}
+		return resultSeq;
 	}
 
 	/**
