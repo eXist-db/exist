@@ -60,7 +60,10 @@ public class BuiltinFunctions extends BasicFunction {
 			new FunctionSignature(
 					new QName("registered-functions", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 					"Returns a sequence containing the QNames of all functions " +
-							"currently known to the system, including functions in built-in modules and Java modules from installed EXPath packages.",
+							"currently visible in the query context, including functions declared in the main module, " +
+							"functions from modules imported by the current query (XQuery library modules and Java modules), " +
+							"functions from eXist's built-in modules, and functions from Java modules in installed EXPath packages " +
+							"that have not yet been loaded into the context.",
 					null,
 					new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE_OR_MORE, "the sequence of function names")),
 			new FunctionSignature(
