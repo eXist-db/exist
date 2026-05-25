@@ -17,7 +17,7 @@ jobs:
           distribution: temurin
           java-version: ${{ env.DEV_JDK }}
       - uses: ./.github/actions/maven-cache
-      - run: mvn -V -B --no-transfer-progress --offline license:check
+      - run: mvn -V -B --no-transfer-progress license:check
         timeout-minutes: 10
   dependencies:
     name: Dependency checks
