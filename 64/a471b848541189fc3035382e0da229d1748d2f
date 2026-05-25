@@ -1,0 +1,28 @@
+extensions/webdav/src/test/java/org/exist/webdav/WebDavRoundTripTest.java
+  s_402b1f194ddd18::t_2109ca79a31383 99
+  s_402b1f194ddd18::t_7b83e160be1ab6 66,69,75,80,85-90
+  s_402b1f194ddd18::t_900d8cb944153a 31,33-34,37-38,40,42-45,47-52,55,57,61,74,76-79,81-84,91-98,100-103
+extensions/webdav/src/test/java/org/exist/webdav/WebDavHttpTest.java
+  s_402b1f194ddd18::t_9737ff2ac54c18 24-28,32-66,68-69,72-75
+extensions/webdav/pom.xml
+  s_402b1f194ddd18::t_68a862c5c96525 146
+BUILD.md
+  s_402b1f194ddd18::t_436e5919c8447b 93
+  s_402b1f194ddd18::t_e1a8ff8742f721 31-71,73,75,77-82
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.1",
+  "base_commit_sha": "64a471b848541189fc3035382e0da229d1748d2f",
+  "prompts": {},
+  "sessions": {
+    "s_402b1f194ddd18": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "54a29463-2e35-41a6-aec3-c4bbb33fe461",
+        "model": "composer-2.5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
