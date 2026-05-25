@@ -1,0 +1,20 @@
+extensions/webdav/src/test/java/org/exist/webdav/WebDavRoundTripTest.java
+  s_402b1f194ddd18::t_bcffa0953bf235 114
+  s_402b1f194ddd18::t_932112074b446c 83,88,93,98,101
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.1",
+  "base_commit_sha": "f87045315e6d671a8e6672ed8fc91f6191da136d",
+  "prompts": {},
+  "sessions": {
+    "s_402b1f194ddd18": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "54a29463-2e35-41a6-aec3-c4bbb33fe461",
+        "model": "composer-2.5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
