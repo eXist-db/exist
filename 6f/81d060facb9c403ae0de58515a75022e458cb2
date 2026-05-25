@@ -1,0 +1,34 @@
+exist-core/src/main/java/org/exist/indexing/IndexWorker.java
+  s_8004b3fa847007::t_ff63e35e428e35 58-60
+exist-core/src/test/java/org/exist/http/PortalRedirectTest.java
+  s_8004b3fa847007::t_2f39c2f9263df1 1-63
+exist-core/src/main/java/org/exist/jetty/WindowsPathResource.java
+  s_8004b3fa847007::t_319d3f5defb07c 45-48
+exist-jetty-config/src/main/resources/org/exist/jetty/etc/jetty-deploy.xml
+  s_8004b3fa847007::t_e1a87ff5d0e5c8 41
+extensions/modules/persistentlogin/src/main/java/org/exist/xquery/modules/persistentlogin/PersistentLogin.java
+  s_8004b3fa847007::t_349c2256648379 71-73
+  s_8004b3fa847007::t_cdad738d2c15ac 69-70,76
+  s_8004b3fa847007::t_d30b569173f266 74-75
+exist-core/src/main/java/org/exist/jetty/WebAppContext.java
+  s_8004b3fa847007::t_639878b943d659 56-76
+  s_8004b3fa847007::t_cc986baa50d758 30-31
+exist-jetty-config/src/main/resources/org/exist/jetty/etc/webapps/portal/WEB-INF/jetty-web.xml
+  s_8004b3fa847007::t_6d41391d447aa6 3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.1",
+  "base_commit_sha": "6f81d060facb9c403ae0de58515a75022e458cb2",
+  "prompts": {},
+  "sessions": {
+    "s_8004b3fa847007": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "317c2393-d8d8-4ce9-b693-6ed653b9eeda",
+        "model": "composer-2.5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
