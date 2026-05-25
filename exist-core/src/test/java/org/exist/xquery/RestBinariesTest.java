@@ -24,6 +24,7 @@ package org.exist.xquery;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.io.input.UnsynchronizedByteArrayInputStream;
 import org.apache.hc.client5.http.fluent.Executor;
 import org.apache.hc.client5.http.fluent.Request;
 import org.apache.hc.core5.http.ClassicHttpResponse;
@@ -84,14 +85,7 @@ public class RestBinariesTest extends AbstractBinariesTest<Result, Result.Value,
                 "let $bin := util:binary-doc('" + TEST_COLLECTION.append(BIN1_FILENAME).toString() + "')\n" +
                 "return response:stream($bin, 'media-type=application/octet-stream')";
 
-        final ClassicHttpResponse response = postXquery(query);
-
-        final HttpEntity entity = response.getEntity();
-        try(final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
-            entity.writeTo(baos);
-
-            assertArrayEquals(BIN1_CONTENT, Base64.decodeBase64(baos.toByteArray()));
-        }
+        assertArrayEquals(BIN1_CONTENT, Base64.decodeBase64(postXqueryBody(query)));
     }
 
     /**
@@ -106,14 +100,7 @@ public class RestBinariesTest extends AbstractBinariesTest<Result, Result.Value,
                 "let $bin := util:binary-doc('" + TEST_COLLECTION.append(BIN1_FILENAME).toString() + "')\n" +
                 "return response:stream-binary($bin, 'media-type=application/octet-stream', ())";
 
-        final ClassicHttpResponse response = postXquery(query);
-
-        final HttpEntity entity = response.getEntity();
-        try(final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
-            entity.writeTo(baos);
-
-            assertArrayEquals(BIN1_CONTENT, baos.toByteArray());
-        }
+        assertArrayEquals(BIN1_CONTENT, postXqueryBody(query));
     }
 
     /**
@@ -161,13 +148,14 @@ public class RestBinariesTest extends AbstractBinariesTest<Result, Result.Value,
 
     @Override
     protected void storeBinaryFile(final XmldbURI filePath, final byte[] content) throws Exception {
-        final ClassicHttpResponse response = (ClassicHttpResponse) executor.execute(Request.put(getRestUrl() + filePath.toString())
+        try (final ClassicHttpResponse response = (ClassicHttpResponse) executor.execute(Request.put(getRestUrl() + filePath.toString())
                 .setHeader("Content-Type", "application/octet-stream")
                 .bodyByteArray(content)
-        ).returnResponse();
+        ).returnResponse()) {
 
-        if(response.getCode() != SC_CREATED) {
-            throw new Exception("Unable to store binary file: " + filePath);
+            if(response.getCode() != SC_CREATED) {
+                throw new Exception("Unable to store binary file: " + filePath);
+            }
         }
     }
 
@@ -177,47 +165,51 @@ public class RestBinariesTest extends AbstractBinariesTest<Result, Result.Value,
 
     @Override
     protected void removeCollection(final XmldbURI collectionUri) throws Exception {
-        final ClassicHttpResponse response = (ClassicHttpResponse) executor.execute(Request.delete(getRestUrl() + collectionUri.toString()))
-                .returnResponse();
+        try (final ClassicHttpResponse response = (ClassicHttpResponse) executor.execute(Request.delete(getRestUrl() + collectionUri.toString()))
+                .returnResponse()) {
 
-        if(response.getCode() != SC_OK) {
-            throw new Exception("Unable to delete collection: " + collectionUri);
+            if(response.getCode() != SC_OK) {
+                throw new Exception("Unable to delete collection: " + collectionUri);
+            }
         }
     }
 
     @Override
     protected QueryResultAccessor<Result, Exception> executeXQuery(final String xquery) throws Exception {
-        final ClassicHttpResponse response = postXquery(xquery);
-        final HttpEntity entity = response.getEntity();
-        try(final InputStream is = entity.getContent()) {
+        final byte[] xmlBytes = postXqueryBody(xquery);
+        try (final InputStream is = new UnsynchronizedByteArrayInputStream(xmlBytes)) {
             final JAXBContext jaxbContext = JAXBContext.newInstance("org.exist.http.jaxb");
             final Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-            final Result result = (Result)unmarshaller.unmarshal(is);
+            final Result result = (Result) unmarshaller.unmarshal(is);
 
             return consumer -> consumer.accept(result);
         }
     }
 
-    private ClassicHttpResponse postXquery(final String xquery) throws JAXBException, IOException {
+    private byte[] postXqueryBody(final String xquery) throws JAXBException, IOException {
         final Query query = new Query();
         query.setText(xquery);
 
         final JAXBContext jaxbContext = JAXBContext.newInstance("org.exist.http.jaxb");
         final Marshaller marshaller = jaxbContext.createMarshaller();
 
-        final ClassicHttpResponse response;
-        try(final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
+        try (final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
             marshaller.marshal(query, baos);
-            response = (ClassicHttpResponse) executor.execute(Request.post(getRestUrl() + "/db/")
+            try (final ClassicHttpResponse response = (ClassicHttpResponse) executor.execute(Request.post(getRestUrl() + "/db/")
                     .bodyByteArray(baos.toByteArray(), ContentType.APPLICATION_XML)
-            ).returnResponse();
-        }
+            ).returnResponse()) {
 
-        if(response.getCode() != SC_OK) {
-            throw new IOException("Unable to query, HTTP response code: " + response.getCode());
+                if (response.getCode() != SC_OK) {
+                    throw new IOException("Unable to query, HTTP response code: " + response.getCode());
+                }
+                if (response.getEntity() == null) {
+                    return new byte[0];
+                }
+                try (final InputStream is = response.getEntity().getContent()) {
+                    return is.readAllBytes();
+                }
+            }
         }
-
-        return response;
     }
 
     @Override

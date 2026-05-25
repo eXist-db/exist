@@ -24,11 +24,9 @@ package org.exist.dom.persistent;
 
 import org.apache.hc.client5.http.fluent.Executor;
 import org.apache.hc.client5.http.fluent.Request;
-import org.exist.http.AbstractHttpTest;
-import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.exist.TestUtils;
+import org.exist.http.AbstractHttpTest;
 import org.exist.test.ExistWebServer;
-import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xmldb.DatabaseImpl;
 import org.exist.xmldb.XmldbURI;
 import org.junit.ClassRule;
@@ -45,13 +43,14 @@ import java.io.IOException;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.hc.core5.http.HttpStatus.SC_CREATED;
+import static org.apache.hc.core5.http.HttpStatus.SC_OK;
 import static org.junit.Assert.*;
 
 /**
  * Tests for retrieving a document containing CDATA via
  * various APIs.
  */
-public class CDataIntergationTest {
+public class CDataIntergationTest extends AbstractHttpTest {
 
     @ClassRule
     public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
@@ -71,23 +70,17 @@ public class CDataIntergationTest {
                 existWebServer, TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
 
         // store document
-        final ClassicHttpResponse storeResponse = (ClassicHttpResponse) executor.execute(
+        assertEquals(SC_CREATED, executeForStatus(executor,
                 Request
                         .put(docUri)
                         .addHeader("Content-Type", "application/xml")
                         .bodyByteArray(cdata_xml.getBytes(UTF_8))
-                ).returnResponse();
-        assertEquals(SC_CREATED, storeResponse.getCode());
+        ));
 
         // retrieve document
-        final ClassicHttpResponse retrieveResponse = (ClassicHttpResponse) executor.execute(
-                Request
-                        .get(docUri)
-                ).returnResponse();
-        try (final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
-            retrieveResponse.getEntity().writeTo(baos);
-            assertEquals(cdata_xml, baos.toString(UTF_8));
-        }
+        final HttpResponseResult retrieved = executeForStatusAndBody(executor, Request.get(docUri));
+        assertEquals(SC_OK, retrieved.statusCode());
+        assertEquals(cdata_xml, retrieved.body());
     }
 
     @Test

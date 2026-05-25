@@ -23,9 +23,7 @@
 package org.exist.http.urlrewrite;
 
 import com.evolvedbinary.j8fu.tuple.Tuple2;
-import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.apache.hc.client5.http.fluent.Request;
-import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.HttpStatus;
 import org.exist.http.AbstractHttpTest;
@@ -97,9 +95,7 @@ public class ControllerTest extends AbstractHttpTest {
         final Request request = Request
                 .put(getRestUri(existWebServer) + "/db/apps/" + testCollectionName + "/" + documentName)
                 .bodyString(documentContent, ContentType.create(documentMediaType));
-        int statusCode = withHttpExecutor(existWebServer, executor ->
-                executor.execute(request).returnResponse().getCode()
-        );
+        int statusCode = withHttpExecutor(existWebServer, executor -> executeForStatus(executor, request));
         assertEquals(HttpStatus.SC_CREATED, statusCode);
     }
 
@@ -107,12 +103,8 @@ public class ControllerTest extends AbstractHttpTest {
         final Request request = Request
                 .get(getAppsUri(existWebServer) + "/" + testCollectionName + "/" + documentName);
         final Tuple2<Integer, String> responseCodeAndBody = withHttpExecutor(existWebServer, executor -> {
-            final ClassicHttpResponse response = (ClassicHttpResponse) executor.execute(request).returnResponse();
-            final int sc = response.getCode();
-            try (final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream()) {
-                response.getEntity().writeTo(baos);
-                return Tuple(sc, baos.toString(UTF_8));
-            }
+            final HttpResponseResult r = executeForStatusAndBody(executor, request);
+            return Tuple(r.statusCode(), r.body());
         });
         return responseCodeAndBody;
     }
