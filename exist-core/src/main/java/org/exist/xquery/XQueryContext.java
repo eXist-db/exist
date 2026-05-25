@@ -616,9 +616,7 @@ public class XQueryContext implements BinaryValueManager, Context {
                 } else {
                     // NOTE(AR) set the location of the module to import relative to this module's load path
                     // - so that transient imports of the imported module will resolve correctly!
-                    final Path collectionPath = Path.of(XmldbURI.create(moduleLoadPath).getCollectionPath());
-                    final Path sourcePath = Path.of(sourceCollection);
-                    location = collectionPath.relativize(sourcePath).toString();
+                    location = relativizeOrFallback(moduleLoadPath, sourceCollection);
                 }
             }
 
@@ -627,6 +625,34 @@ public class XQueryContext implements BinaryValueManager, Context {
 
         } catch (final PermissionDeniedException | IllegalArgumentException e) {
             throw new XPathException(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Compute the location of an imported module relative to the importing module's load path,
+     * falling back to the absolute source collection when the load path is not a relativizable
+     * collection URI.
+     *
+     * Clients may send a synthetic value as the module load path for unsaved in-memory queries
+     * (e.g. eXide sends {@code "xmldb:exist://__new__1"} for new untitled buffers). Such values
+     * are not real collection URIs and cause {@link Path#relativize(Path)} to throw
+     * {@link IllegalArgumentException}. In that case we fall back to the absolute source
+     * collection so the import still resolves, matching the behaviour of the {@code "."}
+     * load-path case.
+     *
+     * @param moduleLoadPath the load path of the importing module
+     * @param sourceCollection the collection path of the module being imported
+     * @return the relative location, or the absolute source collection if relativization fails
+     */
+    static String relativizeOrFallback(final String moduleLoadPath, final String sourceCollection) {
+        try {
+            final Path collectionPath = Path.of(XmldbURI.create(moduleLoadPath).getCollectionPath());
+            final Path sourcePath = Path.of(sourceCollection);
+            return collectionPath.relativize(sourcePath).toString();
+        } catch (final IllegalArgumentException e) {
+            LOG.debug("Module load path '{}' is not relativizable against source collection '{}'; using absolute collection path: {}",
+                    moduleLoadPath, sourceCollection, e.getMessage());
+            return sourceCollection;
         }
     }
 
