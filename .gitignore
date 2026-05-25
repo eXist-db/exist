@@ -18,7 +18,9 @@ work/
 .idea/*
 !/.idea/runConfigurations
 *.iml
-.vscode
+.vscode/
+.cursor/
+.zed/
 
 # OS specific files
 .DS_Store
@@ -29,6 +31,7 @@ plans/
 .moderne/
 !.moderne/context/
 !.moderne/moderne.yml
+.github/instructions/
 
 # Debug logs (e.g. from reindex investigation)
 reindex-dbg.log
