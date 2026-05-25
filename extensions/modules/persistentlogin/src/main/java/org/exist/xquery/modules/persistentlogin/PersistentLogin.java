@@ -66,7 +66,14 @@ public class PersistentLogin {
      */
     private static final String TOKEN_SEPARATOR = "|";
 
-    /** Historical separator; still accepted when parsing incoming cookies. */
+    /**
+     * Historical separator; still accepted when parsing incoming cookies issued before the
+     * {@link #TOKEN_SEPARATOR} switch ({@code :} breaks HC4 Set-Cookie parsing — see
+     * <a href="https://github.com/eXist-db/exist/pull/6393">PR #6393</a>). Remove
+     * {@link #splitTokenValue} dual parsing once HC4 is fully removed from the codebase
+     * (Phase 5 in #6393, after expath Gate B). In-flight browser cookies are not a concern:
+     * a new eXist release install expects users to reauthenticate anyway.
+     */
     private static final String LEGACY_TOKEN_SEPARATOR = ":";
 
     private Map<String, LoginDetails> seriesMap = Collections.synchronizedMap(new HashMap<>());

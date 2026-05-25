@@ -38,7 +38,7 @@
     <!-- Portal webapp at / — serves the redirect page to /exist -->
     <Call name="addHandler">
       <Arg>
-        <New id="portal" class="org.eclipse.jetty.ee10.webapp.WebAppContext">
+        <New id="portal" class="org.exist.jetty.WebAppContext">
           <Set name="contextPath">/</Set>
           <Set name="war"><SystemProperty name="exist.jetty.portal.dir"><Default><Property name="jetty.home" default="."/>/../../../exist-jetty-config/src/main/resources/org/exist/jetty/etc/webapps/portal/</Default></SystemProperty></Set>
           <Set name="defaultsDescriptor"><Property name="jetty.home" default="."/>/etc/webdefault.xml</Set>

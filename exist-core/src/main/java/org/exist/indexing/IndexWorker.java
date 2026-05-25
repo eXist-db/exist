@@ -55,6 +55,9 @@ public interface IndexWorker {
 
     /**
      * Lower values run earlier in {@link IndexController} listener chains and {@link #flush()}.
+     * Gaps reserve room for future workers: {@code 0} structural, {@code 1–99} pre-statistics,
+     * {@code 100–999} pre-Lucene, {@code 1000+} Lucene and later; unranked workers use
+     * {@link Integer#MAX_VALUE}.
      */
     int CHAIN_PRIORITY_STRUCTURAL = 0;
     int CHAIN_PRIORITY_STATISTICS = 100;

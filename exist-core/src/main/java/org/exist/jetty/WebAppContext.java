@@ -27,7 +27,8 @@ import org.exist.storage.BrokerPool;
 
 /**
  * eXist {@link org.eclipse.jetty.ee10.webapp.WebAppContext} with Windows path handling for
- * Jetty 12.1 ({@link WindowsPathResource}).
+ * Jetty 12.1 ({@link WindowsPathResource}). Used for the main webapp ({@code /exist} or
+ * standalone {@code /}) and the distribution portal at {@code /}.
  *
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
  */
@@ -52,6 +53,26 @@ public class WebAppContext extends org.eclipse.jetty.ee10.webapp.WebAppContext {
     protected void doStop() throws Exception {
         super.doStop();
 
-        BrokerPool.stopAll(true);
+        if (ownsBrokerPoolLifecycle()) {
+            BrokerPool.stopAll(true);
+        }
+    }
+
+    /**
+     * Main eXist webapps stop the embedded database; the distribution portal at {@code /} is
+     * static-only and must not tear down {@link BrokerPool} when Jetty stops it alongside {@code /exist}.
+     */
+    private boolean ownsBrokerPoolLifecycle() {
+        if ("/exist".equals(getContextPath())) {
+            return true;
+        }
+        if (!"/".equals(getContextPath())) {
+            return false;
+        }
+        final Resource baseResource = getBaseResource();
+        if (baseResource == null) {
+            return true;
+        }
+        return !baseResource.toString().replace('\\', '/').contains("/webapps/portal");
     }
 }

@@ -42,8 +42,10 @@ import java.util.Objects;
  * {@code WebAppContext.getWebInf()}. Remove when upstream Jetty restores safe Windows resolve.
  * <p>
  * This class extends {@link Resource}, not {@link PathResource}. Jetty internals that use
- * {@code instanceof PathResource} will not treat wrapped resources as path resources; CI and
- * integration tests validate that the exploded-webapp startup path does not depend on that.
+ * {@code instanceof PathResource} will not treat wrapped resources as path resources. eXist
+ * production code has no {@code instanceof PathResource} checks on resources that may be wrapped;
+ * CI and integration tests validate that the exploded-webapp startup path does not depend on
+ * Jetty-internal type checks either.
  * <p>
  * Only {@link #resolve(String)} differs from Jetty 12.1 {@link PathResource} behaviour. Other
  * {@link Resource} methods delegate to the wrapped resource or rely on inherited defaults that
