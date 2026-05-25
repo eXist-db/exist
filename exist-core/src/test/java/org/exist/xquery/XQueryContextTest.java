@@ -347,13 +347,13 @@ public class XQueryContextTest {
     }
 
     @Test
-    public void relativizeOrFallback_realCollectionLoadPath_relativizes() {
+    public void testRelativizeOrFallbackRealCollectionLoadPathRelativizes() {
         assertEquals("../bar",
                 XQueryContext.relativizeOrFallback("xmldb:exist:///db/apps/foo", "/db/apps/bar"));
     }
 
     @Test
-    public void relativizeOrFallback_syntheticLoadPath_fallsBackToSourceCollection() {
+    public void testRelativizeOrFallbackSyntheticLoadPathFallsBackToSourceCollection() {
         // Reproduces the eXide unsaved-buffer crash: when a client sends a synthetic load
         // path like "xmldb:exist://__new__1" for an in-memory query, Path.relativize threw
         // IllegalArgumentException, surfacing as an XPath compile error and blocking module
@@ -363,7 +363,7 @@ public class XQueryContextTest {
     }
 
     @Test
-    public void relativizeOrFallback_emptyLoadPath_fallsBackToSourceCollection() {
+    public void testRelativizeOrFallbackEmptyLoadPathFallsBackToSourceCollection() {
         assertEquals("/db/apps/foo",
                 XQueryContext.relativizeOrFallback("", "/db/apps/foo"));
     }
