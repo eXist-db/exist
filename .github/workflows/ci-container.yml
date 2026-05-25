@@ -76,7 +76,7 @@ jobs:
       # NOTE (DP): When on master push release, when on develop push latest: Version is included automatically
       # TODO (DP): Confirm that releases triggered from maven publish images with the non SNAPSHOT version
       - name: Publish latest images
-        if: github.ref == 'refs/heads/develop'
+        if: github.repository == 'eXist-db/exist' && github.ref == 'refs/heads/develop'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
@@ -84,7 +84,7 @@ jobs:
         run: mvn --no-transfer-progress -q -Ddocker.tag=latest -Ddocker.username=$DOCKER_USERNAME -Ddocker.password=$DOCKER_PASSWORD docker:build docker:push
         working-directory: ./exist-docker
       - name: Publish release images
-        if: github.ref == 'refs/heads/master'
+        if: github.repository == 'eXist-db/exist' && github.ref == 'refs/heads/master'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
