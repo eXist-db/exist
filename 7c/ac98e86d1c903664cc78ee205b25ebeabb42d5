@@ -1,0 +1,60 @@
+exist-core/src/main/java/org/exist/storage/NativeBroker.java
+  s_cc91f600c392c3::t_c9c5877bed2a02 2083
+  s_cc91f600c392c3::t_8fdf373e8bccf2 2122,2172-2173,2185-2186,2189-2191
+  s_cc91f600c392c3::t_535762bbbd28b4 2123,2138,2174,2177-2181
+  s_9a183dbdc45354::t_3b5d1146efcd43 2131-2137,2139-2147
+exist-core-jmh/src/test/java/org/exist/storage/ReindexBenchmarkTest.java
+  s_cc91f600c392c3::t_001fbc040ce7be 1-42
+exist-core-jmh/src/main/java/org/exist/storage/ReindexBenchmark.java
+  s_cc91f600c392c3::t_faf58efc849706 1-57,59-68,73,75-81,97-109,121-124,128-134,140-165,167-170,174,181-201,204-214,223-224,226-229,243-244,83,85,87,89,91,93,95-96,127,179-180
+  s_cc91f600c392c3::t_72428bac24afff 69,70-71
+  s_cc91f600c392c3::t_c870663f7cf232 110-120
+  s_cc91f600c392c3::t_073ed437c7c5b2 166,172-173
+  s_cc91f600c392c3::t_75e14a855b8fab 202-203,215-222,225
+  s_cc91f600c392c3::t_e2e5053a6dc026 230-242
+  s_cc91f600c392c3::t_03a57900292c35 58,135-139
+  s_cc91f600c392c3::t_033a8958db47c6 74,82
+exist-core/src/main/java/org/exist/storage/structural/NativeStructuralIndexWorker.java
+  s_9a183dbdc45354::t_3b5d1146efcd43 568-575
+exist-core-jmh/pom.xml
+  dd267fc11decf911 53-56,139-147
+  s_cc91f600c392c3::t_c0ad4564e7de51 72,57,61,73-74,76-77
+  c36e6eedba036f88 58-60
+exist-core/src/main/java/org/exist/xmlrpc/RpcConnection.java
+  s_cc91f600c392c3::t_76c7ceddb11956 3238
+exist-core/src/main/java/org/exist/storage/DBBroker.java
+  s_cc91f600c392c3::t_fc1b3dc102073d 596-607
+exist-core/src/main/java/org/exist/xmldb/LocalIndexQueryService.java
+  s_cc91f600c392c3::t_8779fcf318ff73 113
+extensions/indexes/lucene/src/test/xquery/lucene/ft-edge.xqm
+  dd267fc11decf911 35,43,49,60,62-84,136-141,146-147,158-159,165-169,174-178,183-187,192-196,200-202,204-208,211-218,221-227,203,233-234,237-238,241,245-246,249-250,252-253,257-258,261-262,267,271-272,275-276,279,113-118,209-210,219-220,228-229,239,251,263,277,89-92,94,96-97,99-101,103,105-109,142-145,160-162,283-284,287-291,295-296,300-303
+  s_cc91f600c392c3::t_96ad1729ad6637 230,231-232,235-236,240,242-244,247-248,254-256,259-260,264-266,268-270,273-274,278,280,119-120,88,93,95,98,102,104,110-111,281-282,285-286,292-294,297-299,304-306,313-322,327-336,342-355
+  s_cc91f600c392c3::t_12244ed1f7f1b4 307-312,323-326,337-341
+exist-core/src/main/java/org/exist/indexing/IndexController.java
+  s_cc91f600c392c3::t_cb4b437adc6f17 205-207
+  s_cc91f600c392c3::t_5549785ca9c9dc 215
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.1",
+  "base_commit_sha": "7cac98e86d1c903664cc78ee205b25ebeabb42d5",
+  "prompts": {},
+  "sessions": {
+    "s_9a183dbdc45354": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "8e0b3ea4-fd85-41de-a1fb-93cab7ce38d8",
+        "model": "claude-4.6-opus-high-thinking"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    },
+    "s_cc91f600c392c3": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "6b7256af-b6b2-47a4-bee2-1ae3ef59b841",
+        "model": "default"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}

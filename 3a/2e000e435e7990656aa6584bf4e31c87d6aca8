@@ -1,0 +1,31 @@
+exist-core/src/main/java/org/exist/storage/NativeBroker.java
+  s_cc91f600c392c3::t_c9c5877bed2a02 2085
+  s_cc91f600c392c3::t_8fdf373e8bccf2 2130,2164-2165,2177-2178,2181-2183
+  s_cc91f600c392c3::t_535762bbbd28b4 2131,2146,2166,2169-2173
+  s_9a183dbdc45354::t_3b5d1146efcd43 2139-2145,2147-2155
+  s_cc91f600c392c3::t_e30ea5732e1af4 2059-2060,2105-2110,2134,2159-2163
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.1",
+  "base_commit_sha": "3a2e000e435e7990656aa6584bf4e31c87d6aca8",
+  "prompts": {},
+  "sessions": {
+    "s_9a183dbdc45354": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "8e0b3ea4-fd85-41de-a1fb-93cab7ce38d8",
+        "model": "claude-4.6-opus-high-thinking"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    },
+    "s_cc91f600c392c3": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "6b7256af-b6b2-47a4-bee2-1ae3ef59b841",
+        "model": "default"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
