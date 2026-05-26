@@ -24,11 +24,14 @@ package org.exist.xquery.functions.util;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;
+import org.exist.repo.ExistRepository;
 import org.exist.xquery.Module;
 import org.exist.xquery.*;
 import org.exist.xquery.functions.fn.FunOnFunctions;
 import org.exist.xquery.value.*;
 
+import java.net.URI;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
@@ -57,7 +60,10 @@ public class BuiltinFunctions extends BasicFunction {
 			new FunctionSignature(
 					new QName("registered-functions", UtilModule.NAMESPACE_URI, UtilModule.PREFIX),
 					"Returns a sequence containing the QNames of all functions " +
-							"currently known to the system, including functions in imported and built-in modules.",
+							"currently visible in the query context, including functions declared in the main module, " +
+							"functions from modules imported by the current query (XQuery library modules and Java modules), " +
+							"functions from eXist's built-in modules, and functions from Java modules in installed EXPath packages " +
+							"that have not yet been loaded into the context.",
 					null,
 					new FunctionReturnSequenceType(Type.STRING, Cardinality.ONE_OR_MORE, "the sequence of function names")),
 			new FunctionSignature(
@@ -120,16 +126,37 @@ public class BuiltinFunctions extends BasicFunction {
 				addFunctionRefsFromContext(resultSeq);
 
 			} else {
-				// registered-functions
+				// registered-functions: enumerate functions from all discoverable modules
+				final Set<QName> seen = new HashSet<>();
 				final Iterable<Module> iterableModules = () -> context.getModules();
 				final Module[] modules = StreamSupport.stream(iterableModules.spliterator(), false).toArray(Module[]::new);
-				addFunctionsFromModules(resultSeq, modules);
+				addDistinctFunctionsFromModules(resultSeq, modules, seen);
+
+				// Java EXPath package modules not yet loaded
+				if (context.getRepository().isPresent()) {
+					final ExistRepository repo = context.getRepository().get();
+					for (final URI uri : repo.getJavaModules()) {
+						final String nsUri = uri.toString();
+						if (context.getModules(nsUri) == null) {
+							try {
+								final Module resolved = repo.resolveJavaModule(nsUri, context);
+								if (resolved != null) {
+									addDistinctFunctionsFromModules(resultSeq, new Module[]{resolved}, seen);
+								}
+							} catch (final XPathException e) {
+								logger.debug("Could not resolve Java module {}: {}", nsUri, e.getMessage());
+							}
+						}
+					}
+				}
 
 				// Add all functions declared in the local module
 				for (final Iterator<UserDefinedFunction> i = context.localFunctions(); i.hasNext(); ) {
 					final UserDefinedFunction func = i.next();
 					final FunctionSignature sig = func.getSignature();
-					resultSeq.add(new QNameValue(this, context, sig.getName()));
+					if (seen.add(sig.getName())) {
+						resultSeq.add(new QNameValue(this, context, sig.getName()));
+					}
 				}
 			}
 		}
@@ -147,6 +174,18 @@ public class BuiltinFunctions extends BasicFunction {
 			}
 			for (final QName qname : set) {
 				resultSeq.add(new QNameValue(this, context, qname));
+			}
+		}
+	}
+
+	private void addDistinctFunctionsFromModules(final ValueSequence resultSeq, final Module[] modules, final Set<QName> seen) {
+		for (final Module module : modules) {
+			final FunctionSignature[] signatures = module.listFunctions();
+			for (final FunctionSignature signature : signatures) {
+				final QName qname = signature.getName();
+				if (seen.add(qname)) {
+					resultSeq.add(new QNameValue(this, context, qname));
+				}
 			}
 		}
 	}
