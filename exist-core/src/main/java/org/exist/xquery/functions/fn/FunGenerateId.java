@@ -51,6 +51,11 @@ public class FunGenerateId extends BasicFunction {
     }
 
     @Override
+    public boolean isContextDependent() {
+        return getArgumentCount() == 0;
+    }
+
+    @Override
     public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
         final NodeValue node;
         if (getArgumentCount() == 0) {

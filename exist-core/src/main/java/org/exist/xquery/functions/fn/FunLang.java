@@ -97,6 +97,11 @@ If $lang is the empty sequence it is interpreted as the zero-length string.""";
 		super(context, signature);
 	}
 
+    @Override
+    public boolean isContextDependent() {
+        return getArgumentCount() == 1;
+    }
+
 	public void analyze(AnalyzeContextInfo contextInfo) throws XPathException {
 		super.analyze(contextInfo);
 		try {

@@ -68,6 +68,11 @@ public class FunStrLength extends Function {
     }
 
     @Override
+    public boolean isContextDependent() {
+        return getArgumentCount() == 0;
+    }
+
+    @Override
     protected Tuple2<Expression, Integer> strictCheckArgumentType(Expression argument,
             @Nullable final SequenceType argType, final AnalyzeContextInfo argContextInfo, final int argPosition,
             int returnType) {

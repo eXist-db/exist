@@ -55,6 +55,11 @@ public class FunDefaultCollation extends BasicFunction {
         super(context, signature);
     }
 
+    @Override
+    public boolean isContextDependent() {
+        return true;
+    }
+
     public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException {
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);

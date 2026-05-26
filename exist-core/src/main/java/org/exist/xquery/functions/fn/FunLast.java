@@ -63,6 +63,11 @@ public class FunLast extends Function {
 			Dependency.CONTEXT_POSITION;
 	}
 
+    @Override
+    public boolean isContextDependent() {
+        return true;
+    }
+
 	/* (non-Javadoc)
 	 * @see org.exist.xquery.functions.Function#eval(org.exist.xquery.StaticContext, org.exist.dom.persistent.DocumentSet, org.exist.xquery.value.Sequence, org.exist.xquery.value.Item)
 	 */

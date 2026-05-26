@@ -58,6 +58,11 @@ public class FunNilled extends BasicFunction {
 		super(context, signature);
 	}
 
+    @Override
+    public boolean isContextDependent() {
+        return getArgumentCount() == 0;
+    }
+
 	@Override
 	public Sequence eval(final Sequence[] args, final Sequence contextSequence) throws XPathException {
 

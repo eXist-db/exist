@@ -92,6 +92,11 @@ public class FunIdRef extends Function {
 		super(context, signature);
 	}
 
+    @Override
+    public boolean isContextDependent() {
+        return getArgumentCount() == 1;
+    }
+
 	/**
 	 * @see org.exist.xquery.Expression#eval(Sequence, Item)
 	 */

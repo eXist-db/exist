@@ -94,6 +94,11 @@ public class FunNormalizeSpace extends Function {
     }
 
     @Override
+    public boolean isContextDependent() {
+        return getArgumentCount() == 0;
+    }
+
+    @Override
     public int returnsType() {
         return Type.STRING;
     }

@@ -62,6 +62,11 @@ public class FunPosition extends Function {
 		Dependency.CONTEXT_POSITION;
 	}
 
+    @Override
+    public boolean isContextDependent() {
+        return true;
+    }
+
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);       

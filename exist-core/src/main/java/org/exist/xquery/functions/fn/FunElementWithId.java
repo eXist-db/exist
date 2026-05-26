@@ -60,6 +60,11 @@ public class FunElementWithId extends BasicFunction {
 	}
 
     @Override
+    public boolean isContextDependent() {
+        return getArgumentCount() == 1;
+    }
+
+    @Override
     public Sequence eval(final Sequence[] args, Sequence contextSequence) throws XPathException {
         if (getArgumentCount() < 1) {
             throw new XPathException(this, ErrorCodes.XPST0017, "function element-with-id requires one argument");
