@@ -35,6 +35,7 @@ import org.exist.xquery.value.Type;
 import org.exist.vector.VectorEmbeddingProvider;
 import org.exist.vector.VectorEmbeddingService;
 import org.exist.vector.VectorModelConstants;
+import org.exist.storage.vector.VectorOperationMetrics;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -96,7 +97,9 @@ public class Embed extends BasicFunction {
       if (provider == null) {
         throw new XPathException(this, VectorModule.EXVECTOR0001, "Failed to load embedding model: " + model);
       }
+      final long start = System.nanoTime();
       final float[] vec = provider.embed(text, true);
+      VectorOperationMetrics.recordEmbed(System.nanoTime() - start);
       if (vec == null || vec.length == 0) {
         throw new XPathException(this, VectorModule.EXVECTOR0002, "Embedding returned empty result");
       }

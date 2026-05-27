@@ -35,6 +35,7 @@ import org.exist.management.impl.LockTable;
 import org.exist.management.impl.ProcessReport;
 import org.exist.management.impl.SanityReport;
 import org.exist.management.impl.SystemInfo;
+import org.exist.management.impl.VectorStore;
 import org.exist.start.CompatibleJavaVersionCheck;
 import org.exist.start.StartException;
 import org.exist.util.NamedThreadFactory;
@@ -66,6 +67,9 @@ import javax.management.remote.JMXServiceURL;
 import javax.xml.XMLConstants;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.TransformerException;
+import java.beans.BeanInfo;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.lang.management.ManagementFactory;
@@ -106,6 +110,7 @@ public class JMXtoXML {
     private final static Map<String, ObjectName[]> CATEGORIES = new TreeMap<>();
     private static final Properties defaultProperties = new Properties();
     private static final QName ROW_ELEMENT = new QName("row", JMX_NAMESPACE, JMX_PREFIX);
+    private static final QName MODEL_ROW_ELEMENT = new QName("Model", JMX_NAMESPACE, JMX_PREFIX);
     private static final QName JMX_ELEMENT = new QName("jmx", JMX_NAMESPACE, JMX_PREFIX);
     private static final QName JMX_RESULT = new QName("result", JMX_NAMESPACE, JMX_PREFIX);
     private static final QName JMX_RESULT_TYPE_ATTR = new QName("class", JMX_NAMESPACE, JMX_PREFIX);
@@ -136,6 +141,10 @@ public class JMXtoXML {
         putCategory("binarystreamcaches", BinaryValues.getAllInstancesQuery());
         putCategory("processes", ProcessReport.getAllInstancesQuery());
         putCategory("sanity", SanityReport.getAllInstancesQuery());
+        putCategory("vector",
+                VectorStore.getAllInstancesQuery(),
+                "org.exist.management.*:type=VectorEmbedding"
+        );
 
         // Jetty
         putCategory("jetty.threads", "org.eclipse.jetty.util.thread:type=queuedthreadpool,*");
@@ -223,7 +232,7 @@ public class JMXtoXML {
 
     /**
      * Retrieve JMX output for the given categories and return a string of XML. Valid categories are "memory",
-     * "instances", "disk", "system", "caches", "locking", "processes", "sanity", "all".
+     * "instances", "disk", "system", "caches", "locking", "processes", "sanity", "vector", "all".
      *
      * @param categories array of categories to include in the report
      * @return string containing an XML report
@@ -425,6 +434,7 @@ public class JMXtoXML {
         switch (object) {
             case null -> {
             }
+            case final List<?> list -> serializeList(builder, list);
             case final TabularData tabularData -> serialize(builder, tabularData);
             case final CompositeData[] compositeData -> serialize(builder, compositeData);
             case final CompositeData compositeData -> serialize(builder, compositeData);
@@ -432,6 +442,41 @@ public class JMXtoXML {
             default -> builder.characters(object.toString());
         }
 
+    }
+
+    private void serializeList(final MemTreeBuilder builder, final List<?> data) throws SAXException {
+        for (final Object item : data) {
+            builder.startElement(MODEL_ROW_ELEMENT, null);
+            serializeJavaBean(builder, item);
+            builder.endElement();
+        }
+    }
+
+    private void serializeJavaBean(final MemTreeBuilder builder, final Object bean) throws SAXException {
+        if (bean == null) {
+            return;
+        }
+        if (bean instanceof CompositeData compositeData) {
+            serialize(builder, compositeData);
+            return;
+        }
+        try {
+            final BeanInfo info = Introspector.getBeanInfo(bean.getClass(), Object.class);
+            for (final PropertyDescriptor property : info.getPropertyDescriptors()) {
+                if (property.getReadMethod() == null || "class".equals(property.getName())) {
+                    continue;
+                }
+                final Object value = property.getReadMethod().invoke(bean);
+                final String propertyName = property.getName();
+                final String xmlName = propertyName.substring(0, 1).toUpperCase() + propertyName.substring(1);
+                final QName qname = new QName(xmlName, JMX_NAMESPACE, JMX_PREFIX);
+                builder.startElement(qname, null);
+                serializeObject(builder, value);
+                builder.endElement();
+            }
+        } catch (ReflectiveOperationException | java.beans.IntrospectionException e) {
+            builder.characters(bean.toString());
+        }
     }
 
     private void serialize(final MemTreeBuilder builder, final Object[] data) throws SAXException {

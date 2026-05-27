@@ -1,0 +1,118 @@
+/*
+ * eXist-db Open Source Native XML Database
+ * Copyright (C) 2001 The eXist-db Authors
+ *
+ * info@exist-db.org
+ * http://www.exist-db.org
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ */
+package org.exist.management.impl;
+
+import org.exist.storage.BrokerPool;
+import org.exist.vector.VectorEmbeddingService;
+import org.exist.vector.VectorMetrics;
+import org.exist.vector.VectorModelDiagnostics;
+import org.exist.vector.VectorModelInfo;
+
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
+import java.util.List;
+
+/**
+ * JMX MBean for vector embedding workload and model diagnostics.
+ */
+public class VectorEmbedding implements VectorEmbeddingMXBean {
+
+    private final String instanceId;
+    private final VectorMetrics metrics = VectorMetrics.getInstance();
+
+    public VectorEmbedding(final BrokerPool pool) {
+        this.instanceId = pool.getId();
+    }
+
+    public static String getAllInstancesQuery() {
+        return getName("*");
+    }
+
+    private static String getName(final String instanceId) {
+        return "org.exist.management." + instanceId + ":type=VectorEmbedding";
+    }
+
+    @Override
+    public ObjectName getName() throws MalformedObjectNameException {
+        return new ObjectName(getName(instanceId));
+    }
+
+    @Override
+    public String getInstanceId() {
+        return instanceId;
+    }
+
+    @Override
+    public boolean isAvailable() {
+        return true;
+    }
+
+    @Override
+    public int getModelCount() {
+        return getModels().size();
+    }
+
+    @Override
+    public int getReadyModelCount() {
+        return VectorModelDiagnostics.countReadyModels(getModels());
+    }
+
+    @Override
+    public int getLoadedProviderCount() {
+        return VectorEmbeddingService.getInstance().getLoadedProviderCount();
+    }
+
+    @Override
+    public long getEmbedCallCount() {
+        return metrics.getEmbedCallCount();
+    }
+
+    @Override
+    public long getEmbedTotalTimeNanos() {
+        return metrics.getEmbedTotalTimeNanos();
+    }
+
+    @Override
+    public long getEmbedLastTimeNanos() {
+        return metrics.getEmbedLastTimeNanos();
+    }
+
+    @Override
+    public long getKnnQueryCount() {
+        return metrics.getKnnQueryCount();
+    }
+
+    @Override
+    public long getKnnTotalTimeNanos() {
+        return metrics.getKnnTotalTimeNanos();
+    }
+
+    @Override
+    public long getKnnLastTimeNanos() {
+        return metrics.getKnnLastTimeNanos();
+    }
+
+    @Override
+    public List<VectorModelInfo> getModels() {
+        return VectorModelDiagnostics.collectModels();
+    }
+}

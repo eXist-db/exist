@@ -25,11 +25,16 @@ import java.util.List;
 import java.util.Map;
 
 import org.exist.dom.QName;
+import org.exist.storage.vector.VectorOperationMetrics;
+import org.exist.vector.VectorEmbeddingJmx;
+import org.exist.vector.VectorMetrics;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.FunctionDSL;
 import org.exist.xquery.FunctionDef;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.XPathException;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 
@@ -73,6 +78,17 @@ public class VectorModule extends AbstractInternalModule {
 
   public VectorModule(final Map<String, List<? extends Object>> parameters) {
     super(functions, parameters);
+    VectorOperationMetrics.register((operation, durationNanos) -> {
+      switch (operation) {
+        case EMBED -> VectorMetrics.getInstance().recordEmbed(durationNanos);
+        case KNN -> VectorMetrics.getInstance().recordKnnQuery(durationNanos);
+      }
+    });
+  }
+
+  @Override
+  public void prepare(final XQueryContext context) throws XPathException {
+    VectorEmbeddingJmx.registerIfAbsent(context.getBroker().getBrokerPool());
   }
 
   @Override

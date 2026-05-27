@@ -24,6 +24,7 @@ xquery version "3.1";
 module namespace vs="http://exist-db.org/xquery/vector-search/test";
 
 declare namespace test="http://exist-db.org/xquery/xqsuite";
+declare namespace stats="http://exist-db.org/xquery/profiling";
 
 (:~
  : Test data for vector search. dimension=4.
@@ -319,6 +320,26 @@ declare variable $vs:COLLECTION_EUCLIDEAN := "/db/" || $vs:COLLECTION_EUCLIDEAN_
 declare variable $vs:COLLECTION_DOT_PRODUCT_NAME := "lucene-test-vector-dot-product";
 declare variable $vs:COLLECTION_DOT_PRODUCT := "/db/" || $vs:COLLECTION_DOT_PRODUCT_NAME;
 
+(:~ Lucene fulltext only — no vector-field (profiler NONE tests). :)
+declare variable $vs:DATA_NO_VECTOR :=
+    <articles>
+        <article><title>Doc 1</title></article>
+    </articles>;
+
+declare variable $vs:XCONF_NO_VECTOR :=
+    <collection xmlns="http://exist-db.org/collection-config/1.0">
+        <index xmlns:xs="http://www.w3.org/2001/XMLSchema">
+            <lucene>
+                <text qname="article">
+                    <field name="title" expression="title"/>
+                </text>
+            </lucene>
+        </index>
+    </collection>;
+
+declare variable $vs:COLLECTION_NO_VECTOR_NAME := "lucene-test-vector-no-index";
+declare variable $vs:COLLECTION_NO_VECTOR := "/db/" || $vs:COLLECTION_NO_VECTOR_NAME;
+
 (:~
  : setUp: create config chain, main collection (base64 + range for filters), text collection,
  : dim-mismatch collection, embedding=local collections, reindex.
@@ -404,7 +425,12 @@ function vs:setup() {
       xmldb:create-collection("/db", $vs:COLLECTION_DOT_PRODUCT_NAME),
       xmldb:store($vs:COLLECTION_DOT_PRODUCT, "test.xml", $vs:DATA_TEXT),
       xmldb:store("/db/system/config/db/" || $vs:COLLECTION_DOT_PRODUCT_NAME, "collection.xconf", $vs:XCONF_DOT_PRODUCT),
-      xmldb:reindex($vs:COLLECTION_DOT_PRODUCT) )
+      xmldb:reindex($vs:COLLECTION_DOT_PRODUCT),
+      xmldb:create-collection("/db/system/config/db", $vs:COLLECTION_NO_VECTOR_NAME),
+      xmldb:create-collection("/db", $vs:COLLECTION_NO_VECTOR_NAME),
+      xmldb:store($vs:COLLECTION_NO_VECTOR, "test.xml", $vs:DATA_NO_VECTOR),
+      xmldb:store("/db/system/config/db/" || $vs:COLLECTION_NO_VECTOR_NAME, "collection.xconf", $vs:XCONF_NO_VECTOR),
+      xmldb:reindex($vs:COLLECTION_NO_VECTOR) )
 };
 
 (:~
@@ -442,7 +468,9 @@ function vs:tearDown() {
     xmldb:remove($vs:COLLECTION_EUCLIDEAN),
     xmldb:remove("/db/system/config/db/" || $vs:COLLECTION_EUCLIDEAN_NAME),
     xmldb:remove($vs:COLLECTION_DOT_PRODUCT),
-    xmldb:remove("/db/system/config/db/" || $vs:COLLECTION_DOT_PRODUCT_NAME)
+    xmldb:remove("/db/system/config/db/" || $vs:COLLECTION_DOT_PRODUCT_NAME),
+    xmldb:remove($vs:COLLECTION_NO_VECTOR),
+    xmldb:remove("/db/system/config/db/" || $vs:COLLECTION_NO_VECTOR_NAME)
 };
 
 (:~
@@ -985,4 +1013,40 @@ function vs:config-invalid-similarity-no-vector-hits() {
                 <vector-field name="cfg_bad_sim" expression="embedding" dimension="4" similarity="invalid" encoding="text"/>
             </text></lucene></index>
         </collection>)
+};
+
+(: ================================================================
+   Profiler optimization-level tests
+   ================================================================ :)
+
+(:~ ft:query-vector on collection without vector-field config reports NONE. :)
+declare
+    %test:stats
+    %test:assertXPath("$result//stats:index[@type eq 'lucene-vector'][@optimization-level eq 'NONE']")
+function vs:profiler-none-when-no-vector-config() {
+    collection($vs:COLLECTION_NO_VECTOR)//article[ft:query-vector(., [1.0, 0.0, 0.0, 0.0], 2)]
+};
+
+(:~ ft:query-field-vector with unknown field name reports NONE. :)
+declare
+    %test:stats
+    %test:assertXPath("$result//stats:index[@type eq 'lucene-vector'][@optimization-level eq 'NONE']")
+function vs:profiler-none-when-unknown-field() {
+    collection($vs:COLLECTION)//article[ft:query-field-vector("unknown_field", [1.0, 0.0, 0.0, 0.0], 2)]
+};
+
+(:~ ft:query-vector with configured vector-field reports OPTIMIZED. :)
+declare
+    %test:stats
+    %test:assertXPath("$result//stats:index[@type eq 'lucene-vector'][@optimization-level eq 'OPTIMIZED']")
+function vs:profiler-optimized-when-vector-config-present() {
+    collection($vs:COLLECTION)//article[ft:query-vector(., [1.0, 0.0, 0.0, 0.0], 2)]
+};
+
+(:~ ft:query-field-vector with configured field name reports OPTIMIZED. :)
+declare
+    %test:stats
+    %test:assertXPath("$result//stats:index[@type eq 'lucene-vector'][@optimization-level eq 'OPTIMIZED']")
+function vs:profiler-optimized-query-field-vector() {
+    collection($vs:COLLECTION)//article[ft:query-field-vector("embedding", [1.0, 0.0, 0.0, 0.0], 2)]
 };

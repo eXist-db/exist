@@ -101,6 +101,20 @@ public class JmxRemoteTest {
     }
 
     @Test
+    public void vectorCategoryIncludesVectorStore() throws IOException {
+        final Request request = Request.Get(getServerUri() + "?c=vector");
+        final String jmxXml = withHttpExecutor(executor -> executor.execute(request).returnContent().asString());
+
+        final Map<String, String> prefix2Uri = new HashMap<>();
+        prefix2Uri.put(JMX_PREFIX, JMX_NAMESPACE);
+
+        assertThat(jmxXml, hasXPath("//jmx:VectorStore").withNamespaceContext(prefix2Uri));
+        assertThat(jmxXml, hasXPath("//jmx:VectorStore/jmx:Available").withNamespaceContext(prefix2Uri));
+        assertThat(jmxXml, hasXPath("//jmx:VectorStore/jmx:FileName").withNamespaceContext(prefix2Uri));
+        assertThat(jmxXml, hasXPath("//jmx:VectorStore/jmx:EntryCount").withNamespaceContext(prefix2Uri));
+    }
+
+    @Test
     public void checkBasicRequest() throws IOException {
         final Request request = Request.Get(getServerUri())
                 .addHeader(new BasicHeader("Accept", ContentType.APPLICATION_XML.toString()));

@@ -163,4 +163,13 @@ public final class VectorEmbeddingService {
     final String cacheKey = modelId + ":" + modelPath.toAbsolutePath();
     cache.remove(cacheKey);
   }
+
+  /**
+   * Returns the number of providers currently cached by this service.
+   *
+   * @return cache size
+   */
+  public int getLoadedProviderCount() {
+    return cache.size();
+  }
 }

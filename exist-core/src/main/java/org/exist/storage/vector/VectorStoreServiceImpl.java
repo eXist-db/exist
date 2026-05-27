@@ -23,6 +23,8 @@ package org.exist.storage.vector;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.exist.management.AgentFactory;
+import org.exist.management.impl.VectorStore;
 import org.exist.storage.BrokerPool;
 import org.exist.storage.BrokerPoolService;
 import org.exist.storage.BrokerPoolServiceException;
@@ -30,6 +32,7 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.btree.DBException;
 import org.exist.storage.txn.Txn;
 import org.exist.util.Configuration;
+import org.exist.util.DatabaseConfigurationException;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -43,7 +46,7 @@ public class VectorStoreServiceImpl implements VectorStoreService, BrokerPoolSer
     private static final Logger LOG = LogManager.getLogger(VectorStoreServiceImpl.class);
 
     private Path dataDir;
-    private VectorStore vectorStore;
+    private VectorStoreImpl vectorStore;
 
     @Override
     public void configure(final Configuration configuration) throws BrokerPoolServiceException {
@@ -65,6 +68,13 @@ public class VectorStoreServiceImpl implements VectorStoreService, BrokerPoolSer
     @Override
     public void startSystem(final DBBroker systemBroker, final Txn transaction) throws BrokerPoolServiceException {
         LOG.info("Opened Vector Store. file={}", dataDir.relativize(dataDir.resolve(VectorStoreImpl.FILE_NAME)));
+        if (vectorStore != null) {
+            try {
+                AgentFactory.getInstance().addMBean(new VectorStore(systemBroker.getBrokerPool(), vectorStore, dataDir));
+            } catch (final DatabaseConfigurationException e) {
+                LOG.warn("Failed to register VectorStore JMX MBean: {}", e.getMessage(), e);
+            }
+        }
     }
 
     @Override
@@ -81,7 +91,7 @@ public class VectorStoreServiceImpl implements VectorStoreService, BrokerPoolSer
 
     @Override
     @Nullable
-    public VectorStore getVectorStore() {
+    public org.exist.storage.vector.VectorStore getVectorStore() {
         return vectorStore;
     }
 }
