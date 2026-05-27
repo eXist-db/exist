@@ -113,6 +113,29 @@ function dt:daytime-plus-ok() {
     xs:string(xs:dayTimeDuration("PT24H") + xs:dayTimeDuration("PT1S"))
 };
 
+(: GH-5045: huge dayTimeDuration values used to make the underlying
+ : XMLGregorianCalendar.add() iterate per-day, taking hours of CPU.
+ : They must now be rejected with FODT0001 quickly. :)
+declare %test:assertError("FODT0001")
+function dt:date-plus-huge-daytime() {
+    xs:date("2026-05-05") + xs:dayTimeDuration("P1712073600000D")
+};
+
+declare %test:assertError("FODT0001")
+function dt:datetime-plus-huge-daytime() {
+    xs:dateTime("2026-05-05T12:00:00Z") + xs:dayTimeDuration("P1712073600000D")
+};
+
+declare %test:assertError("FODT0001")
+function dt:time-plus-huge-daytime() {
+    xs:time("12:00:00Z") + xs:dayTimeDuration("P1712073600000D")
+};
+
+declare %test:assertError("FODT0001")
+function dt:date-minus-huge-daytime() {
+    xs:date("2026-05-05") - xs:dayTimeDuration("P1712073600000D")
+};
+
 (: XQST0125: %public/%private annotations are forbidden on inline functions. :)
 declare %test:assertError("XQST0125")
 function dt:inline-public-annotation() {
