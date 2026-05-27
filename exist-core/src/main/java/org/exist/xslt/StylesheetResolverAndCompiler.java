@@ -44,7 +44,7 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.serializers.Serializer;
-import org.exist.util.XMLBackwardsCompatHandler;
+import org.exist.util.Saxon12CompatSAXFilter;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
 import org.xml.sax.ContentHandler;
@@ -160,7 +160,7 @@ public class StylesheetResolverAndCompiler implements Stylesheet {
     // Wrap the handler to suppress duplicate startDocument/endDocument events.
     // Serializer.toSAX() may send its own doc events (depending on GENERATE_DOC_EVENTS),
     // and Saxon 12 does not tolerate duplicate calls.
-    final ContentHandler guard = new XMLBackwardsCompatHandler(handler);
+    final ContentHandler guard = new Saxon12CompatSAXFilter(handler);
 
     final Serializer serializer = broker.borrowSerializer();
     try {
