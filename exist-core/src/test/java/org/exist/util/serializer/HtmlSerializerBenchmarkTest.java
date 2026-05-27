@@ -45,7 +45,7 @@ import static org.junit.Assert.assertTrue;
  * counts only charAt-based calls — this lets us prove the algorithmic
  * improvement without having to revert the patch.
  */
-public class HtmlSerializerBenchmark {
+public class HtmlSerializerBenchmarkTest {
 
     private static final String LOREM =
             "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do " +
@@ -141,10 +141,10 @@ public class HtmlSerializerBenchmark {
         final CountingWriter withScript = serializeWithScript(script);
 
         final int ltInScript = (int) script.chars().filter(c -> c == '<').count();
-        System.out.println("[HtmlSerializerBenchmark] script has " + ltInScript + " '<' chars");
-        System.out.println("[HtmlSerializerBenchmark] empty body —     per-char: "
+        System.out.println("[HtmlSerializerBenchmarkTest] script has " + ltInScript + " '<' chars");
+        System.out.println("[HtmlSerializerBenchmarkTest] empty body —     per-char: "
                 + empty.perCharWriteCalls + ", string: " + empty.stringWriteCalls);
-        System.out.println("[HtmlSerializerBenchmark] " + script.length() + "-char body — per-char: "
+        System.out.println("[HtmlSerializerBenchmarkTest] " + script.length() + "-char body — per-char: "
                 + withScript.perCharWriteCalls + ", string: " + withScript.stringWriteCalls);
 
         // The script body's '<' chars must NOT cause per-char writes — they
@@ -218,13 +218,13 @@ public class HtmlSerializerBenchmark {
         }
         long perCharMs = (System.nanoTime() - perCharStart) / 1_000_000L;
 
-        System.out.println("[HtmlSerializerBenchmark] " + ITERATIONS + " iters of "
+        System.out.println("[HtmlSerializerBenchmarkTest] " + ITERATIONS + " iters of "
                 + PARAGRAPH_COUNT + "-paragraph HTML doc to OutputStreamWriter(UTF-8):");
-        System.out.println("[HtmlSerializerBenchmark]   bulk path:     " + bulkMs + " ms ("
+        System.out.println("[HtmlSerializerBenchmarkTest]   bulk path:     " + bulkMs + " ms ("
                 + String.format("%.3f", bulkMs * 1.0 / ITERATIONS) + " ms/doc)");
-        System.out.println("[HtmlSerializerBenchmark]   per-char path: " + perCharMs + " ms ("
+        System.out.println("[HtmlSerializerBenchmarkTest]   per-char path: " + perCharMs + " ms ("
                 + String.format("%.3f", perCharMs * 1.0 / ITERATIONS) + " ms/doc)");
-        System.out.println("[HtmlSerializerBenchmark]   speedup:       "
+        System.out.println("[HtmlSerializerBenchmarkTest]   speedup:       "
                 + String.format("%.2fx", perCharMs * 1.0 / Math.max(1, bulkMs)));
 
         assertTrue("Bulk path should be faster than per-char path; bulk="
@@ -249,16 +249,16 @@ public class HtmlSerializerBenchmark {
         final long bulkChars = counter.bulkCharsWritten + counter.stringCharsWritten;
         final double bulkPct = bulkChars * 100.0 / totalChars;
 
-        System.out.println("[HtmlSerializerBenchmark] " + ITERATIONS + " iterations of "
+        System.out.println("[HtmlSerializerBenchmarkTest] " + ITERATIONS + " iterations of "
                 + PARAGRAPH_COUNT + "-paragraph HTML doc in " + elapsedMs + " ms"
                 + " (" + (elapsedMs * 1.0 / ITERATIONS) + " ms/doc)");
-        System.out.println("[HtmlSerializerBenchmark] bulk writes: "
+        System.out.println("[HtmlSerializerBenchmarkTest] bulk writes: "
                 + counter.bulkWriteCalls + " (chars: " + counter.bulkCharsWritten + ")");
-        System.out.println("[HtmlSerializerBenchmark] string writes: "
+        System.out.println("[HtmlSerializerBenchmarkTest] string writes: "
                 + counter.stringWriteCalls + " (chars: " + counter.stringCharsWritten + ")");
-        System.out.println("[HtmlSerializerBenchmark] per-char writes: "
+        System.out.println("[HtmlSerializerBenchmarkTest] per-char writes: "
                 + counter.perCharWriteCalls);
-        System.out.println("[HtmlSerializerBenchmark] " + String.format("%.2f", bulkPct)
+        System.out.println("[HtmlSerializerBenchmarkTest] " + String.format("%.2f", bulkPct)
                 + "% of output bytes flushed in bulk");
 
         // We expect the vast majority of safe-character output to flow through
