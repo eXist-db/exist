@@ -21,8 +21,6 @@
  */
 package org.exist.xquery.value;
 
-import net.sf.saxon.tree.util.FastStringBuffer;
-import net.sf.saxon.value.FloatingPointConverter;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
@@ -119,7 +117,7 @@ public class DayTimeDurationValue extends OrderedDurationValue {
         }
 
         //Copied from Saxon 8.6.1
-        final FastStringBuffer sb = new FastStringBuffer(32);
+        final StringBuilder sb = new StringBuilder(32);
         if (canonicalDuration.getSign() < 0) {
             sb.append('-');
         }
@@ -137,38 +135,10 @@ public class DayTimeDurationValue extends OrderedDurationValue {
             sb.append(m + "M");
         }
         if ((s.intValue() != 0) || (d == 0 && m == 0 && h == 0)) {
-            //TODO : ugly -> factorize
-            //sb.append(Integer.toString(s.intValue()));
-            //double ms = s.doubleValue() - s.intValue();
-            //if (ms != 0.0) {
-            //	sb.append(".");
-            //	sb.append(Double.toString(ms).substring(2));
-            //}
-            //0 is a dummy parameter
-            FloatingPointConverter.appendFloat(sb, s.floatValue(), false);
+            sb.append(net.sf.saxon.value.FloatValue.floatToString(s.floatValue()));
             sb.append("S");
-            /*
-            if (micros == 0) {
-                sb.append(s + "S");
-            } else {
-                long ms = (s * 1000000) + micros;
-                String mss = ms + "";
-                if (s == 0) {
-                    mss = "0000000" + mss;
-                    mss = mss.substring(mss.length()-7);
-                }
-                sb.append(mss.substring(0, mss.length()-6));
-                sb.append('.');
-                int lastSigDigit = mss.length()-1;
-                while (mss.charAt(lastSigDigit) == '0') {
-                    lastSigDigit--;
-                }
-                sb.append(mss.substring(mss.length()-6, lastSigDigit+1));
-                sb.append('S');
-            }
-            */
         }
-        //End of copy        
+        //End of copy
         return sb.toString();
 
     }

@@ -44,8 +44,10 @@ import org.exist.storage.BrokerPool;
 import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock.LockMode;
 import org.exist.storage.serializers.Serializer;
+import org.exist.util.XMLBackwardsCompatHandler;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
+import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
 import static org.exist.xslt.XsltURIResolverHelper.getXsltURIResolver;
@@ -145,12 +147,24 @@ public class StylesheetResolverAndCompiler implements Stylesheet {
     //factory.setURIResolver(new EXistURIResolver(broker, stylesheet.getCollection().getURI().toString()));
 
     final TemplatesHandler handler = factory(broker.getBrokerPool(), errorListener).newTemplatesHandler();
-    handler.setSystemId(stylesheet.getBaseURI());
+    // Use the full xmldb URI as the system ID so Saxon 12 can resolve
+    // relative xsl:import/xsl:include hrefs via the EXistURIResolver
+    final String baseURI = stylesheet.getBaseURI();
+    if (baseURI != null && !baseURI.contains(":")) {
+      handler.setSystemId(XmldbURI.EMBEDDED_SERVER_URI_PREFIX + baseURI);
+    } else {
+      handler.setSystemId(baseURI);
+    }
     handler.startDocument();
+
+    // Wrap the handler to suppress duplicate startDocument/endDocument events.
+    // Serializer.toSAX() may send its own doc events (depending on GENERATE_DOC_EVENTS),
+    // and Saxon 12 does not tolerate duplicate calls.
+    final ContentHandler guard = new XMLBackwardsCompatHandler(handler);
 
     final Serializer serializer = broker.borrowSerializer();
     try {
-      serializer.setSAXHandlers(handler, null);
+      serializer.setSAXHandlers(guard, null);
       serializer.toSAX(stylesheet);
     } finally {
       broker.returnSerializer(serializer);

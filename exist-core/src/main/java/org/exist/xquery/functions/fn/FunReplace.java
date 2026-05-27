@@ -30,6 +30,8 @@ import java.util.regex.PatternSyntaxException;
 import net.sf.saxon.Configuration;
 import net.sf.saxon.functions.Replace;
 import net.sf.saxon.regex.RegularExpression;
+import net.sf.saxon.str.StringView;
+import net.sf.saxon.str.UnicodeString;
 import org.exist.dom.QName;
 import org.exist.xquery.*;
 import org.exist.xquery.value.FunctionParameterSequenceType;
@@ -45,6 +47,9 @@ import static org.exist.xquery.regex.RegexUtil.*;
  * @author <a href="mailto:wolfgang@exist-db.org">Wolfgang Meier</a>
  */
 public class FunReplace extends BasicFunction {
+
+	/** Reused for empty-match detection — avoids per-call allocation of an empty StringView. */
+	private static final UnicodeString EMPTY_STRING_VIEW = StringView.of("");
 
 	private static final QName FS_REPLACE_NAME = new QName("replace", Function.BUILTIN_FUNCTION_NS);
 
@@ -136,26 +141,26 @@ public class FunReplace extends BasicFunction {
 			final List<String> warnings = new ArrayList<>(1);
 
 			try {
-				final RegularExpression regularExpression = config.compileRegularExpression(pattern, flags, "XP30", warnings);
-				if (regularExpression.matches("")) {
+				final RegularExpression regularExpression = config.compileRegularExpression(StringView.of(pattern), flags, "XP31", warnings);
+				if (regularExpression.matches(EMPTY_STRING_VIEW)) {
 					throw new XPathException(this, ErrorCodes.FORX0003, "regular expression could match empty string");
 				}
 
 				//TODO(AR) cache the regular expression... might be possible through Saxon config
 
 				if (!hasLiteral(flags)) {
-					final String msg = Replace.checkReplacement(replace);
+					final String msg = Replace.checkReplacement(StringView.of(replace));
 					if (msg != null) {
 						throw new XPathException(this, ErrorCodes.FORX0004, msg);
 					}
 				}
-				final CharSequence res = regularExpression.replace(string, replace);
+				final UnicodeString res = regularExpression.replace(StringView.of(string), StringView.of(replace));
 				result = new StringValue(this, res.toString());
 
 			} catch (final net.sf.saxon.trans.XPathException e) {
-				// Saxon's XP30 regex translator rejects some valid patterns.
+				// Saxon's XP31 regex translator rejects some valid patterns.
 				// Fall back to Java regex before giving up.
-				if ("FORX0002".equals(e.getErrorCodeLocalPart())) {
+				if ("FORX0002".equals(e.getErrorCodeQName().getLocalPart())) {
 					try {
 						final String javaPattern = translateRegexp(
 								this, pattern, flags.contains("x"), flags.contains("i"));
@@ -170,7 +175,7 @@ public class FunReplace extends BasicFunction {
 						// Java regex fallback also failed — throw original Saxon error below
 					}
 				}
-				switch (e.getErrorCodeLocalPart()) {
+				switch (e.getErrorCodeQName().getLocalPart()) {
 					case "FORX0001" -> throw new XPathException(this, ErrorCodes.FORX0001, e.getMessage());
 					case "FORX0002" -> throw new XPathException(this, ErrorCodes.FORX0002, e.getMessage());
 					case "FORX0003" -> throw new XPathException(this, ErrorCodes.FORX0003, e.getMessage());
