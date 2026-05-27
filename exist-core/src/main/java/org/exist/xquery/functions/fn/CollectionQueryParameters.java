@@ -26,7 +26,6 @@ import org.exist.xquery.Expression;
 import org.exist.xquery.XPathException;
 
 import javax.annotation.Nullable;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -59,19 +58,19 @@ public final class CollectionQueryParameters {
     public static final String VALUE_CONTENT_TYPE_DOCUMENT_BINARY = "application/vnd.existdb.document+binary";
     public static final String VALUE_CONTENT_TYPE_DOCUMENT_XML = "application/vnd.existdb.document+xml";
     public static final String VALUE_CONTENT_TYPE_SUBCOLLECTION = "application/vnd.existdb.collection";
-    public static final String[] VALUE_CONTENT_TYPES = {
+    public static final Set<String> VALUE_CONTENT_TYPES = Set.of(
             VALUE_CONTENT_TYPE_DOCUMENT,
             VALUE_CONTENT_TYPE_DOCUMENT_BINARY,
             VALUE_CONTENT_TYPE_DOCUMENT_XML,
             VALUE_CONTENT_TYPE_SUBCOLLECTION
-    };
+    );
 
     public static final String VALUE_STABLE_NO = "no";
     public static final String VALUE_STABLE_YES = "yes";
-    public static final String[] VALUE_STABLES = {
+    public static final Set<String> VALUE_STABLES = Set.of(
             VALUE_STABLE_NO,
             VALUE_STABLE_YES
-    };
+    );
 
     /** Keys accepted by fn:uri-collection (no select). */
     public static final Set<String> URI_COLLECTION_KEYS = Set.of(KEY_MATCH, KEY_CONTENT_TYPE, KEY_STABLE);
@@ -159,16 +158,12 @@ public final class CollectionQueryParameters {
                         String.format("Unexpected query string \"%s\".", entry));
             }
 
-            if (key.equals(KEY_CONTENT_TYPE)) {
-                if (Arrays.stream(VALUE_CONTENT_TYPES).noneMatch(v -> v.equals(value))) {
-                    throw new XPathException(caller, ErrorCodes.FODC0004,
-                            String.format("Invalid query-string value \"%s\".", entry));
-                }
-            } else if (key.equals(KEY_STABLE)) {
-                if (Arrays.stream(VALUE_STABLES).noneMatch(v -> v.equals(value))) {
-                    throw new XPathException(caller, ErrorCodes.FODC0004,
-                            String.format("Invalid query-string value \"%s\".", entry));
-                }
+            if (key.equals(KEY_CONTENT_TYPE) && !VALUE_CONTENT_TYPES.contains(value)) {
+                throw new XPathException(caller, ErrorCodes.FODC0004,
+                        String.format("Invalid query-string value \"%s\".", entry));
+            } else if (key.equals(KEY_STABLE) && !VALUE_STABLES.contains(value)) {
+                throw new XPathException(caller, ErrorCodes.FODC0004,
+                        String.format("Invalid query-string value \"%s\".", entry));
             }
             // KEY_SELECT and KEY_MATCH accept any string value
         }
