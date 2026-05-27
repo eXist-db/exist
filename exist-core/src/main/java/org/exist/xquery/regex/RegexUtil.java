@@ -156,16 +156,6 @@ public class RegexUtil {
     }
 
     /**
-     * Convert XML Schema/XPath \p{Is<Block>} and \P{Is<Block>} Unicode block
-     * property escapes to Java's \p{In<Block>} and \P{In<Block>} syntax.
-     */
-    private static String convertUnicodeBlockNames(final String pattern) {
-        return pattern
-                .replaceAll("\\\\p\\{Is([^}]+)}", "\\\\p{In$1}")
-                .replaceAll("\\\\P\\{Is([^}]+)}", "\\\\P{In$1}");
-    }
-
-    /**
      * Validates that a regex pattern only uses constructs allowed by the XPath
      * regular expression specification (F&amp;O 3.1, Section 5.6.1), with
      * extensions for XPath 4.0 (Section 5.6.1.1).

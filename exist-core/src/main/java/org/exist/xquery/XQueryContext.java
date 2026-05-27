@@ -3874,10 +3874,7 @@ public class XQueryContext implements BinaryValueManager, Context {
             }
 
             final ModuleVertex that = (ModuleVertex) o;
-            if (!namespaceURI.equals(that.namespaceURI)) {
-                return false;
-            }
-            return location.equals(that.location);
+            return namespaceURI.equals(that.namespaceURI) && location.equals(that.location);
         }
 
         @Override

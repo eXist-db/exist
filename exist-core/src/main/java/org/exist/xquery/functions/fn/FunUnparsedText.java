@@ -320,7 +320,7 @@ public class FunUnparsedText extends BasicFunction {
                 throw new XPathException(this, ErrorCodes.FOUT1170, e.getMessage());
             }
             if (charset == null) {
-                charset = StandardCharsets.UTF_8;
+                charset = UTF_8;
             }
         } else {
             try {

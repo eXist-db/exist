@@ -441,13 +441,10 @@ public final class FunMatches extends Function implements Optimizable, IndexUseR
                     // restricted to that QName
                     contextQName = null;
                 }
-                if (!indexFound && contextQName == null) {
-                    // if there are some indexes defined on a qname,
-                    // we need to check them all
-                    if (iflags.hasIndexOnQNames()) {
-                        indexScan = true;
-                    }
-                    // else use range index defined on path by default
+                // if there are some indexes defined on a qname, we need to check them all;
+                // otherwise use range index defined on path by default
+                if (!indexFound && contextQName == null && iflags.hasIndexOnQNames()) {
+                    indexScan = true;
                 }
             } else {
                 result = evalFallback(nodes, pattern, flags, indexType);
