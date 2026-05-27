@@ -1,0 +1,101 @@
+extensions/vector/src/main/java/org/exist/management/impl/VectorEmbeddingMXBean.java
+  s_2e7ecd3e725105::t_fda395c1ff004b 1-79
+exist-core/src/test/java/org/exist/management/JmxRemoteTest.java
+  s_2e7ecd3e725105::t_adbc1d00ed18b7 104-116
+extensions/vector/src/test/java/org/exist/vector/VectorMetricsTest.java
+  s_2e7ecd3e725105::t_73c8c1305ec894 1-52
+extensions/vector/src/main/java/org/exist/vector/VectorEmbeddingJmx.java
+  s_2e7ecd3e725105::t_ebeaedcddc6c6b 1-65
+exist-core/src/main/java/org/exist/storage/vector/VectorOperationMetrics.java
+  s_2e7ecd3e725105::t_43b17b368a2848 1-81
+extensions/vector/src/main/java/org/exist/vector/VectorEmbeddingService.java
+  s_2e7ecd3e725105::t_69d198824536e2 166-174
+extensions/vector/src/main/java/org/exist/xquery/modules/vector/Diagnostics.java
+  s_2e7ecd3e725105::t_94e81378a40cf2 25-26,38,72,77-83
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/QueryFieldVector.java
+  s_2e7ecd3e725105::t_956efefbae2de7 119-123,128-130,132
+  s_2e7ecd3e725105::t_6d59885cca9394 28
+  s_2e7ecd3e725105::t_1ab2c53cc412aa 124,126-127,131,133-134
+exist-core/src/main/java/org/exist/management/client/JMXServlet.java
+  s_2e7ecd3e725105::t_7507794fb9af55 68
+extensions/vector/src/main/java/org/exist/vector/VectorModelInfo.java
+  s_2e7ecd3e725105::t_d0d4939ccfd905 1-79
+exist-core/src/main/java/org/exist/management/client/JMXtoXML.java
+  s_2e7ecd3e725105::t_a38417e261c53e 38
+  s_2e7ecd3e725105::t_f9db46c186eb57 70-72
+  s_2e7ecd3e725105::t_ff279b4300abdf 235
+  s_2e7ecd3e725105::t_0a30a2fd8056d9 447-476,478-481
+  s_2e7ecd3e725105::t_d9cc7f2802cd55 144-147
+  s_2e7ecd3e725105::t_ce65b5de102ed7 477
+  s_2e7ecd3e725105::t_a1ebbe03e84209 113
+  s_2e7ecd3e725105::t_d33f6334000d62 437
+extensions/vector/src/main/java/org/exist/vector/VectorMetrics.java
+  s_2e7ecd3e725105::t_562df54bbd9746 1-84
+exist-core/src/test/java/org/exist/storage/vector/VectorStoreImplTest.java
+  s_2e7ecd3e725105::t_0f267f2089a897 1-23,25,27,31-33,36-38,53,65,79-81,100-102,115-116
+  s_2e7ecd3e725105::t_f04e394e5208d8 58,106
+  s_2e7ecd3e725105::t_d47f69463782bb 29,34,41-52,59-60,62-64,66-78,88-97,99,108-110,112-114
+  s_2e7ecd3e725105::t_b6c401f27f4496 24,26,28,30,35,39-40,54-57,61,82-84,87,98,103-105,107,111
+  s_2e7ecd3e725105::t_17c96206a7f1e8 85-86
+extensions/vector/src/main/java/org/exist/management/impl/VectorEmbedding.java
+  s_2e7ecd3e725105::t_b96782f75b59fd 1-118
+extensions/vector/src/main/java/org/exist/xquery/modules/vector/Embed.java
+  s_2e7ecd3e725105::t_46ab93bce98493 102
+  s_2e7ecd3e725105::t_c1baeb5f2138d7 38
+  s_2e7ecd3e725105::t_b4763bf81d4dda 100
+extensions/indexes/lucene/src/main/java/org/exist/indexing/lucene/LuceneIndexWorker.java
+  s_2e7ecd3e725105::t_52c146aa0a10b3 897-944
+extensions/indexes/lucene/src/main/java/org/exist/xquery/modules/lucene/QueryVector.java
+  s_2e7ecd3e725105::t_bdca6f59ef5c62 29
+  s_2e7ecd3e725105::t_111d50bb2dc338 114,116-122,127-129,131
+  s_2e7ecd3e725105::t_878782ee95fc0b 123-126,130,132-133
+exist-core/src/main/java/org/exist/management/impl/VectorStoreMXBean.java
+  s_2e7ecd3e725105::t_bbcbd847389c04 1-76
+extensions/vector/src/main/java/org/exist/xquery/modules/vector/EmbedBatch.java
+  s_2e7ecd3e725105::t_ab22d0b43548f4 114
+  s_2e7ecd3e725105::t_f80c2ee867821a 39
+  s_2e7ecd3e725105::t_841c848c6e95a4 112
+exist-core/src/main/java/org/exist/storage/vector/VectorStoreServiceImpl.java
+  s_2e7ecd3e725105::t_e1938cd4899d33 26-27
+  s_2e7ecd3e725105::t_ff206c139c9f21 94
+  s_2e7ecd3e725105::t_9d2929e6a89b91 49
+  s_2e7ecd3e725105::t_6b2a98a7bcd0ac 35
+  s_2e7ecd3e725105::t_6a776e9fcf18de 71-77
+extensions/vector/src/main/java/org/exist/vector/VectorModelDiagnostics.java
+  s_2e7ecd3e725105::t_1de072efdfcf4e 1-107
+exist-core/src/main/java/org/exist/management/impl/VectorStore.java
+  s_2e7ecd3e725105::t_5a49f68c05bc03 28-32
+  s_2e7ecd3e725105::t_e0ea52ef3b7da8 1-27,33-113
+extensions/vector/src/main/java/org/exist/xquery/modules/vector/VectorModule.java
+  s_2e7ecd3e725105::t_5e71c547752b33 28-30,36-37
+  s_2e7ecd3e725105::t_a9b08ef0365291 81-91
+exist-core/src/main/java/org/exist/storage/vector/VectorStoreImpl.java
+  s_2e7ecd3e725105::t_1eb699da6b8945 56-57,65-92,94-109,111-112
+  s_2e7ecd3e725105::t_1729d27fa8734f 130,133-135,140-145,151,154-156
+  s_2e7ecd3e725105::t_98f47146079499 110
+  s_2e7ecd3e725105::t_f1f72c9465fd13 35
+  s_2e7ecd3e725105::t_7820bb34f08fca 41-42
+  s_2e7ecd3e725105::t_e1bf1a04ef7edf 93
+extensions/indexes/lucene/src/test/xquery/lucene/vector-search.xqm
+  s_2e7ecd3e725105::t_74be7fc6f1391c 471-473
+  s_2e7ecd3e725105::t_92552476fa05eb 323-342
+  s_2e7ecd3e725105::t_7ef029c017aa68 1017-1052
+  s_2e7ecd3e725105::t_3e94d91c2f0fa7 27
+  s_2e7ecd3e725105::t_e7e8c6ac3d0e96 428-433
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "232e75638696e8626c6b79853e9f99713db32333",
+  "prompts": {},
+  "sessions": {
+    "s_2e7ecd3e725105": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "bcf87a91-d2e1-49a6-b417-18e3b2098413",
+        "model": "composer-2.5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
