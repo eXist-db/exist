@@ -33,6 +33,7 @@ import net.sf.saxon.regex.RegexMatchHandler;
 import net.sf.saxon.regex.RegularExpression;
 import net.sf.saxon.str.StringView;
 import net.sf.saxon.str.UnicodeString;
+import net.sf.saxon.value.StringValue;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
 import org.exist.xquery.*;
@@ -54,6 +55,9 @@ import static org.exist.xquery.regex.RegexUtil.*;
  * @author <a href="mailto:adam@evolvedbinary.com">Adam Retter</a>
  */
 public class FunAnalyzeString extends BasicFunction {
+
+    /** Reused for empty-match detection — avoids per-call allocation of an empty StringView. */
+    private static final UnicodeString EMPTY_STRING_VIEW = StringView.of("");
 
     private final static QName fnAnalyzeString = new QName("analyze-string", Function.BUILTIN_FUNCTION_NS);
 
@@ -133,15 +137,15 @@ public class FunAnalyzeString extends BasicFunction {
         final List<String> warnings = new ArrayList<>(1);
 
         try {
-            final RegularExpression regularExpression = config.compileRegularExpression(StringView.of(pattern), flags, "XP30", warnings);
-            if (regularExpression.matches(StringView.of(""))) {
+            final RegularExpression regularExpression = config.compileRegularExpression(StringView.of(pattern), flags, "XP31", warnings);
+            if (regularExpression.matches(EMPTY_STRING_VIEW)) {
                 throw new XPathException(this, ErrorCodes.FORX0003, "regular expression could match empty string");
             }
 
             //TODO(AR) cache the regular expression... might be possible through Saxon config
 
             final RegexIterator regexIterator = regularExpression.analyze(StringView.of(input));
-            net.sf.saxon.value.StringValue item;
+            StringValue item;
             while ((item = regexIterator.next()) != null) {
                 if (regexIterator.isMatching()) {
                     match(builder, regexIterator);
@@ -154,7 +158,7 @@ public class FunAnalyzeString extends BasicFunction {
                 LOG.warn(warning);
             }
         } catch (final net.sf.saxon.trans.XPathException e) {
-            // Saxon's XP30 regex translator rejects some valid patterns.
+            // Saxon's XP31 regex translator rejects some valid patterns.
             // Fall back to Java regex before giving up.
             if ("FORX0002".equals(e.getErrorCodeQName().getLocalPart())) {
                 try {
@@ -260,7 +264,7 @@ public class FunAnalyzeString extends BasicFunction {
         builder.endElement();
     }
 
-    private void nonMatch(final MemTreeBuilder builder, final net.sf.saxon.value.StringValue item) {
+    private void nonMatch(final MemTreeBuilder builder, final StringValue item) {
         builder.startElement(QN_NON_MATCH, null);
         builder.characters(item.getStringValue());
         builder.endElement();

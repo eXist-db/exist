@@ -531,7 +531,7 @@ public final class FunMatches extends Function implements Optimizable, IndexUseR
             List<String> warnings = new ArrayList<>(1);
             RegularExpression regex = context.getBroker().getBrokerPool()
                     .getSaxonConfiguration()
-                    .compileRegularExpression(StringView.of(pattern), flags, "XP30", warnings);
+                    .compileRegularExpression(StringView.of(pattern), flags, "XP31", warnings);
 
             for (final String warning : warnings) {
                 LOG.warn(warning);
@@ -540,7 +540,7 @@ public final class FunMatches extends Function implements Optimizable, IndexUseR
             return regex.containsMatch(StringView.of(string));
 
         } catch (final net.sf.saxon.trans.XPathException e) {
-            // Saxon's XP30 regex translator rejects some valid patterns:
+            // Saxon's XP31 regex translator rejects some valid patterns:
             // \b/\B word boundaries, certain quantifier sequences, \p{Is<Block>} names, etc.
             // Fall back to Java regex before giving up.
             if ("FORX0002".equals(e.getErrorCodeQName().getLocalPart())) {

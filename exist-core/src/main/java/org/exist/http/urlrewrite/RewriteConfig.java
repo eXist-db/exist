@@ -33,6 +33,7 @@ import org.exist.storage.DBBroker;
 import org.exist.storage.lock.Lock.LockMode;
 import net.sf.saxon.regex.JavaRegularExpression;
 import net.sf.saxon.str.StringView;
+import net.sf.saxon.trans.XPathException;
 import org.exist.util.XMLReaderPool;
 import org.exist.xmldb.XmldbURI;
 import org.exist.xquery.Constants;
@@ -276,7 +277,7 @@ public class RewriteConfig {
                 this.pattern = Pattern.compile(regex, 0);
                 this.action = action;
                 this.matcher = pattern.matcher("");
-            } catch (final net.sf.saxon.trans.XPathException e) {
+            } catch (final XPathException e) {
                 throw new ServletException("Syntax error in regular expression specified for path. " +
                         e.getMessage(), e);
             }

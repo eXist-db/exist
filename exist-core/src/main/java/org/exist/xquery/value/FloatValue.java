@@ -23,6 +23,7 @@ package org.exist.xquery.value;
 
 import com.ibm.icu.text.Collator;
 import org.exist.util.ByteConversion;
+import org.exist.util.SaxonConversions;
 import org.exist.xquery.Constants;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Expression;
@@ -114,7 +115,7 @@ public class FloatValue extends NumericValue {
 		return s;	
 		*/
 
-        return net.sf.saxon.value.FloatValue.floatToString(value).toString();
+        return SaxonConversions.floatToString(value);
     }
 
     /* (non-Javadoc)

@@ -24,6 +24,7 @@ package org.exist.xquery.value;
 import com.ibm.icu.text.Collator;
 
 import org.exist.util.ByteConversion;
+import org.exist.util.SaxonConversions;
 import org.exist.xquery.Constants;
 import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.Expression;
@@ -93,7 +94,7 @@ public class DoubleValue extends NumericValue {
 
     @Override
     public String getStringValue() {
-        return net.sf.saxon.value.DoubleValue.doubleToString(value).toString();
+        return SaxonConversions.doubleToString(value);
     }
 
     public double getValue() {

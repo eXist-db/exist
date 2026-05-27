@@ -21,6 +21,8 @@
  */
 package org.exist.util;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.Locator;
@@ -33,6 +35,8 @@ import org.xml.sax.SAXException;
  * explicitly-called startDocument/endDocument in the XSLT compilation pipeline.
  */
 public class XMLBackwardsCompatHandler implements ContentHandler {
+
+    private static final Logger LOG = LogManager.getLogger(XMLBackwardsCompatHandler.class);
 
     private final ContentHandler delegate;
     private boolean documentStarted = false;
@@ -51,7 +55,14 @@ public class XMLBackwardsCompatHandler implements ContentHandler {
 
     @Override
     public void endDocument() throws SAXException {
-        // Suppress — the caller will call endDocument on the delegate directly
+        // Suppress — the caller will call endDocument on the delegate directly.
+        // If endDocument arrives before any startDocument, that's a spurious SAX event
+        // (a downstream issue rather than the duplicate-startDocument case this guard
+        // exists for) — log at debug level so it's visible during diagnosis without
+        // adding noise to normal operation.
+        if (!documentStarted && LOG.isDebugEnabled()) {
+            LOG.debug("endDocument received without a preceding startDocument; suppressing");
+        }
     }
 
     @Override
