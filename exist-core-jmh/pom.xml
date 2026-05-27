@@ -60,6 +60,10 @@
             <version>${lucene.version}</version>
         </dependency>
         <dependency>
+            <groupId>net.sf.xmldb-org</groupId>
+            <artifactId>xmldb-api</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.openjdk.jmh</groupId>
             <artifactId>jmh-core</artifactId>
             <version>${jmh.version}</version>
@@ -95,6 +99,10 @@
                                 <exclude>src/main/java/org/exist/storage/lock/LockTableBenchmark.java</exclude>
                                 <exclude>src/main/java/org/exist/xquery/utils/StringJoinBenchmark.java</exclude>
                                 <exclude>src/main/java/org/exist/xquery/utils/URIUtilsBenchmark.java</exclude>
+                                <!-- Verbatim copy of exist-core/src/test/resources-filtered/conf.xml; -->
+                                <!-- bundled so Configuration's classpath-first lookup finds it -->
+                                <!-- when a benchmark boots a BrokerPool standalone. -->
+                                <exclude>src/main/resources/conf.xml</exclude>
                             </excludes>
                         </licenseSet>
 
