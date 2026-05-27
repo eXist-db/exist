@@ -29,19 +29,31 @@ import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 
 /**
- * A SAX ContentHandler wrapper that suppresses duplicate startDocument/endDocument calls.
- * Saxon 12's LinkedTreeBuilder does not tolerate receiving startDocument more than once,
- * which can happen when eXist's Serializer sends document events that overlap with
- * explicitly-called startDocument/endDocument in the XSLT compilation pipeline.
+ * A SAX ContentHandler filter that adapts eXist's serializer output to Saxon 12's
+ * stricter SAX expectations. Saxon 12's {@code LinkedTreeBuilder} rejects two patterns
+ * that earlier Saxon versions tolerated:
+ *
+ * <ol>
+ *   <li>Duplicate {@link #startDocument()} calls — emitted when eXist's Serializer
+ *       sends its own document events on top of an explicit {@code startDocument}
+ *       from the XSLT compilation pipeline.</li>
+ *   <li>Namespace declarations for the implicit {@code xml} prefix
+ *       (URI {@code http://www.w3.org/XML/1998/namespace}) — eXist's persistent DOM
+ *       stores these in its namespace mappings, but Saxon 12 treats redeclaring the
+ *       xml namespace as an error.</li>
+ * </ol>
+ *
+ * This filter wraps a delegate handler and silently drops the offending events while
+ * passing everything else through unchanged.
  */
-public class XMLBackwardsCompatHandler implements ContentHandler {
+public class Saxon12CompatSAXFilter implements ContentHandler {
 
-    private static final Logger LOG = LogManager.getLogger(XMLBackwardsCompatHandler.class);
+    private static final Logger LOG = LogManager.getLogger(Saxon12CompatSAXFilter.class);
 
     private final ContentHandler delegate;
     private boolean documentStarted = false;
 
-    public XMLBackwardsCompatHandler(final ContentHandler delegate) {
+    public Saxon12CompatSAXFilter(final ContentHandler delegate) {
         this.delegate = delegate;
     }
 

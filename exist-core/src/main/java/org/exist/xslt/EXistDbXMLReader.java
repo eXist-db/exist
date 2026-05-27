@@ -25,7 +25,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import org.exist.storage.serializers.Serializer;
-import org.exist.util.XMLBackwardsCompatHandler;
+import org.exist.util.Saxon12CompatSAXFilter;
 
 import org.xml.sax.ContentHandler;
 import org.xml.sax.DTDHandler;
@@ -96,7 +96,7 @@ public class EXistDbXMLReader implements XMLReader, Locator {
             // Filter out the implicit xml namespace that eXist's persistent DOM
             // stores in its namespace mappings. Saxon 12 rejects SAX events
             // declaring the XML namespace URI (http://www.w3.org/XML/1998/namespace).
-            final ContentHandler filtered = new XMLBackwardsCompatHandler(this.contentHandler);
+            final ContentHandler filtered = new Saxon12CompatSAXFilter(this.contentHandler);
             serializer.setSAXHandlers(filtered, null);
             serializer.toSAX(source.getDocument());
     
