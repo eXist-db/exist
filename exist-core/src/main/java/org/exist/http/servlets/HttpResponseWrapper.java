@@ -78,13 +78,25 @@ public class HttpResponseWrapper implements ResponseWrapper {
 		final Cookie cookie = new Cookie(name, encode(value));
 		cookie.setMaxAge(maxAge);
 		cookie.setSecure( secure );
-		if (domain != null) {
+		if (domain != null && !domain.isEmpty()) {
 			cookie.setDomain(domain);
 		}
-		if (path != null) {
+		setCookiePath(cookie, path);
+		response.addCookie(cookie);
+	}
+
+	/**
+	 * Apply a cookie path only when it is a non-empty string.
+	 * <p>
+	 * Standalone Jetty deployments use a root context ({@code getContextPath()} returns {@code ""}).
+	 * Passing that empty string as an explicit Path makes many HTTP clients (including Apache HttpClient
+	 * used in integration tests) reject the cookie entirely. Omitting Path lets the container apply
+	 * the RFC 6265 default for the request URI.
+	 */
+	private static void setCookiePath(final Cookie cookie, final String path) {
+		if (path != null && !path.isEmpty()) {
 			cookie.setPath(path);
 		}
-		response.addCookie(cookie);
 	}
 	
 	@Override

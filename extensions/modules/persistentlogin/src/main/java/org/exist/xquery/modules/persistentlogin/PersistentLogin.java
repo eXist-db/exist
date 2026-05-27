@@ -48,13 +48,9 @@ import java.util.*;
  */
 public class PersistentLogin {
 
-    private final static PersistentLogin instance = new PersistentLogin();
-
-    public static PersistentLogin getInstance() {
-        return instance;
-    }
-
     private final static Logger LOG = LogManager.getLogger(PersistentLogin.class);
+
+    private final static PersistentLogin instance = new PersistentLogin();
 
     public final static int DEFAULT_SERIES_LENGTH = 16;
 
@@ -62,9 +58,31 @@ public class PersistentLogin {
 
     public final static int INVALIDATION_TIMEOUT = 20000;
 
+    /**
+     * Separator between series and token in newly issued cookie values.
+     * Must not appear in base64 output ({@code A-Za-z0-9+/=}).
+     * {@code :} was used historically but breaks Apache HttpClient's Set-Cookie parser
+     * (and some other clients) because unquoted cookie values containing {@code :} are rejected.
+     */
+    private static final String TOKEN_SEPARATOR = "|";
+
+    /**
+     * Historical separator; still accepted when parsing incoming cookies issued before the
+     * {@link #TOKEN_SEPARATOR} switch ({@code :} breaks HC4 Set-Cookie parsing — see
+     * <a href="https://github.com/eXist-db/exist/pull/6393">PR #6393</a>). Remove
+     * {@link #splitTokenValue} dual parsing once HC4 is fully removed from the codebase
+     * (Phase 5 in #6393, after expath Gate B). In-flight browser cookies are not a concern:
+     * a new eXist release install expects users to reauthenticate anyway.
+     */
+    private static final String LEGACY_TOKEN_SEPARATOR = ":";
+
     private Map<String, LoginDetails> seriesMap = Collections.synchronizedMap(new HashMap<>());
 
     private SecureRandom random;
+
+    public static PersistentLogin getInstance() {
+        return instance;
+    }
 
     public PersistentLogin() {
         random = new SecureRandom();
@@ -100,7 +118,11 @@ public class PersistentLogin {
      * or an out-of-sequence request.
      */
     public LoginDetails lookup(String token) throws XPathException {
-        String[] tokens = token.split(":");
+        final String[] tokens = splitTokenValue(token);
+        if (tokens.length < 2) {
+            LOG.debug("Malformed persistent login token");
+            return null;
+        }
 
         LoginDetails data = seriesMap.get(tokens[0]);
         if (data == null) {
@@ -135,8 +157,22 @@ public class PersistentLogin {
      * @param token token string provided by the user
      */
     public void invalidate(String token) {
-        String[] tokens = token.split(":");
-        seriesMap.remove(tokens[0]);
+        final String[] tokens = splitTokenValue(token);
+        if (tokens.length > 0) {
+            seriesMap.remove(tokens[0]);
+        }
+    }
+
+    /**
+     * Split a cookie value into series and token. New cookies use {@link #TOKEN_SEPARATOR};
+     * {@link #LEGACY_TOKEN_SEPARATOR} is still accepted for in-flight sessions created before the switch.
+     */
+    private static String[] splitTokenValue(final String token) {
+        final String[] pipeParts = token.split("\\" + TOKEN_SEPARATOR, 2);
+        if (pipeParts.length == 2) {
+            return pipeParts;
+        }
+        return token.split(LEGACY_TOKEN_SEPARATOR, 2);
     }
 
     private String generateSeriesToken() {
@@ -229,7 +265,7 @@ public class PersistentLogin {
 
         @Override
         public String toString() {
-            return this.series + ":" + this.token;
+            return this.series + TOKEN_SEPARATOR + this.token;
         }
     }
 }

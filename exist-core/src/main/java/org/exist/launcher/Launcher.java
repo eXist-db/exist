@@ -721,14 +721,24 @@ public class Launcher extends Observable implements Observer {
     public void update(final Observable observable, final Object o) {
         final ExistRepository.Notification notification = (ExistRepository.Notification) o;
 
-        if (notification.getPackageURI().equals(PACKAGE_DASHBOARD) && dashboardItem != null) {
-            dashboardItem.setEnabled(notification.getAction() == ExistRepository.Action.INSTALL);
-
-        } else if (notification.getPackageURI().equals(PACKAGE_EXIDE) && eXideItem != null) {
-            eXideItem.setEnabled(notification.getAction() == ExistRepository.Action.INSTALL);
-
-        } else if (notification.getPackageURI().equals(PACKAGE_MONEX) && monexItem != null) {
-            monexItem.setEnabled(notification.getAction() == ExistRepository.Action.INSTALL);
+        switch (notification.getPackageURI()) {
+            case PACKAGE_DASHBOARD -> {
+                if (dashboardItem != null) {
+                    dashboardItem.setEnabled(notification.getAction() == ExistRepository.Action.INSTALL);
+                }
+            }
+            case PACKAGE_EXIDE -> {
+                if (eXideItem != null) {
+                    eXideItem.setEnabled(notification.getAction() == ExistRepository.Action.INSTALL);
+                }
+            }
+            case PACKAGE_MONEX -> {
+                if (monexItem != null) {
+                    monexItem.setEnabled(notification.getAction() == ExistRepository.Action.INSTALL);
+                }
+            }
+            default -> {
+            }
         }
     }
 

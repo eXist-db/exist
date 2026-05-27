@@ -54,6 +54,24 @@ public interface IndexWorker {
     public static final String VALUE_COUNT = "value_count";
 
     /**
+     * Lower values run earlier in {@link IndexController} listener chains and {@link #flush()}.
+     * Gaps reserve room for future workers: {@code 0} structural, {@code 1–99} pre-statistics,
+     * {@code 100–999} pre-Lucene, {@code 1000+} Lucene and later; unranked workers use
+     * {@link Integer#MAX_VALUE}.
+     */
+    int CHAIN_PRIORITY_STRUCTURAL = 0;
+    int CHAIN_PRIORITY_STATISTICS = 100;
+    int CHAIN_PRIORITY_LUCENE = 1000;
+
+    /**
+     * Chain-order priority for {@link IndexController}. Default {@link Integer#MAX_VALUE} preserves
+     * legacy ordering among workers that do not override.
+     */
+    default int getChainPriority() {
+        return Integer.MAX_VALUE;
+    }
+
+    /**
      * Returns an ID which uniquely identifies this worker's index.
      * @return a unique name identifying this worker's index.
      */

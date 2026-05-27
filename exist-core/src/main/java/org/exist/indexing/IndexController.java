@@ -40,7 +40,9 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.exist.security.PermissionDeniedException;
@@ -56,7 +58,14 @@ public class IndexController {
         CONFIG_ONLY_REINDEX
     }
 
-    private final Map<String, IndexWorker> indexWorkers = new HashMap<>();
+    /**
+     * Stable iteration order for listener chains and {@link #flush()}.
+     */
+    private static final Comparator<IndexWorker> INDEX_WORKER_ORDER = Comparator
+            .comparingInt(IndexWorker::getChainPriority)
+            .thenComparing(IndexWorker::getIndexId);
+
+    private final Map<String, IndexWorker> indexWorkers = new LinkedHashMap<>();
 
     private final DBBroker broker;
     private StreamListener listener = null;
@@ -68,9 +77,9 @@ public class IndexController {
     public IndexController(final DBBroker broker) {
         this.broker = broker;
         final List<IndexWorker> workers = broker.getBrokerPool().getIndexManager().getWorkers(broker);
-        for (final IndexWorker worker : workers) {
-            indexWorkers.put(worker.getIndexId(), worker);
-        }
+        workers.stream()
+                .sorted(INDEX_WORKER_ORDER)
+                .forEach(worker -> indexWorkers.put(worker.getIndexId(), worker));
     }
 
     /**

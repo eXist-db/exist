@@ -22,6 +22,7 @@
 package org.exist.launcher;
 
 import org.exist.jetty.JettyStart;
+import org.exist.jetty.JettyStartListener;
 import org.exist.storage.BrokerPool;
 
 import javax.swing.*;
@@ -39,7 +40,7 @@ import org.exist.SystemProperties;
  *
  * @author Wolfgang Meier
  */
-public class SplashScreen extends JFrame implements Observer, Comparable {
+public class SplashScreen extends JFrame implements JettyStartListener, Observer, Comparable {
 
     @Serial
     private static final long serialVersionUID = -8449133653386075548L;
@@ -111,29 +112,41 @@ public class SplashScreen extends JFrame implements Observer, Comparable {
         SwingUtilities.invokeLater(() -> statusLabel.setText(status));
     }
 
-    public void update(Observable o, Object arg) {
-        if (JettyStart.SIGNAL_STARTED.equals(arg)) {
-            setStatus("Server started!");
-            setVisible(false);
-            launcher.signalStarted();
-        } else if (BrokerPool.SIGNAL_STARTUP.equals(arg)) {
-            setStatus("Starting eXist-db ...");
-        } else if (BrokerPool.SIGNAL_ABORTED.equals(arg)) {
-            setVisible(false);
-            launcher.showMessageAndExit("Startup aborted",
-                "eXist-db detected an error during recovery. This may not be fatal, " +
-                "but to avoid possible damage, the db will now stop. Please consider " +
-                "running a consistency check via the export tool and create " +
-                "a backup if problems are reported. The db should come up again if you restart " +
-                "it.", true);
-        } else if (BrokerPool.SIGNAL_WRITABLE.equals(arg)) {
-            setStatus("eXist-db is up. Waiting for web server ...");
-        } else if (JettyStart.SIGNAL_ERROR.equals(arg)) {
-            setVisible(false);
-            launcher.showMessageAndExit("Error Occurred",
-                    "An error occurred during startup. Please check the logs.", true);
-        } else if (BrokerPool.SIGNAL_SHUTDOWN.equals(arg)) {
-            launcher.signalShutdown();
+    @Override
+    public void onJettyStartEvent(final String signal) {
+        switch (signal) {
+            case JettyStart.SIGNAL_STARTED -> {
+                setStatus("Server started!");
+                setVisible(false);
+                launcher.signalStarted();
+            }
+            case JettyStart.SIGNAL_ERROR -> {
+                setVisible(false);
+                launcher.showMessageAndExit("Error Occurred",
+                        "An error occurred during startup. Please check the logs.", true);
+            }
+            case JettyStart.SIGNAL_STARTING -> setStatus("Starting Jetty ...");
+            default -> setStatus(signal);
+        }
+    }
+
+    public void update(final Observable o, final Object arg) {
+        if (arg instanceof String signal) {
+            switch (signal) {
+                case BrokerPool.SIGNAL_STARTUP -> setStatus("Starting eXist-db ...");
+                case BrokerPool.SIGNAL_ABORTED -> {
+                    setVisible(false);
+                    launcher.showMessageAndExit("Startup aborted",
+                            "eXist-db detected an error during recovery. This may not be fatal, " +
+                            "but to avoid possible damage, the db will now stop. Please consider " +
+                            "running a consistency check via the export tool and create " +
+                            "a backup if problems are reported. The db should come up again if you restart " +
+                            "it.", true);
+                }
+                case BrokerPool.SIGNAL_WRITABLE -> setStatus("eXist-db is up. Waiting for web server ...");
+                case BrokerPool.SIGNAL_SHUTDOWN -> launcher.signalShutdown();
+                default -> setStatus(signal);
+            }
         } else {
             setStatus(arg.toString());
         }

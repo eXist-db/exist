@@ -22,6 +22,7 @@
 package org.exist.util;
 
 import java.net.URISyntaxException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static org.junit.Assert.*;
@@ -153,5 +154,32 @@ public class MimeTableTest  {
 		assertNotNull("Mime type not found for test.jpg", mt);
 		assertEquals("Incorrect mime type", "foo/bar", mt.getName());
 		assertEquals("Incorrect resource type", MimeType.BINARY, mt.getType());
+	}
+
+	@Test
+	public void testClasspathDefaultIncludesApplicationXquery() {
+		final MimeTable mimeTable = new MimeTable();
+		final MimeType xquery = mimeTable.getContentType("application/xquery");
+		assertNotNull("application/xquery must be registered in the default mime-types.xml", xquery);
+		assertEquals("application/xquery", xquery.getName());
+	}
+
+	@Test
+	public void testUnreadablePathThrows() {
+		final Path missing = Path.of("/nonexistent/mime-types-does-not-exist.xml");
+		final IllegalStateException ex = assertThrows(IllegalStateException.class, () -> new MimeTable(missing));
+		assertTrue(ex.getMessage().contains("not readable"));
+	}
+
+	@Test
+	public void testInvalidXmlThrows() throws Exception {
+		final Path broken = Files.createTempFile("mime-types-broken", ".xml");
+		try {
+			Files.writeString(broken, "<not-valid-xml");
+			final IllegalStateException ex = assertThrows(IllegalStateException.class, () -> new MimeTable(broken));
+			assertTrue(ex.getMessage().contains("Failed to load mime-type table"));
+		} finally {
+			Files.deleteIfExists(broken);
+		}
 	}
 }

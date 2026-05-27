@@ -23,9 +23,12 @@ package org.exist.xquery.modules.persistentlogin;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.CookieSpecs;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.client.BasicCookieStore;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.exist.TestUtils;
@@ -65,42 +68,35 @@ public class LoginModuleIT {
     private final static String XQUERY_FILENAME = "test-login.xql";
 
     private static Collection root;
-    private static HttpClient client;
-
-    /** Wait for server port to accept connections before XML-RPC. Windows CI can be slower to bind. */
-    private static void waitForServerReady(int port, int timeoutMs) throws InterruptedException {
-        final long deadline = System.currentTimeMillis() + timeoutMs;
-        while (System.currentTimeMillis() < deadline) {
-            try (java.net.Socket s = new java.net.Socket()) {
-                s.connect(new java.net.InetSocketAddress("localhost", port), 1000);
-                return;
-            } catch (IOException e) {
-                Thread.sleep(500);
-            }
-        }
-    }
+    private static CloseableHttpClient client;
+    private static BasicCookieStore cookieStore;
+    private static HttpClientContext httpContext;
 
     @BeforeClass
-    public static void beforeClass() throws XMLDBException, InterruptedException {
+    public static void beforeClass() throws XMLDBException {
         final int port = existWebServer.getPort();
-        final boolean isWindows = System.getProperty("os.name", "").toLowerCase().contains("win");
-        waitForServerReady(port, isWindows ? 60_000 : 30_000);
-
         final String uri = "xmldb:exist://localhost:" + port + "/xmlrpc" + XmldbURI.ROOT_COLLECTION;
         XMLDBException lastException = null;
         for (int i = 0; i < 20; i++) {
             try {
                 root = DatabaseManager.getCollection(uri, TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
+                lastException = null;
                 break;
-            } catch (XMLDBException e) {
+            } catch (final XMLDBException e) {
                 lastException = e;
                 if (i < 19) {
-                    Thread.sleep(500);
+                    try {
+                        Thread.sleep(500);
+                    } catch (final InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        throw new AssertionError("Interrupted while waiting for XML-RPC", ie);
+                    }
                 }
             }
         }
         if (root == null) {
-            throw new AssertionError("Failed to connect to XML-RPC after 20 retries: " + (lastException != null ? lastException.getMessage() : ""));
+            throw new AssertionError("Failed to connect to XML-RPC: "
+                    + (lastException != null ? lastException.getMessage() : "unknown"));
         }
         final BinaryResource res = root.createResource(XQUERY_FILENAME, BinaryResource.class);
         ((EXistResource) res).setMimeType("application/xquery");
@@ -109,12 +105,23 @@ public class LoginModuleIT {
         final UserManagementService ums = root.getService(UserManagementService.class);
         ums.chmod(res, 0777);
 
-        final BasicCookieStore store = new BasicCookieStore();
-        client = HttpClientBuilder.create().setDefaultCookieStore(store).build();
+        cookieStore = new BasicCookieStore();
+        httpContext = HttpClientContext.create();
+        httpContext.setCookieStore(cookieStore);
+        // Jetty 12 emits RFC 6265 Set-Cookie (RFC1123 Expires). HttpClient 4.x DEFAULT (NetscapeDraftSpec)
+        // rejects that format; STANDARD is required for automatic cookie storage. See jetty/jetty.project#12771.
+        client = HttpClientBuilder.create()
+                .setDefaultRequestConfig(RequestConfig.custom()
+                        .setCookieSpec(CookieSpecs.STANDARD)
+                        .build())
+                .build();
     }
 
     @AfterClass
-    public static void afterClass() throws XMLDBException {
+    public static void afterClass() throws Exception {
+        if (client != null) {
+            client.close();
+        }
         if (root != null) {
             final org.xmldb.api.base.Resource res = root.getResource(XQUERY_FILENAME);
             if (res != null) {
@@ -141,10 +148,11 @@ public class LoginModuleIT {
     private void doGet(@Nullable String params, String expected) throws IOException {
         final HttpGet httpGet = new HttpGet("http://localhost:" + existWebServer.getPort() + "/rest" + XmldbURI.ROOT_COLLECTION + '/' + XQUERY_FILENAME +
                 (params == null ? "" : "?" + params));
-        HttpResponse response = client.execute(httpGet);
+        HttpResponse response = client.execute(httpGet, httpContext);
         HttpEntity entity = response.getEntity();
         final String responseBody = EntityUtils.toString(entity);
         assertEquals(responseBody, SC_OK, response.getStatusLine().getStatusCode());
         assertEquals(expected, responseBody);
     }
+
 }

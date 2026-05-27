@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Configure PUBLIC "-//Jetty//Configure//EN" "https://www.eclipse.org/jetty/configure_10_0.dtd">
-<Configure id="exist-portal-context" class="org.eclipse.jetty.ee10.webapp.WebAppContext">
+<Configure id="exist-portal-context" class="org.exist.jetty.WebAppContext">
   <Set name="contextPath">/</Set>
   <Set name="defaultsDescriptor"><Property name="jetty.home" default="."/>/etc/webdefault.xml</Set>
 </Configure>

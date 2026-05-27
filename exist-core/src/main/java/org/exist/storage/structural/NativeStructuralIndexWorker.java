@@ -415,6 +415,11 @@ public class NativeStructuralIndexWorker implements IndexWorker, StructuralIndex
         }
     }
     
+    @Override
+    public int getChainPriority() {
+        return IndexWorker.CHAIN_PRIORITY_STRUCTURAL;
+    }
+
     public String getIndexId() {
         return NativeStructuralIndex.ID;
     }
