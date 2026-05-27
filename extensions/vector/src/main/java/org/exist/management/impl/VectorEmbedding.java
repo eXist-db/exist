@@ -36,11 +36,15 @@ import java.util.List;
  */
 public class VectorEmbedding implements VectorEmbeddingMXBean {
 
+    private static final String PERSISTENCE_BACKEND = "lucene";
+
     private final String instanceId;
     private final VectorMetrics metrics = VectorMetrics.getInstance();
+    private final boolean available;
 
     public VectorEmbedding(final BrokerPool pool) {
         this.instanceId = pool.getId();
+        this.available = true;
     }
 
     public static String getAllInstancesQuery() {
@@ -63,17 +67,22 @@ public class VectorEmbedding implements VectorEmbeddingMXBean {
 
     @Override
     public boolean isAvailable() {
-        return true;
+        return available;
+    }
+
+    @Override
+    public String getPersistenceBackend() {
+        return PERSISTENCE_BACKEND;
     }
 
     @Override
     public int getModelCount() {
-        return getModels().size();
+        return VectorModelDiagnostics.getModelCount();
     }
 
     @Override
     public int getReadyModelCount() {
-        return VectorModelDiagnostics.countReadyModels(getModels());
+        return VectorModelDiagnostics.getReadyModelCount();
     }
 
     @Override
@@ -109,6 +118,16 @@ public class VectorEmbedding implements VectorEmbeddingMXBean {
     @Override
     public long getKnnLastTimeNanos() {
         return metrics.getKnnLastTimeNanos();
+    }
+
+    @Override
+    public void resetMetrics() {
+        metrics.reset();
+    }
+
+    @Override
+    public void refreshModels() {
+        VectorModelDiagnostics.refreshModels();
     }
 
     @Override

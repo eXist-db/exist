@@ -1050,3 +1050,10 @@ declare
 function vs:profiler-optimized-query-field-vector() {
     collection($vs:COLLECTION)//article[ft:query-field-vector("embedding", [1.0, 0.0, 0.0, 0.0], 2)]
 };
+
+(:~ Unknown vector field short-circuits to empty (no Lucene KNN on missing config). :)
+declare
+    %test:assertEquals(0)
+function vs:unknown-field-vector-short-circuit-empty() {
+    count(collection($vs:COLLECTION)//article[ft:query-field-vector("unknown_field", [1.0, 0.0, 0.0, 0.0], 2)])
+};

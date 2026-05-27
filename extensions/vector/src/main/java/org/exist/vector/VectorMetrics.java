@@ -81,4 +81,16 @@ public final class VectorMetrics {
     public long getKnnLastTimeNanos() {
         return knnLastTimeNanos.get();
     }
+
+    /**
+     * Resets all embed and KNN counters to zero.
+     */
+    public void reset() {
+        embedCallCount.reset();
+        embedTotalTimeNanos.reset();
+        embedLastTimeNanos.set(0);
+        knnQueryCount.reset();
+        knnTotalTimeNanos.reset();
+        knnLastTimeNanos.set(0);
+    }
 }

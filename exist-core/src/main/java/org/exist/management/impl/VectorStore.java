@@ -36,6 +36,8 @@ import java.nio.file.Path;
  */
 public class VectorStore implements VectorStoreMXBean {
 
+    private static final String PERSISTENCE_BACKEND = "vector.dbx";
+
     private final String instanceId;
     @Nullable
     private final VectorStoreImpl store;
@@ -71,6 +73,16 @@ public class VectorStore implements VectorStoreMXBean {
     }
 
     @Override
+    public String getPersistenceBackend() {
+        return PERSISTENCE_BACKEND;
+    }
+
+    @Override
+    public boolean isEntryCountKnown() {
+        return store != null;
+    }
+
+    @Override
     public String getFileName() {
         return VectorStoreImpl.FILE_NAME;
     }
@@ -90,12 +102,12 @@ public class VectorStore implements VectorStoreMXBean {
     @Override
     public long getEntryCount() {
         if (store == null) {
-            return 0;
+            return ENTRY_COUNT_UNKNOWN;
         }
         try {
             return store.getEntryCount();
         } catch (final IOException e) {
-            return 0;
+            return ENTRY_COUNT_UNKNOWN;
         }
     }
 

@@ -33,25 +33,62 @@ import java.util.Set;
  */
 public final class VectorModelDiagnostics {
 
+    /** Default TTL for cached model snapshots (JMX polling). */
+    private static final long CACHE_TTL_MS = 60_000L;
+
+    private static volatile CachedSnapshot cache;
+
     private VectorModelDiagnostics() {
+    }
+
+    private record CachedSnapshot(List<VectorModelInfo> models, long timestampMs) {
     }
 
     /**
      * Collect diagnostic information for registry entries and built-in models.
+     * Results are cached briefly to avoid repeated filesystem probes under JMX polling.
      *
      * @return model rows sorted by id
      */
     public static List<VectorModelInfo> collectModels() {
-        final ModelRegistry registry = ModelRegistry.getInstance();
-        final Set<String> registryIds = registry.getModelIds();
-        final Set<String> allIds = new HashSet<>(registryIds);
-        allIds.addAll(VectorModelConstants.getKnownModelIds());
-
-        final List<VectorModelInfo> models = new ArrayList<>(allIds.size());
-        for (final String id : allIds.stream().sorted().toList()) {
-            models.add(describeModel(id, registryIds));
+        final long now = System.currentTimeMillis();
+        final CachedSnapshot current = cache;
+        if (current != null && now - current.timestampMs() < CACHE_TTL_MS) {
+            return current.models();
         }
-        return models;
+        final List<VectorModelInfo> models = collectModelsUncached();
+        final CachedSnapshot snapshot = new CachedSnapshot(List.copyOf(models), now);
+        cache = snapshot;
+        return snapshot.models();
+    }
+
+    /**
+     * Returns model count from a single cached snapshot.
+     */
+    public static int getModelCount() {
+        return collectModels().size();
+    }
+
+    /**
+     * Returns ready model count from a single cached snapshot.
+     */
+    public static int getReadyModelCount() {
+        return countReadyModels(collectModels());
+    }
+
+    /**
+     * Clears the cached model snapshot. The next {@link #collectModels()} rebuilds it.
+     */
+    public static void invalidateCache() {
+        cache = null;
+    }
+
+    /**
+     * Forces a fresh model snapshot and returns it.
+     */
+    public static List<VectorModelInfo> refreshModels() {
+        invalidateCache();
+        return collectModels();
     }
 
     public static int countReadyModels(final List<VectorModelInfo> models) {
@@ -62,6 +99,19 @@ public final class VectorModelDiagnostics {
             }
         }
         return ready;
+    }
+
+    private static List<VectorModelInfo> collectModelsUncached() {
+        final ModelRegistry registry = ModelRegistry.getInstance();
+        final Set<String> registryIds = registry.getModelIds();
+        final Set<String> allIds = new HashSet<>(registryIds);
+        allIds.addAll(VectorModelConstants.getKnownModelIds());
+
+        final List<VectorModelInfo> models = new ArrayList<>(allIds.size());
+        for (final String id : allIds.stream().sorted().toList()) {
+            models.add(describeModel(id, registryIds));
+        }
+        return models;
     }
 
     private static VectorModelInfo describeModel(final String id, final Set<String> registryIds) {

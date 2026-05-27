@@ -26,7 +26,6 @@ import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.indexing.lucene.LuceneIndex;
 import org.exist.indexing.lucene.LuceneIndexWorker;
-import org.exist.storage.vector.VectorOperationMetrics;
 import org.exist.xquery.*;
 import org.exist.xquery.functions.array.ArrayType;
 import org.exist.xquery.functions.map.AbstractMapType;
@@ -109,31 +108,13 @@ public class QueryVector extends BasicFunction {
         final NodeSet nodes = nodesSeq.toNodeSet();
         final DocumentSet docs = nodes.getDocumentSet();
         final LuceneIndexWorker index = (LuceneIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
-        final List<QName> qnames = resolveQNames(nodes, index);
+        final List<QName> qnames = index != null ? resolveQNames(nodes, index) : getQNamesFromNodes(nodes);
 
-        final PerformanceStats.IndexOptimizationLevel optimizationLevel;
-        try {
-            optimizationLevel = index != null && index.hasVectorIndexForQNames(docs, qnames)
-                    ? PerformanceStats.IndexOptimizationLevel.OPTIMIZED
-                    : PerformanceStats.IndexOptimizationLevel.NONE;
-        } catch (IOException e) {
-            throw new XPathException(this, "Failed to check vector index config: " + e.getMessage(), e);
-        }
+        final PerformanceStats.IndexOptimizationLevel optimizationLevel =
+                VectorSearchSupport.optimizationLevelForQNames(this, index, docs, qnames);
 
-        final long start = System.currentTimeMillis();
-        try {
-            final Sequence result = index.searchVector(getExpressionId(), docs, nodes, qnames, vector, k, options);
-            final long duration = System.currentTimeMillis() - start;
-            if (optimizationLevel == PerformanceStats.IndexOptimizationLevel.OPTIMIZED) {
-                VectorOperationMetrics.recordKnn(duration * 1_000_000L);
-            }
-            if (context.getProfiler().traceFunctions()) {
-                context.getProfiler().traceIndexUsage(context, "lucene-vector", this, optimizationLevel, duration);
-            }
-            return result;
-        } catch (IOException e) {
-            throw new XPathException(this, "Vector search failed: " + e.getMessage(), e);
-        }
+        return VectorSearchSupport.execute(this, context, index, optimizationLevel,
+                () -> index.searchVector(getExpressionId(), docs, nodes, qnames, vector, k, options));
     }
 
     private static int parseK(final Sequence[] args) throws XPathException {

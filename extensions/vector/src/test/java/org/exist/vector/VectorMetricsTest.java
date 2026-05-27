@@ -31,6 +31,7 @@ public class VectorMetricsTest {
     @Test
     public void recordsEmbedAndKnnCounters() {
         final VectorMetrics metrics = VectorMetrics.getInstance();
+        metrics.reset();
         metrics.recordEmbed(100);
         metrics.recordEmbed(200);
         metrics.recordKnnQuery(50);
@@ -41,6 +42,16 @@ public class VectorMetricsTest {
         assertEquals(1, metrics.getKnnQueryCount());
         assertEquals(50, metrics.getKnnTotalTimeNanos());
         assertEquals(50, metrics.getKnnLastTimeNanos());
+    }
+
+    @Test
+    public void resetClearsCounters() {
+        final VectorMetrics metrics = VectorMetrics.getInstance();
+        metrics.recordEmbed(100);
+        metrics.recordKnnQuery(50);
+        metrics.reset();
+        assertEquals(0, metrics.getEmbedCallCount());
+        assertEquals(0, metrics.getKnnQueryCount());
     }
 
     @Test

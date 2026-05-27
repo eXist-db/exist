@@ -32,11 +32,30 @@ public interface VectorStoreMXBean extends PerInstanceMBean {
     long NO_FILE_SIZE = -1;
 
     /**
+     * Entry count could not be determined (store unavailable or scan failed).
+     */
+    long ENTRY_COUNT_UNKNOWN = -1;
+
+    /**
      * Whether the vector store is available for this database instance.
      *
      * @return {@code true} when {@code vector.dbx} is open
      */
     boolean isAvailable();
+
+    /**
+     * Persistence backend represented by this MBean.
+     *
+     * @return {@code vector.dbx}
+     */
+    String getPersistenceBackend();
+
+    /**
+     * Whether {@link #getEntryCount()} is known for this instance.
+     *
+     * @return {@code false} when the store is unavailable or counting failed
+     */
+    boolean isEntryCountKnown();
 
     /**
      * The vector store file name (always {@code vector.dbx}).
@@ -58,7 +77,7 @@ public interface VectorStoreMXBean extends PerInstanceMBean {
      * Maintained incrementally on {@code put}/{@code remove}; the first read may
      * scan the BTree if the counter has not yet been initialized.
      *
-     * @return entry count, or {@code 0} when unavailable
+     * @return entry count, or {@link #ENTRY_COUNT_UNKNOWN} when unavailable
      */
     long getEntryCount();
 

@@ -28,26 +28,8 @@ import javax.annotation.Nullable;
  */
 public final class VectorOperationMetrics {
 
-    /**
-     * Vector operation kinds tracked by JMX metrics.
-     */
-    public enum Operation {
-        EMBED,
-        KNN
-    }
-
-    /**
-     * Receives vector operation timing events.
-     */
-    @FunctionalInterface
-    public interface Recorder {
-        Recorder NOOP = (operation, durationNanos) -> {
-        };
-
-        void record(Operation operation, long durationNanos);
-    }
-
-    private static volatile Recorder recorder = Recorder.NOOP;
+    @Nullable
+    private static volatile Recorder recorder;
 
     private VectorOperationMetrics() {
     }
@@ -67,7 +49,7 @@ public final class VectorOperationMetrics {
      * @param durationNanos wall time in nanoseconds
      */
     public static void recordEmbed(final long durationNanos) {
-        recorder.record(Operation.EMBED, durationNanos);
+        activeRecorder().record(Operation.EMBED, durationNanos);
     }
 
     /**
@@ -76,6 +58,30 @@ public final class VectorOperationMetrics {
      * @param durationNanos wall time in nanoseconds
      */
     public static void recordKnn(final long durationNanos) {
-        recorder.record(Operation.KNN, durationNanos);
+        activeRecorder().record(Operation.KNN, durationNanos);
+    }
+
+    private static Recorder activeRecorder() {
+        final Recorder current = recorder;
+        return current != null ? current : Recorder.NOOP;
+    }
+
+    /**
+     * Vector operation kinds tracked by JMX metrics.
+     */
+    public enum Operation {
+        EMBED,
+        KNN
+    }
+
+    /**
+     * Receives vector operation timing events.
+     */
+    @FunctionalInterface
+    public interface Recorder {
+        Recorder NOOP = (operation, durationNanos) -> {
+        };
+
+        void record(Operation operation, long durationNanos);
     }
 }

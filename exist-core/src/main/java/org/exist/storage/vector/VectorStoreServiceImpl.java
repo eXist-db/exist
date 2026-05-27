@@ -75,6 +75,18 @@ public class VectorStoreServiceImpl implements VectorStoreService, BrokerPoolSer
                 LOG.warn("Failed to register VectorStore JMX MBean: {}", e.getMessage(), e);
             }
         }
+        registerVectorExtensionJmx(systemBroker.getBrokerPool());
+    }
+
+    private static void registerVectorExtensionJmx(final BrokerPool pool) {
+        try {
+            final Class<?> lifecycle = Class.forName("org.exist.vector.VectorExtensionLifecycle");
+            lifecycle.getMethod("onBrokerPoolStartSystem", BrokerPool.class).invoke(null, pool);
+        } catch (final ClassNotFoundException e) {
+            LOG.debug("Vector extension not present; VectorEmbedding JMX MBean not registered");
+        } catch (final ReflectiveOperationException e) {
+            LOG.warn("Failed to register VectorEmbedding JMX MBean: {}", e.getMessage(), e);
+        }
     }
 
     @Override

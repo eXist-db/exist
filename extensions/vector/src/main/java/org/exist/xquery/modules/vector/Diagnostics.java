@@ -49,6 +49,7 @@ import static org.exist.xquery.modules.vector.VectorModule.functionSignature;
  *   <li>path — resolved configuration path (relative string)</li>
  *   <li>dimension — configured or default dimension</li>
  *   <li>status — "available" | "missing" | "http"</li>
+ *   <li>provider — "ONNX" | "HTTP"</li>
  *   <li>message — optional hint when status != "available"</li>
  * </ul>
  */
@@ -79,6 +80,7 @@ public class Diagnostics extends BasicFunction {
       builder.addAttribute(new QName("path", null, null), model.getPath());
       builder.addAttribute(new QName("dimension", null, null), Integer.toString(model.getDimension()));
       builder.addAttribute(new QName("status", null, null), model.getStatus());
+      builder.addAttribute(new QName("provider", null, null), model.getProvider());
       final String message = model.getMessage();
       if (message != null && !message.isEmpty()) {
         builder.addAttribute(new QName("message", null, null), message);

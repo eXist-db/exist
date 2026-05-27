@@ -25,7 +25,6 @@ import org.exist.dom.persistent.DocumentSet;
 import org.exist.dom.persistent.NodeSet;
 import org.exist.indexing.lucene.LuceneIndex;
 import org.exist.indexing.lucene.LuceneIndexWorker;
-import org.exist.storage.vector.VectorOperationMetrics;
 import org.exist.xquery.*;
 import org.exist.xquery.functions.array.ArrayType;
 import org.exist.xquery.functions.map.AbstractMapType;
@@ -93,17 +92,19 @@ public class QueryFieldVector extends BasicFunction {
             throw new XPathException(this, "Second argument must be an array of numbers");
         }
 
-        int k = 10;
-        QueryOptions options = new QueryOptions();
+        int kValue = 10;
+        QueryOptions queryOptions = new QueryOptions();
         if (args.length >= 3 && !args[2].isEmpty()) {
-            k = args[2].itemAt(0).toJavaObject(Integer.class);
-            if (k <= 0) {
-                k = 10;
+            kValue = args[2].itemAt(0).toJavaObject(Integer.class);
+            if (kValue <= 0) {
+                kValue = 10;
             }
         }
         if (args.length >= 4 && !args[3].isEmpty()) {
-            options = parseOptions(args[3]);
+            queryOptions = parseOptions(args[3]);
         }
+        final int k = kValue;
+        final QueryOptions options = queryOptions;
 
         DocumentSet docs;
         NodeSet contextSet;
@@ -117,24 +118,10 @@ public class QueryFieldVector extends BasicFunction {
 
         final LuceneIndexWorker index = (LuceneIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
         final PerformanceStats.IndexOptimizationLevel optimizationLevel =
-                index != null && index.hasVectorIndexForField(docs, field)
-                        ? PerformanceStats.IndexOptimizationLevel.OPTIMIZED
-                        : PerformanceStats.IndexOptimizationLevel.NONE;
+                VectorSearchSupport.optimizationLevelForField(index, docs, field);
 
-        final long start = System.currentTimeMillis();
-        try {
-            final Sequence result = index.searchVector(getExpressionId(), docs, contextSet, field, vector, k, options);
-            final long duration = System.currentTimeMillis() - start;
-            if (optimizationLevel == PerformanceStats.IndexOptimizationLevel.OPTIMIZED) {
-                VectorOperationMetrics.recordKnn(duration * 1_000_000L);
-            }
-            if (context.getProfiler().traceFunctions()) {
-                context.getProfiler().traceIndexUsage(context, "lucene-vector", this, optimizationLevel, duration);
-            }
-            return result;
-        } catch (IOException e) {
-            throw new XPathException(this, "Vector search failed: " + e.getMessage(), e);
-        }
+        return VectorSearchSupport.execute(this, context, index, optimizationLevel,
+                () -> index.searchVector(getExpressionId(), docs, contextSet, field, vector, k, options));
     }
 
     private static float[] arrayToFloats(final Sequence seq) throws XPathException {

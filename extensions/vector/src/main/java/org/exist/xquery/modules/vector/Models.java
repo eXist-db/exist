@@ -21,6 +21,8 @@
  */
 package org.exist.xquery.modules.vector;
 
+import org.exist.vector.VectorModelDiagnostics;
+import org.exist.vector.VectorModelInfo;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -30,8 +32,6 @@ import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
-import org.exist.vector.ModelRegistry;
-import org.exist.vector.VectorModelConstants;
 
 import javax.annotation.Nullable;
 
@@ -40,14 +40,7 @@ import static org.exist.xquery.modules.vector.VectorModule.functionSignature;
 /**
  * vector:models() — List embedding model identifiers.
  * <p>
- * Returns (1) models from the {@code <vector-models>} section in conf.xml, plus
- * (2) built-in models with known dimensions (ONNX and HTTP API). To use models
- * not in the built-in list, add them to conf.xml:
- * <pre>
- * &lt;vector-models&gt;
- *   &lt;model id="my-model" path="onnx-models/my-model" dimension="384"/&gt;
- * &lt;/vector-models&gt;
- * </pre>
+ * Returns models from {@link VectorModelDiagnostics} (registry + built-ins).
  */
 public class Models extends BasicFunction {
 
@@ -64,14 +57,8 @@ public class Models extends BasicFunction {
   @Override
   public Sequence eval(final Sequence[] args, @Nullable final Sequence contextSequence) {
     final ValueSequence result = new ValueSequence();
-    final java.util.Set<String> registryIds = ModelRegistry.getInstance().getModelIds();
-    for (final String model : registryIds) {
-      result.add(new StringValue(this, model));
-    }
-    for (final String model : VectorModelConstants.getKnownModelIds()) {
-      if (!registryIds.contains(model)) {
-        result.add(new StringValue(this, model));
-      }
+    for (final VectorModelInfo model : VectorModelDiagnostics.collectModels()) {
+      result.add(new StringValue(this, model.getId()));
     }
     return result;
   }

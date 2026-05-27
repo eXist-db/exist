@@ -31,11 +31,19 @@ import java.util.List;
 public interface VectorEmbeddingMXBean extends PerInstanceMBean {
 
     /**
-     * Whether the vector embedding extension is loaded for this instance.
+     * Whether the vector embedding extension registered this MBean at database startup.
      *
-     * @return {@code true} when the extension registered this MBean
+     * @return {@code true} when the vector extension is loaded
      */
     boolean isAvailable();
+
+    /**
+     * Persistence backend monitored by this MBean ({@code lucene} KNN index vs {@code vector.dbx}).
+     * Vector embeddings may also be stored in Lucene when {@code vector-store="lucene"}.
+     *
+     * @return {@code lucene} for KNN workload metrics
+     */
+    String getPersistenceBackend();
 
     /**
      * Total configured models (registry + built-ins).
@@ -69,6 +77,16 @@ public interface VectorEmbeddingMXBean extends PerInstanceMBean {
     long getKnnTotalTimeNanos();
 
     long getKnnLastTimeNanos();
+
+    /**
+     * Resets embed and KNN workload counters to zero.
+     */
+    void resetMetrics();
+
+    /**
+     * Refreshes the cached model diagnostics snapshot.
+     */
+    void refreshModels();
 
     /**
      * Diagnostic rows for configured and built-in models.
