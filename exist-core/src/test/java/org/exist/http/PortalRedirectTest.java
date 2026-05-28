@@ -21,10 +21,11 @@
  */
 package org.exist.http;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.fluent.Request;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.HttpStatus;
+import org.apache.hc.client5.http.fluent.Request;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.exist.http.AbstractHttpTest;
 import org.exist.test.ExistWebServer;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -45,13 +46,13 @@ public class PortalRedirectTest extends AbstractHttpTest {
 
     @Test
     public void portalRootServesLandingPageWithExistRedirect() throws IOException {
-        final Request request = Request.Get(portalUri(existWebServer));
-        final HttpResponse response = withHttpExecutor(existWebServer,
-                executor -> executor.execute(request).returnResponse());
+        final Request request = Request.get(portalUri(existWebServer));
+        final ClassicHttpResponse response = withHttpExecutor(existWebServer,
+                executor -> (ClassicHttpResponse) executor.execute(request).returnResponse());
 
-        assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
+        assertEquals(HttpStatus.SC_OK, response.getCode());
 
-        final String body = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+        final String body = readResponseBody(response);
         assertTrue("Expected portal title", body.contains("Open Source Native XML Database"));
         assertTrue("Expected JS redirect to /exist", body.contains("window.location.replace(\"/exist\")"));
         assertTrue("Expected noscript fallback link to /exist", body.contains("href=\"/exist\""));
