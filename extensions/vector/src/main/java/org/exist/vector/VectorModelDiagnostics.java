@@ -64,6 +64,8 @@ public final class VectorModelDiagnostics {
 
     /**
      * Returns model count from a single cached snapshot.
+     *
+     * @return total model count
      */
     public static int getModelCount() {
         return collectModels().size();
@@ -71,6 +73,8 @@ public final class VectorModelDiagnostics {
 
     /**
      * Returns ready model count from a single cached snapshot.
+     *
+     * @return ready model count
      */
     public static int getReadyModelCount() {
         return countReadyModels(collectModels());
@@ -85,12 +89,20 @@ public final class VectorModelDiagnostics {
 
     /**
      * Forces a fresh model snapshot and returns it.
+     *
+     * @return fresh model information rows
      */
     public static List<VectorModelInfo> refreshModels() {
         invalidateCache();
         return collectModels();
     }
 
+    /**
+     * Counts how many models are in available status.
+     *
+     * @param models the model list to scan
+     * @return number of available models
+     */
     public static int countReadyModels(final List<VectorModelInfo> models) {
         int ready = 0;
         for (final VectorModelInfo model : models) {

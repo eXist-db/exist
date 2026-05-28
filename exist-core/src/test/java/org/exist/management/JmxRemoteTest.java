@@ -114,7 +114,7 @@ public class JmxRemoteTest {
         assertThat(jmxXml, hasXPath("//jmx:VectorStore/jmx:FileName").withNamespaceContext(prefix2Uri));
         assertThat(jmxXml, hasXPath("//jmx:VectorStore/jmx:EntryCount").withNamespaceContext(prefix2Uri));
         assertThat(jmxXml, hasXPath("//jmx:VectorStore/jmx:EntryCountKnown").withNamespaceContext(prefix2Uri));
-        assertThat(jmxXml, hasXPath("//jmx:VectorStore/jmx:PersistenceBackend").withNamespaceContext(prefix2Uri));
+        assertThat(jmxXml, hasXPath("//jmx:VectorStore/jmx:StorageBackend").withNamespaceContext(prefix2Uri));
     }
 
     @Test
@@ -129,7 +129,7 @@ public class JmxRemoteTest {
 
         assertThat(jmxXml, hasXPath("//jmx:VectorEmbedding").withNamespaceContext(prefix2Uri));
         assertThat(jmxXml, hasXPath("//jmx:VectorEmbedding/jmx:ModelCount").withNamespaceContext(prefix2Uri));
-        assertThat(jmxXml, hasXPath("//jmx:VectorEmbedding/jmx:PersistenceBackend").withNamespaceContext(prefix2Uri));
+        assertThat(jmxXml, hasXPath("//jmx:VectorEmbedding/jmx:KnnBackend").withNamespaceContext(prefix2Uri));
     }
 
     @Test

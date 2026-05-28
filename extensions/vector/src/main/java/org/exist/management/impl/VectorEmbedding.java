@@ -36,18 +36,28 @@ import java.util.List;
  */
 public class VectorEmbedding implements VectorEmbeddingMXBean {
 
-    private static final String PERSISTENCE_BACKEND = "lucene";
+    private static final String KNN_BACKEND = "lucene";
 
     private final String instanceId;
     private final VectorMetrics metrics;
     private final boolean available;
 
+    /**
+     * Creates a new VectorEmbedding MBean for the given broker pool.
+     *
+     * @param pool the broker pool instance
+     */
     public VectorEmbedding(final BrokerPool pool) {
         this.instanceId = pool.getId();
         this.metrics = VectorMetrics.forInstance(instanceId);
         this.available = true;
     }
 
+    /**
+     * Returns the JMX ObjectName query string matching all vector embedding MBeans.
+     *
+     * @return query string for all instances
+     */
     public static String getAllInstancesQuery() {
         return getName("*");
     }
@@ -72,8 +82,8 @@ public class VectorEmbedding implements VectorEmbeddingMXBean {
     }
 
     @Override
-    public String getPersistenceBackend() {
-        return PERSISTENCE_BACKEND;
+    public String getKnnBackend() {
+        return KNN_BACKEND;
     }
 
     @Override

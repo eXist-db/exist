@@ -62,38 +62,78 @@ public final class VectorMetrics {
         INSTANCES.remove(instanceId);
     }
 
+    /**
+     * Records an embedding call duration.
+     *
+     * @param durationNanos wall time in nanoseconds
+     */
     public void recordEmbed(final long durationNanos) {
         embedCallCount.increment();
         embedTotalTimeNanos.add(durationNanos);
         embedLastTimeNanos.set(durationNanos);
     }
 
+    /**
+     * Records a KNN query duration.
+     *
+     * @param durationNanos wall time in nanoseconds
+     */
     public void recordKnnQuery(final long durationNanos) {
         knnQueryCount.increment();
         knnTotalTimeNanos.add(durationNanos);
         knnLastTimeNanos.set(durationNanos);
     }
 
+    /**
+     * Returns the total embedding call count.
+     *
+     * @return embed call count
+     */
     public long getEmbedCallCount() {
         return embedCallCount.sum();
     }
 
+    /**
+     * Returns the total accumulated embedding time in nanoseconds.
+     *
+     * @return total time in nanoseconds
+     */
     public long getEmbedTotalTimeNanos() {
         return embedTotalTimeNanos.sum();
     }
 
+    /**
+     * Returns the last embedding call duration in nanoseconds.
+     *
+     * @return last duration in nanoseconds
+     */
     public long getEmbedLastTimeNanos() {
         return embedLastTimeNanos.get();
     }
 
+    /**
+     * Returns the total KNN query count.
+     *
+     * @return KNN query count
+     */
     public long getKnnQueryCount() {
         return knnQueryCount.sum();
     }
 
+    /**
+     * Returns the total accumulated KNN query time in nanoseconds.
+     *
+     * @return total time in nanoseconds
+     */
     public long getKnnTotalTimeNanos() {
         return knnTotalTimeNanos.sum();
     }
 
+    /**
+     * Returns the last KNN query duration in nanoseconds.
+     *
+     * @return last duration in nanoseconds
+     */
     public long getKnnLastTimeNanos() {
         return knnLastTimeNanos.get();
     }

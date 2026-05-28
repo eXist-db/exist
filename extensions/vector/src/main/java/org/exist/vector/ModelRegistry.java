@@ -48,10 +48,21 @@ public final class ModelRegistry {
   private static volatile ModelRegistry instance;
   private final Map<String, ModelEntry> entries = new HashMap<>();
 
+  /**
+   * A registered model with configured path and dimension.
+   */
   public static final class ModelEntry {
+    /** The resolved model path. */
     public final String path;
+    /** The configured embedding dimension. */
     public final int dimension;
 
+    /**
+     * Creates a model entry.
+     *
+     * @param path      the model path
+     * @param dimension the embedding dimension
+     */
     public ModelEntry(final String path, final int dimension) {
       this.path = path;
       this.dimension = dimension;
@@ -135,6 +146,9 @@ public final class ModelRegistry {
 
   /**
    * Returns the registry entry for the model ID, or null if not configured.
+   *
+   * @param modelId the model identifier
+   * @return the registry entry, or null if not found
    */
   @Nullable
   public ModelEntry get(@Nonnull final String modelId) {
@@ -143,6 +157,8 @@ public final class ModelRegistry {
 
   /**
    * Returns all registered model IDs.
+   *
+   * @return set of registered model IDs
    */
   @Nonnull
   public Set<String> getModelIds() {
@@ -153,6 +169,11 @@ public final class ModelRegistry {
    * Resolves path and dimension. When pathOrUrl is null/empty and the registry
    * has an entry for modelId, use the registry path and dimension. Otherwise
    * use the given path (or default "onnx-models/" + modelId) and defaultDimension.
+   *
+   * @param modelId         the model identifier
+   * @param pathOrUrl       the path or URL, may be null/empty to use registry
+   * @param defaultDimension fallback dimension when registry has no entry
+   * @return resolved path and dimension
    */
   public Resolved resolve(@Nonnull final String modelId, @Nullable final String pathOrUrl, final int defaultDimension) {
     final boolean useDefaultPath = pathOrUrl == null || pathOrUrl.isEmpty();
@@ -164,10 +185,21 @@ public final class ModelRegistry {
     return new Resolved(path, defaultDimension);
   }
 
+  /**
+   * Result of resolving a model path and dimension.
+   */
   public static final class Resolved {
+    /** The resolved model path. */
     public final String path;
+    /** The resolved embedding dimension. */
     public final int dimension;
 
+    /**
+     * Creates a resolved result.
+     *
+     * @param path      the resolved path
+     * @param dimension the resolved dimension
+     */
     Resolved(final String path, final int dimension) {
       this.path = path;
       this.dimension = dimension;

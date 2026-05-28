@@ -36,7 +36,7 @@ import java.nio.file.Path;
  */
 public class VectorStore implements VectorStoreMXBean {
 
-    private static final String PERSISTENCE_BACKEND = "vector.dbx";
+    private static final String STORAGE_BACKEND = "vector.dbx";
 
     private final String instanceId;
     @Nullable
@@ -73,8 +73,8 @@ public class VectorStore implements VectorStoreMXBean {
     }
 
     @Override
-    public String getPersistenceBackend() {
-        return PERSISTENCE_BACKEND;
+    public String getStorageBackend() {
+        return STORAGE_BACKEND;
     }
 
     @Override

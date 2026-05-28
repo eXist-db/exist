@@ -44,11 +44,11 @@ public interface VectorStoreMXBean extends PerInstanceMBean {
     boolean isAvailable();
 
     /**
-     * Persistence backend represented by this MBean.
+     * Storage backend represented by this MBean.
      *
      * @return {@code vector.dbx}
      */
-    String getPersistenceBackend();
+    String getStorageBackend();
 
     /**
      * Whether {@link #getEntryCount()} is known for this instance.

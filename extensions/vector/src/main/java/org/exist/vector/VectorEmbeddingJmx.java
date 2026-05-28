@@ -65,7 +65,7 @@ public final class VectorEmbeddingJmx {
 
     /**
      * Clear registration state for the given broker pool so a subsequent startup can register again.
-     * JMX deregistration is handled by {@link org.exist.management.AgentFactory#closeDBInstance}.
+     * JMX deregistration is handled by {@link org.exist.management.Agent#closeDBInstance}.
      *
      * @param pool the broker pool
      */

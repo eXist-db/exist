@@ -56,7 +56,7 @@ public class VectorEmbeddingJmxTest {
         assertFalse(names.isEmpty());
         final ObjectName name = names.iterator().next();
         assertTrue(server.getAttribute(name, "Available").equals(Boolean.TRUE));
-        assertTrue(server.getAttribute(name, "PersistenceBackend").equals("lucene"));
+        assertTrue(server.getAttribute(name, "KnnBackend").equals("lucene"));
     }
 
     @Test

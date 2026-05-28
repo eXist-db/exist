@@ -37,6 +37,17 @@ public class VectorModelInfo {
     private final String message;
     private final String provider;
 
+    /**
+     * Creates a model diagnostic row.
+     *
+     * @param id        model identifier
+     * @param source    source label (registry, builtin, or registry+builtin)
+     * @param path      resolved model path
+     * @param dimension embedding dimension
+     * @param status    availability status
+     * @param message   status detail message, may be null
+     * @param provider  provider type (ONNX or HTTP)
+     */
     public VectorModelInfo(final String id, final String source, final String path, final int dimension,
                            final String status, @Nullable final String message, final String provider) {
         this.id = id;
@@ -48,31 +59,66 @@ public class VectorModelInfo {
         this.provider = provider;
     }
 
+    /**
+     * Returns the model identifier.
+     *
+     * @return model id
+     */
     public String getId() {
         return id;
     }
 
+    /**
+     * Returns the source label.
+     *
+     * @return source label
+     */
     public String getSource() {
         return source;
     }
 
+    /**
+     * Returns the resolved model path.
+     *
+     * @return model path
+     */
     public String getPath() {
         return path;
     }
 
+    /**
+     * Returns the embedding dimension.
+     *
+     * @return dimension
+     */
     public int getDimension() {
         return dimension;
     }
 
+    /**
+     * Returns the availability status.
+     *
+     * @return status string
+     */
     public String getStatus() {
         return status;
     }
 
+    /**
+     * Returns the status detail message, if any.
+     *
+     * @return message or null
+     */
     @Nullable
     public String getMessage() {
         return message;
     }
 
+    /**
+     * Returns the provider type.
+     *
+     * @return provider type (ONNX or HTTP)
+     */
     public String getProvider() {
         return provider;
     }

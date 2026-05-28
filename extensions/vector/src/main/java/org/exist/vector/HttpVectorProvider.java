@@ -54,6 +54,9 @@ public final class HttpVectorProvider implements VectorEmbeddingProvider {
   private static final Logger LOG = LogManager.getLogger(HttpVectorProvider.class);
   private static final ObjectMapper JSON = new ObjectMapper();
 
+  /**
+   * Supported HTTP embedding API types.
+   */
   public enum ApiType {
     OPENAI,
     COHERE
@@ -232,6 +235,9 @@ public final class HttpVectorProvider implements VectorEmbeddingProvider {
 
   /**
    * Returns true if the path/URL indicates an external HTTP embedding API.
+   *
+   * @param pathOrUrl the path or URL to check
+   * @return true if the URL targets a supported HTTP embedding API
    */
   public static boolean isHttpApiUrl(final String pathOrUrl) {
     return pathOrUrl != null && detectApiType(pathOrUrl) != null;
@@ -239,6 +245,10 @@ public final class HttpVectorProvider implements VectorEmbeddingProvider {
 
   /**
    * Returns default dimension for known HTTP embedding models.
+   *
+   * @param type    the API type (OpenAI or Cohere)
+   * @param modelId the model identifier
+   * @return the default dimension for the model
    */
   public static int getDefaultDimension(final ApiType type, final String modelId) {
     if (type == ApiType.OPENAI) {

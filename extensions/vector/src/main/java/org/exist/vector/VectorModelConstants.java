@@ -78,6 +78,9 @@ public final class VectorModelConstants {
 
   /**
    * Returns the default dimension for a model ID, or 384 if unknown.
+   *
+   * @param modelId the model identifier
+   * @return the default dimension, or 384 if unknown
    */
   public static int getDefaultDimension(final String modelId) {
     return KNOWN_DIMENSIONS.getOrDefault(modelId, 384);
@@ -85,6 +88,9 @@ public final class VectorModelConstants {
 
   /**
    * Returns the default dimension for an OpenAI model, or 1536 if unknown.
+   *
+   * @param modelId the model identifier
+   * @return the default dimension, or 1536 if unknown
    */
   public static int getOpenAIDefaultDimension(final String modelId) {
     return OPENAI_DIMENSIONS.getOrDefault(modelId, 1536);
@@ -92,6 +98,9 @@ public final class VectorModelConstants {
 
   /**
    * Returns the default dimension for a Cohere model, or 1024 if unknown.
+   *
+   * @param modelId the model identifier
+   * @return the default dimension, or 1024 if unknown
    */
   public static int getCohereDefaultDimension(final String modelId) {
     return COHERE_DIMENSIONS.getOrDefault(modelId, 1024);
@@ -99,6 +108,8 @@ public final class VectorModelConstants {
 
   /**
    * Returns the immutable, ordered list of built-in model IDs.
+   *
+   * @return the list of known model IDs
    */
   public static List<String> getKnownModelIds() {
     return KNOWN_MODEL_IDS;

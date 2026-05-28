@@ -38,12 +38,23 @@ public interface VectorEmbeddingMXBean extends PerInstanceMBean {
     boolean isAvailable();
 
     /**
-     * Persistence backend monitored by this MBean ({@code lucene} KNN index vs {@code vector.dbx}).
-     * Vector embeddings may also be stored in Lucene when {@code vector-store="lucene"}.
+     * Search backend used for KNN queries tracked by this MBean.
+     * <p>
+     * This value describes the Lucene index used for {@code ft:query-vector} and related KNN
+     * functions, not where embeddings are persisted at index time. KNN search always runs against
+     * Lucene {@code KnnFloatVectorField} data regardless of collection configuration.
+     * </p>
+     * <p>
+     * Index-time persistence is controlled per collection by {@code vector-store} on
+     * {@code collection.xconf}: {@code vector-store="lucene"} stores embeddings in Lucene only;
+     * {@code vector-store="db"} (default) also mirrors them in {@code vector.dbx}. See
+     * {@link VectorStoreMXBean#getStorageBackend()} and the {@code VectorStore} MBean for
+     * {@code vector.dbx} file statistics.
+     * </p>
      *
      * @return {@code lucene} for KNN workload metrics
      */
-    String getPersistenceBackend();
+    String getKnnBackend();
 
     /**
      * Total configured models (registry + built-ins).
@@ -66,16 +77,46 @@ public interface VectorEmbeddingMXBean extends PerInstanceMBean {
      */
     int getLoadedProviderCount();
 
+    /**
+     * Total embedding call count for this database instance.
+     *
+     * @return embed call count
+     */
     long getEmbedCallCount();
 
+    /**
+     * Total accumulated embedding time in nanoseconds.
+     *
+     * @return total time in nanoseconds
+     */
     long getEmbedTotalTimeNanos();
 
+    /**
+     * Last embedding call duration in nanoseconds.
+     *
+     * @return last duration in nanoseconds
+     */
     long getEmbedLastTimeNanos();
 
+    /**
+     * Total KNN query count for this database instance.
+     *
+     * @return KNN query count
+     */
     long getKnnQueryCount();
 
+    /**
+     * Total accumulated KNN query time in nanoseconds.
+     *
+     * @return total time in nanoseconds
+     */
     long getKnnTotalTimeNanos();
 
+    /**
+     * Last KNN query duration in nanoseconds.
+     *
+     * @return last duration in nanoseconds
+     */
     long getKnnLastTimeNanos();
 
     /**
