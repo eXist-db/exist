@@ -56,6 +56,8 @@ public final class ModelPathResolver {
   /**
    * Base directory for resolving relative model paths and for the ONNX cache.
    * Uses BrokerPool exist home if available, then exist.home, then user.dir.
+   *
+   * @return the base directory path
    */
   @Nonnull
   static Path getVectorBase() {

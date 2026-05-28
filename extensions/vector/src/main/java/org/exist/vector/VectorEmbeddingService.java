@@ -47,6 +47,8 @@ public final class VectorEmbeddingService {
 
   /**
    * Returns the singleton instance.
+   *
+   * @return the singleton instance
    */
   @Nonnull
   public static VectorEmbeddingService getInstance() {
@@ -65,6 +67,11 @@ public final class VectorEmbeddingService {
   /**
    * Returns a provider for the given model ID. Delegates to
    * {@link #getProvider(String, String, int, String)} with null apiKey.
+   *
+   * @param modelId   model identifier
+   * @param pathOrUrl local path, HuggingFace URL, or API base URL
+   * @param dimension expected embedding dimension
+   * @return provider, or null if the model could not be loaded
    */
   @Nullable
   public VectorEmbeddingProvider getProvider(@Nonnull final String modelId,
@@ -162,5 +169,14 @@ public final class VectorEmbeddingService {
   public void evict(@Nonnull final String modelId, @Nonnull final Path modelPath) {
     final String cacheKey = modelId + ":" + modelPath.toAbsolutePath();
     cache.remove(cacheKey);
+  }
+
+  /**
+   * Returns the number of providers currently cached by this service.
+   *
+   * @return cache size
+   */
+  public int getLoadedProviderCount() {
+    return cache.size();
   }
 }

@@ -36,6 +36,7 @@ import org.exist.xquery.value.Type;
 import org.exist.vector.VectorEmbeddingProvider;
 import org.exist.vector.VectorEmbeddingService;
 import org.exist.vector.VectorModelConstants;
+import org.exist.storage.vector.VectorOperationMetrics;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -108,12 +109,17 @@ public class EmbedBatch extends BasicFunction {
     final List<Sequence> resultArrays = new ArrayList<>();
     for (final SequenceIterator it = textsSeq.iterate(); it.hasNext(); ) {
       final String text = it.nextItem().getStringValue();
-      final float[] vec = provider.embed(text, true);
-      if (vec == null || vec.length == 0) {
-        throw new XPathException(this, VectorModule.EXVECTOR0002, "Embedding returned empty result for text: "
-            + (text.length() > 50 ? text.substring(0, 50) + "..." : text));
+      final long start = System.nanoTime();
+      try {
+        final float[] vec = provider.embed(text, true);
+        if (vec == null || vec.length == 0) {
+          throw new XPathException(this, VectorModule.EXVECTOR0002, "Embedding returned empty result for text: "
+              + (text.length() > 50 ? text.substring(0, 50) + "..." : text));
+        }
+        resultArrays.add(floatsToArray(vec).toSequence());
+      } finally {
+        VectorOperationMetrics.recordEmbed(context, System.nanoTime() - start);
       }
-      resultArrays.add(floatsToArray(vec).toSequence());
     }
     return new ArrayType(this, context, resultArrays);
   }

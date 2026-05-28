@@ -92,17 +92,19 @@ public class QueryFieldVector extends BasicFunction {
             throw new XPathException(this, "Second argument must be an array of numbers");
         }
 
-        int k = 10;
-        QueryOptions options = new QueryOptions();
+        int kValue = 10;
+        QueryOptions queryOptions = new QueryOptions();
         if (args.length >= 3 && !args[2].isEmpty()) {
-            k = args[2].itemAt(0).toJavaObject(Integer.class);
-            if (k <= 0) {
-                k = 10;
+            kValue = args[2].itemAt(0).toJavaObject(Integer.class);
+            if (kValue <= 0) {
+                kValue = 10;
             }
         }
         if (args.length >= 4 && !args[3].isEmpty()) {
-            options = parseOptions(args[3]);
+            queryOptions = parseOptions(args[3]);
         }
+        final int k = kValue;
+        final QueryOptions options = queryOptions;
 
         DocumentSet docs;
         NodeSet contextSet;
@@ -115,11 +117,11 @@ public class QueryFieldVector extends BasicFunction {
         }
 
         final LuceneIndexWorker index = (LuceneIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
-        try {
-            return index.searchVector(getExpressionId(), docs, contextSet, field, vector, k, options);
-        } catch (IOException e) {
-            throw new XPathException(this, "Vector search failed: " + e.getMessage(), e);
-        }
+        final PerformanceStats.IndexOptimizationLevel optimizationLevel =
+                VectorSearchSupport.optimizationLevelForField(index, docs, field);
+
+        return VectorSearchSupport.execute(this, context, index, optimizationLevel,
+                () -> index.searchVector(getExpressionId(), docs, contextSet, field, vector, k, options));
     }
 
     private static float[] arrayToFloats(final Sequence seq) throws XPathException {

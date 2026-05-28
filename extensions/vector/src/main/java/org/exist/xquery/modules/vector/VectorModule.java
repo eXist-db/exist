@@ -30,6 +30,7 @@ import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.FunctionDSL;
 import org.exist.xquery.FunctionDef;
 import org.exist.xquery.FunctionSignature;
+import org.exist.xquery.XQueryContext;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 

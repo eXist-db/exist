@@ -108,13 +108,13 @@ public class QueryVector extends BasicFunction {
         final NodeSet nodes = nodesSeq.toNodeSet();
         final DocumentSet docs = nodes.getDocumentSet();
         final LuceneIndexWorker index = (LuceneIndexWorker) context.getBroker().getIndexController().getWorkerByIndexId(LuceneIndex.ID);
-        final List<QName> qnames = resolveQNames(nodes, index);
+        final List<QName> qnames = index != null ? resolveQNames(nodes, index) : getQNamesFromNodes(nodes);
 
-        try {
-            return index.searchVector(getExpressionId(), docs, nodes, qnames, vector, k, options);
-        } catch (IOException e) {
-            throw new XPathException(this, "Vector search failed: " + e.getMessage(), e);
-        }
+        final PerformanceStats.IndexOptimizationLevel optimizationLevel =
+                VectorSearchSupport.optimizationLevelForQNames(this, index, docs, qnames);
+
+        return VectorSearchSupport.execute(this, context, index, optimizationLevel,
+                () -> index.searchVector(getExpressionId(), docs, nodes, qnames, vector, k, options));
     }
 
     private static int parseK(final Sequence[] args) throws XPathException {

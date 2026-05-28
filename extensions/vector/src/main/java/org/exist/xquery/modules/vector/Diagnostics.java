@@ -22,6 +22,8 @@
 package org.exist.xquery.modules.vector;
 
 import org.exist.dom.QName;
+import org.exist.vector.VectorModelDiagnostics;
+import org.exist.vector.VectorModelInfo;
 import org.exist.xquery.BasicFunction;
 import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
@@ -31,16 +33,9 @@ import org.exist.xquery.value.NodeValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.Type;
 import org.exist.xquery.value.ValueSequence;
-import org.exist.xquery.value.StringValue;
-import org.exist.xquery.value.IntegerValue;
-import org.exist.vector.ModelPathResolver;
-import org.exist.vector.ModelRegistry;
-import org.exist.vector.VectorModelConstants;
 
 import javax.annotation.Nullable;
-import java.nio.file.Path;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 import static org.exist.xquery.modules.vector.VectorModule.functionSignature;
 
@@ -54,6 +49,7 @@ import static org.exist.xquery.modules.vector.VectorModule.functionSignature;
  *   <li>path — resolved configuration path (relative string)</li>
  *   <li>dimension — configured or default dimension</li>
  *   <li>status — "available" | "missing" | "http"</li>
+ *   <li>provider — "ONNX" | "HTTP" (uppercase by convention)</li>
  *   <li>message — optional hint when status != "available"</li>
  * </ul>
  */
@@ -74,50 +70,19 @@ public class Diagnostics extends BasicFunction {
   @Override
   public Sequence eval(final Sequence[] args, @Nullable final Sequence contextSequence) {
     final ValueSequence result = new ValueSequence();
-    final ModelRegistry registry = ModelRegistry.getInstance();
-    final Set<String> registryIds = registry.getModelIds();
-    final Set<String> allIds = new HashSet<>(registryIds);
-    allIds.addAll(VectorModelConstants.getKnownModelIds());
-
-    for (final String id : allIds) {
-      String source;
-      if (registryIds.contains(id) && VectorModelConstants.getKnownModelIds().contains(id)) {
-        source = "registry+builtin";
-      } else if (registryIds.contains(id)) {
-        source = "registry";
-      } else {
-        source = "builtin";
-      }
-
-      final ModelRegistry.Resolved resolved = registry.resolve(id, null, VectorModelConstants.getDefaultDimension(id));
-      final String path = resolved.path;
-      final int dim = resolved.dimension;
-
-      String status;
-      String message = "";
-      if (path.startsWith("http://") || path.startsWith("https://")) {
-        status = "http";
-        message = "HTTP/API model; availability depends on remote endpoint and API key configuration.";
-      } else {
-        Path p = ModelPathResolver.resolve(id, path);
-        if (p != null) {
-          status = "available";
-        } else {
-          status = "missing";
-          message = "Model directory not found under exist.home; ensure " + path + " exists with model.onnx and tokenizer.json or adjust conf.xml/vector-field model-path.";
-        }
-      }
-
+    for (final VectorModelInfo model : VectorModelDiagnostics.collectModels()) {
       context.pushDocumentContext();
       final org.exist.dom.memtree.MemTreeBuilder builder = context.getDocumentBuilder();
       builder.startDocument();
       final int nodeNr = builder.startElement(MODEL_QNAME, null);
-      builder.addAttribute(new QName("id", null, null), id);
-      builder.addAttribute(new QName("source", null, null), source);
-      builder.addAttribute(new QName("path", null, null), path);
-      builder.addAttribute(new QName("dimension", null, null), Integer.toString(dim));
-      builder.addAttribute(new QName("status", null, null), status);
-      if (!message.isEmpty()) {
+      builder.addAttribute(new QName("id", null, null), model.getId());
+      builder.addAttribute(new QName("source", null, null), model.getSource());
+      builder.addAttribute(new QName("path", null, null), model.getPath());
+      builder.addAttribute(new QName("dimension", null, null), Integer.toString(model.getDimension()));
+      builder.addAttribute(new QName("status", null, null), model.getStatus());
+      builder.addAttribute(new QName("provider", null, null), model.getProvider());
+      final String message = model.getMessage();
+      if (message != null && !message.isEmpty()) {
         builder.addAttribute(new QName("message", null, null), message);
       }
       builder.endElement();
@@ -129,4 +94,3 @@ public class Diagnostics extends BasicFunction {
     return result;
   }
 }
-

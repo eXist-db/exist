@@ -899,6 +899,54 @@ public class LuceneIndexWorker implements OrderedValuesIndex, QNamedKeysIndex {
         return null;
     }
 
+    /**
+     * Returns true when the Lucene configuration for {@code docs} declares a
+     * {@code vector-field} with the given name.
+     */
+    public boolean hasVectorIndexForField(final DocumentSet docs, final String fieldName) {
+        if (fieldName == null || fieldName.isEmpty()) {
+            return false;
+        }
+        final LuceneConfig config = getLuceneConfig(broker, docs);
+        for (final LuceneIndexConfig idxConf : config.getIndexConfigurations()) {
+            if (findVectorField(idxConf, fieldName) != null) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns true when at least one resolved index qname has a {@code vector-field}
+     * in the Lucene configuration for {@code docs}.
+     */
+    public boolean hasVectorIndexForQNames(final DocumentSet docs, @Nullable final List<QName> qnames)
+            throws IOException {
+        final LuceneConfig config = getLuceneConfig(broker, docs);
+        final List<QName> definedIndexes = getDefinedIndexes(qnames);
+        for (final QName qname : definedIndexes) {
+            final LuceneIndexConfig idxConf = config.getIndexConfigForQName(qname);
+            if (getFirstVectorField(idxConf) != null) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Nullable
+    private static LuceneVectorFieldConfig findVectorField(@Nullable final LuceneIndexConfig idxConf,
+            final String fieldName) {
+        if (idxConf == null) {
+            return null;
+        }
+        for (final AbstractFieldConfig fc : idxConf.getFacetsAndFields()) {
+            if (fc instanceof LuceneVectorFieldConfig vfc && fieldName.equals(vfc.getName())) {
+                return vfc;
+            }
+        }
+        return null;
+    }
+
     /** Build filter to restrict KNN to docs in the document set (index is shared across collections). */
     private Query buildDocsFilterQuery(final DocumentSet docs) {
         if (docs == null || docs.getDocumentCount() == 0) {

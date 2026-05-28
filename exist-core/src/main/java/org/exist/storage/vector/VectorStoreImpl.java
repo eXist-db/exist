@@ -32,11 +32,14 @@ import org.exist.storage.index.BFile;
 import org.exist.storage.txn.Txn;
 import org.exist.util.FileUtils;
 import org.exist.util.FixedByteArray;
+import org.exist.xquery.TerminatedException;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * BFile-backed implementation of VectorStore.
@@ -50,11 +53,63 @@ public class VectorStoreImpl implements VectorStore {
     public static final byte VECTOR_DBX_ID = 0x20;
 
     private final BFile bfile;
+    /** {@code -1} means not yet initialized; use lazy BTree scan on first read. */
+    private final AtomicLong entryCount = new AtomicLong(-1);
 
     public VectorStoreImpl(final BrokerPool pool, final Path dataDir) throws DBException {
         final Path file = dataDir.resolve(FILE_NAME);
         this.bfile = new BFile(pool, VECTOR_DBX_ID, FILE_FORMAT_VERSION_ID, true, file,
                 pool.getCacheManager(), 1.25, 0.03);
+    }
+
+    /**
+     * Returns the number of entries in the store, maintaining an incremental counter when possible.
+     * The first call may scan the BTree ({@code O(n)}).
+     */
+    public long getEntryCount() throws IOException {
+        final long cached = entryCount.get();
+        if (cached >= 0) {
+            return cached;
+        }
+        return initializeEntryCount();
+    }
+
+    /**
+     * Clears the cached entry count so the next {@link #getEntryCount()} rescans the BTree.
+     */
+    public void resetEntryCountCache() {
+        entryCount.set(-1);
+    }
+
+    Path getFilePath() {
+        return bfile.getFile();
+    }
+
+    private long initializeEntryCount() throws IOException {
+        try {
+            final long count = bfile.getKeys().size();
+            entryCount.compareAndSet(-1, count);
+            return entryCount.get() >= 0 ? entryCount.get() : count;
+        } catch (final BTreeException | TerminatedException e) {
+            throw new IOException(e);
+        }
+    }
+
+    private void adjustEntryCount(final long delta) {
+        final long cached = entryCount.get();
+        if (cached >= 0) {
+            entryCount.addAndGet(delta);
+        }
+    }
+
+    private int countKeysWithPrefix(final String docPath) throws IOException {
+        try {
+            final Value prefix = new Value(docPath + "!");
+            final ArrayList<Value> keys = bfile.findKeys(new IndexQuery(IndexQuery.TRUNC_RIGHT, prefix));
+            return keys.size();
+        } catch (final BTreeException | TerminatedException e) {
+            throw new IOException(e);
+        }
     }
 
     private static Value key(final String docPath, final NodeId nodeId) {
@@ -72,20 +127,33 @@ public class VectorStoreImpl implements VectorStore {
     @Override
     public void put(final Txn transaction, final String docPath, final NodeId nodeId, final byte[] vector) throws IOException {
         final Value k = key(docPath, nodeId);
+        final boolean existed = bfile.get(k) != null;
         final FixedByteArray v = new FixedByteArray(vector, 0, vector.length);
         bfile.put(transaction, k, v, true);
+        if (!existed) {
+            adjustEntryCount(1);
+        }
     }
 
     @Override
     public void remove(final Txn transaction, final String docPath, final NodeId nodeId) throws IOException {
-        bfile.remove(transaction, key(docPath, nodeId));
+        final Value k = key(docPath, nodeId);
+        final boolean existed = bfile.get(k) != null;
+        bfile.remove(transaction, k);
+        if (existed) {
+            adjustEntryCount(-1);
+        }
     }
 
     @Override
     public void removeByDocument(final Txn transaction, final String docPath) throws IOException {
         try {
+            final int removed = countKeysWithPrefix(docPath);
             final Value prefix = new Value(docPath + "!");
             bfile.removeAll(transaction, new IndexQuery(IndexQuery.TRUNC_RIGHT, prefix));
+            if (removed > 0) {
+                adjustEntryCount(-removed);
+            }
         } catch (final BTreeException e) {
             throw new IOException(e);
         }

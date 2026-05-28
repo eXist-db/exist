@@ -65,7 +65,7 @@ import java.util.function.Predicate;
  * /exist/jmx?c=instances&amp;c=memory
  * <p>
  * If no parameter is specified, all categories will be returned. Valid categories are "memory", "instances", "disk",
- * "system", "caches", "locking", "processes", "sanity", "all".
+ * "system", "caches", "locking", "processes", "sanity", "vector", "all".
  * <p>
  * The servlet can also be used to test if the database is responsive by using parameter "operation=ping" and a timeout
  * (t=timeout-in-milliseconds). For example, the following call

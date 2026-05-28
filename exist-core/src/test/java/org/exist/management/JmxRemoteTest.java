@@ -46,6 +46,7 @@ import static org.exist.management.client.JMXtoXML.JMX_NAMESPACE;
 import static org.exist.management.client.JMXtoXML.JMX_PREFIX;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assume.assumeTrue;
 import static org.xmlunit.matchers.HasXPathMatcher.hasXPath;
 
 public class JmxRemoteTest {
@@ -101,6 +102,37 @@ public class JmxRemoteTest {
     }
 
     @Test
+    public void vectorCategoryIncludesVectorStore() throws IOException {
+        final Request request = Request.Get(getServerUri() + "?c=vector");
+        final String jmxXml = withHttpExecutor(executor -> executor.execute(request).returnContent().asString());
+
+        final Map<String, String> prefix2Uri = new HashMap<>();
+        prefix2Uri.put(JMX_PREFIX, JMX_NAMESPACE);
+
+        assertThat(jmxXml, hasXPath("//jmx:VectorStore").withNamespaceContext(prefix2Uri));
+        assertThat(jmxXml, hasXPath("//jmx:VectorStore/jmx:Available").withNamespaceContext(prefix2Uri));
+        assertThat(jmxXml, hasXPath("//jmx:VectorStore/jmx:FileName").withNamespaceContext(prefix2Uri));
+        assertThat(jmxXml, hasXPath("//jmx:VectorStore/jmx:EntryCount").withNamespaceContext(prefix2Uri));
+        assertThat(jmxXml, hasXPath("//jmx:VectorStore/jmx:EntryCountKnown").withNamespaceContext(prefix2Uri));
+        assertThat(jmxXml, hasXPath("//jmx:VectorStore/jmx:StorageBackend").withNamespaceContext(prefix2Uri));
+    }
+
+    @Test
+    public void vectorCategoryIncludesVectorEmbeddingWhenExtensionPresent() throws IOException {
+        assumeTrue("Vector extension not on classpath", isVectorExtensionPresent());
+
+        final Request request = Request.Get(getServerUri() + "?c=vector");
+        final String jmxXml = withHttpExecutor(executor -> executor.execute(request).returnContent().asString());
+
+        final Map<String, String> prefix2Uri = new HashMap<>();
+        prefix2Uri.put(JMX_PREFIX, JMX_NAMESPACE);
+
+        assertThat(jmxXml, hasXPath("//jmx:VectorEmbedding").withNamespaceContext(prefix2Uri));
+        assertThat(jmxXml, hasXPath("//jmx:VectorEmbedding/jmx:ModelCount").withNamespaceContext(prefix2Uri));
+        assertThat(jmxXml, hasXPath("//jmx:VectorEmbedding/jmx:KnnBackend").withNamespaceContext(prefix2Uri));
+    }
+
+    @Test
     public void checkBasicRequest() throws IOException {
         final Request request = Request.Get(getServerUri())
                 .addHeader(new BasicHeader("Accept", ContentType.APPLICATION_XML.toString()));
@@ -127,5 +159,14 @@ public class JmxRemoteTest {
             final Executor executor = Executor.newInstance(client);
             return fn.apply(executor);
         });
+    }
+
+    private static boolean isVectorExtensionPresent() {
+        try {
+            Class.forName("org.exist.vector.VectorExtensionLifecycle");
+            return true;
+        } catch (final ClassNotFoundException e) {
+            return false;
+        }
     }
 }
