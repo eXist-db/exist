@@ -1,0 +1,24 @@
+exist-core/src/test/java/org/exist/http/PortalRedirectTest.java
+  s_c01828406b51ec::t_6ed321a6eada9d 55
+  s_c01828406b51ec::t_e5747087f094e7 24,28
+  s_c01828406b51ec::t_32287a3b6a7771 51
+  s_c01828406b51ec::t_9e2d038cc56f5a 27
+  s_c01828406b51ec::t_cbc27f4043d11f 49-50,53
+  s_c01828406b51ec::t_744e4a0e2e63fd 25-26
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "15f639dc9c6ae81aef294b780282fa64b28f82da",
+  "prompts": {},
+  "sessions": {
+    "s_c01828406b51ec": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_192541230ffet7ipJcWSeIsHx7",
+        "model": "nemotron-3-super-free"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
