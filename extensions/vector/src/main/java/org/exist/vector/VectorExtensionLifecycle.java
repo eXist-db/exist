@@ -38,10 +38,14 @@ public final class VectorExtensionLifecycle {
      * @param pool the broker pool
      */
     public static void onBrokerPoolStartSystem(final BrokerPool pool) {
-        VectorOperationMetrics.register((operation, durationNanos) -> {
+        if (pool == null) {
+            return;
+        }
+        final String instanceId = pool.getId();
+        VectorOperationMetrics.register(instanceId, (operation, durationNanos) -> {
             switch (operation) {
-                case EMBED -> VectorMetrics.getInstance().recordEmbed(durationNanos);
-                case KNN -> VectorMetrics.getInstance().recordKnnQuery(durationNanos);
+                case EMBED -> VectorMetrics.forInstance(instanceId).recordEmbed(durationNanos);
+                case KNN -> VectorMetrics.forInstance(instanceId).recordKnnQuery(durationNanos);
                 default -> throw new IllegalStateException("Unsupported vector operation: " + operation);
             }
         });
@@ -54,7 +58,12 @@ public final class VectorExtensionLifecycle {
      * @param pool the broker pool
      */
     public static void onBrokerPoolShutdown(final BrokerPool pool) {
-        VectorOperationMetrics.register(null);
+        if (pool == null) {
+            return;
+        }
+        final String instanceId = pool.getId();
+        VectorOperationMetrics.unregister(instanceId);
+        VectorMetrics.removeInstance(instanceId);
         VectorEmbeddingJmx.unregister(pool);
     }
 }

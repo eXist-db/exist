@@ -105,7 +105,7 @@ public class Embed extends BasicFunction {
         }
         return floatsToArray(vec);
       } finally {
-        VectorOperationMetrics.recordEmbed(System.nanoTime() - start);
+        VectorOperationMetrics.recordEmbed(context, System.nanoTime() - start);
       }
     } catch (final NoClassDefFoundError e) {
       throw new XPathException(this, VectorModule.EXVECTOR0003, "Vector embedding module not available: " + e.getMessage());

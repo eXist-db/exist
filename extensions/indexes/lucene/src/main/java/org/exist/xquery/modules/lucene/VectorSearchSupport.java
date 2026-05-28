@@ -64,7 +64,7 @@ final class VectorSearchSupport {
         try {
             final Sequence result = search.search();
             final long durationNanos = System.nanoTime() - start;
-            VectorOperationMetrics.recordKnn(durationNanos);
+            VectorOperationMetrics.recordKnn(context, durationNanos);
             if (context.getProfiler().traceFunctions()) {
                 context.getProfiler().traceIndexUsage(context, "lucene-vector", fn,
                         optimizationLevel, durationNanos / 1_000_000L);

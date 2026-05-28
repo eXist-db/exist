@@ -118,7 +118,7 @@ public class EmbedBatch extends BasicFunction {
         }
         resultArrays.add(floatsToArray(vec).toSequence());
       } finally {
-        VectorOperationMetrics.recordEmbed(System.nanoTime() - start);
+        VectorOperationMetrics.recordEmbed(context, System.nanoTime() - start);
       }
     }
     return new ArrayType(this, context, resultArrays);

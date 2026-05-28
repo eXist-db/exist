@@ -21,49 +21,90 @@
  */
 package org.exist.storage.vector;
 
+import org.exist.xquery.XQueryContext;
+
 import javax.annotation.Nullable;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Optional bridge for vector workload metrics. Defaults to no-op until the vector extension registers a recorder.
+ * Optional per-instance bridge for vector workload metrics. Defaults to no-op until the vector extension registers recorders.
  */
 public final class VectorOperationMetrics {
 
-    @Nullable
-    private static volatile Recorder recorder;
+    private static final ConcurrentHashMap<String, Recorder> RECORDERS = new ConcurrentHashMap<>();
 
     private VectorOperationMetrics() {
     }
 
     /**
-     * Register the metrics recorder supplied by the vector extension.
+     * Register the metrics recorder supplied by the vector extension for a database instance.
      *
-     * @param newRecorder recorder implementation, or {@code null} to restore the no-op recorder
+     * @param instanceId broker pool instance id
+     * @param newRecorder recorder implementation, or {@code null} to remove the recorder
      */
-    public static void register(@Nullable final Recorder newRecorder) {
-        recorder = newRecorder != null ? newRecorder : Recorder.NOOP;
+    public static void register(final String instanceId, @Nullable final Recorder newRecorder) {
+        if (newRecorder == null) {
+            unregister(instanceId);
+        } else {
+            RECORDERS.put(instanceId, newRecorder);
+        }
     }
 
     /**
-     * Record an embedding call duration.
+     * Remove the metrics recorder for a database instance.
      *
-     * @param durationNanos wall time in nanoseconds
+     * @param instanceId broker pool instance id
      */
-    public static void recordEmbed(final long durationNanos) {
-        activeRecorder().record(Operation.EMBED, durationNanos);
+    public static void unregister(final String instanceId) {
+        RECORDERS.remove(instanceId);
     }
 
     /**
-     * Record a KNN query duration.
+     * Record an embedding call duration for a database instance.
      *
+     * @param instanceId broker pool instance id
      * @param durationNanos wall time in nanoseconds
      */
-    public static void recordKnn(final long durationNanos) {
-        activeRecorder().record(Operation.KNN, durationNanos);
+    public static void recordEmbed(final String instanceId, final long durationNanos) {
+        recorderFor(instanceId).record(Operation.EMBED, durationNanos);
     }
 
-    private static Recorder activeRecorder() {
-        final Recorder current = recorder;
-        return current != null ? current : Recorder.NOOP;
+    /**
+     * Record a KNN query duration for a database instance.
+     *
+     * @param instanceId broker pool instance id
+     * @param durationNanos wall time in nanoseconds
+     */
+    public static void recordKnn(final String instanceId, final long durationNanos) {
+        recorderFor(instanceId).record(Operation.KNN, durationNanos);
+    }
+
+    /**
+     * Record an embedding call duration for the database instance associated with the query context.
+     *
+     * @param context active XQuery context
+     * @param durationNanos wall time in nanoseconds
+     */
+    public static void recordEmbed(final XQueryContext context, final long durationNanos) {
+        recordEmbed(instanceId(context), durationNanos);
+    }
+
+    /**
+     * Record a KNN query duration for the database instance associated with the query context.
+     *
+     * @param context active XQuery context
+     * @param durationNanos wall time in nanoseconds
+     */
+    public static void recordKnn(final XQueryContext context, final long durationNanos) {
+        recordKnn(instanceId(context), durationNanos);
+    }
+
+    private static String instanceId(final XQueryContext context) {
+        return context.getBroker().getBrokerPool().getId();
+    }
+
+    private static Recorder recorderFor(final String instanceId) {
+        return RECORDERS.getOrDefault(instanceId, Recorder.NOOP);
     }
 
     /**

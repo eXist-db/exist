@@ -39,11 +39,12 @@ public class VectorEmbedding implements VectorEmbeddingMXBean {
     private static final String PERSISTENCE_BACKEND = "lucene";
 
     private final String instanceId;
-    private final VectorMetrics metrics = VectorMetrics.getInstance();
+    private final VectorMetrics metrics;
     private final boolean available;
 
     public VectorEmbedding(final BrokerPool pool) {
         this.instanceId = pool.getId();
+        this.metrics = VectorMetrics.forInstance(instanceId);
         this.available = true;
     }
 

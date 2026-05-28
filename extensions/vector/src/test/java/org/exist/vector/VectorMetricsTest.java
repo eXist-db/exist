@@ -21,16 +21,25 @@
  */
 package org.exist.vector;
 
+import org.junit.After;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 
 public class VectorMetricsTest {
 
+    @After
+    public void tearDown() {
+        VectorMetrics.removeInstance("metrics-a");
+        VectorMetrics.removeInstance("metrics-b");
+        VectorMetrics.removeInstance("metrics-reset");
+    }
+
     @Test
     public void recordsEmbedAndKnnCounters() {
-        final VectorMetrics metrics = VectorMetrics.getInstance();
+        final VectorMetrics metrics = VectorMetrics.forInstance("metrics-reset");
         metrics.reset();
         metrics.recordEmbed(100);
         metrics.recordEmbed(200);
@@ -46,12 +55,29 @@ public class VectorMetricsTest {
 
     @Test
     public void resetClearsCounters() {
-        final VectorMetrics metrics = VectorMetrics.getInstance();
+        final VectorMetrics metrics = VectorMetrics.forInstance("metrics-reset");
         metrics.recordEmbed(100);
         metrics.recordKnnQuery(50);
         metrics.reset();
         assertEquals(0, metrics.getEmbedCallCount());
         assertEquals(0, metrics.getKnnQueryCount());
+    }
+
+    @Test
+    public void instancesAreIsolatedById() {
+        final VectorMetrics first = VectorMetrics.forInstance("metrics-a");
+        final VectorMetrics second = VectorMetrics.forInstance("metrics-b");
+        assertNotSame(first, second);
+
+        first.reset();
+        second.reset();
+        first.recordEmbed(100);
+        second.recordKnnQuery(50);
+
+        assertEquals(1, first.getEmbedCallCount());
+        assertEquals(0, first.getKnnQueryCount());
+        assertEquals(0, second.getEmbedCallCount());
+        assertEquals(1, second.getKnnQueryCount());
     }
 
     @Test

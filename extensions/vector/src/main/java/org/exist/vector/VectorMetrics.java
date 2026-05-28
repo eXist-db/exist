@@ -21,15 +21,16 @@
  */
 package org.exist.vector;
 
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAdder;
 
 /**
- * Lightweight counters for vector embedding and KNN query operations.
+ * Lightweight per-database-instance counters for vector embedding and KNN query operations.
  */
 public final class VectorMetrics {
 
-    private static final VectorMetrics INSTANCE = new VectorMetrics();
+    private static final ConcurrentHashMap<String, VectorMetrics> INSTANCES = new ConcurrentHashMap<>();
 
     private final LongAdder embedCallCount = new LongAdder();
     private final LongAdder embedTotalTimeNanos = new LongAdder();
@@ -42,8 +43,23 @@ public final class VectorMetrics {
     private VectorMetrics() {
     }
 
-    public static VectorMetrics getInstance() {
-        return INSTANCE;
+    /**
+     * Returns metrics for the given database instance id.
+     *
+     * @param instanceId broker pool instance id
+     * @return metrics counters for the instance
+     */
+    public static VectorMetrics forInstance(final String instanceId) {
+        return INSTANCES.computeIfAbsent(instanceId, id -> new VectorMetrics());
+    }
+
+    /**
+     * Removes metrics state for a shut-down database instance.
+     *
+     * @param instanceId broker pool instance id
+     */
+    public static void removeInstance(final String instanceId) {
+        INSTANCES.remove(instanceId);
     }
 
     public void recordEmbed(final long durationNanos) {
