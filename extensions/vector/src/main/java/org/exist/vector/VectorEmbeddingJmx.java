@@ -62,4 +62,17 @@ public final class VectorEmbeddingJmx {
             LOG.warn("Failed to register VectorEmbedding JMX MBean for instance {}: {}", instanceId, e.getMessage(), e);
         }
     }
+
+    /**
+     * Clear registration state for the given broker pool so a subsequent startup can register again.
+     * JMX deregistration is handled by {@link org.exist.management.AgentFactory#closeDBInstance}.
+     *
+     * @param pool the broker pool
+     */
+    public static void unregister(final BrokerPool pool) {
+        if (pool == null) {
+            return;
+        }
+        REGISTERED.remove(pool.getId());
+    }
 }

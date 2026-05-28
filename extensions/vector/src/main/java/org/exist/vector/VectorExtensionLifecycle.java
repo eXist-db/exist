@@ -47,4 +47,14 @@ public final class VectorExtensionLifecycle {
         });
         VectorEmbeddingJmx.registerIfAbsent(pool);
     }
+
+    /**
+     * Clears vector extension JMX registration state when the broker pool shuts down.
+     *
+     * @param pool the broker pool
+     */
+    public static void onBrokerPoolShutdown(final BrokerPool pool) {
+        VectorOperationMetrics.register(null);
+        VectorEmbeddingJmx.unregister(pool);
+    }
 }

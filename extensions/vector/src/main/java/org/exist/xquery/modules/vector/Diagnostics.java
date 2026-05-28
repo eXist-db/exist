@@ -49,7 +49,7 @@ import static org.exist.xquery.modules.vector.VectorModule.functionSignature;
  *   <li>path — resolved configuration path (relative string)</li>
  *   <li>dimension — configured or default dimension</li>
  *   <li>status — "available" | "missing" | "http"</li>
- *   <li>provider — "ONNX" | "HTTP"</li>
+ *   <li>provider — "ONNX" | "HTTP" (uppercase by convention)</li>
  *   <li>message — optional hint when status != "available"</li>
  * </ul>
  */

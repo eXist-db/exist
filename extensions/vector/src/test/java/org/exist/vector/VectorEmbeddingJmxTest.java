@@ -22,6 +22,7 @@
 package org.exist.vector;
 
 import org.exist.management.impl.VectorEmbedding;
+import org.exist.storage.BrokerPool;
 import org.exist.test.ExistEmbeddedServer;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -56,5 +57,21 @@ public class VectorEmbeddingJmxTest {
         final ObjectName name = names.iterator().next();
         assertTrue(server.getAttribute(name, "Available").equals(Boolean.TRUE));
         assertTrue(server.getAttribute(name, "PersistenceBackend").equals("lucene"));
+    }
+
+    @Test
+    public void unregisterAllowsReregistrationAfterBrokerPoolRestart() throws Exception {
+        final BrokerPool pool = SERVER.getBrokerPool();
+        VectorEmbeddingJmx.unregister(pool);
+        VectorEmbeddingJmx.registerIfAbsent(pool);
+
+        final MBeanServer server = ManagementFactory.getPlatformMBeanServer();
+        final ObjectName query = new ObjectName(VectorEmbedding.getAllInstancesQuery());
+        assertFalse("VectorEmbedding MBean should be present after re-registration", server.queryNames(query, null).isEmpty());
+
+        SERVER.restart();
+
+        assertFalse("VectorEmbedding MBean should be present after broker pool restart",
+                server.queryNames(query, null).isEmpty());
     }
 }

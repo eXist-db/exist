@@ -47,6 +47,7 @@ public class VectorStoreServiceImpl implements VectorStoreService, BrokerPoolSer
 
     private Path dataDir;
     private VectorStoreImpl vectorStore;
+    private BrokerPool brokerPool;
 
     @Override
     public void configure(final Configuration configuration) throws BrokerPoolServiceException {
@@ -58,6 +59,7 @@ public class VectorStoreServiceImpl implements VectorStoreService, BrokerPoolSer
 
     @Override
     public void prepare(final BrokerPool pool) throws BrokerPoolServiceException {
+        this.brokerPool = pool;
         try {
             this.vectorStore = new VectorStoreImpl(pool, dataDir);
         } catch (final DBException e) {
@@ -89,8 +91,23 @@ public class VectorStoreServiceImpl implements VectorStoreService, BrokerPoolSer
         }
     }
 
+    private static void unregisterVectorExtensionJmx(@Nullable final BrokerPool pool) {
+        if (pool == null) {
+            return;
+        }
+        try {
+            final Class<?> lifecycle = Class.forName("org.exist.vector.VectorExtensionLifecycle");
+            lifecycle.getMethod("onBrokerPoolShutdown", BrokerPool.class).invoke(null, pool);
+        } catch (final ClassNotFoundException e) {
+            LOG.debug("Vector extension not present; VectorEmbedding JMX cleanup skipped");
+        } catch (final ReflectiveOperationException e) {
+            LOG.warn("Failed to unregister VectorEmbedding JMX state: {}", e.getMessage(), e);
+        }
+    }
+
     @Override
     public void shutdown() {
+        unregisterVectorExtensionJmx(brokerPool);
         if (this.vectorStore != null) {
             try {
                 this.vectorStore.close();
@@ -99,6 +116,7 @@ public class VectorStoreServiceImpl implements VectorStoreService, BrokerPoolSer
             }
             this.vectorStore = null;
         }
+        this.brokerPool = null;
     }
 
     @Override

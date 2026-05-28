@@ -52,4 +52,12 @@ public class VectorOperationMetricsTest {
         assertEquals(1, VectorMetrics.getInstance().getEmbedCallCount());
         assertEquals(99, VectorMetrics.getInstance().getEmbedTotalTimeNanos());
     }
+
+    @Test
+    public void shutdownHookClearsMetricsBridge() {
+        VectorExtensionLifecycle.onBrokerPoolStartSystem(null);
+        VectorExtensionLifecycle.onBrokerPoolShutdown(null);
+        VectorOperationMetrics.recordEmbed(50);
+        assertEquals(0, VectorMetrics.getInstance().getEmbedCallCount());
+    }
 }

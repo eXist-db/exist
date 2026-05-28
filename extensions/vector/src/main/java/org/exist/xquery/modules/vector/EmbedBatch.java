@@ -110,13 +110,16 @@ public class EmbedBatch extends BasicFunction {
     for (final SequenceIterator it = textsSeq.iterate(); it.hasNext(); ) {
       final String text = it.nextItem().getStringValue();
       final long start = System.nanoTime();
-      final float[] vec = provider.embed(text, true);
-      VectorOperationMetrics.recordEmbed(System.nanoTime() - start);
-      if (vec == null || vec.length == 0) {
-        throw new XPathException(this, VectorModule.EXVECTOR0002, "Embedding returned empty result for text: "
-            + (text.length() > 50 ? text.substring(0, 50) + "..." : text));
+      try {
+        final float[] vec = provider.embed(text, true);
+        if (vec == null || vec.length == 0) {
+          throw new XPathException(this, VectorModule.EXVECTOR0002, "Embedding returned empty result for text: "
+              + (text.length() > 50 ? text.substring(0, 50) + "..." : text));
+        }
+        resultArrays.add(floatsToArray(vec).toSequence());
+      } finally {
+        VectorOperationMetrics.recordEmbed(System.nanoTime() - start);
       }
-      resultArrays.add(floatsToArray(vec).toSequence());
     }
     return new ArrayType(this, context, resultArrays);
   }

@@ -98,12 +98,15 @@ public class Embed extends BasicFunction {
         throw new XPathException(this, VectorModule.EXVECTOR0001, "Failed to load embedding model: " + model);
       }
       final long start = System.nanoTime();
-      final float[] vec = provider.embed(text, true);
-      VectorOperationMetrics.recordEmbed(System.nanoTime() - start);
-      if (vec == null || vec.length == 0) {
-        throw new XPathException(this, VectorModule.EXVECTOR0002, "Embedding returned empty result");
+      try {
+        final float[] vec = provider.embed(text, true);
+        if (vec == null || vec.length == 0) {
+          throw new XPathException(this, VectorModule.EXVECTOR0002, "Embedding returned empty result");
+        }
+        return floatsToArray(vec);
+      } finally {
+        VectorOperationMetrics.recordEmbed(System.nanoTime() - start);
       }
-      return floatsToArray(vec);
     } catch (final NoClassDefFoundError e) {
       throw new XPathException(this, VectorModule.EXVECTOR0003, "Vector embedding module not available: " + e.getMessage());
     }
