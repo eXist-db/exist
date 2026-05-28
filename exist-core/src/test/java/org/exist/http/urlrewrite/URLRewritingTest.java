@@ -23,13 +23,11 @@
 package org.exist.http.urlrewrite;
 
 import com.evolvedbinary.j8fu.tuple.Tuple2;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.fluent.Request;
-import org.apache.http.entity.ContentType;
+import org.apache.hc.client5.http.fluent.Request;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.HttpStatus;
 import org.exist.http.AbstractHttpTest;
 import org.exist.test.ExistWebServer;
-import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.exist.xmldb.XmldbURI;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -39,7 +37,6 @@ import org.junit.Test;
 import java.io.IOException;
 
 import static com.evolvedbinary.j8fu.tuple.Tuple.Tuple;
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.exist.http.urlrewrite.XQueryURLRewrite.XQUERY_CONTROLLER_FILENAME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -65,22 +62,17 @@ public class URLRewritingTest extends AbstractHttpTest {
 
         final String storeDocUri = getRestUri(existWebServer) + TEST_COLLECTION.append(nestedCollectionName).append(docName);
         final Request storeRequest = Request
-                .Put(storeDocUri)
+                .put(storeDocUri)
                 .bodyString(testDocument, ContentType.APPLICATION_XML);
-        final int storeResponseStatusCode = withHttpExecutor(existWebServer, executor -> executor.execute(storeRequest).returnResponse().getStatusLine().getStatusCode());
+        final int storeResponseStatusCode = withHttpExecutor(existWebServer, executor -> executeForStatus(executor, storeRequest));
         assertEquals(HttpStatus.SC_CREATED, storeResponseStatusCode);
 
         final String retrieveDocUri = getAppsUri(existWebServer) + "/" + TEST_COLLECTION_NAME.append(nestedCollectionName).append(docName);
         final Request retrieveRequest = Request
-                .Get(retrieveDocUri);
-        final Tuple2<Integer, String> retrieveResponseStatusCodeAndBody = withHttpExecutor(existWebServer,  executor -> {
-            final HttpResponse response = executor.execute(retrieveRequest).returnResponse();
-            final String responseBody;
-            try (final UnsynchronizedByteArrayOutputStream baos = new UnsynchronizedByteArrayOutputStream((int)response.getEntity().getContentLength())) {
-                response.getEntity().writeTo(baos);
-                responseBody = baos.toString(UTF_8);
-            }
-            return Tuple(response.getStatusLine().getStatusCode(), responseBody);
+                .get(retrieveDocUri);
+        final Tuple2<Integer, String> retrieveResponseStatusCodeAndBody = withHttpExecutor(existWebServer, executor -> {
+            final HttpResponseResult r = executeForStatusAndBody(executor, retrieveRequest);
+            return Tuple(r.statusCode(), r.body());
         });
         assertEquals(HttpStatus.SC_OK, retrieveResponseStatusCodeAndBody._1.intValue());
         assertTrue(retrieveResponseStatusCodeAndBody._2.matches("<controller>.+</controller>"));
@@ -89,12 +81,10 @@ public class URLRewritingTest extends AbstractHttpTest {
     @BeforeClass
     public static void setup() throws IOException {
         final Request request = Request
-                .Put(getRestUri(existWebServer) + TEST_COLLECTION + "/" + XQUERY_CONTROLLER_FILENAME)
+                .put(getRestUri(existWebServer) + TEST_COLLECTION + "/" + XQUERY_CONTROLLER_FILENAME)
                 .bodyString(TEST_CONTROLLER, ContentType.create("application/xquery"));
 
-        final int statusCode = withHttpExecutor(existWebServer, executor ->
-                executor.execute(request).returnResponse().getStatusLine().getStatusCode()
-        );
+        final int statusCode = withHttpExecutor(existWebServer, executor -> executeForStatus(executor, request));
 
         assertEquals(HttpStatus.SC_CREATED, statusCode);
     }
@@ -102,11 +92,9 @@ public class URLRewritingTest extends AbstractHttpTest {
     @AfterClass
     public static void cleanup() throws IOException {
         final Request request = Request
-                .Delete(getRestUri(existWebServer) + TEST_COLLECTION);
+                .delete(getRestUri(existWebServer) + TEST_COLLECTION);
 
-        final int statusCode = withHttpExecutor(existWebServer, executor ->
-                executor.execute(request).returnResponse().getStatusLine().getStatusCode()
-        );
+        final int statusCode = withHttpExecutor(existWebServer, executor -> executeForStatus(executor, request));
 
         assertEquals(HttpStatus.SC_OK, statusCode);
     }

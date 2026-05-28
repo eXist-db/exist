@@ -26,9 +26,9 @@
  */
 package org.exist.extensions.exquery.restxq.impl;
 
-import org.apache.http.HttpHost;
-import org.apache.http.client.fluent.Executor;
+import org.apache.hc.client5.http.fluent.Executor;
 import org.exist.TestUtils;
+import org.exist.http.AbstractHttpTest;
 import org.exist.test.ExistWebServer;
 import org.junit.Before;
 import org.junit.Rule;
@@ -45,9 +45,7 @@ public abstract class AbstractInstanceIntegrationTest extends AbstractIntegratio
 
     @Before
     public void setupExecutor() {
-        executor = Executor.newInstance()
-                .auth(TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD)
-                .authPreemptive(new HttpHost("localhost", existWebServer.getPort()));
+        executor = AbstractHttpTest.createAuthenticatedExecutor(existWebServer, TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD);
     }
 
     protected String getServerUri() {

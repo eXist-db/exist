@@ -23,7 +23,7 @@ package org.expath.exist;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import org.apache.http.HttpStatus;
+import org.apache.hc.core5.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.exist.dom.QName;

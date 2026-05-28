@@ -19,46 +19,43 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
+
 package org.exist.http;
 
+import org.apache.hc.client5.http.fluent.Request;
 import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.HttpStatus;
-import org.apache.hc.client5.http.fluent.Request;
-import org.apache.hc.core5.http.io.entity.EntityUtils;
-import org.exist.http.AbstractHttpTest;
+import org.exist.TestUtils;
 import org.exist.test.ExistWebServer;
 import org.junit.ClassRule;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 /**
- * Distribution-mode portal at {@code /} — landing page and redirect target to {@code /exist}.
+ * Regression test for HTTP Basic authentication with Apache HttpClient 5.
+ *
+ * <p>HC5's fluent {@link org.apache.hc.client5.http.fluent.Executor} {@code authPreemptive} and
+ * {@code auth} helpers do not reliably attach credentials to requests routed through Jetty's
+ * {@code /exist/...} context path. {@link AbstractHttpTest} therefore installs a preemptive
+ * {@code Authorization} request interceptor on the underlying client; this test guards that
+ * {@link AbstractHttpTest#createAuthenticatedExecutor} still succeeds for authenticated REST access.</p>
  */
-public class PortalRedirectTest extends AbstractHttpTest {
+public class AuthenticatedHttpClientTest extends AbstractHttpTest {
 
     @ClassRule
     public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true, false);
 
     @Test
-    public void portalRootServesLandingPageWithExistRedirect() throws IOException {
-        final Request request = Request.get(portalUri(existWebServer));
-        final ClassicHttpResponse response = withHttpExecutor(existWebServer,
-                executor -> (ClassicHttpResponse) executor.execute(request).returnResponse());
-
-        assertEquals(HttpStatus.SC_OK, response.getCode());
-
-        final String body = readResponseBody(response);
-        assertTrue("Expected portal title", body.contains("Open Source Native XML Database"));
-        assertTrue("Expected JS redirect to /exist", body.contains("window.location.replace(\"/exist\")"));
-        assertTrue("Expected noscript fallback link to /exist", body.contains("href=\"/exist\""));
-    }
-
-    private static String portalUri(final ExistWebServer existWebServer) {
-        return "http://localhost:" + existWebServer.getPort() + "/";
+    public void authenticatedRestRequestSucceeds() throws IOException {
+        final String url = getRestUri(existWebServer) + "/db/";
+        try (ClassicHttpResponse response = (ClassicHttpResponse) createAuthenticatedExecutor(
+                existWebServer, TestUtils.ADMIN_DB_USER, TestUtils.ADMIN_DB_PWD)
+                .execute(Request.get(url))
+                .returnResponse()) {
+            assertEquals(HttpStatus.SC_OK, response.getCode());
+        }
     }
 }

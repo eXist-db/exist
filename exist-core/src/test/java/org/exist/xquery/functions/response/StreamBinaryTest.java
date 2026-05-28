@@ -29,9 +29,9 @@ import java.net.URLEncoder;
 
 import org.apache.commons.codec.binary.Base64;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.fluent.Request;
+import org.apache.hc.client5.http.fluent.Request;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.HttpStatus;
 import org.exist.http.RESTTest;
 import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.junit.Test;
@@ -50,15 +50,16 @@ public class StreamBinaryTest extends RESTTest {
 		final String testValue = "hello world";
 		final String xquery = "response:stream-binary(xs:base64Binary('" +  Base64.encodeBase64String(testValue.getBytes())  + "'), 'application/octet-stream', 'test.bin')";
 
-		final Request get = Request.Get(getCollectionRootUri() + "?_query=" + URLEncoder.encode(xquery, "UTF-8") + "&_indent=no");
+		final Request get = Request.get(getCollectionRootUri() + "?_query=" + URLEncoder.encode(xquery, "UTF-8") + "&_indent=no");
 
-		final HttpResponse response = get.execute().returnResponse();
-		assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
+		try (ClassicHttpResponse response = (ClassicHttpResponse) get.execute().returnResponse()) {
+			assertEquals(HttpStatus.SC_OK, response.getCode());
 
-		try (final UnsynchronizedByteArrayOutputStream os = new UnsynchronizedByteArrayOutputStream()) {
-			response.getEntity().writeTo(os);
+			try (final UnsynchronizedByteArrayOutputStream os = new UnsynchronizedByteArrayOutputStream()) {
+				response.getEntity().writeTo(os);
 
-			assertArrayEquals(testValue.getBytes(), os.toByteArray());
+				assertArrayEquals(testValue.getBytes(), os.toByteArray());
+			}
 		}
 	}
 }

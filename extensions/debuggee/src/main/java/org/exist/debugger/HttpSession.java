@@ -21,8 +21,9 @@
  */
 package org.exist.debugger;
 
-import org.apache.http.client.fluent.Form;
-import org.apache.http.client.fluent.Request;
+import org.apache.hc.client5.http.fluent.Form;
+import org.apache.hc.client5.http.fluent.Request;
+import org.apache.hc.core5.http.ClassicHttpResponse;
 
 /**
  * @author <a href="mailto:shabanovd@gmail.com">Dmitriy Shabanov</a>
@@ -45,12 +46,11 @@ public class HttpSession implements Runnable {
 		try {
 			System.out.println("sending http request with debugging flag");
 
-			final int code = Request.Post(url)
+			final int code = ((ClassicHttpResponse) Request.post(url)
 					.bodyForm(Form.form().add("XDEBUG_SESSION", "default").build())
 					.execute()
-					.returnResponse()
-					.getStatusLine()
-					.getStatusCode();
+					.returnResponse())
+					.getCode();
 
 			debugger.terminate(url, code);
 

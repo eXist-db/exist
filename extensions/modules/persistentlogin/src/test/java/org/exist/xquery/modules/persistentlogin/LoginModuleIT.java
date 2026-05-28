@@ -21,16 +21,15 @@
  */
 package org.exist.xquery.modules.persistentlogin;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.config.CookieSpecs;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.protocol.HttpClientContext;
-import org.apache.http.impl.client.BasicCookieStore;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.cookie.BasicCookieStore;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.client5.http.protocol.HttpClientContext;
+import org.apache.hc.core5.http.ParseException;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.exist.TestUtils;
 import org.exist.test.ExistWebServer;
 import org.exist.xmldb.EXistResource;
@@ -48,7 +47,7 @@ import org.xmldb.api.modules.BinaryResource;
 import javax.annotation.Nullable;
 import java.io.IOException;
 
-import static org.apache.http.HttpStatus.SC_OK;
+import static org.apache.hc.core5.http.HttpStatus.SC_OK;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -108,12 +107,8 @@ public class LoginModuleIT {
         cookieStore = new BasicCookieStore();
         httpContext = HttpClientContext.create();
         httpContext.setCookieStore(cookieStore);
-        // Jetty 12 emits RFC 6265 Set-Cookie (RFC1123 Expires). HttpClient 4.x DEFAULT (NetscapeDraftSpec)
-        // rejects that format; STANDARD is required for automatic cookie storage. See jetty/jetty.project#12771.
-        client = HttpClientBuilder.create()
-                .setDefaultRequestConfig(RequestConfig.custom()
-                        .setCookieSpec(CookieSpecs.STANDARD)
-                        .build())
+        client = HttpClients.custom()
+                .disableAutomaticRetries()
                 .build();
     }
 
@@ -148,11 +143,17 @@ public class LoginModuleIT {
     private void doGet(@Nullable String params, String expected) throws IOException {
         final HttpGet httpGet = new HttpGet("http://localhost:" + existWebServer.getPort() + "/rest" + XmldbURI.ROOT_COLLECTION + '/' + XQUERY_FILENAME +
                 (params == null ? "" : "?" + params));
-        HttpResponse response = client.execute(httpGet, httpContext);
-        HttpEntity entity = response.getEntity();
-        final String responseBody = EntityUtils.toString(entity);
-        assertEquals(responseBody, SC_OK, response.getStatusLine().getStatusCode());
-        assertEquals(expected, responseBody);
+        try (final ClassicHttpResponse response = client.executeOpen(null, httpGet, httpContext)) {
+            final HttpEntity entity = response.getEntity();
+            final String responseBody;
+            try {
+                responseBody = EntityUtils.toString(entity);
+            } catch (final ParseException e) {
+                throw new IOException(e);
+            }
+            assertEquals(responseBody, SC_OK, response.getCode());
+            assertEquals(expected, responseBody);
+        }
     }
 
 }

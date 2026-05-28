@@ -26,13 +26,14 @@
  */
 package org.exist.extensions.exquery.restxq.impl;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.fluent.Executor;
-import org.apache.http.client.fluent.Request;
-import org.apache.http.entity.ContentType;
+import org.apache.hc.client5.http.fluent.Executor;
+import org.apache.hc.client5.http.fluent.Request;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.HttpStatus;
 import org.exist.collections.CollectionConfiguration;
 import org.exist.dom.memtree.SAXAdapter;
+import org.exist.http.AbstractHttpTest;
 import org.exist.test.ExistWebServer;
 import org.exist.util.ExistSAXParserFactory;
 import org.exquery.restxq.Namespace;
@@ -68,6 +69,10 @@ public abstract class AbstractIntegrationTest {
 
     private static ContentType XQUERY_CONTENT_TYPE = ContentType.create("application/xquery", UTF_8);
 
+    /**
+     * Standalone test webapp is mounted at {@code /} (see {@code exist.jetty.standalone.webapp.dir}),
+     * not at {@code /exist} like {@link AbstractHttpTest#getServerUri(ExistWebServer)} in exist-core tests.
+     */
     protected static String getServerUri(final ExistWebServer existWebServer) {
         return "http://localhost:" + existWebServer.getPort();
     }
@@ -81,26 +86,29 @@ public abstract class AbstractIntegrationTest {
     }
 
     protected static void enableRestXqTrigger(final ExistWebServer existWebServer, final Executor executor, final String collectionPath) throws IOException {
-        final HttpResponse response = executor.execute(Request
-                .Put(getRestUri(existWebServer) + "/db/system/config" + collectionPath + "/" + CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE)
+        try (final ClassicHttpResponse response = (ClassicHttpResponse) executor.execute(Request
+                .put(getRestUri(existWebServer) + "/db/system/config" + collectionPath + "/" + CollectionConfiguration.DEFAULT_COLLECTION_CONFIG_FILE)
                 .bodyString(COLLECTION_CONFIG, ContentType.APPLICATION_XML.withCharset(UTF_8))
-        ).returnResponse();
-        assertEquals(HttpStatus.SC_CREATED, response.getStatusLine().getStatusCode());
+        ).returnResponse()) {
+            assertEquals(HttpStatus.SC_CREATED, response.getCode());
+        }
     }
 
     protected static void storeXquery(final ExistWebServer existWebServer, final Executor executor, final String collectionPath, final String xqueryFilename, final String xquery) throws IOException {
-        final HttpResponse response = executor.execute(Request
-                .Put(getRestUri(existWebServer) + collectionPath + "/" + xqueryFilename)
+        try (final ClassicHttpResponse response = (ClassicHttpResponse) executor.execute(Request
+                .put(getRestUri(existWebServer) + collectionPath + "/" + xqueryFilename)
                 .bodyString(xquery, XQUERY_CONTENT_TYPE)
-        ).returnResponse();
-        assertEquals(HttpStatus.SC_CREATED, response.getStatusLine().getStatusCode());
+        ).returnResponse()) {
+            assertEquals(HttpStatus.SC_CREATED, response.getCode());
+        }
     }
 
     protected static void removeXquery(final ExistWebServer existWebServer, final Executor executor, final String collectionPath, final String xqueryFilename) throws IOException {
-        final HttpResponse response = executor.execute(Request
-                .Delete(getRestUri(existWebServer) + collectionPath + "/" + xqueryFilename)
-        ).returnResponse();
-        assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
+        try (final ClassicHttpResponse response = (ClassicHttpResponse) executor.execute(Request
+                .delete(getRestUri(existWebServer) + collectionPath + "/" + xqueryFilename)
+        ).returnResponse()) {
+            assertEquals(HttpStatus.SC_OK, response.getCode());
+        }
     }
 
     protected static void assertRestXqResourceFunctionsCount(final ExistWebServer existWebServer, final Executor executor, final int expectedCount) throws IOException {
@@ -108,25 +116,26 @@ public abstract class AbstractIntegrationTest {
     }
 
     protected static NodeList getRestXqResourceFunctions(final ExistWebServer existWebServer, final Executor executor) throws IOException {
-        final HttpResponse response = executor.execute(Request
-                .Get(getRestUri(existWebServer) + "/db/?_query=rest:resource-functions()")
-        ).returnResponse();
-        assertEquals(HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
+        try (final ClassicHttpResponse response = (ClassicHttpResponse) executor.execute(Request
+                .get(getRestUri(existWebServer) + "/db/?_query=rest:resource-functions()")
+        ).returnResponse()) {
+            assertEquals(HttpStatus.SC_OK, response.getCode());
 
-        final Document doc;
-        try (final InputStream is = response.getEntity().getContent()) {
-            assertNotNull(is);
-            doc = parseXml(is);
+            final Document doc;
+            try (final InputStream is = response.getEntity().getContent()) {
+                assertNotNull(is);
+                doc = parseXml(is);
+            }
+            assertNotNull(doc);
+
+            final Element docElem = doc.getDocumentElement();
+            assertEquals("exist:result", docElem.getNodeName());
+            final NodeList resourceFunctionsList = docElem.getElementsByTagNameNS(Namespace.ANNOTATION_NS, "resource-functions");
+            assertEquals(1, resourceFunctionsList.getLength());
+
+            final Element resourceFunctionsElem = (Element) resourceFunctionsList.item(0);
+            return resourceFunctionsElem.getElementsByTagNameNS(Namespace.ANNOTATION_NS, "resource-function");
         }
-        assertNotNull(doc);
-
-        final Element docElem = doc.getDocumentElement();
-        assertEquals("exist:result", docElem.getNodeName());
-        final NodeList resourceFunctionsList = docElem.getElementsByTagNameNS(Namespace.ANNOTATION_NS, "resource-functions");
-        assertEquals(1, resourceFunctionsList.getLength());
-
-        final Element resourceFunctionsElem = (Element) resourceFunctionsList.item(0);
-        return resourceFunctionsElem.getElementsByTagNameNS(Namespace.ANNOTATION_NS, "resource-function");
     }
 
     protected static Document parseXml(final InputStream inputStream) throws IOException {

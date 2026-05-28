@@ -21,13 +21,13 @@
  */
 package org.exist.xmlrpc;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.fluent.Executor;
-import org.apache.http.client.fluent.Request;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.hc.client5.http.fluent.Executor;
+import org.apache.hc.client5.http.fluent.Request;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.HttpStatus;
 import org.apache.xmlrpc.XmlRpcException;
 import org.apache.xmlrpc.client.XmlRpcClient;
 import org.apache.xmlrpc.client.XmlRpcClientConfigImpl;
@@ -48,6 +48,7 @@ import java.util.Map;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.junit.AfterClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
@@ -73,6 +74,11 @@ public class MoveResourceTest {
 
     @ClassRule
     public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
+
+    @AfterClass
+    public static void closeHttpConnectionManager() {
+        CheckThread.closeConnectionManager();
+    }
 
     private static String getXmlRpcUri() {
         return "http://localhost:" + existWebServer.getPort() + "/xmlrpc";
@@ -200,6 +206,15 @@ public class MoveResourceTest {
 
     private static class CheckThread implements Callable<Boolean> {
         private static final PoolingHttpClientConnectionManager poolingHttpClientConnectionManager = new PoolingHttpClientConnectionManager();
+
+        static void closeConnectionManager() {
+            try {
+                poolingHttpClientConnectionManager.close();
+            } catch (final Exception ignored) {
+                // idempotent
+            }
+        }
+
         private final int iterations;
 
         public CheckThread(final int iterations) {
@@ -212,26 +227,26 @@ public class MoveResourceTest {
                     .custom()
                     .setConnectionManager(poolingHttpClientConnectionManager)
                     .build();
-            final org.apache.http.client.fluent.Executor executor = Executor.newInstance(client);
+            final Executor executor = Executor.newInstance(client);
 
             final String reqUrl = getRestUri() + "/db?_query=" + URLEncoder.encode("collection('/db')//SPEECH[SPEAKER = 'JULIET']", "UTF-8");
-            final Request request = Request.Get(reqUrl);
+            final Request request = Request.get(reqUrl);
 
             for (int i = 0; i < iterations; i++) {
-                HttpResponse response = null;
                 int lastStatus = -1;
                 for (int r = 0; r <= REST_RETRY_MAX; r++) {
-                    response = executor.execute(request).returnResponse();
-                    lastStatus = response.getStatusLine().getStatusCode();
-                    if (lastStatus == HttpStatus.SC_OK) {
-                        break;
-                    }
-                    if (lastStatus < 500 || r == REST_RETRY_MAX) {
-                        fail("REST query failed" + (r > 0 ? " after " + r + " retries" : "") + ": " + response.getStatusLine());
+                    try (ClassicHttpResponse response = (ClassicHttpResponse) executor.execute(request).returnResponse()) {
+                        lastStatus = response.getCode();
+                        if (lastStatus == HttpStatus.SC_OK) {
+                            break;
+                        }
+                        if (lastStatus < 500 || r == REST_RETRY_MAX) {
+                            fail("REST query failed" + (r > 0 ? " after " + r + " retries" : "") + ": HTTP " + lastStatus);
+                        }
                     }
                     Thread.sleep(REST_RETRY_DELAY_MS);
                 }
-                assertEquals(response.getStatusLine().toString(), HttpStatus.SC_OK, response.getStatusLine().getStatusCode());
+                assertEquals("HTTP " + lastStatus, HttpStatus.SC_OK, lastStatus);
 
                 Thread.sleep(DELAY);
             }

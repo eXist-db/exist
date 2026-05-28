@@ -25,12 +25,12 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpHost;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.fluent.Executor;
-import org.apache.http.client.fluent.Request;
+import org.apache.hc.client5.http.fluent.Executor;
+import org.apache.hc.client5.http.fluent.Request;
+import org.exist.http.AbstractHttpTest;
+import org.apache.hc.core5.http.ClassicHttpResponse;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.HttpStatus;
 import org.exist.test.ExistWebServer;
 import org.apache.commons.io.output.UnsynchronizedByteArrayOutputStream;
 import org.junit.ClassRule;
@@ -61,10 +61,10 @@ public class RestApiSecurityTest extends AbstractApiSecurityTest {
         
         final Executor exec = getExecutor(uid, pwd);
         try {
-            final HttpResponse resp = exec.execute(Request.Delete(collectionUri)).returnResponse();
-            
-            if(resp.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
-                throw new ApiException("Could not remove collection: " + collectionUri + ". " + getResponseBody(resp.getEntity()));
+            try (final ClassicHttpResponse resp = (ClassicHttpResponse) exec.execute(Request.delete(collectionUri)).returnResponse()) {
+                if(resp.getCode() != HttpStatus.SC_OK) {
+                    throw new ApiException("Could not remove collection: " + collectionUri + ". " + getResponseBody(resp.getEntity()));
+                }
             }
         } catch(final IOException ioe) {
             throw new ApiException(ioe);
@@ -103,12 +103,12 @@ public class RestApiSecurityTest extends AbstractApiSecurityTest {
     protected String getXmlResourceContent(final String resourceUri, final String uid, final String pwd) throws ApiException {
         final Executor exec = getExecutor(uid, pwd);
         try {
-            final HttpResponse resp = exec.execute(Request.Get(getServerUri() + resourceUri)).returnResponse();
-            
-            if(resp.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
-                throw new ApiException("Could not get XML resource from uri: " + resourceUri + ". " + getResponseBody(resp.getEntity()));
-            } else {
-                return getResponseBody(resp.getEntity());
+            try (final ClassicHttpResponse resp = (ClassicHttpResponse) exec.execute(Request.get(getServerUri() + resourceUri)).returnResponse()) {
+                if(resp.getCode() != HttpStatus.SC_OK) {
+                    throw new ApiException("Could not get XML resource from uri: " + resourceUri + ". " + getResponseBody(resp.getEntity()));
+                } else {
+                    return getResponseBody(resp.getEntity());
+                }
             }
         } catch(final IOException ioe) {
             throw new ApiException(ioe);
@@ -139,14 +139,15 @@ public class RestApiSecurityTest extends AbstractApiSecurityTest {
     protected void createXmlResource(final String resourceUri, final String content, final String uid, final String pwd) throws ApiException {
         final Executor exec = getExecutor(uid, pwd);
         try {
-            final HttpResponse resp = exec.execute(
-                    Request.Put(getServerUri() + resourceUri)
+            try (final ClassicHttpResponse resp = (ClassicHttpResponse) exec.execute(
+                    Request.put(getServerUri() + resourceUri)
                     .addHeader("Content-Type", "application/xml")
                     .bodyByteArray(content.getBytes())
-            ).returnResponse();
-            
-            if(resp.getStatusLine().getStatusCode() != HttpStatus.SC_CREATED) {
-                throw new ApiException("Could not store XML resource to uri: " + resourceUri + ". " + getResponseBody(resp.getEntity()));
+            ).returnResponse()) {
+
+                if(resp.getCode() != HttpStatus.SC_CREATED) {
+                    throw new ApiException("Could not store XML resource to uri: " + resourceUri + ". " + getResponseBody(resp.getEntity()));
+                }
             }
         } catch(final IOException ioe) {
             throw new ApiException(ioe);
@@ -157,14 +158,15 @@ public class RestApiSecurityTest extends AbstractApiSecurityTest {
     protected void createBinResource(final String resourceUri, final byte[] content, final String uid, final String pwd) throws ApiException {
          final Executor exec = getExecutor(uid, pwd);
         try {
-            final HttpResponse resp = exec.execute(
-                    Request.Put(getServerUri() + resourceUri)
+            try (final ClassicHttpResponse resp = (ClassicHttpResponse) exec.execute(
+                    Request.put(getServerUri() + resourceUri)
                     .addHeader("Content-Type", "application/octet-stream")
                     .bodyByteArray(content)
-            ).returnResponse();
-            
-            if(resp.getStatusLine().getStatusCode() != HttpStatus.SC_CREATED) {
-                throw new ApiException("Could not store Binary resource to uri: " + resourceUri + ". " + getResponseBody(resp.getEntity()));
+            ).returnResponse()) {
+
+                if(resp.getCode() != HttpStatus.SC_CREATED) {
+                    throw new ApiException("Could not store Binary resource to uri: " + resourceUri + ". " + getResponseBody(resp.getEntity()));
+                }
             }
         } catch(final IOException ioe) {
             throw new ApiException(ioe);
@@ -175,12 +177,12 @@ public class RestApiSecurityTest extends AbstractApiSecurityTest {
         final Executor exec = getExecutor(uid, pwd);
         try {
             final String queryUri = createQueryUri(xquery);
-            
-            final HttpResponse resp = exec.execute(Request.Get(queryUri)).returnResponse();
 
-            final int status = resp.getStatusLine().getStatusCode();
-            if(status != HttpStatus.SC_OK) {
-                throw new ApiException("HTTP " + status + " could not execute query uri: " + queryUri + ". " + getResponseBody(resp.getEntity()));
+            try (final ClassicHttpResponse resp = (ClassicHttpResponse) exec.execute(Request.get(queryUri)).returnResponse()) {
+                final int status = resp.getCode();
+                if(status != HttpStatus.SC_OK) {
+                    throw new ApiException("HTTP " + status + " could not execute query uri: " + queryUri + ". " + getResponseBody(resp.getEntity()));
+                }
             }
         } catch(final IOException ioe) {
             throw new ApiException(ioe);
@@ -188,7 +190,7 @@ public class RestApiSecurityTest extends AbstractApiSecurityTest {
     }
     
     private Executor getExecutor(final String uid, String pwd) {
-        return Executor.newInstance().authPreemptive(new HttpHost("localhost", existWebServer.getPort())).auth(uid, pwd);
+        return AbstractHttpTest.createAuthenticatedExecutor(existWebServer, uid, pwd);
     }
     
     private String createQueryUri(final String xquery) throws UnsupportedEncodingException {
