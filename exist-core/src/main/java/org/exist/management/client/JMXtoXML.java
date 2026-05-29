@@ -308,6 +308,9 @@ public class JMXtoXML {
 
             for (final String category : categories) {
                 final ObjectName[] names = CATEGORIES.get(category);
+                if (names == null) {
+                    continue;
+                }
                 for (final ObjectName name : names) {
                     queryMBeans(builder, name);
                 }
