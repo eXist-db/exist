@@ -527,7 +527,7 @@ public final class FunMatches extends Function implements Optimizable, IndexUseR
         // XPath 4.0 lookaround syntax is not yet implemented in eXist's XQuery 3.1 runtime.
         // When XQuery 4.0 lands (v2/xq4-core-functions), replace this guard with the
         // translateXPath4Lookaround / Java-regex dispatch path.
-        if (org.exist.xquery.regex.RegexUtil.hasXPath4Lookaround(pattern)) {
+        if (hasXPath4Lookaround(pattern)) {
             throw new XPathException(this, ErrorCodes.XPST0017,
                     "XPath 4.0 lookaround syntax in regex patterns (e.g. (*positive_lookahead:...)) "
                             + "is not yet implemented in this XQuery 3.1 build. Rewrite the regex without lookaround.");
@@ -536,7 +536,7 @@ public final class FunMatches extends Function implements Optimizable, IndexUseR
         // Pre-validate: reject constructs that are not valid in XPath 3.1 regex
         // but that Saxon's XP30 mode accepts (Java/Perl extensions)
         if (!hasLiteral(flags)) {
-            org.exist.xquery.regex.RegexUtil.validateXPathRegex(this, pattern, false);
+            validateXPathRegex(this, pattern, false);
         }
 
         try {

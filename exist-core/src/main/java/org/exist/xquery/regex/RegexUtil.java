@@ -38,6 +38,55 @@ import java.util.regex.Pattern;
 public class RegexUtil {
 
     /**
+     * Compiled pattern matching XPath 4.0 named lookaround group syntax,
+     * e.g. {@code (*positive_lookahead:...)}, used by
+     * {@link #hasXPath4Lookaround(String)} and {@link #translateXPath4Lookaround(String)}.
+     */
+    private static final Pattern XPATH4_LOOKAROUND = Pattern.compile(
+            "\\(\\*(" +
+                    "positive_lookahead|negative_lookahead|" +
+                    "positive_lookbehind|negative_lookbehind" +
+                    "):");
+
+    /**
+     * Single-character escapes that are valid in XPath regular expressions per
+     * F&amp;O 3.1 §5.6.1. Membership lookup keeps {@link #validateBackslashEscape}
+     * out of an NPath explosion from a long multi-label case arm.
+     */
+    private static final java.util.Set<Character> XPATH_REGEX_SIMPLE_ESCAPES = java.util.Set.of(
+            'n', 'r', 't',
+            '\\', '|', '.', '-', '^',
+            '?', '*', '+',
+            '{', '}', '(', ')',
+            '[', ']', '$',
+            // Space: not strictly in the XPath spec but Saxon allows
+            // \<space> in free-spacing mode ('x' flag) for literal space
+            ' ',
+            // Valid XPath multi-character escape shortcuts
+            'd', 'D', 's', 'S',
+            'w', 'W', 'i', 'I',
+            'c', 'C');
+
+    /**
+     * Single-character escapes that are valid inside an XPath regex character
+     * class. Same set as {@link #XPATH_REGEX_SIMPLE_ESCAPES} plus {@code '\b'}
+     * (which inside a class is a literal backspace, not a word boundary) and
+     * {@code '\B'}.
+     */
+    private static final java.util.Set<Character> XPATH_REGEX_CHARCLASS_SIMPLE_ESCAPES = java.util.Set.of(
+            'n', 'r', 't',
+            '\\', '|', '.', '-', '^',
+            '?', '*', '+',
+            '{', '}', '(', ')',
+            '[', ']', '$',
+            ' ',
+            'd', 'D', 's', 'S',
+            'w', 'W', 'i', 'I',
+            'c', 'C',
+            // \b inside class is backspace, allowed; \B likewise
+            'b', 'B');
+
+    /**
      * Parses the flags for an XQuery Regular Expression.
      *
      * @param context The calling expression
@@ -184,131 +233,9 @@ public class RegexUtil {
             final char c = pattern.charAt(i);
 
             if (c == '\\') {
-                if (i + 1 >= len) {
-                    throw new XPathException(context, ErrorCodes.FORX0002,
-                            "Invalid regular expression: trailing backslash",
-                            new StringValue(pattern));
-                }
-                final char next = pattern.charAt(i + 1);
-                switch (next) {
-                    // Valid XPath single-character escapes
-                    case 'n': case 'r': case 't':
-                    case '\\': case '|': case '.': case '-': case '^':
-                    case '?': case '*': case '+':
-                    case '{': case '}': case '(': case ')':
-                    case '[': case ']': case '$':
-                    // Space: not strictly in the XPath spec but Saxon allows
-                    // \<space> in free-spacing mode ('x' flag) for literal space
-                    case ' ':
-                    // Valid XPath multi-character escape shortcuts
-                    case 'd': case 'D': case 's': case 'S':
-                    case 'w': case 'W': case 'i': case 'I':
-                    case 'c': case 'C':
-                        i++; // skip the escaped character
-                        break;
-                    case 'b': case 'B':
-                        // Word boundaries: valid in XPath 4.0, invalid in 3.1
-                        if (!isXQuery40) {
-                            throw new XPathException(context, ErrorCodes.FORX0002,
-                                    "Invalid regular expression: \\" + next
-                                            + " is not a recognized escape sequence in XPath 3.1 regular expressions",
-                                    new StringValue(pattern));
-                        }
-                        // Quantifier after zero-width boundary assertion is not allowed
-                        if (i + 2 < len) {
-                            final char q = pattern.charAt(i + 2);
-                            if (q == '?' || q == '+' || q == '*' || q == '{') {
-                                throw new XPathException(context, ErrorCodes.FORX0002,
-                                        "Invalid regular expression: quantifier '" + q
-                                                + "' after \\" + next + " boundary assertion is not allowed",
-                                        new StringValue(pattern));
-                            }
-                        }
-                        i++;
-                        break;
-                    case '0':
-                        // Octal escapes (\0nn) are not part of the XPath regex spec
-                        throw new XPathException(context, ErrorCodes.FORX0002,
-                                "Invalid regular expression: \\0 (octal escape) is not supported in XPath regular expressions",
-                                new StringValue(pattern));
-                    case '1': case '2': case '3': case '4':
-                    case '5': case '6': case '7': case '8': case '9': {
-                        // Back-reference \N. N is parsed greedily but capped at
-                        // the total number of capturing groups in the pattern,
-                        // so '\19' in a 1-group pattern is '\1' + literal '9',
-                        // while '\11' in an 11-group pattern is back-ref 11.
-                        // The chosen N must also reference a group that has
-                        // already CLOSED at this position; forward references
-                        // (\1(abc)) and self-references ((.)\2) are invalid.
-                        int j = i + 2;
-                        int num = next - '0';
-                        while (j < len && pattern.charAt(j) >= '0' && pattern.charAt(j) <= '9') {
-                            final int candidate = num * 10 + (pattern.charAt(j) - '0');
-                            if (candidate > totalGroups) {
-                                break;
-                            }
-                            num = candidate;
-                            j++;
-                        }
-                        if (num < 1 || num > closedGroupCount) {
-                            throw new XPathException(context, ErrorCodes.FORX0002,
-                                    "Invalid regular expression: back-reference \\" + num
-                                            + " refers to a capturing group that does not exist or has not been closed at this position",
-                                    new StringValue(pattern));
-                        }
-                        i = j - 1;
-                        break;
-                    }
-                    case 'p': case 'P':
-                        // \p{...} or \P{...} — must be followed by {Name}
-                        if (i + 2 < len && pattern.charAt(i + 2) == '{') {
-                            final int close = pattern.indexOf('}', i + 3);
-                            if (close < 0) {
-                                throw new XPathException(context, ErrorCodes.FORX0002,
-                                        "Invalid regular expression: unclosed \\p{ property escape",
-                                        new StringValue(pattern));
-                            }
-                            i = close; // advance past the closing }
-                        } else {
-                            throw new XPathException(context, ErrorCodes.FORX0002,
-                                    "Invalid regular expression: \\p or \\P must be followed by {Name}",
-                                    new StringValue(pattern));
-                        }
-                        break;
-                    default:
-                        // Any other backslash escape is invalid in XPath regex.
-                        // This catches: \x (hex), \\u (Java unicode),
-                        // \A \Z \z (Java anchors),
-                        // \a \e \f \v (special chars), \Q \E (literal mode),
-                        // \G \k \g (named backrefs)
-                        throw new XPathException(context, ErrorCodes.FORX0002,
-                                "Invalid regular expression: \\" + next
-                                        + " is not a recognized escape sequence in XPath regular expressions",
-                                new StringValue(pattern));
-                }
+                i = validateBackslashEscape(context, pattern, i, len, isXQuery40, totalGroups, closedGroupCount);
             } else if (c == '(' && i + 1 < len && pattern.charAt(i + 1) == '?') {
-                // In XPath 3.1, only (?:...) is valid.
-                // In XPath 4.0, lookaround is also valid: (?=...) (?!...) (?<=...) (?<!...)
-                if (i + 2 >= len) {
-                    throw new XPathException(context, ErrorCodes.FORX0002,
-                            "Invalid regular expression: incomplete group syntax at position " + i,
-                            new StringValue(pattern));
-                }
-                final char groupType = pattern.charAt(i + 2);
-                if (groupType == ':') {
-                    // (?:...) — always valid
-                } else if (isXQuery40 && (groupType == '=' || groupType == '!')) {
-                    // (?=...) (?!...) — valid in XPath 4.0
-                } else if (isXQuery40 && groupType == '<' && i + 3 < len
-                        && (pattern.charAt(i + 3) == '=' || pattern.charAt(i + 3) == '!')) {
-                    // (?<=...) (?<!...) — valid in XPath 4.0
-                } else {
-                    throw new XPathException(context, ErrorCodes.FORX0002,
-                            "Invalid regular expression: non-capturing group (?:...) is the only "
-                                    + "permitted group syntax in XPath regular expressions; "
-                                    + "found (?" + groupType + " at position " + i,
-                            new StringValue(pattern));
-                }
+                validateSpecialGroupOpen(context, pattern, i, len, isXQuery40);
                 groupStack.push(Boolean.FALSE);
             } else if (c == '(' && i + 1 < len && pattern.charAt(i + 1) == '*') {
                 // (*name:...) — XPath 4.0 named lookaround
@@ -369,6 +296,156 @@ public class RegexUtil {
     }
 
     /**
+     * Validate the backslash escape at position {@code i} (which points at the
+     * {@code '\\'}). Returns the position of the LAST consumed character so the
+     * caller's {@code for} loop's {@code i++} lands on the next unconsumed char.
+     */
+    private static int validateBackslashEscape(final Expression context, final String pattern,
+            final int i, final int len, final boolean isXQuery40,
+            final int totalGroups, final int closedGroupCount) throws XPathException {
+        if (i + 1 >= len) {
+            throw new XPathException(context, ErrorCodes.FORX0002,
+                    "Invalid regular expression: trailing backslash",
+                    new StringValue(pattern));
+        }
+        final char next = pattern.charAt(i + 1);
+        return switch (classifyBackslashEscape(next)) {
+            case SIMPLE -> i + 1;
+            case WORD_BOUNDARY -> validateWordBoundary(context, pattern, i, len, isXQuery40, next);
+            case OCTAL_ZERO -> throw new XPathException(context, ErrorCodes.FORX0002,
+                    "Invalid regular expression: \\0 (octal escape) is not supported in XPath regular expressions",
+                    new StringValue(pattern));
+            case BACKREF -> validateBackReference(context, pattern, i, len, next, totalGroups, closedGroupCount);
+            case CATEGORY -> validateCategoryEscape(context, pattern, i, len);
+            // Any other backslash escape is invalid in XPath regex.
+            // This catches: \x (hex), \\u (Java unicode),
+            // \A \Z \z (Java anchors),
+            // \a \e \f \v (special chars), \Q \E (literal mode),
+            // \G \k \g (named backrefs)
+            case UNKNOWN -> throw new XPathException(context, ErrorCodes.FORX0002,
+                    "Invalid regular expression: \\" + next
+                            + " is not a recognized escape sequence in XPath regular expressions",
+                    new StringValue(pattern));
+        };
+    }
+
+    /** Classification of a backslash-escape's second character. */
+    private enum BackslashKind { SIMPLE, WORD_BOUNDARY, OCTAL_ZERO, BACKREF, CATEGORY, UNKNOWN }
+
+    private static BackslashKind classifyBackslashEscape(final char next) {
+        if (XPATH_REGEX_SIMPLE_ESCAPES.contains(next)) {
+            return BackslashKind.SIMPLE;
+        }
+        if (next == 'b' || next == 'B') {
+            return BackslashKind.WORD_BOUNDARY;
+        }
+        if (next == '0') {
+            return BackslashKind.OCTAL_ZERO;
+        }
+        if (next >= '1' && next <= '9') {
+            return BackslashKind.BACKREF;
+        }
+        if (next == 'p' || next == 'P') {
+            return BackslashKind.CATEGORY;
+        }
+        return BackslashKind.UNKNOWN;
+    }
+
+    private static int validateWordBoundary(final Expression context, final String pattern,
+            final int i, final int len, final boolean isXQuery40, final char next) throws XPathException {
+        if (!isXQuery40) {
+            throw new XPathException(context, ErrorCodes.FORX0002,
+                    "Invalid regular expression: \\" + next
+                            + " is not a recognized escape sequence in XPath 3.1 regular expressions",
+                    new StringValue(pattern));
+        }
+        if (i + 2 < len) {
+            final char q = pattern.charAt(i + 2);
+            if (q == '?' || q == '+' || q == '*' || q == '{') {
+                throw new XPathException(context, ErrorCodes.FORX0002,
+                        "Invalid regular expression: quantifier '" + q
+                                + "' after \\" + next + " boundary assertion is not allowed",
+                        new StringValue(pattern));
+            }
+        }
+        return i + 1;
+    }
+
+    private static int validateBackReference(final Expression context, final String pattern,
+            final int i, final int len, final char first,
+            final int totalGroups, final int closedGroupCount) throws XPathException {
+        // Back-reference \N. N is parsed greedily but capped at the total
+        // number of capturing groups so '\19' in a 1-group pattern is '\1'
+        // + literal '9', while '\11' in an 11-group pattern is back-ref 11.
+        // The chosen N must also reference a group that has already CLOSED
+        // at this position; forward references and self-references are invalid.
+        int j = i + 2;
+        int num = first - '0';
+        while (j < len && pattern.charAt(j) >= '0' && pattern.charAt(j) <= '9') {
+            final int candidate = num * 10 + (pattern.charAt(j) - '0');
+            if (candidate > totalGroups) {
+                break;
+            }
+            num = candidate;
+            j++;
+        }
+        if (num < 1 || num > closedGroupCount) {
+            throw new XPathException(context, ErrorCodes.FORX0002,
+                    "Invalid regular expression: back-reference \\" + num
+                            + " refers to a capturing group that does not exist or has not been closed at this position",
+                    new StringValue(pattern));
+        }
+        return j - 1;
+    }
+
+    private static int validateCategoryEscape(final Expression context, final String pattern,
+            final int i, final int len) throws XPathException {
+        if (i + 2 >= len || pattern.charAt(i + 2) != '{') {
+            throw new XPathException(context, ErrorCodes.FORX0002,
+                    "Invalid regular expression: \\p or \\P must be followed by {Name}",
+                    new StringValue(pattern));
+        }
+        final int close = pattern.indexOf('}', i + 3);
+        if (close < 0) {
+            throw new XPathException(context, ErrorCodes.FORX0002,
+                    "Invalid regular expression: unclosed \\p{ property escape",
+                    new StringValue(pattern));
+        }
+        return close;
+    }
+
+    /**
+     * Validate the special group opening at position {@code i} (where {@code i}
+     * points at {@code '('} and {@code i+1} is {@code '?'}). In XPath 3.1 only
+     * {@code (?:...)} is permitted; XPath 4.0 also allows the four lookaround
+     * forms {@code (?=...) (?!...) (?<=...) (?<!...)}.
+     */
+    private static void validateSpecialGroupOpen(final Expression context, final String pattern,
+            final int i, final int len, final boolean isXQuery40) throws XPathException {
+        if (i + 2 >= len) {
+            throw new XPathException(context, ErrorCodes.FORX0002,
+                    "Invalid regular expression: incomplete group syntax at position " + i,
+                    new StringValue(pattern));
+        }
+        final char groupType = pattern.charAt(i + 2);
+        if (groupType == ':') {
+            return; // (?:...) — always valid
+        }
+        if (isXQuery40 && (groupType == '=' || groupType == '!')) {
+            return; // (?=...) (?!...) — valid in XPath 4.0
+        }
+        if (isXQuery40 && groupType == '<' && i + 3 < len
+                && (pattern.charAt(i + 3) == '=' || pattern.charAt(i + 3) == '!')) {
+            return; // (?<=...) (?<!...) — valid in XPath 4.0
+        }
+        throw new XPathException(context, ErrorCodes.FORX0002,
+                "Invalid regular expression: non-capturing group (?:...) is the only "
+                        + "permitted group syntax in XPath regular expressions; "
+                        + "found (?" + groupType + " at position " + i,
+                new StringValue(pattern));
+    }
+
+    /**
      * Counts capturing groups in a regex pattern. A '(' opens a capturing
      * group unless followed by '?' (e.g. {@code (?:...)}, {@code (?=...)})
      * or '*' (e.g. {@code (*positive_lookahead:...)}). Escapes and character
@@ -381,43 +458,58 @@ public class RegexUtil {
         while (i < len) {
             final char c = pattern.charAt(i);
             if (c == '\\') {
-                if (i + 1 < len && (pattern.charAt(i + 1) == 'p' || pattern.charAt(i + 1) == 'P')
-                        && i + 2 < len && pattern.charAt(i + 2) == '{') {
-                    final int close = pattern.indexOf('}', i + 3);
-                    i = close < 0 ? len : close + 1;
-                } else {
-                    i += 2;
+                i = skipBackslashForGroupCount(pattern, i, len);
+            } else if (c == '[') {
+                i = skipCharClassForGroupCount(pattern, i, len);
+            } else {
+                if (isCapturingGroupOpen(pattern, i, len)) {
+                    count++;
                 }
-                continue;
+                i++;
             }
-            if (c == '[') {
-                // Skip the character class body. Track nested '[' for
-                // subtraction classes and ignore escapes within.
-                int j = i + 1;
-                int depth = 1;
-                while (j < len && depth > 0) {
-                    final char cj = pattern.charAt(j);
-                    if (cj == '\\') {
-                        j += 2;
-                        continue;
-                    }
-                    if (cj == '[') {
-                        depth++;
-                    } else if (cj == ']') {
-                        depth--;
-                    }
-                    j++;
-                }
-                i = j;
-                continue;
-            }
-            if (c == '(' && (i + 1 >= len
-                    || (pattern.charAt(i + 1) != '?' && pattern.charAt(i + 1) != '*'))) {
-                count++;
-            }
-            i++;
         }
         return count;
+    }
+
+    private static int skipBackslashForGroupCount(final String pattern, final int i, final int len) {
+        if (i + 1 < len && (pattern.charAt(i + 1) == 'p' || pattern.charAt(i + 1) == 'P')
+                && i + 2 < len && pattern.charAt(i + 2) == '{') {
+            final int close = pattern.indexOf('}', i + 3);
+            return close < 0 ? len : close + 1;
+        }
+        return i + 2;
+    }
+
+    private static int skipCharClassForGroupCount(final String pattern, final int i, final int len) {
+        // Skip the character class body. Track nested '[' for subtraction
+        // classes and ignore escapes within.
+        int j = i + 1;
+        int depth = 1;
+        while (j < len && depth > 0) {
+            final char cj = pattern.charAt(j);
+            if (cj == '\\') {
+                j += 2;
+                continue;
+            }
+            if (cj == '[') {
+                depth++;
+            } else if (cj == ']') {
+                depth--;
+            }
+            j++;
+        }
+        return j;
+    }
+
+    private static boolean isCapturingGroupOpen(final String pattern, final int i, final int len) {
+        if (pattern.charAt(i) != '(') {
+            return false;
+        }
+        if (i + 1 >= len) {
+            return true;
+        }
+        final char next = pattern.charAt(i + 1);
+        return next != '?' && next != '*';
     }
 
     /**
@@ -433,106 +525,151 @@ public class RegexUtil {
         final int len = pattern.length();
         int i = 0;
         while (i < len) {
-            final boolean isLookaround;
-            final boolean isLookbehind;
-            final int bodyStart;
-            if (i + 3 < len && pattern.charAt(i) == '(' && pattern.charAt(i + 1) == '?') {
-                final char gt = pattern.charAt(i + 2);
-                if (gt == '=' || gt == '!') {
-                    isLookaround = true;
-                    isLookbehind = false;
-                    bodyStart = i + 3;
-                } else if (gt == '<' && i + 4 < len
-                        && (pattern.charAt(i + 3) == '=' || pattern.charAt(i + 3) == '!')) {
-                    isLookaround = true;
-                    isLookbehind = true;
-                    bodyStart = i + 4;
-                } else {
-                    isLookaround = false;
-                    isLookbehind = false;
-                    bodyStart = -1;
-                }
-            } else if (i + 1 < len && pattern.charAt(i) == '(' && pattern.charAt(i + 1) == '*') {
-                final int colon = pattern.indexOf(':', i + 2);
-                if (colon > 0 && colon < len) {
-                    final String name = pattern.substring(i + 2, colon);
-                    if ("positive_lookahead".equals(name) || "negative_lookahead".equals(name)) {
-                        isLookaround = true;
-                        isLookbehind = false;
-                        bodyStart = colon + 1;
-                    } else if ("positive_lookbehind".equals(name) || "negative_lookbehind".equals(name)) {
-                        isLookaround = true;
-                        isLookbehind = true;
-                        bodyStart = colon + 1;
-                    } else {
-                        isLookaround = false;
-                        isLookbehind = false;
-                        bodyStart = -1;
-                    }
-                } else {
-                    isLookaround = false;
-                    isLookbehind = false;
-                    bodyStart = -1;
-                }
-            } else {
-                isLookaround = false;
-                isLookbehind = false;
-                bodyStart = -1;
-            }
-            if (!isLookaround) {
+            final Lookaround look = detectLookaroundAt(pattern, i, len);
+            if (look == null) {
                 i++;
                 continue;
             }
-            // Find matching closing ')' for this lookaround group
-            int depth = 1;
-            int j = bodyStart;
-            boolean bodyHasUnboundedQuantifier = false;
-            while (j < len && depth > 0) {
-                final char cj = pattern.charAt(j);
-                if (cj == '\\') {
-                    j += 2;
-                    continue;
-                }
-                if (cj == '[') {
-                    final int closeBracket = pattern.indexOf(']', j + 1);
-                    if (closeBracket < 0) {
-                        return; // malformed; let outer error handling take over
-                    }
-                    j = closeBracket + 1;
-                    continue;
-                }
-                if (cj == '(') {
-                    depth++;
-                } else if (cj == ')') {
-                    depth--;
-                    if (depth == 0) {
-                        break;
-                    }
-                } else if (depth == 1 && (cj == '*' || cj == '+' || cj == '?')) {
-                    bodyHasUnboundedQuantifier = true;
-                }
-                j++;
+            final LookaroundBody body = scanLookaroundBody(pattern, look.bodyStart, len);
+            if (body == null) {
+                return; // malformed body; let outer error handling take over
             }
-            if (depth != 0) {
-                return; // unbalanced parens; outer machinery handles
-            }
-            if (isLookbehind && bodyHasUnboundedQuantifier) {
+            if (look.isLookbehind && body.hasUnboundedQuantifier) {
                 throw new XPathException(context, ErrorCodes.FORX0002,
                         "Invalid regular expression: lookbehind assertion must be fixed-length "
                                 + "(unbounded quantifier in body)",
                         new StringValue(pattern));
             }
-            // Quantifier after the lookaround group is also invalid
-            if (j + 1 < len) {
-                final char after = pattern.charAt(j + 1);
-                if (after == '?' || after == '+' || after == '*' || after == '{') {
-                    throw new XPathException(context, ErrorCodes.FORX0002,
-                            "Invalid regular expression: lookaround assertion cannot be quantified ('"
-                                    + after + "' after closing ')')",
-                            new StringValue(pattern));
-                }
+            failIfQuantifierAfter(context, pattern, body.closeParen, len);
+            i = body.closeParen + 1;
+        }
+    }
+
+    /** Describes a lookaround group recognized at a given start position. */
+    private static final class Lookaround {
+        final boolean isLookbehind;
+        final int bodyStart;
+
+        Lookaround(final boolean isLookbehind, final int bodyStart) {
+            this.isLookbehind = isLookbehind;
+            this.bodyStart = bodyStart;
+        }
+    }
+
+    /** Result of scanning a lookaround body: closing-')' index and whether an unbounded quantifier was seen. */
+    private static final class LookaroundBody {
+        final int closeParen;
+        final boolean hasUnboundedQuantifier;
+
+        LookaroundBody(final int closeParen, final boolean hasUnboundedQuantifier) {
+            this.closeParen = closeParen;
+            this.hasUnboundedQuantifier = hasUnboundedQuantifier;
+        }
+    }
+
+    /**
+     * Detect a lookaround group at position {@code i}, returning its body-start
+     * position and direction, or {@code null} if the position does not start a
+     * lookaround. Recognizes both Perl-style {@code (?=}, {@code (?!}, {@code (?<=},
+     * {@code (?<!} and XPath-4-style {@code (*positive_lookahead:} family.
+     */
+    @Nullable
+    private static Lookaround detectLookaroundAt(final String pattern, final int i, final int len) {
+        if (i + 3 < len && pattern.charAt(i) == '(' && pattern.charAt(i + 1) == '?') {
+            return detectPerlLookaround(pattern, i, len);
+        }
+        if (i + 1 < len && pattern.charAt(i) == '(' && pattern.charAt(i + 1) == '*') {
+            return detectXPath4Lookaround(pattern, i, len);
+        }
+        return null;
+    }
+
+    @Nullable
+    private static Lookaround detectPerlLookaround(final String pattern, final int i, final int len) {
+        final char gt = pattern.charAt(i + 2);
+        if (gt == '=' || gt == '!') {
+            return new Lookaround(false, i + 3);
+        }
+        if (gt == '<' && i + 4 < len
+                && (pattern.charAt(i + 3) == '=' || pattern.charAt(i + 3) == '!')) {
+            return new Lookaround(true, i + 4);
+        }
+        return null;
+    }
+
+    @Nullable
+    private static Lookaround detectXPath4Lookaround(final String pattern, final int i, final int len) {
+        final int colon = pattern.indexOf(':', i + 2);
+        if (colon <= 0 || colon >= len) {
+            return null;
+        }
+        final String name = pattern.substring(i + 2, colon);
+        if ("positive_lookahead".equals(name) || "negative_lookahead".equals(name)) {
+            return new Lookaround(false, colon + 1);
+        }
+        if ("positive_lookbehind".equals(name) || "negative_lookbehind".equals(name)) {
+            return new Lookaround(true, colon + 1);
+        }
+        return null;
+    }
+
+    /**
+     * Walk from {@code bodyStart} to the matching closing {@code ')'} of a
+     * lookaround group, tracking whether any depth-1 unbounded quantifier
+     * appears in the body. Returns {@code null} on malformed input (unclosed
+     * character class or unbalanced parens) so the caller can defer to outer
+     * error handling.
+     */
+    @Nullable
+    private static LookaroundBody scanLookaroundBody(final String pattern, final int bodyStart, final int len) {
+        int depth = 1;
+        int j = bodyStart;
+        boolean hasUnbounded = false;
+        while (j < len && depth > 0) {
+            final char cj = pattern.charAt(j);
+            if (cj == '\\') {
+                j += 2;
+                continue;
             }
-            i = j + 1; // continue past closing ')'
+            if (cj == '[') {
+                final int closeBracket = pattern.indexOf(']', j + 1);
+                if (closeBracket < 0) {
+                    return null;
+                }
+                j = closeBracket + 1;
+                continue;
+            }
+            if (cj == '(') {
+                depth++;
+            } else if (cj == ')') {
+                depth--;
+                if (depth == 0) {
+                    return new LookaroundBody(j, hasUnbounded);
+                }
+            } else if (depth == 1 && (cj == '*' || cj == '+' || cj == '?')) {
+                hasUnbounded = true;
+            }
+            j++;
+        }
+        return null;
+    }
+
+    /**
+     * After a lookaround group closes at {@code closeParen}, the character
+     * immediately following must not be a quantifier — lookarounds cannot be
+     * quantified per the XPath F&amp;O regex spec.
+     */
+    private static void failIfQuantifierAfter(final Expression context, final String pattern,
+            final int closeParen, final int len) throws XPathException {
+        if (closeParen + 1 >= len) {
+            return;
+        }
+        final char after = pattern.charAt(closeParen + 1);
+        if (after == '?' || after == '+' || after == '*' || after == '{') {
+            throw new XPathException(context, ErrorCodes.FORX0002,
+                    "Invalid regular expression: lookaround assertion cannot be quantified ('"
+                            + after + "' after closing ')')",
+                    new StringValue(pattern));
         }
     }
 
@@ -567,75 +704,13 @@ public class RegexUtil {
                 return j;
             }
             if (cc == '\\') {
-                if (j + 1 >= len) {
-                    throw new XPathException(context, ErrorCodes.FORX0002,
-                            "Invalid regular expression: trailing backslash inside character class",
-                            new StringValue(pattern));
-                }
-                final char ec = pattern.charAt(j + 1);
-                switch (ec) {
-                    case 'n', 'r', 't',
-                         '\\', '|', '.', '-', '^',
-                         '?', '*', '+',
-                         '{', '}', '(', ')',
-                         '[', ']', '$',
-                         ' ',
-                         'd', 'D', 's', 'S',
-                         'w', 'W', 'i', 'I',
-                         'c', 'C',
-                         // \b inside class is backspace, allowed
-                         'b', 'B' -> j += 2;
-                    case 'p', 'P' -> {
-                        if (j + 2 < len && pattern.charAt(j + 2) == '{') {
-                            final int close = pattern.indexOf('}', j + 3);
-                            if (close < 0) {
-                                throw new XPathException(context, ErrorCodes.FORX0002,
-                                        "Invalid regular expression: unclosed \\p{ inside character class",
-                                        new StringValue(pattern));
-                            }
-                            j = close + 1;
-                        } else {
-                            throw new XPathException(context, ErrorCodes.FORX0002,
-                                    "Invalid regular expression: \\p or \\P must be followed by {Name}",
-                                    new StringValue(pattern));
-                        }
-                    }
-                    default -> throw new XPathException(context, ErrorCodes.FORX0002,
-                            "Invalid regular expression: \\" + ec
-                                    + " is not a recognized escape sequence inside character class",
-                            new StringValue(pattern));
-                }
+                j = scanEscapeInCharClass(context, pattern, j, len);
                 partsCount++;
                 lastWasUnescapedHyphen = false;
                 continue;
             }
             if (cc == '[') {
-                if (j + 1 < len && pattern.charAt(j + 1) == ':') {
-                    throw new XPathException(context, ErrorCodes.FORX0002,
-                            "Invalid regular expression: POSIX character class [:...:] is not supported in XPath regular expressions",
-                            new StringValue(pattern));
-                }
-                // Nested '[' is only valid as the start of a subtraction class,
-                // which requires a preceding unescaped '-' separator AND a
-                // non-empty (pos|neg)CharGroup before that '-'.
-                if (!lastWasUnescapedHyphen) {
-                    throw new XPathException(context, ErrorCodes.FORX0002,
-                            "Invalid regular expression: '[' inside character class is only allowed after a '-' subtraction separator",
-                            new StringValue(pattern));
-                }
-                if (partsBeforeLastHyphen < 1) {
-                    throw new XPathException(context, ErrorCodes.FORX0002,
-                            "Invalid regular expression: character class subtraction requires a non-empty character group before the '-' separator",
-                            new StringValue(pattern));
-                }
-                final int innerEnd = scanCharClass(context, pattern, j, len);
-                j = innerEnd + 1;
-                if (j >= len || pattern.charAt(j) != ']') {
-                    throw new XPathException(context, ErrorCodes.FORX0002,
-                            "Invalid regular expression: closing ']' expected after subtraction character class",
-                            new StringValue(pattern));
-                }
-                return j;
+                return scanNestedCharClass(context, pattern, j, len, lastWasUnescapedHyphen, partsBeforeLastHyphen);
             }
             // Regular char (including literal '-')
             if (cc == '-') {
@@ -652,11 +727,85 @@ public class RegexUtil {
                 new StringValue(pattern));
     }
 
-    private static final Pattern XPATH4_LOOKAROUND = Pattern.compile(
-            "\\(\\*(" +
-                    "positive_lookahead|negative_lookahead|" +
-                    "positive_lookbehind|negative_lookbehind" +
-                    "):");
+    /**
+     * Handle a backslash-escape inside a character class. {@code j} points at
+     * the backslash. Returns the position immediately after the escape.
+     */
+    private static int scanEscapeInCharClass(final Expression context, final String pattern,
+            final int j, final int len) throws XPathException {
+        if (j + 1 >= len) {
+            throw new XPathException(context, ErrorCodes.FORX0002,
+                    "Invalid regular expression: trailing backslash inside character class",
+                    new StringValue(pattern));
+        }
+        final char ec = pattern.charAt(j + 1);
+        if (XPATH_REGEX_CHARCLASS_SIMPLE_ESCAPES.contains(ec)) {
+            return j + 2;
+        }
+        if (ec == 'p' || ec == 'P') {
+            return scanCategoryEscape(context, pattern, j, len);
+        }
+        throw new XPathException(context, ErrorCodes.FORX0002,
+                "Invalid regular expression: \\" + ec
+                        + " is not a recognized escape sequence inside character class",
+                new StringValue(pattern));
+    }
+
+    /**
+     * Handle a {@code \p{Name}} or {@code \P{Name}} category escape inside a
+     * character class. {@code j} points at the backslash. Returns the position
+     * immediately after the closing {@code '}'}.
+     */
+    private static int scanCategoryEscape(final Expression context, final String pattern,
+            final int j, final int len) throws XPathException {
+        if (j + 2 >= len || pattern.charAt(j + 2) != '{') {
+            throw new XPathException(context, ErrorCodes.FORX0002,
+                    "Invalid regular expression: \\p or \\P must be followed by {Name}",
+                    new StringValue(pattern));
+        }
+        final int close = pattern.indexOf('}', j + 3);
+        if (close < 0) {
+            throw new XPathException(context, ErrorCodes.FORX0002,
+                    "Invalid regular expression: unclosed \\p{ inside character class",
+                    new StringValue(pattern));
+        }
+        return close + 1;
+    }
+
+    /**
+     * Handle a nested {@code '['} inside a character class. Per the XPath/XSD
+     * grammar this is only valid as the start of a subtraction class —
+     * the bracket must be preceded by an unescaped {@code '-'} separator AND
+     * a non-empty (pos|neg)CharGroup. Returns the position of the closing
+     * {@code ']'} of the OUTER class so the caller can finish.
+     */
+    private static int scanNestedCharClass(final Expression context, final String pattern,
+            final int j, final int len, final boolean lastWasUnescapedHyphen,
+            final int partsBeforeLastHyphen) throws XPathException {
+        if (j + 1 < len && pattern.charAt(j + 1) == ':') {
+            throw new XPathException(context, ErrorCodes.FORX0002,
+                    "Invalid regular expression: POSIX character class [:...:] is not supported in XPath regular expressions",
+                    new StringValue(pattern));
+        }
+        if (!lastWasUnescapedHyphen) {
+            throw new XPathException(context, ErrorCodes.FORX0002,
+                    "Invalid regular expression: '[' inside character class is only allowed after a '-' subtraction separator",
+                    new StringValue(pattern));
+        }
+        if (partsBeforeLastHyphen < 1) {
+            throw new XPathException(context, ErrorCodes.FORX0002,
+                    "Invalid regular expression: character class subtraction requires a non-empty character group before the '-' separator",
+                    new StringValue(pattern));
+        }
+        final int innerEnd = scanCharClass(context, pattern, j, len);
+        final int after = innerEnd + 1;
+        if (after >= len || pattern.charAt(after) != ']') {
+            throw new XPathException(context, ErrorCodes.FORX0002,
+                    "Invalid regular expression: closing ']' expected after subtraction character class",
+                    new StringValue(pattern));
+        }
+        return after;
+    }
 
     /**
      * Translates XPath 4.0 lookaround syntax to Java regex syntax.

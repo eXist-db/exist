@@ -47,7 +47,6 @@ public class UserDefinedFunction extends Function implements Cloneable {
     private FunctionCall call;
     private boolean hasBeenReset = false;
     private List<ClosureVariable> closureVariables = null;
-    private boolean passContextToBody = false;
 
     // When true, propagate the caller's focus (context sequence + item) to the
     // body. Set by FunctionFactory.wrap so that named-function-reference and
@@ -71,17 +70,6 @@ public class UserDefinedFunction extends Function implements Cloneable {
 
     public void setFunctionBody(Expression body) {
         this.body = body.simplify();
-    }
-
-    /**
-     * Mark this UDF as a wrapper for an internal function (created by
-     * {@link FunctionFactory#wrap}). Wrapper functions pass the evaluation
-     * context through to their body so that context-dependent built-in
-     * functions (like fn:id, fn:idref, fn:string, etc.) can access the
-     * focus when called via function references.
-     */
-    public void setPassContextToBody(boolean passContext) {
-        this.passContextToBody = passContext;
     }
 
     public void addVariable(final String varName) throws XPathException {

@@ -145,7 +145,7 @@ public class FunReplace extends BasicFunction {
 
 			// Pre-validate: reject constructs not valid in XPath regex
 			if (!hasLiteral(flags)) {
-				org.exist.xquery.regex.RegexUtil.validateXPathRegex(this, pattern, isXQuery40);
+				validateXPathRegex(this, pattern, isXQuery40);
 			}
 
 			final Configuration config = context.getBroker().getBrokerPool().getSaxonConfiguration();
