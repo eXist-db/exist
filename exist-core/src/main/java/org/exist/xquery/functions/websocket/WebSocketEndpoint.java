@@ -35,7 +35,8 @@ import jakarta.websocket.*;
 import jakarta.websocket.server.ServerEndpoint;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.util.Iterator;
+import java.nio.ByteBuffer;
+import java.nio.channels.ClosedChannelException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
@@ -63,6 +64,7 @@ public class WebSocketEndpoint {
     private static final Logger LOG = LogManager.getLogger(WebSocketEndpoint.class);
     private static final JsonFactory JSON_FACTORY = new JsonFactory();
     private static final Map<Session, String> sessions = new ConcurrentHashMap<>();
+    private static final ByteBuffer PING_PAYLOAD = ByteBuffer.allocate(0);
 
     private static volatile boolean initialized = false;
     private static ScheduledExecutorService heartbeatService = null;
@@ -109,19 +111,29 @@ public class WebSocketEndpoint {
                 monitorService.shutdown();
                 monitorService = null;
             }
+            sessions.clear();
             initialized = false;
         }
     }
 
     @OnOpen
     public void openSession(final Session session) {
-        session.setMaxIdleTimeout(10000);
         sessions.put(session, DEFAULT_CHANNEL);
     }
 
     @OnClose
     public void closeSession(final Session session, final CloseReason closeReason) {
         sessions.remove(session);
+    }
+
+    @OnError
+    public void onError(final Session session, final Throwable throwable) {
+        sessions.remove(session);
+        if (throwable instanceof ClosedChannelException) {
+            LOG.debug("WebSocket client disconnected abruptly: session {}", session.getId());
+        } else {
+            LOG.warn("WebSocket error on session {}: {}", session.getId(), throwable.getMessage(), throwable);
+        }
     }
 
     @OnMessage
@@ -142,7 +154,16 @@ public class WebSocketEndpoint {
     }
 
     static void pingAll() {
-        sendAll(null, "ping");
+        for (final Session session : sessions.keySet()) {
+            try {
+                session.getBasicRemote().sendPing(PING_PAYLOAD.duplicate());
+            } catch (final ClosedChannelException e) {
+                sessions.remove(session);
+            } catch (final IOException e) {
+                LOG.debug("Ping failed, removing session {}: {}", session.getId(), e.getMessage());
+                sessions.remove(session);
+            }
+        }
     }
 
     /**
@@ -161,6 +182,8 @@ public class WebSocketEndpoint {
                     switch (entry.getValue()) {
                         case String s -> gen.writeStringField(key, s);
                         case Integer i -> gen.writeNumberField(key, i);
+                        case Long l -> gen.writeNumberField(key, l);
+                        case Double d -> gen.writeNumberField(key, d);
                         case Boolean b -> gen.writeBooleanField(key, b);
                         case null -> gen.writeNullField(key);
                         default -> gen.writeStringField(key, entry.getValue().toString());
@@ -181,18 +204,16 @@ public class WebSocketEndpoint {
      * @param message the message text
      */
     public static void sendAll(final String toChannel, final String message) {
-        final Iterator<Map.Entry<Session, String>> iterator = sessions.entrySet().iterator();
-        while (iterator.hasNext()) {
-            try {
-                final Map.Entry<Session, String> entry = iterator.next();
-                final Session session = entry.getKey();
-                final String channel = entry.getValue();
-
-                if (toChannel == null || (!channel.equals(DEFAULT_CHANNEL) && toChannel.equals(channel))) {
+        for (final Map.Entry<Session, String> entry : sessions.entrySet()) {
+            final Session session = entry.getKey();
+            final String channel = entry.getValue();
+            if (toChannel == null || (!channel.equals(DEFAULT_CHANNEL) && toChannel.equals(channel))) {
+                try {
                     session.getBasicRemote().sendText(message);
+                } catch (final IOException e) {
+                    LOG.debug("Removing disconnected WebSocket session: {}", e.getMessage());
+                    sessions.remove(session);
                 }
-            } catch (final IOException e) {
-                LOG.error("Error sending message via websocket: {}", e.getMessage(), e);
             }
         }
     }

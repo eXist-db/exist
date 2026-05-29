@@ -1047,28 +1047,23 @@ public class EvalWebSocketEndpointTest {
         final Session monitorSession = container.connectToServer(new Endpoint() {
             @Override
             public void onOpen(final Session session, final EndpointConfig config) {
+                try {
+                    session.getBasicRemote().sendText("{\"channel\": \"_monitor\"}");
+                    subscribedLatch.countDown();
+                } catch (final IOException e) {
+                    throw new UncheckedIOException(e);
+                }
                 session.addMessageHandler(new MessageHandler.Whole<String>() {
-                    private boolean subscribed = false;
                     @Override
                     public void onMessage(final String message) {
-                        if (!subscribed && "ping".equals(message)) {
-                            try {
-                                session.getBasicRemote().sendText("{\"channel\": \"_monitor\"}");
-                                subscribed = true;
-                                subscribedLatch.countDown();
-                            } catch (IOException e) {
-                                throw new UncheckedIOException(e);
+                        try {
+                            final Map<String, Object> parsed = parseJson(message);
+                            if ("monitor".equals(parsed.get("type"))) {
+                                monitorMessages.add(parsed);
+                                monitorEventLatch.countDown();
                             }
-                        } else if (subscribed && !"ping".equals(message)) {
-                            try {
-                                final Map<String, Object> parsed = parseJson(message);
-                                if ("monitor".equals(parsed.get("type"))) {
-                                    monitorMessages.add(parsed);
-                                    monitorEventLatch.countDown();
-                                }
-                            } catch (final IOException e) {
-                                // ignore parse errors for pings etc.
-                            }
+                        } catch (final IOException e) {
+                            // ignore non-JSON frames
                         }
                     }
                 });
