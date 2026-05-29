@@ -28,15 +28,43 @@ Useful build switches:
 Maven resolves dependencies from these repositories (defined in `exist-parent/pom.xml`):
 
 - **Releases:** Maven Central (direct) → exist-db proxy → exist-db → evolved-binary (all public)
-- **Snapshots:** GitHub Packages (exist, exist-xqts-runner) → exist-db-snapshots → evolved-binary-snapshots
+- **Snapshots and a few release artifacts:** GitHub Packages (`exist`, `exist-xqts-runner`, `jackrabbit-webdav-jakarta`) → exist-db-snapshots → evolved-binary-snapshots
 
-### GitHub Packages (authentication for SNAPSHOT builds)
+### GitHub Packages (authentication required)
 
-When building from `develop` (or any SNAPSHOT version), Maven resolves `exist-xqts-runner` from `https://maven.pkg.github.com/eXist-db/exist-xqts-runner`. GitHub Packages requires authentication; without it you get **401 Unauthorized**.
+When building from `develop` (or any SNAPSHOT version), Maven resolves several artifacts from `maven.pkg.github.com/eXist-db/...`. GitHub Packages requires authentication; without it you get **401 Unauthorized**. Three Maven server IDs are involved (defined in `exist-parent/pom.xml`):
 
-**Option 1 – Exclude XQTS** (no auth needed): use `mvn -DskipTests package -pl '!exist-xqts'` to skip the XQTS module.
+| Server ID | URL | What it provides |
+|---|---|---|
+| `github` | `https://maven.pkg.github.com/eXist-db/exist` | eXist-db inter-module SNAPSHOTs |
+| `github-xqts-runner` | `https://maven.pkg.github.com/eXist-db/exist-xqts-runner` | `exist-xqts-runner` (used by the `exist-xqts` module) |
+| `github-jackrabbit-webdav-jakarta` | `https://maven.pkg.github.com/eXist-db/jackrabbit-webdav-jakarta` | `org.exist-db.thirdparty.org.apache.jackrabbit:jackrabbit-webdav:2.22.3-jakarta-ee10` (used by `extensions/webdav`) |
 
-**Option 2 – Configure GitHub auth** (if you need XQTS or a full build): add a GitHub PAT to `~/.m2/settings.xml` as server `github-xqts-runner` (and optionally `github` for eXist snapshots). See `.github/actions/maven-github-settings/action.yml` for the expected `<server>` format.
+Add all three to `~/.m2/settings.xml`. **The same GitHub PAT (with the `read:packages` scope) can be reused across all three server entries** — Maven matches the `<id>` of a `<server>` to the matching `<repository>` declared in the pom, so each repo needs its own `<server>` block even though the credentials are identical:
+
+```xml
+<settings xmlns="http://maven.apache.org/SETTINGS/1.2.0">
+  <servers>
+    <server>
+      <id>github</id>
+      <username>YOUR_GITHUB_USERNAME</username>
+      <password>YOUR_GITHUB_PAT_WITH_READ_PACKAGES</password>
+    </server>
+    <server>
+      <id>github-xqts-runner</id>
+      <username>YOUR_GITHUB_USERNAME</username>
+      <password>YOUR_GITHUB_PAT_WITH_READ_PACKAGES</password>
+    </server>
+    <server>
+      <id>github-jackrabbit-webdav-jakarta</id>
+      <username>YOUR_GITHUB_USERNAME</username>
+      <password>YOUR_GITHUB_PAT_WITH_READ_PACKAGES</password>
+    </server>
+  </servers>
+</settings>
+```
+
+CI generates the same shape from secrets via `.github/actions/maven-github-settings/action.yml`.
 
 Further build options can be found at: [eXist-db Build Documentation](http://www.exist-db.org/exist/apps/doc/exist-building.xml "How to build eXist") and on the workflow files of this repo.
 
