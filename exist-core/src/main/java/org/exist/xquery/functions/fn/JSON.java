@@ -39,8 +39,10 @@ import org.exist.xquery.value.*;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
 import java.nio.file.Path;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.Files.isReadable;
 import static java.nio.file.Files.newInputStream;
 
@@ -229,8 +231,7 @@ public class JSON extends BasicFunction {
             String url = href.getStringValue();
 
             // Check dynamically available text resources first (XQTS runner registers these)
-            try (final java.io.Reader dynReader = context.getDynamicallyAvailableTextResource(
-                    url, java.nio.charset.StandardCharsets.UTF_8)) {
+            try (final Reader dynReader = context.getDynamicallyAvailableTextResource(url, UTF_8)) {
                 if (dynReader != null) {
                     final StringBuilder sb = new StringBuilder();
                     final char[] buf = new char[4096];
