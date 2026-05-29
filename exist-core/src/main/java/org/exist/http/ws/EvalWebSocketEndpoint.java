@@ -36,6 +36,7 @@ import jakarta.websocket.server.HandshakeRequest;
 import jakarta.websocket.server.ServerEndpoint;
 import jakarta.websocket.server.ServerEndpointConfig;
 import java.io.IOException;
+import java.nio.channels.ClosedChannelException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -88,6 +89,7 @@ public class EvalWebSocketEndpoint {
             queryExecutorService.shutdown();
             queryExecutorService = null;
         }
+        sessions.clear();
     }
 
     /**
@@ -216,14 +218,16 @@ public class EvalWebSocketEndpoint {
 
     @OnError
     public void onError(final Session session, final Throwable error) {
-        if (error.getMessage() != null && error.getMessage().contains("Text message size")) {
-            LOG.warn("WebSocket message exceeds {}MB buffer limit: {}", MAX_TEXT_MESSAGE_SIZE / (1024 * 1024), error.getMessage());
-        } else {
-            LOG.warn("WebSocket eval error: {}", error.getMessage(), error);
-        }
         final EvalSession evalSession = sessions.remove(session);
         if (evalSession != null) {
             evalSession.cancelAll();
+        }
+        if (error instanceof ClosedChannelException) {
+            LOG.debug("WebSocket eval client disconnected abruptly: session {}", session.getId());
+        } else if (error.getMessage() != null && error.getMessage().contains("Text message size")) {
+            LOG.warn("WebSocket message exceeds {}MB buffer limit: {}", MAX_TEXT_MESSAGE_SIZE / (1024 * 1024), error.getMessage());
+        } else {
+            LOG.warn("WebSocket eval error: {}", error.getMessage(), error);
         }
     }
 

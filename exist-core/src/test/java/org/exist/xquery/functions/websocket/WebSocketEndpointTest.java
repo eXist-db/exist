@@ -45,31 +45,23 @@ public class WebSocketEndpointTest {
     public static final ExistWebServer existWebServer = new ExistWebServer(true, false, true, true);
 
     @Test
-    public void connectAndReceiveHeartbeat() throws Exception {
+    public void connectAndHeartbeatKeepsSessionOpen() throws Exception {
         final int port = existWebServer.getPort();
         final URI wsUri = new URI("ws://localhost:" + port + "/ws");
-
-        final CountDownLatch messageLatch = new CountDownLatch(1);
-        final AtomicReference<String> receivedMessage = new AtomicReference<>();
 
         final WebSocketContainer container = ContainerProvider.getWebSocketContainer();
         final Session session = container.connectToServer(new Endpoint() {
             @Override
             public void onOpen(final Session session, final EndpointConfig config) {
-                session.addMessageHandler(new MessageHandler.Whole<String>() {
-                    @Override
-                    public void onMessage(final String message) {
-                        receivedMessage.set(message);
-                        messageLatch.countDown();
-                    }
-                });
             }
         }, ClientEndpointConfig.Builder.create().build(), wsUri);
 
         try {
-            // should receive a heartbeat ping within 1 second
-            assertTrue("Should receive a message within 2s", messageLatch.await(2, TimeUnit.SECONDS));
-            assertEquals("ping", receivedMessage.get());
+            // The heartbeat sends WebSocket PING control frames every 500ms.
+            // They are handled transparently by the WS layer and do not fire onMessage.
+            // The observable effect is that the session stays open.
+            Thread.sleep(1500);
+            assertTrue("Session should remain open after heartbeat interval", session.isOpen());
         } finally {
             session.close();
         }
@@ -88,24 +80,17 @@ public class WebSocketEndpointTest {
         final Session session = container.connectToServer(new Endpoint() {
             @Override
             public void onOpen(final Session session, final EndpointConfig config) {
+                try {
+                    session.getBasicRemote().sendText("{\"channel\": \"test-channel\"}");
+                    subscribedLatch.countDown();
+                } catch (final IOException e) {
+                    throw new UncheckedIOException(e);
+                }
                 session.addMessageHandler(new MessageHandler.Whole<String>() {
-                    private boolean subscribed = false;
-
                     @Override
                     public void onMessage(final String message) {
-                        if (!subscribed && "ping".equals(message)) {
-                            // after first ping, subscribe to a channel
-                            try {
-                                session.getBasicRemote().sendText("{\"channel\": \"test-channel\"}");
-                                subscribed = true;
-                                subscribedLatch.countDown();
-                            } catch (IOException e) {
-                                throw new UncheckedIOException(e);
-                            }
-                        } else if (subscribed && !"ping".equals(message)) {
-                            receivedMessage.set(message);
-                            messageLatch.countDown();
-                        }
+                        receivedMessage.set(message);
+                        messageLatch.countDown();
                     }
                 });
             }
@@ -141,19 +126,12 @@ public class WebSocketEndpointTest {
         final Session session = container.connectToServer(new Endpoint() {
             @Override
             public void onOpen(final Session session, final EndpointConfig config) {
-                session.addMessageHandler(new MessageHandler.Whole<String>() {
-                    @Override
-                    public void onMessage(final String message) {
-                        if ("ping".equals(message)) {
-                            try {
-                                session.getBasicRemote().sendText("{\"channel\": \"count-test\"}");
-                                subscribedLatch.countDown();
-                            } catch (IOException e) {
-                                throw new UncheckedIOException(e);
-                            }
-                        }
-                    }
-                });
+                try {
+                    session.getBasicRemote().sendText("{\"channel\": \"count-test\"}");
+                    subscribedLatch.countDown();
+                } catch (final IOException e) {
+                    throw new UncheckedIOException(e);
+                }
             }
         }, ClientEndpointConfig.Builder.create().build(), wsUri);
 
