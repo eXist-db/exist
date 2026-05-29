@@ -320,6 +320,46 @@ declare variable $vs:COLLECTION_EUCLIDEAN := "/db/" || $vs:COLLECTION_EUCLIDEAN_
 declare variable $vs:COLLECTION_DOT_PRODUCT_NAME := "lucene-test-vector-dot-product";
 declare variable $vs:COLLECTION_DOT_PRODUCT := "/db/" || $vs:COLLECTION_DOT_PRODUCT_NAME;
 
+(:~
+ : Data for result-ordering tests. Article titles A/B/C are deliberately stored
+ : in an order that is NOT the similarity order for query q=[1,0,0,0]:
+ :   A : embedding=[0,0,1,0]      — cosine(A,q) = 0.0   (lowest score)
+ :   B : embedding=[1,0,0,0]      — cosine(B,q) = 1.0   (highest score)
+ :   C : embedding=[0.9,0.1,0,0]  — cosine(C,q) ≈ 0.994 (middle score)
+ : So similarity-ranked order is B, C, A while document order is A, B, C.
+ : Used by the "Result ordering" tests to distinguish XQuery node-sequence
+ : order from explicit ranking via ft:score.
+ :)
+declare variable $vs:DATA_ORDER_SINGLE :=
+    <articles>
+        <article><title>A</title><embedding>0.0 0.0 1.0 0.0</embedding></article>
+        <article><title>B</title><embedding>1.0 0.0 0.0 0.0</embedding></article>
+        <article><title>C</title><embedding>0.9 0.1 0.0 0.0</embedding></article>
+    </articles>;
+declare variable $vs:DATA_ORDER_A :=
+    <article><title>A</title><embedding>0.0 0.0 1.0 0.0</embedding></article>;
+declare variable $vs:DATA_ORDER_B :=
+    <article><title>B</title><embedding>1.0 0.0 0.0 0.0</embedding></article>;
+declare variable $vs:DATA_ORDER_C :=
+    <article><title>C</title><embedding>0.9 0.1 0.0 0.0</embedding></article>;
+
+(:~ Config for result-ordering tests. Uses text encoding for readability. :)
+declare variable $vs:XCONF_ORDER :=
+    <collection xmlns="http://exist-db.org/collection-config/1.0">
+        <index xmlns:xs="http://www.w3.org/2001/XMLSchema">
+            <lucene>
+                <text qname="article">
+                    <vector-field name="embedding" expression="embedding" dimension="4" similarity="cosine" encoding="text"/>
+                </text>
+            </lucene>
+        </index>
+    </collection>;
+
+declare variable $vs:COLLECTION_ORDER_SINGLE_NAME := "lucene-test-vector-order-single";
+declare variable $vs:COLLECTION_ORDER_SINGLE := "/db/" || $vs:COLLECTION_ORDER_SINGLE_NAME;
+declare variable $vs:COLLECTION_ORDER_MULTI_NAME := "lucene-test-vector-order-multi";
+declare variable $vs:COLLECTION_ORDER_MULTI := "/db/" || $vs:COLLECTION_ORDER_MULTI_NAME;
+
 (:~ Lucene fulltext only — no vector-field (profiler NONE tests). :)
 declare variable $vs:DATA_NO_VECTOR :=
     <articles>
@@ -430,7 +470,21 @@ function vs:setup() {
       xmldb:create-collection("/db", $vs:COLLECTION_NO_VECTOR_NAME),
       xmldb:store($vs:COLLECTION_NO_VECTOR, "test.xml", $vs:DATA_NO_VECTOR),
       xmldb:store("/db/system/config/db/" || $vs:COLLECTION_NO_VECTOR_NAME, "collection.xconf", $vs:XCONF_NO_VECTOR),
-      xmldb:reindex($vs:COLLECTION_NO_VECTOR) )
+      xmldb:reindex($vs:COLLECTION_NO_VECTOR),
+      (: Result-ordering: single-document case (3 articles in one .xml). :)
+      xmldb:create-collection("/db/system/config/db", $vs:COLLECTION_ORDER_SINGLE_NAME),
+      xmldb:create-collection("/db", $vs:COLLECTION_ORDER_SINGLE_NAME),
+      xmldb:store($vs:COLLECTION_ORDER_SINGLE, "test.xml", $vs:DATA_ORDER_SINGLE),
+      xmldb:store("/db/system/config/db/" || $vs:COLLECTION_ORDER_SINGLE_NAME, "collection.xconf", $vs:XCONF_ORDER),
+      xmldb:reindex($vs:COLLECTION_ORDER_SINGLE),
+      (: Result-ordering: multi-document case (3 separate .xml files, stored A then B then C). :)
+      xmldb:create-collection("/db/system/config/db", $vs:COLLECTION_ORDER_MULTI_NAME),
+      xmldb:create-collection("/db", $vs:COLLECTION_ORDER_MULTI_NAME),
+      xmldb:store($vs:COLLECTION_ORDER_MULTI, "a.xml", $vs:DATA_ORDER_A),
+      xmldb:store($vs:COLLECTION_ORDER_MULTI, "b.xml", $vs:DATA_ORDER_B),
+      xmldb:store($vs:COLLECTION_ORDER_MULTI, "c.xml", $vs:DATA_ORDER_C),
+      xmldb:store("/db/system/config/db/" || $vs:COLLECTION_ORDER_MULTI_NAME, "collection.xconf", $vs:XCONF_ORDER),
+      xmldb:reindex($vs:COLLECTION_ORDER_MULTI) )
 };
 
 (:~
@@ -470,7 +524,11 @@ function vs:tearDown() {
     xmldb:remove($vs:COLLECTION_DOT_PRODUCT),
     xmldb:remove("/db/system/config/db/" || $vs:COLLECTION_DOT_PRODUCT_NAME),
     xmldb:remove($vs:COLLECTION_NO_VECTOR),
-    xmldb:remove("/db/system/config/db/" || $vs:COLLECTION_NO_VECTOR_NAME)
+    xmldb:remove("/db/system/config/db/" || $vs:COLLECTION_NO_VECTOR_NAME),
+    xmldb:remove($vs:COLLECTION_ORDER_SINGLE),
+    xmldb:remove("/db/system/config/db/" || $vs:COLLECTION_ORDER_SINGLE_NAME),
+    xmldb:remove($vs:COLLECTION_ORDER_MULTI),
+    xmldb:remove("/db/system/config/db/" || $vs:COLLECTION_ORDER_MULTI_NAME)
 };
 
 (:~
@@ -1065,4 +1123,82 @@ declare
     %test:assertEquals(0)
 function vs:unknown-field-vector-short-circuit-empty() {
     count(collection($vs:COLLECTION)//article[ft:query-field-vector("unknown_field", [1.0, 0.0, 0.0, 0.0], 2)])
+};
+
+(: ================================================================
+   Result ordering tests
+
+   ft:query-vector and ft:query-field-vector return an XQuery node
+   sequence. Per the XPath 2.0+ data model, only nodes from the same
+   document have a guaranteed relative order ("document order"); the
+   relative order of nodes from different documents is
+   implementation-defined unless an explicit ordering key is supplied.
+
+   These tests pin down the observable behavior:
+     - With three articles in one document, the default result is in
+       document order (A, B, C) — NOT in similarity order (B, C, A).
+     - With three articles in three separate documents, the default
+       result still contains all three but its order is not similarity
+       order; sorting by ft:score descending produces the expected
+       similarity ranking.
+   See the QueryVector function description for the recommended
+   "for $h in ... order by ft:score($h) descending" idiom.
+   ================================================================ :)
+
+(:~ Single-document case: default order is document order (A, B, C). :)
+declare
+    %test:assertEquals("A", "B", "C")
+function vs:order-single-doc-default-is-document-order() {
+    for $h in collection($vs:COLLECTION_ORDER_SINGLE)//article[ft:query-vector(., [1.0, 0.0, 0.0, 0.0], 3)]
+    return $h/title/string()
+};
+
+(:~ Single-document case: explicit `order by ft:score descending` ranks by similarity (B, C, A). :)
+declare
+    %test:assertEquals("B", "C", "A")
+function vs:order-single-doc-sort-by-score-is-similarity-order() {
+    for $h in collection($vs:COLLECTION_ORDER_SINGLE)//article[ft:query-vector(., [1.0, 0.0, 0.0, 0.0], 3)]
+    order by ft:score($h) descending
+    return $h/title/string()
+};
+
+(:~ Multi-document case: default order is not similarity order. We assert that
+ : sorting the titles alphabetically recovers all three, which proves the result
+ : set is complete without depending on the implementation-defined inter-document
+ : ordering. :)
+declare
+    %test:assertEquals("A", "B", "C")
+function vs:order-multi-doc-default-contains-all-three() {
+    let $titles :=
+        for $h in collection($vs:COLLECTION_ORDER_MULTI)//article[ft:query-vector(., [1.0, 0.0, 0.0, 0.0], 3)]
+        return $h/title/string()
+    for $t in $titles
+    order by $t ascending
+    return $t
+};
+
+(:~ Multi-document case: explicit `order by ft:score descending` ranks by similarity (B, C, A). :)
+declare
+    %test:assertEquals("B", "C", "A")
+function vs:order-multi-doc-sort-by-score-is-similarity-order() {
+    for $h in collection($vs:COLLECTION_ORDER_MULTI)//article[ft:query-vector(., [1.0, 0.0, 0.0, 0.0], 3)]
+    order by ft:score($h) descending
+    return $h/title/string()
+};
+
+(:~ ft:query-field-vector parity: single-document case, default is document order. :)
+declare
+    %test:assertEquals("A", "B", "C")
+function vs:order-field-vector-single-doc-default-is-document-order() {
+    for $h in collection($vs:COLLECTION_ORDER_SINGLE)//article[ft:query-field-vector("embedding", [1.0, 0.0, 0.0, 0.0], 3)]
+    return $h/title/string()
+};
+
+(:~ ft:query-field-vector parity: single-document case, `order by ft:score descending` ranks by similarity. :)
+declare
+    %test:assertEquals("B", "C", "A")
+function vs:order-field-vector-single-doc-sort-by-score-is-similarity-order() {
+    for $h in collection($vs:COLLECTION_ORDER_SINGLE)//article[ft:query-field-vector("embedding", [1.0, 0.0, 0.0, 0.0], 3)]
+    order by ft:score($h) descending
+    return $h/title/string()
 };
