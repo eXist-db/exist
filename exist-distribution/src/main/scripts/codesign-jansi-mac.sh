@@ -37,37 +37,45 @@
 # $2 is the jansi version
 # $3 is temp work directory
 # $4 the mac codesign identity
+# $5 is the jline classifier (e.g. jdk11)
 
 
 set -e
 #set -x  ## enable to help debug
 
-# ensure a clean temp work directory
-if [ -d "${3}/org" ]
-then
-  rm -rf "${3}/org"
-fi
-
-# for each native arch
-archs=('arm64' 'x86' 'x86_64')
-for arch in ${archs[@]}
+# for each jar file
+for jar in "${1}/jansi-${2}.jar" "${1}/jline-${2}-${5}.jar"
 do
-  # create the temp output dirs
-  mkdir -p "${3}/org/jline/nativ/Mac/${arch}"
+  # ensure a clean temp work directory for each jar
+  if [ -d "${3}/org" ]
+  then
+    rm -rf "${3}/org"
+  fi
 
-  # switch to temp output dir
-  pushd "${3}"
+  # for each native arch
+  archs=('arm64' 'x86' 'x86_64')
+  for arch in "${archs[@]}"
+  do
+    # create the temp output dirs
+    mkdir -p "${3}/org/jline/nativ/Mac/${arch}"
 
-  # extract the native files
-  jar -xf "${1}/jansi-${2}.jar" "org/jline/nativ/Mac/${arch}/libjlinenative.jnilib"
+    # switch to temp output dir
+    pushd "${3}"
 
-  # test if the file is unsigned, and sign if needed
-  /usr/bin/codesign --verbose --test-requirement="=anchor trusted" --verify "org/jline/nativ/Mac/${arch}/libjlinenative.jnilib" || /usr/bin/codesign --verbose --force --timestamp --sign "${4}" "org/jline/nativ/Mac/${arch}/libjlinenative.jnilib"
+    # extract the native files
+    jar -xf "${jar}" "org/jline/nativ/Mac/${arch}/libjlinenative.jnilib"
 
-  # overwrite the file in the jar
-  jar -uf "${1}/jansi-${2}.jar" "org/jline/nativ/Mac/${arch}/libjlinenative.jnilib"
+    # test if the file is unsigned, and sign if needed
+    /usr/bin/codesign --verbose --test-requirement="=anchor trusted" \
+                      --verify "org/jline/nativ/Mac/${arch}/libjlinenative.jnilib" || \
+                      /usr/bin/codesign --verbose --force --timestamp --sign "${4}" \
+                      "org/jline/nativ/Mac/${arch}/libjlinenative.jnilib"
 
-  # switch back from temp output dir
-  popd
+    # overwrite the file in the jar
+    jar -uf "${jar}" "org/jline/nativ/Mac/${arch}/libjlinenative.jnilib"
 
+    # switch back from temp output dir
+    popd
+
+  done
 done

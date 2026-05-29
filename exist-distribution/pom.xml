@@ -1027,6 +1027,7 @@
                                         <argument>${jansi.version}</argument>
                                         <argument>${project.build.directory}/jansi-native</argument>
                                         <argument>${mac.codesign.identity}</argument>
+                                        <argument>${jline.classifier}</argument>
                                     </arguments>
                                 </configuration>
                             </execution>
