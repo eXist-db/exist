@@ -54,6 +54,20 @@ public class RootNode extends Step {
         super(context, Constants.SELF_AXIS);
     }
 
+    @Override
+    public int getDependencies() {
+        // Declare CONTEXT_ITEM so the optimizer does not hoist predicates
+        // containing only / out of their iteration context. The default
+        // (CONTEXT_SET) is not enough on its own — the predicate optimizer
+        // looks at CONTEXT_ITEM to decide whether a sub-expression can be
+        // evaluated once outside the iteration. Without this override an
+        // expression like fn:count(.[5 * /]) is evaluated with no context
+        // item, falls through to getStaticallyKnownDocuments(), and returns
+        // arbitrary content from the static-context default (which under
+        // admin includes /db/system).
+        return Dependency.CONTEXT_ITEM | Dependency.CONTEXT_SET;
+    }
+
     public Sequence eval(Sequence contextSequence, Item contextItem) throws XPathException {
         if (context.getProfiler().isEnabled()) {
             context.getProfiler().start(this);       
