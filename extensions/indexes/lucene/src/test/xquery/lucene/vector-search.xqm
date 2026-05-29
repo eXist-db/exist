@@ -902,19 +902,28 @@ function vs:dot-product-indexed-and-queried() {
     count(collection($vs:COLLECTION_DOT_PRODUCT)//article[ft:query-field-vector("emb_dot_product", [1.0, 0.0, 0.0, 0.0], 2)])
 };
 
-(:~ similarity="euclidean": score ordering — closer euclidean distance gets higher score. :)
+(:~ similarity="euclidean": score ordering — closer euclidean distance gets higher score.
+ : Explicitly orders by ft:score descending so the test exercises score-based ranking
+ : rather than the default XQuery node-sequence order (see "Result ordering" section below). :)
 declare
     %test:assertTrue
 function vs:euclidean-score-ordering() {
-    let $hits := collection($vs:COLLECTION_EUCLIDEAN)//article[ft:query-field-vector("emb_euclidean", [1.0, 0.0, 0.0, 0.0], 2)]
+    let $hits :=
+        for $h in collection($vs:COLLECTION_EUCLIDEAN)//article[ft:query-field-vector("emb_euclidean", [1.0, 0.0, 0.0, 0.0], 2)]
+        order by ft:score($h) descending
+        return $h
     return count($hits) eq 2 and ft:score($hits[1]) ge ft:score($hits[2])
 };
 
-(:~ similarity="dot_product": score ordering — higher dot product gets higher score. :)
+(:~ similarity="dot_product": score ordering — higher dot product gets higher score.
+ : Explicitly orders by ft:score descending; see vs:euclidean-score-ordering. :)
 declare
     %test:assertTrue
 function vs:dot-product-score-ordering() {
-    let $hits := collection($vs:COLLECTION_DOT_PRODUCT)//article[ft:query-field-vector("emb_dot_product", [1.0, 0.0, 0.0, 0.0], 2)]
+    let $hits :=
+        for $h in collection($vs:COLLECTION_DOT_PRODUCT)//article[ft:query-field-vector("emb_dot_product", [1.0, 0.0, 0.0, 0.0], 2)]
+        order by ft:score($h) descending
+        return $h
     return count($hits) eq 2 and ft:score($hits[1]) ge ft:score($hits[2])
 };
 
