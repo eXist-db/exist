@@ -58,21 +58,27 @@ public class QueryVector extends BasicFunction {
     private static final FunctionParameterSequenceType FS_PARAM_OPTIONS = optParam("options", Type.ITEM,
             "Optional map with filter-query, filter, facets.");
 
+    private static final String RETURN_DESC =
+            "Nodes matching the vector query. The returned sequence follows XQuery node-sequence semantics; "
+                    + "to rank by similarity, sort explicitly with ft:score, e.g. "
+                    + "'for $h in ft:query-vector(...) order by ft:score($h) descending return $h'.";
+
     final static FunctionSignature[] signatures = {
             functionSignature("query-vector",
-                    "KNN vector search. Returns k nearest nodes. Vector field is resolved from index config.",
-                    returnsOptMany(Type.NODE, "Nodes matching the vector query, ordered by similarity."),
+                    "KNN vector search. Returns the k nodes nearest to the query vector. "
+                            + "Vector field is resolved from index config.",
+                    returnsOptMany(Type.NODE, RETURN_DESC),
                     FS_PARAM_NODES,
                     FS_PARAM_VECTOR),
             functionSignature("query-vector",
                     "KNN vector search with explicit k.",
-                    returnsOptMany(Type.NODE, "Nodes matching the vector query, ordered by similarity."),
+                    returnsOptMany(Type.NODE, RETURN_DESC),
                     FS_PARAM_NODES,
                     FS_PARAM_VECTOR,
                     FS_PARAM_K),
             functionSignature("query-vector",
                     "KNN vector search with k and options (filter-query, filter, facets).",
-                    returnsOptMany(Type.NODE, "Nodes matching the vector query, ordered by similarity."),
+                    returnsOptMany(Type.NODE, RETURN_DESC),
                     FS_PARAM_NODES,
                     FS_PARAM_VECTOR,
                     FS_PARAM_K,
