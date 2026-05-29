@@ -60,7 +60,7 @@ public class RootNodeContextItemDependencyTest {
      * positional predicate {@code [115]} matches nothing.
      */
     @Test
-    public void loneSlashInArithmeticPredicate_multiplyOnRight() throws XMLDBException {
+    public void loneSlashInArithmeticPredicateMultiplyOnRight() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 "let $ctx := document { <bid>23</bid> }/bid return fn:count($ctx[5 * /])");
         assertEquals(1, result.getSize());
@@ -71,7 +71,7 @@ public class RootNodeContextItemDependencyTest {
      * Mirror of the above with the operands swapped — {@code (/) * 5}.
      */
     @Test
-    public void loneSlashInArithmeticPredicate_multiplyOnLeft() throws XMLDBException {
+    public void loneSlashInArithmeticPredicateMultiplyOnLeft() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 "let $ctx := document { <bid>23</bid> }/bid return fn:count($ctx[(/) * 5])");
         assertEquals(1, result.getSize());
@@ -87,7 +87,7 @@ public class RootNodeContextItemDependencyTest {
      * is the one that runs.
      */
     @Test
-    public void loneSlashInPredicate_resolvesToSingleOwnerDocument() throws XMLDBException {
+    public void loneSlashInPredicateResolvesToSingleOwnerDocument() throws XMLDBException {
         final ResourceSet result = existEmbeddedServer.executeQuery(
                 "let $ctx := document { <bid>23</bid> }/bid " +
                 "return fn:count($ctx[fn:count(/) eq 1])");
