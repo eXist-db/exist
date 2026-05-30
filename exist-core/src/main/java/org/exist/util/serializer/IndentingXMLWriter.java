@@ -187,22 +187,28 @@ public class IndentingXMLWriter extends XMLWriter {
             suppressIndentation = new HashSet<>();
             for (final String name : suppressProp.split("\\s+")) {
                 if (!name.isEmpty()) {
-                    // Handle URI-qualified names: Q{ns}local or {ns}local → extract local part
-                    if (name.startsWith("Q{") || name.startsWith("{")) {
-                        final int closeBrace = name.indexOf('}');
-                        if (closeBrace > 0 && closeBrace < name.length() - 1) {
-                            suppressIndentation.add(name.substring(closeBrace + 1));
-                        } else {
-                            suppressIndentation.add(name);
-                        }
-                    } else {
-                        suppressIndentation.add(name);
-                    }
+                    suppressIndentation.add(parseSuppressionName(name));
                 }
             }
         } else {
             suppressIndentation = null;
         }
+    }
+
+    /**
+     * Strip a URI-qualified prefix ({@code Q{ns}local} or {@code {ns}local}) and
+     * return the local part. Returns {@code name} unchanged when no recognisable
+     * prefix is present or the braces do not delimit a non-empty local part.
+     */
+    private static String parseSuppressionName(final String name) {
+        if (!name.startsWith("Q{") && !name.startsWith("{")) {
+            return name;
+        }
+        final int closeBrace = name.indexOf('}');
+        if (closeBrace <= 0 || closeBrace >= name.length() - 1) {
+            return name;
+        }
+        return name.substring(closeBrace + 1);
     }
 
     @Override

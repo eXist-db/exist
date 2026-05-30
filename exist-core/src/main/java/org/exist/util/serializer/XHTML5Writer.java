@@ -28,6 +28,13 @@ import it.unimi.dsi.fastutil.objects.ObjectSet;
 
 /**
  * A writer which produces well-formed XHTML5.
+ *
+ * <p>This class contributes only the HTML5 void-element set (used to decide
+ * which elements emit {@code <br />}-style self-closing markup) and the
+ * HTML5 inline-element set used for indentation suppression. All other
+ * behaviour, including DOCTYPE emission, is inherited from
+ * {@link XHTMLWriter} — see {@link XHTMLWriter#writeDoctype(String)} for
+ * the W3C Serialization 3.1 §7.1/§7.2 doctype rules.</p>
  */
 public class XHTML5Writer extends XHTMLWriter {
 

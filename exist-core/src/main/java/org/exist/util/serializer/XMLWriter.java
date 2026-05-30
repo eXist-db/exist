@@ -840,22 +840,22 @@ public class XMLWriter implements SerializerWriter {
             i = pos;
             while(i < len) {
                 ch = text.charAt(i);
-                if(ch < 128) {
-                    if(checkSpecials && specialChars[ch]) {
+                if (ch < 128) {
+                    if (checkSpecials && specialChars[ch]) {
                         break;
-                    } else if(xml11 && ch >= 0x01 && ch <= 0x1F
+                    } else if (xml11 && ch >= 0x01 && ch <= 0x1F
                             && ch != 0x09 && ch != 0x0A && ch != 0x0D) {
                         // XML 1.1: C0 control chars (except TAB, LF, CR) must be escaped
                         break;
                     } else {
                         i++;
                     }
-                } else if(!charSet.inCharacterSet(ch)) {
+                } else if (!charSet.inCharacterSet(ch)) {
                     break;
-                } else if(ch >= 0x7F && ch <= 0x9F) {
+                } else if (ch >= 0x7F && ch <= 0x9F) {
                     // Control chars 0x7F-0x9F must be serialized as character references
                     break;
-                } else if(ch == 0x2028) {
+                } else if (ch == 0x2028) {
                     // LINE SEPARATOR must be serialized as character reference
                     break;
                 } else {
@@ -869,7 +869,7 @@ public class XMLWriter implements SerializerWriter {
                 return;
             }
             
-            if(needsEscape(ch, inAttribute)) {
+            if (needsEscape(ch, inAttribute)) {
                 switch(ch) {
                     case '<' -> writer.write("&lt;");
                     case '>' -> writer.write("&gt;");
