@@ -523,6 +523,13 @@ public class XQueryContext implements BinaryValueManager, Context {
                 LOG.warn("Failed to copy namespace declaration for prefix '{}'", prefix, ex);
             }
         }
+
+        // Copy in-scope namespaces registered via declareInScopeNamespace. Otherwise QName.parse()
+        // will raise error XPST0081 when resolving path-step names in any of those.
+        for (final Map.Entry<String, String> entry : copyFrom.inScopeNamespaces.entrySet()) {
+            inScopeNamespaces.put(entry.getKey(), entry.getValue());
+            inScopePrefixes.put(entry.getValue(), entry.getKey());
+        }
     }
 
 
