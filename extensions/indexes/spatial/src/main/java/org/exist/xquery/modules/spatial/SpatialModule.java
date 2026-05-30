@@ -39,6 +39,10 @@ public class SpatialModule extends AbstractInternalModule {
     public final static String RELEASED_IN_VERSION = "eXist-1.2";
 
     public static final FunctionDef[] functions = {
+        // --- Distance & proximity ---
+        new FunctionDef(FunSpatialDistance.signatures[0], FunSpatialDistance.class),
+        new FunctionDef(FunSpatialDistance.signatures[1], FunSpatialDistance.class),
+        // --- End Distance & proximity ---
         new FunctionDef(FunSpatialSearch.signatures[0], FunSpatialSearch.class),
         new FunctionDef(FunSpatialSearch.signatures[1], FunSpatialSearch.class),
         new FunctionDef(FunSpatialSearch.signatures[2], FunSpatialSearch.class),
