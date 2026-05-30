@@ -397,7 +397,16 @@ public abstract class AbstractDateTimeValue extends ComputableValue {
     }
 
     public int compareTo(Collator collator, AtomicValue other) throws XPathException {
-        if (other.getType() == getType()) {
+        // Allow comparison when one type is a subtype of the other within the
+        // date/time hierarchy — e.g. xs:dateTime ↔ xs:dateTimeStamp per XSD 1.1
+        // §3.4.28, where xs:dateTimeStamp is a restriction of xs:dateTime.
+        // The underlying calendar comparison is correct for both, so a strict
+        // primitive-type equality check rejects valid comparisons. The
+        // AbstractDateTimeValue instance-check keeps this restricted to the
+        // date/time family (no accidental cross-comparison with, say, durations).
+        if (other instanceof AbstractDateTimeValue
+                && (Type.subTypeOf(getType(), other.getType())
+                        || Type.subTypeOf(other.getType(), getType()))) {
             // filling in missing timezones with local timezone, should be total order as per XPath 2.0 10.4
             final int r = getImplicitCalendar().compare(((AbstractDateTimeValue) other).getImplicitCalendar());
             if (r == DatatypeConstants.INDETERMINATE) {
