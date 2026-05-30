@@ -28,6 +28,8 @@ import org.xmldb.api.base.ResourceSet;
 import org.xmldb.api.base.XMLDBException;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Regression test for the date/time-family subtype comparison fix.
@@ -80,10 +82,10 @@ public class DateTimeSubtypeCompareTest {
                 "xs:date('2024-01-01') eq xs:time('12:00:00')";
         try {
             final ResourceSet rs = embedded.executeQuery(query);
-            org.junit.Assert.fail("Expected XPTY0004 for cross-sister-type comparison, got: "
+            fail("Expected XPTY0004 for cross-sister-type comparison, got: "
                     + (rs.getSize() > 0 ? rs.getResource(0).getContent() : "<empty>"));
         } catch (final XMLDBException e) {
-            org.junit.Assert.assertTrue("Expected XPTY0004 in: " + e.getMessage(),
+            assertTrue("Expected XPTY0004 in: " + e.getMessage(),
                     e.getMessage().contains("XPTY0004"));
         }
     }
