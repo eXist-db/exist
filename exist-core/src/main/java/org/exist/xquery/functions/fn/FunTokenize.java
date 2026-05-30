@@ -89,14 +89,27 @@ public class FunTokenize extends BasicFunction {
                     flags = 0;
                 }
 
+                final boolean isXQuery40 = context.getXQueryVersion() >= 40;
                 final String pattern;
                 if (args.length == 1) {
                     pattern = " ";
                     string = FunNormalizeSpace.normalize(string);
                 } else {
-                    if(hasLiteral(flags)) {
+                    String rawPattern = args[1].itemAt(0).getStringValue();
+
+                    // XQ4: translate (*positive_lookahead:...) etc. to Java regex
+                    if (isXQuery40 && hasXPath4Lookaround(rawPattern)) {
+                        rawPattern = translateXPath4Lookaround(rawPattern);
+                    }
+
+                    // Pre-validate: reject constructs not valid in XPath regex
+                    if (!hasLiteral(flags)) {
+                        validateXPathRegex(this, rawPattern, isXQuery40);
+                    }
+
+                    if (hasLiteral(flags)) {
                         // no need to change anything
-                        pattern = args[1].itemAt(0).getStringValue();
+                        pattern = rawPattern;
                     } else {
                         final boolean ignoreWhitespace = hasIgnoreWhitespace(flags);
                         final boolean caseBlind = hasCaseInsensitive(flags);

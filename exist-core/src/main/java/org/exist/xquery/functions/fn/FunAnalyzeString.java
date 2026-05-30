@@ -131,8 +131,22 @@ public class FunAnalyzeString extends BasicFunction {
         }
     }
 
-    private void analyzeString(final MemTreeBuilder builder, final String input, String pattern, final String flags) throws XPathException {
+    private void analyzeString(final MemTreeBuilder builder, final String input, final String pattern, final String flags) throws XPathException {
         final Configuration config = context.getBroker().getBrokerPool().getSaxonConfiguration();
+
+        // XPath 4.0 lookaround syntax is not yet implemented in eXist's XQuery 3.1 runtime.
+        // When XQuery 4.0 lands (v2/xq4-core-functions), replace this guard with the
+        // translateXPath4Lookaround() dispatch path.
+        if (hasXPath4Lookaround(pattern)) {
+            throw new XPathException(this, ErrorCodes.XPST0017,
+                    "XPath 4.0 lookaround syntax in regex patterns (e.g. (*positive_lookahead:...)) "
+                            + "is not yet implemented in this XQuery 3.1 build. Rewrite the regex without lookaround.");
+        }
+
+        // Pre-validate: reject constructs not valid in XPath 3.1 regex
+        if (!hasLiteral(flags)) {
+            validateXPathRegex(this, pattern, false);
+        }
 
         final List<String> warnings = new ArrayList<>(1);
 

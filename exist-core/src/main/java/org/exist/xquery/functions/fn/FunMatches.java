@@ -441,13 +441,10 @@ public final class FunMatches extends Function implements Optimizable, IndexUseR
                     // restricted to that QName
                     contextQName = null;
                 }
-                if (!indexFound && contextQName == null) {
-                    // if there are some indexes defined on a qname,
-                    // we need to check them all
-                    if (iflags.hasIndexOnQNames()) {
-                        indexScan = true;
-                    }
-                    // else use range index defined on path by default
+                // if there are some indexes defined on a qname, we need to check them all;
+                // otherwise use range index defined on path by default
+                if (!indexFound && contextQName == null && iflags.hasIndexOnQNames()) {
+                    indexScan = true;
                 }
             } else {
                 result = evalFallback(nodes, pattern, flags, indexType);
@@ -526,7 +523,22 @@ public final class FunMatches extends Function implements Optimizable, IndexUseR
     }
 
 
-    private boolean matchXmlRegex(final String string, final String pattern, final String flags) throws XPathException {
+    private boolean matchXmlRegex(String string, final String pattern, final String flags) throws XPathException {
+        // XPath 4.0 lookaround syntax is not yet implemented in eXist's XQuery 3.1 runtime.
+        // When XQuery 4.0 lands (v2/xq4-core-functions), replace this guard with the
+        // translateXPath4Lookaround / Java-regex dispatch path.
+        if (hasXPath4Lookaround(pattern)) {
+            throw new XPathException(this, ErrorCodes.XPST0017,
+                    "XPath 4.0 lookaround syntax in regex patterns (e.g. (*positive_lookahead:...)) "
+                            + "is not yet implemented in this XQuery 3.1 build. Rewrite the regex without lookaround.");
+        }
+
+        // Pre-validate: reject constructs that are not valid in XPath 3.1 regex
+        // but that Saxon's XP30 mode accepts (Java/Perl extensions)
+        if (!hasLiteral(flags)) {
+            validateXPathRegex(this, pattern, false);
+        }
+
         try {
             List<String> warnings = new ArrayList<>(1);
             RegularExpression regex = context.getBroker().getBrokerPool()

@@ -133,8 +133,20 @@ public class FunReplace extends BasicFunction {
 				flags = "";
 			}
     		final String string = stringArg.getStringValue();
-    		final String pattern = args[1].itemAt(0).getStringValue();
+    		String pattern = args[1].itemAt(0).getStringValue();
 			final String replace = args[2].itemAt(0).getStringValue();
+
+			final boolean isXQuery40 = context.getXQueryVersion() >= 40;
+
+			// XQ4: translate (*positive_lookahead:...) etc. to Java regex (?=...) syntax
+			if (isXQuery40 && hasXPath4Lookaround(pattern)) {
+				pattern = translateXPath4Lookaround(pattern);
+			}
+
+			// Pre-validate: reject constructs not valid in XPath regex
+			if (!hasLiteral(flags)) {
+				validateXPathRegex(this, pattern, isXQuery40);
+			}
 
 			final Configuration config = context.getBroker().getBrokerPool().getSaxonConfiguration();
 

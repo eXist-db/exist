@@ -64,7 +64,7 @@ public class VariableReference extends AbstractExpression {
                     "Variable '$" + qname + "' is not declared.");
         }
         if (!var.isInitialized()) {
-            throw new XPathException(this, ErrorCodes.XQST0054,
+            throw new XPathException(this, ErrorCodes.XQDY0054,
                     "variable declaration of '$" + qname + "' cannot " +
                             "be executed because of a circularity.");
         }
