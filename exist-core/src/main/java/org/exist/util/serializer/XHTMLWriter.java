@@ -277,10 +277,10 @@ public class XHTMLWriter extends IndentingXMLWriter {
     private static boolean isUriChar(final char c) {
         // The escape-uri-attributes contract per W3C Serialization 3.1 § 7.2.5
         // is to encode disallowed-in-URI characters. In practice (matching
-        // Saxon and the QT4 conformance tests) only non-ASCII codepoints are
-        // %-escaped: ASCII-range characters — including ' ' which an authoring
-        // tool may leave literal in href values — pass through unchanged so
-        // existing valid escapes are not double-encoded.
+        // Saxon's behavior) only non-ASCII codepoints are %-escaped: ASCII-range
+        // characters — including ' ' which an authoring tool may leave literal
+        // in href values — pass through unchanged so existing valid escapes are
+        // not double-encoded.
         return c < 0x80;
     }
 
@@ -495,18 +495,9 @@ public class XHTMLWriter extends IndentingXMLWriter {
     protected void closeStartTag(final boolean isEmpty) throws TransformerException {
         try {
             if (tagIsOpen) {
-                // Flush canonical buffers (sorted namespaces + attributes) if active
-                if (isCanonical()) {
-                    flushCanonicalBuffersXhtml();
-                }
                 final Writer w = getWriter();
                 if (isEmpty) {
-                    if (isCanonical()) {
-                        // Canonical: always expand empty elements — coalesce 4 writes into 2
-                        w.write("></");
-                        w.write(currentTag);
-                        w.write('>');
-                    } else if (isEmptyTag(currentTag)) {
+                    if (isEmptyTag(currentTag)) {
                         // For method="html", use HTML-style void tags (<br>)
                         // For method="xhtml", use XHTML-style (<br />)
                         if (isHtmlMethod()) {
@@ -588,7 +579,7 @@ public class XHTMLWriter extends IndentingXMLWriter {
         if (doctypeWritten) {
             return;
         }
-        if (isCanonical() || !isHtmlRoot(rootElement)) {
+        if (!isHtmlRoot(rootElement)) {
             doctypeWritten = true;
             return;
         }

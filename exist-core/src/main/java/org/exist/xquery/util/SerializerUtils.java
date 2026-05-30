@@ -126,18 +126,15 @@ public class SerializerUtils {
     public enum W3CParameterConvention implements ParameterConvention<String> {
         ALLOW_DUPLICATE_NAMES("allow-duplicate-names", Type.BOOLEAN, Cardinality.ZERO_OR_ONE, BooleanValue.FALSE),
         BYTE_ORDER_MARK("byte-order-mark", Type.BOOLEAN, Cardinality.ZERO_OR_ONE, BooleanValue.FALSE),
-        CANONICAL(EXistOutputKeys.CANONICAL, Type.BOOLEAN, Cardinality.ZERO_OR_ONE, BooleanValue.FALSE),
         CDATA_SECTION_ELEMENTS(OutputKeys.CDATA_SECTION_ELEMENTS, Type.QNAME, Cardinality.ZERO_OR_MORE, Sequence.EMPTY_SEQUENCE),
         DOCTYPE_PUBLIC(OutputKeys.DOCTYPE_PUBLIC, Type.STRING, Cardinality.ZERO_OR_ONE, Sequence.EMPTY_SEQUENCE),   //default: () means "absent"
         DOCTYPE_SYSTEM(OutputKeys.DOCTYPE_SYSTEM, Type.STRING, Cardinality.ZERO_OR_ONE, Sequence.EMPTY_SEQUENCE),   //default: () means "absent"
         ENCODING(OutputKeys.ENCODING, Type.STRING, Cardinality.ZERO_OR_ONE, new StringValue(UTF_8.name())),
-        ESCAPE_SOLIDUS(EXistOutputKeys.ESCAPE_SOLIDUS, Type.BOOLEAN, Cardinality.ZERO_OR_ONE, BooleanValue.TRUE),
         ESCAPE_URI_ATTRIBUTES("escape-uri-attributes", Type.BOOLEAN, Cardinality.ZERO_OR_ONE, BooleanValue.TRUE),
         HTML_VERSION(EXistOutputKeys.HTML_VERSION, Type.DECIMAL, Cardinality.ZERO_OR_ONE, new DecimalValue(5)),
         INCLUDE_CONTENT_TYPE("include-content-type", Type.BOOLEAN, Cardinality.ZERO_OR_ONE, BooleanValue.TRUE),
         INDENT(OutputKeys.INDENT, Type.BOOLEAN, Cardinality.ZERO_OR_ONE, BooleanValue.FALSE),
         ITEM_SEPARATOR(EXistOutputKeys.ITEM_SEPARATOR, Type.STRING, Cardinality.ZERO_OR_ONE, Sequence.EMPTY_SEQUENCE),  //default: () means "absent"
-        JSON_LINES(EXistOutputKeys.JSON_LINES, Type.BOOLEAN, Cardinality.ZERO_OR_ONE, BooleanValue.FALSE),
         JSON_NODE_OUTPUT_METHOD(EXistOutputKeys.JSON_NODE_OUTPUT_METHOD, Type.STRING, Cardinality.ZERO_OR_ONE, new StringValue("xml")),
         MEDIA_TYPE(OutputKeys.MEDIA_TYPE, Type.STRING, Cardinality.ZERO_OR_ONE, Sequence.EMPTY_SEQUENCE),    // default: a media type suitable for the chosen method
         METHOD(OutputKeys.METHOD, Type.STRING, Cardinality.ZERO_OR_ONE, new StringValue("xml")),

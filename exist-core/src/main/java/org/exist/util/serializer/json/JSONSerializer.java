@@ -23,13 +23,11 @@ package org.exist.util.serializer.json;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.json.JsonWriteFeature;
 import io.lacuna.bifurcan.IEntry;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import org.exist.storage.DBBroker;
 import org.exist.storage.serializers.EXistOutputKeys;
 import org.exist.storage.serializers.Serializer;
-import org.exist.xquery.ErrorCodes;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.functions.array.ArrayType;
 import org.exist.xquery.functions.map.MapType;
@@ -41,8 +39,6 @@ import javax.annotation.Nullable;
 import javax.xml.transform.OutputKeys;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
 
 /**
@@ -58,27 +54,17 @@ public class JSONSerializer {
 
     private final DBBroker broker;
     private final Properties outputProperties;
-    private final boolean canonical;
     @Nullable private final Int2ObjectMap<String> characterMap;
 
     public JSONSerializer(DBBroker broker, Properties outputProperties) {
         super();
         this.broker = broker;
         this.outputProperties = outputProperties;
-        final String canonicalProp = outputProperties.getProperty(EXistOutputKeys.CANONICAL);
-        this.canonical = isBooleanTrue(canonicalProp);
         this.characterMap = SerializerUtils.getCharacterMap(outputProperties);
     }
 
     public void serialize(Sequence sequence, Writer writer) throws SAXException {
-        // QT4: escape-solidus controls whether / is escaped as \/
-        // Default is "no" for XQ 3.1 compatibility (parameter doesn't exist in 3.1 spec)
-        // Canonical JSON (RFC 8785): solidus is NOT escaped
-        final boolean escapeSolidus = !canonical && isBooleanTrue(
-                outputProperties.getProperty(EXistOutputKeys.ESCAPE_SOLIDUS, "no"));
-        final JsonFactory factory = JsonFactory.builder()
-                .configure(JsonWriteFeature.ESCAPE_FORWARD_SLASHES, escapeSolidus)
-                .build();
+        final JsonFactory factory = JsonFactory.builder().build();
         try {
             JsonGenerator generator = factory.createGenerator(writer);
             generator.disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET);
@@ -100,52 +86,13 @@ public class JSONSerializer {
             if ("no".equals(outputProperties.getProperty(EXistOutputKeys.ALLOW_DUPLICATE_NAMES, "no"))) {
                 generator.enable(JsonGenerator.Feature.STRICT_DUPLICATE_DETECTION);
             }
-            final boolean jsonLines = isBooleanTrue(
-                    outputProperties.getProperty(EXistOutputKeys.JSON_LINES, "no"));
-            if (jsonLines) {
-                serializeJsonLines(sequence, generator);
-            } else {
-                serializeSequence(sequence, generator);
-            }
+            serializeSequence(sequence, generator);
             if ("yes".equals(outputProperties.getProperty(EXistOutputKeys.INSERT_FINAL_NEWLINE, "no"))) {
                 generator.writeRaw('\n');
             }
             generator.close();
         } catch (IOException | XPathException e) {
             throw new SAXException(e.getMessage(), e);
-        }
-    }
-
-    /**
-     * JSON Lines format (NDJSON): one JSON value per line, no array wrapper.
-     * Per QT4 Serialization 4.0, when json-lines=true.
-     */
-    private void serializeJsonLines(Sequence sequence, JsonGenerator generator) throws IOException, XPathException, SAXException {
-        if (sequence.isEmpty()) {
-            return;
-        }
-        // Each line must be a separate root-level value. Jackson adds separator
-        // whitespace between root values, so we serialize each item to a string
-        // and concatenate with newlines.
-        final boolean escapeSolidus = !isBooleanFalse(
-                outputProperties.getProperty(EXistOutputKeys.ESCAPE_SOLIDUS, "yes"));
-        boolean first = true;
-        for (SequenceIterator i = sequence.iterate(); i.hasNext(); ) {
-            if (!first) {
-                generator.writeRaw('\n');
-            }
-            // Serialize this item to a standalone string
-            final java.io.StringWriter lineWriter = new java.io.StringWriter();
-            final JsonFactory lineFactory = JsonFactory.builder()
-                    .configure(JsonWriteFeature.ESCAPE_FORWARD_SLASHES, escapeSolidus)
-                    .build();
-            final JsonGenerator lineGen = lineFactory.createGenerator(lineWriter);
-            lineGen.disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET);
-            serializeItem(i.nextItem(), lineGen);
-            lineGen.close();
-            // Write the line's JSON as raw content to avoid Jackson's root separator
-            generator.writeRaw(lineWriter.toString());
-            first = false;
         }
     }
 
@@ -189,24 +136,11 @@ public class JSONSerializer {
 
     private void serializeAtomicValue(Item item, JsonGenerator generator) throws IOException, XPathException, SAXException {
         if (Type.subTypeOfUnion(item.getType(), Type.NUMERIC)) {
-            if (canonical) {
-                // RFC 8785: cast to double, use shortest representation
-                final double d = ((NumericValue) item).getDouble();
-                if (!Double.isFinite(d)) {
-                    throw new SAXException("err:SERE0020 Numeric value " + item.getStringValue()
-                            + " cannot be serialized in canonical JSON");
-                }
-                generator.writeRawValue(canonicalDoubleString(d));
-                return;
-            }
             final String stringValue = item.getStringValue();
             // W3C Serialization 3.1: INF, -INF, and NaN MUST raise SERE0020
             if ("NaN".equals(stringValue) || "INF".equals(stringValue) || "-INF".equals(stringValue)) {
                 throw new SAXException("err:SERE0020 Numeric value " + stringValue
                         + " cannot be serialized as JSON");
-            } else if ("-0".equals(stringValue)) {
-                // Negative zero: write as 0 (QT4 allows either 0 or -0)
-                generator.writeNumber(stringValue);
             } else {
                 generator.writeNumber(stringValue);
             }
@@ -214,26 +148,6 @@ public class JSONSerializer {
             generator.writeBoolean(((AtomicValue) item).effectiveBooleanValue());
         } else {
             writeStringWithCharMap(generator, item.getStringValue());
-        }
-    }
-
-    /**
-     * RFC 8785 canonical double formatting.
-     * Uses ECMAScript shortest representation: minimum digits to uniquely
-     * identify the double value. Plain notation for [1e-6, 1e21), exponential
-     * notation otherwise with lowercase 'e'.
-     */
-    private static String canonicalDoubleString(final double value) {
-        if (value == 0) return "0";
-        if (value == Double.MIN_VALUE) return "5e-324";
-        if (value == -Double.MIN_VALUE) return "-5e-324";
-
-        final java.math.BigDecimal bd = java.math.BigDecimal.valueOf(value).stripTrailingZeros();
-        final double abs = Math.abs(value);
-        if (abs >= 1e-6 && abs < 1e21) {
-            return bd.toPlainString();
-        } else {
-            return bd.toString().replace('E', 'e');
         }
     }
 
@@ -278,12 +192,6 @@ public class JSONSerializer {
         return "yes".equals(v) || "true".equals(v) || "1".equals(v);
     }
 
-    private static boolean isBooleanFalse(final String value) {
-        if (value == null) return false;
-        final String v = value.trim();
-        return "no".equals(v) || "false".equals(v) || "0".equals(v);
-    }
-
     private void serializeNode(Item item, JsonGenerator generator) throws SAXException {
         final Serializer serializer = broker.borrowSerializer();
         final Properties xmlOutput = new Properties();
@@ -316,31 +224,7 @@ public class JSONSerializer {
 
     private void serializeMap(MapType map, JsonGenerator generator) throws IOException, XPathException, SAXException {
         generator.writeStartObject();
-
-        // Canonical JSON (RFC 8785): sort keys by UTF-16 code unit order
-        final Iterable<IEntry<AtomicValue, Sequence>> entries;
-        if (canonical) {
-            final List<IEntry<AtomicValue, Sequence>> sorted = new ArrayList<>();
-            for (final IEntry<AtomicValue, Sequence> entry : map) {
-                sorted.add(entry);
-            }
-            sorted.sort((a, b) -> {
-                try {
-                    return a.key().getStringValue().compareTo(b.key().getStringValue());
-                } catch (XPathException e) {
-                    return 0;
-                }
-            });
-            entries = sorted;
-        } else {
-            final List<IEntry<AtomicValue, Sequence>> list = new ArrayList<>();
-            for (final IEntry<AtomicValue, Sequence> entry : map) {
-                list.add(entry);
-            }
-            entries = list;
-        }
-
-        for (final IEntry<AtomicValue, Sequence> entry : entries) {
+        for (final IEntry<AtomicValue, Sequence> entry : map) {
             final String key = entry.key().getStringValue();
             generator.writeFieldName(key);
             serializeSequence(entry.value(), generator, false);

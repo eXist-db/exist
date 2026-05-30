@@ -92,12 +92,7 @@ public class XMLWriter implements SerializerWriter {
      */
     private boolean xdmSerialization = false;
     private boolean xml11 = false;
-    private boolean canonical = false;
     @Nullable private java.text.Normalizer.Form normalizationForm = null;
-
-    // Canonical XML: buffer namespaces and attributes for sorting
-    private final List<String[]> canonicalNamespaces = new ArrayList<>();  // [prefix, uri]
-    private final List<String[]> canonicalAttributes = new ArrayList<>();  // [nsUri, localName, qname, value]
 
     private final Deque<QName> elementName = new ArrayDeque<>();
 
@@ -173,8 +168,6 @@ public class XMLWriter implements SerializerWriter {
         this.xdmSerialization = "yes".equals(outputProperties.getProperty(EXistOutputKeys.XDM_SERIALIZATION, "no"));
         this.xml11 = "1.1".equals(outputProperties.getProperty(OutputKeys.VERSION));
         this.normalizationForm = parseNormalizationForm(outputProperties.getProperty("normalization-form", "none"));
-        final String canonicalProp = outputProperties.getProperty(EXistOutputKeys.CANONICAL);
-        this.canonical = "yes".equals(canonicalProp) || "true".equals(canonicalProp) || "1".equals(canonicalProp);
     }
 
     private Set<QName> parseCdataSectionElementNames() {
@@ -377,24 +370,6 @@ public class XMLWriter implements SerializerWriter {
                 throw new TransformerException("Found a namespace declaration outside an element");
             }
 
-            if (canonical) {
-                // Buffer for sorting — emitted in closeStartTag
-                // Validate: reject relative namespace URIs (SERE0024)
-                if (!normUri.isEmpty() && isRelativeUri(normUri)) {
-                    throw new TransformerException("err:SERE0024 Canonical serialization does not allow relative namespace URIs: " + normUri);
-                }
-                if (normPrefix.isEmpty() && normUri.isEmpty()) {
-                    return;  // Skip xmlns="" in canonical (not meaningful for no-namespace elements)
-                }
-                // Deduplicate: replace existing binding for same prefix
-                canonicalNamespaces.removeIf(ns -> ns[0].equals(normPrefix));
-                canonicalNamespaces.add(new String[]{normPrefix, normUri});
-                // Track in namespace stack so getDefaultNamespace() stays accurate
-                nspaces.add(normPrefix);
-                nspaces.add(normUri);
-                return;
-            }
-
             // Look up what is currently in scope for this prefix.
             // nsLookup scans nspaces from innermost to outermost and falls back to the
             // defaultNamespace baseline field for the default-namespace prefix.
@@ -430,13 +405,6 @@ public class XMLWriter implements SerializerWriter {
                     characters(value);
                     return;
             }
-            if (canonical) {
-                // Buffer for sorting — extract namespace URI from qname if prefixed
-                final int colon = qname.indexOf(':');
-                final String nsUri = colon > 0 ? "" : "";  // string qname doesn't carry namespace
-                canonicalAttributes.add(new String[]{nsUri, colon > 0 ? qname.substring(colon + 1) : qname, qname, value.toString()});
-                return;
-            }
             // Coalesce ' ' + qname + '="' into a single bulk write when the
             // qname fits in the scratch buffer (typical case for short HTML
             // attribute names like class, href, style).
@@ -452,18 +420,6 @@ public class XMLWriter implements SerializerWriter {
         try {
             if(!tagIsOpen) {
                 characters(value);
-                return;
-            }
-            if (canonical) {
-                final String nsUri = qname.getNamespaceURI() != null ? qname.getNamespaceURI() : "";
-                final String localName = qname.getLocalPart();
-                final String fullName;
-                if (qname.getPrefix() != null && !qname.getPrefix().isEmpty()) {
-                    fullName = qname.getPrefix() + ":" + localName;
-                } else {
-                    fullName = localName;
-                }
-                canonicalAttributes.add(new String[]{nsUri, localName, fullName, value.toString()});
                 return;
             }
             final String prefix = qname.getPrefix();
@@ -730,24 +686,9 @@ public class XMLWriter implements SerializerWriter {
 
     protected void closeStartTag(final boolean isEmpty) throws TransformerException {
         try {
-            if(tagIsOpen) {
-                if (canonical) {
-                    flushCanonicalBuffers();
-                }
-                if(isEmpty && !canonical) {
-                    // Canonical XML: empty elements expanded to <elem></elem>
+            if (tagIsOpen) {
+                if (isEmpty) {
                     writer.write("/>");
-                } else if (isEmpty) {
-                    // Canonical: write ></qname> for empty elements
-                    writer.write('>');
-                    final QName currentElem = elementName.peek();
-                    writer.write("</");
-                    if (currentElem.getPrefix() != null && !currentElem.getPrefix().isEmpty()) {
-                        writer.write(currentElem.getPrefix());
-                        writer.write(':');
-                    }
-                    writer.write(currentElem.getLocalPart());
-                    writer.write('>');
                 } else {
                     writer.write('>');
                 }
@@ -756,52 +697,6 @@ public class XMLWriter implements SerializerWriter {
         } catch(final IOException ioe) {
             throw new TransformerException(ioe.getMessage(), ioe);
         }
-    }
-
-    protected boolean isCanonical() {
-        return canonical;
-    }
-
-    protected void flushCanonicalBuffersXhtml() throws TransformerException {
-        try {
-            flushCanonicalBuffers();
-        } catch (final IOException ioe) {
-            throw new TransformerException(ioe.getMessage(), ioe);
-        }
-    }
-
-    private void flushCanonicalBuffers() throws IOException {
-        // Sort namespaces by prefix (default namespace first, then alphabetical)
-        canonicalNamespaces.sort((a, b) -> a[0].compareTo(b[0]));
-        // Write sorted namespaces
-        for (final String[] ns : canonicalNamespaces) {
-            writer.write(' ');
-            if (ns[0].isEmpty()) {
-                writer.write("xmlns=\"");
-            } else {
-                writer.write("xmlns:");
-                writer.write(ns[0]);
-                writer.write("=\"");
-            }
-            writeChars(ns[1], true);
-            writer.write('"');
-        }
-        canonicalNamespaces.clear();
-
-        // Sort attributes by namespace URI (primary), then local name (secondary)
-        canonicalAttributes.sort((a, b) -> {
-            final int cmp = a[0].compareTo(b[0]);
-            return cmp != 0 ? cmp : a[1].compareTo(b[1]);
-        });
-        // Write sorted attributes
-        for (final String[] attr : canonicalAttributes) {
-            writer.write(' ');
-            writer.write(attr[2]);  // qualified name
-            writer.write("=\"");
-            writeChars(attr[3], true);
-            writer.write('"');
-        }
-        canonicalAttributes.clear();
     }
 
     protected void writeDeclaration() throws TransformerException {
@@ -1083,15 +978,6 @@ public class XMLWriter implements SerializerWriter {
         final String s = text.toString();
         if (java.text.Normalizer.isNormalized(s, normalizationForm)) return text;
         return java.text.Normalizer.normalize(s, normalizationForm);
-    }
-
-    private static boolean isRelativeUri(final String uri) {
-        for (int i = 0; i < uri.length(); i++) {
-            final char c = uri.charAt(i);
-            if (c == ':') return false;
-            if (c == '/' || c == '?' || c == '#') return true;
-        }
-        return true;
     }
 
     private static class XMLDeclaration {

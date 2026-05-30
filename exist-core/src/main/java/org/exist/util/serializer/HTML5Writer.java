@@ -334,8 +334,8 @@ public class HTML5Writer extends XHTML5Writer {
 
     @Override
     public void processingInstruction(final String target, final String data) throws TransformerException {
-        // QT4 PR2372: HTML5 has no PI syntax, so the serializer renders
-        // processing instructions as comments of the form `<!--?target data?-->`,
+        // HTML5 has no PI syntax, so the serializer renders processing
+        // instructions as comments of the form `<!--?target data?-->`,
         // matching the HTML5 parser's coercion of `<?...?>` content.
         try {
             if (tagIsOpen) {
