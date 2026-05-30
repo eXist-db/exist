@@ -259,7 +259,38 @@ public class PathExpr extends AbstractExpression implements CompiledXQuery,
                         !currentContext.isPersistentSet();
                 //DESIGN : first test the dependency then the result
                 final int exprDeps = expr.getDependencies();
-                if (inMemProcessing ||
+                // XPath 3.1 §3.3.5 (Path Operator) requires E2 in E1/E2 to be evaluated
+                // for each item in E1's result. The "single eval" else-branch below is a
+                // performance shortcut that only preserves the correct multiplicity when
+                // E2 returns nodes (the subsequent removeDuplicates() call absorbs any
+                // missing iterations). When E2 is a context-INdependent step that
+                // returns atomic values, the shortcut collapses the result — every
+                // iteration of E1 would produce the same atomic value, so the missing
+                // iterations matter. See #798.
+                //
+                // This is narrowly the "atomic literal RHS" case (`//b/3`,
+                // `//x/'name'`, etc.). Context-dependent atomic steps already
+                // declare CONTEXT_ITEM/POSITION/SET and take the existing iterate
+                // branch — or, in the index-optimised Predicate.selectByNodeSet
+                // path, are intentionally evaluated once against the full node-set.
+                // We must not force iteration in those cases.
+                //
+                // Restricted to non-first steps: the first step is the path's
+                // starting point, not a "RHS of /". This also keeps us out of the
+                // function-argument-wrapper case, where a single-step PathExpr
+                // wraps an atomic-returning argument (e.g. the literal pattern
+                // `'^HAM.*'` of matches() inside a predicate) that must NOT be
+                // iterated over the surrounding context.
+                final boolean stepReturnsNonNode = !Type.subTypeOf(expr.returnsType(), Type.NODE);
+                final boolean stepIsContextIndependent =
+                        !Dependency.dependsOn(exprDeps, Dependency.CONTEXT_ITEM)
+                        && !Dependency.dependsOn(exprDeps, Dependency.CONTEXT_POSITION)
+                        && !Dependency.dependsOn(exprDeps, Dependency.CONTEXT_SET);
+                final boolean atomicRhsMustIterate = stepReturnsNonNode
+                        && stepIsContextIndependent
+                        && stepIdx > 0
+                        && currentContext != null && currentContext.hasMany();
+                if (inMemProcessing || atomicRhsMustIterate ||
                         ((Dependency.dependsOn(exprDeps, Dependency.CONTEXT_ITEM) ||
                                 Dependency.dependsOn(exprDeps, Dependency.CONTEXT_POSITION)) &&
                                 //A positional predicate will be evaluated one time
