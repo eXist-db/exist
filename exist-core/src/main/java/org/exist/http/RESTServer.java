@@ -128,7 +128,6 @@ public class RESTServer {
     public final static Properties defaultOutputKeysProperties = new Properties();
 
     static {
-        defaultOutputKeysProperties.setProperty(EXistOutputKeys.OMIT_ORIGINAL_XML_DECLARATION, "no");
         defaultOutputKeysProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
         defaultOutputKeysProperties.setProperty(OutputKeys.INDENT, "yes");
         defaultOutputKeysProperties.setProperty(OutputKeys.MEDIA_TYPE,
@@ -396,14 +395,6 @@ public class RESTServer {
             final String omitXmlDeclaration = broker.getConfiguration().getProperty(Serializer.PROPERTY_OMIT_XML_DECLARATION, "yes");
             outputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, omitXmlDeclaration);
         }
-        if ((option = getParameter(request, Omit_Original_Xml_Declaration)) != null) {
-            // take user query-string specified omit-original-xml-declaration setting
-            outputProperties.setProperty(EXistOutputKeys.OMIT_ORIGINAL_XML_DECLARATION, option);
-        } else {
-            // set omit-original-xml-declaration by configuration
-            final String omitOriginalXmlDeclaration = broker.getConfiguration().getProperty(Serializer.PROPERTY_OMIT_ORIGINAL_XML_DECLARATION, "no");
-            outputProperties.setProperty(EXistOutputKeys.OMIT_ORIGINAL_XML_DECLARATION, omitOriginalXmlDeclaration);
-        }
         if ((option = getParameter(request, Source)) != null && !safeMode) {
             source = "yes".equals(option);
         }
@@ -526,10 +517,9 @@ public class RESTServer {
             // found an XQuery or XProc resource, fixup request values
             final String pathInfo = pathUri.trimFromBeginning(servletPath).toString();
 
-            // reset any output-doctype, omit-xml-declaration, or omit-original-xml-declaration properties, as these can conflict with others set via XQuery Serialization settings
+            // reset any output-doctype, or omit-xml-declaration properties, as these can conflict with others set via XQuery Serialization settings
             outputProperties.setProperty(EXistOutputKeys.OUTPUT_DOCTYPE, "no");
             outputProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-            outputProperties.setProperty(EXistOutputKeys.OMIT_ORIGINAL_XML_DECLARATION, "yes");
 
             // Should we display the source of the XQuery or XProc or execute it
             final Descriptor descriptor = Descriptor.getDescriptorSingleton();

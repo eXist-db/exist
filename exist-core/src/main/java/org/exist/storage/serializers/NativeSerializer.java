@@ -44,6 +44,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import javax.xml.transform.OutputKeys;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
@@ -118,7 +119,7 @@ public class NativeSerializer extends Serializer {
         }
 
         if (doc.getXmlDeclaration() != null){
-            if ("no".equals(getProperty(EXistOutputKeys.OMIT_ORIGINAL_XML_DECLARATION, "no"))) {
+            if ("no".equals(getProperty(OutputKeys.OMIT_XML_DECLARATION, "yes"))) {
                 final XMLDeclarationImpl xmlDecl = doc.getXmlDeclaration();
                 receiver.declaration(xmlDecl.getVersion(), xmlDecl.getEncoding(), xmlDecl.getStandalone());
             }

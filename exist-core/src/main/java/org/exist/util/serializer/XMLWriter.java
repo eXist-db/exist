@@ -48,7 +48,6 @@ public class XMLWriter implements SerializerWriter {
     
     protected final static Properties defaultProperties = new Properties();
     static {
-        defaultProperties.setProperty(EXistOutputKeys.OMIT_ORIGINAL_XML_DECLARATION, "no");
         defaultProperties.setProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
         defaultProperties.setProperty(EXistOutputKeys.XDM_SERIALIZATION, "no");
     }
@@ -532,24 +531,16 @@ public class XMLWriter implements SerializerWriter {
         }
         declarationWritten = true;
 
-        final String omitOriginalXmlDecl = outputProperties.getProperty(EXistOutputKeys.OMIT_ORIGINAL_XML_DECLARATION, "yes");
-        if (originalXmlDecl != null && "no".equals(omitOriginalXmlDecl)) {
+        final String omitXmlDecl = outputProperties.getProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+        if ("yes".equals(omitXmlDecl)) {
+            return;
+        }
+
+        if (originalXmlDecl != null) {
             // get the fields of the persisted xml declaration, but overridden with any properties from the serialization properties
             final String version = outputProperties.getProperty(OutputKeys.VERSION, (originalXmlDecl.version != null ? originalXmlDecl.version : DEFAULT_XML_VERSION));
             final String encoding = outputProperties.getProperty(OutputKeys.ENCODING, (originalXmlDecl.encoding != null ? originalXmlDecl.encoding : DEFAULT_XML_ENCODING));
             @Nullable final String standalone = outputProperties.getProperty(OutputKeys.STANDALONE, originalXmlDecl.standalone);
-
-            writeDeclaration(version, encoding, standalone);
-
-            return;
-        }
-
-        final String omitXmlDecl = outputProperties.getProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-        if ("no".equals(omitXmlDecl)) {
-            // get the fields of the declaration from the serialization properties
-            final String version = outputProperties.getProperty(OutputKeys.VERSION, DEFAULT_XML_VERSION);
-            final String encoding = outputProperties.getProperty(OutputKeys.ENCODING, DEFAULT_XML_ENCODING);
-            @Nullable final String standalone = outputProperties.getProperty(OutputKeys.STANDALONE);
 
             writeDeclaration(version, encoding, standalone);
         }
