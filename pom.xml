@@ -28,7 +28,7 @@
     <parent>
         <groupId>org.exist-db</groupId>
         <artifactId>exist-parent</artifactId>
-        <version>7.0.0-SNAPSHOT</version>
+        <version>${revision}</version>
         <relativePath>exist-parent</relativePath>
     </parent>
 
@@ -71,11 +71,28 @@
     </build>
 
     <profiles>
+        <!-- === Build umbrella profiles === -->
         <profile>
-            <id>installer</id>
+            <!-- Default contributor build: compiles, tests, produces a runnable distribution dir.
+                 Does NOT build installer, stress tests, or micro-benchmarks. -->
+            <id>local-build</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
             </activation>
+        </profile>
+
+        <profile>
+            <!-- Full release build: adds exist-installer to the reactor and sets exist.release=true
+                 to enable dist archive assembly in exist-distribution. Use with -Prelease-build. -->
+            <id>release-build</id>
+            <modules>
+                <module>exist-installer</module>
+            </modules>
+        </profile>
+        <!-- === End Build umbrella profiles === -->
+
+        <profile>
+            <id>installer</id>
             <modules>
                 <module>exist-installer</module>
             </modules>
@@ -95,10 +112,17 @@
         </profile>
 
         <profile>
+            <!-- Activates both stress tests and micro-benchmarks in one shot: -Pperf-tests -->
+            <id>perf-tests</id>
+            <modules>
+                <module>exist-core-jcstress</module>
+                <module>exist-core-jmh</module>
+                <module>exist-indexes-jmh</module>
+            </modules>
+        </profile>
+
+        <profile>
             <id>concurrency-stress-tests</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
             <modules>
                 <module>exist-core-jcstress</module>
             </modules>
@@ -106,9 +130,6 @@
 
         <profile>
             <id>micro-benchmarks</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
             <modules>
                 <module>exist-core-jmh</module>
                 <module>exist-indexes-jmh</module>

@@ -27,7 +27,7 @@
 
     <groupId>org.exist-db</groupId>
     <artifactId>exist-parent</artifactId>
-    <version>7.0.0-SNAPSHOT</version>
+    <version>${revision}</version>
     <packaging>pom</packaging>
 
     <name>eXist-db Parent</name>
@@ -97,14 +97,18 @@
             <name>GitHub Registry for Snapshots</name>
             <url>https://maven.pkg.github.com/eXist-db/exist</url>
         </snapshotRepository>
-        <repository>
+        <!-- Release publishing is handled by central-publishing-maven-plugin in the
+             release-build profile; this legacy Nexus staging entry is superseded. -->
+        <!-- repository>
             <id>sonatype-nexus-staging</id>
             <name>Nexus Release Repository</name>
             <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
+        </repository -->
     </distributionManagement>
 
     <properties>
+        <revision>7.0.0-SNAPSHOT</revision>
+
         <maven.compiler.release>21</maven.compiler.release>
         <maven.compiler.source>${maven.compiler.release}</maven.compiler.source>
         <maven.compiler.target>${maven.compiler.release}</maven.compiler.target>
@@ -832,6 +836,16 @@
         <pluginManagement>
             <plugins>
                 <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>flatten-maven-plugin</artifactId>
+                    <version>1.7.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.sonatype.central</groupId>
+                    <artifactId>central-publishing-maven-plugin</artifactId>
+                    <version>0.7.0</version>
+                </plugin>
+                <plugin>
                     <groupId>software.xdev</groupId>
                     <artifactId>find-and-replace-maven-plugin</artifactId>
                     <version>1.0.5</version>
@@ -1207,6 +1221,31 @@
 
         <plugins>
             <plugin>
+                <!-- Resolves ${revision} in deployed/installed POMs (Maven 3 CI-friendly versions) -->
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>flatten-maven-plugin</artifactId>
+                <configuration>
+                    <updatePomFile>true</updatePomFile>
+                    <flattenMode>resolveCiFriendlyVersions</flattenMode>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>flatten</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>flatten</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>flatten.clean</id>
+                        <phase>clean</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
                 <version>3.6.3</version>
@@ -1446,6 +1485,100 @@
     </reporting>
 
     <profiles>
+
+        <!-- === Release pipeline === -->
+        <profile>
+            <id>release-build</id>
+            <properties>
+                <exist.release>true</exist.release>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                                <configuration>
+                                    <keyname>${existdb.release.key}</keyname>
+                                    <passphrase>${existdb.release.key.passphrase}</passphrase>
+                                    <gpgArguments>
+                                        <arg>--batch</arg>
+                                        <arg>--pinentry-mode</arg>
+                                        <arg>loopback</arg>
+                                    </gpgArguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <publishingServerId>central</publishingServerId>
+                            <autoPublish>true</autoPublish>
+                            <!-- uploaded: bundle accepted, sync to Central mirrors is async.
+                                 Avoids blocking CI for the 15-30 min full publication sync. -->
+                            <waitUntil>uploaded</waitUntil>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>release-preflight</id>
+            <activation>
+                <property>
+                    <name>release.preflight</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-enforcer-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>release-preflight-checks</id>
+                                <phase>validate</phase>
+                                <goals>
+                                    <goal>enforce</goal>
+                                </goals>
+                                <configuration>
+                                    <rules>
+                                        <requireEnvironmentVariable>
+                                            <variableName>CENTRAL_TOKEN_USERNAME</variableName>
+                                            <message>CENTRAL_TOKEN_USERNAME env var is required for release publishing.</message>
+                                        </requireEnvironmentVariable>
+                                        <requireEnvironmentVariable>
+                                            <variableName>CENTRAL_TOKEN_PASSWORD</variableName>
+                                            <message>CENTRAL_TOKEN_PASSWORD env var is required for release publishing.</message>
+                                        </requireEnvironmentVariable>
+                                        <requireProperty>
+                                            <property>existdb.release.key</property>
+                                            <message>existdb.release.key is required for GPG artifact signing.</message>
+                                        </requireProperty>
+                                        <requireProperty>
+                                            <property>existdb.release.key.passphrase</property>
+                                            <message>existdb.release.key.passphrase is required for GPG artifact signing.</message>
+                                        </requireProperty>
+                                    </rules>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <!-- === End Release pipeline === -->
 
         <profile>
             <!-- NOTE: this is used from the maven-release-plugin -->

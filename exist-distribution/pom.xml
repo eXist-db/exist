@@ -29,7 +29,7 @@
     <parent>
         <groupId>org.exist-db</groupId>
         <artifactId>exist-parent</artifactId>
-        <version>7.0.0-SNAPSHOT</version>
+        <version>${revision}</version>
         <relativePath>../exist-parent</relativePath>
     </parent>
 
@@ -1063,10 +1063,10 @@
                 <os>
                     <family>mac</family>
                 </os>
-                <!-- Note: Travis Mac doesn't support the hdiutil attach required by create-dmg-mac.sh -->
+                <!-- Opt-in: only when mac-signing=true so local dev builds and CI test runs don't attempt DMG creation -->
                 <property>
-                    <name>env.CI</name>
-                    <value>!true</value>
+                    <name>mac-signing</name>
+                    <value>true</value>
                 </property>
             </activation>
             <build>
@@ -1187,16 +1187,31 @@
                                     <useMavenLogger>true</useMavenLogger>
                                     <executable>/usr/bin/xcrun</executable>
                                     <arguments>
-                                        <argument>altool</argument>
-                                        <argument>--notarize-app</argument>
-                                        <argument>--verbose</argument>
-                                        <argument>--primary-bundle-id</argument>
-                                        <argument>org.exist-db</argument>
-                                        <argument>--username</argument>
-                                        <argument>${existdb.release.notarize.username}</argument>
+                                        <argument>notarytool</argument>
+                                        <argument>submit</argument>
+                                        <argument>${mac.dmg}</argument>
+                                        <argument>--apple-id</argument>
+                                        <argument>${existdb.release.notarize.apple-id}</argument>
                                         <argument>--password</argument>
                                         <argument>${existdb.release.notarize.password}</argument>
-                                        <argument>--file</argument>
+                                        <argument>--team-id</argument>
+                                        <argument>${existdb.release.notarize.team-id}</argument>
+                                        <argument>--wait</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>mac-staple-dmg</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <useMavenLogger>true</useMavenLogger>
+                                    <executable>/usr/bin/xcrun</executable>
+                                    <arguments>
+                                        <argument>stapler</argument>
+                                        <argument>staple</argument>
                                         <argument>${mac.dmg}</argument>
                                     </arguments>
                                 </configuration>
