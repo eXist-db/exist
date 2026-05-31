@@ -2059,7 +2059,7 @@ public class InteractiveClient {
      * Ask user for login data using gui.
      *
      * @param props Client properties
-     * @return FALSE when pressed cancel, TRUE is sucessfull.
+     * @return FALSE when the login dialog was dismissed, TRUE if login data was provided.
      */
     private boolean getGuiLoginData(final Properties props) {
         return getGuiLoginData(props, ClientFrame::getLoginData);
@@ -2165,7 +2165,7 @@ public class InteractiveClient {
                         ClientFrame.showErrorMessage("Connection to database failed: " + message, cnf);
                         final boolean haveLoginData = getGuiLoginData(properties);
                         if (!haveLoginData) {
-                            // user pressed Cancel
+                            // user dismissed the login dialog; abort startup
                             return false;
                         }
                     } else {
@@ -2278,7 +2278,7 @@ public class InteractiveClient {
 
                     final boolean haveLoginData = getGuiLoginData(properties);
                     if (!haveLoginData) {
-                        // pressed cancel
+                        // user dismissed the login dialog; abort startup
                         return true;
                     }
 
