@@ -1,0 +1,30 @@
+.github/workflows/ci-release.yml
+  s_1264426024174d::t_c672510eef9d4c 310
+  s_1264426024174d::t_81e68a965c5ab5 22
+  s_1264426024174d::t_e704d30bc45323 205
+  s_1264426024174d::t_51a86ae6b4084d 239
+  s_1264426024174d::t_66176cc0636729 262,264-268
+  s_1264426024174d::t_82366294e918bb 298-299
+  s_1264426024174d::t_ec5a9295b5ec46 185-187
+.github/workflows/ci-container.yml
+  s_1264426024174d::t_bfc497b6251cf3 36
+  s_1264426024174d::t_51f36a02293398 40
+exist-versioning-release.md
+  s_1264426024174d::t_d1b5a95ac7011e 139
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "c8ac053c968499a5a8f225962ffc399218047ce5",
+  "prompts": {},
+  "sessions": {
+    "s_1264426024174d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1ee6d1d8-833d-4c5c-a6b5-448bac261f5f",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
