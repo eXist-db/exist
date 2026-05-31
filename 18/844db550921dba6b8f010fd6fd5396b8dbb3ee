@@ -1,0 +1,19 @@
+.github/workflows/ci-container.yml
+  s_1264426024174d::t_862426fb0f6afd 4-8,19-25,56-66,104-106,111-119,121
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "18844db550921dba6b8f010fd6fd5396b8dbb3ee",
+  "prompts": {},
+  "sessions": {
+    "s_1264426024174d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1ee6d1d8-833d-4c5c-a6b5-448bac261f5f",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
