@@ -1,0 +1,38 @@
+.github/workflows/ci-container.yml
+  s_1264426024174d::t_51f36a02293398 40
+  s_1264426024174d::t_bfc497b6251cf3 36
+.github/workflows/ci-release.yml
+  s_1264426024174d::t_51a86ae6b4084d 238
+  s_1264426024174d::t_a8fb1c25e7387f 92,177,289
+  s_1264426024174d::t_c672510eef9d4c 309
+  s_1264426024174d::t_81e68a965c5ab5 22
+  s_1264426024174d::t_66176cc0636729 261,263-267
+  s_1264426024174d::t_82366294e918bb 297-298
+  s_1264426024174d::t_ec5a9295b5ec46 184-186
+  s_1264426024174d::t_77aef19748d94c 98
+  s_1264426024174d::t_e704d30bc45323 204
+  s_1264426024174d::t_b2ac838269313d 300
+exist-parent/pom.xml
+  s_1264426024174d::t_fd9eb8b2a26dc1 1516
+  s_1264426024174d::t_fb1a9f33099e65 1586-1589
+  s_1264426024174d::t_efc22b6b203bb9 1510-1511
+  s_1264426024174d::t_054310817806dc 1517-1535
+exist-versioning-release.md
+  s_1264426024174d::t_8ffa97c6c30fac 118,122
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "2dcf2d923a39434a87910c520e2067d67414034c",
+  "prompts": {},
+  "sessions": {
+    "s_1264426024174d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1ee6d1d8-833d-4c5c-a6b5-448bac261f5f",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": null
+    }
+  }
+}
