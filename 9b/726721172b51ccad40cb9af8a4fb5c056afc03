@@ -1,0 +1,35 @@
+exist-core/src/main/java/org/exist/jetty/JettyStart.java
+  s_b371cd7261149b::t_562144acd2b15d 347
+  s_b371cd7261149b::t_60a24e3e988958 348
+  s_b371cd7261149b::t_e8b21e0cc2d21b 511,514,516,518-525,528,530-534,537-539,542-546,548-550,554-555
+  s_b371cd7261149b::t_5722557b74597a 515,517,526-527
+exist-core/src/main/java/org/exist/TestUtils.java
+  s_b371cd7261149b::t_ea9ff5491e93b6 39-40
+  s_b371cd7261149b::t_7d664d2b3441b4 200,206-226,273,279,283,267
+  s_b371cd7261149b::t_1f03bad0ed7726 237,241-242,259,270,284,318,327,293,304
+  s_b371cd7261149b::t_b44521f89a8e59 260
+  s_b371cd7261149b::t_de6b3dd32b5939 334-335,347,243,251,255,272,307-308,330-331,250,264,271,274,348,351-352,355-356,360-361
+  s_b371cd7261149b::t_650b40a36c95ef 346,328,305,349
+  s_b371cd7261149b::t_e634881d8edab0 34-35
+  s_b371cd7261149b::t_042413afe82a8e 201,203
+  s_b371cd7261149b::t_d8f753f7a26440 309,312,285,287
+  s_b371cd7261149b::t_eac38cc3d45584 231
+extensions/webdav/src/test/resources/standalone-webapp/WEB-INF/controller-config.xml
+  s_b371cd7261149b::t_2a78ff081c3b21 27
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "9b726721172b51ccad40cb9af8a4fb5c056afc03",
+  "prompts": {},
+  "sessions": {
+    "s_b371cd7261149b": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "6972b017-56e3-4c37-af24-6e90cb4988df",
+        "model": "default"
+      },
+      "human_author": null
+    }
+  }
+}

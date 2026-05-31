@@ -1,0 +1,56 @@
+extensions/exquery/restxq/src/test/resources/standalone-webapp/WEB-INF/web.xml
+  s_b371cd7261149b::t_2be167b2d3fcaa 103-111
+extensions/debuggee/src/test/resources/standalone-webapp/WEB-INF/web.xml
+  s_b371cd7261149b::t_eed3cd1b9c5cd3 77-88
+exist-core/src/main/java/org/exist/jetty/JettyStart.java
+  s_b371cd7261149b::t_562144acd2b15d 347
+  s_b371cd7261149b::t_60a24e3e988958 348
+  s_b371cd7261149b::t_e8b21e0cc2d21b 511,515,517,519-526,529,531-535,538-540,543-547,549-551,563-564,559-560
+  s_b371cd7261149b::t_5722557b74597a 516,518,527-528
+  s_b371cd7261149b::t_797b5f07323a8f 512-514,530,536-537,541-542,548,552,554-558,561-562
+  s_b371cd7261149b::t_77d1e99527be5d 553
+extensions/modules/file/src/test/resources/standalone-webapp/WEB-INF/web.xml
+  s_b371cd7261149b::t_5dd5456cecaa33 77-88
+exist-core/src/main/java/org/exist/test/ExistWebServer.java
+  s_b371cd7261149b::t_e50328ac3263cd 145,148-151
+  s_b371cd7261149b::t_ffcc4b8aeef1ee 126,129,147
+  s_b371cd7261149b::t_aebab2f15f9714 140-141,144
+  s_b371cd7261149b::t_09162eb4334403 146,163,165,167-168
+  s_b371cd7261149b::t_89fbd495173c8d 181,192,203,205-208,210
+  s_b371cd7261149b::t_c309d948b2f795 182-191,193-202,209,211-216
+exist-jetty-config/src/main/resources/standalone-webapp/WEB-INF/web.xml
+  s_b371cd7261149b::t_c543f62632a259 182-201
+exist-core/src/main/java/org/exist/TestUtils.java
+  s_b371cd7261149b::t_ea9ff5491e93b6 39-40
+  s_b371cd7261149b::t_7d664d2b3441b4 202,209-229,279,285,289,269
+  s_b371cd7261149b::t_1f03bad0ed7726 239,243-244,261,276,290,324,333,299,310
+  s_b371cd7261149b::t_b44521f89a8e59 262,275
+  s_b371cd7261149b::t_de6b3dd32b5939 340-341,358,245,253,257,278,313-314,336-337,252,266,277,280,359,368-369,375-376,379-380
+  s_b371cd7261149b::t_650b40a36c95ef 357,334,311,352,361-367,370-374,377-378
+  s_b371cd7261149b::t_e634881d8edab0 34-35
+  s_b371cd7261149b::t_042413afe82a8e 203,206
+  s_b371cd7261149b::t_d8f753f7a26440 315,318,291,293
+  s_b371cd7261149b::t_eac38cc3d45584 234
+  s_b371cd7261149b::t_80b8f01fc68843 204
+  s_b371cd7261149b::t_c3146d6f462231 205
+extensions/modules/persistentlogin/src/test/resources/standalone-webapp/WEB-INF/web.xml
+  s_b371cd7261149b::t_ff18509e9b8bc5 77-88
+extensions/webdav/src/test/resources/standalone-webapp/WEB-INF/web.xml
+  s_b371cd7261149b::t_167993b456fc6f 113-128
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "8a7d02f5bae4c5b2ba602d82055d49c4df42fff5",
+  "prompts": {},
+  "sessions": {
+    "s_b371cd7261149b": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "6972b017-56e3-4c37-af24-6e90cb4988df",
+        "model": "default"
+      },
+      "human_author": null
+    }
+  }
+}
