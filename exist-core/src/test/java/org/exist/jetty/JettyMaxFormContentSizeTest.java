@@ -22,10 +22,11 @@
 package org.exist.jetty;
 
 import org.eclipse.jetty.ee10.webapp.WebAppContext;
+import org.eclipse.jetty.util.resource.ResourceFactory;
 import org.eclipse.jetty.xml.XmlConfiguration;
 import org.junit.Test;
 
-import java.io.InputStream;
+import java.net.URL;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
@@ -77,10 +78,10 @@ public class JettyMaxFormContentSizeTest {
 
     private static WebAppContext configureContext(final String resource,
                                                   final Map<String, String> properties) throws Exception {
-        final java.net.URL url = JettyMaxFormContentSizeTest.class.getResource(resource);
+        final URL url = JettyMaxFormContentSizeTest.class.getResource(resource);
         assertNotNull("missing classpath resource " + resource, url);
         final XmlConfiguration xml = new XmlConfiguration(
-                org.eclipse.jetty.util.resource.ResourceFactory.root().newResource(url));
+                ResourceFactory.root().newResource(url));
         xml.getProperties().putAll(properties);
         return (WebAppContext) xml.configure();
     }
