@@ -2162,6 +2162,7 @@ public class InteractiveClient {
                 } catch (final XMLDBException cnf) {
                     final String message = cnf.getMessage() != null ? cnf.getMessage() : cnf.getClass().getName();
                     if (isRetryableError(message)) {
+                        ClientFrame.showErrorMessage("Connection to database failed: " + message, cnf);
                         final boolean haveLoginData = getGuiLoginData(properties);
                         if (!haveLoginData) {
                             // user pressed Cancel
