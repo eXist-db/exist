@@ -6,6 +6,25 @@
     <Set name="contextPath">/</Set>
     <Set name="war"><SystemProperty name="exist.jetty.standalone.webapp.dir"><Default><Property name="jetty.home" default="."/>/../../../standalone-webapp/</Default></SystemProperty></Set>
     <Set name="defaultsDescriptor"><Property name="jetty.home" default="."/>/etc/webdefault.xml</Set>
+    <!--
+         Maximum size (in bytes) of an application/x-www-form-urlencoded
+         request body before Jetty rejects it with HTTP 400 "Unable to
+         parse form content". 200000 matches Jetty's default; override at
+         startup with -Djetty.http.maxFormContentSize=<bytes>.
+
+         Note: in Jetty 12 the per-Request attribute
+         "org.eclipse.jetty.server.Request.maxFormContentSize" that was
+         used in earlier eXist documentation no longer takes effect; the
+         only recognised path is ServletContextHandler.setMaxFormContentSize,
+         which this Set call invokes via Jetty's XmlConfiguration.
+    -->
+    <Set name="maxFormContentSize"><Property name="jetty.http.maxFormContentSize" default="200000"/></Set>
+    <!--
+         Maximum number of distinct keys in an application/x-www-form-urlencoded
+         request body. 1000 matches Jetty's default. Override with
+         -Djetty.http.maxFormKeys=<count>.
+    -->
+    <Set name="maxFormKeys"><Property name="jetty.http.maxFormKeys" default="1000"/></Set>
     <Set name="securityHandler">
         <New class="org.eclipse.jetty.ee10.servlet.security.ConstraintSecurityHandler">
             <Set name="loginService">
