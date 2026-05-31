@@ -130,11 +130,17 @@ jobs:
             -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASS" release.keychain
           rm /tmp/cert.p12
 
+      - name: Write Apple API key
+        env:
+          EXISTDB_APPLE_API_KEY: ${{ secrets.EXISTDB_APPLE_API_KEY }}
+        run: |
+          echo "$EXISTDB_APPLE_API_KEY" | base64 --decode > /tmp/notarytool.p8
+          chmod 600 /tmp/notarytool.p8
+
       - name: Build, sign, notarize and staple DMG
         env:
-          EXISTDB_APPLE_ID: ${{ secrets.EXISTDB_APPLE_ID }}
-          EXISTDB_APPLE_APP_PASSWORD: ${{ secrets.EXISTDB_APPLE_APP_PASSWORD }}
-          EXISTDB_APPLE_TEAM_ID: ${{ secrets.EXISTDB_APPLE_TEAM_ID }}
+          EXISTDB_APPLE_API_KEY_ID: ${{ secrets.EXISTDB_APPLE_API_KEY_ID }}
+          EXISTDB_APPLE_API_ISSUER_ID: ${{ secrets.EXISTDB_APPLE_API_ISSUER_ID }}
         run: |
           TAG="${{ github.event.inputs.tag || github.ref_name }}"
           REVISION="${TAG#eXist-}"
@@ -146,10 +152,14 @@ jobs:
             -Ddependency-check.skip=true \
             -Dlicense.skip=true \
             -Dmac.codesign.identity="${{ vars.EXISTDB_MAC_CODESIGN_IDENTITY }}" \
-            -Dexistdb.release.notarize.apple-id="$EXISTDB_APPLE_ID" \
-            -Dexistdb.release.notarize.password="$EXISTDB_APPLE_APP_PASSWORD" \
-            -Dexistdb.release.notarize.team-id="$EXISTDB_APPLE_TEAM_ID" \
+            -Dexistdb.release.notarize.key-path=/tmp/notarytool.p8 \
+            -Dexistdb.release.notarize.key-id="$EXISTDB_APPLE_API_KEY_ID" \
+            -Dexistdb.release.notarize.issuer-id="$EXISTDB_APPLE_API_ISSUER_ID" \
             clean package
+
+      - name: Remove Apple API key
+        if: always()
+        run: rm -f /tmp/notarytool.p8
 
       - name: Verify DMG notarization
         run: |
@@ -251,7 +261,7 @@ jobs:
             Write-Host "No .exe produced on this runner; skipping Authenticode signing"
             exit 0
           }
-          dotnet tool install --global AzureSignTool --version 5.0.0
+          dotnet tool install --global AzureSignTool --version 7.0.1
           $vaultName = ($env:AZURE_KEYVAULT_URI -replace 'https://|\.vault\.azure\.net/?', '')
           $certName  = az keyvault certificate list `
             --vault-name $vaultName --query "[0].name" -o tsv

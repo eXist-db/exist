@@ -1191,12 +1191,12 @@
                                         <argument>notarytool</argument>
                                         <argument>submit</argument>
                                         <argument>${mac.dmg}</argument>
-                                        <argument>--apple-id</argument>
-                                        <argument>${existdb.release.notarize.apple-id}</argument>
-                                        <argument>--password</argument>
-                                        <argument>${existdb.release.notarize.password}</argument>
-                                        <argument>--team-id</argument>
-                                        <argument>${existdb.release.notarize.team-id}</argument>
+                                        <argument>--key</argument>
+                                        <argument>${existdb.release.notarize.key-path}</argument>
+                                        <argument>--key-id</argument>
+                                        <argument>${existdb.release.notarize.key-id}</argument>
+                                        <argument>--issuer</argument>
+                                        <argument>${existdb.release.notarize.issuer-id}</argument>
                                         <argument>--wait</argument>
                                     </arguments>
                                 </configuration>

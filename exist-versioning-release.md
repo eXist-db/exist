@@ -127,11 +127,11 @@ All secrets must be in place under **Settings → Secrets and variables → Acti
 | `EXISTDB_RELEASE_KEY_PASSPHRASE` | `build-linux` — GPG passphrase |
 | `CENTRAL_TOKEN_USERNAME` | `build-linux` — Sonatype Central Portal user token username |
 | `CENTRAL_TOKEN_PASSWORD` | `build-linux` — Sonatype Central Portal user token password |
-| `EXISTDB_MAC_CERTIFICATE` | `build-mac` — Developer ID Application cert (base64 PKCS12) |
+| `EXISTDB_MAC_CERTIFICATE` | `build-mac` — Developer ID Application cert (base64 PKCS12) for codesigning |
 | `EXISTDB_MAC_CERTIFICATE_PASSWORD` | `build-mac` — Certificate password |
-| `EXISTDB_APPLE_ID` | `build-mac` — Apple ID for `notarytool` |
-| `EXISTDB_APPLE_APP_PASSWORD` | `build-mac` — App-specific password for `notarytool` |
-| `EXISTDB_APPLE_TEAM_ID` | `build-mac` — Apple Developer Team ID |
+| `EXISTDB_APPLE_API_KEY` | `build-mac` — App Store Connect API private key (base64-encoded `.p8`) for notarytool |
+| `EXISTDB_APPLE_API_KEY_ID` | `build-mac` — API Key ID (10-char alphanumeric) |
+| `EXISTDB_APPLE_API_ISSUER_ID` | `build-mac` — App Store Connect Issuer ID (UUID) |
 | `AZURE_CLIENT_ID` | `build-windows` — OIDC app registration client ID |
 | `AZURE_TENANT_ID` | `build-windows` — Azure tenant |
 | `AZURE_SUBSCRIPTION_ID` | `build-windows` — Azure subscription |
