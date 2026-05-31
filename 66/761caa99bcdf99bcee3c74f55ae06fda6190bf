@@ -1,0 +1,23 @@
+exist-parent/pom.xml
+  s_1264426024174d::t_43c269eb269509 115
+.github/workflows/ci-test.yml
+  s_1264426024174d::t_51ed155e59be1f 89
+.github/actions/install-mvnd/action.yml
+  s_1264426024174d::t_9a9e23fcb1da95 7
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "66761caa99bcdf99bcee3c74f55ae06fda6190bf",
+  "prompts": {},
+  "sessions": {
+    "s_1264426024174d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1ee6d1d8-833d-4c5c-a6b5-448bac261f5f",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
