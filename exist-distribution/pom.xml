@@ -1064,11 +1064,8 @@
                 <os>
                     <family>mac</family>
                 </os>
-                <!-- Opt-in: only when mac-signing=true so local dev builds and CI test runs don't attempt DMG creation -->
-                <property>
-                    <name>mac-signing</name>
-                    <value>true</value>
-                </property>
+                <!-- Active on any macOS build. Negate with !mac-dmg-on-mac for quick builds.
+                     Signing and notarization are gated separately by codesign-mac-dmg (mac-signing=true). -->
             </activation>
             <build>
                 <plugins>

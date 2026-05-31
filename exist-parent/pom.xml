@@ -1227,7 +1227,7 @@
                 <artifactId>flatten-maven-plugin</artifactId>
                 <configuration>
                     <updatePomFile>true</updatePomFile>
-                    <flattenMode>resolveCiFriendlyVersions</flattenMode>
+                    <flattenMode>resolveCiFriendliesOnly</flattenMode>
                 </configuration>
                 <executions>
                     <execution>

@@ -31,5 +31,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           mvn -V -B --no-transfer-progress -q -DskipTests -Ddependency-check.skip=true \
-          -P !mac-dmg-on-unix,!installer,!concurrency-stress-tests,!micro-benchmarks,skip-build-dist-archives \
+          -P skip-build-dist-archives \
           clean deploy

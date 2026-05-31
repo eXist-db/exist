@@ -41,6 +41,41 @@ mvn test -pl exist-core -Ddependency-check.skip=true -Ddocker=false
 mvn test -pl exist-core -Dtest="org.exist.xquery.XPathQueryTest" -Ddependency-check.skip=true -Ddocker=false
 ```
 
+### Distribution artifacts (zip, tar.bz2, DMG)
+
+Produces release archives and, on macOS, an unsigned DMG suitable for local testing.
+Output lands in `exist-distribution/target/`.
+
+```bash
+JAVA_HOME=$(/usr/libexec/java_home -v 21) \
+  mvn -T1.5C clean package \
+  -pl exist-distribution -am \
+  -DskipTests \
+  -Ddependency-check.skip=true \
+  -Ddocker=false \
+  -Drevision=7.0.0-SNAPSHOT
+```
+
+The DMG is unsigned. For the fully signed and notarized DMG used in releases, see `exist-versioning-release.md`.
+
+### IzPack installer JAR
+
+Produces the cross-platform installer JAR in `exist-installer/target/`.
+Maven will warn "could not be activated because it does not exist" for the `installer` profile — this is a Maven 3 multi-module quirk; the build is correct.
+
+```bash
+JAVA_HOME=$(/usr/libexec/java_home -v 21) \
+  mvn -T1.5C clean package \
+  -Pinstaller \
+  -pl exist-installer -am \
+  -DskipTests \
+  -Ddependency-check.skip=true \
+  -Ddocker=false \
+  -Drevision=7.0.0-SNAPSHOT
+```
+
+Run the installer: `java -jar exist-installer/target/exist-installer-7.0.0-SNAPSHOT.jar`
+
 ### Docker image
 
 ```bash
