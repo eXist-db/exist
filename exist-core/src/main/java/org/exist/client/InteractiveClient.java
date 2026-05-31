@@ -2078,15 +2078,25 @@ public class InteractiveClient {
 
     /**
      * Reusable method for connecting to database. Exits process on failure.
+     * In GUI mode, retryable errors (e.g. wrong credentials) are rethrown as
+     * XMLDBException so the caller can prompt the user and retry.
      */
-    private void connectToDatabase() {
+    private void connectToDatabase() throws XMLDBException {
         try {
             connect();
         } catch (final Exception cnf) {
+            final String message = cnf.getMessage() != null ? cnf.getMessage() : cnf.getClass().getName();
+            if (options.startGUI && isRetryableError(message)) {
+                if (frame != null) {
+                    frame.setStatus("Connection to database failed; message: " + message);
+                }
+                throw cnf instanceof XMLDBException xe ? xe
+                        : new XMLDBException(ErrorCodes.VENDOR_ERROR, message, cnf);
+            }
             if (options.startGUI && frame != null) {
-                frame.setStatus("Connection to database failed; message: " + cnf.getMessage());
+                frame.setStatus("Connection to database failed; message: " + message);
             } else {
-                consoleErr("Connection to database failed; message: " + cnf.getMessage(), cnf);
+                consoleErr("Connection to database failed; message: " + message, cnf);
             }
             System.exit(SystemExitCodes.CATCH_ALL_GENERAL_ERROR_EXIT_CODE);
         }
@@ -2142,8 +2152,30 @@ public class InteractiveClient {
                     .build();
         }
 
-        // connect to the db
-        connectToDatabase();
+        // connect to the db; in GUI mode retry on bad credentials
+        if (interactive && options.startGUI) {
+            boolean connected = false;
+            while (!connected) {
+                try {
+                    connectToDatabase();
+                    connected = true;
+                } catch (final XMLDBException cnf) {
+                    final String message = cnf.getMessage() != null ? cnf.getMessage() : cnf.getClass().getName();
+                    if (isRetryableError(message)) {
+                        final boolean haveLoginData = getGuiLoginData(properties);
+                        if (!haveLoginData) {
+                            // user pressed Cancel
+                            return false;
+                        }
+                    } else {
+                        consoleErr("Connection to database failed; message: " + message, cnf);
+                        System.exit(SystemExitCodes.CATCH_ALL_GENERAL_ERROR_EXIT_CODE);
+                    }
+                }
+            }
+        } else {
+            connectToDatabase();
+        }
 
         if (current == null) {
             if (options.startGUI && frame != null) {
@@ -2253,7 +2285,12 @@ public class InteractiveClient {
                     shutdown(false);
 
                     // connect to the db
-                    connectToDatabase();
+                    try {
+                        connectToDatabase();
+                    } catch (final XMLDBException e) {
+                        // connection failed again; loop will re-prompt for credentials
+                        errorMessageReference.set(getExceptionMessage(e));
+                    }
 
                 } else if (!errorMessage.isEmpty()) {
                     // No pattern match, but we have an error. stop here
@@ -2281,6 +2318,7 @@ public class InteractiveClient {
     boolean isRetryableError(String errorMessage) {
         return errorMessage.contains("Invalid password for user") ||
                 errorMessage.contains("Connection refused: connect") ||
+                errorMessage.contains("Unauthorized") ||
                 UNKNOWN_USER_PATTERN.matcher(errorMessage).find();
     }
 
