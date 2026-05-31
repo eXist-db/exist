@@ -1,6 +1,11 @@
 name: Publish Container
 on:
   push:
+    branches:
+      - develop
+      - master
+    tags:
+      - 'eXist-*'
   pull_request:
   schedule:
       - cron: "0 6 * * *"
@@ -11,8 +16,13 @@ jobs:
     name: Test and Publish Container Images
     runs-on: ubuntu-latest
     timeout-minutes: 60
-    # NOTE (DP): Publish on develop and master, test on PRs against these
-    if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/master' || github.base_ref ==  'develop' || github.base_ref ==  'master'
+    # Publish on develop (latest) and eXist-* tags (versioned + release); test on PRs against these branches.
+    if: >
+      github.ref == 'refs/heads/develop' ||
+      github.ref == 'refs/heads/master' ||
+      startsWith(github.ref, 'refs/tags/eXist-') ||
+      github.base_ref == 'develop' ||
+      github.base_ref == 'master'
     steps:
       - uses: actions/checkout@v6
         with:
@@ -43,7 +53,17 @@ jobs:
         timeout-minutes: 35
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: mvn -V -B --no-transfer-progress -q -Pdocker -DskipTests -Ddependency-check.skip=true -P !mac-dmg-on-unix,!installer,!concurrency-stress-tests,!micro-benchmarks,skip-build-dist-archives clean package
+        run: |
+          REVISION_ARG=""
+          if [[ "${{ github.ref }}" == refs/tags/eXist-* ]]; then
+            VERSION="${{ github.ref_name }}"
+            REVISION_ARG="-Drevision=${VERSION#eXist-}"
+          fi
+          mvn -V -B --no-transfer-progress -q \
+            -Pdocker -DskipTests -Ddependency-check.skip=true \
+            -P '!mac-dmg-on-unix,skip-build-dist-archives' \
+            $REVISION_ARG \
+            clean package
       - name: Check local images
         run: docker image ls
       - name: Check license headers
@@ -73,8 +93,6 @@ jobs:
           name: exist-core-failed-log
           path: exist.log
 
-      # NOTE (DP): When on master push release, when on develop push latest: Version is included automatically
-      # TODO (DP): Confirm that releases triggered from maven publish images with the non SNAPSHOT version
       - name: Publish latest images
         if: github.repository == 'eXist-db/exist' && github.ref == 'refs/heads/develop'
         env:
@@ -83,14 +101,24 @@ jobs:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
         run: mvn --no-transfer-progress -q -Ddocker.tag=latest -Ddocker.username=$DOCKER_USERNAME -Ddocker.password=$DOCKER_PASSWORD docker:build docker:push
         working-directory: ./exist-docker
-      - name: Publish release images
-        if: github.repository == 'eXist-db/exist' && github.ref == 'refs/heads/master'
+
+      - name: Publish versioned release images
+        if: github.repository == 'eXist-db/exist' && startsWith(github.ref, 'refs/tags/eXist-')
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-        run: mvn --no-transfer-progress -q -Ddocker.tag=release -Ddocker.username=$DOCKER_USERNAME -Ddocker.password=$DOCKER_PASSWORD docker:build docker:push
+        run: |
+          VERSION="${{ github.ref_name }}"
+          VERSION="${VERSION#eXist-}"
+          mvn --no-transfer-progress -q \
+            -Drevision="$VERSION" \
+            -Ddocker.tag=release \
+            -Ddocker.username=$DOCKER_USERNAME \
+            -Ddocker.password=$DOCKER_PASSWORD \
+            docker:build docker:push
         working-directory: ./exist-docker
+
       # NOTE (DP): This is for debugging, publishes an experimental image from inside PRs against develop
       # - name: Publish experimental images
       #   if: github.base_ref == 'develop'
