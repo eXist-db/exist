@@ -24,6 +24,7 @@ package org.exist.dom.persistent;
 import org.exist.numbering.NodeId;
 import org.exist.xquery.value.Item;
 import org.exist.xquery.value.SequenceIterator;
+import org.exist.xquery.value.Type;
 
 import javax.annotation.Nullable;
 import java.util.ArrayDeque;
@@ -35,6 +36,7 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
     private Node root;
     private int size = 0;
     private int state = 0;
+    private int itemType = Type.ANY_TYPE;
 
     @Override
     public SequenceIterator iterate() {
@@ -61,6 +63,31 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
     @Override
     public long getItemCountLong() {
         return size;
+    }
+
+    /**
+     * Refine the tracked itemType as nodes are added, mirroring the pattern
+     * used by {@link AbstractArrayNodeSet#checkItemType(int)}. The result is
+     * exposed via {@link #getItemType()} so that sequence-level type checks
+     * (function return types, variable declarations, instance-of, ...) see
+     * the tightest common supertype of the contained items rather than the
+     * unconditional {@link Type#NODE} returned by the {@link AbstractNodeSet}
+     * default.
+     */
+    private void checkItemType(final int type) {
+        if (itemType == Type.NODE || itemType == type) {
+            return;
+        }
+        if (itemType == Type.ANY_TYPE) {
+            itemType = type;
+        } else {
+            itemType = Type.NODE;
+        }
+    }
+
+    @Override
+    public int getItemType() {
+        return itemType == Type.ANY_TYPE ? Type.NODE : itemType;
     }
 
 
@@ -110,6 +137,7 @@ public class AVLTreeNodeSet extends AbstractNodeSet {
             return;
         }
 
+        checkItemType(proxy.getType());
         setHasChanged();
         if(root == null) {
             root = new Node(proxy);
