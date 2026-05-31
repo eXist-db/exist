@@ -1,0 +1,32 @@
+.github/workflows/ci-snapshots.yml
+  s_1264426024174d::t_fc4a97d426842e 34
+.github/workflows/ci-test.yml
+  s_1264426024174d::t_0c0e8d0efc3d70 115
+  s_1264426024174d::t_f925cf54b98191 97
+  s_1264426024174d::t_730425b4e64f7b 112
+.github/workflows/sonarcloud.yml
+  s_1264426024174d::t_faa636c6ec6bcb 33
+exist-distribution/pom.xml
+  s_1264426024174d::t_9bd0bd1323f3d3 1067-1068
+AGENTS.md
+  s_1264426024174d::t_b23aa027239ae4 61-78
+  s_1264426024174d::t_0c1b5954fe30a8 44-60
+exist-parent/pom.xml
+  s_1264426024174d::t_177d1ca6caf9c8 1230
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "c60f277e68ca0da6260d79d7d0ac00f533f7b714",
+  "prompts": {},
+  "sessions": {
+    "s_1264426024174d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1ee6d1d8-833d-4c5c-a6b5-448bac261f5f",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": null
+    }
+  }
+}
