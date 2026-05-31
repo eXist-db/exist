@@ -118,6 +118,13 @@ public class HTML5Writer extends XHTML5Writer {
         BOOLEAN_ATTRIBUTE_NAMES.add("willValidate");
     }
 
+    private static final ObjectSet<String> BOOLEAN_ATTRIBUTE_NAMES_LOWER = new ObjectOpenHashSet<>(BOOLEAN_ATTRIBUTE_NAMES.size());
+    static {
+        for (final String n : BOOLEAN_ATTRIBUTE_NAMES) {
+            BOOLEAN_ATTRIBUTE_NAMES_LOWER.add(n.toLowerCase(java.util.Locale.ROOT));
+        }
+    }
+
     private static final ObjectSet<String> EMPTY_TAGS = new ObjectOpenHashSet<>(31);
     static {
         EMPTY_TAGS.add("area");
@@ -156,8 +163,15 @@ public class HTML5Writer extends XHTML5Writer {
         if (!isEmptyTag(qname.getLocalPart())) {
             super.endElement(qname);
         } else {
+            // HTML5 omits the close tag for void elements; we still need to
+            // honor the meta-in-head dedup that XHTMLWriter sets up at startElement
+            // time. Capture the buffered-meta flag before closeStartTag flips state.
+            final boolean wasBufferedMeta = isBufferedMeta(qname.getLocalPart());
             closeStartTag(true);
             endIndent(qname.getNamespaceURI(), qname.getLocalPart());
+            if (wasBufferedMeta) {
+                endMetaBuffer();
+            }
         }
     }
 
@@ -166,24 +180,33 @@ public class HTML5Writer extends XHTML5Writer {
         if (!isEmptyTag(localName)) {
             super.endElement(namespaceURI, localName, qname);
         } else {
+            final boolean wasBufferedMeta = isBufferedMeta(localName);
             closeStartTag(true);
             endIndent(namespaceURI, localName);
+            if (wasBufferedMeta) {
+                endMetaBuffer();
+            }
         }
     }
 
     @Override
     public void attribute(String qname, CharSequence value) throws TransformerException {
+        // Strip prefix for the meta-dedup redundancy check
+        final int colon = qname.indexOf(':');
+        final String localName = colon < 0 ? qname : qname.substring(colon + 1);
+        noteMetaAttribute(localName, value);
+        final CharSequence effectiveValue = maybeEscapeUriHtml5(localName, value);
         try {
             if(!tagIsOpen) {
-                characters(value);
+                characters(effectiveValue);
                 return;
             }
             final Writer writer = getWriter();
             writer.write(' ');
             writer.write(qname);
-            if (!(BOOLEAN_ATTRIBUTE_NAMES.contains(qname) && qname.contentEquals(value))) {
+            if (!isBooleanAttributeMatch(qname, effectiveValue)) {
                 writer.write("=\"");
-                writeChars(value, true);
+                writeChars(effectiveValue, true);
                 writer.write('"');
             }
         } catch(final IOException ioe) {
@@ -193,9 +216,12 @@ public class HTML5Writer extends XHTML5Writer {
 
     @Override
     public void attribute(QName qname, CharSequence value) throws TransformerException {
+        noteMetaAttribute(qname.getLocalPart(), value);
+        final String localPart = qname.getLocalPart();
+        final CharSequence effectiveValue = maybeEscapeUriHtml5(localPart, value);
         try {
             if(!tagIsOpen) {
-                characters(value);
+                characters(effectiveValue);
                 return;
                 // throw new TransformerException("Found an attribute outside an
                 // element");
@@ -206,11 +232,10 @@ public class HTML5Writer extends XHTML5Writer {
                 writer.write(qname.getPrefix());
                 writer.write(':');
             }
-            final String localPart = qname.getLocalPart();
             writer.write(localPart);
-            if (!(BOOLEAN_ATTRIBUTE_NAMES.contains(localPart) && localPart.contentEquals(value))) {
+            if (!isBooleanAttributeMatch(localPart, effectiveValue)) {
                 writer.write("=\"");
-                writeChars(value, true);
+                writeChars(effectiveValue, true);
                 writer.write('"');
             }
         } catch(final IOException ioe) {
@@ -218,31 +243,114 @@ public class HTML5Writer extends XHTML5Writer {
         }
     }
 
+    /**
+     * URI-attribute escaping for the HTML5 writer. Mirrors
+     * {@link XHTMLWriter#shouldEscapeUriAttribute(String, String)} but unwraps
+     * the prefixed form of {@link #currentTag} so the (element, attribute)
+     * lookup uses local names only.
+     */
+    private CharSequence maybeEscapeUriHtml5(final String attrLocal, final CharSequence value) {
+        if (currentTag == null) {
+            return value;
+        }
+        final String elementLocal = currentTag.contains(":")
+                ? currentTag.substring(currentTag.indexOf(':') + 1)
+                : currentTag;
+        if (!shouldEscapeUriAttribute(elementLocal, attrLocal)) {
+            return value;
+        }
+        return escapeUriAttribute(value);
+    }
+
+    /**
+     * HTML5 boolean attribute minimization: emit just the bare name when the
+     * value is empty or matches the attribute name case-insensitively
+     * (per W3C XSLT/XQuery Serialization 3.1, section 7.2.2).
+     */
+    private static boolean isBooleanAttributeMatch(final String name, final CharSequence value) {
+        if (!BOOLEAN_ATTRIBUTE_NAMES_LOWER.contains(name.toLowerCase(java.util.Locale.ROOT))) {
+            return false;
+        }
+        if (value == null || value.length() == 0) {
+            return true;
+        }
+        return name.equalsIgnoreCase(value.toString());
+    }
+
     @Override
     public void namespace(String prefix, String nsURI) throws TransformerException {
-        // no namespaces allowed in HTML5
+        // HTML5 elements never carry an explicit xmlns since the parser puts
+        // them in the HTML namespace implicitly. Foreign content (anything
+        // outside the XHTML namespace, e.g. SVG, MathML, custom XML) keeps
+        // its namespace declarations so the receiver can re-parse it as XML.
+        if (nsURI == null || nsURI.isEmpty()) {
+            return;
+        }
+        if (org.exist.Namespaces.XHTML_NS.equals(nsURI)) {
+            return;
+        }
+        super.namespace(prefix, nsURI);
     }
 
     @Override
     protected void closeStartTag(boolean isEmpty) throws TransformerException {
         try {
             if (tagIsOpen) {
+                final Writer w = getWriter();
                 if (isEmpty) {
                     if (isEmptyTag(currentTag)) {
-                        getWriter().write(">");
+                        w.write('>');
+                    } else if (isForeignContent()) {
+                        // Foreign content (SVG, MathML, custom XML namespace)
+                        // embedded in HTML5 is serialized with XML self-close
+                        // syntax so the receiver can re-parse it as XML.
+                        w.write("/>");
                     } else {
-                        getWriter().write('>');
-                        getWriter().write("</");
-                        getWriter().write(currentTag);
-                        getWriter().write('>');
+                        // Coalesce ">", "</", tag, ">" into 2 writer calls instead of 4
+                        w.write("></");
+                        w.write(currentTag);
+                        w.write('>');
                     }
                 } else {
-                    getWriter().write('>');
+                    w.write('>');
                 }
                 tagIsOpen = false;
             }
         } catch (final IOException ioe) {
             throw new TransformerException(ioe.getMessage(), ioe);
+        }
+    }
+
+    /**
+     * The current element is "foreign content" when its namespace is neither
+     * the XHTML namespace nor the empty (no-namespace) HTML namespace; that
+     * is the trigger for XML-style self-closing per HTML5's foreign-content
+     * serialization rule.
+     */
+    private boolean isForeignContent() {
+        final String ns = currentElementNamespaceURI();
+        return ns != null && !ns.isEmpty() && !org.exist.Namespaces.XHTML_NS.equals(ns);
+    }
+
+    @Override
+    public void processingInstruction(final String target, final String data) throws TransformerException {
+        // HTML5 has no PI syntax, so the serializer renders processing
+        // instructions as comments of the form `<!--?target data?-->`,
+        // matching the HTML5 parser's coercion of `<?...?>` content.
+        try {
+            if (tagIsOpen) {
+                closeStartTag(false);
+            }
+            final Writer writer = getWriter();
+            writer.write("<!--?");
+            writer.write(target);
+            if (data != null && !data.isEmpty()) {
+                writer.write(' ');
+                writer.write(data);
+            }
+            writer.write("?-->");
+        } catch (final IOException e) {
+            throw new TransformerException(e.getMessage(), e);
         }
     }
 
@@ -253,4 +361,28 @@ public class HTML5Writer extends XHTML5Writer {
         }
         return super.needsEscape(ch);
     }
+
+    @Override
+    protected boolean needsEscape(final char ch, final boolean inAttribute) {
+        // In raw text elements (script, style), suppress escaping for TEXT content only.
+        // Attribute values must always be escaped, even on raw text elements.
+        if (!inAttribute && RAW_TEXT_ELEMENTS.contains(currentTag)) {
+            return false;
+        }
+        // For attributes, always return true (bypass the 1-arg override
+        // which returns false for all script/style content)
+        if (inAttribute) {
+            return true;
+        }
+        return super.needsEscape(ch, inAttribute);
+    }
+
+    @Override
+    protected boolean needsEscaping(final boolean inAttribute) {
+        // Mirror the per-char rule above: TEXT content inside script/style is
+        // raw text and never needs escaping. Lets writeChars() bulk-stream
+        // the entire block in one Writer.write() call.
+        return inAttribute || !RAW_TEXT_ELEMENTS.contains(currentTag);
+    }
+
 }

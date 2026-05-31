@@ -60,7 +60,11 @@ public class Option {
     }
 	
 	public Option(final Expression expression, QName qname, String contents)  throws XPathException {
-		if (qname.getPrefix() == null || qname.getPrefix().isEmpty())
+		// Options must be in a namespace: either via prefix or via URIQualifiedName Q{uri}local
+		final String prefix = qname.getPrefix();
+		final String namespaceURI = qname.getNamespaceURI();
+		if ((prefix == null || prefix.isEmpty())
+				&& (namespaceURI == null || namespaceURI.isEmpty()))
 			{throw new XPathException(expression, "XPST0081: options must have a prefix");}
 		this.qname = qname;
 		this.contents = contents;

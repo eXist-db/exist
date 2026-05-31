@@ -22,13 +22,19 @@
 package org.exist.util.serializer;
 
 import java.io.Writer;
-import javax.xml.transform.TransformerException;
 
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 
 /**
  * A writer which produces well-formed XHTML5.
+ *
+ * <p>This class contributes only the HTML5 void-element set (used to decide
+ * which elements emit {@code <br />}-style self-closing markup) and the
+ * HTML5 inline-element set used for indentation suppression. All other
+ * behaviour, including DOCTYPE emission, is inherited from
+ * {@link XHTMLWriter} — see {@link XHTMLWriter#writeDoctype(String)} for
+ * the W3C Serialization 3.1 §7.1/§7.2 doctype rules.</p>
  */
 public class XHTML5Writer extends XHTMLWriter {
 
@@ -120,15 +126,5 @@ public class XHTML5Writer extends XHTMLWriter {
 
     public XHTML5Writer(Writer writer, ObjectSet<String> emptyTags, ObjectSet<String> inlineTags) {
         super(writer, emptyTags, inlineTags);
-    }
-
-    @Override
-    protected void writeDoctype(String rootElement) throws TransformerException {
-        if (doctypeWritten) {
-            return;
-        }
-
-        documentType("html", null, null);
-        doctypeWritten = true;
     }
 }
