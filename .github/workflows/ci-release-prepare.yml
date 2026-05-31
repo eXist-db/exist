@@ -1,0 +1,63 @@
+name: Prepare Release
+
+# Replaces mvn release:prepare. Updates CITATION.cff, commits, creates the
+# annotated tag, and pushes — which then triggers ci-release.yml.
+#
+# Requires a fine-grained PAT (RELEASE_PAT) with contents:write on this repo.
+# GITHUB_TOKEN pushes do not trigger downstream tag workflows.
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g. 7.0.0)'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  prepare:
+    name: Prepare eXist-${{ inputs.version }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          # PAT required so the tag push triggers ci-release.yml.
+          # GITHUB_TOKEN pushes are intentionally blocked from triggering workflows.
+          token: ${{ secrets.RELEASE_PAT }}
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - uses: ./.github/actions/maven-cache
+
+      - uses: ./.github/actions/maven-github-settings
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update CITATION.cff
+        run: |
+          mvn -B --no-transfer-progress \
+            -Pcitation-release-metadata \
+            -DupdateCff=true \
+            -Drevision=${{ inputs.version }} \
+            validate
+
+      - name: Commit and tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add CITATION.cff
+          # Only commit if CITATION.cff actually changed
+          git diff --staged --quiet || \
+            git commit -m "[release] Prepare eXist-${{ inputs.version }}"
+          git tag -a "eXist-${{ inputs.version }}" \
+            -m "eXist-db ${{ inputs.version }}"
+          git push origin HEAD
+          git push origin "eXist-${{ inputs.version }}"

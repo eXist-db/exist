@@ -1,0 +1,309 @@
+name: Release
+
+# Triggered by an eXist-* tag (created by ci-release-prepare.yml).
+# Four jobs run in parallel then converge on a single GitHub Release:
+#   build-linux   — Maven Central deploy + zip/tar archives (Ubuntu)
+#   build-mac     — signed + notarized DMG (macOS)
+#   build-windows — signed installer JAR + Authenticode .exe (Windows)
+#   publish-github-release — collects all artifacts, creates the GitHub Release
+
+on:
+  push:
+    tags:
+      - 'eXist-*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing tag to re-release (e.g. eXist-7.0.0)'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+env:
+  JAVA_VERSION: '21'
+
+# ─── Shared helper ────────────────────────────────────────────────────────────
+# Extract the semantic version from the tag name (strips the "eXist-" prefix).
+# Usage in run steps:  TAG="${{ github.event.inputs.tag || github.ref_name }}"
+#                      REVISION="${TAG#eXist-}"
+
+jobs:
+
+  # ── Job 1: Build and publish to Maven Central ────────────────────────────────
+  build-linux:
+    name: Build and publish to Maven Central
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      CENTRAL_TOKEN_USERNAME: ${{ secrets.CENTRAL_TOKEN_USERNAME }}
+      CENTRAL_TOKEN_PASSWORD: ${{ secrets.CENTRAL_TOKEN_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - uses: ./.github/actions/maven-cache
+
+      - uses: ./.github/actions/maven-github-settings
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          central-token-username: ${{ secrets.CENTRAL_TOKEN_USERNAME }}
+          central-token-password: ${{ secrets.CENTRAL_TOKEN_PASSWORD }}
+
+      - name: Import GPG key
+        env:
+          EXISTDB_RELEASE_KEY: ${{ secrets.EXISTDB_RELEASE_KEY }}
+        run: echo "$EXISTDB_RELEASE_KEY" | base64 --decode | gpg --batch --import
+
+      - name: Deploy to Maven Central
+        env:
+          EXISTDB_RELEASE_KEY_ID: ${{ secrets.EXISTDB_RELEASE_KEY_ID }}
+          EXISTDB_RELEASE_KEY_PASSPHRASE: ${{ secrets.EXISTDB_RELEASE_KEY_PASSPHRASE }}
+        run: |
+          TAG="${{ github.event.inputs.tag || github.ref_name }}"
+          REVISION="${TAG#eXist-}"
+          mvn -V -B --no-transfer-progress \
+            -Prelease-build \
+            -Drevision="$REVISION" \
+            -Drelease.preflight=true \
+            -DskipTests \
+            -Ddependency-check.skip=true \
+            -Dlicense.skip=true \
+            -Dexistdb.release.key="$EXISTDB_RELEASE_KEY_ID" \
+            -Dexistdb.release.key.passphrase="$EXISTDB_RELEASE_KEY_PASSPHRASE" \
+            clean deploy
+
+      - name: Collect distribution archives
+        run: |
+          mkdir -p /tmp/release-assets
+          cp exist-distribution/target/*.zip     /tmp/release-assets/ 2>/dev/null || true
+          cp exist-distribution/target/*.tar.bz2 /tmp/release-assets/ 2>/dev/null || true
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: release-linux
+          path: /tmp/release-assets/
+          retention-days: 1
+
+  # ── Job 2: Build signed + notarized macOS DMG ────────────────────────────────
+  build-mac:
+    name: Build macOS DMG
+    runs-on: macos-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - uses: ./.github/actions/maven-cache
+
+      - uses: ./.github/actions/maven-github-settings
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Import Developer ID certificate
+        env:
+          EXISTDB_MAC_CERTIFICATE: ${{ secrets.EXISTDB_MAC_CERTIFICATE }}
+          EXISTDB_MAC_CERTIFICATE_PASSWORD: ${{ secrets.EXISTDB_MAC_CERTIFICATE_PASSWORD }}
+        run: |
+          KEYCHAIN_PASS=$(openssl rand -base64 32)
+          security create-keychain -p "$KEYCHAIN_PASS" release.keychain
+          security default-keychain -s release.keychain
+          security unlock-keychain -p "$KEYCHAIN_PASS" release.keychain
+          security set-keychain-settings -lut 21600 release.keychain
+          echo "$EXISTDB_MAC_CERTIFICATE" | base64 --decode > /tmp/cert.p12
+          security import /tmp/cert.p12 -k release.keychain \
+            -P "$EXISTDB_MAC_CERTIFICATE_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list \
+            -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASS" release.keychain
+          rm /tmp/cert.p12
+
+      - name: Build, sign, notarize and staple DMG
+        env:
+          EXISTDB_APPLE_ID: ${{ secrets.EXISTDB_APPLE_ID }}
+          EXISTDB_APPLE_APP_PASSWORD: ${{ secrets.EXISTDB_APPLE_APP_PASSWORD }}
+          EXISTDB_APPLE_TEAM_ID: ${{ secrets.EXISTDB_APPLE_TEAM_ID }}
+        run: |
+          TAG="${{ github.event.inputs.tag || github.ref_name }}"
+          REVISION="${TAG#eXist-}"
+          mvn -V -B --no-transfer-progress \
+            -Prelease-build \
+            -Dmac-signing=true \
+            -Drevision="$REVISION" \
+            -DskipTests \
+            -Ddependency-check.skip=true \
+            -Dlicense.skip=true \
+            -Dmac.codesign.identity="${{ vars.EXISTDB_MAC_CODESIGN_IDENTITY }}" \
+            -Dexistdb.release.notarize.apple-id="$EXISTDB_APPLE_ID" \
+            -Dexistdb.release.notarize.password="$EXISTDB_APPLE_APP_PASSWORD" \
+            -Dexistdb.release.notarize.team-id="$EXISTDB_APPLE_TEAM_ID" \
+            clean package
+
+      - name: Verify DMG notarization
+        run: |
+          DMG=$(find exist-distribution/target -name "*.dmg" | head -1)
+          xcrun stapler validate "$DMG"
+
+      - name: Collect DMG
+        run: |
+          mkdir -p /tmp/release-assets
+          cp exist-distribution/target/*.dmg /tmp/release-assets/ 2>/dev/null || true
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: release-mac
+          path: /tmp/release-assets/
+          retention-days: 1
+
+  # ── Job 3: Build signed Windows installer ───────────────────────────────────
+  build-windows:
+    name: Build Windows installer
+    runs-on: windows-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - uses: ./.github/actions/maven-cache
+
+      - uses: ./.github/actions/maven-github-settings
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Azure login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Build installer
+        shell: bash
+        run: |
+          TAG="${{ github.event.inputs.tag || github.ref_name }}"
+          REVISION="${TAG#eXist-}"
+          mvn -V -B --no-transfer-progress \
+            -Prelease-build \
+            -Drevision="$REVISION" \
+            -DskipTests \
+            -Ddependency-check.skip=true \
+            -Dlicense.skip=true \
+            clean package
+
+      - name: Sign installer JAR (Azure Key Vault JCA)
+        shell: bash
+        env:
+          AZURE_KEYVAULT_URI: ${{ vars.AZURE_KEYVAULT_URI }}
+        run: |
+          JAR=$(find exist-installer/target -name "*.jar" \
+            -not -name "*sources*" -not -name "*javadoc*" | head -1)
+          [ -n "$JAR" ] || { echo "No installer JAR found in exist-installer/target"; exit 1; }
+          # Download Azure Key Vault JCA provider to classpath
+          KV_JCA_JAR="$HOME/.m2/azure-keyvault-jca.jar"
+          if [ ! -f "$KV_JCA_JAR" ]; then
+            mvn -q dependency:get \
+              -Dartifact=com.azure:azure-security-keyvault-jca:2.10.0:jar \
+              -Ddest="$KV_JCA_JAR"
+          fi
+          VAULT_NAME="${AZURE_KEYVAULT_URI##https://}"
+          VAULT_NAME="${VAULT_NAME%%.*}"
+          CERT_NAME=$(az keyvault certificate list \
+            --vault-name "$VAULT_NAME" --query "[0].name" -o tsv)
+          ACCESS_TOKEN=$(az account get-access-token \
+            --resource "https://vault.azure.net" --query accessToken -o tsv)
+          jarsigner \
+            -keystore NONE \
+            -storetype AzureKeyVault \
+            -providerClass com.azure.security.keyvault.jca.KeyVaultJcaProvider \
+            -providerArg "-J-Dazure.keyvault.uri=${AZURE_KEYVAULT_URI}" \
+            -J-Dazure.keyvault.accessToken="$ACCESS_TOKEN" \
+            -J-cp "$KV_JCA_JAR" \
+            -tsa http://timestamp.sectigo.com/ \
+            "$JAR" "$CERT_NAME"
+          jarsigner -verify -strict "$JAR"
+
+      - name: Sign .exe with Authenticode (AzureSignTool)
+        shell: pwsh
+        env:
+          AZURE_KEYVAULT_URI: ${{ vars.AZURE_KEYVAULT_URI }}
+        run: |
+          $exe = Get-ChildItem -Path exist-installer/target -Filter "*.exe" |
+            Select-Object -First 1
+          if (-not $exe) {
+            Write-Host "No .exe produced on this runner; skipping Authenticode signing"
+            exit 0
+          }
+          dotnet tool install --global AzureSignTool --version 5.0.0
+          $vaultName = ($env:AZURE_KEYVAULT_URI -replace 'https://|\.vault\.azure\.net/?', '')
+          $certName  = az keyvault certificate list `
+            --vault-name $vaultName --query "[0].name" -o tsv
+          $token = az account get-access-token `
+            --resource "https://vault.azure.net" --query accessToken -o tsv
+          AzureSignTool sign `
+            --azure-key-vault-url      $env:AZURE_KEYVAULT_URI `
+            --azure-key-vault-certificate $certName `
+            --azure-key-vault-accesstoken $token `
+            --timestamp-rfc3161        http://timestamp.sectigo.com/ `
+            --description              "eXist-db Installer" `
+            $exe.FullName
+          $sig = Get-AuthenticodeSignature $exe.FullName
+          if ($sig.Status -ne 'Valid') {
+            Write-Error "Authenticode signature invalid: $($sig.Status)"
+            exit 1
+          }
+
+      - name: Collect installer artifacts
+        shell: bash
+        run: |
+          mkdir -p /tmp/release-assets
+          find exist-installer/target \
+            -name "*.jar" -not -name "*sources*" -not -name "*javadoc*" \
+            -exec cp {} /tmp/release-assets/ \;
+          find exist-installer/target -name "*.exe" \
+            -exec cp {} /tmp/release-assets/ \; 2>/dev/null || true
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: release-windows
+          path: /tmp/release-assets/
+          retention-days: 1
+
+  # ── Job 4: Publish GitHub Release ───────────────────────────────────────────
+  publish-github-release:
+    name: Publish GitHub Release
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [build-linux, build-mac, build-windows]
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: release-*
+          merge-multiple: true
+          path: /tmp/release-assets
+
+      - name: List release assets
+        run: ls -lh /tmp/release-assets/
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.tag || github.ref_name }}
+          files: /tmp/release-assets/*
+          generate_release_notes: true
