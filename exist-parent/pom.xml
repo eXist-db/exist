@@ -1507,13 +1507,29 @@
                                 </goals>
                                 <configuration>
                                     <keyname>${existdb.release.key}</keyname>
-                                    <passphrase>${existdb.release.key.passphrase}</passphrase>
-                                    <gpgArguments>
-                                        <arg>--batch</arg>
-                                        <arg>--pinentry-mode</arg>
-                                        <arg>loopback</arg>
-                                    </gpgArguments>
+                                    <passphraseEnvName>EXISTDB_RELEASE_KEY_PASSPHRASE</passphraseEnvName>
+                                    <signer>bc</signer>
                                 </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <goals><goal>jar-no-fork</goal></goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals><goal>jar</goal></goals>
                             </execution>
                         </executions>
                     </plugin>
@@ -1567,10 +1583,10 @@
                                             <property>existdb.release.key</property>
                                             <message>existdb.release.key is required for GPG artifact signing.</message>
                                         </requireProperty>
-                                        <requireProperty>
-                                            <property>existdb.release.key.passphrase</property>
-                                            <message>existdb.release.key.passphrase is required for GPG artifact signing.</message>
-                                        </requireProperty>
+                                        <requireEnvironmentVariable>
+                                            <variableName>EXISTDB_RELEASE_KEY_PASSPHRASE</variableName>
+                                            <message>EXISTDB_RELEASE_KEY_PASSPHRASE env var is required for GPG artifact signing.</message>
+                                        </requireEnvironmentVariable>
                                     </rules>
                                 </configuration>
                             </execution>

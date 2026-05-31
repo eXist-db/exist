@@ -19,7 +19,7 @@ on:
         type: string
 
 permissions:
-  contents: write
+  contents: read  # default; jobs that need more declare it explicitly
 
 env:
   JAVA_VERSION: '21'
@@ -77,7 +77,6 @@ jobs:
             -Ddependency-check.skip=true \
             -Dlicense.skip=true \
             -Dexistdb.release.key="$EXISTDB_RELEASE_KEY_ID" \
-            -Dexistdb.release.key.passphrase="$EXISTDB_RELEASE_KEY_PASSPHRASE" \
             clean deploy
 
       - name: Collect distribution archives
@@ -90,13 +89,13 @@ jobs:
         with:
           name: release-linux
           path: /tmp/release-assets/
-          retention-days: 1
+          retention-days: 3
 
   # ── Job 2: Build signed + notarized macOS DMG ────────────────────────────────
   build-mac:
     name: Build macOS DMG
     runs-on: macos-latest
-    timeout-minutes: 60
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v6
         with:
@@ -175,13 +174,16 @@ jobs:
         with:
           name: release-mac
           path: /tmp/release-assets/
-          retention-days: 1
+          retention-days: 3
 
   # ── Job 3: Build signed Windows installer ───────────────────────────────────
   build-windows:
     name: Build Windows installer
     runs-on: windows-latest
     timeout-minutes: 60
+    permissions:
+      id-token: write  # OIDC for Azure Key Vault signing
+      contents: read
     steps:
       - uses: actions/checkout@v6
         with:
@@ -199,7 +201,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Azure login (OIDC)
-        uses: azure/login@v2
+        uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5  # v2
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
@@ -233,18 +235,12 @@ jobs:
               -Dartifact=com.azure:azure-security-keyvault-jca:2.10.0:jar \
               -Ddest="$KV_JCA_JAR"
           fi
-          VAULT_NAME="${AZURE_KEYVAULT_URI##https://}"
-          VAULT_NAME="${VAULT_NAME%%.*}"
-          CERT_NAME=$(az keyvault certificate list \
-            --vault-name "$VAULT_NAME" --query "[0].name" -o tsv)
-          ACCESS_TOKEN=$(az account get-access-token \
-            --resource "https://vault.azure.net" --query accessToken -o tsv)
+          CERT_NAME="${{ vars.AZURE_KEYVAULT_CERT_NAME }}"
           jarsigner \
             -keystore NONE \
             -storetype AzureKeyVault \
             -providerClass com.azure.security.keyvault.jca.KeyVaultJcaProvider \
             -providerArg "-J-Dazure.keyvault.uri=${AZURE_KEYVAULT_URI}" \
-            -J-Dazure.keyvault.accessToken="$ACCESS_TOKEN" \
             -J-cp "$KV_JCA_JAR" \
             -tsa http://timestamp.sectigo.com/ \
             "$JAR" "$CERT_NAME"
@@ -262,17 +258,13 @@ jobs:
             exit 0
           }
           dotnet tool install --global AzureSignTool --version 7.0.1
-          $vaultName = ($env:AZURE_KEYVAULT_URI -replace 'https://|\.vault\.azure\.net/?', '')
-          $certName  = az keyvault certificate list `
-            --vault-name $vaultName --query "[0].name" -o tsv
-          $token = az account get-access-token `
-            --resource "https://vault.azure.net" --query accessToken -o tsv
+          $certName = '${{ vars.AZURE_KEYVAULT_CERT_NAME }}'
           AzureSignTool sign `
-            --azure-key-vault-url      $env:AZURE_KEYVAULT_URI `
-            --azure-key-vault-certificate $certName `
-            --azure-key-vault-accesstoken $token `
-            --timestamp-rfc3161        http://timestamp.sectigo.com/ `
-            --description              "eXist-db Installer" `
+            --azure-key-vault-url          $env:AZURE_KEYVAULT_URI `
+            --azure-key-vault-certificate  $certName `
+            --azure-key-vault-managed-identity `
+            --timestamp-rfc3161            http://timestamp.sectigo.com/ `
+            --description                  "eXist-db Installer" `
             $exe.FullName
           $sig = Get-AuthenticodeSignature $exe.FullName
           if ($sig.Status -ne 'Valid') {
@@ -294,7 +286,7 @@ jobs:
         with:
           name: release-windows
           path: /tmp/release-assets/
-          retention-days: 1
+          retention-days: 3
 
   # ── Job 4: Publish GitHub Release ───────────────────────────────────────────
   publish-github-release:
@@ -302,8 +294,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     needs: [build-linux, build-mac, build-windows]
+    permissions:
+      contents: write  # create GitHub Release
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           pattern: release-*
           merge-multiple: true
@@ -312,7 +306,7 @@ jobs:
       - name: List release assets
         run: ls -lh /tmp/release-assets/
 
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65  # v2
         with:
           tag_name: ${{ github.event.inputs.tag || github.ref_name }}
           files: /tmp/release-assets/*

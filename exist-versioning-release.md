@@ -115,9 +115,11 @@ The `ci-release.yml` workflow runs four jobs in parallel then converges:
 | `build-windows` | windows-latest | signed installer JAR + Authenticode `.exe` |
 | `publish-github-release` | ubuntu-latest | GitHub Release with all assets attached |
 
-### Prerequisites: required GitHub secrets
+### Prerequisites: required GitHub secrets and repository rules
 
 All secrets must be in place under **Settings → Secrets and variables → Actions** before running a release. See `plans/internal-release-runbook.template.md` for the full table and rotation guidance.
+
+A **tag ruleset** restricts creation and deletion of `eXist-*` tags to users with the Maintain or Admin role (Settings → Rules → Rulesets). The `RELEASE_PAT` owner must hold one of those roles; all other automation only reads tags and is unaffected.
 
 | Secret | Used by |
 |--------|---------|
@@ -136,7 +138,7 @@ All secrets must be in place under **Settings → Secrets and variables → Acti
 | `AZURE_TENANT_ID` | `build-windows` — Azure tenant |
 | `AZURE_SUBSCRIPTION_ID` | `build-windows` — Azure subscription |
 
-Repository variable (not a secret): `AZURE_KEYVAULT_URI` (e.g. `https://exist-db-signing.vault.azure.net/`) and `EXISTDB_MAC_CODESIGN_IDENTITY`.
+Repository variables (not secrets): `AZURE_KEYVAULT_URI` (e.g. `https://exist-db-signing.vault.azure.net/`), `AZURE_KEYVAULT_CERT_NAME` (the certificate name as it appears in Key Vault, e.g. `existdb-code-signing`), and `EXISTDB_MAC_CODESIGN_IDENTITY`.
 
 ### Preparing a Product Release
 
