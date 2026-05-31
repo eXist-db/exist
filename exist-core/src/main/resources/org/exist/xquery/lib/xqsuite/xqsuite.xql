@@ -113,30 +113,50 @@ declare function test:suite(
                     namespace-uri-from-QName(function-name($func)) = $module
                 })
             let $setup := test:call-func-with-annotation($modFunctions, "setUp", $test-error-function)
-            let $result :=
-                if (empty($setup) or $setup/self::ok) then
-                    let $startTime := util:system-time()
-                    let $results := test:function-by-annotation($modFunctions, "assert", $runner)
-                    let $elapsed :=
-                        util:system-time() - $startTime
-                    return
-                        <testsuite package="{$module}" timestamp="{util:system-dateTime()}"
-                            tests="{count($results)}"
-                            failures="{count($results/failure)}"
-                            errors="{count($results/error)}"
-                            pending="{count($results/pending)}"
-                            time="{$elapsed}">
-                            { $results }
-                        </testsuite>
+            let $setupOk := empty($setup) or exists($setup/self::ok)
+            let $startTime := util:system-time()
+            let $results :=
+                if ($setupOk) then
+                    test:function-by-annotation($modFunctions, "assert", $runner)
+                else ()
+            let $elapsed := util:system-time() - $startTime
+            (:
+             : tearDown always runs, regardless of whether setUp or any test
+             : threw. Prior to https://github.com/eXist-db/exist/issues/6422
+             : a tearDown error was caught in test:call-func-with-annotation
+             : and the resulting <system-err/> was then discarded by the
+             : outer ($result, $tearDown)[1] selector, leaving the bug
+             : invisible to any consumer of the suite XML (CI, IDE, reports).
+             : Surface it as a <system-err> child on the <testsuite>, and
+             : count it as one additional error.
+             :)
+            let $tearDown := test:call-func-with-annotation($modFunctions, "tearDown", $test-error-function)
+            let $tearDownErr := $tearDown/self::system-err
+            return
+                if ($setupOk) then
+                    <testsuite package="{$module}" timestamp="{util:system-dateTime()}"
+                        tests="{count($results)}"
+                        failures="{count($results/failure)}"
+                        errors="{count($results/error) + count($tearDownErr)}"
+                        pending="{count($results/pending)}"
+                        time="{$elapsed}">
+                        { $results }
+                        {
+                            if ($tearDownErr) then
+                                <system-err>{ "tearDown error: " || $tearDownErr/string() }</system-err>
+                            else ()
+                        }
+                    </testsuite>
                 else
                     <testsuite package="{$module}" timestamp="{util:system-dateTime()}"
-                        errors="{count($functions)}">
-                        {$setup/string()}
+                        errors="{count($functions) + count($tearDownErr)}">
+                        {
+                            if ($tearDownErr) then
+                                $setup/string() || "&#10;tearDown error: " || $tearDownErr/string()
+                            else
+                                $setup/string()
+                        }
                     </testsuite>
-            return (
-                $result,
-                test:call-func-with-annotation($modFunctions, "tearDown", $test-error-function)
-            )[1]
         }
         </testsuites>
 };
