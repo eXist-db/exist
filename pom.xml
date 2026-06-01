@@ -28,7 +28,7 @@
     <parent>
         <groupId>org.exist-db</groupId>
         <artifactId>exist-parent</artifactId>
-        <version>7.0.0-SNAPSHOT</version>
+        <version>${revision}</version>
         <relativePath>exist-parent</relativePath>
     </parent>
 
@@ -71,15 +71,25 @@
     </build>
 
     <profiles>
+        <!-- === Build umbrella profiles === -->
         <profile>
-            <id>installer</id>
+            <!-- Default contributor build: compiles, tests, produces a runnable distribution dir.
+                 Does NOT build installer or perf modules. -->
+            <id>local-build</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
             </activation>
+        </profile>
+
+        <profile>
+            <!-- Full release build: adds exist-installer to the reactor and (via exist-parent's
+                 release-build profile) enables GPG signing + Central publishing. -->
+            <id>release-build</id>
             <modules>
                 <module>exist-installer</module>
             </modules>
         </profile>
+        <!-- === End Build umbrella profiles === -->
 
         <profile>
             <id>docker</id>
@@ -95,21 +105,10 @@
         </profile>
 
         <profile>
-            <id>concurrency-stress-tests</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
+            <!-- Stress tests + JMH micro-benchmarks. -->
+            <id>perf-tests</id>
             <modules>
                 <module>exist-core-jcstress</module>
-            </modules>
-        </profile>
-
-        <profile>
-            <id>micro-benchmarks</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <modules>
                 <module>exist-core-jmh</module>
                 <module>exist-indexes-jmh</module>
             </modules>

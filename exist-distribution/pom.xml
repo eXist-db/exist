@@ -29,7 +29,7 @@
     <parent>
         <groupId>org.exist-db</groupId>
         <artifactId>exist-parent</artifactId>
-        <version>7.0.0-SNAPSHOT</version>
+        <version>${revision}</version>
         <relativePath>../exist-parent</relativePath>
     </parent>
 
@@ -54,7 +54,7 @@
         <mac.bundle.resources.dir>${mac.bundle.dir}/Contents/Resources</mac.bundle.resources.dir>
         <mac.bundle.java.dir>${mac.bundle.dir}/Contents/Java</mac.bundle.java.dir>
         <mac.dmg>${project.build.directory}/eXist-db-${project.version}.dmg</mac.dmg>
-        <mac.codesign.identity>Developer ID Application: Evolved Binary Ltd</mac.codesign.identity>
+        <mac.codesign.identity></mac.codesign.identity>
     </properties>
 
     <dependencies>
@@ -968,6 +968,9 @@
 
     <profiles>
         <profile>
+            <!-- Shares the `onnx-model` id with exist-parent's profile so that a single
+                 `-Ponnx-model` activates the model download (in parent) AND adds the
+                 exist-vector runtime dependency (here). Keep ids in sync. -->
             <id>onnx-model</id>
             <dependencies>
                 <dependency>
@@ -1027,6 +1030,7 @@
                                         <argument>${jansi.version}</argument>
                                         <argument>${project.build.directory}/jansi-native</argument>
                                         <argument>${mac.codesign.identity}</argument>
+                                        <argument>${jline.classifier}</argument>
                                     </arguments>
                                 </configuration>
                             </execution>
@@ -1063,11 +1067,8 @@
                 <os>
                     <family>mac</family>
                 </os>
-                <!-- Note: Travis Mac doesn't support the hdiutil attach required by create-dmg-mac.sh -->
-                <property>
-                    <name>env.CI</name>
-                    <value>!true</value>
-                </property>
+                <!-- Active on any macOS build. Negate with !mac-dmg-on-mac for quick builds.
+                     Signing and notarization are gated separately by codesign-mac-dmg (mac-signing=true). -->
             </activation>
             <build>
                 <plugins>
@@ -1187,16 +1188,31 @@
                                     <useMavenLogger>true</useMavenLogger>
                                     <executable>/usr/bin/xcrun</executable>
                                     <arguments>
-                                        <argument>altool</argument>
-                                        <argument>--notarize-app</argument>
-                                        <argument>--verbose</argument>
-                                        <argument>--primary-bundle-id</argument>
-                                        <argument>org.exist-db</argument>
-                                        <argument>--username</argument>
-                                        <argument>${existdb.release.notarize.username}</argument>
-                                        <argument>--password</argument>
-                                        <argument>${existdb.release.notarize.password}</argument>
-                                        <argument>--file</argument>
+                                        <argument>notarytool</argument>
+                                        <argument>submit</argument>
+                                        <argument>${mac.dmg}</argument>
+                                        <argument>--key</argument>
+                                        <argument>${existdb.release.notarize.key-path}</argument>
+                                        <argument>--key-id</argument>
+                                        <argument>${existdb.release.notarize.key-id}</argument>
+                                        <argument>--issuer</argument>
+                                        <argument>${existdb.release.notarize.issuer-id}</argument>
+                                        <argument>--wait</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>mac-staple-dmg</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <useMavenLogger>true</useMavenLogger>
+                                    <executable>/usr/bin/xcrun</executable>
+                                    <arguments>
+                                        <argument>stapler</argument>
+                                        <argument>staple</argument>
                                         <argument>${mac.dmg}</argument>
                                     </arguments>
                                 </configuration>

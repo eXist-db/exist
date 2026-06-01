@@ -17,8 +17,10 @@ eXist-db is an open-source native XML database with full XQuery support. The mai
 ```bash
 JAVA_HOME=$(/usr/libexec/java_home -v 21) \
   mvn -T1.5C clean install -DskipTests -Ddependency-check.skip=true -Ddocker=false \
-  -P 'skip-build-dist-archives,!build-dist-archives,!mac-dmg-on-mac,!codesign-mac-dmg,!mac-dmg-on-unix,!installer,!concurrency-stress-tests,!micro-benchmarks,!appassembler-booter'
+  -Pskip-build-dist-archives
 ```
+
+On macOS this still produces an unsigned DMG (`mac-dmg-on-mac` is active by default on Mac runners). Add `-P '!mac-dmg-on-mac'` to skip it.
 
 ### Build a single module
 
@@ -41,12 +43,45 @@ mvn test -pl exist-core -Ddependency-check.skip=true -Ddocker=false
 mvn test -pl exist-core -Dtest="org.exist.xquery.XPathQueryTest" -Ddependency-check.skip=true -Ddocker=false
 ```
 
+### Distribution artifacts (zip, tar.bz2, DMG)
+
+Produces release archives and, on macOS, an unsigned DMG suitable for local testing.
+Output lands in `exist-distribution/target/`.
+
+```bash
+JAVA_HOME=$(/usr/libexec/java_home -v 21) \
+  mvn -T1.5C clean package \
+  -pl exist-distribution -am \
+  -DskipTests \
+  -Ddependency-check.skip=true \
+  -Ddocker=false \
+  -Drevision=7.0.0-SNAPSHOT
+```
+
+The DMG is unsigned. For the fully signed and notarized DMG used in releases, see `exist-versioning-release.md`.
+
+### IzPack installer JAR
+
+Produces the cross-platform installer JAR in `exist-installer/target/`.
+
+```bash
+JAVA_HOME=$(/usr/libexec/java_home -v 21) \
+  mvn -T1.5C clean package \
+  -pl exist-installer -am \
+  -DskipTests \
+  -Ddependency-check.skip=true \
+  -Ddocker=false \
+  -Drevision=7.0.0-SNAPSHOT
+```
+
+Run the installer: `java -jar exist-installer/target/exist-installer-7.0.0-SNAPSHOT.jar`
+
 ### Docker image
 
 ```bash
 # Build the Docker image
 mvn -T1.5C clean package -DskipTests -Ddependency-check.skip=true -Ddocker=true \
-  -P 'skip-build-dist-archives,!build-dist-archives,!mac-dmg-on-mac,!codesign-mac-dmg,!mac-dmg-on-unix,!installer,!concurrency-stress-tests,!micro-benchmarks,!appassembler-booter' \
+  -Pskip-build-dist-archives \
   -pl exist-docker -am
 
 cp exist-docker/target/classes/Dockerfile exist-docker/target/exist-docker-*-docker-dir/Dockerfile

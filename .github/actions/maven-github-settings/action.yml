@@ -1,19 +1,43 @@
-# Creates Maven settings.xml with auth for the eXist-db org's GitHub Packages repos.
+# Creates Maven settings.xml with auth for the eXist-db org's GitHub Packages repos
+# and optionally for Sonatype Central Portal publishing.
 # Required for resolving artifacts from maven.pkg.github.com/eXist-db/{exist, exist-xqts-runner, jackrabbit-webdav-jakarta}.
 name: Maven GitHub Packages settings
-description: Create settings.xml with github, github-xqts-runner, and github-jackrabbit-webdav-jakarta servers
+description: Create settings.xml with GitHub Packages and (optionally) Sonatype Central Portal servers
 inputs:
   token:
     description: 'GitHub token for package authentication'
     required: true
+  central-token-username:
+    description: 'Sonatype Central Portal user token username (release jobs only)'
+    required: false
+    default: ''
+  central-token-password:
+    description: 'Sonatype Central Portal user token password (release jobs only)'
+    required: false
+    default: ''
 runs:
   using: 'composite'
   steps:
     - name: Create Maven settings for GitHub Packages
       shell: bash
+      env:
+        CENTRAL_TOKEN_USERNAME: ${{ inputs.central-token-username }}
+        CENTRAL_TOKEN_PASSWORD: ${{ inputs.central-token-password }}
       run: |
         mkdir -p ~/.m2
         OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+
+        # Build optional Central Portal server block
+        CENTRAL_SERVER=""
+        if [ -n "$CENTRAL_TOKEN_USERNAME" ]; then
+          CENTRAL_SERVER="
+            <server>
+              <id>central</id>
+              <username>${CENTRAL_TOKEN_USERNAME}</username>
+              <password>${CENTRAL_TOKEN_PASSWORD}</password>
+            </server>"
+        fi
+
         cat > ~/.m2/settings.xml << EOF
         <settings xmlns="http://maven.apache.org/SETTINGS/1.2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.2.0 https://maven.apache.org/xsd/settings-1.2.0.xsd">
           <servers>
@@ -31,7 +55,7 @@ runs:
               <id>github-jackrabbit-webdav-jakarta</id>
               <username>${OWNER}</username>
               <password>${{ inputs.token }}</password>
-            </server>
+            </server>${CENTRAL_SERVER}
           </servers>
         </settings>
         EOF

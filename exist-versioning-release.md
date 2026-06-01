@@ -84,150 +84,89 @@ It is trivial for a developer to relate a timestamp back to a Git hash (by using
 
 ### Where the version number is stored
 
-The version number is stored in the `exist-parent/pom.xml` file, in a single property, `<version>`. The Semantic Versioning number `3.2.0-SNAPSHOT` would be stored as follows:
+The version number is stored in `exist-parent/pom.xml` as the `<revision>` CI-friendly property:
+```xml
+<properties>
+    <revision>7.0.0-SNAPSHOT</revision>
+</properties>
 ```
-<version>3.2.0-SNAPSHOT</version>
-```
+
+All module `<parent>` blocks reference `<version>${revision}</version>`. The `flatten-maven-plugin` resolves `${revision}` to a literal version in every installed or deployed POM so that downstream consumers see a concrete version, not the placeholder.
 
 That version number is also copied into the `META-INF/MANIFEST.MF` file of any Jar packages that are built, using the standard manifest attributes: `Specification-Version` and `Implementation-Version`.
 
 ## Release Process
 
-This section details concrete steps for creating and publishing product releases. Each section here assumes you are starting with a clean Git checkout of the `develop` branch from [https://github.com/eXist-db/exist.git](https://github.com/eXist-db/exist.git).
+This section details concrete steps for creating and publishing product releases. Releases are fully automated via two GitHub Actions workflows — no local Maven invocation is required for normal releases.
 
-### Initiating Semantic Versioning
+### Overview: two-workflow release pattern
 
-Version 3.0.0 was released before Semantic Versioning. The following steps will initiate Semantic Versioning for the remainder of the development phase of the next release, a new minor version to be called version 3.1.0:
+| Workflow | Trigger | What it does |
+|----------|---------|--------------|
+| `ci-release-prepare.yml` | `workflow_dispatch` | Updates `CITATION.cff`, commits, creates annotated tag `eXist-X.Y.Z`, pushes |
+| `ci-release.yml` | `push.tags: eXist-*` | Parallel platform builds → GitHub Release |
 
-1.  Modify `$EXIST_HOME/build.properties` to read:
+The `ci-release.yml` workflow runs four jobs in parallel then converges:
 
-    ```
-    project.version = 3.1.0-SNAPSHOT
-    ```
+| Job | Runner | Output |
+|-----|--------|--------|
+| `build-linux` | ubuntu-latest | zip + tar.bz2 archives; deploy to Maven Central |
+| `build-mac` | macos-latest | signed + notarized DMG |
+| `build-windows` | windows-latest | signed installer JAR + Authenticode `.exe` |
+| `publish-github-release` | ubuntu-latest | GitHub Release with all assets attached |
 
-2.  Commit the changes and push to `origin` (or `upstream` if you are on a fork).
+### Prerequisites: required GitHub secrets and repository rules
+
+All secrets must be in place under **Settings → Secrets and variables → Actions** before running a release. See `internal-release-runbook.template.md` for the full table and rotation guidance.
+
+A **tag ruleset** restricts creation and deletion of `eXist-*` tags to users with the Maintain or Admin role (Settings → Rules → Rulesets). The `RELEASE_PAT` owner must hold one of those roles; all other automation only reads tags and is unaffected.
+
+| Secret | Used by |
+|--------|---------|
+| `RELEASE_PAT` | `ci-release-prepare` — PAT with `contents:write`; required because `GITHUB_TOKEN` pushes do not trigger downstream tag workflows |
+| `EXISTDB_RELEASE_KEY` | `build-linux` — GPG private key (armored, base64-encoded); imported via `gpg --import` |
+| `EXISTDB_RELEASE_KEY_ID` | `build-linux` — GPG key ID passed to `-Dexistdb.release.key=` (e.g. `ABC1234`) |
+| `EXISTDB_RELEASE_KEY_PASSPHRASE` | `build-linux` — GPG passphrase |
+| `CENTRAL_TOKEN_USERNAME` | `build-linux` — Sonatype Central Portal user token username |
+| `CENTRAL_TOKEN_PASSWORD` | `build-linux` — Sonatype Central Portal user token password |
+| `EXISTDB_MAC_CERTIFICATE` | `build-mac` — Developer ID Application cert (base64 PKCS12) for codesigning |
+| `EXISTDB_MAC_CERTIFICATE_PASSWORD` | `build-mac` — Certificate password |
+| `EXISTDB_APPLE_API_KEY` | `build-mac` — App Store Connect API private key (base64-encoded `.p8`) for notarytool |
+| `EXISTDB_APPLE_API_KEY_ID` | `build-mac` — API Key ID (10-char alphanumeric) |
+| `EXISTDB_APPLE_API_ISSUER_ID` | `build-mac` — App Store Connect Issuer ID (UUID) |
+| `AZURE_CLIENT_ID` | `build-windows` — OIDC app registration client ID |
+| `AZURE_TENANT_ID` | `build-windows` — Azure tenant |
+| `AZURE_SUBSCRIPTION_ID` | `build-windows` — Azure subscription |
+
+Repository variables (not secrets): `AZURE_KEYVAULT_URI` (e.g. `https://exist-db-signing.vault.azure.net/`), `AZURE_KEYVAULT_CERT_NAME` (the certificate name as it appears in Key Vault, e.g. `existdb-code-signing`), and `EXISTDB_MAC_CODESIGN_IDENTITY`.
 
 ### Preparing a Product Release
 
-Once development on a new stable version is complete, the following steps will prepare the version for release. For purposes of illustration, we will assume we are preparing the stable release of version 5.3.0.
-You will require a system with:
-* macOS
-* JDK 8
-* Maven 3.6.0+
-* Docker
-* GnuPG
-* A GPG key (for signing release artifacts)
-* A Java KeyStore with key (for signing IzPack Installer)
-* A valid Apple Developer Certificate (for signing Mac DMG)
-* A Github account and username / password or Github Personal access tokens (https://github.com/settings/tokens) with permission to publish Github releases to the eXist-db .org
+For purposes of illustration, we will assume we are preparing the stable release of version 7.0.0.
 
-1. You will need login credentials for the eXist-db organisation on:
-    1. Sonatype OSS staging for Maven Central - https://oss.sonatype.org/
-    2. DockerHub - https://cloud.docker.com/orgs/existdb/
-    
-    Your credentials for these should be stored securely in the `<servers`> section on your machine in your local `~/.m2/settings.xml` file, e.g.:
-    ```xml
-    <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
-          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
+1.  Merge any outstanding PRs that have been reviewed and accepted for the milestone eXist-7.0.0.
 
-        <servers>
-        
-            <!-- Sonatype OSS staging for Maven Central -->
-            <server>
-                <id>sonatype-nexus-staging</id>
-                <username>YOUR-USERNAME</username>
-                <password>YOUR-PASSWORD</password>
-            </server>
-            
-            <!-- eXist-db DockerHub -->
-            <server>
-                <id>docker.io</id>
-                <username>YOUR-USERNAME</username>
-                <password>YOUR-PASSWORD</password>
-            </server>
+2.  Confirm that CI is green on `develop` (or your release branch).
 
-            <!-- eXist-db Github Release -->
-            <server>
-                <id>github</id>
-                <privateKey>[Github Personal access tokens]</privateKey>
-            </server>
-        </servers>
-    </settings>
-    ```
+3.  Go to **Actions → Prepare Release** and click **Run workflow**. Enter the version number (e.g. `7.0.0`). Click **Run workflow**.
 
-2. You will need your GPG Key, Java KeyStore, and Apple Notarization API credentials for signing the release artifacts in the `<activeProfiles`> section on your machine in your local `~/.m2/settings.xml` file, e.g.:
-    ```xml
-    <profiles>
-   
-       <profile>
-           <id>existdb-release-signing</id>
-           <properties>
-               <existdb.release.key>ABC1234</existdb.release.key>
-               <existdb.release.public-keyfile>${user.home}/.gnupg/pubring.gpg</existdb.release.public-keyfile>
-               <existdb.release.private-keyfile>${user.home}/.gnupg/secring.gpg</existdb.release.private-keyfile>
-               <existdb.release.key.passphrase>your-password</existdb.release.key.passphrase>
-   
-               <existdb.release.keystore>${user.home}/your.store</existdb.release.keystore>
-               <existdb.release.keystore.pass>your-keystore-password</existdb.release.keystore.pass>
-               <existdb.release.keystore.key.alias>your-alias</existdb.release.keystore.key.alias>
-               <existdb.release.keystore.key.pass>your-key-password</existdb.release.keystore.key.pass>
-   
-                <existdb.release.notarize.username>your-apple-developer-email@your-dom.ain</existdb.release.notarize.username>
-                <existdb.release.notarize.password>your-apple-notarize-api-password</existdb.release.notarize.password>
-           </properties>
-       </profile>
-   
-    </profiles>
+    The workflow will:
+    - Run `mvn -Pcitation-release-metadata -DupdateCff=true -Drevision=7.0.0 validate` to update `CITATION.cff`.
+    - Commit the change if `CITATION.cff` was modified (`[release] Prepare eXist-7.0.0`).
+    - Create an annotated tag `eXist-7.0.0`.
+    - Push the commit and the tag.
 
+4.  The tag push automatically triggers **Actions → Release**. Monitor the four parallel jobs. Total runtime is approximately 45–90 minutes (macOS notarization and Windows Authenticode signing dominate).
 
-    <activeProfiles>
-   
-           <activeProfile>existdb-release-signing</activeProfile>
-   
-    </activeProfiles>
-    ```
-
-3.  Merge any outstanding PRs that have been reviewed and accepted for the milestone eXist-5.3.0.
-
-4.  Make sure that you have the HEAD of `origin/develop` (or `upstream` if you are on a fork).
-
-5.  Prepare the release, if you wish you can do a dry-run first by specifiying `-DdryRun=true`:
-    ```
-    $ mvn -Ddocker=true -Dmac-signing=true -P installer -Dizpack-signing=true -Darguments="-Ddocker=true -Dmac-signing=true -P installer -Dizpack-signing=true" release:prepare
-    ```
-    
-    Maven will start the release process and prompt you for any information that it requires, for example:
-    
-    ```
-    [INFO] --- maven-release-plugin:2.1:prepare (default-cli) @ exist ---
-    [INFO] Verifying that there are no local modifications...
-    [INFO]   ignoring changes on: pom.xml.next, pom.xml.releaseBackup, pom.xml.tag, pom.xml.backup, pom.xml.branch, release.properties
-    [INFO] Executing: /bin/sh -c cd /Users/aretter/code/exist.maven && git status
-    [INFO] Working directory: /Users/aretter/code/exist.maven
-    [INFO] Checking dependencies and plugins for snapshots ...
-    What is the release version for "eXist-db"? (org.exist-db:exist) 5.3.0: :
-    What is SCM release tag or label for "eXist-db"? (org.exist-db:exist) eXist-5.3.0: :
-    What is the new development version for "eXist-db"? (org.exist-db:exist) 5.4.0-SNAPSHOT: :
-    ```
-
-6.  Once the prepare process completes you can perform the release. This will upload Maven Artifacts to Maven
-Central (staging), Docker images to Docker Hub, and eXist-db distributions and installer to Github releases:
-    ```
-    $ mvn -Ddocker=true -Dmac-signing=true -P installer -Dizpack-signing=true -Djarsigner.skip=false -Darguments="-Ddocker=true -Dmac-signing=true -P installer -Dizpack-signing=true -Djarsigner.skip=false" release:perform
-    ```
-
-7.  Update the stable branch (`master`) of eXist-db to reflect the latest release:
-    ```
-    $ git push origin eXist-5.3.0:master
-    ```
+5.  When all four jobs pass, the **Publish GitHub Release** job creates the GitHub Release and attaches all artifacts automatically.
 
 #### Publishing/Promoting the Product Release
+
 1.  Check that the new versions are visible on [Github](https://github.com/eXist-db/exist/releases).
 
 2.  Check that the new versions are visible on [DockerHub](https://hub.docker.com/r/existdb/existdb).
 
-3.  Login to https://oss.sonatype.org and release the Maven artifacts to Maven central as described [here](https://central.sonatype.org/pages/releasing-the-deployment.html).
+3.  Maven Central: the `build-linux` job deploys via `central-publishing-maven-plugin` with `autoPublish=true`. Artifacts are queued for sync immediately after upload. Check [central.sonatype.com](https://central.sonatype.com) for the `org.exist-db` namespace to confirm propagation (typically 15–30 min after job completion).
 
 4.  Update the Mac HomeBrew for eXist-db, see: [Releasing to Homebrew](https://github.com/eXist-db/exist/blob/develop/exist-versioning-release.md#releasing-to-homebrew).
 
@@ -297,6 +236,12 @@ Central (staging), Docker images to Docker Hub, and eXist-db distributions and i
 
 13. Go to GitHub and move all issues and PRs which are still open for the release milestone to the next release milestone. Close the release milestone.
 
+
+### Manual fallback (CI unavailable)
+
+If the CI release workflow is unavailable, the `exist-release` Maven profile (backed by `maven-release-plugin`) remains usable for emergency releases. This path requires a local macOS machine with valid Apple credentials, GnuPG, and all signing keys available in `~/.m2/settings.xml`. See `plans/internal-release-runbook.template.md` §9 for the full procedure and required properties.
+
+Tag naming must still follow the `eXist-X.Y.Z` convention. After a manual tag push, re-run **Actions → Release** via `workflow_dispatch` with the tag name to produce platform artifacts that were skipped locally.
 
 ### Releasing to Homebrew
 [Homebrew](http://brew.sh) is a popular command-line package manager for macOS. Once Homebrew is installed, applications like eXist can be installed via a simple command. eXist's presence on Homebrew is found in the Caskroom project, as a "cask", at [https://github.com/caskroom/homebrew-cask/blob/master/Casks/exist-db.rb](https://github.com/caskroom/homebrew-cask/blob/master/Casks/exist-db.rb).
