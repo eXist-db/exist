@@ -92,14 +92,21 @@ public class QueryPlanSerializer extends DefaultExpressionVisitor {
     @Override
     public void visit(final Expression expression) {
         final String className = expression.getClass().getSimpleName();
-        if (className.isEmpty()) {
-            startElement("expression", mergeAttrs(
-                    new String[][]{{"class", expression.getClass().getName()}},
-                    locationAttrs(expression)));
-        } else {
-            startElement("expression", mergeAttrs(
-                    new String[][]{{"type", className}},
-                    locationAttrs(expression)));
+        final String[][] attrs = className.isEmpty()
+                ? new String[][]{{"class", expression.getClass().getName()}}
+                : new String[][]{{"type", className}};
+        startElement("expression", mergeAttrs(attrs, locationAttrs(expression)));
+        // Comprehensive fallback: any expression that exposes sub-expressions
+        // via getSubExpressionCount / getSubExpression renders them nested
+        // here, rather than as siblings of a self-closed <expression/>.
+        // Specific visit*() methods (visitPathExpr, visitForExpression, ...)
+        // override this entirely and emit their own wrapper element.
+        final int subCount = expression.getSubExpressionCount();
+        for (int i = 0; i < subCount; i++) {
+            final Expression sub = expression.getSubExpression(i);
+            if (sub != null) {
+                sub.accept(this);
+            }
         }
         endElement();
     }
@@ -372,6 +379,22 @@ public class QueryPlanSerializer extends DefaultExpressionVisitor {
         startElement("simple-map", locationAttrs(simpleMap));
         simpleMap.getLeft().accept(this);
         simpleMap.getRight().accept(this);
+        endElement();
+    }
+
+    @Override
+    public void visitMapExpr(final org.exist.xquery.functions.map.MapExpr mapExpr) {
+        startElement("map", locationAttrs(mapExpr));
+        for (int i = 0; i < mapExpr.getMappingCount(); i++) {
+            startElement("entry");
+            startElement("key");
+            mapExpr.getMappingKey(i).accept(this);
+            endElement();
+            startElement("value");
+            mapExpr.getMappingValue(i).accept(this);
+            endElement();
+            endElement();
+        }
         endElement();
     }
 }
