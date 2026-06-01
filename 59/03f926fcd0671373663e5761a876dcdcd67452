@@ -1,0 +1,62 @@
+extensions/exquery/restxq/src/test/java/org/exist/extensions/exquery/restxq/impl/AbstractInstanceIntegrationTest.java
+  s_402b1f194ddd18::t_72b7dd49bd9ba4 29
+  s_402b1f194ddd18::t_ad41527c000f5c 31,48
+extensions/modules/file/src/test/java/org/exist/xquery/modules/file/RestBinariesTest.java
+  s_402b1f194ddd18::t_72b7dd49bd9ba4 26-30,50-51,86,111,124,129,144,147,154,165,172,175,180-181
+  s_402b1f194ddd18::t_ad41527c000f5c 31,68,134-137
+extensions/expath/src/main/java/org/expath/httpclient/model/exist/EXistTreeBuilder.java
+  s_402b1f194ddd18::t_ad41527c000f5c 24
+exist-core/src/test/java/org/exist/xmlrpc/MoveResourceTest.java
+  s_402b1f194ddd18::t_72b7dd49bd9ba4 24-30,230,233,240,245,249
+  s_402b1f194ddd18::t_ad41527c000f5c 51,78-82,209-217
+exist-core/src/test/java/org/exist/http/AbstractHttpTest.java
+  s_402b1f194ddd18::t_72b7dd49bd9ba4 137,147-148,167-168,170,90-91
+  s_402b1f194ddd18::t_ad41527c000f5c 87-89,109,134,169
+extensions/exquery/restxq/pom.xml
+  s_402b1f194ddd18::t_72b7dd49bd9ba4 184-185,190
+  s_402b1f194ddd18::t_bdd0989140c63b 188-189,160
+  s_402b1f194ddd18::t_ad41527c000f5c 161-167
+exist-core/src/test/java/org/exist/http/AuthenticatedHttpClientTest.java
+  s_402b1f194ddd18::t_ad41527c000f5c 1-61
+extensions/exquery/restxq/src/test/java/org/exist/extensions/exquery/restxq/impl/AbstractIntegrationTest.java
+  s_402b1f194ddd18::t_72b7dd49bd9ba4 29-33,90,99,108,120
+  s_402b1f194ddd18::t_ad41527c000f5c 36,72-75,89,92-94,98,101-103,107,109-111,119,121-137
+exist-core/pom.xml
+  s_402b1f194ddd18::t_ad41527c000f5c 1172-1173,1176-1185
+  s_402b1f194ddd18::t_72b7dd49bd9ba4 592-593,658-659,663-664
+extensions/exquery/restxq/src/test/java/org/exist/extensions/exquery/restxq/impl/AbstractClassIntegrationTest.java
+  s_402b1f194ddd18::t_72b7dd49bd9ba4 29
+  s_402b1f194ddd18::t_ad41527c000f5c 31,47
+extensions/modules/persistentlogin/src/test/java/org/exist/xquery/modules/persistentlogin/LoginModuleIT.java
+  s_402b1f194ddd18::t_834d455146abb8 70,72
+  s_402b1f194ddd18::t_322b1c20c86e85 71
+  s_402b1f194ddd18::t_4c34f884e3c24d 107
+  s_402b1f194ddd18::t_23ce2a436d2c71 108-109
+  s_402b1f194ddd18::t_d6e3c0997d2971 116-118
+  s_402b1f194ddd18::t_72b7dd49bd9ba4 119,24-32,50,156
+  s_402b1f194ddd18::t_90a5e1e4435d2a 158
+  s_402b1f194ddd18::t_ad41527c000f5c 110-112,146-155
+extensions/modules/file/pom.xml
+  s_402b1f194ddd18::t_72b7dd49bd9ba4 133-134,140
+  s_402b1f194ddd18::t_c237d6ee258516 138-139,111
+  s_402b1f194ddd18::t_ad41527c000f5c 112-118
+extensions/expath/pom.xml
+  s_402b1f194ddd18::t_72b7dd49bd9ba4 72-73
+  s_402b1f194ddd18::t_ad41527c000f5c 60-65
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "5903f926fcd0671373663e5761a876dcdcd67452",
+  "prompts": {},
+  "sessions": {
+    "s_402b1f194ddd18": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "54a29463-2e35-41a6-aec3-c4bbb33fe461",
+        "model": "composer-2.5"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
