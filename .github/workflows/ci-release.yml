@@ -57,16 +57,16 @@ jobs:
           central-token-username: ${{ secrets.CENTRAL_TOKEN_USERNAME }}
           central-token-password: ${{ secrets.CENTRAL_TOKEN_PASSWORD }}
 
-      - name: Import GPG key
-        env:
-          EXISTDB_RELEASE_KEY: ${{ secrets.EXISTDB_RELEASE_KEY }}
-        run: echo "$EXISTDB_RELEASE_KEY" | base64 --decode | gpg --batch --import
-
       - name: Deploy to Maven Central
         env:
+          EXISTDB_RELEASE_KEY: ${{ secrets.EXISTDB_RELEASE_KEY }}
           EXISTDB_RELEASE_KEY_ID: ${{ secrets.EXISTDB_RELEASE_KEY_ID }}
           EXISTDB_RELEASE_KEY_PASSPHRASE: ${{ secrets.EXISTDB_RELEASE_KEY_PASSPHRASE }}
         run: |
+          # maven-gpg-plugin's BouncyCastle signer reads the armored key from
+          # MAVEN_GPG_KEY (not from gnupg's keyring). Decode the base64 secret
+          # in-place so the key never lands on disk.
+          export MAVEN_GPG_KEY="$(echo "$EXISTDB_RELEASE_KEY" | base64 --decode)"
           TAG="${{ github.event.inputs.tag || github.ref_name }}"
           REVISION="${TAG#eXist-}"
           mvn -V -B --no-transfer-progress \
