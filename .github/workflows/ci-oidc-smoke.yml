@@ -1,0 +1,96 @@
+name: Release signing smoke (Azure OIDC + Key Vault JAR sign)
+
+# Exercises the Azure federated credential AND the Key Vault JCA jarsigner
+# path without dispatching a full release. Triggered by tags matching
+# `eXist-*-oidc-smoke` — a pattern that ci-release.yml does NOT match, so
+# the full release pipeline never starts.
+#
+# Validates:
+#   1. Federated credential's matching expression accepts eXist-* tag subject
+#      (Azure OIDC login succeeds).
+#   2. Key Vault Crypto User RBAC propagated to the App Registration
+#      (jarsigner can read the cert metadata).
+#   3. Cert is usable for signing (no DigiCert HSM non-exportable key issue
+#      — Azure SDK #44085 — would surface here).
+#   4. TSA timestamping reachable (Sectigo URL responds).
+#
+# Usage:
+#   git tag -a eXist-99.0.0-oidc-smoke -m "release signing smoke"
+#   git push origin eXist-99.0.0-oidc-smoke
+#   # watch Actions → Release signing smoke (~2-3 min)
+#   git push origin :eXist-99.0.0-oidc-smoke   # cleanup
+#
+# Mirrors ci-release.yml build-windows signing commands. Runs on
+# ubuntu-latest because jarsigner + the Azure JCA library are platform-
+# independent; this catches the same cert/RBAC failures the real Windows
+# job would. Authenticode .exe signing (AzureSignTool) is Windows-only
+# and not exercised here.
+
+on:
+  push:
+    tags:
+      - 'eXist-*-oidc-smoke'
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  smoke:
+    name: OIDC login + Key Vault JAR sign
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Azure login (OIDC)
+        uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5  # v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Confirm token + tenant
+        run: |
+          az account show --query "{tenantId:tenantId,user:user.name}" -o table
+          echo "OIDC login succeeded — federated credential expression matches eXist-* tag subject."
+
+      - name: Build throwaway JAR to sign
+        run: |
+          mkdir -p /tmp/smoke && cd /tmp/smoke
+          echo "smoke canary" > canary.txt
+          jar cf smoke.jar canary.txt
+          ls -la smoke.jar
+
+      - name: Sign smoke JAR with Azure Key Vault JCA
+        env:
+          AZURE_KEYVAULT_URI: ${{ vars.AZURE_KEYVAULT_URI }}
+          AZURE_KEYVAULT_CERT_NAME: ${{ vars.AZURE_KEYVAULT_CERT_NAME }}
+        run: |
+          # Mirrors ci-release.yml:223-247 (Sign installer JAR step)
+          KV_JCA_JAR="$HOME/.m2/azure-keyvault-jca.jar"
+          if [ ! -f "$KV_JCA_JAR" ]; then
+            mvn -q dependency:get \
+              -Dartifact=com.azure:azure-security-keyvault-jca:2.10.0:jar \
+              -Ddest="$KV_JCA_JAR"
+          fi
+          ls -la "$KV_JCA_JAR"
+          jarsigner \
+            -keystore NONE \
+            -storetype AzureKeyVault \
+            -providerClass com.azure.security.keyvault.jca.KeyVaultJcaProvider \
+            -providerArg "-J-Dazure.keyvault.uri=${AZURE_KEYVAULT_URI}" \
+            -J-cp "$KV_JCA_JAR" \
+            -tsa http://timestamp.sectigo.com/ \
+            /tmp/smoke/smoke.jar "$AZURE_KEYVAULT_CERT_NAME"
+
+      - name: Verify smoke JAR signature
+        run: |
+          jarsigner -verify -strict -verbose /tmp/smoke/smoke.jar | tail -20
+          echo "Key Vault JCA signing succeeded — Crypto User RBAC + cert + TSA all working."
