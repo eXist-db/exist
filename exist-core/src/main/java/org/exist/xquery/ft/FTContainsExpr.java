@@ -119,89 +119,107 @@ public class FTContainsExpr extends AbstractExpression {
 
     @Override
     public Sequence eval(final Sequence contextSequence, final Item contextItem) throws XPathException {
-        Sequence effectiveContext = contextSequence;
-        if (contextItem != null) {
-            effectiveContext = contextItem.toSequence();
-        }
-
-        // Evaluate source expression to get the search context
+        final Sequence effectiveContext = contextItem != null ? contextItem.toSequence() : contextSequence;
         final Sequence sourceSeq = source.eval(effectiveContext, null);
-
-        // Per XQFT 3.0 §2.1: if the source evaluates to an empty sequence,
-        // there is no text to search — return false immediately.
+        // Per XQFT 3.0 §2.1: empty source -> no text to search -> false.
         if (sourceSeq.isEmpty()) {
             return BooleanValue.FALSE;
         }
 
-        // Collect ignored nodes if FTIgnoreOption is present
-        Set<Node> ignoredNodes = null;
-        if (ignoreExpr != null) {
-            final Sequence ignoredSeq = ignoreExpr.eval(effectiveContext, null);
-            if (!ignoredSeq.isEmpty()) {
-                // XQFT 3.0 §3.7: FTIgnoreOption must evaluate to a node sequence.
-                // Non-node values raise XPTY0004.
-                ignoredNodes = new HashSet<>();
-                for (int i = 0; i < ignoredSeq.getItemCount(); i++) {
-                    final Item item = ignoredSeq.itemAt(i);
-                    if (!Type.subTypeOf(item.getType(), Type.NODE)) {
-                        throw new XPathException(this, ErrorCodes.XPTY0004,
-                                "FTIgnoreOption 'without content' expression must evaluate to nodes, got: "
-                                        + Type.getTypeName(item.getType()));
-                    }
-                    if (item instanceof Node) {
-                        ignoredNodes.add((Node) item);
-                    }
-                }
-            }
-        }
+        final Set<Node> ignoredNodes = collectIgnoredNodes(effectiveContext);
 
-        // Per XQFT 3.0 §2.1: if the source is a sequence of items,
-        // evaluate each item independently and return true if ANY matches.
+        // Per XQFT 3.0 §2.1: source items are tested independently; the overall
+        // expression is true if ANY item matches.
         for (int i = 0; i < sourceSeq.getItemCount(); i++) {
-            final Item sourceItem = sourceSeq.itemAt(i);
-            String sourceText;
-
-            // Apply FTIgnoreOption: extract text from DOM while skipping ignored nodes
-            List<Integer> elementBoundaries = null;
-            if (ignoredNodes != null && !ignoredNodes.isEmpty() && sourceItem instanceof Node) {
-                sourceText = extractTextWithoutIgnored((Node) sourceItem, ignoredNodes);
-            } else if (sourceItem instanceof Node) {
-                // Collect element boundary offsets within the string value for
-                // sentence/paragraph detection. The string value itself is unchanged
-                // (getStringValue concatenates text nodes), but we record where
-                // element boundaries occur so FTEvaluator can treat them as
-                // sentence/paragraph breaks for scope/distance unit detection.
-                elementBoundaries = new ArrayList<>();
-                collectElementBoundaries((Node) sourceItem, elementBoundaries, new int[]{0});
-                sourceText = sourceItem.getStringValue();
-            } else {
-                sourceText = sourceItem.getStringValue();
-            }
-
-            // Use cached URI maps (captured during analyze), falling back to context attributes.
-            // The cache avoids the race condition where context.reset() clears attributes
-            // between analyze and eval in concurrent test runner scenarios.
-            @SuppressWarnings("unchecked")
-            final Map<String, Path> stopWordURIMap = cachedStopWordURIMap != null
-                    ? cachedStopWordURIMap
-                    : (Map<String, Path>) context.getAttribute("ft.stopWordURIMap");
-            @SuppressWarnings("unchecked")
-            final Map<String, Path> thesaurusURIMap = cachedThesaurusURIMap != null
-                    ? cachedThesaurusURIMap
-                    : (Map<String, Path>) context.getAttribute("ft.thesaurusURIMap");
-            final FTEvaluator evaluator = new FTEvaluator(sourceText, stopWordURIMap, thesaurusURIMap,
-                    elementBoundaries);
-            // Provide XQuery context for dynamic expressions in positional filters
-            // (e.g., window size expressions that reference the predicate context item)
-            evaluator.setContextSequence(contextSequence);
-            // Pass default FT match options from static context (declare ft-option)
-            final FTMatchOptions defaultOpts = context.getDefaultFTMatchOptions();
-            if (evaluator.evaluate(ftSelection, defaultOpts)) {
+            if (matchSourceItem(sourceSeq.itemAt(i), ignoredNodes, contextSequence)) {
                 return BooleanValue.TRUE;
             }
         }
-
         return BooleanValue.FALSE;
+    }
+
+    /**
+     * Evaluate the FTIgnoreOption ('without content') expression if present and
+     * return the set of nodes to skip. Returns {@code null} when no ignore
+     * expression is declared and an empty set when the expression evaluates to
+     * the empty sequence. XPTY0004 is raised for non-node items per XQFT 3.0 §3.7.
+     */
+    private Set<Node> collectIgnoredNodes(final Sequence effectiveContext) throws XPathException {
+        if (ignoreExpr == null) {
+            return null;
+        }
+        final Sequence ignoredSeq = ignoreExpr.eval(effectiveContext, null);
+        if (ignoredSeq.isEmpty()) {
+            return null;
+        }
+        final Set<Node> ignored = new HashSet<>();
+        for (int i = 0; i < ignoredSeq.getItemCount(); i++) {
+            final Item item = ignoredSeq.itemAt(i);
+            if (!Type.subTypeOf(item.getType(), Type.NODE)) {
+                throw new XPathException(this, ErrorCodes.XPTY0004,
+                        "FTIgnoreOption 'without content' expression must evaluate to nodes, got: "
+                                + Type.getTypeName(item.getType()));
+            }
+            if (item instanceof Node) {
+                ignored.add((Node) item);
+            }
+        }
+        return ignored;
+    }
+
+    /**
+     * Test a single source item against the FT selection. Extracts the source
+     * text (honouring any FTIgnoreOption) and runs {@link FTEvaluator#evaluate}
+     * with the per-evaluator URI-map caches.
+     */
+    private boolean matchSourceItem(final Item sourceItem, final Set<Node> ignoredNodes,
+                                    final Sequence contextSequence) throws XPathException {
+        final SourceText st = extractSourceText(sourceItem, ignoredNodes);
+        final FTEvaluator evaluator = new FTEvaluator(st.text, resolveStopWordURIMap(),
+                resolveThesaurusURIMap(), st.elementBoundaries);
+        // Provide XQuery context for dynamic expressions in positional filters
+        // (e.g., window-size expressions that reference the predicate context item).
+        evaluator.setContextSequence(contextSequence);
+        return evaluator.evaluate(ftSelection, context.getDefaultFTMatchOptions());
+    }
+
+    private record SourceText(String text, List<Integer> elementBoundaries) { }
+
+    /**
+     * Extract the search-text and the corresponding element-boundary offsets
+     * for a single source item. Element-boundary offsets are used downstream
+     * for sentence/paragraph detection — the string value itself is unchanged.
+     */
+    private SourceText extractSourceText(final Item sourceItem, final Set<Node> ignoredNodes) throws XPathException {
+        if (ignoredNodes != null && !ignoredNodes.isEmpty() && sourceItem instanceof Node) {
+            return new SourceText(extractTextWithoutIgnored((Node) sourceItem, ignoredNodes), null);
+        }
+        if (sourceItem instanceof Node) {
+            final List<Integer> boundaries = new ArrayList<>();
+            collectElementBoundaries((Node) sourceItem, boundaries, new int[]{0});
+            return new SourceText(sourceItem.getStringValue(), boundaries);
+        }
+        return new SourceText(sourceItem.getStringValue(), null);
+    }
+
+    /**
+     * Prefer the analyze-time cached map; fall back to the context attribute
+     * (e.g. when this expression was constructed without calling analyze).
+     * The cache avoids the race where {@code context.reset()} clears
+     * attributes between analyze and eval in concurrent test runner scenarios.
+     */
+    @SuppressWarnings("unchecked")
+    private Map<String, Path> resolveStopWordURIMap() {
+        return cachedStopWordURIMap != null
+                ? cachedStopWordURIMap
+                : (Map<String, Path>) context.getAttribute("ft.stopWordURIMap");
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, Path> resolveThesaurusURIMap() {
+        return cachedThesaurusURIMap != null
+                ? cachedThesaurusURIMap
+                : (Map<String, Path>) context.getAttribute("ft.thesaurusURIMap");
     }
 
     @Override

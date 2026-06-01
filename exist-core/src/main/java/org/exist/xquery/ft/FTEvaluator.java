@@ -379,36 +379,70 @@ public class FTEvaluator {
         if (offsets.length == 0 || text == null || text.isEmpty()) {
             return new int[0];
         }
-        // Build set of element boundary offsets for quick lookup
         final Set<Integer> elemBounds = elementBoundaries != null
                 ? new HashSet<>(elementBoundaries) : Collections.emptySet();
-        // Find paragraph boundaries by scanning for double-newline patterns
-        // and element boundaries
+        final int[] paraAt = buildPerCharParagraphIndex(text, elemBounds);
+        return projectOffsetsToParagraphs(offsets, text, paraAt);
+    }
+
+    /**
+     * Walk the text character-by-character and assign each char a paragraph
+     * index. Paragraph boundaries are double-newlines or element boundaries
+     * (when content has already been emitted in the current paragraph).
+     * Extracted from {@link #buildParagraphMap} to keep the per-iteration
+     * branching out of the parent method's NPath count.
+     */
+    private static int[] buildPerCharParagraphIndex(final String text, final Set<Integer> elemBounds) {
         final int[] paraAt = new int[text.length()];
         int paraNum = 0;
         boolean prevNewline = false;
         for (int i = 0; i < text.length(); i++) {
-            // Element boundary: increment paragraph if we have content before it
-            if (elemBounds.contains(i) && i > 0 && paraAt[i - 1] == paraNum) {
-                paraNum++;
-            }
-            final char c = text.charAt(i);
-            if (c == '\n') {
-                if (prevNewline) {
-                    paraNum++;
-                    prevNewline = false;
-                } else {
-                    prevNewline = true;
-                }
-            } else if (c != '\r' && c != ' ' && c != '\t') {
-                prevNewline = false;
-            }
+            paraNum = bumpForElementBoundary(elemBounds, i, paraAt, paraNum);
+            final ParagraphStep step = advance(text.charAt(i), prevNewline, paraNum);
+            paraNum = step.paraNum;
+            prevNewline = step.prevNewline;
             paraAt[i] = paraNum;
         }
-        // Map each token to its paragraph
+        return paraAt;
+    }
+
+    /**
+     * If position {@code i} is an element boundary and we've emitted content
+     * since the last bump, increment the paragraph counter; otherwise return
+     * {@code paraNum} unchanged.
+     */
+    private static int bumpForElementBoundary(final Set<Integer> elemBounds, final int i,
+                                              final int[] paraAt, final int paraNum) {
+        if (elemBounds.contains(i) && i > 0 && paraAt[i - 1] == paraNum) {
+            return paraNum + 1;
+        }
+        return paraNum;
+    }
+
+    /** Per-character state transition for {@link #buildPerCharParagraphIndex}. */
+    private record ParagraphStep(int paraNum, boolean prevNewline) { }
+
+    private static ParagraphStep advance(final char c, final boolean prevNewline, final int paraNum) {
+        if (c == '\n') {
+            return prevNewline
+                    ? new ParagraphStep(paraNum + 1, false)
+                    : new ParagraphStep(paraNum, true);
+        }
+        if (c == '\r' || c == ' ' || c == '\t') {
+            return new ParagraphStep(paraNum, prevNewline);
+        }
+        return new ParagraphStep(paraNum, false);
+    }
+
+    /**
+     * Project token offsets onto the per-character paragraph index, clamping
+     * to the last valid character offset.
+     */
+    private static int[] projectOffsetsToParagraphs(final int[] offsets, final String text, final int[] paraAt) {
         final int[] map = new int[offsets.length];
+        final int lastIdx = text.length() - 1;
         for (int i = 0; i < offsets.length; i++) {
-            map[i] = paraAt[Math.min(offsets[i], text.length() - 1)];
+            map[i] = paraAt[Math.min(offsets[i], lastIdx)];
         }
         return map;
     }
@@ -473,15 +507,50 @@ public class FTEvaluator {
      */
     AllMatches evalFTWords(final FTWords ftWords, final FTMatchOptions options)
             throws XPathException {
-        // Evaluate the words value expression to get the search string(s)
+        final List<String> searchStrings = collectSearchStrings(ftWords);
+        if (searchStrings.isEmpty()) {
+            return new AllMatches();
+        }
+
+        final FTMatchOptions.CaseMode caseMode = options == null ? null : options.getCaseMode();
+        this.currentCaseMode = caseMode;
+        applyCaseNormalization(searchStrings, caseMode);
+
+        final boolean caseInsensitive = isCaseInsensitive(caseMode);
+        final boolean useWildcards = isWildcardOption(options);
+        final boolean diacriticsInsensitive = isDiacriticsInsensitive(options);
+        final boolean useStemming = isStemmingOption(options);
+
+        final Set<String> stopWords = collectStopWords(options, caseInsensitive, ftWords);
+
+        expandWithThesaurus(searchStrings, options, ftWords);
+
+        if (useWildcards) {
+            for (final String searchStr : searchStrings) {
+                validateWildcardPattern(searchStr, ftWords);
+            }
+        }
+
+        AllMatches result = dispatchByMode(ftWords.getMode(), searchStrings, caseInsensitive,
+                useWildcards, diacriticsInsensitive, useStemming, stopWords);
+
+        final FTTimes ftTimes = ftWords.getFTTimes();
+        if (ftTimes != null) {
+            result = applyTimes(result, ftTimes);
+        }
+        return result;
+    }
+
+    /**
+     * Evaluate the FTWords value expression and coerce its items to the
+     * xs:string* permitted by XQFT 3.0 §3.1 (nodes atomize to xs:untypedAtomic;
+     * other atomic types raise XPTY0004).
+     */
+    private List<String> collectSearchStrings(final FTWords ftWords) throws XPathException {
         final Sequence wordsSeq = ftWords.getWordsValue().eval(contextSequence, null);
         final List<String> searchStrings = new ArrayList<>();
         for (int i = 0; i < wordsSeq.getItemCount(); i++) {
             final Item item = wordsSeq.itemAt(i);
-            // XQFT 3.0 §3.1: FTWords values must be coercible to xs:string*.
-            // Nodes are atomized to xs:untypedAtomic (always valid).
-            // Atomic types must be xs:string, xs:untypedAtomic, or xs:anyURI.
-            // Other atomic types (xs:integer, etc.) raise XPTY0004.
             final int itemType = item.getType();
             if (!Type.subTypeOf(itemType, Type.NODE)
                     && !Type.subTypeOf(itemType, Type.STRING)
@@ -493,104 +562,107 @@ public class FTEvaluator {
             }
             searchStrings.add(item.getStringValue());
         }
+        return searchStrings;
+    }
 
-        if (searchStrings.isEmpty()) {
-            // XQFT 3.0 §3.1: empty sequence produces no matches.
-            return new AllMatches();
-        }
-
-        // XQFT 3.0 §4.1: case mode handling (XQFTTS interpretation).
-        // - INSENSITIVE (default): compare tokens ignoring case.
-        // - SENSITIVE: compare tokens with exact case.
-        // - LOWERCASE: source token must be all lowercase; compare case-insensitively.
-        // - UPPERCASE: source token must be all uppercase; compare case-insensitively.
-        final FTMatchOptions.CaseMode caseMode = options == null ? null : options.getCaseMode();
-        this.currentCaseMode = caseMode;
-        final boolean caseInsensitive = caseMode == null ||
-                caseMode == FTMatchOptions.CaseMode.INSENSITIVE ||
-                caseMode == FTMatchOptions.CaseMode.LOWERCASE ||
-                caseMode == FTMatchOptions.CaseMode.UPPERCASE;
-
-        // Apply lowercase/uppercase normalization to search strings.
-        // Source tokens are normalized in wordMatches() to avoid mutating the shared list.
+    /**
+     * XQFT 3.0 §4.1 case mode handling: LOWERCASE / UPPERCASE force the search
+     * strings to the matching form so token comparison is case-insensitive
+     * against the source case constraint.
+     */
+    private static void applyCaseNormalization(final List<String> searchStrings,
+                                               final FTMatchOptions.CaseMode caseMode) {
         if (caseMode == FTMatchOptions.CaseMode.LOWERCASE) {
             searchStrings.replaceAll(s -> s.toLowerCase(Locale.ROOT));
         } else if (caseMode == FTMatchOptions.CaseMode.UPPERCASE) {
             searchStrings.replaceAll(s -> s.toUpperCase(Locale.ROOT));
         }
-        final boolean useWildcards = options != null &&
-                Boolean.TRUE.equals(options.getWildcards());
-        // XQFT 3.0 §4.3: diacritics mode. Default to insensitive.
-        final boolean diacriticsInsensitive = options == null ||
-                options.getDiacriticsMode() == null ||
-                options.getDiacriticsMode() == FTMatchOptions.DiacriticsMode.INSENSITIVE;
-        // XQFT 3.0 §4.4: stemming mode. Default to no stemming.
-        final boolean useStemming = options != null &&
-                Boolean.TRUE.equals(options.getStemming());
+    }
 
-        // Collect stop words from options (XQFT 3.0 §4.6)
-        final Set<String> stopWords = collectStopWords(options, caseInsensitive, ftWords);
+    private static boolean isCaseInsensitive(final FTMatchOptions.CaseMode caseMode) {
+        return caseMode == null
+                || caseMode == FTMatchOptions.CaseMode.INSENSITIVE
+                || caseMode == FTMatchOptions.CaseMode.LOWERCASE
+                || caseMode == FTMatchOptions.CaseMode.UPPERCASE;
+    }
 
-        // XQFT 3.0 §4.5: Thesaurus expansion.
-        // For each search string, look up the full string in the thesaurus first
-        // (for multi-word terms like "web site components"), then try individual words.
-        if (options != null && Boolean.FALSE.equals(options.getNoThesaurus())
-                && !options.getThesaurusIDs().isEmpty()) {
-            final List<String> expanded = new ArrayList<>(searchStrings);
-            for (final String searchStr : searchStrings) {
-                for (final FTMatchOptions.ThesaurusID tid : options.getThesaurusIDs()) {
-                    // First try the full search string as a thesaurus term
-                    final Set<String> fullSynonyms = expandThesaurus(searchStr.trim(), tid, ftWords);
-                    for (final String syn : fullSynonyms) {
-                        if (!syn.equalsIgnoreCase(searchStr.trim()) && !expanded.contains(syn)) {
-                            expanded.add(syn);
-                        }
-                    }
-                    // Also try individual words (for single-word thesaurus entries)
-                    for (final String word : tokenize(searchStr)) {
-                        final Set<String> wordSynonyms = expandThesaurus(word, tid, ftWords);
-                        for (final String syn : wordSynonyms) {
-                            if (!syn.equalsIgnoreCase(word) && !expanded.contains(syn)) {
-                                expanded.add(syn);
-                            }
-                        }
-                    }
+    private static boolean isWildcardOption(final FTMatchOptions options) {
+        return options != null && Boolean.TRUE.equals(options.getWildcards());
+    }
+
+    /** XQFT 3.0 §4.3: diacritics mode defaults to insensitive. */
+    private static boolean isDiacriticsInsensitive(final FTMatchOptions options) {
+        return options == null
+                || options.getDiacriticsMode() == null
+                || options.getDiacriticsMode() == FTMatchOptions.DiacriticsMode.INSENSITIVE;
+    }
+
+    /** XQFT 3.0 §4.4: stemming defaults to off. */
+    private static boolean isStemmingOption(final FTMatchOptions options) {
+        return options != null && Boolean.TRUE.equals(options.getStemming());
+    }
+
+    /**
+     * XQFT 3.0 §4.5: thesaurus expansion. For each search string, look up
+     * the full string first (so multi-word terms like "web site components"
+     * match a single thesaurus entry), then try the individual tokenised
+     * words. Mutates {@code searchStrings} in place.
+     */
+    private void expandWithThesaurus(final List<String> searchStrings,
+                                     final FTMatchOptions options,
+                                     final FTWords ftWords) throws XPathException {
+        if (options == null || !Boolean.FALSE.equals(options.getNoThesaurus())
+                || options.getThesaurusIDs().isEmpty()) {
+            return;
+        }
+        final List<String> expanded = new ArrayList<>(searchStrings);
+        for (final String searchStr : searchStrings) {
+            for (final FTMatchOptions.ThesaurusID tid : options.getThesaurusIDs()) {
+                addSynonyms(expanded, expandThesaurus(searchStr.trim(), tid, ftWords), searchStr.trim());
+                for (final String word : tokenize(searchStr)) {
+                    addSynonyms(expanded, expandThesaurus(word, tid, ftWords), word);
                 }
             }
-            searchStrings.clear();
-            searchStrings.addAll(expanded);
         }
+        searchStrings.clear();
+        searchStrings.addAll(expanded);
+    }
 
-        // Validate wildcard patterns (XQFT 1.0 §A.2: only ., .+, .*, .? are valid)
-        if (useWildcards) {
-            for (final String searchStr : searchStrings) {
-                validateWildcardPattern(searchStr, ftWords);
+    /**
+     * Append the synonyms from a thesaurus lookup into the expanded list,
+     * skipping a synonym that equals the source term (case-insensitive) or is
+     * already present.
+     */
+    private static void addSynonyms(final List<String> expanded,
+                                    final Set<String> synonyms,
+                                    final String sourceTerm) {
+        for (final String syn : synonyms) {
+            if (!syn.equalsIgnoreCase(sourceTerm) && !expanded.contains(syn)) {
+                expanded.add(syn);
             }
         }
+    }
 
-        final FTWords.AnyallMode mode = ftWords.getMode();
-        AllMatches result;
-        switch (mode) {
-            case ANY:
-                result = evalAny(searchStrings, caseInsensitive, useWildcards, diacriticsInsensitive, useStemming, stopWords); break;
-            case ANY_WORD:
-                result = evalAnyWord(searchStrings, caseInsensitive, useWildcards, diacriticsInsensitive, useStemming, stopWords); break;
-            case ALL:
-                result = evalAll(searchStrings, caseInsensitive, useWildcards, diacriticsInsensitive, useStemming, stopWords); break;
-            case ALL_WORDS:
-                result = evalAllWords(searchStrings, caseInsensitive, useWildcards, diacriticsInsensitive, useStemming, stopWords); break;
-            case PHRASE:
-                result = evalPhrase(searchStrings, caseInsensitive, useWildcards, diacriticsInsensitive, useStemming, stopWords); break;
-            default:
-                result = evalAny(searchStrings, caseInsensitive, useWildcards, diacriticsInsensitive, useStemming, stopWords); break;
-        }
-
-        // Apply FTTimes constraint if present
-        final FTTimes ftTimes = ftWords.getFTTimes();
-        if (ftTimes != null) {
-            result = applyTimes(result, ftTimes);
-        }
-        return result;
+    /**
+     * Dispatch to the per-mode FTWords evaluator. Extracted from
+     * {@link #evalFTWords} so the top-level method stays below the PMD
+     * NPath threshold.
+     */
+    private AllMatches dispatchByMode(final FTWords.AnyallMode mode,
+                                      final List<String> searchStrings,
+                                      final boolean caseInsensitive,
+                                      final boolean useWildcards,
+                                      final boolean diacriticsInsensitive,
+                                      final boolean useStemming,
+                                      final Set<String> stopWords) throws XPathException {
+        return switch (mode) {
+            case ANY_WORD -> evalAnyWord(searchStrings, caseInsensitive, useWildcards, diacriticsInsensitive, useStemming, stopWords);
+            case ALL -> evalAll(searchStrings, caseInsensitive, useWildcards, diacriticsInsensitive, useStemming, stopWords);
+            case ALL_WORDS -> evalAllWords(searchStrings, caseInsensitive, useWildcards, diacriticsInsensitive, useStemming, stopWords);
+            case PHRASE -> evalPhrase(searchStrings, caseInsensitive, useWildcards, diacriticsInsensitive, useStemming, stopWords);
+            // ANY is the default per XQFT 3.0 §3.1.
+            case ANY -> evalAny(searchStrings, caseInsensitive, useWildcards, diacriticsInsensitive, useStemming, stopWords);
+        };
     }
 
     /**
@@ -763,69 +835,70 @@ public class FTEvaluator {
                                 final String searchWord,
                                 final boolean caseInsensitive, final boolean useWildcards,
                                 final boolean diacriticsInsensitive, final boolean useStemming) {
-        String src = sourceToken;
-        String search = searchWord;
-
-        // Apply diacritics normalization if insensitive
-        if (diacriticsInsensitive) {
-            src = stripDiacritics(src);
-            search = stripDiacritics(search);
-        }
+        String src = diacriticsInsensitive ? stripDiacritics(sourceToken) : sourceToken;
+        String search = diacriticsInsensitive ? stripDiacritics(searchWord) : searchWord;
 
         if (useWildcards && containsWildcardIndicator(search)) {
-            final String regex = wildcardToRegex(search, caseInsensitive);
-            // First try matching against the clean token
-            if (Pattern.matches(regex, src)) {
-                return true;
-            }
-            // If the pattern contains literal punctuation (via XQFT escape
-            // sequences like \. \? etc.), that punctuation is only present in
-            // the raw token. Use lookingAt() instead of matches() to handle
-            // trailing punctuation (e.g. raw token "next?," for pattern "nex.\?").
-            if (search.contains("\\") && rawSourceToken != null) {
-                String rawSrc = rawSourceToken;
-                if (diacriticsInsensitive) {
-                    rawSrc = stripDiacritics(rawSrc);
-                }
-                return Pattern.compile(regex).matcher(rawSrc).lookingAt();
-            }
-            return false;
+            return matchWildcard(src, rawSourceToken, search, caseInsensitive, diacriticsInsensitive);
         }
 
-        // When wildcards are enabled but the search token has no wildcard indicator,
-        // strip punctuation from the search token so it matches as a normal token.
-        // tokenizeWildcard() preserves all characters; normal matching needs clean tokens.
-        // XQFTTS: "task?" with no wildcard indicator strips to "task" and matches source "task".
         if (useWildcards) {
+            // No wildcard indicator -- strip punctuation so a search like "task?"
+            // matches a source "task" (per XQFTTS).
             search = search.replaceAll("[^\\p{L}\\p{N}]", "");
             if (search.isEmpty()) {
                 return false;
             }
         }
 
-        // Apply stemming: compare stems instead of exact words
         if (useStemming) {
             src = stem(src);
             search = stem(search);
         }
 
         if (caseInsensitive) {
-            // XQFT §4.1 + XQFTTS interpretation: for lowercase/uppercase modes,
-            // the source token must already be in the specified case. The search
-            // token is normalized in evalFTWords(), and comparison is case-insensitive.
-            // This acts as a FILTER: 'using uppercase' only matches tokens that
-            // are already uppercase in the source (e.g., "AIDS" matches but "aids" does not).
-            if (currentCaseMode == FTMatchOptions.CaseMode.LOWERCASE) {
-                if (!sourceToken.equals(sourceToken.toLowerCase(Locale.ROOT))) {
-                    return false;
-                }
-            } else if (currentCaseMode == FTMatchOptions.CaseMode.UPPERCASE
-                    && !sourceToken.equals(sourceToken.toUpperCase(Locale.ROOT))) {
+            if (!matchesCaseFilter(sourceToken)) {
                 return false;
             }
             return src.equalsIgnoreCase(search);
         }
         return src.equals(search);
+    }
+
+    /**
+     * Wildcard-pattern path of {@link #wordMatches}. Matches the regex first
+     * against the clean source token; if the search pattern uses XQFT escape
+     * sequences (literal punctuation), fall back to {@code lookingAt} on the
+     * raw token so trailing punctuation does not defeat the match.
+     */
+    private boolean matchWildcard(final String src, final String rawSourceToken,
+                                  final String search, final boolean caseInsensitive,
+                                  final boolean diacriticsInsensitive) {
+        final String regex = wildcardToRegex(search, caseInsensitive);
+        if (Pattern.matches(regex, src)) {
+            return true;
+        }
+        if (search.contains("\\") && rawSourceToken != null) {
+            final String rawSrc = diacriticsInsensitive ? stripDiacritics(rawSourceToken) : rawSourceToken;
+            return Pattern.compile(regex).matcher(rawSrc).lookingAt();
+        }
+        return false;
+    }
+
+    /**
+     * XQFT §4.1 case-mode source-side filter. For LOWERCASE / UPPERCASE the
+     * source token must already be in the corresponding case (e.g. "using
+     * uppercase" only matches AIDS, not aids). Returns false when the source
+     * fails the filter.
+     */
+    private boolean matchesCaseFilter(final String sourceToken) {
+        if (currentCaseMode == FTMatchOptions.CaseMode.LOWERCASE) {
+            return sourceToken.equals(sourceToken.toLowerCase(Locale.ROOT));
+        }
+        if (currentCaseMode == FTMatchOptions.CaseMode.UPPERCASE) {
+            return sourceToken.equals(sourceToken.toUpperCase(Locale.ROOT));
+        }
+        return true;
     }
 
     /**
@@ -856,69 +929,111 @@ public class FTEvaluator {
         if (word == null || word.length() < 3) {
             return word;
         }
-        String s = word.toLowerCase(Locale.ROOT);
+        final String lower = word.toLowerCase(Locale.ROOT);
+        return removeTrailingE(stripInflectionalSuffix(lower));
+    }
 
-        // Step 1: Strip inflectional suffixes (longest match first)
+    /**
+     * Step 1 of the stem: strip the longest matching inflectional suffix and
+     * (where appropriate) un-double the trailing consonant. Extracted from
+     * {@link #stem} so the top-level method stays under the PMD NPath threshold.
+     */
+    private static String stripInflectionalSuffix(final String s) {
+        final String trimmed = tryStripFixedSuffix(s);
+        if (trimmed != null) {
+            return trimmed;
+        }
+        return tryStripVerbAdjectiveSuffix(s);
+    }
+
+    /**
+     * Fixed-suffix table: longest match first. These suffixes map to a
+     * deterministic replacement (or simple truncation) regardless of stem
+     * length. Returns the rewritten word, or {@code null} if no suffix matches.
+     */
+    private static String tryStripFixedSuffix(final String s) {
         if (s.endsWith("ational")) {
-            s = s.substring(0, s.length() - 7) + "ate";
-        } else if (s.endsWith("iveness")) {
-            s = s.substring(0, s.length() - 7) + "ive";
-        } else if (s.endsWith("fulness")) {
-            s = s.substring(0, s.length() - 7) + "ful";
-        } else if (s.endsWith("ously")) {
-            s = s.substring(0, s.length() - 5) + "ous";
-        } else if (s.endsWith("ement")) {
-            s = s.substring(0, s.length() - 5);
-        } else if (s.endsWith("ness")) {
-            s = s.substring(0, s.length() - 4);
-        } else if (s.endsWith("ment") && !s.endsWith("mment")) {
-            s = s.substring(0, s.length() - 4);
-        } else if (s.endsWith("ies")) {
-            s = s.substring(0, s.length() - 3) + "i";
-        } else if (s.endsWith("ied")) {
-            s = s.substring(0, s.length() - 3) + "i";
-        } else if (s.endsWith("eed")) {
-            // keep as-is (e.g. "feed")
-        } else if (s.endsWith("ing")) {
-            final String base = s.substring(0, s.length() - 3);
-            if (base.length() >= 2) {
-                s = undouble(base);
-            }
-        } else if (s.endsWith("ed")) {
-            final String base = s.substring(0, s.length() - 2);
-            if (base.length() >= 2) {
-                s = undouble(base);
-            }
-        } else if (s.endsWith("ers")) {
-            final String base = s.substring(0, s.length() - 3);
-            if (base.length() >= 2) {
-                s = undouble(base);
-            }
-        } else if (s.endsWith("er")) {
-            final String base = s.substring(0, s.length() - 2);
-            if (base.length() >= 2) {
-                s = undouble(base);
-            }
-        } else if (s.endsWith("es")) {
-            final String base = s.substring(0, s.length() - 2);
-            if (base.length() >= 3) {
-                s = base;
-            }
-        } else if (s.endsWith("s") && !s.endsWith("ss")) {
-            s = s.substring(0, s.length() - 1);
-        } else if (s.endsWith("ly")) {
-            final String base = s.substring(0, s.length() - 2);
-            if (base.length() >= 3) {
-                s = base;
-            }
+            return s.substring(0, s.length() - 7) + "ate";
         }
+        if (s.endsWith("iveness")) {
+            return s.substring(0, s.length() - 7) + "ive";
+        }
+        if (s.endsWith("fulness")) {
+            return s.substring(0, s.length() - 7) + "ful";
+        }
+        if (s.endsWith("ously")) {
+            return s.substring(0, s.length() - 5) + "ous";
+        }
+        if (s.endsWith("ement")) {
+            return s.substring(0, s.length() - 5);
+        }
+        if (s.endsWith("ness")) {
+            return s.substring(0, s.length() - 4);
+        }
+        if (s.endsWith("ment") && !s.endsWith("mment")) {
+            return s.substring(0, s.length() - 4);
+        }
+        if (s.endsWith("ies") || s.endsWith("ied")) {
+            return s.substring(0, s.length() - 3) + "i";
+        }
+        if (s.endsWith("eed")) {
+            return s; // keep as-is (e.g. "feed")
+        }
+        return null;
+    }
 
-        // Step 2: Remove trailing 'e' if the stem is long enough.
-        // This ensures "picture" → "pictur" matches "pictures" → "pictur".
+    /**
+     * Verb / adjective suffixes that require stem-length checks and possibly
+     * consonant un-doubling. Returns the rewritten word, or {@code s} unchanged
+     * if no suffix matches.
+     */
+    private static String tryStripVerbAdjectiveSuffix(final String s) {
+        if (s.endsWith("ing")) {
+            return undoubleIfLongEnough(s, 3);
+        }
+        if (s.endsWith("ed")) {
+            return undoubleIfLongEnough(s, 2);
+        }
+        if (s.endsWith("ers")) {
+            return undoubleIfLongEnough(s, 3);
+        }
+        if (s.endsWith("er")) {
+            return undoubleIfLongEnough(s, 2);
+        }
+        if (s.endsWith("es")) {
+            final String base = s.substring(0, s.length() - 2);
+            return base.length() >= 3 ? base : s;
+        }
+        if (s.endsWith("s") && !s.endsWith("ss")) {
+            return s.substring(0, s.length() - 1);
+        }
+        if (s.endsWith("ly")) {
+            final String base = s.substring(0, s.length() - 2);
+            return base.length() >= 3 ? base : s;
+        }
+        return s;
+    }
+
+    /**
+     * Strip {@code suffixLen} characters then un-double the trailing consonant
+     * if the residual base has at least 2 characters; otherwise return {@code s}
+     * unchanged.
+     */
+    private static String undoubleIfLongEnough(final String s, final int suffixLen) {
+        final String base = s.substring(0, s.length() - suffixLen);
+        return base.length() >= 2 ? undouble(base) : s;
+    }
+
+    /**
+     * Step 2 of the stem: remove a trailing {@code e} when the stem is long
+     * enough and the {@code e} is not part of an {@code ee} digraph (so
+     * "picture" -> "pictur" matches "pictures" -> "pictur", but "feed" is
+     * preserved).
+     */
+    private static String removeTrailingE(final String s) {
         if (s.length() >= 4 && s.endsWith("e") && !s.endsWith("ee")) {
-            s = s.substring(0, s.length() - 1);
+            return s.substring(0, s.length() - 1);
         }
-
         return s;
     }
 
@@ -1036,69 +1151,88 @@ public class FTEvaluator {
      */
     private Set<String> collectStopWords(final FTMatchOptions options, final boolean caseInsensitive,
                                          final Expression context) throws XPathException {
-        if (options == null) {
+        if (options == null || Boolean.TRUE.equals(options.getNoStopWords())) {
             return Collections.emptySet();
         }
-        if (Boolean.TRUE.equals(options.getNoStopWords())) {
-            return Collections.emptySet();
-        }
+        enforceLanguageStopWordSupport(options, context);
+
         final Set<String> result = new HashSet<>();
-
-        // XQFT 3.0 §4.6: raise FTST0013 if stop words are requested with a language
-        // specification but we don't support language-specific stop word lists.
-        // We only have a default (English) stop word list; no per-language lists.
-        if (options.getUseDefaultStopWords() && options.getLanguage() != null) {
-            final String lang = options.getLanguage().trim().toLowerCase(Locale.ROOT);
-            if (!lang.isEmpty() && !lang.equals("en") && !lang.startsWith("en-")) {
-                throw new XPathException(context, ErrorCodes.FTST0013,
-                        "Stop word list not available for language: " + options.getLanguage());
-            }
-        }
-
-        // Handle "stop words default" — load from ##default URI mapping
-        if (options.getUseDefaultStopWords()) {
-            final Path defaultPath = stopWordURIMap.get("##default");
-            if (defaultPath != null) {
-                loadStopWordsFromPath(defaultPath, result, caseInsensitive, context, "##default");
-            }
-            // If no ##default mapping, silently use empty set (implementation-defined)
-        }
-
-        // Add inline stop words (union)
-        final List<String> inlineWords = options.getInlineStopWords();
-        if (inlineWords != null) {
-            for (final String sw : inlineWords) {
-                result.add(caseInsensitive ? sw.toLowerCase(Locale.ROOT) : sw);
-            }
-        }
-
-        // Load external stop words from URIs (union)
-        final List<String> uris = options.getStopWordURIs();
-        if (uris != null) {
-            for (final String uri : uris) {
-                loadStopWordsFromURI(uri, result, caseInsensitive, context);
-            }
-        }
-
-        // Remove excepted inline stop words
-        final List<String> exceptInline = options.getExceptInlineStopWords();
-        if (exceptInline != null) {
-            for (final String sw : exceptInline) {
-                result.remove(caseInsensitive ? sw.toLowerCase(Locale.ROOT) : sw);
-            }
-        }
-
-        // Remove excepted URI stop words
-        final List<String> exceptURIs = options.getExceptStopWordURIs();
-        if (exceptURIs != null && !exceptURIs.isEmpty()) {
-            final Set<String> exceptWords = new HashSet<>();
-            for (final String uri : exceptURIs) {
-                loadStopWordsFromURI(uri, exceptWords, caseInsensitive, context);
-            }
-            result.removeAll(exceptWords);
-        }
-
+        addDefaultStopWords(options, result, caseInsensitive, context);
+        addInlineStopWords(options.getInlineStopWords(), result, caseInsensitive);
+        addUriStopWords(options.getStopWordURIs(), result, caseInsensitive, context);
+        removeInlineExceptions(options.getExceptInlineStopWords(), result, caseInsensitive);
+        removeUriExceptions(options.getExceptStopWordURIs(), result, caseInsensitive, context);
         return result;
+    }
+
+    /**
+     * XQFT 3.0 §4.6: we only ship an English default stop-word list, so raise
+     * FTST0013 if the caller asks for the default list together with a
+     * non-English language tag.
+     */
+    private void enforceLanguageStopWordSupport(final FTMatchOptions options, final Expression context) throws XPathException {
+        if (!options.getUseDefaultStopWords() || options.getLanguage() == null) {
+            return;
+        }
+        final String lang = options.getLanguage().trim().toLowerCase(Locale.ROOT);
+        if (!lang.isEmpty() && !lang.equals("en") && !lang.startsWith("en-")) {
+            throw new XPathException(context, ErrorCodes.FTST0013,
+                    "Stop word list not available for language: " + options.getLanguage());
+        }
+    }
+
+    private void addDefaultStopWords(final FTMatchOptions options, final Set<String> result,
+                                     final boolean caseInsensitive, final Expression context) throws XPathException {
+        if (!options.getUseDefaultStopWords()) {
+            return;
+        }
+        final Path defaultPath = stopWordURIMap.get("##default");
+        if (defaultPath != null) {
+            loadStopWordsFromPath(defaultPath, result, caseInsensitive, context, "##default");
+        }
+        // No ##default mapping: implementation-defined, silently use empty set.
+    }
+
+    private static void addInlineStopWords(final List<String> inlineWords, final Set<String> result,
+                                           final boolean caseInsensitive) {
+        if (inlineWords == null) {
+            return;
+        }
+        for (final String sw : inlineWords) {
+            result.add(caseInsensitive ? sw.toLowerCase(Locale.ROOT) : sw);
+        }
+    }
+
+    private void addUriStopWords(final List<String> uris, final Set<String> result,
+                                 final boolean caseInsensitive, final Expression context) throws XPathException {
+        if (uris == null) {
+            return;
+        }
+        for (final String uri : uris) {
+            loadStopWordsFromURI(uri, result, caseInsensitive, context);
+        }
+    }
+
+    private static void removeInlineExceptions(final List<String> exceptions, final Set<String> result,
+                                               final boolean caseInsensitive) {
+        if (exceptions == null) {
+            return;
+        }
+        for (final String sw : exceptions) {
+            result.remove(caseInsensitive ? sw.toLowerCase(Locale.ROOT) : sw);
+        }
+    }
+
+    private void removeUriExceptions(final List<String> exceptURIs, final Set<String> result,
+                                     final boolean caseInsensitive, final Expression context) throws XPathException {
+        if (exceptURIs == null || exceptURIs.isEmpty()) {
+            return;
+        }
+        final Set<String> exceptWords = new HashSet<>();
+        for (final String uri : exceptURIs) {
+            loadStopWordsFromURI(uri, exceptWords, caseInsensitive, context);
+        }
+        result.removeAll(exceptWords);
     }
 
     /**
@@ -1399,60 +1533,73 @@ public class FTEvaluator {
 
     AllMatches evalFTPrimaryWithOptions(final FTPrimaryWithOptions pwo, final FTMatchOptions inheritedOptions)
             throws XPathException {
-        // XQFT 3.0 §4.9: raise FTST0019 if match options conflict
         final FTMatchOptions localOptions = pwo.getMatchOptions();
+        // XQFT 3.0 §4.9: raise FTST0019 if match options conflict.
         if (localOptions != null && localOptions.hasConflict()) {
             throw new XPathException(pwo, ErrorCodes.FTST0019,
                     localOptions.getConflictDescription());
         }
-
-        // Merge match options: local options override inherited ones
         final FTMatchOptions effective = mergeOptions(inheritedOptions, localOptions);
-
-        // XQFT 3.0 §4.8: raise FTST0009 for unsupported languages.
-        // We support Latin-script languages (en, de, fr, es, it, pt, nl, etc.)
-        // using the default whitespace tokenizer and Snowball stemmer.
-        // Non-Latin-script languages (zh, ja, ko, ar, he, th, etc.) require
-        // specialized tokenizers we don't have, so we raise FTST0009.
-        if (effective != null && effective.getLanguage() != null) {
-            final String lang = effective.getLanguage().trim();
-            if (!lang.isEmpty()) {
-                // Reject invalid BCP 47 tags
-                if (!lang.matches("[a-zA-Z]{2,8}(-.*)?")) {
-                    throw new XPathException(pwo, ErrorCodes.FTST0009,
-                            "Language not supported: " + effective.getLanguage());
-                }
-                // Reject languages requiring non-Latin tokenizers
-                final String primary = lang.contains("-") ? lang.substring(0, lang.indexOf('-')) : lang;
-                final String lc = primary.toLowerCase(Locale.ROOT);
-                if ("zh".equals(lc) || "ja".equals(lc) || "ko".equals(lc) ||
-                        "ar".equals(lc) || "he".equals(lc) || "th".equals(lc) ||
-                        "hi".equals(lc) || "bn".equals(lc) || "ta".equals(lc) ||
-                        "ka".equals(lc) || "km".equals(lc) || "my".equals(lc)) {
-                    throw new XPathException(pwo, ErrorCodes.FTST0009,
-                            "Language not supported (no tokenizer for non-Latin script): " + lang);
-                }
-            }
-        }
-
-        // XQFT 3.0 §3.7: Validate weight expression if present.
-        // Weight must evaluate to a numeric value in [-1000, 1000]; otherwise FTDY0016.
-        // Non-numeric values raise XPTY0004.
-        if (pwo.getWeight() != null) {
-            final Sequence weightSeq = pwo.getWeight().eval(contextSequence, null);
-            if (weightSeq.isEmpty() || !Type.subTypeOfUnion(weightSeq.itemAt(0).getType(), Type.NUMERIC)) {
-                throw new XPathException(pwo, ErrorCodes.XPTY0004,
-                        "Weight expression must evaluate to a numeric value, got: " +
-                                (weightSeq.isEmpty() ? "empty sequence" : Type.getTypeName(weightSeq.itemAt(0).getType())));
-            }
-            final double w = weightSeq.itemAt(0).toJavaObject(Double.class);
-            if (w < -1000.0 || w > 1000.0 || Double.isNaN(w)) {
-                throw new XPathException(pwo, ErrorCodes.FTDY0016,
-                        "Weight value " + w + " is out of the allowed range [-1000.0, 1000.0]");
-            }
-        }
-
+        validateLanguageSupport(effective, pwo);
+        validateWeight(pwo);
         return evalExpression(pwo.getPrimary(), effective);
+    }
+
+    /**
+     * XQFT 3.0 §4.8: raise FTST0009 for unsupported languages. We support
+     * Latin-script languages (en, de, fr, es, it, pt, nl, ...) using the
+     * default whitespace tokenizer and Snowball stemmer; non-Latin-script
+     * languages need specialized tokenizers we don't ship.
+     */
+    private static void validateLanguageSupport(final FTMatchOptions effective, final FTPrimaryWithOptions pwo)
+            throws XPathException {
+        if (effective == null || effective.getLanguage() == null) {
+            return;
+        }
+        final String lang = effective.getLanguage().trim();
+        if (lang.isEmpty()) {
+            return;
+        }
+        if (!lang.matches("[a-zA-Z]{2,8}(-.*)?")) {
+            throw new XPathException(pwo, ErrorCodes.FTST0009,
+                    "Language not supported: " + effective.getLanguage());
+        }
+        final String primary = lang.contains("-") ? lang.substring(0, lang.indexOf('-')) : lang;
+        if (isNonLatinScriptLanguage(primary.toLowerCase(Locale.ROOT))) {
+            throw new XPathException(pwo, ErrorCodes.FTST0009,
+                    "Language not supported (no tokenizer for non-Latin script): " + lang);
+        }
+    }
+
+    /** Primary-tag set of non-Latin-script languages that require dedicated tokenizers. */
+    private static final Set<String> NON_LATIN_SCRIPT_LANGUAGES = Set.of(
+            "zh", "ja", "ko", "ar", "he", "th",
+            "hi", "bn", "ta", "ka", "km", "my");
+
+    private static boolean isNonLatinScriptLanguage(final String primary) {
+        return NON_LATIN_SCRIPT_LANGUAGES.contains(primary);
+    }
+
+    /**
+     * XQFT 3.0 §3.7: validate weight expression. Must evaluate to a numeric
+     * value in [-1000, 1000]; otherwise XPTY0004 (non-numeric) or FTDY0016
+     * (out of range / NaN).
+     */
+    private void validateWeight(final FTPrimaryWithOptions pwo) throws XPathException {
+        if (pwo.getWeight() == null) {
+            return;
+        }
+        final Sequence weightSeq = pwo.getWeight().eval(contextSequence, null);
+        if (weightSeq.isEmpty() || !Type.subTypeOfUnion(weightSeq.itemAt(0).getType(), Type.NUMERIC)) {
+            throw new XPathException(pwo, ErrorCodes.XPTY0004,
+                    "Weight expression must evaluate to a numeric value, got: " +
+                            (weightSeq.isEmpty() ? "empty sequence" : Type.getTypeName(weightSeq.itemAt(0).getType())));
+        }
+        final double w = weightSeq.itemAt(0).toJavaObject(Double.class);
+        if (w < -1000.0 || w > 1000.0 || Double.isNaN(w)) {
+            throw new XPathException(pwo, ErrorCodes.FTDY0016,
+                    "Weight value " + w + " is out of the allowed range [-1000.0, 1000.0]");
+        }
     }
 
     // === Positional filters ===
@@ -1623,8 +1770,7 @@ public class FTEvaluator {
      */
     private AllMatches applyScope(final AllMatches input, final FTScope ftScope) {
         final AllMatches result = new AllMatches();
-        final boolean isSentence = ftScope.getBigUnit() == FTScope.BigUnit.SENTENCE;
-        final int[] unitMap = isSentence ? sentenceOf : paragraphOf;
+        final int[] unitMap = ftScope.getBigUnit() == FTScope.BigUnit.SENTENCE ? sentenceOf : paragraphOf;
         final boolean isSame = ftScope.getScopeType() == FTScope.ScopeType.SAME;
 
         for (final Match m : input.getMatches()) {
@@ -1632,56 +1778,57 @@ public class FTEvaluator {
             if (groups.isEmpty()) {
                 continue;
             }
-            if (isSame) {
-                // All positions from all groups must be in the same unit
-                int commonUnit = -1;
-                boolean allSame = true;
-                for (final SortedSet<Integer> group : groups) {
-                    for (final int pos : group) {
-                        final int u = pos < unitMap.length ? unitMap[pos] : 0;
-                        if (commonUnit < 0) {
-                            commonUnit = u;
-                        } else if (u != commonUnit) {
-                            allSame = false;
-                            break;
-                        }
-                    }
-                    if (!allSame) {
-                        break;
-                    }
-                }
-                if (allSame) {
-                    result.addMatch(m);
-                }
-            } else {
-                // "different": require >= 2 groups.
-                // For each group, determine the unit of its first and last positions.
-                // If a group spans a single unit, that unit must not already be seen.
-                // Groups spanning multiple units (first unit != last unit) are always accepted.
-                int count = 0;
-                boolean allDifferent = true;
-                final Set<Integer> usedUnits = new HashSet<>();
-                for (final SortedSet<Integer> group : groups) {
-                    if (group.isEmpty()) {
-                        continue;
-                    }
-                    count++;
-                    final int startUnit = group.first() < unitMap.length ? unitMap[group.first()] : 0;
-                    final int endUnit = group.last() < unitMap.length ? unitMap[group.last()] : 0;
-                    if (startUnit == endUnit && !usedUnits.add(startUnit)) {
-                        // Single-unit group already seen: not all different
-                        allDifferent = false;
-                        break;
-                    }
-                    // Multi-unit group (spans boundary): mark start unit but never reject
-                    usedUnits.add(startUnit);
-                }
-                if (allDifferent && count > 1) {
-                    result.addMatch(m);
-                }
+            final boolean keep = isSame
+                    ? scopeSameKeep(groups, unitMap)
+                    : scopeDifferentKeep(groups, unitMap);
+            if (keep) {
+                result.addMatch(m);
             }
         }
         return result;
+    }
+
+    /**
+     * Same-unit predicate: every position in every group must map to the same
+     * sentence/paragraph index.
+     */
+    private static boolean scopeSameKeep(final List<SortedSet<Integer>> groups, final int[] unitMap) {
+        int commonUnit = -1;
+        for (final SortedSet<Integer> group : groups) {
+            for (final int pos : group) {
+                final int u = pos < unitMap.length ? unitMap[pos] : 0;
+                if (commonUnit < 0) {
+                    commonUnit = u;
+                } else if (u != commonUnit) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Different-unit predicate: at least two groups, and each single-unit group
+     * must inhabit a distinct sentence/paragraph (multi-unit groups always
+     * count as distinct).
+     */
+    private static boolean scopeDifferentKeep(final List<SortedSet<Integer>> groups, final int[] unitMap) {
+        int count = 0;
+        final Set<Integer> usedUnits = new HashSet<>();
+        for (final SortedSet<Integer> group : groups) {
+            if (group.isEmpty()) {
+                continue;
+            }
+            count++;
+            final int startUnit = group.first() < unitMap.length ? unitMap[group.first()] : 0;
+            final int endUnit = group.last() < unitMap.length ? unitMap[group.last()] : 0;
+            if (startUnit == endUnit && !usedUnits.add(startUnit)) {
+                return false;
+            }
+            // Multi-unit group spans a boundary -- mark start unit but never reject.
+            usedUnits.add(startUnit);
+        }
+        return count > 1;
     }
 
     /**
@@ -1822,7 +1969,9 @@ public class FTEvaluator {
     }
 
     /**
-     * Merge inherited options with local overrides.
+     * Merge inherited options with local overrides. Local values win when
+     * present; for collection-typed options, a non-empty local list replaces
+     * the inherited list (per XQFT 3.0 §4.7 scoping).
      */
     static FTMatchOptions mergeOptions(final FTMatchOptions inherited, final FTMatchOptions local) {
         if (local == null) {
@@ -1831,32 +1980,62 @@ public class FTEvaluator {
         if (inherited == null) {
             return local;
         }
-        // Local overrides inherited
         final FTMatchOptions merged = new FTMatchOptions();
-        merged.setCaseMode(local.getCaseMode() != null ? local.getCaseMode() : inherited.getCaseMode());
-        merged.setDiacriticsMode(local.getDiacriticsMode() != null ? local.getDiacriticsMode() : inherited.getDiacriticsMode());
-        merged.setStemming(local.getStemming() != null ? local.getStemming() : inherited.getStemming());
-        merged.setWildcards(local.getWildcards() != null ? local.getWildcards() : inherited.getWildcards());
-        merged.setLanguage(local.getLanguage() != null ? local.getLanguage() : inherited.getLanguage());
-        merged.setNoThesaurus(local.getNoThesaurus() != null ? local.getNoThesaurus() : inherited.getNoThesaurus());
-        merged.setNoStopWords(local.getNoStopWords() != null ? local.getNoStopWords() : inherited.getNoStopWords());
-        // Merge stop word lists (local overrides if non-empty)
-        if (!local.getInlineStopWords().isEmpty()) {
-            merged.getInlineStopWords().addAll(local.getInlineStopWords());
-        } else if (inherited.getInlineStopWords() != null) {
-            merged.getInlineStopWords().addAll(inherited.getInlineStopWords());
-        }
-        if (!local.getStopWordURIs().isEmpty()) {
-            merged.getStopWordURIs().addAll(local.getStopWordURIs());
-        } else if (inherited.getStopWordURIs() != null) {
-            merged.getStopWordURIs().addAll(inherited.getStopWordURIs());
-        }
-        // Merge thesaurus IDs (local overrides if non-empty)
-        if (!local.getThesaurusIDs().isEmpty()) {
-            merged.getThesaurusIDs().addAll(local.getThesaurusIDs());
-        } else if (!inherited.getThesaurusIDs().isEmpty()) {
-            merged.getThesaurusIDs().addAll(inherited.getThesaurusIDs());
-        }
+        copyScalarOverrides(merged, local, inherited);
+        copyCollectionOverrides(merged, local, inherited);
         return merged;
+    }
+
+    /**
+     * Apply each scalar override on {@code local} or fall back to {@code inherited}.
+     * Extracted to keep {@link #mergeOptions} below the PMD NPath threshold.
+     */
+    private static void copyScalarOverrides(final FTMatchOptions merged,
+                                            final FTMatchOptions local,
+                                            final FTMatchOptions inherited) {
+        merged.setCaseMode(preferLocal(local.getCaseMode(), inherited.getCaseMode()));
+        merged.setDiacriticsMode(preferLocal(local.getDiacriticsMode(), inherited.getDiacriticsMode()));
+        merged.setStemming(preferLocal(local.getStemming(), inherited.getStemming()));
+        merged.setWildcards(preferLocal(local.getWildcards(), inherited.getWildcards()));
+        merged.setLanguage(preferLocal(local.getLanguage(), inherited.getLanguage()));
+        merged.setNoThesaurus(preferLocal(local.getNoThesaurus(), inherited.getNoThesaurus()));
+        merged.setNoStopWords(preferLocal(local.getNoStopWords(), inherited.getNoStopWords()));
+    }
+
+    /** Return {@code localValue} if non-null, otherwise {@code inheritedValue}. */
+    private static <T> T preferLocal(final T localValue, final T inheritedValue) {
+        return localValue != null ? localValue : inheritedValue;
+    }
+
+    /**
+     * Apply non-empty local list overrides for the three collection-typed
+     * options ({@code stop-words}, {@code stop-word-URIs}, {@code thesaurus IDs}),
+     * falling back to the inherited list when the local one is empty.
+     */
+    private static void copyCollectionOverrides(final FTMatchOptions merged,
+                                                final FTMatchOptions local,
+                                                final FTMatchOptions inherited) {
+        copyListOverride(merged.getInlineStopWords(),
+                local.getInlineStopWords(), inherited.getInlineStopWords());
+        copyListOverride(merged.getStopWordURIs(),
+                local.getStopWordURIs(), inherited.getStopWordURIs());
+        copyListOverride(merged.getThesaurusIDs(),
+                local.getThesaurusIDs(), inherited.getThesaurusIDs());
+    }
+
+    /**
+     * Copy {@code localList} into {@code target} when non-empty; otherwise copy
+     * {@code inheritedList} (also only if non-null and non-empty — the inherited
+     * accessor for {@code getInlineStopWords} and {@code getStopWordURIs} can
+     * return {@code null} on uninitialised options).
+     */
+    private static <T> void copyListOverride(final java.util.Collection<T> target,
+                                             final java.util.Collection<T> localList,
+                                             final java.util.Collection<T> inheritedList) {
+        if (localList != null && !localList.isEmpty()) {
+            target.addAll(localList);
+        } else if (inheritedList != null && !inheritedList.isEmpty()) {
+            target.addAll(inheritedList);
+        }
     }
 }
