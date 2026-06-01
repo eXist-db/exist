@@ -30,13 +30,16 @@ import org.expath.pkg.repo.XarSource;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URLEncoder;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.time.Duration;
 
 /**
  * Loads packages from a remote public repository (e.g. https://exist-db.org/exist/apps/public-repo).
@@ -47,8 +50,8 @@ public record RepoPackageLoader(String repoURL) implements PackageLoader {
 
     private static final Logger LOG = LogManager.getLogger(RepoPackageLoader.class);
 
-    private static final int CONNECT_TIMEOUT = 15_000;
-    private static final int READ_TIMEOUT = 15_000;
+    private static final Duration CONNECT_TIMEOUT = Duration.ofSeconds(15);
+    private static final Duration REQUEST_TIMEOUT = Duration.ofSeconds(15);
 
     @Override
     public XarSource load(final String name, final Version version) throws IOException {
@@ -69,14 +72,40 @@ public record RepoPackageLoader(String repoURL) implements PackageLoader {
             }
         }
         LOG.info("Retrieving package from {}", pkgURL);
-        final HttpURLConnection connection = (HttpURLConnection) URI.create(pkgURL).toURL().openConnection();
-        connection.setConnectTimeout(CONNECT_TIMEOUT);
-        connection.setReadTimeout(READ_TIMEOUT);
-        connection.setRequestMethod("GET");
-        connection.setRequestProperty("User-Agent", "eXist-db Package Manager");
-        connection.connect();
 
-        try (final InputStream is = connection.getInputStream()) {
+        // Use the JDK 11+ HttpClient: it honours the standard system-property
+        // proxy hooks (http.proxyHost / https.proxyHost / java.net.useSystemProxies)
+        // and the platform ProxySelector.getDefault(), so corporate-proxy
+        // deployments work out of the box.
+        final HttpClient client = HttpClient.newBuilder()
+                .connectTimeout(CONNECT_TIMEOUT)
+                .followRedirects(HttpClient.Redirect.NORMAL)
+                .proxy(java.net.ProxySelector.getDefault())
+                .build();
+        final HttpRequest request = HttpRequest.newBuilder(URI.create(pkgURL))
+                .GET()
+                .timeout(REQUEST_TIMEOUT)
+                .header("User-Agent", "eXist-db Package Manager")
+                .build();
+
+        final HttpResponse<InputStream> response;
+        try {
+            response = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
+        } catch (final InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException("Interrupted while downloading package from " + pkgURL, e);
+        }
+
+        if (response.statusCode() < 200 || response.statusCode() >= 300) {
+            // Drain the body so the underlying connection can be reused / closed.
+            try (final InputStream ignored = response.body()) {
+                // empty
+            }
+            throw new IOException("Failed to download package from " + pkgURL
+                    + ": HTTP " + response.statusCode());
+        }
+
+        try (final InputStream is = response.body()) {
             final TemporaryFileManager temporaryFileManager = TemporaryFileManager.getInstance();
             final Path outFile = temporaryFileManager.getTemporaryFile();
             Files.copy(is, outFile, StandardCopyOption.REPLACE_EXISTING);
