@@ -84,6 +84,13 @@ final class FunDeepEqualStreamingComparator {
 
     private static final int EOF = -1;
     private static final AttrSnapshot[] EMPTY_ATTRS = new AttrSnapshot[0];
+    /**
+     * Cached {@link Comparator} that places nulls first and otherwise uses
+     * String's natural order. Used by {@link #compareNullable(String, String)}
+     * and the no-collator branch of {@link #safeCompare(String, String, Collator)}.
+     */
+    private static final Comparator<String> NULLS_FIRST_NATURAL =
+            Comparator.nullsFirst(Comparator.<String>naturalOrder());
     private static final Comparator<AttrSnapshot> ATTR_ORDER = (x, y) -> {
         final int nsCmp = compareNullable(x.ns, y.ns);
         if (nsCmp != 0) {
@@ -320,14 +327,6 @@ final class FunDeepEqualStreamingComparator {
         Arrays.sort(out, ATTR_ORDER);
         return out;
     }
-
-    /**
-     * Cached {@link Comparator} that places nulls first and otherwise uses
-     * String's natural order. Used by {@link #compareNullable(String, String)}
-     * and the no-collator branch of {@link #safeCompare(String, String, Collator)}.
-     */
-    private static final Comparator<String> NULLS_FIRST_NATURAL =
-            Comparator.nullsFirst(Comparator.<String>naturalOrder());
 
     private static int compareNullable(@Nullable final String a, @Nullable final String b) {
         return NULLS_FIRST_NATURAL.compare(a, b);
