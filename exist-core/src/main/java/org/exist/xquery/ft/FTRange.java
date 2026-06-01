@@ -87,38 +87,35 @@ public class FTRange extends FTAbstractExpr {
     @Override
     public void dump(final ExpressionDumper dumper) {
         switch (mode) {
-            case EXACTLY:
+            case EXACTLY -> {
                 dumper.display("exactly ");
                 expr1.dump(dumper);
-                break;
-            case AT_LEAST:
+            }
+            case AT_LEAST -> {
                 dumper.display("at least ");
                 expr1.dump(dumper);
-                break;
-            case AT_MOST:
+            }
+            case AT_MOST -> {
                 dumper.display("at most ");
                 expr1.dump(dumper);
-                break;
-            case FROM_TO:
+            }
+            case FROM_TO -> {
                 dumper.display("from ");
                 expr1.dump(dumper);
                 dumper.display(" to ");
                 expr2.dump(dumper);
-                break;
-            default:
-                break;
+            }
         }
     }
 
     @Override
     public String toString() {
-        switch (mode) {
-            case EXACTLY: return "exactly " + expr1.toString();
-            case AT_LEAST: return "at least " + expr1.toString();
-            case AT_MOST: return "at most " + expr1.toString();
-            case FROM_TO: return "from " + expr1.toString() + " to " + expr2.toString();
-            default: return "";
-        }
+        return switch (mode) {
+            case EXACTLY -> "exactly " + expr1.toString();
+            case AT_LEAST -> "at least " + expr1.toString();
+            case AT_MOST -> "at most " + expr1.toString();
+            case FROM_TO -> "from " + expr1.toString() + " to " + expr2.toString();
+        };
     }
 
     @Override

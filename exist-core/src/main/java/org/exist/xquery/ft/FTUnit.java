@@ -30,12 +30,12 @@ public enum FTUnit {
     WORDS, SENTENCES, PARAGRAPHS;
 
     public static FTUnit fromString(final String s) {
-        switch (s) {
-            case "words": return WORDS;
-            case "sentences": return SENTENCES;
-            case "paragraphs": return PARAGRAPHS;
-            default: throw new IllegalArgumentException("Unknown FTUnit: " + s);
-        }
+        return switch (s) {
+            case "words" -> WORDS;
+            case "sentences" -> SENTENCES;
+            case "paragraphs" -> PARAGRAPHS;
+            default -> throw new IllegalArgumentException("Unknown FTUnit: " + s);
+        };
     }
 
     @Override

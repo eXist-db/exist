@@ -75,33 +75,33 @@ public class FTConformanceTest {
     // =========================================================================
 
     @Test
-    public void s2_1_basicContainsText() throws Exception {
+    public void s21BasicContainsText() throws Exception {
         assertTrue(evalBool("'usability testing' contains text 'usability'"));
     }
 
     @Test
-    public void s2_1_noMatch() throws Exception {
+    public void s21NoMatch() throws Exception {
         assertFalse(evalBool("'usability testing' contains text 'performance'"));
     }
 
     @Test
-    public void s2_1_multiWordMatch() throws Exception {
+    public void s21MultiWordMatch() throws Exception {
         // Default "any" mode: each search string is treated as a phrase
         assertTrue(evalBool("'usability testing and analysis' contains text 'usability testing'"));
     }
 
     @Test
-    public void s2_1_emptyStringAlwaysMatches() throws Exception {
+    public void s21EmptyStringAlwaysMatches() throws Exception {
         assertTrue(evalBool("'anything' contains text ''"));
     }
 
     @Test
-    public void s2_1_xmlElement() throws Exception {
+    public void s21XmlElement() throws Exception {
         assertTrue(evalBool("<p>The quick brown fox</p> contains text 'quick'"));
     }
 
     @Test
-    public void s2_1_variableSource() throws Exception {
+    public void s21VariableSource() throws Exception {
         assertTrue(evalBool("let $x := 'hello world' return $x contains text 'hello'"));
     }
 
@@ -112,13 +112,13 @@ public class FTConformanceTest {
     // --- "any" (default) ---
 
     @Test
-    public void s2_2_anyDefault() throws Exception {
+    public void s22AnyDefault() throws Exception {
         // "any" is the default; any single search string can match as a phrase
         assertTrue(evalBool("'hello world' contains text 'hello'"));
     }
 
     @Test
-    public void s2_2_anyMultipleStrings() throws Exception {
+    public void s22AnyMultipleStrings() throws Exception {
         // With computed value producing multiple strings (must use {Expr} syntax)
         assertTrue(evalBool("'hello world' contains text {('goodbye', 'hello')}"));
     }
@@ -126,57 +126,57 @@ public class FTConformanceTest {
     // --- "any word" ---
 
     @Test
-    public void s2_2_anyWord() throws Exception {
+    public void s22AnyWord() throws Exception {
         // Tokenize into individual words; any one can match
         assertTrue(evalBool("'hello world' contains text 'goodbye hello' any word"));
     }
 
     @Test
-    public void s2_2_anyWordNoMatch() throws Exception {
+    public void s22AnyWordNoMatch() throws Exception {
         assertFalse(evalBool("'hello world' contains text 'goodbye farewell' any word"));
     }
 
     // --- "all" ---
 
     @Test
-    public void s2_2_all() throws Exception {
+    public void s22All() throws Exception {
         // All search strings must match (each as a phrase)
         assertTrue(evalBool("'hello world' contains text 'hello' all"));
     }
 
     @Test
-    public void s2_2_allMultiple() throws Exception {
+    public void s22AllMultiple() throws Exception {
         assertTrue(evalBool("'hello world' contains text {('hello', 'world')} all"));
     }
 
     @Test
-    public void s2_2_allFails() throws Exception {
+    public void s22AllFails() throws Exception {
         assertFalse(evalBool("'hello world' contains text {('hello', 'gone')} all"));
     }
 
     // --- "all words" ---
 
     @Test
-    public void s2_2_allWords() throws Exception {
+    public void s22AllWords() throws Exception {
         // Tokenize into words; all must individually match
         assertTrue(evalBool("'the quick brown fox' contains text 'quick fox' all words"));
     }
 
     @Test
-    public void s2_2_allWordsFail() throws Exception {
+    public void s22AllWordsFail() throws Exception {
         assertFalse(evalBool("'the quick brown fox' contains text 'quick gone' all words"));
     }
 
     // --- "phrase" ---
 
     @Test
-    public void s2_2_phrase() throws Exception {
+    public void s22Phrase() throws Exception {
         // All words form one phrase — must appear consecutively
         assertTrue(evalBool("'the quick brown fox' contains text 'quick brown' phrase"));
     }
 
     @Test
-    public void s2_2_phraseNoMatch() throws Exception {
+    public void s22PhraseNoMatch() throws Exception {
         // Words not consecutive
         assertFalse(evalBool("'the quick brown fox' contains text 'quick fox' phrase"));
     }
@@ -186,27 +186,27 @@ public class FTConformanceTest {
     // =========================================================================
 
     @Test
-    public void s2_3_ftor() throws Exception {
+    public void s23Ftor() throws Exception {
         assertTrue(evalBool("'hello world' contains text 'hello' ftor 'goodbye'"));
         assertTrue(evalBool("'hello world' contains text 'goodbye' ftor 'hello'"));
         assertFalse(evalBool("'hello world' contains text 'goodbye' ftor 'farewell'"));
     }
 
     @Test
-    public void s2_3_ftand() throws Exception {
+    public void s23Ftand() throws Exception {
         assertTrue(evalBool("'hello world' contains text 'hello' ftand 'world'"));
         assertFalse(evalBool("'hello world' contains text 'hello' ftand 'gone'"));
     }
 
     @Test
-    public void s2_3_ftnot() throws Exception {
+    public void s23Ftnot() throws Exception {
         // ftnot: negation — matches if search term does NOT appear
         assertTrue(evalBool("'hello world' contains text ftnot 'gone'"));
         assertFalse(evalBool("'hello world' contains text ftnot 'hello'"));
     }
 
     @Test
-    public void s2_3_mildNot() throws Exception {
+    public void s23MildNot() throws Exception {
         // "not in": matches from left that don't overlap with right positions
         // "hello" matches at pos 0, "hello" also matches at pos 0 in right operand
         // So the match DOES overlap → should be excluded
@@ -214,13 +214,13 @@ public class FTConformanceTest {
     }
 
     @Test
-    public void s2_3_mildNotNoOverlap() throws Exception {
+    public void s23MildNotNoOverlap() throws Exception {
         // "hello" at pos 0, "world" at pos 1 — no overlap
         assertTrue(evalBool("'hello world' contains text 'hello' not in 'world'"));
     }
 
     @Test
-    public void s2_3_complexBoolean() throws Exception {
+    public void s23ComplexBoolean() throws Exception {
         // Nested: (A ftand B) ftor C
         assertTrue(evalBool(
             "'the quick brown fox' contains text ('quick' ftand 'fox') ftor 'elephant'"
@@ -237,14 +237,14 @@ public class FTConformanceTest {
     // --- ordered ---
 
     @Test
-    public void s2_4_ordered() throws Exception {
+    public void s24Ordered() throws Exception {
         assertTrue(evalBool(
             "'the quick brown fox' contains text 'quick' ftand 'fox' ordered"
         ));
     }
 
     @Test
-    public void s2_4_orderedReverse() throws Exception {
+    public void s24OrderedReverse() throws Exception {
         // "fox" (first operand) at pos 3, "quick" (second operand) at pos 1.
         // Ordered requires first operand before second in text → 3 > 1 → fails.
         assertFalse(evalBool(
@@ -255,7 +255,7 @@ public class FTConformanceTest {
     // --- window ---
 
     @Test
-    public void s2_4_windowFits() throws Exception {
+    public void s24WindowFits() throws Exception {
         // "quick" at pos 1, "brown" at pos 2 → span = 2, fits in window 3
         assertTrue(evalBool(
             "'the quick brown fox' contains text 'quick' ftand 'brown' window 3 words"
@@ -263,7 +263,7 @@ public class FTConformanceTest {
     }
 
     @Test
-    public void s2_4_windowTooSmall() throws Exception {
+    public void s24WindowTooSmall() throws Exception {
         // "quick" at pos 1, "fox" at pos 3 → span = 3, doesn't fit in window 2
         assertFalse(evalBool(
             "'the quick brown fox' contains text 'quick' ftand 'fox' window 2 words"
@@ -271,7 +271,7 @@ public class FTConformanceTest {
     }
 
     @Test
-    public void s2_4_windowExact() throws Exception {
+    public void s24WindowExact() throws Exception {
         // span = 3, window = 3 → exactly fits
         assertTrue(evalBool(
             "'the quick brown fox' contains text 'quick' ftand 'fox' window 3 words"
@@ -281,7 +281,7 @@ public class FTConformanceTest {
     // --- distance ---
 
     @Test
-    public void s2_4_distanceExactly() throws Exception {
+    public void s24DistanceExactly() throws Exception {
         // "quick" at pos 1, "brown" at pos 2 → gap = 0
         assertTrue(evalBool(
             "'the quick brown fox' contains text 'quick' ftand 'brown' distance exactly 0 words"
@@ -289,7 +289,7 @@ public class FTConformanceTest {
     }
 
     @Test
-    public void s2_4_distanceAtMost() throws Exception {
+    public void s24DistanceAtMost() throws Exception {
         // "quick" at pos 1, "fox" at pos 3 → gap = 1
         assertTrue(evalBool(
             "'the quick brown fox' contains text 'quick' ftand 'fox' distance at most 2 words"
@@ -297,7 +297,7 @@ public class FTConformanceTest {
     }
 
     @Test
-    public void s2_4_distanceFromTo() throws Exception {
+    public void s24DistanceFromTo() throws Exception {
         // gap = 1 (one word "brown" between "quick" and "fox")
         assertTrue(evalBool(
             "'the quick brown fox' contains text 'quick' ftand 'fox' distance from 1 to 3 words"
@@ -307,25 +307,25 @@ public class FTConformanceTest {
     // --- at start / at end / entire content ---
 
     @Test
-    public void s2_4_atStart() throws Exception {
+    public void s24AtStart() throws Exception {
         assertTrue(evalBool("'hello world' contains text 'hello' at start"));
         assertFalse(evalBool("'hello world' contains text 'world' at start"));
     }
 
     @Test
-    public void s2_4_atEnd() throws Exception {
+    public void s24AtEnd() throws Exception {
         assertTrue(evalBool("'hello world' contains text 'world' at end"));
         assertFalse(evalBool("'hello world' contains text 'hello' at end"));
     }
 
     @Test
-    public void s2_4_entireContent() throws Exception {
+    public void s24EntireContent() throws Exception {
         assertTrue(evalBool("'hello' contains text 'hello' entire content"));
         assertFalse(evalBool("'hello world' contains text 'hello' entire content"));
     }
 
     @Test
-    public void s2_4_entireContentAllWords() throws Exception {
+    public void s24EntireContentAllWords() throws Exception {
         assertTrue(evalBool(
             "'hello world' contains text 'hello world' all words entire content"
         ));
@@ -338,19 +338,19 @@ public class FTConformanceTest {
     // --- case ---
 
     @Test
-    public void s2_5_caseSensitive() throws Exception {
+    public void s25CaseSensitive() throws Exception {
         assertFalse(evalBool("'Hello World' contains text 'hello' using case sensitive"));
         assertTrue(evalBool("'Hello World' contains text 'Hello' using case sensitive"));
     }
 
     @Test
-    public void s2_5_caseInsensitive() throws Exception {
+    public void s25CaseInsensitive() throws Exception {
         assertTrue(evalBool("'Hello World' contains text 'hello' using case insensitive"));
         assertTrue(evalBool("'HELLO WORLD' contains text 'hello' using case insensitive"));
     }
 
     @Test
-    public void s2_5_lowercase() throws Exception {
+    public void s25Lowercase() throws Exception {
         // XQFTTS interpretation: "lowercase" only matches tokens already in lowercase.
         // "Hello" is mixed case, so it doesn't match "hello" using lowercase.
         assertFalse(evalBool("'Hello World' contains text 'hello' using lowercase"));
@@ -359,7 +359,7 @@ public class FTConformanceTest {
     }
 
     @Test
-    public void s2_5_uppercase() throws Exception {
+    public void s25Uppercase() throws Exception {
         // XQFTTS interpretation: "uppercase" only matches tokens already in uppercase.
         // "Hello" is mixed case, so it doesn't match "HELLO" using uppercase.
         assertFalse(evalBool("'Hello World' contains text 'HELLO' using uppercase"));
@@ -370,26 +370,26 @@ public class FTConformanceTest {
     // --- wildcards ---
 
     @Test
-    public void s2_5_wildcardsStar() throws Exception {
+    public void s25WildcardsStar() throws Exception {
         assertTrue(evalBool("'hello world' contains text 'hel.*' using wildcards"));
     }
 
     @Test
-    public void s2_5_wildcardsDot() throws Exception {
+    public void s25WildcardsDot() throws Exception {
         // . matches exactly one character
         assertTrue(evalBool("'hello world' contains text 'h.llo' using wildcards"));
         assertFalse(evalBool("'hello world' contains text 'h.lo' using wildcards"));
     }
 
     @Test
-    public void s2_5_wildcardsPlus() throws Exception {
+    public void s25WildcardsPlus() throws Exception {
         // .+ matches one or more
         assertTrue(evalBool("'hello world' contains text 'hel.+' using wildcards"));
         assertFalse(evalBool("'hello world' contains text 'hello.+' using wildcards"));
     }
 
     @Test
-    public void s2_5_wildcardsCaseInsensitive() throws Exception {
+    public void s25WildcardsCaseInsensitive() throws Exception {
         assertTrue(evalBool(
             "'Hello World' contains text 'hel.*' using wildcards using case insensitive"
         ));
@@ -398,7 +398,7 @@ public class FTConformanceTest {
     // --- multiple using clauses ---
 
     @Test
-    public void s2_5_multipleMatchOptions() throws Exception {
+    public void s25MultipleMatchOptions() throws Exception {
         assertTrue(evalBool(
             "'Hello World' contains text 'hel.*' using case insensitive using wildcards"
         ));
@@ -409,7 +409,7 @@ public class FTConformanceTest {
     // =========================================================================
 
     @Test
-    public void s2_6_occursExactly() throws Exception {
+    public void s26OccursExactly() throws Exception {
         // "the" appears 2 times in "the quick brown the fox"
         assertTrue(evalBool(
             "'the quick brown the fox' contains text 'the' occurs exactly 2 times"
@@ -420,14 +420,14 @@ public class FTConformanceTest {
     }
 
     @Test
-    public void s2_6_occursAtLeast() throws Exception {
+    public void s26OccursAtLeast() throws Exception {
         assertTrue(evalBool(
             "'the quick the brown the fox' contains text 'the' occurs at least 2 times"
         ));
     }
 
     @Test
-    public void s2_6_occursAtMost() throws Exception {
+    public void s26OccursAtMost() throws Exception {
         assertTrue(evalBool(
             "'the quick brown fox' contains text 'the' occurs at most 2 times"
         ));
@@ -437,7 +437,7 @@ public class FTConformanceTest {
     }
 
     @Test
-    public void s2_6_occursFromTo() throws Exception {
+    public void s26OccursFromTo() throws Exception {
         assertTrue(evalBool(
             "'the quick the fox' contains text 'the' occurs from 1 to 3 times"
         ));
@@ -448,14 +448,14 @@ public class FTConformanceTest {
     // =========================================================================
 
     @Test
-    public void s2_7_parenthesizedSelection() throws Exception {
+    public void s27ParenthesizedSelection() throws Exception {
         assertTrue(evalBool(
             "'the quick brown fox' contains text ('quick' ftand 'fox')"
         ));
     }
 
     @Test
-    public void s2_7_parenthesizedWithPosFilter() throws Exception {
+    public void s27ParenthesizedWithPosFilter() throws Exception {
         assertTrue(evalBool(
             "'the quick brown fox' contains text " +
             "('quick' ftand 'fox') using case insensitive ordered"
@@ -467,7 +467,7 @@ public class FTConformanceTest {
     // =========================================================================
 
     @Test
-    public void useCase_filterBooks() throws Exception {
+    public void useCaseFilterBooks() throws Exception {
         assertEquals(2, evalCount(
             "let $books := (" +
             "  <book><title>Learning XQuery</title></book>," +
@@ -478,7 +478,7 @@ public class FTConformanceTest {
     }
 
     @Test
-    public void useCase_filterWithBoolean() throws Exception {
+    public void useCaseFilterWithBoolean() throws Exception {
         // 2 XQuery books + 2 Java books = 4 matches
         assertEquals(4, evalCount(
             "let $books := (" +
@@ -491,7 +491,7 @@ public class FTConformanceTest {
     }
 
     @Test
-    public void useCase_nestedElements() throws Exception {
+    public void useCaseNestedElements() throws Exception {
         // "contains text" uses the string value of the element (including descendants)
         // String value of <div><p>Hello</p><p>World</p></div> is "HelloWorld"
         assertTrue(evalBool(
@@ -500,7 +500,7 @@ public class FTConformanceTest {
     }
 
     @Test
-    public void useCase_flworFilter() throws Exception {
+    public void useCaseFlworFilter() throws Exception {
         assertEquals(2, evalCount(
             "for $w in ('apple', 'banana', 'apricot', 'cherry') " +
             "where $w contains text 'ap.*' using wildcards " +
@@ -509,14 +509,14 @@ public class FTConformanceTest {
     }
 
     @Test
-    public void useCase_conditionalFT() throws Exception {
+    public void useCaseConditionalFT() throws Exception {
         assertEquals("found", evalString(
             "if ('hello world' contains text 'hello') then 'found' else 'not found'"
         ));
     }
 
     @Test
-    public void useCase_countMatches() throws Exception {
+    public void useCaseCountMatches() throws Exception {
         // hello, help, hero, hope all start with 'h' — 4 matches
         assertEquals("4", evalString(
             "let $words := ('hello', 'world', 'help', 'hero', 'hope') " +
@@ -529,41 +529,41 @@ public class FTConformanceTest {
     // =========================================================================
 
     @Test
-    public void edge_emptySource() throws Exception {
+    public void edgeEmptySource() throws Exception {
         assertFalse(evalBool("'' contains text 'hello'"));
     }
 
     @Test
-    public void edge_emptySearchEmptySource() throws Exception {
+    public void edgeEmptySearchEmptySource() throws Exception {
         assertTrue(evalBool("'' contains text ''"));
     }
 
     @Test
-    public void edge_numericSource() throws Exception {
+    public void edgeNumericSource() throws Exception {
         assertTrue(evalBool("42 contains text '42'"));
     }
 
     @Test
-    public void edge_sequenceSource() throws Exception {
+    public void edgeSequenceSource() throws Exception {
         // String value of a sequence of strings is their concatenation
         assertTrue(evalBool("('hello', 'world') contains text 'hello'"));
     }
 
     @Test
-    public void edge_multipleSpaces() throws Exception {
+    public void edgeMultipleSpaces() throws Exception {
         // Extra whitespace shouldn't affect word tokenization
         assertTrue(evalBool("'hello   world' contains text 'hello'"));
         assertTrue(evalBool("'hello   world' contains text 'world'"));
     }
 
     @Test
-    public void edge_punctuation() throws Exception {
+    public void edgePunctuation() throws Exception {
         assertTrue(evalBool("'hello, world!' contains text 'hello'"));
         assertTrue(evalBool("'hello, world!' contains text 'world'"));
     }
 
     @Test
-    public void edge_unicodeText() throws Exception {
+    public void edgeUnicodeText() throws Exception {
         assertTrue(evalBool("'Stra\u00DFe und Gr\u00FC\u00DFe' contains text 'Stra\u00DFe'"));
     }
 
@@ -572,7 +572,7 @@ public class FTConformanceTest {
     // =========================================================================
 
     @Test
-    public void xqftts_predicateWithDistance() throws Exception {
+    public void xqfttsPredicateWithDistance() throws Exception {
         // Reproduces XQFTTS FTDistance-words1: step expression "para" in predicate with distance filter
         final String query =
             "let $doc := <books><book>" +
@@ -587,7 +587,7 @@ public class FTConformanceTest {
     }
 
     @Test
-    public void xqftts_predicateWithWindow() throws Exception {
+    public void xqfttsPredicateWithWindow() throws Exception {
         final String query =
             "let $doc := <books><book>" +
             "<title>Book1</title>" +
@@ -598,7 +598,7 @@ public class FTConformanceTest {
     }
 
     @Test
-    public void xqftts_predicateWithOrdered() throws Exception {
+    public void xqfttsPredicateWithOrdered() throws Exception {
         final String query =
             "let $doc := <books><book>" +
             "<title>Book1</title>" +
@@ -609,7 +609,7 @@ public class FTConformanceTest {
     }
 
     @Test
-    public void xqftts_predicateBasicFTAnd() throws Exception {
+    public void xqfttsPredicateBasicFTAnd() throws Exception {
         // This pattern already works (FTAnd-q1 in XQFTTS passes)
         final String query =
             "let $doc := <books><book>" +

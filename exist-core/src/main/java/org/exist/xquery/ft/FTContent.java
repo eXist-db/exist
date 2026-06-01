@@ -57,20 +57,18 @@ public class FTContent extends FTAbstractExpr {
     @Override
     public void dump(final ExpressionDumper dumper) {
         switch (contentType) {
-            case AT_START: dumper.display("at start"); break;
-            case AT_END: dumper.display("at end"); break;
-            case ENTIRE_CONTENT: dumper.display("entire content"); break;
-            default: break;
+            case AT_START -> dumper.display("at start");
+            case AT_END -> dumper.display("at end");
+            case ENTIRE_CONTENT -> dumper.display("entire content");
         }
     }
 
     @Override
     public String toString() {
-        switch (contentType) {
-            case AT_START: return "at start";
-            case AT_END: return "at end";
-            case ENTIRE_CONTENT: return "entire content";
-            default: return "";
-        }
+        return switch (contentType) {
+            case AT_START -> "at start";
+            case AT_END -> "at end";
+            case ENTIRE_CONTENT -> "entire content";
+        };
     }
 }

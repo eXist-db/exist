@@ -41,14 +41,15 @@ public class FTWords extends FTAbstractExpr {
         ANY, ANY_WORD, ALL, ALL_WORDS, PHRASE;
 
         public static AnyallMode fromString(final String s) {
-            switch (s) {
-                case "any": return ANY;
-                case "any word": return ANY_WORD;
-                case "all": return ALL;
-                case "all words": return ALL_WORDS;
-                case "phrase": return PHRASE;
-                default: return ANY;
-            }
+            return switch (s) {
+                case "any word" -> ANY_WORD;
+                case "all" -> ALL;
+                case "all words" -> ALL_WORDS;
+                case "phrase" -> PHRASE;
+                // "any" is the documented default per XQFT 3.0 §3.1.
+                case "any" -> ANY;
+                default -> ANY;
+            };
         }
 
         @Override

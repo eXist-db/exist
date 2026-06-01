@@ -1608,14 +1608,18 @@ public class FTEvaluator {
             throws XPathException {
         if (filter instanceof FTOrder) {
             return applyOrdered(input);
-        } else if (filter instanceof FTWindow) {
-            return applyWindow(input, (FTWindow) filter);
-        } else if (filter instanceof FTDistance) {
-            return applyDistance(input, (FTDistance) filter);
-        } else if (filter instanceof FTContent) {
-            return applyContent(input, (FTContent) filter);
-        } else if (filter instanceof FTScope) {
-            return applyScope(input, (FTScope) filter);
+        }
+        if (filter instanceof FTWindow window) {
+            return applyWindow(input, window);
+        }
+        if (filter instanceof FTDistance distance) {
+            return applyDistance(input, distance);
+        }
+        if (filter instanceof FTContent content) {
+            return applyContent(input, content);
+        }
+        if (filter instanceof FTScope scope) {
+            return applyScope(input, scope);
         }
         return input;
     }
@@ -1734,27 +1738,17 @@ public class FTEvaluator {
             if (positions.isEmpty()) {
                 continue;
             }
-            switch (ftContent.getContentType()) {
-                case AT_START:
-                    if (positions.first() == 0) {
-                        result.addMatch(m);
-                    }
-                    break;
-                case AT_END:
-                    if (positions.last() == totalTokens - 1) {
-                        result.addMatch(m);
-                    }
-                    break;
-                case ENTIRE_CONTENT:
-                    // XQFT 3.0 §3.6.2: entire content requires that the match covers
-                    // all token positions from 0 to totalTokens-1.
-                    if (positions.first() == 0 && positions.last() == totalTokens - 1
-                            && positions.size() == totalTokens) {
-                        result.addMatch(m);
-                    }
-                    break;
-                default:
-                    break;
+            // XQFT 3.0 §3.6.2: ENTIRE_CONTENT requires that the match covers
+            // every token position from 0 to totalTokens-1.
+            final boolean keep = switch (ftContent.getContentType()) {
+                case AT_START -> positions.first() == 0;
+                case AT_END -> positions.last() == totalTokens - 1;
+                case ENTIRE_CONTENT -> positions.first() == 0
+                        && positions.last() == totalTokens - 1
+                        && positions.size() == totalTokens;
+            };
+            if (keep) {
+                result.addMatch(m);
             }
         }
         return result;
@@ -1945,27 +1939,21 @@ public class FTEvaluator {
     }
 
     private int[] evalRange(final FTRange range) throws XPathException {
-        switch (range.getMode()) {
-            case EXACTLY: {
+        return switch (range.getMode()) {
+            case EXACTLY -> {
                 final int n = evalIntExpr(range.getExpr1());
-                return new int[]{n, n};
+                yield new int[]{n, n};
             }
-            case AT_LEAST: {
+            case AT_LEAST -> {
                 final int n = evalIntExpr(range.getExpr1());
-                return new int[]{n, Integer.MAX_VALUE};
+                yield new int[]{n, Integer.MAX_VALUE};
             }
-            case AT_MOST: {
+            case AT_MOST -> {
                 final int n = evalIntExpr(range.getExpr1());
-                return new int[]{0, n};
+                yield new int[]{0, n};
             }
-            case FROM_TO: {
-                final int from = evalIntExpr(range.getExpr1());
-                final int to = evalIntExpr(range.getExpr2());
-                return new int[]{from, to};
-            }
-            default:
-                return new int[]{0, Integer.MAX_VALUE};
-        }
+            case FROM_TO -> new int[]{evalIntExpr(range.getExpr1()), evalIntExpr(range.getExpr2())};
+        };
     }
 
     /**
