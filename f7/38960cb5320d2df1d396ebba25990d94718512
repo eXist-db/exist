@@ -1,0 +1,19 @@
+.github/workflows/ci-release.yml
+  s_4ae47a8df5d50d::t_4093636c5eb157 62,66-69
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "f738960cb5320d2df1d396ebba25990d94718512",
+  "prompts": {},
+  "sessions": {
+    "s_4ae47a8df5d50d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7c36fe8b-9396-40e7-8fd4-337a463741b4",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
