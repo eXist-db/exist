@@ -24,6 +24,7 @@ package org.exist.xquery.functions.fn;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
+import io.lacuna.bifurcan.IEntry;
 import org.exist.Namespaces;
 import org.exist.dom.QName;
 import org.exist.dom.memtree.MemTreeBuilder;
@@ -42,6 +43,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.nio.file.Path;
+import java.util.Set;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.nio.file.Files.isReadable;
@@ -114,10 +116,26 @@ public class JSON extends BasicFunction {
     public static final String OPTION_DUPLICATES_REJECT = "reject";
     public static final String OPTION_DUPLICATES_USE_FIRST = "use-first";
     public static final String OPTION_DUPLICATES_USE_LAST = "use-last";
+    public static final String OPTION_DUPLICATES_RETAIN = "retain";
     public static final String OPTION_LIBERAL = "liberal";
     public static final String OPTION_ESCAPE = "escape";
     public static final String OPTION_UNESCAPE = "unescape";
+    public static final String OPTION_VALIDATE = "validate";
+    public static final String OPTION_FALLBACK = "fallback";
     public static final QName KEY = new QName("key",null);
+
+    // Per F&O 3.1 §17.4.1 (fn:parse-json) and §17.5.1 (fn:json-to-xml): the permitted
+    // 'duplicates' values differ between the two functions. parse-json permits use-last
+    // (preserving the last value); json-to-xml permits retain (keeping all duplicates in
+    // the XML output, which is incompatible with validate=true).
+    private static final Set<String> PERMITTED_DUPLICATES_PARSE_JSON = Set.of(
+            OPTION_DUPLICATES_REJECT, OPTION_DUPLICATES_USE_FIRST, OPTION_DUPLICATES_USE_LAST);
+
+    private static final Set<String> PERMITTED_DUPLICATES_JSON_TO_XML = Set.of(
+            OPTION_DUPLICATES_REJECT, OPTION_DUPLICATES_USE_FIRST, OPTION_DUPLICATES_RETAIN);
+
+    private static final Set<String> JSON_TO_XML_KNOWN_OPTIONS = Set.of(
+            OPTION_LIBERAL, OPTION_DUPLICATES, OPTION_VALIDATE, OPTION_ESCAPE, OPTION_FALLBACK);
 
     public JSON(XQueryContext context, FunctionSignature signature) {
         super(context, signature);
@@ -131,45 +149,22 @@ public class JSON extends BasicFunction {
         }
         // process options if present
         // TODO: jackson does not allow access to raw string, so option "unescape" is not supported
-        boolean liberal = false;
-        String handleDuplicates = OPTION_DUPLICATES_USE_LAST;
+        // Empty options sequence -> defaults. Otherwise the value must be a map
+        // (XPTY0004 per F&O 3.1 §2.4); the per-key validation lives in parseOptions.
+        final ParsedOptions opts;
         if (getArgumentCount() == 2 && !args[1].isEmpty()) {
             final Item optItem = args[1].itemAt(0);
             if (optItem.getType() != Type.MAP_ITEM) {
                 throw new XPathException(this, ErrorCodes.XPTY0004,
                         "Expected map for options parameter, got " + Type.getTypeName(optItem.getType()));
             }
-            final MapType options = (MapType) optItem;
-            final Sequence liberalOpt = options.get(new StringValue(OPTION_LIBERAL));
-            if (liberalOpt.hasOne()) {
-                final Item liberalItem = liberalOpt.itemAt(0);
-                if (liberalItem.getType() != Type.BOOLEAN) {
-                    throw new XPathException(this, ErrorCodes.XPTY0004,
-                            "Option 'liberal' must be a boolean, got " + Type.getTypeName(liberalItem.getType()));
-                }
-                liberal = ((BooleanValue) liberalItem).effectiveBooleanValue();
-            }
-            final Sequence duplicateOpt = options.get(new StringValue(OPTION_DUPLICATES));
-            if (duplicateOpt.hasOne()) {
-                final Item dupItem = duplicateOpt.itemAt(0);
-                if (!Type.subTypeOf(dupItem.getType(), Type.STRING)) {
-                    throw new XPathException(this, ErrorCodes.XPTY0004,
-                            "Option 'duplicates' must be a string, got " + Type.getTypeName(dupItem.getType()));
-                }
-                handleDuplicates = dupItem.getStringValue();
-            }
-            final Sequence escapeOpt = options.get(new StringValue(OPTION_ESCAPE));
-            if (escapeOpt.hasOne()) {
-                try {
-                    escapeOpt.itemAt(0).convertTo(Type.BOOLEAN);
-                } catch (final XPathException e) {
-                    throw new XPathException(this, ErrorCodes.FOJS0005,
-                            "Value of option 'escape' is not a valid xs:boolean: " + escapeOpt.itemAt(0).getStringValue());
-                }
-            }
+            opts = parseOptions((MapType) optItem, isCalledAs(FS_JSON_TO_XML_NAME));
+        } else {
+            opts = ParsedOptions.DEFAULTS;
         }
 
-        JsonFactory factory = createJsonFactory(liberal);
+        JsonFactory factory = createJsonFactory(opts.liberal);
+        final String handleDuplicates = opts.handleDuplicates;
 
         if (isCalledAs(FS_PARSE_JSON_NAME)) {
             return parse(args[0], handleDuplicates, factory);
@@ -177,6 +172,147 @@ public class JSON extends BasicFunction {
             return toxml(args[0], handleDuplicates, factory);
         } else {
             return parseResource(args[0], handleDuplicates, factory);
+        }
+    }
+
+    private record ParsedOptions(boolean liberal, String handleDuplicates) {
+        static final ParsedOptions DEFAULTS = new ParsedOptions(false, OPTION_DUPLICATES_USE_LAST);
+    }
+
+    /**
+     * Validate and extract options per F&O 3.1 §2.4 (option-parameter conventions) and §17.5.3.
+     * Wrong-typed values raise XPTY0004; bad permitted values raise FOJS0005.
+     */
+    private ParsedOptions parseOptions(final MapType options, final boolean isJsonToXml) throws XPathException {
+        final Boolean liberalOpt = requireBooleanOpt(options, OPTION_LIBERAL);
+        final String duplicatesOpt = requireStringOpt(options, OPTION_DUPLICATES);
+        final Boolean validateOpt = requireBooleanOpt(options, OPTION_VALIDATE);
+        requireBooleanOpt(options, OPTION_ESCAPE);
+        requireFunctionOpt(options, OPTION_FALLBACK, 1);
+
+        String handleDuplicates = OPTION_DUPLICATES_USE_LAST;
+        if (duplicatesOpt != null) {
+            final Set<String> permitted = isJsonToXml
+                    ? PERMITTED_DUPLICATES_JSON_TO_XML
+                    : PERMITTED_DUPLICATES_PARSE_JSON;
+            if (!permitted.contains(duplicatesOpt)) {
+                throw new XPathException(this, ErrorCodes.FOJS0005,
+                        "Value of option 'duplicates' is not permitted: " + duplicatesOpt);
+            }
+            handleDuplicates = duplicatesOpt;
+        } else if (isJsonToXml) {
+            handleDuplicates = Boolean.TRUE.equals(validateOpt)
+                    ? OPTION_DUPLICATES_REJECT
+                    : OPTION_DUPLICATES_RETAIN;
+        }
+
+        if (isJsonToXml) {
+            if (Boolean.TRUE.equals(validateOpt) && OPTION_DUPLICATES_RETAIN.equals(duplicatesOpt)) {
+                throw new XPathException(this, ErrorCodes.FOJS0005,
+                        "Option 'duplicates' value 'retain' is not permitted when 'validate' is true");
+            }
+            rejectUnknownJsonToXmlOptions(options);
+        }
+
+        return new ParsedOptions(Boolean.TRUE.equals(liberalOpt), handleDuplicates);
+    }
+
+    private void rejectUnknownJsonToXmlOptions(final MapType options) throws XPathException {
+        for (final IEntry<AtomicValue, Sequence> entry : options) {
+            final String key = entry.key().getStringValue();
+            if (!JSON_TO_XML_KNOWN_OPTIONS.contains(key)) {
+                throw new XPathException(this, ErrorCodes.FOJS0005,
+                        "Unknown option key for fn:json-to-xml: " + key);
+            }
+        }
+    }
+
+    /**
+     * Return the value of an option as an xs:boolean, or null if the option is absent.
+     * Raises XPTY0004 if the value is the wrong type or has cardinality other than 1.
+     * An xs:untypedAtomic value is cast to xs:boolean per F&O 3.1 §2.4.
+     */
+    private Boolean requireBooleanOpt(final MapType options, final String key) throws XPathException {
+        final Sequence value = options.get(new StringValue(key));
+        if (value == null) {
+            return null;
+        }
+        if (value.isEmpty()) {
+            if (!options.contains(new StringValue(key))) {
+                return null;
+            }
+            // Key present with empty-sequence value: cardinality mismatch.
+            throw new XPathException(this, ErrorCodes.XPTY0004,
+                    "Option '" + key + "' must be a single value, got empty sequence");
+        }
+        if (!value.hasOne()) {
+            throw new XPathException(this, ErrorCodes.XPTY0004,
+                    "Option '" + key + "' must be a single xs:boolean, got cardinality " + value.getItemCount());
+        }
+        final AtomicValue atom = value.itemAt(0).atomize();
+        final int t = atom.getType();
+        if (Type.subTypeOf(t, Type.BOOLEAN)) {
+            return ((BooleanValue) atom).getValue();
+        }
+        if (t == Type.UNTYPED_ATOMIC) {
+            return atom.convertTo(Type.BOOLEAN).effectiveBooleanValue();
+        }
+        throw new XPathException(this, ErrorCodes.XPTY0004,
+                "Option '" + key + "' must be an xs:boolean, got " + Type.getTypeName(t));
+    }
+
+    /**
+     * Return the value of an option as an xs:string, or null if the option is absent.
+     * Raises XPTY0004 if the value is the wrong type or has cardinality other than 1.
+     */
+    private String requireStringOpt(final MapType options, final String key) throws XPathException {
+        final Sequence value = options.get(new StringValue(key));
+        if (value == null) {
+            return null;
+        }
+        if (value.isEmpty()) {
+            if (!options.contains(new StringValue(key))) {
+                return null;
+            }
+            // Key present with empty-sequence value: cardinality mismatch.
+            throw new XPathException(this, ErrorCodes.XPTY0004,
+                    "Option '" + key + "' must be a single value, got empty sequence");
+        }
+        if (!value.hasOne()) {
+            throw new XPathException(this, ErrorCodes.XPTY0004,
+                    "Option '" + key + "' must be a single xs:string, got cardinality " + value.getItemCount());
+        }
+        final AtomicValue atom = value.itemAt(0).atomize();
+        final int t = atom.getType();
+        if (Type.subTypeOf(t, Type.STRING) || t == Type.UNTYPED_ATOMIC) {
+            return atom.getStringValue();
+        }
+        throw new XPathException(this, ErrorCodes.XPTY0004,
+                "Option '" + key + "' must be an xs:string, got " + Type.getTypeName(t));
+    }
+
+    /**
+     * Validate that an option, if present, is a single function reference of the given arity.
+     * Raises XPTY0004 on type or arity mismatch (or wrong cardinality).
+     */
+    private void requireFunctionOpt(final MapType options, final String key, final int arity) throws XPathException {
+        final Sequence value = options.get(new StringValue(key));
+        if (value == null || value.isEmpty()) {
+            return;
+        }
+        if (!value.hasOne()) {
+            throw new XPathException(this, ErrorCodes.XPTY0004,
+                    "Option '" + key + "' must be a single function, got cardinality " + value.getItemCount());
+        }
+        final Item item = value.itemAt(0);
+        if (!(item instanceof final FunctionReference fr)) {
+            throw new XPathException(this, ErrorCodes.XPTY0004,
+                    "Option '" + key + "' must be a function, got " + Type.getTypeName(item.getType()));
+        }
+        final int actualArity = fr.getSignature().getArgumentCount();
+        if (actualArity != arity) {
+            throw new XPathException(this, ErrorCodes.XPTY0004,
+                    "Option '" + key + "' must be a function with arity " + arity + ", got arity " + actualArity);
         }
     }
 
