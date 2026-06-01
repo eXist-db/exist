@@ -1035,6 +1035,26 @@
                                 </configuration>
                             </execution>
                             <execution>
+                                <!--
+                                    Signs the lz4-java native binaries (Apple notarization #4000 cause)
+                                -->
+                                <id>mac-codesign-lz4-native</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <useMavenLogger>true</useMavenLogger>
+                                    <executable>${project.basedir}/src/main/scripts/codesign-lz4-mac.sh</executable>
+                                    <arguments>
+                                        <argument>${mac.bundle.java.dir}</argument>
+                                        <argument>1.11.0</argument>
+                                        <argument>${project.build.directory}/lz4-native</argument>
+                                        <argument>${mac.codesign.identity}</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                            <execution>
                                 <id>mac-codesign-app</id>
                                 <phase>package</phase>
                                 <goals>
