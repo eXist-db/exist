@@ -17,8 +17,10 @@ eXist-db is an open-source native XML database with full XQuery support. The mai
 ```bash
 JAVA_HOME=$(/usr/libexec/java_home -v 21) \
   mvn -T1.5C clean install -DskipTests -Ddependency-check.skip=true -Ddocker=false \
-  -P 'skip-build-dist-archives,!build-dist-archives,!mac-dmg-on-mac,!codesign-mac-dmg,!mac-dmg-on-unix,!installer,!concurrency-stress-tests,!micro-benchmarks,!appassembler-booter'
+  -Pskip-build-dist-archives
 ```
+
+On macOS this still produces an unsigned DMG (`mac-dmg-on-mac` is active by default on Mac runners). Add `-P '!mac-dmg-on-mac'` to skip it.
 
 ### Build a single module
 
@@ -61,12 +63,10 @@ The DMG is unsigned. For the fully signed and notarized DMG used in releases, se
 ### IzPack installer JAR
 
 Produces the cross-platform installer JAR in `exist-installer/target/`.
-Maven will warn "could not be activated because it does not exist" for the `installer` profile — this is a Maven 3 multi-module quirk; the build is correct.
 
 ```bash
 JAVA_HOME=$(/usr/libexec/java_home -v 21) \
   mvn -T1.5C clean package \
-  -Pinstaller \
   -pl exist-installer -am \
   -DskipTests \
   -Ddependency-check.skip=true \
@@ -81,7 +81,7 @@ Run the installer: `java -jar exist-installer/target/exist-installer-7.0.0-SNAPS
 ```bash
 # Build the Docker image
 mvn -T1.5C clean package -DskipTests -Ddependency-check.skip=true -Ddocker=true \
-  -P 'skip-build-dist-archives,!build-dist-archives,!mac-dmg-on-mac,!codesign-mac-dmg,!mac-dmg-on-unix,!installer,!concurrency-stress-tests,!micro-benchmarks,!appassembler-booter' \
+  -Pskip-build-dist-archives \
   -pl exist-docker -am
 
 cp exist-docker/target/classes/Dockerfile exist-docker/target/exist-docker-*-docker-dir/Dockerfile

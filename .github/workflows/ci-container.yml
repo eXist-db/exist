@@ -60,8 +60,8 @@ jobs:
             REVISION_ARG="-Drevision=${VERSION#eXist-}"
           fi
           mvn -V -B --no-transfer-progress -q \
-            -Pdocker -DskipTests -Ddependency-check.skip=true \
-            -P '!mac-dmg-on-unix,skip-build-dist-archives' \
+            -Pdocker,skip-build-dist-archives \
+            -DskipTests -Ddependency-check.skip=true \
             $REVISION_ARG \
             clean package
       - name: Check local images

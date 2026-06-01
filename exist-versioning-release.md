@@ -117,7 +117,7 @@ The `ci-release.yml` workflow runs four jobs in parallel then converges:
 
 ### Prerequisites: required GitHub secrets and repository rules
 
-All secrets must be in place under **Settings → Secrets and variables → Actions** before running a release. See `plans/internal-release-runbook.template.md` for the full table and rotation guidance.
+All secrets must be in place under **Settings → Secrets and variables → Actions** before running a release. See `internal-release-runbook.template.md` for the full table and rotation guidance.
 
 A **tag ruleset** restricts creation and deletion of `eXist-*` tags to users with the Maintain or Admin role (Settings → Rules → Rulesets). The `RELEASE_PAT` owner must hold one of those roles; all other automation only reads tags and is unaffected.
 

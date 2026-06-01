@@ -74,7 +74,7 @@
         <!-- === Build umbrella profiles === -->
         <profile>
             <!-- Default contributor build: compiles, tests, produces a runnable distribution dir.
-                 Does NOT build installer, stress tests, or micro-benchmarks. -->
+                 Does NOT build installer or perf modules. -->
             <id>local-build</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
@@ -82,21 +82,14 @@
         </profile>
 
         <profile>
-            <!-- Full release build: adds exist-installer to the reactor and sets exist.release=true
-                 to enable dist archive assembly in exist-distribution. Use with -Prelease-build. -->
+            <!-- Full release build: adds exist-installer to the reactor and (via exist-parent's
+                 release-build profile) enables GPG signing + Central publishing. -->
             <id>release-build</id>
             <modules>
                 <module>exist-installer</module>
             </modules>
         </profile>
         <!-- === End Build umbrella profiles === -->
-
-        <profile>
-            <id>installer</id>
-            <modules>
-                <module>exist-installer</module>
-            </modules>
-        </profile>
 
         <profile>
             <id>docker</id>
@@ -112,25 +105,10 @@
         </profile>
 
         <profile>
-            <!-- Activates both stress tests and micro-benchmarks in one shot: -Pperf-tests -->
+            <!-- Stress tests + JMH micro-benchmarks. -->
             <id>perf-tests</id>
             <modules>
                 <module>exist-core-jcstress</module>
-                <module>exist-core-jmh</module>
-                <module>exist-indexes-jmh</module>
-            </modules>
-        </profile>
-
-        <profile>
-            <id>concurrency-stress-tests</id>
-            <modules>
-                <module>exist-core-jcstress</module>
-            </modules>
-        </profile>
-
-        <profile>
-            <id>micro-benchmarks</id>
-            <modules>
                 <module>exist-core-jmh</module>
                 <module>exist-indexes-jmh</module>
             </modules>
