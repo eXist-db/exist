@@ -156,6 +156,8 @@ public class FunXmlToJson extends BasicFunction {
                     "Invalid XML representation of JSON. Found XML element which is not one of [map, array, null, boolean, number, string].");
         }
 
+        validateDomAttributes(element, localName);
+
         switch (localName) {
             case "map" -> writeJsonMap(element, gen);
             case "array" -> writeJsonArray(element, gen);
@@ -168,7 +170,100 @@ public class FunXmlToJson extends BasicFunction {
         }
     }
 
+    /**
+     * Validate that the attributes on a JSON-representation element conform to
+     * F&O 3.1 §17.4.2 (the schema for JSON, Appendix C.2). The only allowed
+     * no-namespace attributes are {@code key} / {@code escaped-key} on any of
+     * the six elements (meaningful only when child of {@code map}) and
+     * {@code escaped} on any element (meaningful only on {@code string}, but
+     * per W3C bug 29917 tolerated as a no-op elsewhere). Attributes in the
+     * XPath-functions namespace are disallowed ({@code anyAttribute namespace="##other"}).
+     * Other-namespace attributes are ignored. The {@code escaped} /
+     * {@code escaped-key} values must be valid xs:boolean.
+     */
+    private void validateDomAttributes(final org.w3c.dom.Element element, final String localName) throws XPathException {
+        final org.w3c.dom.NamedNodeMap attrs = element.getAttributes();
+        if (attrs == null) {
+            return;
+        }
+        for (int i = 0; i < attrs.getLength(); i++) {
+            final org.w3c.dom.Attr attr = (org.w3c.dom.Attr) attrs.item(i);
+            final String attrName = attr.getLocalName() != null ? attr.getLocalName() : attr.getName();
+            // Skip xmlns declarations — they live in the standard XML namespace.
+            final String fullName = attr.getName();
+            if ("xmlns".equals(fullName) || (fullName != null && fullName.startsWith("xmlns:"))) {
+                continue;
+            }
+            final String attrNs = attr.getNamespaceURI();
+            if (Namespaces.XPATH_FUNCTIONS_NS.equals(attrNs)) {
+                throw new XPathException(this, ErrorCodes.FOJS0006,
+                        "Invalid XML representation of JSON. Attribute '" + attrName
+                        + "' must not be in the namespace '" + Namespaces.XPATH_FUNCTIONS_NS + "'.");
+            }
+            if (attrNs != null && !attrNs.isEmpty()) {
+                continue;
+            }
+            switch (attrName) {
+                case "key" -> { /* always allowed; lexical form is xs:string */ }
+                case "escaped-key" -> {
+                    if (!isValidXsBoolean(attr.getValue())) {
+                        throw new XPathException(this, ErrorCodes.FOJS0006,
+                                "Invalid XML representation of JSON. Attribute 'escaped-key' must have a valid xs:boolean value, but got '"
+                                + attr.getValue() + "'.");
+                    }
+                }
+                case "escaped" -> {
+                    if (!isValidXsBoolean(attr.getValue())) {
+                        throw new XPathException(this, ErrorCodes.FOJS0006,
+                                "Invalid XML representation of JSON. Attribute 'escaped' must have a valid xs:boolean value, but got '"
+                                + attr.getValue() + "'.");
+                    }
+                }
+                default -> throw new XPathException(this, ErrorCodes.FOJS0006,
+                        "Invalid XML representation of JSON. Attribute '" + attrName
+                        + "' is not allowed on element '" + localName + "'.");
+            }
+        }
+    }
+
+    /**
+     * Reject non-whitespace text children of {@code map} and {@code array} per
+     * F&O 3.1 §17.4.2 — only element children (and whitespace) are permitted
+     * inside container elements.
+     */
+    private void validateContainerChildren(final org.w3c.dom.Element element, final String localName) throws XPathException {
+        final org.w3c.dom.NodeList children = element.getChildNodes();
+        for (int i = 0; i < children.getLength(); i++) {
+            final org.w3c.dom.Node child = children.item(i);
+            final short kind = child.getNodeType();
+            if (kind == org.w3c.dom.Node.TEXT_NODE || kind == org.w3c.dom.Node.CDATA_SECTION_NODE) {
+                final String text = child.getNodeValue();
+                if (text != null && !isXmlWhitespace(text)) {
+                    throw new XPathException(this, ErrorCodes.FOJS0006,
+                            "Invalid XML representation of JSON. Element '" + localName
+                            + "' must not have non-whitespace text content.");
+                }
+            }
+        }
+    }
+
+    /**
+     * Reject element children of leaf JSON elements ({@code string}, {@code number},
+     * {@code boolean}, {@code null}) per F&O 3.1 §17.4.2.
+     */
+    private void validateNoElementChildren(final org.w3c.dom.Element element, final String localName) throws XPathException {
+        final org.w3c.dom.NodeList children = element.getChildNodes();
+        for (int i = 0; i < children.getLength(); i++) {
+            if (children.item(i).getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
+                throw new XPathException(this, ErrorCodes.FOJS0006,
+                        "Invalid XML representation of JSON. Element '" + localName
+                        + "' must not have element children.");
+            }
+        }
+    }
+
     private void writeJsonMap(final org.w3c.dom.Element element, final JsonGenerator gen) throws XPathException, IOException {
+        validateContainerChildren(element, "map");
         gen.writeStartObject();
         final org.w3c.dom.NodeList mapChildren = element.getChildNodes();
         final Set<String> seenKeys = new java.util.HashSet<>();
@@ -193,6 +288,7 @@ public class FunXmlToJson extends BasicFunction {
     }
 
     private void writeJsonArray(final org.w3c.dom.Element element, final JsonGenerator gen) throws XPathException, IOException {
+        validateContainerChildren(element, "array");
         gen.writeStartArray();
         final org.w3c.dom.NodeList arrayChildren = element.getChildNodes();
         for (int i = 0; i < arrayChildren.getLength(); i++) {
@@ -205,6 +301,7 @@ public class FunXmlToJson extends BasicFunction {
     }
 
     private void writeJsonString(final org.w3c.dom.Element element, final JsonGenerator gen) throws XPathException, IOException {
+        validateNoElementChildren(element, "string");
         final String strContent = getTextContent(element);
         final boolean escaped = "true".equals(element.getAttribute("escaped"));
         if (escaped) {
@@ -219,6 +316,7 @@ public class FunXmlToJson extends BasicFunction {
     }
 
     private void writeJsonNumber(final org.w3c.dom.Element element, final JsonGenerator gen) throws XPathException, IOException {
+        validateNoElementChildren(element, "number");
         final String numStr = getTextContent(element);
         try {
             gen.writeNumber(new BigDecimal(numStr));
@@ -227,13 +325,15 @@ public class FunXmlToJson extends BasicFunction {
         }
     }
 
-    private void writeJsonBoolean(final org.w3c.dom.Element element, final JsonGenerator gen) throws IOException {
+    private void writeJsonBoolean(final org.w3c.dom.Element element, final JsonGenerator gen) throws XPathException, IOException {
+        validateNoElementChildren(element, "boolean");
         final String boolStr = getTextContent(element);
         final boolean boolVal = !("0".equals(boolStr) || "false".equals(boolStr) || boolStr.isEmpty());
         gen.writeBoolean(boolVal);
     }
 
     private void writeJsonNull(final org.w3c.dom.Element element, final JsonGenerator gen) throws XPathException, IOException {
+        validateNoElementChildren(element, "null");
         final String nullContent = getTextContent(element);
         if (!nullContent.isEmpty()) {
             throw new XPathException(this, ErrorCodes.FOJS0006,
