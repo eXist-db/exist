@@ -53,10 +53,19 @@ import static javax.xml.XMLConstants.XML_NS_PREFIX;
  * util:explain('for $x in 1 to 10 where $x > 5 return $x * 2')
  * </pre>
  *
- * Returns an XML representation of the expression tree showing prolog
+ * <p>Returns an XML representation of the expression tree showing prolog
  * declarations (namespace declarations, module imports) followed by the
  * post-optimization expression body (FLWOR clauses, path expressions,
- * function calls, comparisons, etc.).
+ * function calls, comparisons, etc.).</p>
+ *
+ * <p>Inspired by Saxon's explain capabilities (which group output by XQuery
+ * construct rather than by AST class name) and the general "show me how the
+ * engine reads my query" idea behind PostgreSQL's EXPLAIN ANALYZE. BaseX
+ * also ships a {@code query:plan} function with a different output style
+ * (element names mirror internal Java class names: {@code GFLWOR},
+ * {@code IterPath}, {@code MapEntry}); eXist's util:explain uses XQuery
+ * construct names ({@code <for>}, {@code <path>}, {@code <map>/<entry>}) to
+ * stay close to how the developer thinks about the query.</p>
  */
 public class FunExplain extends BasicFunction {
 
