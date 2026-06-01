@@ -107,6 +107,7 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
 
     @Override
     public void setDocumentLocator(Locator locator) {
+        // no-op: in-memory builder does not surface source-location information.
     }
 
     @Override
@@ -276,26 +277,55 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
         }
         final DocumentImpl doc = builder.getDocument();
         final int parent = doc.getLastNode();
-        if (parent < 0 || doc.getNodeType(parent) != org.w3c.dom.Node.ELEMENT_NODE) {
+        if (!isElementParent(doc, parent)) {
             return;
         }
-        final QName parentName = doc.nodeName[parent];
-        if (parentName != null && prefix.equals(parentName.getPrefix())
-                && uri.equals(parentName.getNamespaceURI())) {
+        if (isParentSelfDeclaration(doc, parent, prefix, uri)) {
             return;
         }
-        final int firstNs = doc.alphaLen[parent];
-        if (firstNs >= 0) {
-            for (int ns = firstNs;
-                 ns < doc.nextNamespace && doc.namespaceParent[ns] == parent;
-                 ns++) {
-                final QName nsName = doc.namespaceCode[ns];
-                if (nsName != null && prefix.equals(nsName.getLocalPart())) {
-                    return;
-                }
-            }
+        if (hasExistingPrefixDeclaration(doc, parent, prefix)) {
+            return;
         }
         builder.namespaceNode(prefix, uri);
+    }
+
+    private static boolean isElementParent(final DocumentImpl doc, final int parent) {
+        return parent >= 0 && doc.getNodeType(parent) == org.w3c.dom.Node.ELEMENT_NODE;
+    }
+
+    /**
+     * The parent element already carries the prefix-to-uri binding via its
+     * own name (e.g. parent is {@code <c:foo xmlns:c="..."/>} and we're being
+     * asked to emit {@code xmlns:c="..."} for the same URI). The declaration
+     * is redundant.
+     */
+    private static boolean isParentSelfDeclaration(final DocumentImpl doc, final int parent,
+                                                   final String prefix, final String uri) {
+        final QName parentName = doc.nodeName[parent];
+        return parentName != null
+                && prefix.equals(parentName.getPrefix())
+                && uri.equals(parentName.getNamespaceURI());
+    }
+
+    /**
+     * Scan the namespace declarations already attached to {@code parent} and
+     * return true if any of them binds the same {@code prefix}.
+     */
+    private static boolean hasExistingPrefixDeclaration(final DocumentImpl doc, final int parent,
+                                                       final String prefix) {
+        final int firstNs = doc.alphaLen[parent];
+        if (firstNs < 0) {
+            return false;
+        }
+        for (int ns = firstNs;
+             ns < doc.nextNamespace && doc.namespaceParent[ns] == parent;
+             ns++) {
+            final QName nsName = doc.namespaceCode[ns];
+            if (nsName != null && prefix.equals(nsName.getLocalPart())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -317,18 +347,22 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
 
     @Override
     public void skippedEntity(final String name) throws SAXException {
+        // no-op: entity references are not surfaced through the in-memory builder.
     }
 
     @Override
     public void endCDATA() throws SAXException {
+        // no-op: CDATA boundaries are not surfaced through the in-memory builder.
     }
 
     @Override
     public void endDTD() throws SAXException {
+        // no-op: DTD declarations are not surfaced through the in-memory builder.
     }
 
     @Override
     public void startCDATA() throws SAXException {
+        // no-op: CDATA boundaries are not surfaced through the in-memory builder.
     }
 
     @Override
@@ -343,14 +377,17 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
 
     @Override
     public void endEntity(final String name) throws SAXException {
+        // no-op: entity boundaries are not surfaced through the in-memory builder.
     }
 
     @Override
     public void startEntity(final String name) throws SAXException {
+        // no-op: entity boundaries are not surfaced through the in-memory builder.
     }
 
     @Override
     public void startDTD(final String name, final String publicId, final String systemId) throws SAXException {
+        // no-op: DTD declarations are not surfaced through the in-memory builder.
     }
 
     @Override
@@ -394,18 +431,18 @@ public class DocumentBuilderReceiver implements ContentHandler, LexicalHandler, 
         return qname;
     }
 
-    private String generatePrefix(final XQueryContext context, String prefix) {
-        int i = 0;
-        while(prefix == null) {
-            prefix = "XXX";
-            if(i > 0) {
-                prefix += String.valueOf(i);
-            }
-            if(context.getInScopeNamespace(prefix) != null) {
-                prefix = null;
-                i++;
-            }
+    private String generatePrefix(final XQueryContext context, final String requestedPrefix) {
+        if (requestedPrefix != null) {
+            return requestedPrefix;
         }
-        return prefix;
+        // Generate "XXX", "XXX1", "XXX2", ... until we find one not already
+        // bound in scope.
+        String candidate = "XXX";
+        int i = 0;
+        while (context.getInScopeNamespace(candidate) != null) {
+            i++;
+            candidate = "XXX" + i;
+        }
+        return candidate;
     }
 }
