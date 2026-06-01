@@ -1,0 +1,21 @@
+exist-distribution/src/main/scripts/codesign-lz4-mac.sh
+  s_4ae47a8df5d50d::t_d7ccdfc618816b 1-63
+exist-distribution/pom.xml
+  s_4ae47a8df5d50d::t_e608514ef916b7 1038-1056
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "5b7db6099addeaf86db44e99b9cb3cf20bb17862",
+  "prompts": {},
+  "sessions": {
+    "s_4ae47a8df5d50d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7c36fe8b-9396-40e7-8fd4-337a463741b4",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
