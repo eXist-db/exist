@@ -321,36 +321,24 @@ final class FunDeepEqualStreamingComparator {
         return out;
     }
 
+    /**
+     * Cached {@link Comparator} that places nulls first and otherwise uses
+     * String's natural order. Used by {@link #compareNullable(String, String)}
+     * and the no-collator branch of {@link #safeCompare(String, String, Collator)}.
+     */
+    private static final Comparator<String> NULLS_FIRST_NATURAL =
+            Comparator.nullsFirst(Comparator.<String>naturalOrder());
+
     private static int compareNullable(@Nullable final String a, @Nullable final String b) {
-        // NOTE: intentional reference equality short-circuit (mirrors safeCompare).
-        if (a == b) {
-            return Constants.EQUAL;
-        }
-        if (a == null) {
-            return Constants.INFERIOR;
-        }
-        if (b == null) {
-            return Constants.SUPERIOR;
-        }
-        return a.compareTo(b);
+        return NULLS_FIRST_NATURAL.compare(a, b);
     }
 
     private static int safeCompare(@Nullable final String a, @Nullable final String b,
             @Nullable final Collator collator) {
-        // NOTE: intentional reference equality short-circuit (matches FunDeepEqual.safeCompare).
-        if (a == b) {
-            return Constants.EQUAL;
+        if (collator == null) {
+            return NULLS_FIRST_NATURAL.compare(a, b);
         }
-        if (a == null) {
-            return Constants.INFERIOR;
-        }
-        if (b == null) {
-            return Constants.SUPERIOR;
-        }
-        if (collator != null) {
-            return collator.compare(a, b);
-        }
-        return a.compareTo(b);
+        return Comparator.nullsFirst(collator::compare).compare(a, b);
     }
 
     private record AttrSnapshot(@Nullable String ns, String local, String value) {}
