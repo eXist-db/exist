@@ -221,15 +221,27 @@ jobs:
             -Dlicense.skip=true \
             clean package
 
+      - name: Write OIDC token for JCA workload identity
+        shell: bash
+        run: |
+          TOKEN=$(curl -sS -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=api://AzureADTokenExchange" \
+            | jq -r '.value')
+          [ -n "$TOKEN" ] || { echo "Failed to obtain OIDC token"; exit 1; }
+          echo "$TOKEN" > /tmp/azure-oidc-token.txt
+          chmod 600 /tmp/azure-oidc-token.txt
+          echo "AZURE_FEDERATED_TOKEN_FILE=/tmp/azure-oidc-token.txt" >> "$GITHUB_ENV"
+
       - name: Sign installer JAR (Azure Key Vault JCA)
         shell: bash
         env:
           AZURE_KEYVAULT_URI: ${{ vars.AZURE_KEYVAULT_URI }}
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
         run: |
           JAR=$(find exist-installer/target -name "*.jar" \
             -not -name "*sources*" -not -name "*javadoc*" | head -1)
           [ -n "$JAR" ] || { echo "No installer JAR found in exist-installer/target"; exit 1; }
-          # Download Azure Key Vault JCA provider to classpath
           KV_JCA_JAR="$HOME/.m2/repository/com/azure/azure-security-keyvault-jca/2.10.0/azure-security-keyvault-jca-2.10.0.jar"
           if [ ! -f "$KV_JCA_JAR" ]; then
             mvn -q dependency:get \
@@ -237,17 +249,20 @@ jobs:
           fi
           CERT_NAME="${{ vars.AZURE_KEYVAULT_CERT_NAME }}"
           jarsigner \
-            -J--module-path="${KV_JCA_JAR}" \
-            -J--add-modules="com.azure.security.keyvault.jca" \
+            -J-cp -J"${KV_JCA_JAR}" \
+            -J-Dazure.keyvault.uri="${AZURE_KEYVAULT_URI}" \
             -keystore NONE \
             -storetype AzureKeyVault \
             -storepass "" \
-            -providerName AzureKeyVault \
             -providerClass com.azure.security.keyvault.jca.KeyVaultJcaProvider \
-            -J-Dazure.keyvault.uri="${AZURE_KEYVAULT_URI}" \
             -tsa http://timestamp.sectigo.com/ \
             "$JAR" "$CERT_NAME"
           jarsigner -verify -strict "$JAR"
+
+      - name: Remove OIDC token file
+        if: always()
+        shell: bash
+        run: rm -f /tmp/azure-oidc-token.txt
 
       - name: Sign .exe with Authenticode (AzureSignTool)
         shell: pwsh

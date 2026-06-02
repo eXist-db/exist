@@ -68,12 +68,29 @@ jobs:
           jar cf smoke.jar canary.txt
           ls -la smoke.jar
 
+      - name: Write OIDC token for JCA workload identity
+        run: |
+          # azure-security-keyvault-jca reads workload identity credentials from
+          # env vars: AZURE_FEDERATED_TOKEN_FILE + AZURE_CLIENT_ID + AZURE_TENANT_ID.
+          # azure/login doesn't write the token file, so we do it here.
+          TOKEN=$(curl -sS -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=api://AzureADTokenExchange" \
+            | jq -r '.value')
+          [ -n "$TOKEN" ] || { echo "Failed to obtain OIDC token"; exit 1; }
+          echo "$TOKEN" > /tmp/azure-oidc-token.txt
+          chmod 600 /tmp/azure-oidc-token.txt
+          echo "AZURE_FEDERATED_TOKEN_FILE=/tmp/azure-oidc-token.txt" >> "$GITHUB_ENV"
+
       - name: Sign smoke JAR with Azure Key Vault JCA
         env:
           AZURE_KEYVAULT_URI: ${{ vars.AZURE_KEYVAULT_URI }}
           AZURE_KEYVAULT_CERT_NAME: ${{ vars.AZURE_KEYVAULT_CERT_NAME }}
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
         run: |
-          # Mirrors ci-release.yml:223-247 (Sign installer JAR step)
+          # -J-cp requires two separate -J tokens: one for the flag, one for the value.
+          # --module-path does NOT work for non-modular JARs (JCA SPI not registered).
+          # Auth via workload identity: AZURE_FEDERATED_TOKEN_FILE + AZURE_CLIENT_ID + AZURE_TENANT_ID.
           KV_JCA_JAR="$HOME/.m2/repository/com/azure/azure-security-keyvault-jca/2.10.0/azure-security-keyvault-jca-2.10.0.jar"
           if [ ! -f "$KV_JCA_JAR" ]; then
             mvn -q dependency:get \
@@ -81,16 +98,18 @@ jobs:
           fi
           ls -la "$KV_JCA_JAR"
           jarsigner \
-            -J--module-path="${KV_JCA_JAR}" \
-            -J--add-modules="com.azure.security.keyvault.jca" \
+            -J-cp -J"${KV_JCA_JAR}" \
+            -J-Dazure.keyvault.uri="${AZURE_KEYVAULT_URI}" \
             -keystore NONE \
             -storetype AzureKeyVault \
             -storepass "" \
-            -providerName AzureKeyVault \
             -providerClass com.azure.security.keyvault.jca.KeyVaultJcaProvider \
-            -J-Dazure.keyvault.uri="${AZURE_KEYVAULT_URI}" \
             -tsa http://timestamp.sectigo.com/ \
             /tmp/smoke/smoke.jar "$AZURE_KEYVAULT_CERT_NAME"
+
+      - name: Remove OIDC token file
+        if: always()
+        run: rm -f /tmp/azure-oidc-token.txt
 
       - name: Verify smoke JAR signature
         run: |
