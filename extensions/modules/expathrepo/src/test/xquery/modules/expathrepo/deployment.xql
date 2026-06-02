@@ -180,8 +180,15 @@ function deploy:install-uninstall-library() {
         $inList,
         $avail1,
         $avail2,
-        $undeploy/@result/string(), 
+        $undeploy/@result/string(),
         $remove,
         $avail3
     )
+};
+
+declare
+    %test:name("repo:remove on unknown package throws EXPATH007 rather than silently returning false")
+    %test:assertError("EXPATH007")
+function deploy:remove-unknown-throws() {
+    repo:remove("http://exist-db.org/apps/this-package-does-not-exist-and-never-did")
 };
