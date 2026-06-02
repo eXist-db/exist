@@ -255,8 +255,16 @@ public class Deployment {
             broker.getBrokerPool().reportStatus("Installing app: " + pkg.getAbbrev());
             repo.get().reportAction(ExistRepository.Action.INSTALL, pkg.getName());
 
-            LOG.info("Deploying package {}", pkgName);
-            return deploy(broker, transaction, pkgName, repo, null);
+            // installPackage may return packages.latest() (the highest-version
+            // entry by semver) rather than the just-installed package when the
+            // registry already had a higher version with the same name. Deploy
+            // the freshly-installed package specifically (looked up by the
+            // version we extracted from the XAR descriptor above) so an explicit
+            // repo:install-and-deploy(name, "<older>", url) is not silently
+            // upgraded to packages.latest().
+            final Package deployTarget = resolveInstalledVersion(repo.get(), pkg, pkgVersion);
+            LOG.info("Deploying package {} (version {})", pkgName, deployTarget.getVersion());
+            return deploy(broker, transaction, deployTarget, null);
         }
 
         // Totally unnecessary to do the above if repo is unavailable.
@@ -271,6 +279,18 @@ public class Deployment {
             throw new PackageException("Package requires eXist-db version " + version + ". " +
                     "Installed version is " + procVersion);
         }
+    }
+
+    private Package resolveInstalledVersion(final ExistRepository repo, final Package installed, final String requestedVersion) {
+        if (requestedVersion == null) {
+            return installed;
+        }
+        final Packages allVersions = repo.getParentRepo().getPackages(installed.getName());
+        if (allVersions == null) {
+            return installed;
+        }
+        final Package match = allVersions.version(requestedVersion);
+        return match != null ? match : installed;
     }
 
     public Optional<String> undeploy(final DBBroker broker, final Txn transaction, final String pkgName, final Optional<ExistRepository> repo) throws PackageException {
@@ -317,14 +337,38 @@ public class Deployment {
         return Optional.empty();
     }
 
+    /**
+     * Deploy a package by name. Resolves the package via {@code packages.latest()} for
+     * that name (see {@link #getPackage(String, Optional)}), which is appropriate for
+     * callers that explicitly want "the latest installed version of this package" —
+     * e.g., the user invoking {@code repo:deploy(name)} directly.
+     *
+     * NOT appropriate for the install-and-deploy flow when a specific version has just
+     * been installed alongside an existing higher version; that path should call
+     * {@link #deploy(DBBroker, Txn, Package, String)} with the
+     * freshly-installed package itself.
+     */
     public Optional<String> deploy(final DBBroker broker, final Txn transaction, final String pkgName, final Optional<ExistRepository> repo, final String userTarget) throws PackageException, IOException {
-        final Optional<Path> maybePackageDir = getPackageDir(pkgName, repo);
-        if (maybePackageDir.isEmpty()) {
+        final Optional<Package> pkg = getPackage(pkgName, repo);
+        if (pkg.isEmpty()) {
             throw new PackageException("Package not found: " + pkgName);
         }
+        return deploy(broker, transaction, pkg.get(), userTarget);
+    }
 
-        final Path packageDir = maybePackageDir.get();
-
+    /**
+     * Deploy a specific {@link Package}. Use this overload when the caller knows exactly
+     * which package version to deploy (e.g., the one it just installed) rather than
+     * wanting the {@code packages.latest()} for the given name.
+     *
+     * Introduced to fix the bug where {@code repo:install-and-deploy} with an explicit
+     * version argument would correctly install the requested version but then deploy the
+     * existing higher version instead, because the name-based lookup always returned
+     * {@code packages.latest()}.
+     */
+    public Optional<String> deploy(final DBBroker broker, final Txn transaction, final Package targetPkg, final String userTarget) throws PackageException, IOException {
+        final Path packageDir = getPackageDir(targetPkg);
+        final String pkgName = targetPkg.getName();
         final DocumentImpl repoXML = getRepoXML(broker, packageDir);
         if (repoXML == null) {
             return Optional.empty();
@@ -363,10 +407,13 @@ public class Deployment {
                 }
                 if (targetCollection == null) {
                     // no target means: package does not need to be deployed into database
-                    // however, we need to preserve a copy for backup purposes
-                    final Optional<Package> pkg = getPackage(pkgName, repo);
-                    pkg.orElseThrow(() -> new XPathException((Expression) null, "expath repository is not available so the package was not stored."));
-                    final String pkgColl = pkg.get().getAbbrev() + "-" + pkg.get().getVersion();
+                    // however, we need to preserve a copy for backup purposes.
+                    // Use targetPkg's abbrev+version directly rather than re-resolving
+                    // packages.latest() — when install-and-deploy was called with an
+                    // explicit older version, the registry's latest may be a different
+                    // (higher) version, and re-resolving would point this status target
+                    // at the wrong version's collection.
+                    final String pkgColl = targetPkg.getAbbrev() + "-" + targetPkg.getVersion();
                     targetCollection = XmldbURI.SYSTEM.append("repo/" + pkgColl);
                 }
 
