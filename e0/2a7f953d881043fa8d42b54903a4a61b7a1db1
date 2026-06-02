@@ -1,0 +1,25 @@
+.github/workflows/ci-oidc-smoke.yml
+  s_bff74bbe28b8ae::t_ac3d67d4cd4fa9 160
+  s_bff74bbe28b8ae::t_830d9bc6b22bd2 168
+  s_bff74bbe28b8ae::t_3b521860ae9988 122-128
+.github/workflows/ci-release.yml
+  s_bff74bbe28b8ae::t_87679ec713781e 298
+  s_bff74bbe28b8ae::t_890e2e44f540d3 288
+  s_bff74bbe28b8ae::t_cd0b0c217572ac 256-263
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "e02a7f953d881043fa8d42b54903a4a61b7a1db1",
+  "prompts": {},
+  "sessions": {
+    "s_bff74bbe28b8ae": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8fa267a5-c257-4f36-b96d-c8e3cc52bd34",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "duncdrum <d.paterson@me.com>"
+    }
+  }
+}
