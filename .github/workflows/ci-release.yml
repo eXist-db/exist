@@ -236,7 +236,8 @@ jobs:
               -Dartifact=com.azure:azure-security-keyvault-jca:2.10.0:jar
           fi
           CERT_NAME="${{ vars.AZURE_KEYVAULT_CERT_NAME }}"
-          CLASSPATH="$KV_JCA_JAR" jarsigner \
+          jarsigner \
+            -J-cp "-J${KV_JCA_JAR}" \
             -keystore NONE \
             -storetype AzureKeyVault \
             -providerClass com.azure.security.keyvault.jca.KeyVaultJcaProvider \

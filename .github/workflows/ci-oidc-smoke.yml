@@ -80,7 +80,8 @@ jobs:
               -Dartifact=com.azure:azure-security-keyvault-jca:2.10.0:jar
           fi
           ls -la "$KV_JCA_JAR"
-          CLASSPATH="$KV_JCA_JAR" jarsigner \
+          jarsigner \
+            -J-cp "-J${KV_JCA_JAR}" \
             -keystore NONE \
             -storetype AzureKeyVault \
             -providerClass com.azure.security.keyvault.jca.KeyVaultJcaProvider \
